@@ -1,0 +1,16 @@
+window {
+	background: #2B2928;
+	backdrop-filter: blur(60px);
+	border-radius: 12px;
+}
+
+nav {
+	background: #303030;
+	box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+	border-radius: 16px;
+}
+
+nav button {
+	border: none;
+	background: none;
+}
