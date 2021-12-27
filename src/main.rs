@@ -23,14 +23,13 @@ fn setup_section<S: SectionInfo>(nav: &gtk4::ListBox) {
 		.build();
 	entry_box.append(&icon);
 	entry_box.append(&label);
-	let button = gtk4::Button::builder().child(&entry_box).build();
 	let row = gtk4::ListBoxRow::builder()
 		.margin_bottom(8)
 		.margin_top(8)
 		.margin_end(8)
 		.margin_start(8)
-		.child(&button)
-		.css_name("rounded")
+		.child(&entry_box)
+		.css_classes(vec!["nav-element".into()])
 		.build();
 	nav.append(&row);
 }
@@ -58,6 +57,10 @@ fn build_ui(application: &gtk4::Application) {
 		.margin_start(16)
 		.margin_end(32)
 		.build();
+
+	let header = gtk4::HeaderBar::builder().css_name("title").build();
+	window.set_titlebar(Some(&header));
+
 	let nav = gtk4::ListBox::builder()
 		.margin_top(20)
 		.margin_bottom(20)

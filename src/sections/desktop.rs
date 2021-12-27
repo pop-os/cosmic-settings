@@ -5,7 +5,7 @@ pub struct DesktopSection;
 
 impl SectionInfo for DesktopSection {
 	const NAME: &'static str = "Desktop";
-	const ICON: &'static str = "user-desktop";
+	const ICON: &'static str = "user-desktop-symbolic";
 }
 
 impl Section for DesktopSection {

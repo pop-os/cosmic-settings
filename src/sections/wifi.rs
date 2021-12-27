@@ -5,7 +5,7 @@ pub struct WifiSection;
 
 impl SectionInfo for WifiSection {
 	const NAME: &'static str = "WiFi";
-	const ICON: &'static str = "network-wireless";
+	const ICON: &'static str = "network-wireless-symbolic";
 }
 
 impl Section for WifiSection {
