@@ -1,7 +1,7 @@
 mod sections;
 
-use gtk4::{CssProvider, STYLE_PROVIDER_PRIORITY_APPLICATION, StyleContext, gdk::Display, prelude::*};
-use crate::sections::{SectionInfo};
+use crate::sections::SectionInfo;
+use gtk4::{gdk::Display, prelude::*, CssProvider, StyleContext, STYLE_PROVIDER_PRIORITY_APPLICATION, Orientation};
 
 fn main() {
 	let application =
@@ -59,6 +59,23 @@ fn build_ui(application: &gtk4::Application) {
 		.build();
 
 	let header = gtk4::HeaderBar::builder().css_name("title").build();
+	let nav_button_box = gtk4::Box::builder()
+		.orientation(gtk4::Orientation::Horizontal)
+		.spacing(8)
+		.margin_start(10)
+		.margin_end(10)
+		.margin_top(10)
+		.margin_bottom(10)
+		.build();
+	let nav_button_label = gtk4::Label::new(Some("Navigation"));
+	nav_button_box.append(&nav_button_label);
+	let nav_button_sep = gtk4::Separator::new(Orientation::Vertical);
+	nav_button_box.append(&nav_button_sep);
+	let nav_button_icon = gtk4::Image::from_icon_name(Some("go-next-symbolic"));
+	nav_button_box.append(&nav_button_icon);
+	let nav_button = gtk4::Button::builder().css_name("nav-button").child(&nav_button_box).margin_top(10).build();
+	header.pack_start(&nav_button);
+
 	window.set_titlebar(Some(&header));
 
 	let nav = gtk4::ListBox::builder()

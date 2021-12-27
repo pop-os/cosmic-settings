@@ -1,8 +1,8 @@
-mod wifi;
 mod desktop;
+mod wifi;
 
-pub use wifi::WifiSection;
 pub use desktop::DesktopSection;
+pub use wifi::WifiSection;
 
 pub trait SectionInfo {
 	/// The name this section appears as.

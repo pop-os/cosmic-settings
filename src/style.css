@@ -10,6 +10,13 @@ title {
 	border-radius: 8px 8px 0px 0px;
 }
 
+nav-button {
+	background: #303030;
+	box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
+	border-radius: 0px 24px 24px 0px;
+	color: #44ECEC;
+}
+
 nav {
 	background: #303030;
 	box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
