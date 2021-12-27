@@ -1,7 +1,14 @@
 mod sections;
+mod widgets;
 
-use crate::sections::SectionInfo;
-use gtk4::{gdk::Display, prelude::*, CssProvider, StyleContext, STYLE_PROVIDER_PRIORITY_APPLICATION, Orientation};
+use crate::sections::Section;
+use gtk4::{
+	gdk::Display,
+	glib::{self, prelude::*},
+	prelude::*,
+	CssProvider, Orientation, StyleContext, STYLE_PROVIDER_PRIORITY_APPLICATION,
+};
+use std::{cell::RefCell, rc::Rc};
 
 fn main() {
 	let application =
@@ -10,7 +17,7 @@ fn main() {
 	application.run();
 }
 
-fn setup_section<S: SectionInfo>(nav: &gtk4::ListBox) {
+fn setup_section<S: Section>(nav: &gtk4::ListBox) {
 	let icon = gtk4::Image::from_icon_name(Some(S::ICON));
 	let label = gtk4::Label::new(Some(S::NAME));
 	let entry_box = gtk4::Box::builder()
@@ -73,10 +80,16 @@ fn build_ui(application: &gtk4::Application) {
 	nav_button_box.append(&nav_button_sep);
 	let nav_button_icon = gtk4::Image::from_icon_name(Some("go-next-symbolic"));
 	nav_button_box.append(&nav_button_icon);
-	let nav_button = gtk4::Button::builder().css_name("nav-button").child(&nav_button_box).margin_top(10).build();
+	let nav_button = gtk4::Button::builder()
+		.css_name("nav-button")
+		.child(&nav_button_box)
+		.margin_top(10)
+		.build();
 	header.pack_start(&nav_button);
 
 	window.set_titlebar(Some(&header));
+
+	let current_section = Rc::new(RefCell::new("WiFi".to_string()));
 
 	let nav = gtk4::ListBox::builder()
 		.margin_top(20)
@@ -87,6 +100,8 @@ fn build_ui(application: &gtk4::Application) {
 		.build();
 	setup_section::<sections::WifiSection>(&nav);
 	setup_section::<sections::DesktopSection>(&nav);
+	nav.connect_row_activated(glib::clone!(@strong current_section => move |_, row| {
+	}));
 	base_box.append(&nav);
 
 	window.set_child(Some(&base_box));
