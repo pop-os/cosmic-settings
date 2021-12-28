@@ -1,0 +1,14 @@
+nav {
+  background: #303030;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+
+  .nav-element {
+    border-radius: 24px;
+  }
+
+  .nav-element:selected {
+    background: #94EBEB;
+    color: #272727;
+  }
+}

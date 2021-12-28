@@ -79,7 +79,7 @@ fn setup_section<S: Section>(nav: &gtk4::ListBox, stack: &gtk4::Stack) {
 
 fn build_ui(application: &gtk4::Application) {
 	let provider = CssProvider::new();
-	provider.load_from_data(include_bytes!("style.css"));
+	provider.load_from_data(include_bytes!(concat!(env!("OUT_DIR"), "/style.css")));
 	// We give the CssProvided to the default screen so the CSS rules we added
 	// can be applied to our window.
 	StyleContext::add_provider_for_display(
