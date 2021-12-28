@@ -9,7 +9,7 @@ impl Section for WifiSection {
 	const ICON: &'static str = "network-wireless-symbolic";
 
 	fn settings() -> Vec<Box<dyn SettingsGroup>> {
-		vec![AirplaneMode::new()]
+		vec![AirplaneMode::new(), Wifi::new()]
 	}
 }
 
@@ -26,11 +26,35 @@ impl SettingsGroup for AirplaneMode {
 	}
 
 	fn layout(&self, target: &gtk4::Box) {
-		let checkbox = gtk4::Switch::new();
+		let checkbox = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Airplane Mode");
 			..set_description("Disables Wi-Fi, Bluetooth, and mobile broadband");
+			..set_child(&checkbox);
+		};
+		target.append(&entry);
+	}
+}
+
+#[derive(Default)]
+struct Wifi;
+
+impl SettingsGroup for Wifi {
+	fn title(&self) -> &'static str {
+		"Wi-Fi"
+	}
+
+	fn keywords(&self) -> &[&'static str] {
+		&["wifi", "wi-fi", "wireless", "disable", "turn off"]
+	}
+
+	fn layout(&self, target: &gtk4::Box) {
+		let checkbox = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Wi-Fi");
+			..set_description("Disables all Wi-Fi functions");
 			..set_child(&checkbox);
 		};
 		target.append(&entry);
