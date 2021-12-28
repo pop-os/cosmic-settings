@@ -101,9 +101,38 @@ fn build_ui(application: &gtk4::Application) {
 		.margin_end(32)
 		.build();
 
+	let settings_stack = gtk4::Stack::new();
+
 	let header = gtk4::HeaderBar::builder().css_name("title").build();
+
+	let search_entry = gtk4::SearchEntry::builder()
+		.valign(gtk4::Align::Center)
+		.hexpand(true)
+		.build();
+	let search_bar = gtk4::SearchBar::builder()
+		.valign(gtk4::Align::Center)
+		.key_capture_widget(&window)
+		.child(&search_entry)
+		.build();
+	let search_button = gtk4::ToggleButton::builder()
+		.icon_name("system-search-symbolic")
+		.valign(gtk4::Align::Center)
+		.css_classes(vec!["search-button".into()])
+		.build();
+	search_bar.connect_entry(&search_entry);
+	search_entry.connect_search_started(
+		glib::clone!(@weak settings_stack, @weak search_button => move |_| {
+			search_button.set_active(true);
+			settings_stack.set_visible_child_name("_search");
+		}),
+	);
+	search_entry.connect_stop_search(glib::clone!(@weak search_button => move |_| {
+		search_button.set_active(false);
+	}));
+
 	let nav_button_box = gtk4::Box::builder()
 		.orientation(gtk4::Orientation::Horizontal)
+		.valign(gtk4::Align::Center)
 		.spacing(8)
 		.margin_start(10)
 		.margin_end(10)
@@ -117,21 +146,21 @@ fn build_ui(application: &gtk4::Application) {
 	let nav_button_icon = gtk4::Image::from_icon_name(Some("go-next-symbolic"));
 	nav_button_box.append(&nav_button_icon);
 	let nav_button = gtk4::Button::builder()
-		.css_name("nav-button")
 		.child(&nav_button_box)
 		.margin_top(10)
+		.css_classes(vec!["nav-button".into()])
 		.build();
 	header.pack_start(&nav_button);
+	header.pack_start(&search_button);
+	header.pack_start(&search_bar);
 	window.set_titlebar(Some(&header));
-
-	let settings_stack = gtk4::Stack::new();
 
 	let nav = gtk4::ListBox::builder()
 		.margin_top(20)
 		.margin_bottom(20)
 		.margin_start(12)
 		.margin_end(12)
-		.css_name("nav")
+		.css_classes(vec!["nav".into()])
 		.build();
 	setup_section::<sections::WifiSection>(&nav, &settings_stack);
 	setup_section::<sections::DesktopSection>(&nav, &settings_stack);
@@ -139,7 +168,6 @@ fn build_ui(application: &gtk4::Application) {
 		let row = row
 			.downcast_ref::<widgets::ListBoxSelectionRow>()
 			.expect("invalid object");
-		println!("{}", row.row_id());
 		settings_stack.set_visible_child_name(&row.row_id());
 	}));
 	base_box.append(&nav);
