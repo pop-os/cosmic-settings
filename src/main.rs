@@ -130,6 +130,10 @@ fn build_ui(application: &gtk4::Application) {
 		search_button.set_active(false);
 	}));
 
+	let nav_revealer = gtk4::Revealer::builder()
+		.transition_type(gtk4::RevealerTransitionType::SlideRight)
+		.build();
+
 	let nav_button_box = gtk4::Box::builder()
 		.orientation(gtk4::Orientation::Horizontal)
 		.valign(gtk4::Align::Center)
@@ -150,6 +154,18 @@ fn build_ui(application: &gtk4::Application) {
 		.margin_top(10)
 		.css_classes(vec!["nav-button".into()])
 		.build();
+	nav_button.connect_clicked(
+		glib::clone!(@weak nav_revealer, @weak nav_button_icon => move |_| {
+			let active = nav_revealer.reveals_child();
+			if active {
+				nav_button_icon.set_icon_name(Some("go-next-symbolic"));
+				nav_revealer.set_reveal_child(false);
+			} else {
+				nav_button_icon.set_icon_name(Some("go-previous-symbolic"));
+				nav_revealer.set_reveal_child(true);
+			}
+		}),
+	);
 	header.pack_start(&nav_button);
 	header.pack_start(&search_button);
 	header.pack_start(&search_bar);
@@ -170,7 +186,8 @@ fn build_ui(application: &gtk4::Application) {
 			.expect("invalid object");
 		settings_stack.set_visible_child_name(&row.row_id());
 	}));
-	base_box.append(&nav);
+	nav_revealer.set_child(Some(&nav));
+	base_box.append(&nav_revealer);
 	base_box.append(&settings_stack);
 
 	window.set_child(Some(&base_box));
