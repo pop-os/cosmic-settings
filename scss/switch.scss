@@ -8,7 +8,7 @@ switch {
     box-shadow: 1px 1px 4px rgba(147, 147, 147, 0.15);
   }
 
-  :checked {
+  &:checked {
 	background: #94EBEB;
   }
 }
