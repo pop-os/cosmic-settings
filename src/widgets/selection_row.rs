@@ -1,6 +1,5 @@
 use gtk4::{
-	glib,
-	glib::{prelude::*, Object, Value},
+	glib::{self, prelude::*, Object, Value},
 	subclass::prelude::*,
 };
 use std::cell::RefCell;
@@ -43,6 +42,20 @@ impl ObjectSubclass for ListBoxSelectionRowImp {
 }
 
 impl ObjectImpl for ListBoxSelectionRowImp {
+	fn properties() -> &'static [glib::ParamSpec] {
+		use once_cell::sync::Lazy;
+		static PROPERTIES: Lazy<Vec<glib::ParamSpec>> = Lazy::new(|| {
+			vec![glib::ParamSpec::new_string(
+				"row-id",
+				"row id",
+				"row id",
+				None,
+				glib::ParamFlags::READWRITE,
+			)]
+		});
+		PROPERTIES.as_ref()
+	}
+
 	fn set_property(&self, _obj: &Self::Type, _id: usize, value: &Value, pspec: &glib::ParamSpec) {
 		match pspec.name() {
 			"row-id" => {
@@ -60,20 +73,6 @@ impl ObjectImpl for ListBoxSelectionRowImp {
 			"row-id" => self.row_id.borrow().to_value(),
 			_ => unimplemented!(),
 		}
-	}
-
-	fn properties() -> &'static [glib::ParamSpec] {
-		use once_cell::sync::Lazy;
-		static PROPERTIES: Lazy<Vec<glib::ParamSpec>> = Lazy::new(|| {
-			vec![glib::ParamSpec::new_string(
-				"row-id",
-				"row id",
-				"row id",
-				None,
-				glib::ParamFlags::READWRITE,
-			)]
-		});
-		PROPERTIES.as_ref()
 	}
 
 	fn constructed(&self, obj: &Self::Type) {

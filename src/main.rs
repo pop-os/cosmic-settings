@@ -11,7 +11,6 @@ use gtk4::{
 	prelude::*,
 	CssProvider, Orientation, StyleContext, STYLE_PROVIDER_PRIORITY_APPLICATION,
 };
-use std::{cell::RefCell, rc::Rc};
 
 fn main() {
 	let application =
@@ -20,7 +19,8 @@ fn main() {
 	application.run();
 }
 
-fn setup_section<S: Section>(nav: &gtk4::ListBox) {
+fn setup_section<S: Section>(nav: &gtk4::ListBox, stack: &gtk4::Stack) {
+	// Set up the nav entry
 	let icon = gtk4::Image::from_icon_name(Some(S::ICON));
 	let label = gtk4::Label::new(Some(S::NAME));
 	let entry_box = gtk4::Box::builder()
@@ -43,6 +43,38 @@ fn setup_section<S: Section>(nav: &gtk4::ListBox) {
 		..set_child(Some(&entry_box));
 	};
 	nav.append(&row);
+
+	// Alright, now we setup the actual settings panel
+	let panel = gtk4::Box::builder()
+		.orientation(gtk4::Orientation::Vertical)
+		.spacing(24)
+		.hexpand(true)
+		.build();
+
+	let entries = S::settings();
+	for group in entries {
+		let title = group.title();
+		let group_box = gtk4::Box::builder()
+			.orientation(Orientation::Vertical)
+			.spacing(8)
+			.build();
+		let group_title = gtk4::Label::builder()
+			.label(title)
+			.css_classes(vec!["settings-group-title".into()])
+			.halign(gtk4::Align::Start)
+			.build();
+		let group_box_inner = gtk4::Box::builder()
+			.orientation(gtk4::Orientation::Vertical)
+			.spacing(16)
+			.css_classes(vec!["settings-group".into()])
+			.build();
+		group_box.append(&group_title);
+		group_box.append(&group_box_inner);
+		group.layout(&group_box_inner);
+		panel.append(&group_box);
+	}
+
+	stack.add_titled(&panel, Some(S::NAME), S::NAME);
 }
 
 fn build_ui(application: &gtk4::Application) {
@@ -90,10 +122,9 @@ fn build_ui(application: &gtk4::Application) {
 		.margin_top(10)
 		.build();
 	header.pack_start(&nav_button);
-
 	window.set_titlebar(Some(&header));
 
-	let current_section = Rc::new(RefCell::new("WiFi".to_string()));
+	let settings_stack = gtk4::Stack::new();
 
 	let nav = gtk4::ListBox::builder()
 		.margin_top(20)
@@ -102,13 +133,17 @@ fn build_ui(application: &gtk4::Application) {
 		.margin_end(12)
 		.css_name("nav")
 		.build();
-	setup_section::<sections::WifiSection>(&nav);
-	setup_section::<sections::DesktopSection>(&nav);
-	nav.connect_row_activated(glib::clone!(@strong current_section => move |_, row| {
-		let row = row.downcast_ref::<widgets::ListBoxSelectionRow>().expect("invalid object");
+	setup_section::<sections::WifiSection>(&nav, &settings_stack);
+	setup_section::<sections::DesktopSection>(&nav, &settings_stack);
+	nav.connect_row_activated(glib::clone!(@weak settings_stack => move |_, row| {
+		let row = row
+			.downcast_ref::<widgets::ListBoxSelectionRow>()
+			.expect("invalid object");
 		println!("{}", row.row_id());
+		settings_stack.set_visible_child_name(&row.row_id());
 	}));
 	base_box.append(&nav);
+	base_box.append(&settings_stack);
 
 	window.set_child(Some(&base_box));
 
