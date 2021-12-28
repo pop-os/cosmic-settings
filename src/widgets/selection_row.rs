@@ -12,18 +12,30 @@ glib::wrapper! {
 
 impl ListBoxSelectionRow {
 	pub fn new(row_id: String) -> Self {
-		Object::new(&[("row-id", &row_id)]).expect("Failed to create `ListBoxSelectionRow`.")
+		Object::new(&[("row-id", &row_id), ("subsection", &false)])
+			.expect("Failed to create `ListBoxSelectionRow`.")
 	}
 
 	pub fn row_id(&self) -> String {
 		let value = self.property("row-id").expect("invalid row_id");
 		value.get::<String>().expect("row_id is not string?")
 	}
+
+	pub fn subsection(&self) -> bool {
+		let value = self.property("subsection").expect("invalid subsection");
+		value.get::<bool>().expect("subsection is not bool?")
+	}
+
+	pub fn set_subsection(&self, subsection: bool) {
+		self.set_property("subsection", subsection)
+			.expect("failed to set subsection");
+	}
 }
 
 #[derive(Debug, Default)]
 pub struct ListBoxSelectionRowImp {
 	row_id: RefCell<String>,
+	subsection: RefCell<bool>,
 }
 
 #[glib::object_subclass]
@@ -45,13 +57,22 @@ impl ObjectImpl for ListBoxSelectionRowImp {
 	fn properties() -> &'static [glib::ParamSpec] {
 		use once_cell::sync::Lazy;
 		static PROPERTIES: Lazy<Vec<glib::ParamSpec>> = Lazy::new(|| {
-			vec![glib::ParamSpec::new_string(
-				"row-id",
-				"row id",
-				"row id",
-				None,
-				glib::ParamFlags::READWRITE,
-			)]
+			vec![
+				glib::ParamSpec::new_string(
+					"row-id",
+					"row id",
+					"row id",
+					None,
+					glib::ParamFlags::READWRITE,
+				),
+				glib::ParamSpec::new_boolean(
+					"subsection",
+					"subsection",
+					"subsection",
+					false,
+					glib::ParamFlags::READWRITE,
+				),
+			]
 		});
 		PROPERTIES.as_ref()
 	}
@@ -64,6 +85,10 @@ impl ObjectImpl for ListBoxSelectionRowImp {
 					.expect("The value needs to be of type `String`.");
 				self.row_id.replace(input_value);
 			}
+			"subsection" => {
+				let input_value = value.get().expect("The value needs to be of type `bool`.");
+				self.subsection.replace(input_value);
+			}
 			_ => unimplemented!(),
 		}
 	}
@@ -71,6 +96,7 @@ impl ObjectImpl for ListBoxSelectionRowImp {
 	fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> Value {
 		match pspec.name() {
 			"row-id" => self.row_id.borrow().to_value(),
+			"subsection" => self.subsection.borrow().to_value(),
 			_ => unimplemented!(),
 		}
 	}

@@ -4,7 +4,7 @@ extern crate cascade;
 mod sections;
 mod widgets;
 
-use crate::sections::Section;
+use crate::sections::{Section, SectionLayout, SettingsGroup};
 use gtk4::{
 	gdk::Display,
 	glib::{self, prelude::*},
@@ -19,7 +19,70 @@ fn main() {
 	application.run();
 }
 
-fn setup_section<S: Section>(nav: &gtk4::ListBox, stack: &gtk4::Stack) {
+fn setup_single_section(panel: &gtk4::Box, groups: Vec<Box<dyn SettingsGroup>>) {
+	for group in groups {
+		let title = group.title();
+		let group_box = gtk4::Box::builder()
+			.orientation(Orientation::Vertical)
+			.spacing(8)
+			.build();
+		let group_title = gtk4::Label::builder()
+			.label(title)
+			.css_classes(vec!["settings-group-title".into()])
+			.halign(gtk4::Align::Start)
+			.build();
+		let group_box_inner = gtk4::Box::builder()
+			.orientation(gtk4::Orientation::Vertical)
+			.spacing(16)
+			.css_classes(vec!["settings-group".into()])
+			.build();
+		group_box.append(&group_title);
+		group_box.append(&group_box_inner);
+		group.layout(&group_box_inner);
+		panel.append(&group_box);
+	}
+}
+
+fn setup_multi_section(
+	name: &str,
+	panel: &gtk4::Box,
+	subsection_stack: &gtk4::Stack,
+	sections: Vec<(&'static str, Vec<Box<dyn SettingsGroup>>)>,
+) {
+	let nav = gtk4::ListBox::builder()
+		.margin_top(20)
+		.margin_bottom(20)
+		.margin_start(12)
+		.margin_end(12)
+		.css_classes(vec!["nav-subsection".into()])
+		.build();
+	for (name, groups) in sections {
+		let label = gtk4::Label::builder()
+			.label(name)
+			.margin_top(8)
+			.margin_bottom(8)
+			.margin_start(8)
+			.margin_end(8)
+			.build();
+		let row = cascade! {
+			widgets::ListBoxSelectionRow::new(name.into());
+			..add_css_class("nav-element");
+			..set_margin_top(8);
+			..set_margin_bottom(8);
+			..set_margin_start(8);
+			..set_margin_end(8);
+			..set_child(Some(&label));
+		};
+		nav.append(&row);
+	}
+	subsection_stack.add_named(&nav, Some(name));
+}
+
+fn setup_section<S: Section>(
+	nav: &gtk4::ListBox,
+	main_stack: &gtk4::Stack,
+	subsection_stack: &gtk4::Stack,
+) {
 	// Set up the nav entry
 	let icon = gtk4::Image::from_icon_name(Some(S::ICON));
 	let label = gtk4::Label::new(Some(S::NAME));
@@ -51,30 +114,16 @@ fn setup_section<S: Section>(nav: &gtk4::ListBox, stack: &gtk4::Stack) {
 		.hexpand(true)
 		.build();
 
-	let entries = S::settings();
-	for group in entries {
-		let title = group.title();
-		let group_box = gtk4::Box::builder()
-			.orientation(Orientation::Vertical)
-			.spacing(8)
-			.build();
-		let group_title = gtk4::Label::builder()
-			.label(title)
-			.css_classes(vec!["settings-group-title".into()])
-			.halign(gtk4::Align::Start)
-			.build();
-		let group_box_inner = gtk4::Box::builder()
-			.orientation(gtk4::Orientation::Vertical)
-			.spacing(16)
-			.css_classes(vec!["settings-group".into()])
-			.build();
-		group_box.append(&group_title);
-		group_box.append(&group_box_inner);
-		group.layout(&group_box_inner);
-		panel.append(&group_box);
+	let entries = S::layout();
+	match entries {
+		SectionLayout::Single(groups) => setup_single_section(&panel, groups),
+		SectionLayout::Multiple(subsections) => {
+			setup_multi_section(S::NAME, &panel, subsection_stack, subsections);
+			row.set_subsection(true);
+		}
 	}
 
-	stack.add_titled(&panel, Some(S::NAME), S::NAME);
+	main_stack.add_titled(&panel, Some(S::NAME), S::NAME);
 }
 
 fn build_ui(application: &gtk4::Application) {
@@ -171,22 +220,41 @@ fn build_ui(application: &gtk4::Application) {
 	header.pack_start(&search_bar);
 	window.set_titlebar(Some(&header));
 
-	let nav = gtk4::ListBox::builder()
+	let nav_box = gtk4::Box::builder()
+		.orientation(gtk4::Orientation::Horizontal)
 		.margin_top(20)
 		.margin_bottom(20)
 		.margin_start(12)
 		.margin_end(12)
 		.css_classes(vec!["nav".into()])
 		.build();
-	setup_section::<sections::WifiSection>(&nav, &settings_stack);
-	setup_section::<sections::DesktopSection>(&nav, &settings_stack);
-	nav.connect_row_activated(glib::clone!(@weak settings_stack => move |_, row| {
-		let row = row
-			.downcast_ref::<widgets::ListBoxSelectionRow>()
-			.expect("invalid object");
-		settings_stack.set_visible_child_name(&row.row_id());
-	}));
-	nav_revealer.set_child(Some(&nav));
+	let nav_stack = gtk4::Stack::builder()
+		.css_classes(vec!["nav-subsection".into()])
+		.build();
+	let nav_stack_revealer = gtk4::Revealer::builder()
+		.child(&nav_stack)
+		.transition_type(gtk4::RevealerTransitionType::SlideRight)
+		.build();
+	let nav = gtk4::ListBox::builder().build();
+	nav_box.append(&nav);
+	nav_box.append(&nav_stack_revealer);
+	nav_revealer.set_child(Some(&nav_box));
+	setup_section::<sections::WifiSection>(&nav, &settings_stack, &nav_stack);
+	setup_section::<sections::DesktopSection>(&nav, &settings_stack, &nav_stack);
+	nav.connect_row_activated(
+		glib::clone!(@weak settings_stack, @weak nav_stack, @weak nav_stack_revealer => move |_, row| {
+			let row = row
+				.downcast_ref::<widgets::ListBoxSelectionRow>()
+				.expect("invalid object");
+			if row.subsection() {
+				nav_stack_revealer.set_reveal_child(true);
+				nav_stack.set_visible_child_name(&row.row_id());
+			} else {
+				nav_stack_revealer.set_reveal_child(false);
+				settings_stack.set_visible_child_name(&row.row_id());
+			}
+		}),
+	);
 	base_box.append(&nav_revealer);
 	base_box.append(&settings_stack);
 

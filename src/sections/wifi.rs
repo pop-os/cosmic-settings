@@ -1,4 +1,4 @@
-use super::{Section, SettingsGroup};
+use super::{Section, SectionLayout, SettingsGroup};
 use crate::widgets::SettingsEntry;
 use gtk4::prelude::*;
 
@@ -8,8 +8,8 @@ impl Section for WifiSection {
 	const NAME: &'static str = "WiFi";
 	const ICON: &'static str = "network-wireless-symbolic";
 
-	fn settings() -> Vec<Box<dyn SettingsGroup>> {
-		vec![AirplaneMode::new(), Wifi::new()]
+	fn layout() -> SectionLayout {
+		SectionLayout::Single(vec![AirplaneMode::new(), Wifi::new()])
 	}
 }
 

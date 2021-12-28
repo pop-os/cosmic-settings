@@ -11,7 +11,18 @@ pub trait Section: Sized {
 	/// The icon that will appear next to this setting in the nav.
 	const ICON: &'static str;
 	/// Returns all the settings groups from this section.
-	fn settings() -> Vec<Box<dyn SettingsGroup>>;
+	fn layout() -> SectionLayout;
+}
+
+/// The layout of the groups in a [`Section`].
+pub enum SectionLayout {
+	/// The section has a single page of settings groups.
+	Single(Vec<Box<dyn SettingsGroup>>),
+	/// The section has multiple pages of settings groups.
+	///
+	/// This is a [`Vec`] and not a [`HashMap`] or [`BTreeMap`] due to the fact that they may
+	/// be arbitraily sorted in a specific way.
+	Multiple(Vec<(&'static str, Vec<Box<dyn SettingsGroup>>)>),
 }
 
 /// A group of settings in the COSMIC settings app.
