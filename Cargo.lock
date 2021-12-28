@@ -45,6 +45,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "cascade"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f18c6a921baae2d947e4cf96f6ef1b5774b3056ae8edbdf5c5cfce4f33260921"
+
+[[package]]
 name = "cfg-expr"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -66,7 +72,9 @@ dependencies = [
 name = "cosmic-settings"
 version = "0.1.0"
 dependencies = [
+ "cascade",
  "gtk4",
+ "once_cell",
 ]
 
 [[package]]

@@ -13,7 +13,7 @@ pub struct SettingsCheckboxImp {
 
 #[glib::object_subclass]
 impl ObjectSubclass for SettingsCheckboxImp {
-	const NAME: &'static str = "ExButton";
+	const NAME: &'static str = "SettingsCheckbox";
 	type Type = SettingsCheckbox;
 	type ParentType = gtk4::Widget;
 	type Interfaces = ();

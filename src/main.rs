@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate cascade;
+
 mod sections;
 mod widgets;
 
@@ -30,14 +33,15 @@ fn setup_section<S: Section>(nav: &gtk4::ListBox) {
 		.build();
 	entry_box.append(&icon);
 	entry_box.append(&label);
-	let row = gtk4::ListBoxRow::builder()
-		.margin_bottom(8)
-		.margin_top(8)
-		.margin_end(8)
-		.margin_start(8)
-		.child(&entry_box)
-		.css_classes(vec!["nav-element".into()])
-		.build();
+	let row = cascade! {
+		widgets::ListBoxSelectionRow::new(S::NAME.into());
+		..add_css_class("nav-element");
+		..set_margin_top(8);
+		..set_margin_bottom(8);
+		..set_margin_start(8);
+		..set_margin_end(8);
+		..set_child(Some(&entry_box));
+	};
 	nav.append(&row);
 }
 
@@ -101,6 +105,8 @@ fn build_ui(application: &gtk4::Application) {
 	setup_section::<sections::WifiSection>(&nav);
 	setup_section::<sections::DesktopSection>(&nav);
 	nav.connect_row_activated(glib::clone!(@strong current_section => move |_, row| {
+		let row = row.downcast_ref::<widgets::ListBoxSelectionRow>().expect("invalid object");
+		println!("{}", row.row_id());
 	}));
 	base_box.append(&nav);
 
