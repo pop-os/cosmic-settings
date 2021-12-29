@@ -1,0 +1,8 @@
+radio {
+  border: 1px solid #CCCCCC;
+  background: none;
+  &:checked {
+    background: #94EBEB;
+    color: #000000;
+  }
+}
