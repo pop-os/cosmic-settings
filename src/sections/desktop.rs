@@ -9,7 +9,91 @@ impl Section for DesktopSection {
 	const ICON: &'static str = "user-desktop-symbolic";
 
 	fn layout() -> SectionLayout {
-		SectionLayout::Multiple(vec![("Desktop", vec![TopBar::new()])])
+		SectionLayout::Multiple(vec![(
+			"Desktop",
+			vec![SuperKeyAction::new(), HotCorner::new(), TopBar::new()],
+		)])
+	}
+}
+
+#[derive(Default)]
+struct SuperKeyAction;
+
+impl SettingsGroup for SuperKeyAction {
+	fn title(&self) -> &'static str {
+		"Super Key Action"
+	}
+
+	fn keywords(&self) -> &[&'static str] {
+		&[
+			"super",
+			"launcher",
+			"window",
+			"workspace",
+			"overview",
+			"app",
+		]
+	}
+
+	fn layout(&self, target: &gtk4::Box) {
+		let check = gtk4::CheckButton::builder()
+			.valign(gtk4::Align::Center)
+			.build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Launcher");
+			..set_description("Pressing the Super key opens the Launcher");
+			..set_child(&check);
+			..align_child(gtk4::Align::Start);
+		};
+		target.append(&entry);
+		let check = gtk4::CheckButton::builder()
+			.valign(gtk4::Align::Center)
+			.group(&check)
+			.build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Workspaces");
+			..set_description("Pressing the Super key opens the Window and Workspaces Overview");
+			..set_child(&check);
+			..align_child(gtk4::Align::Start);
+		};
+		target.append(&entry);
+		let check = gtk4::CheckButton::builder()
+			.valign(gtk4::Align::Center)
+			.group(&check)
+			.build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Applications");
+			..set_description("Pressing the Super key opens the Applications Overview");
+			..set_child(&check);
+			..align_child(gtk4::Align::Start);
+		};
+		target.append(&entry);
+	}
+}
+
+#[derive(Default)]
+struct HotCorner;
+
+impl SettingsGroup for HotCorner {
+	fn title(&self) -> &'static str {
+		"Hot Corner"
+	}
+
+	fn keywords(&self) -> &[&'static str] {
+		&["corner", "hot"]
+	}
+
+	fn layout(&self, target: &gtk4::Box) {
+		let switch = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Enable top-left hot corner for Workspaces");
+			..set_child(&switch);
+		};
+		target.append(&entry);
 	}
 }
 
