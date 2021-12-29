@@ -1,7 +1,9 @@
 mod desktop;
+mod keyboard;
 mod wifi;
 
 pub use desktop::DesktopSection;
+pub use keyboard::KeyboardSection;
 pub use wifi::WifiSection;
 
 /// A section of the COSMIC settings app.

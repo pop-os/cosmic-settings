@@ -260,6 +260,7 @@ fn build_ui(application: &gtk4::Application) {
 	nav_revealer.set_child(Some(&nav_box));
 	setup_section::<sections::WifiSection>(&nav, &settings_stack, &nav_stack);
 	setup_section::<sections::DesktopSection>(&nav, &settings_stack, &nav_stack);
+	setup_section::<sections::KeyboardSection>(&nav, &settings_stack, &nav_stack);
 	nav.connect_row_activated(
 		glib::clone!(@weak settings_stack, @weak nav_stack, @weak nav_stack_revealer => move |_, row| {
 			let row = row
