@@ -45,7 +45,7 @@ fn setup_single_section(panel: &gtk4::Box, groups: Vec<Box<dyn SettingsGroup>>) 
 
 fn setup_multi_section(
 	name: &str,
-	panel: &gtk4::Box,
+	main_stack: &gtk4::Stack,
 	subsection_stack: &gtk4::Stack,
 	sections: Vec<(&'static str, Vec<Box<dyn SettingsGroup>>)>,
 ) {
@@ -57,6 +57,7 @@ fn setup_multi_section(
 		.css_classes(vec!["nav-subsection".into()])
 		.build();
 	for (name, groups) in sections {
+		// Set up the subsection in the nav panel
 		let label = gtk4::Label::builder()
 			.label(name)
 			.margin_top(8)
@@ -74,7 +75,21 @@ fn setup_multi_section(
 			..set_child(Some(&label));
 		};
 		nav.append(&row);
+		// Set up the actual groups
+		let panel = gtk4::Box::builder()
+			.orientation(gtk4::Orientation::Vertical)
+			.spacing(24)
+			.hexpand(true)
+			.build();
+		setup_single_section(&panel, groups);
+		main_stack.add_named(&panel, Some(name));
 	}
+	nav.connect_row_activated(glib::clone!(@weak main_stack, => move |_, row| {
+		let row = row
+			.downcast_ref::<widgets::ListBoxSelectionRow>()
+			.expect("invalid object");
+		main_stack.set_visible_child_name(&row.row_id());
+	}));
 	subsection_stack.add_named(&nav, Some(name));
 }
 
@@ -107,23 +122,23 @@ fn setup_section<S: Section>(
 	};
 	nav.append(&row);
 
-	// Alright, now we setup the actual settings panel
-	let panel = gtk4::Box::builder()
-		.orientation(gtk4::Orientation::Vertical)
-		.spacing(24)
-		.hexpand(true)
-		.build();
-
 	let entries = S::layout();
 	match entries {
-		SectionLayout::Single(groups) => setup_single_section(&panel, groups),
+		SectionLayout::Single(groups) => {
+			// Alright, now we setup the actual settings panel
+			let panel = gtk4::Box::builder()
+				.orientation(gtk4::Orientation::Vertical)
+				.spacing(24)
+				.hexpand(true)
+				.build();
+			setup_single_section(&panel, groups);
+			main_stack.add_titled(&panel, Some(S::NAME), S::NAME);
+		}
 		SectionLayout::Multiple(subsections) => {
-			setup_multi_section(S::NAME, &panel, subsection_stack, subsections);
+			setup_multi_section(S::NAME, &main_stack, subsection_stack, subsections);
 			row.set_subsection(true);
 		}
 	}
-
-	main_stack.add_titled(&panel, Some(S::NAME), S::NAME);
 }
 
 fn build_ui(application: &gtk4::Application) {
