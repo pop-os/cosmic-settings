@@ -142,8 +142,10 @@ fn setup_section<S: Section>(
 }
 
 fn build_ui(application: &gtk4::Application) {
-	let provider = CssProvider::new();
-	provider.load_from_data(include_bytes!(concat!(env!("OUT_DIR"), "/style.css")));
+	let provider = cascade! {
+		CssProvider::new();
+		..load_from_data(include_bytes!(concat!(env!("OUT_DIR"), "/style.css")));
+	};
 	// We give the CssProvided to the default screen so the CSS rules we added
 	// can be applied to our window.
 	StyleContext::add_provider_for_display(
@@ -152,10 +154,12 @@ fn build_ui(application: &gtk4::Application) {
 		STYLE_PROVIDER_PRIORITY_APPLICATION,
 	);
 
-	let window = gtk4::ApplicationWindow::new(application);
-
-	window.set_title(Some("Settings"));
-	window.set_default_size(842, 632);
+	let window = gtk4::ApplicationWindow::builder()
+		.application(application)
+		.title("Settings")
+		.default_width(842)
+		.default_height(632)
+		.build();
 
 	let base_box = gtk4::Box::builder()
 		.orientation(gtk4::Orientation::Horizontal)
