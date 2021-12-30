@@ -1,6 +1,6 @@
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
-use gtk4::prelude::*;
+use gtk4::{prelude::*, Align, CheckButton, Switch};
 
 pub struct DesktopSection;
 
@@ -36,19 +36,17 @@ impl SettingsGroup for SuperKeyAction {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
-		let check = gtk4::CheckButton::builder()
-			.valign(gtk4::Align::Center)
-			.build();
+		let check = CheckButton::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Launcher");
 			..set_description("Pressing the Super key opens the Launcher");
 			..set_child(&check);
-			..align_child(gtk4::Align::Start);
+			..align_child(Align::Start);
 		};
 		target.append(&entry);
-		let check = gtk4::CheckButton::builder()
-			.valign(gtk4::Align::Center)
+		let check = CheckButton::builder()
+			.valign(Align::Center)
 			.group(&check)
 			.build();
 		let entry = cascade! {
@@ -56,11 +54,11 @@ impl SettingsGroup for SuperKeyAction {
 			..set_title("Workspaces");
 			..set_description("Pressing the Super key opens the Window and Workspaces Overview");
 			..set_child(&check);
-			..align_child(gtk4::Align::Start);
+			..align_child(Align::Start);
 		};
 		target.append(&entry);
-		let check = gtk4::CheckButton::builder()
-			.valign(gtk4::Align::Center)
+		let check = CheckButton::builder()
+			.valign(Align::Center)
 			.group(&check)
 			.build();
 		let entry = cascade! {
@@ -68,7 +66,7 @@ impl SettingsGroup for SuperKeyAction {
 			..set_title("Applications");
 			..set_description("Pressing the Super key opens the Applications Overview");
 			..set_child(&check);
-			..align_child(gtk4::Align::Start);
+			..align_child(Align::Start);
 		};
 		target.append(&entry);
 	}
@@ -87,7 +85,7 @@ impl SettingsGroup for HotCorner {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
-		let switch = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
+		let switch = Switch::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Enable top-left hot corner for Workspaces");
@@ -119,14 +117,14 @@ impl SettingsGroup for TopBar {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
-		let switch = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
+		let switch = Switch::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Show Workspaces Button");
 			..set_child(&switch);
 		};
 		target.append(&entry);
-		let switch = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
+		let switch = Switch::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Show Applications Button");

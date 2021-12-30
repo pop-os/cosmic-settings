@@ -1,6 +1,6 @@
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
-use gtk4::prelude::*;
+use gtk4::{prelude::*, Align, CheckButton, Label};
 
 pub struct KeyboardSection;
 
@@ -32,9 +32,7 @@ impl SettingsGroup for InputSourceSwitching {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
-		let check = gtk4::CheckButton::builder()
-			.valign(gtk4::Align::Center)
-			.build();
+		let check = CheckButton::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Use the same source for all windows");
@@ -42,18 +40,18 @@ impl SettingsGroup for InputSourceSwitching {
 			..align_child(gtk4::Align::Start);
 		};
 		target.append(&entry);
-		let check = gtk4::CheckButton::builder()
-			.valign(gtk4::Align::Center)
+		let check = CheckButton::builder()
+			.valign(Align::Center)
 			.group(&check)
 			.build();
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Switch input sources individually for each window");
 			..set_child(&check);
-			..align_child(gtk4::Align::Start);
+			..align_child(Align::Start);
 		};
 		target.append(&entry);
-		let label = gtk4::Label::new(Some("Super+Space"));
+		let label = Label::new(Some("Super+Space"));
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Keyboard Shortcut");
@@ -85,7 +83,7 @@ impl SettingsGroup for TypeSpecialCharacters {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
-		let label = gtk4::Label::new(Some("Layout Default"));
+		let label = Label::new(Some("Layout Default"));
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Alternate Characters Key");
@@ -93,7 +91,7 @@ impl SettingsGroup for TypeSpecialCharacters {
 			..set_child(&label);
 		};
 		target.append(&entry);
-		let label = gtk4::Label::new(Some("Layout Default"));
+		let label = Label::new(Some("Layout Default"));
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Compose Key");

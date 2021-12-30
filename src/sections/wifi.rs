@@ -1,6 +1,6 @@
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
-use gtk4::prelude::*;
+use gtk4::{prelude::*, Align, Switch};
 
 pub struct WifiSection;
 
@@ -26,7 +26,7 @@ impl SettingsGroup for AirplaneMode {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
-		let checkbox = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
+		let checkbox = Switch::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Airplane Mode");
@@ -50,7 +50,7 @@ impl SettingsGroup for Wifi {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
-		let checkbox = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
+		let checkbox = Switch::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Wi-Fi");
