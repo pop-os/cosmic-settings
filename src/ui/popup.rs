@@ -1,4 +1,6 @@
-use gtk4::{prelude::*, Align, Overlay, Revealer, RevealerTransitionType, Stack, Widget};
+use gtk4::{
+	prelude::*, Align, Orientation, Overlay, Revealer, RevealerTransitionType, Stack, Widget,
+};
 
 #[derive(Clone)]
 pub struct PopupGui {
@@ -9,15 +11,22 @@ pub struct PopupGui {
 
 impl PopupGui {
 	pub fn new(child: &gtk4::Box) -> Self {
-		let stack = Stack::new();
+		let stack = Stack::builder()
+			.margin_top(24)
+			.margin_bottom(24)
+			.margin_start(24)
+			.margin_end(24)
+			.build();
 		let revealer = Revealer::builder()
 			.child(&stack)
-			//.halign(Align::End)
+			.halign(Align::End)
+			.valign(Align::Center)
 			.transition_type(RevealerTransitionType::SlideLeft)
+			.css_classes(vec!["settings-popup".into()])
+			.margin_end(24)
 			.build();
 		let overlay = Overlay::builder().child(child).build();
 		overlay.add_overlay(&revealer);
-		revealer.hide();
 		Self {
 			stack,
 			revealer,
@@ -26,7 +35,6 @@ impl PopupGui {
 	}
 
 	pub fn pop_up(&self, name: &str) {
-		self.revealer.show();
 		self.stack.set_visible_child_name(name);
 		self.revealer.set_reveal_child(true);
 	}

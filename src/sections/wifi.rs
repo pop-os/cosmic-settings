@@ -100,7 +100,7 @@ impl SettingsGroup for AdditionalNetworkSettings {
 		let button = Button::with_label("Wi-Fi Hotspot");
 		target.append(&button);
 		let button = Button::with_label("Connect to Hidden Networks");
-		button.connect_clicked(clone!(@weak ui => move |_| {
+		button.connect_clicked(clone!(@strong ui => move |_| {
 			ui.popup.pop_up("hidden-net");
 		}));
 		target.append(&button);
