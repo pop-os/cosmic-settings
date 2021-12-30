@@ -10,6 +10,7 @@ use gtk4::{
 	gdk::Display, gio::ApplicationFlags, prelude::*, CssProvider, StyleContext,
 	STYLE_PROVIDER_PRIORITY_APPLICATION,
 };
+use std::rc::Rc;
 
 fn main() {
 	let application = gtk4::Application::new(
@@ -40,10 +41,10 @@ fn build_ui(application: &gtk4::Application) {
 		.default_height(632)
 		.build();
 
-	let ui = ui::SettingsGui::new(&window);
-	section::setup::<sections::WifiSection>(&ui);
-	section::setup::<sections::DesktopSection>(&ui);
-	section::setup::<sections::KeyboardSection>(&ui);
+	let ui = Rc::new(ui::SettingsGui::new(&window));
+	section::setup::<sections::WifiSection>(ui.clone());
+	section::setup::<sections::DesktopSection>(ui.clone());
+	section::setup::<sections::KeyboardSection>(ui.clone());
 
 	window.show();
 }

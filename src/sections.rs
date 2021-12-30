@@ -4,6 +4,7 @@ mod wifi;
 
 pub use self::{desktop::DesktopSection, keyboard::KeyboardSection, wifi::WifiSection};
 use crate::ui::SettingsGui;
+use std::rc::Rc;
 
 /// A section of the COSMIC settings app.
 pub trait Section: Sized {
@@ -40,5 +41,5 @@ pub trait SettingsGroup {
 	/// Returns the keywords that this group will show up in search with.
 	fn keywords(&self) -> &[&'static str];
 	/// Lays out the widgets from this setting group in the given Box.
-	fn layout(&self, target: &gtk4::Box, ui: &SettingsGui);
+	fn layout(&self, target: &gtk4::Box, ui: Rc<SettingsGui>);
 }

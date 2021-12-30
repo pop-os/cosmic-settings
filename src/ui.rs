@@ -1,7 +1,8 @@
 pub mod nav;
+pub mod popup;
 pub mod section;
 
-pub use self::nav::SettingsNavGui;
+pub use self::{nav::SettingsNavGui, popup::PopupGui};
 use crate::widgets::ListBoxSelectionRow;
 use gtk4::{
 	glib::{self, clone},
@@ -18,6 +19,8 @@ pub struct SettingsGui {
 	pub base: gtk4::Box,
 	/// Various elements related to navigation.
 	pub nav: SettingsNavGui,
+	/// Various elements related to popup UIs
+	pub popup: PopupGui,
 	/// The stack that contains the pages of primary content.
 	pub content: Stack,
 }
@@ -31,12 +34,14 @@ impl SettingsGui {
 		Self::setup_row_active(&nav, &content);
 		base.append(&nav.revealer);
 		base.append(&content);
-		window.set_child(Some(&base));
+		let popup = PopupGui::new(&base);
+		window.set_child(Some(&popup.overlay));
 		window.set_titlebar(Some(&header));
 		Self {
 			header,
 			base,
 			nav,
+			popup,
 			content,
 		}
 	}

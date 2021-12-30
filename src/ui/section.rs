@@ -8,8 +8,9 @@ use gtk4::{
 	prelude::*,
 	Align, Image, Label, ListBox, Orientation,
 };
+use std::rc::Rc;
 
-pub fn setup<S: Section>(ui: &SettingsGui) {
+pub fn setup<S: Section>(ui: Rc<SettingsGui>) {
 	// Set up the nav entry
 	let icon = Image::from_icon_name(Some(S::ICON));
 	let label = Label::new(Some(S::NAME));
@@ -43,7 +44,7 @@ pub fn setup<S: Section>(ui: &SettingsGui) {
 				.spacing(24)
 				.hexpand(true)
 				.build();
-			setup_single(&panel, ui, groups);
+			setup_single(&panel, ui.clone(), groups);
 			ui.content.add_titled(&panel, Some(S::NAME), S::NAME);
 		}
 		SectionLayout::Multiple(subsections) => {
@@ -53,7 +54,7 @@ pub fn setup<S: Section>(ui: &SettingsGui) {
 	}
 }
 
-fn setup_single(panel: &gtk4::Box, ui: &SettingsGui, groups: Vec<Box<dyn SettingsGroup>>) {
+fn setup_single(panel: &gtk4::Box, ui: Rc<SettingsGui>, groups: Vec<Box<dyn SettingsGroup>>) {
 	for group in groups {
 		let title = group.title();
 		let group_box = gtk4::Box::builder()
@@ -72,14 +73,14 @@ fn setup_single(panel: &gtk4::Box, ui: &SettingsGui, groups: Vec<Box<dyn Setting
 			.build();
 		group_box.append(&group_title);
 		group_box.append(&group_box_inner);
-		group.layout(&group_box_inner, ui);
+		group.layout(&group_box_inner, ui.clone());
 		panel.append(&group_box);
 	}
 }
 
 fn setup_multi(
 	name: &str,
-	ui: &SettingsGui,
+	ui: Rc<SettingsGui>,
 	sections: Vec<(&'static str, Vec<Box<dyn SettingsGroup>>)>,
 ) {
 	let nav = ListBox::builder()
@@ -114,7 +115,7 @@ fn setup_multi(
 			.spacing(24)
 			.hexpand(true)
 			.build();
-		setup_single(&panel, ui, groups);
+		setup_single(&panel, ui.clone(), groups);
 		ui.content.add_named(&panel, Some(name));
 	}
 	let main_stack = &ui.content;

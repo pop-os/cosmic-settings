@@ -1,6 +1,11 @@
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
-use gtk4::{prelude::*, Align, Switch};
+use gtk4::{
+	glib::{self, clone},
+	prelude::*,
+	Align, Button, Label, Orientation, Switch,
+};
+use std::rc::Rc;
 
 pub struct WifiSection;
 
@@ -9,7 +14,11 @@ impl Section for WifiSection {
 	const ICON: &'static str = "network-wireless-symbolic";
 
 	fn layout() -> SectionLayout {
-		SectionLayout::Single(vec![AirplaneMode::new(), Wifi::new()])
+		SectionLayout::Single(vec![
+			AirplaneMode::new(),
+			Wifi::new(),
+			AdditionalNetworkSettings::new(),
+		])
 	}
 }
 
@@ -25,7 +34,7 @@ impl SettingsGroup for AirplaneMode {
 		&["airplane", "disable", "turn off"]
 	}
 
-	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
+	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
 		let checkbox = Switch::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
@@ -49,7 +58,7 @@ impl SettingsGroup for Wifi {
 		&["wifi", "wi-fi", "wireless", "disable", "turn off"]
 	}
 
-	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
+	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
 		let checkbox = Switch::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
@@ -58,5 +67,44 @@ impl SettingsGroup for Wifi {
 			..set_child(&checkbox);
 		};
 		target.append(&entry);
+	}
+}
+
+#[derive(Default)]
+struct AdditionalNetworkSettings;
+
+impl AdditionalNetworkSettings {
+	pub fn create_hidden_network_popup() -> gtk4::Box {
+		let base = gtk4::Box::builder()
+			.orientation(Orientation::Vertical)
+			.build();
+		let label = Label::new(Some("Hello World!"));
+		base.append(&label);
+		base
+	}
+}
+
+impl SettingsGroup for AdditionalNetworkSettings {
+	fn title(&self) -> &'static str {
+		"Additional Network Settings"
+	}
+
+	fn keywords(&self) -> &[&'static str] {
+		&[
+			"wifi", "wi-fi", "wireless", "hotspot", "hidden", "network", "tether", "hot-spot",
+			"hot spot",
+		]
+	}
+
+	fn layout(&self, target: &gtk4::Box, ui: Rc<SettingsGui>) {
+		let button = Button::with_label("Wi-Fi Hotspot");
+		target.append(&button);
+		let button = Button::with_label("Connect to Hidden Networks");
+		button.connect_clicked(clone!(@weak ui => move |_| {
+			ui.popup.pop_up("hidden-net");
+		}));
+		target.append(&button);
+		ui.popup
+			.add_overlay("hidden-net", Self::create_hidden_network_popup);
 	}
 }

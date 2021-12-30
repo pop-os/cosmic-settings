@@ -1,6 +1,7 @@
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
 use gtk4::{prelude::*, Align, CheckButton, Label};
+use std::rc::Rc;
 
 pub struct KeyboardSection;
 
@@ -31,7 +32,7 @@ impl SettingsGroup for InputSourceSwitching {
 		&["input", "source", "switch", "shortcut", "keyboard"]
 	}
 
-	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
+	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
 		let check = CheckButton::builder().valign(Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
@@ -82,7 +83,7 @@ impl SettingsGroup for TypeSpecialCharacters {
 		]
 	}
 
-	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
+	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
 		let label = Label::new(Some("Layout Default"));
 		let entry = cascade! {
 			SettingsEntry::new();
