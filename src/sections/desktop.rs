@@ -1,5 +1,5 @@
 use super::{Section, SectionLayout, SettingsGroup};
-use crate::widgets::SettingsEntry;
+use crate::{ui::SettingsGui, widgets::SettingsEntry};
 use gtk4::prelude::*;
 
 pub struct DesktopSection;
@@ -35,7 +35,7 @@ impl SettingsGroup for SuperKeyAction {
 		]
 	}
 
-	fn layout(&self, target: &gtk4::Box) {
+	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
 		let check = gtk4::CheckButton::builder()
 			.valign(gtk4::Align::Center)
 			.build();
@@ -86,7 +86,7 @@ impl SettingsGroup for HotCorner {
 		&["corner", "hot"]
 	}
 
-	fn layout(&self, target: &gtk4::Box) {
+	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
 		let switch = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
@@ -118,7 +118,7 @@ impl SettingsGroup for TopBar {
 		]
 	}
 
-	fn layout(&self, target: &gtk4::Box) {
+	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
 		let switch = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();

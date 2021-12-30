@@ -1,5 +1,5 @@
 use super::{Section, SectionLayout, SettingsGroup};
-use crate::widgets::SettingsEntry;
+use crate::{ui::SettingsGui, widgets::SettingsEntry};
 use gtk4::prelude::*;
 
 pub struct WifiSection;
@@ -25,7 +25,7 @@ impl SettingsGroup for AirplaneMode {
 		&["airplane", "disable", "turn off"]
 	}
 
-	fn layout(&self, target: &gtk4::Box) {
+	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
 		let checkbox = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();
@@ -49,7 +49,7 @@ impl SettingsGroup for Wifi {
 		&["wifi", "wi-fi", "wireless", "disable", "turn off"]
 	}
 
-	fn layout(&self, target: &gtk4::Box) {
+	fn layout(&self, target: &gtk4::Box, _ui: &SettingsGui) {
 		let checkbox = gtk4::Switch::builder().valign(gtk4::Align::Center).build();
 		let entry = cascade! {
 			SettingsEntry::new();

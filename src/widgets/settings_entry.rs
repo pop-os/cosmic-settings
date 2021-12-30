@@ -22,7 +22,7 @@ impl SettingsEntry {
 		IntoWidget: Into<Option<&'a Widget>>,
 	{
 		let imp = self.inner();
-		let child = child.into().map(|x| x.as_ref());
+		let child = child.into().map(AsRef::as_ref);
 		let child_box_ref = imp.child_box.borrow();
 		let child_box: &gtk4::Box = child_box_ref.as_ref().expect("child_box not created??");
 		if let Some(new_child) = child {

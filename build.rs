@@ -18,13 +18,11 @@ fn main() {
 		// Ensure path ends with .scss and doesn't start with a _
 		if path
 			.file_name()
-			.map(|ext| ext.to_str().map(|x| x.starts_with('_')))
-			.flatten()
+			.and_then(|ext| ext.to_str().map(|x| x.starts_with('_')))
 			.unwrap_or(false)
 			|| !path
 				.extension()
-				.map(|ext| ext.to_str().map(|x| x == "scss"))
-				.flatten()
+				.and_then(|ext| ext.to_str().map(|x| x == "scss"))
 				.unwrap_or(false)
 		{
 			continue;
