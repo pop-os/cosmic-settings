@@ -1,3 +1,8 @@
+.search-bar-inactive {
+	background: none;
+	border: none;
+}
+
 .search-bar {
 	background: #303030;
 	box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
@@ -6,8 +11,17 @@
 	border-image-source: #66EAEA;
 }
 
+.search-button {
+	background: none;
+	border: none;
+	color: #94EBEB;
+}
+
 .search-bar-entry {
-  background: none;
-  color: #94EBEB;
-  border: none;
+	background: none;
+	color: #94EBEB;
+	border: none;
+	&:focus-within {
+		outline: none;
+	}
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use gtk4::{
-	glib::{self, Object},
+	glib::{self, clone, Object},
 	prelude::*,
 	subclass::prelude::*,
 	Button, Entry, Image,
@@ -49,20 +49,33 @@ impl ObjectImpl for SearchBarImp {
 			.spacing(10)
 			.margin_top(10)
 			.margin_bottom(10)
-			.css_classes(vec!["search-bar".into()])
+			.css_classes(vec!["search-bar-inactive".into()])
 			.build();
 
 		let image = Image::builder()
 			.icon_name("folder-saved-search-symbolic")
+			.build();
+		let search_button = Button::builder()
+			.child(&image)
+			.css_classes(vec!["search-button".into()])
 			.margin_start(10)
 			.build();
-		holder.append(&image);
+		holder.append(&search_button);
 
 		let entry = Entry::builder()
-			.has_frame(false)
 			.placeholder_text("Find a setting...")
 			.css_classes(vec!["search-bar-entry".into()])
 			.build();
+		entry.hide();
+		search_button.connect_clicked(clone!(@weak holder, @weak entry => move |_| {
+			if entry.get_visible() {
+				holder.set_css_classes(&["search-bar-inactive"]);
+				entry.hide();
+			}  else {
+				holder.set_css_classes(&["search-bar"]);
+				entry.show();
+			}
+		}));
 		holder.append(&entry);
 
 		holder.set_parent(obj);
