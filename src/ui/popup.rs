@@ -1,6 +1,6 @@
-use gtk4::{
-	prelude::*, Align, Orientation, Overlay, Revealer, RevealerTransitionType, Stack, Widget,
-};
+// SPDX-License-Identifier: GPL-3.0-only
+
+use gtk4::{prelude::*, Align, Overlay, Revealer, RevealerTransitionType, Stack, Widget};
 
 #[derive(Clone)]
 pub struct PopupGui {

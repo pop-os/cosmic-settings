@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 use gtk4::{
 	glib::{self, prelude::*, Object, Value},
 	subclass::prelude::*,

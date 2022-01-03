@@ -1,10 +1,8 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
-use gtk4::{
-	glib::{self, clone},
-	prelude::*,
-	Align, Button, Label, Orientation, Switch,
-};
+use gtk4::{glib::clone, prelude::*, Align, Button, Label, Orientation, Switch};
 use std::rc::Rc;
 
 pub struct WifiSection;

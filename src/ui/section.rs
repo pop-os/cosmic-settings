@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 use crate::{
 	sections::{Section, SectionLayout, SettingsGroup},
 	ui::SettingsGui,
