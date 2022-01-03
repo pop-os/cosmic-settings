@@ -14,7 +14,7 @@ impl Section for DesktopSection {
 	fn layout() -> SectionLayout {
 		SectionLayout::Multiple(vec![(
 			"Desktop",
-			vec![SuperKeyAction::new(), HotCorner::new(), TopBar::new()],
+			vec![SuperKeyAction::boxed(), HotCorner::boxed(), TopBar::boxed()],
 		)])
 	}
 }

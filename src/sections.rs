@@ -32,7 +32,7 @@ pub enum SectionLayout {
 /// A group of settings in the COSMIC settings app.
 pub trait SettingsGroup {
 	/// Returns a new instance of this settings group in a box.
-	fn new() -> Box<dyn SettingsGroup>
+	fn boxed() -> Box<dyn SettingsGroup>
 	where
 		Self: 'static + Default,
 	{

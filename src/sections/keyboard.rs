@@ -15,7 +15,10 @@ impl Section for KeyboardSection {
 		SectionLayout::Multiple(vec![
 			(
 				"Input",
-				vec![InputSourceSwitching::new(), TypeSpecialCharacters::new()],
+				vec![
+					InputSourceSwitching::boxed(),
+					TypeSpecialCharacters::boxed(),
+				],
 			),
 			("Keyboard Shortcuts", vec![]),
 		])

@@ -13,9 +13,9 @@ impl Section for WifiSection {
 
 	fn layout() -> SectionLayout {
 		SectionLayout::Single(vec![
-			AirplaneMode::new(),
-			Wifi::new(),
-			AdditionalNetworkSettings::new(),
+			AirplaneMode::boxed(),
+			Wifi::boxed(),
+			AdditionalNetworkSettings::boxed(),
 		])
 	}
 }
