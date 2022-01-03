@@ -46,7 +46,7 @@ fn build_ui(application: &gtk4::Application) {
 	let ui = Rc::new(ui::SettingsGui::new(&window));
 	section::setup::<sections::WifiSection>(ui.clone());
 	section::setup::<sections::DesktopSection>(ui.clone());
-	section::setup::<sections::KeyboardSection>(ui.clone());
+	section::setup::<sections::KeyboardSection>(ui);
 
 	window.show();
 }

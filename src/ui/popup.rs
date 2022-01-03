@@ -58,7 +58,7 @@ impl PopupGui {
 	fn create_revealer() -> Revealer {
 		Revealer::builder()
 			.halign(Align::End)
-			.valign(Align::Center)
+			.valign(Align::Start)
 			.transition_type(RevealerTransitionType::SlideLeft)
 			.css_classes(vec!["settings-popup".into()])
 			.margin_end(24)
