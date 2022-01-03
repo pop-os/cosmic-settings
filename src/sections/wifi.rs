@@ -95,9 +95,15 @@ impl SettingsGroup for AdditionalNetworkSettings {
 	}
 
 	fn layout(&self, target: &gtk4::Box, ui: Rc<SettingsGui>) {
-		let button = Button::with_label("Wi-Fi Hotspot");
+		let button = Button::builder()
+			.label("Wi-Fi Hotspot")
+			.css_classes(vec!["settings-button".into()])
+			.build();
 		target.append(&button);
-		let button = Button::with_label("Connect to Hidden Networks");
+		let button = Button::builder()
+			.label("Connect to Hidden Networks")
+			.css_classes(vec!["settings-button".into()])
+			.build();
 		button.connect_clicked(clone!(@strong ui => move |_| {
 			ui.popup.pop_up("hidden-net");
 		}));
