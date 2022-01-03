@@ -17,6 +17,8 @@ use gtk4::{
 pub struct SettingsGui {
 	/// The title bar of the application
 	pub header: HeaderBar,
+	/// The box containing the header contents
+	pub header_box: gtk4::Box,
 	/// The search bar of the application
 	pub search: SearchBar,
 	/// The base box that contains everything except the header.
@@ -32,10 +34,12 @@ pub struct SettingsGui {
 impl SettingsGui {
 	pub fn new(window: &ApplicationWindow) -> Self {
 		let header = Self::create_header();
+		let header_box = Self::create_header_box();
 		let search = Self::create_search_bar();
 		let base = Self::create_base_box();
-		let nav = SettingsNavGui::new(&header);
-		header.pack_start(&search);
+		let nav = SettingsNavGui::new(&header_box);
+		header_box.append(&search);
+		header.pack_start(&header_box);
 		let content = Stack::new();
 		Self::setup_row_active(&nav, &content);
 		base.append(&nav.revealer);
@@ -45,6 +49,7 @@ impl SettingsGui {
 		window.set_titlebar(Some(&header));
 		Self {
 			header,
+			header_box,
 			search,
 			base,
 			nav,
@@ -58,7 +63,10 @@ impl SettingsGui {
 	}
 
 	fn create_search_bar() -> SearchBar {
-		SearchBar::new()
+		cascade! {
+			SearchBar::new();
+			..set_margin_top(10);
+		}
 	}
 
 	fn create_base_box() -> gtk4::Box {
@@ -68,6 +76,12 @@ impl SettingsGui {
 			.margin_bottom(0)
 			.margin_start(16)
 			.margin_end(32)
+			.build()
+	}
+
+	fn create_header_box() -> gtk4::Box {
+		gtk4::Box::builder()
+			.orientation(Orientation::Horizontal)
 			.build()
 	}
 

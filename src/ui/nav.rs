@@ -3,7 +3,7 @@
 use gtk4::{
 	glib::{self, clone},
 	prelude::*,
-	Button, HeaderBar, ListBox, Orientation, Revealer, Stack,
+	Button, ListBox, Orientation, Revealer, Stack,
 };
 
 /// A struct containing references to various elements of COSMIC setting's navigation GUI.
@@ -24,12 +24,12 @@ pub struct SettingsNavGui {
 }
 
 impl SettingsNavGui {
-	pub fn new(header: &HeaderBar) -> Self {
+	pub fn new(header_box: &gtk4::Box) -> Self {
 		let nav_box = Self::create_nav_box();
 		let stack = Self::create_stack();
 		let revealer = Self::create_revealer(&nav_box);
 		let subsection_revealer = Self::create_subsection_revealer(&stack);
-		let button = Self::create_button(header, &revealer);
+		let button = Self::create_button(header_box, &revealer);
 		let list = gtk4::ListBox::new();
 		nav_box.append(&list);
 		nav_box.append(&subsection_revealer);
@@ -75,15 +75,13 @@ impl SettingsNavGui {
 			.build()
 	}
 
-	fn create_button(header: &HeaderBar, revealer: &Revealer) -> Button {
+	fn create_button(header_box: &gtk4::Box, revealer: &Revealer) -> Button {
 		let button_box = gtk4::Box::builder()
 			.orientation(gtk4::Orientation::Horizontal)
 			.valign(gtk4::Align::Center)
 			.spacing(8)
 			.margin_start(10)
 			.margin_end(10)
-			.margin_top(10)
-			.margin_bottom(10)
 			.build();
 		let button_label = gtk4::Label::new(Some("Navigation"));
 		button_box.append(&button_label);
@@ -106,7 +104,7 @@ impl SettingsNavGui {
 				revealer.set_reveal_child(true);
 			}
 		}));
-		header.pack_start(&button);
+		header_box.append(&button);
 		button
 	}
 }

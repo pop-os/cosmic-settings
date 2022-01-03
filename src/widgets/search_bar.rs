@@ -47,18 +47,12 @@ impl ObjectImpl for SearchBarImp {
 		let holder = gtk4::Box::builder()
 			.orientation(gtk4::Orientation::Horizontal)
 			.spacing(10)
-			.margin_top(10)
-			.margin_bottom(10)
 			.css_classes(vec!["search-bar-inactive".into()])
 			.build();
 
-		let image = Image::builder()
-			.icon_name("folder-saved-search-symbolic")
-			.build();
 		let search_button = Button::builder()
-			.child(&image)
+			.icon_name("folder-saved-search-symbolic")
 			.css_classes(vec!["search-button".into()])
-			.margin_start(10)
 			.build();
 		holder.append(&search_button);
 
