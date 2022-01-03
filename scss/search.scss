@@ -1,4 +1,13 @@
-.search-button {
+.search-bar {
+	background: #303030;
+	box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
+	border-radius: 24px;
+	border: 1px solid;
+	border-image-source: #66EAEA;
+}
+
+.search-bar-entry {
   background: none;
   color: #94EBEB;
+  border: none;
 }

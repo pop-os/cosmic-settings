@@ -5,7 +5,7 @@ pub mod popup;
 pub mod section;
 
 pub use self::{nav::SettingsNavGui, popup::PopupGui};
-use crate::widgets::ListBoxSelectionRow;
+use crate::widgets::{ListBoxSelectionRow, SearchBar};
 use gtk4::{
 	glib::{self, clone},
 	prelude::*,
@@ -17,6 +17,8 @@ use gtk4::{
 pub struct SettingsGui {
 	/// The title bar of the application
 	pub header: HeaderBar,
+	/// The search bar of the application
+	pub search: SearchBar,
 	/// The base box that contains everything except the header.
 	pub base: gtk4::Box,
 	/// Various elements related to navigation.
@@ -30,8 +32,10 @@ pub struct SettingsGui {
 impl SettingsGui {
 	pub fn new(window: &ApplicationWindow) -> Self {
 		let header = Self::create_header();
+		let search = Self::create_search_bar();
 		let base = Self::create_base_box();
 		let nav = SettingsNavGui::new(&header);
+		header.pack_start(&search);
 		let content = Stack::new();
 		Self::setup_row_active(&nav, &content);
 		base.append(&nav.revealer);
@@ -41,6 +45,7 @@ impl SettingsGui {
 		window.set_titlebar(Some(&header));
 		Self {
 			header,
+			search,
 			base,
 			nav,
 			popup,
@@ -49,7 +54,11 @@ impl SettingsGui {
 	}
 
 	fn create_header() -> HeaderBar {
-		gtk4::HeaderBar::builder().css_name("title").build()
+		HeaderBar::builder().css_name("title").build()
+	}
+
+	fn create_search_bar() -> SearchBar {
+		SearchBar::new()
 	}
 
 	fn create_base_box() -> gtk4::Box {
