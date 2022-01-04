@@ -3,7 +3,7 @@
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
   border-radius: 16px;
   border: 2px solid;
-  border-image-source: linear-gradient(180deg, #464646 0%, #222222 100%);
+  border-color: #464646;
 
   .nav-element {
     border-radius: 24px;
@@ -16,8 +16,6 @@
   .nav-subsection {
     background: #434343;
     border-radius: 0 16px 16px 0;
-    border: 2px solid;
-    border-image-source: linear-gradient(180deg, #464646 0%, #222222 100%);
 
     .nav-element {
       font-weight: 400;
