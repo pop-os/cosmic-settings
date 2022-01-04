@@ -5,10 +5,6 @@
   border: 2px solid;
   border-image-source: linear-gradient(180deg, #464646 0%, #222222 100%);
 
-  list {
-    background: none;
-  }
-
   .nav-element {
     border-radius: 24px;
     &:selected {
