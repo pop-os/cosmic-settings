@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::{sections::SettingsGroup, ui::SettingsGui};
+use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use gtk4::{
 	glib::{self, Object},
 	prelude::*,
@@ -45,14 +46,14 @@ impl ListBoxKeywordedRow {
 		*self.inner().keywords.borrow_mut() = group.keywords();
 	}
 
-	pub fn matches(&self, haystack: &str) -> bool {
+	pub fn matches(&self, matcher: Rc<SkimMatcherV2>, haystack: &str) -> bool {
 		let haystack = haystack.trim().to_lowercase();
 		let inner = self.inner();
 		inner
 			.keywords
 			.borrow()
 			.iter()
-			.any(|keyword| haystack.contains(keyword))
+			.any(|needle| matcher.fuzzy_match(needle, &haystack).is_some())
 	}
 
 	fn inner(&self) -> &ListBoxKeywordedRowImp {

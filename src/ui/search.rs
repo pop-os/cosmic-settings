@@ -5,6 +5,7 @@ use crate::{
 	sections::SettingsGroupStore,
 	widgets::{ListBoxKeywordedRow, SearchBar},
 };
+use fuzzy_matcher::skim::SkimMatcherV2;
 use gtk4::{
 	glib::{self, clone},
 	prelude::*,
@@ -33,14 +34,16 @@ impl SearchGui {
 			keyworded_row.set_group(ui.clone(), &**group);
 			self.all_results.append(&keyworded_row);
 		}
-		self.all_results
-			.set_filter_func(clone!(@strong self.bar as bar => move |row| {
+		let matcher = Rc::new(SkimMatcherV2::default());
+		self.all_results.set_filter_func(
+			clone!(@strong self.bar as bar, @strong matcher => move |row| {
 				let text = bar.text();
 				let row = row
 					.downcast_ref::<ListBoxKeywordedRow>()
 					.expect("invalid object");
-				row.matches(text.as_str())
-			}));
+				row.matches(matcher.clone(), text.as_str())
+			}),
+		);
 		self.bar.connect_changed(
 			clone!(@weak self.bar as bar, @weak self.all_results as all_results, @weak ui.content as content => move |_| {
 				all_results.invalidate_filter();
