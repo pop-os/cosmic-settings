@@ -27,7 +27,7 @@ impl SettingsGroup for SuperKeyAction {
 		"Super Key Action"
 	}
 
-	fn keywords(&self) -> &[&'static str] {
+	fn keywords(&self) -> &'static [&'static str] {
 		&[
 			"super",
 			"launcher",
@@ -83,7 +83,7 @@ impl SettingsGroup for HotCorner {
 		"Hot Corner"
 	}
 
-	fn keywords(&self) -> &[&'static str] {
+	fn keywords(&self) -> &'static [&'static str] {
 		&["corner", "hot"]
 	}
 
@@ -106,7 +106,7 @@ impl SettingsGroup for TopBar {
 		"Top Bar"
 	}
 
-	fn keywords(&self) -> &[&'static str] {
+	fn keywords(&self) -> &'static [&'static str] {
 		&[
 			"top bar",
 			"menu bar",

@@ -7,12 +7,12 @@ mod sections;
 mod ui;
 mod widgets;
 
-use crate::ui::section;
+use crate::{sections::SettingsGroupStore, ui::section};
 use gtk4::{
 	gdk::Display, gio::ApplicationFlags, prelude::*, CssProvider, StyleContext,
 	STYLE_PROVIDER_PRIORITY_APPLICATION,
 };
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 fn main() {
 	let application = gtk4::Application::new(
@@ -43,10 +43,14 @@ fn build_ui(application: &gtk4::Application) {
 		.default_height(632)
 		.build();
 
+	let sections_store: SettingsGroupStore = Rc::new(RefCell::new(Vec::new()));
 	let ui = Rc::new(ui::SettingsGui::new(&window));
-	section::setup::<sections::WifiSection>(ui.clone());
-	section::setup::<sections::DesktopSection>(ui.clone());
-	section::setup::<sections::KeyboardSection>(ui);
+	section::setup::<sections::WifiSection>(ui.clone(), sections_store.clone());
+	section::setup::<sections::DesktopSection>(ui.clone(), sections_store.clone());
+	section::setup::<sections::KeyboardSection>(ui.clone(), sections_store.clone());
+	ui.search.setup(ui.clone(), sections_store);
+	ui.content
+		.add_named(&ui.search.all_results, Some("_search"));
 
 	window.show();
 }

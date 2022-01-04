@@ -33,7 +33,7 @@ impl SettingsGroup for InputSourceSwitching {
 		"Input Source Switching"
 	}
 
-	fn keywords(&self) -> &[&'static str] {
+	fn keywords(&self) -> &'static [&'static str] {
 		&["input", "source", "switch", "shortcut", "keyboard"]
 	}
 
@@ -76,7 +76,7 @@ impl SettingsGroup for TypeSpecialCharacters {
 		"Type Special Characters"
 	}
 
-	fn keywords(&self) -> &[&'static str] {
+	fn keywords(&self) -> &'static [&'static str] {
 		&[
 			"type",
 			"special",

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use gtk4::{
-	glib::{self, clone, Object},
+	glib::{self, clone, GString, Object},
 	prelude::*,
 	subclass::prelude::*,
-	Button, Entry, Image,
+	Button, Entry,
 };
 use std::cell::RefCell;
 
@@ -18,11 +18,24 @@ impl SearchBar {
 	pub fn new() -> Self {
 		Self::default()
 	}
+
+	pub fn connect_changed<F: Fn(&Entry) + 'static>(&self, f: F) {
+		self.inner().entry.borrow().connect_changed(f);
+	}
+
+	pub fn text(&self) -> GString {
+		self.inner().entry.borrow().text()
+	}
+
+	fn inner(&self) -> &SearchBarImp {
+		SearchBarImp::from_instance(self)
+	}
 }
 
 #[derive(Debug, Default)]
 pub struct SearchBarImp {
 	holder: RefCell<gtk4::Box>,
+	entry: RefCell<Entry>,
 }
 
 #[glib::object_subclass]
@@ -74,6 +87,7 @@ impl ObjectImpl for SearchBarImp {
 
 		holder.set_parent(obj);
 		*self.holder.borrow_mut() = holder;
+		*self.entry.borrow_mut() = entry;
 	}
 }
 

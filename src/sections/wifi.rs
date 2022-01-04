@@ -28,7 +28,7 @@ impl SettingsGroup for AirplaneMode {
 		"Airplane Mode"
 	}
 
-	fn keywords(&self) -> &[&'static str] {
+	fn keywords(&self) -> &'static [&'static str] {
 		&["airplane", "disable", "turn off"]
 	}
 
@@ -52,7 +52,7 @@ impl SettingsGroup for Wifi {
 		"Wi-Fi"
 	}
 
-	fn keywords(&self) -> &[&'static str] {
+	fn keywords(&self) -> &'static [&'static str] {
 		&["wifi", "wi-fi", "wireless", "disable", "turn off"]
 	}
 
@@ -87,7 +87,7 @@ impl SettingsGroup for AdditionalNetworkSettings {
 		"Additional Network Settings"
 	}
 
-	fn keywords(&self) -> &[&'static str] {
+	fn keywords(&self) -> &'static [&'static str] {
 		&[
 			"wifi", "wi-fi", "wireless", "hotspot", "hidden", "network", "tether", "hot-spot",
 			"hot spot",
