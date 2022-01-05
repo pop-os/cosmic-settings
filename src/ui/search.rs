@@ -11,7 +11,7 @@ use gtk4::{
 	prelude::*,
 	ListBox,
 };
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 /// A struct containing references to search-related elements
 #[derive(Clone)]
@@ -20,6 +20,8 @@ pub struct SearchGui {
 	pub bar: SearchBar,
 	/// The ListBox containing all the search results
 	pub all_results: ListBox,
+	/// The name of the content child that was present *before* searching
+	pub before_search_child: RefCell<Option<String>>,
 }
 
 impl SearchGui {
@@ -44,15 +46,18 @@ impl SearchGui {
 				row.matches(matcher.clone(), text.as_str())
 			}),
 		);
-		self.bar.connect_changed(
-			clone!(@weak self.bar as bar, @weak self.all_results as all_results, @weak ui.content as content => move |_| {
-				all_results.invalidate_filter();
-				let text = bar.text();
-				if !text.as_str().is_empty() {
-					content.set_visible_child_name("_search");
+		self.bar.connect_changed(clone!(@weak ui => move |_| {
+			ui.search.all_results.invalidate_filter();
+			let text = ui.search.bar.text();
+			if !text.as_str().trim().is_empty() {
+				if ui.search.before_search_child.borrow().is_none() {
+					*ui.search.before_search_child.borrow_mut() = ui.content.visible_child_name().map(|name| name.as_str().to_string());
 				}
-			}),
-		);
+				ui.content.set_visible_child_name("_search");
+			} else if let Some(name) = ui.search.before_search_child.borrow_mut().take() {
+				ui.content.set_visible_child_name(name.as_str());
+			}
+		}));
 	}
 
 	fn create_all_results() -> ListBox {
@@ -71,6 +76,11 @@ impl Default for SearchGui {
 	fn default() -> Self {
 		let bar = Self::create_bar();
 		let all_results = Self::create_all_results();
-		Self { bar, all_results }
+		let before_search_child = RefCell::new(None);
+		Self {
+			bar,
+			all_results,
+			before_search_child,
+		}
 	}
 }
