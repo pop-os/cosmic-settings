@@ -104,8 +104,10 @@ fn setup_multi(
 		// Set up the subsection in the nav panel
 		let label = Label::builder()
 			.label(name)
-			.margin_top(8)
-			.margin_bottom(8)
+			.margin_top(5)
+			.margin_bottom(5)
+			.margin_start(8)
+			.halign(Align::Start)
 			.build();
 		let row = cascade! {
 			ListBoxSelectionRow::new(name.into());
