@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
-use crate::{
-	sections::{Section, SectionLayout, SettingsGroup},
-	ui::SettingsGui,
-	widgets::SettingsEntry,
-};
+use crate::{sections::SettingsGroup, ui::SettingsGui, widgets::SettingsEntry};
 use gtk4::{prelude::*, Align, CheckButton, Switch};
 use std::rc::Rc;
 

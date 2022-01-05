@@ -36,6 +36,7 @@ pub fn setup<S: Section>(ui: Rc<SettingsGui>, sections_store: SettingsGroupStore
 		..set_child(Some(&entry_box));
 	};
 	ui.nav.list.append(&row);
+	ui.nav.labels.borrow_mut().push(label);
 
 	let entries = S::layout();
 	match entries {
@@ -95,8 +96,8 @@ fn setup_multi(
 	let nav = ListBox::builder()
 		.margin_top(20)
 		.margin_bottom(20)
-		.margin_start(12)
-		.margin_end(12)
+		.margin_start(10)
+		.margin_end(10)
 		.css_classes(vec!["nav-subsection".into()])
 		.build();
 	for (name, groups) in sections {
@@ -105,16 +106,12 @@ fn setup_multi(
 			.label(name)
 			.margin_top(8)
 			.margin_bottom(8)
-			.margin_start(8)
-			.margin_end(8)
 			.build();
 		let row = cascade! {
 			ListBoxSelectionRow::new(name.into());
 			..add_css_class("nav-element");
 			..set_margin_top(8);
 			..set_margin_bottom(8);
-			..set_margin_start(8);
-			..set_margin_end(8);
 			..set_child(Some(&label));
 		};
 		nav.append(&row);

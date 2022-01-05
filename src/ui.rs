@@ -79,19 +79,23 @@ impl SettingsGui {
 	}
 
 	fn setup_row_active(nav: &SettingsNavGui, content: &Stack) {
-		let nav_stack = &nav.stack;
-		let nav_stack_revealer = &nav.subsection_revealer;
 		nav.list.connect_row_activated(
-			clone!(@weak content, @weak nav_stack, @weak nav_stack_revealer => move |_, row| {
+			clone!(@weak content, @weak nav.labels as labels, @weak nav.stack as nav_stack, @weak nav.subsection_revealer as nav_stack_revealer => move |_, row| {
 				let row = row
 					.downcast_ref::<ListBoxSelectionRow>()
 					.expect("invalid object");
 				if row.subsection() {
 					nav_stack_revealer.set_reveal_child(true);
 					nav_stack.set_visible_child_name(&row.row_id());
+					for label in labels.borrow().iter() {
+						label.hide();
+					}
 				} else {
 					nav_stack_revealer.set_reveal_child(false);
 					content.set_visible_child_name(&row.row_id());
+					for label in labels.borrow().iter() {
+						label.show();
+					}
 				}
 			}),
 		);

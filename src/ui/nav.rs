@@ -3,8 +3,9 @@
 use gtk4::{
 	glib::{self, clone},
 	prelude::*,
-	Button, ListBox, Orientation, Revealer, Stack,
+	Button, Label, ListBox, Orientation, Revealer, Stack,
 };
+use std::{cell::RefCell, rc::Rc};
 
 /// A struct containing references to various elements of COSMIC setting's navigation GUI.
 #[derive(Clone)]
@@ -19,6 +20,8 @@ pub struct SettingsNavGui {
 	pub nav_box: gtk4::Box,
 	/// The primary list containg nav entries
 	pub list: ListBox,
+	/// A list of all labels in the nav bar.
+	pub labels: Rc<RefCell<Vec<Label>>>,
 	/// The stack containing the menus for subsections
 	pub stack: Stack,
 }
@@ -34,12 +37,14 @@ impl SettingsNavGui {
 		nav_box.append(&list);
 		nav_box.append(&subsection_revealer);
 		revealer.set_child(Some(&nav_box));
+		let labels = Rc::new(RefCell::new(Vec::new()));
 		Self {
 			revealer,
 			subsection_revealer,
 			button,
 			nav_box,
 			list,
+			labels,
 			stack,
 		}
 	}
