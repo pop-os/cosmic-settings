@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
+mod dock;
+
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
 use gtk4::{prelude::*, Align, CheckButton, Switch};
@@ -12,10 +14,26 @@ impl Section for DesktopSection {
 	const ICON: &'static str = "user-desktop-symbolic";
 
 	fn layout() -> SectionLayout {
-		SectionLayout::Multiple(vec![(
-			"Desktop",
-			vec![SuperKeyAction::boxed(), HotCorner::boxed(), TopBar::boxed()],
-		)])
+		SectionLayout::Multiple(vec![
+			(
+				"Desktop",
+				vec![
+					SuperKeyAction::boxed(),
+					HotCorner::boxed(),
+					TopBar::boxed(),
+					WindowControls::boxed(),
+				],
+			),
+			(
+				"Dock",
+				vec![
+					dock::Dock::boxed(),
+					dock::DockOptions::boxed(),
+					dock::DockVisibility::boxed(),
+					dock::DockSize::boxed(),
+				],
+			),
+		])
 	}
 }
 
@@ -131,6 +149,36 @@ impl SettingsGroup for TopBar {
 		let entry = cascade! {
 			SettingsEntry::new();
 			..set_title("Show Applications Button");
+			..set_child(&switch);
+		};
+		target.append(&entry);
+	}
+}
+
+#[derive(Default)]
+struct WindowControls;
+
+impl SettingsGroup for WindowControls {
+	fn title(&self) -> &'static str {
+		"Window Controls"
+	}
+
+	fn keywords(&self) -> &'static [&'static str] {
+		&["minimize", "maximize", "window", "controls"]
+	}
+
+	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
+		let switch = Switch::builder().valign(Align::Center).build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Show Minimize Button");
+			..set_child(&switch);
+		};
+		target.append(&entry);
+		let switch = Switch::builder().valign(Align::Center).build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Show Maximize Button");
 			..set_child(&switch);
 		};
 		target.append(&entry);
