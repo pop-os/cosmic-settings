@@ -48,6 +48,7 @@ fn build_ui(application: &gtk4::Application) {
 	section::setup::<sections::WifiSection>(ui.clone(), sections_store.clone());
 	section::setup::<sections::DesktopSection>(ui.clone(), sections_store.clone());
 	section::setup::<sections::KeyboardSection>(ui.clone(), sections_store.clone());
+	section::setup::<sections::AboutSection>(ui.clone(), sections_store.clone());
 	ui.search.setup(ui.clone(), sections_store);
 	ui.content
 		.add_named(&ui.search.all_results, Some("_search"));

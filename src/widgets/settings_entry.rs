@@ -4,6 +4,7 @@ use gtk4::{
 	glib::{self, Object},
 	prelude::*,
 	subclass::prelude::*,
+	Label,
 };
 use std::cell::RefCell;
 
@@ -34,6 +35,15 @@ impl SettingsEntry {
 		if let Some(old_child) = imp.child.replace(child.cloned()) {
 			child_box.remove(&old_child);
 		}
+	}
+
+	pub fn set_child_label<A: AsRef<str>>(&self, label: A) {
+		let label = label.as_ref();
+		let child = Label::builder()
+			.label(label)
+			.css_classes(vec!["settings-entry-text".into()])
+			.build();
+		self.set_child(&child);
 	}
 
 	pub fn align_child(&self, alignment: gtk4::Align) {

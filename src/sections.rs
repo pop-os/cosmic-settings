@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
+mod about;
 mod desktop;
 mod keyboard;
 mod wifi;
 
-pub use self::{desktop::DesktopSection, keyboard::KeyboardSection, wifi::WifiSection};
+pub use self::{
+	about::AboutSection, desktop::DesktopSection, keyboard::KeyboardSection, wifi::WifiSection,
+};
 use crate::ui::SettingsGui;
 use std::{cell::RefCell, rc::Rc};
 

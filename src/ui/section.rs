@@ -69,17 +69,19 @@ fn setup_single(
 			.orientation(Orientation::Vertical)
 			.spacing(8)
 			.build();
-		let group_title = Label::builder()
-			.label(title)
-			.css_classes(vec!["settings-group-title".into()])
-			.halign(Align::Start)
-			.build();
 		let group_box_inner = gtk4::Box::builder()
 			.orientation(gtk4::Orientation::Vertical)
 			.spacing(16)
 			.css_classes(vec!["settings-group".into()])
 			.build();
-		group_box.append(&group_title);
+		if !title.is_empty() {
+			let group_title = Label::builder()
+				.label(title)
+				.css_classes(vec!["settings-group-title".into()])
+				.halign(Align::Start)
+				.build();
+			group_box.append(&group_title);
+		}
 		group_box.append(&group_box_inner);
 		group.layout(&group_box_inner, ui.clone());
 		panel.append(&group_box);
