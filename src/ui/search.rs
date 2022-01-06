@@ -9,7 +9,7 @@ use fuzzy_matcher::skim::SkimMatcherV2;
 use gtk4::{
 	glib::{self, clone},
 	prelude::*,
-	ListBox,
+	ListBox, ScrolledWindow,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -20,6 +20,8 @@ pub struct SearchGui {
 	pub bar: SearchBar,
 	/// The ListBox containing all the search results
 	pub all_results: ListBox,
+	/// The scrollable window containing `all_results`
+	pub all_results_scroll: ScrolledWindow,
 	/// The name of the content child that was present *before* searching
 	pub before_search_child: RefCell<Option<String>>,
 }
@@ -64,6 +66,10 @@ impl SearchGui {
 		ListBox::new()
 	}
 
+	fn create_all_results_scroll(all_results: &ListBox) -> ScrolledWindow {
+		ScrolledWindow::builder().child(all_results).build()
+	}
+
 	fn create_bar() -> SearchBar {
 		cascade! {
 			SearchBar::new();
@@ -76,10 +82,12 @@ impl Default for SearchGui {
 	fn default() -> Self {
 		let bar = Self::create_bar();
 		let all_results = Self::create_all_results();
+		let all_results_scroll = Self::create_all_results_scroll(&all_results);
 		let before_search_child = RefCell::new(None);
 		Self {
 			bar,
 			all_results,
+			all_results_scroll,
 			before_search_child,
 		}
 	}

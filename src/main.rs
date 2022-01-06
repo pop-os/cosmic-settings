@@ -51,7 +51,7 @@ fn build_ui(application: &gtk4::Application) {
 	section::setup::<sections::AboutSection>(ui.clone(), sections_store.clone());
 	ui.search.setup(ui.clone(), sections_store);
 	ui.content
-		.add_named(&ui.search.all_results, Some("_search"));
+		.add_named(&ui.search.all_results_scroll, Some("_search"));
 
 	window.show();
 }
