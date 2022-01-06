@@ -3,7 +3,7 @@
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
 use bytesize::ByteSize;
-use gtk4::prelude::*;
+use gtk4::{prelude::*, Label, Orientation};
 use std::rc::Rc;
 use sysinfo::{DiskExt, ProcessorExt, System, SystemExt};
 
@@ -44,6 +44,27 @@ impl SettingsGroup for Device {
 #[derive(Default)]
 struct DeviceSpecs;
 
+impl DeviceSpecs {
+	fn gpus() -> Vec<String> {
+		use std::process::Command;
+
+		let mut out = vec![];
+		if let Ok(output) = Command::new("glxinfo").output() {
+			let output = String::from_utf8_lossy(&output.stdout);
+			for line in output.lines() {
+				if let Some(renderer_string) = line.strip_prefix("OpenGL renderer string: ") {
+					let mut gpu = renderer_string.trim().to_string();
+					if let Some(index) = gpu.find(';') {
+						gpu.truncate(index);
+					}
+					out.push(gpu);
+				}
+			}
+		}
+		out
+	}
+}
+
 impl SettingsGroup for DeviceSpecs {
 	fn keywords(&self) -> &'static [&'static str] {
 		&[
@@ -78,6 +99,23 @@ impl SettingsGroup for DeviceSpecs {
 				..set_child_label(cpu.brand());
 			};
 			target.append(&row);
+			let gpus = Self::gpus();
+			let graphics_box = gtk4::Box::new(Orientation::Vertical, 8);
+			if !gpus.is_empty() {
+				for gpu in gpus {
+					let label = Label::builder()
+						.label(&gpu)
+						.css_classes(vec!["settings-entry-text".into()])
+						.build();
+					graphics_box.append(&label);
+				}
+				let graphics = cascade! {
+					SettingsEntry::new();
+					..set_title("Graphics");
+					..set_child(&graphics_box);
+				};
+				target.append(&graphics);
+			}
 			let disk = &info.disks()[0];
 			let row = cascade! {
 				SettingsEntry::new();

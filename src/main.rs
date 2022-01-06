@@ -39,8 +39,8 @@ fn build_ui(application: &gtk4::Application) {
 	let window = gtk4::ApplicationWindow::builder()
 		.application(application)
 		.title("Settings")
-		.default_width(842)
-		.default_height(632)
+		.default_width(800)
+		.default_height(600)
 		.build();
 
 	let sections_store: SettingsGroupStore = Rc::new(RefCell::new(Vec::new()));
