@@ -8,7 +8,7 @@ use crate::{
 use gtk4::{
 	glib::{self, clone},
 	prelude::*,
-	Align, Image, Label, ListBox, Orientation,
+	Align, Image, Label, ListBox, Orientation, PolicyType, ScrolledWindow,
 };
 use std::rc::Rc;
 
@@ -47,8 +47,14 @@ pub fn setup<S: Section>(ui: Rc<SettingsGui>, sections_store: SettingsGroupStore
 				.spacing(24)
 				.hexpand(true)
 				.build();
+			let scroll_window = ScrolledWindow::builder()
+				.child(&panel)
+				.hscrollbar_policy(PolicyType::Never)
+				.vscrollbar_policy(PolicyType::Automatic)
+				.build();
 			setup_single(&panel, ui.clone(), groups, sections_store);
-			ui.content.add_titled(&panel, Some(S::NAME), S::NAME);
+			ui.content
+				.add_titled(&scroll_window, Some(S::NAME), S::NAME);
 		}
 		SectionLayout::Multiple(subsections) => {
 			setup_multi(S::NAME, ui, subsections, sections_store);
@@ -125,8 +131,13 @@ fn setup_multi(
 			.spacing(24)
 			.hexpand(true)
 			.build();
+		let scroll_window = ScrolledWindow::builder()
+			.child(&panel)
+			.hscrollbar_policy(PolicyType::Never)
+			.vscrollbar_policy(PolicyType::Automatic)
+			.build();
 		setup_single(&panel, ui.clone(), groups, sections_store.clone());
-		ui.content.add_named(&panel, Some(name));
+		ui.content.add_named(&scroll_window, Some(name));
 	}
 	let main_stack = &ui.content;
 	nav.connect_row_activated(clone!(@weak main_stack, => move |_, row| {

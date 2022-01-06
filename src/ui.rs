@@ -68,7 +68,7 @@ impl SettingsGui {
 			.margin_top(16)
 			.margin_bottom(0)
 			.margin_start(16)
-			.margin_end(32)
+			.margin_end(16)
 			.build()
 	}
 

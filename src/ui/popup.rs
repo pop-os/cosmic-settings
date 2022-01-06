@@ -29,10 +29,7 @@ impl PopupGui {
 		top_box.append(&button);
 		let internal_box = gtk4::Box::builder()
 			.orientation(Orientation::Vertical)
-			.margin_top(24)
-			.margin_bottom(24)
-			.margin_start(24)
-			.margin_end(24)
+			.css_classes(vec!["settings-popup".into()])
 			.build();
 		internal_box.append(&top_box);
 		internal_box.append(&stack);
@@ -60,7 +57,6 @@ impl PopupGui {
 			.halign(Align::End)
 			.valign(Align::Start)
 			.transition_type(RevealerTransitionType::SlideLeft)
-			.css_classes(vec!["settings-popup".into()])
 			.margin_end(24)
 			.build()
 	}
