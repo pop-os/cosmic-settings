@@ -23,10 +23,6 @@ impl Section for AboutSection {
 #[derive(Default)]
 struct Device;
 impl SettingsGroup for Device {
-	fn title(&self) -> &'static str {
-		""
-	}
-
 	fn keywords(&self) -> &'static [&'static str] {
 		&["device", "hostname", "name", "computer"]
 	}
@@ -49,10 +45,6 @@ impl SettingsGroup for Device {
 struct DeviceSpecs;
 
 impl SettingsGroup for DeviceSpecs {
-	fn title(&self) -> &'static str {
-		""
-	}
-
 	fn keywords(&self) -> &'static [&'static str] {
 		&[
 			"device",
@@ -101,10 +93,6 @@ impl SettingsGroup for DeviceSpecs {
 struct OsInfo;
 
 impl SettingsGroup for OsInfo {
-	fn title(&self) -> &'static str {
-		""
-	}
-
 	fn keywords(&self) -> &'static [&'static str] {
 		&[
 			"x11",

@@ -42,7 +42,10 @@ pub trait SettingsGroup {
 		Box::new(Self::default()) as _
 	}
 	/// Returns the title of this group of settings.
-	fn title(&self) -> &'static str;
+	/// No title will be displayed if an empty string is returned.
+	fn title(&self) -> &'static str {
+		""
+	}
 	/// Returns the keywords that this group will show up in search with.
 	fn keywords(&self) -> &'static [&'static str];
 	/// Lays out the widgets from this setting group in the given Box.
