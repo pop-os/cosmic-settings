@@ -38,7 +38,10 @@ impl SettingsGroup for PopIcon {
 			.ok()
 			.and_then(|mut os_release| os_release.extra.remove("LOGO"))
 			.unwrap_or_else(|| "distribution-logo".to_string());
-		let logo = Image::builder().icon_name("pop-os").pixel_size(128).build();
+		let logo = Image::builder()
+			.icon_name(&logo_name)
+			.pixel_size(128)
+			.build();
 		target.append(&logo);
 		target.remove_css_class("settings-group");
 	}
