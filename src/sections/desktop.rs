@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 mod dock;
+mod workspaces;
 
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
@@ -33,6 +34,7 @@ impl Section for DesktopSection {
 					dock::DockSize::boxed(),
 				],
 			),
+			("Workspaces", vec![workspaces::Workspaces::boxed()]),
 		])
 	}
 }
