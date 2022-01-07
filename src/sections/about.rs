@@ -3,7 +3,7 @@
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
 use bytesize::ByteSize;
-use gtk4::{prelude::*, Label, Orientation};
+use gtk4::{prelude::*, IconSize, Image, Label, Orientation};
 use std::rc::Rc;
 use sysinfo::{DiskExt, ProcessorExt, System, SystemExt};
 
@@ -16,7 +16,26 @@ impl Section for AboutSection {
 	const ICON: &'static str = "dialog-information-symbolic";
 
 	fn layout() -> SectionLayout {
-		SectionLayout::Single(vec![Device::boxed(), DeviceSpecs::boxed(), OsInfo::boxed()])
+		SectionLayout::Single(vec![
+			PopIcon::boxed(),
+			Device::boxed(),
+			DeviceSpecs::boxed(),
+			OsInfo::boxed(),
+		])
+	}
+}
+
+#[derive(Default)]
+struct PopIcon;
+impl SettingsGroup for PopIcon {
+	fn keywords(&self) -> &'static [&'static str] {
+		&[]
+	}
+
+	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
+		let pop_logo = Image::builder().icon_name("pop-os").pixel_size(128).build();
+		target.append(&pop_logo);
+		target.remove_css_class("settings-group");
 	}
 }
 
