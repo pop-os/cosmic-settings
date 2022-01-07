@@ -3,7 +3,8 @@
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry};
 use bytesize::ByteSize;
-use gtk4::{prelude::*, IconSize, Image, Label, Orientation};
+use gtk4::{prelude::*, Image, Label, Orientation};
+use os_release::OsRelease;
 use std::rc::Rc;
 use sysinfo::{DiskExt, ProcessorExt, System, SystemExt};
 
@@ -33,8 +34,12 @@ impl SettingsGroup for PopIcon {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
-		let pop_logo = Image::builder().icon_name("pop-os").pixel_size(128).build();
-		target.append(&pop_logo);
+		let logo_name = OsRelease::new()
+			.ok()
+			.and_then(|mut os_release| os_release.extra.remove("LOGO"))
+			.unwrap_or_else(|| "distribution-logo".to_string());
+		let logo = Image::builder().icon_name("pop-os").pixel_size(128).build();
+		target.append(&logo);
 		target.remove_css_class("settings-group");
 	}
 }

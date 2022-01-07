@@ -154,6 +154,7 @@ dependencies = [
  "grass",
  "gtk4",
  "once_cell",
+ "os-release",
  "sysinfo",
 ]
 
@@ -705,6 +706,15 @@ name = "once_cell"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da32515d9f6e6e489d7bc9d84c71b060db7247dc035bbe44eac88cf87486d8d5"
+
+[[package]]
+name = "os-release"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82f29ae2f71b53ec19cc23385f8e4f3d90975195aa3d09171ba3bef7159bec27"
+dependencies = [
+ "lazy_static",
+]
 
 [[package]]
 name = "pango"
