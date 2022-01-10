@@ -154,7 +154,7 @@ impl ObjectImpl for SettingsEntryImp {
 			.orientation(gtk4::Orientation::Horizontal)
 			.hexpand(true)
 			.margin_start(24)
-			.margin_end(8)
+			.margin_end(24)
 			.margin_top(8)
 			.margin_bottom(8)
 			.spacing(16)

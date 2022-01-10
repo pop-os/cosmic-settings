@@ -109,7 +109,13 @@ impl SettingsGroup for VisibleNetworks {
 				.icon_name("emblem-system-symbolic")
 				.css_classes(vec!["settings-button".into()])
 				.build();
-			let outer_box = gtk4::Box::new(Orientation::Horizontal, 0);
+			let outer_box = gtk4::Box::builder()
+				.orientation(Orientation::Horizontal)
+				.margin_start(24)
+				.margin_end(24)
+				.margin_top(8)
+				.margin_bottom(8)
+				.build();
 			outer_box.append(&connect_button);
 			outer_box.append(&settings_button);
 			target.append(&outer_box);
