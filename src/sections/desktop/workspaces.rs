@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::{sections::SettingsGroup, ui::SettingsGui, widgets::SettingsEntry};
-use gtk4::{prelude::*, Align, CheckButton};
+use gtk4::{prelude::*, Align, CheckButton, SpinButton};
 use std::rc::Rc;
 
 #[derive(Default)]
@@ -36,6 +36,13 @@ impl SettingsGroup for Workspaces {
 			..set_description("Specify a number of Workspaces");
 			..set_child(&check);
 			..align_child(Align::Start);
+		};
+		target.append(&entry);
+		let spin = SpinButton::with_range(1., 10., 1.);
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Number of Workspaces");
+			..set_child(&spin);
 		};
 		target.append(&entry);
 	}
