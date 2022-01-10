@@ -34,7 +34,14 @@ impl Section for DesktopSection {
 					dock::DockSize::boxed(),
 				],
 			),
-			("Workspaces", vec![workspaces::Workspaces::boxed()]),
+			(
+				"Workspaces",
+				vec![
+					workspaces::Workspaces::boxed(),
+					workspaces::MultiMonitorBehavior::boxed(),
+					workspaces::PlacementWorkspacePicker::boxed(),
+				],
+			),
 		])
 	}
 }

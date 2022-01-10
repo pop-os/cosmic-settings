@@ -47,3 +47,73 @@ impl SettingsGroup for Workspaces {
 		target.append(&entry);
 	}
 }
+
+#[derive(Default)]
+pub struct MultiMonitorBehavior;
+
+impl SettingsGroup for MultiMonitorBehavior {
+	fn title(&self) -> &'static str {
+		"Multi-monitor Behavior"
+	}
+
+	fn keywords(&self) -> &'static [&'static str] {
+		&["monitor", "screen", "display"]
+	}
+
+	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
+		let check = CheckButton::builder().valign(Align::Center).build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Workspaces Span Displays");
+			..set_child(&check);
+			..align_child(Align::Start);
+		};
+		target.append(&entry);
+		let check = CheckButton::builder()
+			.valign(Align::Center)
+			.group(&check)
+			.build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Workspaces on Primary Display Only");
+			..set_child(&check);
+			..align_child(Align::Start);
+		};
+		target.append(&entry);
+	}
+}
+
+#[derive(Default)]
+pub struct PlacementWorkspacePicker;
+
+impl SettingsGroup for PlacementWorkspacePicker {
+	fn title(&self) -> &'static str {
+		"Placement of the Workspace Picker"
+	}
+
+	fn keywords(&self) -> &'static [&'static str] {
+		&["place", "side", "workspace", "pick", "picker"]
+	}
+
+	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
+		let check = CheckButton::builder().valign(Align::Center).build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Along the left side");
+			..set_child(&check);
+			..align_child(Align::Start);
+		};
+		target.append(&entry);
+		let check = CheckButton::builder()
+			.valign(Align::Center)
+			.group(&check)
+			.build();
+		let entry = cascade! {
+			SettingsEntry::new();
+			..set_title("Along the right side");
+			..set_child(&check);
+			..align_child(Align::Start);
+		};
+		target.append(&entry);
+	}
+}
