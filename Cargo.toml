@@ -16,4 +16,5 @@ sysinfo = "0.22.4"
 [build-dependencies]
 grass = "0.10.8"
 
-[features]
+[workspace]
+members = ["networkmanager"]
