@@ -216,26 +216,35 @@ impl SettingsGroup for VisibleNetworks {
 				Ok(d) => d,
 				Err(_) => todo!(),
 			};
-
 			for d in devices {
 				if let Ok(Some(SpecificDevice::Wireless(w))) = d.downcast_to_device().await {
-					match w.get_all_access_points().await {
-						Ok(aps) => {
-							let ssids: Vec<String> = stream::iter(aps)
-								.filter_map(|ap| async move {
-									ap.ssid()
-										.await
-										.map(|v| String::from_utf8_lossy(&v).to_string())
-										.ok()
-								})
-								.collect()
-								.await;
-
-							let _ = net_tx.send(NetworksEvent::IdList(ssids));
+					match w.request_scan(std::collections::HashMap::new()).await {
+						Ok(_) => (),
+						Err(_) => {
+							eprintln!("Scan failed");
+							continue;
 						}
-						Err(_) => continue,
 					};
-					todo!();
+
+					let mut scan_changed = w.receive_last_scan_changed().await;
+					if let Some(_) = scan_changed.next().await {
+						match w.get_access_points().await {
+							Ok(aps) => {
+								let ssids: Vec<String> = stream::iter(aps)
+									.filter_map(|ap| async move {
+										ap.ssid()
+											.await
+											.map(|v| String::from_utf8_lossy(&v).to_string())
+											.ok()
+									})
+									.collect()
+									.await;
+								let _ = net_tx.send(NetworksEvent::IdList(ssids));
+								break;
+							}
+							Err(_) => continue,
+						};
+					}
 				}
 			}
 		});
