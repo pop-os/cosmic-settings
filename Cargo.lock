@@ -281,13 +281,6 @@ checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
 [[package]]
 name = "cosmic-dbus-networkmanager"
 version = "0.1.0"
-dependencies = [
- "zbus",
-]
-
-[[package]]
-name = "cosmic-dbus-networkmanager"
-version = "0.1.0"
 source = "git+https://github.com/pop-os/dbus-settings-bindings#54a9f4d6f3b718afccf7235937e9c68be6075ad1"
 dependencies = [
  "bitflags",
@@ -302,7 +295,7 @@ dependencies = [
  "anyhow",
  "bytesize",
  "cascade",
- "cosmic-dbus-networkmanager 0.1.0 (git+https://github.com/pop-os/dbus-settings-bindings)",
+ "cosmic-dbus-networkmanager",
  "futures",
  "futures-util",
  "fuzzy-matcher",
