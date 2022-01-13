@@ -12,7 +12,11 @@ use gtk4::{
 	gdk::Display, gio::ApplicationFlags, prelude::*, CssProvider, StyleContext,
 	STYLE_PROVIDER_PRIORITY_APPLICATION,
 };
+use once_cell::sync::OnceCell;
 use std::{cell::RefCell, rc::Rc};
+use tokio::runtime::{self, Runtime};
+
+static RT: OnceCell<runtime::Runtime> = OnceCell::new();
 
 fn main() {
 	let application = gtk4::Application::new(
@@ -36,6 +40,7 @@ fn build_ui(application: &gtk4::Application) {
 		STYLE_PROVIDER_PRIORITY_APPLICATION,
 	);
 
+	RT.set(Runtime::new().unwrap()).unwrap();
 	let window = gtk4::ApplicationWindow::builder()
 		.application(application)
 		.title("Settings")
