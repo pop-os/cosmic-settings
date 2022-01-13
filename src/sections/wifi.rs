@@ -2,17 +2,11 @@
 
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry, RT};
-use cosmic_dbus_networkmanager::{
-	device::{wireless::WirelessDevice, SpecificDevice},
-	interface::settings::{connection::ConnectionSettingsProxy, SettingsProxy},
-	nm::NetworkManager,
-};
+use cosmic_dbus_networkmanager::{device::SpecificDevice, nm::NetworkManager};
 use futures::stream::{self, StreamExt};
 use gtk4::{glib, prelude::*, Align, Button, Image, Label, Orientation, Switch};
-use once_cell::sync::OnceCell;
-use std::{iter::IntoIterator, rc::Rc};
-use zbus::{Connection, Error, Result};
-use zvariant::Str;
+use std::{cell::RefCell, rc::Rc, time::Duration};
+use zbus::Connection;
 pub struct WifiSection;
 
 impl Section for WifiSection {
@@ -78,50 +72,11 @@ impl SettingsGroup for Wifi {
 }
 
 #[derive(Default)]
-struct VisibleNetworks;
-
-impl VisibleNetworks {
-	async fn network_connections_as_id<I>(
-		connections: I,
-		sys_conn_cell: &OnceCell<Connection>,
-	) -> Vec<String>
-	where
-		I: IntoIterator<Item = zbus::zvariant::OwnedObjectPath>,
-	{
-		stream::iter(connections)
-			.then(
-				glib::clone!(@strong sys_conn_cell => @default-return Ok(String::new()), move |conn_path|
-					{
-						let sys_conn_cell = sys_conn_cell.clone();
-						async move {
-							let sys_conn = sys_conn_cell.get().unwrap();
-							let conn_proxy = ConnectionSettingsProxy::builder(&sys_conn)
-								.path(conn_path)?
-								.build()
-								.await?;
-							let settings = conn_proxy.get_settings().await?;
-							let id: String = String::from(
-								settings
-									.get("connection")
-									.ok_or(Error::InvalidReply)?
-									.get("id")
-									.ok_or(Error::InvalidReply)?
-									.downcast_ref::<Str>()
-									.ok_or(Error::InvalidReply)?
-									.as_str(),
-							);
-							Ok(id)
-						}
-					}
-				),
-			)
-			.collect::<Vec<Result<String>>>()
-			.await
-			.into_iter()
-			.filter_map(|x| x.ok())
-			.collect::<Vec<String>>()
-	}
+struct VisibleNetworks {
+	access_point_ids: Rc<RefCell<Vec<gtk4::Box>>>,
 }
+
+impl VisibleNetworks {}
 
 enum NetworksEvent {
 	IdList(Vec<String>),
@@ -144,15 +99,18 @@ impl SettingsGroup for VisibleNetworks {
 		let (net_tx, net_rx) = glib::MainContext::channel::<NetworksEvent>(glib::PRIORITY_DEFAULT);
 		// let (ui_tx, ui_rx) = glib::MainContext::channel::<NetworksUiEvent>(glib::PRIORITY_DEFAULT);
 
+		let id_handles = &self.access_point_ids;
 		net_rx.attach(
 			None,
-			glib::clone!(@weak target => @default-return glib::Continue(true), move |event| {
+			glib::clone!(@weak target, @strong id_handles => @default-return glib::Continue(true), move |event| {
 				match event {
 					NetworksEvent::IdList(ids) => {
-						for network in ids {
+						let mut new_ids = vec![];
+						for ssid in ids {
+							dbg!(&ssid);
 							let inner_box = gtk4::Box::new(Orientation::Horizontal, 16);
 							let icon = Image::from_icon_name(Some("network-wireless-symbolic"));
-							let label = Label::new(Some(&network));
+							let label = Label::new(Some(&ssid));
 							inner_box.append(&icon);
 							inner_box.append(&label);
 							let connect_button = Button::builder()
@@ -174,11 +132,15 @@ impl SettingsGroup for VisibleNetworks {
 							outer_box.append(&connect_button);
 							outer_box.append(&settings_button);
 							target.append(&outer_box);
+							new_ids.push(outer_box);
 						}
-
+						let old_ids = id_handles.replace(new_ids);
+						for id in old_ids {
+							id.unparent();
+						}
 					}
 				};
-				glib::Continue(false)
+				glib::Continue(true)
 			}),
 		);
 
@@ -188,25 +150,9 @@ impl SettingsGroup for VisibleNetworks {
 				Ok(conn) => conn,
 				Err(_) => return, //TODO err msg
 			};
-			// let sys_conn_cell = OnceCell::new();
+			// let sys_conn_cell = once_cell::sync::OnceCell::new();
 			// sys_conn_cell.set(sys_conn).unwrap();
 			// let sys_conn = sys_conn_cell.get().unwrap();
-			// let nm_proxy = match SettingsProxy::new(sys_conn).await {
-			// 	Ok(p) => p,
-			// 	Err(_) => return, //TODO err msg
-			// };
-			// let known_connections = Self::network_connections_as_id(conns, &sys_conn_cell).await;
-			// let _ = net_tx.send(NetworksEvent::IdList(known_connections));
-
-			// let mut conns_changed = nm_proxy.receive_connections_changed().await;
-			// while let Some(conns) = conns_changed.next().await {
-			// 	let conns = match conns.get().await {
-			// 		Ok(c) => c,
-			// 		Err(_) => continue,
-			// 	};
-			// 	let networks = Self::network_connections_as_id(conns, &sys_conn_cell).await;
-			// 	let _ = net_tx.send(NetworksEvent::IdList(networks));
-			// }
 
 			let nm = match NetworkManager::new(&sys_conn).await {
 				Ok(p) => p,
@@ -218,16 +164,13 @@ impl SettingsGroup for VisibleNetworks {
 			};
 			for d in devices {
 				if let Ok(Some(SpecificDevice::Wireless(w))) = d.downcast_to_device().await {
-					match w.request_scan(std::collections::HashMap::new()).await {
-						Ok(_) => (),
-						Err(_) => {
-							eprintln!("Scan failed");
-							continue;
-						}
+					if let Err(_) = w.request_scan(std::collections::HashMap::new()).await {
+						eprintln!("Scan failed");
+						continue;
 					};
-
 					let mut scan_changed = w.receive_last_scan_changed().await;
-					if let Some(_) = scan_changed.next().await {
+					while let Some(_t) = scan_changed.next().await {
+						println!("scan changed");
 						match w.get_access_points().await {
 							Ok(aps) => {
 								let ssids: Vec<String> = stream::iter(aps)
@@ -239,10 +182,13 @@ impl SettingsGroup for VisibleNetworks {
 									})
 									.collect()
 									.await;
-								let _ = net_tx.send(NetworksEvent::IdList(ssids));
-								break;
+								dbg!(&ssids);
+								net_tx.send(NetworksEvent::IdList(ssids)).unwrap();
 							}
-							Err(_) => continue,
+							Err(_) => {
+								println!("getting access points failed...");
+								continue;
+							}
 						};
 					}
 				}
