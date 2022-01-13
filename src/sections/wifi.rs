@@ -2,8 +2,10 @@
 
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry, RT};
-use cosmic_dbus_networkmanager::interface::settings::{
-	connection::ConnectionSettingsProxy, SettingsProxy,
+use cosmic_dbus_networkmanager::{
+	device::{wireless::WirelessDevice, SpecificDevice},
+	interface::settings::{connection::ConnectionSettingsProxy, SettingsProxy},
+	nm::NetworkManager,
 };
 use futures::stream::{self, StreamExt};
 use gtk4::{glib, prelude::*, Align, Button, Image, Label, Orientation, Switch};
@@ -186,28 +188,55 @@ impl SettingsGroup for VisibleNetworks {
 				Ok(conn) => conn,
 				Err(_) => return, //TODO err msg
 			};
-			let nm_proxy = match SettingsProxy::new(&sys_conn).await {
+			// let sys_conn_cell = OnceCell::new();
+			// sys_conn_cell.set(sys_conn).unwrap();
+			// let sys_conn = sys_conn_cell.get().unwrap();
+			// let nm_proxy = match SettingsProxy::new(sys_conn).await {
+			// 	Ok(p) => p,
+			// 	Err(_) => return, //TODO err msg
+			// };
+			// let known_connections = Self::network_connections_as_id(conns, &sys_conn_cell).await;
+			// let _ = net_tx.send(NetworksEvent::IdList(known_connections));
+
+			// let mut conns_changed = nm_proxy.receive_connections_changed().await;
+			// while let Some(conns) = conns_changed.next().await {
+			// 	let conns = match conns.get().await {
+			// 		Ok(c) => c,
+			// 		Err(_) => continue,
+			// 	};
+			// 	let networks = Self::network_connections_as_id(conns, &sys_conn_cell).await;
+			// 	let _ = net_tx.send(NetworksEvent::IdList(networks));
+			// }
+
+			let nm = match NetworkManager::new(&sys_conn).await {
 				Ok(p) => p,
-				Err(_) => return, //TODO err msg
+				Err(_) => todo!(), //TODO err msg
 			};
-			let conns = match nm_proxy.list_connections().await {
-				Ok(c) => c,
-				Err(_) => return, //TODO err msg
+			let devices = match nm.devices().await {
+				Ok(d) => d,
+				Err(_) => todo!(),
 			};
 
-			let sys_conn_cell = OnceCell::new();
-			sys_conn_cell.set(sys_conn).unwrap();
-			let networks = Self::network_connections_as_id(conns, &sys_conn_cell).await;
-			let _ = net_tx.send(NetworksEvent::IdList(networks));
+			for d in devices {
+				if let Ok(Some(SpecificDevice::Wireless(w))) = d.downcast_to_device().await {
+					match w.get_all_access_points().await {
+						Ok(aps) => {
+							let ssids: Vec<String> = stream::iter(aps)
+								.filter_map(|ap| async move {
+									ap.ssid()
+										.await
+										.map(|v| String::from_utf8_lossy(&v).to_string())
+										.ok()
+								})
+								.collect()
+								.await;
 
-			let mut conns_changed = nm_proxy.receive_connections_changed().await;
-			while let Some(conns) = conns_changed.next().await {
-				let conns = match conns.get().await {
-					Ok(c) => c,
-					Err(_) => continue,
-				};
-				let networks = Self::network_connections_as_id(conns, &sys_conn_cell).await;
-				let _ = net_tx.send(NetworksEvent::IdList(networks));
+							let _ = net_tx.send(NetworksEvent::IdList(ssids));
+						}
+						Err(_) => continue,
+					};
+					todo!();
+				}
 			}
 		});
 	}
