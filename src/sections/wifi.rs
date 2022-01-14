@@ -4,8 +4,9 @@ use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry, RT};
 use cosmic_dbus_networkmanager::{device::SpecificDevice, nm::NetworkManager};
 use futures::stream::{self, StreamExt};
+use gtk4::glib::Sender;
 use gtk4::{glib, prelude::*, Align, Button, Image, Label, Orientation, Switch};
-use std::{cell::RefCell, rc::Rc, time::Duration};
+use std::{cell::RefCell, rc::Rc};
 use zbus::Connection;
 pub struct WifiSection;
 
@@ -76,7 +77,97 @@ struct VisibleNetworks {
 	access_point_ids: Rc<RefCell<Vec<gtk4::Box>>>,
 }
 
-impl VisibleNetworks {}
+impl VisibleNetworks {
+	fn handle_access_point(
+		target: gtk4::Box,
+		ids: Vec<String>,
+		id_handles: Rc<RefCell<Vec<gtk4::Box>>>,
+	) {
+		let mut new_ids = vec![];
+		for ssid in ids {
+			dbg!(&ssid);
+			let inner_box = gtk4::Box::new(Orientation::Horizontal, 16);
+			let icon = Image::from_icon_name(Some("network-wireless-symbolic"));
+			let label = Label::new(Some(&ssid));
+			inner_box.append(&icon);
+			inner_box.append(&label);
+			let connect_button = Button::builder()
+				.child(&inner_box)
+				.css_classes(vec!["settings-button".into()])
+				.hexpand(true)
+				.build();
+			let settings_button = Button::builder()
+				.icon_name("emblem-system-symbolic")
+				.css_classes(vec!["settings-button".into()])
+				.build();
+			let outer_box = gtk4::Box::builder()
+				.orientation(Orientation::Horizontal)
+				.margin_start(24)
+				.margin_end(24)
+				.margin_top(8)
+				.margin_bottom(8)
+				.build();
+			outer_box.append(&connect_button);
+			outer_box.append(&settings_button);
+			target.append(&outer_box);
+			new_ids.push(outer_box);
+		}
+		let old_ids = id_handles.replace(new_ids);
+		for id in old_ids {
+			id.unparent();
+		}
+	}
+
+	async fn scan_for_devices(tx: Sender<NetworksEvent>) {
+		let sys_conn = match Connection::system().await {
+			Ok(conn) => conn,
+			Err(_) => return, //TODO err msg
+		};
+		// let sys_conn_cell = once_cell::sync::OnceCell::new();
+		// sys_conn_cell.set(sys_conn).unwrap();
+		// let sys_conn = sys_conn_cell.get().unwrap();
+
+		let nm = match NetworkManager::new(&sys_conn).await {
+			Ok(p) => p,
+			Err(_) => todo!(), //TODO err msg
+		};
+		let devices = match nm.devices().await {
+			Ok(d) => d,
+			Err(_) => todo!(),
+		};
+		for d in devices {
+			if let Ok(Some(SpecificDevice::Wireless(w))) = d.downcast_to_device().await {
+				if let Err(_) = w.request_scan(std::collections::HashMap::new()).await {
+					eprintln!("Scan failed");
+					continue;
+				};
+				let mut scan_changed = w.receive_last_scan_changed().await;
+				while let Some(_t) = scan_changed.next().await {
+					println!("scan changed");
+					match w.get_access_points().await {
+						Ok(aps) => {
+							let ssids: Vec<String> = stream::iter(aps)
+								.filter_map(|ap| async move {
+									ap.ssid()
+										.await
+										.map(|v| String::from_utf8_lossy(&v).to_string())
+										.ok()
+								})
+								.collect()
+								.await;
+							dbg!(&ssids);
+							tx.send(NetworksEvent::IdList(ssids)).unwrap();
+						}
+						Err(_) => {
+							println!("getting access points failed...");
+							continue;
+						}
+					};
+				}
+			}
+		}
+	}
+}
 
 enum NetworksEvent {
 	IdList(Vec<String>),
@@ -98,46 +189,12 @@ impl SettingsGroup for VisibleNetworks {
 	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
 		let (net_tx, net_rx) = glib::MainContext::channel::<NetworksEvent>(glib::PRIORITY_DEFAULT);
 		// let (ui_tx, ui_rx) = glib::MainContext::channel::<NetworksUiEvent>(glib::PRIORITY_DEFAULT);
-
-		let id_handles = &self.access_point_ids;
 		net_rx.attach(
 			None,
-			glib::clone!(@weak target, @strong id_handles => @default-return glib::Continue(true), move |event| {
+			glib::clone!(@weak target, @strong self.access_point_ids as id_handles => @default-return glib::Continue(true), move |event| {
 				match event {
 					NetworksEvent::IdList(ids) => {
-						let mut new_ids = vec![];
-						for ssid in ids {
-							dbg!(&ssid);
-							let inner_box = gtk4::Box::new(Orientation::Horizontal, 16);
-							let icon = Image::from_icon_name(Some("network-wireless-symbolic"));
-							let label = Label::new(Some(&ssid));
-							inner_box.append(&icon);
-							inner_box.append(&label);
-							let connect_button = Button::builder()
-								.child(&inner_box)
-								.css_classes(vec!["settings-button".into()])
-								.hexpand(true)
-								.build();
-							let settings_button = Button::builder()
-								.icon_name("emblem-system-symbolic")
-								.css_classes(vec!["settings-button".into()])
-								.build();
-							let outer_box = gtk4::Box::builder()
-								.orientation(Orientation::Horizontal)
-								.margin_start(24)
-								.margin_end(24)
-								.margin_top(8)
-								.margin_bottom(8)
-								.build();
-							outer_box.append(&connect_button);
-							outer_box.append(&settings_button);
-							target.append(&outer_box);
-							new_ids.push(outer_box);
-						}
-						let old_ids = id_handles.replace(new_ids);
-						for id in old_ids {
-							id.unparent();
-						}
+						Self::handle_access_point(target, ids, id_handles.clone());
 					}
 				};
 				glib::Continue(true)
@@ -145,55 +202,7 @@ impl SettingsGroup for VisibleNetworks {
 		);
 
 		let handle = RT.get().unwrap().handle();
-		handle.spawn(async move {
-			let sys_conn = match Connection::system().await {
-				Ok(conn) => conn,
-				Err(_) => return, //TODO err msg
-			};
-			// let sys_conn_cell = once_cell::sync::OnceCell::new();
-			// sys_conn_cell.set(sys_conn).unwrap();
-			// let sys_conn = sys_conn_cell.get().unwrap();
-
-			let nm = match NetworkManager::new(&sys_conn).await {
-				Ok(p) => p,
-				Err(_) => todo!(), //TODO err msg
-			};
-			let devices = match nm.devices().await {
-				Ok(d) => d,
-				Err(_) => todo!(),
-			};
-			for d in devices {
-				if let Ok(Some(SpecificDevice::Wireless(w))) = d.downcast_to_device().await {
-					if let Err(_) = w.request_scan(std::collections::HashMap::new()).await {
-						eprintln!("Scan failed");
-						continue;
-					};
-					let mut scan_changed = w.receive_last_scan_changed().await;
-					while let Some(_t) = scan_changed.next().await {
-						println!("scan changed");
-						match w.get_access_points().await {
-							Ok(aps) => {
-								let ssids: Vec<String> = stream::iter(aps)
-									.filter_map(|ap| async move {
-										ap.ssid()
-											.await
-											.map(|v| String::from_utf8_lossy(&v).to_string())
-											.ok()
-									})
-									.collect()
-									.await;
-								dbg!(&ssids);
-								net_tx.send(NetworksEvent::IdList(ssids)).unwrap();
-							}
-							Err(_) => {
-								println!("getting access points failed...");
-								continue;
-							}
-						};
-					}
-				}
-			}
-		});
+		handle.spawn(Self::scan_for_devices(net_tx));
 	}
 }
 
