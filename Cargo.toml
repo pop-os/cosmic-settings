@@ -20,6 +20,7 @@ futures-util = "0.3.19"
 tokio-stream = "0.1.8"
 zvariant = "3.0.0"
 anyhow = "1.0.52"
+relm4-macros = { git = "https://github.com/AaronErhardt/Relm4" }
 
 [build-dependencies]
 grass = "0.10.8"

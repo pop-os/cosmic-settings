@@ -86,29 +86,29 @@ impl VisibleNetworks {
 		let mut new_ids = vec![];
 		for ssid in ids {
 			dbg!(&ssid);
-			let inner_box = gtk4::Box::new(Orientation::Horizontal, 16);
-			let icon = Image::from_icon_name(Some("network-wireless-symbolic"));
-			let label = Label::new(Some(&ssid));
-			inner_box.append(&icon);
-			inner_box.append(&label);
-			let connect_button = Button::builder()
-				.child(&inner_box)
-				.css_classes(vec!["settings-button".into()])
-				.hexpand(true)
-				.build();
-			let settings_button = Button::builder()
-				.icon_name("emblem-system-symbolic")
-				.css_classes(vec!["settings-button".into()])
-				.build();
-			let outer_box = gtk4::Box::builder()
-				.orientation(Orientation::Horizontal)
-				.margin_start(24)
-				.margin_end(24)
-				.margin_top(8)
-				.margin_bottom(8)
-				.build();
-			outer_box.append(&connect_button);
-			outer_box.append(&settings_button);
+			view! {
+				outer_box = gtk4::Box {
+					set_orientation: Orientation::Horizontal,
+					set_margin_start: 24,
+					set_margin_end: 24,
+					set_margin_top: 8,
+					set_margin_bottom: 8,
+					append: connect_button = &Button {
+						add_css_class: "settings-button",
+						set_hexpand: true,
+						set_child: inner_box = Some(&gtk4::Box) {
+							set_orientation: Orientation::Horizontal,
+							set_spacing: 16,
+							append: icon = &Image::from_icon_name(Some("network-wireless-symbolic")) {},
+							append: label = &Label::new(Some(&ssid)) {}
+						}
+					},
+					append: settings_button = &Button {
+						add_css_class: "settings-button",
+						set_icon_name: "emblem-system-symbolic",
+					}
+				}
+			}
 			target.append(&outer_box);
 			new_ids.push(outer_box);
 		}
@@ -137,7 +137,10 @@ impl VisibleNetworks {
 		};
 		for d in devices {
 			if let Ok(Some(SpecificDevice::Wireless(w))) = d.downcast_to_device().await {
-				if let Err(_) = w.request_scan(std::collections::HashMap::new()).await {
+				if w.request_scan(std::collections::HashMap::new())
+					.await
+					.is_err()
+				{
 					eprintln!("Scan failed");
 					continue;
 				};

@@ -2,6 +2,8 @@
 
 #[macro_use]
 extern crate cascade;
+#[macro_use]
+extern crate relm4_macros;
 
 mod sections;
 mod ui;
