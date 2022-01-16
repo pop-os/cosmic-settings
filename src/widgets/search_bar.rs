@@ -81,6 +81,7 @@ impl ObjectImpl for SearchBarImp {
 			}  else {
 				holder.set_css_classes(&["search-bar"]);
 				entry.show();
+				entry.grab_focus();
 			}
 		}));
 		holder.append(&entry);
