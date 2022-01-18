@@ -2,10 +2,12 @@
 
 use super::{Section, SectionLayout, SettingsGroup};
 use crate::{ui::SettingsGui, widgets::SettingsEntry, RT};
-use cosmic_dbus_networkmanager::{device::SpecificDevice, nm::NetworkManager};
+use cosmic_dbus_networkmanager::{
+	device::SpecificDevice, interface::enums::ApSecurityFlags, nm::NetworkManager,
+};
 use futures::stream::{self, StreamExt};
 use gtk4::glib::Sender;
-use gtk4::{glib, prelude::*, Align, Button, Image, Label, Orientation, Switch};
+use gtk4::{glib, prelude::*, Align, Button, Image, Label, Orientation, Spinner, Switch};
 use std::{cell::RefCell, rc::Rc};
 use zbus::Connection;
 pub struct WifiSection;
@@ -72,20 +74,40 @@ impl SettingsGroup for Wifi {
 	}
 }
 
-#[derive(Default)]
 struct VisibleNetworks {
+	spinner: Spinner,
 	access_point_ids: Rc<RefCell<Vec<gtk4::Box>>>,
+}
+
+impl Default for VisibleNetworks {
+	fn default() -> Self {
+		view! {
+			spinner = Spinner {
+				set_margin_top: 8,
+				set_margin_bottom: 8,
+				set_margin_start: 8,
+				set_margin_end: 8,
+				set_halign: Align::Center,
+				set_spinning: true
+			}
+		}
+		let access_point_ids = Rc::default();
+		Self {
+			spinner,
+			access_point_ids,
+		}
+	}
 }
 
 impl VisibleNetworks {
 	fn handle_access_point(
 		target: gtk4::Box,
-		ids: Vec<String>,
+		aps: Vec<AccessPoint>,
 		id_handles: Rc<RefCell<Vec<gtk4::Box>>>,
 	) {
 		let mut new_ids = vec![];
-		for ssid in ids {
-			dbg!(&ssid);
+		for ap in aps {
+			dbg!(&ap);
 			view! {
 				outer_box = gtk4::Box {
 					set_orientation: Orientation::Horizontal,
@@ -100,7 +122,7 @@ impl VisibleNetworks {
 							set_orientation: Orientation::Horizontal,
 							set_spacing: 16,
 							append: icon = &Image::from_icon_name(Some("network-wireless-symbolic")) {},
-							append: label = &Label::new(Some(&ssid)) {}
+							append: label = &Label::new(Some(&ap.ssid)) {}
 						}
 					},
 					append: settings_button = &Button {
@@ -109,7 +131,7 @@ impl VisibleNetworks {
 					}
 				}
 			}
-			target.append(&outer_box);
+			target.prepend(&outer_box);
 			new_ids.push(outer_box);
 		}
 		let old_ids = id_handles.replace(new_ids);
@@ -149,17 +171,8 @@ impl VisibleNetworks {
 					println!("scan changed");
 					match w.get_access_points().await {
 						Ok(aps) => {
-							let ssids: Vec<String> = stream::iter(aps)
-								.filter_map(|ap| async move {
-									ap.ssid()
-										.await
-										.map(|v| String::from_utf8_lossy(&v).to_string())
-										.ok()
-								})
-								.collect()
-								.await;
-							dbg!(&ssids);
-							tx.send(NetworksEvent::IdList(ssids)).unwrap();
+							tx.send(NetworksEvent::ApList(AccessPoint::from_list(aps).await))
+								.unwrap();
 						}
 						Err(_) => {
 							println!("getting access points failed...");
@@ -173,7 +186,45 @@ impl VisibleNetworks {
 }
 
 enum NetworksEvent {
-	IdList(Vec<String>),
+	ApList(Vec<AccessPoint>),
+}
+
+#[derive(Debug)]
+struct AccessPoint {
+	ssid: String,
+	hw_address: String,
+	strength: u8,
+	wpa_flags: ApSecurityFlags,
+}
+
+impl AccessPoint {
+	pub async fn new(
+		ap: cosmic_dbus_networkmanager::access_point::AccessPoint<'_>,
+	) -> Option<Self> {
+		Some(Self {
+			ssid: ap
+				.ssid()
+				.await
+				.map(|x| String::from_utf8_lossy(&x).into_owned())
+				.ok()?,
+			hw_address: ap.hw_address().await.ok()?,
+			strength: ap.strength().await.ok()?,
+			wpa_flags: ap.wpa_flags().await.ok()?,
+		})
+	}
+
+	pub async fn from_list(
+		aps: Vec<cosmic_dbus_networkmanager::access_point::AccessPoint<'_>>,
+	) -> Vec<Self> {
+		let mut out = Vec::<Self>::with_capacity(aps.len());
+		for ap in aps {
+			if let Some(ap) = Self::new(ap).await {
+				out.push(ap);
+			}
+		}
+		out.sort_by(|a, b| a.strength.cmp(&b.strength));
+		out
+	}
 }
 
 // enum NetworksUiEvent {
@@ -196,13 +247,15 @@ impl SettingsGroup for VisibleNetworks {
 			None,
 			glib::clone!(@weak target, @strong self.access_point_ids as id_handles => @default-return glib::Continue(true), move |event| {
 				match event {
-					NetworksEvent::IdList(ids) => {
-						Self::handle_access_point(target, ids, id_handles.clone());
+					NetworksEvent::ApList(aps) => {
+						Self::handle_access_point(target, aps, id_handles.clone());
 					}
 				};
 				glib::Continue(true)
 			}),
 		);
+
+		target.append(&self.spinner);
 
 		let handle = RT.get().unwrap().handle();
 		handle.spawn(Self::scan_for_devices(net_tx));
