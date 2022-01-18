@@ -1434,8 +1434,9 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
 name = "relm4-macros"
-version = "0.4.0-beta.3"
-source = "git+https://github.com/AaronErhardt/Relm4#69555e356a56bf2fdfe0a7b83a7e3d61c8e51a6c"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f5045d3846dea514bf21308e0f23af298dbf970c6dc943172eddcdc7ffc47e6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1508,9 +1509,18 @@ dependencies = [
 
 [[package]]
 name = "sha1"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2579985fda508104f7587689507983eadd6a6e84dd35d6d115361f530916fa0d"
+checksum = "c1da05c97445caa12d05e848c4a4fcbbea29e748ac28f7e80e9b010392063770"
+dependencies = [
+ "sha1_smol",
+]
+
+[[package]]
+name = "sha1_smol"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae1a47186c03a32177042e55dbc5fd5aee900b8e0069a8d70fba96a9375cd012"
 
 [[package]]
 name = "signal-hook-registry"
@@ -1523,9 +1533,9 @@ dependencies = [
 
 [[package]]
 name = "siphasher"
-version = "0.3.7"
+version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "533494a8f9b724d33625ab53c6c4800f7cc445895924a8ef649222dcb76e938b"
+checksum = "a86232ab60fa71287d7f2ddae4a7073f6b7aac33631c3015abb556f08c6d0a3e"
 
 [[package]]
 name = "slab"
@@ -1876,9 +1886,9 @@ dependencies = [
 
 [[package]]
 name = "zvariant"
-version = "3.0.0"
+version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a946c049b2eac1a253f98e9267a8ce7a3d93be274ea146e6dd7a0965232a911"
+checksum = "bbb31b009e0b0c4f2c1283c9c23129e4f76020da4b3c4dfa032abfbfe30a2c02"
 dependencies = [
  "byteorder",
  "enumflags2",
@@ -1890,9 +1900,9 @@ dependencies = [
 
 [[package]]
 name = "zvariant_derive"
-version = "3.0.0"
+version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28fce5afb8d639bff79b1e8cdb258a3ca22d458f4603b23d794b4cb4e878c990"
+checksum = "5295bdc2688c7239423889191d730ad071f814dc36c48edf7cda23f38dd28b2a"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
