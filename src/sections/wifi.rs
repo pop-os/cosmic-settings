@@ -105,7 +105,11 @@ impl VisibleNetworks {
 		aps: Vec<AccessPoint>,
 		id_handles: Rc<RefCell<Vec<gtk4::Box>>>,
 	) {
-		let mut new_ids = vec![];
+		let mut boxes = id_handles.borrow_mut();
+		for boxy in boxes.drain(..) {
+			boxy.unparent();
+			target.remove(&boxy);
+		}
 		for ap in aps {
 			dbg!(&ap);
 			view! {
@@ -132,11 +136,7 @@ impl VisibleNetworks {
 				}
 			}
 			target.prepend(&outer_box);
-			new_ids.push(outer_box);
-		}
-		let old_ids = id_handles.replace(new_ids);
-		for id in old_ids {
-			id.unparent();
+			boxes.push(outer_box);
 		}
 	}
 
@@ -258,7 +258,12 @@ impl SettingsGroup for VisibleNetworks {
 		target.append(&self.spinner);
 
 		let handle = RT.get().unwrap().handle();
-		handle.spawn(Self::scan_for_devices(net_tx));
+		handle.spawn(async move {
+			loop {
+				Self::scan_for_devices(net_tx.clone()).await;
+				tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+			}
+		});
 	}
 }
 
