@@ -76,7 +76,6 @@ impl SettingsGroup for Wifi {
 
 struct VisibleNetworks {
 	spinner: Spinner,
-	access_point_ids: Rc<RefCell<Vec<gtk4::Box>>>,
 }
 
 impl Default for VisibleNetworks {
@@ -91,27 +90,18 @@ impl Default for VisibleNetworks {
 				set_spinning: true
 			}
 		}
-		let access_point_ids = Rc::default();
-		Self {
-			spinner,
-			access_point_ids,
-		}
+		Self { spinner }
 	}
 }
 
 impl VisibleNetworks {
-	fn handle_access_point(
-		target: gtk4::Box,
-		aps: Vec<AccessPoint>,
-		id_handles: Rc<RefCell<Vec<gtk4::Box>>>,
-	) {
-		let mut boxes = id_handles.borrow_mut();
-		for boxy in boxes.drain(..) {
-			boxy.unparent();
-			target.remove(&boxy);
+	fn handle_access_point(target: gtk4::Box, aps: Vec<AccessPoint>) {
+		dbg!(aps.len());
+		while let Some(widget) = target.first_child().as_ref() {
+			target.remove(widget);
 		}
 		for ap in aps {
-			dbg!(&ap);
+			// dbg!(&ap);
 			view! {
 				outer_box = gtk4::Box {
 					set_orientation: Orientation::Horizontal,
@@ -136,7 +126,6 @@ impl VisibleNetworks {
 				}
 			}
 			target.prepend(&outer_box);
-			boxes.push(outer_box);
 		}
 	}
 
@@ -157,6 +146,7 @@ impl VisibleNetworks {
 			Ok(d) => d,
 			Err(_) => todo!(),
 		};
+		let mut all_aps = vec![];
 		for d in devices {
 			if let Ok(Some(SpecificDevice::Wireless(w))) = d.downcast_to_device().await {
 				if w.request_scan(std::collections::HashMap::new())
@@ -167,12 +157,21 @@ impl VisibleNetworks {
 					continue;
 				};
 				let mut scan_changed = w.receive_last_scan_changed().await;
-				while let Some(_t) = scan_changed.next().await {
+				if let Some(t) = scan_changed.next().await {
+					if let Ok(t) = t.get().await {
+						if t == -1 {
+							println!("getting access points failed...");
+							continue;
+						}
+					}
 					println!("scan changed");
 					match w.get_access_points().await {
 						Ok(aps) => {
-							tx.send(NetworksEvent::ApList(AccessPoint::from_list(aps).await))
-								.unwrap();
+							if aps.len() > 0 {
+								let mut aps = AccessPoint::from_list(aps).await;
+								all_aps.append(&mut aps);
+								break;
+							}
 						}
 						Err(_) => {
 							println!("getting access points failed...");
@@ -182,6 +181,7 @@ impl VisibleNetworks {
 				}
 			}
 		}
+		tx.send(NetworksEvent::ApList(all_aps)).unwrap();
 	}
 }
 
@@ -241,20 +241,21 @@ impl SettingsGroup for VisibleNetworks {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
-		let (net_tx, net_rx) = glib::MainContext::channel::<NetworksEvent>(glib::PRIORITY_DEFAULT);
+		let (net_tx, net_rx) = glib::MainContext::channel::<NetworksEvent>(glib::PRIORITY_HIGH);
 		// let (ui_tx, ui_rx) = glib::MainContext::channel::<NetworksUiEvent>(glib::PRIORITY_DEFAULT);
 		net_rx.attach(
 			None,
-			glib::clone!(@weak target, @strong self.access_point_ids as id_handles => @default-return glib::Continue(true), move |event| {
+			glib::clone!(@weak target => @default-return glib::Continue(true), move |event| {
 				match event {
 					NetworksEvent::ApList(aps) => {
-						Self::handle_access_point(target, aps, id_handles.clone());
+						Self::handle_access_point(target, aps);
 					}
 				};
 				glib::Continue(true)
 			}),
 		);
 
+		dbg!(&target);
 		target.append(&self.spinner);
 
 		let handle = RT.get().unwrap().handle();
