@@ -1,5 +1,6 @@
-use std::rc::Rc;
+// SPDX-License-Identifier: GPL-3.0-only
 
+use crate::{sections::SettingsGroup, ui::SettingsGui, RT};
 use cosmic_dbus_networkmanager::{
 	device::SpecificDevice, interface::enums::ApSecurityFlags, nm::NetworkManager,
 };
@@ -9,11 +10,8 @@ use gtk4::{
 	prelude::*,
 	Align, Button, Image, Label, Orientation, Spinner,
 };
+use std::rc::Rc;
 use zbus::Connection;
-
-use crate::{sections::SettingsGroup, ui::SettingsGui, RT};
-
-// SPDX-License-Identifier: GPL-3.0-only
 
 pub struct VisibleNetworks {
 	spinner: Spinner,
