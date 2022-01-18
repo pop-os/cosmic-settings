@@ -1,6 +1,7 @@
 .search-bar-inactive {
 	background: none;
-	border: none;
+	border: 1px solid;
+	border-color: rgba(0, 0, 0, 0);
 }
 
 .search-bar {
