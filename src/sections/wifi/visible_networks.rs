@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
-use crate::{sections::SettingsGroup, ui::SettingsGui, RT};
+use crate::{sections::SettingsGroup, ui::SettingsGui};
 use cosmic_dbus_networkmanager::{
 	device::SpecificDevice, interface::enums::ApSecurityFlags, nm::NetworkManager,
 };
@@ -213,7 +213,7 @@ impl SettingsGroup for VisibleNetworks {
 
 		let cancel = Arc::new(AtomicBool::new(false));
 
-		RT.get().unwrap().spawn({
+		crate::task::spawn({
 			let cancel = cancel.clone();
 			let tx = net_tx.clone();
 			async move {
