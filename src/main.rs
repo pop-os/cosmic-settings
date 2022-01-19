@@ -6,6 +6,7 @@ extern crate cascade;
 extern crate relm4_macros;
 
 mod sections;
+mod task;
 mod ui;
 mod widgets;
 

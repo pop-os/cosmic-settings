@@ -230,7 +230,7 @@ impl SettingsGroup for VisibleNetworks {
 		});
 
 		let target = target.downgrade();
-		glib::MainContext::default().spawn_local(async move {
+		crate::task::spawn_local(async move {
 			let mut aps = SlotMap::new();
 
 			while let Some(event) = net_rx.recv().await {
@@ -252,7 +252,7 @@ impl SettingsGroup for VisibleNetworks {
 								.text(&format!("TODO {}", ap.ssid))
 								.build();
 
-							glib::MainContext::default().spawn_local(async move {
+							crate::task::spawn_local(async move {
 								dialog.run_future().await;
 								dialog.close();
 							});
