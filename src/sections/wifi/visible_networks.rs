@@ -5,12 +5,10 @@ use cosmic_dbus_networkmanager::{
 	device::SpecificDevice, interface::enums::ApSecurityFlags, nm::NetworkManager,
 };
 use futures::StreamExt;
-use gtk4::{
-	glib::{self, MainContext, Sender},
-	prelude::*,
-	Align, Button, Image, Label, Orientation, Spinner,
-};
+use gtk4::{glib, prelude::*, Align, Button, Image, Label, Orientation, Spinner};
+use slotmap::{DefaultKey, SlotMap};
 use std::rc::Rc;
+use tokio::sync::mpsc::UnboundedSender;
 use zbus::Connection;
 
 pub struct VisibleNetworks {
@@ -34,12 +32,18 @@ impl Default for VisibleNetworks {
 }
 
 impl VisibleNetworks {
-	fn handle_access_point(target: gtk4::Box, aps: Vec<AccessPoint>) {
+	fn handle_access_point(
+		target: &gtk4::Box,
+		tx: &UnboundedSender<NetworksEvent>,
+		aps: &SlotMap<DefaultKey, AccessPoint>,
+	) {
 		dbg!(aps.len());
+
 		while let Some(widget) = target.first_child().as_ref() {
 			target.remove(widget);
 		}
-		for ap in aps {
+
+		for (id, ap) in aps.iter() {
 			// dbg!(&ap);
 			view! {
 				outer_box = gtk4::Box {
@@ -64,11 +68,20 @@ impl VisibleNetworks {
 					}
 				}
 			}
+
+			connect_button.connect_clicked(glib::clone!(@strong tx => move |_| {
+				let _ = tx.send(NetworksEvent::ConfigureDevice(id));
+			}));
+
+			settings_button.connect_clicked(glib::clone!(@strong tx => move |_| {
+				let _ = tx.send(NetworksEvent::ConfigureDevice(id));
+			}));
+
 			target.prepend(&outer_box);
 		}
 	}
 
-	async fn scan_for_devices(tx: Sender<NetworksEvent>) {
+	async fn scan_for_devices(tx: UnboundedSender<NetworksEvent>) {
 		let sys_conn = match Connection::system().await {
 			Ok(conn) => conn,
 			Err(_) => return, //TODO err msg
@@ -85,7 +98,8 @@ impl VisibleNetworks {
 			Ok(d) => d,
 			Err(_) => todo!(),
 		};
-		let mut all_aps = vec![];
+		let mut all_aps = SlotMap::new();
+
 		for d in devices {
 			if let Ok(Some(SpecificDevice::Wireless(w))) = d.downcast_to_device().await {
 				if w.request_scan(std::collections::HashMap::new())
@@ -99,33 +113,40 @@ impl VisibleNetworks {
 				if let Some(t) = scan_changed.next().await {
 					if let Ok(t) = t.get().await {
 						if t == -1 {
-							println!("getting access points failed...");
+							eprintln!("getting access points failed...");
 							continue;
 						}
 					}
-					println!("scan changed");
+					eprintln!("scan changed");
 					match w.get_access_points().await {
 						Ok(aps) => {
 							if !aps.is_empty() {
-								let mut aps = AccessPoint::from_list(aps).await;
-								all_aps.append(&mut aps);
+								for ap in AccessPoint::from_list(aps).await {
+									all_aps.insert(ap);
+								}
+
 								break;
 							}
 						}
 						Err(_) => {
-							println!("getting access points failed...");
+							eprintln!("getting access points failed...");
 							continue;
 						}
 					};
 				}
 			}
 		}
-		tx.send(NetworksEvent::ApList(all_aps)).unwrap();
+
+		if let Err(why) = tx.send(NetworksEvent::ApList(all_aps)) {
+			eprintln!("{}:{}: {:?}", file!(), line!(), why);
+		}
 	}
 }
 
+#[derive(Debug)]
 enum NetworksEvent {
-	ApList(Vec<AccessPoint>),
+	ApList(SlotMap<DefaultKey, AccessPoint>),
+	ConfigureDevice(DefaultKey),
 }
 
 #[derive(Debug)]
@@ -176,27 +197,51 @@ impl SettingsGroup for VisibleNetworks {
 	}
 
 	fn layout(&self, target: &gtk4::Box, _ui: Rc<SettingsGui>) {
-		let (net_tx, net_rx) = MainContext::channel::<NetworksEvent>(glib::PRIORITY_HIGH);
-		net_rx.attach(
-			None,
-			glib::clone!(@weak target => @default-return glib::Continue(true), move |event| {
-				match event {
-					NetworksEvent::ApList(aps) => {
-						Self::handle_access_point(target, aps);
-					}
-				};
-				glib::Continue(true)
-			}),
-		);
-
 		dbg!(&target);
 		target.append(&self.spinner);
 
-		let handle = RT.get().unwrap().handle();
-		handle.spawn(async move {
-			loop {
-				Self::scan_for_devices(net_tx.clone()).await;
-				tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+		let (net_tx, mut net_rx) = tokio::sync::mpsc::unbounded_channel();
+
+		RT.get().unwrap().spawn({
+			let tx = net_tx.clone();
+			async move {
+				loop {
+					Self::scan_for_devices(tx.clone()).await;
+					tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+				}
+			}
+		});
+
+		let target = target.downgrade();
+		glib::MainContext::default().spawn_local(async move {
+			let mut aps = SlotMap::new();
+
+			while let Some(event) = net_rx.recv().await {
+				match event {
+					NetworksEvent::ApList(update) => {
+						if let Some(target) = target.upgrade() {
+							Self::handle_access_point(&target, &net_tx, &update);
+						}
+
+						aps = update;
+					}
+
+					NetworksEvent::ConfigureDevice(device) => {
+						if let Some(ap) = aps.get(device) {
+							eprintln!("configuring {:?}", ap);
+
+							let dialog = gtk4::MessageDialogBuilder::new()
+								.buttons(gtk4::ButtonsType::OkCancel)
+								.text(&format!("TODO {}", ap.ssid))
+								.build();
+
+							glib::MainContext::default().spawn_local(async move {
+								dialog.run_future().await;
+								dialog.close();
+							});
+						}
+					}
+				}
 			}
 		});
 	}
