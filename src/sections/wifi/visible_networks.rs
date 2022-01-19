@@ -8,6 +8,10 @@ use futures::StreamExt;
 use gtk4::{glib, prelude::*, Align, Button, Image, Label, Orientation, Spinner};
 use slotmap::{DefaultKey, SlotMap};
 use std::rc::Rc;
+use std::sync::{
+	atomic::{AtomicBool, Ordering},
+	Arc,
+};
 use tokio::sync::mpsc::UnboundedSender;
 use zbus::Connection;
 
@@ -147,6 +151,7 @@ impl VisibleNetworks {
 enum NetworksEvent {
 	ApList(SlotMap<DefaultKey, AccessPoint>),
 	ConfigureDevice(DefaultKey),
+	Quit,
 }
 
 #[derive(Debug)]
@@ -202,10 +207,22 @@ impl SettingsGroup for VisibleNetworks {
 
 		let (net_tx, mut net_rx) = tokio::sync::mpsc::unbounded_channel();
 
+		target.connect_destroy(glib::clone!(@strong net_tx => move |_| {
+			let _ = net_tx.send(NetworksEvent::Quit);
+		}));
+
+		let cancel = Arc::new(AtomicBool::new(false));
+
 		RT.get().unwrap().spawn({
+			let cancel = cancel.clone();
 			let tx = net_tx.clone();
 			async move {
 				loop {
+					if cancel.load(Ordering::Relaxed) {
+						eprintln!("stopped network scanning");
+						return;
+					}
+
 					Self::scan_for_devices(tx.clone()).await;
 					tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 				}
@@ -240,6 +257,12 @@ impl SettingsGroup for VisibleNetworks {
 								dialog.close();
 							});
 						}
+					}
+
+					NetworksEvent::Quit => {
+						eprintln!("stop network scanning");
+						cancel.store(true, Ordering::SeqCst);
+						break;
 					}
 				}
 			}
