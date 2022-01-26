@@ -4,11 +4,14 @@
 extern crate cascade;
 #[macro_use]
 extern crate relm4_macros;
+#[macro_use]
+extern crate tracing;
 
-mod sections;
-mod task;
-mod ui;
-mod widgets;
+pub(crate) mod sections;
+pub(crate) mod service;
+pub(crate) mod task;
+pub(crate) mod ui;
+pub(crate) mod widgets;
 
 use crate::{sections::SettingsGroupStore, ui::section};
 use gtk4::{
@@ -18,16 +21,25 @@ use gtk4::{
 use once_cell::sync::OnceCell;
 use std::{cell::RefCell, rc::Rc};
 use tokio::runtime::{self, Runtime};
+use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 static RT: OnceCell<runtime::Runtime> = OnceCell::new();
 
 fn main() {
+	setup_logging();
 	let application = gtk4::Application::new(
 		Some("com.system76.cosmic.settings"),
 		ApplicationFlags::default(),
 	);
 	application.connect_activate(build_ui);
 	application.run();
+}
+
+fn setup_logging() {
+	let subscriber = FmtSubscriber::builder()
+		.with_env_filter(EnvFilter::from_default_env())
+		.finish();
+	tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 }
 
 fn build_ui(application: &gtk4::Application) {
