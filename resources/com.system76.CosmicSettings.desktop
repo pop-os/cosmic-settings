@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Cosmic Settings
+Type=Application
+Exec=cosmic-settings
+Terminal=false
+Categories=GNOME;GTK;
+Keywords=Gnome;GTK;
+OnlyShowIn=GNOME;Unity;COSMIC
+Icon=org.gnome.Settings
+StartupNotify=true
+NoDisplay=true
