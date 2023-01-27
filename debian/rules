@@ -1,17 +1,12 @@
 #!/usr/bin/make -f
 
-export DESTDIR = debian/cosmic-settings
+export DESTDIR = debian/tmp
 export VENDOR ?= 1
-CLEAN ?= 1
 
 %:
 	dh $@
 
 override_dh_auto_clean:
-	if test "${CLEAN}" = "1"; then \
-		cargo clean; \
-	fi
-
 	if ! ischroot && test "${VENDOR}" = "1"; then \
 		mkdir -p .cargo; \
 		cargo vendor | head -n -1 > .cargo/config; \

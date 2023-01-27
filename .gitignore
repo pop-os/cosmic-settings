@@ -8,3 +8,4 @@ debian/*
 !debian/copyright
 !debian/rules
 !debian/source
+!debian/install
