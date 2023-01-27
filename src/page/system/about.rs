@@ -16,13 +16,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = super::Model;
 
-    const PERSISTENT_ID: &'static str = "about";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("about", "help-about-symbolic")
             .title(fl!("about"))
             .description(fl!("about", "desc"))
-            .icon_name("help-about-symbolic")
     }
 
     fn content(sections: &mut SlotMap<page::section::Entity, Section>) -> Option<Content> {

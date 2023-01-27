@@ -18,6 +18,7 @@ use cosmic::{
 };
 
 use crate::{
+    config::{self, Config},
     page::{self, desktop, section, sound, system, time, Page},
     widget::{page_title, parent_page_button, search_header, sub_page_button},
 };
@@ -27,6 +28,7 @@ use crate::{
 pub struct SettingsApp {
     pub active_page: page::Entity,
     pub config: Config,
+    pub config_path: config::PathManager,
     pub debug: bool,
     pub is_condensed: bool,
     pub nav_bar_toggled_condensed: bool,
@@ -41,11 +43,6 @@ pub struct SettingsApp {
     pub theme: Theme,
     pub title: String,
     pub window_width: u32,
-}
-
-#[derive(Debug, Default)]
-pub struct Config {
-    nav_page: &'static str,
 }
 
 #[allow(dead_code)]
@@ -73,11 +70,12 @@ impl Application for SettingsApp {
     type Theme = Theme;
 
     fn new(_flags: ()) -> (Self, Command<Self::Message>) {
+        let mut config_path = config::PathManager::new();
+
         let mut app = SettingsApp {
             active_page: page::Entity::default(),
-            config: Config {
-                nav_page: "desktop",
-            },
+            config: config_path.config("main", Config::deserialize),
+            config_path,
             debug: false,
             is_condensed: false,
             nav_bar: segmented_button::Model::default(),
@@ -119,7 +117,12 @@ impl Application for SettingsApp {
         // app.insert_page::<accessibility::Page>();
         // app.insert_page::<applications::Page>();
 
-        app.activate_navbar(app.active_page);
+        for (id, info) in app.pages.pages.iter() {
+            if info.id == &*app.config.active_page {
+                app.activate_page(id);
+                break;
+            }
+        }
 
         (app, Command::none())
     }
@@ -299,7 +302,14 @@ impl SettingsApp {
     /// Activates a page.
     fn activate_page(&mut self, page: page::Entity) {
         self.nav_bar_toggled_condensed = false;
+        let current_page = self.active_page;
         self.active_page = page;
+
+        if current_page != page {
+            self.config.active_page = Box::from(self.pages.pages[page].id);
+            self.config_path
+                .config("main", |path| self.config.serialize(path));
+        }
 
         self.search_clear();
         self.search.state = search::State::Inactive;
@@ -320,12 +330,7 @@ impl SettingsApp {
     /// Adds a main page to the settings application.
     fn insert_page<P: Page>(&mut self) -> page::Insert {
         let id = self.pages.register::<P>().id();
-
         self.navbar_insert(id);
-
-        if P::PERSISTENT_ID == self.config.nav_page {
-            self.active_page = id;
-        }
 
         page::Insert {
             model: &mut self.pages,

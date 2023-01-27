@@ -19,13 +19,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = super::Model;
 
-    const PERSISTENT_ID: &'static str = "desktop-options";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("desktop-options", "video-display-symbolic")
             .title(fl!("desktop-options"))
             .description(fl!("desktop-options", "desc"))
-            .icon_name("video-display-symbolic")
     }
 
     #[allow(clippy::too_many_lines)]

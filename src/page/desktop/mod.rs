@@ -15,12 +15,8 @@ pub struct Page;
 impl page::Page for Page {
     type Model = super::Model;
 
-    const PERSISTENT_ID: &'static str = "desktop";
-
     fn page() -> page::Meta {
-        page::Meta::default()
-            .title(fl!("desktop"))
-            .icon_name("video-display-symbolic")
+        page::Meta::new("desktop", "video-display-symbolic").title(fl!("desktop"))
     }
 
     fn sub_pages(page: page::Insert) -> page::Insert {

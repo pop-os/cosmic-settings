@@ -9,6 +9,8 @@
 pub mod app;
 pub use app::{Message, SettingsApp};
 
+pub mod config;
+
 #[macro_use]
 pub mod localize;
 

@@ -19,13 +19,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = super::Model;
 
-    const PERSISTENT_ID: &'static str = "wallpaper";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("wallpaper", "preferences-desktop-wallpaper-symbolic")
             .title(fl!("wallpaper"))
             .description(fl!("wallpaper", "desc"))
-            .icon_name("preferences-desktop-wallpaper-symbolic")
     }
 
     fn content(sections: &mut SlotMap<section::Entity, Section>) -> Option<Content> {

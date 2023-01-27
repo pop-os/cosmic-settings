@@ -38,13 +38,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = Model;
 
-    const PERSISTENT_ID: &'static str = "time-date";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("time-date", "preferences-system-time-symbolic")
             .title(fl!("time-date"))
             .description(fl!("time-date", "desc"))
-            .icon_name("preferences-system-time-symbolic")
     }
 
     fn content(sections: &mut SlotMap<section::Entity, Section>) -> Option<Content> {

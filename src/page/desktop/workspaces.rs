@@ -12,13 +12,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = super::Model;
 
-    const PERSISTENT_ID: &'static str = "workspaces";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("workspaces", "preferences-pop-desktop-workspaces-symbolic")
             .title(fl!("workspaces"))
             .description(fl!("workspaces", "desc"))
-            .icon_name("preferences-pop-desktop-workspaces-symbolic")
     }
 
     fn content(sections: &mut SlotMap<section::Entity, Section>) -> Option<Content> {

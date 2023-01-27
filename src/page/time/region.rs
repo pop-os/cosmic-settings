@@ -9,13 +9,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = ();
 
-    const PERSISTENT_ID: &'static str = "time-region";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("time-region", "preferences-desktop-locale-symbolic")
             .title(fl!("time-region"))
             .description(fl!("time-region", "desc"))
-            .icon_name("preferences-desktop-locale-symbolic")
     }
 
     fn content(sections: &mut SlotMap<section::Entity, Section>) -> Option<Content> {

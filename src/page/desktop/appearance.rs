@@ -9,13 +9,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = super::Model;
 
-    const PERSISTENT_ID: &'static str = "appearance";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("appearance", "preferences-pop-desktop-appearance-symbolic")
             .title(fl!("appearance"))
             .description(fl!("appearance", "desc"))
-            .icon_name("preferences-pop-desktop-appearance-symbolic")
     }
 
     fn content(sections: &mut SlotMap<section::Entity, Section>) -> Option<Content> {

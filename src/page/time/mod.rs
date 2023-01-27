@@ -11,13 +11,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = ();
 
-    const PERSISTENT_ID: &'static str = "time";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("time", "preferences-system-time-symbolic")
             .title(fl!("time"))
             .description(fl!("time", "desc"))
-            .icon_name("preferences-system-time-symbolic")
     }
 
     fn sub_pages(page: page::Insert) -> page::Insert {

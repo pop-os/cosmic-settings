@@ -10,13 +10,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = super::Model;
 
-    const PERSISTENT_ID: &'static str = "firmware";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("firmware", "firmware-manager-symbolic")
             .title(fl!("firmware"))
             .description(fl!("firmware", "desc"))
-            .icon_name("firmware-manager-symbolic")
     }
 
     fn content(sections: &mut SlotMap<section::Entity, Section>) -> Option<Content> {

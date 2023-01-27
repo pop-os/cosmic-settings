@@ -15,13 +15,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = Sound;
 
-    const PERSISTENT_ID: &'static str = "sound";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("sound", "multimedia-volume-control-symbolic")
             .title(fl!("sound"))
             .description(fl!("sound", "desc"))
-            .icon_name("multimedia-volume-control-symbolic")
     }
 
     fn content(sections: &mut SlotMap<section::Entity, Section>) -> Option<Content> {

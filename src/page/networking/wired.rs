@@ -4,8 +4,7 @@
 use crate::page;
 
 pub fn page() -> page::Meta {
-    page::Meta::default()
+    page::Meta::new("wired", "network-workgroup-symbolic")
         .title(fl!("wired"))
         .description(fl!("wired", "desc"))
-        .icon_name("network-workgroup-symbolic")
 }

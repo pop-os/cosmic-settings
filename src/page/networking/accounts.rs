@@ -4,8 +4,7 @@
 use crate::page;
 
 pub fn page() -> page::Meta {
-    page::Meta::default()
+    page::Meta::new("online-accounts", "goa-panel-symbolic")
         .title(fl!("online-accounts"))
         .description(fl!("online-accounts", "desc"))
-        .icon_name("goa-panel-symbolic")
 }

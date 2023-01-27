@@ -24,9 +24,6 @@ slotmap::new_key_type! {
 pub trait Page {
     type Model: Default + 'static;
 
-    /// A unique identity that is the same between application runs.
-    const PERSISTENT_ID: &'static str;
-
     fn page() -> Meta;
 
     #[must_use]
@@ -41,17 +38,40 @@ pub trait Page {
     }
 }
 
-#[derive(Default, Setters)]
+#[derive(Setters)]
 #[must_use]
 pub struct Meta {
+    /// A unique identity that is the same between application runs.
+    #[setters(skip)]
+    pub id: &'static str,
+
+    /// The icon associated with the page.
+    #[setters(skip)]
+    pub icon_name: &'static str,
+
+    /// The title of the page.
     #[setters(into)]
     pub title: String,
-    #[setters(into)]
-    pub icon_name: &'static str,
+
+    /// A description of the page.
     #[setters(into)]
     pub description: String,
+
+    /// The parent of the page.
     #[setters(strip_option)]
     pub parent: Option<Entity>,
+}
+
+impl Meta {
+    pub const fn new(id: &'static str, icon_name: &'static str) -> Self {
+        Self {
+            title: String::new(),
+            icon_name,
+            id,
+            description: String::new(),
+            parent: None,
+        }
+    }
 }
 
 pub type Content = Vec<section::Entity>;

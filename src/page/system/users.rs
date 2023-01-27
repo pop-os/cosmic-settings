@@ -10,13 +10,10 @@ pub struct Page;
 impl page::Page for Page {
     type Model = super::Model;
 
-    const PERSISTENT_ID: &'static str = "users";
-
     fn page() -> page::Meta {
-        page::Meta::default()
+        page::Meta::new("users", "system-users-symbolic")
             .title(fl!("users"))
             .description(fl!("users", "desc"))
-            .icon_name("system-users-symbolic")
     }
 
     fn content(sections: &mut SlotMap<section::Entity, Section>) -> Option<Content> {
