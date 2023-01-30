@@ -86,7 +86,6 @@ impl Model {
             let (tx, rx) = async_channel::bounded(1);
 
             std::thread::spawn(move || {
-                println!("loading page");
                 let _res = tx.send_blocking(func(id));
             });
 

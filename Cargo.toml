@@ -27,7 +27,7 @@ features = ["fluent-system", "desktop-requester"]
 
 [dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-branch = "settings-improv"
+rev = "843919e44f0a00c33c29358359be5b4bfa41ab00"
 default-features = false
 features = ["debug", "winit", "dyrend"]
 

@@ -216,7 +216,6 @@ impl Application for SettingsApp {
 
     #[allow(clippy::too_many_lines)]
     fn view(&self) -> Element<Message> {
-        let start = std::time::Instant::now();
         let (nav_bar_message, nav_bar_toggled) = if self.is_condensed {
             (
                 Message::ToggleNavBarCondensed,
@@ -289,11 +288,6 @@ impl Application for SettingsApp {
             .width(Length::Fill)
             .height(Length::Fill)
             .into();
-
-        eprintln!(
-            "view: {:?}",
-            std::time::Instant::now().duration_since(start)
-        );
 
         column(vec![header, content]).into()
     }
