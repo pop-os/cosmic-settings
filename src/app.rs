@@ -48,19 +48,21 @@ pub struct SettingsApp {
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum Message {
+    About(system::about::Message),
     Close,
-    Desktop(desktop::Message),
     DateAndTime(time::date::Message),
+    Desktop(desktop::Message),
     Drag,
     KeyboardNav(keyboard_nav::Message),
     Maximize,
     Minimize,
     NavBar(segmented_button::Entity),
+    None,
+    Page(page::Entity),
     Search(search::Message),
     ToggleNavBar,
     ToggleNavBarCondensed,
     WindowResize(u32, u32),
-    Page(page::Entity),
 }
 
 impl Application for SettingsApp {
@@ -117,14 +119,16 @@ impl Application for SettingsApp {
         // app.insert_page::<accessibility::Page>();
         // app.insert_page::<applications::Page>();
 
+        let mut command = Command::none();
+
         for (id, info) in app.pages.pages.iter() {
             if info.id == &*app.config.active_page {
-                app.activate_page(id);
+                command = app.activate_page(id);
                 break;
             }
         }
 
-        (app, Command::none())
+        (app, command)
     }
 
     fn title(&self) -> String {
@@ -167,14 +171,14 @@ impl Application for SettingsApp {
                     return self.search.focus();
                 }
             },
-            Message::Page(page) => self.activate_page(page),
+            Message::Page(page) => return self.activate_page(page),
             Message::Drag => return drag(window::Id::new(0)),
             Message::Close => return close(window::Id::new(0)),
             Message::Minimize => return minimize(window::Id::new(0), true),
             Message::Maximize => return toggle_maximize(window::Id::new(0)),
             Message::NavBar(key) => {
                 if let Some(page) = self.nav_bar.data::<page::Entity>(key).copied() {
-                    self.activate_page(page);
+                    return self.activate_page(page);
                 }
             }
             Message::ToggleNavBar => self.nav_bar_toggled = !self.nav_bar_toggled,
@@ -190,7 +194,12 @@ impl Application for SettingsApp {
             Message::Search(search::Message::Clear) => {
                 self.search_clear();
             }
-            Message::Search(_) => {}
+            Message::None | Message::Search(_) => {}
+            Message::About(message) => {
+                if let Some(model) = self.pages.resource_mut::<system::about::Model>() {
+                    model.update(message);
+                }
+            }
             Message::Desktop(message) => {
                 if let Some(model) = self.pages.resource_mut::<desktop::Model>() {
                     model.update(message);
@@ -300,7 +309,7 @@ impl Application for SettingsApp {
 
 impl SettingsApp {
     /// Activates a page.
-    fn activate_page(&mut self, page: page::Entity) {
+    fn activate_page(&mut self, page: page::Entity) -> Command<crate::Message> {
         self.nav_bar_toggled_condensed = false;
         let current_page = self.active_page;
         self.active_page = page;
@@ -314,6 +323,8 @@ impl SettingsApp {
         self.search_clear();
         self.search.state = search::State::Inactive;
         self.activate_navbar(page);
+
+        self.pages.init_page(page).unwrap_or(Command::none())
     }
 
     /// Activates the navbar item associated with a page.

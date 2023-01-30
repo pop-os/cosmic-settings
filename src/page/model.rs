@@ -12,6 +12,7 @@ use slotmap::{SecondaryMap, SlotMap, SparseSecondaryMap};
 
 pub struct Model {
     pub pages: SlotMap<page::Entity, Meta>,
+    pub page_load: SecondaryMap<page::Entity, fn(page::Entity) -> crate::Message>,
     pub resource: HashMap<TypeId, Box<dyn Any>>,
     pub storage: HashMap<TypeId, SecondaryMap<page::Entity, Box<dyn Any>>>,
     pub sub_pages: SparseSecondaryMap<page::Entity, Vec<page::Entity>>,
@@ -24,6 +25,7 @@ impl Default for Model {
         Self {
             content: SparseSecondaryMap::new(),
             pages: SlotMap::with_key(),
+            page_load: SecondaryMap::new(),
             resource: HashMap::new(),
             sections: SlotMap::with_key(),
             storage: HashMap::new(),
@@ -79,9 +81,29 @@ impl Model {
             .and_then(|storage| storage.remove(id));
     }
 
+    pub fn init_page(&mut self, id: page::Entity) -> Option<cosmic::iced::Command<crate::Message>> {
+        if let Some(func) = self.page_load.get(id).copied() {
+            let (tx, rx) = async_channel::bounded(1);
+
+            std::thread::spawn(move || {
+                println!("loading page");
+                let _res = tx.send_blocking(func(id));
+            });
+
+            let future = async move { dbg!(rx.recv().await.unwrap_or(crate::Message::None)) };
+
+            return Some(cosmic::iced::Command::single(
+                cosmic::iced_native::command::Action::Future(Box::pin(future)),
+            ));
+        }
+
+        None
+    }
+
     // Registers a new page in the settings panel.
     pub fn register<P: Page>(&mut self) -> Insert {
         let id = self.pages.insert(P::page());
+        self.page_load.insert(id, P::load);
 
         if let Some(content) = P::content(&mut self.sections) {
             self.content.insert(id, content);
@@ -118,13 +140,17 @@ impl Model {
         &'a self,
         rule: &'a Regex,
     ) -> impl Iterator<Item = (page::Entity, section::Entity)> + 'a {
-        SearchIter {
-            content: self.content.iter(),
-            model: self,
-            sections: None,
-            rule,
-            page: page::Entity::default(),
-        }
+        generator::Gn::new_scoped_local(|mut s| {
+            for (page, sections) in self.content.iter() {
+                for id in sections {
+                    if self.sections[*id].matches_search(rule) {
+                        s.yield_((page, *id));
+                    }
+                }
+            }
+
+            generator::done!();
+        })
     }
 
     /// Returns the sub-pages of a page, if it has any.
@@ -173,39 +199,5 @@ impl<'a> Insert<'a> {
             .or_insert_with(|| vec![page]);
 
         self
-    }
-}
-
-pub struct SearchIter<'a> {
-    model: &'a Model,
-    content: slotmap::sparse_secondary::Iter<'a, page::Entity, Content>,
-    sections: Option<std::slice::Iter<'a, section::Entity>>,
-    page: page::Entity,
-    rule: &'a Regex,
-}
-
-impl<'a> Iterator for SearchIter<'a> {
-    type Item = (page::Entity, section::Entity);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        'outer: loop {
-            if let Some(sections) = self.sections.as_mut() {
-                for id in sections {
-                    if self.model.sections[*id].matches_search(self.rule) {
-                        return Some((self.page, *id));
-                    }
-                }
-
-                self.sections = None;
-            }
-
-            if let Some((page, content)) = self.content.next() {
-                self.page = page;
-                self.sections = Some(content.iter());
-                continue 'outer;
-            }
-
-            return None;
-        }
     }
 }

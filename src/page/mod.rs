@@ -36,6 +36,12 @@ pub trait Page {
     fn sub_pages(page: Insert) -> Insert {
         page
     }
+
+    #[must_use]
+    #[allow(unused)]
+    fn load(page: Entity) -> crate::Message {
+        crate::Message::None
+    }
 }
 
 #[derive(Setters)]

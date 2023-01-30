@@ -38,8 +38,8 @@ clean-dist: clean
     rm -rf .cargo vendor vendor.tar target
 
 # Run the application for testing purposes
-run:
-    cargo run --release
+run *args:
+    cargo run {{args}}
 
 # Compile debug build of cosmic-settings
 build-debug *args:

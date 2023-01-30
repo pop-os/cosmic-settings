@@ -1,5 +1,7 @@
 app = COSMIC Settings
 
+unknown = Unknown
+
 ## Desktop
 
 desktop = Desktop
@@ -128,6 +130,7 @@ about = About
     .desc = Device name, hardware information, operating system defaults.
 
 about-device = Device name
+    .desc = This name appears to other network or bluetooth devices.
 
 about-hardware = Hardware
     .model = Hardware model

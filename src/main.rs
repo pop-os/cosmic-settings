@@ -24,7 +24,14 @@ use i18n_embed::DesktopLanguageRequester;
 /// # Errors
 ///
 /// Returns error if iced fails to run the application.
-pub fn main() -> cosmic::iced::Result {
+pub fn main() -> color_eyre::Result<()> {
+    better_panic::install();
+    color_eyre::install()?;
+
+    if std::env::var("RUST_SPANTRACE").is_err() {
+        std::env::set_var("RUST_SPANTRACE", "0");
+    }
+
     let localizer = crate::localize::localizer();
     let requested_languages = DesktopLanguageRequester::requested_languages();
 
@@ -35,5 +42,7 @@ pub fn main() -> cosmic::iced::Result {
     settings::set_default_icon_theme("Pop");
     let mut settings = settings();
     settings.window.min_size = Some((600, 300));
-    SettingsApp::run(settings)
+    SettingsApp::run(settings)?;
+
+    Ok(())
 }
