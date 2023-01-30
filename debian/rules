@@ -16,7 +16,7 @@ override_dh_auto_clean:
 	fi
 
 override_dh_auto_build:
-	just x86-64-target=x86-64-v2 build-vendored
+	just build-vendored
 
 override_dh_auto_install:
 	just rootdir=$(DESTDIR) install

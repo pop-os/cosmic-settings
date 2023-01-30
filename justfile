@@ -1,12 +1,9 @@
 name := 'cosmic-settings'
 appid := 'com.system76.CosmicSettings'
 
-arch := `uname -m`
+x86-64-target := 'x86-64-v2'
 
-# Choose x86-64-v2, v3, or v4 for packaging
-x86-64-target := 'native'
-
-export RUSTFLAGS := if arch == 'x86_64' {
+export RUSTFLAGS := if arch() == 'x86_64' {
     '-C target-cpu=' + x86-64-target
 } else {
     ''
@@ -23,10 +20,8 @@ desktop := appid + '.desktop'
 desktop-src := 'resources/' + desktop
 desktop-dest := rootdir + prefix + '/share/applications/' + desktop
 
+[private]
 help:
-    @echo '{{name}} ({{appid}})'
-    @echo 'RUSTFLAGS={{RUSTFLAGS}}'
-    @echo 'prefix={{prefix}}'
     @just -l
 
 # Remove Cargo build artifacts
@@ -37,10 +32,6 @@ clean:
 clean-dist: clean
     rm -rf .cargo vendor vendor.tar target
 
-# Run the application for testing purposes
-run *args:
-    cargo run {{args}}
-
 # Compile debug build of cosmic-settings
 build-debug *args:
     cargo build {{args}}
@@ -49,7 +40,7 @@ build-debug *args:
 build-release *args: (build-debug '--release' args)
 
 # Vendored release build of cosmic-settings
-build-vendored *args: _vendor-extract (build-release '--frozen --offline' args)
+build-vendored *args: vendor-extract (build-release '--frozen --offline' args)
 
 # Run `cargo clippy`
 check *args:
@@ -58,19 +49,27 @@ check *args:
 # Run `cargo clippy` with json message format
 check-json: (check '--message-format=json')
 
+# Installation command
+[private]
+install-cmd options src dest:
+    install {{options}} {{src}} {{dest}}
+
+[private]
+install-bin src dest: (install-cmd '-Dm0755' src dest)
+
+[private]
+install-file src dest: (install-cmd '-Dm0644' src dest)
+
+# Install everything
+install: (install-bin bin-src bin-dest) (install-file desktop-src desktop-dest)
+
+# Run the application for testing purposes
+run *args:
+    cargo run {{args}}
+
 # Run `cargo test`
 test:
     cargo test --all-features
-
-# Installation command
-_install options src dest:
-    install {{options}} {{src}} {{dest}}
-
-_install-bin src dest: (_install '-Dm0755' src dest)
-_install-file src dest: (_install '-Dm0644' src dest)
-
-# Install everything
-install: (_install-bin bin-src bin-dest) (_install-file desktop-src desktop-dest)
 
 # Uninstalls everything (requires same arguments as given to install)
 uninstall:
@@ -86,7 +85,8 @@ vendor:
     rm -rf vendor
 
 # Extracts vendored dependencies if vendor=1
-_vendor-extract:
+[private]
+vendor-extract:
     #!/usr/bin/env sh
     rm -rf vendor
     tar pxf vendor.tar
