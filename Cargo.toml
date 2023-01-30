@@ -8,7 +8,6 @@ rust-version = "1.65.0"
 [dependencies]
 apply = "0.3.0"
 async-channel = "1.8.0"
-better-panic = "0.3.0"
 bytecheck = "0.6.9"
 color-eyre = "0.6.2"
 derive_setters = "0.1.5"
@@ -20,6 +19,7 @@ regex = "1.7.1"
 rkyv = { version = "0.7.39", features = ["validation"]}
 rust-embed = "6.4.2"
 slotmap = "1.0.6"
+tokio = "1.25.0"
 
 [dependencies.i18n-embed]
 version = "0.13.8"
@@ -29,10 +29,10 @@ features = ["fluent-system", "desktop-requester"]
 git = "https://github.com/pop-os/libcosmic"
 rev = "843919e44f0a00c33c29358359be5b4bfa41ab00"
 default-features = false
-features = ["debug", "winit", "dyrend"]
+features = ["debug", "winit", "dyrend", "tokio"]
 
 [profile.dev]
-opt-level = 3
+opt-level = 2
 incremental = true
 
 [profile.release]

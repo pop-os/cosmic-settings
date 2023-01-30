@@ -5,13 +5,14 @@ pub mod desktop;
 pub mod networking;
 pub mod section;
 pub mod time;
+
 pub use section::Section;
 pub mod sound;
 pub mod system;
 
 mod model;
 
-pub use model::{Insert, Model};
+pub use model::{Insert, Model, PageTask};
 
 use derive_setters::Setters;
 use slotmap::SlotMap;
@@ -39,8 +40,8 @@ pub trait Page {
 
     #[must_use]
     #[allow(unused)]
-    fn load(page: Entity) -> crate::Message {
-        crate::Message::None
+    fn load(page: Entity) -> PageTask {
+        Box::pin(async move { crate::Message::None })
     }
 }
 

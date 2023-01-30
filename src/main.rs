@@ -25,7 +25,6 @@ use i18n_embed::DesktopLanguageRequester;
 ///
 /// Returns error if iced fails to run the application.
 pub fn main() -> color_eyre::Result<()> {
-    better_panic::install();
     color_eyre::install()?;
 
     if std::env::var("RUST_SPANTRACE").is_err() {

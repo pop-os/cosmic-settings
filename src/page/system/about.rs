@@ -1,6 +1,8 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use std::future::Future;
+
 use crate::page::{self, Content, Section};
 use cosmic::{
     iced::{
@@ -38,7 +40,7 @@ pub struct Info {
 impl Model {
     pub fn update(&mut self, message: Message) {
         match message {
-            Message::Info(info) => self.info = dbg!(info),
+            Message::Info(info) => self.info = info,
         }
     }
 }
@@ -64,15 +66,17 @@ impl page::Page for Page {
         ])
     }
 
-    fn load(page: page::Entity) -> crate::Message {
-        let info = Info {
-            windowing_system: std::env::var("XDG_SESSION_TYPE")
-                .ok()
-                .unwrap_or_else(|| fl!("unknown")),
-            ..Info::default()
-        };
+    fn load(_page: page::Entity) -> crate::page::PageTask {
+        Box::pin(async move {
+            let info = Info {
+                windowing_system: std::env::var("XDG_SESSION_TYPE")
+                    .ok()
+                    .unwrap_or_else(|| fl!("unknown")),
+                ..Info::default()
+            };
 
-        crate::Message::About(Message::Info(info))
+            crate::Message::About(Message::Info(info))
+        })
     }
 }
 

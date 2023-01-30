@@ -4,15 +4,20 @@
 use std::{
     any::{Any, TypeId},
     collections::HashMap,
+    future::Future,
+    pin::Pin,
 };
 
 use crate::page::{self, section, Content, Meta, Page, Section};
+use cosmic::iced_native::command::{Action, Command};
 use regex::Regex;
 use slotmap::{SecondaryMap, SlotMap, SparseSecondaryMap};
 
+pub type PageTask = Pin<Box<dyn Future<Output = crate::Message> + Send>>;
+
 pub struct Model {
     pub pages: SlotMap<page::Entity, Meta>,
-    pub page_load: SecondaryMap<page::Entity, fn(page::Entity) -> crate::Message>,
+    pub page_load: SecondaryMap<page::Entity, fn(page::Entity) -> PageTask>,
     pub resource: HashMap<TypeId, Box<dyn Any>>,
     pub storage: HashMap<TypeId, SecondaryMap<page::Entity, Box<dyn Any>>>,
     pub sub_pages: SparseSecondaryMap<page::Entity, Vec<page::Entity>>,
@@ -81,19 +86,9 @@ impl Model {
             .and_then(|storage| storage.remove(id));
     }
 
-    pub fn init_page(&mut self, id: page::Entity) -> Option<cosmic::iced::Command<crate::Message>> {
+    pub fn init_page(&mut self, id: page::Entity) -> Option<Command<crate::Message>> {
         if let Some(func) = self.page_load.get(id).copied() {
-            let (tx, rx) = async_channel::bounded(1);
-
-            std::thread::spawn(move || {
-                let _res = tx.send_blocking(func(id));
-            });
-
-            let future = async move { dbg!(rx.recv().await.unwrap_or(crate::Message::None)) };
-
-            return Some(cosmic::iced::Command::single(
-                cosmic::iced_native::command::Action::Future(Box::pin(future)),
-            ));
+            return Some(Command::single(Action::Future(func(id))));
         }
 
         None
@@ -102,6 +97,7 @@ impl Model {
     // Registers a new page in the settings panel.
     pub fn register<P: Page>(&mut self) -> Insert {
         let id = self.pages.insert(P::page());
+
         self.page_load.insert(id, P::load);
 
         if let Some(content) = P::content(&mut self.sections) {
@@ -183,6 +179,8 @@ impl<'a> Insert<'a> {
             parent: Some(self.id),
             ..P::page()
         });
+
+        self.model.page_load.insert(page, P::load);
 
         if let Some(content) = P::content(&mut self.model.sections) {
             self.model.content.insert(page, content);

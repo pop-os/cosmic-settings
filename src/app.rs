@@ -66,7 +66,7 @@ pub enum Message {
 }
 
 impl Application for SettingsApp {
-    type Executor = iced::executor::Default;
+    type Executor = cosmic::executor::single::Executor;
     type Flags = ();
     type Message = Message;
     type Theme = Theme;

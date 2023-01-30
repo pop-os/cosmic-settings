@@ -167,16 +167,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
-name = "better-panic"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fa9e1d11a268684cbd90ed36370d7577afb6c62d912ddff5c15fc34343e5036"
-dependencies = [
- "backtrace",
- "console",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -436,18 +426,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "console"
-version = "0.15.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3d79fbe8970a77e3e34151cc13d3b3e248aa0faaecb9f6091fa07ebefe5ad60"
-dependencies = [
- "encode_unicode",
- "lazy_static",
- "libc",
- "windows-sys 0.42.0",
-]
-
-[[package]]
 name = "const_panic"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -512,7 +490,6 @@ version = "0.1.0"
 dependencies = [
  "apply",
  "async-channel",
- "better-panic",
  "bytecheck",
  "color-eyre",
  "derive_setters",
@@ -526,6 +503,7 @@ dependencies = [
  "rkyv",
  "rust-embed",
  "slotmap",
+ "tokio",
 ]
 
 [[package]]
@@ -921,12 +899,6 @@ dependencies = [
  "quote",
  "syn",
 ]
-
-[[package]]
-name = "encode_unicode"
-version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 
 [[package]]
 name = "error-code"
@@ -1625,6 +1597,7 @@ source = "git+https://github.com/pop-os/libcosmic?rev=843919e44f0a00c33c29358359
 dependencies = [
  "futures",
  "log",
+ "tokio",
  "wasm-bindgen-futures",
  "wasm-timer",
 ]
@@ -1925,6 +1898,7 @@ dependencies = [
  "lazy_static",
  "palette",
  "slotmap",
+ "tokio",
 ]
 
 [[package]]
@@ -3536,6 +3510,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ac3f5b6856e931e15e07b478e98c8045239829a65f9156d4fa7e7788197a5ef"
 dependencies = [
  "displaydoc",
+]
+
+[[package]]
+name = "tokio"
+version = "1.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8e00990ebabbe4c14c08aca901caed183ecd5c09562a12c824bb53d3c3fd3af"
+dependencies = [
+ "autocfg",
+ "num_cpus",
+ "pin-project-lite",
+ "windows-sys 0.42.0",
 ]
 
 [[package]]
