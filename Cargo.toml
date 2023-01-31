@@ -21,6 +21,9 @@ rust-embed = "6.4.2"
 slotmap = "1.0.6"
 tokio = "1.25.0"
 
+[dependencies.cosmic-settings-system]
+path = "pages/system"
+
 [dependencies.i18n-embed]
 version = "0.13.8"
 features = ["fluent-system", "desktop-requester"]
@@ -32,7 +35,7 @@ default-features = false
 features = ["debug", "winit", "dyrend", "tokio"]
 
 [profile.dev]
-opt-level = 2
+opt-level = "s"
 incremental = true
 
 [profile.release]
