@@ -3,10 +3,12 @@ appid := 'com.system76.CosmicSettings'
 
 x86-64-target := 'x86-64-v2'
 
+linker := '-C link-arg=-fuse-ld=lld'
+
 export RUSTFLAGS := if arch() == 'x86_64' {
-    '-C target-cpu=' + x86-64-target
+    linker + ' -C target-cpu=' + x86-64-target
 } else {
-    ''
+    linker
 }
 
 rootdir := ''

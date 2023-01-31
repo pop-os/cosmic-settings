@@ -10,6 +10,7 @@ Build-Depends:
     libexpat1-dev,
     libfontconfig-dev,
     libfreetype-dev,
+    lld,
     pkg-config,
 Standards-Version: 4.6.2
 Homepage: https://github.com/pop-os/cosmic-settings
