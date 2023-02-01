@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Michael Murphy <mmstick@pm.me>
 Build-Depends:
     debhelper-compat (=13),
-    just,
+    just (>= 1.13.0),
     cargo,
     cmake,
     libexpat1-dev,
@@ -12,6 +12,7 @@ Build-Depends:
     libfreetype-dev,
     lld,
     pkg-config,
+    rustc (>= 1.65.0)
 Standards-Version: 4.6.2
 Homepage: https://github.com/pop-os/cosmic-settings
 
