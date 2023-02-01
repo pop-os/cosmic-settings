@@ -1,10 +1,10 @@
-app = Configurações COSMIC
+app = Definições COSMIC
 
 unknown = Desconhecido
 
 ## Desktop
 
-desktop = Desktop
+desktop = Ambiente de trabalho
 
 ## Desktop: Appearance
 
@@ -13,100 +13,100 @@ appearance = Aparência
 
 ## Desktop: Dock & Panel
 
-dock = Doca & Painel Superior
-    .desc = Customize os tamanhos, posições e mais da Doca e Painel Superior.
+dock = Doca e Painel superior
+    .desc = Personalizar tamanho, posições e mais da doca e painel superior.
 
 ## Desktop: Notifications
 
 notifications = Notificações
-    .desc = Não perturbe, notificações de tela de bloqueio e configurações por aplicação.
+    .desc = Não incomodar, notificações no ecrã de bloqueio e definições por aplicação.
 
 
 ## Desktop: Options
 
-desktop-options = Opções do Desktop
-    .desc = Ação da Tecla Super, cantos quentes, opções de controle de janela.
+desktop-options = Opções do ambiente de trabalho
+    .desc = Ação da tecla Super, cantos ativos, opções de controlo de janelas.
 
-super-key-action = Ação da Tecla Super
-    .launcher = Inicializador
-    .workspaces = Áreas de Trabalho
+super-key-action = Ação da tecla Super
+    .launcher = Lançador
+    .workspaces = Áreas de trabalho
     .applications = Aplicações
 
-hot-corner = Canto Quente
-    .top-left-corner = Habilite o canto quente superior esquerdo para as Áreas de Trabalho
+hot-corner = Canto ativo
+    .top-left-corner = Ativar o canto superior esquerdo para as áreas de trabalho
 
-top-panel = Painel Superior
-    .workspaces = Mostrar o Botão das Áreas de Trabalho
-    .applications = Mostrar o Botão das Aplicações
+top-panel = Painel superior
+    .workspaces = Mostrar o botão das áreas de trabalho
+    .applications = Mostrar o botão das aplicações
 
-window-controls = Controles de Janela
-    .minimize = Mostrar o Botão de Minimizar
-    .maximize = Mostrar o Botão de Maximizar
+window-controls = Controlos de janela
+    .minimize = Mostrar o botão de minimizar
+    .maximize = Mostrar o botão de maximizar
 
 ## Desktop: Wallpaper
 
 wallpaper = Papel de parede
-    .desc = Imagens de fundo, cores, e opções de show de slides.
-    .same = O mesmo fundo para todos as telas
+    .desc = Imagens de fundo, cores e opções de diapositvos.
+    .same = O mesmo fundo para todos os ecrãs
     .fit = Ajuste do fundo
-    .slide = Show de slides
-    .change = Mude a imagem a cada
+    .slide = Diapositivos
+    .change = Mudar imagem a cada
 
 
 ## Desktop: Workspaces
 
-workspaces = Áreas de Trabalho
-    .desc = Defina o número, comportamento e posição da Área de Trabalho.
+workspaces = Áreas de trabalho
+    .desc = Definir número, comportamento e posição da área de rabalho.
 
-workspaces-behavior = Comportamento da Área de Trabalho
-    .dynamic = Áreas de Trabalho dinâmicas 
-    .fixed = Número Fixo de Áreas de Trabalho
+workspaces-behavior = Comportamento da área de trabalho
+    .dynamic = Áreas de trabalho dinâmicas 
+    .fixed = Número fixo de áreas de trabalho
 
-workspaces-multi-behavior = Comportamento Multi telas
-    .span = Áreas de Trabalho Extendem as Telas
-    .separate = Telas Possuem Áreas de Trabalho Separadas
+workspaces-multi-behavior = Comportamento Multi-monitor
+    .span = Áreas de trabalho expandem os ecrãs
+    .separate = Ecrãs têm áreas de trabalho separadas
 
 ## Networking: Wired
 
-wired = Com fio
-    .desc = Conexões com fio, perfis de conexão
+wired = Cabo de rede
+    .desc = Ligações por cabo de rede, perfis de ligação
 
 ## Networking: Online Accounts
 
-online-accounts = Contas Online
-    .desc = Adicione contas, IMAP e SMTP, logins empresariais
+online-accounts = Contas online
+    .desc = Adicionar contas, IMAP e SMTP, acessos empresariais
 
 ## Time & Language
 
-time = Hora & Língua
-    .desc = N/A
+time = Hora e Idioma
+    .desc = N/D
 
-time-date = Data & Hora
-    .desc = Fuso horário, opções automáticas de relógio e algumas formatações de hora.
+time-date = Data e Hora
+    .desc = Fuso horário, definições automáticas de relógio, e alguma formatação de hora.
     .auto = Definir automaticamente
 
 time-zone = Fuso horário
     .auto = Fuso horário automático
-    .auto-info = Requer serviços de localização e acesso à internet
+    .auto-info = Requer serviços de localização e acesso à Internet
 
-time-format = Formato de Data & Hora
+time-format = Formato de Data e Hora
     .twenty-four = Formato de 24 horas
     .first = Primeiro dia da semana
 
-time-region = Região & Língua
+time-region = Região e Idioma
     .desc = Formatar datas, horas e números baseado na sua região
 
 ## Sound
 
 sound = Som
-    .desc = N/A
+    .desc = N/D
 
 sound-output = Saída
     .volume = Volume de saída
     .device = Dispositivo de saída
     .level = Nível de saída
     .config = Configuração
-    .balance = Balancear
+    .balance = Equilíbrio
 
 sound-input = Entrada
     .volume = Volume de entrada
@@ -118,34 +118,34 @@ sound-alerts = Alertas
     .sound = Som dos alertas
 
 sound-applications = Aplicações
-    .desc = Volumes e configurações das Aplicações
+    .desc = Volumes e definições das aplicações
 
 ## System
 
-system = Sistema & Contas
+system = Sistema e Contas
 
 ## System: About
 
-about = Sobre
-    .desc = Nome do dispositivo, informações do hardware, configurações padrão do sistema operacional
+about = Acerca
+    .desc = Nome do dispositivo, informação de hardware, padrões do sistema operativo
 
 about-device = Nome do dispositivo
-    .desc = Esse nome aparece para outros dispositivos de rede e bluetooth.
+    .desc = Este nome aparece a outros dispositivos de rede ou bluetooth
 
 about-hardware = Hardware
-    .model = Modelo do hardware
+    .model = Modelo do equipamento
     .memory = Memória
     .processor = Processador
     .graphics = Gráficos
-    .disk-capacity = Capacidade do Disco
+    .disk-capacity = Capacidade do disco
 
-about-os = Sistema Operacional
-    .os = Sistema operacional
-    .os-architecture = Arquitetura do sistema operacional
-    .desktop-environment = Ambiente desktop
+about-os = Sistema Operativo
+    .os = Sistema operativo
+    .os-architecture = Arquitetura do sistema operativo
+    .desktop-environment = Ambiente de trabalho
     .windowing-system = Sistema de janelas
 
-about-related = Configurações relacionadas
+about-related = Definições relacionadas
     .support = Obter suporte
 
 ## System: Firmware
@@ -155,5 +155,5 @@ firmware = Firmware
 
 ## System: Users
 
-users = Usuários
-    .desc = Autenticação e login, tela de bloqueio.
+users = Utilizadores
+    .desc = Autenticação e acesso, ecrã de bloqueio.
