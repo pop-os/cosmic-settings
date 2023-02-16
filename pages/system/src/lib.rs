@@ -55,13 +55,13 @@ impl Info {
             total_capacity += disk.total_space();
         }
 
-        info.disk_capacity = format!("{} GB", (total_capacity / 1_000_000_000));
+        info.disk_capacity = format_size(total_capacity);
 
         if let Some(name) = sys.host_name() {
             info.device_name = name;
         }
 
-        info.memory = format!("{} GB", (sys.total_memory() / 1_000_000_000 + 1));
+        info.memory = format_size(sys.total_memory());
 
         if let Ok(mut session) = std::env::var("XDG_SESSION_TYPE") {
             if let Some(first) = session.get_mut(0..1) {
@@ -199,4 +199,10 @@ pub fn read_to_string<'a, P: AsRef<OsStr>>(
     }
 
     std::str::from_utf8(buffer.as_slice()).ok()
+}
+
+fn format_size(size: u64) -> String {
+    byte_unit::Byte::from_bytes(size)
+        .get_appropriate_unit(true)
+        .to_string()
 }
