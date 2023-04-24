@@ -41,13 +41,10 @@ Translation files may be found in the [i18n directory](./i18n). New translations
 
 Licensed under the [GNU Public License 3.0](https://choosealicense.com/licenses/gpl-3.0).
 
-
-
 ### Contribution
 
 Any contribution intentionally submitted for inclusion in the work by you shall be licensed under the GNU Public License 3.0 (GPL-3.0). Each source file should have a SPDX copyright notice at the top of the file:
 
 ```
-// Copyright {year-created} System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 ```
