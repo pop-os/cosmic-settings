@@ -1,14 +1,20 @@
 name := 'cosmic-settings'
 appid := 'com.system76.CosmicSettings'
 
-x86-64-target := 'x86-64-v2'
-
-linker := '-C link-arg=-fuse-ld=lld'
-
-export RUSTFLAGS := if arch() == 'x86_64' {
-    linker + ' -C target-cpu=' + x86-64-target
+# Use the lld linker if it is available.
+ld-args := if `which lld || true` != '' {
+    '-C link-arg=-fuse-ld=lld -C link-arg=-Wl,--build-id=sha1'
 } else {
-    linker
+    ''
+}
+
+# Use the x86-64-v2 target by default on x86-64 systems.
+target-cpu := if arch() == 'x86_64' { 'x86-64-v2' } else { '' }
+
+export RUSTFLAGS := if target-cpu != '' {
+    ld-args + ' -C target-cpu=' + target-cpu + ' ' + env_var_or_default('RUSTFLAGS', '')
+} else {
+    ld-args + ' ' + env_var_or_default('RUSTFLAGS', '')
 }
 
 rootdir := ''
@@ -24,6 +30,7 @@ desktop-dest := clean(rootdir / prefix) / 'share' / 'applications' / desktop
 
 [private]
 help:
+    echo $RUSTFLAGS
     @just -l
 
 # Remove Cargo build artifacts
