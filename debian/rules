@@ -1,6 +1,5 @@
 #!/usr/bin/make -f
 
-export DEB_LDFLAGS_MAINT_APPEND += -fuse-ld=lld -Wl,--build-id=sha1
 export DESTDIR = debian/tmp
 export VENDOR ?= 1
 

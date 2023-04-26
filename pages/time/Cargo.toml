@@ -1,0 +1,14 @@
+[package]
+name = "cosmic-settings-time"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+icu_calendar = "1.2.0"
+icu_timezone = "1.2.0"
+timedate-zbus = "0.1.0"
+
+[dependencies.zbus]
+version = "3.12.0"
+default-features = false
+features = ["tokio"]

@@ -1,0 +1,13 @@
+[package]
+name = "cosmic-settings-page"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+derive_setters = "0.1.5"
+regex = "1.8.1"
+slotmap = "1.0.6"
+libcosmic = { workspace = true }
+generator = "0.7.4"
+downcast-rs = "1.2.0"
+once_cell = "1.17.1"

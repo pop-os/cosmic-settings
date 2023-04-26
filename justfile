@@ -1,29 +1,36 @@
 name := 'cosmic-settings'
 appid := 'com.system76.CosmicSettings'
 
-x86-64-target := 'x86-64-v2'
-
-linker := '-C link-arg=-fuse-ld=lld'
-
-export RUSTFLAGS := if arch() == 'x86_64' {
-    linker + ' -C target-cpu=' + x86-64-target
+# Use the lld linker if it is available.
+ld-args := if `which lld || true` != '' {
+    '-C link-arg=-fuse-ld=lld -C link-arg=-Wl,--build-id=sha1'
 } else {
-    linker
+    ''
+}
+
+# Use the x86-64-v2 target by default on x86-64 systems.
+target-cpu := if arch() == 'x86_64' { 'x86-64-v2' } else { '' }
+
+export RUSTFLAGS := if target-cpu != '' {
+    ld-args + ' -C target-cpu=' + target-cpu + ' ' + env_var_or_default('RUSTFLAGS', '')
+} else {
+    ld-args + ' ' + env_var_or_default('RUSTFLAGS', '')
 }
 
 rootdir := ''
 prefix := '/usr'
 
 # File paths
-bin-src := 'target/release/' + name
-bin-dest := rootdir + prefix + '/bin/' + name
+bin-src := 'target' / 'release' / name
+bin-dest := clean(rootdir / prefix) / 'bin' / name
 
 desktop := appid + '.desktop'
-desktop-src := 'resources/' + desktop
-desktop-dest := rootdir + prefix + '/share/applications/' + desktop
+desktop-src := 'resources' / desktop
+desktop-dest := clean(rootdir / prefix) / 'share' / 'applications' / desktop
 
 [private]
 help:
+    echo $RUSTFLAGS
     @just -l
 
 # Remove Cargo build artifacts
@@ -34,21 +41,21 @@ clean:
 clean-dist: clean
     rm -rf .cargo vendor vendor.tar target
 
-# Compile debug build of cosmic-settings
+# Compile with debug profile
 build-debug *args:
     cargo build {{args}}
 
-# Compile release build of cosmic-settings
+# Compile with release profile
 build-release *args: (build-debug '--release' args)
 
-# Vendored release build of cosmic-settings
+# Compile with a vendored tarball
 build-vendored *args: vendor-extract (build-release '--frozen --offline' args)
 
-# Run `cargo clippy`
+# Check for errors and linter warnings
 check *args:
     cargo clippy --all-features {{args}} -- -W clippy::pedantic
 
-# Run `cargo clippy` with json message format
+# Runs a check with JSON message format for IDE integration
 check-json: (check '--message-format=json')
 
 # Installation command
@@ -67,11 +74,11 @@ install: (install-bin bin-src bin-dest) (install-file desktop-src desktop-dest)
 
 # Run the application for testing purposes
 run *args:
-    cargo run {{args}}
+    env RUST_BACKTRACE=full cargo run --release {{args}}
 
 # Run `cargo test`
 test:
-    cargo test --all-features
+    cargo test
 
 # Uninstalls everything (requires same arguments as given to install)
 uninstall:
@@ -86,10 +93,9 @@ vendor:
     tar pcf vendor.tar vendor
     rm -rf vendor
 
-# Extracts vendored dependencies if vendor=1
+# Extracts vendored dependencies
 [private]
 vendor-extract:
-    #!/usr/bin/env sh
     rm -rf vendor
     tar pxf vendor.tar
 

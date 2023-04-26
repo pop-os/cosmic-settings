@@ -1,45 +1,9 @@
-[package]
-name = "cosmic-settings"
-version = "0.1.0"
-edition = "2021"
-license = "GPL-3.0-only"
-rust-version = "1.65.0"
+[workspace]
+members = ["app", "page", "pages/*"]
+default-members = ["app"]
 
-[dependencies]
-apply = "0.3.0"
-async-channel = "1.8.0"
-bytecheck = "0.6.9"
-color-eyre = "0.6.2"
-derive_setters = "0.1.5"
-dirs = "4.0.0"
-generator = "0.7.2"
-i18n-embed-fl = "0.6.5"
-once_cell = "1.17.0"
-regex = "1.7.1"
-rkyv = { version = "0.7.39", features = ["validation"]}
-rust-embed = "6.4.2"
-slotmap = "1.0.6"
-tokio = "1.25.0"
-
-[dependencies.cosmic-settings-system]
-path = "pages/system"
-
-[dependencies.i18n-embed]
-version = "0.13.8"
-features = ["fluent-system", "desktop-requester"]
-
-[dependencies.libcosmic]
+[workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-rev = "843919e44f0a00c33c29358359be5b4bfa41ab00"
+rev = "8232e1d249a467673dbc5b0aa2f2e1665fb18dde"
 default-features = false
 features = ["debug", "winit", "dyrend", "tokio"]
-
-[profile.dev]
-opt-level = "s"
-incremental = true
-
-[profile.release]
-opt-level = "s"
-overflow-checks = true
-lto = "thin"
-incremental = false
