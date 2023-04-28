@@ -93,7 +93,7 @@ impl Application for SettingsApp {
             search_selections: Vec::default(),
             show_maximize: true,
             show_minimize: true,
-            theme: Theme::Dark,
+            theme: Theme::dark(),
             window_width: 0,
         };
 
