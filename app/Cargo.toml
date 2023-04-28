@@ -13,6 +13,7 @@ cosmic-settings-desktop = { path = "../pages/desktop" }
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-system = { path = "../pages/system" }
 cosmic-settings-time = { path = "../pages/time" }
+derivative = "2.2.0"
 derive_setters = "0.1.6"
 dirs = "5.0.1"
 generator = "0.7.4"

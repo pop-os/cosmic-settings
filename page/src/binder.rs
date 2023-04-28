@@ -118,19 +118,22 @@ impl<Message: 'static> Binder<Message> {
         self.page.get_mut(id).map(AsMut::as_mut)
     }
 
+    /// Get entity ID of page by its type ID.
+    pub fn page_id<P: Page<Message>>(&self) -> Option<crate::Entity> {
+        self.typed_page_ids.get(&TypeId::of::<P>()).copied()
+    }
+
     /// Obtain a reference to a page by its type ID.
     #[must_use]
     pub fn page<P: Page<Message>>(&self) -> Option<&P> {
-        let id = self.typed_page_ids.get(&TypeId::of::<P>())?;
-        let page = self.page.get(*id)?;
+        let page = self.page.get(self.page_id::<P>()?)?;
         page.downcast_ref::<P>()
     }
 
     /// Obtain a reference to a page by its type ID.
     #[must_use]
     pub fn page_mut<P: Page<Message>>(&mut self) -> Option<&mut P> {
-        let id = self.typed_page_ids.get(&TypeId::of::<P>())?;
-        let page = self.page.get_mut(*id)?;
+        let page = self.page.get_mut(self.page_id::<P>()?)?;
         page.downcast_mut::<P>()
     }
 

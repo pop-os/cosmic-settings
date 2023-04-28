@@ -221,3 +221,49 @@ firmware = Firmware
 
 users = Users
     .desc = Authentication and login, lock screen.
+
+## Input
+
+input = Input
+    .desc = Input
+
+## Input: Keyboard
+
+keyboard = Keyboard
+    .desc = Keyboard input
+
+keyboard-sources = Input Sources
+    .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
+    .move-up = Move up
+    .move-down = Move down
+    .settings = Settings
+    .view-layout = View keyboard layout
+    .remove = Remove
+
+keyboard-special-char = Special Character Entry
+    .alternate = Alternate characters key
+    .compose = Compose key
+
+## Input: Keyboard: Shortcuts
+
+keyboard-shortcuts = Keyboard Shortcuts
+    .desc = View and customize shortcuts
+
+## Input: Mouse
+mouse = Mouse
+    .desc = Mouse speed, acceleration, natural scrolling.
+    .primary-button = Primary button
+    .primary-button-left = Left
+    .primary-button-right = Right
+    .speed = Mouse speed
+    .acceleration = Enable mouse acceleration
+    .acceleration-desc = Automatically adjusts tracking sensitivty based on speed.
+    .double-click-speed = Double-click speed
+    .double-click-speed-desc = Changes how fast double-clicks have to be to register.
+
+mouse-scrolling = Scrolling
+    .speed = Scrolling speed
+    .natural = Natural scrolling
+    .natural-desc = Scroll the content, instead of the view
+
+## Input: Touchpad

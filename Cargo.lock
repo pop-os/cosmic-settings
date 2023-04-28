@@ -783,6 +783,7 @@ dependencies = [
  "cosmic-settings-page",
  "cosmic-settings-system",
  "cosmic-settings-time",
+ "derivative",
  "derive_setters",
  "dirs 5.0.1",
  "downcast-rs",

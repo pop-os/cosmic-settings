@@ -39,7 +39,7 @@ use crate::{
                 applets::{self, APPLET_DND_ICON_ID},
             },
         },
-        sound, system, time,
+        input, sound, system, time,
     },
     subscription::desktop_files,
     widget::{page_title, parent_page_button, search_header, sub_page_button},
@@ -142,6 +142,8 @@ impl Application for SettingsApp {
 
         // app.insert_page::<accessibility::Page>();
         // app.insert_page::<applications::Page>();
+        //
+        app.insert_page::<input::Page>();
 
         let active_id = app
             .pages
@@ -267,6 +269,16 @@ impl Application for SettingsApp {
                 }
                 crate::pages::Message::DesktopWallpaper(message) => {
                     page::update!(self.pages, message, desktop::wallpaper::Page);
+                }
+                crate::pages::Message::Input(message) => {
+                    if matches!(message, input::Message::OpenKeyboardShortcuts) {
+                        if let Some(id) = self.pages.page_id::<input::keyboard::shortcuts::Page>() {
+                            self.activate_page(id);
+                        }
+                    }
+                    if let Some(page) = self.pages.page_mut::<input::Page>() {
+                        page.update(message);
+                    }
                 }
                 crate::pages::Message::External { .. } => {
                     todo!("external plugins not supported yet");
