@@ -98,7 +98,7 @@ pub fn sub_page_button(entity: page::Entity, page: &page::Info) -> Element<page:
         .spacing(16)
         .apply(container)
         .padding([20, 24])
-        .style(theme::Container::Custom(list::column::style))
+        .style(theme::Container::custom(list::column::style))
         .apply(button)
         .padding(0)
         .style(theme::Button::Transparent)
