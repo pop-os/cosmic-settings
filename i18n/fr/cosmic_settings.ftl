@@ -14,12 +14,12 @@ appearance = Apparence
 ## Desktop: Dock et Panneau
 
 dock = Dock et Barre Supérieure
-    .desc = Personnalisez la taille, les positions et plus encore pour le Dock et de la Barre Supérieure.
+    .desc = Personnalisez la taille, la position et plus encore pour le Dock et de la Barre Supérieure.
 
 ## Desktop: Notifications
 
 notifications = Notifications
-    .desc = Ne pas déranger, notifications écran vérouillé, et paramètres par application.
+    .desc = Ne pas déranger, notifications d'écran de vérouillage, et paramètres par application.
 
 
 ## Desktop: Options
@@ -46,7 +46,7 @@ window-controls = Contrôles Fenêtre
 ## Desktop: Wallpaper
 
 wallpaper = Fond d'écran
-    .desc = Image d'arrière plan, couleurs, et options de diaporama.
+    .desc = Image d'arrière-plan, couleurs et options de diaporama.
     .same = Même arrière-plan pour tous les écrans
     .fit = Ajustement de l'arrière-plan
     .slide = Diaporama
@@ -56,25 +56,25 @@ wallpaper = Fond d'écran
 ## Desktop: Workspaces
 
 workspaces = Espaces virtuel
-    .desc = Définir le nombre, comportement et placement des espaces virtuel.
+    .desc = Définir le nombre, le comportement et le placement des espaces virtuels.
 
 workspaces-behavior = Comportement de l'espace de travail
     .dynamic = Espaces de travail dynamiques
     .fixed = Nombre fixe d'espaces de travail
 
 workspaces-multi-behavior = Comportement Multi-écran
-    .span = Les espaces de travail couvrent les affichages
+    .span = Les espaces de travail couvrent les tous les écrans
     .separate = Les écrans ont des espaces de travail séparés
 
 ## Networking: Wired
 
 wired = Filaire
-    .desc = Connexion filaire, profile de connexion
+    .desc = Connexion filaire, profil de connexion
 
 ## Networking: Online Accounts
 
 online-accounts = Comptes en lignes
-    .desc = Ajouter Comptes en lignes, IMAP et SMTP, identifiants de connexion d'entreprise
+    .desc = Ajouter des comptes en lignes, IMAP et SMTP, identifiants de connexion d'entreprise
 
 ## Time & Language
 
@@ -82,19 +82,19 @@ time = Heure et Language
     .desc = N/A
 
 time-date = Date et Heure
-    .desc = Fuseau horraire, réglage de l'heure automatique, et format de l'heure.
+    .desc = Fuseau horaire, réglage de l'heure automatique, et format de l'heure.
     .auto = Régler automatiquement
 
-time-zone = Fuseau Horraire
-    .auto = Fuseau horraire automatique
-    .auto-info = Nécessite le service de localisation et accès à internet
+time-zone = Fuseau Horaire
+    .auto = Fuseau horaire automatique
+    .auto-info = Nécessite le service de localisation et l'accès à internet
 
 time-format = Format date et heure
     .twenty-four = 24 heures
     .first = Premiers jour de la semaine
 
 time-region = Région et Language
-    .desc = Format dates, heures, et nombres basés sur votre region
+    .desc = Format de dates, heures, et nombres basés sur votre region
 
 ## Sound
 
@@ -114,7 +114,7 @@ sound-input = Entrée
     .level = niveau d'entrée
 
 sound-alerts = Alertes
-    .volume = Volumes d'alertes
+    .volume = Volumes des alertes
     .sound = Alertes sonores
 
 sound-applications = Applications
@@ -156,4 +156,4 @@ firmware = Micrologiciel
 ## System: Users
 
 users = Utilisateurs
-    .desc = Authentication et connexion, écran de vérouillage.
+    .desc = Authentication et connexion, écran de verrouillage.
