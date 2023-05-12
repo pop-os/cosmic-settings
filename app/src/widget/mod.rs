@@ -38,7 +38,7 @@ pub fn search_header<Message>(
             .into(),
     );
 
-    column_children.push(vertical_space(Length::Units(8)).into());
+    column_children.push(vertical_space(Length::Fixed(8.)).into());
     column_children.push(divider::horizontal::heavy().into());
 
     column(column_children).into()
