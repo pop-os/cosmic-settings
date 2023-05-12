@@ -7,9 +7,8 @@ use cosmic_settings_page::{self as page, section};
 
 use cosmic::{
     iced::widget::{self, column, container, horizontal_space, row},
-    iced::{self, Application, Command, Length, Subscription},
-    iced_native::{subscription, window},
-    iced_winit::window::{close, drag, minimize, toggle_maximize},
+    iced::{self, subscription, window, Application, Command, Length, Subscription},
+    iced_runtime::window::{close, drag, minimize, toggle_maximize},
     keyboard_nav,
     theme::Theme,
     widget::{
@@ -172,10 +171,10 @@ impl Application for SettingsApp {
                 }
             },
             Message::Page(page) => return self.activate_page(page),
-            Message::Drag => return drag(window::Id::new(0)),
-            Message::Close => return close(window::Id::new(0)),
-            Message::Minimize => return minimize(window::Id::new(0), true),
-            Message::Maximize => return toggle_maximize(window::Id::new(0)),
+            Message::Drag => return drag(),
+            Message::Close => return close(),
+            Message::Minimize => return minimize(true),
+            Message::Maximize => return toggle_maximize(),
             Message::NavBar(key) => {
                 if let Some(page) = self.nav_bar.data::<page::Entity>(key).copied() {
                     return self.activate_page(page);

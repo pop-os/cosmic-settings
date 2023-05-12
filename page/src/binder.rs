@@ -3,7 +3,7 @@
 
 use crate::section::{self, Section};
 use crate::{Content, Info, Page};
-use cosmic::iced_native::command::{Action, Command};
+use cosmic::iced_runtime::command::{Action, Command};
 use regex::Regex;
 use slotmap::{SecondaryMap, SlotMap, SparseSecondaryMap};
 use std::{
