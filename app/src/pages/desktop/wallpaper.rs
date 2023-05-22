@@ -1,21 +1,74 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use super::Message;
+use std::{path::PathBuf, time::Instant};
+
 use apply::Apply;
 use cosmic::{
-    iced::widget::{column, container, horizontal_space, image, row, svg, text},
+    iced::alignment::Horizontal,
+    iced::widget::{column, container, horizontal_space, row, text},
     iced::Length,
+    iced_runtime::core::image::Handle as ImageHandle,
     theme,
     widget::{list_column, settings, toggler},
     Element,
 };
+use cosmic_settings_desktop::wallpaper::{self, Entry, Output};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
-use slotmap::SlotMap;
+use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 
-#[derive(Default)]
-pub struct Page;
+#[derive(Clone, Debug)]
+pub enum Message {
+    SameBackground(bool),
+    Select(DefaultKey),
+    Slideshow(bool),
+    Update((wallpaper::Config, Context)),
+}
+
+pub struct Page {
+    pub config: wallpaper::Config,
+    pub selection: Context,
+    pub same_background: bool,
+    pub slideshow: bool,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        Page {
+            config: wallpaper::Config::default(),
+            selection: Context::default(),
+            same_background: true,
+            slideshow: false,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Context {
+    active: DefaultKey,
+    handles: SlotMap<DefaultKey, ImageHandle>,
+    paths: SecondaryMap<DefaultKey, PathBuf>,
+}
+
+impl Page {
+    pub fn update(&mut self, message: Message) {
+        match message {
+            Message::SameBackground(value) => self.same_background = value,
+            Message::Select(id) => {
+                if let Some(path) = self.selection.paths.get(id) {
+                    wallpaper::set(&mut self.config, Entry::new(Output::All, path.to_owned()));
+                    self.selection.active = id;
+                }
+            }
+            Message::Slideshow(value) => self.slideshow = value,
+            Message::Update((config, selection)) => {
+                self.config = config;
+                self.selection = selection;
+            }
+        }
+    }
+}
 
 impl page::Page<crate::pages::Message> for Page {
     fn content(
@@ -30,6 +83,32 @@ impl page::Page<crate::pages::Message> for Page {
             .title(fl!("wallpaper"))
             .description(fl!("wallpaper", "desc"))
     }
+
+    fn load(&self, _page: page::Entity) -> Option<page::Task<crate::pages::Message>> {
+        Some(Box::pin(async move {
+            let config = wallpaper::config();
+
+            let mut backgrounds = wallpaper::load_each_from_path("/usr/share/backgrounds".into());
+            let mut update = Context::default();
+
+            let start = Instant::now();
+
+            while let Some((path, image)) = backgrounds.recv().await {
+                let handle =
+                    ImageHandle::from_pixels(image.width(), image.height(), image.into_vec());
+
+                let id = update.handles.insert(handle);
+                update.paths.insert(id, path);
+            }
+
+            tracing::info!(
+                "loaded wallpapers in {:?}",
+                Instant::now().duration_since(start)
+            );
+
+            crate::pages::Message::DesktopWallpaper(Message::Update((config, update)))
+        }))
+    }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -42,57 +121,84 @@ pub fn settings() -> Section<crate::pages::Message> {
             fl!("wallpaper", "slide"),
             fl!("wallpaper", "change"),
         ])
-        .view::<Page>(|binder, _page, section| {
-            let desktop = binder
-                .page::<super::Page>()
-                .expect("desktop page not found");
+        .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
-            let image_paths: Vec<std::path::PathBuf> = Vec::new();
 
-            let mut image_column = Vec::with_capacity(image_paths.len() / 4);
-            for chunk in image_paths.chunks(4) {
-                let mut image_row = Vec::with_capacity(chunk.len());
-                for image_path in chunk.iter() {
-                    image_row.push(if image_path.ends_with(".svg") {
-                        svg(svg::Handle::from_path(image_path))
-                            .width(Length::Fixed(150.))
-                            .into()
-                    } else {
-                        image(image_path).width(Length::Fixed(150.)).into()
-                    });
+            let mut image_column = Vec::with_capacity(page.selection.handles.len() / 4);
+            let mut image_handles = page.selection.handles.iter();
+
+            while let Some((id, handle)) = image_handles.next() {
+                let mut image_row = Vec::with_capacity(4);
+
+                image_row.push(wallpaper_button(handle, id));
+
+                for (id, handle) in image_handles.by_ref().take(3) {
+                    image_row.push(wallpaper_button(handle, id));
                 }
+
                 image_column.push(row(image_row).spacing(16).into());
             }
 
-            let children = vec![
-                row!(
+            let mut children = Vec::with_capacity(3);
+
+            if let Some(image) = page.selection.handles.get(page.selection.active) {
+                let display_preview = row!(
                     horizontal_space(Length::Fill),
                     container(
-                        image("/usr/share/backgrounds/pop/kate-hazen-COSMIC-desktop-wallpaper.png")
-                            .width(Length::Fixed(300.))
+                        cosmic::iced::widget::image(image.clone()).width(Length::Fixed(300.0))
                     )
                     .padding(4)
                     .style(theme::Container::Background),
                     horizontal_space(Length::Fill),
                 )
-                .into(),
+                .padding([0, 0, 8, 0])
+                .into();
+
+                children.push(display_preview);
+            }
+
+            children.push(
+                cosmic::widget::text("All Displays")
+                    .horizontal_alignment(Horizontal::Center)
+                    .width(Length::Fill)
+                    .apply(cosmic::iced::widget::container)
+                    .width(Length::Fill)
+                    .padding([0, 0, 16, 0])
+                    .into(),
+            );
+
+            children.push(
                 list_column()
                     .add(settings::item(
                         &descriptions[0],
-                        toggler(None, desktop.same_background, Message::SameBackground),
+                        toggler(None, page.same_background, Message::SameBackground),
                     ))
                     .add(settings::item(&descriptions[1], text("TODO")))
                     .add(settings::item(
                         &descriptions[2],
-                        toggler(None, desktop.slideshow, Message::Slideshow),
+                        toggler(None, page.slideshow, Message::Slideshow),
                     ))
                     .into(),
-                column(image_column).spacing(16).into(),
-            ];
+            );
 
-            settings::view_column(children)
+            children.push(column(image_column).spacing(12).padding(0).into());
+
+            cosmic::iced::widget::column(children)
+                .spacing(22)
                 .padding(0)
+                .max_width(683)
                 .apply(Element::from)
-                .map(crate::pages::Message::Desktop)
+                .map(crate::pages::Message::DesktopWallpaper)
         })
+}
+
+pub fn wallpaper_button(handle: &ImageHandle, id: DefaultKey) -> Element<Message> {
+    let image = cosmic::iced::widget::image(handle.clone()).apply(cosmic::iced::Element::from);
+
+    cosmic::iced::widget::button(image)
+        .width(Length::Fixed(158.0))
+        .height(Length::Fixed(105.0))
+        .style(cosmic::theme::Button::Transparent)
+        .on_press(Message::Select(id))
+        .into()
 }

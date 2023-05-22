@@ -25,7 +25,7 @@ pub fn search_header<Message>(
 
         column_children.push(
             text(parent_meta.title.as_str())
-                .size(16)
+                .size(14)
                 .apply(container)
                 .padding([0, 0, 0, 6])
                 .into(),
@@ -47,7 +47,7 @@ pub fn search_header<Message>(
 #[must_use]
 pub fn search_page_link<Message: 'static>(title: &str) -> Button<Message, cosmic::Renderer> {
     text(title)
-        .size(32)
+        .size(24)
         .horizontal_alignment(iced::alignment::Horizontal::Left)
         .apply(button)
         .style(cosmic::theme::Button::Link)
@@ -56,7 +56,7 @@ pub fn search_page_link<Message: 'static>(title: &str) -> Button<Message, cosmic
 #[must_use]
 pub fn page_title<Message: 'static>(page: &page::Info) -> Element<Message> {
     row!(
-        text(page.title.as_str()).size(32),
+        text(page.title.as_str()).size(24),
         horizontal_space(Length::Fill)
     )
     .into()
@@ -71,13 +71,13 @@ pub fn parent_page_button<'a, Message: Clone + 'static>(
     column!(
         button(row!(
             icon("go-previous-symbolic", 20).style(theme::Svg::SymbolicLink),
-            text(parent.title.as_str()).size(20),
+            text(parent.title.as_str()).size(14),
         ))
         .padding(0)
         .style(theme::Button::Link)
         .on_press(on_press),
         row!(
-            text(sub_page.title.as_str()).size(32),
+            text(sub_page.title.as_str()).size(24),
             horizontal_space(Length::Fill),
         )
         .align_items(iced::alignment::Alignment::Center),

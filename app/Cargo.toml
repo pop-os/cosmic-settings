@@ -9,6 +9,7 @@ rust-version = "1.65.0"
 apply = "0.3.0"
 async-channel = "1.8.0"
 color-eyre = "0.6.2"
+cosmic-settings-desktop = { path = "../pages/desktop" }
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-system = { path = "../pages/system" }
 cosmic-settings-time = { path = "../pages/time" }
@@ -23,7 +24,8 @@ rust-embed = "6.6.1"
 slotmap = "1.0.6"
 tokio = "1.28.2"
 downcast-rs = "1.2.0"
-cosmic-panel-config = { git = "https://github.com/pop-os/cosmic-panel" }
+# TODO: migrate this dependency to the pages/desktop crate.
+cosmic-panel-config = { workspace = true }
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"]}
 
@@ -33,6 +35,4 @@ features = ["fluent-system", "desktop-requester"]
 
 [profile.release]
 opt-level = "s"
-overflow-checks = true
 lto = "thin"
-incremental = false

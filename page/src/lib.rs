@@ -83,3 +83,12 @@ impl Info {
         }
     }
 }
+
+#[macro_export]
+macro_rules! update {
+    ($binder:expr, $message:expr, $page:ty) => {{
+        if let Some(page) = $binder.page_mut::<$page>() {
+            page.update($message);
+        }
+    }};
+}

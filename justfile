@@ -1,7 +1,7 @@
 name := 'cosmic-settings'
 appid := 'com.system76.CosmicSettings'
 
-# Use the lld linker if it is available.
+# Use lld linker if available
 ld-args := if `which lld || true` != '' {
     '-C link-arg=-fuse-ld=lld -C link-arg=-Wl,--build-id=sha1'
 } else {

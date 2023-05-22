@@ -235,19 +235,16 @@ impl Application for SettingsApp {
             Message::None | Message::Search(_) => {}
             Message::PageMessage(message) => match message {
                 crate::pages::Message::About(message) => {
-                    if let Some(page) = self.pages.page_mut::<system::about::Page>() {
-                        page.update(message);
-                    }
+                    page::update!(self.pages, message, system::about::Page);
                 }
                 crate::pages::Message::DateAndTime(message) => {
-                    if let Some(page) = self.pages.page_mut::<time::date::Page>() {
-                        page.update(message);
-                    }
+                    page::update!(self.pages, message, time::date::Page);
                 }
                 crate::pages::Message::Desktop(message) => {
-                    if let Some(page) = self.pages.page_mut::<desktop::Page>() {
-                        page.update(message);
-                    }
+                    page::update!(self.pages, message, desktop::Page);
+                }
+                crate::pages::Message::DesktopWallpaper(message) => {
+                    page::update!(self.pages, message, desktop::wallpaper::Page);
                 }
                 crate::pages::Message::External { .. } => {
                     todo!("external plugins not supported yet");
@@ -457,7 +454,10 @@ impl SettingsApp {
             );
         }
 
-        settings::view_column(column_widgets).into()
+        settings::view_column(column_widgets)
+            .max_width(683)
+            .padding(0)
+            .into()
     }
 
     fn search_changed(&mut self, phrase: String) {

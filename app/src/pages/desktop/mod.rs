@@ -19,8 +19,6 @@ pub struct Page {
     pub show_applications_button: bool,
     pub show_minimize_button: bool,
     pub show_maximize_button: bool,
-    pub slideshow: bool,
-    pub same_background: bool,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -39,10 +37,8 @@ impl page::AutoBind<crate::pages::Message> for Page {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub enum Message {
-    Slideshow(bool),
-    SameBackground(bool),
     ShowWorkspacesButton(bool),
     ShowApplicationsButton(bool),
     ShowMinimizeButton(bool),
@@ -53,12 +49,10 @@ pub enum Message {
 impl Page {
     pub fn update(&mut self, message: Message) {
         match message {
-            Message::SameBackground(value) => self.same_background = value,
             Message::ShowApplicationsButton(value) => self.show_applications_button = value,
             Message::ShowMaximizeButton(value) => self.show_maximize_button = value,
             Message::ShowMinimizeButton(value) => self.show_minimize_button = value,
             Message::ShowWorkspacesButton(value) => self.show_workspaces_button = value,
-            Message::Slideshow(value) => self.slideshow = value,
             Message::TopLeftHotCorner(value) => self.top_left_hot_corner = value,
         }
     }

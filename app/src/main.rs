@@ -52,8 +52,8 @@ pub fn main() -> color_eyre::Result<()> {
     let localizer = crate::localize::localizer();
     let requested_languages = DesktopLanguageRequester::requested_languages();
 
-    if let Err(error) = localizer.select(&requested_languages) {
-        eprintln!("error while loading fluent localizations: {error}");
+    if let Err(why) = localizer.select(&requested_languages) {
+        tracing::error!(%why, "error while loading fluent localizations");
     }
 
     cosmic::settings::set_default_icon_theme("Pop");

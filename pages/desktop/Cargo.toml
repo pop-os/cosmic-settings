@@ -1,0 +1,17 @@
+[package]
+name = "cosmic-settings-desktop"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cosmic-bg-config = { workspace = true }
+cosmic-config = { workspace = true }
+dirs = "5.0.1"
+freedesktop-icons = "0.2.3"
+futures-lite = "1.13.0"
+image = "0.24.6"
+rayon = "1.7.0"
+tokio = { version = "1.28.0", features = ["sync"] }
+tracing = "0.1.37"
