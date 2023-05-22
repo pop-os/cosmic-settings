@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use super::{AutoBind, Binder, Content, Entity, Info};
+use super::{AutoBind, Binder, Content, Entity};
 
 /// An inserted page which may have additional properties assigned to it.
 pub struct Insert<'a, Message> {
@@ -25,25 +25,16 @@ impl<'a, Message: 'static> Insert<'a, Message> {
     #[allow(clippy::return_self_not_must_use)]
     #[allow(clippy::must_use_candidate)]
     pub fn sub_page<P: AutoBind<Message>>(self) -> Self {
-        let sub_page = P::default();
+        let sub_page = self.model.register::<P>().id();
 
-        let page = self.model.info.insert(Info {
-            parent: Some(self.id),
-            ..sub_page.info()
-        });
-
-        if let Some(content) = sub_page.content(&mut self.model.sections) {
-            self.model.content.insert(page, content);
-        }
-
-        self.model.page.insert(page, Box::new(sub_page));
+        self.model.info[sub_page].parent = Some(self.id);
 
         self.model
             .sub_pages
             .entry(self.id)
             .expect("parent page missing")
-            .and_modify(|v| v.push(page))
-            .or_insert_with(|| vec![page]);
+            .and_modify(|v| v.push(sub_page))
+            .or_insert_with(|| vec![sub_page]);
 
         self
     }
