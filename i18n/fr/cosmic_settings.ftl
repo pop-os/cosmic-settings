@@ -24,7 +24,7 @@ notifications = Notifications
 
 ## Desktop: Options
 
-desktop-options = Options Bureau
+desktop-panel-options = Options Bureau
     .desc = Action de la Touche Super, coins actifs, options du contrôle des fenêtres.
 
 super-key-action = Action Touche Super

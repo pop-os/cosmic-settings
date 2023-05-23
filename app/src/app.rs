@@ -213,6 +213,9 @@ impl Application for SettingsApp {
                 crate::pages::Message::External { .. } => {
                     todo!("external plugins not supported yet");
                 }
+                crate::pages::Message::Page(page) => {
+                    return self.activate_page(page);
+                }
             },
         }
         ret
@@ -273,10 +276,10 @@ impl Application for SettingsApp {
                     horizontal_space(Length::Fill),
                     (if self.search.is_active() {
                         self.search_view()
-                    } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
-                        self.sub_page_view(sub_pages)
                     } else if let Some(content) = self.pages.content(self.active_page) {
                         self.page_view(content)
+                    } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
+                        self.sub_page_view(sub_pages)
                     } else {
                         panic!("page without sub-pages or content");
                     })
@@ -297,7 +300,7 @@ impl Application for SettingsApp {
     }
 
     fn theme(&self) -> Theme {
-        self.theme
+        self.theme.clone()
     }
 
     fn scale_factor(&self) -> f64 {

@@ -4,9 +4,10 @@
 use super::Message;
 use apply::Apply;
 use cosmic::{
-    iced::widget::horizontal_space,
+    iced::widget::{button, container, horizontal_space, row},
     iced::Length,
-    widget::{settings, toggler},
+    theme,
+    widget::{icon, list, settings, toggler},
     Element,
 };
 
@@ -28,17 +29,23 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(hot_corner()),
             sections.insert(top_panel()),
             sections.insert(window_controls()),
+            sections.insert(panel_dock_links()),
         ])
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("desktop-options", "video-display-symbolic")
-            .title(fl!("desktop-options"))
-            .description(fl!("desktop-options", "desc"))
+        page::Info::new("desktop-panel-options", "video-display-symbolic")
+            .title(fl!("desktop-panel-options"))
+            .description(fl!("desktop-panel-options", "desc"))
     }
 }
 
-impl page::AutoBind<crate::pages::Message> for Page {}
+impl page::AutoBind<crate::pages::Message> for Page {
+    fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
+        page.sub_page::<super::panel::Page>()
+            .sub_page::<super::dock::Page>()
+    }
+}
 
 pub fn hot_corner() -> Section<crate::pages::Message> {
     Section::default()
@@ -157,5 +164,59 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Desktop)
+        })
+}
+
+pub fn panel_dock_links() -> Section<crate::pages::Message> {
+    Section::default()
+        .title(fl!("desktop-panels-and-applets"))
+        .view::<Page>(|binder, _page, section| {
+            // TODO probably a way of getting the entity and its info
+            let mut settings = settings::view_section(&section.title);
+            settings = if let Some((panel_entity, panel_info)) =
+                binder.info.iter().find(|(_, v)| v.id == "panel")
+            {
+                settings.add(
+                    settings::item::builder(panel_info.title.clone())
+                        .description(panel_info.description.clone())
+                        .control(row!(
+                            horizontal_space(Length::Fill),
+                            icon("go-next-symbolic", 20).style(theme::Svg::Symbolic)
+                        ))
+                        .spacing(16)
+                        .apply(container)
+                        .style(theme::Container::custom(list::column::style))
+                        .apply(button)
+                        .padding(0)
+                        .style(theme::Button::Transparent)
+                        .on_press(crate::pages::Message::Page(panel_entity)),
+                )
+            } else {
+                settings
+            };
+
+            settings = if let Some((dock_entity, dock_info)) =
+                binder.info.iter().find(|(_, v)| v.id == "dock")
+            {
+                settings.add(
+                    settings::item::builder(dock_info.title.clone())
+                        .description(dock_info.description.clone())
+                        .control(row!(
+                            horizontal_space(Length::Fill),
+                            icon("go-next-symbolic", 20).style(theme::Svg::Symbolic)
+                        ))
+                        .spacing(16)
+                        .apply(container)
+                        .style(theme::Container::custom(list::column::style))
+                        .apply(button)
+                        .padding(0)
+                        .style(theme::Button::Transparent)
+                        .on_press(crate::pages::Message::Page(dock_entity)),
+                )
+            } else {
+                settings
+            };
+
+            Element::from(settings)
         })
 }

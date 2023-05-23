@@ -18,6 +18,8 @@ pub mod widget;
 
 pub mod pages;
 
+use env_logger::Env;
+
 use cosmic::iced::Application;
 use i18n_embed::DesktopLanguageRequester;
 
@@ -25,6 +27,11 @@ use i18n_embed::DesktopLanguageRequester;
 ///
 /// Returns error if iced fails to run the application.
 pub fn main() -> color_eyre::Result<()> {
+    let env = Env::default()
+        .filter_or("MY_LOG_LEVEL", "info")
+        .write_style_or("MY_LOG_STYLE", "always");
+
+    env_logger::init_from_env(env);
     color_eyre::install()?;
 
     if std::env::var("RUST_SPANTRACE").is_err() {
