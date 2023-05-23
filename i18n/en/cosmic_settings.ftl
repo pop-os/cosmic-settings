@@ -57,6 +57,10 @@ panel-behavior-and-position = Behavior and Positions
     .autohide = Automatically hide panel
     .position = Position on screen
     .display = Show on display
+panel-top = Top
+panel-bottom = Bottom
+panel-left = Left
+panel-right = Right
 
 panel-style = Style
     .anchor-gap = Gap between panel and screen edges

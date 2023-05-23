@@ -798,7 +798,7 @@ dependencies = [
 [[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel#aae46287cdb349381743fe530f281333c7ebfa83"
+source = "git+https://github.com/pop-os/cosmic-panel#1ef8ca7dd07bbbc6bd86ce8421dc3c759d4a837b"
 dependencies = [
  "anyhow",
  "cosmic-config 0.1.0 (git+https://github.com/pop-os/libcosmic?tag=cosmic-config-derive)",
