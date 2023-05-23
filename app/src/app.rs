@@ -20,7 +20,10 @@ use cosmic::{
 
 use crate::{
     config::{self, Config},
-    pages::{desktop, sound, system, time},
+    pages::{
+        desktop::{self, panel},
+        sound, system, time,
+    },
     widget::{page_title, parent_page_button, search_header, sub_page_button},
 };
 
@@ -215,6 +218,11 @@ impl Application for SettingsApp {
                 }
                 crate::pages::Message::Page(page) => {
                     return self.activate_page(page);
+                }
+                crate::pages::Message::Panel(message) => {
+                    if let Some(page) = self.pages.page_mut::<panel::Page>() {
+                        page.update(message);
+                    }
                 }
             },
         }

@@ -758,7 +758,19 @@ dependencies = [
  "cosmic-config-derive",
  "dirs 5.0.1",
  "iced_futures",
- "notify",
+ "notify 6.0.0",
+ "ron",
+ "serde",
+]
+
+[[package]]
+name = "cosmic-config"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/libcosmic#98ec1bbd487cf5412c0e94ef9ae7694c9b72edbd"
+dependencies = [
+ "atomicwrites",
+ "dirs 4.0.0",
+ "notify 5.2.0",
  "ron",
  "serde",
 ]
@@ -773,6 +785,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmic-panel-config"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/cosmic-panel#f342e53f95aee2a26c8cc6578cfe5c39a1ed99b5"
+dependencies = [
+ "anyhow",
+ "cosmic-config 0.1.0 (git+https://github.com/pop-os/libcosmic)",
+ "ron",
+ "serde",
+ "tracing",
+ "wayland-protocols-wlr",
+ "xdg-shell-wrapper-config",
+]
+
+[[package]]
 name = "cosmic-settings"
 version = "0.1.0"
 dependencies = [
@@ -780,6 +806,7 @@ dependencies = [
  "async-channel",
  "bytecheck",
  "color-eyre",
+ "cosmic-panel-config",
  "cosmic-settings-page",
  "cosmic-settings-system",
  "cosmic-settings-time",
@@ -860,7 +887,7 @@ version = "0.1.0"
 source = "git+https://github.com/pop-os/libcosmic?branch=cosmic-advanced-text#bf1c474d0846e31c647444ff7bd5ecb7f361efcd"
 dependencies = [
  "anyhow",
- "cosmic-config",
+ "cosmic-config 0.1.0 (git+https://github.com/pop-os/libcosmic?branch=cosmic-advanced-text)",
  "csscolorparser",
  "directories",
  "lazy_static",
@@ -2540,7 +2567,7 @@ version = "0.1.0"
 source = "git+https://github.com/pop-os/libcosmic?branch=cosmic-advanced-text#bf1c474d0846e31c647444ff7bd5ecb7f361efcd"
 dependencies = [
  "apply",
- "cosmic-config",
+ "cosmic-config 0.1.0 (git+https://github.com/pop-os/libcosmic?branch=cosmic-advanced-text)",
  "cosmic-theme",
  "derive_setters",
  "fraction",
@@ -2891,6 +2918,24 @@ checksum = "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a"
 dependencies = [
  "memchr",
  "minimal-lexical",
+]
+
+[[package]]
+name = "notify"
+version = "5.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "729f63e1ca555a43fe3efa4f3efdf4801c479da85b432242a7b726f353c88486"
+dependencies = [
+ "bitflags 1.3.2",
+ "crossbeam-channel",
+ "filetime",
+ "fsevent-sys",
+ "inotify",
+ "kqueue",
+ "libc",
+ "mio",
+ "walkdir",
+ "windows-sys 0.45.0",
 ]
 
 [[package]]
@@ -4956,6 +5001,7 @@ dependencies = [
  "wayland-backend",
  "wayland-client 0.30.1",
  "wayland-scanner 0.30.0",
+ "wayland-server",
 ]
 
 [[package]]
@@ -4969,6 +5015,7 @@ dependencies = [
  "wayland-client 0.30.1",
  "wayland-protocols 0.30.0",
  "wayland-scanner 0.30.0",
+ "wayland-server",
 ]
 
 [[package]]
@@ -4991,6 +5038,20 @@ dependencies = [
  "proc-macro2",
  "quick-xml",
  "quote",
+]
+
+[[package]]
+name = "wayland-server"
+version = "0.30.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9062def387c1b1d80e366d8243c2b3bd6d9e4f343032a3e5da8d4aa03866cf89"
+dependencies = [
+ "bitflags 1.3.2",
+ "downcast-rs",
+ "io-lifetimes",
+ "nix 0.26.2",
+ "wayland-backend",
+ "wayland-scanner 0.30.0",
 ]
 
 [[package]]
@@ -5539,6 +5600,15 @@ checksum = "2769203cd13a0c6015d515be729c526d041e9cf2c0cc478d57faee85f40c6dcd"
 dependencies = [
  "nix 0.26.2",
  "winapi",
+]
+
+[[package]]
+name = "xdg-shell-wrapper-config"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/xdg-shell-wrapper?rev=a5bf783#a5bf7832fc091a0fcb685cd297bfa3cddcd72974"
+dependencies = [
+ "serde",
+ "wayland-protocols-wlr",
 ]
 
 [[package]]

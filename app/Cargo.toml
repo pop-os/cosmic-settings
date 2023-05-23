@@ -27,6 +27,7 @@ tokio = "1.27.0"
 downcast-rs = "1.2.0"
 log = "0.4"
 env_logger = "0.10"
+cosmic-panel-config = { git = "https://github.com/pop-os/cosmic-panel" }
 
 [dependencies.i18n-embed]
 version = "0.13.8"
