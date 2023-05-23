@@ -62,6 +62,11 @@ panel-bottom = Bottom
 panel-left = Left
 panel-right = Right
 
+panel-appearance = Appearance
+    .match = Match desktop
+    .light = Light
+    .dark = Dark
+
 panel-style = Style
     .anchor-gap = Gap between panel and screen edges
     .extend = Extend panel to screen edges
@@ -76,6 +81,7 @@ panel-missing = Panel Configuration is Missing
     .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
     .fix = Reset to default
 
+applets = Applets
 ## Desktop: Wallpaper
 
 wallpaper = Wallpaper
