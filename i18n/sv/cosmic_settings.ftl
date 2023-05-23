@@ -24,7 +24,7 @@ notifications = Notifikationer
 
 ## Desktop: Options
 
-desktop-options = Skrivbordsalternativ
+desktop-panel-options = Skrivbordsalternativ
     .desc = Supertangent funktion, heta hörn, och fönsterkontroll alternativ.
 
 super-key-action = Supertangentfunktion

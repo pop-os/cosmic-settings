@@ -107,6 +107,25 @@ pub fn sub_page_button(entity: page::Entity, page: &page::Info) -> Element<page:
 }
 
 #[must_use]
+pub fn sub_page_section(entity: page::Entity, page: &page::Info) -> Element<page::Entity> {
+    settings::item::builder(page.title.as_str())
+        .description(page.description.as_str())
+        .control(row!(
+            horizontal_space(Length::Fill),
+            icon("go-next-symbolic", 20).style(theme::Svg::Symbolic)
+        ))
+        .spacing(16)
+        .apply(container)
+        .padding([20, 24])
+        .style(theme::Container::custom(list::column::style))
+        .apply(button)
+        .padding(0)
+        .style(theme::Button::Transparent)
+        .on_press(entity)
+        .into()
+}
+
+#[must_use]
 pub fn unimplemented_page<Message: 'static>() -> Element<'static, Message> {
     settings::view_section("")
         .add(text("We haven't created that panel yet, and/or it is using a similar idea as current Pop! designs."))

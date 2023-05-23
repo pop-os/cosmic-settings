@@ -24,7 +24,7 @@ notifications = Notificações
 
 ## Desktop: Options
 
-desktop-options = Opções do ambiente de trabalho
+desktop-panel-options = Opções do ambiente de trabalho
     .desc = Ação da tecla Super, cantos ativos, opções de controlo de janelas.
 
 super-key-action = Ação da tecla Super

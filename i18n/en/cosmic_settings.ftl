@@ -13,8 +13,8 @@ appearance = Appearance
 
 ## Desktop: Dock & Panel
 
-dock = Dock & Top Panel
-    .desc = Customize size, positions, and more for Dock and Top Panel.
+dock = Dock
+    .desc = Panel with pinned applications.
 
 ## Desktop: Notifications
 
@@ -24,7 +24,7 @@ notifications = Notifications
 
 ## Desktop: Options
 
-desktop-options = Desktop Options
+desktop-panel-options = Desktop and Panel
     .desc = Super Key action, hot corners, window control options.
 
 super-key-action = Super Key Action
@@ -43,6 +43,12 @@ window-controls = Window Controls
     .minimize = Show Minimize Button
     .maximize = Show Maximize Button
 
+desktop-panels-and-applets = Desktop Panels and Applets
+
+panel = Panel
+    .desc = Top bar with desktop controls and menus.
+dock = Dock
+    .desc = Panel with pinned applications.
 ## Desktop: Wallpaper
 
 wallpaper = Wallpaper

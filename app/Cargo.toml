@@ -25,6 +25,8 @@ rust-embed = "6.6.1"
 slotmap = "1.0.6"
 tokio = "1.27.0"
 downcast-rs = "1.2.0"
+log = "0.4"
+env_logger = "0.10"
 
 [dependencies.i18n-embed]
 version = "0.13.8"
