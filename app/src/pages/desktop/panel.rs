@@ -1,7 +1,8 @@
 use cosmic::{
     iced::widget::horizontal_space,
     iced::Length,
-    widget::{settings, toggler},
+    iced_widget::pick_list,
+    widget::{settings, text, toggler},
     Element,
 };
 
@@ -11,6 +12,7 @@ use cosmic_panel_config::{AutoHide, CosmicPanelConfig, CosmicPanelOuput, PanelAn
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slotmap::SlotMap;
+use std::borrow::Cow;
 
 pub struct Page {
     config_helper: Option<cosmic_config::Config>,
@@ -64,7 +66,11 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 pub fn behavior_and_position() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("panel-behavior-and-position"))
-        .descriptions(vec![fl!("panel-behavior-and-position", "autohide")])
+        .descriptions(vec![
+            fl!("panel-behavior-and-position", "autohide"),
+            fl!("panel-behavior-and-position", "position"),
+            fl!("panel-behavior-and-position", "display"),
+        ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
             let panel_config = page.panel_config.as_ref().unwrap();
@@ -75,6 +81,20 @@ pub fn behavior_and_position() -> Section<crate::pages::Message> {
                         Message::AutoHidePanel(value)
                     }),
                 ))
+                .add(settings::item(
+                    &descriptions[1],
+                    pick_list(
+                        Cow::from(vec![
+                            Anchor(PanelAnchor::Top),
+                            Anchor(PanelAnchor::Bottom),
+                            Anchor(PanelAnchor::Left),
+                            Anchor(PanelAnchor::Right),
+                        ]),
+                        Some(Anchor(panel_config.anchor)),
+                        |a| Message::PanelAnchor(a.0),
+                    ),
+                ))
+                .add(settings::item(&descriptions[2], text("todo")))
                 .apply(Element::from)
                 .map(crate::pages::Message::Panel)
         })
@@ -82,14 +102,15 @@ pub fn behavior_and_position() -> Section<crate::pages::Message> {
 
 pub fn style() -> Section<crate::pages::Message> {
     Section::default()
-        .title(fl!("hot-corner"))
-        .descriptions(vec![fl!("hot-corner", "top-left-corner")])
+        .title(fl!("panel-style"))
+        .descriptions(vec![
+            fl!("panel-style", "anchor-gap"),
+            fl!("panel-style", "extend"),
+            fl!("panel-style", "appearance"),
+            fl!("panel-style", "size"),
+            fl!("panel-style", "background-opacity"),
+        ])
         .view::<Page>(|binder, _page, section| {
-            let desktop = binder
-                .page::<super::Page>()
-                .expect("desktop page not found");
-
-            let descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .apply(Element::from)
                 .map(crate::pages::Message::Desktop)
@@ -98,8 +119,8 @@ pub fn style() -> Section<crate::pages::Message> {
 
 pub fn configuration() -> Section<crate::pages::Message> {
     Section::default()
-        .title(fl!("hot-corner"))
-        .descriptions(vec![fl!("hot-corner", "top-left-corner")])
+        .title(fl!("panel-applets"))
+        .descriptions(vec![fl!("panel-applets", "desc")])
         .view::<Page>(|binder, _page, section| {
             let desktop = binder
                 .page::<super::Page>()
@@ -114,8 +135,11 @@ pub fn configuration() -> Section<crate::pages::Message> {
 
 pub fn add_panel() -> Section<crate::pages::Message> {
     Section::default()
-        .title(fl!("hot-corner"))
-        .descriptions(vec![fl!("hot-corner", "top-left-corner")])
+        .title(fl!("panel-missing"))
+        .descriptions(vec![
+            fl!("panel-missing", "desc"),
+            fl!("panel-missing", "fix"),
+        ])
         .view::<Page>(|binder, _page, section| {
             let desktop = binder
                 .page::<super::Page>()
@@ -126,6 +150,20 @@ pub fn add_panel() -> Section<crate::pages::Message> {
                 .apply(Element::from)
                 .map(crate::pages::Message::Desktop)
         })
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct Anchor(PanelAnchor);
+
+impl ToString for Anchor {
+    fn to_string(&self) -> String {
+        match self.0 {
+            PanelAnchor::Top => fl!("panel-top"),
+            PanelAnchor::Bottom => fl!("panel-bottom"),
+            PanelAnchor::Left => fl!("panel-left"),
+            PanelAnchor::Right => fl!("panel-right"),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
