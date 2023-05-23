@@ -57,6 +57,21 @@ panel-behavior-and-position = Behavior and Positions
     .autohide = Automatically hide panel
     .position = Position on screen
     .display = Show on display
+
+panel-style = Style
+    .anchor-gap = Gap between panel and screen edges
+    .extend = Extend panel to screen edges
+    .appearance = Appearance
+    .size = Size
+    .background-opacity = Background opacity
+
+panel-applets = Configuration
+    .desc = Configure panel applets.
+
+panel-missing = Panel Configuration is Missing
+    .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
+    .fix = Reset to default
+
 ## Desktop: Wallpaper
 
 wallpaper = Wallpaper
