@@ -14,6 +14,7 @@ pub enum Message {
     About(system::about::Message),
     DateAndTime(time::date::Message),
     Desktop(desktop::Message),
+    Panel(desktop::panel::Message),
     External { id: String, message: Vec<u8> },
     Page(Entity),
 }

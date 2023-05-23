@@ -45,10 +45,18 @@ window-controls = Window Controls
 
 desktop-panels-and-applets = Desktop Panels and Applets
 
-panel = Panel
-    .desc = Top bar with desktop controls and menus.
+
 dock = Dock
     .desc = Panel with pinned applications.
+
+## Desktop: Panel
+panel = Panel
+    .desc = Top bar with desktop controls and menus.
+
+panel-behavior-and-position = Behavior and Positions
+    .autohide = Automatically hide panel
+    .position = Position on screen
+    .display = Show on display
 ## Desktop: Wallpaper
 
 wallpaper = Wallpaper
