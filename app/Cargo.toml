@@ -28,6 +28,7 @@ downcast-rs = "1.2.0"
 log = "0.4"
 env_logger = "0.10"
 cosmic-panel-config = { git = "https://github.com/pop-os/cosmic-panel" }
+cosmic-config = { git = "https://github.com/pop-os/libcosmic", tag = "cosmic-config-derive"  }
 
 [dependencies.i18n-embed]
 version = "0.13.8"
