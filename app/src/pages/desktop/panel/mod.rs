@@ -1,6 +1,7 @@
 use cosmic::{
     iced::widget::{button, container, horizontal_space, pick_list, row},
     iced::Length,
+    iced_widget::slider,
     theme,
     widget::{icon, list, settings, text, toggler},
     Element,
@@ -139,11 +140,47 @@ pub fn style() -> Section<crate::pages::Message> {
                     pick_list(
                         Cow::from(vec![Appearance::Match, Appearance::Light, Appearance::Dark]),
                         Some(page.appearance),
-                        |a| Message::Appearance(a),
+                        Message::Appearance,
                     ),
                 ))
-                .add(settings::item(&descriptions[3], text("todo")))
-                .add(settings::item(&descriptions[4], text("todo")))
+                .add(settings::item(
+                    &descriptions[3],
+                    slider(
+                        0..=4,
+                        match panel_config.size {
+                            PanelSize::XS => 0,
+                            PanelSize::S => 1,
+                            PanelSize::M => 2,
+                            PanelSize::L => 3,
+                            PanelSize::XL => 4,
+                        },
+                        |v| {
+                            if v == 0 {
+                                Message::PanelSize(PanelSize::XS)
+                            } else if v == 1 {
+                                Message::PanelSize(PanelSize::S)
+                            } else if v == 2 {
+                                Message::PanelSize(PanelSize::M)
+                            } else if v == 3 {
+                                Message::PanelSize(PanelSize::L)
+                            } else {
+                                Message::PanelSize(PanelSize::XL)
+                            }
+                        },
+                    ),
+                ))
+                .add(settings::item(
+                    &descriptions[4],
+                    slider(
+                        0..=100,
+                        (match panel_config.background {
+                            cosmic_panel_config::CosmicPanelBackground::ThemeDefault(Some(a))
+                            | cosmic_panel_config::CosmicPanelBackground::Color([_, _, _, a]) => a,
+                            _ => 0.0,
+                        } * 100.0) as i32,
+                        |v| Message::Opacity(v as f32 / 100.0),
+                    ),
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Panel)
         })
@@ -293,7 +330,7 @@ pub enum Message {
     PanelSize(PanelSize),
     Appearance(Appearance),
     ExtendToEdge(bool),
-    Opacity(f64),
+    Opacity(f32),
     Applets,
 }
 
@@ -329,7 +366,14 @@ impl Page {
 
                 let _ = panel_config.write_entry(helper);
             }
-            Message::PanelSize(_) => todo!(),
+            Message::PanelSize(size) => {
+                let helper = self.config_helper.as_ref().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
+
+                panel_config.size = size;
+
+                let _ = panel_config.write_entry(helper);
+            }
             Message::Appearance(_) => {
                 //TODO update panel config to support these kinds of configs
             }
@@ -341,7 +385,21 @@ impl Page {
 
                 let _ = panel_config.write_entry(helper);
             }
-            Message::Opacity(_) => todo!(),
+            Message::Opacity(opacity) => {
+                let helper = self.config_helper.as_ref().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
+
+                match &mut panel_config.background {
+                    cosmic_panel_config::CosmicPanelBackground::ThemeDefault(o) => {
+                        *o = Some(opacity);
+                    }
+                    cosmic_panel_config::CosmicPanelBackground::Color([_, _, _, o]) => {
+                        *o = opacity;
+                    }
+                }
+
+                let _ = panel_config.write_entry(helper);
+            }
             Message::Applets => todo!(),
         }
     }
