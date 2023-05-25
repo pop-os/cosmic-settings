@@ -85,9 +85,8 @@ pub fn behavior_and_position() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
-            let panel_config = match page.panel_config.as_ref() {
-                Some(panel_config) => panel_config,
-                None => return Element::from(text(fl!("unknown"))),
+            let Some(panel_config) = page.panel_config.as_ref() else {
+                return Element::from(text(fl!("unknown")));
             };
             settings::view_section(&section.title)
                 .add(settings::item(
@@ -143,9 +142,7 @@ pub fn style() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
-            let panel_config = if let Some(panel_config) = page.panel_config.as_ref() {
-                panel_config
-            } else {
+            let Some(panel_config) = page.panel_config.as_ref() else {
                 return Element::from(text(fl!("unknown")));
             };
             settings::view_section(&section.title)
