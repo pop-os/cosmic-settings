@@ -2,6 +2,8 @@ app = COSMIC Settings
 
 unknown = Unknown
 
+number = { $number }
+
 ## Desktop
 
 desktop = Desktop
@@ -73,6 +75,9 @@ panel-style = Style
     .appearance = Appearance
     .size = Size
     .background-opacity = Background opacity
+    
+small = Small
+large = Large
 
 panel-applets = Configuration
     .desc = Configure panel applets.
@@ -82,6 +87,9 @@ panel-missing = Panel Configuration is Missing
     .fix = Reset to default
 
 applets = Applets
+
+all = All
+
 ## Desktop: Wallpaper
 
 wallpaper = Wallpaper

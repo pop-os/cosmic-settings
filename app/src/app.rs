@@ -6,11 +6,20 @@ use apply::Apply;
 use cosmic_settings_page::{self as page, section};
 
 use cosmic::{
-    iced::widget::{self, column, container, horizontal_space, row},
-    iced::{self, subscription, window, Application, Command, Length, Subscription},
-    iced_runtime::window::{close, drag, minimize, toggle_maximize},
+    iced::{
+        self,
+        event::wayland::{self, WindowEvent, WindowState},
+        event::PlatformSpecific,
+        subscription, window, Application, Color, Command, Length, Subscription,
+    },
+    iced::{
+        widget::{self, column, container, horizontal_space, row},
+        window::Mode,
+    },
+    iced_sctk::commands::window::{set_mode_window, start_drag_window},
+    iced_style::application,
     keyboard_nav,
-    theme::Theme,
+    theme::{self, Theme},
     widget::{
         header_bar, nav_bar, nav_bar_toggle, scrollable, search, segmented_button, settings,
         IconSource,
@@ -26,6 +35,8 @@ use crate::{
     },
     widget::{page_title, parent_page_button, search_header, sub_page_button},
 };
+
+use std::process;
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
@@ -43,6 +54,7 @@ pub struct SettingsApp {
     pub search: search::Model,
     pub search_selections: Vec<(page::Entity, section::Entity)>,
     pub show_maximize: bool,
+    pub sharp_corners: bool,
     pub show_minimize: bool,
     pub theme: Theme,
     pub title: String,
@@ -65,6 +77,7 @@ pub enum Message {
     ToggleNavBar,
     ToggleNavBarCondensed,
     WindowResize(u32, u32),
+    WindowState(WindowState),
 }
 
 impl Application for SettingsApp {
@@ -77,6 +90,7 @@ impl Application for SettingsApp {
         let mut config_path = config::PathManager::new();
 
         let mut app = SettingsApp {
+            sharp_corners: false,
             active_page: page::Entity::default(),
             config: config_path.config("main", Config::deserialize),
             config_path,
@@ -142,6 +156,22 @@ impl Application for SettingsApp {
             iced::Event::Window(_window_id, window::Event::Resized { width, height }) => {
                 Some(Message::WindowResize(width, height))
             }
+            iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Window(
+                WindowEvent::State(s),
+                ..,
+            ))) => Some(Message::WindowState(s)),
+            iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Output(
+                wayland::OutputEvent::Created(Some(info)),
+                o,
+            ))) if info.name.is_some() => Some(Message::PageMessage(crate::pages::Message::Panel(
+                panel::Message::OutputAdded(info.name.unwrap(), o),
+            ))),
+            iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Output(
+                wayland::OutputEvent::Removed,
+                o,
+            ))) => Some(Message::PageMessage(crate::pages::Message::Panel(
+                panel::Message::OutputRemoved(o),
+            ))),
             _ => None,
         });
 
@@ -174,10 +204,20 @@ impl Application for SettingsApp {
                 }
             },
             Message::Page(page) => return self.activate_page(page),
-            Message::Drag => return drag(),
-            Message::Close => return close(),
-            Message::Minimize => return minimize(true),
-            Message::Maximize => return toggle_maximize(),
+            Message::Drag => return start_drag_window(window::Id(0)),
+            Message::Close => {
+                process::exit(0);
+            }
+            Message::Minimize => return set_mode_window(window::Id(0), Mode::Hidden),
+            Message::Maximize => {
+                if self.sharp_corners {
+                    self.sharp_corners = false;
+                    return set_mode_window(window::Id(0), Mode::Windowed);
+                }
+
+                self.sharp_corners = true;
+                return set_mode_window(window::Id(0), Mode::Fullscreen);
+            }
             Message::NavBar(key) => {
                 if let Some(page) = self.nav_bar.data::<page::Entity>(key).copied() {
                     return self.activate_page(page);
@@ -225,12 +265,16 @@ impl Application for SettingsApp {
                     }
                 }
             },
+            Message::WindowState(state) => {
+                dbg!(&state);
+                self.sharp_corners = matches!(state, WindowState::Activated);
+            }
         }
         ret
     }
 
     #[allow(clippy::too_many_lines)]
-    fn view(&self) -> Element<Message> {
+    fn view(&self, _id: window::Id) -> Element<Message> {
         let (nav_bar_message, nav_bar_toggled) = if self.is_condensed {
             (
                 Message::ToggleNavBarCondensed,
@@ -302,6 +346,7 @@ impl Application for SettingsApp {
             .padding([0, 8, 8, 8])
             .width(Length::Fill)
             .height(Length::Fill)
+            .style(theme::Container::Background)
             .into();
 
         column(vec![header, content]).into()
@@ -313,6 +358,25 @@ impl Application for SettingsApp {
 
     fn scale_factor(&self) -> f64 {
         self.scaling_factor as f64
+    }
+
+    fn close_requested(&self, id: window::Id) -> Self::Message {
+        if id == window::Id(0) {
+            Message::Close
+        } else {
+            Message::None
+        }
+    }
+
+    fn style(&self) -> <Self::Theme as cosmic::iced_style::application::StyleSheet>::Style {
+        if self.sharp_corners {
+            cosmic::theme::Application::default()
+        } else {
+            cosmic::theme::Application::Custom(Box::new(|theme| application::Appearance {
+                background_color: Color::TRANSPARENT,
+                text_color: theme.cosmic().on_bg_color().into(),
+            }))
+        }
     }
 }
 
