@@ -1,4 +1,5 @@
 use cosmic::{
+    cosmic_config::{self, CosmicConfigEntry},
     iced::widget::{button, container, horizontal_space, pick_list, row},
     iced::Length,
     iced_widget::slider,
@@ -9,8 +10,9 @@ use cosmic::{
 };
 
 use apply::Apply;
-use cosmic_config::CosmicConfigEntry;
-use cosmic_panel_config::{AutoHide, CosmicPanelConfig, CosmicPanelOuput, PanelAnchor, PanelSize};
+use cosmic_panel_config::{
+    AutoHide, CosmicPanelBackground, CosmicPanelConfig, CosmicPanelOuput, PanelAnchor, PanelSize,
+};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
 use std::{borrow::Cow, collections::HashMap};
@@ -21,7 +23,6 @@ pub struct Page {
     config_helper: Option<cosmic_config::Config>,
     panel_config: Option<CosmicPanelConfig>,
     // TODO move these into panel config
-    appearance: Appearance,
     pub outputs: HashMap<ObjectId, (String, WlOutput)>,
 }
 
@@ -39,7 +40,6 @@ impl Default for Page {
         Self {
             config_helper,
             panel_config,
-            appearance: Appearance::Dark,
             outputs: HashMap::new(),
         }
     }
@@ -143,9 +143,10 @@ pub fn style() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
-            let panel_config = match page.panel_config.as_ref() {
-                Some(panel_config) => panel_config,
-                None => return Element::from(text(fl!("unknown"))),
+            let panel_config = if let Some(panel_config) = page.panel_config.as_ref() {
+                panel_config
+            } else {
+                return Element::from(text(fl!("unknown")));
             };
             settings::view_section(&section.title)
                 .add(settings::item(
@@ -164,7 +165,7 @@ pub fn style() -> Section<crate::pages::Message> {
                     &descriptions[2],
                     pick_list(
                         Cow::from(vec![Appearance::Match, Appearance::Light, Appearance::Dark]),
-                        Some(page.appearance),
+                        panel_config.background.clone().try_into().ok(),
                         Message::Appearance,
                     ),
                 ))
@@ -204,18 +205,9 @@ pub fn style() -> Section<crate::pages::Message> {
                     &descriptions[4],
                     row![
                         text(fl!("number", HashMap::from_iter(vec![("number", 0)]))),
-                        slider(
-                            0..=100,
-                            (match panel_config.background {
-                                cosmic_panel_config::CosmicPanelBackground::ThemeDefault(Some(
-                                    a,
-                                ))
-                                | cosmic_panel_config::CosmicPanelBackground::Color([_, _, _, a]) =>
-                                    a,
-                                _ => 0.0,
-                            } * 100.0) as i32,
-                            |v| Message::Opacity(v as f32 / 100.0),
-                        ),
+                        slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
+                            Message::Opacity(v as f32 / 100.0)
+                        },),
                         text(fl!("number", HashMap::from_iter(vec![("number", 100)]))),
                     ]
                     .spacing(12),
@@ -358,6 +350,28 @@ impl ToString for Appearance {
     }
 }
 
+impl TryFrom<CosmicPanelBackground> for Appearance {
+    type Error = ();
+    fn try_from(value: CosmicPanelBackground) -> Result<Self, Self::Error> {
+        match value {
+            CosmicPanelBackground::ThemeDefault => Ok(Appearance::Match),
+            CosmicPanelBackground::Light => Ok(Appearance::Light),
+            CosmicPanelBackground::Dark => Ok(Appearance::Dark),
+            _ => Err(()),
+        }
+    }
+}
+
+impl From<Appearance> for CosmicPanelBackground {
+    fn from(appearance: Appearance) -> Self {
+        match appearance {
+            Appearance::Match => CosmicPanelBackground::ThemeDefault,
+            Appearance::Light => CosmicPanelBackground::Light,
+            Appearance::Dark => CosmicPanelBackground::Dark,
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum Message {
     // panel messages
@@ -424,8 +438,13 @@ impl Page {
 
                 _ = panel_config.write_entry(helper);
             }
-            Message::Appearance(_) => {
-                //TODO update panel config to support these kinds of configs
+            Message::Appearance(a) => {
+                let helper = self.config_helper.as_ref().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
+
+                panel_config.background = a.into();
+
+                _ = panel_config.write_entry(helper);
             }
             Message::ExtendToEdge(enabled) => {
                 let helper = self.config_helper.as_ref().unwrap();
@@ -439,14 +458,7 @@ impl Page {
                 let helper = self.config_helper.as_ref().unwrap();
                 let panel_config = self.panel_config.as_mut().unwrap();
 
-                match &mut panel_config.background {
-                    cosmic_panel_config::CosmicPanelBackground::ThemeDefault(o) => {
-                        *o = Some(opacity);
-                    }
-                    cosmic_panel_config::CosmicPanelBackground::Color([_, _, _, o]) => {
-                        *o = opacity;
-                    }
-                }
+                panel_config.opacity = opacity;
 
                 _ = panel_config.write_entry(helper);
             }
