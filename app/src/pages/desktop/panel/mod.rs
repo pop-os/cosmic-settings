@@ -2,6 +2,7 @@ use cosmic::{
     iced::widget::{button, container, horizontal_space, pick_list, row},
     iced::Length,
     iced_widget::slider,
+    sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
     theme,
     widget::{icon, list, settings, text, toggler},
     Element,
@@ -12,7 +13,7 @@ use cosmic_config::CosmicConfigEntry;
 use cosmic_panel_config::{AutoHide, CosmicPanelConfig, CosmicPanelOuput, PanelAnchor, PanelSize};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::HashMap};
 
 mod applets;
 
@@ -21,6 +22,7 @@ pub struct Page {
     panel_config: Option<CosmicPanelConfig>,
     // TODO move these into panel config
     appearance: Appearance,
+    pub outputs: HashMap<ObjectId, (String, WlOutput)>,
 }
 
 impl Default for Page {
@@ -38,6 +40,7 @@ impl Default for Page {
             config_helper,
             panel_config,
             appearance: Appearance::Dark,
+            outputs: HashMap::new(),
         }
     }
 }
@@ -82,7 +85,10 @@ pub fn behavior_and_position() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
-            let panel_config = page.panel_config.as_ref().unwrap();
+            let panel_config = match page.panel_config.as_ref() {
+                Some(panel_config) => panel_config,
+                None => return Element::from(text(fl!("unknown"))),
+            };
             settings::view_section(&section.title)
                 .add(settings::item(
                     &descriptions[0],
@@ -103,7 +109,23 @@ pub fn behavior_and_position() -> Section<crate::pages::Message> {
                         |a| Message::PanelAnchor(a.0),
                     ),
                 ))
-                .add(settings::item(&descriptions[2], text("todo")))
+                .add(settings::item(
+                    &descriptions[2],
+                    pick_list(
+                        Cow::from(
+                            Some(fl!("all"))
+                                .into_iter()
+                                .chain(page.outputs.values().map(|(name, _)| name.clone()))
+                                .collect::<Vec<_>>(),
+                        ),
+                        match &panel_config.output {
+                            CosmicPanelOuput::All => Some(fl!("all")),
+                            CosmicPanelOuput::Active => None,
+                            CosmicPanelOuput::Name(ref name) => Some(name.clone()),
+                        },
+                        Message::Output,
+                    ),
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Panel)
         })
@@ -119,9 +141,12 @@ pub fn style() -> Section<crate::pages::Message> {
             fl!("panel-style", "size"),
             fl!("panel-style", "background-opacity"),
         ])
-        .view::<Page>(|binder, page, section| {
+        .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
-            let panel_config = page.panel_config.as_ref().unwrap();
+            let panel_config = match page.panel_config.as_ref() {
+                Some(panel_config) => panel_config,
+                None => return Element::from(text(fl!("unknown"))),
+            };
             settings::view_section(&section.title)
                 .add(settings::item(
                     &descriptions[0],
@@ -145,41 +170,55 @@ pub fn style() -> Section<crate::pages::Message> {
                 ))
                 .add(settings::item(
                     &descriptions[3],
-                    slider(
-                        0..=4,
-                        match panel_config.size {
-                            PanelSize::XS => 0,
-                            PanelSize::S => 1,
-                            PanelSize::M => 2,
-                            PanelSize::L => 3,
-                            PanelSize::XL => 4,
-                        },
-                        |v| {
-                            if v == 0 {
-                                Message::PanelSize(PanelSize::XS)
-                            } else if v == 1 {
-                                Message::PanelSize(PanelSize::S)
-                            } else if v == 2 {
-                                Message::PanelSize(PanelSize::M)
-                            } else if v == 3 {
-                                Message::PanelSize(PanelSize::L)
-                            } else {
-                                Message::PanelSize(PanelSize::XL)
-                            }
-                        },
-                    ),
+                    // TODO custom discrete slider variant
+                    row![
+                        text(fl!("small")),
+                        slider(
+                            0..=4,
+                            match panel_config.size {
+                                PanelSize::XS => 0,
+                                PanelSize::S => 1,
+                                PanelSize::M => 2,
+                                PanelSize::L => 3,
+                                PanelSize::XL => 4,
+                            },
+                            |v| {
+                                if v == 0 {
+                                    Message::PanelSize(PanelSize::XS)
+                                } else if v == 1 {
+                                    Message::PanelSize(PanelSize::S)
+                                } else if v == 2 {
+                                    Message::PanelSize(PanelSize::M)
+                                } else if v == 3 {
+                                    Message::PanelSize(PanelSize::L)
+                                } else {
+                                    Message::PanelSize(PanelSize::XL)
+                                }
+                            },
+                        ),
+                        text(fl!("large"))
+                    ]
+                    .spacing(12),
                 ))
                 .add(settings::item(
                     &descriptions[4],
-                    slider(
-                        0..=100,
-                        (match panel_config.background {
-                            cosmic_panel_config::CosmicPanelBackground::ThemeDefault(Some(a))
-                            | cosmic_panel_config::CosmicPanelBackground::Color([_, _, _, a]) => a,
-                            _ => 0.0,
-                        } * 100.0) as i32,
-                        |v| Message::Opacity(v as f32 / 100.0),
-                    ),
+                    row![
+                        text(fl!("number", HashMap::from_iter(vec![("number", 0)]))),
+                        slider(
+                            0..=100,
+                            (match panel_config.background {
+                                cosmic_panel_config::CosmicPanelBackground::ThemeDefault(Some(
+                                    a,
+                                ))
+                                | cosmic_panel_config::CosmicPanelBackground::Color([_, _, _, a]) =>
+                                    a,
+                                _ => 0.0,
+                            } * 100.0) as i32,
+                            |v| Message::Opacity(v as f32 / 100.0),
+                        ),
+                        text(fl!("number", HashMap::from_iter(vec![("number", 100)]))),
+                    ]
+                    .spacing(12),
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Panel)
@@ -216,6 +255,8 @@ pub fn configuration() -> Section<crate::pages::Message> {
             Element::from(settings)
         })
 }
+
+#[allow(clippy::module_name_repetitions)]
 pub fn panel_dock_links() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("desktop-panels-and-applets"))
@@ -270,6 +311,7 @@ pub fn panel_dock_links() -> Section<crate::pages::Message> {
         })
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub fn add_panel() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("panel-missing"))
@@ -277,12 +319,8 @@ pub fn add_panel() -> Section<crate::pages::Message> {
             fl!("panel-missing", "desc"),
             fl!("panel-missing", "fix"),
         ])
-        .view::<Page>(|binder, _page, section| {
-            let desktop = binder
-                .page::<super::Page>()
-                .expect("desktop page not found");
-
-            let descriptions = &section.descriptions;
+        .view::<Page>(|_binder, _page, section| {
+            // _descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .apply(Element::from)
                 .map(crate::pages::Message::Desktop)
@@ -325,13 +363,15 @@ pub enum Message {
     // panel messages
     AutoHidePanel(bool),
     PanelAnchor(PanelAnchor),
-    Output(CosmicPanelOuput),
+    Output(String),
     AnchorGap(bool),
     PanelSize(PanelSize),
     Appearance(Appearance),
     ExtendToEdge(bool),
     Opacity(f32),
     Applets,
+    OutputAdded(String, WlOutput),
+    OutputRemoved(WlOutput),
 }
 
 impl Page {
@@ -347,7 +387,7 @@ impl Page {
                     handle_size: 4,
                 });
 
-                let _ = panel_config.write_entry(helper);
+                _ = panel_config.write_entry(helper);
             }
             Message::PanelAnchor(anchor) => {
                 let helper = self.config_helper.as_ref().unwrap();
@@ -355,16 +395,26 @@ impl Page {
 
                 panel_config.anchor = anchor;
 
-                let _ = panel_config.write_entry(helper);
+                _ = panel_config.write_entry(helper);
             }
-            Message::Output(_) => todo!(),
+            Message::Output(name) => {
+                let helper = self.config_helper.as_ref().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
+
+                panel_config.output = match name {
+                    s if s == fl!("all") => CosmicPanelOuput::All,
+                    _ => CosmicPanelOuput::Name(name),
+                };
+
+                _ = panel_config.write_entry(helper);
+            }
             Message::AnchorGap(enabled) => {
                 let helper = self.config_helper.as_ref().unwrap();
                 let panel_config = self.panel_config.as_mut().unwrap();
 
                 panel_config.anchor_gap = enabled;
 
-                let _ = panel_config.write_entry(helper);
+                _ = panel_config.write_entry(helper);
             }
             Message::PanelSize(size) => {
                 let helper = self.config_helper.as_ref().unwrap();
@@ -372,7 +422,7 @@ impl Page {
 
                 panel_config.size = size;
 
-                let _ = panel_config.write_entry(helper);
+                _ = panel_config.write_entry(helper);
             }
             Message::Appearance(_) => {
                 //TODO update panel config to support these kinds of configs
@@ -383,7 +433,7 @@ impl Page {
 
                 panel_config.expand_to_edges = enabled;
 
-                let _ = panel_config.write_entry(helper);
+                _ = panel_config.write_entry(helper);
             }
             Message::Opacity(opacity) => {
                 let helper = self.config_helper.as_ref().unwrap();
@@ -398,9 +448,16 @@ impl Page {
                     }
                 }
 
-                let _ = panel_config.write_entry(helper);
+                _ = panel_config.write_entry(helper);
             }
             Message::Applets => todo!(),
+
+            Message::OutputAdded(name, output) => {
+                self.outputs.insert(output.id(), (name, output));
+            }
+            Message::OutputRemoved(output) => {
+                self.outputs.remove(&output.id());
+            }
         }
     }
 }

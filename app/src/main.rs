@@ -20,7 +20,10 @@ pub mod pages;
 
 use env_logger::Env;
 
-use cosmic::iced::Application;
+use cosmic::{
+    iced::{wayland::actions::window::SctkWindowSettings, Application, Limits},
+    iced_sctk::settings::InitialSurface,
+};
 use i18n_embed::DesktopLanguageRequester;
 
 /// # Errors
@@ -47,7 +50,11 @@ pub fn main() -> color_eyre::Result<()> {
 
     cosmic::settings::set_default_icon_theme("Pop");
     let mut settings = cosmic::settings();
-    settings.window.min_size = Some((600, 300));
+    settings.initial_surface = InitialSurface::XdgWindow(SctkWindowSettings {
+        size_limits: Limits::NONE.min_width(600.0).min_height(300.0),
+        ..Default::default()
+    });
+
     SettingsApp::run(settings)?;
 
     Ok(())

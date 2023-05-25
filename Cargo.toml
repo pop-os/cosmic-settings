@@ -7,4 +7,4 @@ git = "https://github.com/pop-os/libcosmic"
 # rev = "b85c504d72ee1c0d360c56042996474932df97cb"
 branch = "cosmic-advanced-text"
 default-features = false
-features = ["debug", "winit", "tokio"]
+features = ["debug", "wayland", "tokio"]
