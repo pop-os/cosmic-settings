@@ -13,11 +13,6 @@ desktop = Desktop
 appearance = Appearance
     .desc = Accent colors and COSMIC theming.
 
-## Desktop: Dock & Panel
-
-dock = Dock
-    .desc = Panel with pinned applications.
-
 ## Desktop: Notifications
 
 notifications = Notifications
