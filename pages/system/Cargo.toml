@@ -7,12 +7,12 @@ license = "GPL-3.0-only"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-byte-unit = { version = "4.0.18", default-features = false }
+byte-unit = { version = "4.0.19", default-features = false }
 const_format = "0.2.30"
 concat-in-place = "1.1.0"
-sysinfo = "0.28.4"
+sysinfo = "0.29.0"
 memchr = "2.5.0"
 
 [dependencies.bumpalo]
-version = "3.12.1"
+version = "3.13.0"
 features = ["collections"]
