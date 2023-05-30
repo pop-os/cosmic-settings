@@ -28,7 +28,7 @@ use cosmic::{
 };
 
 use crate::{
-    config::{self, Config},
+    config::Config,
     pages::{
         desktop::{self, panel},
         sound, system, time,
@@ -43,7 +43,6 @@ use std::process;
 pub struct SettingsApp {
     pub active_page: page::Entity,
     pub config: Config,
-    pub config_path: config::PathManager,
     pub debug: bool,
     pub is_condensed: bool,
     pub nav_bar_toggled_condensed: bool,
@@ -87,13 +86,10 @@ impl Application for SettingsApp {
     type Theme = Theme;
 
     fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
-        let mut config_path = config::PathManager::new();
-
         let mut app = SettingsApp {
             sharp_corners: false,
             active_page: page::Entity::default(),
-            config: config_path.config("main", Config::deserialize),
-            config_path,
+            config: Config::new(),
             debug: false,
             is_condensed: false,
             nav_bar: segmented_button::Model::default(),
@@ -389,8 +385,8 @@ impl SettingsApp {
 
         if current_page != page {
             self.config.active_page = Box::from(&*self.pages.info[page].id);
-            self.config_path
-                .config("main", |path| self.config.serialize(path));
+            self.config
+                .set_active_page(Box::from(&*self.pages.info[page].id));
         }
 
         self.search_clear();
