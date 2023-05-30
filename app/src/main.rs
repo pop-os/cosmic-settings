@@ -18,8 +18,6 @@ pub mod widget;
 
 pub mod pages;
 
-use env_logger::Env;
-
 use cosmic::{
     iced::{wayland::actions::window::SctkWindowSettings, Application, Limits},
     iced_sctk::settings::InitialSurface,
@@ -30,16 +28,26 @@ use i18n_embed::DesktopLanguageRequester;
 ///
 /// Returns error if iced fails to run the application.
 pub fn main() -> color_eyre::Result<()> {
-    let env = Env::default()
-        .filter_or("MY_LOG_LEVEL", "info")
-        .write_style_or("MY_LOG_STYLE", "always");
-
-    env_logger::init_from_env(env);
     color_eyre::install()?;
 
     if std::env::var("RUST_SPANTRACE").is_err() {
         std::env::set_var("RUST_SPANTRACE", "0");
     }
+
+    if std::env::var_os("RUST_LOG").is_none() {
+        std::env::set_var("RUST_LOG", "info");
+    }
+
+    tracing_subscriber::fmt()
+        .pretty()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_writer(std::io::stderr)
+        .without_time()
+        .with_line_number(true)
+        .with_file(true)
+        .with_target(false)
+        .with_thread_names(true)
+        .init();
 
     let localizer = crate::localize::localizer();
     let requested_languages = DesktopLanguageRequester::requested_languages();

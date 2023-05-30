@@ -25,9 +25,9 @@ rust-embed = "6.6.1"
 slotmap = "1.0.6"
 tokio = "1.28.2"
 downcast-rs = "1.2.0"
-log = "0.4"
-env_logger = "0.10"
 cosmic-panel-config = { git = "https://github.com/pop-os/cosmic-panel" }
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"]}
 
 [dependencies.i18n-embed]
 version = "0.13.9"
