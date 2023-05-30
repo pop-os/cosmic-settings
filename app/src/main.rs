@@ -8,15 +8,13 @@
 
 pub mod app;
 pub use app::{Message, SettingsApp};
-
 pub mod config;
 
 #[macro_use]
 pub mod localize;
-
-pub mod widget;
-
 pub mod pages;
+pub mod theme;
+pub mod widget;
 
 use cosmic::{
     iced::{wayland::actions::window::SctkWindowSettings, Application, Limits},

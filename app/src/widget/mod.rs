@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use apply::Apply;
-use cosmic::iced::{
-    self,
-    widget::{button, column, container, horizontal_space, row, vertical_space, Button},
-    Length,
-};
 use cosmic::widget::{divider, icon, list, settings, text};
+use cosmic::{
+    iced::{
+        self,
+        widget::{button, column, container, horizontal_space, row, vertical_space, Button},
+        Length,
+    },
+    iced_widget::core::image,
+};
 use cosmic::{theme, Element};
 use cosmic_settings_page as page;
 
@@ -130,4 +133,20 @@ pub fn unimplemented_page<Message: 'static>() -> Element<'static, Message> {
     settings::view_section("")
         .add(text("We haven't created that panel yet, and/or it is using a similar idea as current Pop! designs."))
         .into()
+}
+
+#[must_use]
+pub fn display_container<'a, Message: 'a>(
+    image: image::Handle,
+    width: f32,
+) -> cosmic::Element<'a, Message> {
+    row!(
+        horizontal_space(Length::Fill),
+        container(cosmic::iced::widget::image(image).width(Length::Fixed(width)))
+            .padding(4)
+            .style(crate::theme::display_container()),
+        horizontal_space(Length::Fill),
+    )
+    .padding([0, 0, 8, 0])
+    .into()
 }

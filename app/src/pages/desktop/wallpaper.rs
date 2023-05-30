@@ -9,6 +9,7 @@ use cosmic::{
     iced::widget::{column, container, horizontal_space, row, text},
     iced::Length,
     iced_runtime::core::image::Handle as ImageHandle,
+    iced_widget::core::renderer::BorderRadius,
     theme,
     widget::{list_column, settings, toggler},
     Element,
@@ -57,7 +58,7 @@ impl Page {
             Message::SameBackground(value) => self.same_background = value,
             Message::Select(id) => {
                 if let Some(path) = self.selection.paths.get(id) {
-                    wallpaper::set(&mut self.config, Entry::new(Output::All, path.to_owned()));
+                    wallpaper::set(&mut self.config, Entry::new(Output::All, path.clone()));
                     self.selection.active = id;
                 }
             }
@@ -65,6 +66,20 @@ impl Page {
             Message::Update((config, selection)) => {
                 self.config = config;
                 self.selection = selection;
+
+                if let Some(entry) = self
+                    .config
+                    .backgrounds
+                    .iter()
+                    .find(|b| b.output == Output::All)
+                {
+                    self.same_background = true;
+                    for (entity, path) in self.selection.paths.iter() {
+                        if path == &entry.source {
+                            self.selection.active = entity;
+                        }
+                    }
+                }
             }
         }
     }
@@ -88,7 +103,9 @@ impl page::Page<crate::pages::Message> for Page {
         Some(Box::pin(async move {
             let config = wallpaper::config();
 
-            let mut backgrounds = wallpaper::load_each_from_path("/usr/share/backgrounds".into());
+            let mut backgrounds =
+                wallpaper::load_each_from_path("/usr/share/backgrounds/pop/".into());
+
             let mut update = Context::default();
 
             let start = Instant::now();
@@ -142,19 +159,7 @@ pub fn settings() -> Section<crate::pages::Message> {
             let mut children = Vec::with_capacity(3);
 
             if let Some(image) = page.selection.handles.get(page.selection.active) {
-                let display_preview = row!(
-                    horizontal_space(Length::Fill),
-                    container(
-                        cosmic::iced::widget::image(image.clone()).width(Length::Fixed(300.0))
-                    )
-                    .padding(4)
-                    .style(theme::Container::Background),
-                    horizontal_space(Length::Fill),
-                )
-                .padding([0, 0, 8, 0])
-                .into();
-
-                children.push(display_preview);
+                children.push(crate::widget::display_container(image.clone(), 300.0));
             }
 
             children.push(

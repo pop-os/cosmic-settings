@@ -28,6 +28,7 @@ pub fn set(config: &mut Config, entry: Entry) {
             entry.output.to_string(),
             entry.source.display()
         );
+
         if let Err(why) = config.set_entry(&context, entry) {
             tracing::error!(?why, "failed to set background");
         }
