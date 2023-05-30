@@ -4,7 +4,10 @@ default-members = ["app"]
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-# rev = "b85c504d72ee1c0d360c56042996474932df97cb"
-branch = "cosmic-advanced-text"
+rev = "f06a81c"
 default-features = false
 features = ["debug", "wayland", "tokio"]
+
+[workspace.dependencies.cosmic-config]
+git = "https://github.com/pop-os/libcosmic"
+rev = "f06a81c"

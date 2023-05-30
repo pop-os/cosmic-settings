@@ -8,7 +8,7 @@ license = "GPL-3.0-only"
 
 [dependencies]
 byte-unit = { version = "4.0.19", default-features = false }
-const_format = "0.2.30"
+const_format = "0.2.31"
 concat-in-place = "1.1.0"
 sysinfo = "0.29.0"
 memchr = "2.5.0"

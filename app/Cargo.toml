@@ -13,21 +13,21 @@ color-eyre = "0.6.2"
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-system = { path = "../pages/system" }
 cosmic-settings-time = { path = "../pages/time" }
-derive_setters = "0.1.5"
+derive_setters = "0.1.6"
 dirs = "5.0.1"
 generator = "0.7.4"
 i18n-embed-fl = "0.6.7"
 libcosmic = {workspace = true}
-once_cell = "1.17.1"
+once_cell = "1.17.2"
 regex = "1.8.3"
 rkyv = { version = "0.7.42", features = ["validation"]}
 rust-embed = "6.6.1"
 slotmap = "1.0.6"
-tokio = "1.28.1"
+tokio = "1.28.2"
 downcast-rs = "1.2.0"
 log = "0.4"
 env_logger = "0.10"
-cosmic-panel-config = { git = "https://github.com/pop-os/cosmic-panel", branch = "bg_jammy" }
+cosmic-panel-config = { git = "https://github.com/pop-os/cosmic-panel" }
 
 [dependencies.i18n-embed]
 version = "0.13.9"
