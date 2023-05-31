@@ -1,4 +1,4 @@
-pub use cosmic_bg_config::{Config, Entry, Output};
+pub use cosmic_bg_config::{Config, Entry, Output, ScalingMode};
 use image::RgbaImage;
 use std::{
     collections::hash_map::DefaultHasher,

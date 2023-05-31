@@ -6,21 +6,20 @@ use std::{path::PathBuf, time::Instant};
 use apply::Apply;
 use cosmic::{
     iced::alignment::Horizontal,
-    iced::widget::{column, container, horizontal_space, row, text},
+    iced::widget::{column, row},
     iced::Length,
     iced_runtime::core::image::Handle as ImageHandle,
-    iced_widget::core::renderer::BorderRadius,
-    theme,
     widget::{list_column, settings, toggler},
     Element,
 };
-use cosmic_settings_desktop::wallpaper::{self, Entry, Output};
+use cosmic_settings_desktop::wallpaper::{self, Entry, Output, ScalingMode};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    Fit(String),
     SameBackground(bool),
     Select(DefaultKey),
     Slideshow(bool),
@@ -32,7 +31,13 @@ pub struct Page {
     pub selection: Context,
     pub same_background: bool,
     pub slideshow: bool,
+    pub fit_options: Vec<String>,
+    pub selected_fit: u32,
 }
+
+const FIT: u32 = 0;
+const STRETCH: u32 = 1;
+const ZOOM: u32 = 2;
 
 impl Default for Page {
     fn default() -> Self {
@@ -41,6 +46,8 @@ impl Default for Page {
             selection: Context::default(),
             same_background: true,
             slideshow: false,
+            fit_options: vec!["Fit to Screen".into(), "Stretch".into(), "Zoom".into()],
+            selected_fit: 0,
         }
     }
 }
@@ -53,14 +60,39 @@ pub struct Context {
 }
 
 impl Page {
+    pub fn apply(&mut self) {
+        let Some(path) = self.selection.paths.get(self.selection.active) else {
+            return
+        };
+
+        let mut entry = Entry::new(Output::All, path.clone());
+
+        match self.selected_fit {
+            FIT => entry.scaling_mode = ScalingMode::Fit([0.0, 0.0, 0.0]),
+            STRETCH => entry.scaling_mode = ScalingMode::Stretch,
+            ZOOM => entry.scaling_mode = ScalingMode::Zoom,
+            _ => (),
+        }
+
+        wallpaper::set(&mut self.config, entry);
+    }
+
     pub fn update(&mut self, message: Message) {
         match message {
+            Message::Fit(option) => {
+                self.selected_fit = self
+                    .fit_options
+                    .iter()
+                    .enumerate()
+                    .find(|(_, key)| **key == option)
+                    .map_or(0, |(indice, _)| indice as u32);
+
+                self.apply();
+            }
             Message::SameBackground(value) => self.same_background = value,
             Message::Select(id) => {
-                if let Some(path) = self.selection.paths.get(id) {
-                    wallpaper::set(&mut self.config, Entry::new(Output::All, path.clone()));
-                    self.selection.active = id;
-                }
+                self.selection.active = id;
+                self.apply();
             }
             Message::Slideshow(value) => self.slideshow = value,
             Message::Update((config, selection)) => {
@@ -77,6 +109,11 @@ impl Page {
                     for (entity, path) in self.selection.paths.iter() {
                         if path == &entry.source {
                             self.selection.active = entity;
+                            match entry.scaling_mode {
+                                ScalingMode::Fit(_) => self.selected_fit = FIT,
+                                ScalingMode::Stretch => self.selected_fit = STRETCH,
+                                ScalingMode::Zoom => self.selected_fit = ZOOM,
+                            }
                         }
                     }
                 }
@@ -172,13 +209,19 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .into(),
             );
 
+            let background_fit = cosmic::iced::widget::pick_list(
+                &page.fit_options,
+                page.fit_options.get(page.selected_fit as usize).cloned(),
+                Message::Fit,
+            );
+
             children.push(
                 list_column()
                     .add(settings::item(
                         &descriptions[0],
                         toggler(None, page.same_background, Message::SameBackground),
                     ))
-                    .add(settings::item(&descriptions[1], text("TODO")))
+                    .add(settings::item(&descriptions[1], background_fit))
                     .add(settings::item(
                         &descriptions[2],
                         toggler(None, page.slideshow, Message::Slideshow),
@@ -197,7 +240,7 @@ pub fn settings() -> Section<crate::pages::Message> {
         })
 }
 
-pub fn wallpaper_button(handle: &ImageHandle, id: DefaultKey) -> Element<Message> {
+fn wallpaper_button(handle: &ImageHandle, id: DefaultKey) -> Element<Message> {
     let image = cosmic::iced::widget::image(handle.clone()).apply(cosmic::iced::Element::from);
 
     cosmic::iced::widget::button(image)
