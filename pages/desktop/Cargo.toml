@@ -15,3 +15,5 @@ image = "0.24.6"
 rayon = "1.7.0"
 tokio = { version = "1.28.0", features = ["sync"] }
 tracing = "0.1.37"
+sctk = { package = "smithay-client-toolkit", git = "https://github.com/Smithay/client-toolkit" }
+wayland-client = "0.30.1"

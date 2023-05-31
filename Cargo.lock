@@ -718,7 +718,7 @@ dependencies = [
 [[package]]
 name = "cosmic-bg-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-bg#c9fec966262a9a3572e662b4e98f647f4807ba33"
+source = "git+https://github.com/pop-os/cosmic-bg?branch=settings_jammy#23f4a1f80e98d36efc4a83a59ec9e8b13bfca35b"
 dependencies = [
  "cosmic-config",
  "derive_setters",
@@ -754,7 +754,7 @@ dependencies = [
 [[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel?branch=settings_jammy#a71a4cba13184f22ba8874c910b20e99f60871c0"
+source = "git+https://github.com/pop-os/cosmic-panel?branch=settings_jammy#1b8699fb4b23243e425d05174afb8e3275ff3d4a"
 dependencies = [
  "anyhow",
  "cosmic-config",
@@ -804,8 +804,10 @@ dependencies = [
  "futures-lite",
  "image",
  "rayon",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/Smithay/client-toolkit)",
  "tokio",
  "tracing",
+ "wayland-client 0.30.2",
 ]
 
 [[package]]
@@ -2076,7 +2078,7 @@ dependencies = [
  "instant",
  "log",
  "palette",
- "smithay-client-toolkit 0.17.0",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/pop-os/client-toolkit?tag=themed-pointer)",
  "thiserror",
  "twox-hash",
 ]
@@ -2131,7 +2133,7 @@ dependencies = [
  "iced_accessibility",
  "iced_core",
  "iced_futures",
- "smithay-client-toolkit 0.17.0",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/pop-os/client-toolkit?tag=themed-pointer)",
  "thiserror",
 ]
 
@@ -2150,7 +2152,7 @@ dependencies = [
  "itertools",
  "log",
  "raw-window-handle 0.5.2",
- "smithay-client-toolkit 0.17.0",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/pop-os/client-toolkit?tag=themed-pointer)",
  "smithay-clipboard",
  "thiserror",
  "wayland-backend",
@@ -2216,7 +2218,7 @@ dependencies = [
  "iced_style",
  "num-traits",
  "ouroboros 0.13.0",
- "smithay-client-toolkit 0.17.0",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/pop-os/client-toolkit?tag=themed-pointer)",
  "thiserror",
  "unicode-segmentation",
 ]
@@ -2533,7 +2535,7 @@ dependencies = [
  "lazy_static",
  "palette",
  "slotmap",
- "smithay-client-toolkit 0.17.0",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/pop-os/client-toolkit?tag=themed-pointer)",
  "tokio",
 ]
 
@@ -4007,6 +4009,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "smithay-client-toolkit"
+version = "0.17.0"
+source = "git+https://github.com/Smithay/client-toolkit#9d0bbc69f33873d5e85864413e12c71f8c458a2d"
+dependencies = [
+ "bitflags 1.3.2",
+ "calloop",
+ "cursor-icon",
+ "dlib",
+ "log",
+ "memmap2",
+ "nix 0.26.2",
+ "pkg-config",
+ "thiserror",
+ "wayland-backend",
+ "wayland-client 0.30.2",
+ "wayland-csd-frame",
+ "wayland-cursor 0.30.0",
+ "wayland-protocols 0.30.0",
+ "wayland-protocols-wlr",
+ "wayland-scanner 0.30.0",
+ "xkbcommon",
+]
+
+[[package]]
 name = "smithay-clipboard"
 version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4838,6 +4864,17 @@ dependencies = [
  "once_cell",
  "smallvec",
  "wayland-sys 0.29.5",
+]
+
+[[package]]
+name = "wayland-csd-frame"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72191e30290b83491325d32c1327be7f45459c97263d9d48494c81efc9328116"
+dependencies = [
+ "bitflags 2.3.1",
+ "cursor-icon",
+ "wayland-backend",
 ]
 
 [[package]]

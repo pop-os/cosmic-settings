@@ -1,7 +1,7 @@
 pub use cosmic_bg_config::{Config, Entry, Output, ScalingMode};
 use image::RgbaImage;
 use std::{
-    collections::hash_map::DefaultHasher,
+    collections::{hash_map::DefaultHasher, HashMap},
     fs::DirEntry,
     hash::{Hash, Hasher},
     path::{Path, PathBuf},
@@ -9,16 +9,28 @@ use std::{
 };
 use tokio::sync::mpsc::{self, Receiver};
 
-pub fn config() -> Config {
+pub fn config() -> (Config, HashMap<String, String>) {
+    let mut displays = HashMap::new();
+
+    if let Ok(outputs) = crate::outputs::outputs() {
+        for output in outputs {
+            if let Some(name) = output.name {
+                displays.insert(name, output.make);
+            }
+        }
+    }
+
     let helper = Config::helper().expect("failed to get helper for cosmic bg config");
 
-    match Config::load(&helper) {
+    let config = match Config::load(&helper) {
         Ok(conf) => conf,
         Err(why) => {
             tracing::warn!(?why, "Config file error, falling back to defaults");
             Config::default()
         }
-    }
+    };
+
+    (config, displays)
 }
 
 pub fn set(config: &mut Config, entry: Entry) {

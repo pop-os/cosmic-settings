@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{path::PathBuf, time::Instant};
+use std::{collections::HashMap, path::PathBuf, time::Instant};
 
 use apply::Apply;
 use cosmic::{
@@ -23,16 +23,17 @@ pub enum Message {
     SameBackground(bool),
     Select(DefaultKey),
     Slideshow(bool),
-    Update((wallpaper::Config, Context)),
+    Update((wallpaper::Config, HashMap<String, String>, Context)),
 }
 
 pub struct Page {
     pub config: wallpaper::Config,
-    pub selection: Context,
-    pub same_background: bool,
-    pub slideshow: bool,
     pub fit_options: Vec<String>,
+    pub outputs: HashMap<String, String>,
+    pub same_background: bool,
     pub selected_fit: u32,
+    pub selection: Context,
+    pub slideshow: bool,
 }
 
 const FIT: u32 = 0;
@@ -43,11 +44,12 @@ impl Default for Page {
     fn default() -> Self {
         Page {
             config: wallpaper::Config::default(),
-            selection: Context::default(),
-            same_background: true,
-            slideshow: false,
             fit_options: vec!["Fit to Screen".into(), "Stretch".into(), "Zoom".into()],
+            outputs: HashMap::new(),
+            same_background: true,
             selected_fit: 0,
+            selection: Context::default(),
+            slideshow: false,
         }
     }
 }
@@ -89,15 +91,22 @@ impl Page {
 
                 self.apply();
             }
-            Message::SameBackground(value) => self.same_background = value,
+
+            Message::SameBackground(value) => {
+                self.same_background = value;
+            }
+
             Message::Select(id) => {
                 self.selection.active = id;
                 self.apply();
             }
+
             Message::Slideshow(value) => self.slideshow = value,
-            Message::Update((config, selection)) => {
+
+            Message::Update((config, outputs, selection)) => {
                 self.config = config;
                 self.selection = selection;
+                self.outputs = outputs;
 
                 if let Some(entry) = self
                     .config
@@ -138,7 +147,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn load(&self, _page: page::Entity) -> Option<page::Task<crate::pages::Message>> {
         Some(Box::pin(async move {
-            let config = wallpaper::config();
+            let (config, outputs) = wallpaper::config();
 
             let mut backgrounds =
                 wallpaper::load_each_from_path("/usr/share/backgrounds/pop/".into());
@@ -160,7 +169,7 @@ impl page::Page<crate::pages::Message> for Page {
                 Instant::now().duration_since(start)
             );
 
-            crate::pages::Message::DesktopWallpaper(Message::Update((config, update)))
+            crate::pages::Message::DesktopWallpaper(Message::Update((config, outputs, update)))
         }))
     }
 }
