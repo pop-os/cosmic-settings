@@ -9,7 +9,11 @@ use cosmic::{
     iced::widget::{column, row},
     iced::Length,
     iced_runtime::core::image::Handle as ImageHandle,
-    widget::{list_column, settings, toggler},
+    widget::{
+        list_column,
+        segmented_button::{self, SingleSelectModel},
+        settings, toggler,
+    },
     Element,
 };
 use cosmic_settings_desktop::wallpaper::{self, Entry, Output, ScalingMode};
@@ -20,6 +24,8 @@ use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 #[derive(Clone, Debug)]
 pub enum Message {
     Fit(String),
+    Output(segmented_button::Entity),
+    RotationFrequency(String),
     SameBackground(bool),
     Select(DefaultKey),
     Slideshow(bool),
@@ -27,27 +33,51 @@ pub enum Message {
 }
 
 pub struct Page {
+    pub active_output: Option<String>,
     pub config: wallpaper::Config,
+    pub current_directory: PathBuf,
     pub fit_options: Vec<String>,
-    pub outputs: HashMap<String, String>,
+    pub outputs: SingleSelectModel,
+    pub rotation_frequency: u64,
+    pub rotation_options: Vec<String>,
     pub same_background: bool,
-    pub selected_fit: u32,
+    pub selected_fit: usize,
+    pub selected_rotation: usize,
     pub selection: Context,
     pub slideshow: bool,
 }
 
-const FIT: u32 = 0;
-const STRETCH: u32 = 1;
-const ZOOM: u32 = 2;
+const FIT: usize = 0;
+const STRETCH: usize = 1;
+const ZOOM: usize = 2;
+
+const MINUTES_5: usize = 0;
+const MINUTES_10: usize = 1;
+const MINUTES_15: usize = 2;
+const MINUTES_30: usize = 3;
+const HOUR_1: usize = 4;
+const HOUR_2: usize = 5;
 
 impl Default for Page {
     fn default() -> Self {
         Page {
+            active_output: None,
             config: wallpaper::Config::default(),
+            current_directory: PathBuf::from("/usr/share/backgrounds/pop/"),
             fit_options: vec![fl!("fit-to-screen"), fl!("stretch"), fl!("zoom")],
-            outputs: HashMap::new(),
+            outputs: SingleSelectModel::default(),
+            rotation_frequency: 300,
+            rotation_options: vec![
+                fl!("x-minutes", number = 5),
+                fl!("x-minutes", number = 10),
+                fl!("x-minutes", number = 15),
+                fl!("x-minutes", number = 30),
+                fl!("x-hours", number = 1),
+                fl!("x-hours", number = 2),
+            ],
             same_background: true,
             selected_fit: 0,
+            selected_rotation: 0,
             selection: Context::default(),
             slideshow: false,
         }
@@ -62,18 +92,38 @@ pub struct Context {
 }
 
 impl Page {
+    /// Applies the current settings to cosmic-bg.
     pub fn apply(&mut self) {
-        let Some(path) = self.selection.paths.get(self.selection.active) else {
-            return
+        let path = if self.slideshow {
+            &self.current_directory
+        } else if let Some(path) = self.selection.paths.get(self.selection.active) {
+            path
+        } else {
+            return;
         };
 
-        let mut entry = Entry::new(Output::All, path.clone());
+        let output = if self.same_background {
+            Output::All
+        } else if let Some(name) = self.outputs.active_data::<String>() {
+            Output::Name(name.clone())
+        } else {
+            return;
+        };
 
-        match self.selected_fit {
-            FIT => entry.scaling_mode = ScalingMode::Fit([0.0, 0.0, 0.0]),
-            STRETCH => entry.scaling_mode = ScalingMode::Stretch,
-            ZOOM => entry.scaling_mode = ScalingMode::Zoom,
-            _ => (),
+        let scaling_mode = match self.selected_fit {
+            FIT => ScalingMode::Fit([0.0, 0.0, 0.0]),
+            STRETCH => ScalingMode::Stretch,
+            ZOOM => ScalingMode::Zoom,
+            _ => return,
+        };
+
+        let entry = Entry::new(output.clone(), path.clone())
+            .scaling_mode(scaling_mode)
+            .rotation_frequency(self.rotation_frequency);
+
+        if output != Output::All {
+            self.config.backgrounds.clear();
+            self.config.outputs.clear();
         }
 
         wallpaper::set(&mut self.config, entry);
@@ -87,9 +137,33 @@ impl Page {
                     .iter()
                     .enumerate()
                     .find(|(_, key)| **key == option)
-                    .map_or(0, |(indice, _)| indice as u32);
+                    .map_or(0, |(indice, _)| indice);
+            }
 
-                self.apply();
+            Message::Output(id) => {
+                self.outputs.activate(id);
+                if let Some(name) = self.outputs.data::<String>(id) {
+                    self.active_output = Some(name.clone());
+                }
+            }
+
+            Message::RotationFrequency(option) => {
+                self.selected_rotation = self
+                    .fit_options
+                    .iter()
+                    .enumerate()
+                    .find(|(_, key)| **key == option)
+                    .map_or(0, |(indice, _)| indice);
+
+                self.rotation_frequency = match self.selected_rotation {
+                    MINUTES_5 => 300,
+                    MINUTES_10 => 600,
+                    MINUTES_15 => 900,
+                    MINUTES_30 => 1800,
+                    HOUR_1 => 3600,
+                    HOUR_2 => 7200,
+                    _ => 10800,
+                };
             }
 
             Message::SameBackground(value) => {
@@ -98,15 +172,35 @@ impl Page {
 
             Message::Select(id) => {
                 self.selection.active = id;
-                self.apply();
             }
 
-            Message::Slideshow(value) => self.slideshow = value,
+            Message::Slideshow(value) => {
+                self.slideshow = value;
+            }
 
             Message::Update((config, outputs, selection)) => {
                 self.config = config;
                 self.selection = selection;
-                self.outputs = outputs;
+                self.outputs.clear();
+
+                {
+                    let mut first = None;
+                    for (name, model) in outputs {
+                        let entity = self
+                            .outputs
+                            .insert()
+                            .text(format!("{model} ({name})"))
+                            .data(name);
+
+                        if first.is_none() {
+                            first = Some(entity.id());
+                        }
+                    }
+
+                    if let Some(id) = first {
+                        self.outputs.activate(id);
+                    }
+                }
 
                 if let Some(entry) = self
                     .config
@@ -118,16 +212,32 @@ impl Page {
                     for (entity, path) in self.selection.paths.iter() {
                         if path == &entry.source {
                             self.selection.active = entity;
+
                             match entry.scaling_mode {
                                 ScalingMode::Fit(_) => self.selected_fit = FIT,
                                 ScalingMode::Stretch => self.selected_fit = STRETCH,
                                 ScalingMode::Zoom => self.selected_fit = ZOOM,
                             }
+
+                            self.slideshow = path.is_dir();
+
+                            match entry.rotation_frequency {
+                                600 => self.selected_rotation = MINUTES_10,
+                                900 => self.selected_rotation = MINUTES_15,
+                                1800 => self.selected_rotation = MINUTES_30,
+                                3600 => self.selected_rotation = HOUR_1,
+                                7200 => self.selected_rotation = HOUR_2,
+                                _ => self.selected_rotation = MINUTES_5,
+                            }
+
+                            self.rotation_frequency = entry.rotation_frequency;
                         }
                     }
                 }
             }
         }
+
+        self.apply();
     }
 }
 
@@ -208,15 +318,19 @@ pub fn settings() -> Section<crate::pages::Message> {
                 children.push(crate::widget::display_container(image.clone(), 300.0));
             }
 
-            children.push(
+            children.push(if page.same_background {
                 cosmic::widget::text("All Displays")
                     .horizontal_alignment(Horizontal::Center)
                     .width(Length::Fill)
                     .apply(cosmic::iced::widget::container)
                     .width(Length::Fill)
                     .padding([0, 0, 16, 0])
-                    .into(),
-            );
+                    .into()
+            } else {
+                cosmic::widget::horiontal_view_switcher(&page.outputs)
+                    .on_activate(Message::Output)
+                    .into()
+            });
 
             let background_fit = cosmic::iced::widget::pick_list(
                 &page.fit_options,
@@ -224,8 +338,8 @@ pub fn settings() -> Section<crate::pages::Message> {
                 Message::Fit,
             );
 
-            children.push(
-                list_column()
+            children.push({
+                let column = list_column()
                     .add(settings::item(
                         &descriptions[0],
                         toggler(None, page.same_background, Message::SameBackground),
@@ -234,9 +348,23 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .add(settings::item(
                         &descriptions[2],
                         toggler(None, page.slideshow, Message::Slideshow),
-                    ))
-                    .into(),
-            );
+                    ));
+
+                if page.slideshow {
+                    column
+                        .add(settings::item(
+                            &descriptions[3],
+                            cosmic::iced::widget::pick_list(
+                                &page.rotation_options,
+                                page.rotation_options.get(page.selected_rotation).cloned(),
+                                Message::RotationFrequency,
+                            ),
+                        ))
+                        .into()
+                } else {
+                    column.into()
+                }
+            });
 
             children.push(column(image_column).spacing(12).padding(0).into());
 

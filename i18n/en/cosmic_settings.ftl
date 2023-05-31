@@ -99,6 +99,13 @@ fit-to-screen = Fit to Screen
 stretch = Stretch
 zoom = Zoom
 
+x-minutes = { $number } minutes
+
+x-hours = { $number ->
+    [1] 1 hour
+    *[other] { $number } hours
+}
+
 ## Desktop: Workspaces
 
 workspaces = Workspaces
