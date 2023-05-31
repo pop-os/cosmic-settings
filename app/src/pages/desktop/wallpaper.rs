@@ -44,7 +44,7 @@ impl Default for Page {
     fn default() -> Self {
         Page {
             config: wallpaper::Config::default(),
-            fit_options: vec!["Fit to Screen".into(), "Stretch".into(), "Zoom".into()],
+            fit_options: vec![fl!("fit-to-screen"), fl!("stretch"), fl!("zoom")],
             outputs: HashMap::new(),
             same_background: true,
             selected_fit: 0,

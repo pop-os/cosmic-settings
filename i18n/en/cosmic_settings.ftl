@@ -54,6 +54,7 @@ panel-behavior-and-position = Behavior and Positions
     .autohide = Automatically hide panel
     .position = Position on screen
     .display = Show on display
+
 panel-top = Top
 panel-bottom = Bottom
 panel-left = Left
@@ -70,7 +71,7 @@ panel-style = Style
     .appearance = Appearance
     .size = Size
     .background-opacity = Background opacity
-    
+
 small = Small
 large = Large
 
@@ -94,6 +95,9 @@ wallpaper = Wallpaper
     .slide = Slideshow
     .change = Change image every
 
+fit-to-screen = Fit to Screen
+stretch = Stretch
+zoom = Zoom
 
 ## Desktop: Workspaces
 
