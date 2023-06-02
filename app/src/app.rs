@@ -3,9 +3,11 @@
 
 use apply::Apply;
 
+use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
 
 use cosmic::{
+    cosmic_config::config_subscription,
     iced::{
         self,
         event::wayland::{self, WindowEvent, WindowState},
@@ -26,17 +28,25 @@ use cosmic::{
     },
     Element, ElementExt,
 };
+use i18n_embed::unic_langid::parser::errors;
 
 use crate::{
     config::Config,
     pages::{
-        desktop::{self, panel},
+        desktop::{
+            self,
+            panel::{
+                self,
+                applets::{self, APPLET_DND_ICON_ID},
+            },
+        },
         sound, system, time,
     },
+    subscription::desktop_files,
     widget::{page_title, parent_page_button, search_header, sub_page_button},
 };
 
-use std::process;
+use std::{borrow::Cow, process};
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
@@ -77,6 +87,8 @@ pub enum Message {
     ToggleNavBarCondensed,
     WindowResize(u32, u32),
     WindowState(WindowState),
+    PanelConfig(CosmicPanelConfig),
+    DesktopInfo,
 }
 
 impl Application for SettingsApp {
@@ -174,9 +186,22 @@ impl Application for SettingsApp {
         Subscription::batch(vec![
             window_break,
             keyboard_nav::subscription().map(Message::KeyboardNav),
+            desktop_files(0).map(|_| Message::DesktopInfo),
+            config_subscription(0, "com.system76.CosmicPanel.panel".into(), 1).map(
+                |(_, e)| match e {
+                    Ok(config) => Message::PanelConfig(config),
+                    Err((errors, config)) => {
+                        for error in errors {
+                            log::error!("Error loading panel config: {:?}", error);
+                        }
+                        Message::PanelConfig(config)
+                    }
+                },
+            ),
         ])
     }
 
+    #[allow(clippy::too_many_lines)]
     fn update(&mut self, message: Message) -> iced::Command<Self::Message> {
         let mut ret = Command::none();
         match message {
@@ -257,17 +282,46 @@ impl Application for SettingsApp {
                         page.update(message);
                     }
                 }
+                crate::pages::Message::Applet(message) => {
+                    if let Some(page) = self.pages.page_mut::<applets::Page>() {
+                        ret = page.update(message);
+                    }
+                }
             },
             Message::WindowState(state) => {
                 dbg!(&state);
                 self.sharp_corners = matches!(state, WindowState::Activated);
+            }
+            Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
+                if let Some(page) = self.pages.page_mut::<panel::Page>() {
+                    page.update(panel::Message::PanelConfig(config.clone()));
+                }
+                if let Some(page) = self.pages.page_mut::<applets::Page>() {
+                    _ = page.update(applets::Message::PanelConfig(config));
+                }
+            }
+            Message::PanelConfig(c) => {
+                // dbg!(c);
+                // ignore other config changes
+            }
+            Message::DesktopInfo => {
+                if let Some(page) = self.pages.page_mut::<applets::Page>() {
+                    // collect the potential applets
+                    ret = page.update(applets::Message::Applets(
+                        freedesktop_desktop_entry::Iter::new(
+                            freedesktop_desktop_entry::default_paths(),
+                        )
+                        .filter_map(|p| applets::Applet::try_from(Cow::from(p)).ok())
+                        .collect(),
+                    ));
+                }
             }
         }
         ret
     }
 
     #[allow(clippy::too_many_lines)]
-    fn view(&self, _id: window::Id) -> Element<Message> {
+    fn view(&self, id: window::Id) -> Element<Message> {
         let (nav_bar_message, nav_bar_toggled) = if self.is_condensed {
             (
                 Message::ToggleNavBarCondensed,

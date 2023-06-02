@@ -83,6 +83,9 @@ panel-missing = Panel Configuration is Missing
     .fix = Reset to default
 
 applets = Applets
+start-segment = Start Segment
+center-segment = Center Segment
+end-segment = End Segment
 
 all = All
 
