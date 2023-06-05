@@ -1,10 +1,8 @@
 use std::{
     borrow::{Borrow, Cow},
-    cell::RefCell,
     fmt::Debug,
     mem,
     path::{Path, PathBuf},
-    rc::Rc,
     str::FromStr,
     sync::Arc,
 };
@@ -13,21 +11,18 @@ use apply::Apply;
 use cosmic::{
     cosmic_config::{self, Config, CosmicConfigEntry},
     iced::{
+        alignment::{Horizontal, Vertical},
         event::{
             self,
-            wayland::{self, Event},
+            wayland::{self},
             PlatformSpecific,
         },
         mouse, overlay, touch,
         wayland::actions::data_device::{ActionInner, DataFromMimeType, DndIcon},
         wayland::data_device::action as data_device_action,
-        window, Alignment, Length, Point, Rectangle, Size,
+        window, Alignment, Color, Length, Point, Rectangle, Size,
     },
-    iced_runtime::{
-        command::platform_specific,
-        core::{self, id::Id},
-        Command,
-    },
+    iced_runtime::{command::platform_specific, core::id::Id, Command},
     iced_style::container::StyleSheet,
     iced_widget::{
         column, container,
@@ -45,27 +40,51 @@ use cosmic::{
     Element,
 };
 
+use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section, Section};
 use freedesktop_desktop_entry::DesktopEntry;
 use slotmap::SlotMap;
+use tracing::error;
 
-use crate::{app, pages};
+const MIME_TYPE: &str = "text/uri-list";
+
+pub type OnDndCommand<'a, Message> = Box<
+    dyn Fn(
+            Box<dyn Send + Sync + Fn() -> platform_specific::wayland::data_device::ActionInner>,
+        ) -> Message
+        + 'a,
+>;
+
+const SPACING: f32 = 8.0;
+
+// radius is 8.0
+const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
+
+pub const APPLET_DND_ICON_ID: window::Id = window::Id(1000);
+pub const ADD_APPLET_DIALOGUE_ID: window::Id = window::Id(1001);
 
 pub struct Page {
     available_entries: Vec<Applet<'static>>,
-    panel_config_helper: Option<Config>,
+    config_helper: Option<Config>,
     current_config: Option<CosmicPanelConfig>,
-    drag_state: State,
+    dragged_applet: Option<Applet<'static>>,
 }
 
 impl Default for Page {
     fn default() -> Self {
+        let config_helper = cosmic_config::Config::new("com.system76.CosmicPanel.panel", 1).ok();
+        let current_config = config_helper.as_ref().and_then(|config_helper| {
+            // TODO error handling...
+            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
+            // If the config is not present, it will be created with the default values and the name will not match
+            (panel_config.name == "panel").then_some(panel_config)
+        });
         Self {
             available_entries: Vec::new(),
-            panel_config_helper: None,
-            current_config: None,
-            drag_state: State::default(),
+            config_helper,
+            current_config,
+            dragged_applet: None,
         }
     }
 }
@@ -100,9 +119,10 @@ pub enum Message {
     ReorderEnd(Vec<Applet<'static>>),
     Applets(Vec<Applet<'static>>),
     PanelConfig(CosmicPanelConfig),
-    StartDnd(State),
+    StartDnd(ReorderWidgetState),
     DnDCommand(Arc<Box<dyn Send + Sync + Fn() -> ActionInner>>),
-    ApplyReorder,
+    Save,
+    Cancel,
     Ignore,
 }
 
@@ -117,20 +137,34 @@ impl Debug for Message {
             Message::StartDnd(_) => write!(f, "StartDnd"),
             Message::DnDCommand(_) => write!(f, "DnDCommand"),
             Message::Ignore => write!(f, "Ignore"),
-            Message::ApplyReorder => write!(f, "ApplyReorder"),
+            Message::Save => write!(f, "ApplyReorder"),
             Message::RemoveStart(_) => write!(f, "RemoveStart"),
             Message::RemoveCenter(_) => write!(f, "RemoveCenter"),
             Message::RemoveEnd(_) => write!(f, "RemoveEnd"),
             Message::DetailStart(_) => write!(f, "DetailStart"),
             Message::DetailCenter(_) => write!(f, "DetailCenter"),
             Message::DetailEnd(_) => write!(f, "DetailEnd"),
+            Message::Cancel => write!(f, "Cancel"),
         }
     }
 }
 
 impl Page {
-    #[must_use]
-    pub fn update(&mut self, message: Message) -> Command<app::Message> {
+    pub fn save(&self) {
+        let Some(config) = self.current_config.as_ref() else {
+            error!("No panel config. Failed to save applets.");
+            return;
+        };
+        let Some(helper) = self.config_helper.as_ref() else {
+            error!("No panel config helper. Failed to save applets.");
+            return;
+        };
+        if let Err(e) = config.write_entry(helper) {
+            error!("Failed to save applets: {:?}", e);
+        }
+    }
+
+    pub fn update(&mut self, message: Message) -> (Option<State>, Command<app::Message>) {
         match message {
             Message::PanelConfig(c) => {
                 self.current_config = Some(c);
@@ -138,28 +172,31 @@ impl Page {
 
             Message::ReorderStart(start_list) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return (None, Command::none());
                 };
                 let Some((list, _)) = config.plugins_wings.as_mut() else {
-                    return Command::none();
+                    config.plugins_wings = Some((start_list.into_iter().map(|a: Applet| a.id.into()).collect(), Vec::new()));
+                    return (None, Command::none());
                 };
                 *list = start_list.into_iter().map(|a| a.id.into()).collect();
             }
             Message::ReorderCenter(center_list) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return (None, Command::none());
                 };
                 let Some(list) = config.plugins_center.as_mut() else {
-                    return Command::none();
+                    config.plugins_center = Some(center_list.into_iter().map(|a: Applet| a.id.into()).collect());
+                    return (None, Command::none());
                 };
                 *list = center_list.into_iter().map(|a| a.id.into()).collect();
             }
             Message::ReorderEnd(end_list) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return (None, Command::none());
                 };
                 let Some((_, list)) = config.plugins_wings.as_mut() else {
-                    return Command::none();
+                    config.plugins_wings = Some((Vec::new(), end_list.into_iter().map(|a: Applet| a.id.into()).collect()));
+                    return (None, Command::none());
                 };
                 *list = end_list.into_iter().map(|a| a.id.into()).collect();
             }
@@ -167,45 +204,68 @@ impl Page {
                 self.available_entries = applets;
             }
             Message::StartDnd(state) => {
-                self.drag_state = state;
+                self.dragged_applet = state.dragged_applet().map(Applet::into_owned);
+                return (Some(State::DndIcon(state)), Command::none());
             }
             Message::DnDCommand(action) => {
-                return data_device_action(action());
+                return (None, data_device_action(action()));
             }
             Message::Ignore => {}
-            Message::ApplyReorder => todo!(),
+            Message::Save => {
+                self.dragged_applet = None;
+                self.save();
+            }
             Message::RemoveStart(to_remove) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return (None, Command::none());
                 };
                 let Some((list, _)) = config.plugins_wings.as_mut() else {
-                    return Command::none();
+                    return (None, Command::none());
                 };
                 list.retain(|id| id != &to_remove);
+                self.save();
             }
             Message::RemoveCenter(to_remove) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return (None, Command::none());
                 };
                 let Some(list) = config.plugins_center.as_mut() else {
-                    return Command::none();
+                    return (None, Command::none());
                 };
                 list.retain(|id| id != &to_remove);
+                self.save();
             }
             Message::RemoveEnd(to_remove) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return (None, Command::none());
                 };
                 let Some((_, list)) = config.plugins_wings.as_mut() else {
-                    return Command::none();
+                    return (None, Command::none());
                 };
                 list.retain(|id| id != &to_remove);
+                self.save();
             }
-            Message::DetailStart(_) => todo!(),
-            Message::DetailCenter(_) => todo!(),
-            Message::DetailEnd(_) => todo!(),
+            Message::DetailStart(_) => {
+                // TODO ask design team
+            }
+            Message::DetailCenter(_) => {
+                // TODO ask design team
+            }
+            Message::DetailEnd(_) => {
+                // TODO ask design team
+            }
+            Message::Cancel => {
+                self.dragged_applet = None;
+                let current_config = self.config_helper.as_ref().and_then(|config_helper| {
+                    // TODO error handling...
+                    let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
+                    // If the config is not present, it will be created with the default values and the name will not match
+                    (panel_config.name == "panel").then_some(panel_config)
+                });
+                self.current_config = current_config;
+            }
         };
-        Command::none()
+        (None, Command::none())
     }
 }
 
@@ -220,71 +280,83 @@ pub fn lists() -> Section<crate::pages::Message> {
             column![
                 text(fl!("start-segment")),
                 AppletReorderList::new(
-                    page.available_entries
-                        .iter()
-                        .filter_map(|a| {
-                            config.plugins_wings.as_ref().and_then(|list| {
-                                list.0
-                                    .iter()
-                                    .any(|saved| (saved.as_str() == a.id.as_ref()))
-                                    .then(|| a.borrowed())
-                            })
-                        })
-                        .collect(),
+                    config
+                        .plugins_wings
+                        .as_ref()
+                        .map(|list| list
+                            .0
+                            .iter()
+                            .filter_map(|id| page
+                                .available_entries
+                                .iter()
+                                .find(|e| e.id.as_ref() == id.as_str())
+                                .map(Applet::borrowed))
+                            .collect())
+                        .unwrap_or_default(),
                     Some((window::Id(0), APPLET_DND_ICON_ID)),
                     Message::StartDnd,
                     |a| Message::DnDCommand(Arc::new(a)),
                     Message::RemoveStart,
                     Message::DetailStart,
                     Message::ReorderStart,
-                    Message::ApplyReorder,
+                    Message::Save,
+                    Message::Cancel,
+                    page.dragged_applet.as_ref().map(Applet::borrowed)
                 )
             ]
             .spacing(8.0),
             column![
                 text(fl!("center-segment")),
                 AppletReorderList::new(
-                    page.available_entries
-                        .iter()
-                        .filter_map(|a| {
-                            config.plugins_center.as_ref().and_then(|list| {
-                                list.iter()
-                                    .any(|saved| (saved.as_str() == a.id.as_ref()))
-                                    .then(|| a.borrowed())
-                            })
-                        })
-                        .collect(),
+                    config
+                        .plugins_center
+                        .as_ref()
+                        .map(|list| list
+                            .iter()
+                            .filter_map(|id| page
+                                .available_entries
+                                .iter()
+                                .find(|e| e.id.as_ref() == id.as_str())
+                                .map(Applet::borrowed))
+                            .collect())
+                        .unwrap_or_default(),
                     Some((window::Id(0), APPLET_DND_ICON_ID)),
                     Message::StartDnd,
                     |a| Message::DnDCommand(Arc::new(a)),
                     Message::RemoveCenter,
                     Message::DetailCenter,
                     Message::ReorderCenter,
-                    Message::ApplyReorder,
+                    Message::Save,
+                    Message::Cancel,
+                    page.dragged_applet.as_ref().map(Applet::borrowed)
                 )
             ]
             .spacing(8.0),
             column![
                 text(fl!("end-segment")),
                 AppletReorderList::new(
-                    page.available_entries
-                        .iter()
-                        .filter_map(|a| {
-                            config.plugins_wings.as_ref().and_then(|list| {
-                                list.1
-                                    .iter()
-                                    .any(|saved| (saved.as_str() == a.id.as_ref()))
-                                    .then(|| a.borrowed())
-                            })
-                        })
-                        .collect(),
+                    config
+                        .plugins_wings
+                        .as_ref()
+                        .map(|list| list
+                            .1
+                            .iter()
+                            .filter_map(|id| page
+                                .available_entries
+                                .iter()
+                                .find(|e| e.id.as_ref() == id.as_str())
+                                .map(Applet::borrowed))
+                            .collect())
+                        .unwrap_or_default(),
                     Some((window::Id(0), APPLET_DND_ICON_ID)),
                     Message::StartDnd,
                     |a| Message::DnDCommand(Arc::new(a)),
                     Message::RemoveEnd,
                     Message::DetailEnd,
                     Message::ReorderEnd,
-                    Message::ApplyReorder,
+                    Message::Save,
+                    Message::Cancel,
+                    page.dragged_applet.as_ref().map(Applet::borrowed)
                 )
             ]
             .spacing(8.0),
@@ -348,40 +420,28 @@ impl<'a> Applet<'a> {
     }
 }
 
-static MIME_TYPE: &str = "text/uri-list";
-
-pub type OnDndCommand<'a, Message> = Box<
-    dyn Fn(
-            Box<dyn Send + Sync + Fn() -> platform_specific::wayland::data_device::ActionInner>,
-        ) -> Message
-        + 'a,
->;
-
-const SPACING: f32 = 8.0;
-
-const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
-
-pub const APPLET_DND_ICON_ID: window::Id = window::Id(1000);
-// TODO A11y
+// TODO A11y / keyboard support
 
 pub struct AppletReorderList<'a, Message> {
     id: Id,
     info: Vec<Applet<'a>>,
-    on_create_dnd_source: Box<dyn Fn(State) -> Message + 'a>,
+    on_create_dnd_source: Box<dyn Fn(ReorderWidgetState) -> Message + 'a>,
     on_dnd_command_produced: OnDndCommand<'a, Message>,
     on_reorder: Box<dyn Fn(Vec<Applet<'static>>) -> Message + 'a>,
     on_finish: Option<Message>,
+    on_cancel: Option<Message>,
     surface_ids: Option<(window::Id, window::Id)>,
-    dnd_icon: bool,
     inner: Element<'a, Message>,
 }
 
 impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
+    #[allow(clippy::too_many_arguments)]
+    #[must_use]
     /// new applet list which can be reordered and dragged
     pub fn new(
         info: Vec<Applet<'a>>,
         surface_ids: Option<(window::Id, window::Id)>,
-        on_create_dnd_source: impl Fn(State) -> Message + 'a,
+        on_create_dnd_source: impl Fn(ReorderWidgetState) -> Message + 'a,
         on_dnd_command_produced: impl Fn(
                 Box<dyn Send + Sync + Fn() -> platform_specific::wayland::data_device::ActionInner>,
             ) -> Message
@@ -390,7 +450,8 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
         on_details: impl Fn(String) -> Message + 'a,
         on_reorder: impl Fn(Vec<Applet<'static>>) -> Message + 'a,
         on_apply_reorder: Message,
-        // state: Option<&State>,
+        on_cancel: Message,
+        active_dnd: Option<Applet<'a>>, // state: Option<&State>,
     ) -> Self {
         // let dragged_path = state.and_then(|state| state.dragged_applet());
         let applet_buttons = info
@@ -398,6 +459,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             .into_iter()
             .map(|info| {
                 let id_clone = info.id.to_string();
+                let is_dragged = active_dnd.as_ref().map_or(false, |dnd| dnd.id == info.id);
                 container(
                     row![
                         icon("open-menu-symbolic", 16).style(theme::Svg::Symbolic),
@@ -420,6 +482,10 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 .style(theme::Container::Custom(Box::new(move |theme| {
                     let mut style = theme.appearance(&theme::Container::Primary);
                     style.border_radius = 8.0.into();
+                    if is_dragged {
+                        style.border_color = theme.cosmic().accent_color().into();
+                        style.border_width = 2.0;
+                    }
                     style
                 })))
                 .into()
@@ -433,16 +499,39 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             on_dnd_command_produced: Box::new(on_dnd_command_produced),
             on_reorder: Box::new(on_reorder),
             on_finish: Some(on_apply_reorder),
+            on_cancel: Some(on_cancel),
             surface_ids,
-            dnd_icon: false,
-            inner: Column::with_children(applet_buttons)
-                .spacing(SPACING)
-                .into(),
+            inner: if active_dnd.is_some() && applet_buttons.is_empty() {
+                container(
+                    text(fl!("drop-here"))
+                        .width(Length::Fill)
+                        .height(Length::Fill)
+                        .vertical_alignment(Vertical::Center)
+                        .horizontal_alignment(Horizontal::Center),
+                )
+                .width(Length::Fill)
+                .height(Length::Fixed(48.0))
+                .padding(8)
+                .style(theme::Container::Custom(Box::new(move |theme| {
+                    let mut style = theme.appearance(&theme::Container::Primary);
+                    style.border_radius = 8.0.into();
+                    style.border_color = theme.cosmic().bg_divider().into();
+                    style.border_width = 2.0;
+                    style.background = Color::TRANSPARENT.into();
+                    style
+                })))
+                .into()
+            } else {
+                Column::with_children(applet_buttons)
+                    .spacing(SPACING)
+                    .into()
+            },
         }
     }
 
+    #[must_use]
     /// mark this as a dnd icon
-    pub fn dnd_icon(state: State) -> Self {
+    pub fn dnd_icon(state: &'a ReorderWidgetState) -> Self {
         Self {
             id: Id::unique(),
             info: Vec::new(),
@@ -451,12 +540,11 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             on_reorder: Box::new(|_| unimplemented!()),
             on_finish: None,
             surface_ids: None,
-            dnd_icon: true,
             inner: if let Some(info) = state.dragged_applet() {
                 container(
                     row![
                         icon("open-menu-symbolic", 16).style(theme::Svg::Symbolic),
-                        icon(info.icon.to_owned(), 32).style(theme::Svg::Symbolic),
+                        icon(info.icon.into_owned(), 32).style(theme::Svg::Symbolic),
                         column![text(info.name), text(info.description).size(10)]
                             .spacing(4.0)
                             .width(Length::Fill),
@@ -474,7 +562,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                     .spacing(12)
                     .align_items(Alignment::Center),
                 )
-                .width(Length::Fill)
+                .width(Length::Fixed(state.layout.map_or(400.0, |l| l.width)))
                 .padding(8)
                 .style(theme::Container::Custom(Box::new(move |theme| {
                     let mut style = theme.appearance(&theme::Container::Primary);
@@ -485,81 +573,69 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             } else {
                 text("unknown").into()
             },
+            on_cancel: None,
         }
     }
 
+    #[must_use]
     /// reorders the list of applets given:
     /// - the bounds of the list
     /// - the current mouse position during a drag
-    /// - the applet being dragged
+    /// - the applet being offered to this list
     fn get_reordered(
         &self,
         layout: &layout::Layout,
         pos: Point,
-        path: Applet<'a>,
+        offered_applet: Applet<'a>,
     ) -> Vec<Applet<'a>> {
         let mut reordered: Vec<_> = self.info.clone();
-        let mut to_remove = reordered.iter().position(|p| p == &path);
 
         if !layout.bounds().contains(pos) {
-            if let Some(pos) = reordered.iter().position(|p| p == &path) {
-                reordered.remove(pos);
-            }
+            // applets shouldn't be in two lists at once
+            reordered.retain(|a| a != &offered_applet);
+
+            return reordered;
+        }
+
+        // special case
+        if reordered.is_empty() {
+            reordered.push(offered_applet);
+            return reordered;
+        }
+
+        // special case
+        if reordered.len() == 1 && reordered[0] == offered_applet {
             return reordered;
         }
 
         let height = (layout.bounds().height - SPACING * (self.info.len() - 1) as f32)
             / self.info.len() as f32;
 
-        let rectangles = (0..reordered.len())
-            .map(|i| {
-                if i == 0 {
-                    let y = layout.bounds().y;
-                    Rectangle::new(
-                        Point::new(layout.bounds().x, y),
-                        Size::new(layout.bounds().width, height / 2.0),
-                    )
-                } else if i == reordered.len() - 1 {
-                    let i_offset = i - 1;
-                    let y = layout.bounds().y
-                        + height / 2.0
-                        + height * i_offset as f32
-                        + SPACING * i_offset as f32;
-                    Rectangle::new(
-                        Point::new(layout.bounds().x, y),
-                        Size::new(layout.bounds().width, height / 2.0),
-                    )
-                } else {
-                    let i_offset = i - 1;
-                    let y = layout.bounds().y
-                        + height / 2.0
-                        + height * i_offset as f32
-                        + SPACING * i_offset as f32;
-                    Rectangle::new(
-                        Point::new(layout.bounds().x, y),
-                        Size::new(layout.bounds().width, height),
-                    )
-                }
-            })
-            .collect::<Vec<_>>();
-        if let Some(cursor_index) = rectangles
-            .iter()
-            .enumerate()
-            .find(|(_, r)| r.contains(pos))
-            .map(|(i, _)| i)
-        {
-            reordered.insert(cursor_index, path);
-            if let Some(to_remove) = to_remove.as_mut() {
-                if *to_remove < cursor_index {
-                    *to_remove += 1;
-                } else if *to_remove > cursor_index {
-                    *to_remove -= 1;
-                }
+        let mut found = false;
+        let mut y = layout.bounds().y;
+
+        for i in 0..=reordered.len() {
+            if i == 0 || i == reordered.len() {
+                y += height / 2.0;
+            } else {
+                y += height + SPACING;
+            }
+            if pos.y <= y {
+                reordered.insert(i, offered_applet.clone());
+                let mut index = 0;
+                reordered.retain(|a| {
+                    let ret = a != &offered_applet || index == i;
+                    index += 1;
+                    ret
+                });
+
+                found = true;
+                break;
             }
         }
-
-        if let Some(to_remove) = to_remove {
-            reordered.remove(to_remove);
+        if !found {
+            reordered.retain(|a| a != &offered_applet);
+            reordered.push(offered_applet);
         }
 
         reordered
@@ -571,11 +647,11 @@ where
     Message: Clone,
 {
     fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<State>()
+        tree::Tag::of::<ReorderWidgetState>()
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(State::new())
+        tree::State::new(ReorderWidgetState::new())
     }
 
     fn children(&self) -> Vec<Tree> {
@@ -637,17 +713,19 @@ where
             event::Status::Captured => return event::Status::Captured,
             event::Status::Ignored => event::Status::Ignored,
         };
-        // todo do some arithmetic to find out which applet from the list is being dragged
+
         let height = (layout.bounds().height - SPACING * (self.info.len() - 1) as f32)
             / self.info.len() as f32;
-        let state = tree.state.downcast_mut::<State>();
+        let state = tree.state.downcast_mut::<ReorderWidgetState>();
 
         state.dragging_state = match mem::take(&mut state.dragging_state) {
             DraggingState::None => {
                 // if no dragging state, listen for press events
                 match &event {
                     event::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-                    | event::Event::Touch(touch::Event::FingerPressed { .. }) => {
+                    | event::Event::Touch(touch::Event::FingerPressed { .. })
+                        if layout.bounds().contains(cursor_position) =>
+                    {
                         ret = event::Status::Captured;
 
                         DraggingState::Pressed(cursor_position)
@@ -655,6 +733,24 @@ where
                     _ => DraggingState::None,
                 }
             }
+            DraggingState::Dragging(applet) => match &event {
+                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::DataSource(wayland::DataSourceEvent::DndFinished),
+                )) => {
+                    ret = event::Status::Captured;
+                    DraggingState::None
+                }
+                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::DataSource(wayland::DataSourceEvent::Cancelled),
+                )) => {
+                    ret = event::Status::Captured;
+                    if let Some(on_cancel) = self.on_cancel.clone() {
+                        shell.publish(on_cancel);
+                    }
+                    DraggingState::None
+                }
+                _ => DraggingState::Dragging(applet),
+            },
             DraggingState::Pressed(start) => {
                 // if dragging state is pressed, listen for motion events or release events
                 match &event {
@@ -663,39 +759,26 @@ where
                         let d_y = cursor_position.y - start.y;
                         let d_x = cursor_position.x - start.x;
                         let distance_squared = d_y * d_y + d_x * d_x;
+
                         if distance_squared > DRAG_START_DISTANCE_SQUARED {
                             if let Some((_, applet)) =
                                 self.info.iter().enumerate().find(|(i, _)| {
-                                    let bounds = Rectangle::new(
-                                        Point::new(
-                                            layout.bounds().x,
-                                            layout.bounds().y + *i as f32 * height,
-                                        ),
-                                        cosmic::iced::Size::new(layout.bounds().width, height),
-                                    );
-                                    bounds.contains(cursor_position)
+                                    start.y
+                                        < layout.bounds().y + (*i + 1) as f32 * (height + SPACING)
                                 })
                             {
                                 let (window_id, icon_id) = self.surface_ids.unwrap();
-                                let mut state_clone = state.clone();
-                                state_clone.dragging_state =
+                                state.dragging_state =
                                     DraggingState::Dragging(applet.clone().into_owned());
 
                                 // TODO emit a dnd command
-
-                                shell.publish((self.on_create_dnd_source.as_ref())(state_clone));
-                                let reordered = self
-                                    .info
-                                    .clone()
-                                    .into_iter()
-                                    .filter(|a| a != applet)
-                                    .map(Applet::into_owned)
-                                    .collect::<Vec<_>>();
-                                shell.publish((self.on_reorder.as_ref())(reordered));
-
-                                let state = state.clone();
-                                let p = applet.path.to_path_buf();
+                                state.layout = Some(layout.bounds().size());
                                 let state_clone = state.clone();
+                                shell.publish((self.on_create_dnd_source.as_ref())(
+                                    state_clone.clone(),
+                                ));
+
+                                let p = applet.path.to_path_buf();
                                 shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(move || {
                                     platform_specific::wayland::data_device::ActionInner::StartDnd {
                                         mime_types: vec![MIME_TYPE.to_string()],
@@ -727,68 +810,78 @@ where
                     _ => DraggingState::Pressed(start),
                 }
             }
-            // if dragging listen for drag events
-            DraggingState::Dragging(applet) => match &event {
-                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::DataSource(wayland::DataSourceEvent::DndFinished),
-                ))
-                | event::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::DataSource(wayland::DataSourceEvent::Cancelled),
-                )) => {
-                    ret = event::Status::Captured;
-                    if let Some(on_finish) = self.on_finish.clone() {
-                        shell.publish(on_finish);
-                    }
-                    DraggingState::None
-                }
-                // event::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                //     wayland::Event::DataSource(wayland::DataSourceEvent::DndActionAccepted(_)),
-                // )) => {
-                //     // TODO support just copying
-                //     todo!()
-                // }
-                _ => DraggingState::Dragging(applet),
-            },
         };
         state.dnd_offer = match mem::take(&mut state.dnd_offer) {
             DndOfferState::None => match &event {
+                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::DndOffer(wayland::DndOfferEvent::SourceActions(actions)),
+                )) => DndOfferState::OutsideWidget(Vec::new(), *actions, None),
                 event::Event::PlatformSpecific(PlatformSpecific::Wayland(
                     wayland::Event::DndOffer(wayland::DndOfferEvent::Enter { x, y, mime_types }),
                 )) => {
                     if mime_types.iter().any(|m| m.as_str() == MIME_TYPE) {
                         let point = Point::new(*x as f32, *y as f32);
-                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                            move || {
-                                platform_specific::wayland::data_device::ActionInner::Accept(Some(
-                                    MIME_TYPE.to_string(),
-                                ))
-                            },
-                        )));
-                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                            move || {
-                                platform_specific::wayland::data_device::ActionInner::SetActions {
-                                    preferred: DndAction::Move,
-                                    accepted: DndAction::Move.union(DndAction::Copy),
-                                }
-                            },
-                        )));
-                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                            move || {
-                                platform_specific::wayland::data_device::ActionInner::RequestDndData(MIME_TYPE.to_string())
-                            },
-                        )));
+
                         if layout.bounds().contains(point) {
-                            // let reordered_list = self.get_reordered(layout, cursor_position, path)
+                            shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                                move || {
+                                    platform_specific::wayland::data_device::ActionInner::SetActions {
+                                        preferred: DndAction::Move,
+                                        accepted: DndAction::Move,
+                                    }
+                                },
+                            )));
+                            shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                                move || {
+                                    platform_specific::wayland::data_device::ActionInner::Accept(
+                                        Some(MIME_TYPE.to_string()),
+                                    )
+                                },
+                            )));
+                            let data = match &state.dragging_state {
+                                DraggingState::Dragging(a) => Some(a.clone()),
+
+                                _ => {
+                                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                                    move || {
+                                        platform_specific::wayland::data_device::ActionInner::RequestDndData(
+                                            MIME_TYPE.to_string(),
+                                        )
+                                    },
+                                )));
+                                    None
+                                }
+                            };
                             DndOfferState::HandlingOffer(
                                 mime_types.clone(),
                                 DndAction::empty(),
-                                None,
+                                data,
                             )
                         } else {
+                            let data = match &state.dragging_state {
+                                DraggingState::Dragging(data) => {
+                                    let filtered: Vec<_> = self
+                                        .info
+                                        .clone()
+                                        .into_iter()
+                                        .filter(|a| a != data)
+                                        .collect();
+                                    if filtered != self.info {
+                                        shell.publish((self.on_reorder.as_ref())(
+                                            filtered
+                                                .into_iter()
+                                                .map(pages::desktop::panel::applets::Applet::into_owned)
+                                                .collect(),
+                                        ));
+                                    }
+                                    Some(data.clone())
+                                }
+                                _ => None,
+                            };
                             DndOfferState::OutsideWidget(
                                 mime_types.clone(),
                                 DndAction::empty(),
-                                None,
+                                data,
                             )
                         }
                     } else {
@@ -799,57 +892,70 @@ where
             },
             DndOfferState::OutsideWidget(mime_types, action, data) => match &event {
                 event::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::DndOffer(wayland::DndOfferEvent::SourceActions(actions)),
+                )) => DndOfferState::OutsideWidget(mime_types, *actions, data),
+                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
                     wayland::Event::DndOffer(wayland::DndOfferEvent::Motion { x, y }),
                 )) => {
                     let point = Point::new(*x as f32, *y as f32);
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || {
-                            platform_specific::wayland::data_device::ActionInner::Accept(Some(
-                                MIME_TYPE.to_string(),
-                            ))
-                        },
-                    )));
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || platform_specific::wayland::data_device::ActionInner::SetActions {
-                            preferred: DndAction::Move,
-                            accepted: DndAction::Move.union(DndAction::Copy),
-                        },
-                    )));
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || {
-                            platform_specific::wayland::data_device::ActionInner::RequestDndData(
-                                MIME_TYPE.to_string(),
-                            )
-                        },
-                    )));
+
                     if layout.bounds().contains(point) {
+                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                            move || {
+                                platform_specific::wayland::data_device::ActionInner::SetActions {
+                                    preferred: DndAction::Move,
+                                    accepted: DndAction::Move,
+                                }
+                            },
+                        )));
+                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                            move || {
+                                platform_specific::wayland::data_device::ActionInner::Accept(Some(
+                                    MIME_TYPE.to_string(),
+                                ))
+                            },
+                        )));
+                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                            move || {
+                                platform_specific::wayland::data_device::ActionInner::SetActions {
+                                    preferred: action.intersection(DndAction::Move),
+                                    accepted: action
+                                        .intersection(DndAction::Move.union(DndAction::Copy)),
+                                }
+                            },
+                        )));
+                        // TODO maybe keep track of data and request here if we don't have it
+                        // also maybe just refactor DND Targets to allow easier handling...
+
+                        if data.is_none() {
+                            shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                                move || {
+                                    platform_specific::wayland::data_device::ActionInner::RequestDndData(
+                                        MIME_TYPE.to_string(),
+                                    )
+                                },
+                            )));
+                        }
                         if let Some(applet) = data.clone() {
-                            let reordered_list: Vec<_> =
-                                self.get_reordered(&layout, cursor_position, applet);
+                            let reordered_list: Vec<_> = self.get_reordered(
+                                &layout,
+                                Point {
+                                    x: *x as f32,
+                                    y: *y as f32,
+                                },
+                                applet,
+                            );
                             if reordered_list != self.info {
                                 shell.publish((self.on_reorder.as_ref())(
                                     reordered_list.into_iter().map(Applet::into_owned).collect(),
                                 ));
                             }
                         }
+
                         DndOfferState::HandlingOffer(mime_types, DndAction::empty(), data)
                     } else {
                         DndOfferState::OutsideWidget(mime_types, DndAction::empty(), data)
                     }
-                }
-                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::DndOffer(wayland::DndOfferEvent::Leave),
-                )) => DndOfferState::None,
-                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::DndOffer(wayland::DndOfferEvent::SourceActions(actions)),
-                )) => {
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || platform_specific::wayland::data_device::ActionInner::SetActions {
-                            preferred: DndAction::Move,
-                            accepted: DndAction::Move.union(DndAction::Copy),
-                        },
-                    )));
-                    DndOfferState::OutsideWidget(mime_types, *actions, data)
                 }
                 event::Event::PlatformSpecific(PlatformSpecific::Wayland(
                     wayland::Event::DndOffer(wayland::DndOfferEvent::DndData {
@@ -858,19 +964,21 @@ where
                     }),
                 )) => {
                     if mime_type.as_str() == MIME_TYPE {
-                        DndOfferState::OutsideWidget(
-                            mime_types.clone(),
-                            action,
-                            std::str::from_utf8(new_data.as_bytes())
-                                .ok()
-                                .and_then(|s| url::Url::from_str(s).ok())
-                                .and_then(|url| url.to_file_path().ok())
-                                .and_then(|p| Applet::try_from(Cow::from(p)).ok()),
-                        )
+                        let data = std::str::from_utf8(new_data.as_bytes())
+                            .ok()
+                            .and_then(|s| url::Url::from_str(s).ok())
+                            .and_then(|url| url.to_file_path().ok())
+                            .and_then(|p| Applet::try_from(Cow::from(p)).ok());
+                        DndOfferState::OutsideWidget(mime_types, action, data)
                     } else {
                         DndOfferState::OutsideWidget(mime_types, action, data)
                     }
                 }
+                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::DndOffer(
+                        wayland::DndOfferEvent::DropPerformed | wayland::DndOfferEvent::Leave,
+                    ),
+                )) => DndOfferState::None,
                 _ => DndOfferState::OutsideWidget(mime_types, action, data),
             },
             DndOfferState::HandlingOffer(mime_types, action, data) => match &event {
@@ -878,37 +986,55 @@ where
                     wayland::Event::DndOffer(wayland::DndOfferEvent::Motion { x, y }),
                 )) => {
                     let point = Point::new(*x as f32, *y as f32);
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || {
-                            platform_specific::wayland::data_device::ActionInner::Accept(Some(
-                                MIME_TYPE.to_string(),
-                            ))
-                        },
-                    )));
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || platform_specific::wayland::data_device::ActionInner::SetActions {
-                            preferred: DndAction::Move,
-                            accepted: DndAction::Move.union(DndAction::Copy),
-                        },
-                    )));
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || {
-                            platform_specific::wayland::data_device::ActionInner::RequestDndData(
-                                MIME_TYPE.to_string(),
-                            )
-                        },
-                    )));
                     if layout.bounds().contains(point) {
+                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                            move || {
+                                platform_specific::wayland::data_device::ActionInner::SetActions {
+                                    preferred: DndAction::Move,
+                                    accepted: DndAction::Move,
+                                }
+                            },
+                        )));
                         if let Some(data) = data.clone() {
-                            let reordered_list = self.get_reordered(&layout, cursor_position, data);
+                            let reordered_list = self.get_reordered(
+                                &layout,
+                                Point {
+                                    x: *x as f32,
+                                    y: *y as f32,
+                                },
+                                data,
+                            );
                             if reordered_list != self.info {
                                 shell.publish((self.on_reorder.as_ref())(
-                                    reordered_list.into_iter().map(|p| p.into_owned()).collect(),
+                                    reordered_list
+                                        .into_iter()
+                                        .map(pages::desktop::panel::applets::Applet::into_owned)
+                                        .collect(),
                                 ));
                             }
                         }
                         DndOfferState::HandlingOffer(mime_types, DndAction::empty(), data)
                     } else {
+                        if let Some(applet) = data.clone() {
+                            let reordered_list: Vec<_> = self.get_reordered(
+                                &layout,
+                                Point {
+                                    x: *x as f32,
+                                    y: *y as f32,
+                                },
+                                applet,
+                            );
+                            if reordered_list != self.info {
+                                shell.publish((self.on_reorder.as_ref())(
+                                    reordered_list.into_iter().map(Applet::into_owned).collect(),
+                                ));
+                            }
+                        }
+                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                            move || {
+                                platform_specific::wayland::data_device::ActionInner::Accept(None)
+                            },
+                        )));
                         DndOfferState::OutsideWidget(mime_types, DndAction::empty(), data)
                     }
                 }
@@ -921,7 +1047,7 @@ where
                     shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
                         move || platform_specific::wayland::data_device::ActionInner::SetActions {
                             preferred: DndAction::Move,
-                            accepted: DndAction::Move.union(DndAction::Copy),
+                            accepted: DndAction::Move,
                         },
                     )));
                     DndOfferState::HandlingOffer(mime_types, *actions, data)
@@ -933,42 +1059,81 @@ where
                     }),
                 )) => {
                     if mime_type.as_str() == MIME_TYPE {
-                        DndOfferState::HandlingOffer(
-                            mime_types.clone(),
-                            action,
-                            std::str::from_utf8(new_data.as_bytes())
-                                .ok()
-                                .and_then(|s| url::Url::from_str(s).ok())
-                                .and_then(|url| url.to_file_path().ok())
-                                .and_then(|p| Applet::try_from(Cow::from(p)).ok()),
-                        )
+                        let data = std::str::from_utf8(new_data.as_bytes())
+                            .ok()
+                            .and_then(|s| url::Url::from_str(s).ok())
+                            .and_then(|url| url.to_file_path().ok())
+                            .and_then(|p| Applet::try_from(Cow::from(p)).ok());
+                        if let Some(data) = data.borrow() {
+                            let filtered: Vec<_> = self
+                                .info
+                                .clone()
+                                .into_iter()
+                                .filter(|a| a != data)
+                                .collect();
+                            if filtered != self.info {
+                                shell.publish((self.on_reorder.as_ref())(
+                                    filtered
+                                        .into_iter()
+                                        .map(pages::desktop::panel::applets::Applet::into_owned)
+                                        .collect(),
+                                ));
+                            }
+                        }
+
+                        DndOfferState::HandlingOffer(mime_types, action, data)
                     } else {
                         DndOfferState::HandlingOffer(mime_types, action, data)
                     }
                 }
                 event::Event::PlatformSpecific(PlatformSpecific::Wayland(
                     wayland::Event::DndOffer(wayland::DndOfferEvent::DropPerformed),
-                )) => DndOfferState::Dropped,
+                )) => {
+                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                        move || platform_specific::wayland::data_device::ActionInner::SetActions {
+                            preferred: DndAction::Move,
+                            accepted: DndAction::Move,
+                        },
+                    )));
+                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                        move || {
+                            platform_specific::wayland::data_device::ActionInner::Accept(Some(
+                                MIME_TYPE.to_string(),
+                            ))
+                        },
+                    )));
+                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                        move || {
+                            platform_specific::wayland::data_device::ActionInner::RequestDndData(
+                                MIME_TYPE.to_string(),
+                            )
+                        },
+                    )));
+                    DndOfferState::Dropped
+                }
                 _ => DndOfferState::HandlingOffer(mime_types, action, data),
             },
             DndOfferState::Dropped => match &event {
                 event::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::DataSource(wayland::DataSourceEvent::DndFinished)
-                    | wayland::Event::DataSource(wayland::DataSourceEvent::Cancelled),
+                    wayland::Event::DndOffer(wayland::DndOfferEvent::DndData { .. }),
                 )) => {
                     if let Some(on_finish) = self.on_finish.clone() {
                         shell.publish(on_finish);
                     }
-                    ret = event::Status::Captured;
-                    DndOfferState::None
-                }
-                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::DndOffer(wayland::DndOfferEvent::DndData { .. }),
-                )) => {
-                    // already applied the data, so we can just finish
                     shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
                         move || platform_specific::wayland::data_device::ActionInner::DndFinished,
                     )));
+
+                    DndOfferState::None
+                }
+                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::DndOffer(wayland::DndOfferEvent::Leave),
+                )) => {
+                    // already applied the offer, so we can just finish
+                    if let Some(on_cancel) = self.on_cancel.clone() {
+                        shell.publish(on_cancel);
+                    }
+
                     DndOfferState::None
                 }
                 _ => DndOfferState::Dropped,
@@ -1028,7 +1193,7 @@ where
             renderer,
         ) {
             mouse::Interaction::Idle => {
-                let state = state.state.downcast_ref::<State>();
+                let state = state.state.downcast_ref::<ReorderWidgetState>();
                 if matches!(state.dragging_state, DraggingState::Dragging(_)) {
                     mouse::Interaction::Grabbing
                 } else if layout.bounds().contains(cursor_position) {
@@ -1049,13 +1214,14 @@ pub struct AppletString(PathBuf);
 impl DataFromMimeType for AppletString {
     fn from_mime_type(&self, mime_type: &str) -> Option<Vec<u8>> {
         if mime_type == MIME_TYPE {
-            Some(
+            let data = Some(
                 url::Url::from_file_path(self.0.clone())
                     .ok()?
                     .to_string()
                     .as_bytes()
                     .to_vec(),
-            )
+            );
+            data
         } else {
             None
         }
@@ -1084,19 +1250,20 @@ pub(crate) enum DndOfferState {
 
 /// The state of a [`TextInput`].
 #[derive(Debug, Default, Clone)]
-pub struct State {
+pub struct ReorderWidgetState {
     dragging_state: DraggingState,
     dnd_offer: DndOfferState,
+    layout: Option<Size>,
 }
 
-impl State {
-    pub(crate) fn new() -> State {
-        State::default()
+impl ReorderWidgetState {
+    pub(crate) fn new() -> ReorderWidgetState {
+        ReorderWidgetState::default()
     }
 
-    pub(crate) fn dragged_applet(self) -> Option<Applet<'static>> {
-        match self.dragging_state {
-            DraggingState::Dragging(applet) => Some(applet),
+    pub(crate) fn dragged_applet(&self) -> Option<Applet<'_>> {
+        match &self.dragging_state {
+            DraggingState::Dragging(applet) => Some(applet.borrowed()),
             _ => None,
         }
     }
@@ -1106,4 +1273,13 @@ impl<'a, Message: 'static + Clone> From<AppletReorderList<'a, Message>> for Elem
     fn from(applet_reorder_list: AppletReorderList<'a, Message>) -> Self {
         Element::new(applet_reorder_list)
     }
+}
+
+pub fn dnd_icon<Message: Clone + 'static>(state: &ReorderWidgetState) -> Element<'_, Message> {
+    Element::from(AppletReorderList::dnd_icon(state))
+}
+
+#[derive(Debug, Clone)]
+pub enum State {
+    DndIcon(ReorderWidgetState),
 }

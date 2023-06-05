@@ -15,7 +15,7 @@ use cosmic_panel_config::{
 };
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
-use std::{borrow::Cow, cell::RefCell, collections::HashMap, rc::Rc};
+use std::{borrow::Cow, collections::HashMap};
 
 pub mod applets;
 

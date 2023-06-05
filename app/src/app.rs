@@ -46,7 +46,7 @@ use crate::{
     widget::{page_title, parent_page_button, search_header, sub_page_button},
 };
 
-use std::{borrow::Cow, process};
+use std::{borrow::Cow, mem, process};
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
@@ -68,6 +68,10 @@ pub struct SettingsApp {
     pub theme: Theme,
     pub title: String,
     pub window_width: u32,
+    // special case state for interfaces that don't live on the main window
+    //
+    // Applets
+    applet_dnd_surface: applets::ReorderWidgetState,
 }
 
 #[allow(dead_code)]
@@ -119,6 +123,7 @@ impl Application for SettingsApp {
             show_minimize: true,
             theme: Theme::dark(),
             window_width: 0,
+            applet_dnd_surface: applets::ReorderWidgetState::default(),
         };
 
         // app.insert_page::<wifi::Page>();
@@ -126,6 +131,8 @@ impl Application for SettingsApp {
         // app.insert_page::<bluetooth::Page>();
 
         let desktop_id = app.insert_page::<desktop::Page>().id();
+        // app.insert_page::<panel::Page>();
+        // app.insert_page::<applets::Page>();
 
         // app.insert_page::<input::Page>();
 
@@ -284,12 +291,15 @@ impl Application for SettingsApp {
                 }
                 crate::pages::Message::Applet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets::Page>() {
-                        ret = page.update(message);
+                        let update = page.update(message);
+                        ret = update.1;
+                        if let Some(applets::State::DndIcon(s)) = update.0 {
+                            self.applet_dnd_surface = s;
+                        }
                     }
                 }
             },
             Message::WindowState(state) => {
-                dbg!(&state);
                 self.sharp_corners = matches!(state, WindowState::Activated);
             }
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
@@ -300,14 +310,11 @@ impl Application for SettingsApp {
                     _ = page.update(applets::Message::PanelConfig(config));
                 }
             }
-            Message::PanelConfig(c) => {
-                // dbg!(c);
-                // ignore other config changes
-            }
+            Message::PanelConfig(_) => {} // ignore other config changes for now,
             Message::DesktopInfo => {
                 if let Some(page) = self.pages.page_mut::<applets::Page>() {
                     // collect the potential applets
-                    ret = page.update(applets::Message::Applets(
+                    (_, ret) = page.update(applets::Message::Applets(
                         freedesktop_desktop_entry::Iter::new(
                             freedesktop_desktop_entry::default_paths(),
                         )
@@ -322,6 +329,9 @@ impl Application for SettingsApp {
 
     #[allow(clippy::too_many_lines)]
     fn view(&self, id: window::Id) -> Element<Message> {
+        if id == APPLET_DND_ICON_ID {
+            return applets::dnd_icon(&self.applet_dnd_surface);
+        }
         let (nav_bar_message, nav_bar_toggled) = if self.is_condensed {
             (
                 Message::ToggleNavBarCondensed,
@@ -389,7 +399,7 @@ impl Application for SettingsApp {
             );
         }
 
-        let content = container(row(widgets))
+        let content = container(row(widgets).spacing(8))
             .padding([0, 8, 8, 8])
             .width(Length::Fill)
             .height(Length::Fill)

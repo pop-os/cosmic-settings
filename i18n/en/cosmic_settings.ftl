@@ -89,6 +89,8 @@ end-segment = End Segment
 
 all = All
 
+drop-here = Drop applets here
+
 ## Desktop: Wallpaper
 
 wallpaper = Wallpaper
