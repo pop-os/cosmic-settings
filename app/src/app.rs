@@ -28,7 +28,6 @@ use cosmic::{
     },
     Element, ElementExt,
 };
-use i18n_embed::unic_langid::parser::errors;
 
 use crate::{
     config::Config,
@@ -46,7 +45,7 @@ use crate::{
     widget::{page_title, parent_page_button, search_header, sub_page_button},
 };
 
-use std::{borrow::Cow, mem, process};
+use std::{borrow::Cow, process};
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
@@ -68,10 +67,6 @@ pub struct SettingsApp {
     pub theme: Theme,
     pub title: String,
     pub window_width: u32,
-    // special case state for interfaces that don't live on the main window
-    //
-    // Applets
-    applet_dnd_surface: applets::ReorderWidgetState,
 }
 
 #[allow(dead_code)]
@@ -123,7 +118,6 @@ impl Application for SettingsApp {
             show_minimize: true,
             theme: Theme::dark(),
             window_width: 0,
-            applet_dnd_surface: applets::ReorderWidgetState::default(),
         };
 
         // app.insert_page::<wifi::Page>();
@@ -291,11 +285,7 @@ impl Application for SettingsApp {
                 }
                 crate::pages::Message::Applet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets::Page>() {
-                        let update = page.update(message);
-                        ret = update.1;
-                        if let Some(applets::State::DndIcon(s)) = update.0 {
-                            self.applet_dnd_surface = s;
-                        }
+                        ret = page.update(message);
                     }
                 }
             },
@@ -314,7 +304,7 @@ impl Application for SettingsApp {
             Message::DesktopInfo => {
                 if let Some(page) = self.pages.page_mut::<applets::Page>() {
                     // collect the potential applets
-                    (_, ret) = page.update(applets::Message::Applets(
+                    ret = page.update(applets::Message::Applets(
                         freedesktop_desktop_entry::Iter::new(
                             freedesktop_desktop_entry::default_paths(),
                         )
@@ -329,9 +319,17 @@ impl Application for SettingsApp {
 
     #[allow(clippy::too_many_lines)]
     fn view(&self, id: window::Id) -> Element<Message> {
-        if id == APPLET_DND_ICON_ID {
-            return applets::dnd_icon(&self.applet_dnd_surface);
+        if let Some(Some(page)) =
+            (id == APPLET_DND_ICON_ID).then(|| self.pages.page::<applets::Page>())
+        {
+            return page.dnd_icon();
         }
+        if let Some(Some(page)) =
+            (id == applets::ADD_APPLET_DIALOGUE_ID).then(|| self.pages.page::<applets::Page>())
+        {
+            return page.add_applet_view();
+        }
+
         let (nav_bar_message, nav_bar_toggled) = if self.is_condensed {
             (
                 Message::ToggleNavBarCondensed,
@@ -420,7 +418,13 @@ impl Application for SettingsApp {
     fn close_requested(&self, id: window::Id) -> Self::Message {
         if id == window::Id(0) {
             Message::Close
-        } else {
+        }
+        // else if id == applets::ADD_APPLET_DIALOGUE_ID {
+        //     Message::PageMessage(crate::pages::Message::Applet(
+        //         applets::Message::CloseAppletDialogue,
+        //     ))
+        // }
+        else {
             Message::None
         }
     }

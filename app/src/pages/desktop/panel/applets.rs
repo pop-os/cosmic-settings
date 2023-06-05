@@ -18,12 +18,18 @@ use cosmic::{
             PlatformSpecific,
         },
         mouse, overlay, touch,
-        wayland::actions::data_device::{ActionInner, DataFromMimeType, DndIcon},
+        wayland::actions::{
+            data_device::{ActionInner, DataFromMimeType, DndIcon},
+            window::SctkWindowSettings,
+        },
         wayland::data_device::action as data_device_action,
         window, Alignment, Color, Length, Point, Rectangle, Size,
     },
     iced_runtime::{command::platform_specific, core::id::Id, Command},
-    iced_style::container::StyleSheet,
+    iced_sctk::commands,
+    iced_style::{
+        button::StyleSheet as ButtonStyleSheet, container::StyleSheet as ContainerStyleSheet,
+    },
     iced_widget::{
         column, container,
         core::{
@@ -32,11 +38,13 @@ use cosmic::{
             Clipboard, Shell, Widget,
         },
         graphics::image::image_rs::EncodableLayout,
-        row, text, Column,
+        row, scrollable, text, text_input,
+        text_input::{Icon, Side},
+        Column,
     },
     sctk::reexports::client::protocol::wl_data_device_manager::DndAction,
     theme,
-    widget::{button, icon},
+    widget::{button, header_bar, icon, list_column},
     Element,
 };
 
@@ -68,7 +76,8 @@ pub struct Page {
     available_entries: Vec<Applet<'static>>,
     config_helper: Option<Config>,
     current_config: Option<CosmicPanelConfig>,
-    dragged_applet: Option<Applet<'static>>,
+    reorder_widget_state: ReorderWidgetState,
+    search: String,
 }
 
 impl Default for Page {
@@ -84,7 +93,8 @@ impl Default for Page {
             available_entries: Vec::new(),
             config_helper,
             current_config,
-            dragged_applet: None,
+            reorder_widget_state: ReorderWidgetState::default(),
+            search: String::new(),
         }
     }
 }
@@ -100,7 +110,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn info(&self) -> page::Info {
         page::Info::new("panel_applets", "preferences-pop-desktop-dock-symbolic")
-            .title(fl!("applets"))
+        // .title(fl!("applets"))
     }
 }
 
@@ -121,6 +131,11 @@ pub enum Message {
     PanelConfig(CosmicPanelConfig),
     StartDnd(ReorderWidgetState),
     DnDCommand(Arc<Box<dyn Send + Sync + Fn() -> ActionInner>>),
+    Search(String),
+    AddApplet(Applet<'static>),
+    AddAppletDialogue,
+    CloseAppletDialogue,
+    DragAppletDialogue,
     Save,
     Cancel,
     Ignore,
@@ -145,6 +160,11 @@ impl Debug for Message {
             Message::DetailCenter(_) => write!(f, "DetailCenter"),
             Message::DetailEnd(_) => write!(f, "DetailEnd"),
             Message::Cancel => write!(f, "Cancel"),
+            Message::Search(_) => write!(f, "Search"),
+            Message::AddApplet(_) => write!(f, "AddApplet"),
+            Message::AddAppletDialogue => write!(f, "AddAppletDialogue"),
+            Message::CloseAppletDialogue => write!(f, "CloseAppletDialogue"),
+            Message::DragAppletDialogue => write!(f, "DragAppletDialogue"),
         }
     }
 }
@@ -164,7 +184,129 @@ impl Page {
         }
     }
 
-    pub fn update(&mut self, message: Message) -> (Option<State>, Command<app::Message>) {
+    #[must_use]
+    pub fn dnd_icon(&self) -> Element<app::Message> {
+        Element::from(AppletReorderList::dnd_icon(&self.reorder_widget_state))
+    }
+
+    #[must_use]
+    #[allow(clippy::too_many_lines)]
+    pub fn add_applet_view(&self) -> Element<app::Message> {
+        let mut list_column = list_column();
+        let mut has_some = false;
+        for info in self
+            .available_entries
+            .iter()
+            .filter(|a| a.matches(&self.search))
+        {
+            if let Some(config) = self.current_config.as_ref() {
+                if let Some(center) = config.plugins_center.as_ref() {
+                    if center.iter().any(|a| a.as_str() == info.id.as_ref()) {
+                        continue;
+                    }
+                }
+
+                if let Some(wings) = config.plugins_wings.as_ref() {
+                    if wings
+                        .0
+                        .iter()
+                        .chain(wings.1.iter())
+                        .any(|a| a.as_str() == info.id.as_ref())
+                    {
+                        continue;
+                    }
+                }
+            }
+            has_some = true;
+            list_column = list_column.add(
+                row![
+                    icon(info.icon.to_owned(), 32).style(theme::Svg::Symbolic),
+                    column![
+                        text(info.name.to_owned()),
+                        text(info.description.to_owned()).size(10)
+                    ]
+                    .spacing(4.0)
+                    .width(Length::Fill),
+                    cosmic::iced::widget::button(text(fl!("add")))
+                        .style(theme::Button::Custom {
+                            active: Box::new(|theme| {
+                                let mut style = theme.active(&theme::Button::Text);
+                                style.text_color = theme.cosmic().accent_color().into();
+                                style
+                            }),
+                            hover: Box::new(|theme| {
+                                let mut style = theme.hovered(&theme::Button::Text);
+                                style.text_color = theme.cosmic().accent_color().into();
+                                style
+                            })
+                        })
+                        .padding(8.0)
+                        .on_press(app::Message::PageMessage(pages::Message::Applet(
+                            Message::AddApplet(info.clone())
+                        ))),
+                ]
+                .padding([0, 32, 0, 32])
+                .spacing(12)
+                .align_items(Alignment::Center),
+            );
+        }
+        if !has_some {
+            list_column = list_column.add(
+                text(fl!("no-applets-found"))
+                    .width(Length::Fill)
+                    .horizontal_alignment(Horizontal::Center),
+            );
+        }
+        column![
+            header_bar()
+                .title(fl!("add-applet"))
+                .on_close(app::Message::PageMessage(pages::Message::Applet(
+                    Message::CloseAppletDialogue
+                )))
+                .on_drag(app::Message::PageMessage(pages::Message::Applet(
+                    Message::DragAppletDialogue
+                ))),
+            container(
+                scrollable(
+                    column![
+                        text(fl!("add-applet")).size(24).width(Length::Fill),
+                        text_input(&fl!("search-applets"), &self.search)
+                            .style(theme::TextInput::Search)
+                            .padding([8, 24])
+                            .icon(Icon {
+                                font: cosmic::iced::Font::default(),
+                                code_point: '🔍',
+                                size: Some(12.0),
+                                spacing: 12.0,
+                                side: Side::Left,
+                            })
+                            .on_input(|s| {
+                                app::Message::PageMessage(pages::Message::Applet(Message::Search(
+                                    s,
+                                )))
+                            })
+                            .on_paste(|s| {
+                                app::Message::PageMessage(pages::Message::Applet(Message::Search(
+                                    s,
+                                )))
+                            })
+                            .width(Length::Fixed(312.0)),
+                        list_column
+                    ]
+                    .padding([0, 64, 32, 64])
+                    .align_items(Alignment::Center)
+                    .spacing(8.0)
+                )
+                .width(Length::Fill)
+                .height(Length::Fill)
+            )
+            .style(theme::Container::Background)
+        ]
+        .into()
+    }
+
+    #[allow(clippy::too_many_lines)]
+    pub fn update(&mut self, message: Message) -> Command<app::Message> {
         match message {
             Message::PanelConfig(c) => {
                 self.current_config = Some(c);
@@ -172,31 +314,31 @@ impl Page {
 
             Message::ReorderStart(start_list) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 let Some((list, _)) = config.plugins_wings.as_mut() else {
                     config.plugins_wings = Some((start_list.into_iter().map(|a: Applet| a.id.into()).collect(), Vec::new()));
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 *list = start_list.into_iter().map(|a| a.id.into()).collect();
             }
             Message::ReorderCenter(center_list) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 let Some(list) = config.plugins_center.as_mut() else {
                     config.plugins_center = Some(center_list.into_iter().map(|a: Applet| a.id.into()).collect());
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 *list = center_list.into_iter().map(|a| a.id.into()).collect();
             }
             Message::ReorderEnd(end_list) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 let Some((_, list)) = config.plugins_wings.as_mut() else {
                     config.plugins_wings = Some((Vec::new(), end_list.into_iter().map(|a: Applet| a.id.into()).collect()));
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 *list = end_list.into_iter().map(|a| a.id.into()).collect();
             }
@@ -204,43 +346,43 @@ impl Page {
                 self.available_entries = applets;
             }
             Message::StartDnd(state) => {
-                self.dragged_applet = state.dragged_applet().map(Applet::into_owned);
-                return (Some(State::DndIcon(state)), Command::none());
+                self.reorder_widget_state = state;
+                return Command::none();
             }
             Message::DnDCommand(action) => {
-                return (None, data_device_action(action()));
+                return data_device_action(action());
             }
             Message::Ignore => {}
             Message::Save => {
-                self.dragged_applet = None;
+                self.reorder_widget_state = ReorderWidgetState::default();
                 self.save();
             }
             Message::RemoveStart(to_remove) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 let Some((list, _)) = config.plugins_wings.as_mut() else {
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 list.retain(|id| id != &to_remove);
                 self.save();
             }
             Message::RemoveCenter(to_remove) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 let Some(list) = config.plugins_center.as_mut() else {
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 list.retain(|id| id != &to_remove);
                 self.save();
             }
             Message::RemoveEnd(to_remove) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 let Some((_, list)) = config.plugins_wings.as_mut() else {
-                    return (None, Command::none());
+                    return Command::none();
                 };
                 list.retain(|id| id != &to_remove);
                 self.save();
@@ -255,7 +397,7 @@ impl Page {
                 // TODO ask design team
             }
             Message::Cancel => {
-                self.dragged_applet = None;
+                self.reorder_widget_state = ReorderWidgetState::default();
                 let current_config = self.config_helper.as_ref().and_then(|config_helper| {
                     // TODO error handling...
                     let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
@@ -264,11 +406,56 @@ impl Page {
                 });
                 self.current_config = current_config;
             }
+            Message::Search(text) => {
+                self.search = text;
+            }
+            Message::AddApplet(applet) => {
+                // TODO ask design team
+                let Some(config) = self.current_config.as_mut() else {
+                    return Command::none();
+                };
+                let list = if let Some((list, _)) = config.plugins_wings.as_mut() {
+                    list
+                } else {
+                    config.plugins_wings = Some((Vec::new(), Vec::new()));
+                    &mut config.plugins_wings.as_mut().unwrap().0
+                };
+
+                list.push(applet.id.to_string());
+                self.save();
+                return commands::window::close_window(ADD_APPLET_DIALOGUE_ID);
+            }
+            Message::AddAppletDialogue => {
+                let window_settings = SctkWindowSettings {
+                    window_id: ADD_APPLET_DIALOGUE_ID,
+                    app_id: Some("com.system76.CosmicSettings".to_string()),
+                    title: Some(fl!("add-applet")),
+                    parent: None,
+                    autosize: false,
+                    size_limits: layout::Limits::NONE
+                        .min_width(300.0)
+                        .max_width(800.0)
+                        .min_height(200.0)
+                        .max_height(1080.0),
+                    size: (512, 420),
+                    resizable: None,
+                    client_decorations: true,
+                    transparent: true,
+                };
+                return commands::window::get_window(window_settings);
+            }
+            Message::CloseAppletDialogue => {
+                return commands::window::close_window(ADD_APPLET_DIALOGUE_ID);
+            }
+            Message::DragAppletDialogue => {
+                return commands::window::start_drag_window(ADD_APPLET_DIALOGUE_ID);
+            }
         };
-        (None, Command::none())
+        Command::none()
     }
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn lists() -> Section<crate::pages::Message> {
     Section::default().view::<Page>(|_binder, page, _section| {
         let Some(config) = page.current_config.as_ref() else {
@@ -278,6 +465,13 @@ pub fn lists() -> Section<crate::pages::Message> {
         };
         column![
             column![
+                row![
+                    text(fl!("applets")).width(Length::Fill).size(24),
+                    cosmic::iced::widget::button(text(fl!("add-applet")))
+                        .style(theme::Button::Secondary)
+                        .padding(8.0)
+                        .on_press(Message::AddAppletDialogue)
+                ],
                 text(fl!("start-segment")),
                 AppletReorderList::new(
                     config
@@ -301,7 +495,7 @@ pub fn lists() -> Section<crate::pages::Message> {
                     Message::ReorderStart,
                     Message::Save,
                     Message::Cancel,
-                    page.dragged_applet.as_ref().map(Applet::borrowed)
+                    page.reorder_widget_state.dragged_applet()
                 )
             ]
             .spacing(8.0),
@@ -328,7 +522,7 @@ pub fn lists() -> Section<crate::pages::Message> {
                     Message::ReorderCenter,
                     Message::Save,
                     Message::Cancel,
-                    page.dragged_applet.as_ref().map(Applet::borrowed)
+                    page.reorder_widget_state.dragged_applet()
                 )
             ]
             .spacing(8.0),
@@ -356,11 +550,12 @@ pub fn lists() -> Section<crate::pages::Message> {
                     Message::ReorderEnd,
                     Message::Save,
                     Message::Cancel,
-                    page.dragged_applet.as_ref().map(Applet::borrowed)
+                    page.reorder_widget_state.dragged_applet()
                 )
             ]
             .spacing(8.0),
         ]
+        .padding([0, 16, 0, 16])
         .spacing(12.0)
         .apply(Element::from)
         .map(pages::Message::Applet)
@@ -374,6 +569,12 @@ pub struct Applet<'a> {
     pub description: Cow<'a, str>,
     pub icon: Cow<'a, str>,
     pub path: Cow<'a, Path>,
+}
+
+impl Applet<'_> {
+    pub fn matches(&self, query: &str) -> bool {
+        self.name.contains(query) || self.description.contains(query) || self.id.contains(query)
+    }
 }
 
 impl<'a> TryFrom<Cow<'a, Path>> for Applet<'static> {
@@ -1248,7 +1449,6 @@ pub(crate) enum DndOfferState {
     Dropped,
 }
 
-/// The state of a [`TextInput`].
 #[derive(Debug, Default, Clone)]
 pub struct ReorderWidgetState {
     dragging_state: DraggingState,
@@ -1274,11 +1474,6 @@ impl<'a, Message: 'static + Clone> From<AppletReorderList<'a, Message>> for Elem
         Element::new(applet_reorder_list)
     }
 }
-
-pub fn dnd_icon<Message: Clone + 'static>(state: &ReorderWidgetState) -> Element<'_, Message> {
-    Element::from(AppletReorderList::dnd_icon(state))
-}
-
 #[derive(Debug, Clone)]
 pub enum State {
     DndIcon(ReorderWidgetState),
