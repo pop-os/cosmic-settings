@@ -301,6 +301,8 @@ impl Page {
                 .height(Length::Fill)
             )
             .style(theme::Container::Background)
+            .width(Length::Fill)
+            .height(Length::Fill)
         ]
         .into()
     }
