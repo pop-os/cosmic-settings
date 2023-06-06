@@ -637,7 +637,7 @@ impl<'a> Applet<'a> {
 }
 
 // TODO A11y / keyboard support
-
+#[allow(dead_code)]
 pub struct AppletReorderList<'a, Message> {
     id: Id,
     info: Vec<Applet<'a>>,
