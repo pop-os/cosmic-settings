@@ -78,6 +78,7 @@ pub struct Page {
     current_config: Option<CosmicPanelConfig>,
     reorder_widget_state: ReorderWidgetState,
     search: String,
+    has_dialogue: bool,
 }
 
 impl Default for Page {
@@ -95,6 +96,7 @@ impl Default for Page {
             current_config,
             reorder_widget_state: ReorderWidgetState::default(),
             search: String::new(),
+            has_dialogue: false,
         }
     }
 }
@@ -135,6 +137,7 @@ pub enum Message {
     AddApplet(Applet<'static>),
     AddAppletDialogue,
     CloseAppletDialogue,
+    ClosedAppletDialogue,
     DragAppletDialogue,
     Save,
     Cancel,
@@ -165,6 +168,7 @@ impl Debug for Message {
             Message::AddAppletDialogue => write!(f, "AddAppletDialogue"),
             Message::CloseAppletDialogue => write!(f, "CloseAppletDialogue"),
             Message::DragAppletDialogue => write!(f, "DragAppletDialogue"),
+            Message::ClosedAppletDialogue => write!(f, "ClosedAppletDialogue"),
         }
     }
 }
@@ -428,11 +432,12 @@ impl Page {
                 return commands::window::close_window(ADD_APPLET_DIALOGUE_ID);
             }
             Message::AddAppletDialogue => {
+                self.has_dialogue = true;
                 let window_settings = SctkWindowSettings {
                     window_id: ADD_APPLET_DIALOGUE_ID,
                     app_id: Some("com.system76.CosmicSettings".to_string()),
                     title: Some(fl!("add-applet")),
-                    parent: None,
+                    parent: Some(window::Id(0)),
                     autosize: false,
                     size_limits: layout::Limits::NONE
                         .min_width(300.0)
@@ -446,7 +451,11 @@ impl Page {
                 };
                 return commands::window::get_window(window_settings);
             }
+            Message::ClosedAppletDialogue => {
+                self.has_dialogue = false;
+            }
             Message::CloseAppletDialogue => {
+                self.has_dialogue = false;
                 return commands::window::close_window(ADD_APPLET_DIALOGUE_ID);
             }
             Message::DragAppletDialogue => {
@@ -465,14 +474,18 @@ pub fn lists() -> Section<crate::pages::Message> {
                 text(fl!("unknown"))
             );
         };
+        let button = cosmic::iced::widget::button(text(fl!("add-applet")))
+            .style(theme::Button::Secondary)
+            .padding(8.0);
         column![
             column![
                 row![
                     text(fl!("applets")).width(Length::Fill).size(24),
-                    cosmic::iced::widget::button(text(fl!("add-applet")))
-                        .style(theme::Button::Secondary)
-                        .padding(8.0)
-                        .on_press(Message::AddAppletDialogue)
+                    if page.has_dialogue {
+                        button
+                    } else {
+                        button.on_press(Message::AddAppletDialogue)
+                    }
                 ],
                 text(fl!("start-segment")),
                 AppletReorderList::new(

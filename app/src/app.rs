@@ -418,6 +418,10 @@ impl Application for SettingsApp {
     fn close_requested(&self, id: window::Id) -> Self::Message {
         if id == window::Id(0) {
             Message::Close
+        } else if id == applets::ADD_APPLET_DIALOGUE_ID {
+            Message::PageMessage(crate::pages::Message::Applet(
+                applets::Message::ClosedAppletDialogue,
+            ))
         } else {
             Message::None
         }
