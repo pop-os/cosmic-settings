@@ -12,6 +12,7 @@ Build-Depends:
     libfreetype-dev,
     lld,
     pkg-config,
+    libxkbcommon-dev,
     rustc (>= 1.65.0)
 Standards-Version: 4.6.2
 Homepage: https://github.com/pop-os/cosmic-settings
