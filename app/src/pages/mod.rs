@@ -16,6 +16,7 @@ pub enum Message {
     Desktop(desktop::Message),
     Panel(desktop::panel::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
+    Applet(desktop::panel::applets::Message),
     External { id: String, message: Vec<u8> },
     Page(Entity),
 }

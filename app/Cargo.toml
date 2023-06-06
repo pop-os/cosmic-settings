@@ -28,6 +28,12 @@ downcast-rs = "1.2.0"
 cosmic-panel-config = { workspace = true }
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"]}
+log = "0.4"
+env_logger = "0.10"
+url = "2.3.1"
+freedesktop-desktop-entry = "0.5.0"
+notify = "6.0.0"
+anyhow = "1.0"
 
 [dependencies.i18n-embed]
 version = "0.13.9"

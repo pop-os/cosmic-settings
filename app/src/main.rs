@@ -16,6 +16,8 @@ pub mod pages;
 pub mod theme;
 pub mod widget;
 
+pub mod subscription;
+
 use cosmic::{
     iced::{wayland::actions::window::SctkWindowSettings, Application, Limits},
     iced_sctk::settings::InitialSurface,

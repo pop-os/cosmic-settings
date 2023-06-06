@@ -83,8 +83,17 @@ panel-missing = Panel Configuration is Missing
     .fix = Reset to default
 
 applets = Applets
+start-segment = Start Segment
+center-segment = Center Segment
+end-segment = End Segment
 
+add = Add
+add-applet = Add Applet
+search-applets = Search applets...
+no-applets-found = No applets found...
 all = All
+
+drop-here = Drop applets here
 
 ## Desktop: Wallpaper
 
