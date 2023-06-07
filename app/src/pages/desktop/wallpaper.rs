@@ -334,7 +334,7 @@ pub fn settings() -> Section<crate::pages::Message> {
 
             let background_fit = cosmic::iced::widget::pick_list(
                 &page.fit_options,
-                page.fit_options.get(page.selected_fit as usize).cloned(),
+                page.fit_options.get(page.selected_fit).cloned(),
                 Message::Fit,
             );
 

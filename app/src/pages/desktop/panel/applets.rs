@@ -224,10 +224,10 @@ impl Page {
             has_some = true;
             list_column = list_column.add(
                 row![
-                    icon(info.icon.to_owned(), 32).style(theme::Svg::Symbolic),
+                    icon(info.icon.clone(), 32).style(theme::Svg::Symbolic),
                     column![
-                        text(info.name.to_owned()),
-                        text(info.description.to_owned()).size(10)
+                        text(info.name.clone()),
+                        text(info.description.clone()).size(10)
                     ]
                     .spacing(4.0)
                     .width(Length::Fill),
@@ -906,7 +906,7 @@ where
         );
     }
 
-    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::too_many_lines, clippy::needless_match)]
     fn on_event(
         &mut self,
         tree: &mut Tree,
