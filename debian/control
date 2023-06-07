@@ -5,7 +5,7 @@ Maintainer: Michael Murphy <mmstick@pm.me>
 Build-Depends:
     debhelper-compat (=13),
     just (>= 1.13.0),
-    rust-all (>= 1.69.0),
+    rust-all,
     cmake,
     libexpat1-dev,
     libfontconfig-dev,
