@@ -7,8 +7,7 @@ use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
 
 use cosmic::{
-    cosmic_config::{config_subscription, CosmicConfigEntry},
-    cosmic_theme::util::CssColor,
+    cosmic_config::config_subscription,
     iced::{
         self,
         event::wayland::{self, WindowEvent, WindowState},
@@ -22,14 +21,13 @@ use cosmic::{
     iced_sctk::commands::window::{set_mode_window, start_drag_window},
     iced_style::application,
     keyboard_nav,
-    theme::{self, Theme},
+    theme::{self, theme_subscription, Theme},
     widget::{
         header_bar, nav_bar, nav_bar_toggle, scrollable, search, segmented_button, settings,
         IconSource,
     },
     Element, ElementExt,
 };
-use tracing::error;
 
 use crate::{
     config::Config,
@@ -47,7 +45,7 @@ use crate::{
     widget::{page_title, parent_page_button, search_header, sub_page_button},
 };
 
-use std::{borrow::Cow, process, sync::Arc};
+use std::{borrow::Cow, process};
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
@@ -120,7 +118,7 @@ impl Application for SettingsApp {
             show_maximize: true,
             show_minimize: true,
             window_width: 0,
-            theme: theme(),
+            theme: cosmic::theme::theme(),
         };
 
         // app.insert_page::<wifi::Page>();
@@ -202,23 +200,7 @@ impl Application for SettingsApp {
                     }
                 },
             ),
-            config_subscription::<u64, cosmic::cosmic_theme::Theme<CssColor>>(
-                0,
-                cosmic::cosmic_theme::NAME.into(),
-                cosmic::cosmic_theme::Theme::<CssColor>::version() as u64,
-            )
-            .map(|(_, res)| {
-                let theme = res.map_or_else(
-                    |(errors, theme)| {
-                        for err in errors {
-                            error!("{:?}", err);
-                        }
-                        theme.into_srgba()
-                    },
-                    cosmic::cosmic_theme::Theme::into_srgba,
-                );
-                Message::ThemeChanged(cosmic::theme::Theme::custom(Arc::new(theme)))
-            }),
+            theme_subscription(0).map(Message::ThemeChanged),
         ])
     }
 
@@ -624,23 +606,4 @@ impl SettingsApp {
             .apply(Element::from)
             .map(Message::Page)
     }
-}
-
-fn theme() -> Theme {
-    let Ok(helper) = cosmic::cosmic_config::Config::new(
-        cosmic::cosmic_theme::NAME,
-        cosmic::cosmic_theme::Theme::<CssColor>::version() as u64,
-    ) else {
-        return cosmic::theme::Theme::dark();
-    };
-    let t = cosmic::cosmic_theme::Theme::get_entry(&helper).map_or_else(
-        |(errors, theme)| {
-            for err in errors {
-                tracing::error!("{:?}", err);
-            }
-            theme.into_srgba()
-        },
-        cosmic::cosmic_theme::Theme::into_srgba,
-    );
-    cosmic::theme::Theme::custom(Arc::new(t))
 }
