@@ -138,9 +138,9 @@ checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
 
 [[package]]
 name = "arrayvec"
-version = "0.7.2"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
+checksum = "8868f09ff8cea88b079da74ae569d9b8c62a23c68c746240b704ee6f7525c89c"
 
 [[package]]
 name = "ash"
@@ -379,9 +379,9 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "bitflags"
-version = "2.3.1"
+version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6776fc96284a0bb647b615056fc496d1fe1644a7ab01829818a6d91cae888b84"
+checksum = "6dbe3c979c178231552ecba20214a8272df4e09f232a87aef4320cf06539aded"
 
 [[package]]
 name = "block"
@@ -719,7 +719,7 @@ dependencies = [
 [[package]]
 name = "cosmic-bg-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-bg?branch=settings_jammy#23f4a1f80e98d36efc4a83a59ec9e8b13bfca35b"
+source = "git+https://github.com/pop-os/cosmic-bg#9958bb035bf4a108d2fc537a6f1134e5bc21262c"
 dependencies = [
  "cosmic-config",
  "derive_setters",
@@ -755,7 +755,7 @@ dependencies = [
 [[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel?branch=settings_jammy#1b8699fb4b23243e425d05174afb8e3275ff3d4a"
+source = "git+https://github.com/pop-os/cosmic-panel#2d57cec0d1d835f70e1348175ee2ceae6242e739"
 dependencies = [
  "anyhow",
  "cosmic-config",
@@ -2593,7 +2593,7 @@ version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd85a5776cd9500c2e2059c8c76c3b01528566b7fcbaf8098b55a33fc298849b"
 dependencies = [
- "arrayvec 0.7.2",
+ "arrayvec 0.7.3",
 ]
 
 [[package]]
@@ -4405,7 +4405,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce2986c82f77818c7b9144c70818fdde98db15308e329ae2f7204d767808fd3c"
 dependencies = [
  "arrayref",
- "arrayvec 0.7.2",
+ "arrayvec 0.7.3",
  "bytemuck",
  "cfg-if",
  "log",
@@ -5128,7 +5128,7 @@ version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3059ea4ddec41ca14f356833e2af65e7e38c0a8f91273867ed526fb9bafcca95"
 dependencies = [
- "arrayvec 0.7.2",
+ "arrayvec 0.7.3",
  "cfg-if",
  "js-sys",
  "log",
@@ -5152,9 +5152,9 @@ version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f478237b4bf0d5b70a39898a66fa67ca3a007d79f2520485b8b0c3dfc46f8c2"
 dependencies = [
- "arrayvec 0.7.2",
+ "arrayvec 0.7.3",
  "bit-vec",
- "bitflags 2.3.1",
+ "bitflags 2.3.2",
  "codespan-reporting",
  "log",
  "naga",
@@ -5176,10 +5176,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74851c2c8e5d97652e74c241d41b0656b31c924a45dcdecde83975717362cfa4"
 dependencies = [
  "android_system_properties",
- "arrayvec 0.7.2",
+ "arrayvec 0.7.3",
  "ash",
  "bit-set",
- "bitflags 2.3.1",
+ "bitflags 2.3.2",
  "block",
  "core-graphics-types",
  "d3d12",
@@ -5217,7 +5217,7 @@ version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5bd33a976130f03dcdcd39b3810c0c3fc05daf86f0aaf867db14bfb7c4a9a32b"
 dependencies = [
- "bitflags 2.3.1",
+ "bitflags 2.3.2",
  "js-sys",
  "web-sys",
 ]
