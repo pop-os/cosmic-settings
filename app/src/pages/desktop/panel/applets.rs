@@ -733,7 +733,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                     style.border_radius = 8.0.into();
                     style.border_color = theme.cosmic().bg_divider().into();
                     style.border_width = 2.0;
-                    style.background = Color::TRANSPARENT.into();
+                    style.background = Some(Color::TRANSPARENT.into());
                     style
                 })))
                 .into()
@@ -912,7 +912,7 @@ where
         tree: &mut Tree,
         event: event::Event,
         layout: layout::Layout<'_>,
-        cursor_position: Point,
+        cursor_position: mouse::Cursor,
         renderer: &cosmic::Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
@@ -940,11 +940,11 @@ where
                 match &event {
                     event::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
                     | event::Event::Touch(touch::Event::FingerPressed { .. })
-                        if layout.bounds().contains(cursor_position) =>
+                        if cursor_position.is_over(layout.bounds()) =>
                     {
                         ret = event::Status::Captured;
 
-                        DraggingState::Pressed(cursor_position)
+                        DraggingState::Pressed(cursor_position.position().unwrap_or_default())
                     }
                     _ => DraggingState::None,
                 }
@@ -972,8 +972,9 @@ where
                 match &event {
                     event::Event::Mouse(mouse::Event::CursorMoved { .. })
                     | event::Event::Touch(touch::Event::FingerMoved { .. }) => {
-                        let d_y = cursor_position.y - start.y;
-                        let d_x = cursor_position.x - start.x;
+                        let pos = cursor_position.position().unwrap_or_default();
+                        let d_y = pos.y - start.y;
+                        let d_x = pos.x - start.x;
                         let distance_squared = d_y * d_y + d_x * d_x;
 
                         if distance_squared > DRAG_START_DISTANCE_SQUARED {
@@ -1366,7 +1367,7 @@ where
         theme: &cosmic::Theme,
         style: &renderer::Style,
         layout: layout::Layout<'_>,
-        cursor_position: Point,
+        cursor_position: mouse::Cursor,
         viewport: &Rectangle,
     ) {
         self.inner.as_widget().draw(
@@ -1397,7 +1398,7 @@ where
         &self,
         state: &Tree,
         layout: layout::Layout<'_>,
-        cursor_position: Point,
+        cursor_position: mouse::Cursor,
         viewport: &Rectangle,
         renderer: &cosmic::Renderer,
     ) -> mouse::Interaction {
@@ -1412,7 +1413,7 @@ where
                 let state = state.state.downcast_ref::<ReorderWidgetState>();
                 if matches!(state.dragging_state, DraggingState::Dragging(_)) {
                     mouse::Interaction::Grabbing
-                } else if layout.bounds().contains(cursor_position) {
+                } else if cursor_position.is_over(layout.bounds()) {
                     mouse::Interaction::Grab
                 } else {
                     mouse::Interaction::default()
