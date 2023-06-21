@@ -29,9 +29,7 @@ desktop-src := 'resources' / desktop
 desktop-dest := clean(rootdir / prefix) / 'share' / 'applications' / desktop
 
 [private]
-help:
-    echo $RUSTFLAGS
-    @just -l
+default: build-release
 
 # Remove Cargo build artifacts
 clean:

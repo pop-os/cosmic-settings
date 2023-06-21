@@ -2,15 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use apply::Apply;
-use cosmic::widget::{divider, icon, list, settings, text};
-use cosmic::{
-    iced::{
-        self,
-        widget::{button, column, container, horizontal_space, row, vertical_space, Button},
-        Length,
-    },
-    iced_widget::core::image,
+use cosmic::iced::{
+    self,
+    widget::{button, column, container, horizontal_space, row, vertical_space, Button},
+    Length,
 };
+use cosmic::widget::{divider, icon, list, settings, text};
 use cosmic::{theme, Element};
 use cosmic_settings_page as page;
 
@@ -136,13 +133,10 @@ pub fn unimplemented_page<Message: 'static>() -> Element<'static, Message> {
 }
 
 #[must_use]
-pub fn display_container<'a, Message: 'a>(
-    image: image::Handle,
-    width: f32,
-) -> cosmic::Element<'a, Message> {
+pub fn display_container<'a, Message: 'a>(widget: Element<'a, Message>) -> Element<'a, Message> {
     row!(
         horizontal_space(Length::Fill),
-        container(cosmic::iced::widget::image(image).width(Length::Fixed(width)))
+        container(widget)
             .padding(4)
             .style(crate::theme::display_container()),
         horizontal_space(Length::Fill),

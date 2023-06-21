@@ -104,12 +104,14 @@ wallpaper = Wallpaper
     .slide = Slideshow
     .change = Change image every
 
+all-displays = All Displays
+colors = Colors
 fit-to-screen = Fit to Screen
 stretch = Stretch
+system-backgrounds = System backgrounds
 zoom = Zoom
 
 x-minutes = { $number } minutes
-
 x-hours = { $number ->
     [1] 1 hour
     *[other] { $number } hours

@@ -1,4 +1,5 @@
-pub use cosmic_bg_config::{Config, Entry, Output, ScalingMode};
+pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
+
 use image::RgbaImage;
 use std::{
     collections::{hash_map::DefaultHasher, HashMap},
@@ -36,10 +37,12 @@ pub fn config() -> (Config, HashMap<String, String>) {
 pub fn set(config: &mut Config, entry: Entry) {
     if let Ok(context) = Config::helper() {
         tracing::info!(
-            "setting wallpaper for {} to {}",
-            entry.output.to_string(),
-            entry.source.display()
+            output = entry.output.to_string(),
+            source = ?entry.source,
+            "setting wallpaper",
         );
+
+        let _res = Config::set_same_on_all(&context, config.same_on_all);
 
         if let Err(why) = config.set_entry(&context, entry) {
             tracing::error!(?why, "failed to set background");

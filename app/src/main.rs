@@ -23,6 +23,7 @@ use cosmic::{
     iced_sctk::settings::InitialSurface,
 };
 use i18n_embed::DesktopLanguageRequester;
+use tracing_subscriber::prelude::*;
 
 /// # Errors
 ///
@@ -34,30 +35,12 @@ pub fn main() -> color_eyre::Result<()> {
         std::env::set_var("RUST_SPANTRACE", "0");
     }
 
-    if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "info");
-    }
-
-    tracing_subscriber::fmt()
-        .pretty()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
-        .with_writer(std::io::stderr)
-        .without_time()
-        .with_line_number(true)
-        .with_file(true)
-        .with_target(false)
-        .with_thread_names(true)
-        .init();
-
-    let localizer = crate::localize::localizer();
-    let requested_languages = DesktopLanguageRequester::requested_languages();
-
-    if let Err(why) = localizer.select(&requested_languages) {
-        tracing::error!(%why, "error while loading fluent localizations");
-    }
+    init_logger();
+    init_localizer();
 
     cosmic::settings::set_default_icon_theme("Pop");
     let mut settings = cosmic::settings();
+    settings.default_text_size = 14.0;
     settings.initial_surface = InitialSurface::XdgWindow(SctkWindowSettings {
         title: Some(fl!("app")),
         size_limits: Limits::NONE.min_width(600.0).min_height(300.0),
@@ -68,4 +51,39 @@ pub fn main() -> color_eyre::Result<()> {
     SettingsApp::run(settings)?;
 
     Ok(())
+}
+
+fn init_localizer() {
+    let localizer = crate::localize::localizer();
+    let requested_languages = DesktopLanguageRequester::requested_languages();
+
+    if let Err(why) = localizer.select(&requested_languages) {
+        tracing::error!(%why, "error while loading fluent localizations");
+    }
+}
+
+fn init_logger() {
+    let log_level = std::env::var("RUST_LOG")
+        .ok()
+        .and_then(|level| level.parse::<tracing::Level>().ok())
+        .unwrap_or(tracing::Level::INFO);
+
+    let log_format = tracing_subscriber::fmt::format()
+        .pretty()
+        .without_time()
+        .with_line_number(true)
+        .with_file(true)
+        .with_target(false)
+        .with_thread_names(true);
+
+    let log_filter = tracing_subscriber::fmt::Layer::default()
+        .with_writer(std::io::stderr)
+        .event_format(log_format)
+        .with_filter(tracing_subscriber::filter::filter_fn(move |metadata| {
+            metadata.level() == &tracing::Level::ERROR
+                || (metadata.target().starts_with("cosmic_settings")
+                    && metadata.level() <= &log_level)
+        }));
+
+    tracing_subscriber::registry().with(log_filter).init();
 }

@@ -193,8 +193,8 @@ impl Application for SettingsApp {
                 |(_, e)| match e {
                     Ok(config) => Message::PanelConfig(config),
                     Err((errors, config)) => {
-                        for error in errors {
-                            log::error!("Error loading panel config: {:?}", error);
+                        for why in errors {
+                            tracing::error!(?why, "panel config load error");
                         }
                         Message::PanelConfig(config)
                     }
@@ -209,6 +209,7 @@ impl Application for SettingsApp {
         let mut ret = Command::none();
         match message {
             Message::WindowResize(width, _height) => {
+                tracing::debug!(width, "new window width");
                 let break_point = (600.0 * self.scaling_factor) as u32;
                 self.window_width = width;
                 self.is_condensed = self.window_width < break_point;
@@ -281,13 +282,11 @@ impl Application for SettingsApp {
                     return self.activate_page(page);
                 }
                 crate::pages::Message::Panel(message) => {
-                    if let Some(page) = self.pages.page_mut::<panel::Page>() {
-                        page.update(message);
-                    }
+                    page::update!(self.pages, message, panel::Page);
                 }
                 crate::pages::Message::Applet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets::Page>() {
-                        ret = page.update(message);
+                        return page.update(message);
                     }
                 }
             },
