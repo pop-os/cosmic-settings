@@ -88,7 +88,7 @@ impl Default for Page {
             // TODO error handling...
             let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
             // If the config is not present, it will be created with the default values and the name will not match
-            (panel_config.name == "panel").then_some(panel_config)
+            (panel_config.name == "Panel").then_some(panel_config)
         });
         Self {
             available_entries: Vec::new(),
@@ -408,7 +408,7 @@ impl Page {
                     // TODO error handling...
                     let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
                     // If the config is not present, it will be created with the default values and the name will not match
-                    (panel_config.name == "panel").then_some(panel_config)
+                    (panel_config.name == "Panel").then_some(panel_config)
                 });
                 self.current_config = current_config;
             }
