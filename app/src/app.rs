@@ -189,7 +189,7 @@ impl Application for SettingsApp {
             window_break,
             keyboard_nav::subscription().map(Message::KeyboardNav),
             desktop_files(0).map(|_| Message::DesktopInfo),
-            config_subscription(0, "com.system76.CosmicPanel.panel".into(), 1).map(
+            config_subscription(0, "com.system76.CosmicPanel.Panel".into(), 1).map(
                 |(_, e)| match e {
                     Ok(config) => Message::PanelConfig(config),
                     Err((errors, config)) => {

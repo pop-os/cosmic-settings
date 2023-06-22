@@ -29,7 +29,7 @@ pub struct Page {
 impl Default for Page {
     fn default() -> Self {
         // TODO CosmicPanelConfig should return its own version
-        let config_helper = cosmic_config::Config::new("com.system76.CosmicPanel.panel", 1).ok();
+        let config_helper = cosmic_config::Config::new("com.system76.CosmicPanel.Panel", 1).ok();
         let panel_config = config_helper.as_ref().and_then(|config_helper| {
             // TODO error handling...
             let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
