@@ -72,7 +72,7 @@ install: (install-bin bin-src bin-dest) (install-file desktop-src desktop-dest)
 
 # Run the application for testing purposes
 run *args:
-    env RUST_BACKTRACE=full cargo run --release {{args}}
+    env RUST_LOG=debug RUST_BACKTRACE=full cargo run --release {{args}}
 
 # Run `cargo test`
 test:

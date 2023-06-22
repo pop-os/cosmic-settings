@@ -80,8 +80,9 @@ fn init_logger() {
         .with_writer(std::io::stderr)
         .event_format(log_format)
         .with_filter(tracing_subscriber::filter::filter_fn(move |metadata| {
+            let target = metadata.target();
             metadata.level() == &tracing::Level::ERROR
-                || (metadata.target().starts_with("cosmic_settings")
+                || ((target.starts_with("cosmic_settings") || target.starts_with("cosmic_bg"))
                     && metadata.level() <= &log_level)
         }));
 
