@@ -10,13 +10,13 @@ use std::{
 };
 
 use apply::Apply;
-use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::widget::{
     list_column,
     segmented_button::{self, SingleSelectModel},
     settings, toggler,
 };
 use cosmic::{iced::alignment::Horizontal, iced::Length, Element};
+use cosmic::{iced_core::alignment::Vertical, iced_runtime::core::image::Handle as ImageHandle};
 use cosmic_settings_desktop::wallpaper::{self, Entry, ScalingMode};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -492,10 +492,12 @@ pub fn settings() -> Section<crate::pages::Message> {
                 cosmic::widget::text(fl!("all-displays"))
                     .font(cosmic::font::FONT_SEMIBOLD)
                     .horizontal_alignment(Horizontal::Center)
+                    .vertical_alignment(Vertical::Center)
                     .width(Length::Fill)
+                    .height(Length::Fill)
                     .apply(cosmic::iced::widget::container)
                     .width(Length::Fill)
-                    .padding([6, 0, 6, 0])
+                    .height(Length::Fixed(32.0))
                     .into()
             } else {
                 cosmic::widget::horizontal_segmented_selection(&page.outputs)
