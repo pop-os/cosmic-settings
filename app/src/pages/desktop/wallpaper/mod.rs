@@ -526,7 +526,6 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .apply(cosmic::iced::widget::container)
-                    .width(Length::Fill)
                     .height(Length::Fixed(32.0))
                     .into()
             } else {
@@ -597,7 +596,6 @@ pub fn settings() -> Section<crate::pages::Message> {
 
             cosmic::iced::widget::column(children)
                 .spacing(22)
-                .padding(0)
                 .max_width(683)
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWallpaper)

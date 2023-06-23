@@ -70,9 +70,8 @@ pub fn color_image(
 /// Color selection list
 pub fn color_select_options() -> Element<'static, Message> {
     cosmic::iced::widget::responsive(|size| {
-        let items_per_row = ((size.width / (COLOR_WIDTH + ROW_SPACING) as f32).floor() as usize)
-            .max(1)
-            .min(8);
+        let items_per_row =
+            flex_row_items(size.width, COLOR_WIDTH as f32, ROW_SPACING as f32, 8) as usize;
 
         let mut color_column = Vec::with_capacity(wallpaper::DEFAULT_COLORS.len() / items_per_row);
         let mut colors = wallpaper::DEFAULT_COLORS.iter();
@@ -100,16 +99,25 @@ pub fn color_select_options() -> Element<'static, Message> {
     .into()
 }
 
+fn flex_row_items(available: f32, item_width: f32, spacing: f32, max_items: u32) -> u32 {
+    let mut items = 2;
+
+    while items <= max_items && available >= (item_width + spacing) * items as f32 - spacing {
+        items += 1;
+    }
+
+    items - 1
+}
+
 /// Background selection list
 pub fn wallpaper_select_options(page: &super::Page) -> Element<Message> {
     cosmic::iced::widget::responsive(|size| {
-        let items_per_row = ((size.width / (WALLPAPER_WIDTH + ROW_SPACING as f32)).floor()
-            as usize)
-            .max(1)
-            .min(4);
+        let items_per_row =
+            flex_row_items(size.width, WALLPAPER_WIDTH, ROW_SPACING as f32, 4) as usize;
 
         let mut image_column =
             Vec::with_capacity(page.selection.selection_handles.len() / items_per_row);
+
         let mut image_handles = page.selection.selection_handles.iter();
 
         while let Some((id, handle)) = image_handles.next() {
