@@ -126,8 +126,9 @@ impl Default for Choice {
 #[derive(Clone, Debug, Default)]
 pub struct Context {
     active: Choice,
-    handles: SlotMap<DefaultKey, ImageHandle>,
-    paths: SecondaryMap<DefaultKey, PathBuf>,
+    paths: SlotMap<DefaultKey, PathBuf>,
+    display_handles: SecondaryMap<DefaultKey, ImageHandle>,
+    selection_handles: SecondaryMap<DefaultKey, ImageHandle>,
 }
 
 impl Page {
@@ -434,12 +435,23 @@ impl page::Page<crate::pages::Message> for Page {
 
             let mut update = Context::default();
 
-            while let Some((path, image)) = backgrounds.recv().await {
-                let handle =
-                    ImageHandle::from_pixels(image.width(), image.height(), image.into_vec());
+            while let Some((path, display_image, selection_image)) = backgrounds.recv().await {
+                let id = update.paths.insert(path);
 
-                let id = update.handles.insert(handle);
-                update.paths.insert(id, path);
+                let display_handle = ImageHandle::from_pixels(
+                    display_image.width(),
+                    display_image.height(),
+                    display_image.into_vec(),
+                );
+
+                update.display_handles.insert(id, display_handle);
+
+                let selection_handle = ImageHandle::from_pixels(
+                    selection_image.width(),
+                    selection_image.height(),
+                    selection_image.into_vec(),
+                );
+                update.selection_handles.insert(id, selection_handle);
             }
 
             tracing::debug!(
@@ -477,15 +489,19 @@ pub fn settings() -> Section<crate::pages::Message> {
                 // Shows background options, with the slideshow toggle enabled
                 Choice::Slideshow => {
                     slideshow_enabled = true;
-                    page.selection.handles.values().next().map(|handle| {
-                        cosmic::iced::widget::image(handle.clone())
-                            .width(Length::Fixed(300.0))
-                            .into()
-                    })
+                    page.selection
+                        .display_handles
+                        .values()
+                        .next()
+                        .map(|handle| {
+                            cosmic::iced::widget::image(handle.clone())
+                                .width(Length::Fixed(300.0))
+                                .into()
+                        })
                 }
 
                 // Shows background options, with the slideshow toggle visible
-                Choice::Background(key) => page.selection.handles.get(key).map(|handle| {
+                Choice::Background(key) => page.selection.display_handles.get(key).map(|handle| {
                     cosmic::iced::widget::image(handle.clone())
                         .width(Length::Fixed(300.0))
                         .into()

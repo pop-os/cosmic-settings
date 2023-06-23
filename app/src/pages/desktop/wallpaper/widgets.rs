@@ -83,8 +83,8 @@ pub fn color_select_options() -> Element<'static, Message> {
 
 /// Background selection list
 pub fn wallpaper_select_options(page: &super::Page) -> Element<Message> {
-    let mut image_column = Vec::with_capacity(page.selection.handles.len() / 4);
-    let mut image_handles = page.selection.handles.iter();
+    let mut image_column = Vec::with_capacity(page.selection.selection_handles.len() / 4);
+    let mut image_handles = page.selection.selection_handles.iter();
 
     while let Some((id, handle)) = image_handles.next() {
         let mut image_row = Vec::with_capacity(4);
