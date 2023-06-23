@@ -15,8 +15,8 @@ use cosmic::widget::{
     segmented_button::{self, SingleSelectModel},
     settings, toggler,
 };
-use cosmic::{iced::alignment::Horizontal, iced::Length, Element};
-use cosmic::{iced_core::alignment::Vertical, iced_runtime::core::image::Handle as ImageHandle};
+use cosmic::{iced::Length, Element};
+use cosmic::{iced_core::alignment, iced_runtime::core::image::Handle as ImageHandle};
 use cosmic_settings_desktop::wallpaper::{self, Entry, ScalingMode};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -521,11 +521,12 @@ pub fn settings() -> Section<crate::pages::Message> {
             children.push(if page.config.same_on_all {
                 cosmic::widget::text(fl!("all-displays"))
                     .font(cosmic::font::FONT_SEMIBOLD)
-                    .horizontal_alignment(Horizontal::Center)
-                    .vertical_alignment(Vertical::Center)
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .vertical_alignment(alignment::Vertical::Center)
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .apply(cosmic::iced::widget::container)
+                    .width(Length::Fill)
                     .height(Length::Fixed(32.0))
                     .into()
             } else {
