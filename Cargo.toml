@@ -18,3 +18,9 @@ git = "https://github.com/pop-os/cosmic-bg"
 
 [workspace.dependencies.cosmic-panel-config]
 git = "https://github.com/pop-os/cosmic-panel"
+
+[patch."https://github.com/pop-os/libcosmic"]
+# libcosmic = { path = "../libcosmic" }
+# cosmic-config = { path = "../libcosmic/cosmic-config" }
+# libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "flexalloc" }
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "flexalloc" }
