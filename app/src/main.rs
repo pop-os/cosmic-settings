@@ -43,7 +43,7 @@ pub fn main() -> color_eyre::Result<()> {
     settings.default_text_size = 14.0;
     settings.initial_surface = InitialSurface::XdgWindow(SctkWindowSettings {
         title: Some(fl!("app")),
-        size_limits: Limits::NONE.min_width(600.0).min_height(300.0),
+        size_limits: Limits::NONE.min_width(400.0).min_height(300.0),
         app_id: Some("com.system76.CosmicSettings".to_string()),
         ..Default::default()
     });
