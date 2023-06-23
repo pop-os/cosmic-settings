@@ -27,7 +27,7 @@ downcast-rs = "1.2.0"
 # TODO: migrate this dependency to the pages/desktop crate.
 cosmic-panel-config = { workspace = true }
 tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.17", features = ["env-filter"]}
+tracing-subscriber = "0.3.17"
 log = "0.4"
 env_logger = "0.10"
 url = "2.3.1"
