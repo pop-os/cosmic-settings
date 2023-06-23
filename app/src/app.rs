@@ -53,7 +53,6 @@ pub struct SettingsApp {
     pub active_page: page::Entity,
     pub config: Config,
     pub debug: bool,
-    pub is_condensed: bool,
     pub nav_bar_toggled_condensed: bool,
     pub nav_bar_toggled: bool,
     pub nav_bar: segmented_button::SingleSelectModel,
@@ -103,7 +102,6 @@ impl Application for SettingsApp {
             active_page: page::Entity::default(),
             config: Config::new(),
             debug: false,
-            is_condensed: false,
             nav_bar: segmented_button::Model::default(),
             nav_bar_toggled: true,
             nav_bar_toggled_condensed: false,
@@ -208,12 +206,7 @@ impl Application for SettingsApp {
     fn update(&mut self, message: Message) -> iced::Command<Self::Message> {
         let mut ret = Command::none();
         match message {
-            Message::WindowResize(width, _height) => {
-                tracing::debug!(width, "new window width");
-                let break_point = (600.0 * self.scaling_factor) as u32;
-                self.window_width = width;
-                self.is_condensed = self.window_width < break_point;
-            }
+            Message::WindowResize(_width, _height) => {}
             Message::KeyboardNav(message) => match message {
                 keyboard_nav::Message::Unfocus => ret = keyboard_nav::unfocus(),
                 keyboard_nav::Message::FocusNext => ret = widget::focus_next(),
@@ -334,81 +327,87 @@ impl Application for SettingsApp {
             return page.add_applet_view();
         }
 
-        let (nav_bar_message, nav_bar_toggled) = if self.is_condensed {
-            (
-                Message::ToggleNavBarCondensed,
-                self.nav_bar_toggled_condensed,
-            )
-        } else {
-            (Message::ToggleNavBar, self.nav_bar_toggled)
-        };
+        cosmic::iced::widget::responsive(|size| {
+            let is_condensed = (600.0 * self.scaling_factor) > size.width;
+            let narrow_navbar = (700.0 * self.scaling_factor) > size.width;
 
-        let mut header = header_bar()
-            .title("")
-            .on_close(Message::Close)
-            .on_drag(Message::Drag)
-            .start(
-                iced::widget::row!(
-                    nav_bar_toggle()
-                        .on_nav_bar_toggled(nav_bar_message)
-                        .nav_bar_active(nav_bar_toggled),
-                    search::search(&self.search, Message::Search)
+            let (nav_bar_message, nav_bar_toggled) = if is_condensed {
+                (
+                    Message::ToggleNavBarCondensed,
+                    self.nav_bar_toggled_condensed,
                 )
-                .align_items(iced::Alignment::Center)
-                .into(),
-            );
+            } else {
+                (Message::ToggleNavBar, self.nav_bar_toggled)
+            };
 
-        if self.show_maximize {
-            header = header.on_maximize(Message::Maximize);
-        }
+            let mut header = header_bar()
+                .title("")
+                .on_close(Message::Close)
+                .on_drag(Message::Drag)
+                .start(
+                    iced::widget::row!(
+                        nav_bar_toggle()
+                            .on_nav_bar_toggled(nav_bar_message)
+                            .nav_bar_active(nav_bar_toggled),
+                        search::search(&self.search, Message::Search)
+                    )
+                    .align_items(iced::Alignment::Center)
+                    .into(),
+                );
 
-        if self.show_minimize {
-            header = header.on_minimize(Message::Minimize);
-        }
-
-        let header = Into::<Element<Message>>::into(header).debug(self.debug);
-
-        let mut widgets = Vec::with_capacity(2);
-
-        if nav_bar_toggled {
-            let mut nav_bar = nav_bar(&self.nav_bar, Message::NavBar);
-
-            if !self.is_condensed {
-                nav_bar = nav_bar.max_width(300);
+            if self.show_maximize {
+                header = header.on_maximize(Message::Maximize);
             }
 
-            let nav_bar: Element<_> = nav_bar.into();
-            widgets.push(nav_bar.debug(self.debug));
-        }
+            if self.show_minimize {
+                header = header.on_minimize(Message::Minimize);
+            }
 
-        if !(self.is_condensed && nav_bar_toggled) {
-            widgets.push(
-                scrollable(row![
-                    horizontal_space(Length::Fill),
-                    (if self.search.is_active() {
-                        self.search_view()
-                    } else if let Some(content) = self.pages.content(self.active_page) {
-                        self.page_view(content)
-                    } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
-                        self.sub_page_view(sub_pages)
-                    } else {
-                        panic!("page without sub-pages or content");
-                    })
-                    .debug(self.debug),
-                    horizontal_space(Length::Fill),
-                ])
-                .into(),
-            );
-        }
+            let header = Into::<Element<Message>>::into(header).debug(self.debug);
 
-        let content = container(row(widgets).spacing(8))
-            .padding([0, 8, 8, 8])
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .style(theme::Container::Background)
-            .into();
+            let mut widgets = Vec::with_capacity(2);
 
-        column(vec![header, content]).into()
+            if nav_bar_toggled {
+                let mut nav_bar = nav_bar(&self.nav_bar, Message::NavBar);
+
+                if !is_condensed {
+                    nav_bar = nav_bar.max_width(if narrow_navbar { 200 } else { 300 });
+                }
+
+                let nav_bar: Element<_> = nav_bar.into();
+                widgets.push(nav_bar.debug(self.debug));
+            }
+
+            if !(is_condensed && nav_bar_toggled) {
+                widgets.push(
+                    scrollable(row![
+                        horizontal_space(Length::Fill),
+                        (if self.search.is_active() {
+                            self.search_view()
+                        } else if let Some(content) = self.pages.content(self.active_page) {
+                            self.page_view(content)
+                        } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
+                            self.sub_page_view(sub_pages)
+                        } else {
+                            panic!("page without sub-pages or content");
+                        })
+                        .debug(self.debug),
+                        horizontal_space(Length::Fill),
+                    ])
+                    .into(),
+                );
+            }
+
+            let content = container(row(widgets).spacing(8))
+                .padding([0, 8, 8, 8])
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .style(theme::Container::Background)
+                .into();
+
+            column(vec![header, content]).into()
+        })
+        .into()
     }
 
     fn theme(&self) -> Theme {
