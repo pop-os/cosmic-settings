@@ -22,6 +22,8 @@ use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 
+const SYSTEM_WALLPAPER_DIR: &str = "/usr/share/backgrounds/pop/";
+
 const CATEGORY_SYSTEM_WALLPAPERS: usize = 0;
 const CATEGORY_COLOR: usize = 1;
 
@@ -76,11 +78,12 @@ impl Default for Page {
             active_category: CATEGORY_SYSTEM_WALLPAPERS,
             categories: vec![fl!("system-backgrounds"), fl!("colors")],
             config: wallpaper::Config::default(),
-            current_directory: PathBuf::from("/usr/share/backgrounds/pop/"),
+            current_directory: PathBuf::from(SYSTEM_WALLPAPER_DIR),
             fit_options: vec![fl!("fit-to-screen"), fl!("stretch"), fl!("zoom")],
             outputs: SingleSelectModel::default(),
             rotation_frequency: 300,
             rotation_options: vec![
+                // FIX: fluent is inserting extra unicode characters in formatting
                 fl!("x-minutes", number = 5)
                     .replace('\u{2068}', "")
                     .replace('\u{2069}', ""),
@@ -201,36 +204,48 @@ impl Page {
         self.selection = selection;
         self.outputs.clear();
 
-        {
-            let mut first = None;
-            for (name, model) in displays {
-                let entity = self
-                    .outputs
-                    .insert()
-                    .text(format!("{model} ({name})"))
-                    .data(name);
+        let mut first = None;
+        for (name, model) in displays {
+            let entity = self
+                .outputs
+                .insert()
+                .text(format!("{model} ({name})"))
+                .data(name);
 
-                if first.is_none() {
-                    first = Some(entity.id());
-                }
+            if first.is_none() {
+                first = Some(entity.id());
             }
+        }
 
-            if let Some(id) = first {
-                self.outputs.activate(id);
+        if let Some(id) = first {
+            self.outputs.activate(id);
+        }
+
+        if self.config.same_on_all || self.config.backgrounds.is_empty() {
+            let entry = self.config.default_background.clone();
+            self.select_background_entry(&entry);
+
+            if let Some(current) = entry_directory(&entry) {
+                self.current_directory = current;
             }
+        } else if let Some(data) = self.outputs.active_data::<String>() {
+            let mut backgrounds = Vec::new();
+            std::mem::swap(&mut self.config.backgrounds, &mut backgrounds);
 
-            if self.config.same_on_all || self.config.backgrounds.is_empty() {
-                self.select_background_entry(&self.config.default_background.clone());
-            } else if let Some(data) = self.outputs.active_data::<String>() {
-                for background in &self.config.backgrounds {
-                    if &background.output == data {
-                        self.active_output = Some(data.clone());
-                        self.select_background_entry(&background.clone());
+            for background in &backgrounds {
+                if &background.output == data {
+                    self.active_output = Some(data.clone());
+                    self.select_background_entry(background);
 
-                        break;
+                    if let Some(current) = entry_directory(background) {
+                        self.current_directory = current;
                     }
+
+                    break;
                 }
             }
+
+            std::mem::swap(&mut self.config.backgrounds, &mut backgrounds);
         }
     }
 
@@ -415,8 +430,7 @@ impl page::Page<crate::pages::Message> for Page {
 
             let (config, outputs) = wallpaper::config();
 
-            let mut backgrounds =
-                wallpaper::load_each_from_path("/usr/share/backgrounds/pop/".into());
+            let mut backgrounds = wallpaper::load_each_from_path(SYSTEM_WALLPAPER_DIR.into());
 
             let mut update = Context::default();
 
@@ -572,4 +586,21 @@ pub fn settings() -> Section<crate::pages::Message> {
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWallpaper)
         })
+}
+
+/// Sets the current wallpaper directory.
+fn entry_directory(entry: &wallpaper::Entry) -> Option<PathBuf> {
+    Some(match entry.source {
+        wallpaper::Source::Path(ref path) => {
+            if path.is_dir() {
+                path.clone()
+            } else if let Some(path) = path.parent() {
+                path.to_path_buf()
+            } else {
+                return None;
+            }
+        }
+
+        wallpaper::Source::Color(_) => PathBuf::from(SYSTEM_WALLPAPER_DIR),
+    })
 }
