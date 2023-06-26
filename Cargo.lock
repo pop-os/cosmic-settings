@@ -253,7 +253,7 @@ checksum = "0e97ce7de6cf12de5d7226c73f5ba9811622f4db3a5b91b55c53e987e5f91cba"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -270,7 +270,7 @@ checksum = "b9ccdd8f2a161be9bd5c023df56f1b2a0bd1d83872ae53b71a84a12c9bf6e842"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -445,7 +445,7 @@ checksum = "fdde5c9cd29ebd706ce1b35600920a33550e402fc998a2e53ad3b42c3c47a192"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -735,7 +735,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "atomicwrites",
  "calloop",
@@ -750,7 +750,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -759,7 +759,7 @@ dependencies = [
 [[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel#a195fa719b622e60ccd57e522fb6cb591717b2f7"
+source = "git+https://github.com/pop-os/cosmic-panel#22571fe4d9496439f6940c4358751424552f84cd"
 dependencies = [
  "anyhow",
  "cosmic-config",
@@ -878,7 +878,7 @@ dependencies = [
 [[package]]
 name = "cosmic-theme"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "anyhow",
  "cosmic-config",
@@ -1068,7 +1068,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -1090,7 +1090,7 @@ checksum = "29a358ff9f12ec09c3e61fef9b5a9902623a695a46a917b07f269bff1445611a"
 dependencies = [
  "darling_core 0.20.1",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -1132,7 +1132,7 @@ dependencies = [
  "darling 0.20.1",
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -1218,7 +1218,7 @@ checksum = "487585f4d0c6655fe74905e2504d8ad6908e4db67f744eb140876906c2f3175d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -1291,7 +1291,7 @@ checksum = "5e9a1f9f7d83e59740248a6e14ecf93929ade55027844dfcea78beafccc15745"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -1575,7 +1575,7 @@ checksum = "1a5c6c585bc94aaf2c7b51dd4c2ba22680844aba4c687be581871a6f518c5742"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -1738,7 +1738,7 @@ checksum = "89ca545a94061b6365f2c7355b4b32bd20df3ff95f02da9329b34ccc3bd6ee72"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -1946,10 +1946,11 @@ dependencies = [
 
 [[package]]
 name = "half"
-version = "2.2.1"
+version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02b4af3693f1b705df946e9fe5631932443781d0aabb423b62fcd4d73f6d2fd0"
+checksum = "bc52e53916c08643f1b56ec082790d1e86a32e58dc5268f897f313fbae7b4872"
 dependencies = [
+ "cfg-if",
  "crunchy",
 ]
 
@@ -2081,7 +2082,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.20",
+ "syn 2.0.22",
  "unic-langid",
 ]
 
@@ -2101,7 +2102,7 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.9.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "iced_accessibility",
  "iced_core",
@@ -2117,7 +2118,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "accesskit",
  "accesskit_unix",
@@ -2126,7 +2127,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.9.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "bitflags 1.3.2",
  "iced_accessibility",
@@ -2141,7 +2142,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.6.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "futures",
  "iced_core",
@@ -2154,7 +2155,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.8.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
@@ -2171,7 +2172,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -2183,7 +2184,7 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "iced_accessibility",
  "iced_core",
@@ -2195,7 +2196,7 @@ dependencies = [
 [[package]]
 name = "iced_sctk"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "enum-repr",
  "float-cmp",
@@ -2217,7 +2218,7 @@ dependencies = [
 [[package]]
 name = "iced_style"
 version = "0.8.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "iced_core",
  "once_cell",
@@ -2227,7 +2228,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2245,7 +2246,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.10.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
@@ -2266,7 +2267,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "iced_renderer",
  "iced_runtime",
@@ -2281,7 +2282,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.9.1"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "iced_graphics",
  "iced_runtime",
@@ -2589,14 +2590,14 @@ checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 
 [[package]]
 name = "libc"
-version = "0.2.146"
+version = "0.2.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f92be4933c13fd498862a9e02a3055f8a8d9c039ce33db97306fd5a6caa7f29b"
+checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 
 [[package]]
 name = "libcosmic"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#b0db23a16923f7fb33faca870f1151951a494fb2"
+source = "git+https://github.com/pop-os/libcosmic#1562a80245d9d8058e11603e34d0b2e234f20805"
 dependencies = [
  "apply",
  "cosmic-config",
@@ -3258,7 +3259,7 @@ checksum = "3c02bfa6b3ba8af5434fa0531bf5701f750d983d4260acd6867faca51cdc4484"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -3351,7 +3352,7 @@ dependencies = [
  "phf_shared",
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -3386,7 +3387,7 @@ checksum = "39407670928234ebc5e6e580247dd567ad73a3578460c5990f9503df207e8f07"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -3478,9 +3479,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.60"
+version = "1.0.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dec2b086b7a862cf4de201096214fa870344cf922b2b30c167badb3af3195406"
+checksum = "7b368fba921b0dce7e60f5e04ec15e565b3303972b42bcfde1d0713b881959eb"
 dependencies = [
  "unicode-ident",
 ]
@@ -3735,7 +3736,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rust-embed-utils",
- "syn 2.0.20",
+ "syn 2.0.22",
  "walkdir",
 ]
 
@@ -3873,7 +3874,7 @@ checksum = "d9735b638ccc51c28bf6914d90a2e9725b377144fc612c49a611fddd1b631d68"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -3884,7 +3885,7 @@ checksum = "bcec881020c684085e55a25f7fd888954d56609ef363479dc5a1305eb0d40cab"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -4203,9 +4204,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.20"
+version = "2.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcb8d4cebc40aa517dfb69618fa647a346562e67228e2236ae0042ee6ac14775"
+checksum = "2efbeae7acf4eabd6bcdcbd11c92f45231ddda7539edc7806bd1a04a03b24616"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4295,7 +4296,7 @@ checksum = "f9456a42c5b0d803c8cd86e73dd7cc9edd429499f37a3550d286d5e86720569f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -4485,7 +4486,7 @@ checksum = "5f4f31f56159e98206da9efd823404b79b6ef3143b4a7ab76e67b1751b25a4ab"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
 ]
 
 [[package]]
@@ -4811,7 +4812,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
  "wasm-bindgen-shared",
 ]
 
@@ -4845,7 +4846,7 @@ checksum = "54681b18a46765f095758388f2d0cf16eb8d4169b639ab575a8f5693af210c7b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.20",
+ "syn 2.0.22",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
