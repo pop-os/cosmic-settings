@@ -38,7 +38,3 @@ anyhow = "1.0"
 [dependencies.i18n-embed]
 version = "0.13.9"
 features = ["fluent-system", "desktop-requester"]
-
-[profile.release]
-opt-level = "s"
-lto = "thin"

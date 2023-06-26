@@ -24,3 +24,7 @@ git = "https://github.com/pop-os/cosmic-panel"
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "flexalloc" }
 # cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "flexalloc" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
