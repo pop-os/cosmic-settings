@@ -791,6 +791,7 @@ dependencies = [
  "generator",
  "i18n-embed",
  "i18n-embed-fl",
+ "image",
  "libcosmic",
  "log",
  "notify",

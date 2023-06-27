@@ -70,7 +70,7 @@ pub fn config() -> (Config, HashMap<String, String>) {
 
 pub fn set(config: &mut Config, entry: Entry) {
     if let Ok(context) = Config::helper() {
-        tracing::info!(
+        tracing::debug!(
             output = entry.output.to_string(),
             source = ?entry.source,
             "setting wallpaper",
@@ -312,7 +312,7 @@ fn border_radius(
     let mut alpha: u16 = 0;
     let mut skip_draw = true;
 
-    let draw = |img: &mut image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, alpha, x, y| {
+    let draw = |img: &mut RgbaImage, alpha, x, y| {
         debug_assert!((1..=256).contains(&alpha));
         let pixel_alpha = &mut img[coordinates(r0 - x, r0 - y)].0[3];
         *pixel_alpha = ((alpha * *pixel_alpha as u16 + 128) / 256) as u8;

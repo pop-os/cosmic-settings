@@ -137,8 +137,10 @@ pub fn display_container<'a, Message: 'a>(widget: Element<'a, Message>) -> Eleme
     row!(
         horizontal_space(Length::Fill),
         container(widget)
+            .style(crate::theme::display_container_screen())
+            .apply(container)
             .padding(4)
-            .style(crate::theme::display_container()),
+            .style(crate::theme::display_container_frame()),
         horizontal_space(Length::Fill),
     )
     .padding([0, 0, 8, 0])

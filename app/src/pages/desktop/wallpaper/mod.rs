@@ -20,6 +20,7 @@ use cosmic::{iced_core::alignment, iced_runtime::core::image::Handle as ImageHan
 use cosmic_settings_desktop::wallpaper::{self, Entry, ScalingMode};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use image::imageops::FilterType::Lanczos3;
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 
 const SYSTEM_WALLPAPER_DIR: &str = "/usr/share/backgrounds/pop/";
@@ -30,6 +31,9 @@ const CATEGORY_COLOR: usize = 1;
 const FIT: usize = 0;
 const STRETCH: usize = 1;
 const ZOOM: usize = 2;
+
+const SIMULATED_WIDTH: u16 = 300;
+const SIMULATED_HEIGHT: u16 = 169;
 
 const MINUTES_5: usize = 0;
 const MINUTES_10: usize = 1;
@@ -59,6 +63,7 @@ pub enum Category {
 pub struct Page {
     pub active_output: Option<String>,
     pub active_category: usize,
+    pub cached_display_handle: Option<ImageHandle>,
     pub categories: Vec<String>,
     pub config: wallpaper::Config,
     pub current_directory: PathBuf,
@@ -76,6 +81,7 @@ impl Default for Page {
         Page {
             active_output: None,
             active_category: CATEGORY_SYSTEM_WALLPAPERS,
+            cached_display_handle: None,
             categories: vec![fl!("system-backgrounds"), fl!("colors")],
             config: wallpaper::Config::default(),
             current_directory: PathBuf::from(SYSTEM_WALLPAPER_DIR),
@@ -127,11 +133,76 @@ impl Default for Choice {
 pub struct Context {
     active: Choice,
     paths: SlotMap<DefaultKey, PathBuf>,
-    display_handles: SecondaryMap<DefaultKey, ImageHandle>,
+    display_images: SecondaryMap<DefaultKey, image::RgbaImage>,
     selection_handles: SecondaryMap<DefaultKey, ImageHandle>,
 }
 
 impl Page {
+    fn cache_display_image(&mut self) {
+        let choice = match self.selection.active {
+            Choice::Background(id) => self.selection.display_images.get(id),
+
+            Choice::Slideshow => self.selection.display_images.values().next(),
+
+            Choice::Color(_) => None,
+        };
+
+        let Some(image) = choice else {
+            return;
+        };
+
+        self.cached_display_handle = None;
+
+        let temp_image;
+
+        let image = match self.selected_fit {
+            FIT => image,
+
+            STRETCH => {
+                temp_image = image::imageops::resize(
+                    image,
+                    SIMULATED_WIDTH as u32,
+                    SIMULATED_HEIGHT as u32,
+                    Lanczos3,
+                );
+                &temp_image
+            }
+
+            ZOOM => {
+                let (w, h) = (image.width(), image.height());
+
+                let ratio =
+                    (SIMULATED_WIDTH as f64 / w as f64).max(SIMULATED_HEIGHT as f64 / h as f64);
+
+                let (new_width, new_height) = (
+                    (w as f64 * ratio).round() as u32,
+                    (h as f64 * ratio).round() as u32,
+                );
+
+                let mut new_image = image::imageops::resize(image, new_width, new_height, Lanczos3);
+
+                temp_image = image::imageops::crop(
+                    &mut new_image,
+                    (new_width - SIMULATED_WIDTH as u32) / 2,
+                    (new_height - SIMULATED_HEIGHT as u32) / 2,
+                    SIMULATED_WIDTH as u32,
+                    SIMULATED_HEIGHT as u32,
+                )
+                .to_image();
+
+                &temp_image
+            }
+
+            _ => return,
+        };
+
+        self.cached_display_handle = Some(ImageHandle::from_pixels(
+            image.width(),
+            image.height(),
+            image.to_vec(),
+        ));
+    }
+
     fn config_output(&self) -> Option<String> {
         if self.config.same_on_all {
             Some(String::from("all"))
@@ -261,6 +332,7 @@ impl Page {
 
                 CATEGORY_COLOR => {
                     self.selection.active = Choice::Color(wallpaper::DEFAULT_COLORS[0].clone());
+                    self.cache_display_image();
                 }
 
                 _ => (),
@@ -296,6 +368,17 @@ impl Page {
         };
     }
 
+    #[must_use]
+    pub fn display_image_view(&self) -> cosmic::Element<Message> {
+        match self.cached_display_handle {
+            Some(ref handle) => cosmic::iced::widget::image(handle.clone())
+                .width(Length::Fixed(SIMULATED_WIDTH as f32))
+                .into(),
+
+            None => cosmic::iced::widget::Space::new(SIMULATED_WIDTH, SIMULATED_HEIGHT).into(),
+        }
+    }
+
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) {
         match message {
@@ -303,6 +386,7 @@ impl Page {
 
             Message::ColorSelect(color) => {
                 self.selection.active = Choice::Color(color);
+                self.cached_display_handle = None;
             }
 
             Message::Fit(option) => {
@@ -312,6 +396,8 @@ impl Page {
                     .enumerate()
                     .find(|(_, key)| **key == option)
                     .map_or(0, |(indice, _)| indice);
+
+                self.cache_display_image();
             }
 
             Message::Output(id) => self.change_output(id),
@@ -325,11 +411,13 @@ impl Page {
 
             Message::Select(id) => {
                 self.selection.active = Choice::Background(id);
+                self.cache_display_image();
             }
 
             Message::Slideshow(enable) => {
                 if enable {
                     self.selection.active = Choice::Slideshow;
+                    self.cache_display_image();
                 } else {
                     self.select_first_background();
                 }
@@ -347,6 +435,7 @@ impl Page {
             wallpaper::Source::Path(ref path) => {
                 if path.is_dir() {
                     self.selection.active = Choice::Slideshow;
+                    self.cache_display_image();
                 } else if let Some(entity) = self.background_id_from_path(path) {
                     self.select_background(entry, entity, path.is_dir());
                 }
@@ -355,6 +444,7 @@ impl Page {
             wallpaper::Source::Color(ref color) => {
                 self.selection.active = Choice::Color(color.clone());
                 self.active_category = CATEGORY_COLOR;
+                self.cache_display_image();
             }
         }
     }
@@ -399,6 +489,8 @@ impl Page {
         }
 
         self.rotation_frequency = entry.rotation_frequency;
+
+        self.cache_display_image();
     }
 
     /// Locate the ID of a background that's already stored in memory
@@ -438,13 +530,7 @@ impl page::Page<crate::pages::Message> for Page {
             while let Some((path, display_image, selection_image)) = backgrounds.recv().await {
                 let id = update.paths.insert(path);
 
-                let display_handle = ImageHandle::from_pixels(
-                    display_image.width(),
-                    display_image.height(),
-                    display_image.into_vec(),
-                );
-
-                update.display_handles.insert(id, display_handle);
+                update.display_images.insert(id, display_image);
 
                 let selection_handle = ImageHandle::from_pixels(
                     selection_image.width(),
@@ -485,38 +571,24 @@ pub fn settings() -> Section<crate::pages::Message> {
             let mut show_slideshow_toggle = true;
             let mut slideshow_enabled = false;
 
-            let display_demo = match page.selection.active {
-                // Shows background options, with the slideshow toggle enabled
-                Choice::Slideshow => {
-                    slideshow_enabled = true;
-                    page.selection
-                        .display_handles
-                        .values()
-                        .next()
-                        .map(|handle| {
-                            cosmic::iced::widget::image(handle.clone())
-                                .width(Length::Fixed(300.0))
-                                .into()
-                        })
-                }
+            children.push(crate::widget::display_container(
+                match page.selection.active {
+                    // Shows background options, with the slideshow toggle enabled
+                    Choice::Slideshow => {
+                        slideshow_enabled = true;
+                        page.display_image_view()
+                    }
 
-                // Shows background options, with the slideshow toggle visible
-                Choice::Background(key) => page.selection.display_handles.get(key).map(|handle| {
-                    cosmic::iced::widget::image(handle.clone())
-                        .width(Length::Fixed(300.0))
-                        .into()
-                }),
+                    // Shows background options, with the slideshow toggle visible
+                    Choice::Background(_) => page.display_image_view(),
 
-                // Displays color options, and hides the slideshow toggle
-                Choice::Color(ref color) => {
-                    show_slideshow_toggle = false;
-                    Some(widgets::color_image(color.clone(), 300, 169, 0.0))
-                }
-            };
-
-            if let Some(element) = display_demo {
-                children.push(crate::widget::display_container(element));
-            }
+                    // Displays color options, and hides the slideshow toggle
+                    Choice::Color(ref color) => {
+                        show_slideshow_toggle = false;
+                        widgets::color_image(color.clone(), SIMULATED_WIDTH, SIMULATED_HEIGHT, 0.0)
+                    }
+                },
+            ));
 
             children.push(if page.config.same_on_all {
                 cosmic::widget::text(fl!("all-displays"))
