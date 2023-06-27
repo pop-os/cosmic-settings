@@ -1,13 +1,13 @@
 pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
 
-use image::RgbaImage;
+use image::{DynamicImage, RgbaImage};
 use std::{
     borrow::Cow,
     collections::{hash_map::DefaultHasher, HashMap},
     fs::DirEntry,
     hash::{Hash, Hasher},
+    io::Read,
     path::{Path, PathBuf},
-    sync::Arc,
 };
 use tokio::sync::mpsc::{self, Receiver};
 
@@ -97,11 +97,12 @@ pub fn cache_dir() -> Option<PathBuf> {
 /// Loads wallpapers in parallel by spawning tasks with a rayon thread pool.
 #[must_use]
 pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaImage)> {
-    let cache_dir = Arc::new(cache_dir());
+    let cache_dir = cache_dir();
 
     let (tx, rx) = mpsc::channel(1);
 
     tokio::task::spawn_blocking(move || {
+        let mut buffer = Vec::new();
         let mut paths = vec![path];
 
         while let Some(path) = paths.pop() {
@@ -116,19 +117,49 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
                     if file_type.is_dir() {
                         paths.push(path);
                     } else if file_type.is_file() {
-                        let tx = tx.clone();
-                        let cache_dir = cache_dir.clone();
-                        rayon::spawn_fifo(move || {
-                            let display_thumbnail =
-                                load_thumbnail(cache_dir.as_deref(), &path, &entry, 300, 169);
+                        let image_operation =
+                            load_thumbnail(&mut buffer, cache_dir.as_deref(), &path, &entry);
 
-                            if let Some(display_thumbnail) = display_thumbnail {
+                        if let Some(image_operation) = image_operation {
+                            let tokio_handle = tokio::runtime::Handle::current();
+                            let tx = tx.clone();
+
+                            rayon::spawn_fifo(move || {
+                                let display_thumbnail = match image_operation {
+                                    ImageOperation::Cached(thumbnail) => thumbnail.to_rgba8(),
+
+                                    ImageOperation::GenerateThumbnail { path, image } => {
+                                        let image = image.thumbnail(300, 169).to_rgba8();
+
+                                        if let Some(path) = path {
+                                            // Save thumbnail to disk without blocking.
+                                            tokio_handle.spawn_blocking({
+                                                let image = image.clone();
+                                                move || {
+                                                    if let Err(why) = image.save(&path) {
+                                                        tracing::error!(
+                                                            ?path,
+                                                            ?why,
+                                                            "failed to save image thumbnail"
+                                                        );
+
+                                                        let _res = std::fs::remove_file(&path);
+                                                    }
+                                                }
+                                            });
+                                        }
+
+                                        image
+                                    }
+                                };
+
                                 let mut selection_thumbnail = image::imageops::resize(
                                     &display_thumbnail,
                                     158,
                                     105,
                                     image::imageops::FilterType::Lanczos3,
                                 );
+
                                 round(&mut selection_thumbnail, [8, 8, 8, 8]);
 
                                 let _res = tx.blocking_send((
@@ -136,8 +167,8 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
                                     display_thumbnail,
                                     selection_thumbnail,
                                 ));
-                            }
-                        });
+                            });
+                        }
                     }
                 }
             }
@@ -147,18 +178,25 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
     rx
 }
 
-/// Generates and caches the thumbnail of a wallpaper.
+enum ImageOperation {
+    GenerateThumbnail {
+        path: Option<PathBuf>,
+        image: DynamicImage,
+    },
+    Cached(DynamicImage),
+}
+
+/// Loads wallpaper thumbnails, or defines what needs to be done to create them.
 ///
 ///
 /// Caching reduces time required to load a wallpaper by 99%.
 #[must_use]
-pub fn load_thumbnail(
+fn load_thumbnail(
+    input_buffer: &mut Vec<u8>,
     cache_dir: Option<&Path>,
     path: &Path,
     entry: &DirEntry,
-    width: u32,
-    height: u32,
-) -> Option<RgbaImage> {
+) -> Option<ImageOperation> {
     if let Some(cache_dir) = cache_dir {
         if let Ok(ctime) = entry.metadata().and_then(|meta| meta.created()) {
             // Search for thumbnail by a unique hash string.
@@ -169,27 +207,69 @@ pub fn load_thumbnail(
 
             let thumbnail_path = cache_dir.join(format!("{hash:x}.png"));
 
-            // Load image from thumbnail if it exists and can be opened.
             if thumbnail_path.exists() {
-                if let Ok(image) = image::open(&thumbnail_path) {
-                    return Some(image.into_rgba8());
+                if let Some(image) = open_image(input_buffer, &thumbnail_path) {
+                    return Some(ImageOperation::Cached(image));
                 }
+
+                let _res = std::fs::remove_file(&thumbnail_path);
             }
 
-            // Create new thumbnail and save it if not.
-            return image::open(path).ok().map(|mut image| {
-                image = image.thumbnail_exact(width, height);
-                let _res = image.save(&thumbnail_path);
-                image.into_rgba8()
+            return Some(ImageOperation::GenerateThumbnail {
+                path: Some(thumbnail_path),
+                image: open_image(input_buffer, path)?,
             });
         }
     }
 
-    // Generate thumbnail from wallpaper without saving it
-    image::open(path).ok().map(|mut image| {
-        image = image.thumbnail_exact(width, height);
-        image.into_rgba8()
-    })
+    if let Some(image) = open_image(input_buffer, path) {
+        return Some(ImageOperation::GenerateThumbnail { path: None, image });
+    }
+
+    None
+}
+
+fn open_image(input_buffer: &mut Vec<u8>, path: &Path) -> Option<DynamicImage> {
+    let capacity = match path.metadata() {
+        Ok(metadata) => metadata.len() as usize,
+        Err(why) => {
+            tracing::error!(?path, ?why, "error loading image metadata");
+            return None;
+        }
+    };
+
+    input_buffer.clear();
+    input_buffer.reserve_exact(capacity);
+
+    let mut file = match std::fs::File::open(path) {
+        Ok(file) => file,
+        Err(why) => {
+            tracing::error!(?path, ?why, "error opening image");
+            return None;
+        }
+    };
+
+    if let Err(why) = file.read_to_end(input_buffer) {
+        tracing::error!(?path, ?why, "error reading image");
+    }
+
+    let input_cursor = std::io::Cursor::new(input_buffer);
+    let mut image_decoder = image::io::Reader::new(input_cursor);
+
+    image_decoder = if let Ok(decoder) = image_decoder.with_guessed_format() {
+        decoder
+    } else {
+        tracing::error!(?path, "unsupported image format");
+        return None;
+    };
+
+    match image_decoder.decode() {
+        Ok(image) => Some(image),
+        Err(why) => {
+            tracing::error!(?path, ?why, "image decode failed");
+            None
+        }
+    }
 }
 
 // https://users.rust-lang.org/t/how-to-trim-image-to-circle-image-without-jaggy/70374/2
