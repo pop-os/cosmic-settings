@@ -67,9 +67,9 @@ pub fn color_image(
 /// Color selection list
 pub fn color_select_options() -> Element<'static, Message> {
     flex_select_row(|vec, _size| {
-        let elements = wallpaper::DEFAULT_COLORS.iter().cloned().map(color_button);
-
-        vec.extend(elements);
+        for color in wallpaper::DEFAULT_COLORS {
+            vec.push(color_button(color.clone()));
+        }
 
         COLOR_WIDTH
     })
@@ -78,13 +78,9 @@ pub fn color_select_options() -> Element<'static, Message> {
 /// Background selection list
 pub fn wallpaper_select_options(page: &super::Page) -> Element<Message> {
     flex_select_row(move |vec, _size| {
-        let elements = page
-            .selection
-            .selection_handles
-            .iter()
-            .map(|(id, handle)| wallpaper_button(handle, id));
-
-        vec.extend(elements);
+        for (id, handle) in &page.selection.selection_handles {
+            vec.push(wallpaper_button(handle, id));
+        }
 
         WALLPAPER_WIDTH
     })
