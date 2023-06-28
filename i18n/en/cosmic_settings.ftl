@@ -177,11 +177,21 @@ workspaces = Workspaces
 
 workspaces-behavior = Workspace Behavior
     .dynamic = Dynamic workspaces
+    .dynamic-desc = Automatically removes empty workspaces.
     .fixed = Fixed Number of Workspaces
+    .fixed-desc = Add or remove workspaces in the overview.
 
 workspaces-multi-behavior = Multi-monitor Behavior
     .span = Workspaces Span Displays
     .separate = Displays Have Separate Workspaces
+
+workspaces-overview-thumbnails = Workspace Overview Thumbnails
+    .show-number = Show Workspace Number
+    .show-name = Show Workspace Name
+
+workspaces-orientation = Workspaces Orientation
+    .vertical = Vertical
+    .horizontal = Horizontal
 
 ## Networking: Wired
 
