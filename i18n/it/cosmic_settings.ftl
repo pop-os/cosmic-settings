@@ -2,6 +2,8 @@ app = Impostazioni COSMIC
 
 unknown = Sconosciuto
 
+number = { $number }
+
 ## Desktop
 
 desktop = Scrivania
@@ -11,11 +13,6 @@ desktop = Scrivania
 appearance = Aspetto
     .desc = Colori d'accento e tema Cosmic.
 
-## Desktop: Dock & Panel
-
-dock = Barra Applicazioni e Barra Superiore
-    .desc = Personalizza dimensioni, posizione, e altro per Barra Applicazioni e Barra Superiore.
-
 ## Desktop: Notifications
 
 notifications = Notifiche
@@ -24,7 +21,7 @@ notifications = Notifiche
 
 ## Desktop: Options
 
-desktop-options = Opzioni Scrivania
+desktop-panel-options = Scrivania e Pannello
     .desc = Azione per il Tasto Super, hot corners, opzioni di controllo finestra.
 
 super-key-action = Azione per il Tasto Super
@@ -35,13 +32,67 @@ super-key-action = Azione per il Tasto Super
 hot-corner = Hot Corner
     .top-left-corner = Abilita hot corner in alto a sinistra per spazi di lavoro
 
-top-panel = Barra Superiore
+top-panel = Pannello Superiore
     .workspaces = Mostra Tasto Spazi di Lavoro
     .applications = Mostra tasto Applicazioni
 
 window-controls = Controlli Finestra
     .minimize = Mostra Tasto Minimizza
     .maximize = Mostra tasto Massimizza
+
+desktop-panels-and-applets = Pannelli scrivania e applet
+
+dock = Barra Applicazioni
+    .desc = Pannello con applicazioni appuntate.
+
+## Desktop: Panel
+panel = Pannello
+    .desc = Barra superiore con controlli scrivania e menu.
+
+panel-behavior-and-position = Comportamento e Posizioni
+    .autohide = Nascondi pannello automaticamente
+    .position = Posizione sullo schermo
+    .display = Mostra su schermo
+
+panel-top = Alto
+panel-bottom = Basso
+panel-left = Sinistra
+panel-right = Destra
+
+panel-appearance = Aspetto
+    .match = Abbina con scrivania
+    .light = Chiaro
+    .dark = Scuro
+
+panel-style = Stile
+    .anchor-gap = Spazio tra il pannello e bordi dello schermo
+    .extend = Estendi pannello fino ai bordi dello schermo
+    .appearance = Aspetto
+    .size = Dimensioni
+    .background-opacity = Opacità dello sfondo
+
+small = Piccolo
+large = Grande
+
+panel-applets = Configurazione
+    .desc = Configura applets del pannello.
+
+panel-missing = Configurazione Pannello non trovata
+    .desc = Il file di configurazione del pannello non è stato trovato a causa dell'utilizzo di una configurazione personalizzata oppure si è corrotto.
+    .fix = Reimposta predefinito
+
+applets = Applet
+start-segment = Segmento Iniziale
+center-segment = Segmento Centrale
+end-segment = Segmento Finale
+
+add = Aggiungi
+add-applet = Aggiungi Applet
+search-applets = Cerca applet...
+no-applets-found = Nessun applet trovato...
+all = Tutte
+
+drop-here = Rilascia applet qui
 
 ## Desktop: Wallpaper
 
@@ -52,6 +103,18 @@ wallpaper = Sfondo
     .slide = Presentazione
     .change = Cambia immagine ogni
 
+all-displays = Tutti gli Schermi
+colors = Colori
+fit-to-screen = Adatta allo Schermo
+stretch = Allarga
+system-backgrounds = Sfondi di sistema
+zoom = Zoom
+
+x-minutes = { $number } minuti
+x-hours = { $number ->
+    [1] 1 ora
+    *[other] { $number } ore
+}
 
 ## Desktop: Workspaces
 
@@ -139,8 +202,8 @@ about-hardware = Hardware
     .graphics = Scheda grafica
     .disk-capacity = Memoria di massa
 
-about-os = Sistema operativo
-    .os = Sistema operativo
+about-os = Sistema Operativo
+    .os = Sistema Operativo
     .os-architecture = Architettura del sistema operativo
     .desktop-environment = Ambiente grafico
     .windowing-system = Gestore grafico
