@@ -40,7 +40,7 @@ window-controls = Pencere Seçenekleri
     .minimize = Küçültme tuşunu göster
     .maximize = Büyültme tuşunu göster
 
-desktop-panels-and-applets = Masaüstü Panelleri ve Eklentiler
+desktop-panels-and-applets = Masaüstü Panelleri ve Kabuk Bileşenleri
 
 
 dock = Görev Çubuğu
@@ -76,24 +76,24 @@ small = Küçük
 large = Büyük
 
 panel-applets = Yapılandırma
-    .desc = Panel eklentilerini yapılandır.
+    .desc = Panel kabuk bileşenlerini yapılandır.
 
 panel-missing = Panel Yapılandırması Eksik
     .desc = Panel yapılandırma dosyası, özel bir yapılandırmadan veya bozulduğundan dolayı eksik.
     .fix = Varsayılana sıfırla
 
-applets = Eklentiler
+applets = Kabuk Bileşenleri
 start-segment = Baş Kısım
 center-segment = Orta Kısım
 end-segment = Son Kısım
 
 add = Ekle
-add-applet = Eklenti Ekle
-search-applets = Eklenti ara...
-no-applets-found = Eklenti bulunamadı...
+add-applet = Kabuk Bileşeni Ekle
+search-applets = Kabuk Bileşeni ara...
+no-applets-found = Kabuk Bileşeni bulunamadı...
 all = Tümü
 
-drop-here = Eklentileri buraya bırak
+drop-here = Kabuk bileşenlerini buraya bırak
 
 ## Desktop: Wallpaper
 
