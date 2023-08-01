@@ -39,7 +39,8 @@ use crate::{
                 applets::{self, APPLET_DND_ICON_ID},
             },
         },
-        input, sound, system, time,
+        input::{self, keyboard},
+        sound, system, time,
     },
     subscription::desktop_files,
     widget::{page_title, parent_page_button, search_header, sub_page_button},
@@ -273,11 +274,11 @@ impl Application for SettingsApp {
                 crate::pages::Message::Input(message) => {
                     if matches!(message, input::Message::OpenKeyboardShortcuts) {
                         if let Some(id) = self.pages.page_id::<input::keyboard::shortcuts::Page>() {
-                            self.activate_page(id);
+                            return self.activate_page(id);
                         }
                     }
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
-                        page.update(message);
+                        return page.update(message);
                     }
                 }
                 crate::pages::Message::External { .. } => {
@@ -337,6 +338,16 @@ impl Application for SettingsApp {
             (id == applets::ADD_APPLET_DIALOGUE_ID).then(|| self.pages.page::<applets::Page>())
         {
             return page.add_applet_view();
+        }
+        if let Some(Some(page)) =
+            (id == keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID).then(|| self.pages.page::<input::Page>())
+        {
+            return page.add_input_source_view();
+        }
+        if let Some(Some(page)) = (id == keyboard::SPECIAL_CHARACTER_DIALOGUE_ID)
+            .then(|| self.pages.page::<input::Page>())
+        {
+            return page.special_character_key_view();
         }
 
         cosmic::iced::widget::responsive(|size| {

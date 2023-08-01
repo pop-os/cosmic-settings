@@ -1,16 +1,66 @@
 use apply::Apply;
-use cosmic::iced::{
-    self,
-    widget::{self, horizontal_space},
-    Length,
+use cosmic::{
+    iced::{
+        self,
+        widget::{self, horizontal_space},
+        window, Length,
+    },
+    iced_style, theme,
+    widget::settings,
 };
-use cosmic::iced_style;
-use cosmic::widget::settings;
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
 
 use super::Message;
+
+pub const ADD_INPUT_SOURCE_DIALOGUE_ID: window::Id = window::Id(2000);
+pub const SPECIAL_CHARACTER_DIALOGUE_ID: window::Id = window::Id(2001);
+
+static COMPOSE_OPTIONS: &[(&str, &str)] = &[
+    // ("Left Alt", "compose:lalt"), XXX?
+    ("Right Alt", "compose:ralt"),
+    ("Left Super", "compose:lwin"),
+    ("Right Super", "compose:rwin"),
+    ("Menu key", "compose:menu"),
+    ("Right Ctrl", "compose:rctrl"),
+    ("Caps Lock", "compose:caps"),
+    ("Scroll Lock", "compose:sclk"),
+    ("Print Screen", "compose:prsc"),
+];
+
+static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
+    ("Left Alt", "lv3:lalt_switch"),
+    ("Right Alt", "lv3:alt_switch"),
+    ("Left Super", "lv3:lwin_switch"),
+    ("Right Super", "lv3:win_switch"),
+    ("Menu key", "lv3:menu_switch"),
+    // ("Right Ctrl", "lv3:"), XXX
+    ("Caps Lock", "lv3:caps_switch"),
+    // ("Scroll Lock", "lv3:"), XXX
+    // ("Print Screen", "lv3"), XXX
+];
+
+#[derive(Copy, Clone, Debug)]
+pub enum SpecialKey {
+    AlternateCharacters,
+    Compose,
+}
+
+impl SpecialKey {
+    pub fn title(self) -> String {
+        match self {
+            Self::Compose => "Compose".to_string(),
+            Self::AlternateCharacters => "Alternate Characters".to_string(),
+        }
+    }
+
+    pub fn prefix(self) -> &'static str {
+        match self {
+            Self::Compose => "compose:",
+            Self::AlternateCharacters => "lv3:",
+        }
+    }
+}
 
 fn popover_menu_row(label: String) -> cosmic::Element<'static, Message> {
     widget::text(label)
@@ -92,6 +142,68 @@ pub struct InputSource {
     label: String,
 }
 
+impl super::Page {
+    pub fn add_input_source_view(&self) -> cosmic::Element<'static, crate::app::Message> {
+        widget::column![].into()
+    }
+
+    pub fn special_character_key_view(&self) -> cosmic::Element<'_, crate::app::Message> {
+        let Some(special_key) = self.special_character_dialog else {
+            return widget::text("").into();
+        };
+
+        let options = match special_key {
+            SpecialKey::Compose => COMPOSE_OPTIONS,
+            SpecialKey::AlternateCharacters => ALTERNATE_CHARACTER_OPTIONS,
+        };
+        let prefix = special_key.prefix();
+        let current = self
+            .xkb_options
+            .iter()
+            .find(|x| x.starts_with(prefix))
+            .map(String::as_str);
+
+        // TODO description, layout default
+
+        let mut list = cosmic::widget::list_column();
+        list = list.add(special_char_radio_row("None", None, current));
+        for (desc, id) in options {
+            list = list.add(special_char_radio_row(desc, Some(id), current));
+        }
+        widget::column![
+            cosmic::widget::header_bar()
+                .title(special_key.title())
+                .on_close(Message::CloseSpecialCharacterDialog),
+            cosmic::widget::container(
+                cosmic::widget::scrollable(cosmic::widget::container(list).padding(24))
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+            )
+            .style(theme::Container::Background)
+            .width(Length::Fill)
+            .height(Length::Fill)
+        ]
+        .apply(cosmic::Element::from)
+        .map(crate::pages::Message::Input)
+        .map(crate::app::Message::PageMessage)
+    }
+}
+
+fn special_char_radio_row<'a>(
+    desc: &'a str,
+    value: Option<&'static str>,
+    current_value: Option<&'a str>,
+) -> cosmic::Element<'a, Message> {
+    settings::item_row(vec![iced::widget::radio(
+        desc,
+        value,
+        Some(current_value),
+        |_| Message::SpecialCharacterSelect(value),
+    )
+    .into()])
+    .into()
+}
+
 #[derive(Default)]
 pub struct Page;
 
@@ -161,8 +273,14 @@ fn special_character_entry() -> Section<crate::pages::Message> {
 
             // TODO dialogs
             settings::view_section(&section.title)
-                .add(settings::item(&descriptions[0], go_next_control()))
-                .add(settings::item(&descriptions[1], go_next_control()))
+                .add(go_next_item(
+                    &descriptions[0],
+                    Message::OpenSpecialCharacterDialog(SpecialKey::AlternateCharacters),
+                ))
+                .add(go_next_item(
+                    &descriptions[1],
+                    Message::OpenSpecialCharacterDialog(SpecialKey::Compose),
+                ))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Input)
         })
@@ -172,21 +290,14 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("keyboard-shortcuts"))
         .descriptions(vec![fl!("keyboard-shortcuts", "desc")])
-        .view::<Page>(|binder, _page, section| {
+        .view::<Page>(|_binder, _page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
-                .add(
-                    settings::item(&descriptions[0], go_next_control())
-                        .apply(widget::container)
-                        .style(cosmic::theme::Container::custom(
-                            cosmic::widget::list::column::style,
-                        ))
-                        .apply(widget::button)
-                        .style(cosmic::theme::Button::Transparent)
-                        .padding(0)
-                        .on_press(Message::OpenKeyboardShortcuts),
-                )
+                .add(go_next_item(
+                    &descriptions[0],
+                    Message::OpenKeyboardShortcuts,
+                ))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Input)
         })
@@ -198,4 +309,17 @@ fn go_next_control() -> cosmic::Element<'static, Message> {
         cosmic::widget::icon("go-next-symbolic", 20).style(cosmic::theme::Svg::Symbolic)
     )
     .into()
+}
+
+fn go_next_item(description: &str, msg: Message) -> cosmic::Element<'_, Message> {
+    settings::item(description, go_next_control())
+        .apply(widget::container)
+        .style(cosmic::theme::Container::custom(
+            cosmic::widget::list::column::style,
+        ))
+        .apply(widget::button)
+        .style(cosmic::theme::Button::Transparent)
+        .padding(0)
+        .on_press(msg)
+        .into()
 }

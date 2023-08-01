@@ -1,8 +1,5 @@
 use apply::Apply;
-use cosmic::iced::{
-    widget::{self, horizontal_space},
-    Length,
-};
+use cosmic::iced::widget;
 use cosmic::widget::settings;
 use cosmic::Element;
 use cosmic_settings_page::Section;

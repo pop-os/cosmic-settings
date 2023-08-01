@@ -1,8 +1,5 @@
 use apply::Apply;
-use cosmic::iced::{
-    widget::{self, horizontal_space},
-    Length,
-};
+use cosmic::iced::widget;
 use cosmic::widget::settings;
 use cosmic::Element;
 use cosmic_settings_page::Section;
@@ -35,9 +32,9 @@ fn shortcuts() -> Section<crate::pages::Message> {
     Section::default()
         .descriptions(vec![])
         .view::<Page>(|binder, _page, section| {
-            let descriptions = &section.descriptions;
+            let _descriptions = &section.descriptions;
 
-            let input = binder
+            let _input = binder
                 .page::<super::super::Page>()
                 .expect("input page not found");
 
