@@ -18,10 +18,7 @@ pub mod widget;
 
 pub mod subscription;
 
-use cosmic::{
-    iced::{wayland::actions::window::SctkWindowSettings, Application, Limits},
-    iced_sctk::settings::InitialSurface,
-};
+use cosmic::iced::Limits;
 use i18n_embed::DesktopLanguageRequester;
 use tracing_subscriber::prelude::*;
 
@@ -38,17 +35,12 @@ pub fn main() -> color_eyre::Result<()> {
     init_logger();
     init_localizer();
 
-    cosmic::settings::set_default_icon_theme("Pop");
-    let mut settings = cosmic::settings();
-    settings.default_text_size = 14.0;
-    settings.initial_surface = InitialSurface::XdgWindow(SctkWindowSettings {
-        title: Some(fl!("app")),
-        size_limits: Limits::NONE.min_width(400.0).min_height(300.0),
-        app_id: Some("com.system76.CosmicSettings".to_string()),
-        ..Default::default()
-    });
+    let settings = cosmic::app::Settings::default()
+        .default_icon_theme("Pop")
+        .default_text_size(14.0)
+        .size_limits(Limits::NONE.min_width(400.0).min_height(300.0));
 
-    SettingsApp::run(settings)?;
+    cosmic::app::run::<app::SettingsApp>(settings, ())?;
 
     Ok(())
 }

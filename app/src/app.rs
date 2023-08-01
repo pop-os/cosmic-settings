@@ -6,142 +6,77 @@ use apply::Apply;
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
 
+use cosmic::iced::Subscription;
+
 use cosmic::{
+    app::{ApplicationExt, Command, Core},
     cosmic_config::config_subscription,
-    iced::{
-        self,
-        event::wayland::{self, WindowEvent, WindowState},
-        event::PlatformSpecific,
-        subscription, window, Application, Color, Command, Length, Subscription,
-    },
-    iced::{
-        widget::{self, column, container, horizontal_space, row},
-        window::Mode,
-    },
-    iced_sctk::commands::window::{set_mode_window, start_drag_window},
-    iced_style::application,
-    keyboard_nav,
-    theme::{self, theme_subscription, Theme},
-    widget::{
-        header_bar, nav_bar, nav_bar_toggle, scrollable, search, segmented_button, settings,
-        IconSource,
-    },
+    iced::widget::{horizontal_space, row},
+    iced::{self, event::wayland, event::PlatformSpecific, subscription, window, Length},
+    widget::{nav_bar, scrollable, search, segmented_button, settings, IconSource},
     Element, ElementExt,
 };
 
-use crate::{
-    config::Config,
-    pages::{
-        desktop::{
-            self,
-            panel::{
-                self,
-                applets::{self, APPLET_DND_ICON_ID},
-            },
-        },
-        sound, system, time,
-    },
-    subscription::desktop_files,
-    widget::{page_title, parent_page_button, search_header, sub_page_button},
-};
-
-use std::{borrow::Cow, process};
+use crate::config::Config;
+use crate::pages::desktop::{self, panel};
+use crate::pages::{sound, system, time};
+use crate::subscription::desktop_files;
+use crate::widget::{page_title, parent_page_button, search_header, sub_page_button};
+use panel::applets::{self, APPLET_DND_ICON_ID};
+use std::borrow::Cow;
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
 pub struct SettingsApp {
-    pub active_page: page::Entity,
-    pub config: Config,
-    pub debug: bool,
-    pub nav_bar_toggled_condensed: bool,
-    pub nav_bar_toggled: bool,
-    pub nav_bar: segmented_button::SingleSelectModel,
-    pub pages: page::Binder<crate::pages::Message>,
-    pub scaling_factor: f32,
-    pub search: search::Model,
-    pub search_selections: Vec<(page::Entity, section::Entity)>,
-    pub show_maximize: bool,
-    pub sharp_corners: bool,
-    pub show_minimize: bool,
-    pub theme: Theme,
-    pub title: String,
-    pub window_width: u32,
+    active_page: page::Entity,
+    config: Config,
+    core: Core,
+    nav_model: nav_bar::Model,
+    pages: page::Binder<crate::pages::Message>,
+    search: search::Model,
+    search_selections: Vec<(page::Entity, section::Entity)>,
 }
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum Message {
-    Close,
-    Drag,
-    KeyboardNav(keyboard_nav::Message),
-    Maximize,
-    Minimize,
-    NavBar(segmented_button::Entity),
-    None,
     Page(page::Entity),
     PageMessage(crate::pages::Message),
     Search(search::Message),
-    ToggleNavBar,
-    ToggleNavBarCondensed,
-    WindowResize(u32, u32),
-    WindowState(WindowState),
     PanelConfig(CosmicPanelConfig),
     DesktopInfo,
-    ThemeChanged(Theme),
 }
 
-impl Application for SettingsApp {
+impl cosmic::Application for SettingsApp {
     type Executor = cosmic::executor::single::Executor;
     type Flags = ();
     type Message = Message;
-    type Theme = Theme;
 
-    fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
+    const APP_ID: &'static str = "com.system76.CosmicSettings";
+
+    fn core(&self) -> &Core {
+        &self.core
+    }
+
+    fn core_mut(&mut self) -> &mut Core {
+        &mut self.core
+    }
+
+    fn init(core: Core, _flags: Self::Flags) -> (Self, Command<Self::Message>) {
         let mut app = SettingsApp {
-            sharp_corners: false,
             active_page: page::Entity::default(),
             config: Config::new(),
-            debug: false,
-            nav_bar: segmented_button::Model::default(),
-            nav_bar_toggled: true,
-            nav_bar_toggled_condensed: false,
+            core,
+            nav_model: nav_bar::Model::default(),
             pages: page::Binder::default(),
-            title: crate::fl!("app"),
-            scaling_factor: std::env::var("COSMIC_SCALE")
-                .ok()
-                .and_then(|scale| scale.parse::<f32>().ok())
-                .unwrap_or(1.0),
             search: search::Model::default(),
             search_selections: Vec::default(),
-            show_maximize: true,
-            show_minimize: true,
-            window_width: 0,
-            theme: cosmic::theme::theme(),
         };
 
-        // app.insert_page::<wifi::Page>();
-        // app.insert_page::<networking::Page>();
-        // app.insert_page::<bluetooth::Page>();
-
         let desktop_id = app.insert_page::<desktop::Page>().id();
-        // app.insert_page::<panel::Page>();
-        // app.insert_page::<applets::Page>();
-
-        // app.insert_page::<input::Page>();
-
-        // app.insert_page::<displays::Page>();
-        // app.insert_page::<power::Page>();
-
         app.insert_page::<sound::Page>();
-
-        // app.insert_page::<printers::Page>();
-        // app.insert_page::<privacy::Page>();
-
         app.insert_page::<system::Page>();
         app.insert_page::<time::Page>();
-
-        // app.insert_page::<accessibility::Page>();
-        // app.insert_page::<applications::Page>();
 
         let active_id = app
             .pages
@@ -150,24 +85,51 @@ impl Application for SettingsApp {
             .find(|(_id, info)| info.id == *app.config.active_page)
             .map_or(desktop_id, |(id, _info)| id);
 
-        let command = app.activate_page(active_id);
+        let command = Command::batch(vec![
+            app.set_title(crate::fl!("app")),
+            app.activate_page(active_id),
+        ]);
 
         (app, command)
     }
 
-    fn title(&self) -> String {
-        self.title.clone()
+    fn nav_model(&self) -> Option<&nav_bar::Model> {
+        Some(&self.nav_model)
     }
 
-    fn subscription(&self) -> Subscription<Message> {
+    fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
+        if id == applets::ADD_APPLET_DIALOGUE_ID {
+            Some(Message::PageMessage(crate::pages::Message::Applet(
+                applets::Message::ClosedAppletDialogue,
+            )))
+        } else {
+            None
+        }
+    }
+
+    fn on_escape(&mut self) -> Command<Self::Message> {
+        if self.search.is_active() {
+            self.search.state = search::State::Inactive;
+            self.search_clear();
+        }
+
+        Command::none()
+    }
+
+    fn on_nav_select(&mut self, id: nav_bar::Id) -> Command<Self::Message> {
+        if let Some(page) = self.nav_model.data::<page::Entity>(id).copied() {
+            return self.activate_page(page);
+        }
+
+        Command::none()
+    }
+
+    fn on_search(&mut self) -> Command<Self::Message> {
+        self.search.focus()
+    }
+
+    fn subscription(&self) -> Subscription<Self::Message> {
         let window_break = subscription::events_with(|event, _| match event {
-            iced::Event::Window(_window_id, window::Event::Resized { width, height }) => {
-                Some(Message::WindowResize(width, height))
-            }
-            iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Window(
-                WindowEvent::State(s),
-                ..,
-            ))) => Some(Message::WindowState(s)),
             iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Output(
                 wayland::OutputEvent::Created(Some(info)),
                 o,
@@ -183,78 +145,46 @@ impl Application for SettingsApp {
             _ => None,
         });
 
-        Subscription::batch(vec![
-            window_break,
-            keyboard_nav::subscription().map(Message::KeyboardNav),
-            desktop_files(0).map(|_| Message::DesktopInfo),
-            config_subscription(0, "com.system76.CosmicPanel.Panel".into(), 1).map(
-                |(_, e)| match e {
-                    Ok(config) => Message::PanelConfig(config),
-                    Err((errors, config)) => {
-                        for why in errors {
-                            tracing::error!(?why, "panel config load error");
-                        }
-                        Message::PanelConfig(config)
+        let config = config_subscription(0, "com.system76.CosmicPanel.Panel".into(), 1).map(
+            |(_, e)| match e {
+                Ok(config) => Message::PanelConfig(config),
+                Err((errors, config)) => {
+                    for why in errors {
+                        tracing::error!(?why, "panel config load error");
                     }
-                },
-            ),
-            theme_subscription(0).map(Message::ThemeChanged),
-        ])
+                    Message::PanelConfig(config)
+                }
+            },
+        );
+
+        let subscriptions = vec![
+            window_break,
+            desktop_files(0).map(|_| Message::DesktopInfo),
+            config,
+        ];
+
+        Subscription::batch(subscriptions)
     }
 
     #[allow(clippy::too_many_lines)]
-    fn update(&mut self, message: Message) -> iced::Command<Self::Message> {
-        let mut ret = Command::none();
+    fn update(&mut self, message: Message) -> Command<Self::Message> {
         match message {
-            Message::WindowResize(_width, _height) => {}
-            Message::KeyboardNav(message) => match message {
-                keyboard_nav::Message::Unfocus => ret = keyboard_nav::unfocus(),
-                keyboard_nav::Message::FocusNext => ret = widget::focus_next(),
-                keyboard_nav::Message::FocusPrevious => ret = widget::focus_previous(),
-                keyboard_nav::Message::Escape => {
-                    if self.search.is_active() {
-                        self.search.state = search::State::Inactive;
-                        self.search_clear();
-                    }
-                }
-                keyboard_nav::Message::Search => {
-                    return self.search.focus();
-                }
-            },
             Message::Page(page) => return self.activate_page(page),
-            Message::Drag => return start_drag_window(window::Id(0)),
-            Message::Close => {
-                process::exit(0);
-            }
-            Message::Minimize => return set_mode_window(window::Id(0), Mode::Hidden),
-            Message::Maximize => {
-                if self.sharp_corners {
-                    self.sharp_corners = false;
-                    return set_mode_window(window::Id(0), Mode::Windowed);
-                }
 
-                self.sharp_corners = true;
-                return set_mode_window(window::Id(0), Mode::Fullscreen);
-            }
-            Message::NavBar(key) => {
-                if let Some(page) = self.nav_bar.data::<page::Entity>(key).copied() {
-                    return self.activate_page(page);
-                }
-            }
-            Message::ToggleNavBar => self.nav_bar_toggled = !self.nav_bar_toggled,
-            Message::ToggleNavBarCondensed => {
-                self.nav_bar_toggled_condensed = !self.nav_bar_toggled_condensed;
-            }
             Message::Search(search::Message::Activate) => {
                 return self.search.focus();
             }
+
             Message::Search(search::Message::Changed(phrase)) => {
                 self.search_changed(phrase);
             }
+
             Message::Search(search::Message::Clear) => {
                 self.search_clear();
             }
-            Message::None | Message::Search(_) => {}
+
+            Message::Search(_) => {}
+
             Message::PageMessage(message) => match message {
                 crate::pages::Message::About(message) => {
                     page::update!(self.pages, message, system::about::Page);
@@ -279,13 +209,11 @@ impl Application for SettingsApp {
                 }
                 crate::pages::Message::Applet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets::Page>() {
-                        return page.update(message);
+                        return page.update(message).map(cosmic::app::Message::App);
                     }
                 }
             },
-            Message::WindowState(state) => {
-                self.sharp_corners = matches!(state, WindowState::Activated);
-            }
+
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
                     page.update(panel::Message::PanelConfig(config.clone()));
@@ -294,158 +222,73 @@ impl Application for SettingsApp {
                     _ = page.update(applets::Message::PanelConfig(config));
                 }
             }
+
             Message::PanelConfig(_) => {} // ignore other config changes for now,
+
             Message::DesktopInfo => {
                 if let Some(page) = self.pages.page_mut::<applets::Page>() {
                     // collect the potential applets
-                    ret = page.update(applets::Message::Applets(
-                        freedesktop_desktop_entry::Iter::new(
-                            freedesktop_desktop_entry::default_paths(),
-                        )
-                        .filter_map(|p| applets::Applet::try_from(Cow::from(p)).ok())
-                        .collect(),
-                    ));
+                    return page
+                        .update(applets::Message::Applets(
+                            freedesktop_desktop_entry::Iter::new(
+                                freedesktop_desktop_entry::default_paths(),
+                            )
+                            .filter_map(|p| applets::Applet::try_from(Cow::from(p)).ok())
+                            .collect(),
+                        ))
+                        .map(cosmic::app::Message::App);
                 }
             }
-            Message::ThemeChanged(theme) => {
-                self.theme = theme;
-            }
         }
-        ret
+
+        Command::none()
     }
 
     #[allow(clippy::too_many_lines)]
-    fn view(&self, id: window::Id) -> Element<Message> {
+    fn view(&self) -> Element<Message> {
+        scrollable(row![
+            horizontal_space(Length::Fill),
+            (if self.search.is_active() {
+                self.search_view()
+            } else if let Some(content) = self.pages.content(self.active_page) {
+                self.page_view(content)
+            } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
+                self.sub_page_view(sub_pages)
+            } else {
+                panic!("page without sub-pages or content");
+            })
+            .debug(self.core.debug),
+            horizontal_space(Length::Fill),
+        ])
+        .apply(cosmic::Element::from)
+    }
+
+    fn header_start(&self) -> Vec<Element<Self::Message>> {
+        let search = search::search(&self.search, Message::Search);
+
+        vec![search]
+    }
+
+    fn view_window(&self, id: window::Id) -> Element<Message> {
         if let Some(Some(page)) =
             (id == APPLET_DND_ICON_ID).then(|| self.pages.page::<applets::Page>())
         {
-            return page.dnd_icon();
+            return page.dnd_icon().map(Into::into);
         }
+
         if let Some(Some(page)) =
             (id == applets::ADD_APPLET_DIALOGUE_ID).then(|| self.pages.page::<applets::Page>())
         {
-            return page.add_applet_view();
+            return page.add_applet_view().map(Into::into);
         }
 
-        cosmic::iced::widget::responsive(|size| {
-            let is_condensed = (600.0 * self.scaling_factor) > size.width;
-            let narrow_navbar = (700.0 * self.scaling_factor) > size.width;
-
-            let (nav_bar_message, nav_bar_toggled) = if is_condensed {
-                (
-                    Message::ToggleNavBarCondensed,
-                    self.nav_bar_toggled_condensed,
-                )
-            } else {
-                (Message::ToggleNavBar, self.nav_bar_toggled)
-            };
-
-            let mut header = header_bar()
-                .title("")
-                .on_close(Message::Close)
-                .on_drag(Message::Drag)
-                .start(
-                    iced::widget::row!(
-                        nav_bar_toggle()
-                            .on_nav_bar_toggled(nav_bar_message)
-                            .nav_bar_active(nav_bar_toggled),
-                        search::search(&self.search, Message::Search)
-                    )
-                    .align_items(iced::Alignment::Center)
-                    .into(),
-                );
-
-            if self.show_maximize {
-                header = header.on_maximize(Message::Maximize);
-            }
-
-            if self.show_minimize {
-                header = header.on_minimize(Message::Minimize);
-            }
-
-            let header = Into::<Element<Message>>::into(header).debug(self.debug);
-
-            let mut widgets = Vec::with_capacity(2);
-
-            if nav_bar_toggled {
-                let mut nav_bar = nav_bar(&self.nav_bar, Message::NavBar);
-
-                if !is_condensed {
-                    nav_bar = nav_bar.max_width(if narrow_navbar { 200 } else { 300 });
-                }
-
-                let nav_bar: Element<_> = nav_bar.into();
-                widgets.push(nav_bar.debug(self.debug));
-            }
-
-            if !(is_condensed && nav_bar_toggled) {
-                widgets.push(
-                    scrollable(row![
-                        horizontal_space(Length::Fill),
-                        (if self.search.is_active() {
-                            self.search_view()
-                        } else if let Some(content) = self.pages.content(self.active_page) {
-                            self.page_view(content)
-                        } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
-                            self.sub_page_view(sub_pages)
-                        } else {
-                            panic!("page without sub-pages or content");
-                        })
-                        .debug(self.debug),
-                        horizontal_space(Length::Fill),
-                    ])
-                    .into(),
-                );
-            }
-
-            let content = container(row(widgets).spacing(8))
-                .padding([0, 8, 8, 8])
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .style(theme::Container::Background)
-                .into();
-
-            column(vec![header, content]).into()
-        })
-        .into()
-    }
-
-    fn theme(&self) -> Theme {
-        self.theme.clone()
-    }
-
-    fn scale_factor(&self) -> f64 {
-        self.scaling_factor as f64
-    }
-
-    fn close_requested(&self, id: window::Id) -> Self::Message {
-        if id == window::Id(0) {
-            Message::Close
-        } else if id == applets::ADD_APPLET_DIALOGUE_ID {
-            Message::PageMessage(crate::pages::Message::Applet(
-                applets::Message::ClosedAppletDialogue,
-            ))
-        } else {
-            Message::None
-        }
-    }
-
-    fn style(&self) -> <Self::Theme as cosmic::iced_style::application::StyleSheet>::Style {
-        if self.sharp_corners {
-            cosmic::theme::Application::default()
-        } else {
-            cosmic::theme::Application::Custom(Box::new(|theme| application::Appearance {
-                background_color: Color::TRANSPARENT,
-                text_color: theme.cosmic().on_bg_color().into(),
-            }))
-        }
+        panic!("no view for window {id:?}");
     }
 }
 
 impl SettingsApp {
     /// Activates a page.
     fn activate_page(&mut self, page: page::Entity) -> Command<crate::Message> {
-        self.nav_bar_toggled_condensed = false;
         let current_page = self.active_page;
         self.active_page = page;
 
@@ -461,8 +304,9 @@ impl SettingsApp {
 
         self.pages
             .page_reload(page)
-            .unwrap_or(Command::none())
+            .unwrap_or(iced::Command::none())
             .map(Message::PageMessage)
+            .map(cosmic::app::Message::App)
     }
 
     /// Activates the navbar item associated with a page.
@@ -472,7 +316,7 @@ impl SettingsApp {
         }
 
         if let Some(nav_id) = self.pages.data(page) {
-            self.nav_bar.activate(*nav_id);
+            self.nav_model.activate(*nav_id);
         }
     }
 
@@ -492,7 +336,7 @@ impl SettingsApp {
     fn navbar_insert(&mut self, id: page::Entity) -> segmented_button::SingleSelectEntityMut {
         let page = &self.pages.info[id];
 
-        self.nav_bar
+        self.nav_model
             .insert()
             .text(page.title.clone())
             .icon(IconSource::from(page.icon_name.clone()))
@@ -601,7 +445,7 @@ impl SettingsApp {
         }
 
         settings::view_column(column_widgets)
-            .apply(Element::from)
+            .apply(cosmic::Element::from)
             .map(Message::Page)
     }
 }

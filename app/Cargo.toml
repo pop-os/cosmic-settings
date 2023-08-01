@@ -3,7 +3,7 @@ name = "cosmic-settings"
 version = "0.1.0"
 edition = "2021"
 license = "GPL-3.0-only"
-rust-version = "1.65.0"
+rust-version = "1.71.0"
 
 [dependencies]
 apply = "0.3.0"

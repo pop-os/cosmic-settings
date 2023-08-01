@@ -1,5 +1,5 @@
 use std::{
-    borrow::{Borrow, Cow},
+    borrow::Cow,
     fmt::Debug,
     mem,
     path::{Path, PathBuf},
@@ -1281,7 +1281,8 @@ where
                             .and_then(|s| url::Url::from_str(s).ok())
                             .and_then(|url| url.to_file_path().ok())
                             .and_then(|p| Applet::try_from(Cow::from(p)).ok());
-                        if let Some(data) = data.borrow() {
+
+                        if let Some(ref data) = data {
                             let filtered: Vec<_> = self
                                 .info
                                 .clone()

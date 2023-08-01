@@ -391,7 +391,7 @@ impl Page {
         match message {
             Message::AutoHidePanel(enabled) => {
                 let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
 
                 panel_config.autohide = enabled.then_some(AutoHide {
                     wait_time: 1000,
@@ -403,7 +403,7 @@ impl Page {
             }
             Message::PanelAnchor(anchor) => {
                 let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
 
                 panel_config.anchor = anchor;
 
@@ -411,7 +411,7 @@ impl Page {
             }
             Message::Output(name) => {
                 let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
 
                 panel_config.output = match name {
                     s if s == fl!("all") => CosmicPanelOuput::All,
@@ -422,7 +422,7 @@ impl Page {
             }
             Message::AnchorGap(enabled) => {
                 let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
 
                 panel_config.anchor_gap = enabled;
 
@@ -430,7 +430,7 @@ impl Page {
             }
             Message::PanelSize(size) => {
                 let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
 
                 panel_config.size = size;
 
@@ -438,7 +438,7 @@ impl Page {
             }
             Message::Appearance(a) => {
                 let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
 
                 panel_config.background = a.into();
 
@@ -446,7 +446,7 @@ impl Page {
             }
             Message::ExtendToEdge(enabled) => {
                 let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
 
                 panel_config.expand_to_edges = enabled;
 
@@ -454,7 +454,7 @@ impl Page {
             }
             Message::Opacity(opacity) => {
                 let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
+                let panel_config = self.panel_config.as_mut().unwrap();
 
                 panel_config.opacity = opacity;
 

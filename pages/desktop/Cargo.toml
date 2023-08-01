@@ -13,7 +13,7 @@ freedesktop-icons = "0.2.3"
 futures-lite = "1.13.0"
 image = "0.24.6"
 rayon = "1.7.0"
-sctk = { package = "smithay-client-toolkit", git = "https://github.com/pop-os/client-toolkit", tag = "themed-pointer"}
+sctk = { workspace = true }
 tokio = { version = "1.28.0", features = ["sync"] }
 tracing = "0.1.37"
 wayland-client = "0.30.1"
