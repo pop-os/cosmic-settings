@@ -51,7 +51,7 @@ build-debug *args:
 build-release *args: (build-debug '--release' args)
 
 # Compile with a vendored tarball
-build-vendored *args: vendor-extract (build-release '--frozen --offline' args)
+build-vendored *args: vendor-extract (build-release '--offline --locked' args)
 
 # Check for errors and linter warnings
 check *args:
