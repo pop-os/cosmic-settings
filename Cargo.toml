@@ -25,8 +25,8 @@ git = "https://github.com/smithay/client-toolkit"
 rev = "c9940f4"
 
 [patch."https://github.com/pop-os/libcosmic"]
-# libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "application" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "application" }
+# libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=master", rev = "master" }
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=master", rev = "master" }
 
 [profile.release]
 opt-level = 3

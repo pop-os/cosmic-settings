@@ -88,9 +88,9 @@ uninstall:
 
 # Vendor Cargo dependencies locally
 vendor:
+    rm -rf .cargo vendor vendor.tar
     mkdir -p .cargo
-    cargo vendor --sync Cargo.toml \
-        | head -n -1 > .cargo/config
+    cargo vendor | head -n -1 > .cargo/config
     echo 'directory = "vendor"' >> .cargo/config
     tar pcf vendor.tar vendor
     rm -rf vendor
