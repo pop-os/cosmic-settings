@@ -158,10 +158,11 @@ impl super::Page {
         };
         let prefix = special_key.prefix();
         let current = self
-            .xkb_options
+            .xkb
+            .options
             .iter()
-            .find(|x| x.starts_with(prefix))
-            .map(String::as_str);
+            .flat_map(|x| x.split(','))
+            .find(|x| x.starts_with(prefix));
 
         // TODO description, layout default
 

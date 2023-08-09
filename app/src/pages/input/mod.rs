@@ -1,15 +1,18 @@
 use crate::app;
 use cosmic::{
+    cosmic_config::{self, ConfigGet, ConfigSet},
     iced::{self, wayland::actions::window::SctkWindowSettings, window},
     iced_sctk::commands,
     iced_widget::core::layout,
 };
 use cosmic_settings_page as page;
+use itertools::Itertools;
+use tracing::error;
 
 pub mod keyboard;
 mod mouse;
 
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Default, Clone, serde::Deserialize, serde::Serialize)]
 pub struct XkbConfig {
     pub rules: String,
     pub model: String,
@@ -34,13 +37,10 @@ pub enum Message {
     SpecialCharacterSelect(Option<&'static str>),
 }
 
-#[derive(derivative::Derivative)]
-#[derivative(Default)]
 pub struct Page {
-    // cosmic_config::Config
+    config: cosmic_config::Config,
 
     // Mouse
-    #[derivative(Default(value = "mouse::default_primary_button()"))]
     primary_button: cosmic::widget::segmented_button::SingleSelectModel,
     acceleration: bool,
     natural_scroll: bool,
@@ -50,10 +50,44 @@ pub struct Page {
 
     // Keyboard
     expanded_source_popover: Option<String>,
-    #[derivative(Default(value = "keyboard::default_input_sources()"))]
     sources: Vec<keyboard::InputSource>,
     special_character_dialog: Option<keyboard::SpecialKey>,
-    xkb_options: Vec<String>,
+    xkb: XkbConfig,
+}
+
+fn get_config<T: Default + serde::de::DeserializeOwned>(
+    config: &cosmic_config::Config,
+    key: &str,
+) -> T {
+    config.get(key).unwrap_or_else(|err| {
+        error!(?err, "Failed to read config '{}'", key);
+        T::default()
+    })
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        let xkb = get_config(&config, "xkb-config");
+
+        Self {
+            config,
+
+            // Mouse
+            primary_button: mouse::default_primary_button(),
+            acceleration: false,
+            natural_scroll: false,
+            double_click_speed: 0,
+            scroll_speed: 0,
+            mouse_speed: 0,
+
+            // Keyboard
+            expanded_source_popover: None,
+            sources: keyboard::default_input_sources(),
+            special_character_dialog: None,
+            xkb,
+        }
+    }
 }
 
 impl Page {
@@ -107,14 +141,17 @@ impl Page {
             }
             Message::SpecialCharacterSelect(id) => {
                 if let Some(special_key) = self.special_character_dialog {
+                    let options = self.xkb.options.as_deref().unwrap_or("");
                     let prefix = special_key.prefix();
-                    if let Some(idx) = self.xkb_options.iter().position(|x| x.starts_with(prefix)) {
-                        self.xkb_options.remove(idx);
+                    let new_options = options
+                        .split(',')
+                        .filter(|x| !x.starts_with(prefix))
+                        .chain(id.into_iter())
+                        .join(",");
+                    self.xkb.options = Some(new_options).filter(|x| !x.is_empty());
+                    if let Err(err) = self.config.set("xkb-config", &self.xkb) {
+                        error!(?err, "Failed to set config 'xkb-config'");
                     }
-                    if let Some(id) = id {
-                        self.xkb_options.push(id.to_string());
-                    }
-                    // TODO set in cosmic-config
                 }
             }
             Message::OpenKeyboardShortcuts => {}
