@@ -5,21 +5,13 @@ use cosmic::{
     iced_sctk::commands,
     iced_widget::core::layout,
 };
+use cosmic_comp_config::XkbConfig;
 use cosmic_settings_page as page;
 use itertools::Itertools;
 use tracing::error;
 
 pub mod keyboard;
 mod mouse;
-
-#[derive(Debug, Default, Clone, serde::Deserialize, serde::Serialize)]
-pub struct XkbConfig {
-    pub rules: String,
-    pub model: String,
-    pub layout: String,
-    pub variant: String,
-    pub options: Option<String>,
-}
 
 #[derive(Clone, Debug)]
 pub enum Message {

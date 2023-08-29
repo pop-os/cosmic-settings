@@ -16,6 +16,11 @@ git = "https://github.com/pop-os/libcosmic"
 [workspace.dependencies.cosmic-bg-config]
 git = "https://github.com/pop-os/cosmic-bg"
 
+[workspace.dependencies.cosmic-comp-config]
+git = "https://github.com/pop-os/cosmic-comp"
+branch = "cosmic-comp-config"
+# path = "../cosmic-comp/cosmic-comp-config"
+
 [workspace.dependencies.cosmic-panel-config]
 git = "https://github.com/pop-os/cosmic-panel"
 

@@ -26,6 +26,7 @@ rust-embed = "6.6.1"
 slotmap = "1.0.6"
 tokio = "1.28.2"
 downcast-rs = "1.2.0"
+cosmic-comp-config = { workspace = true }
 # TODO: migrate this dependency to the pages/desktop crate.
 cosmic-panel-config = { workspace = true }
 tracing = "0.1.37"
