@@ -272,11 +272,6 @@ impl Application for SettingsApp {
                     page::update!(self.pages, message, desktop::wallpaper::Page);
                 }
                 crate::pages::Message::Input(message) => {
-                    if matches!(message, input::Message::OpenKeyboardShortcuts) {
-                        if let Some(id) = self.pages.page_id::<input::keyboard::shortcuts::Page>() {
-                            return self.activate_page(id);
-                        }
-                    }
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
                         return page.update(message);
                     }

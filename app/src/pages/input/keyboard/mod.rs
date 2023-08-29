@@ -291,20 +291,25 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("keyboard-shortcuts"))
         .descriptions(vec![fl!("keyboard-shortcuts", "desc")])
-        .view::<Page>(|_binder, _page, section| {
+        .view::<Page>(|binder, _page, section| {
             let descriptions = &section.descriptions;
 
-            settings::view_section(&section.title)
-                .add(go_next_item(
+            let mut section = settings::view_section(&section.title);
+            if let Some((shortcuts_entity, _)) = binder
+                .info
+                .iter()
+                .find(|(_, v)| v.id == "keyboard-shortcuts")
+            {
+                section = section.add(go_next_item(
                     &descriptions[0],
-                    Message::OpenKeyboardShortcuts,
-                ))
-                .apply(cosmic::Element::from)
-                .map(crate::pages::Message::Input)
+                    crate::pages::Message::Page(shortcuts_entity),
+                ));
+            }
+            section.apply(cosmic::Element::from)
         })
 }
 
-fn go_next_control() -> cosmic::Element<'static, Message> {
+fn go_next_control<Msg: Clone + 'static>() -> cosmic::Element<'static, Msg> {
     widget::row!(
         horizontal_space(Length::Fill),
         cosmic::widget::icon("go-next-symbolic", 20).style(cosmic::theme::Svg::Symbolic)
@@ -312,7 +317,7 @@ fn go_next_control() -> cosmic::Element<'static, Message> {
     .into()
 }
 
-fn go_next_item(description: &str, msg: Message) -> cosmic::Element<'_, Message> {
+fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::Element<'_, Msg> {
     settings::item(description, go_next_control())
         .apply(widget::container)
         .style(cosmic::theme::Container::custom(

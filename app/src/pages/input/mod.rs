@@ -23,7 +23,6 @@ pub enum Message {
     PrimaryButtonSelected(cosmic::widget::segmented_button::Entity),
     // seperate close message, to make sure another isn't closed?
     ExpandInputSourcePopover(Option<String>),
-    OpenKeyboardShortcuts,
     OpenSpecialCharacterDialog(keyboard::SpecialKey),
     CloseSpecialCharacterDialog,
     SpecialCharacterSelect(Option<&'static str>),
@@ -146,7 +145,6 @@ impl Page {
                     }
                 }
             }
-            Message::OpenKeyboardShortcuts => {}
         }
         iced::Command::none()
     }
