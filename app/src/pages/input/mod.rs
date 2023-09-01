@@ -5,7 +5,10 @@ use cosmic::{
     iced_sctk::commands,
     iced_widget::core::layout,
 };
-use cosmic_comp_config::XkbConfig;
+use cosmic_comp_config::{
+    input::{AccelProfile, InputConfig},
+    XkbConfig,
+};
 use cosmic_settings_page as page;
 use itertools::Itertools;
 use tracing::error;
@@ -17,9 +20,9 @@ mod mouse;
 pub enum Message {
     SetAcceleration(bool),
     SetNaturalScroll(bool),
-    SetScrollSpeed(u32),
+    SetScrollFactor(f64),
     SetDoubleClickSpeed(u32),
-    SetMouseSpeed(u32),
+    SetMouseSpeed(f64),
     PrimaryButtonSelected(cosmic::widget::segmented_button::Entity),
     // seperate close message, to make sure another isn't closed?
     ExpandInputSourcePopover(Option<String>),
@@ -30,14 +33,12 @@ pub enum Message {
 
 pub struct Page {
     config: cosmic_config::Config,
+    input_default: InputConfig,
+    #[allow(dead_code)]
+    input_touchpad: InputConfig,
 
     // Mouse
     primary_button: cosmic::widget::segmented_button::SingleSelectModel,
-    acceleration: bool,
-    natural_scroll: bool,
-    double_click_speed: u32,
-    scroll_speed: u32,
-    mouse_speed: u32,
 
     // Keyboard
     expanded_source_popover: Option<String>,
@@ -59,18 +60,25 @@ fn get_config<T: Default + serde::de::DeserializeOwned>(
 impl Default for Page {
     fn default() -> Self {
         let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        let input_default: InputConfig = get_config(&config, "input-default");
+        let input_touchpad = get_config(&config, "input-touchpad");
         let xkb = get_config(&config, "xkb-config");
+
+        let mut primary_button = mouse::default_primary_button();
+        let idx = if input_default.left_handed.unwrap_or(false) {
+            0
+        } else {
+            1
+        };
+        primary_button.activate_position(idx);
 
         Self {
             config,
+            input_default,
+            input_touchpad,
 
             // Mouse
-            primary_button: mouse::default_primary_button(),
-            acceleration: false,
-            natural_scroll: false,
-            double_click_speed: 0,
-            scroll_speed: 0,
-            mouse_speed: 0,
+            primary_button,
 
             // Keyboard
             expanded_source_popover: None,
@@ -86,22 +94,57 @@ impl Page {
     pub fn update(&mut self, message: Message) -> iced::Command<app::Message> {
         match message {
             Message::SetAcceleration(value) => {
-                self.acceleration = value;
+                let profile = if value {
+                    AccelProfile::Adaptive
+                } else {
+                    AccelProfile::Flat
+                };
+                self.input_default
+                    .acceleration
+                    .get_or_insert(Default::default())
+                    .profile = Some(profile);
+                if let Err(err) = self.config.set("input-default", &self.input_default) {
+                    error!(?err, "Failed to set config 'input-default'");
+                }
             }
             Message::SetNaturalScroll(value) => {
-                self.natural_scroll = value;
+                self.input_default
+                    .scroll_config
+                    .get_or_insert(Default::default())
+                    .natural_scroll = Some(value);
+                if let Err(err) = self.config.set("input-default", &self.input_default) {
+                    error!(?err, "Failed to set config 'input-default'");
+                }
             }
-            Message::SetScrollSpeed(value) => {
-                self.scroll_speed = value;
+            Message::SetScrollFactor(value) => {
+                self.input_default
+                    .scroll_config
+                    .get_or_insert(Default::default())
+                    .scroll_factor = Some(value);
+                if let Err(err) = self.config.set("input-default", &self.input_default) {
+                    error!(?err, "Failed to set config 'input-default'");
+                }
             }
-            Message::SetDoubleClickSpeed(value) => {
-                self.double_click_speed = value;
+            Message::SetDoubleClickSpeed(_value) => {
+                // TODO
             }
             Message::SetMouseSpeed(value) => {
-                self.mouse_speed = value;
+                self.input_default
+                    .acceleration
+                    .get_or_insert(Default::default())
+                    .speed = value;
+                if let Err(err) = self.config.set("input-default", &self.input_default) {
+                    error!(?err, "Failed to set config 'input-default'");
+                }
             }
             Message::PrimaryButtonSelected(entity) => {
                 self.primary_button.activate(entity);
+                let left_entity = self.primary_button.entity_at(1).unwrap();
+                let left_handed = self.primary_button.active() == left_entity;
+                self.input_default.left_handed = Some(left_handed);
+                if let Err(err) = self.config.set("input-default", &self.input_default) {
+                    error!(?err, "Failed to set config 'input-default'");
+                }
             }
             Message::ExpandInputSourcePopover(value) => {
                 self.expanded_source_popover = value;

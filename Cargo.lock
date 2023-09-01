@@ -735,7 +735,7 @@ dependencies = [
 [[package]]
 name = "cosmic-comp-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-comp?branch=cosmic-comp-config#7955b16bd56122d021b762153e86dd90158d18e2"
+source = "git+https://github.com/pop-os/cosmic-comp#1392fc7c953678a14825ba3d1e5619d38c1946c7"
 dependencies = [
  "input",
  "serde",
