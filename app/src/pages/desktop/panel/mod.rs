@@ -426,6 +426,12 @@ impl Page {
 
                 panel_config.anchor_gap = enabled;
 
+                if enabled {
+                    panel_config.margin = 4;
+                } else {
+                    panel_config.margin = 0;
+                }
+
                 _ = panel_config.write_entry(helper);
             }
             Message::PanelSize(size) => {
