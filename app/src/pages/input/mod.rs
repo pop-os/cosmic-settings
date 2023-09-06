@@ -15,15 +15,16 @@ use tracing::error;
 
 pub mod keyboard;
 mod mouse;
+mod touchpad;
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    SetAcceleration(bool),
-    SetNaturalScroll(bool),
-    SetScrollFactor(f64),
-    SetDoubleClickSpeed(u32),
-    SetMouseSpeed(f64),
-    PrimaryButtonSelected(cosmic::widget::segmented_button::Entity),
+    SetAcceleration(bool, bool),
+    SetNaturalScroll(bool, bool),
+    SetScrollFactor(f64, bool),
+    SetDoubleClickSpeed(u32, bool),
+    SetMouseSpeed(f64, bool),
+    PrimaryButtonSelected(cosmic::widget::segmented_button::Entity, bool),
     // seperate close message, to make sure another isn't closed?
     ExpandInputSourcePopover(Option<String>),
     OpenSpecialCharacterDialog(keyboard::SpecialKey),
@@ -39,6 +40,9 @@ pub struct Page {
 
     // Mouse
     primary_button: cosmic::widget::segmented_button::SingleSelectModel,
+
+    // Touchpad
+    touchpad_primary_button: cosmic::widget::segmented_button::SingleSelectModel,
 
     // Keyboard
     expanded_source_popover: Option<String>,
@@ -61,16 +65,24 @@ impl Default for Page {
     fn default() -> Self {
         let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
         let input_default: InputConfig = get_config(&config, "input-default");
-        let input_touchpad = get_config(&config, "input-touchpad");
+        let input_touchpad: InputConfig = get_config(&config, "input-touchpad");
         let xkb = get_config(&config, "xkb-config");
 
         let mut primary_button = mouse::default_primary_button();
         let idx = if input_default.left_handed.unwrap_or(false) {
-            0
-        } else {
             1
+        } else {
+            0
         };
         primary_button.activate_position(idx);
+
+        let mut touchpad_primary_button = mouse::default_primary_button();
+        let idx = if input_touchpad.left_handed.unwrap_or(false) {
+            1
+        } else {
+            0
+        };
+        touchpad_primary_button.activate_position(idx);
 
         Self {
             config,
@@ -79,6 +91,9 @@ impl Default for Page {
 
             // Mouse
             primary_button,
+
+            // Touchpad
+            touchpad_primary_button,
 
             // Keyboard
             expanded_source_popover: None,
@@ -90,61 +105,56 @@ impl Default for Page {
 }
 
 impl Page {
-    // TODO
+    fn update_input<F: Fn(&mut InputConfig)>(&mut self, touchpad: bool, f: F) {
+        let (name, input_config) = if touchpad {
+            ("input-touchpad", &mut self.input_touchpad)
+        } else {
+            ("input-default", &mut self.input_default)
+        };
+        f(input_config);
+        if let Err(err) = self.config.set(name, input_config) {
+            error!(?err, "Failed to set config '{}'", name);
+        }
+    }
+
     pub fn update(&mut self, message: Message) -> iced::Command<app::Message> {
         match message {
-            Message::SetAcceleration(value) => {
+            Message::SetAcceleration(value, touchpad) => {
                 let profile = if value {
                     AccelProfile::Adaptive
                 } else {
                     AccelProfile::Flat
                 };
-                self.input_default
-                    .acceleration
-                    .get_or_insert(Default::default())
-                    .profile = Some(profile);
-                if let Err(err) = self.config.set("input-default", &self.input_default) {
-                    error!(?err, "Failed to set config 'input-default'");
-                }
+                self.update_input(touchpad, |x| {
+                    x.acceleration.get_or_insert(Default::default()).profile = Some(profile);
+                });
             }
-            Message::SetNaturalScroll(value) => {
-                self.input_default
-                    .scroll_config
+            Message::SetNaturalScroll(value, touchpad) => self.update_input(touchpad, |x| {
+                x.scroll_config
                     .get_or_insert(Default::default())
                     .natural_scroll = Some(value);
-                if let Err(err) = self.config.set("input-default", &self.input_default) {
-                    error!(?err, "Failed to set config 'input-default'");
-                }
-            }
-            Message::SetScrollFactor(value) => {
-                self.input_default
-                    .scroll_config
+            }),
+            Message::SetScrollFactor(value, touchpad) => self.update_input(touchpad, |x| {
+                x.scroll_config
                     .get_or_insert(Default::default())
-                    .scroll_factor = Some(value);
-                if let Err(err) = self.config.set("input-default", &self.input_default) {
-                    error!(?err, "Failed to set config 'input-default'");
-                }
-            }
-            Message::SetDoubleClickSpeed(_value) => {
+                    .scroll_factor = Some(value)
+            }),
+            Message::SetDoubleClickSpeed(_value, _touchpad) => {
                 // TODO
             }
-            Message::SetMouseSpeed(value) => {
-                self.input_default
-                    .acceleration
-                    .get_or_insert(Default::default())
-                    .speed = value;
-                if let Err(err) = self.config.set("input-default", &self.input_default) {
-                    error!(?err, "Failed to set config 'input-default'");
-                }
-            }
-            Message::PrimaryButtonSelected(entity) => {
-                self.primary_button.activate(entity);
-                let left_entity = self.primary_button.entity_at(1).unwrap();
-                let left_handed = self.primary_button.active() == left_entity;
-                self.input_default.left_handed = Some(left_handed);
-                if let Err(err) = self.config.set("input-default", &self.input_default) {
-                    error!(?err, "Failed to set config 'input-default'");
-                }
+            Message::SetMouseSpeed(value, touchpad) => self.update_input(touchpad, |x| {
+                x.acceleration.get_or_insert(Default::default()).speed = value
+            }),
+            Message::PrimaryButtonSelected(entity, touchpad) => {
+                let select_model = if touchpad {
+                    &mut self.touchpad_primary_button
+                } else {
+                    &mut self.primary_button
+                };
+                select_model.activate(entity);
+                let left_entity = select_model.entity_at(1).unwrap();
+                let left_handed = select_model.active() == left_entity;
+                self.update_input(touchpad, |x| x.left_handed = Some(left_handed));
             }
             Message::ExpandInputSourcePopover(value) => {
                 self.expanded_source_popover = value;
@@ -204,6 +214,8 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        page.sub_page::<keyboard::Page>().sub_page::<mouse::Page>()
+        page.sub_page::<keyboard::Page>()
+            .sub_page::<mouse::Page>()
+            .sub_page::<touchpad::Page>()
     }
 }

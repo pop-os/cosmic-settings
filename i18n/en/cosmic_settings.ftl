@@ -267,3 +267,14 @@ mouse-scrolling = Scrolling
     .natural-desc = Scroll the content, instead of the view
 
 ## Input: Touchpad
+
+touchpad = Touchpad
+    .desc = Touchpad speed, click options, gestures.
+    .primary-button = Primary button
+    .primary-button-left = Left
+    .primary-button-right = Right
+    .speed = Touchpad speed
+    .acceleration = Enable touchpad acceleration
+    .acceleration-desc = Automatically adjusts tracking sensitivty based on speed.
+    .double-click-speed = Double-click speed
+    .double-click-speed-desc = Changes how fast double-clicks have to be to register.
