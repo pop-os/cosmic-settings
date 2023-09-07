@@ -43,6 +43,7 @@
             autoPatchelfHook
           ];
           buildInputs = with pkgs; [
+            systemdMinimal
             libxkbcommon
             freetype
             fontconfig
@@ -50,6 +51,7 @@
             lld
             desktop-file-utils
             stdenv.cc.cc.lib
+            libinput
            ];
           runtimeDependencies = with pkgs; [
             wayland
