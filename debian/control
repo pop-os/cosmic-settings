@@ -13,6 +13,8 @@ Build-Depends:
     lld,
     pkg-config,
     libxkbcommon-dev,
+    libudev-dev,
+    libinput-dev
 Standards-Version: 4.6.2
 Homepage: https://github.com/pop-os/cosmic-settings
 
