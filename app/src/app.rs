@@ -39,6 +39,7 @@ use crate::{
                 applets::{self, APPLET_DND_ICON_ID},
             },
         },
+        input::{self, keyboard},
         sound, system, time,
     },
     subscription::desktop_files,
@@ -142,6 +143,8 @@ impl Application for SettingsApp {
 
         // app.insert_page::<accessibility::Page>();
         // app.insert_page::<applications::Page>();
+        //
+        app.insert_page::<input::Page>();
 
         let active_id = app
             .pages
@@ -268,6 +271,11 @@ impl Application for SettingsApp {
                 crate::pages::Message::DesktopWallpaper(message) => {
                     page::update!(self.pages, message, desktop::wallpaper::Page);
                 }
+                crate::pages::Message::Input(message) => {
+                    if let Some(page) = self.pages.page_mut::<input::Page>() {
+                        return page.update(message);
+                    }
+                }
                 crate::pages::Message::External { .. } => {
                     todo!("external plugins not supported yet");
                 }
@@ -325,6 +333,16 @@ impl Application for SettingsApp {
             (id == applets::ADD_APPLET_DIALOGUE_ID).then(|| self.pages.page::<applets::Page>())
         {
             return page.add_applet_view();
+        }
+        if let Some(Some(page)) =
+            (id == keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID).then(|| self.pages.page::<input::Page>())
+        {
+            return page.add_input_source_view();
+        }
+        if let Some(Some(page)) = (id == keyboard::SPECIAL_CHARACTER_DIALOGUE_ID)
+            .then(|| self.pages.page::<input::Page>())
+        {
+            return page.special_character_key_view();
         }
 
         cosmic::iced::widget::responsive(|size| {
