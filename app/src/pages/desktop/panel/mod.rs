@@ -388,42 +388,32 @@ pub enum Message {
 
 impl Page {
     pub fn update(&mut self, message: Message) {
+        let helper = self.config_helper.as_ref().unwrap();
+        let mut panel_config = self.panel_config.as_mut().unwrap();
         match message {
             Message::AutoHidePanel(enabled) => {
-                let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
-
-                panel_config.autohide = enabled.then_some(AutoHide {
-                    wait_time: 1000,
-                    transition_time: 200,
-                    handle_size: 4,
-                });
-
-                _ = panel_config.write_entry(helper);
+                if enabled {
+                    panel_config.exclusive_zone = false;
+                    panel_config.autohide = Some(AutoHide {
+                        wait_time: 1000,
+                        transition_time: 200,
+                        handle_size: 4,
+                    });
+                } else {
+                    panel_config.exclusive_zone = true;
+                    panel_config.autohide = None;
+                }
             }
             Message::PanelAnchor(anchor) => {
-                let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
-
                 panel_config.anchor = anchor;
-
-                _ = panel_config.write_entry(helper);
             }
             Message::Output(name) => {
-                let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
-
                 panel_config.output = match name {
                     s if s == fl!("all") => CosmicPanelOuput::All,
                     _ => CosmicPanelOuput::Name(name),
                 };
-
-                _ = panel_config.write_entry(helper);
             }
             Message::AnchorGap(enabled) => {
-                let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
-
                 panel_config.anchor_gap = enabled;
 
                 if enabled {
@@ -431,40 +421,18 @@ impl Page {
                 } else {
                     panel_config.margin = 0;
                 }
-
-                _ = panel_config.write_entry(helper);
             }
             Message::PanelSize(size) => {
-                let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
-
                 panel_config.size = size;
-
-                _ = panel_config.write_entry(helper);
             }
             Message::Appearance(a) => {
-                let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
-
                 panel_config.background = a.into();
-
-                _ = panel_config.write_entry(helper);
             }
             Message::ExtendToEdge(enabled) => {
-                let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
-
                 panel_config.expand_to_edges = enabled;
-
-                _ = panel_config.write_entry(helper);
             }
             Message::Opacity(opacity) => {
-                let helper = self.config_helper.as_ref().unwrap();
-                let mut panel_config = self.panel_config.as_mut().unwrap();
-
                 panel_config.opacity = opacity;
-
-                _ = panel_config.write_entry(helper);
             }
             Message::Applets => todo!(),
 
@@ -476,7 +444,16 @@ impl Page {
             }
             Message::PanelConfig(c) => {
                 self.panel_config = Some(c);
+                return;
             }
         }
+
+        if panel_config.anchor_gap || !panel_config.expand_to_edges {
+            panel_config.border_radius = 8;
+        } else {
+            panel_config.border_radius = 0;
+        }
+
+        _ = panel_config.write_entry(helper);
     }
 }
