@@ -128,8 +128,8 @@ impl Application for SettingsApp {
         // app.insert_page::<bluetooth::Page>();
 
         let desktop_id = app.insert_page::<desktop::Page>().id();
-        app.insert_page::<panel::Page>();
-        app.insert_page::<dock::Page>();
+        // app.insert_page::<panel::Page>();
+        // app.insert_page::<dock::Page>();
 
         // app.insert_page::<input::Page>();
 
