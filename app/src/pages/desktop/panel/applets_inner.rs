@@ -366,7 +366,6 @@ impl Page {
                 *list = end_list.into_iter().map(|a| a.id.into()).collect();
             }
             Message::Applets(applets) => {
-                dbg!(&applets);
                 self.available_entries = applets;
             }
             Message::StartDnd(state) => {
