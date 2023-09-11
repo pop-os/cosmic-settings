@@ -1,15 +1,6 @@
-use std::{
-    borrow::{Borrow, Cow},
-    fmt::Debug,
-    mem,
-    path::{Path, PathBuf},
-    str::FromStr,
-    sync::Arc,
-};
-
 use apply::Apply;
 use cosmic::{
-    cosmic_config::{self, Config, CosmicConfigEntry},
+    cosmic_config::{Config, CosmicConfigEntry},
     iced::{
         alignment::{Horizontal, Vertical},
         event::{
@@ -47,6 +38,14 @@ use cosmic::{
     widget::{button, header_bar, icon, list_column},
     Element,
 };
+use std::{
+    borrow::{Borrow, Cow},
+    fmt::Debug,
+    mem,
+    path::{Path, PathBuf},
+    str::FromStr,
+    sync::Arc,
+};
 
 use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;
@@ -70,28 +69,31 @@ const SPACING: f32 = 8.0;
 const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
 
 pub const APPLET_DND_ICON_ID: window::Id = window::Id(1000);
-pub const ADD_APPLET_DIALOGUE_ID: window::Id = window::Id(1001);
+pub const ADD_PANEL_APPLET_DIALOGUE_ID: window::Id = window::Id(1001);
 
 pub struct Page {
-    available_entries: Vec<Applet<'static>>,
-    config_helper: Option<Config>,
-    current_config: Option<CosmicPanelConfig>,
-    reorder_widget_state: ReorderWidgetState,
-    search: String,
-    has_dialogue: bool,
+    pub(crate) available_entries: Vec<Applet<'static>>,
+    pub(crate) config_helper: Option<Config>,
+    pub(crate) current_config: Option<CosmicPanelConfig>,
+    pub(crate) reorder_widget_state: ReorderWidgetState,
+    pub(crate) search: String,
+    pub(crate) has_dialogue: bool,
 }
 
 impl Default for Page {
     fn default() -> Self {
-        let config_helper = cosmic_config::Config::new("com.system76.CosmicPanel.Panel", 1).ok();
+        let config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
         let current_config = config_helper.as_ref().and_then(|config_helper| {
-            // TODO error handling...
             let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
             // If the config is not present, it will be created with the default values and the name will not match
             (panel_config.name == "Panel").then_some(panel_config)
         });
         Self {
-            available_entries: Vec::new(),
+            available_entries: freedesktop_desktop_entry::Iter::new(
+                freedesktop_desktop_entry::default_paths(),
+            )
+            .filter_map(|p| Applet::try_from(Cow::from(p)).ok())
+            .collect(),
             config_helper,
             current_config,
             reorder_widget_state: ReorderWidgetState::default(),
@@ -101,13 +103,31 @@ impl Default for Page {
     }
 }
 
+pub trait AppletsPage {
+    fn inner(&self) -> &Page;
+
+    fn inner_mut(&mut self) -> &mut Page;
+}
+
+impl AppletsPage for Page {
+    fn inner(&self) -> &Page {
+        self
+    }
+
+    fn inner_mut(&mut self) -> &mut Page {
+        self
+    }
+}
+
 impl page::Page<crate::pages::Message> for Page {
     #[allow(clippy::too_many_lines)]
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(lists())])
+        Some(vec![
+            sections.insert(lists::<Page, _>(pages::Message::PanelApplet))
+        ])
     }
 
     fn info(&self) -> page::Info {
@@ -141,7 +161,6 @@ pub enum Message {
     DragAppletDialogue,
     Save,
     Cancel,
-    Ignore,
 }
 
 impl Debug for Message {
@@ -154,7 +173,6 @@ impl Debug for Message {
             Message::PanelConfig(_) => write!(f, "PanelConfig"),
             Message::StartDnd(_) => write!(f, "StartDnd"),
             Message::DnDCommand(_) => write!(f, "DnDCommand"),
-            Message::Ignore => write!(f, "Ignore"),
             Message::Save => write!(f, "ApplyReorder"),
             Message::RemoveStart(_) => write!(f, "RemoveStart"),
             Message::RemoveCenter(_) => write!(f, "RemoveCenter"),
@@ -195,7 +213,10 @@ impl Page {
 
     #[must_use]
     #[allow(clippy::too_many_lines)]
-    pub fn add_applet_view(&self) -> Element<app::Message> {
+    pub fn add_applet_view<T: Fn(Message) -> crate::pages::Message + Copy + 'static>(
+        &self,
+        msg_map: T,
+    ) -> Element<app::Message> {
         let mut list_column = list_column();
         let mut has_some = false;
         for info in self
@@ -245,9 +266,9 @@ impl Page {
                             })
                         })
                         .padding(8.0)
-                        .on_press(app::Message::PageMessage(pages::Message::Applet(
-                            Message::AddApplet(info.clone())
-                        ))),
+                        .on_press(app::Message::PageMessage(msg_map(Message::AddApplet(
+                            info.clone()
+                        )))),
                 ]
                 .padding([0, 32, 0, 32])
                 .spacing(12)
@@ -264,10 +285,10 @@ impl Page {
         column![
             header_bar()
                 .title(fl!("add-applet"))
-                .on_close(app::Message::PageMessage(pages::Message::Applet(
+                .on_close(app::Message::PageMessage(msg_map(
                     Message::CloseAppletDialogue
                 )))
-                .on_drag(app::Message::PageMessage(pages::Message::Applet(
+                .on_drag(app::Message::PageMessage(msg_map(
                     Message::DragAppletDialogue
                 ))),
             container(
@@ -284,15 +305,11 @@ impl Page {
                                 spacing: 12.0,
                                 side: Side::Left,
                             })
-                            .on_input(|s| {
-                                app::Message::PageMessage(pages::Message::Applet(Message::Search(
-                                    s,
-                                )))
+                            .on_input(move |s| {
+                                app::Message::PageMessage(msg_map(Message::Search(s)))
                             })
-                            .on_paste(|s| {
-                                app::Message::PageMessage(pages::Message::Applet(Message::Search(
-                                    s,
-                                )))
+                            .on_paste(move |s| {
+                                app::Message::PageMessage(msg_map(Message::Search(s)))
                             })
                             .width(Length::Fixed(312.0)),
                         list_column
@@ -312,7 +329,7 @@ impl Page {
     }
 
     #[allow(clippy::too_many_lines)]
-    pub fn update(&mut self, message: Message) -> Command<app::Message> {
+    pub fn update(&mut self, message: Message, window_id: window::Id) -> Command<app::Message> {
         match message {
             Message::PanelConfig(c) => {
                 self.current_config = Some(c);
@@ -349,6 +366,7 @@ impl Page {
                 *list = end_list.into_iter().map(|a| a.id.into()).collect();
             }
             Message::Applets(applets) => {
+                dbg!(&applets);
                 self.available_entries = applets;
             }
             Message::StartDnd(state) => {
@@ -358,7 +376,6 @@ impl Page {
             Message::DnDCommand(action) => {
                 return data_device_action(action());
             }
-            Message::Ignore => {}
             Message::Save => {
                 self.reorder_widget_state = ReorderWidgetState::default();
                 self.save();
@@ -429,12 +446,12 @@ impl Page {
 
                 list.push(applet.id.to_string());
                 self.save();
-                return commands::window::close_window(ADD_APPLET_DIALOGUE_ID);
+                return commands::window::close_window(window_id);
             }
             Message::AddAppletDialogue => {
                 self.has_dialogue = true;
                 let window_settings = SctkWindowSettings {
-                    window_id: ADD_APPLET_DIALOGUE_ID,
+                    window_id,
                     app_id: Some("com.system76.CosmicSettings".to_string()),
                     title: Some(fl!("add-applet")),
                     parent: Some(window::Id(0)),
@@ -456,10 +473,10 @@ impl Page {
             }
             Message::CloseAppletDialogue => {
                 self.has_dialogue = false;
-                return commands::window::close_window(ADD_APPLET_DIALOGUE_ID);
+                return commands::window::close_window(window_id);
             }
             Message::DragAppletDialogue => {
-                return commands::window::start_drag_window(ADD_APPLET_DIALOGUE_ID);
+                return commands::window::start_drag_window(window_id);
             }
         };
         Command::none()
@@ -467,13 +484,20 @@ impl Page {
 }
 
 #[allow(clippy::too_many_lines)]
-pub fn lists() -> Section<crate::pages::Message> {
-    Section::default().view::<Page>(|_binder, page, _section| {
+pub fn lists<
+    P: page::Page<crate::pages::Message> + AppletsPage,
+    T: Fn(Message) -> crate::pages::Message + Copy + 'static,
+>(
+    msg_map: T,
+) -> Section<crate::pages::Message> {
+    Section::default().view::<P>(move |_binder, page, _section| {
+        let page = page.inner();
         let Some(config) = page.current_config.as_ref() else {
             return Element::from(
                 text(fl!("unknown"))
             );
         };
+
         let button = cosmic::iced::widget::button(text(fl!("add-applet")))
             .style(theme::Button::Secondary)
             .padding(8.0);
@@ -510,7 +534,7 @@ pub fn lists() -> Section<crate::pages::Message> {
                     Message::ReorderStart,
                     Message::Save,
                     Message::Cancel,
-                    page.reorder_widget_state.dragged_applet()
+                    page.reorder_widget_state.dragged_applet().as_ref()
                 )
             ]
             .spacing(8.0),
@@ -537,7 +561,7 @@ pub fn lists() -> Section<crate::pages::Message> {
                     Message::ReorderCenter,
                     Message::Save,
                     Message::Cancel,
-                    page.reorder_widget_state.dragged_applet()
+                    page.reorder_widget_state.dragged_applet().as_ref()
                 )
             ]
             .spacing(8.0),
@@ -565,7 +589,7 @@ pub fn lists() -> Section<crate::pages::Message> {
                     Message::ReorderEnd,
                     Message::Save,
                     Message::Cancel,
-                    page.reorder_widget_state.dragged_applet()
+                    page.reorder_widget_state.dragged_applet().as_ref()
                 )
             ]
             .spacing(8.0),
@@ -573,7 +597,7 @@ pub fn lists() -> Section<crate::pages::Message> {
         .padding([0, 16, 0, 16])
         .spacing(12.0)
         .apply(Element::from)
-        .map(pages::Message::Applet)
+        .map(msg_map)
     })
 }
 
@@ -587,6 +611,7 @@ pub struct Applet<'a> {
 }
 
 impl Applet<'_> {
+    #[must_use]
     pub fn matches(&self, query: &str) -> bool {
         self.name.contains(query) || self.description.contains(query) || self.id.contains(query)
     }
@@ -667,9 +692,8 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
         on_reorder: impl Fn(Vec<Applet<'static>>) -> Message + 'a,
         on_apply_reorder: Message,
         on_cancel: Message,
-        active_dnd: Option<Applet<'a>>, // state: Option<&State>,
+        active_dnd: Option<&Applet<'a>>,
     ) -> Self {
-        // let dragged_path = state.and_then(|state| state.dragged_applet());
         let applet_buttons = info
             .clone()
             .into_iter()
@@ -1057,7 +1081,6 @@ where
                             )));
                             let data = match &state.dragging_state {
                                 DraggingState::Dragging(a) => Some(a.clone()),
-
                                 _ => {
                                     shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
                                     move || {
@@ -1087,7 +1110,7 @@ where
                                         shell.publish((self.on_reorder.as_ref())(
                                             filtered
                                                 .into_iter()
-                                                .map(pages::desktop::panel::applets::Applet::into_owned)
+                                                .map(pages::desktop::panel::applets_inner::Applet::into_owned)
                                                 .collect(),
                                         ));
                                     }
@@ -1225,7 +1248,7 @@ where
                                 shell.publish((self.on_reorder.as_ref())(
                                     reordered_list
                                         .into_iter()
-                                        .map(pages::desktop::panel::applets::Applet::into_owned)
+                                        .map(pages::desktop::panel::applets_inner::Applet::into_owned)
                                         .collect(),
                                 ));
                             }
@@ -1292,7 +1315,7 @@ where
                                 shell.publish((self.on_reorder.as_ref())(
                                     filtered
                                         .into_iter()
-                                        .map(pages::desktop::panel::applets::Applet::into_owned)
+                                        .map(pages::desktop::panel::applets_inner::Applet::into_owned)
                                         .collect(),
                                 ));
                             }

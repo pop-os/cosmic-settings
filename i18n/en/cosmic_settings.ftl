@@ -52,6 +52,7 @@ panel = Panel
 
 panel-behavior-and-position = Behavior and Positions
     .autohide = Automatically hide panel
+    .dock-autohide = Automatically hide dock
     .position = Position on screen
     .display = Show on display
 
@@ -67,7 +68,9 @@ panel-appearance = Appearance
 
 panel-style = Style
     .anchor-gap = Gap between panel and screen edges
+    .dock-anchor-gap = Gap between dock and screen edges
     .extend = Extend panel to screen edges
+    .dock-extend = Extend dock to screen edges
     .appearance = Appearance
     .size = Size
     .background-opacity = Background opacity
@@ -76,6 +79,7 @@ small = Small
 large = Large
 
 panel-applets = Configuration
+    .dock-desc = Configure dock applets.
     .desc = Configure panel applets.
 
 panel-missing = Panel Configuration is Missing

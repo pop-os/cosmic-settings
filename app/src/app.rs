@@ -28,15 +28,18 @@ use cosmic::{
     },
     Element, ElementExt,
 };
+use page::Page;
 
 use crate::{
     config::Config,
     pages::{
         desktop::{
             self,
+            dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
             panel::{
                 self,
-                applets::{self, APPLET_DND_ICON_ID},
+                applets_inner::{self, AppletsPage, APPLET_DND_ICON_ID},
+                inner as _panel,
             },
         },
         input::{self, keyboard},
@@ -125,8 +128,8 @@ impl Application for SettingsApp {
         // app.insert_page::<bluetooth::Page>();
 
         let desktop_id = app.insert_page::<desktop::Page>().id();
-        // app.insert_page::<panel::Page>();
-        // app.insert_page::<applets::Page>();
+        app.insert_page::<panel::Page>();
+        app.insert_page::<dock::Page>();
 
         // app.insert_page::<input::Page>();
 
@@ -175,13 +178,13 @@ impl Application for SettingsApp {
                 wayland::OutputEvent::Created(Some(info)),
                 o,
             ))) if info.name.is_some() => Some(Message::PageMessage(crate::pages::Message::Panel(
-                panel::Message::OutputAdded(info.name.unwrap(), o),
+                panel::Message(_panel::Message::OutputAdded(info.name.unwrap(), o)),
             ))),
             iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Output(
                 wayland::OutputEvent::Removed,
                 o,
             ))) => Some(Message::PageMessage(crate::pages::Message::Panel(
-                panel::Message::OutputRemoved(o),
+                panel::Message(_panel::Message::OutputRemoved(o)),
             ))),
             _ => None,
         });
@@ -224,7 +227,9 @@ impl Application for SettingsApp {
                     return self.search.focus();
                 }
             },
-            Message::Page(page) => return self.activate_page(page),
+            Message::Page(page) => {
+                return self.activate_page(page);
+            }
             Message::Drag => return start_drag_window(window::Id(0)),
             Message::Close => {
                 process::exit(0);
@@ -257,7 +262,6 @@ impl Application for SettingsApp {
             Message::Search(search::Message::Clear) => {
                 self.search_clear();
             }
-            Message::None | Message::Search(_) => {}
             Message::PageMessage(message) => match message {
                 crate::pages::Message::About(message) => {
                     page::update!(self.pages, message, system::about::Page);
@@ -285,8 +289,16 @@ impl Application for SettingsApp {
                 crate::pages::Message::Panel(message) => {
                     page::update!(self.pages, message, panel::Page);
                 }
-                crate::pages::Message::Applet(message) => {
-                    if let Some(page) = self.pages.page_mut::<applets::Page>() {
+                crate::pages::Message::PanelApplet(message) => {
+                    if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
+                        return page.update(message, applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID);
+                    }
+                }
+                crate::pages::Message::Dock(message) => {
+                    page::update!(self.pages, message, dock::Page);
+                }
+                crate::pages::Message::DockApplet(message) => {
+                    if let Some(page) = self.pages.page_mut::<dock::applets::Page>() {
                         return page.update(message);
                     }
                 }
@@ -295,29 +307,54 @@ impl Application for SettingsApp {
                 self.sharp_corners = matches!(state, WindowState::Activated);
             }
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
-                if let Some(page) = self.pages.page_mut::<panel::Page>() {
-                    page.update(panel::Message::PanelConfig(config.clone()));
-                }
-                if let Some(page) = self.pages.page_mut::<applets::Page>() {
-                    _ = page.update(applets::Message::PanelConfig(config));
+                page::update!(
+                    self.pages,
+                    panel::Message(_panel::Message::PanelConfig(config.clone())),
+                    panel::Page
+                );
+
+                if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
+                    return page.update(
+                        applets_inner::Message::PanelConfig(config),
+                        applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID,
+                    );
                 }
             }
-            Message::PanelConfig(_) => {} // ignore other config changes for now,
+            Message::PanelConfig(config) if config.name.to_lowercase().contains("dock") => {
+                page::update!(
+                    self.pages,
+                    dock::Message::Inner(_panel::Message::PanelConfig(config.clone(),)),
+                    dock::Page
+                );
+                page::update!(
+                    self.pages,
+                    dock::applets::Message(applets_inner::Message::PanelConfig(config,)),
+                    dock::applets::Page
+                );
+            }
             Message::DesktopInfo => {
-                if let Some(page) = self.pages.page_mut::<applets::Page>() {
-                    // collect the potential applets
-                    ret = page.update(applets::Message::Applets(
-                        freedesktop_desktop_entry::Iter::new(
-                            freedesktop_desktop_entry::default_paths(),
-                        )
-                        .filter_map(|p| applets::Applet::try_from(Cow::from(p)).ok())
-                        .collect(),
-                    ));
+                let info_list: Vec<_> = freedesktop_desktop_entry::Iter::new(
+                    freedesktop_desktop_entry::default_paths(),
+                )
+                .filter_map(|p| applets_inner::Applet::try_from(Cow::from(p)).ok())
+                .collect();
+
+                page::update!(
+                    self.pages,
+                    dock::applets::Message(applets_inner::Message::Applets(info_list.clone())),
+                    dock::applets::Page
+                );
+                if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
+                    return page.update(
+                        applets_inner::Message::Applets(info_list),
+                        applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID,
+                    );
                 }
             }
             Message::ThemeChanged(theme) => {
                 self.theme = theme;
             }
+            Message::PanelConfig(_) | Message::None | Message::Search(_) => {} // Ignored
         }
         ret
     }
@@ -325,14 +362,21 @@ impl Application for SettingsApp {
     #[allow(clippy::too_many_lines)]
     fn view(&self, id: window::Id) -> Element<Message> {
         if let Some(Some(page)) =
-            (id == APPLET_DND_ICON_ID).then(|| self.pages.page::<applets::Page>())
+            (id == APPLET_DND_ICON_ID).then(|| self.pages.page::<applets_inner::Page>())
         {
             return page.dnd_icon();
         }
-        if let Some(Some(page)) =
-            (id == applets::ADD_APPLET_DIALOGUE_ID).then(|| self.pages.page::<applets::Page>())
+        if let Some(Some(page)) = (id == applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID)
+            .then(|| self.pages.page::<applets_inner::Page>())
         {
-            return page.add_applet_view();
+            return page.add_applet_view(crate::pages::Message::PanelApplet);
+        }
+        if let Some(Some(page)) =
+            (id == ADD_DOCK_APPLET_DIALOGUE_ID).then(|| self.pages.page::<dock::applets::Page>())
+        {
+            return page.inner().add_applet_view(|msg| {
+                crate::pages::Message::DockApplet(dock::applets::Message(msg))
+            });
         }
         if let Some(Some(page)) =
             (id == keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID).then(|| self.pages.page::<input::Page>())
@@ -439,10 +483,14 @@ impl Application for SettingsApp {
     fn close_requested(&self, id: window::Id) -> Self::Message {
         if id == window::Id(0) {
             Message::Close
-        } else if id == applets::ADD_APPLET_DIALOGUE_ID {
-            Message::PageMessage(crate::pages::Message::Applet(
-                applets::Message::ClosedAppletDialogue,
+        } else if id == applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID {
+            Message::PageMessage(crate::pages::Message::PanelApplet(
+                applets_inner::Message::ClosedAppletDialogue,
             ))
+        } else if id == ADD_DOCK_APPLET_DIALOGUE_ID {
+            Message::PageMessage(crate::pages::Message::DockApplet(dock::applets::Message(
+                applets_inner::Message::ClosedAppletDialogue,
+            )))
         } else {
             Message::None
         }

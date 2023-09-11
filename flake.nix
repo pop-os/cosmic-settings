@@ -44,6 +44,7 @@
           ];
           buildInputs = with pkgs; [
             systemdMinimal
+            bashInteractive
             libxkbcommon
             freetype
             fontconfig
