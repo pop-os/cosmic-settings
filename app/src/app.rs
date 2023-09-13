@@ -204,6 +204,17 @@ impl Application for SettingsApp {
                     }
                 },
             ),
+            config_subscription(0, "com.system76.CosmicPanel.Dock".into(), 1).map(
+                |(_, e)| match e {
+                    Ok(config) => Message::PanelConfig(config),
+                    Err((errors, config)) => {
+                        for why in errors {
+                            tracing::error!(?why, "dock config load error");
+                        }
+                        Message::PanelConfig(config)
+                    }
+                },
+            ),
             theme_subscription(0).map(Message::ThemeChanged),
         ])
     }
