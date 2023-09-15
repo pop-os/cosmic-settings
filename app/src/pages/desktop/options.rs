@@ -26,8 +26,6 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(vec![
             sections.insert(super_key_action()),
-            sections.insert(hot_corner()),
-            sections.insert(top_panel()),
             sections.insert(window_controls()),
             sections.insert(panel_dock_links()),
         ])
@@ -45,28 +43,6 @@ impl page::AutoBind<crate::pages::Message> for Page {
         page.sub_page::<super::panel::Page>()
             .sub_page::<super::dock::Page>()
     }
-}
-
-pub fn hot_corner() -> Section<crate::pages::Message> {
-    Section::default()
-        .title(fl!("hot-corner"))
-        .descriptions(vec![fl!("hot-corner", "top-left-corner")])
-        .view::<Page>(|binder, _page, section| {
-            let desktop = binder
-                .page::<super::Page>()
-                .expect("desktop page not found");
-
-            let descriptions = &section.descriptions;
-            settings::view_section(&section.title)
-                .add(settings::item(
-                    &descriptions[0],
-                    toggler(None, desktop.top_left_hot_corner, |value| {
-                        Message::TopLeftHotCorner(value)
-                    }),
-                ))
-                .apply(Element::from)
-                .map(crate::pages::Message::Desktop)
-        })
 }
 
 pub fn super_key_action() -> Section<crate::pages::Message> {
@@ -94,41 +70,6 @@ pub fn super_key_action() -> Section<crate::pages::Message> {
                     horizontal_space(Length::Fill),
                 ))
                 .into()
-        })
-}
-
-pub fn top_panel() -> Section<crate::pages::Message> {
-    Section::default()
-        .title(fl!("top-panel"))
-        .descriptions(vec![
-            fl!("top-panel", "workspaces"),
-            fl!("top-panel", "applications"),
-        ])
-        .view::<Page>(|binder, _page, section| {
-            let desktop = binder
-                .page::<super::Page>()
-                .expect("desktop page not found");
-            let descriptions = &section.descriptions;
-
-            settings::view_section(&section.title)
-                .add(settings::item(
-                    &descriptions[0],
-                    toggler(
-                        None,
-                        desktop.show_workspaces_button,
-                        Message::ShowWorkspacesButton,
-                    ),
-                ))
-                .add(settings::item(
-                    &descriptions[1],
-                    toggler(
-                        None,
-                        desktop.show_applications_button,
-                        Message::ShowApplicationsButton,
-                    ),
-                ))
-                .apply(Element::from)
-                .map(crate::pages::Message::Desktop)
         })
 }
 
