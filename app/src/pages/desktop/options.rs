@@ -4,10 +4,9 @@
 use super::Message;
 use apply::Apply;
 use cosmic::{
-    iced::widget::{button, container, horizontal_space, row},
     iced::Length,
     theme,
-    widget::{icon, list, settings, toggler},
+    widget::{button, container, horizontal_space, icon, list, row, settings, toggler},
     Element,
 };
 
@@ -117,18 +116,19 @@ pub fn panel_dock_links() -> Section<crate::pages::Message> {
             settings = if let Some((panel_entity, panel_info)) =
                 binder.info.iter().find(|(_, v)| v.id == "panel")
             {
+                let control = row::with_children(vec![
+                    horizontal_space(Length::Fill).into(),
+                    icon::from_name("go-next-symbolic").size(16).into(),
+                ]);
+
                 settings.add(
                     settings::item::builder(panel_info.title.clone())
                         .description(panel_info.description.clone())
-                        .control(row!(
-                            horizontal_space(Length::Fill),
-                            icon("go-next-symbolic", 20).style(theme::Svg::Symbolic)
-                        ))
+                        .control(control)
                         .spacing(16)
                         .apply(container)
-                        .style(theme::Container::custom(list::column::style))
+                        .style(theme::Container::custom(list::style))
                         .apply(button)
-                        .padding(0)
                         .style(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(panel_entity)),
                 )
@@ -139,18 +139,19 @@ pub fn panel_dock_links() -> Section<crate::pages::Message> {
             settings = if let Some((dock_entity, dock_info)) =
                 binder.info.iter().find(|(_, v)| v.id == "dock")
             {
+                let control = row::with_children(vec![
+                    horizontal_space(Length::Fill).into(),
+                    icon::from_name("go-next-symbolic").size(16).into(),
+                ]);
+
                 settings.add(
                     settings::item::builder(dock_info.title.clone())
                         .description(dock_info.description.clone())
-                        .control(row!(
-                            horizontal_space(Length::Fill),
-                            icon("go-next-symbolic", 20).style(theme::Svg::Symbolic)
-                        ))
+                        .control(control)
                         .spacing(16)
                         .apply(container)
-                        .style(theme::Container::custom(list::column::style))
+                        .style(theme::Container::custom(list::style))
                         .apply(button)
-                        .padding(0)
                         .style(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(dock_entity)),
                 )

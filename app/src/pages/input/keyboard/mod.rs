@@ -6,7 +6,7 @@ use cosmic::{
         window, Length,
     },
     iced_style, theme,
-    widget::settings,
+    widget::{button, container, icon, radio, settings},
 };
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
@@ -68,11 +68,11 @@ fn popover_menu_row(label: String) -> cosmic::Element<'static, Message> {
         .style(cosmic::theme::Container::custom(|theme| {
             iced_style::container::Appearance {
                 background: None,
-                ..cosmic::widget::list::column::style(theme)
+                ..cosmic::widget::list::style(theme)
             }
         }))
-        .apply(widget::button)
-        .style(cosmic::theme::Button::Transparent)
+        .apply(button)
+        .style(theme::Button::Transparent)
         .into()
 }
 
@@ -92,7 +92,8 @@ fn popover_menu() -> cosmic::Element<'static, Message> {
     .height(Length::Shrink)
     .apply(cosmic::widget::container)
     .style(cosmic::theme::Container::custom(|theme| {
-        iced_style::container::Appearance {
+        container::Appearance {
+            icon_color: Some(theme.cosmic().background.on.into()),
             text_color: Some(theme.cosmic().background.on.into()),
             background: Some(iced::Color::from(theme.cosmic().background.base).into()),
             border_radius: (12.0).into(),
@@ -104,18 +105,14 @@ fn popover_menu() -> cosmic::Element<'static, Message> {
 }
 
 fn popover_button(input_source: &InputSource, expanded: bool) -> cosmic::Element<'static, Message> {
-    let style = if expanded {
-        cosmic::theme::Svg::SymbolicActive
-    } else {
-        cosmic::theme::Svg::Symbolic
-    };
     let on_press = Message::ExpandInputSourcePopover(if expanded {
         None
     } else {
         Some(input_source.id.clone())
     });
-    let button = cosmic::widget::button(cosmic::theme::Button::Secondary)
-        .icon(style, "open-menu-symbolic", 20)
+
+    let button = button::icon(icon::from_name("open-menu-symbolic"))
+        .extra_small()
         .padding(0)
         .on_press(on_press);
 
@@ -195,12 +192,9 @@ fn special_char_radio_row<'a>(
     value: Option<&'static str>,
     current_value: Option<&'a str>,
 ) -> cosmic::Element<'a, Message> {
-    settings::item_row(vec![iced::widget::radio(
-        desc,
-        value,
-        Some(current_value),
-        |_| Message::SpecialCharacterSelect(value),
-    )
+    settings::item_row(vec![radio(desc, value, Some(current_value), |_| {
+        Message::SpecialCharacterSelect(value)
+    })
     .into()])
     .into()
 }
@@ -312,7 +306,7 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
 fn go_next_control<Msg: Clone + 'static>() -> cosmic::Element<'static, Msg> {
     widget::row!(
         horizontal_space(Length::Fill),
-        cosmic::widget::icon("go-next-symbolic", 20).style(cosmic::theme::Svg::Symbolic)
+        icon::from_name("go-next-symbolic").size(16).icon(),
     )
     .into()
 }
@@ -321,11 +315,10 @@ fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::El
     settings::item(description, go_next_control())
         .apply(widget::container)
         .style(cosmic::theme::Container::custom(
-            cosmic::widget::list::column::style,
+            cosmic::widget::list::style,
         ))
-        .apply(widget::button)
-        .style(cosmic::theme::Button::Transparent)
-        .padding(0)
+        .apply(button)
+        .style(theme::Button::Transparent)
         .on_press(msg)
         .into()
 }
