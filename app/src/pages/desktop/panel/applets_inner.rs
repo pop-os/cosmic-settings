@@ -1026,6 +1026,13 @@ where
                     }
                     DraggingState::None
                 }
+                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::DataSource(wayland::DataSourceEvent::DndDropPerformed),
+                )) => {
+                    ret = event::Status::Captured;
+
+                    DraggingState::None
+                }
                 _ => DraggingState::Dragging(applet),
             },
             DraggingState::Pressed(start) => {
