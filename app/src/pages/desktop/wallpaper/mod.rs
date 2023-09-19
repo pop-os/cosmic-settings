@@ -13,7 +13,7 @@ use apply::Apply;
 use cosmic::widget::{
     list_column,
     segmented_button::{self, SingleSelectModel},
-    settings, toggler,
+    segmented_selection, settings, text, toggler,
 };
 use cosmic::{iced::Length, Element};
 use cosmic::{iced_core::alignment, iced_runtime::core::image::Handle as ImageHandle};
@@ -591,7 +591,7 @@ pub fn settings() -> Section<crate::pages::Message> {
             ));
 
             children.push(if page.config.same_on_all {
-                cosmic::widget::text(fl!("all-displays"))
+                text(fl!("all-displays"))
                     .font(cosmic::font::FONT_SEMIBOLD)
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .vertical_alignment(alignment::Vertical::Center)
@@ -602,7 +602,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .height(Length::Fixed(32.0))
                     .into()
             } else {
-                cosmic::widget::horizontal_segmented_selection(&page.outputs)
+                segmented_selection::horizontal(&page.outputs)
                     .on_activate(Message::Output)
                     .into()
             });
@@ -669,7 +669,6 @@ pub fn settings() -> Section<crate::pages::Message> {
 
             cosmic::iced::widget::column(children)
                 .spacing(22)
-                .max_width(683)
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWallpaper)
         })

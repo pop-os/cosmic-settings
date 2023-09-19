@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::{iced, widget::settings};
+use cosmic::widget::{settings, text};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
 
@@ -39,14 +39,8 @@ fn alerts() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|_binder, _page, section| {
             settings::view_section(&section.title)
-                .add(settings::item(
-                    &section.descriptions[0],
-                    iced::widget::text("TODO"),
-                ))
-                .add(settings::item(
-                    &section.descriptions[1],
-                    iced::widget::text("TODO"),
-                ))
+                .add(settings::item(&section.descriptions[0], text("TODO")))
+                .add(settings::item(&section.descriptions[1], text("TODO")))
                 .into()
         })
 }
@@ -57,10 +51,7 @@ fn applications() -> Section<crate::pages::Message> {
         .descriptions(vec![fl!("sound-applications", "desc")])
         .view::<Page>(|_binder, _page, section| {
             settings::view_section(&section.title)
-                .add(settings::item(
-                    &section.descriptions[0],
-                    iced::widget::text("TODO"),
-                ))
+                .add(settings::item(&section.descriptions[0], text("TODO")))
                 .into()
         })
 }
@@ -75,18 +66,9 @@ fn input() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|_binder, _page, section| {
             settings::view_section(&section.title)
-                .add(settings::item(
-                    &section.descriptions[0],
-                    iced::widget::text("TODO"),
-                ))
-                .add(settings::item(
-                    &section.descriptions[1],
-                    iced::widget::text("TODO"),
-                ))
-                .add(settings::item(
-                    &section.descriptions[2],
-                    iced::widget::text("TODO"),
-                ))
+                .add(settings::item(&section.descriptions[0], text("TODO")))
+                .add(settings::item(&section.descriptions[1], text("TODO")))
+                .add(settings::item(&section.descriptions[2], text("TODO")))
                 .into()
         })
 }
@@ -103,22 +85,10 @@ fn output() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|_binder, _page, section| {
             settings::view_section(&section.title)
-                .add(settings::item(
-                    &section.descriptions[0],
-                    iced::widget::text("TODO"),
-                ))
-                .add(settings::item(
-                    &section.descriptions[1],
-                    iced::widget::text("TODO"),
-                ))
-                .add(settings::item(
-                    &section.descriptions[2],
-                    iced::widget::text("TODO"),
-                ))
-                .add(settings::item(
-                    &section.descriptions[3],
-                    iced::widget::text("TODO"),
-                ))
+                .add(settings::item(&section.descriptions[0], text("TODO")))
+                .add(settings::item(&section.descriptions[1], text("TODO")))
+                .add(settings::item(&section.descriptions[2], text("TODO")))
+                .add(settings::item(&section.descriptions[3], text("TODO")))
                 .into()
         })
 }

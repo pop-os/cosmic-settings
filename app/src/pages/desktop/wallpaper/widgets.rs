@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use super::Message;
-use apply::Apply;
 use cosmic::iced_core::{self, gradient::Linear, Background, BorderRadius, Color, Degrees};
 use cosmic::iced_core::{alignment, Length};
 use cosmic::iced_runtime::core::image::Handle as ImageHandle;
+use cosmic::prelude::*;
+use cosmic::widget::{button, container, image, space};
 use cosmic::{iced, Element};
 use cosmic_settings_desktop::wallpaper;
 use slotmap::DefaultKey;
@@ -18,9 +19,9 @@ const ROW_SPACING: u16 = 16;
 
 /// A button for selecting a color or gradient.
 pub fn color_button(color: wallpaper::Color) -> Element<'static, Message> {
-    iced::widget::button(color_image(color.clone(), COLOR_WIDTH, COLOR_WIDTH, 8.0))
+    button(color_image(color.clone(), COLOR_WIDTH, COLOR_WIDTH, 8.0))
         .padding(0)
-        .style(cosmic::theme::Button::Transparent)
+        .style(button::Style::IconVertical)
         .on_press(Message::ColorSelect(color))
         .into()
 }
@@ -32,9 +33,10 @@ pub fn color_image(
     height: u16,
     border_radius: f32,
 ) -> Element<'static, Message> {
-    iced::widget::container(iced::widget::space::Space::new(width, height))
+    container(space::Space::new(width, height))
         .style(cosmic::theme::Container::custom(move |_theme| {
-            iced::widget::container::Appearance {
+            container::Appearance {
+                icon_color: None,
                 text_color: None,
                 background: Some(match &color {
                     wallpaper::Color::Single([r, g, b]) => {
@@ -98,9 +100,9 @@ fn flex_select_row<'a>(
 }
 
 fn wallpaper_button(handle: &ImageHandle, id: DefaultKey) -> Element<Message> {
-    let image = iced::widget::image(handle.clone()).apply(iced::Element::from);
+    let image = image(handle.clone()).apply(iced::Element::from);
 
-    iced::widget::button(image)
+    button(image)
         .padding(0)
         .style(cosmic::theme::Button::Transparent)
         .on_press(Message::Select(id))

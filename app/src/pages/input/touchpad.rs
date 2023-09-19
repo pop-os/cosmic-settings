@@ -1,6 +1,5 @@
 use apply::Apply;
-use cosmic::iced::widget;
-use cosmic::widget::settings;
+use cosmic::widget::{self, settings};
 use cosmic::Element;
 use cosmic_comp_config::input::AccelProfile;
 use cosmic_settings_page::Section;

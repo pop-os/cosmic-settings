@@ -85,6 +85,11 @@ impl<Message: 'static> Binder<Message> {
             .and_then(|storage| storage.remove(id));
     }
 
+    #[must_use]
+    pub fn find_page_by_id(&self, id: &str) -> Option<(crate::Entity, &Info)> {
+        self.info.iter().find(|(_id, info)| info.id == id)
+    }
+
     /// Registers a new page in the settings panel.
     pub fn register<P: AutoBind<Message>>(&mut self) -> crate::Insert<Message> {
         let page = P::default();

@@ -1,11 +1,12 @@
 use cosmic::{
     cosmic_config::{self, CosmicConfigEntry},
-    iced::widget::{button, container, horizontal_space, pick_list, row},
     iced::Length,
     iced_widget::slider,
     sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
     theme,
-    widget::{icon, list, settings, text, toggler},
+    widget::{
+        button, container, horizontal_space, icon, list, pick_list, row, settings, text, toggler,
+    },
     Element,
 };
 
@@ -14,7 +15,7 @@ use cosmic_panel_config::{
     AutoHide, CosmicPanelBackground, CosmicPanelConfig, CosmicPanelContainerConfig,
     CosmicPanelOuput, PanelAnchor, PanelSize,
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section};
 use std::{borrow::Cow, collections::HashMap};
 
 pub struct PageInner {
@@ -149,8 +150,8 @@ pub(crate) fn style<
                 .add(settings::item(
                     &descriptions[3],
                     // TODO custom discrete slider variant
-                    row![
-                        text(fl!("small")),
+                    row::with_children(vec![
+                        text(fl!("small")).into(),
                         slider(
                             0..=4,
                             match panel_config.size {
@@ -173,20 +174,22 @@ pub(crate) fn style<
                                     Message::PanelSize(PanelSize::XL)
                                 }
                             },
-                        ),
-                        text(fl!("large"))
-                    ]
+                        )
+                        .into(),
+                        text(fl!("large")).into(),
+                    ])
                     .spacing(12),
                 ))
                 .add(settings::item(
                     &descriptions[4],
-                    row![
-                        text(fl!("number", HashMap::from_iter(vec![("number", 0)]))),
+                    row::with_children(vec![
+                        text(fl!("number", HashMap::from_iter(vec![("number", 0)]))).into(),
                         slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
                             Message::Opacity(v as f32 / 100.0)
-                        },),
-                        text(fl!("number", HashMap::from_iter(vec![("number", 100)]))),
-                    ]
+                        })
+                        .into(),
+                        text(fl!("number", HashMap::from_iter(vec![("number", 100)]))).into(),
+                    ])
                     .spacing(12),
                 ))
                 .apply(Element::from)
@@ -208,17 +211,18 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                 .iter()
                 .find(|(_, v)| v.id == page.applets_page_id())
             {
+                let control = row::with_children(vec![
+                    horizontal_space(Length::Fill).into(),
+                    icon::from_name("go-next-symbolic").size(16).into(),
+                ]);
+
                 settings.add(
                     settings::item::builder(&descriptions[0])
-                        .control(row!(
-                            horizontal_space(Length::Fill),
-                            icon("go-next-symbolic", 20).style(theme::Svg::Symbolic)
-                        ))
+                        .control(control)
                         .spacing(16)
                         .apply(container)
-                        .style(theme::Container::custom(list::column::style))
+                        .style(theme::Container::custom(list::style))
                         .apply(button)
-                        .padding(0)
                         .style(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(panel_applets_entity)),
                 )
