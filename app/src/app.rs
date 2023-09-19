@@ -316,12 +316,14 @@ impl cosmic::Application for SettingsApp {
             panic!("page without sub-pages or content");
         };
 
+        let padding = if self.core.is_condensed() { 0 } else { 64 };
+
         container(page_view)
             .max_width(800)
             .width(Length::Fill)
             .apply(container)
             .center_x()
-            .padding([0, 64])
+            .padding([0, padding])
             .width(Length::Fill)
             .apply(scrollable)
             .into()
