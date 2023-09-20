@@ -69,9 +69,9 @@ dependencies = [
 
 [[package]]
 name = "aho-corasick"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f2135563fb5c609d2b2b87c1e8ce7bc41b0b45430fa9661f457981503dd5bf0"
+checksum = "ea5d730647d4fadd988536d06fecce94b7b4f2a7efdae548f1cf4b63205518ab"
 dependencies = [
  "memchr",
 ]
@@ -762,7 +762,7 @@ dependencies = [
 [[package]]
 name = "cosmic-comp-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-comp#5cebc7b97de4e8c0ed84ffb3b93837e95f8b4980"
+source = "git+https://github.com/pop-os/cosmic-comp#63c073e3e5fc422ae812795b6e47e3557b3f1d84"
 dependencies = [
  "input",
  "serde",
@@ -771,7 +771,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "atomicwrites",
  "calloop",
@@ -786,7 +786,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -795,7 +795,7 @@ dependencies = [
 [[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel#dbd419e7e7e85c7dc2f1caea90bf73e4b28c6c88"
+source = "git+https://github.com/pop-os/cosmic-panel#e4bf33198f9da2d7a9bc165ac82ca10c790ee3b1"
 dependencies = [
  "anyhow",
  "cosmic-config",
@@ -920,7 +920,7 @@ dependencies = [
 [[package]]
 name = "cosmic-theme"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "almost",
  "cosmic-config",
@@ -2042,9 +2042,9 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
 name = "hermit-abi"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "443144c8cdadd93ebf52ddb4056d257f5b52c04d3c804e657d19eb73fc33668b"
+checksum = "d77f7ec81a6d05a3abb01ab6eb7590f6083d08449fe5a1c8b1e620283546ccb7"
 
 [[package]]
 name = "hex"
@@ -2137,7 +2137,7 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.10.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "iced_accessibility",
  "iced_core",
@@ -2153,7 +2153,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "accesskit",
  "accesskit_unix",
@@ -2162,14 +2162,14 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.10.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "bitflags 1.3.2",
  "iced_accessibility",
  "instant",
  "log",
  "palette",
- "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=c9940f4)",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=f49df45)",
  "thiserror",
  "twox-hash",
 ]
@@ -2177,7 +2177,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.7.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "futures",
  "iced_core",
@@ -2190,7 +2190,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.9.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
@@ -2207,7 +2207,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -2220,19 +2220,19 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.1.1"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "iced_accessibility",
  "iced_core",
  "iced_futures",
- "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=c9940f4)",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=f49df45)",
  "thiserror",
 ]
 
 [[package]]
 name = "iced_sctk"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "enum-repr",
  "float-cmp",
@@ -2242,19 +2242,21 @@ dependencies = [
  "iced_runtime",
  "iced_style",
  "itertools 0.10.5",
+ "lazy_static",
  "raw-window-handle 0.5.2",
- "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=c9940f4)",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=f49df45)",
  "smithay-clipboard",
  "thiserror",
  "tracing",
  "wayland-backend",
  "wayland-protocols 0.30.1",
+ "xkeysym",
 ]
 
 [[package]]
 name = "iced_style"
 version = "0.9.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "iced_core",
  "once_cell",
@@ -2264,7 +2266,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2282,7 +2284,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.11.1"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
@@ -2303,14 +2305,14 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.1.3"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "iced_renderer",
  "iced_runtime",
  "iced_style",
  "num-traits",
  "ouroboros",
- "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=c9940f4)",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=f49df45)",
  "thiserror",
  "unicode-segmentation",
 ]
@@ -2318,7 +2320,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.10.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "iced_graphics",
  "iced_runtime",
@@ -2674,7 +2676,7 @@ checksum = "9cdc71e17332e86d2e1d38c1f99edcb6288ee11b815fb1a4b049eaa2114d369b"
 [[package]]
 name = "libcosmic"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#aa2dfe0ea5b8d25a3ae18d9e86ce71367eceabdb"
+source = "git+https://github.com/pop-os/libcosmic#1a1614b3296f3298b41c258da5f40247cbeee329"
 dependencies = [
  "apply",
  "ashpd",
@@ -2695,7 +2697,7 @@ dependencies = [
  "lazy_static",
  "palette",
  "slotmap",
- "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=c9940f4)",
+ "smithay-client-toolkit 0.17.0 (git+https://github.com/smithay/client-toolkit?rev=f49df45)",
  "thiserror",
  "tokio",
  "tracing",
@@ -4170,14 +4172,15 @@ dependencies = [
 [[package]]
 name = "smithay-client-toolkit"
 version = "0.17.0"
-source = "git+https://github.com/smithay/client-toolkit?rev=c9940f4#c9940f4167f0d81cc26f77b7eeef6a34068a90a5"
+source = "git+https://github.com/smithay/client-toolkit?rev=f49df45#f49df457aa0dd33d505c212bafab407257cb83f8"
 dependencies = [
  "bitflags 1.3.2",
+ "bytemuck",
  "calloop",
  "cursor-icon",
  "dlib",
  "log",
- "memmap2 0.5.10",
+ "memmap2 0.7.1",
  "nix 0.26.4",
  "pkg-config",
  "thiserror",
@@ -4189,6 +4192,7 @@ dependencies = [
  "wayland-protocols-wlr",
  "wayland-scanner 0.30.1",
  "xkbcommon",
+ "xkeysym",
 ]
 
 [[package]]
@@ -4821,9 +4825,9 @@ checksum = "b1d386ff53b415b7fe27b50bb44679e2cc4660272694b7b6f3326d8480823a94"
 
 [[package]]
 name = "unicode-width"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0edd1e5b14653f783770bce4a4dabb4a5108a5370a5f5d8cfe8710c361f6c8b"
+checksum = "e51733f11c9c4f72aa0c160008246859e340b00807569a0da0e7a1079b27ba85"
 
 [[package]]
 name = "unicode-xid"
@@ -5089,9 +5093,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-csd-frame"
-version = "0.1.0"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72191e30290b83491325d32c1327be7f45459c97263d9d48494c81efc9328116"
+checksum = "7146581cd54ec2ef3a68e0d0e3501c9cefa8d4894da4007b715ecced5a289a1c"
 dependencies = [
  "bitflags 2.4.0",
  "cursor-icon",
@@ -5358,9 +5362,9 @@ checksum = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
 
 [[package]]
 name = "winapi-util"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70ec6ce85bb158151cae5e5c87f95a8e97d2c0c4b001223f33a334e3ce5de178"
+checksum = "f29e6f9198ba0d26b4c9f07dbe6f9ed633e1f3d5b8b414090084349e46a52596"
 dependencies = [
  "winapi",
 ]
@@ -5739,6 +5743,15 @@ checksum = "52db25b599e92bf6e3904134618728eeb7b49a5a4f38f107f92399bb9c496b88"
 dependencies = [
  "libc",
  "memmap2 0.7.1",
+]
+
+[[package]]
+name = "xkeysym"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "054a8e68b76250b253f671d1268cb7f1ae089ec35e195b2efb2a4e9a836d0621"
+dependencies = [
+ "bytemuck",
 ]
 
 [[package]]
