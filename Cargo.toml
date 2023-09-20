@@ -28,6 +28,9 @@ git = "https://github.com/pop-os/cosmic-panel"
 # libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "improv" }
 # cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "improv" }
 
+[patch."https://github.com/Smithay/client-toolkit"]
+sctk = { git = "https://github.com/smithay/client-toolkit//", package = "smithay-client-toolkit", rev = "f49df45"}
+
 [profile.release]
 opt-level = 3
 lto = "thin"
