@@ -1,4 +1,11 @@
-use apply::Apply;
+use button::StyleSheet as ButtonStyleSheet;
+use cosmic::iced_style::container::StyleSheet;
+use cosmic::iced_widget::text_input::{Icon, Side};
+use cosmic::widget::{
+    button, column, container, header_bar, icon, list_column, row, scrollable, text, text_input,
+    Column,
+};
+
 use cosmic::{
     cosmic_config::{Config, CosmicConfigEntry},
     iced::{
@@ -18,26 +25,18 @@ use cosmic::{
     },
     iced_runtime::{command::platform_specific, core::id::Id, Command},
     iced_sctk::commands,
-    iced_style::{
-        button::StyleSheet as ButtonStyleSheet, container::StyleSheet as ContainerStyleSheet,
-    },
     iced_widget::{
-        column, container,
         core::{
             layout, renderer,
             widget::{tree, Operation, OperationOutputWrapper, Tree},
             Clipboard, Shell, Widget,
         },
         graphics::image::image_rs::EncodableLayout,
-        row, scrollable, text, text_input,
-        text_input::{Icon, Side},
-        Column,
     },
     sctk::reexports::client::protocol::wl_data_device_manager::DndAction,
-    theme,
-    widget::{button, header_bar, icon, list_column},
-    Element,
+    theme, Apply, Element,
 };
+
 use std::{
     borrow::{Borrow, Cow},
     fmt::Debug,
@@ -244,32 +243,49 @@ impl Page {
             }
             has_some = true;
             list_column = list_column.add(
-                row![
-                    icon(info.icon.clone(), 32).style(theme::Svg::Symbolic),
-                    column![
-                        text(info.name.clone()),
-                        text(info.description.clone()).size(10)
-                    ]
-                    .spacing(4.0)
-                    .width(Length::Fill),
-                    cosmic::iced::widget::button(text(fl!("add")))
-                        .style(theme::Button::Custom {
-                            active: Box::new(|theme| {
-                                let mut style = theme.active(&theme::Button::Text);
-                                style.text_color = theme.cosmic().accent_color().into();
+                row::with_children(vec![
+                    icon::from_name(&*info.icon)
+                        .size(32)
+                        .symbolic(true)
+                        .icon()
+                        .into(),
+                    column::with_capacity(2)
+                        .push(text(info.name.clone()))
+                        .push(text(info.description.clone()).size(10))
+                        .spacing(4.0)
+                        .width(Length::Fill)
+                        .into(),
+                    button(text(fl!("add")))
+                        .style(button::Style::Custom {
+                            active: Box::new(|focused, theme| {
+                                let mut style = theme.active(focused, &button::Style::Text);
+                                style.text_color = Some(theme.cosmic().accent_color().into());
                                 style
                             }),
-                            hover: Box::new(|theme| {
-                                let mut style = theme.hovered(&theme::Button::Text);
-                                style.text_color = theme.cosmic().accent_color().into();
+                            disabled: Box::new(|theme| {
+                                let mut style = theme.disabled(&button::Style::Text);
+                                let mut text_color: Color = theme.cosmic().accent_color().into();
+                                text_color.a *= 0.5;
+                                style.text_color = Some(text_color);
                                 style
-                            })
+                            }),
+                            hovered: Box::new(|focused, theme| {
+                                let mut style = theme.hovered(focused, &theme::Button::Text);
+                                style.text_color = Some(theme.cosmic().accent_color().into());
+                                style
+                            }),
+                            pressed: Box::new(|focused, theme| {
+                                let mut style = theme.pressed(focused, &theme::Button::Text);
+                                style.text_color = Some(theme.cosmic().accent_color().into());
+                                style
+                            }),
                         })
                         .padding(8.0)
                         .on_press(app::Message::PageMessage(msg_map(Message::AddApplet(
-                            info.clone()
-                        )))),
-                ]
+                            info.clone(),
+                        ))))
+                        .into(),
+                ])
                 .padding([0, 32, 0, 32])
                 .spacing(12)
                 .align_items(Alignment::Center),
@@ -282,49 +298,43 @@ impl Page {
                     .horizontal_alignment(Horizontal::Center),
             );
         }
-        column![
+        column::with_children(vec![
             header_bar()
                 .title(fl!("add-applet"))
                 .on_close(app::Message::PageMessage(msg_map(
-                    Message::CloseAppletDialogue
+                    Message::CloseAppletDialogue,
                 )))
                 .on_drag(app::Message::PageMessage(msg_map(
-                    Message::DragAppletDialogue
-                ))),
+                    Message::DragAppletDialogue,
+                )))
+                .into(),
             container(
                 scrollable(
-                    column![
-                        text(fl!("add-applet")).size(24).width(Length::Fill),
-                        text_input(&fl!("search-applets"), &self.search)
-                            .style(theme::TextInput::Search)
-                            .padding([8, 24])
-                            .icon(Icon {
-                                font: cosmic::iced::Font::default(),
-                                code_point: '🔍',
-                                size: Some(12.0),
-                                spacing: 12.0,
-                                side: Side::Left,
-                            })
+                    column::with_children(vec![
+                        text(fl!("add-applet")).size(24).width(Length::Fill).into(),
+                        text_input::search_input(&fl!("search-applets"), &self.search, None)
                             .on_input(move |s| {
                                 app::Message::PageMessage(msg_map(Message::Search(s)))
                             })
                             .on_paste(move |s| {
                                 app::Message::PageMessage(msg_map(Message::Search(s)))
                             })
-                            .width(Length::Fixed(312.0)),
-                        list_column
-                    ]
+                            .width(Length::Fixed(312.0))
+                            .into(),
+                        list_column.into(),
+                    ])
                     .padding([0, 64, 32, 64])
                     .align_items(Alignment::Center)
-                    .spacing(8.0)
+                    .spacing(8.0),
                 )
                 .width(Length::Fill)
-                .height(Length::Fill)
+                .height(Length::Fill),
             )
             .style(theme::Container::Background)
             .width(Length::Fill)
             .height(Length::Fill)
-        ]
+            .into(),
+        ])
         .into()
     }
 
@@ -497,33 +507,36 @@ pub fn lists<
             );
         };
 
-        let button = cosmic::iced::widget::button(text(fl!("add-applet")))
-            .style(theme::Button::Secondary)
-            .padding(8.0);
-        column![
-            column![
-                row![
-                    text(fl!("applets")).width(Length::Fill).size(24),
-                    if page.has_dialogue {
+        let button = button::standard(fl!("add-applet"));
+
+        column::with_children(vec![
+            column::with_children(vec![
+                row::with_children(vec![
+                    text(fl!("applets")).width(Length::Fill).size(24).into(),
+                    (if page.has_dialogue {
                         button
                     } else {
                         button.on_press(Message::AddAppletDialogue)
-                    }
-                ],
-                text(fl!("start-segment")),
+                    })
+                    .into(),
+                ])
+                .into(),
+                text(fl!("start-segment")).into(),
                 AppletReorderList::new(
                     config
                         .plugins_wings
                         .as_ref()
-                        .map(|list| list
-                            .0
-                            .iter()
-                            .filter_map(|id| page
-                                .available_entries
+                        .map(|list| {
+                            list.0
                                 .iter()
-                                .find(|e| e.id.as_ref() == id.as_str())
-                                .map(Applet::borrowed))
-                            .collect())
+                                .filter_map(|id| {
+                                    page.available_entries
+                                        .iter()
+                                        .find(|e| e.id.as_ref() == id.as_str())
+                                        .map(Applet::borrowed)
+                                })
+                                .collect()
+                        })
                         .unwrap_or_default(),
                     Some((window::Id(0), APPLET_DND_ICON_ID)),
                     Message::StartDnd,
@@ -533,24 +546,28 @@ pub fn lists<
                     Message::ReorderStart,
                     Message::Save,
                     Message::Cancel,
-                    page.reorder_widget_state.dragged_applet().as_ref()
+                    page.reorder_widget_state.dragged_applet().as_ref(),
                 )
-            ]
-            .spacing(8.0),
-            column![
-                text(fl!("center-segment")),
+                .into(),
+            ])
+            .spacing(8.0)
+            .into(),
+            column::with_children(vec![
+                text(fl!("center-segment")).into(),
                 AppletReorderList::new(
                     config
                         .plugins_center
                         .as_ref()
-                        .map(|list| list
-                            .iter()
-                            .filter_map(|id| page
-                                .available_entries
-                                .iter()
-                                .find(|e| e.id.as_ref() == id.as_str())
-                                .map(Applet::borrowed))
-                            .collect())
+                        .map(|list| {
+                            list.iter()
+                                .filter_map(|id| {
+                                    page.available_entries
+                                        .iter()
+                                        .find(|e| e.id.as_ref() == id.as_str())
+                                        .map(Applet::borrowed)
+                                })
+                                .collect()
+                        })
                         .unwrap_or_default(),
                     Some((window::Id(0), APPLET_DND_ICON_ID)),
                     Message::StartDnd,
@@ -560,25 +577,29 @@ pub fn lists<
                     Message::ReorderCenter,
                     Message::Save,
                     Message::Cancel,
-                    page.reorder_widget_state.dragged_applet().as_ref()
+                    page.reorder_widget_state.dragged_applet().as_ref(),
                 )
-            ]
-            .spacing(8.0),
-            column![
-                text(fl!("end-segment")),
+                .into(),
+            ])
+            .spacing(8.0)
+            .into(),
+            column::with_children(vec![
+                text(fl!("end-segment")).into(),
                 AppletReorderList::new(
                     config
                         .plugins_wings
                         .as_ref()
-                        .map(|list| list
-                            .1
-                            .iter()
-                            .filter_map(|id| page
-                                .available_entries
+                        .map(|list| {
+                            list.1
                                 .iter()
-                                .find(|e| e.id.as_ref() == id.as_str())
-                                .map(Applet::borrowed))
-                            .collect())
+                                .filter_map(|id| {
+                                    page.available_entries
+                                        .iter()
+                                        .find(|e| e.id.as_ref() == id.as_str())
+                                        .map(Applet::borrowed)
+                                })
+                                .collect()
+                        })
                         .unwrap_or_default(),
                     Some((window::Id(0), APPLET_DND_ICON_ID)),
                     Message::StartDnd,
@@ -588,11 +609,13 @@ pub fn lists<
                     Message::ReorderEnd,
                     Message::Save,
                     Message::Cancel,
-                    page.reorder_widget_state.dragged_applet().as_ref()
+                    page.reorder_widget_state.dragged_applet().as_ref(),
                 )
-            ]
-            .spacing(8.0),
-        ]
+                .into(),
+            ])
+            .spacing(8.0)
+            .into(),
+        ])
         .padding([0, 16, 0, 16])
         .spacing(12.0)
         .apply(Element::from)
@@ -700,19 +723,27 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 let id_clone = info.id.to_string();
                 let is_dragged = active_dnd.as_ref().map_or(false, |dnd| dnd.id == info.id);
                 container(
-                    row![
-                        icon("open-menu-symbolic", 16).style(theme::Svg::Symbolic),
-                        icon(info.icon, 32).style(theme::Svg::Symbolic),
-                        column![text(info.name), text(info.description).size(10)]
+                    row::with_children(vec![
+                        icon::from_name("open-menu-symbolic")
+                            .symbolic(true)
+                            .size(16)
+                            .into(),
+                        icon::from_name(info.icon).size(32).symbolic(true).into(),
+                        column::with_capacity(2)
                             .spacing(4.0)
-                            .width(Length::Fill),
-                        button(theme::Button::Text)
-                            .icon(theme::Svg::Symbolic, "edit-delete-symbolic", 16)
-                            .on_press(on_remove(id_clone.clone())),
-                        button(theme::Button::Text)
-                            .icon(theme::Svg::Symbolic, "open-menu-symbolic", 16)
-                            .on_press(on_details(id_clone)),
-                    ]
+                            .width(Length::Fill)
+                            .push(text(info.name))
+                            .push(text::caption(info.description))
+                            .into(),
+                        button::icon(icon::from_name("edit-delete-symbolic"))
+                            .extra_small()
+                            .on_press(on_remove(id_clone.clone()))
+                            .into(),
+                        button::icon(icon::from_name("open-menu-symbolic"))
+                            .extra_small()
+                            .on_press(on_details(id_clone))
+                            .into(),
+                    ])
                     .spacing(12)
                     .align_items(Alignment::Center),
                 )
@@ -781,23 +812,28 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             surface_ids: None,
             inner: if let Some(info) = state.dragged_applet() {
                 container(
-                    row![
-                        icon("open-menu-symbolic", 16).style(theme::Svg::Symbolic),
-                        icon(info.icon.into_owned(), 32).style(theme::Svg::Symbolic),
-                        column![text(info.name), text(info.description).size(10)]
+                    row::with_children(vec![
+                        icon::from_name("open-menu-symbolic")
+                            .size(16)
+                            .symbolic(true)
+                            .into(),
+                        icon::from_name(info.icon.into_owned())
+                            .size(32)
+                            .symbolic(true)
+                            .into(),
+                        column::with_capacity(2)
                             .spacing(4.0)
-                            .width(Length::Fill),
-                        button(theme::Button::Text).icon(
-                            theme::Svg::Symbolic,
-                            "edit-delete-symbolic",
-                            16
-                        ),
-                        button(theme::Button::Text).icon(
-                            theme::Svg::Symbolic,
-                            "open-menu-symbolic",
-                            16
-                        ),
-                    ]
+                            .width(Length::Fill)
+                            .push(text(info.name))
+                            .push(text::caption(info.description))
+                            .into(),
+                        button::icon(icon::from_name("edit-delete-symbolic"))
+                            .extra_small()
+                            .into(),
+                        button::icon(icon::from_name("open-menu-symbolic"))
+                            .extra_small()
+                            .into(),
+                    ])
                     .spacing(12)
                     .align_items(Alignment::Center),
                 )
@@ -939,6 +975,7 @@ where
         renderer: &cosmic::Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
     ) -> event::Status {
         let mut ret = match self.inner.as_widget_mut().on_event(
             &mut tree.children[0],
@@ -948,6 +985,7 @@ where
             renderer,
             clipboard,
             shell,
+            viewport,
         ) {
             event::Status::Captured => return event::Status::Captured,
             event::Status::Ignored => event::Status::Ignored,
@@ -986,6 +1024,13 @@ where
                     if let Some(on_cancel) = self.on_cancel.clone() {
                         shell.publish(on_cancel);
                     }
+                    DraggingState::None
+                }
+                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::DataSource(wayland::DataSourceEvent::DndDropPerformed),
+                )) => {
+                    ret = event::Status::Captured;
+
                     DraggingState::None
                 }
                 _ => DraggingState::Dragging(applet),

@@ -1,7 +1,5 @@
-use apply::Apply;
-use cosmic::iced::widget;
-use cosmic::widget::settings;
-use cosmic::Element;
+use cosmic::widget::{column, settings};
+use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slotmap::SlotMap;
@@ -44,7 +42,8 @@ fn shortcuts() -> Section<crate::pages::Message> {
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
             */
-            widget::column![settings::view_section(&section.title)]
+            column()
+                .push(settings::view_section(&section.title))
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
         })

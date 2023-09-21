@@ -80,7 +80,7 @@ fn distributor_logo() -> Section<crate::pages::Message> {
         .view::<Page>(|_binder, _page, _section| {
             row!(
                 horizontal_space(Length::Fill),
-                icon("distributor-logo", 78),
+                icon::from_name("distributor-logo").size(78).icon(),
                 horizontal_space(Length::Fill),
             )
             // Add extra padding to reach 40px from the first section.

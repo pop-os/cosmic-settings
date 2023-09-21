@@ -7,7 +7,6 @@ git = "https://github.com/pop-os/libcosmic"
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-default-features = false
 features = ["debug", "wayland", "tokio"]
 
 [workspace.dependencies.cosmic-config]
@@ -24,10 +23,13 @@ git = "https://github.com/pop-os/cosmic-comp"
 git = "https://github.com/pop-os/cosmic-panel"
 
 [patch."https://github.com/pop-os/libcosmic"]
-# libcosmic = { path = "../libcosmic" }
-# cosmic-config = { path = "../libcosmic/cosmic-config" }
-# libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "flexalloc" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "flexalloc" }
+# libcosmic = { path = "../../libcosmic" }
+# cosmic-config = { path = "../../libcosmic/cosmic-config" }
+# libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "improv" }
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=master", branch = "improv" }
+
+[patch."https://github.com/Smithay/client-toolkit"]
+sctk = { git = "https://github.com/smithay/client-toolkit//", package = "smithay-client-toolkit", rev = "f49df45"}
 
 [profile.release]
 opt-level = 3
