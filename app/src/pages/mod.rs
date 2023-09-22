@@ -20,6 +20,7 @@ pub enum Message {
     DesktopWallpaper(desktop::wallpaper::Message),
     PanelApplet(desktop::panel::applets_inner::Message),
     DockApplet(desktop::dock::applets::Message),
+    Appearance(desktop::appearance::Message),
     Input(input::Message),
     External { id: String, message: Vec<u8> },
     Page(Entity),

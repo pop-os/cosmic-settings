@@ -14,19 +14,19 @@ appearance = Appearance
     .desc = Accent colors and COSMIC theming.
 
 mode-and-colors = Mode and Colors
-    .auto-switch = Automatically switch from Light to Dark mode
-        .desc = Switches to Light mode at sunrise
-    .accent-color = Accent color
-    .app-background = Application or window background
-    .container-background = Container background
-        .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
-        .reset = Reset to auto
-        .desc = Primary container color is used for navigation sidebar, side drawer, dialogs and similar widgets.
-    .text-tint = Interface text tint
-        .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
-    .control-tint = Control component tint
-        .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components.
-    .window-hint-accent = Use theme accent color as active window hint
+auto-switch = Automatically switch from Light to Dark mode
+    .desc = Switches to Light mode at sunrise
+accent-color = Accent color
+app-background = Application or window background
+container-background = Container background
+    .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
+    .reset = Reset to auto
+    .desc = Primary container color is used for navigation sidebar, side drawer, dialogs and similar widgets.
+text-tint = Interface text tint
+    .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
+control-tint = Control component tint
+    .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components.
+window-hint-accent = Use theme accent color as active window hint
 hex = Hex
 rgb = RGB
 
@@ -34,8 +34,8 @@ style = Style
     .round = Round
     .slightly-round = Slightly round
     .square = Square
-    .frosted = Frosted glass effect on system interface
-        .desc = Applies background blur to panel, dock, applets, launcher, and application library.
+frosted = Frosted glass effect on system interface
+    .desc = Applies background blur to panel, dock, applets, launcher, and application library.
 
 # interface density left out for now
 
