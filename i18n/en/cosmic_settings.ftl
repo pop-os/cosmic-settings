@@ -37,6 +37,7 @@ style = Style
 frosted = Frosted glass effect on system interface
     .desc = Applies background blur to panel, dock, applets, launcher, and application library.
 
+reset-default = Reset to default
 # interface density left out for now
 
 window-management = Window Management
