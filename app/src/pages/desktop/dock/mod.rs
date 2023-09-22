@@ -2,12 +2,13 @@ use std::collections::HashMap;
 
 use apply::Apply;
 use cosmic::{
-    cosmic_config::CosmicConfigEntry,
+    cosmic_config::{ConfigSet, CosmicConfigEntry},
     widget::{settings, text, toggler},
     Element,
 };
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, section, Section};
+use log::error;
 use slotmap::SlotMap;
 
 use crate::pages::desktop::panel::inner::{add_panel, behavior_and_position, configuration, style};
@@ -36,6 +37,10 @@ impl Page {
                 let Some(panel_config) = self.inner.panel_config.as_ref() else {
                     return;
                 };
+                let Ok(helper) = CosmicPanelContainerConfig::cosmic_config() else {
+                    return;
+                };
+
                 if enabled {
                     container_config.config_list.push(panel_config.clone());
                 } else {
@@ -43,7 +48,16 @@ impl Page {
                         .config_list
                         .retain(|c| c.name.as_str() != "Dock");
                 }
-                _ = container_config.write_entries();
+
+                let entry_names = container_config
+                    .config_list
+                    .iter()
+                    .map(|c| c.name.clone())
+                    .collect::<Vec<_>>();
+
+                if let Err(err) = helper.set("entries", entry_names) {
+                    error!("{:?}", err);
+                }
             }
             Message::Inner(inner) => {
                 self.inner.update(inner);
