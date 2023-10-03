@@ -312,7 +312,7 @@ impl Page {
                 scrollable(
                     column::with_children(vec![
                         text(fl!("add-applet")).size(24).width(Length::Fill).into(),
-                        text_input::search_input(&fl!("search-applets"), &self.search, None)
+                        text_input::search_input(&fl!("search-applets"), &self.search)
                             .on_input(move |s| {
                                 app::Message::PageMessage(msg_map(Message::Search(s)))
                             })

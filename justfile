@@ -20,6 +20,8 @@ export RUSTFLAGS := if target-cpu != '' {
 rootdir := ''
 prefix := '/usr'
 
+default-schema-target := clean(rootdir / prefix) / 'share' / 'cosmic'
+
 # File paths
 bin-src := 'target' / 'release' / name
 bin-dest := clean(rootdir / prefix) / 'bin' / name
@@ -69,7 +71,8 @@ install-file src dest: (install-cmd '-Dm0644' src dest)
 
 # Install everything
 install: (install-bin bin-src bin-dest) (install-file desktop-src desktop-dest)
-
+find resources/default_schema -type f -exec install -Dm0644 {} {{default-schema-target}}/{} \;
+ 
 # Run the application for testing purposes
 run *args:
     env RUST_LOG=debug RUST_BACKTRACE=full cargo run --release {{args}}

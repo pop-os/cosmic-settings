@@ -247,7 +247,7 @@ impl cosmic::Application for SettingsApp {
                 }
                 crate::pages::Message::Appearance(message) => {
                     if let Some(page) = self.pages.page_mut::<appearance::Page>() {
-                        page.update(message);
+                        return page.update(message).map(cosmic::app::Message::App);
                     }
                     // TODO
                 }
@@ -346,6 +346,11 @@ impl cosmic::Application for SettingsApp {
             .then(|| self.pages.page::<applets_inner::Page>())
         {
             return page.add_applet_view(crate::pages::Message::PanelApplet);
+        }
+        if let Some(Some(page)) = (id == appearance::COLOR_PICKER_DIALOG_ID)
+            .then(|| self.pages.page::<appearance::Page>())
+        {
+            return page.color_picker_view();
         }
         if let Some(Some(page)) =
             (id == ADD_DOCK_APPLET_DIALOGUE_ID).then(|| self.pages.page::<dock::applets::Page>())

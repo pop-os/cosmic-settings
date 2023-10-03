@@ -27,8 +27,13 @@ text-tint = Interface text tint
 control-tint = Control component tint
     .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components.
 window-hint-accent = Use theme accent color as active window hint
+color-picker = Color Picker
 hex = Hex
 rgb = RGB
+recent-colors = Recent colors
+reset-to-default = Reset to default
+copy-to-clipboard = Copy to clipboard
+copied-to-clipboard = Copied to clipboard
 
 style = Style
     .round = Round
