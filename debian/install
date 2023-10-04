@@ -1,2 +1,4 @@
 /usr/bin/cosmic-settings
 /usr/share/applications/com.system76.CosmicSettings.desktop
+/usr/share/cosmic/resources/default_schema/com.system76.CosmicTheme.*
+/usr/share/icons/hicolor/scalable

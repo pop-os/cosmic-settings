@@ -30,6 +30,8 @@ desktop := appid + '.desktop'
 desktop-src := 'resources' / desktop
 desktop-dest := clean(rootdir / prefix) / 'share' / 'applications' / desktop
 
+iconsdir := clean(rootdir / prefix) / 'share' / 'icons' / 'hicolor' 
+
 [private]
 default: build-release
 
@@ -71,12 +73,13 @@ install-file src dest: (install-cmd '-Dm0644' src dest)
 
 # Install everything
 install: (install-bin bin-src bin-dest) (install-file desktop-src desktop-dest)
-find resources/default_schema -type f -exec install -Dm0644 {} {{default-schema-target}}/{} \;
+    find resources/default_schema -type f -exec install -Dm0644 {} {{default-schema-target}}/{} \;
+    find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
  
 # Run the application for testing purposes
 run *args:
     env RUST_LOG=debug RUST_BACKTRACE=full cargo run --release {{args}}
-
+    @just resources/icons/install
 # Run `cargo test`
 test:
     cargo test
@@ -84,7 +87,9 @@ test:
 # Uninstalls everything (requires same arguments as given to install)
 uninstall:
     rm -rf {{bin-dest}} {{desktop-dest}}
-
+    find resources/default_schema -type f -exec rm {{default-schema-target}}/{} \;
+    find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm {{iconsdir}}/{}
+ 
 # Vendor Cargo dependencies locally
 vendor:
     mkdir -p .cargo

@@ -10,6 +10,7 @@ use cosmic::iced::widget::{column, row};
 use cosmic::iced::{window, Color};
 use cosmic::iced_core::{layout, Length};
 use cosmic::iced_sctk::commands::window::{close_window, get_window};
+use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
     button, container, header_bar, horizontal_space, settings, spin_button, text, ColorPickerModel,
     ColorPickerUpdate,
@@ -43,6 +44,7 @@ pub struct Page {
     interface_text: ColorPickerModel,
     control_component: ColorPickerModel,
     active_dialog: Option<NamedColorPicker>,
+    roundness: Roundness,
 
     theme_mode: ThemeMode,
     theme_builder: ThemeBuilder,
@@ -86,12 +88,14 @@ impl Default for Page {
                 }
             })
             .unwrap_or_default();
+        // TODO fill these values with the current values
         Self {
             accent_window_hint: Default::default(),
             frosted: Default::default(),
             window_hint_size: Default::default(),
             gap_size: Default::default(),
             can_reset: Default::default(),
+            roundness: Roundness::Round,
             custom_accent: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, None),
             application_background: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, None),
             container_background: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, None),
@@ -120,6 +124,14 @@ pub enum Message {
     InterfaceText(ColorPickerUpdate),
     ControlComponent(ColorPickerUpdate),
     CloseRequested(window::Id),
+    Roundness(Roundness),
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Roundness {
+    Round,
+    SlightlyRound,
+    Square,
 }
 
 impl Page {
@@ -380,6 +392,10 @@ impl Page {
                 };
                 Command::none()
             }
+            Message::Roundness(r) => {
+                self.roundness = r;
+                Command::none()
+            }
         };
 
         if theme_builder_needs_update {
@@ -508,36 +524,56 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
             fl!("control-tint", "desc"),
             // 12
             fl!("window-hint-accent"),
+            // 13
+            fl!("dark"),
+            fl!("light"),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
-                .add(container(text("TODO")).width(Length::Fill))
+                .add(
+                    container(
+                        row![
+                            column![
+                                button(
+                                    icon(from_name("illustration-appearance-mode-dark").into(),)
+                                        .width(Length::Fixed(188.0))
+                                        .height(Length::Fixed(100.0))
+                                )
+                                .style(cosmic::theme::Button::IconVertical)
+                                .padding(8)
+                                .on_press(Message::DarkMode(true)),
+                                text(&descriptions[13])
+                            ]
+                            .spacing(8)
+                            .align_items(cosmic::iced_core::Alignment::Center),
+                            column![
+                                button(
+                                    icon(from_name("illustration-appearance-mode-light").into(),)
+                                        .width(Length::Fixed(188.0))
+                                        .height(Length::Fixed(100.0))
+                                )
+                                .style(cosmic::theme::Button::IconVertical)
+                                .padding(8)
+                                .on_press(Message::DarkMode(false)),
+                                text(&descriptions[14])
+                            ]
+                            .spacing(8)
+                            .align_items(cosmic::iced_core::Alignment::Center)
+                        ]
+                        .spacing(48)
+                        .align_items(cosmic::iced_core::Alignment::Center),
+                    )
+                    .width(Length::Fill)
+                    .align_x(cosmic::iced_core::alignment::Horizontal::Center),
+                )
                 .add(
                     settings::item::builder(&descriptions[0])
                         .description(&descriptions[1])
                         .toggler(page.theme_mode.auto_switch, Message::Autoswitch),
                 )
-                .add(column![
-                    text(&descriptions[2]),
-                    // if page.container_background.get_is_active() {
-                    //     container(
-                    //         page.
-                    //             .builder(Message::ContainerBackground)
-                    //             .build(
-                    //                 fl!("recent-colors"),
-                    //                 fl!("copy-to-clipboard"),
-                    //                 fl!("copied-to-clipboard"),
-                    //             ),
-                    //     )
-                    // } else {
-                    //     container(
-                    //         page.bg_color_model
-                    //             .picker_button(Message::ContainerBackground),
-                    //     )
-                    // }
-                ])
+                .add(column![text(&descriptions[2]),])
                 .add(
                     settings::item::builder(&descriptions[3]).control(
                         page.application_background
@@ -600,7 +636,76 @@ pub fn style() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
-                .add(container(text("TODO Toggle Image buttons for roundness")).width(Length::Fill))
+                .add(
+                    container(
+                        row![
+                            column![
+                                button(
+                                    icon(
+                                        from_name(if page.theme_mode.is_dark {
+                                            "illustration-appearance-dark-style-round"
+                                        } else {
+                                            "illustration-appearance-light-style-round"
+                                        })
+                                        .into()
+                                    )
+                                    .width(Length::Fixed(188.0))
+                                    .height(Length::Fixed(100.0))
+                                )
+                                .style(cosmic::theme::Button::IconVertical)
+                                .padding(8)
+                                .on_press(Message::Roundness(Roundness::Round)),
+                                text(&descriptions[0])
+                            ]
+                            .spacing(8)
+                            .align_items(cosmic::iced_core::Alignment::Center),
+                            column![
+                                button(
+                                    icon(
+                                        from_name(if page.theme_mode.is_dark {
+                                            "illustration-appearance-dark-style-slightly-round"
+                                        } else {
+                                            "illustration-appearance-light-style-slightly-round"
+                                        })
+                                        .into()
+                                    )
+                                    .width(Length::Fixed(188.0))
+                                    .height(Length::Fixed(100.0))
+                                )
+                                .style(cosmic::theme::Button::IconVertical)
+                                .padding(8)
+                                .on_press(Message::Roundness(Roundness::SlightlyRound)),
+                                text(&descriptions[1])
+                            ]
+                            .spacing(8)
+                            .align_items(cosmic::iced_core::Alignment::Center),
+                            column![
+                                button(
+                                    icon(
+                                        from_name(if page.theme_mode.is_dark {
+                                            "illustration-appearance-dark-style-square"
+                                        } else {
+                                            "illustration-appearance-light-style-square"
+                                        })
+                                        .into(),
+                                    )
+                                    .width(Length::Fixed(188.0))
+                                    .height(Length::Fixed(100.0))
+                                )
+                                .style(cosmic::theme::Button::IconVertical)
+                                .padding(8)
+                                .on_press(Message::Roundness(Roundness::Square)),
+                                text(&descriptions[2])
+                            ]
+                            .spacing(8)
+                            .align_items(cosmic::iced_core::Alignment::Center)
+                        ]
+                        .spacing(12)
+                        .align_items(cosmic::iced_core::Alignment::Center),
+                    )
+                    .width(Length::Fill)
+                    .align_x(cosmic::iced_core::alignment::Horizontal::Center),
+                )
                 .add(
                     settings::item::builder(&descriptions[3])
                         .description(&descriptions[4])
@@ -623,14 +728,15 @@ pub fn window_management() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
-                .add(
-                    settings::item::builder(&descriptions[0])
-                        .control(cosmic::widget::spin_button("", Message::WindowHintSize)),
-                )
-                .add(
-                    settings::item::builder(&descriptions[1])
-                        .control(cosmic::widget::spin_button("", Message::GapSize)),
-                )
+                .add(settings::item::builder(&descriptions[0]).control(
+                    cosmic::widget::spin_button(
+                        page.window_hint_size.to_string(),
+                        Message::WindowHintSize,
+                    ),
+                ))
+                .add(settings::item::builder(&descriptions[1]).control(
+                    cosmic::widget::spin_button(page.gap_size.to_string(), Message::GapSize),
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
