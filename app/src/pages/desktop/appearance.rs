@@ -1,6 +1,8 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use std::sync::Arc;
+
 use apply::Apply;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::Srgba;
@@ -112,6 +114,7 @@ impl Default for Page {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    Entered,
     DarkMode(bool),
     Autoswitch(bool),
     AccentWindowHint(bool),
@@ -125,6 +128,7 @@ pub enum Message {
     ControlComponent(ColorPickerUpdate),
     CloseRequested(window::Id),
     Roundness(Roundness),
+    Left,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -396,6 +400,22 @@ impl Page {
                 self.roundness = r;
                 Command::none()
             }
+            Message::Entered => {
+                *self = Self::default();
+                let theme_builder = self.theme_builder.clone();
+                Command::perform(async {}, |_| {
+                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
+                        // TODO set the values of the theme builder
+                        theme_builder.build(),
+                    )))
+                })
+                // Load the current theme builders and mode
+                // Set the theme for the application to match the current mode instead of the system theme?
+            }
+            Message::Left => {
+                dbg!("left");
+                Command::perform(async {}, |_| app::Message::SetSystemTheme)
+            }
         };
 
         if theme_builder_needs_update {
@@ -496,6 +516,18 @@ impl page::Page<crate::pages::Message> for Page {
         page::Info::new("appearance", "preferences-pop-desktop-appearance-symbolic")
             .title(fl!("appearance"))
             .description(fl!("appearance", "desc"))
+    }
+
+    fn load(&self, page: page::Entity) -> Option<page::Task<crate::pages::Message>> {
+        Some(Box::pin(async move {
+            crate::pages::Message::Appearance(Message::Entered)
+        }))
+    }
+
+    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+        Command::perform(async {}, |_| {
+            crate::pages::Message::Appearance(Message::Left)
+        })
     }
 }
 

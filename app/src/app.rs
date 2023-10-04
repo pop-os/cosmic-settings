@@ -1,6 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use color_eyre::owo_colors::OwoColorize;
 use cosmic::iced::Subscription;
 use cosmic::{
     app::{Command, Core},
@@ -15,6 +16,7 @@ use cosmic::{
 };
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
+use page::Page;
 
 use crate::config::Config;
 
@@ -54,6 +56,8 @@ pub enum Message {
     PanelConfig(CosmicPanelConfig),
     Search(search::Message),
     SetWindowTitle,
+    SetSystemTheme,
+    SetTheme(cosmic::theme::Theme),
 }
 
 impl cosmic::Application for SettingsApp {
@@ -305,7 +309,12 @@ impl cosmic::Application for SettingsApp {
                 }
             }
 
-            Message::PanelConfig(_) | Message::Search(_) => {} // Ignored
+            Message::PanelConfig(_) | Message::Search(_) => {}
+            Message::SetSystemTheme => {
+                return cosmic::app::command::set_theme(cosmic::theme::system_preference());
+            }
+
+            Message::SetTheme(t) => return cosmic::app::command::set_theme(t),
         }
 
         Command::none()
@@ -380,7 +389,17 @@ impl SettingsApp {
         let current_page = self.active_page;
         self.active_page = page;
 
+        let mut leave_command = iced::Command::none()
+            .map(Message::PageMessage)
+            .map(cosmic::app::Message::App);
+
         if current_page != page {
+            leave_command = self
+                .pages
+                .on_leave(current_page)
+                .unwrap_or(iced::Command::none())
+                .map(Message::PageMessage)
+                .map(cosmic::app::Message::App);
             self.config.active_page = Box::from(&*self.pages.info[page].id);
             self.config
                 .set_active_page(Box::from(&*self.pages.info[page].id));
@@ -398,6 +417,7 @@ impl SettingsApp {
             .map(cosmic::app::Message::App);
 
         Command::batch(vec![
+            leave_command,
             page_command,
             cosmic::command::future(async { Message::SetWindowTitle })
                 .map(cosmic::app::Message::App),

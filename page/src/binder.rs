@@ -142,6 +142,14 @@ impl<Message: 'static> Binder<Message> {
         page.downcast_mut::<P>()
     }
 
+    /// Returns a command when a page is left
+    pub fn on_leave(&mut self, id: crate::Entity) -> Option<Command<Message>> {
+        if let Some(page) = self.page.get_mut(id) {
+            return Some(page.on_leave());
+        }
+        None
+    }
+
     /// Calls a page's load function to refresh its data.
     pub fn page_reload(&mut self, id: crate::Entity) -> Option<Command<Message>> {
         if let Some(page) = self.page.get(id) {

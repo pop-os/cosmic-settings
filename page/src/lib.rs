@@ -5,6 +5,7 @@ mod binder;
 pub use binder::{AutoBind, Binder};
 
 mod insert;
+use cosmic::Command;
 use downcast_rs::{impl_downcast, Downcast};
 pub use insert::Insert;
 
@@ -42,6 +43,11 @@ pub trait Page<Message: 'static>: Downcast {
     #[allow(unused)]
     fn load(&self, page: crate::Entity) -> Option<crate::Task<Message>> {
         None
+    }
+
+    /// Emit a command when the page is left
+    fn on_leave(&mut self) -> Command<Message> {
+        Command::none()
     }
 }
 
