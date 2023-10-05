@@ -9,7 +9,7 @@ use cosmic::cosmic_theme::palette::Srgba;
 use cosmic::cosmic_theme::{Theme, ThemeBuilder, ThemeMode};
 use cosmic::iced::wayland::actions::window::SctkWindowSettings;
 use cosmic::iced::widget::{column, row};
-use cosmic::iced::{window, Color};
+use cosmic::iced::window;
 use cosmic::iced_core::{layout, Length};
 use cosmic::iced_sctk::commands::window::{close_window, get_window};
 use cosmic::widget::icon::{from_name, icon};
@@ -262,7 +262,7 @@ impl Page {
                     ColorPickerUpdate::ToggleColorPicker => {
                         // create the color picker dialog
                         // set the active picker
-                        self.active_dialog = Some(NamedColorPicker::ApplicationBackground);
+                        self.active_dialog = Some(NamedColorPicker::ContainerBackground);
                         get_window(color_picker_window_settings())
                     }
                     _ => Command::none(),
@@ -362,7 +362,7 @@ impl Page {
                 };
                 Command::batch(vec![cmd, self.control_component.update::<app::Message>(u)])
             }
-            Message::CloseRequested(id) => {
+            Message::CloseRequested(_) => {
                 match self.active_dialog.take() {
                     Some(NamedColorPicker::ApplicationBackground) => {
                         _ = self
@@ -412,10 +412,9 @@ impl Page {
                 // Load the current theme builders and mode
                 // Set the theme for the application to match the current mode instead of the system theme?
             }
-            Message::Left => {
-                dbg!("left");
-                Command::perform(async {}, |_| app::Message::SetSystemTheme)
-            }
+            Message::Left => Command::perform(async {}, |_| {
+                app::Message::SetTheme(cosmic::theme::system_preference())
+            }),
         };
 
         if theme_builder_needs_update {
@@ -457,7 +456,7 @@ impl Page {
         }
 
         // TODO if there were some changes, rebuild and apply to the config
-        return ret;
+        ret
     }
 
     pub fn color_picker_view(&self) -> Element<crate::app::Message> {
@@ -518,7 +517,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("appearance", "desc"))
     }
 
-    fn load(&self, page: page::Entity) -> Option<page::Task<crate::pages::Message>> {
+    fn load(&self, _: page::Entity) -> Option<page::Task<crate::pages::Message>> {
         Some(Box::pin(async move {
             crate::pages::Message::Appearance(Message::Entered)
         }))
@@ -570,7 +569,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             column![
                                 button(
                                     icon(from_name("illustration-appearance-mode-dark").into(),)
-                                        .width(Length::Fixed(188.0))
+                                        .width(Length::Fill)
                                         .height(Length::Fixed(100.0))
                                 )
                                 .style(cosmic::theme::Button::IconVertical)
@@ -579,11 +578,12 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 text(&descriptions[13])
                             ]
                             .spacing(8)
+                            .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
                             column![
                                 button(
                                     icon(from_name("illustration-appearance-mode-light").into(),)
-                                        .width(Length::Fixed(188.0))
+                                        .width(Length::Fill)
                                         .height(Length::Fixed(100.0))
                                 )
                                 .style(cosmic::theme::Button::IconVertical)
@@ -592,10 +592,12 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 text(&descriptions[14])
                             ]
                             .spacing(8)
+                            .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center)
                         ]
                         .spacing(48)
-                        .align_items(cosmic::iced_core::Alignment::Center),
+                        .align_items(cosmic::iced_core::Alignment::Center)
+                        .width(Length::Fixed(424.0)),
                     )
                     .width(Length::Fill)
                     .align_x(cosmic::iced_core::alignment::Horizontal::Center),
@@ -681,7 +683,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                         })
                                         .into()
                                     )
-                                    .width(Length::Fixed(188.0))
+                                    .width(Length::Fill)
                                     .height(Length::Fixed(100.0))
                                 )
                                 .style(cosmic::theme::Button::IconVertical)
@@ -690,6 +692,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 text(&descriptions[0])
                             ]
                             .spacing(8)
+                            .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
                             column![
                                 button(
@@ -701,7 +704,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                         })
                                         .into()
                                     )
-                                    .width(Length::Fixed(188.0))
+                                    .width(Length::Fill)
                                     .height(Length::Fixed(100.0))
                                 )
                                 .style(cosmic::theme::Button::IconVertical)
@@ -710,6 +713,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 text(&descriptions[1])
                             ]
                             .spacing(8)
+                            .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
                             column![
                                 button(
@@ -721,9 +725,10 @@ pub fn style() -> Section<crate::pages::Message> {
                                         })
                                         .into(),
                                     )
-                                    .width(Length::Fixed(188.0))
+                                    .width(Length::Fill)
                                     .height(Length::Fixed(100.0))
                                 )
+                                .width(Length::FillPortion(1))
                                 .style(cosmic::theme::Button::IconVertical)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::Square)),
@@ -731,8 +736,10 @@ pub fn style() -> Section<crate::pages::Message> {
                             ]
                             .spacing(8)
                             .align_items(cosmic::iced_core::Alignment::Center)
+                            .width(Length::FillPortion(1))
                         ]
                         .spacing(12)
+                        .width(Length::Fixed(628.0))
                         .align_items(cosmic::iced_core::Alignment::Center),
                     )
                     .width(Length::Fill)
