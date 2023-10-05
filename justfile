@@ -73,7 +73,7 @@ install-file src dest: (install-cmd '-Dm0644' src dest)
 
 # Install everything
 install: (install-bin bin-src bin-dest) (install-file desktop-src desktop-dest)
-    find resources/default_schema -type f -exec install -Dm0644 {} {{default-schema-target}}/{} \;
+    find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'default_schema'/{} {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
  
 # Run the application for testing purposes
@@ -87,7 +87,7 @@ test:
 # Uninstalls everything (requires same arguments as given to install)
 uninstall:
     rm -rf {{bin-dest}} {{desktop-dest}}
-    find resources/default_schema -type f -exec rm {{default-schema-target}}/{} \;
+    find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm -rf {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm {{iconsdir}}/{}
  
 # Vendor Cargo dependencies locally

@@ -4,14 +4,13 @@
 use std::sync::Arc;
 
 use apply::Apply;
-use cosmic::app::command::message::cosmic;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
-use cosmic::cosmic_theme::palette::Srgba;
-use cosmic::cosmic_theme::{Spacing, Theme, ThemeBuilder, ThemeMode};
+use cosmic::cosmic_theme::palette::{Srgb, Srgba};
+use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
 use cosmic::iced::wayland::actions::window::SctkWindowSettings;
 use cosmic::iced::widget::{column, row};
 use cosmic::iced::window;
-use cosmic::iced_core::{layout, Length};
+use cosmic::iced_core::{layout, Color, Length};
 use cosmic::iced_sctk::commands::window::{close_window, get_window};
 use cosmic::iced_widget::scrollable;
 use cosmic::widget::icon::{from_name, icon};
@@ -74,13 +73,19 @@ impl Default for Page {
             })
             .unwrap_or_default();
 
+        (theme_mode_config, theme_mode).into()
+    }
+}
+
+impl From<(Option<Config>, ThemeMode)> for Page {
+    fn from((theme_mode_config, theme_mode): (Option<Config>, ThemeMode)) -> Self {
         let theme_builder_config = if theme_mode.is_dark {
             ThemeBuilder::dark_config()
         } else {
             ThemeBuilder::light_config()
         }
         .ok();
-        let theme_builder = theme_mode_config
+        let theme_builder = theme_builder_config
             .as_ref()
             .map(|c| match ThemeBuilder::get_entry(c) {
                 Ok(t) => t,
@@ -91,20 +96,55 @@ impl Default for Page {
                     t
                 }
             })
-            .unwrap_or_default();
-        // TODO fill these values with the current values
+            .unwrap_or_else(|| {
+                if theme_mode.is_dark {
+                    ThemeBuilder::dark()
+                } else {
+                    ThemeBuilder::light()
+                }
+            });
+        // TODO fill all these values with the current values
         Self {
             accent_window_hint: Default::default(),
             frosted: Default::default(),
             window_hint_size: Default::default(),
             gap_size: Default::default(),
-            can_reset: Default::default(),
-            roundness: Roundness::Round,
-            custom_accent: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, None),
-            application_background: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, None),
-            container_background: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, None),
-            interface_text: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, None),
-            control_component: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, None),
+            can_reset: if theme_mode.is_dark {
+                theme_builder == ThemeBuilder::dark()
+            } else {
+                theme_builder == ThemeBuilder::light()
+            },
+            roundness: theme_builder.corner_radii.into(),
+            custom_accent: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                None,
+                theme_builder.accent.map(Color::from),
+            ),
+            application_background: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                None,
+                theme_builder.bg_color.map(Color::from),
+            ),
+            container_background: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                None,
+                theme_builder.primary_container_bg.map(Color::from),
+            ),
+            interface_text: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                None,
+                theme_builder.text_tint.map(Color::from),
+            ),
+            control_component: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                None,
+                theme_builder.neutral_tint.map(Color::from),
+            ),
             active_dialog: None,
             theme_mode_config,
             theme_builder_config,
@@ -141,12 +181,55 @@ pub enum Roundness {
     Square,
 }
 
+impl From<Roundness> for CornerRadii {
+    fn from(value: Roundness) -> Self {
+        match value {
+            Roundness::Round => CornerRadii {
+                radius_0: [0.0; 4],
+                radius_xs: [4.0; 4],
+                radius_s: [8.0; 4],
+                radius_m: [16.0; 4],
+                radius_l: [32.0; 4],
+                radius_xl: [160.0; 4],
+            },
+            Roundness::SlightlyRound => CornerRadii {
+                radius_0: [0.0; 4],
+                radius_xs: [2.0; 4],
+                radius_s: [8.0; 4],
+                radius_m: [8.0; 4],
+                radius_l: [8.0; 4],
+                radius_xl: [8.0; 4],
+            },
+            Roundness::Square => CornerRadii {
+                radius_0: [0.0; 4],
+                radius_xs: [2.0; 4],
+                radius_s: [2.0; 4],
+                radius_m: [2.0; 4],
+                radius_l: [2.0; 4],
+                radius_xl: [2.0; 4],
+            },
+        }
+    }
+}
+
+impl From<CornerRadii> for Roundness {
+    fn from(value: CornerRadii) -> Self {
+        if value.radius_m[0] == 16.0 {
+            Self::Round
+        } else if value.radius_m[0] == 8.0 {
+            Self::SlightlyRound
+        } else {
+            Self::Square
+        }
+    }
+}
+
 impl Page {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Command<app::Message> {
         let mut theme_builder_needs_update = false;
 
-        let ret = match message {
+        let mut ret = match message {
             Message::DarkMode(enabled) => {
                 self.theme_mode.is_dark = enabled;
                 if let Some(config) = self.theme_mode_config.as_ref() {
@@ -155,26 +238,15 @@ impl Page {
                         _ = config.set::<bool>("is_dark", enabled);
                     }
                 }
-                let theme_builder_config = if enabled {
-                    ThemeBuilder::dark_config()
-                } else {
-                    ThemeBuilder::light_config()
-                }
-                .ok();
-                if let Some(config) = theme_builder_config.as_ref() {
-                    self.theme_builder = match ThemeBuilder::get_entry(config) {
-                        Ok(tb) => tb,
-                        Err((errors, tb)) => {
-                            for e in errors {
-                                tracing::error!("{e}");
-                            }
-                            tb
-                        }
-                    };
-                } else {
-                    tracing::error!("Failed to load the theme builder config.");
-                }
-                Command::none()
+                *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
+
+                let theme_builder = self.theme_builder.clone();
+                Command::perform(async {}, |_| {
+                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
+                        // TODO set the values of the theme builder
+                        theme_builder.build(),
+                    )))
+                })
             }
             Message::Autoswitch(enabled) => {
                 self.theme_mode.auto_switch = enabled;
@@ -303,7 +375,10 @@ impl Page {
                     }
                     _ => Command::none(),
                 };
-                Command::batch(vec![cmd, self.custom_accent.update::<app::Message>(u)])
+                let cmd2 = self.custom_accent.update::<app::Message>(u);
+
+                self.theme_builder.accent = self.custom_accent.get_applied_color().map(Srgb::from);
+                Command::batch(vec![cmd, cmd2])
             }
             Message::InterfaceText(u) => {
                 let cmd = match &u {
@@ -430,21 +505,16 @@ impl Page {
                 return ret;
             };
             let mut theme_builder = std::mem::take(&mut self.theme_builder);
-            if let Some(c) = self.application_background.get_applied_color() {
-                theme_builder = theme_builder.bg_color(c.into());
-            }
-            if let Some(c) = self.container_background.get_applied_color() {
-                theme_builder = theme_builder.primary_container_bg(c.into());
-            }
-            if let Some(c) = self.custom_accent.get_applied_color() {
-                theme_builder = theme_builder.accent(c.into());
-            }
-            if let Some(c) = self.interface_text.get_applied_color() {
-                theme_builder = theme_builder.text_tint(c.into());
-            }
-            if let Some(c) = self.control_component.get_applied_color() {
-                theme_builder = theme_builder.neutral_tint(c.into());
-            }
+            theme_builder.bg_color = self
+                .application_background
+                .get_applied_color()
+                .map(Srgba::from);
+            theme_builder.primary_container_bg = self
+                .container_background
+                .get_applied_color()
+                .map(Srgba::from);
+            theme_builder.text_tint = self.interface_text.get_applied_color().map(Srgb::from);
+            theme_builder.neutral_tint = self.control_component.get_applied_color().map(Srgb::from);
 
             _ = theme_builder.write_entry(config);
 
@@ -461,6 +531,16 @@ impl Page {
             } else {
                 tracing::error!("Failed to get the theme config.");
             }
+            let theme_builder = self.theme_builder.clone();
+            ret = Command::batch(vec![
+                ret,
+                Command::perform(async {}, |_| {
+                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
+                        // TODO set the values of the theme builder
+                        theme_builder.build(),
+                    )))
+                }),
+            ])
         }
 
         // TODO if there were some changes, rebuild and apply to the config
@@ -573,7 +653,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
             let cur_accent = page
                 .theme_builder
                 .accent
-                .map(|a| cosmic::cosmic_theme::palette::Srgba::from(a))
+                .map(|a| Srgba::from(a))
                 .unwrap_or(palette.accent_blue);
             settings::view_section(&section.title)
                 .add(
@@ -644,11 +724,6 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                     Some(Message::PaletteAccent(palette.accent_pink.into())),
                                     palette.accent_pink.into(),
                                     cur_accent == palette.accent_pink,
-                                ),
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_red.into())),
-                                    palette.accent_red.into(),
-                                    cur_accent == palette.accent_red,
                                 ),
                                 color_button(
                                     Some(Message::PaletteAccent(palette.accent_red.into())),
