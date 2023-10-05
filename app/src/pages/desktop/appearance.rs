@@ -4,14 +4,16 @@
 use std::sync::Arc;
 
 use apply::Apply;
+use cosmic::app::command::message::cosmic;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::Srgba;
-use cosmic::cosmic_theme::{Theme, ThemeBuilder, ThemeMode};
+use cosmic::cosmic_theme::{Spacing, Theme, ThemeBuilder, ThemeMode};
 use cosmic::iced::wayland::actions::window::SctkWindowSettings;
 use cosmic::iced::widget::{column, row};
 use cosmic::iced::window;
 use cosmic::iced_core::{layout, Length};
 use cosmic::iced_sctk::commands::window::{close_window, get_window};
+use cosmic::iced_widget::scrollable;
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
     button, container, header_bar, horizontal_space, settings, spin_button, text, ColorPickerModel,
@@ -123,6 +125,7 @@ pub enum Message {
     GapSize(spin_button::Message),
     ApplicationBackground(ColorPickerUpdate),
     ContainerBackground(ColorPickerUpdate),
+    PaletteAccent(cosmic::iced::Color),
     CustomAccent(ColorPickerUpdate),
     InterfaceText(ColorPickerUpdate),
     ControlComponent(ColorPickerUpdate),
@@ -415,6 +418,11 @@ impl Page {
             Message::Left => Command::perform(async {}, |_| {
                 app::Message::SetTheme(cosmic::theme::system_preference())
             }),
+            Message::PaletteAccent(c) => {
+                self.theme_builder.accent = Some(c.into());
+                theme_builder_needs_update = true;
+                Command::none()
+            }
         };
 
         if theme_builder_needs_update {
@@ -561,7 +569,12 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
-
+            let palette = &page.theme_builder.palette.as_ref();
+            let cur_accent = page
+                .theme_builder
+                .accent
+                .map(|a| cosmic::cosmic_theme::palette::Srgba::from(a))
+                .unwrap_or(palette.accent_blue);
             settings::view_section(&section.title)
                 .add(
                     container(
@@ -607,7 +620,82 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         .description(&descriptions[1])
                         .toggler(page.theme_mode.auto_switch, Message::Autoswitch),
                 )
-                .add(column![text(&descriptions[2]),])
+                .add(
+                    column![
+                        text(&descriptions[2]),
+                        scrollable(
+                            row![
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_blue.into())),
+                                    palette.accent_blue.into(),
+                                    cur_accent == palette.accent_blue,
+                                ),
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_indigo.into())),
+                                    palette.accent_indigo.into(),
+                                    cur_accent == palette.accent_indigo,
+                                ),
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_purple.into())),
+                                    palette.accent_purple.into(),
+                                    cur_accent == palette.accent_purple,
+                                ),
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_pink.into())),
+                                    palette.accent_pink.into(),
+                                    cur_accent == palette.accent_pink,
+                                ),
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_red.into())),
+                                    palette.accent_red.into(),
+                                    cur_accent == palette.accent_red,
+                                ),
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_red.into())),
+                                    palette.accent_red.into(),
+                                    cur_accent == palette.accent_red,
+                                ),
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_orange.into())),
+                                    palette.accent_orange.into(),
+                                    cur_accent == palette.accent_orange,
+                                ),
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_yellow.into())),
+                                    palette.accent_yellow.into(),
+                                    cur_accent == palette.accent_yellow,
+                                ),
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_green.into())),
+                                    palette.accent_green.into(),
+                                    cur_accent == palette.accent_green,
+                                ),
+                                color_button(
+                                    Some(Message::PaletteAccent(palette.accent_warm_grey.into())),
+                                    palette.accent_warm_grey.into(),
+                                    cur_accent == palette.accent_warm_grey,
+                                ),
+                                style_color_button(
+                                    page.custom_accent.picker_button(Message::CustomAccent),
+                                    page.custom_accent
+                                        .get_applied_color()
+                                        .unwrap_or(cosmic::iced::Color::BLACK),
+                                    page.custom_accent.get_applied_color()
+                                        == Some(cur_accent.into())
+                                )
+                                .width(Length::Fixed(48.0))
+                                .height(Length::Fixed(48.0))
+                            ]
+                            .padding([0, 0, 16, 0])
+                            .spacing(16)
+                        )
+                        .direction(scrollable::Direction::Horizontal(
+                            scrollable::Properties::new()
+                        ))
+                    ]
+                    .padding([16, 24, 0, 24])
+                    .spacing(8),
+                )
                 .add(
                     settings::item::builder(&descriptions[3]).control(
                         page.application_background
@@ -814,4 +902,119 @@ fn color_picker_window_settings() -> SctkWindowSettings {
         client_decorations: true,
         transparent: true,
     }
+}
+
+// TODO replace with image button / toggle buttons
+fn color_button<'a, Message: 'a>(
+    on_press: Option<Message>,
+    color: cosmic::iced::Color,
+    selected: bool,
+) -> cosmic::widget::Button<'a, Message, cosmic::Renderer> {
+    let ret = button(cosmic::widget::vertical_space(Length::Fixed(f32::from(
+        48.0,
+    ))))
+    .width(Length::Fixed(f32::from(48.0)))
+    .height(Length::Fixed(f32::from(48.0)))
+    .on_press_maybe(on_press);
+    style_color_button(ret, color, selected)
+}
+
+fn style_color_button<'a, Message: 'a>(
+    b: button::Button<'a, Message, cosmic::Renderer>,
+    color: cosmic::iced::Color,
+    selected: bool,
+) -> button::Button<'a, Message, cosmic::Renderer> {
+    b.style(cosmic::theme::Button::Custom {
+        active: Box::new(move |focused, theme| {
+            let cosmic = theme.cosmic();
+
+            let (outline_width, outline_color) = if focused {
+                (1.0, cosmic.accent_color().into())
+            } else {
+                (0.0, cosmic::iced::Color::TRANSPARENT)
+            };
+            cosmic::widget::button::Appearance {
+                shadow_offset: cosmic::iced_core::Vector::default(),
+                background: Some(color.into()),
+                border_radius: cosmic.radius_xs().into(),
+                border_width: 1.0,
+                border_color: if selected {
+                    cosmic.on_bg_color().into()
+                } else {
+                    cosmic::iced::Color::TRANSPARENT
+                },
+                outline_width,
+                outline_color,
+                icon_color: None,
+                text_color: None,
+            }
+        }),
+        disabled: Box::new(move |theme| {
+            let cosmic = theme.cosmic();
+
+            cosmic::widget::button::Appearance {
+                shadow_offset: cosmic::iced_core::Vector::default(),
+                background: Some(color.into()),
+                border_radius: cosmic.radius_xs().into(),
+                border_width: 1.0,
+                border_color: if selected {
+                    cosmic.on_bg_color().into()
+                } else {
+                    cosmic::iced::Color::TRANSPARENT
+                },
+                outline_width: 0.0,
+                outline_color: cosmic::iced::Color::TRANSPARENT,
+                icon_color: None,
+                text_color: None,
+            }
+        }),
+        hovered: Box::new(move |focused, theme| {
+            let cosmic = theme.cosmic();
+
+            let (outline_width, outline_color) = if focused {
+                (1.0, cosmic.accent_color().into())
+            } else {
+                (0.0, cosmic::iced::Color::TRANSPARENT)
+            };
+            cosmic::widget::button::Appearance {
+                shadow_offset: cosmic::iced_core::Vector::default(),
+                background: Some(color.into()),
+                border_radius: cosmic.radius_xs().into(),
+                border_width: 1.0,
+                border_color: if selected {
+                    cosmic.on_bg_color().into()
+                } else {
+                    cosmic::iced::Color::TRANSPARENT
+                },
+                outline_width,
+                outline_color,
+                icon_color: None,
+                text_color: None,
+            }
+        }),
+        pressed: Box::new(move |focused, theme| {
+            let cosmic = theme.cosmic();
+
+            let (outline_width, outline_color) = if focused {
+                (1.0, cosmic.accent_color().into())
+            } else {
+                (0.0, cosmic::iced::Color::TRANSPARENT)
+            };
+            cosmic::widget::button::Appearance {
+                shadow_offset: cosmic::iced_core::Vector::default(),
+                background: Some(color.into()),
+                border_radius: cosmic.radius_xs().into(),
+                border_width: 1.0,
+                border_color: if selected {
+                    cosmic.on_bg_color().into()
+                } else {
+                    cosmic::iced::Color::TRANSPARENT
+                },
+                outline_width,
+                outline_color,
+                icon_color: None,
+                text_color: None,
+            }
+        }),
+    })
 }
