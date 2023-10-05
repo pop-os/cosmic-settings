@@ -280,7 +280,7 @@ checksum = "5fd55a5ba1179988837d24ab4c7cc8ed6efdeff578ede0416b4225a5fca35bd0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -297,7 +297,7 @@ checksum = "bc00ceb34980c03614e35a3a4e218276a0a824e911d07651cd0d858a51e8c0f0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -470,7 +470,7 @@ checksum = "965ab7eb5f8f97d2a083c799f3a1b994fc397b2fe2da5d1da1626ce15a39f2b1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -518,7 +518,7 @@ dependencies = [
  "bitflags 2.4.0",
  "log",
  "polling 3.2.0",
- "rustix 0.38.15",
+ "rustix 0.38.17",
  "slab",
  "thiserror",
 ]
@@ -530,7 +530,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f0ea9b9476c7fad82841a8dbb380e2eae480c21910feba80725b46931ed8f02"
 dependencies = [
  "calloop 0.12.2",
- "rustix 0.38.15",
+ "rustix 0.38.17",
  "wayland-backend 0.3.2",
  "wayland-client 0.31.1",
 ]
@@ -807,7 +807,7 @@ dependencies = [
 [[package]]
 name = "cosmic-comp-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-comp#d051f41de6d2daf1f0c5fa3d70d16d8b1b13b64b"
+source = "git+https://github.com/pop-os/cosmic-comp#e1e5dd994aaa0c415e8fc797ad53066a504f774a"
 dependencies = [
  "input",
  "serde",
@@ -816,6 +816,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "0.1.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "atomicwrites",
  "calloop 0.12.2",
@@ -830,6 +831,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "0.1.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -963,6 +965,7 @@ dependencies = [
 [[package]]
 name = "cosmic-theme"
 version = "0.1.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "almost",
  "cosmic-config",
@@ -1157,7 +1160,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -1179,7 +1182,7 @@ checksum = "836a9bbc7ad63342d6d6e7b815ccab164bc77a2d95d84bc3117a8c0d5c98e2d5"
 dependencies = [
  "darling_core 0.20.3",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -1221,7 +1224,7 @@ dependencies = [
  "darling 0.20.3",
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -1298,7 +1301,7 @@ checksum = "487585f4d0c6655fe74905e2504d8ad6908e4db67f744eb140876906c2f3175d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -1371,7 +1374,7 @@ checksum = "f95e2801cd355d4a1a3e3953ce6ee5ae9603a5c833455343a8bfe3f44d418246"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -1677,7 +1680,7 @@ checksum = "1a5c6c585bc94aaf2c7b51dd4c2ba22680844aba4c687be581871a6f518c5742"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -1840,7 +1843,7 @@ checksum = "89ca545a94061b6365f2c7355b4b32bd20df3ff95f02da9329b34ccc3bd6ee72"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -2137,7 +2140,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "thiserror",
- "toml 0.8.1",
+ "toml 0.8.2",
  "unic-langid",
 ]
 
@@ -2180,7 +2183,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.37",
+ "syn 2.0.38",
  "unic-langid",
 ]
 
@@ -2194,12 +2197,13 @@ dependencies = [
  "i18n-config",
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
 name = "iced"
 version = "0.10.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "iced_accessibility",
  "iced_core",
@@ -2215,6 +2219,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "accesskit",
  "accesskit_unix",
@@ -2223,6 +2228,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.10.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "bitflags 1.3.2",
  "iced_accessibility",
@@ -2237,6 +2243,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.7.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "futures",
  "iced_core",
@@ -2249,6 +2256,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.9.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
@@ -2266,6 +2274,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.1.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -2278,6 +2287,7 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.1.1"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "iced_accessibility",
  "iced_core",
@@ -2289,6 +2299,7 @@ dependencies = [
 [[package]]
 name = "iced_sctk"
 version = "0.1.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "enum-repr",
  "float-cmp",
@@ -2312,6 +2323,7 @@ dependencies = [
 [[package]]
 name = "iced_style"
 version = "0.9.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "iced_core",
  "once_cell",
@@ -2321,6 +2333,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.1.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2338,6 +2351,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.11.1"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
@@ -2359,6 +2373,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.1.3"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "iced_renderer",
  "iced_runtime",
@@ -2373,6 +2388,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.10.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "iced_graphics",
  "iced_runtime",
@@ -2388,9 +2404,9 @@ dependencies = [
 
 [[package]]
 name = "icu_calendar"
-version = "1.3.1"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff0efcbeb549a74ade74c9e385e59568272dc840ec68b2eb772708de16b77c6b"
+checksum = "b520c5675775e3838447c33fc55bf558148c6824ef0d20ff7a9e0df7345a281c"
 dependencies = [
  "calendrical_calculations",
  "displaydoc",
@@ -2405,15 +2421,15 @@ dependencies = [
 
 [[package]]
 name = "icu_calendar_data"
-version = "1.3.0"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf910a18bc3665153db121163ffe3fac18add670c778a4c485e50140ef198b61"
+checksum = "75d8d1a514ca7e6dc547be930f2fd661d578909c07cf1c1adade81c3f7a78840"
 
 [[package]]
 name = "icu_locid"
-version = "1.3.0"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56b72c6de0121c00da9828eb3e2603041d563788289bb15feba7c3331de71b5f"
+checksum = "f284eb342dc49d3e9d9f3b188489d76b5d22dfb1d1a5e0d1941811253bac625c"
 dependencies = [
  "displaydoc",
  "litemap",
@@ -2424,9 +2440,9 @@ dependencies = [
 
 [[package]]
 name = "icu_locid_transform"
-version = "1.3.1"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19b10b2a476daefcfe19707e095f5fdc1f446870a56e250250ae64782016bcf9"
+checksum = "6551daf80882d8e68eee186cc19e132d8bde1b1f059a79b93384a5ca0e8fc5e7"
 dependencies = [
  "displaydoc",
  "icu_locid",
@@ -2438,15 +2454,15 @@ dependencies = [
 
 [[package]]
 name = "icu_locid_transform_data"
-version = "1.3.0"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce5d8151979828a4645be945302e05c903cbb5c4a86a936965f7605bd5142e06"
+checksum = "2a741eba5431f75eb2f1f9022d3cffabcadda6771e54fb4e77c8ba8653e4da44"
 
 [[package]]
 name = "icu_provider"
-version = "1.3.1"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18d505243d809d5e14491a29ab9842f8a4b0568a33b462251f8ebf971ba55c83"
+checksum = "68acdef80034b5e35d8524e9817479d389a4f9774f3f0cbe1bf3884d80fd5934"
 dependencies = [
  "displaydoc",
  "icu_locid",
@@ -2461,20 +2477,20 @@ dependencies = [
 
 [[package]]
 name = "icu_provider_macros"
-version = "1.3.0"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca9be8af0b117ccf1516251daab4c9137c012646a211c2a02d2f568ea3cd0df4"
+checksum = "2060258edfcfe32ca7058849bf0f146cb5c59aadbedf480333c0d0002f97bc99"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
 name = "icu_timezone"
-version = "1.3.0"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d411c1ab1c6062291de1f347d46eca742dd945ee21e0f012e22f27b273b38659"
+checksum = "19e6401cd210ccda98b2e7fc707831b29c6efe319efbbec460f957b6f331f626"
 dependencies = [
  "displaydoc",
  "icu_calendar",
@@ -2488,9 +2504,9 @@ dependencies = [
 
 [[package]]
 name = "icu_timezone_data"
-version = "1.3.0"
+version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9628d42fbde50f50ec8ee704c7cba46279734b46f1f4c352b6d5c5d4a9165008"
+checksum = "6d7e214a653bac59b768c42f82d252f13af95e8a9cb07b6108b8bc723c561b43"
 
 [[package]]
 name = "ident_case"
@@ -2651,7 +2667,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb0889898416213fab133e1d33a0e5858a48177452750691bde3666d0fdbaf8b"
 dependencies = [
  "hermit-abi",
- "rustix 0.38.15",
+ "rustix 0.38.17",
  "windows-sys 0.48.0",
 ]
 
@@ -2767,6 +2783,7 @@ checksum = "9cdc71e17332e86d2e1d38c1f99edcb6288ee11b815fb1a4b049eaa2114d369b"
 [[package]]
 name = "libcosmic"
 version = "0.1.0"
+source = "git+https://github.com/pop-os/libcosmic//?branch=theme-dark-light-switching#f6a010785f6a4bf6f42c33ecc37aa3c8e5713712"
 dependencies = [
  "apply",
  "ashpd",
@@ -3453,7 +3470,7 @@ dependencies = [
  "proc-macro-error",
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -3489,7 +3506,7 @@ checksum = "b7db010ec5ff3d4385e4f133916faacd9dad0f6a09394c92d825b3aed310fa0a"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -3582,7 +3599,7 @@ dependencies = [
  "phf_shared",
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -3617,7 +3634,7 @@ checksum = "4359fd9c9171ec6e8c62926d6faaf553a8dc3f64e1507e76da7911b4f6a04405"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -3687,7 +3704,7 @@ dependencies = [
  "cfg-if",
  "concurrent-queue",
  "pin-project-lite",
- "rustix 0.38.15",
+ "rustix 0.38.17",
  "tracing",
  "windows-sys 0.48.0",
 ]
@@ -3997,7 +4014,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rust-embed-utils",
- "syn 2.0.37",
+ "syn 2.0.38",
  "walkdir",
 ]
 
@@ -4049,9 +4066,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.15"
+version = "0.38.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2f9da0cbd88f9f09e7814e388301c8414c51c62aa6ce1e4b5c551d49d96e531"
+checksum = "f25469e9ae0f3d0047ca8b93fc56843f38e6774f0914a107ff8b41be8be8e0b7"
 dependencies = [
  "bitflags 2.4.0",
  "errno",
@@ -4164,7 +4181,7 @@ checksum = "4eca7ac642d82aa35b60049a6eccb4be6be75e599bd2e9adb5f875a737654af2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -4175,7 +4192,7 @@ checksum = "8725e1dfadb3a50f7e5ce0b1a540466f6ed3fe7a0fca2ac2b8b831d31316bd00"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -4232,9 +4249,9 @@ dependencies = [
 
 [[package]]
 name = "sharded-slab"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1b21f559e07218024e7e9f90f96f601825397de0e25420135f7f952453fed0b"
+checksum = "f40ca3c46823713e0d4209592e8d6e826aa57e928f09752619fc696c499637f6"
 dependencies = [
  "lazy_static",
 ]
@@ -4497,9 +4514,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.37"
+version = "2.0.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7303ef2c05cd654186cb250d29049a24840ca25d2747c25c0381c8d9e2f582e8"
+checksum = "e96b79aaa137db8f61e26363a0c9b47d8b4ec75da28b7d1d614c2303e232408b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4514,7 +4531,7 @@ checksum = "285ba80e733fac80aa4270fbcdf83772a79b80aa35c97075320abfee4a915b06"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
  "unicode-xid",
 ]
 
@@ -4545,7 +4562,7 @@ dependencies = [
 [[package]]
 name = "taffy"
 version = "0.3.11"
-source = "git+https://github.com/DioxusLabs/taffy#120bb7a2e501822b324fd48de955450ebbba1c1a"
+source = "git+https://github.com/DioxusLabs/taffy#48e4800f14c6af5cd26275fb570d11b93e279654"
 dependencies = [
  "arrayvec 0.7.4",
  "grid",
@@ -4568,7 +4585,7 @@ dependencies = [
  "cfg-if",
  "fastrand 2.0.1",
  "redox_syscall 0.3.5",
- "rustix 0.38.15",
+ "rustix 0.38.17",
  "windows-sys 0.48.0",
 ]
 
@@ -4598,7 +4615,7 @@ checksum = "10712f02019e9288794769fba95cd6847df9874d49d871d062172f9dd41bc4cc"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -4684,9 +4701,9 @@ dependencies = [
 
 [[package]]
 name = "tinystr"
-version = "0.7.3"
+version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b07bb54ef1f8ff27564b08b861144d3b8d40263efe07684f64987f4c0d044e3e"
+checksum = "d5d0e245e80bdc9b4e5356fc45a72184abbc3861992603f515270e9340f5a219"
 dependencies = [
  "displaydoc",
  "zerovec",
@@ -4736,14 +4753,14 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.1"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1bc1433177506450fe920e46a4f9812d0c211f5dd556da10e731a0a3dfa151f0"
+checksum = "185d8ab0dfbb35cf1399a6344d8484209c088f75f8f68230da55d48d95d43e3d"
 dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "toml_edit 0.20.1",
+ "toml_edit 0.20.2",
 ]
 
 [[package]]
@@ -4768,9 +4785,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.20.1"
+version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca676d9ba1a322c1b64eb8045a5ec5c0cfb0c9d08e15e9ff622589ad5221c8fe"
+checksum = "396e4d48bbb2b7554c944bde63101b5ae446cff6ec4a24227428f15eb72ef338"
 dependencies = [
  "indexmap 2.0.2",
  "serde",
@@ -4799,7 +4816,7 @@ checksum = "5f4f31f56159e98206da9efd823404b79b6ef3143b4a7ab76e67b1751b25a4ab"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
@@ -5140,7 +5157,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
  "wasm-bindgen-shared",
 ]
 
@@ -5174,7 +5191,7 @@ checksum = "54681b18a46765f095758388f2d0cf16eb8d4169b639ab575a8f5693af210c7b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
@@ -6035,7 +6052,7 @@ checksum = "d5e19fb6ed40002bab5403ffa37e53e0e56f914a4450c8765f533018db1db35f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
  "synstructure",
 ]
 
@@ -6129,15 +6146,15 @@ checksum = "e6a647510471d372f2e6c2e6b7219e44d8c574d24fdc11c610a61455782f18c3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
  "synstructure",
 ]
 
 [[package]]
 name = "zerotrie"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41354ddf8b8303c6e1274c5f2ed4bd7ad401db10634e50bd7303ae0fd84b2bd8"
+checksum = "9685bb4deb98dab812e87c296a9631fc00d7ca4bc5c2c5f304f375bbed711a8a"
 dependencies = [
  "displaydoc",
  "yoke",
@@ -6163,7 +6180,7 @@ checksum = "acabf549809064225ff8878baedc4ce3732ac3b07e7c7ce6e5c2ccdbc485c324"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.37",
+ "syn 2.0.38",
 ]
 
 [[package]]
