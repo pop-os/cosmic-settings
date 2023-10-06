@@ -85,9 +85,15 @@ impl From<(Option<Config>, ThemeMode)> for Page {
             ThemeBuilder::light_config()
         }
         .ok();
-        let theme_builder = theme_builder_config
-            .as_ref()
-            .map(|c| match ThemeBuilder::get_entry(c) {
+        let theme_builder = theme_builder_config.as_ref().map_or_else(
+            || {
+                if theme_mode.is_dark {
+                    ThemeBuilder::dark()
+                } else {
+                    ThemeBuilder::light()
+                }
+            },
+            |c| match ThemeBuilder::get_entry(c) {
                 Ok(t) => t,
                 Err((errors, t)) => {
                     for e in errors {
@@ -95,14 +101,8 @@ impl From<(Option<Config>, ThemeMode)> for Page {
                     }
                     t
                 }
-            })
-            .unwrap_or_else(|| {
-                if theme_mode.is_dark {
-                    ThemeBuilder::dark()
-                } else {
-                    ThemeBuilder::light()
-                }
-            });
+            },
+        );
         // TODO fill all these values with the current values
         Self {
             accent_window_hint: Default::default(),
@@ -214,9 +214,9 @@ impl From<Roundness> for CornerRadii {
 
 impl From<CornerRadii> for Roundness {
     fn from(value: CornerRadii) -> Self {
-        if value.radius_m[0] == 16.0 {
+        if (value.radius_m[0] - 16.0).abs() < 0.01 {
             Self::Round
-        } else if value.radius_m[0] == 8.0 {
+        } else if (value.radius_m[0] - 8.0).abs() < 0.01 {
             Self::SlightlyRound
         } else {
             Self::Square
@@ -540,7 +540,7 @@ impl Page {
                         theme_builder.build(),
                     )))
                 }),
-            ])
+            ]);
         }
 
         // TODO if there were some changes, rebuild and apply to the config
@@ -653,7 +653,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
             let cur_accent = page
                 .theme_builder
                 .accent
-                .map(|a| Srgba::from(a))
+                .map(Srgba::from)
                 .unwrap_or(palette.accent_blue);
             settings::view_section(&section.title)
                 .add(
@@ -985,12 +985,10 @@ fn color_button<'a, Message: 'a>(
     color: cosmic::iced::Color,
     selected: bool,
 ) -> cosmic::widget::Button<'a, Message, cosmic::Renderer> {
-    let ret = button(cosmic::widget::vertical_space(Length::Fixed(f32::from(
-        48.0,
-    ))))
-    .width(Length::Fixed(f32::from(48.0)))
-    .height(Length::Fixed(f32::from(48.0)))
-    .on_press_maybe(on_press);
+    let ret = button(cosmic::widget::vertical_space(Length::Fixed(48.0)))
+        .width(Length::Fixed(48.0))
+        .height(Length::Fixed(48.0))
+        .on_press_maybe(on_press);
     style_color_button(ret, color, selected)
 }
 

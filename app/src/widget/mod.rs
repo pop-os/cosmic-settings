@@ -42,7 +42,6 @@ pub fn search_header<Message>(
     column::with_children(column_children).into()
 }
 
-#[must_use]
 pub fn search_page_link<Message: 'static>(title: &str) -> button::TextButton<Message> {
     button::text(title).style(button::Style::Link)
 }

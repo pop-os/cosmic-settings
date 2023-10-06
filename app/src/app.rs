@@ -281,7 +281,7 @@ impl cosmic::Application for SettingsApp {
                     self.pages,
                     dock::applets::Message(applets_inner::Message::PanelConfig(config,)),
                     dock::applets::Page
-                );
+                )
             }
 
             Message::DesktopInfo => {
@@ -291,7 +291,7 @@ impl cosmic::Application for SettingsApp {
                 .filter_map(|p| applets_inner::Applet::try_from(Cow::from(p)).ok())
                 .collect();
 
-                page::update!(
+                _ = page::update!(
                     self.pages,
                     dock::applets::Message(applets_inner::Message::Applets(info_list.clone())),
                     dock::applets::Page

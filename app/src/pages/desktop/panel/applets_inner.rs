@@ -1,6 +1,6 @@
 use button::StyleSheet as ButtonStyleSheet;
 use cosmic::iced_style::container::StyleSheet;
-use cosmic::iced_widget::text_input::{Icon, Side};
+
 use cosmic::widget::{
     button, column, container, header_bar, icon, list_column, row, scrollable, text, text_input,
     Column,
