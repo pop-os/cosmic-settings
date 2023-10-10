@@ -11,6 +11,7 @@ Build-Depends:
     libfontconfig-dev,
     libfreetype-dev,
     lld,
+    libwayland-dev,
     pkg-config,
     libxkbcommon-dev,
     libudev-dev,
