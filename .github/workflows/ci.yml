@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install system dependencies
-        run: sudo apt-get update && sudo apt-get install lld cmake libexpat1-dev libfontconfig-dev libfreetype-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev
+        run: sudo apt-get update && sudo apt-get install lld cmake libexpat1-dev libfontconfig-dev libfreetype-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
       - uses: actions/checkout@v3
       - name: install toolchain
         run: rustup toolchain install 1.70.0 --component clippy
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install system dependencies
-        run: sudo apt-get update && sudo apt-get install lld cmake libexpat1-dev libfontconfig-dev libfreetype-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev
+        run: sudo apt-get update && sudo apt-get install lld cmake libexpat1-dev libfontconfig-dev libfreetype-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
       - uses: actions/checkout@v3
       - name: install toolchain
         run: rustup show
