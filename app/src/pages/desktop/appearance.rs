@@ -33,15 +33,13 @@ enum NamedColorPicker {
     ContainerBackground,
     InterfaceText,
     ControlComponent,
+    AccentWindowHint,
 }
 // TODO integrate with settings backend
 pub struct Page {
-    accent_window_hint: bool,
-    frosted: bool,
-    window_hint_size: u16,
-    gap_size: u16,
     can_reset: bool,
     custom_accent: ColorPickerModel,
+    accent_window_hint: ColorPickerModel,
     application_background: ColorPickerModel,
     container_background: ColorPickerModel,
     interface_text: ColorPickerModel,
@@ -105,10 +103,6 @@ impl From<(Option<Config>, ThemeMode)> for Page {
         );
         // TODO fill all these values with the current values
         Self {
-            accent_window_hint: Default::default(),
-            frosted: Default::default(),
-            window_hint_size: Default::default(),
-            gap_size: Default::default(),
             can_reset: if theme_mode.is_dark {
                 theme_builder == ThemeBuilder::dark()
             } else {
@@ -145,6 +139,12 @@ impl From<(Option<Config>, ThemeMode)> for Page {
                 None,
                 theme_builder.neutral_tint.map(Color::from),
             ),
+            accent_window_hint: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                None,
+                theme_builder.window_hint.map(Color::from),
+            ),
             active_dialog: None,
             theme_mode_config,
             theme_builder_config,
@@ -159,10 +159,10 @@ pub enum Message {
     Entered,
     DarkMode(bool),
     Autoswitch(bool),
-    AccentWindowHint(bool),
     Frosted(bool),
     WindowHintSize(spin_button::Message),
     GapSize(spin_button::Message),
+    AccentWindowHint(ColorPickerUpdate),
     ApplicationBackground(ColorPickerUpdate),
     ContainerBackground(ColorPickerUpdate),
     PaletteAccent(cosmic::iced::Color),
@@ -256,28 +256,58 @@ impl Page {
                 if !enabled {}
                 Command::none()
             }
-            Message::AccentWindowHint(enabled) => {
-                // TODO write to cosmic comp config
-                self.accent_window_hint = enabled;
-                Command::none()
+            Message::AccentWindowHint(u) => {
+                let cmd = match &u {
+                    ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
+                        // close the color picker dialog
+                        // apply changes
+                        theme_builder_needs_update = true;
+                        close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
+                    }
+                    // TODO apply changes
+                    ColorPickerUpdate::ActionFinished => {
+                        theme_builder_needs_update = true;
+                        _ = self
+                            .accent_window_hint
+                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
+                        Command::none()
+                    }
+                    ColorPickerUpdate::Cancel => {
+                        // close the color picker dialog
+                        close_window(COLOR_PICKER_DIALOG_ID)
+                    }
+                    ColorPickerUpdate::ToggleColorPicker => {
+                        // create the color picker dialog
+                        // set the active picker
+                        self.active_dialog = Some(NamedColorPicker::AccentWindowHint);
+                        get_window(color_picker_window_settings())
+                    }
+                    _ => Command::none(),
+                };
+                Command::batch(vec![cmd, self.accent_window_hint.update::<app::Message>(u)])
             }
             Message::Frosted(enabled) => {
-                // TODO add variable to the config
-                self.frosted = enabled;
+                theme_builder_needs_update = true;
+                self.theme_builder.is_frosted = enabled;
                 Command::none()
             }
             Message::WindowHintSize(msg) => {
-                // TODO write to cosmic comp config
-                self.window_hint_size = match msg {
-                    spin_button::Message::Increment => self.window_hint_size.saturating_add(1),
-                    spin_button::Message::Decrement => self.window_hint_size.saturating_sub(1),
+                theme_builder_needs_update = true;
+                self.theme_builder.active_hint = match msg {
+                    spin_button::Message::Increment => {
+                        self.theme_builder.active_hint.saturating_add(1)
+                    }
+                    spin_button::Message::Decrement => {
+                        self.theme_builder.active_hint.saturating_sub(1)
+                    }
                 };
                 Command::none()
             }
             Message::GapSize(msg) => {
-                self.gap_size = match msg {
-                    spin_button::Message::Increment => self.gap_size.saturating_add(1),
-                    spin_button::Message::Decrement => self.gap_size.saturating_sub(1),
+                theme_builder_needs_update = true;
+                self.theme_builder.gaps.1 = match msg {
+                    spin_button::Message::Increment => self.theme_builder.gaps.1.saturating_add(1),
+                    spin_button::Message::Decrement => self.theme_builder.gaps.1.saturating_sub(1),
                 };
                 Command::none()
             }
@@ -467,6 +497,11 @@ impl Page {
                             .interface_text
                             .update::<app::Message>(ColorPickerUpdate::AppliedColor);
                     }
+                    Some(NamedColorPicker::AccentWindowHint) => {
+                        _ = self
+                            .accent_window_hint
+                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
+                    }
                     None => {
                         theme_builder_needs_update = false;
                         warn!("Unknown appearance dialog closed.");
@@ -515,6 +550,7 @@ impl Page {
                 .map(Srgba::from);
             theme_builder.text_tint = self.interface_text.get_applied_color().map(Srgb::from);
             theme_builder.neutral_tint = self.control_component.get_applied_color().map(Srgb::from);
+            theme_builder.window_hint = self.accent_window_hint.get_applied_color().map(Srgb::from);
 
             _ = theme_builder.write_entry(config);
 
@@ -560,6 +596,9 @@ impl Page {
             }
             Some(NamedColorPicker::CustomAccent) => (&self.custom_accent, Message::CustomAccent),
             Some(NamedColorPicker::InterfaceText) => (&self.interface_text, Message::InterfaceText),
+            Some(NamedColorPicker::AccentWindowHint) => {
+                (&self.accent_window_hint, Message::AccentWindowHint)
+            }
             None => return text("OOPS!").into(),
         };
         column![
@@ -653,8 +692,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
             let cur_accent = page
                 .theme_builder
                 .accent
-                .map(Srgba::from)
-                .unwrap_or(palette.accent_blue);
+                .map_or(palette.accent_blue, Srgba::from);
             settings::view_section(&section.title)
                 .add(
                     container(
@@ -810,8 +848,12 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&descriptions[12])
-                        .toggler(page.accent_window_hint, Message::AccentWindowHint),
+                    settings::item::builder(&descriptions[12]).control(
+                        page.accent_window_hint
+                            .picker_button(Message::AccentWindowHint)
+                            .width(Length::Fixed(48.0))
+                            .height(Length::Fixed(24.0)),
+                    ),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
@@ -911,7 +953,7 @@ pub fn style() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&descriptions[3])
                         .description(&descriptions[4])
-                        .toggler(page.frosted, Message::Frosted),
+                        .toggler(page.theme_builder.is_frosted, Message::Frosted),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
@@ -932,12 +974,15 @@ pub fn window_management() -> Section<crate::pages::Message> {
             settings::view_section(&section.title)
                 .add(settings::item::builder(&descriptions[0]).control(
                     cosmic::widget::spin_button(
-                        page.window_hint_size.to_string(),
+                        page.theme_builder.active_hint.to_string(),
                         Message::WindowHintSize,
                     ),
                 ))
                 .add(settings::item::builder(&descriptions[1]).control(
-                    cosmic::widget::spin_button(page.gap_size.to_string(), Message::GapSize),
+                    cosmic::widget::spin_button(
+                        page.theme_builder.gaps.1.to_string(),
+                        Message::GapSize,
+                    ),
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
