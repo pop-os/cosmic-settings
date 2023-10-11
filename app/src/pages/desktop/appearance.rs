@@ -171,6 +171,9 @@ pub enum Message {
     ControlComponent(ColorPickerUpdate),
     CloseRequested(window::Id),
     Roundness(Roundness),
+    Import,
+    Export,
+    Reset,
     Left,
 }
 
@@ -533,6 +536,41 @@ impl Page {
                 theme_builder_needs_update = true;
                 Command::none()
             }
+            Message::Reset => {
+                self.theme_builder = if self.theme_mode.is_dark {
+                    ThemeBuilder::dark()
+                } else {
+                    ThemeBuilder::light()
+                };
+                if let Some(config) = self.theme_builder_config.as_ref() {
+                    _ = self.theme_builder.write_entry(config);
+                };
+
+                let config = if self.theme_mode.is_dark {
+                    Theme::<Srgba>::dark_config()
+                } else {
+                    Theme::<Srgba>::light_config()
+                };
+                let new_theme = self.theme_builder.clone().build();
+                if let Ok(config) = config {
+                    _ = new_theme.write_entry(&config);
+                } else {
+                    tracing::error!("Failed to get the theme config.");
+                }
+
+                *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
+                Command::perform(async {}, |_| {
+                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
+                })
+            }
+            Message::Import => {
+                // TODO get file from portal
+                Command::none()
+            }
+            Message::Export => {
+                // TODO write file using portal
+                Command::none()
+            }
         };
 
         if theme_builder_needs_update {
@@ -572,14 +610,18 @@ impl Page {
                 ret,
                 Command::perform(async {}, |_| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
-                        // TODO set the values of the theme builder
                         theme_builder.build(),
                     )))
                 }),
             ]);
         }
 
-        // TODO if there were some changes, rebuild and apply to the config
+        self.can_reset = if self.theme_mode.is_dark {
+            self.theme_builder != ThemeBuilder::dark()
+        } else {
+            self.theme_builder != ThemeBuilder::light()
+        };
+
         ret
     }
 
@@ -631,6 +673,7 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
+            sections.insert(import_export()),
             sections.insert(mode_and_colors()),
             sections.insert(style()),
             sections.insert(window_management()),
@@ -655,6 +698,30 @@ impl page::Page<crate::pages::Message> for Page {
             crate::pages::Message::Appearance(Message::Left)
         })
     }
+}
+
+fn import_export() -> Section<crate::pages::Message> {
+    Section::default()
+        .descriptions(vec![fl!("import"), fl!("export")])
+        .view::<Page>(|_binder, page, section| {
+            let spacing = &page.theme_builder.spacing;
+            let descriptions = &section.descriptions;
+            container(
+                row![
+                    button(text(&descriptions[0]))
+                        .on_press(Message::Import)
+                        .padding([spacing.space_xxs, spacing.space_xs]),
+                    button(text(&descriptions[1]))
+                        .on_press(Message::Export)
+                        .padding([spacing.space_xxs, spacing.space_xs])
+                ]
+                .spacing(8.0),
+            )
+            .width(Length::Fill)
+            .align_x(cosmic::iced_core::alignment::Horizontal::Right)
+            .apply(Element::from)
+            .map(crate::pages::Message::Appearance)
+        })
 }
 
 #[allow(clippy::too_many_lines)]
@@ -994,9 +1061,13 @@ pub fn reset_button() -> Section<crate::pages::Message> {
     Section::default()
         .descriptions(vec![fl!("reset-default")])
         .view::<Page>(|_binder, page, section| {
+            let spacing = &page.theme_builder.spacing;
             let descriptions = &section.descriptions;
             if page.can_reset {
-                row![button(text(&descriptions[0]))].apply(Element::from)
+                row![button(text(&descriptions[0]))
+                    .on_press(Message::Reset)
+                    .padding([spacing.space_xxs, spacing.space_xs])]
+                .apply(Element::from)
             } else {
                 horizontal_space(1).apply(Element::from)
             }

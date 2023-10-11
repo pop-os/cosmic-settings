@@ -13,6 +13,9 @@ desktop = Desktop
 appearance = Appearance
     .desc = Accent colors and COSMIC theming.
 
+import = Import
+export = Export
+
 mode-and-colors = Mode and Colors
 auto-switch = Automatically switch from Light to Dark mode
     .desc = Switches to Light mode at sunrise
