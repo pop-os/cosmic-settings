@@ -4,6 +4,7 @@
 use std::sync::Arc;
 
 use apply::Apply;
+use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{Srgb, Srgba};
 use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
@@ -21,6 +22,7 @@ use cosmic::widget::{
 use cosmic::{Command, Element};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use ron::ser::PrettyConfig;
 use slotmap::SlotMap;
 use tracing::warn;
 
@@ -189,8 +191,14 @@ pub enum Message {
     ControlComponent(ColorPickerUpdate),
     CloseRequested(window::Id),
     Roundness(Roundness),
-    Import,
-    Export,
+    StartImport,
+    StartExport,
+    ImportFile(Arc<SelectedFiles>),
+    ExportFile(Arc<SelectedFiles>),
+    ExportSuccess,
+    ImportSuccess(ThemeBuilder),
+    ImportError,
+    ExportError,
     Reset,
     Left,
 }
@@ -581,13 +589,147 @@ impl Page {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
                 })
             }
-            Message::Import => {
-                // TODO get file from portal
+            Message::StartImport => Command::perform(
+                async {
+                    SelectedFiles::open_file()
+                        .modal(true)
+                        .filter(FileFilter::glob(FileFilter::new("ron"), "*.ron"))
+                        .send()
+                        .await?
+                        .response()
+                },
+                |res| {
+                    if let Ok(f) = res {
+                        crate::Message::PageMessage(crate::pages::Message::Appearance(
+                            Message::ImportFile(Arc::new(f)),
+                        ))
+                    } else {
+                        // TODO Error toast?
+                        tracing::error!("failed to select a file for importing a custom theme.");
+                        crate::Message::PageMessage(crate::pages::Message::Appearance(
+                            Message::ImportError,
+                        ))
+                    }
+                },
+            ),
+            Message::StartExport => {
+                let is_dark = self.theme_mode.is_dark;
+                let name = format!("{}.ron", if is_dark { fl!("dark") } else { fl!("light") });
+                Command::perform(
+                    async move {
+                        SelectedFiles::save_file()
+                            .modal(true)
+                            .current_name(Some(name.as_str()))
+                            .send()
+                            .await?
+                            .response()
+                    },
+                    |res| {
+                        if let Ok(f) = res {
+                            crate::Message::PageMessage(crate::pages::Message::Appearance(
+                                Message::ExportFile(Arc::new(f)),
+                            ))
+                        } else {
+                            // TODO Error toast?
+                            tracing::error!(
+                                "failed to select a file for importing a custom theme."
+                            );
+                            crate::Message::PageMessage(crate::pages::Message::Appearance(
+                                Message::ExportError,
+                            ))
+                        }
+                    },
+                )
+            }
+            Message::ImportFile(f) => {
+                let Some(f) = f.uris().get(0) else {
+                    return Command::none();
+                };
+                if f.scheme() != "file" {
+                    return Command::none();
+                }
+                let Ok(path) = f.to_file_path() else {
+                    return Command::none();
+                };
+                Command::perform(
+                    async move { tokio::fs::read_to_string(path).await },
+                    |res| {
+                        if let Some(b) = res.ok().and_then(|s| ron::de::from_str(&s).ok()) {
+                            crate::Message::PageMessage(crate::pages::Message::Appearance(
+                                Message::ImportSuccess(b),
+                            ))
+                        } else {
+                            // TODO Error toast?
+                            tracing::error!("failed to import a file for a custom theme.");
+                            crate::Message::PageMessage(crate::pages::Message::Appearance(
+                                Message::ImportError,
+                            ))
+                        }
+                    },
+                )
+            }
+            Message::ExportFile(f) => {
+                let Some(f) = f.uris().get(0) else {
+                    return Command::none();
+                };
+                if f.scheme() != "file" {
+                    return Command::none();
+                }
+                let Ok(path) = f.to_file_path() else {
+                    return Command::none();
+                };
+                let Ok(builder) = ron::ser::to_string_pretty(&self.theme_builder, PrettyConfig::default()) else {
+                    return Command::none();
+                };
+                Command::perform(
+                    async move { tokio::fs::write(path, builder).await },
+                    |res| {
+                        if res.is_ok() {
+                            crate::Message::PageMessage(crate::pages::Message::Appearance(
+                                Message::ExportSuccess,
+                            ))
+                        } else {
+                            // TODO Error toast?
+                            tracing::error!(
+                                "failed to select a file for importing a custom theme."
+                            );
+                            crate::Message::PageMessage(crate::pages::Message::Appearance(
+                                Message::ExportError,
+                            ))
+                        }
+                    },
+                )
+            }
+            Message::ImportError => Command::none(),
+            Message::ExportError => Command::none(),
+            Message::ExportSuccess => {
+                tracing::trace!("Export successful");
                 Command::none()
             }
-            Message::Export => {
-                // TODO write file using portal
-                Command::none()
+            Message::ImportSuccess(builder) => {
+                tracing::trace!("Import successful");
+                self.theme_builder = builder;
+
+                if let Some(config) = self.theme_builder_config.as_ref() {
+                    _ = self.theme_builder.write_entry(config);
+                };
+
+                let config = if self.theme_mode.is_dark {
+                    Theme::<Srgba>::dark_config()
+                } else {
+                    Theme::<Srgba>::light_config()
+                };
+                let new_theme = self.theme_builder.clone().build();
+                if let Ok(config) = config {
+                    _ = new_theme.write_entry(&config);
+                } else {
+                    tracing::error!("Failed to get the theme config.");
+                }
+
+                *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
+                Command::perform(async {}, |_| {
+                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
+                })
             }
         };
 
@@ -727,10 +869,10 @@ fn import_export() -> Section<crate::pages::Message> {
             container(
                 row![
                     button(text(&descriptions[0]))
-                        .on_press(Message::Import)
+                        .on_press(Message::StartImport)
                         .padding([spacing.space_xxs, spacing.space_xs]),
                     button(text(&descriptions[1]))
-                        .on_press(Message::Export)
+                        .on_press(Message::StartExport)
                         .padding([spacing.space_xxs, spacing.space_xs])
                 ]
                 .spacing(8.0),
