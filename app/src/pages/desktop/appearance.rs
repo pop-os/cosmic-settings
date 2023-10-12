@@ -15,8 +15,8 @@ use cosmic::iced_sctk::commands::window::{close_window, get_window};
 use cosmic::iced_widget::scrollable;
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
-    button, container, header_bar, horizontal_space, settings, spin_button, text, ColorPickerModel,
-    ColorPickerUpdate,
+    button, color_picker::ColorPickerUpdate, container, header_bar, horizontal_space, settings,
+    spin_button, text, ColorPickerModel,
 };
 use cosmic::{Command, Element};
 use cosmic_settings_page::Section;
@@ -101,6 +101,24 @@ impl From<(Option<Config>, ThemeMode)> for Page {
                 }
             },
         );
+        let custom_accent = theme_builder.accent.filter(|c| {
+            let palette = if theme_mode.is_dark {
+                Theme::dark_default().palette
+            } else {
+                Theme::light_default().palette
+            };
+            let c = Srgba::new(c.red, c.green, c.blue, 1.0);
+            c != palette.accent_blue
+                && c != palette.accent_green
+                && c != palette.accent_indigo
+                && c != palette.accent_orange
+                && c != palette.accent_pink
+                && c != palette.accent_purple
+                && c != palette.accent_red
+                && c != palette.accent_warm_grey
+                && c != palette.accent_yellow
+        });
+
         // TODO fill all these values with the current values
         Self {
             can_reset: if theme_mode.is_dark {
@@ -113,7 +131,7 @@ impl From<(Option<Config>, ThemeMode)> for Page {
                 fl!("hex"),
                 fl!("rgb"),
                 None,
-                theme_builder.accent.map(Color::from),
+                custom_accent.map(Color::from),
             ),
             application_background: ColorPickerModel::new(
                 fl!("hex"),
@@ -855,16 +873,10 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                     palette.accent_warm_grey.into(),
                                     cur_accent == palette.accent_warm_grey,
                                 ),
-                                style_color_button(
-                                    page.custom_accent.picker_button(Message::CustomAccent),
-                                    page.custom_accent
-                                        .get_applied_color()
-                                        .unwrap_or(cosmic::iced::Color::BLACK),
-                                    page.custom_accent.get_applied_color()
-                                        == Some(cur_accent.into())
-                                )
-                                .width(Length::Fixed(48.0))
-                                .height(Length::Fixed(48.0))
+                                page.custom_accent
+                                    .picker_button(Message::CustomAccent, None)
+                                    .width(Length::Fixed(48.0))
+                                    .height(Length::Fixed(48.0))
                             ]
                             .padding([0, 0, 16, 0])
                             .spacing(16)
@@ -879,7 +891,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&descriptions[3]).control(
                         page.application_background
-                            .picker_button(Message::ApplicationBackground)
+                            .picker_button(Message::ApplicationBackground, Some(24))
                             .width(Length::Fixed(48.0))
                             .height(Length::Fixed(24.0)),
                     ),
@@ -889,7 +901,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         .description(&descriptions[5])
                         .control(
                             page.container_background
-                                .picker_button(Message::ContainerBackground)
+                                .picker_button(Message::ContainerBackground, Some(24))
                                 .width(Length::Fixed(48.0))
                                 .height(Length::Fixed(24.0)),
                         ),
@@ -899,7 +911,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         .description(&descriptions[9])
                         .control(
                             page.interface_text
-                                .picker_button(Message::InterfaceText)
+                                .picker_button(Message::InterfaceText, Some(24))
                                 .width(Length::Fixed(48.0))
                                 .height(Length::Fixed(24.0)),
                         ),
@@ -909,7 +921,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         .description(&descriptions[11])
                         .control(
                             page.control_component
-                                .picker_button(Message::ControlComponent)
+                                .picker_button(Message::ControlComponent, Some(24))
                                 .width(Length::Fixed(48.0))
                                 .height(Length::Fixed(24.0)),
                         ),
@@ -917,7 +929,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&descriptions[12]).control(
                         page.accent_window_hint
-                            .picker_button(Message::AccentWindowHint)
+                            .picker_button(Message::AccentWindowHint, Some(24))
                             .width(Length::Fixed(48.0))
                             .height(Length::Fixed(24.0)),
                     ),

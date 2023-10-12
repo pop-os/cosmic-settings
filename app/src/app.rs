@@ -190,7 +190,7 @@ impl cosmic::Application for SettingsApp {
         match message {
             Message::Page(page) => return self.activate_page(page),
 
-            Message::SetWindowTitle => return self.set_window_title(),
+            Message::SetWindowTitle => return self.set_title(),
 
             Message::Search(search::Message::Activate) => {
                 return self.search.focus();
@@ -416,8 +416,8 @@ impl SettingsApp {
         ])
     }
 
-    fn set_window_title(&self) -> Command<crate::Message> {
-        cosmic::app::command::set_title(format!(
+    fn set_title(&mut self) -> Command<crate::Message> {
+        self.set_window_title(format!(
             "{} - COSMIC Settings",
             self.pages.info[self.active_page].title
         ))
