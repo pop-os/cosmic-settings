@@ -708,8 +708,8 @@ impl Page {
                     },
                 )
             }
-            Message::ImportError => Command::none(),
-            Message::ExportError => Command::none(),
+            // TODO: error message toast?
+            Message::ExportError | Message::ImportError => Command::none(),
             Message::ExportSuccess => {
                 tracing::trace!("Export successful");
                 Command::none()
