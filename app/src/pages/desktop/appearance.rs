@@ -215,7 +215,7 @@ pub enum Message {
     ImportFile(Arc<SelectedFiles>),
     ExportFile(Arc<SelectedFiles>),
     ExportSuccess,
-    ImportSuccess(ThemeBuilder),
+    ImportSuccess(Box<ThemeBuilder>),
     ImportError,
     ExportError,
     Reset,
@@ -664,7 +664,7 @@ impl Page {
                     |res| {
                         if let Some(b) = res.ok().and_then(|s| ron::de::from_str(&s).ok()) {
                             crate::Message::PageMessage(crate::pages::Message::Appearance(
-                                Message::ImportSuccess(b),
+                                Message::ImportSuccess(Box::new(b)),
                             ))
                         } else {
                             // TODO Error toast?
@@ -716,7 +716,7 @@ impl Page {
             }
             Message::ImportSuccess(builder) => {
                 tracing::trace!("Import successful");
-                self.theme_builder = builder;
+                self.theme_builder = *builder;
 
                 if let Some(config) = self.theme_builder_config.as_ref() {
                     _ = self.theme_builder.write_entry(config);
