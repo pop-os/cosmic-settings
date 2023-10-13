@@ -54,6 +54,8 @@ pub enum Message {
     PanelConfig(CosmicPanelConfig),
     Search(search::Message),
     SetWindowTitle,
+    OpenContextDrawer(Cow<'static, str>),
+    CloseContextDrawer,
     SetTheme(cosmic::theme::Theme),
 }
 
@@ -307,6 +309,13 @@ impl cosmic::Application for SettingsApp {
             }
             Message::PanelConfig(_) | Message::Search(_) => {}
             Message::SetTheme(t) => return cosmic::app::command::set_theme(t),
+            Message::OpenContextDrawer(title) => {
+                self.core.window.show_context = true;
+                self.set_context_title(title.to_string());
+            }
+            Message::CloseContextDrawer => {
+                self.core.window.show_context = false;
+            }
         }
 
         Command::none()
@@ -372,6 +381,16 @@ impl cosmic::Application for SettingsApp {
         }
 
         panic!("unknown window ID: {id:?}");
+    }
+
+    fn context_drawer(&self) -> Option<Element<Message>> {
+        if self.core.window.show_context {
+            self.pages
+                .context_drawer(self.active_page)
+                .map(|e| e.map(Message::PageMessage))
+        } else {
+            None
+        }
     }
 }
 

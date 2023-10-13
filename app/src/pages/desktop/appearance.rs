@@ -6,14 +6,14 @@ use std::sync::Arc;
 use apply::Apply;
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
-use cosmic::cosmic_theme::palette::{self, FromColor, Hsv, Hsva, Srgb, Srgba};
+use cosmic::cosmic_theme::palette::{self, FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
 use cosmic::iced::wayland::actions::window::SctkWindowSettings;
 use cosmic::iced::widget::{column, row};
 use cosmic::iced::window;
 use cosmic::iced_core::{layout, Color, Length};
 use cosmic::iced_sctk::commands::window::{close_window, get_window};
-use cosmic::iced_widget::{scrollable, toggler};
+use cosmic::iced_widget::scrollable;
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, header_bar, horizontal_space, settings,
@@ -32,7 +32,6 @@ pub const COLOR_PICKER_DIALOG_ID: window::Id = window::Id(1003);
 enum NamedColorPicker {
     CustomAccent,
     ApplicationBackground,
-    ContainerBackground,
     InterfaceText,
     ControlComponent,
     AccentWindowHint,
@@ -397,12 +396,9 @@ impl Page {
             Message::ContainerBackground(u) => {
                 let cmd = match &u {
                     ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
-                        // close the color picker dialog
-                        // apply changes
                         theme_builder_needs_update = true;
-                        close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
+                        Command::perform(async {}, |_| crate::app::Message::CloseContextDrawer)
                     }
-                    // TODO apply changes
                     ColorPickerUpdate::ActionFinished => {
                         theme_builder_needs_update = true;
                         _ = self
@@ -411,15 +407,11 @@ impl Page {
                         Command::none()
                     }
                     ColorPickerUpdate::Cancel => {
-                        // close the color picker dialog
-                        close_window(COLOR_PICKER_DIALOG_ID)
+                        Command::perform(async {}, |_| crate::app::Message::CloseContextDrawer)
                     }
-                    ColorPickerUpdate::ToggleColorPicker => {
-                        // create the color picker dialog
-                        // set the active picker
-                        self.active_dialog = Some(NamedColorPicker::ContainerBackground);
-                        get_window(color_picker_window_settings())
-                    }
+                    ColorPickerUpdate::ToggleColorPicker => Command::perform(async {}, |_| {
+                        crate::app::Message::OpenContextDrawer(fl!("container-background").into())
+                    }),
                     _ => Command::none(),
                 };
                 Command::batch(vec![
@@ -525,11 +517,6 @@ impl Page {
                     Some(NamedColorPicker::ApplicationBackground) => {
                         _ = self
                             .application_background
-                            .update::<app::Message>(ColorPickerUpdate::Cancel);
-                    }
-                    Some(NamedColorPicker::ContainerBackground) => {
-                        _ = self
-                            .container_background
                             .update::<app::Message>(ColorPickerUpdate::Cancel);
                     }
                     Some(NamedColorPicker::ControlComponent) => {
@@ -843,9 +830,6 @@ impl Page {
             Some(NamedColorPicker::ApplicationBackground) => {
                 (&self.application_background, Message::ApplicationBackground)
             }
-            Some(NamedColorPicker::ContainerBackground) => {
-                (&self.container_background, Message::ContainerBackground)
-            }
             Some(NamedColorPicker::ControlComponent) => {
                 (&self.control_component, Message::ControlComponent)
             }
@@ -910,6 +894,29 @@ impl page::Page<crate::pages::Message> for Page {
         Command::perform(async {}, |_| {
             crate::pages::Message::Appearance(Message::Left)
         })
+    }
+
+    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+        Some(
+            column![
+                text(fl!("container-background", "desc-detail")).width(Length::Fill),
+                self.container_background
+                    .builder(Message::ContainerBackground)
+                    .width(Length::Fixed(248.0))
+                    .height(Length::Fixed(158.0))
+                    .reset_label(fl!("container-background", "reset"))
+                    .build(
+                        fl!("recent-colors"),
+                        fl!("copy-to-clipboard"),
+                        fl!("copied-to-clipboard"),
+                    )
+            ]
+            .padding(self.theme_builder.spacing.space_l)
+            .align_items(cosmic::iced_core::Alignment::Center)
+            .spacing(self.theme_builder.spacing.space_m)
+            .apply(Element::from)
+            .map(crate::pages::Message::Appearance),
+        )
     }
 }
 
@@ -1096,10 +1103,27 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                     settings::item::builder(&descriptions[4])
                         .description(&descriptions[5])
                         .control(
-                            page.container_background
-                                .picker_button(Message::ContainerBackground, Some(24))
-                                .width(Length::Fixed(48.0))
-                                .height(Length::Fixed(24.0)),
+                            if let Some(c) = page.container_background.get_applied_color() {
+                                container(
+                                    color_button(
+                                        Some(Message::ContainerBackground(
+                                            ColorPickerUpdate::ToggleColorPicker,
+                                        )),
+                                        c,
+                                        true,
+                                    )
+                                    .width(Length::Fixed(48.0))
+                                    .height(Length::Fixed(24.0)),
+                                )
+                            } else {
+                                container(
+                                    button::text(fl!("auto"))
+                                        .trailing_icon(from_name("go-next-symbolic"))
+                                        .on_press(Message::ContainerBackground(
+                                            ColorPickerUpdate::ToggleColorPicker,
+                                        )),
+                                )
+                            },
                         ),
                 )
                 .add(
