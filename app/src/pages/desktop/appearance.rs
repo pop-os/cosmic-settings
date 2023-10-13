@@ -6,14 +6,14 @@ use std::sync::Arc;
 use apply::Apply;
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
-use cosmic::cosmic_theme::palette::{Srgb, Srgba};
+use cosmic::cosmic_theme::palette::{self, FromColor, Hsv, Hsva, Srgb, Srgba};
 use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
 use cosmic::iced::wayland::actions::window::SctkWindowSettings;
 use cosmic::iced::widget::{column, row};
 use cosmic::iced::window;
 use cosmic::iced_core::{layout, Color, Length};
 use cosmic::iced_sctk::commands::window::{close_window, get_window};
-use cosmic::iced_widget::scrollable;
+use cosmic::iced_widget::{scrollable, toggler};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, header_bar, horizontal_space, settings,
@@ -48,6 +48,7 @@ pub struct Page {
     control_component: ColorPickerModel,
     active_dialog: Option<NamedColorPicker>,
     roundness: Roundness,
+    no_custom_window_hint: bool,
 
     theme_mode: ThemeMode,
     theme_builder: ThemeBuilder,
@@ -77,6 +78,86 @@ impl Default for Page {
     }
 }
 
+impl From<(Option<Config>, ThemeMode, Option<Config>, ThemeBuilder)> for Page {
+    fn from(
+        (theme_mode_config, theme_mode, theme_builder_config, theme_builder): (
+            Option<Config>,
+            ThemeMode,
+            Option<Config>,
+            ThemeBuilder,
+        ),
+    ) -> Self {
+        let theme: Theme<palette::Srgba> = if theme_mode.is_dark {
+            Theme::dark_default()
+        } else {
+            Theme::light_default()
+        };
+        let custom_accent = theme_builder.accent.filter(|c| {
+            let c = Srgba::new(c.red, c.green, c.blue, 1.0);
+            c != theme.palette.accent_blue
+                && c != theme.palette.accent_green
+                && c != theme.palette.accent_indigo
+                && c != theme.palette.accent_orange
+                && c != theme.palette.accent_pink
+                && c != theme.palette.accent_purple
+                && c != theme.palette.accent_red
+                && c != theme.palette.accent_warm_grey
+                && c != theme.palette.accent_yellow
+        });
+
+        Self {
+            can_reset: if theme_mode.is_dark {
+                theme_builder == ThemeBuilder::dark()
+            } else {
+                theme_builder == ThemeBuilder::light()
+            },
+            roundness: theme_builder.corner_radii.into(),
+            custom_accent: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                None,
+                custom_accent.map(Color::from),
+            ),
+            application_background: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                Some(theme.background.base.into()),
+                theme_builder.bg_color.map(Color::from),
+            ),
+            container_background: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                None,
+                theme_builder.primary_container_bg.map(Color::from),
+            ),
+            interface_text: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                Some(theme.background.on.into()),
+                theme_builder.text_tint.map(Color::from),
+            ),
+            control_component: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                Some(theme.palette.neutral_5.into()),
+                theme_builder.neutral_tint.map(Color::from),
+            ),
+            accent_window_hint: ColorPickerModel::new(
+                fl!("hex"),
+                fl!("rgb"),
+                None,
+                theme_builder.window_hint.map(Color::from),
+            ),
+            no_custom_window_hint: theme_builder.accent.is_some(),
+            active_dialog: None,
+            theme_mode_config,
+            theme_builder_config,
+            theme_mode,
+            theme_builder,
+        }
+    }
+}
+
 impl From<(Option<Config>, ThemeMode)> for Page {
     fn from((theme_mode_config, theme_mode): (Option<Config>, ThemeMode)) -> Self {
         let theme_builder_config = if theme_mode.is_dark {
@@ -103,74 +184,13 @@ impl From<(Option<Config>, ThemeMode)> for Page {
                 }
             },
         );
-        let custom_accent = theme_builder.accent.filter(|c| {
-            let palette = if theme_mode.is_dark {
-                Theme::dark_default().palette
-            } else {
-                Theme::light_default().palette
-            };
-            let c = Srgba::new(c.red, c.green, c.blue, 1.0);
-            c != palette.accent_blue
-                && c != palette.accent_green
-                && c != palette.accent_indigo
-                && c != palette.accent_orange
-                && c != palette.accent_pink
-                && c != palette.accent_purple
-                && c != palette.accent_red
-                && c != palette.accent_warm_grey
-                && c != palette.accent_yellow
-        });
-
-        // TODO fill all these values with the current values
-        Self {
-            can_reset: if theme_mode.is_dark {
-                theme_builder == ThemeBuilder::dark()
-            } else {
-                theme_builder == ThemeBuilder::light()
-            },
-            roundness: theme_builder.corner_radii.into(),
-            custom_accent: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
-                None,
-                custom_accent.map(Color::from),
-            ),
-            application_background: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
-                None,
-                theme_builder.bg_color.map(Color::from),
-            ),
-            container_background: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
-                None,
-                theme_builder.primary_container_bg.map(Color::from),
-            ),
-            interface_text: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
-                None,
-                theme_builder.text_tint.map(Color::from),
-            ),
-            control_component: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
-                None,
-                theme_builder.neutral_tint.map(Color::from),
-            ),
-            accent_window_hint: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
-                None,
-                theme_builder.window_hint.map(Color::from),
-            ),
-            active_dialog: None,
+        (
             theme_mode_config,
-            theme_builder_config,
             theme_mode,
+            theme_builder_config,
             theme_builder,
-        }
+        )
+            .into()
     }
 }
 
@@ -201,6 +221,7 @@ pub enum Message {
     ExportError,
     Reset,
     Left,
+    UseDefaultWindowHint(bool),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -731,6 +752,38 @@ impl Page {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
                 })
             }
+            Message::UseDefaultWindowHint(v) => {
+                self.no_custom_window_hint = v;
+                theme_builder_needs_update = true;
+                let theme: Theme<palette::Srgba> = if self.theme_mode.is_dark {
+                    Theme::dark_default()
+                } else {
+                    Theme::light_default()
+                };
+                let window_hint = self
+                    .theme_builder
+                    .window_hint
+                    .filter(|c| {
+                        let c = Srgba::new(c.red, c.green, c.blue, 1.0);
+                        !v && c != theme.palette.accent_blue
+                            && c != theme.palette.accent_green
+                            && c != theme.palette.accent_indigo
+                            && c != theme.palette.accent_orange
+                            && c != theme.palette.accent_pink
+                            && c != theme.palette.accent_purple
+                            && c != theme.palette.accent_red
+                            && c != theme.palette.accent_warm_grey
+                            && c != theme.palette.accent_yellow
+                    })
+                    .unwrap_or(
+                        self.custom_accent
+                            .get_applied_color()
+                            .unwrap_or_default()
+                            .into(),
+                    );
+                self.accent_window_hint
+                    .update(ColorPickerUpdate::ActiveColor(Hsv::from_color(window_hint)))
+            }
         };
 
         if theme_builder_needs_update {
@@ -908,8 +961,9 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
             fl!("control-tint"),
             fl!("control-tint", "desc"),
             // 12
+            fl!("window-hint-accent-toggle"),
             fl!("window-hint-accent"),
-            // 13
+            // 14
             fl!("dark"),
             fl!("light"),
         ])
@@ -920,7 +974,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 .theme_builder
                 .accent
                 .map_or(palette.accent_blue, Srgba::from);
-            settings::view_section(&section.title)
+            let mut section = settings::view_section(&section.title)
                 .add(
                     container(
                         row![
@@ -1069,13 +1123,20 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&descriptions[12]).control(
+                    settings::item::builder(&descriptions[12])
+                        .toggler(page.no_custom_window_hint, Message::UseDefaultWindowHint),
+                );
+            if !page.no_custom_window_hint {
+                section = section.add(
+                    settings::item::builder(&descriptions[13]).control(
                         page.accent_window_hint
                             .picker_button(Message::AccentWindowHint, Some(24))
                             .width(Length::Fixed(48.0))
                             .height(Length::Fixed(24.0)),
                     ),
-                )
+                );
+            }
+            section
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
