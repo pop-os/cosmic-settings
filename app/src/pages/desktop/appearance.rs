@@ -747,29 +747,33 @@ impl Page {
                 } else {
                     Theme::light_default()
                 };
-                let window_hint = self
-                    .theme_builder
-                    .window_hint
-                    .filter(|c| {
-                        let c = Srgba::new(c.red, c.green, c.blue, 1.0);
-                        !v && c != theme.palette.accent_blue
-                            && c != theme.palette.accent_green
-                            && c != theme.palette.accent_indigo
-                            && c != theme.palette.accent_orange
-                            && c != theme.palette.accent_pink
-                            && c != theme.palette.accent_purple
-                            && c != theme.palette.accent_red
-                            && c != theme.palette.accent_warm_grey
-                            && c != theme.palette.accent_yellow
-                    })
-                    .unwrap_or(
-                        self.custom_accent
-                            .get_applied_color()
-                            .unwrap_or_default()
-                            .into(),
-                    );
-                self.accent_window_hint
-                    .update(ColorPickerUpdate::ActiveColor(Hsv::from_color(window_hint)))
+                if !v {
+                    let window_hint = self
+                        .theme_builder
+                        .window_hint
+                        .filter(|c| {
+                            let c = Srgba::new(c.red, c.green, c.blue, 1.0);
+                            c != theme.palette.accent_blue
+                                && c != theme.palette.accent_green
+                                && c != theme.palette.accent_indigo
+                                && c != theme.palette.accent_orange
+                                && c != theme.palette.accent_pink
+                                && c != theme.palette.accent_purple
+                                && c != theme.palette.accent_red
+                                && c != theme.palette.accent_warm_grey
+                                && c != theme.palette.accent_yellow
+                        })
+                        .unwrap_or(
+                            self.custom_accent
+                                .get_applied_color()
+                                .unwrap_or_default()
+                                .into(),
+                        );
+                    _ = self.accent_window_hint.update::<app::Message>(
+                        ColorPickerUpdate::ActiveColor(Hsv::from_color(window_hint)),
+                    )
+                };
+                Command::none()
             }
         };
 
@@ -788,7 +792,11 @@ impl Page {
                 .map(Srgba::from);
             theme_builder.text_tint = self.interface_text.get_applied_color().map(Srgb::from);
             theme_builder.neutral_tint = self.control_component.get_applied_color().map(Srgb::from);
-            theme_builder.window_hint = self.accent_window_hint.get_applied_color().map(Srgb::from);
+            theme_builder.window_hint = if self.no_custom_window_hint {
+                None
+            } else {
+                self.accent_window_hint.get_applied_color().map(Srgb::from)
+            };
 
             _ = theme_builder.write_entry(config);
 
