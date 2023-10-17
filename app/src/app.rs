@@ -19,7 +19,7 @@ use cosmic_settings_page::{self as page, section};
 use crate::config::Config;
 
 use crate::pages::desktop::{
-    self,
+    self, appearance,
     dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
     panel::{
         self,
@@ -54,6 +54,9 @@ pub enum Message {
     PanelConfig(CosmicPanelConfig),
     Search(search::Message),
     SetWindowTitle,
+    OpenContextDrawer(Cow<'static, str>),
+    CloseContextDrawer,
+    SetTheme(cosmic::theme::Theme),
 }
 
 impl cosmic::Application for SettingsApp {
@@ -189,7 +192,7 @@ impl cosmic::Application for SettingsApp {
         match message {
             Message::Page(page) => return self.activate_page(page),
 
-            Message::SetWindowTitle => return self.set_window_title(),
+            Message::SetWindowTitle => return self.set_title(),
 
             Message::Search(search::Message::Activate) => {
                 return self.search.focus();
@@ -245,6 +248,12 @@ impl cosmic::Application for SettingsApp {
                         return page.update(message).map(cosmic::app::Message::App);
                     }
                 }
+                crate::pages::Message::Appearance(message) => {
+                    if let Some(page) = self.pages.page_mut::<appearance::Page>() {
+                        return page.update(message).map(cosmic::app::Message::App);
+                    }
+                    // TODO
+                }
             },
 
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
@@ -274,7 +283,7 @@ impl cosmic::Application for SettingsApp {
                     self.pages,
                     dock::applets::Message(applets_inner::Message::PanelConfig(config,)),
                     dock::applets::Page
-                );
+                )
             }
 
             Message::DesktopInfo => {
@@ -284,7 +293,7 @@ impl cosmic::Application for SettingsApp {
                 .filter_map(|p| applets_inner::Applet::try_from(Cow::from(p)).ok())
                 .collect();
 
-                page::update!(
+                _ = page::update!(
                     self.pages,
                     dock::applets::Message(applets_inner::Message::Applets(info_list.clone())),
                     dock::applets::Page
@@ -298,8 +307,15 @@ impl cosmic::Application for SettingsApp {
                         .map(cosmic::app::Message::App);
                 }
             }
-
-            Message::PanelConfig(_) | Message::Search(_) => {} // Ignored
+            Message::PanelConfig(_) | Message::Search(_) => {}
+            Message::SetTheme(t) => return cosmic::app::command::set_theme(t),
+            Message::OpenContextDrawer(title) => {
+                self.core.window.show_context = true;
+                self.set_context_title(title.to_string());
+            }
+            Message::CloseContextDrawer => {
+                self.core.window.show_context = false;
+            }
         }
 
         Command::none()
@@ -341,6 +357,11 @@ impl cosmic::Application for SettingsApp {
         {
             return page.add_applet_view(crate::pages::Message::PanelApplet);
         }
+        if let Some(Some(page)) = (id == appearance::COLOR_PICKER_DIALOG_ID)
+            .then(|| self.pages.page::<appearance::Page>())
+        {
+            return page.color_picker_view();
+        }
         if let Some(Some(page)) =
             (id == ADD_DOCK_APPLET_DIALOGUE_ID).then(|| self.pages.page::<dock::applets::Page>())
         {
@@ -361,6 +382,16 @@ impl cosmic::Application for SettingsApp {
 
         panic!("unknown window ID: {id:?}");
     }
+
+    fn context_drawer(&self) -> Option<Element<Message>> {
+        if self.core.window.show_context {
+            self.pages
+                .context_drawer(self.active_page)
+                .map(|e| e.map(Message::PageMessage))
+        } else {
+            None
+        }
+    }
 }
 
 impl SettingsApp {
@@ -369,7 +400,17 @@ impl SettingsApp {
         let current_page = self.active_page;
         self.active_page = page;
 
+        let mut leave_command = iced::Command::none()
+            .map(Message::PageMessage)
+            .map(cosmic::app::Message::App);
+
         if current_page != page {
+            leave_command = self
+                .pages
+                .on_leave(current_page)
+                .unwrap_or(iced::Command::none())
+                .map(Message::PageMessage)
+                .map(cosmic::app::Message::App);
             self.config.active_page = Box::from(&*self.pages.info[page].id);
             self.config
                 .set_active_page(Box::from(&*self.pages.info[page].id));
@@ -387,14 +428,15 @@ impl SettingsApp {
             .map(cosmic::app::Message::App);
 
         Command::batch(vec![
+            leave_command,
             page_command,
             cosmic::command::future(async { Message::SetWindowTitle })
                 .map(cosmic::app::Message::App),
         ])
     }
 
-    fn set_window_title(&self) -> Command<crate::Message> {
-        cosmic::app::command::set_title(format!(
+    fn set_title(&mut self) -> Command<crate::Message> {
+        self.set_window_title(format!(
             "{} - COSMIC Settings",
             self.pages.info[self.active_page].title
         ))

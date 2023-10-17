@@ -247,7 +247,7 @@ pub(crate) fn add_panel<
             fl!("panel-missing", "desc"),
             fl!("panel-missing", "fix"),
         ])
-        .view::<P>(move |_binder, page, section| {
+        .view::<P>(move |_binder, _page, section| {
             // _descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .apply(Element::from)

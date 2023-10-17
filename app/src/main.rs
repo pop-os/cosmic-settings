@@ -18,10 +18,7 @@ pub mod widget;
 
 pub mod subscription;
 
-use cosmic::{
-    iced::{wayland::actions::window::SctkWindowSettings, Limits},
-    iced_sctk::settings::InitialSurface,
-};
+use cosmic::iced::Limits;
 use i18n_embed::DesktopLanguageRequester;
 use tracing_subscriber::prelude::*;
 

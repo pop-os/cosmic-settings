@@ -4,6 +4,7 @@
 use crate::section::{self, Section};
 use crate::{Content, Info, Page};
 use cosmic::iced_runtime::command::{Action, Command};
+use cosmic::Element;
 use regex::Regex;
 use slotmap::{SecondaryMap, SlotMap, SparseSecondaryMap};
 use std::{
@@ -137,9 +138,24 @@ impl<Message: 'static> Binder<Message> {
 
     /// Obtain a reference to a page by its type ID.
     #[must_use]
+    pub fn context_drawer(&self, id: crate::Entity) -> Option<Element<'_, Message>> {
+        let page = self.page.get(id)?;
+        page.context_drawer()
+    }
+
+    /// Obtain a reference to a page by its type ID.
+    #[must_use]
     pub fn page_mut<P: Page<Message>>(&mut self) -> Option<&mut P> {
         let page = self.page.get_mut(self.page_id::<P>()?)?;
         page.downcast_mut::<P>()
+    }
+
+    /// Returns a command when a page is left
+    pub fn on_leave(&mut self, id: crate::Entity) -> Option<Command<Message>> {
+        if let Some(page) = self.page.get_mut(id) {
+            return Some(page.on_leave());
+        }
+        None
     }
 
     /// Calls a page's load function to refresh its data.

@@ -1,6 +1,6 @@
 use button::StyleSheet as ButtonStyleSheet;
 use cosmic::iced_style::container::StyleSheet;
-use cosmic::iced_widget::text_input::{Icon, Side};
+
 use cosmic::widget::{
     button, column, container, header_bar, icon, list_column, row, scrollable, text, text_input,
     Column,
@@ -312,7 +312,7 @@ impl Page {
                 scrollable(
                     column::with_children(vec![
                         text(fl!("add-applet")).size(24).width(Length::Fill).into(),
-                        text_input::search_input(&fl!("search-applets"), &self.search, None)
+                        text_input::search_input(&fl!("search-applets"), &self.search)
                             .on_input(move |s| {
                                 app::Message::PageMessage(msg_map(Message::Search(s)))
                             })

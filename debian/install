@@ -1,2 +1,8 @@
 /usr/bin/cosmic-settings
 /usr/share/applications/com.system76.CosmicSettings.desktop
+/usr/share/cosmic/com.system76.CosmicTheme.Dark
+/usr/share/cosmic/com.system76.CosmicTheme.Dark.Builder
+/usr/share/cosmic/com.system76.CosmicTheme.Light
+/usr/share/cosmic/com.system76.CosmicTheme.Light.Builder
+/usr/share/cosmic/com.system76.CosmicTheme.Mode
+/usr/share/icons/hicolor/scalable

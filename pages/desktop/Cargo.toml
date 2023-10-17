@@ -9,11 +9,11 @@ edition = "2021"
 cosmic-bg-config = { workspace = true }
 cosmic-config = { workspace = true }
 dirs = "5.0.1"
-freedesktop-icons = "0.2.3"
+freedesktop-icons = "0.2.4"
 futures-lite = "1.13.0"
 image = "0.24.6"
 rayon = "1.7.0"
-sctk = { git = "https://github.com/smithay/client-toolkit/", package = "smithay-client-toolkit", rev = "f49df45"}
+sctk = { git = "https://github.com/smithay/client-toolkit/", package = "smithay-client-toolkit", rev = "dc8c4a0"}
 tokio = { version = "1.28.0", features = ["sync"] }
 tracing = "0.1.37"
-wayland-client = "0.30.1"
+wayland-client = "0.31.1"
