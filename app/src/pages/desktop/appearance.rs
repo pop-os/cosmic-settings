@@ -1002,7 +1002,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .style(cosmic::theme::Button::IconVertical)
                                 .padding(8)
                                 .on_press(Message::DarkMode(true)),
-                                text(&descriptions[13])
+                                text(&descriptions[14])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1016,7 +1016,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .style(cosmic::theme::Button::IconVertical)
                                 .padding(8)
                                 .on_press(Message::DarkMode(false)),
-                                text(&descriptions[14])
+                                text(&descriptions[15])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
