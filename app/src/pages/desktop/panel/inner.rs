@@ -5,7 +5,7 @@ use cosmic::{
     sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
     theme,
     widget::{
-        button, container, horizontal_space, icon, list, pick_list, row, settings, text, toggler,
+        button, container, dropdown, horizontal_space, icon, list, row, settings, text, toggler,
     },
     Element,
 };
@@ -16,14 +16,40 @@ use cosmic_panel_config::{
     CosmicPanelOuput, PanelAnchor, PanelSize,
 };
 use cosmic_settings_page::{self as page, Section};
-use std::{borrow::Cow, collections::HashMap};
+use std::collections::HashMap;
 
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
     pub(crate) panel_config: Option<CosmicPanelConfig>,
+    pub outputs: Vec<String>,
+    pub anchors: Vec<String>,
+    pub backgrounds: Vec<String>,
     pub(crate) container_config: Option<CosmicPanelContainerConfig>,
     // TODO move these into panel config
-    pub(crate) outputs: HashMap<ObjectId, (String, WlOutput)>,
+    pub(crate) outputs_map: HashMap<ObjectId, (String, WlOutput)>,
+}
+
+impl Default for PageInner {
+    fn default() -> Self {
+        Self {
+            config_helper: Default::default(),
+            panel_config: Default::default(),
+            outputs: vec![fl!("all")],
+            anchors: vec![
+                Anchor(PanelAnchor::Left).to_string(),
+                Anchor(PanelAnchor::Right).to_string(),
+                Anchor(PanelAnchor::Top).to_string(),
+                Anchor(PanelAnchor::Bottom).to_string(),
+            ],
+            backgrounds: vec![
+                Appearance::Match.to_string(),
+                Appearance::Light.to_string(),
+                Appearance::Dark.to_string(),
+            ],
+            container_config: Default::default(),
+            outputs_map: Default::default(),
+        }
+    }
 }
 
 pub trait PanelPage {
@@ -71,30 +97,20 @@ pub(crate) fn behavior_and_position<
                 ))
                 .add(settings::item(
                     &descriptions[1],
-                    pick_list(
-                        Cow::from(vec![
-                            Anchor(PanelAnchor::Top),
-                            Anchor(PanelAnchor::Left),
-                            Anchor(PanelAnchor::Right),
-                            Anchor(PanelAnchor::Bottom),
-                        ]),
-                        Some(Anchor(panel_config.anchor)),
-                        |a| Message::PanelAnchor(a.0),
+                    dropdown(
+                        page.anchors.as_slice(),
+                        Some(panel_config.anchor as usize),
+                        Message::PanelAnchor,
                     ),
                 ))
                 .add(settings::item(
                     &descriptions[2],
-                    pick_list(
-                        Cow::from(
-                            Some(fl!("all"))
-                                .into_iter()
-                                .chain(page.outputs.values().map(|(name, _)| name.clone()))
-                                .collect::<Vec<_>>(),
-                        ),
+                    dropdown(
+                        page.outputs.as_slice(),
                         match &panel_config.output {
-                            CosmicPanelOuput::All => Some(fl!("all")),
+                            CosmicPanelOuput::All => Some(0),
                             CosmicPanelOuput::Active => None,
-                            CosmicPanelOuput::Name(ref name) => Some(name.clone()),
+                            CosmicPanelOuput::Name(n) => page.outputs.iter().position(|o| o == n),
                         },
                         Message::Output,
                     ),
@@ -141,9 +157,14 @@ pub(crate) fn style<
                 ))
                 .add(settings::item(
                     &descriptions[2],
-                    pick_list(
-                        Cow::from(vec![Appearance::Match, Appearance::Light, Appearance::Dark]),
-                        panel_config.background.clone().try_into().ok(),
+                    dropdown(
+                        inner.backgrounds.as_slice(),
+                        match panel_config.background {
+                            CosmicPanelBackground::ThemeDefault => Some(0),
+                            CosmicPanelBackground::Dark => Some(1),
+                            CosmicPanelBackground::Light => Some(2),
+                            CosmicPanelBackground::Color(_) => None,
+                        },
                         Message::Appearance,
                     ),
                 ))
@@ -312,11 +333,11 @@ impl From<Appearance> for CosmicPanelBackground {
 pub enum Message {
     // panel messages
     AutoHidePanel(bool),
-    PanelAnchor(PanelAnchor),
-    Output(String),
+    PanelAnchor(usize),
+    Output(usize),
     AnchorGap(bool),
     PanelSize(PanelSize),
-    Appearance(Appearance),
+    Appearance(usize),
     ExtendToEdge(bool),
     Opacity(f32),
     OutputAdded(String, WlOutput),
@@ -346,14 +367,25 @@ impl PageInner {
                     panel_config.autohide = None;
                 }
             }
-            Message::PanelAnchor(anchor) => {
-                panel_config.anchor = anchor;
+            Message::PanelAnchor(i) => {
+                if let Some(anchor) = [
+                    PanelAnchor::Left,
+                    PanelAnchor::Right,
+                    PanelAnchor::Top,
+                    PanelAnchor::Bottom,
+                ]
+                .iter()
+                .find(|a| a.to_string() == self.anchors[i])
+                {
+                    panel_config.anchor = *anchor;
+                }
             }
-            Message::Output(name) => {
-                panel_config.output = match name {
-                    s if s == fl!("all") => CosmicPanelOuput::All,
-                    _ => CosmicPanelOuput::Name(name),
-                };
+            Message::Output(i) => {
+                if i == 0 {
+                    panel_config.output = CosmicPanelOuput::All;
+                } else {
+                    panel_config.output = CosmicPanelOuput::Name(self.outputs[i].clone())
+                }
             }
             Message::AnchorGap(enabled) => {
                 panel_config.anchor_gap = enabled;
@@ -368,7 +400,12 @@ impl PageInner {
                 panel_config.size = size;
             }
             Message::Appearance(a) => {
-                panel_config.background = a.into();
+                if let Some(b) = [Appearance::Match, Appearance::Light, Appearance::Dark]
+                    .iter()
+                    .find(|b| b.to_string() == self.backgrounds[a])
+                {
+                    panel_config.background = b.clone().into();
+                }
             }
             Message::ExtendToEdge(enabled) => {
                 panel_config.expand_to_edges = enabled;
@@ -377,10 +414,15 @@ impl PageInner {
                 panel_config.opacity = opacity;
             }
             Message::OutputAdded(name, output) => {
-                self.outputs.insert(output.id(), (name, output));
+                self.outputs.push(name.clone());
+                self.outputs_map.insert(output.id(), (name, output));
             }
             Message::OutputRemoved(output) => {
-                self.outputs.remove(&output.id());
+                if let Some((name, _)) = self.outputs_map.remove(&output.id()) {
+                    if let Some(pos) = self.outputs.iter().position(|o| o == &name) {
+                        self.outputs.remove(pos);
+                    }
+                }
             }
             Message::PanelConfig(c) => {
                 self.panel_config = Some(c);
