@@ -11,7 +11,7 @@ use std::{
 
 use apply::Apply;
 use cosmic::widget::{
-    list_column,
+    dropdown, list_column,
     segmented_button::{self, SingleSelectModel},
     segmented_selection, settings, text, toggler,
 };
@@ -44,11 +44,11 @@ const HOUR_2: usize = 5;
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    ChangeCategory(String),
+    ChangeCategory(usize),
     ColorSelect(wallpaper::Color),
     Fit(String),
     Output(segmented_button::Entity),
-    RotationFrequency(String),
+    RotationFrequency(usize),
     SameBackground(bool),
     Select(DefaultKey),
     Slideshow(bool),
@@ -322,21 +322,19 @@ impl Page {
     }
 
     /// Changes the selection category, such as wallpaper select or color select.
-    fn change_category(&mut self, category: &str) {
-        if let Some(pos) = self.categories.iter().position(|c| c == category) {
-            self.active_category = pos;
-            match pos {
-                CATEGORY_SYSTEM_WALLPAPERS => {
-                    self.select_first_background();
-                }
-
-                CATEGORY_COLOR => {
-                    self.selection.active = Choice::Color(wallpaper::DEFAULT_COLORS[0].clone());
-                    self.cache_display_image();
-                }
-
-                _ => (),
+    fn change_category(&mut self, pos: usize) {
+        self.active_category = pos;
+        match pos {
+            CATEGORY_SYSTEM_WALLPAPERS => {
+                self.select_first_background();
             }
+
+            CATEGORY_COLOR => {
+                self.selection.active = Choice::Color(wallpaper::DEFAULT_COLORS[0].clone());
+                self.cache_display_image();
+            }
+
+            _ => (),
         }
     }
 
@@ -349,13 +347,8 @@ impl Page {
     }
 
     // Changes the slideshow background rotation frequency
-    pub fn change_rotation_frequency(&mut self, option: &str) {
-        self.selected_rotation = self
-            .rotation_options
-            .iter()
-            .enumerate()
-            .find(|(_, key)| **key == option)
-            .map_or(0, |(indice, _)| indice);
+    pub fn change_rotation_frequency(&mut self, option: usize) {
+        self.selected_rotation = option;
 
         self.rotation_frequency = match self.selected_rotation {
             MINUTES_5 => 300,
@@ -382,7 +375,7 @@ impl Page {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) {
         match message {
-            Message::ChangeCategory(category) => self.change_category(&category),
+            Message::ChangeCategory(pos) => self.change_category(pos),
 
             Message::ColorSelect(color) => {
                 self.selection.active = Choice::Color(color);
@@ -402,7 +395,7 @@ impl Page {
 
             Message::Output(id) => self.change_output(id),
 
-            Message::RotationFrequency(option) => self.change_rotation_frequency(&option),
+            Message::RotationFrequency(pos) => self.change_rotation_frequency(pos),
 
             Message::SameBackground(value) => {
                 self.config.same_on_all = value;
@@ -633,9 +626,9 @@ pub fn settings() -> Section<crate::pages::Message> {
                     column
                         .add(settings::item(
                             &descriptions[3],
-                            cosmic::iced::widget::pick_list(
+                            dropdown(
                                 &page.rotation_options,
-                                page.rotation_options.get(page.selected_rotation).cloned(),
+                                Some(page.selected_rotation),
                                 Message::RotationFrequency,
                             ),
                         ))
@@ -645,9 +638,9 @@ pub fn settings() -> Section<crate::pages::Message> {
                 }
             });
 
-            let category_selection = cosmic::iced::widget::pick_list(
+            let category_selection = dropdown(
                 &page.categories,
-                Some(page.categories[page.active_category].clone()),
+                Some(page.active_category),
                 Message::ChangeCategory,
             );
 

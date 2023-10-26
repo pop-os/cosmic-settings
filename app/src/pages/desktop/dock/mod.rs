@@ -117,7 +117,8 @@ impl Default for Page {
                 config_helper,
                 panel_config,
                 container_config,
-                outputs: HashMap::new(),
+                outputs_map: HashMap::new(),
+                ..Default::default()
             },
         }
     }
