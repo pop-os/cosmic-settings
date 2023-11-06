@@ -18,6 +18,7 @@ use cosmic_settings_page::{self as page, section};
 
 use crate::config::Config;
 
+use crate::pages::desktop::appearance::COLOR_PICKER_DIALOG_ID;
 use crate::pages::desktop::{
     self, appearance,
     dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
@@ -114,6 +115,10 @@ impl cosmic::Application for SettingsApp {
             Message::PageMessage(crate::pages::Message::DockApplet(dock::applets::Message(
                 applets_inner::Message::ClosedAppletDialogue,
             )))
+        } else if id == COLOR_PICKER_DIALOG_ID {
+            Message::PageMessage(crate::pages::Message::Appearance(
+                appearance::Message::CloseRequested,
+            ))
         } else {
             return None;
         };
@@ -293,7 +298,7 @@ impl cosmic::Application for SettingsApp {
                 .filter_map(|p| applets_inner::Applet::try_from(Cow::from(p)).ok())
                 .collect();
 
-                _ = page::update!(
+                page::update!(
                     self.pages,
                     dock::applets::Message(applets_inner::Message::Applets(info_list.clone())),
                     dock::applets::Page

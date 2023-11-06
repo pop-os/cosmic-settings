@@ -197,6 +197,7 @@ impl From<(Option<Config>, ThemeMode)> for Page {
 pub enum Message {
     Entered,
     DarkMode(bool),
+    DragColorPicker,
     Autoswitch(bool),
     Frosted(bool),
     WindowHintSize(spin_button::Message),
@@ -208,7 +209,7 @@ pub enum Message {
     CustomAccent(ColorPickerUpdate),
     InterfaceText(ColorPickerUpdate),
     ControlComponent(ColorPickerUpdate),
-    CloseRequested(window::Id),
+    CloseRequested,
     Roundness(Roundness),
     StartImport,
     StartExport,
@@ -311,6 +312,7 @@ impl Page {
                         // close the color picker dialog
                         // apply changes
                         theme_builder_needs_update = true;
+                        self.active_dialog = None;
                         close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
@@ -323,13 +325,18 @@ impl Page {
                     }
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
+                        self.active_dialog = None;
                         close_window(COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
-                        // create the color picker dialog
-                        // set the active picker
-                        self.active_dialog = Some(NamedColorPicker::AccentWindowHint);
-                        get_window(color_picker_window_settings())
+                        let prev = self
+                            .active_dialog
+                            .replace(NamedColorPicker::AccentWindowHint);
+                        if prev.is_none() {
+                            get_window(color_picker_window_settings())
+                        } else {
+                            Command::none()
+                        }
                     }
                     _ => Command::none(),
                 };
@@ -366,6 +373,7 @@ impl Page {
                         // close the color picker dialog
                         // apply changes
                         theme_builder_needs_update = true;
+                        self.active_dialog = None;
                         close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
@@ -378,13 +386,18 @@ impl Page {
                     }
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
+                        self.active_dialog = None;
                         close_window(COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
-                        // create the color picker dialog
-                        // set the active picker
-                        self.active_dialog = Some(NamedColorPicker::ApplicationBackground);
-                        get_window(color_picker_window_settings())
+                        let prev = self
+                            .active_dialog
+                            .replace(NamedColorPicker::ApplicationBackground);
+                        if prev.is_none() {
+                            get_window(color_picker_window_settings())
+                        } else {
+                            Command::none()
+                        }
                     }
                     _ => Command::none(),
                 };
@@ -425,6 +438,7 @@ impl Page {
                         // close the color picker dialog
                         // apply changes
                         theme_builder_needs_update = true;
+                        self.active_dialog = None;
                         close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
@@ -437,13 +451,16 @@ impl Page {
                     }
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
+                        self.active_dialog = None;
                         close_window(COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
-                        // create the color picker dialog
-                        // set the active picker
-                        self.active_dialog = Some(NamedColorPicker::CustomAccent);
-                        get_window(color_picker_window_settings())
+                        let prev = self.active_dialog.replace(NamedColorPicker::CustomAccent);
+                        if prev.is_none() {
+                            get_window(color_picker_window_settings())
+                        } else {
+                            Command::none()
+                        }
                     }
                     _ => Command::none(),
                 };
@@ -458,6 +475,7 @@ impl Page {
                         // close the color picker dialog
                         // apply changes
                         theme_builder_needs_update = true;
+                        self.active_dialog = None;
                         close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
@@ -470,13 +488,16 @@ impl Page {
                     }
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
+                        self.active_dialog = None;
                         close_window(COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
-                        // create the color picker dialog
-                        // set the active picker
-                        self.active_dialog = Some(NamedColorPicker::InterfaceText);
-                        get_window(color_picker_window_settings())
+                        let prev = self.active_dialog.replace(NamedColorPicker::InterfaceText);
+                        if prev.is_none() {
+                            get_window(color_picker_window_settings())
+                        } else {
+                            Command::none()
+                        }
                     }
                     _ => Command::none(),
                 };
@@ -488,6 +509,7 @@ impl Page {
                         // close the color picker dialog
                         // apply changes
                         theme_builder_needs_update = true;
+                        self.active_dialog = None;
                         close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
@@ -500,19 +522,24 @@ impl Page {
                     }
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
+                        self.active_dialog = None;
                         close_window(COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
-                        // create the color picker dialog
-                        // set the active picker
-                        self.active_dialog = Some(NamedColorPicker::ControlComponent);
-                        get_window(color_picker_window_settings())
+                        let prev = self
+                            .active_dialog
+                            .replace(NamedColorPicker::ControlComponent);
+                        if prev.is_none() {
+                            get_window(color_picker_window_settings())
+                        } else {
+                            Command::none()
+                        }
                     }
                     _ => Command::none(),
                 };
                 Command::batch(vec![cmd, self.control_component.update::<app::Message>(u)])
             }
-            Message::CloseRequested(_) => {
+            Message::CloseRequested => {
                 match self.active_dialog.take() {
                     Some(NamedColorPicker::ApplicationBackground) => {
                         _ = self
@@ -775,6 +802,9 @@ impl Page {
                 };
                 Command::none()
             }
+            Message::DragColorPicker => {
+                cosmic::iced_sctk::commands::window::start_drag_window(COLOR_PICKER_DIALOG_ID)
+            }
         };
 
         if theme_builder_needs_update {
@@ -851,17 +881,24 @@ impl Page {
         column![
             header_bar()
                 .title(fl!("color-picker"))
-                .on_close(msg(ColorPickerUpdate::AppliedColor)),
-            picker
-                .builder(msg)
-                .width(Length::Fixed(254.0))
-                .height(Length::Fixed(174.0))
-                .reset_label(fl!("reset-to-default"))
-                .build(
-                    fl!("recent-colors"),
-                    fl!("copy-to-clipboard"),
-                    fl!("copied-to-clipboard"),
-                )
+                .on_close(msg(ColorPickerUpdate::AppliedColor))
+                .on_drag(Message::DragColorPicker),
+            container(
+                picker
+                    .builder(msg)
+                    .width(Length::Fixed(254.0))
+                    .height(Length::Fixed(174.0))
+                    .reset_label(fl!("reset-to-default"))
+                    .build(
+                        fl!("recent-colors"),
+                        fl!("copy-to-clipboard"),
+                        fl!("copied-to-clipboard"),
+                    )
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .align_x(cosmic::iced_core::alignment::Horizontal::Center)
+            .style(cosmic::theme::style::Container::Background)
         ]
         .width(Length::Fill)
         .height(Length::Fill)
@@ -1333,10 +1370,10 @@ fn color_picker_window_settings() -> SctkWindowSettings {
         size_limits: layout::Limits::NONE
             .min_width(300.0)
             .max_width(800.0)
-            .min_height(200.0)
+            .min_height(520.0)
             .max_height(1080.0),
-        size: (286, 424),
-        resizable: None,
+        size: (300, 520),
+        resizable: Some(8.0),
         client_decorations: true,
         transparent: true,
     }
