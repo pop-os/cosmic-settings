@@ -404,7 +404,7 @@ impl PageInner {
                     .iter()
                     .find(|b| b.to_string() == self.backgrounds[a])
                 {
-                    panel_config.background = b.clone().into();
+                    panel_config.background = (*b).into();
                 }
             }
             Message::ExtendToEdge(enabled) => {
