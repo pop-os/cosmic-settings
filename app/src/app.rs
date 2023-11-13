@@ -1,7 +1,9 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use cosmic::app::DbusActivationMessage;
 use cosmic::iced::Subscription;
+use cosmic::iced_core::window::Id;
 use cosmic::{
     app::{Command, Core},
     cosmic_config::config_subscription,
@@ -58,6 +60,13 @@ pub enum Message {
     OpenContextDrawer(Cow<'static, str>),
     CloseContextDrawer,
     SetTheme(cosmic::theme::Theme),
+    DbusActivation(DbusActivationMessage),
+}
+
+impl From<DbusActivationMessage> for Message {
+    fn from(msg: DbusActivationMessage) -> Self {
+        Message::DbusActivation(msg)
+    }
 }
 
 impl cosmic::Application for SettingsApp {
@@ -320,6 +329,20 @@ impl cosmic::Application for SettingsApp {
             }
             Message::CloseContextDrawer => {
                 self.core.window.show_context = false;
+            }
+            Message::DbusActivation(mut msg) => {
+                let mut cmds = Vec::with_capacity(1);
+                dbg!(&msg);
+                // try to use token for xdg-activation
+                if let Some(token) = msg.activation_token.take() {
+                    cmds.push(cosmic::iced_sctk::commands::activation::activate(
+                        Id::default(),
+                        token,
+                    ));
+                }
+                // if flag args are passed, use those to change the page
+
+                return Command::batch(cmds);
             }
         }
 

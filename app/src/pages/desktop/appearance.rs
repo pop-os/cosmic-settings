@@ -1040,7 +1040,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                         .height(Length::Fixed(100.0))
                                 )
                                 .style(button::Style::Image)
-                                .padding([0, 0])
+                                .padding([8, 0])
                                 .selected(page.theme_mode.is_dark)
                                 .on_press(Message::DarkMode(true)),
                                 text(&descriptions[14])
@@ -1414,19 +1414,6 @@ fn color_picker_window_settings() -> SctkWindowSettings {
         ..Default::default()
     }
 }
-
-// TODO replace with image button / toggle buttons
-// fn color_button_<'a, Message: 'a>(
-//     on_press: Option<Message>,
-//     color: cosmic::iced::Color,
-//     selected: bool,
-// ) -> cosmic::widget::Button<'a, Message, cosmic::Renderer> {
-//     let ret = button(cosmic::widget::vertical_space(Length::Fixed(48.0)))
-//         .width(Length::Fixed(48.0))
-//         .height(Length::Fixed(48.0))
-//         .on_press_maybe(on_press);
-//     color_button(ret, color, selected)
-// }
 
 /// A button for selecting a color or gradient.
 pub fn color_button<'a, Message: 'a + Clone>(

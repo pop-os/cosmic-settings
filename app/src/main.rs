@@ -38,7 +38,7 @@ pub fn main() -> color_eyre::Result<()> {
     let settings = cosmic::app::Settings::default()
         .size_limits(Limits::NONE.min_width(400.0).min_height(300.0));
 
-    cosmic::app::run::<app::SettingsApp>(settings, ())?;
+    cosmic::app::run_single_instance::<app::SettingsApp>(settings, ())?;
 
     Ok(())
 }
