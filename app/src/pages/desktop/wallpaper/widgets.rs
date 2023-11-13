@@ -25,12 +25,12 @@ pub fn color_button(color: wallpaper::Color, selected: bool) -> Element<'static,
 }
 
 /// A sized container that's filled with a color or gradient.
-pub fn color_image(
+pub fn color_image<'a, M: 'a>(
     color: wallpaper::Color,
     width: u16,
     height: u16,
     border_radius: f32,
-) -> Element<'static, Message> {
+) -> Element<'a, M> {
     container(space::Space::new(width, height))
         .style(cosmic::theme::Container::custom(move |_theme| {
             container::Appearance {
