@@ -5,7 +5,7 @@ use super::Message;
 use cosmic::iced_core::{self, gradient::Linear, Background, BorderRadius, Color, Degrees, Length};
 use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::prelude::*;
-use cosmic::widget::{button, container, image, space};
+use cosmic::widget::{button, container, space};
 use cosmic::{iced, Element};
 use cosmic_settings_desktop::wallpaper;
 use slotmap::DefaultKey;
@@ -15,10 +15,11 @@ const COLUMN_SPACING: u16 = 12;
 const ROW_SPACING: u16 = 16;
 
 /// A button for selecting a color or gradient.
-pub fn color_button(color: wallpaper::Color) -> Element<'static, Message> {
+pub fn color_button(color: wallpaper::Color, selected: bool) -> Element<'static, Message> {
     button(color_image(color.clone(), COLOR_WIDTH, COLOR_WIDTH, 8.0))
         .padding(0)
-        .style(button::Style::IconVertical)
+        .selected(selected)
+        .style(button::Style::Image)
         .on_press(Message::ColorSelect(color))
         .into()
 }
@@ -64,22 +65,32 @@ pub fn color_image(
 }
 
 /// Color selection list
-pub fn color_select_options() -> Element<'static, Message> {
+pub fn color_select_options(selected: Option<&wallpaper::Color>) -> Element<'static, Message> {
     let mut vec = Vec::with_capacity(wallpaper::DEFAULT_COLORS.len());
 
     for color in wallpaper::DEFAULT_COLORS {
-        vec.push(color_button(color.clone()));
+        vec.push(color_button(
+            color.clone(),
+            selected.map_or(false, |selection| selection == color),
+        ));
     }
 
     flex_select_row(vec)
 }
 
 /// Background selection list
-pub fn wallpaper_select_options(page: &super::Page) -> Element<Message> {
+pub fn wallpaper_select_options(
+    page: &super::Page,
+    selected: Option<DefaultKey>,
+) -> Element<Message> {
     let mut vec = Vec::with_capacity(page.selection.selection_handles.len());
 
     for (id, handle) in &page.selection.selection_handles {
-        vec.push(wallpaper_button(handle, id));
+        vec.push(wallpaper_button(
+            handle,
+            id,
+            selected.map_or(false, |selection| id == selection),
+        ));
     }
 
     flex_select_row(vec)
@@ -95,12 +106,9 @@ fn flex_select_row(elements: Vec<Element<Message>>) -> Element<Message> {
         .into()
 }
 
-fn wallpaper_button(handle: &ImageHandle, id: DefaultKey) -> Element<Message> {
-    let image = image(handle.clone()).apply(iced::Element::from);
-
-    button(image)
-        .padding(0)
-        .style(cosmic::theme::Button::Transparent)
+fn wallpaper_button(handle: &ImageHandle, id: DefaultKey, selected: bool) -> Element<Message> {
+    cosmic::widget::button::image(handle.clone())
+        .selected(selected)
         .on_press(Message::Select(id))
         .into()
 }

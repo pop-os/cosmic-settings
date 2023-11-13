@@ -41,6 +41,7 @@ image = "0.24.6"
 serde = { version = "1.0.180", features = ["derive"] }
 ashpd = "0.6.2"
 ron = "0.8"
+static_init = "1.0.3"
 
 [dependencies.i18n-embed]
 version = "0.13.9"
