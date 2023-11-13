@@ -6,7 +6,6 @@ mod widgets;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    time::Instant,
 };
 
 use apply::Apply;
@@ -22,6 +21,7 @@ use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use image::imageops::FilterType::Lanczos3;
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
+use static_init::dynamic;
 
 const SYSTEM_WALLPAPER_DIR: &str = "/usr/share/backgrounds/pop/";
 
@@ -46,7 +46,7 @@ const HOUR_2: usize = 5;
 pub enum Message {
     ChangeCategory(usize),
     ColorSelect(wallpaper::Color),
-    Fit(String),
+    Fit(usize),
     Output(segmented_button::Entity),
     RotationFrequency(usize),
     SameBackground(bool),
@@ -364,11 +364,11 @@ impl Page {
     #[must_use]
     pub fn display_image_view(&self) -> cosmic::Element<Message> {
         match self.cached_display_handle {
-            Some(ref handle) => cosmic::iced::widget::image(handle.clone())
+            Some(ref handle) => cosmic::widget::image(handle.clone())
                 .width(Length::Fixed(SIMULATED_WIDTH as f32))
                 .into(),
 
-            None => cosmic::iced::widget::Space::new(SIMULATED_WIDTH, SIMULATED_HEIGHT).into(),
+            None => cosmic::widget::Space::new(SIMULATED_WIDTH, SIMULATED_HEIGHT).into(),
         }
     }
 
@@ -382,14 +382,8 @@ impl Page {
                 self.cached_display_handle = None;
             }
 
-            Message::Fit(option) => {
-                self.selected_fit = self
-                    .fit_options
-                    .iter()
-                    .enumerate()
-                    .find(|(_, key)| **key == option)
-                    .map_or(0, |(indice, _)| indice);
-
+            Message::Fit(selection) => {
+                self.selected_fit = selection;
                 self.cache_display_image();
             }
 
@@ -512,8 +506,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn load(&self, _page: page::Entity) -> Option<page::Task<crate::pages::Message>> {
         Some(Box::pin(async move {
-            let start = Instant::now();
-
             let (config, outputs) = wallpaper::config();
 
             let mut backgrounds = wallpaper::load_each_from_path(SYSTEM_WALLPAPER_DIR.into());
@@ -533,11 +525,6 @@ impl page::Page<crate::pages::Message> for Page {
                 update.selection_handles.insert(id, selection_handle);
             }
 
-            tracing::debug!(
-                "loaded wallpapers in {:?}",
-                Instant::now().duration_since(start)
-            );
-
             crate::pages::Message::DesktopWallpaper(Message::Update(Box::new((
                 config, outputs, update,
             ))))
@@ -547,18 +534,28 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
+#[dynamic]
+static WALLPAPER_SAME: String = fl!("wallpaper", "same");
+
+#[dynamic]
+static WALLPAPER_FIT: String = fl!("wallpaper", "fit");
+
+#[dynamic]
+static WALLPAPER_SLIDE: String = fl!("wallpaper", "slide");
+
+#[dynamic]
+static WALLPAPER_CHANGE: String = fl!("wallpaper", "change");
+
 #[allow(clippy::too_many_lines)]
 pub fn settings() -> Section<crate::pages::Message> {
     Section::default()
         .descriptions(vec![
-            fl!("wallpaper", "same"),
-            fl!("wallpaper", "fit"),
-            fl!("wallpaper", "slide"),
-            fl!("wallpaper", "change"),
+            WALLPAPER_SAME.clone(),
+            WALLPAPER_FIT.clone(),
+            WALLPAPER_SLIDE.clone(),
+            WALLPAPER_CHANGE.clone(),
         ])
-        .view::<Page>(|_binder, page, section| {
-            let descriptions = &section.descriptions;
-
+        .view::<Page>(|_binder, page, _section| {
             let mut children = Vec::with_capacity(3);
 
             let mut show_slideshow_toggle = true;
@@ -590,7 +587,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .vertical_alignment(alignment::Vertical::Center)
                     .width(Length::Fill)
                     .height(Length::Fill)
-                    .apply(cosmic::iced::widget::container)
+                    .apply(cosmic::widget::container)
                     .width(Length::Fill)
                     .height(Length::Fixed(32.0))
                     .into()
@@ -600,32 +597,29 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .into()
             });
 
-            let background_fit = cosmic::iced::widget::pick_list(
-                &page.fit_options,
-                page.fit_options.get(page.selected_fit).cloned(),
-                Message::Fit,
-            );
+            let background_fit =
+                cosmic::widget::dropdown(&page.fit_options, Some(page.selected_fit), Message::Fit);
 
             children.push({
                 let mut column = list_column()
                     .add(settings::item(
-                        &descriptions[0],
+                        &*WALLPAPER_SAME,
                         toggler(None, page.config.same_on_all, Message::SameBackground),
                     ))
-                    .add(settings::item(&descriptions[1], background_fit));
+                    .add(settings::item(&*WALLPAPER_FIT, background_fit));
 
                 if show_slideshow_toggle {
                     column = column.add(settings::item(
-                        &descriptions[2],
+                        &*WALLPAPER_SLIDE,
                         toggler(None, slideshow_enabled, Message::Slideshow),
                     ));
                 }
 
-                // The rotation frequency pick list should only be shown when the slideshow is enabled.
+                // The rotation frequency dropdown should only be shown when the slideshow is enabled.
                 if slideshow_enabled {
                     column
                         .add(settings::item(
-                            &descriptions[3],
+                            &*WALLPAPER_CHANGE,
                             dropdown(
                                 &page.rotation_options,
                                 Some(page.selected_rotation),
@@ -649,18 +643,31 @@ pub fn settings() -> Section<crate::pages::Message> {
             match page.active_category {
                 // Displays system wallpapers that are available to select from
                 CATEGORY_SYSTEM_WALLPAPERS => {
-                    children.push(widgets::wallpaper_select_options(page));
+                    children.push(widgets::wallpaper_select_options(
+                        page,
+                        if let Choice::Background(selection) = page.selection.active {
+                            Some(selection)
+                        } else {
+                            None
+                        },
+                    ));
                 }
 
                 // Displays colors and gradients that are available to select from
                 CATEGORY_COLOR => {
-                    children.push(widgets::color_select_options());
+                    children.push(widgets::color_select_options(
+                        if let Choice::Color(ref color) = page.selection.active {
+                            Some(color)
+                        } else {
+                            None
+                        },
+                    ));
                 }
 
                 _ => (),
             }
 
-            cosmic::iced::widget::column(children)
+            cosmic::widget::column::with_children(children)
                 .spacing(22)
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWallpaper)
