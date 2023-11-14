@@ -7,6 +7,8 @@
 #![allow(clippy::cast_lossless)]
 
 pub mod app;
+use std::str::FromStr;
+
 pub use app::{Message, SettingsApp};
 pub mod config;
 
@@ -18,9 +20,59 @@ pub mod widget;
 
 pub mod subscription;
 
-use cosmic::iced::Limits;
+use clap::{Parser, Subcommand};
+use cosmic::{app::CosmicFlags, iced::Limits};
 use i18n_embed::DesktopLanguageRequester;
+use ron::error::SpannedError;
+use serde::{Deserialize, Serialize};
 use tracing_subscriber::prelude::*;
+
+#[derive(Parser, Debug, Serialize, Deserialize, Clone)]
+#[command(author, version, about, long_about = None)]
+#[command(propagate_version = true)]
+pub struct Args {
+    #[command(subcommand)]
+    subcommand: Option<PageCommands>,
+}
+
+#[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
+pub enum PageCommands {
+    /// Open the settings bluetooth page
+    Bluetooth,
+    /// Open the settings network page
+    Network,
+    /// Open the settings notifications page
+    Notifications,
+    /// Open the settings power page
+    Power,
+    /// Open the settings sound page
+    Sound,
+    /// Open the settings time page
+    Time,
+}
+
+impl FromStr for PageCommands {
+    type Err = SpannedError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        ron::de::from_str(s)
+    }
+}
+
+impl ToString for PageCommands {
+    fn to_string(&self) -> String {
+        ron::ser::to_string(self).unwrap()
+    }
+}
+
+impl CosmicFlags for Args {
+    type SubCommand = PageCommands;
+    type Args = Vec<String>;
+
+    fn action(&self) -> Option<&PageCommands> {
+        self.subcommand.as_ref()
+    }
+}
 
 /// # Errors
 ///
@@ -35,10 +87,12 @@ pub fn main() -> color_eyre::Result<()> {
     init_logger();
     init_localizer();
 
+    let args = Args::parse();
+
     let settings = cosmic::app::Settings::default()
         .size_limits(Limits::NONE.min_width(400.0).min_height(300.0));
 
-    cosmic::app::run_single_instance::<app::SettingsApp>(settings, ())?;
+    cosmic::app::run_single_instance::<app::SettingsApp>(settings, args)?;
 
     Ok(())
 }
