@@ -1,9 +1,8 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::app::{DbusActivationDetails, DbusActivationMessage};
+use cosmic::app::DbusActivationDetails;
 use cosmic::iced::Subscription;
-use cosmic::iced_core::window::Id;
 use cosmic::{
     app::{Command, Core},
     cosmic_config::config_subscription,
@@ -37,7 +36,6 @@ use crate::pages::{sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use std::borrow::Cow;
-use std::str::FromStr;
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
@@ -77,11 +75,11 @@ pub enum Message {
     OpenContextDrawer(Cow<'static, str>),
     CloseContextDrawer,
     SetTheme(cosmic::theme::Theme),
-    DbusActivation(DbusActivationMessage<PageCommands, Vec<String>>),
+    DbusActivation(DbusActivationDetails<PageCommands, Vec<String>>),
 }
 
-impl From<DbusActivationMessage<PageCommands, Vec<String>>> for Message {
-    fn from(msg: DbusActivationMessage<PageCommands, Vec<String>>) -> Self {
+impl From<DbusActivationDetails<PageCommands, Vec<String>>> for Message {
+    fn from(msg: DbusActivationDetails<PageCommands, Vec<String>>) -> Self {
         Message::DbusActivation(msg)
     }
 }
@@ -351,18 +349,11 @@ impl cosmic::Application for SettingsApp {
             Message::CloseContextDrawer => {
                 self.core.window.show_context = false;
             }
-            Message::DbusActivation(mut msg) => {
+            Message::DbusActivation(msg) => {
                 let mut cmds = Vec::with_capacity(1);
-                // try to use token for xdg-activation
-                if let Some(token) = msg.activation_token.take() {
-                    cmds.push(cosmic::iced_sctk::commands::activation::activate(
-                        Id::default(),
-                        token,
-                    ));
-                }
 
                 // if action was passed, use it to change the page
-                if let DbusActivationDetails::ActivateAction { action, .. } = msg.msg {
+                if let DbusActivationDetails::ActivateAction { action, .. } = msg {
                     if let Some(p) = self.subcommand_to_page(action) {
                         cmds.push(self.activate_page(p));
                     }
