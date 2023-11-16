@@ -176,6 +176,7 @@ impl Page {
                     resizable: None,
                     client_decorations: true,
                     transparent: true,
+                    ..Default::default()
                 };
                 return commands::window::get_window(window_settings);
             }

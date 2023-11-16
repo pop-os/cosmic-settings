@@ -1411,6 +1411,7 @@ fn color_picker_window_settings() -> SctkWindowSettings {
         resizable: Some(8.0),
         client_decorations: true,
         transparent: true,
+        ..Default::default()
     }
 }
 
