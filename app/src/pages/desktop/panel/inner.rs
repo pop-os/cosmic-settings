@@ -1,8 +1,8 @@
 use cosmic::{
+    cctk::sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
     cosmic_config::{self, CosmicConfigEntry},
     iced::Length,
     iced_widget::slider,
-    sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
     theme,
     widget::{
         button, container, dropdown, horizontal_space, icon, list, row, settings, text, toggler,
