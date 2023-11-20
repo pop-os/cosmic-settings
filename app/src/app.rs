@@ -1,6 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use cosmic::app::DbusActivationDetails;
 use cosmic::iced::Subscription;
 use cosmic::{
     app::{Command, Core},
@@ -15,8 +16,10 @@ use cosmic::{
 };
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
+use page::Entity;
 
 use crate::config::Config;
+use crate::PageCommands;
 
 use crate::pages::desktop::appearance::COLOR_PICKER_DIALOG_ID;
 use crate::pages::desktop::{
@@ -46,6 +49,20 @@ pub struct SettingsApp {
     search_selections: Vec<(page::Entity, section::Entity)>,
 }
 
+impl SettingsApp {
+    fn subcommand_to_page(&self, cmd: PageCommands) -> Option<Entity> {
+        match cmd {
+            // PageCommands::Bluetooth => self.pages.page_id::<system::bluetooth::Page>(),
+            // PageCommands::Network => self.pages.page_id::<system::network::Page>(),
+            // PageCommands::Notifications => self.pages.page_id::<notifications::Page>(),
+            // PageCommands::Power => self.pages.page_id::<system::power::Page>(),
+            PageCommands::Sound => self.pages.page_id::<sound::Page>(),
+            PageCommands::Time => self.pages.page_id::<time::Page>(),
+            _ => None,
+        }
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -58,11 +75,18 @@ pub enum Message {
     OpenContextDrawer(Cow<'static, str>),
     CloseContextDrawer,
     SetTheme(cosmic::theme::Theme),
+    DbusActivation(DbusActivationDetails<PageCommands, Vec<String>>),
+}
+
+impl From<DbusActivationDetails<PageCommands, Vec<String>>> for Message {
+    fn from(msg: DbusActivationDetails<PageCommands, Vec<String>>) -> Self {
+        Message::DbusActivation(msg)
+    }
 }
 
 impl cosmic::Application for SettingsApp {
     type Executor = cosmic::executor::single::Executor;
-    type Flags = ();
+    type Flags = crate::Args;
     type Message = Message;
 
     const APP_ID: &'static str = "com.system76.CosmicSettings";
@@ -75,7 +99,7 @@ impl cosmic::Application for SettingsApp {
         &mut self.core
     }
 
-    fn init(core: Core, _flags: Self::Flags) -> (Self, Command<Self::Message>) {
+    fn init(core: Core, flags: Self::Flags) -> (Self, Command<Self::Message>) {
         let mut app = SettingsApp {
             active_page: page::Entity::default(),
             config: Config::new(),
@@ -92,10 +116,14 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<time::Page>();
         app.insert_page::<input::Page>();
 
-        let active_id = app
-            .pages
-            .find_page_by_id(&app.config.active_page)
-            .map_or(desktop_id, |(id, _info)| id);
+        let active_id = match flags.subcommand {
+            Some(p) => app.subcommand_to_page(p),
+            None => app
+                .pages
+                .find_page_by_id(&app.config.active_page)
+                .map(|(id, _info)| id),
+        }
+        .unwrap_or(desktop_id);
 
         let command = app.activate_page(active_id);
 
@@ -320,6 +348,18 @@ impl cosmic::Application for SettingsApp {
             }
             Message::CloseContextDrawer => {
                 self.core.window.show_context = false;
+            }
+            Message::DbusActivation(msg) => {
+                let mut cmds = Vec::with_capacity(1);
+
+                // if action was passed, use it to change the page
+                if let DbusActivationDetails::ActivateAction { action, .. } = msg {
+                    if let Some(p) = self.subcommand_to_page(action) {
+                        cmds.push(self.activate_page(p));
+                    }
+                }
+
+                return Command::batch(cmds);
             }
         }
 

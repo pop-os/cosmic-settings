@@ -7,6 +7,7 @@ use cosmic::widget::{
 };
 
 use cosmic::{
+    cctk::sctk::reexports::client::protocol::wl_data_device_manager::DndAction,
     cosmic_config::{Config, CosmicConfigEntry},
     iced::{
         alignment::{Horizontal, Vertical},
@@ -33,7 +34,6 @@ use cosmic::{
         },
         graphics::image::image_rs::EncodableLayout,
     },
-    sctk::reexports::client::protocol::wl_data_device_manager::DndAction,
     theme, Apply, Element,
 };
 
@@ -1124,18 +1124,17 @@ where
                                     )
                                 },
                             )));
-                            let data = match &state.dragging_state {
-                                DraggingState::Dragging(a) => Some(a.clone()),
-                                _ => {
-                                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
+                            let data = if let DraggingState::Dragging(a) = &state.dragging_state {
+                                Some(a.clone())
+                            } else {
+                                shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
                                     move || {
                                         platform_specific::wayland::data_device::ActionInner::RequestDndData(
                                             MIME_TYPE.to_string(),
                                         )
                                     },
                                 )));
-                                    None
-                                }
+                                None
                             };
                             DndOfferState::HandlingOffer(
                                 mime_types.clone(),
