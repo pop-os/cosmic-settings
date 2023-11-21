@@ -1,7 +1,23 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::app::DbusActivationDetails;
+use crate::config::Config;
+use crate::pages::desktop::appearance::COLOR_PICKER_DIALOG_ID;
+use crate::pages::desktop::{
+    self, appearance,
+    dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
+    panel::{
+        self,
+        applets_inner::{self, AppletsPage, APPLET_DND_ICON_ID},
+        inner as _panel,
+    },
+};
+use crate::pages::input::{self, keyboard};
+use crate::pages::{sound, system, time};
+use crate::subscription::desktop_files;
+use crate::widget::{page_title, search_header};
+use crate::PageCommands;
+use cosmic::app::DbusActivationMessage;
 use cosmic::iced::Subscription;
 use cosmic::{
     app::{Command, Core},
@@ -17,25 +33,7 @@ use cosmic::{
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
 use page::Entity;
-
-use crate::config::Config;
-use crate::PageCommands;
-
-use crate::pages::desktop::appearance::COLOR_PICKER_DIALOG_ID;
-use crate::pages::desktop::{
-    self, appearance,
-    dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
-    panel::{
-        self,
-        applets_inner::{self, AppletsPage, APPLET_DND_ICON_ID},
-        inner as _panel,
-    },
-};
-use crate::pages::input::{self, keyboard};
-use crate::pages::{sound, system, time};
-use crate::subscription::desktop_files;
-use crate::widget::{page_title, search_header};
-use std::borrow::Cow;
+use std::{borrow::Cow, str::FromStr};
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
@@ -50,7 +48,7 @@ pub struct SettingsApp {
 }
 
 impl SettingsApp {
-    fn subcommand_to_page(&self, cmd: PageCommands) -> Option<Entity> {
+    fn subcommand_to_page(&self, cmd: &PageCommands) -> Option<Entity> {
         match cmd {
             // PageCommands::Bluetooth => self.pages.page_id::<system::bluetooth::Page>(),
             // PageCommands::Network => self.pages.page_id::<system::network::Page>(),
@@ -75,13 +73,6 @@ pub enum Message {
     OpenContextDrawer(Cow<'static, str>),
     CloseContextDrawer,
     SetTheme(cosmic::theme::Theme),
-    DbusActivation(DbusActivationDetails<PageCommands, Vec<String>>),
-}
-
-impl From<DbusActivationDetails<PageCommands, Vec<String>>> for Message {
-    fn from(msg: DbusActivationDetails<PageCommands, Vec<String>>) -> Self {
-        Message::DbusActivation(msg)
-    }
 }
 
 impl cosmic::Application for SettingsApp {
@@ -117,7 +108,7 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<input::Page>();
 
         let active_id = match flags.subcommand {
-            Some(p) => app.subcommand_to_page(p),
+            Some(p) => app.subcommand_to_page(&p),
             None => app
                 .pages
                 .find_page_by_id(&app.config.active_page)
@@ -349,21 +340,23 @@ impl cosmic::Application for SettingsApp {
             Message::CloseContextDrawer => {
                 self.core.window.show_context = false;
             }
-            Message::DbusActivation(msg) => {
-                let mut cmds = Vec::with_capacity(1);
-
-                // if action was passed, use it to change the page
-                if let DbusActivationDetails::ActivateAction { action, .. } = msg {
-                    if let Some(p) = self.subcommand_to_page(action) {
-                        cmds.push(self.activate_page(p));
-                    }
-                }
-
-                return Command::batch(cmds);
-            }
         }
 
         Command::none()
+    }
+
+    fn dbus_activation(&mut self, msg: DbusActivationMessage) -> Command<Self::Message> {
+        match msg.msg {
+            cosmic::app::DbusActivationDetails::Activate
+            | cosmic::app::DbusActivationDetails::Open { .. } => None,
+            cosmic::app::DbusActivationDetails::ActivateAction { action, .. } => {
+                PageCommands::from_str(&action)
+                    .ok()
+                    .and_then(|action| self.subcommand_to_page(&action))
+                    .map(|e| self.activate_page(e))
+            }
+        }
+        .unwrap_or_else(Command::none)
     }
 
     fn view(&self) -> Element<Message> {
