@@ -1027,12 +1027,10 @@ dependencies = [
  "cosmic-settings-desktop",
  "cosmic-settings-page",
  "cosmic-settings-system",
- "cosmic-settings-time",
  "derivative",
  "derive_setters",
  "dirs 5.0.1",
  "downcast-rs",
- "env_logger",
  "freedesktop-desktop-entry",
  "generator",
  "i18n-embed",
@@ -1501,19 +1499,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.39",
-]
-
-[[package]]
-name = "env_logger"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95b3f3e67048839cb0d0781f445682a35113da7121f7c949db0e2be96a4fbece"
-dependencies = [
- "humantime",
- "is-terminal",
- "log",
- "regex",
- "termcolor",
 ]
 
 [[package]]
@@ -2242,12 +2227,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
-name = "humantime"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
-
-[[package]]
 name = "i18n-config"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2762,17 +2741,6 @@ name = "io-lifetimes"
 version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bffb4def18c48926ccac55c1223e02865ce1a821751a95920448662696e7472c"
-
-[[package]]
-name = "is-terminal"
-version = "0.4.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb0889898416213fab133e1d33a0e5858a48177452750691bde3666d0fdbaf8b"
-dependencies = [
- "hermit-abi",
- "rustix 0.38.25",
- "windows-sys",
-]
 
 [[package]]
 name = "itertools"
