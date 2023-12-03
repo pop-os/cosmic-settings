@@ -271,8 +271,8 @@ users = Korisnici
 
 ## Input
 
-input = Ulaz
-    .desc = Ulaz
+input = Unos
+    .desc = Unos
 
 ## Input: Keyboard
 
