@@ -271,8 +271,8 @@ users = Корисници
 
 ## Input
 
-input = Улаз
-    .desc = Улаз
+input = Унос
+    .desc = Унос
 
 ## Input: Keyboard
 
