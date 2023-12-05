@@ -3,7 +3,7 @@ pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
 use image::{DynamicImage, RgbaImage};
 use std::{
     borrow::Cow,
-    collections::{hash_map::DefaultHasher, HashMap},
+    collections::{hash_map::DefaultHasher, BTreeSet, HashMap},
     fs::DirEntry,
     hash::{Hash, Hasher},
     io::Read,
@@ -104,6 +104,7 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
     tokio::task::spawn_blocking(move || {
         let mut buffer = Vec::new();
         let mut paths = vec![path];
+        let mut wallpapers = BTreeSet::new();
 
         while let Some(path) = paths.pop() {
             if let Ok(dir) = path.read_dir() {
@@ -117,60 +118,59 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
                     if file_type.is_dir() {
                         paths.push(path);
                     } else if file_type.is_file() {
-                        let image_operation =
-                            load_thumbnail(&mut buffer, cache_dir.as_deref(), &path, &entry);
-
-                        if let Some(image_operation) = image_operation {
-                            let tokio_handle = tokio::runtime::Handle::current();
-                            let tx = tx.clone();
-
-                            rayon::spawn_fifo(move || {
-                                let display_thumbnail = match image_operation {
-                                    ImageOperation::Cached(thumbnail) => thumbnail.to_rgba8(),
-
-                                    ImageOperation::GenerateThumbnail { path, image } => {
-                                        let image = image.thumbnail(300, 169).to_rgba8();
-
-                                        if let Some(path) = path {
-                                            // Save thumbnail to disk without blocking.
-                                            tokio_handle.spawn_blocking({
-                                                let image = image.clone();
-                                                move || {
-                                                    if let Err(why) = image.save(&path) {
-                                                        tracing::error!(
-                                                            ?path,
-                                                            ?why,
-                                                            "failed to save image thumbnail"
-                                                        );
-
-                                                        let _res = std::fs::remove_file(&path);
-                                                    }
-                                                }
-                                            });
-                                        }
-
-                                        image
-                                    }
-                                };
-
-                                let mut selection_thumbnail = image::imageops::resize(
-                                    &display_thumbnail,
-                                    158,
-                                    105,
-                                    image::imageops::FilterType::Lanczos3,
-                                );
-
-                                round(&mut selection_thumbnail, [8, 8, 8, 8]);
-
-                                let _res = tx.blocking_send((
-                                    path,
-                                    display_thumbnail,
-                                    selection_thumbnail,
-                                ));
-                            });
-                        }
+                        wallpapers.insert(path);
                     }
                 }
+            }
+        }
+
+        for path in wallpapers {
+            let image_operation = load_thumbnail(&mut buffer, cache_dir.as_deref(), &path);
+
+            if let Some(image_operation) = image_operation {
+                let tokio_handle = tokio::runtime::Handle::current();
+                let tx = tx.clone();
+
+                rayon::spawn_fifo(move || {
+                    let display_thumbnail = match image_operation {
+                        ImageOperation::Cached(thumbnail) => thumbnail.to_rgba8(),
+
+                        ImageOperation::GenerateThumbnail { path, image } => {
+                            let image = image.thumbnail(300, 169).to_rgba8();
+
+                            if let Some(path) = path {
+                                // Save thumbnail to disk without blocking.
+                                tokio_handle.spawn_blocking({
+                                    let image = image.clone();
+                                    move || {
+                                        if let Err(why) = image.save(&path) {
+                                            tracing::error!(
+                                                ?path,
+                                                ?why,
+                                                "failed to save image thumbnail"
+                                            );
+
+                                            let _res = std::fs::remove_file(&path);
+                                        }
+                                    }
+                                });
+                            }
+
+                            image
+                        }
+                    };
+
+                    let mut selection_thumbnail = image::imageops::resize(
+                        &display_thumbnail,
+                        158,
+                        105,
+                        image::imageops::FilterType::Lanczos3,
+                    );
+
+                    round(&mut selection_thumbnail, [8, 8, 8, 8]);
+
+                    let _res = tx.blocking_send((path, display_thumbnail, selection_thumbnail));
+                });
             }
         }
     });
@@ -195,10 +195,9 @@ fn load_thumbnail(
     input_buffer: &mut Vec<u8>,
     cache_dir: Option<&Path>,
     path: &Path,
-    entry: &DirEntry,
 ) -> Option<ImageOperation> {
     if let Some(cache_dir) = cache_dir {
-        if let Ok(ctime) = entry.metadata().and_then(|meta| meta.created()) {
+        if let Ok(ctime) = path.metadata().and_then(|meta| meta.created()) {
             // Search for thumbnail by a unique hash string.
             let mut hasher = DefaultHasher::new();
             path.hash(&mut hasher);
