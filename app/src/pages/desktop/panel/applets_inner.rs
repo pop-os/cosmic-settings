@@ -312,7 +312,7 @@ impl Page {
                 scrollable(
                     column::with_children(vec![
                         text(fl!("add-applet")).size(24).width(Length::Fill).into(),
-                        text_input::search_input(&fl!("search-applets"), &self.search)
+                        text_input::search_input(fl!("search-applets"), &self.search)
                             .on_input(move |s| {
                                 app::Message::PageMessage(msg_map(Message::Search(s)))
                             })
@@ -946,8 +946,13 @@ where
         Length::Shrink
     }
 
-    fn layout(&self, renderer: &cosmic::Renderer, limits: &layout::Limits) -> layout::Node {
-        let inner_layout = self.inner.as_widget().layout(renderer, limits);
+    fn layout(
+        &self,
+        tree: &mut Tree,
+        renderer: &cosmic::Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
+        let inner_layout = self.inner.as_widget().layout(tree, renderer, limits);
         layout::Node::with_children(inner_layout.size(), vec![inner_layout])
     }
 
