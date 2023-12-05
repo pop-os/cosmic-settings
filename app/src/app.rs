@@ -22,7 +22,11 @@ use cosmic::iced::Subscription;
 use cosmic::{
     app::{Command, Core},
     cosmic_config::config_subscription,
-    iced::{self, event::wayland, event::PlatformSpecific, subscription, window, Length},
+    iced::{
+        self,
+        event::{self, wayland, PlatformSpecific},
+        window, Length,
+    },
     prelude::*,
     widget::{
         column, container, icon, nav_bar, navigation, scrollable, search, segmented_button,
@@ -167,7 +171,7 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        let window_break = subscription::events_with(|event, _| match event {
+        let window_break = event::listen_with(|event, _| match event {
             iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Output(
                 wayland::OutputEvent::Created(Some(info)),
                 o,
