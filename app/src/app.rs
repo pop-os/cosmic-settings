@@ -18,6 +18,7 @@ use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
 use cosmic::app::DbusActivationMessage;
+use cosmic::dialog::file_chooser;
 use cosmic::iced::Subscription;
 use cosmic::{
     app::{Command, Core},
@@ -45,6 +46,7 @@ pub struct SettingsApp {
     active_page: page::Entity,
     config: Config,
     core: Core,
+    file_chooser: Option<(file_chooser::Sender, page::Entity)>,
     nav_model: nav_bar::Model,
     pages: page::Binder<crate::pages::Message>,
     search: search::Model,
@@ -65,10 +67,11 @@ impl SettingsApp {
     }
 }
 
-#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum Message {
     DesktopInfo,
+    FileChooser(FileChooser),
+    Error(String),
     Page(page::Entity),
     PageMessage(crate::pages::Message),
     PanelConfig(CosmicPanelConfig),
@@ -77,6 +80,21 @@ pub enum Message {
     OpenContextDrawer(Cow<'static, str>),
     CloseContextDrawer,
     SetTheme(cosmic::theme::Theme),
+}
+
+#[derive(Clone, Debug)]
+pub enum FileChooser {
+    Closed,
+    Init(file_chooser::Sender),
+    Open {
+        title: String,
+        accept_label: String,
+        include_directories: bool,
+        modal: bool,
+        multiple_files: bool,
+    },
+    Opened,
+    Selected(Vec<url::Url>),
 }
 
 impl cosmic::Application for SettingsApp {
@@ -99,6 +117,7 @@ impl cosmic::Application for SettingsApp {
             active_page: page::Entity::default(),
             config: Config::new(),
             core,
+            file_chooser: None,
             nav_model: nav_bar::Model::default(),
             pages: page::Binder::default(),
             search: search::Model::default(),
@@ -212,6 +231,32 @@ impl cosmic::Application for SettingsApp {
                     }
                 },
             ),
+            file_chooser::subscription(|response| match response {
+                file_chooser::Message::Closed => Message::FileChooser(FileChooser::Closed),
+
+                file_chooser::Message::Opened => Message::FileChooser(FileChooser::Opened),
+
+                file_chooser::Message::Selected(files) => {
+                    Message::FileChooser(FileChooser::Selected(files.uris().to_owned()))
+                }
+
+                file_chooser::Message::Err(why) => {
+                    let mut source: &dyn std::error::Error = &why;
+                    let mut string =
+                        format!("open dialog subscription errored\n    cause: {source}");
+
+                    while let Some(new_source) = source.source() {
+                        string.push_str(&format!("\n    cause: {new_source}"));
+                        source = new_source;
+                    }
+
+                    Message::Error(string)
+                }
+
+                file_chooser::Message::Init(sender) => {
+                    Message::FileChooser(FileChooser::Init(sender))
+                }
+            }),
         ])
     }
 
@@ -238,29 +283,39 @@ impl cosmic::Application for SettingsApp {
                 crate::pages::Message::About(message) => {
                     page::update!(self.pages, message, system::about::Page);
                 }
+
                 crate::pages::Message::DateAndTime(message) => {
                     page::update!(self.pages, message, time::date::Page);
                 }
+
                 crate::pages::Message::Desktop(message) => {
                     page::update!(self.pages, message, desktop::Page);
                 }
+
                 crate::pages::Message::DesktopWallpaper(message) => {
-                    page::update!(self.pages, message, desktop::wallpaper::Page);
+                    if let Some(page) = self.pages.page_mut::<desktop::wallpaper::Page>() {
+                        return page.update(message).map(cosmic::app::Message::App);
+                    }
                 }
+
                 crate::pages::Message::Input(message) => {
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);
                     }
                 }
+
                 crate::pages::Message::External { .. } => {
                     todo!("external plugins not supported yet");
                 }
+
                 crate::pages::Message::Page(page) => {
                     return self.activate_page(page);
                 }
+
                 crate::pages::Message::Panel(message) => {
                     page::update!(self.pages, message, panel::Page);
                 }
+
                 crate::pages::Message::PanelApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                         return page
@@ -268,19 +323,65 @@ impl cosmic::Application for SettingsApp {
                             .map(cosmic::app::Message::App);
                     }
                 }
+
                 crate::pages::Message::Dock(message) => {
                     page::update!(self.pages, message, dock::Page);
                 }
+
                 crate::pages::Message::DockApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<dock::applets::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);
                     }
                 }
+
                 crate::pages::Message::Appearance(message) => {
                     if let Some(page) = self.pages.page_mut::<appearance::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);
                     }
-                    // TODO
+                }
+            },
+
+            Message::FileChooser(message) => match message {
+                FileChooser::Selected(files) => {
+                    return self.pages.page[self.active_page]
+                        .file_chooser(files)
+                        .map(crate::app::Message::PageMessage)
+                        .map(cosmic::app::Message::App)
+                }
+
+                FileChooser::Closed => {}
+
+                FileChooser::Opened => {
+                    if let Some((sender, _)) = self.file_chooser.as_mut() {
+                        return sender.response().map(|_| cosmic::app::Message::None);
+                    }
+                }
+
+                FileChooser::Open {
+                    title,
+                    accept_label,
+                    include_directories,
+                    modal,
+                    multiple_files,
+                } => {
+                    if let Some((sender, entity)) = self.file_chooser.as_mut() {
+                        if let Some(dialog) = file_chooser::open_file() {
+                            *entity = self.active_page;
+
+                            return dialog
+                                .title(title)
+                                .accept_label(accept_label)
+                                .include_directories(include_directories)
+                                .modal(modal)
+                                .multiple_files(multiple_files)
+                                .create(sender)
+                                .map(|_| cosmic::app::message::none());
+                        }
+                    }
+                }
+
+                FileChooser::Init(sender) => {
+                    self.file_chooser = Some((sender, page::Entity::default()));
                 }
             },
 
@@ -311,7 +412,7 @@ impl cosmic::Application for SettingsApp {
                     self.pages,
                     dock::applets::Message(applets_inner::Message::PanelConfig(config,)),
                     dock::applets::Page
-                )
+                );
             }
 
             Message::DesktopInfo => {
@@ -335,14 +436,22 @@ impl cosmic::Application for SettingsApp {
                         .map(cosmic::app::Message::App);
                 }
             }
+
             Message::PanelConfig(_) | Message::Search(_) => {}
+
             Message::SetTheme(t) => return cosmic::app::command::set_theme(t),
+
             Message::OpenContextDrawer(title) => {
                 self.core.window.show_context = true;
                 self.set_context_title(title.to_string());
             }
+
             Message::CloseContextDrawer => {
                 self.core.window.show_context = false;
+            }
+
+            Message::Error(error) => {
+                tracing::error!(error, "error occurred");
             }
         }
 

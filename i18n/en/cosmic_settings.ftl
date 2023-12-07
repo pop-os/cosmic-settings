@@ -13,67 +13,75 @@ desktop = Desktop
 appearance = Appearance
     .desc = Accent colors and COSMIC theming.
 
-import = Import
-export = Export
-
-mode-and-colors = Mode and Colors
-auto-switch = Automatically switch from Light to Dark mode
-    .desc = Switches to Light mode at sunrise
 accent-color = Accent color
 app-background = Application or window background
 auto = Auto
 close = Close
+color-picker = Color Picker
+copied-to-clipboard = Copied to clipboard
+copy-to-clipboard = Copy to clipboard
+dark = Dark
+export = Export
+hex = Hex
+import = Import
+light = Light
+mode-and-colors = Mode and Colors
+recent-colors = Recent colors
+reset-default = Reset to default
+reset-to-default = Reset to default
+rgb = RGB
+window-hint-accent = Active window hint color
+window-hint-accent-toggle = Use theme accent color as active window hint
+
+auto-switch = Automatically switch from Light to Dark mode
+    .desc = Switches to Light mode at sunrise
+
 container-background = Container background
     .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
     .reset = Reset to auto
     .desc = Primary container color is used for navigation sidebar, side drawer, dialogs and similar widgets.
-text-tint = Interface text tint
-    .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
+
 control-tint = Control component tint
     .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components.
-window-hint-accent-toggle = Use theme accent color as active window hint
-window-hint-accent = Active window hint color
-dark = Dark
-light = Light
-color-picker = Color Picker
-hex = Hex
-rgb = RGB
-recent-colors = Recent colors
-reset-to-default = Reset to default
-copy-to-clipboard = Copy to clipboard
-copied-to-clipboard = Copied to clipboard
+
+frosted = Frosted glass effect on system interface
+    .desc = Applies background blur to panel, dock, applets, launcher, and application library.
+
+text-tint = Interface text tint
+    .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
 
 style = Style
     .round = Round
     .slightly-round = Slightly round
     .square = Square
-frosted = Frosted glass effect on system interface
-    .desc = Applies background blur to panel, dock, applets, launcher, and application library.
 
-reset-default = Reset to default
 # interface density left out for now
-
 window-management = Window Management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
+
 ## Desktop: Notifications
 
 notifications = Notifications
     .desc = Do Not Disturb, lockscreen notifications, and per-application settings.
-
 
 ## Desktop: Options
 
 desktop-panel-options = Desktop and Panel
     .desc = Super Key action, hot corners, window control options.
 
+desktop-panels-and-applets = Desktop Panels and Applets
+
+dock = Dock
+    .desc = Panel with pinned applications.
+
+hot-corner = Hot Corner
+    .top-left-corner = Enable top-left hot corner for Workspaces
+
 super-key-action = Super Key Action
     .launcher = Launcher
     .workspaces = Workspaces
     .applications = Applications
-
-hot-corner = Hot Corner
-    .top-left-corner = Enable top-left hot corner for Workspaces
 
 top-panel = Top Panel
     .workspaces = Show Workspaces Button
@@ -83,31 +91,38 @@ window-controls = Window Controls
     .minimize = Show Minimize Button
     .maximize = Show Maximize Button
 
-desktop-panels-and-applets = Desktop Panels and Applets
-
-
-dock = Dock
-    .desc = Panel with pinned applications.
-
 ## Desktop: Panel
+
 panel = Panel
     .desc = Top bar with desktop controls and menus.
+
+add = Add
+add-applet = Add Applet
+all = All
+applets = Applets
+center-segment = Center Segment
+drop-here = Drop applets here
+end-segment = End Segment
+large = Large
+no-applets-found = No applets found...
+panel-bottom = Bottom
+panel-left = Left
+panel-right = Right
+panel-top = Top
+search-applets = Search applets...
+small = Small
+start-segment = Start Segment
+
+panel-appearance = Appearance
+    .match = Match desktop
+    .light = Light
+    .dark = Dark
 
 panel-behavior-and-position = Behavior and Positions
     .autohide = Automatically hide panel
     .dock-autohide = Automatically hide dock
     .position = Position on screen
     .display = Show on display
-
-panel-top = Top
-panel-bottom = Bottom
-panel-left = Left
-panel-right = Right
-
-panel-appearance = Appearance
-    .match = Match desktop
-    .light = Light
-    .dark = Dark
 
 panel-style = Style
     .anchor-gap = Gap between panel and screen edges
@@ -118,9 +133,6 @@ panel-style = Style
     .size = Size
     .background-opacity = Background opacity
 
-small = Small
-large = Large
-
 panel-applets = Configuration
     .dock-desc = Configure dock applets.
     .desc = Configure panel applets.
@@ -128,19 +140,6 @@ panel-applets = Configuration
 panel-missing = Panel Configuration is Missing
     .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
     .fix = Reset to default
-
-applets = Applets
-start-segment = Start Segment
-center-segment = Center Segment
-end-segment = End Segment
-
-add = Add
-add-applet = Add Applet
-search-applets = Search applets...
-no-applets-found = No applets found...
-all = All
-
-drop-here = Drop applets here
 
 ## Desktop: Wallpaper
 
@@ -151,12 +150,18 @@ wallpaper = Wallpaper
     .slide = Slideshow
     .change = Change image every
 
+add-color = Add color
+add-image = Add image
 all-displays = All Displays
 colors = Colors
 fit-to-screen = Fit to Screen
+recent-folders = Recent Folders
 stretch = Stretch
 system-backgrounds = System backgrounds
 zoom = Zoom
+
+wallpaper-dialog-image = Choose wallpaper image
+    .accept = _Add
 
 x-minutes = { $number } minutes
 x-hours = { $number ->
