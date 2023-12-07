@@ -15,8 +15,19 @@ const COLUMN_SPACING: u16 = 12;
 const ROW_SPACING: u16 = 16;
 
 /// A button for selecting a color or gradient.
-pub fn color_button(color: wallpaper::Color, selected: bool) -> Element<'static, Message> {
-    button(color_image(color.clone(), COLOR_WIDTH, COLOR_WIDTH, 8.0))
+pub fn color_button(
+    color: wallpaper::Color,
+    removable: bool,
+    selected: bool,
+) -> Element<'static, Message> {
+    let content = color_image(color.clone(), COLOR_WIDTH, COLOR_WIDTH, 8.0);
+    let on_remove = if removable {
+        Some(Message::ColorRemove(color.clone()))
+    } else {
+        None
+    };
+
+    button::custom_image_button(content, on_remove)
         .padding(0)
         .selected(selected)
         .style(button::Style::Image)
@@ -65,12 +76,26 @@ pub fn color_image<'a, M: 'a>(
 }
 
 /// Color selection list
-pub fn color_select_options(selected: Option<&wallpaper::Color>) -> Element<'static, Message> {
+pub fn color_select_options(
+    context: &super::Context,
+    selected: Option<&wallpaper::Color>,
+) -> Element<'static, Message> {
     let mut vec = Vec::with_capacity(wallpaper::DEFAULT_COLORS.len());
 
+    // Place removable custom colors first
+    for color in context.custom_colors.iter().rev() {
+        vec.push(color_button(
+            color.clone(),
+            true,
+            selected.map_or(false, |selection| selection == color),
+        ));
+    }
+
+    // Then non-removable default colors
     for color in wallpaper::DEFAULT_COLORS {
         vec.push(color_button(
             color.clone(),
+            false,
             selected.map_or(false, |selection| selection == color),
         ));
     }
@@ -85,10 +110,28 @@ pub fn wallpaper_select_options(
 ) -> Element<Message> {
     let mut vec = Vec::with_capacity(page.selection.selection_handles.len());
 
+    // Place removable custom images first
+    for id in page.selection.custom_images.iter().rev() {
+        let handle = &page.selection.selection_handles[*id];
+
+        vec.push(wallpaper_button(
+            handle,
+            *id,
+            true,
+            selected.map_or(false, |selection| id == &selection),
+        ));
+    }
+
+    // Then place non-removable images from the current folder
     for (id, handle) in &page.selection.selection_handles {
+        if page.selection.is_custom.contains_key(id) {
+            continue;
+        }
+
         vec.push(wallpaper_button(
             handle,
             id,
+            false,
             selected.map_or(false, |selection| id == selection),
         ));
     }
@@ -106,9 +149,19 @@ fn flex_select_row(elements: Vec<Element<Message>>) -> Element<Message> {
         .into()
 }
 
-fn wallpaper_button(handle: &ImageHandle, id: DefaultKey, selected: bool) -> Element<Message> {
+fn wallpaper_button(
+    handle: &ImageHandle,
+    id: DefaultKey,
+    removable: bool,
+    selected: bool,
+) -> Element<Message> {
     cosmic::widget::button::image(handle.clone())
         .selected(selected)
         .on_press(Message::Select(id))
+        .on_remove_maybe(if removable {
+            Some(Message::ImageRemove(id))
+        } else {
+            None
+        })
         .into()
 }

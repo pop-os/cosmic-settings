@@ -7,7 +7,7 @@ git = "https://github.com/pop-os/libcosmic"
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-features = ["wayland", "tokio", "single-instance"]
+features = ["single-instance", "tokio", "wayland", "xdg-portal"]
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"

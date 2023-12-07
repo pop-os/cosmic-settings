@@ -44,6 +44,11 @@ pub trait Page<Message: 'static>: Downcast {
         None
     }
 
+    /// Response from a file chooser dialog request.
+    fn file_chooser(&mut self, _selected: Vec<url::Url>) -> Command<Message> {
+        Command::none()
+    }
+
     #[must_use]
     #[allow(unused)]
     fn load(&self, page: crate::Entity) -> Option<crate::Task<Message>> {
