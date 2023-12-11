@@ -23,6 +23,7 @@ use cosmic::{Command, Element};
 use cosmic_settings_desktop::wallpaper;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use once_cell::sync::Lazy;
 use ron::ser::PrettyConfig;
 use slotmap::SlotMap;
 use tracing::warn;
@@ -30,7 +31,8 @@ use tracing::warn;
 use crate::app;
 
 use super::wallpaper::widgets::color_image;
-pub const COLOR_PICKER_DIALOG_ID: window::Id = window::Id(1003);
+
+pub static COLOR_PICKER_DIALOG_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
 
 enum NamedColorPicker {
     CustomAccent,
@@ -316,7 +318,7 @@ impl Page {
                         // apply changes
                         theme_builder_needs_update = true;
                         self.active_dialog = None;
-                        close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
+                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
                     ColorPickerUpdate::ActionFinished => {
@@ -329,7 +331,7 @@ impl Page {
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
                         self.active_dialog = None;
-                        close_window(COLOR_PICKER_DIALOG_ID)
+                        close_window(*COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
                         let prev = self
@@ -377,7 +379,7 @@ impl Page {
                         // apply changes
                         theme_builder_needs_update = true;
                         self.active_dialog = None;
-                        close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
+                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
                     ColorPickerUpdate::ActionFinished => {
@@ -390,7 +392,7 @@ impl Page {
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
                         self.active_dialog = None;
-                        close_window(COLOR_PICKER_DIALOG_ID)
+                        close_window(*COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
                         let prev = self
@@ -442,7 +444,7 @@ impl Page {
                         // apply changes
                         theme_builder_needs_update = true;
                         self.active_dialog = None;
-                        close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
+                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
                     ColorPickerUpdate::ActionFinished => {
@@ -455,7 +457,7 @@ impl Page {
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
                         self.active_dialog = None;
-                        close_window(COLOR_PICKER_DIALOG_ID)
+                        close_window(*COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
                         let prev = self.active_dialog.replace(NamedColorPicker::CustomAccent);
@@ -479,7 +481,7 @@ impl Page {
                         // apply changes
                         theme_builder_needs_update = true;
                         self.active_dialog = None;
-                        close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
+                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
                     ColorPickerUpdate::ActionFinished => {
@@ -492,7 +494,7 @@ impl Page {
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
                         self.active_dialog = None;
-                        close_window(COLOR_PICKER_DIALOG_ID)
+                        close_window(*COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
                         let prev = self.active_dialog.replace(NamedColorPicker::InterfaceText);
@@ -513,7 +515,7 @@ impl Page {
                         // apply changes
                         theme_builder_needs_update = true;
                         self.active_dialog = None;
-                        close_window::<app::Message>(COLOR_PICKER_DIALOG_ID)
+                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
                     }
                     // TODO apply changes
                     ColorPickerUpdate::ActionFinished => {
@@ -526,7 +528,7 @@ impl Page {
                     ColorPickerUpdate::Cancel => {
                         // close the color picker dialog
                         self.active_dialog = None;
-                        close_window(COLOR_PICKER_DIALOG_ID)
+                        close_window(*COLOR_PICKER_DIALOG_ID)
                     }
                     ColorPickerUpdate::ToggleColorPicker => {
                         let prev = self
@@ -806,7 +808,7 @@ impl Page {
                 Command::none()
             }
             Message::DragColorPicker => {
-                cosmic::iced_sctk::commands::window::start_drag_window(COLOR_PICKER_DIALOG_ID)
+                cosmic::iced_sctk::commands::window::start_drag_window(*COLOR_PICKER_DIALOG_ID)
             }
         };
 
@@ -1397,10 +1399,10 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn color_picker_window_settings() -> SctkWindowSettings {
     SctkWindowSettings {
-        window_id: COLOR_PICKER_DIALOG_ID,
+        window_id: *COLOR_PICKER_DIALOG_ID,
         app_id: Some("com.system76.CosmicSettings".to_string()),
         title: Some(fl!("color-picker")),
-        parent: Some(window::Id(0)),
+        parent: Some(window::Id::MAIN),
         autosize: false,
         size_limits: layout::Limits::NONE
             .min_width(300.0)

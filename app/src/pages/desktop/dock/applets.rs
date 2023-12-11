@@ -1,6 +1,7 @@
 use cosmic::{cosmic_config::CosmicConfigEntry, iced::window, iced_runtime::Command};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section, Section};
+use once_cell::sync::Lazy;
 use slotmap::SlotMap;
 use std::borrow::Cow;
 
@@ -12,7 +13,7 @@ use crate::{
     },
 };
 
-pub const ADD_DOCK_APPLET_DIALOGUE_ID: window::Id = window::Id(1002);
+pub static ADD_DOCK_APPLET_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
 
 pub(crate) struct Page {
     inner: applets_inner::Page,
@@ -58,7 +59,7 @@ pub struct Message(pub applets_inner::Message);
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Command<app::Message> {
-        self.inner.update(message.0, ADD_DOCK_APPLET_DIALOGUE_ID)
+        self.inner.update(message.0, *ADD_DOCK_APPLET_DIALOGUE_ID)
     }
 }
 
