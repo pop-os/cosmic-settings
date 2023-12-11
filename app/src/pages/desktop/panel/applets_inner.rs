@@ -2,8 +2,8 @@ use button::StyleSheet as ButtonStyleSheet;
 use cosmic::iced_style::container::StyleSheet;
 
 use cosmic::widget::{
-    button, column, container, header_bar, icon, list_column, row, scrollable, text, text_input,
-    Column,
+    button, column, container, header_bar, horizontal_space, icon, list_column, row, scrollable,
+    text, text_input, Column,
 };
 
 use cosmic::{
@@ -625,7 +625,7 @@ pub fn lists<
     })
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Applet<'a> {
     pub id: Cow<'a, str>,
     pub name: Cow<'a, str>,
@@ -848,7 +848,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 })))
                 .into()
             } else {
-                text("unknown").into()
+                horizontal_space(1).into()
             },
             on_cancel: None,
         }
@@ -936,7 +936,7 @@ where
     }
 
     fn diff(&mut self, tree: &mut Tree) {
-        tree.diff_children(std::slice::from_mut(&mut self.inner));
+        self.inner.as_widget_mut().diff(&mut tree.children[0]);
     }
 
     fn width(&self) -> Length {
@@ -953,7 +953,10 @@ where
         renderer: &cosmic::Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        let inner_layout = self.inner.as_widget().layout(tree, renderer, limits);
+        let inner_layout = self
+            .inner
+            .as_widget()
+            .layout(&mut tree.children[0], renderer, limits);
         layout::Node::with_children(inner_layout.size(), vec![inner_layout])
     }
 
