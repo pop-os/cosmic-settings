@@ -162,10 +162,10 @@ impl Page {
             Message::OpenSpecialCharacterDialog(special_key) => {
                 self.special_character_dialog = Some(special_key);
                 let window_settings = SctkWindowSettings {
-                    window_id: keyboard::SPECIAL_CHARACTER_DIALOGUE_ID,
+                    window_id: *keyboard::SPECIAL_CHARACTER_DIALOGUE_ID,
                     app_id: Some("com.system76.CosmicSettings".to_string()),
                     title: Some(special_key.title()),
-                    parent: Some(window::Id(0)),
+                    parent: Some(window::Id::MAIN),
                     autosize: false,
                     size_limits: layout::Limits::NONE
                         .min_width(300.0)
@@ -182,7 +182,7 @@ impl Page {
             }
             Message::CloseSpecialCharacterDialog => {
                 self.special_character_dialog = None;
-                return commands::window::close_window(keyboard::SPECIAL_CHARACTER_DIALOGUE_ID);
+                return commands::window::close_window(*keyboard::SPECIAL_CHARACTER_DIALOGUE_ID);
             }
             Message::SpecialCharacterSelect(id) => {
                 if let Some(special_key) = self.special_character_dialog {

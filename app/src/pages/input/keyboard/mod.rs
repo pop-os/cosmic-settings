@@ -9,12 +9,13 @@ use cosmic::{
     widget::{button, container, icon, radio, settings},
 };
 use cosmic_settings_page::{self as page, section, Section};
+use once_cell::sync::Lazy;
 use slotmap::SlotMap;
 
 use super::Message;
 
-pub const ADD_INPUT_SOURCE_DIALOGUE_ID: window::Id = window::Id(2000);
-pub const SPECIAL_CHARACTER_DIALOGUE_ID: window::Id = window::Id(2001);
+pub static ADD_INPUT_SOURCE_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
+pub static SPECIAL_CHARACTER_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
 
 static COMPOSE_OPTIONS: &[(&str, &str)] = &[
     // ("Left Alt", "compose:lalt"), XXX?

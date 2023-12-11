@@ -36,6 +36,7 @@ use cosmic::{
     },
     theme, Apply, Element,
 };
+use once_cell::sync::Lazy;
 
 use std::{
     borrow::{Borrow, Cow},
@@ -67,8 +68,8 @@ const SPACING: f32 = 8.0;
 // radius is 8.0
 const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
 
-pub const APPLET_DND_ICON_ID: window::Id = window::Id(1000);
-pub const ADD_PANEL_APPLET_DIALOGUE_ID: window::Id = window::Id(1001);
+pub static APPLET_DND_ICON_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
+pub static ADD_PANEL_APPLET_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
 
 pub struct Page {
     pub(crate) available_entries: Vec<Applet<'static>>,
@@ -463,7 +464,7 @@ impl Page {
                     window_id,
                     app_id: Some("com.system76.CosmicSettings".to_string()),
                     title: Some(fl!("add-applet")),
-                    parent: Some(window::Id(0)),
+                    parent: Some(window::Id::MAIN),
                     autosize: false,
                     size_limits: layout::Limits::NONE
                         .min_width(300.0)
@@ -539,7 +540,7 @@ pub fn lists<
                                 .collect()
                         })
                         .unwrap_or_default(),
-                    Some((window::Id(0), APPLET_DND_ICON_ID)),
+                    Some((window::Id::MAIN, *APPLET_DND_ICON_ID)),
                     Message::StartDnd,
                     |a| Message::DnDCommand(Arc::new(a)),
                     Message::RemoveStart,
@@ -570,7 +571,7 @@ pub fn lists<
                                 .collect()
                         })
                         .unwrap_or_default(),
-                    Some((window::Id(0), APPLET_DND_ICON_ID)),
+                    Some((window::Id::MAIN, *APPLET_DND_ICON_ID)),
                     Message::StartDnd,
                     |a| Message::DnDCommand(Arc::new(a)),
                     Message::RemoveCenter,
@@ -602,7 +603,7 @@ pub fn lists<
                                 .collect()
                         })
                         .unwrap_or_default(),
-                    Some((window::Id(0), APPLET_DND_ICON_ID)),
+                    Some((window::Id::MAIN, *APPLET_DND_ICON_ID)),
                     Message::StartDnd,
                     |a| Message::DnDCommand(Arc::new(a)),
                     Message::RemoveEnd,
