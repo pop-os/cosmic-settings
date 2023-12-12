@@ -8,7 +8,7 @@ To compile, a stable Rust compiler and [just](https://github.com/casey/just) are
 
 - cargo
 - just
-- lld
+- mold
 
 Some C libraries are also required for font support at the moment.
 

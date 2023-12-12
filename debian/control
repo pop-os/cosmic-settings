@@ -4,18 +4,18 @@ Priority: optional
 Maintainer: Michael Murphy <mmstick@pm.me>
 Build-Depends:
     debhelper-compat (=13),
-    just (>= 1.13.0),
-    rust-all,
     cmake,
+    just (>= 1.13.0),
     libexpat1-dev,
     libfontconfig-dev,
     libfreetype-dev,
-    lld,
-    libwayland-dev,
-    pkg-config,
-    libxkbcommon-dev,
+    libinput-dev,
     libudev-dev,
-    libinput-dev
+    libwayland-dev,
+    libxkbcommon-dev,
+    mold,
+    pkg-config,
+    rust-all,
 Standards-Version: 4.6.2
 Homepage: https://github.com/pop-os/cosmic-settings
 

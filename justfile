@@ -1,21 +1,21 @@
 name := 'cosmic-settings'
 appid := 'com.system76.CosmicSettings'
 
-# Use lld linker if available
-ld-args := if `which lld || true` != '' {
-    '-C link-arg=-fuse-ld=lld -C link-arg=-Wl,--build-id=sha1'
+# Use mold linker if clang and mold exists.
+clang-path := `which clang || true`
+mold-path := `which mold || true`
+
+linker-arg := if clang-path != '' {
+    if mold-path != '' {
+        '-C linker=' + clang-path + ' -C link-arg=--ld-path=' + mold-path + ' '
+    } else {
+        ''
+    }
 } else {
     ''
 }
 
-# Use the x86-64-v2 target by default on x86-64 systems.
-target-cpu := if arch() == 'x86_64' { 'x86-64-v2' } else { '' }
-
-export RUSTFLAGS := if target-cpu != '' {
-    ld-args + ' -C target-cpu=' + target-cpu + ' ' + env_var_or_default('RUSTFLAGS', '')
-} else {
-    ld-args + ' ' + env_var_or_default('RUSTFLAGS', '')
-}
+export RUSTFLAGS := linker-arg + env_var_or_default('RUSTFLAGS', '')
 
 rootdir := ''
 prefix := '/usr'
