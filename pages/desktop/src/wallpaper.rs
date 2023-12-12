@@ -4,7 +4,6 @@ use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
 use std::{
     borrow::Cow,
     collections::{hash_map::DefaultHasher, BTreeSet, HashMap},
-    fs::DirEntry,
     hash::{Hash, Hasher},
     io::Read,
     path::{Path, PathBuf},
@@ -97,8 +96,6 @@ pub fn cache_dir() -> Option<PathBuf> {
 /// Loads wallpapers in parallel by spawning tasks with a rayon thread pool.
 #[must_use]
 pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaImage)> {
-    let cache_dir = cache_dir();
-
     let (tx, rx) = mpsc::channel(1);
 
     tokio::task::spawn(async move {
@@ -187,7 +184,7 @@ pub async fn load_image_with_thumbnail(
             let _res = tx.send(Some((path, display_thumbnail, selection_thumbnail)));
         });
     } else {
-        tx.send(None);
+        let _res = tx.send(None);
     }
 
     rx.await.unwrap_or(None)
