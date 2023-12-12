@@ -38,7 +38,7 @@ notify = "6.0.0"
 anyhow = "1.0"
 image = "0.24.6"
 serde = { version = "1.0.180", features = ["derive"] }
-ashpd = "0.6.2"
+ashpd = { version = "0.6.2", default-features = false }
 ron = "0.8"
 static_init = "1.0.3"
 clap = {version = "4.4.8", features = ["derive"] }
