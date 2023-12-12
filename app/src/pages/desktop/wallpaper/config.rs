@@ -16,7 +16,7 @@ const RECENT_FOLDERS: &str = "recent-folders";
 #[derive(Debug, Default)]
 pub struct Config {
     context: Option<cosmic_config::Config>,
-    current_folder: Option<PathBuf>,
+    pub(super) current_folder: Option<PathBuf>,
     custom_colors: Vec<wallpaper::Color>,
     custom_images: Vec<PathBuf>,
     recent_folders: VecDeque<PathBuf>,
@@ -34,8 +34,8 @@ impl Config {
             }
         };
 
-        if let Ok(path) = dbg!(context.get::<PathBuf>(CURRENT_FOLDER)) {
-            config.current_folder = Some(path);
+        if let Ok(path) = context.get::<Option<PathBuf>>(CURRENT_FOLDER) {
+            config.current_folder = path;
         }
 
         if let Ok(colors) = context.get::<Vec<wallpaper::Color>>(CUSTOM_COLORS) {
@@ -59,7 +59,12 @@ impl Config {
     pub fn current_folder(&self) -> &Path {
         self.current_folder
             .as_deref()
-            .unwrap_or(Path::new("/usr/share/backgrounds/"))
+            .unwrap_or(Self::default_folder())
+    }
+
+    #[must_use]
+    pub fn default_folder() -> &'static Path {
+        Path::new("/usr/share/backgrounds/")
     }
 
     /// Sets the current background folder
@@ -67,9 +72,12 @@ impl Config {
     /// # Errors
     ///
     /// Returns an error if the on-disk configuration could not be updated.
-    pub fn set_current_folder(&mut self, folder: PathBuf) -> Result<(), cosmic_config::Error> {
+    pub fn set_current_folder(
+        &mut self,
+        folder: Option<PathBuf>,
+    ) -> Result<(), cosmic_config::Error> {
         let result = self.update(CURRENT_FOLDER, &folder);
-        self.current_folder = Some(folder);
+        self.current_folder = folder;
         result
     }
 

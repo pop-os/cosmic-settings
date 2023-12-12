@@ -503,16 +503,19 @@ impl cosmic::Application for SettingsApp {
         {
             return page.dnd_icon();
         }
+
         if let Some(Some(page)) = (id == *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID)
             .then(|| self.pages.page::<applets_inner::Page>())
         {
             return page.add_applet_view(crate::pages::Message::PanelApplet);
         }
+
         if let Some(Some(page)) = (id == *appearance::COLOR_PICKER_DIALOG_ID)
             .then(|| self.pages.page::<appearance::Page>())
         {
             return page.color_picker_view();
         }
+
         if let Some(Some(page)) =
             (id == *ADD_DOCK_APPLET_DIALOGUE_ID).then(|| self.pages.page::<dock::applets::Page>())
         {
@@ -520,15 +523,23 @@ impl cosmic::Application for SettingsApp {
                 crate::pages::Message::DockApplet(dock::applets::Message(msg))
             });
         }
+
         if let Some(Some(page)) = (id == *keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID)
             .then(|| self.pages.page::<input::Page>())
         {
             return page.add_input_source_view();
         }
+
         if let Some(Some(page)) = (id == *keyboard::SPECIAL_CHARACTER_DIALOGUE_ID)
             .then(|| self.pages.page::<input::Page>())
         {
             return page.special_character_key_view();
+        }
+
+        if let Some(page) = self.pages.page::<desktop::wallpaper::Page>() {
+            if id == page.color_dialog {
+                return page.show_color_dialog();
+            }
         }
 
         panic!("unknown window ID: {id:?}");

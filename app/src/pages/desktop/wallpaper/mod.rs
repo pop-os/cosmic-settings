@@ -13,8 +13,12 @@ use std::{
 };
 
 use apply::Apply;
-use cosmic::{iced::Length, Element};
-use cosmic::{iced_core::alignment, iced_runtime::core::image::Handle as ImageHandle};
+use cosmic::iced::{wayland::actions::window::SctkWindowSettings, window, Color, Length};
+use cosmic::iced_sctk::commands::window::{close_window, get_window};
+use cosmic::{
+    iced_core::{alignment, layout},
+    iced_runtime::core::image::Handle as ImageHandle,
+};
 use cosmic::{
     widget::{
         button, dropdown, list_column, row,
@@ -22,6 +26,10 @@ use cosmic::{
         segmented_selection, settings, text, toggler,
     },
     Command,
+};
+use cosmic::{
+    widget::{color_picker::ColorPickerUpdate, ColorPickerModel},
+    Element,
 };
 use cosmic_settings_desktop::wallpaper::{self, Entry, ScalingMode};
 use cosmic_settings_page::Section;
@@ -50,11 +58,12 @@ pub type Image = ImageBuffer<Rgba<u8>, Vec<u8>>;
 #[derive(Clone, Debug)]
 pub enum Message {
     ChangeFolder(Context),
-    ColorAdd(wallpaper::Color),
     ColorAddDialog,
+    ColorDialogUpdate(ColorPickerUpdate),
     ColorRemove(wallpaper::Color),
     ChangeCategory(Category),
     ColorSelect(wallpaper::Color),
+    DragColorDialog,
     Fit(usize),
     ImageAdd(Option<Arc<(PathBuf, Image, Image)>>),
     ImageAddDialog,
@@ -79,6 +88,8 @@ pub struct Page {
     pub background_service_config: wallpaper::Config,
     pub cached_display_handle: Option<ImageHandle>,
     pub categories: dropdown::multi::Model<String, Category>,
+    pub color_dialog: window::Id,
+    pub color_model: ColorPickerModel,
     pub config: Config,
     pub fit_options: Vec<String>,
     pub outputs: SingleSelectModel,
@@ -173,6 +184,8 @@ impl Default for Page {
                 categories
             },
             background_service_config: wallpaper::Config::default(),
+            color_dialog: window::Id::unique(),
+            color_model: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, Some(Color::WHITE)),
             config: Config::new(),
             fit_options: vec![fl!("fit-to-screen"), fl!("stretch"), fl!("zoom")],
             outputs: SingleSelectModel::default(),
@@ -203,11 +216,6 @@ impl Default for Page {
             selected_rotation: 0,
             selection: Context::default(),
         };
-
-        // Sync custom colors from config.
-        for color in page.config.custom_colors() {
-            page.selection.add_custom_color(color.clone());
-        }
 
         page.assign_recent_folders();
 
@@ -355,19 +363,13 @@ impl Page {
         wallpaper::set(&mut self.background_service_config, entry);
     }
 
-    /// Updates configuration for background image.
-    fn config_background_entry(&self, output: String, path: PathBuf) -> Option<Entry> {
-        let scaling_mode = match self.selected_fit {
-            FIT => ScalingMode::Fit([0.0, 0.0, 0.0]),
-            STRETCH => ScalingMode::Stretch,
-            ZOOM => ScalingMode::Zoom,
-            _ => return None,
-        };
-
-        Entry::new(output, wallpaper::Source::Path(path))
-            .scaling_mode(scaling_mode)
-            .rotation_frequency(self.rotation_frequency)
-            .apply(Some)
+    /// Locate the ID of a background that's already stored in memory
+    fn background_id_from_path(&self, path: &Path) -> Option<DefaultKey> {
+        self.selection
+            .paths
+            .iter()
+            .find(|(_id, background)| *background == path)
+            .map(|(id, _)| id)
     }
 
     /// Updates configuration from the background service.
@@ -405,7 +407,7 @@ impl Page {
             self.select_background_entry(&entry);
 
             if let Some(current) = entry_directory(self.config.current_folder(), &entry) {
-                if let Err(why) = self.config.set_current_folder(current) {
+                if let Err(why) = self.config.set_current_folder(Some(current)) {
                     tracing::error!(?why, "cannot set current folder");
                 }
             }
@@ -423,7 +425,7 @@ impl Page {
 
                     if let Some(current) = entry_directory(self.config.current_folder(), background)
                     {
-                        if let Err(why) = self.config.set_current_folder(current) {
+                        if let Err(why) = self.config.set_current_folder(Some(current)) {
                             tracing::error!(?why, "cannot set current folder");
                         }
                     }
@@ -445,7 +447,18 @@ impl Page {
 
         match category {
             Category::Backgrounds => {
-                self.select_first_background();
+                if self.config.current_folder.is_some() {
+                    let _ = self.config.set_current_folder(None);
+                    command = cosmic::command::future(async move {
+                        crate::app::Message::PageMessage(crate::pages::Message::DesktopWallpaper(
+                            Message::ChangeFolder(
+                                change_folder(Config::default_folder().to_owned()).await,
+                            ),
+                        ))
+                    });
+                } else {
+                    self.select_first_background();
+                }
             }
 
             Category::Colors => {
@@ -455,7 +468,7 @@ impl Page {
 
             Category::RecentFolder(id) => {
                 if let Some(path) = self.config.recent_folders().get(id).cloned() {
-                    if let Err(why) = self.config.set_current_folder(path.clone()) {
+                    if let Err(why) = self.config.set_current_folder(Some(path.clone())) {
                         tracing::error!(?path, ?why, "failed to set current folder");
                     }
 
@@ -495,6 +508,21 @@ impl Page {
         };
     }
 
+    /// Updates configuration for background image.
+    fn config_background_entry(&self, output: String, path: PathBuf) -> Option<Entry> {
+        let scaling_mode = match self.selected_fit {
+            FIT => ScalingMode::Fit([0.0, 0.0, 0.0]),
+            STRETCH => ScalingMode::Stretch,
+            ZOOM => ScalingMode::Zoom,
+            _ => return None,
+        };
+
+        Entry::new(output, wallpaper::Source::Path(path))
+            .scaling_mode(scaling_mode)
+            .rotation_frequency(self.rotation_frequency)
+            .apply(Some)
+    }
+
     #[must_use]
     pub fn display_image_view(&self) -> cosmic::Element<Message> {
         match self.cached_display_handle {
@@ -509,6 +537,44 @@ impl Page {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
         match message {
+            Message::DragColorDialog => {
+                return cosmic::iced_sctk::commands::window::start_drag_window(self.color_dialog)
+            }
+
+            Message::ColorDialogUpdate(update) => {
+                let cmd = match update {
+                    ColorPickerUpdate::AppliedColor
+                    | ColorPickerUpdate::Cancel
+                    | ColorPickerUpdate::Reset => {
+                        if let Some(color) = self.color_model.get_applied_color() {
+                            let color = wallpaper::Color::Single([color.r, color.g, color.b]);
+
+                            if let Err(why) = self.config.add_custom_color(color.clone()) {
+                                tracing::error!(?why, "could not set custom color");
+                            }
+
+                            self.selection.add_custom_color(color);
+                        }
+
+                        close_window(self.color_dialog)
+                    }
+
+                    ColorPickerUpdate::ActionFinished => {
+                        let _res = self
+                            .color_model
+                            .update::<crate::app::Message>(ColorPickerUpdate::AppliedColor);
+                        Command::none()
+                    }
+
+                    _ => Command::none(),
+                };
+
+                return Command::batch(vec![
+                    cmd,
+                    self.color_model.update::<crate::app::Message>(update),
+                ]);
+            }
+
             Message::ChangeFolder(mut context) => {
                 // Reassign custom colors and images to the new context.
                 std::mem::swap(&mut context, &mut self.selection);
@@ -531,14 +597,9 @@ impl Page {
 
                 self.select_first_background();
             }
-            Message::ColorAdd(color) => {
-                if let Err(why) = self.config.add_custom_color(color) {
-                    tracing::error!(?why, "could not set custom color");
-                }
-            }
 
             Message::ColorAddDialog => {
-                unimplemented!();
+                return get_window(color_picker_window_settings(self.color_dialog));
             }
 
             Message::ColorRemove(color) => {
@@ -625,7 +686,22 @@ impl Page {
                 self.background_service_config_update(update.0, update.1, update.2);
                 self.config_apply();
 
-                // Load custom content
+                // Sync custom colors from config.
+                for color in self.config.custom_colors() {
+                    self.selection.add_custom_color(color.clone());
+                }
+
+                // Set the default selection if an image was selected.
+                if let Choice::Background(_) | Choice::Slideshow = self.selection.active {
+                    let folder = self.config.current_folder();
+                    for (id, recent) in self.config.recent_folders().iter().enumerate() {
+                        if recent == folder {
+                            self.categories.selected = Some(Category::RecentFolder(id));
+                        }
+                    }
+                }
+
+                // Load preview images for each custom image stored in the on-disk config.
                 return cosmic::command::batch(self.config.custom_images().iter().cloned().map(
                     |path| {
                         cosmic::command::future(async move {
@@ -717,13 +793,13 @@ impl Page {
         self.cache_display_image();
     }
 
-    /// Locate the ID of a background that's already stored in memory
-    fn background_id_from_path(&self, path: &Path) -> Option<DefaultKey> {
-        self.selection
-            .paths
-            .iter()
-            .find(|(_id, background)| *background == path)
-            .map(|(id, _)| id)
+    pub fn show_color_dialog(&self) -> Element<crate::app::Message> {
+        color_picker_view(
+            &self.color_model,
+            Message::DragColorDialog,
+            Message::ColorDialogUpdate,
+        )
+        .map(|m| crate::app::Message::PageMessage(crate::pages::Message::DesktopWallpaper(m)))
     }
 }
 
@@ -754,7 +830,7 @@ pub struct Context {
 impl Context {
     fn add_custom_color(&mut self, color: wallpaper::Color) {
         if !self.custom_colors.contains(&color) {
-            self.add_custom_color(color);
+            self.custom_colors.push(color);
         }
     }
 
@@ -923,7 +999,11 @@ pub fn settings() -> Section<crate::pages::Message> {
                     (fl!("add-image"), Message::ImageAddDialog)
                 };
 
-                button::link(text).on_press(message)
+                button::link(text)
+                    .trailing_icon(true)
+                    .on_press(message)
+                    .apply(cosmic::widget::container)
+                    .align_y(alignment::Vertical::Bottom)
             };
 
             children.push(
@@ -984,4 +1064,61 @@ fn entry_directory(current_folder: &Path, entry: &wallpaper::Entry) -> Option<Pa
 
         wallpaper::Source::Color(_) => PathBuf::from(current_folder),
     })
+}
+
+fn color_picker_window_settings(window_id: window::Id) -> SctkWindowSettings {
+    SctkWindowSettings {
+        window_id,
+        app_id: Some("com.system76.CosmicSettings".to_string()),
+        title: Some(fl!("color-picker")),
+        parent: Some(window::Id::MAIN),
+        autosize: false,
+        size_limits: layout::Limits::NONE
+            .min_width(300.0)
+            .max_width(800.0)
+            .min_height(520.0)
+            .max_height(520.0),
+        size: (300, 520),
+        resizable: Some(8.0),
+        client_decorations: true,
+        transparent: true,
+        ..Default::default()
+    }
+}
+
+// TODO: Reuse with the appearance page
+pub fn color_picker_view<Message: Clone + 'static>(
+    model: &ColorPickerModel,
+    on_drag: Message,
+    on_message: fn(ColorPickerUpdate) -> Message,
+) -> Element<Message> {
+    let header = cosmic::widget::header_bar()
+        .title(fl!("color-picker"))
+        .on_close(on_message(ColorPickerUpdate::AppliedColor))
+        .on_drag(on_drag);
+
+    let content = cosmic::widget::container(
+        model
+            .builder(on_message)
+            .width(Length::Fixed(254.0))
+            .height(Length::Fixed(174.0))
+            .reset_label(fl!("reset-to-default"))
+            .build(
+                fl!("recent-colors"),
+                fl!("copy-to-clipboard"),
+                fl!("copied-to-clipboard"),
+            ),
+    )
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .center_x()
+    .style(cosmic::theme::style::Container::Background);
+
+    cosmic::widget::column::with_capacity(2)
+        .push(header)
+        .push(content)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .align_items(cosmic::iced_core::Alignment::Center)
+        .apply(Element::from)
 }
