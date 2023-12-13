@@ -107,7 +107,6 @@ all-displays = Tutti gli Schermi
 colors = Colori
 fit-to-screen = Adatta allo Schermo
 stretch = Allarga
-system-backgrounds = Sfondi di sistema
 zoom = Zoom
 
 x-minutes = { $number } minuti

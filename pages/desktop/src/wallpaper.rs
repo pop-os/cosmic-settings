@@ -69,12 +69,6 @@ pub fn config() -> (Config, HashMap<String, String>) {
 
 pub fn set(config: &mut Config, entry: Entry) {
     if let Ok(context) = Config::helper() {
-        tracing::debug!(
-            output = entry.output.to_string(),
-            source = ?entry.source,
-            "setting wallpaper",
-        );
-
         let _res = Config::set_same_on_all(&context, config.same_on_all);
 
         if let Err(why) = config.set_entry(&context, entry) {

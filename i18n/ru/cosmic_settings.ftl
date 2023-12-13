@@ -155,7 +155,6 @@ all-displays = Все экраны
 colors = Цвета
 fit-to-screen = Подгонять под экран
 stretch = Растянуть
-system-backgrounds = Системные фоны
 zoom = Увеличить
 
 x-minutes = { $number } минут

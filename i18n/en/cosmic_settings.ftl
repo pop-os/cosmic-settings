@@ -144,24 +144,25 @@ panel-missing = Panel Configuration is Missing
 ## Desktop: Wallpaper
 
 wallpaper = Wallpaper
-    .desc = Background images, colors, and slideshow options.
-    .same = Same background on all displays
-    .fit = Background fit
-    .slide = Slideshow
     .change = Change image every
+    .desc = Wallpaper images, colors, and slideshow options.
+    .fit = Wallpaper fit
+    .folder-dialog = Choose wallpaper folder
+    .image-dialog = Choose wallpaper image
+    .plural = Wallpapers
+    .same = Same wallpaper on all displays
+    .slide = Slideshow
 
 add-color = Add color
 add-image = Add image
 all-displays = All Displays
 colors = Colors
+dialog-add = _Add
 fit-to-screen = Fit to Screen
+open-new-folder = Open new folder
 recent-folders = Recent Folders
 stretch = Stretch
-system-backgrounds = System backgrounds
 zoom = Zoom
-
-wallpaper-dialog-image = Choose wallpaper image
-    .accept = _Add
 
 x-minutes = { $number } minutes
 x-hours = { $number ->
