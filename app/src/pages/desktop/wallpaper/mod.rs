@@ -928,7 +928,12 @@ pub fn settings() -> Section<crate::pages::Message> {
                     // Displays color options, and hides the slideshow toggle
                     Choice::Color(ref color) => {
                         show_slideshow_toggle = false;
-                        widgets::color_image(color.clone(), SIMULATED_WIDTH, SIMULATED_HEIGHT, 0.0)
+                        widgets::color_image(
+                            color.clone(),
+                            SIMULATED_WIDTH,
+                            SIMULATED_HEIGHT,
+                            Some(0.0),
+                        )
                     }
                 },
             ));

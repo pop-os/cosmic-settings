@@ -1434,7 +1434,7 @@ pub fn color_button<'a, Message: 'a + Clone>(
         wallpaper::Color::Single([color.r, color.g, color.b]),
         width,
         height,
-        8.0,
+        None,
     ))
     .padding(0)
     .selected(selected)
