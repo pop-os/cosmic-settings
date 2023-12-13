@@ -580,6 +580,8 @@ impl Page {
             }
             Message::Roundness(r) => {
                 self.roundness = r;
+                self.theme_builder.corner_radii = self.roundness.into();
+                theme_builder_needs_update = true;
                 Command::none()
             }
             Message::Entered => {
@@ -1279,7 +1281,8 @@ pub fn style() -> Section<crate::pages::Message> {
                                     .width(Length::Fill)
                                     .height(Length::Fixed(100.0))
                                 )
-                                .style(cosmic::theme::Button::IconVertical)
+                                .selected(matches!(page.roundness, Roundness::Round))
+                                .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::Round)),
                                 text(&descriptions[0])
@@ -1300,7 +1303,8 @@ pub fn style() -> Section<crate::pages::Message> {
                                     .width(Length::Fill)
                                     .height(Length::Fixed(100.0))
                                 )
-                                .style(cosmic::theme::Button::IconVertical)
+                                .selected(matches!(page.roundness, Roundness::SlightlyRound))
+                                .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::SlightlyRound)),
                                 text(&descriptions[1])
@@ -1322,7 +1326,8 @@ pub fn style() -> Section<crate::pages::Message> {
                                     .height(Length::Fixed(100.0))
                                 )
                                 .width(Length::FillPortion(1))
-                                .style(cosmic::theme::Button::IconVertical)
+                                .selected(matches!(page.roundness, Roundness::Square))
+                                .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::Square)),
                                 text(&descriptions[2])
