@@ -20,7 +20,7 @@ pub fn color_button(
     removable: bool,
     selected: bool,
 ) -> Element<'static, Message> {
-    let content = color_image(color.clone(), COLOR_WIDTH, COLOR_WIDTH, 8.0);
+    let content = color_image(color.clone(), COLOR_WIDTH, COLOR_WIDTH, None);
     let on_remove = if removable {
         Some(Message::ColorRemove(color.clone()))
     } else {
@@ -40,10 +40,10 @@ pub fn color_image<'a, M: 'a>(
     color: wallpaper::Color,
     width: u16,
     height: u16,
-    border_radius: f32,
+    border_radius: Option<f32>,
 ) -> Element<'a, M> {
     container(space::Space::new(width, height))
-        .style(cosmic::theme::Container::custom(move |_theme| {
+        .style(cosmic::theme::Container::custom(move |theme| {
             container::Appearance {
                 icon_color: None,
                 text_color: None,
@@ -66,7 +66,9 @@ pub fn color_image<'a, M: 'a>(
                         Background::Gradient(iced_core::Gradient::Linear(linear))
                     }
                 }),
-                border_radius: BorderRadius::from(border_radius),
+                border_radius: border_radius
+                    .map(|br| br.into())
+                    .unwrap_or_else(|| theme.cosmic().corner_radii.radius_s.into()),
                 border_width: 0.0,
                 border_color: Color::TRANSPARENT,
             }
