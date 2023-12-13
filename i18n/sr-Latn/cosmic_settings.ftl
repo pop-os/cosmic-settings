@@ -270,8 +270,8 @@ users = Korisnici
 
 ## Input
 
-input = Ulaz
-    .desc = Ulaz
+input = Unos
+    .desc = Unos
 
 ## Input: Keyboard
 
@@ -304,8 +304,8 @@ mouse = Miš
     .speed = Brzina miša
     .acceleration = Omogući ubrzanje miša
     .acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
-    .double-click-speed = Brzina duplog klika
-    .double-click-speed-desc = Menja koliko brzi dupli klikovi moraju biti da bi se registrovali.
+    .double-click-speed = Brzina dvostrukog klika
+    .double-click-speed-desc = Menja potrebnu brzinu za registrovanje dvostrukih klikova.
 
 mouse-scrolling = Pomeranje
     .speed = Brzina pomeranja
@@ -322,5 +322,5 @@ touchpad = Dodirna tabla
     .speed = Brzina dodirne table
     .acceleration = Omogući ubrzanje dodirne table
     .acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
-    .double-click-speed = Brzina duplog klika
-    .double-click-speed-desc = Menja koliko brzi dupli klikovi moraju biti da bi se registrovali.
+    .double-click-speed = Brzina dvostrukog klika
+    .double-click-speed-desc = Menja potrebnu brzinu za registrovanje dvostrukih klikova.
