@@ -148,7 +148,6 @@ all-displays = 所有顯示器
 colors = 顏色
 fit-to-screen = 延伸至全螢幕
 stretch = 延伸
-system-backgrounds = 系統背景
 zoom = 縮放
 
 x-minutes = { $number } 分鐘

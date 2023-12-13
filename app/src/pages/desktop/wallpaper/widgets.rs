@@ -15,6 +15,7 @@ const COLUMN_SPACING: u16 = 12;
 const ROW_SPACING: u16 = 16;
 
 /// A button for selecting a color or gradient.
+#[must_use]
 pub fn color_button(
     color: wallpaper::Color,
     removable: bool,
@@ -36,6 +37,7 @@ pub fn color_button(
 }
 
 /// A sized container that's filled with a color or gradient.
+#[must_use]
 pub fn color_image<'a, M: 'a>(
     color: wallpaper::Color,
     width: u16,
@@ -78,6 +80,7 @@ pub fn color_image<'a, M: 'a>(
 }
 
 /// Color selection list
+#[must_use]
 pub fn color_select_options(
     context: &super::Context,
     selected: Option<&wallpaper::Color>,
@@ -106,22 +109,26 @@ pub fn color_select_options(
 }
 
 /// Background selection list
+#[must_use]
 pub fn wallpaper_select_options(
     page: &super::Page,
     selected: Option<DefaultKey>,
+    show_custom_images: bool,
 ) -> Element<Message> {
     let mut vec = Vec::with_capacity(page.selection.selection_handles.len());
 
-    // Place removable custom images first
-    for id in page.selection.custom_images.iter().rev() {
-        let handle = &page.selection.selection_handles[*id];
+    if show_custom_images {
+        // Place removable custom images first
+        for id in page.selection.custom_images.iter().rev() {
+            let handle = &page.selection.selection_handles[*id];
 
-        vec.push(wallpaper_button(
-            handle,
-            *id,
-            true,
-            selected.map_or(false, |selection| id == &selection),
-        ));
+            vec.push(wallpaper_button(
+                handle,
+                *id,
+                true,
+                selected.map_or(false, |selection| id == &selection),
+            ));
+        }
     }
 
     // Then place non-removable images from the current folder

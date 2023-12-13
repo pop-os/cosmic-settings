@@ -34,20 +34,51 @@ impl Config {
             }
         };
 
+        // Get the active background folder from cosmic-config.
         if let Ok(path) = context.get::<Option<PathBuf>>(CURRENT_FOLDER) {
-            config.current_folder = path;
+            // Set current folder if it exists.
+            config.current_folder = path.filter(|path| path.exists());
         }
 
+        // Get custom colors stored in cosmic-config.
         if let Ok(colors) = context.get::<Vec<wallpaper::Color>>(CUSTOM_COLORS) {
             config.custom_colors = colors;
         }
 
+        // Get custom background images stored in cosmic-config.
         if let Ok(images) = context.get::<Vec<PathBuf>>(CUSTOM_IMAGES) {
-            config.custom_images = images;
+            // Update config if images are missing.
+            let mut update_config = false;
+
+            for image in images {
+                if image.exists() {
+                    config.custom_images.push(image);
+                } else {
+                    update_config = true;
+                }
+            }
+
+            if update_config {
+                let _res = config.update_custom_images();
+            }
         }
 
-        if let Ok(folders) = dbg!(context.get::<VecDeque<PathBuf>>(RECENT_FOLDERS)) {
-            config.recent_folders = folders;
+        // Get recently-added background folders from cosmic-config.
+        if let Ok(folders) = context.get::<VecDeque<PathBuf>>(RECENT_FOLDERS) {
+            // Update config if folders are missing
+            let mut update_config = false;
+
+            for folder in folders {
+                if folder.exists() {
+                    config.recent_folders.push_back(folder);
+                } else {
+                    update_config = true;
+                }
+            }
+
+            if update_config {
+                let _res = config.update_recent_folders();
+            }
         }
 
         config.context = Some(context);

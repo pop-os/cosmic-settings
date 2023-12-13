@@ -112,7 +112,6 @@ all-displays = Všechny monitory
 colors = Barvy
 fit-to-screen = Vyplnit obrazovku
 stretch = Roztáhnout
-system-backgrounds = Systémové pozadí
 zoom = Přiblížení
 
 x-minutes = { $number } minut

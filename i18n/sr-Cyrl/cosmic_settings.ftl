@@ -155,7 +155,6 @@ all-displays = Сви екрани
 colors = Боје
 fit-to-screen = Уклопи у екран
 stretch = Развуци
-system-backgrounds = Системске позадине
 zoom = Увећај
 
 x-minutes = { $number } мин.

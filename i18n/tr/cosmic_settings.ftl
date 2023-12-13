@@ -108,7 +108,6 @@ all-displays = Tüm Ekranlar
 colors = Renkler
 fit-to-screen = Ekrana Sığdır
 stretch = Uzat
-system-backgrounds = Sistem duvar kağıtları
 zoom = Yakınlaştır
 
 x-minutes = { $number } dakika
