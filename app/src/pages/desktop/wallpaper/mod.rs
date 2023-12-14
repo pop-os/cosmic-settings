@@ -142,8 +142,10 @@ impl page::Page<crate::pages::Message> for Page {
                 ActiveDialog::AddFolder => {
                     if path.is_dir() {
                         self.add_recent_folder(path.clone());
-
                         let _res = self.config.set_current_folder(Some(path.clone()));
+
+                        let id = self.config.recent_folders().len() - 1;
+                        self.categories.selected = Some(Category::RecentFolder(id));
 
                         return cosmic::command::future(async move {
                             crate::pages::Message::DesktopWallpaper(Message::ChangeFolder(
@@ -166,7 +168,9 @@ impl page::Page<crate::pages::Message> for Page {
                     }
                 }
 
-                ActiveDialog::None => (),
+                ActiveDialog::None => {
+                    tracing::error!("not actively handling a dialog");
+                },
             }
         }
 
