@@ -194,11 +194,16 @@ impl page::Page<crate::pages::Message> for Page {
         self.active_dialog = ActiveDialog::None;
 
         if let Some(selection) = selections.first() {
-            let path = PathBuf::from(selection.path());
+            let Ok(path) = selection.to_file_path() else {
+                tracing::error!(path = selection.path(), "not a valid file path");
+                return Command::none();
+            };
 
             match active_dialog {
                 ActiveDialog::AddFolder => {
                     if path.is_dir() {
+                        tracing::info!(?path, "opening new folder");
+
                         let _res = self.config.set_current_folder(Some(path.clone()));
 
                         // Add the selected folder to the recent folders list.
@@ -222,6 +227,8 @@ impl page::Page<crate::pages::Message> for Page {
 
                 ActiveDialog::AddImage => {
                     if path.is_file() {
+                        tracing::info!(?path, "opening custom image");
+
                         // Loads a single custom image and its thumbnail for display in the backgrounds view.
                         return cosmic::command::future(async move {
                             let result =
