@@ -93,8 +93,11 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
     let (tx, rx) = mpsc::channel(1);
 
     tokio::task::spawn(async move {
+        // Scratch space for storing images into.
         let mut buffer = Vec::new();
+        // Directories to search recursively.
         let mut paths = vec![path];
+        // Discovered image files that will be loaded as wallpapers.
         let mut wallpapers = BTreeSet::new();
 
         while let Some(path) = paths.pop() {
@@ -106,10 +109,17 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
 
                     let path = entry.path();
 
+                    // Recursively search directories, while storing only image files.
                     if file_type.is_dir() {
                         paths.push(path);
                     } else if file_type.is_file() {
-                        wallpapers.insert(path);
+                        let Ok(Some(kind)) = infer::get_from_path(&path) else {
+                            continue
+                        };
+
+                        if infer::MatcherType::Image == kind.matcher_type() {
+                            wallpapers.insert(path);
+                        }
                     }
                 }
             }
