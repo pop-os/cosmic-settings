@@ -62,59 +62,117 @@ const HOUR_2: usize = 5;
 
 pub type Image = ImageBuffer<Rgba<u8>, Vec<u8>>;
 
+/// Messages for the wallpaper view.
 #[derive(Clone, Debug)]
 pub enum Message {
+    /// Selects an option in the category dropdown menu.
     ChangeCategory(Category),
+    /// Changes the displayed images in the wallpaper view.
     ChangeFolder(Context),
+    /// Creates a color dialog
     ColorAddDialog,
+    /// Handles messages from the color dialog.
     ColorDialogUpdate(ColorPickerUpdate),
+    /// Removes a custom color from the color view.
     ColorRemove(wallpaper::Color),
+    /// Selects a color in the color view.
     ColorSelect(wallpaper::Color),
+    /// Handles the drag message in the color dialog.
     DragColorDialog,
+    /// Sets the wallpaper fit parameter.
     Fit(usize),
+    /// Adds a new custom image to the wallpaper view.
     ImageAdd(Option<Arc<(PathBuf, Image, Image)>>),
+    /// Creates an image dialog.
     ImageAddDialog,
+    /// Removes a custom image from the wallpaper view.
     ImageRemove(DefaultKey),
+    /// Initializes the view.
     Init(Box<(wallpaper::Config, HashMap<String, String>, Context)>),
+    /// Changes the active output display that is to be configured.
     Output(segmented_button::Entity),
+    /// Changes the rotation frequency of wallpaper images in slideshow mode.
     RotationFrequency(usize),
+    /// If set, all outputs will use the same wallpaper.
     SameWallpaper(bool),
+    /// Selects an background option from the list of selections in the view.
     Select(DefaultKey),
+    /// Changes the slideshow parameter.
     Slideshow(bool),
 }
 
+/// Messages defined for the category dropdown menu.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Category {
+    /// Opens a dialog for adding a folder
     AddFolder,
+    /// Changes the view to the color view.
     Colors,
+    /// Changes the view to an added folder.
     RecentFolder(usize),
+    /// Changes the view to the system wallpaper view.
     Wallpapers,
 }
 
+/// The status of active dialog requests.
 #[derive(Copy, Clone)]
 enum ActiveDialog {
+    /// The active dialog is a folder dialog.
     AddFolder,
+    /// The active dialog is an image dialog.
     AddImage,
+    /// No request has been made for a dialog.
     None,
 }
 
+/// The page struct for the wallpaper view.
 pub struct Page {
-    pub active_output: Option<String>,
+    /// The display that is currently being configured.
+    ///
+    /// If set to `None`, all displays will have the same wallpaper.
+    active_output: Option<String>,
+
+    /// The state of an active dialog request.
     active_dialog: ActiveDialog,
-    pub wallpaper_service_config: wallpaper::Config,
-    pub cached_display_handle: Option<ImageHandle>,
-    pub categories: dropdown::multi::Model<String, Category>,
+
+    /// Configuration parameters used by the cosmic-bg service.
+    wallpaper_service_config: wallpaper::Config,
+
+    /// Cache for storing the image used by the display preview.
+    cached_display_handle: Option<ImageHandle>,
+
+    /// Model for the category dropdown, which has categories and recent folders.
+    categories: dropdown::multi::Model<String, Category>,
+
+    /// The window ID of the color dialog.
     pub color_dialog: window::Id,
-    pub color_model: ColorPickerModel,
-    pub config: Config,
-    pub fit_options: Vec<String>,
-    pub outputs: SingleSelectModel,
-    pub recent_folders: Vec<(PathBuf, String)>,
-    pub rotation_frequency: u64,
-    pub rotation_options: Vec<String>,
-    pub selected_fit: usize,
-    pub selected_rotation: usize,
-    pub selection: Context,
+
+    /// The color model updated by the color dialog.
+    color_model: ColorPickerModel,
+
+    /// Settings for this page, stored by cosmic-config.
+    config: Config,
+
+    /// Model containing available wallpaper fit options.
+    fit_options: Vec<String>,
+
+    /// Model for selecting between display outputs.
+    outputs: SingleSelectModel,
+
+    /// Current value of the slideshow rotation frequency.
+    rotation_frequency: u64,
+
+    /// Model for available options for rotation frequencies.
+    rotation_options: Vec<String>,
+
+    /// The ID of the currently-selected wallpaper fit.
+    selected_fit: usize,
+
+    /// The ID of the currently-selected slideshow rotation.
+    selected_rotation: usize,
+
+    /// Stores custom colors, custom images, and all image data for every wallpaper.
+    selection: Context,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -141,12 +199,19 @@ impl page::Page<crate::pages::Message> for Page {
             match active_dialog {
                 ActiveDialog::AddFolder => {
                     if path.is_dir() {
-                        self.add_recent_folder(path.clone());
                         let _res = self.config.set_current_folder(Some(path.clone()));
 
-                        let id = self.config.recent_folders().len() - 1;
-                        self.categories.selected = Some(Category::RecentFolder(id));
+                        // Add the selected folder to the recent folders list.
+                        self.add_recent_folder(path.clone());
 
+                        // Select that folder in the recent folders list.
+                        for (id, recent) in self.config.recent_folders().iter().enumerate() {
+                            if &path == recent {
+                                self.categories.selected = Some(Category::RecentFolder(id));
+                            }
+                        }
+
+                        // Load the wallpapers from the selected folder into the view.
                         return cosmic::command::future(async move {
                             crate::pages::Message::DesktopWallpaper(Message::ChangeFolder(
                                 change_folder(path).await,
@@ -157,6 +222,7 @@ impl page::Page<crate::pages::Message> for Page {
 
                 ActiveDialog::AddImage => {
                     if path.is_file() {
+                        // Loads a single custom image and its thumbnail for display in the backgrounds view.
                         return cosmic::command::future(async move {
                             let result =
                                 wallpaper::load_image_with_thumbnail(&mut Vec::new(), path).await;
@@ -170,7 +236,7 @@ impl page::Page<crate::pages::Message> for Page {
 
                 ActiveDialog::None => {
                     tracing::error!("not actively handling a dialog");
-                },
+                }
             }
         }
 
@@ -235,7 +301,6 @@ impl Default for Page {
             config: Config::new(),
             fit_options: vec![fl!("fit-to-screen"), fl!("stretch"), fl!("zoom")],
             outputs: SingleSelectModel::default(),
-            recent_folders: Vec::new(),
             rotation_frequency: 300,
             rotation_options: vec![
                 // FIX: fluent is inserting extra unicode characters in formatting
