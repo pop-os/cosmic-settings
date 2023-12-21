@@ -64,9 +64,9 @@ fn get_config<T: Default + serde::de::DeserializeOwned>(
 impl Default for Page {
     fn default() -> Self {
         let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
-        let input_default: InputConfig = get_config(&config, "input-default");
-        let input_touchpad: InputConfig = get_config(&config, "input-touchpad");
-        let xkb = get_config(&config, "xkb-config");
+        let input_default: InputConfig = get_config(&config, "input_default");
+        let input_touchpad: InputConfig = get_config(&config, "input_touchpad");
+        let xkb = get_config(&config, "xkb_config");
 
         let mut primary_button = mouse::default_primary_button();
         let idx = if input_default.left_handed.unwrap_or(false) {
@@ -107,9 +107,9 @@ impl Default for Page {
 impl Page {
     fn update_input<F: Fn(&mut InputConfig)>(&mut self, touchpad: bool, f: F) {
         let (name, input_config) = if touchpad {
-            ("input-touchpad", &mut self.input_touchpad)
+            ("input_touchpad", &mut self.input_touchpad)
         } else {
-            ("input-default", &mut self.input_default)
+            ("input_default", &mut self.input_default)
         };
         f(input_config);
         if let Err(err) = self.config.set(name, input_config) {
@@ -194,8 +194,8 @@ impl Page {
                         .chain(id.into_iter())
                         .join(",");
                     self.xkb.options = Some(new_options).filter(|x| !x.is_empty());
-                    if let Err(err) = self.config.set("xkb-config", &self.xkb) {
-                        error!(?err, "Failed to set config 'xkb-config'");
+                    if let Err(err) = self.config.set("xkb_config", &self.xkb) {
+                        error!(?err, "Failed to set config 'xkb_config'");
                     }
                 }
             }
