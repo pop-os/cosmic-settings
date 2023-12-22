@@ -8,11 +8,11 @@ license = "GPL-3.0-only"
 
 [dependencies]
 byte-unit = { version = "4.0.19", default-features = false }
-const_format = "0.2.31"
+const_format = "0.2.32"
 concat-in-place = "1.1.0"
-sysinfo = "0.29.0"
-memchr = "2.5.0"
+sysinfo = "0.29.11"
+memchr = "2.7.1"
 
 [dependencies.bumpalo]
-version = "3.13.0"
+version = "3.14.0"
 features = ["collections"]

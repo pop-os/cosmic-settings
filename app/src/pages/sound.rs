@@ -5,6 +5,23 @@ use cosmic::widget::{settings, text};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
 
+// crate::cache_dynamic_lazy! {
+//     pub static SOUND_ALERTS_VOLUME: String = fl!("sound-alerts", "volume");
+//     pub static SOUND_ALERTS_SOUND: String = fl!("sound-alerts", "sound");
+
+//     pub static SOUND_APPLICATIONS_DESC: String = fl!("sound-applications", "desc");
+
+//     pub static SOUND_INPUT_VOLUME: String = fl!("sound-input", "volume");
+//     pub static SOUND_INPUT_DEVICE: String = fl!("sound-input", "device");
+//     pub static SOUND_INPUT_LEVEL: String = fl!("sound-input", "level");
+
+//     pub static SOUND_OUTPUT_VOLUME: String = fl!("sound-output", "volume");
+//     pub static SOUND_OUTPUT_DEVICE: String = fl!("sound-output", "device");
+//     pub static SOUND_OUTPUT_LEVEL: String = fl!("sound-output", "level");
+//     pub static SOUND_OUTPUT_CONFIG: String = fl!("sound-output", "config");
+//     pub static SOUND_OUTPUT_BALANCE: String = fl!("sound-output", "balance");
+// }
+
 #[derive(Default)]
 pub struct Page;
 

@@ -331,6 +331,12 @@ impl cosmic::Application for SettingsApp {
                     page::update!(self.pages, message, desktop::workspaces::Page);
                 }
 
+                crate::pages::Message::Displays(message) => {
+                    if let Some(page) = self.pages.page_mut::<desktop::display::Page>() {
+                        return page.update(message).map(cosmic::app::Message::App);
+                    }
+                }
+
                 crate::pages::Message::Input(message) => {
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);

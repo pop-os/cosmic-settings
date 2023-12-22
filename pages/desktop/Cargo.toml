@@ -11,10 +11,10 @@ cosmic-config = { workspace = true }
 dirs = "5.0.1"
 freedesktop-icons = "0.2.4"
 futures-lite = "1.13.0"
-image = "0.24.6"
+image = "0.24.7"
 infer = "0.15.0"
-rayon = "1.7.0"
-sctk = { git = "https://github.com/smithay/client-toolkit/", package = "smithay-client-toolkit", rev = "dc8c4a0"}
-tokio = { version = "1.28.0", features = ["sync"] }
-tracing = "0.1.37"
+rayon = "1.8.0"
+sctk = { workspace = true }
+tokio = { version = "1.35.1", features = ["sync"] }
+tracing = "0.1.40"
 wayland-client = "0.31.1"

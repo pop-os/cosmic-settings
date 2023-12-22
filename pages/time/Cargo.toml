@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-icu_calendar = "1.2.0"
-icu_timezone = "1.2.0"
+icu_calendar = "1.4.0"
+icu_timezone = "1.4.0"
 timedate-zbus = "0.1.0"
 
 [dependencies.zbus]
-version = "3.13.1"
+version = "3.14.1"
 default-features = false
 features = ["tokio"]

@@ -20,10 +20,11 @@ export RUSTFLAGS := linker-arg + env_var_or_default('RUSTFLAGS', '')
 rootdir := ''
 prefix := '/usr'
 
+cargo-target-dir := env('CARGO_TARGET_DIR', 'target')
 default-schema-target := clean(rootdir / prefix) / 'share' / 'cosmic'
 
 # File paths
-bin-src := 'target' / 'release' / name
+bin-src := cargo-target-dir / 'release' / name
 bin-dest := clean(rootdir / prefix) / 'bin' / name
 
 desktop := appid + '.desktop'
@@ -116,3 +117,6 @@ version:
 # Show the current git commit
 git-rev:
     @git rev-parse --short HEAD
+
+info:
+    echo ${RUSTFLAGS}

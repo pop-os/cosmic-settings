@@ -84,6 +84,8 @@ pub fn main() -> color_eyre::Result<()> {
         std::env::set_var("RUST_SPANTRACE", "0");
     }
 
+    std::env::set_var("WGPU_POWER_PREF", "low");
+
     init_logger();
     init_localizer();
 
@@ -132,7 +134,6 @@ fn init_logger() {
 
     tracing_subscriber::registry().with(log_filter).init();
 }
-
 
 #[macro_export]
 macro_rules! cache_dynamic_lazy {

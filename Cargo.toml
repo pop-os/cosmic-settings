@@ -2,12 +2,9 @@
 members = ["app", "page", "pages/*"]
 default-members = ["app"]
 
-[workspace.dependencies.iced_core]
-git = "https://github.com/pop-os/libcosmic"
-
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-features = ["single-instance", "tokio", "wayland", "xdg-portal"]
+features = ["single-instance", "tokio", "wayland", "wgpu", "xdg-portal"]
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
@@ -22,17 +19,12 @@ git = "https://github.com/pop-os/cosmic-comp"
 [workspace.dependencies.cosmic-panel-config]
 git = "https://github.com/pop-os/cosmic-panel"
 
-# [patch."https://github.com/pop-os/libcosmic"]
-# libcosmic = { path = "../libcosmic" }
-# cosmic-config = { path = "../libcosmic/cosmic-config" }
-
-# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "refactor-single-instance" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "refactor-single-instance"}
-
-[patch."https://github.com/Smithay/client-toolkit"]
-sctk = { git = "https://github.com/smithay/client-toolkit//", package = "smithay-client-toolkit", rev = "e63ab5f"}
+[workspace.dependencies.sctk]
+git = "https://github.com/smithay/client-toolkit/"
+package = "smithay-client-toolkit"
+rev = "e63ab5f"
 
 [profile.release]
 opt-level = 3
-debug = true
-lto = "thin"
+# debug = true
+# lto = "thin"
