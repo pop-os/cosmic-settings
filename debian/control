@@ -21,6 +21,6 @@ Homepage: https://github.com/pop-os/cosmic-settings
 
 Package: cosmic-settings
 Architecture: amd64 arm64
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}, cosmic-randr
 Description: Settings application for the COSMIC desktop environment
  Settings application for the COSMIC desktop environment

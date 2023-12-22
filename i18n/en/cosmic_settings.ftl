@@ -60,6 +60,76 @@ window-management = Window Management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
 
+## Desktop: Display
+
+-requires-restart = Requires restart
+
+color = Color
+    .depth = Color depth
+    .profile = Color profile
+    .sidebar = Color Profiles
+    .temperature = Color temperature
+
+display = Display
+    .desc = Manage displays, graphics switching, and night light
+    .arrangement = Display Arrangement
+    .arrangement-desc = Drag displays to rearrange them.
+    .enable = Enable display
+    .external = { $size } { $output } External Display
+    .laptop = { $size } Laptop Display
+    .options = Display Options
+    .refresh-rate = Refresh rate
+    .resolution = Resolution
+    .scale = Scale
+
+graphics-mode = Graphics mode
+    .mode = { $mode ->
+        [compute] Compute
+        *[hybrid] Hybrid
+        [integrated] Integrated
+        [nvidia] NVIDIA
+    } graphics
+    .enable = Enable { $mode ->
+        [compute] compute
+        *[hybrid] hybrid
+        [integrated] integrated
+        [nvidia] NVIDIA
+    } graphics
+    .desc = { $mode ->
+        [compute] Uses dedicated graphics for computational workloads only. Disables external displays. { -requires-restart }.
+        *[hybrid] Applications use integrated graphics unless explicitly requested to use dedicated graphics. { -requires-restart }.
+        [integrated] Turns off dedicated graphics for a longer battery life and less fan noise.
+        [nvidia] Better graphical experience and highest power usage. { -requires-restart }.
+    }
+    .restart = Restart and switch to { $mode }?
+    .restart-desc = Switching to { $mode } will close all open applications
+
+mirroring = Mirroring
+    .id = Mirroring { $id }
+    .dont = Don't mirror
+    .mirror = Mirror { $display }
+    .project = Project to { $display ->
+        [all] all displays
+        *[other] { $display }
+    }
+    .project-count = Projecting to { $count} other { $count ->
+        [1] display
+        *[other] displays
+    }
+
+night-light = Night Light
+    .auto = Automatic (sunset to sunrise)
+    .desc = Reduce blue light with warmer colors.
+
+orientation = Orientation
+    .landscape = Landscape
+    .landscape-flipped = Landscape (Flipped)
+    .portrait = Portrait
+    .portrait-flipped = Portrait (Flipped)
+
+scheduling = Scheduling
+    .manual = Manual schedule
+
 ## Desktop: Notifications
 
 notifications = Notifications

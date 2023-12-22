@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::{iced_widget::core::BorderRadius, theme};
+use cosmic::theme;
 
 #[must_use]
 pub fn display_container_frame() -> cosmic::theme::Container {

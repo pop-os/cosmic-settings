@@ -91,7 +91,7 @@ impl From<(Option<Config>, ThemeMode, Option<Config>, ThemeBuilder)> for Page {
             ThemeBuilder,
         ),
     ) -> Self {
-        let theme: Theme<palette::Srgba> = if theme_mode.is_dark {
+        let theme = if theme_mode.is_dark {
             Theme::dark_default()
         } else {
             Theme::light_default()
@@ -615,9 +615,9 @@ impl Page {
                 };
 
                 let config = if self.theme_mode.is_dark {
-                    Theme::<Srgba>::dark_config()
+                    Theme::dark_config()
                 } else {
-                    Theme::<Srgba>::light_config()
+                    Theme::light_config()
                 };
                 let new_theme = self.theme_builder.clone().build();
                 if let Ok(config) = config {
@@ -757,9 +757,9 @@ impl Page {
                 };
 
                 let config = if self.theme_mode.is_dark {
-                    Theme::<Srgba>::dark_config()
+                    Theme::dark_config()
                 } else {
-                    Theme::<Srgba>::light_config()
+                    Theme::light_config()
                 };
                 let new_theme = self.theme_builder.clone().build();
                 if let Ok(config) = config {
@@ -776,7 +776,7 @@ impl Page {
             Message::UseDefaultWindowHint(v) => {
                 self.no_custom_window_hint = v;
                 theme_builder_needs_update = true;
-                let theme: Theme<palette::Srgba> = if self.theme_mode.is_dark {
+                let theme = if self.theme_mode.is_dark {
                     Theme::dark_default()
                 } else {
                     Theme::light_default()
@@ -840,9 +840,9 @@ impl Page {
             self.theme_builder = theme_builder;
 
             let config = if self.theme_mode.is_dark {
-                Theme::<Srgba>::dark_config()
+                Theme::dark_config()
             } else {
-                Theme::<Srgba>::light_config()
+                Theme::light_config()
             };
             if let Ok(config) = config {
                 let new_theme = self.theme_builder.clone().build();

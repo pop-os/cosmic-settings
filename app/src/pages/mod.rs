@@ -13,16 +13,17 @@ pub mod time;
 #[derive(Clone, Debug)]
 pub enum Message {
     About(system::about::Message),
+    Appearance(desktop::appearance::Message),
     DateAndTime(time::date::Message),
     Desktop(desktop::Message),
-    Panel(desktop::panel::Message),
-    Dock(desktop::dock::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
-    PanelApplet(desktop::panel::applets_inner::Message),
-    DockApplet(desktop::dock::applets::Message),
-    Appearance(desktop::appearance::Message),
     DesktopWorkspaces(desktop::workspaces::Message),
-    Input(input::Message),
+    Displays(desktop::display::Message),
+    Dock(desktop::dock::Message),
+    DockApplet(desktop::dock::applets::Message),
     External { id: String, message: Vec<u8> },
+    Input(input::Message),
     Page(Entity),
+    Panel(desktop::panel::Message),
+    PanelApplet(desktop::panel::applets_inner::Message),
 }
