@@ -936,7 +936,7 @@ where
     }
 
     fn diff(&mut self, tree: &mut Tree) {
-        self.inner.as_widget_mut().diff(&mut tree.children[0]);
+        tree.diff_children(&mut [&mut self.inner]);
     }
 
     fn width(&self) -> Length {
@@ -1001,7 +1001,8 @@ where
             event::Status::Ignored => event::Status::Ignored,
         };
 
-        let height = (layout.bounds().height - SPACING * (self.info.len() - 1) as f32)
+        let height = (layout.bounds().height
+            - SPACING * (self.info.len().saturating_sub(1)) as f32)
             / self.info.len() as f32;
         let state = tree.state.downcast_mut::<ReorderWidgetState>();
 
