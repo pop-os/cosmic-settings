@@ -13,67 +13,75 @@ desktop = Radna površina
 appearance = Izgled
     .desc = Boje detalja i promena COSMIC palete.
 
-import = Uvezi
-export = Izvezi
-
-mode-and-colors = Režim i boje
-auto-switch = Automatsko menjanje režima
-    .desc = Svetli režim se uključuje pri izlasku, a tamni pri zalasku sunca
 accent-color = Boja detalja
 app-background = Pozadina aplikacija ili prozora
 auto = Automatski
 close = Zatvori
+color-picker = Birač boja
+copied-to-clipboard = Kopirano u privremenu memoriju
+copy-to-clipboard = Kopiraj u privremenu memoriju
+dark = Tamno
+export = Izvezi
+hex = Hex
+import = Uvezi
+light = Svetlo
+mode-and-colors = Režim i boje
+recent-colors = Nedavne boje
+reset-default = Vrati na podrazumevano
+reset-to-default = Vrati na podrazumevano
+rgb = RGB
+window-hint-accent = Boja nagoveštaja aktivnog prozora
+window-hint-accent-toggle = Koristi boju detalja iz teme kao nagoveštaj aktivnog prozora
+
+auto-switch = Automatsko menjanje režima
+    .desc = Svetli režim se uključuje pri izlasku, a tamni pri zalasku sunca
+
 container-background = Pozadina kontejnera
     .desc-detail = Boja pozadine kontejnera se koristi za bočnu traku za navigaciju, bočni meni, dijaloške okvire i druge slične vidžete. Podrazumevano, automatski se izvodi iz pozadine aplikacija ili prozora.
     .reset = Vrati na automatsko
     .desc = Boja pozadine kontejnera se koristi za bočnu traku za navigaciju, bočni meni, dijaloške okvire i druge slične vidžete.
-text-tint = Nijansa teksta interfejsa
-    .desc = Boja koja se koristi za dobijanje boja teksta interfejsa koje imaju dovoljan kontrast na različitim površinama.
+	
 control-tint = Nijansa kontrolnih komponenti
     .desc = Koristi se za pozadinu standardnih dugmadi, unosa za pretragu, unosa teksta i sličnih komponenti.
-window-hint-accent-toggle = Koristi boju detalja iz teme kao nagoveštaj aktivnog prozora
-window-hint-accent = Boja nagoveštaja aktivnog prozora
-dark = Tamno
-light = Svetlo
-color-picker = Birač boja
-hex = Hex
-rgb = RGB
-recent-colors = Nedavne boje
-reset-to-default = Vrati na podrazumevano
-copy-to-clipboard = Kopiraj u privremenu memoriju
-copied-to-clipboard = Kopirano u privremenu memoriju
-
+	
+frosted = Efekat mat stakla na interfejsu sistema
+    .desc = Primenjuje zamućenje pozadine na panel, dok, aplete, pokretač i biblioteku aplikacija.
+	
+text-tint = Nijansa teksta interfejsa
+    .desc = Boja koja se koristi za dobijanje boja teksta interfejsa koje imaju dovoljan kontrast na različitim površinama.
+	
 style = Stil
     .round = Okrugli
     .slightly-round = Blago okrugli
     .square = Četvrtast
-frosted = Efekat mat stakla na interfejsu sistema
-    .desc = Primenjuje zamućenje pozadine na panel, dok, aplete, pokretač i biblioteku aplikacija.
 
-reset-default = Vrati na podrazumevano
 # interface density left out for now
-
 window-management = Upravljanje prozorima
     .active-hint = Veličina nagoveštaja aktivnog prozora
     .gaps = Praznine oko složenih prozora
+
 ## Desktop: Notifications
 
 notifications = Obaveštenja
     .desc = Ne uznemiravaj, obaveštenja na zaključanom ekranu i podešavanja aplikacija.
 
-
 ## Desktop: Options
 
 desktop-panel-options = Radna površina i panel
     .desc = Uloga Super tastera, lepljivi uglovi, kontrola prozora.
+	
+desktop-panels-and-applets = Paneli radne površine i apleti
+
+dock = Dok
+    .desc = Traka sa zakačenim aplikacijama.
+	
+hot-corner = Lepljivi uglovi
+    .top-left-corner = Uključiti gornji levi lepljivi ugao za radne prostore
 
 super-key-action = Uloga Super tastera
     .launcher = Pokretač aplikacija
     .workspaces = Radni prostori
     .applications = Aplikacije
-
-hot-corner = Lepljivi uglovi
-    .top-left-corner = Uključiti gornji levi lepljivi ugao za radne prostore
 
 top-panel = Gornji panel
     .workspaces = Dugme za prikazivanje radnih prostora
@@ -83,31 +91,38 @@ window-controls = Kontrola prozora
     .minimize = Prikaži dugme za minimizovanje
     .maximize = Prikaži dugme za maksimizovanje
 
-desktop-panels-and-applets = Paneli radne površine i apleti
-
-
-dock = Dok
-    .desc = Traka sa zakačenim aplikacijama.
-
 ## Desktop: Panel
+
 panel = Gornji panel
     .desc = Gornja traka sa kontrolama radne površine i menijima.
+	
+add = Dodaj
+add-applet = Dodaj aplet
+all = Sve
+applets = Apleti
+center-segment = Centralni segment
+drop-here = Spustite aplete ovde
+end-segment = Krajnji segment
+large = Veliko
+no-applets-found = Nisu pronađeni apleti...
+panel-bottom = Dno
+panel-left = Levo
+panel-right = Desno
+panel-top = Vrh
+search-applets = Pretraži aplete...
+small = Malo
+start-segment = Početni segment
+
+panel-appearance = Izgled
+    .match = Kao sistem
+    .light = Svetli
+    .dark = Tamni
 
 panel-behavior-and-position = Ponašanje i pozicija
     .autohide = Automatsko sakrivanje panela
     .dock-autohide = Automatsko sakrivanje dok-a
     .position = Pozicija na ekranu
     .display = Prikaži na ekranu
-
-panel-top = Vrh
-panel-bottom = Dno
-panel-left = Levo
-panel-right = Desno
-
-panel-appearance = Izgled
-    .match = Kao sistem
-    .light = Svetli
-    .dark = Tamni
 
 panel-style = Stil
     .anchor-gap = Razmak između panela i ivica ekrana
@@ -118,9 +133,6 @@ panel-style = Stil
     .size = Veličina
     .background-opacity = Prozirnost pozadine
 
-small = Malo
-large = Veliko
-
 panel-applets = Konfiguracija
     .dock-desc = Podesi aplete na dok-u.
     .desc = Podesi aplete na panelu.
@@ -129,38 +141,33 @@ panel-missing = Nedostaje konfiguracija panela
     .desc = Konfiguraciona datoteka panela nedostaje zbog korišćenja prilagođene konfiguracije ili je oštećena.
     .fix = Vrati na podrazumevano
 
-applets = Apleti
-start-segment = Početni segment
-center-segment = Centralni segment
-end-segment = Krajnji segment
-
-add = Dodaj
-add-applet = Dodaj aplet
-search-applets = Pretraži aplete...
-no-applets-found = Nije pronađen aplet...
-all = Sve
-
-drop-here = Spustite aplete ovde
-
 ## Desktop: Wallpaper
 
 wallpaper = Pozadina
+	.change = Promeni sliku svakih
     .desc = Pozadine radne površine, boje, i slajd-šou.
+	.fit = Skaliranje pozadine
+	.folder-dialog = Izaberite fasciklu za pozadine
+    .image-dialog = Izaberite sliku pozadine
+    .plural = Pozadine
     .same = Ista pozadina na svim ekranima
-    .fit = Skaliranje pozadine
     .slide = Slajd-šou
-    .change = Promeni sliku svakih
 
+add-color = Dodaj boju
+add-image = Dodaj sliku
 all-displays = Svi ekrani
 colors = Boje
+dialog-add = _Add
 fit-to-screen = Uklopi u ekran
+open-new-folder = Otvori novu fasciklu
+recent-folders = Nedavne fascikle
 stretch = Razvuci
 zoom = Uvećaj
 
 x-minutes = { $number } min.
 x-hours = { $number ->
     [1] 60 minuta
-    *[other] { $number } č.
+    *[other] { $number } sat.
 }
 
 ## Desktop: Workspaces
@@ -170,11 +177,21 @@ workspaces = Radni prostori
 
 workspaces-behavior = Ponašanje radnih prostora
     .dynamic = Dinamični radni prostori
+	.dynamic-desc = Automatski uklanja prazne radne prostore.
     .fixed = Fiksni broj radnih prostora
+	.fixed-desc = Dodajte ili uklonite radne prostore u pregledu.
 
 workspaces-multi-behavior = Ponašanje sa više monitora
     .span = Radni prostori su zajednički za sve ekrane
     .separate = Ekrani imaju odvojene radne prostore
+	
+workspaces-overview-thumbnails = Prikaz radnih prostora u pregledu
+    .show-number = Prikaži broj radnog prostora
+    .show-name = Prikaži ime radnog prostora
+
+workspaces-orientation = Orijentacija radnih prostora
+    .vertical = Vertikalni
+    .horizontal = Horizontalni
 
 ## Networking: Wired
 
