@@ -74,7 +74,13 @@ impl Info {
             info.windowing_system = session;
         }
 
-        if let Ok(mut session) = std::env::var("DESKTOP_SESSION") {
+        // prefer XDG_SESSION_DESKTOP because the value is singular: https://www.freedesktop.org/software/systemd/man/latest/pam_systemd.html
+        if let Ok(mut session) = std::env::var("XDG_SESSION_DESKTOP")
+            // otherwise, XDG_CURRENT_DESKTOP (could be plural): https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
+            .or_else(|_| std::env::var("XDG_CURRENT_DESKTOP"))
+            // fallback to legacy environment variable
+            .or_else(|_| std::env::var("DESKTOP_SESSION"))
+        {
             if let Some(first) = session.get_mut(0..1) {
                 first.make_ascii_uppercase();
             }
