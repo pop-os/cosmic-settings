@@ -132,3 +132,14 @@ fn init_logger() {
 
     tracing_subscriber::registry().with(log_filter).init();
 }
+
+
+#[macro_export]
+macro_rules! cache_dynamic_lazy {
+    ( $( $visible:vis static $variable:ident: $type:ty = $expression:expr; )+ ) => {
+        $(
+            #[static_init::dynamic(lazy)]
+            $visible static $variable: $type = $expression;
+        )+
+    };
+}
