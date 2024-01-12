@@ -13,7 +13,7 @@ use crate::{
     },
 };
 
-pub static ADD_DOCK_APPLET_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
+pub static ADD_DOCK_APPLET_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
 
 pub(crate) struct Page {
     inner: applets_inner::Page,

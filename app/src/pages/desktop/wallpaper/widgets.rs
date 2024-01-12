@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use super::Message;
-use cosmic::iced_core::{self, gradient::Linear, Background, BorderRadius, Color, Degrees, Length};
+use cosmic::iced_core::{self, gradient::Linear, Background, Color, Degrees, Length};
 use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::prelude::*;
 use cosmic::widget::{button, container, space};

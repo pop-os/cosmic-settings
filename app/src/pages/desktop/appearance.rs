@@ -32,7 +32,7 @@ use crate::app;
 
 use super::wallpaper::widgets::color_image;
 
-pub static COLOR_PICKER_DIALOG_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
+pub static COLOR_PICKER_DIALOG_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
 
 enum NamedColorPicker {
     CustomAccent,
