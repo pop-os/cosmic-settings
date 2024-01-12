@@ -193,14 +193,14 @@ fn multi_behavior() -> Section<crate::pages::Message> {
                     &descriptions[0],
                     WorkspaceMode::Global,
                     Some(page.comp_workspace_config.workspace_mode),
-                    |x| Message::SetWorkspaceMode(x),
+                    Message::SetWorkspaceMode,
                 )
                 .into()]))
                 .add(settings::item_row(vec![radio(
                     &descriptions[1],
                     WorkspaceMode::OutputBound,
                     Some(page.comp_workspace_config.workspace_mode),
-                    |x| Message::SetWorkspaceMode(x),
+                    Message::SetWorkspaceMode,
                 )
                 .into()]))
                 .apply(Element::from)
@@ -239,7 +239,7 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
             settings::view_section(&section.title)
                 .add(
                     cosmic::widget::segmented_selection::horizontal(&page.orientation_model)
-                        .on_activate(|x| Message::OrientationButtonSelected(x)),
+                        .on_activate(Message::OrientationButtonSelected),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)

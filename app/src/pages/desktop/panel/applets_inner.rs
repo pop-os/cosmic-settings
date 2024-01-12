@@ -68,8 +68,8 @@ const SPACING: f32 = 8.0;
 // radius is 8.0
 const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
 
-pub static APPLET_DND_ICON_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
-pub static ADD_PANEL_APPLET_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
+pub static APPLET_DND_ICON_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
+pub static ADD_PANEL_APPLET_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
 
 pub struct Page {
     pub(crate) available_entries: Vec<Applet<'static>>,

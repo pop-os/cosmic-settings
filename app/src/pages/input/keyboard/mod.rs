@@ -14,8 +14,8 @@ use slotmap::SlotMap;
 
 use super::Message;
 
-pub static ADD_INPUT_SOURCE_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
-pub static SPECIAL_CHARACTER_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(|| window::Id::unique());
+pub static ADD_INPUT_SOURCE_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
+pub static SPECIAL_CHARACTER_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
 
 static COMPOSE_OPTIONS: &[(&str, &str)] = &[
     // ("Left Alt", "compose:lalt"), XXX?
