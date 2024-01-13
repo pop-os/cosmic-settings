@@ -166,31 +166,37 @@ zoom = Przybliż
 
 x-minutes = { $number ->
     [1] 1 minuta
-    [2] 2 minuty
-    [3] 3 minuty
-    [4] 4 minuty
+    [few] { $number } minuty
     *[other] { $number } minut
 }
 x-hours = { $number ->
     [1] 1 godzina
-    [2] 2 godziny
-    [3] 3 godziny
-    [4] 4 godziny
+    [few] { $number } godziny
     *[other] { $number } godzin
 }
 
 ## Desktop: Workspaces
 
 workspaces = Obszary Robocze
-    .desc = Ustaw numer, zachowanie i rozmieszczenie przestrzeni roboczej.
+    .desc = Ustaw numer, zachowanie i rozmieszczenie obszaru roboczego.
 
 workspaces-behavior = Funkcjonowanie Obszaru Roboczego
-    .dynamic = Dynamiczne przestrzenie robocze
-    .fixed = Stała liczba przestrzeni roboczych
+    .dynamic = Dynamiczne obszary robocze
+    .dynamic-desc = Puste obszary robocze są automatycznie usuwane.
+    .fixed = Stała liczba obszarów roboczych
+    .fixed-desc = Dodaj lub usuń obszar roboczy w podglądzie.
 
 workspaces-multi-behavior = Funkcjonowanie Przy Wielu Monitorach
     .span = Obszary Robocze Wspólne Dla Wyświetlaczy
     .separate = Wyświetlacze Mają Osobne Obszary Robocze
+
+workspaces-overview-thumbnails = Miniatury Podglądu Obszaru Roboczego
+    .show-number = Pokaż Numer Obszaru Roboczego
+    .show-name = Pokaż Nazwę Obszaru Roboczego
+
+workspaces-orientation = Kierunek Obszarów Roboczych
+    .vertical = Pionowy
+    .horizontal = Poziomy
 
 ## Networking: Wired
 
@@ -270,6 +276,7 @@ about-os = System Operacyjny
     .os-architecture = Architektura Systemu Operacyjnego
     .desktop-environment = Środowisko Graficzne
     .windowing-system = System Okien
+
 about-related = Pokrewne Ustawienia
     .support = Uzyskaj Wsparcie
 
