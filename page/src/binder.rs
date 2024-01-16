@@ -3,7 +3,7 @@
 
 use crate::section::{self, Section};
 use crate::{Content, Info, Page};
-use cosmic::iced_runtime::command::{Action, Command};
+use cosmic::iced_runtime::command::Command;
 use cosmic::Element;
 use regex::Regex;
 use slotmap::{SecondaryMap, SlotMap, SparseSecondaryMap};
@@ -159,14 +159,12 @@ impl<Message: 'static> Binder<Message> {
     }
 
     /// Calls a page's load function to refresh its data.
-    pub fn page_reload(&mut self, id: crate::Entity) -> Option<Command<Message>> {
-        if let Some(page) = self.page.get(id) {
-            if let Some(future) = page.load(id) {
-                return Some(Command::single(Action::Future(future)));
-            }
+    pub fn page_reload(&mut self, id: crate::Entity) -> Command<Message> {
+        if let Some(page) = self.page.get_mut(id) {
+            return page.reload(id);
         }
 
-        None
+        Command::none()
     }
 
     #[must_use]

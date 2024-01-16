@@ -3,6 +3,7 @@
 
 use cosmic_settings_page::{self as page, section, Section};
 
+use cosmic::{command, Command};
 use cosmic::{
     iced::{
         widget::{horizontal_space, row},
@@ -46,10 +47,10 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("about", "desc"))
     }
 
-    fn load(&self, _page: page::Entity) -> Option<page::Task<crate::pages::Message>> {
-        Some(Box::pin(async move {
+    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
+        command::future(async move {
             crate::pages::Message::About(Message::Info(Box::new(Info::load())))
-        }))
+        })
     }
 }
 

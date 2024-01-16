@@ -589,7 +589,6 @@ impl SettingsApp {
         let page_command = self
             .pages
             .page_reload(page)
-            .unwrap_or(iced::Command::none())
             .map(Message::PageMessage)
             .map(cosmic::app::Message::App);
 
