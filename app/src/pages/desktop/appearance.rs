@@ -6,7 +6,7 @@ use std::sync::Arc;
 use apply::Apply;
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
-use cosmic::cosmic_theme::palette::{self, FromColor, Hsv, Srgb, Srgba};
+use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
 use cosmic::iced::wayland::actions::window::SctkWindowSettings;
 use cosmic::iced::widget::{column, row};
@@ -19,7 +19,7 @@ use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, header_bar, horizontal_space, settings,
     spin_button, text, ColorPickerModel,
 };
-use cosmic::{Command, Element};
+use cosmic::{command, Command, Element};
 use cosmic_settings_desktop::wallpaper;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -936,10 +936,8 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("appearance", "desc"))
     }
 
-    fn load(&self, _: page::Entity) -> Option<page::Task<crate::pages::Message>> {
-        Some(Box::pin(async move {
-            crate::pages::Message::Appearance(Message::Entered)
-        }))
+    fn reload(&mut self, _: page::Entity) -> Command<crate::pages::Message> {
+        command::future(async move { crate::pages::Message::Appearance(Message::Entered) })
     }
 
     fn on_leave(&mut self) -> Command<crate::pages::Message> {

@@ -13,6 +13,12 @@ use std::{
 };
 
 use apply::Apply;
+use cosmic::widget::{
+    button, dropdown, list_column, row,
+    segmented_button::{self, SingleSelectModel},
+    segmented_selection, settings, text, toggler,
+};
+use cosmic::{command, Command};
 use cosmic::{
     iced::{wayland::actions::window::SctkWindowSettings, window, Color, Length},
     prelude::CollectionWidget,
@@ -25,14 +31,6 @@ use cosmic::{
 use cosmic::{
     iced_core::{alignment, layout},
     iced_runtime::core::image::Handle as ImageHandle,
-};
-use cosmic::{
-    widget::{
-        button, dropdown, list_column, row,
-        segmented_button::{self, SingleSelectModel},
-        segmented_selection, settings, text, toggler,
-    },
-    Command,
 };
 use cosmic::{
     widget::{color_picker::ColorPickerUpdate, ColorPickerModel},
@@ -250,10 +248,10 @@ impl page::Page<crate::pages::Message> for Page {
         Command::none()
     }
 
-    fn load(&self, _page: page::Entity) -> Option<page::Task<crate::pages::Message>> {
+    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
         let current_folder = self.config.current_folder().to_owned();
 
-        Some(Box::pin(async move {
+        command::future(async move {
             let (wallpaper_service_config, outputs) = wallpaper::config();
 
             let update = change_folder(current_folder).await;
@@ -263,7 +261,7 @@ impl page::Page<crate::pages::Message> for Page {
                 outputs,
                 update,
             ))))
-        }))
+        })
     }
 }
 

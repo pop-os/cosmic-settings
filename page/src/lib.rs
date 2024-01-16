@@ -14,7 +14,7 @@ pub use section::Section;
 
 use derive_setters::Setters;
 use slotmap::SlotMap;
-use std::{borrow::Cow, future::Future, pin::Pin};
+use std::borrow::Cow;
 
 slotmap::new_key_type! {
     /// The unique ID of a page.
@@ -23,9 +23,6 @@ slotmap::new_key_type! {
 
 /// A collection of sections which a page may be comprised of.
 pub type Content = Vec<section::Entity>;
-
-/// A request by a page to run a command in the background.
-pub type Task<Message> = Pin<Box<dyn Future<Output = Message> + Send>>;
 
 pub trait Page<Message: 'static>: Downcast {
     /// Information about the page
@@ -51,8 +48,8 @@ pub trait Page<Message: 'static>: Downcast {
 
     #[must_use]
     #[allow(unused)]
-    fn load(&self, page: crate::Entity) -> Option<crate::Task<Message>> {
-        None
+    fn reload(&mut self, page: crate::Entity) -> Command<Message> {
+        Command::none()
     }
 
     /// Emit a command when the page is left

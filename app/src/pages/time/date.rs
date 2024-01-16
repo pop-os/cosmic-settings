@@ -37,10 +37,6 @@ impl page::Page<crate::pages::Message> for Page {
             .title(fl!("time-date"))
             .description(fl!("time-date", "desc"))
     }
-
-    fn load(&self, _page: page::Entity) -> Option<page::Task<crate::pages::Message>> {
-        None
-    }
 }
 
 impl Page {
