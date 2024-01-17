@@ -29,10 +29,7 @@ use cosmic::{
         window, Length,
     },
     prelude::*,
-    widget::{
-        column, container, icon, nav_bar, navigation, scrollable, search, segmented_button,
-        settings,
-    },
+    widget::{column, container, icon, nav_bar, scrollable, search, segmented_button, settings},
     Element,
 };
 use cosmic_panel_config::CosmicPanelConfig;
@@ -49,7 +46,9 @@ pub struct SettingsApp {
     file_chooser: Option<(file_chooser::Sender, page::Entity)>,
     nav_model: nav_bar::Model,
     pages: page::Binder<crate::pages::Message>,
-    search: search::Model,
+    search_active: bool,
+    search_id: cosmic::widget::Id,
+    search_input: String,
     search_selections: Vec<(page::Entity, section::Entity)>,
 }
 
@@ -75,6 +74,10 @@ pub enum Message {
     Page(page::Entity),
     PageMessage(crate::pages::Message),
     PanelConfig(CosmicPanelConfig),
+    SearchActivate,
+    SearchChanged(String),
+    SearchClear,
+    SearchSubmit,
     Search(search::Message),
     SetWindowTitle,
     OpenContextDrawer(Cow<'static, str>),
@@ -120,7 +123,9 @@ impl cosmic::Application for SettingsApp {
             file_chooser: None,
             nav_model: nav_bar::Model::default(),
             pages: page::Binder::default(),
-            search: search::Model::default(),
+            search_active: false,
+            search_id: cosmic::widget::Id::unique(),
+            search_input: String::new(),
             search_selections: Vec::default(),
         };
 
@@ -148,6 +153,24 @@ impl cosmic::Application for SettingsApp {
         Some(&self.nav_model)
     }
 
+    fn header_start(&self) -> Vec<Element<Self::Message>> {
+        let mut widgets = Vec::new();
+
+        widgets.push(if self.search_active {
+            cosmic::widget::text_input::search_input("", &self.search_input)
+                .width(Length::Fixed(240.0))
+                .id(self.search_id.clone())
+                .on_clear(Message::SearchClear)
+                .on_input(Message::SearchChanged)
+                .on_submit(Message::SearchSubmit)
+                .into()
+        } else {
+            cosmic::widget::search::button(Message::SearchActivate)
+        });
+
+        widgets
+    }
+
     fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
         let message = if id == *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID {
             Message::PageMessage(crate::pages::Message::PanelApplet(
@@ -169,8 +192,8 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn on_escape(&mut self) -> Command<Self::Message> {
-        if self.search.is_active() {
-            self.search.state = search::State::Inactive;
+        if self.search_active {
+            self.search_active = false;
             self.search_clear();
         }
 
@@ -186,7 +209,8 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn on_search(&mut self) -> Command<Self::Message> {
-        self.search.focus()
+        self.search_active = true;
+        cosmic::widget::text_input::focus(self.search_id.clone())
     }
 
     fn subscription(&self) -> Subscription<Message> {
@@ -267,16 +291,21 @@ impl cosmic::Application for SettingsApp {
 
             Message::SetWindowTitle => return self.set_title(),
 
-            Message::Search(search::Message::Activate) => {
-                return self.search.focus();
-            }
-
-            Message::Search(search::Message::Changed(phrase)) => {
+            Message::SearchChanged(phrase) => {
                 self.search_changed(phrase);
             }
 
-            Message::Search(search::Message::Clear) => {
+            Message::SearchActivate => {
+                self.search_active = true;
+                return cosmic::widget::text_input::focus(self.search_id.clone());
+            }
+
+            Message::SearchClear => {
                 self.search_clear();
+            }
+
+            Message::SearchSubmit => {
+                self.search_active = true;
             }
 
             Message::PageMessage(message) => match message {
@@ -477,7 +506,7 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn view(&self) -> Element<Message> {
-        let page_view = if self.search.is_active() {
+        let page_view = if self.search_active {
             self.search_view()
         } else if let Some(content) = self.pages.content(self.active_page) {
             self.page_view(content)
@@ -583,7 +612,7 @@ impl SettingsApp {
         }
 
         self.search_clear();
-        self.search.state = search::State::Inactive;
+        self.search_active = false;
         self.activate_navbar(page);
 
         let page_command = self
@@ -696,13 +725,13 @@ impl SettingsApp {
             }
         }
 
-        self.search.phrase = phrase;
+        self.search_input = phrase;
     }
 
     /// Clears the search results so that the search page will not be shown.
     fn search_clear(&mut self) {
         self.search_selections.clear();
-        self.search.phrase.clear();
+        self.search_input.clear();
     }
 
     /// Displays the search view.
