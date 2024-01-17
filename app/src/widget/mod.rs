@@ -3,7 +3,8 @@
 
 use cosmic::iced::Length;
 use cosmic::widget::{
-    button, column, container, divider, horizontal_space, icon, list, row, settings, text, vertical_space,
+    button, column, container, divider, horizontal_space, icon, list, row, settings, text,
+    vertical_space,
 };
 use cosmic::{theme, Apply, Element};
 use cosmic_settings_page as page;
@@ -75,8 +76,6 @@ pub fn display_container<'a, Message: 'a>(widget: Element<'a, Message>) -> Eleme
         .padding([0, 0, 8, 0])
         .into()
 }
-
-
 
 #[must_use]
 pub fn page_list_item<'a, Message: 'static + Clone>(
