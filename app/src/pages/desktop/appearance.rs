@@ -9,15 +9,14 @@ use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
 use cosmic::iced::wayland::actions::window::SctkWindowSettings;
-use cosmic::iced::widget::{column, row};
 use cosmic::iced::window;
-use cosmic::iced_core::{layout, Color, Length};
+use cosmic::iced_core::{alignment, layout, Alignment, Color, Length};
 use cosmic::iced_sctk::commands::window::{close_window, get_window};
 use cosmic::iced_widget::scrollable;
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, header_bar, horizontal_space, settings,
-    spin_button, text, ColorPickerModel,
+    button, color_picker::ColorPickerUpdate, container, header_bar, horizontal_space, row,
+    settings, spin_button, text, ColorPickerModel,
 };
 use cosmic::{command, Command, Element};
 use cosmic_settings_desktop::wallpaper;
@@ -885,7 +884,7 @@ impl Page {
             }
             None => return text("OOPS!").into(),
         };
-        column![
+        cosmic::iced::widget::column![
             header_bar()
                 .title(fl!("color-picker"))
                 .on_close(msg(ColorPickerUpdate::AppliedColor))
@@ -922,12 +921,34 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
-            sections.insert(import_export()),
             sections.insert(mode_and_colors()),
             sections.insert(style()),
             sections.insert(window_management()),
             sections.insert(reset_button()),
         ])
+    }
+
+    fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
+        let spacing = self.theme_builder.spacing;
+        let content = row::with_capacity(2)
+            .spacing(self.theme_builder.spacing.space_xxs)
+            .push(
+                button(text(fl!("import")))
+                    .on_press(Message::StartImport)
+                    .padding([spacing.space_xxs, spacing.space_xs]),
+            )
+            .push(
+                button(text(fl!("export")))
+                    .on_press(Message::StartExport)
+                    .padding([spacing.space_xxs, spacing.space_xs]),
+            )
+            .apply(container)
+            .width(Length::Fill)
+            .align_x(alignment::Horizontal::Right)
+            .apply(Element::from)
+            .map(crate::pages::Message::Appearance);
+
+        Some(content)
     }
 
     fn info(&self) -> page::Info {
@@ -948,7 +969,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
         Some(
-            column![
+            cosmic::iced::widget::column![
                 text(fl!("container-background", "desc-detail")).width(Length::Fill),
                 self.container_background
                     .builder(Message::ContainerBackground)
@@ -968,30 +989,6 @@ impl page::Page<crate::pages::Message> for Page {
             .map(crate::pages::Message::Appearance),
         )
     }
-}
-
-fn import_export() -> Section<crate::pages::Message> {
-    Section::default()
-        .descriptions(vec![fl!("import"), fl!("export")])
-        .view::<Page>(|_binder, page, section| {
-            let spacing = &page.theme_builder.spacing;
-            let descriptions = &section.descriptions;
-            container(
-                row![
-                    button(text(&descriptions[0]))
-                        .on_press(Message::StartImport)
-                        .padding([spacing.space_xxs, spacing.space_xs]),
-                    button(text(&descriptions[1]))
-                        .on_press(Message::StartExport)
-                        .padding([spacing.space_xxs, spacing.space_xs])
-                ]
-                .spacing(8.0),
-            )
-            .width(Length::Fill)
-            .align_x(cosmic::iced_core::alignment::Horizontal::Right)
-            .apply(Element::from)
-            .map(crate::pages::Message::Appearance)
-        })
 }
 
 #[allow(clippy::too_many_lines)]
@@ -1034,8 +1031,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
             let mut section = settings::view_section(&section.title)
                 .add(
                     container(
-                        row![
-                            column![
+                        cosmic::iced::widget::row![
+                            cosmic::iced::widget::column![
                                 button(
                                     icon(from_name("illustration-appearance-mode-dark").into(),)
                                         .width(Length::Fill)
@@ -1050,7 +1047,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             .spacing(8)
                             .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
-                            column![
+                            cosmic::iced::widget::column![
                                 button(
                                     icon(from_name("illustration-appearance-mode-light").into(),)
                                         .width(Length::Fill)
@@ -1079,10 +1076,10 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         .toggler(page.theme_mode.auto_switch, Message::Autoswitch),
                 )
                 .add(
-                    column![
+                    cosmic::iced::widget::column![
                         text(&descriptions[2]),
                         scrollable(
-                            row![
+                            cosmic::iced::widget::row![
                                 color_button(
                                     Some(Message::PaletteAccent(palette.accent_blue.into())),
                                     palette.accent_blue.into(),
@@ -1265,8 +1262,8 @@ pub fn style() -> Section<crate::pages::Message> {
             settings::view_section(&section.title)
                 .add(
                     container(
-                        row![
-                            column![
+                        cosmic::iced::widget::row![
+                            cosmic::iced::widget::column![
                                 button(
                                     icon(
                                         from_name(if page.theme_mode.is_dark {
@@ -1288,7 +1285,7 @@ pub fn style() -> Section<crate::pages::Message> {
                             .spacing(8)
                             .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
-                            column![
+                            cosmic::iced::widget::column![
                                 button(
                                     icon(
                                         from_name(if page.theme_mode.is_dark {
@@ -1310,7 +1307,7 @@ pub fn style() -> Section<crate::pages::Message> {
                             .spacing(8)
                             .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
-                            column![
+                            cosmic::iced::widget::column![
                                 button(
                                     icon(
                                         from_name(if page.theme_mode.is_dark {
@@ -1388,7 +1385,7 @@ pub fn reset_button() -> Section<crate::pages::Message> {
             let spacing = &page.theme_builder.spacing;
             let descriptions = &section.descriptions;
             if page.can_reset {
-                row![button(text(&descriptions[0]))
+                cosmic::iced::widget::row![button(text(&descriptions[0]))
                     .on_press(Message::Reset)
                     .padding([spacing.space_xxs, spacing.space_xs])]
                 .apply(Element::from)

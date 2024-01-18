@@ -27,3 +27,9 @@ pub enum Message {
     Panel(desktop::panel::Message),
     PanelApplet(desktop::panel::applets_inner::Message),
 }
+
+impl From<Message> for crate::Message {
+    fn from(message: Message) -> Self {
+        crate::Message::PageMessage(message)
+    }
+}

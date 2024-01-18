@@ -20,6 +20,7 @@ use crate::PageCommands;
 use cosmic::app::DbusActivationMessage;
 use cosmic::dialog::file_chooser;
 use cosmic::iced::Subscription;
+use cosmic::widget::row;
 use cosmic::{
     app::{Command, Core},
     cosmic_config::config_subscription,
@@ -682,15 +683,26 @@ impl SettingsApp {
 
     /// Displays the view of a page.
     fn page_view(&self, content: &[section::Entity]) -> cosmic::Element<Message> {
-        let page = &self.pages.info[self.active_page];
+        let page = &self.pages.page[self.active_page];
+        let page_info = &self.pages.info[self.active_page];
         let mut column_widgets = Vec::with_capacity(1);
 
-        if let Some(parent) = page.parent {
-            column_widgets.push(crate::widget::sub_page_header(
-                page.title.as_str(),
+        if let Some(parent) = page_info.parent {
+            let page_header = crate::widget::sub_page_header(
+                page_info.title.as_str(),
                 self.pages.info[parent].title.as_str(),
                 Message::Page(parent),
-            ));
+            );
+
+            let mut page_header_content = row::with_capacity(2)
+                .align_items(iced::Alignment::End)
+                .push(page_header);
+
+            if let Some(element) = page.header_view() {
+                page_header_content = page_header_content.push(element.map(Message::from));
+            }
+
+            column_widgets.push(page_header_content.into());
         }
 
         column_widgets.reserve_exact(1 + content.len());
