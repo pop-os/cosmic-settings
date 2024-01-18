@@ -4,7 +4,7 @@ default-members = ["app"]
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-features = ["single-instance", "tokio", "wayland", "wgpu", "xdg-portal"]
+features = ["single-instance", "tokio", "wayland", "xdg-portal"]
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
