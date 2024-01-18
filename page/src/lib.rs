@@ -46,6 +46,10 @@ pub trait Page<Message: 'static>: Downcast {
         Command::none()
     }
 
+    fn header_view(&self) -> Option<Element<'_, Message>> {
+        None
+    }
+
     #[must_use]
     #[allow(unused)]
     fn reload(&mut self, page: crate::Entity) -> Command<Message> {

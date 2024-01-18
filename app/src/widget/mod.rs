@@ -117,13 +117,12 @@ pub fn sub_page_header<'a, Message: 'static + Clone>(
         .style(button::Style::Link)
         .on_press(on_press);
 
-    let sub_page_header = row::with_capacity(2)
-        .push(text::title3(sub_page))
-        .push(horizontal_space(Length::Fill));
+    let sub_page_header = row::with_capacity(2).push(text::title3(sub_page));
 
     column::with_capacity(2)
         .push(previous_button)
         .push(sub_page_header)
         .spacing(6)
+        .width(Length::Shrink)
         .into()
 }
