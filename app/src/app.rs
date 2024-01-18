@@ -651,7 +651,7 @@ impl SettingsApp {
         let mut column_widgets = Vec::with_capacity(1);
 
         if let Some(parent) = page.parent {
-            column_widgets.push(navigation::sub_page_header(
+            column_widgets.push(crate::widget::sub_page_header(
                 page.title.as_str(),
                 self.pages.info[parent].title.as_str(),
                 Message::Page(parent),
@@ -736,7 +736,7 @@ impl SettingsApp {
 
         for entity in sub_pages.iter().copied() {
             let sub_page = &self.pages.info[entity];
-            page_list = page_list.push(navigation::page_list_item(
+            page_list = page_list.push(crate::widget::page_list_item(
                 sub_page.title.as_str(),
                 sub_page.description.as_str(),
                 &sub_page.icon_name,
