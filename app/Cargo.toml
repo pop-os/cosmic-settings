@@ -7,7 +7,7 @@ rust-version = "1.65.0"
 
 [dependencies]
 apply = "0.3.0"
-async-channel = "1.9.0"
+async-channel = "2.1.1"
 color-eyre = "0.6.2"
 cosmic-randr-shell = { git = "https://github.com/pop-os/cosmic-randr", rev = "c35172c" }
 cosmic-settings-desktop = { path = "../pages/desktop" }
@@ -18,12 +18,12 @@ derivative = "2.2.0"
 derive_setters = "0.1.6"
 dirs = "5.0.1"
 generator = "0.7.5"
-i18n-embed-fl = "0.6.7"
-itertools = "0.11.0"
+i18n-embed-fl = "0.7.0"
+itertools = "0.12.0"
 libcosmic = {workspace = true}
 once_cell = "1.19.0"
 regex = "1.10.2"
-rust-embed = "6.8.1"
+rust-embed = "8.2.0"
 slotmap = "1.0.7"
 tokio = "1.35.1"
 downcast-rs = "1.2.0"
@@ -37,17 +37,17 @@ url = "2.5.0"
 freedesktop-desktop-entry = "0.5.0"
 notify = "6.1.1"
 anyhow = "1.0"
-image = "0.24.7"
+image = "0.24.8"
 serde = { version = "1.0.195", features = ["derive"] }
 ashpd = { version = "0.6.8", default-features = false }
 ron = "0.8"
 static_init = "1.0.3"
-clap = {version = "4.4.15", features = ["derive"] }
+clap = {version = "4.4.18", features = ["derive"] }
 itoa = "1.0.10"
 futures = { package = "futures-lite", version = "2.2.0" }
 
 [dependencies.i18n-embed]
-version = "0.13.9"
+version = "0.14.1"
 features = ["fluent-system", "desktop-requester"]
 
 [features]
