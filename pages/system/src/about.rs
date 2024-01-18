@@ -3,7 +3,6 @@
 
 use bumpalo::Bump;
 use std::{ffi::OsStr, io::Read};
-use sysinfo::{DiskExt, SystemExt};
 
 use concat_in_place::strcat;
 use const_format::concatcp;
@@ -49,18 +48,18 @@ impl Info {
 
         let mut sys = sysinfo::System::new();
 
-        sys.refresh_disks_list();
-        sys.refresh_disks();
+        let disks = sysinfo::Disks::new_with_refreshed_list();
+
         sys.refresh_memory();
 
         let mut total_capacity = 0;
-        for disk in sys.disks() {
+        for disk in disks.list() {
             total_capacity += disk.total_space();
         }
 
         info.disk_capacity = format_size(total_capacity);
 
-        if let Some(name) = sys.host_name() {
+        if let Some(name) = sysinfo::System::host_name() {
             info.device_name = name;
         }
 
@@ -204,7 +203,7 @@ pub fn read_to_string<'a, P: AsRef<OsStr>>(
 }
 
 fn format_size(size: u64) -> String {
-    byte_unit::Byte::from_bytes(size)
-        .get_appropriate_unit(true)
+    byte_unit::Byte::from_u64(size)
+        .get_appropriate_unit(byte_unit::UnitType::Decimal)
         .to_string()
 }

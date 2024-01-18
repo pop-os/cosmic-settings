@@ -22,7 +22,7 @@ git = "https://github.com/pop-os/cosmic-panel"
 [workspace.dependencies.sctk]
 git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
-rev = "e63ab5f"
+rev = "2e9bf9f"
 
 [profile.release]
 opt-level = 3
