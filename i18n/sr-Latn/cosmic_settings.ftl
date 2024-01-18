@@ -60,6 +60,76 @@ window-management = Upravljanje prozorima
     .active-hint = Veličina nagoveštaja aktivnog prozora
     .gaps = Praznine oko složenih prozora
 
+## Desktop: Display
+
+-requires-restart = Zahteva ponovno pokretanje
+
+color = Boja
+    .depth = Dubina boje
+    .profile = Profil boje
+    .sidebar = Profili boje
+    .temperature = Temperatura boje
+
+display = Ekran
+    .desc = Upravljajte ekranima, prebacivanjem grafike i noćnim svetlom
+    .arrangement = Raspored ekrana
+    .arrangement-desc = Prevucite ekrane da biste ih preuredili.
+    .enable = Omogući ekran
+    .external = { $size } { $output } spoljašnji ekran
+    .laptop = { $size } ekran laptopa
+    .options = Opcije ekrana
+    .refresh-rate = Osvežavanje
+    .resolution = Rezolucija
+    .scale = Razmera
+
+graphics-mode = Grafički režim
+    .mode = { $mode ->
+        [compute] Računska
+        *[hybrid] Hibridna
+        [integrated] Integrisana
+        [nvidia] NVIDIA
+    } grafika
+    .enable = Omogući { $mode ->
+        [compute] računsku
+        *[hybrid] hibridnu
+        [integrated] integrisanu
+        [nvidia] NVIDIA
+    } grafiku
+    .desc = { $mode ->
+        [compute] Koristi namensku grafiku samo za računska opterećenja. Isljučuje spoljne ekrane. { -requires-restart }.
+        *[hybrid] Aplikacije koriste integrisanu grafiku osim ako se izričito ne zahteva korišćenje namenske grafike. { -requires-restart }.
+        [integrated] Isključuje namensku grafiku radi dužeg trajanja baterije i manje buke ventilatora.
+        [nvidia] Bolje grafičko iskustvo i najveća potrošnja energije. { -requires-restart }.
+    }
+    .restart = Ponovo pokreni i prebaci na { $mode }?
+    .restart-desc = Prebacivanje na { $mode } će zatvoriti sve otvorene aplikacije
+
+mirroring = Preslikavanje
+    .id = Preslikavanje { $id }
+    .dont = Ne preslikavaj
+    .mirror = Preslikaj { $display }
+    .project = Projektuj na { $display ->
+        [all] sve ekrane
+        *[other] { $display }
+    }
+    .project-count = Projektovanje na još { $count} { $count ->
+        [1] ekran
+        *[other] ekrana
+    }
+
+night-light = Noćno svetlo
+    .auto = Automatsko (od zalaska do izlaska sunca)
+    .desc = Smanjite plavo svetlo toplijim bojama.
+
+orientation = Orijentacija
+    .landscape = Položeno
+	.landscape-flipped = Položeno (preokrenuto)
+    .portrait = Uspravno
+	.portrait-flipped = Uspravno (preokrenuto)
+
+scheduling = Planiranje
+    .manual = Ručni raspored
+
 ## Desktop: Notifications
 
 notifications = Obaveštenja
