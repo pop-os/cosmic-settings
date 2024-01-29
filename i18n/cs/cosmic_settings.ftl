@@ -18,7 +18,6 @@ appearance = Vzhled
 notifications = Oznámení
     .desc = Nerušit, oznámení na zamykací obrazovce, a nastavení pro specifické aplikace.
 
-
 ## Desktop: Options
 
 desktop-panel-options = Plocha a Panel
@@ -111,8 +110,6 @@ wallpaper = Tapeta
 all-displays = Všechny monitory
 colors = Barvy
 fit-to-screen = Vyplnit obrazovku
-stretch = Roztáhnout
-zoom = Přiblížení
 
 x-minutes = { $number } minut
 x-hours = { $number ->

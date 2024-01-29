@@ -386,7 +386,7 @@ impl Page {
     /// View for the display configuration section.
     pub fn display_view(&self) -> Element<pages::Message> {
         let Some(&active_id) = self.display_tabs.active_data::<OutputKey>() else {
-            return column().into()
+            return column().into();
         };
 
         let active_output = &self.list.outputs[active_id];
@@ -467,7 +467,7 @@ impl Page {
 
         for (name, id) in sorted_outputs {
             let Some(output) = self.list.outputs.get(id) else {
-                continue
+                continue;
             };
 
             let inches =

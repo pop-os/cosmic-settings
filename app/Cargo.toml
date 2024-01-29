@@ -2,7 +2,7 @@
 name = "cosmic-settings"
 version = "0.1.0"
 edition = "2021"
-license = "GPL-3.0-only"
+license = "GPL-3.0"
 rust-version = "1.65.0"
 
 [dependencies]
@@ -22,7 +22,7 @@ i18n-embed-fl = "0.7.0"
 itertools = "0.12.0"
 libcosmic = {workspace = true}
 once_cell = "1.19.0"
-regex = "1.10.2"
+regex = "1.10.3"
 rust-embed = "8.2.0"
 slotmap = "1.0.7"
 tokio = "1.35.1"
@@ -38,7 +38,7 @@ freedesktop-desktop-entry = "0.5.0"
 notify = "6.1.1"
 anyhow = "1.0"
 image = "0.24.8"
-serde = { version = "1.0.195", features = ["derive"] }
+serde = { version = "1.0.196", features = ["derive"] }
 ashpd = { version = "0.6.8", default-features = false }
 ron = "0.8"
 static_init = "1.0.3"

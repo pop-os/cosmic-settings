@@ -104,7 +104,7 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
             if let Ok(dir) = path.read_dir() {
                 for entry in dir.filter_map(Result::ok) {
                     let Ok(file_type) = entry.file_type() else {
-                        continue
+                        continue;
                     };
 
                     let path = entry.path();
@@ -114,7 +114,7 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
                         paths.push(path);
                     } else if file_type.is_file() {
                         let Ok(Some(kind)) = infer::get_from_path(&path) else {
-                            continue
+                            continue;
                         };
 
                         if infer::MatcherType::Image == kind.matcher_type() {

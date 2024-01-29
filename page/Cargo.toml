@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 derive_setters = "0.1.6"
-regex = "1.10.2"
+regex = "1.10.3"
 slotmap = "1.0.7"
 libcosmic = { workspace = true }
 generator = "0.7.5"

@@ -1,6 +1,7 @@
 [workspace]
 members = ["app", "page", "pages/*"]
 default-members = ["app"]
+resolver = "2"
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
@@ -26,5 +27,3 @@ rev = "2e9bf9f"
 
 [profile.release]
 opt-level = 3
-# debug = true
-# lto = "thin"

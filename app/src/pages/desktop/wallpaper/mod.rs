@@ -5,6 +5,7 @@ mod config;
 pub mod widgets;
 
 pub use config::Config;
+use url::Url;
 
 use std::{
     collections::HashMap,
@@ -13,12 +14,15 @@ use std::{
 };
 
 use apply::Apply;
-use cosmic::widget::{
-    button, dropdown, list_column, row,
-    segmented_button::{self, SingleSelectModel},
-    segmented_selection, settings, text, toggler,
-};
 use cosmic::{command, Command};
+use cosmic::{
+    dialog::file_chooser,
+    widget::{
+        button, dropdown, list_column, row,
+        segmented_button::{self, SingleSelectModel},
+        settings, text, toggler, view_switcher,
+    },
+};
 use cosmic::{
     iced::{wayland::actions::window::SctkWindowSettings, window, Color, Length},
     prelude::CollectionWidget,
@@ -45,8 +49,7 @@ use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 use static_init::dynamic;
 
 const FIT: usize = 0;
-const STRETCH: usize = 1;
-const ZOOM: usize = 2;
+const ZOOM: usize = 1;
 
 const SIMULATED_WIDTH: u16 = 300;
 const SIMULATED_HEIGHT: u16 = 169;
@@ -63,6 +66,10 @@ pub type Image = ImageBuffer<Rgba<u8>, Vec<u8>>;
 /// Messages for the wallpaper view.
 #[derive(Clone, Debug)]
 pub enum Message {
+    /// Adds a new wallpaper folder.
+    AddFolder(Arc<Result<Url, file_chooser::Error>>),
+    /// Adds a new image file the system wallpaper folder.
+    AddFile(Arc<Result<Url, file_chooser::Error>>),
     /// Selects an option in the category dropdown menu.
     ChangeCategory(Category),
     /// Changes the displayed images in the wallpaper view.
@@ -112,26 +119,12 @@ pub enum Category {
     Wallpapers,
 }
 
-/// The status of active dialog requests.
-#[derive(Copy, Clone)]
-enum ActiveDialog {
-    /// The active dialog is a folder dialog.
-    AddFolder,
-    /// The active dialog is an image dialog.
-    AddImage,
-    /// No request has been made for a dialog.
-    None,
-}
-
 /// The page struct for the wallpaper view.
 pub struct Page {
     /// The display that is currently being configured.
     ///
     /// If set to `None`, all displays will have the same wallpaper.
     active_output: Option<String>,
-
-    /// The state of an active dialog request.
-    active_dialog: ActiveDialog,
 
     /// Configuration parameters used by the cosmic-bg service.
     wallpaper_service_config: wallpaper::Config,
@@ -187,67 +180,6 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("wallpaper", "desc"))
     }
 
-    fn file_chooser(&mut self, selections: Vec<url::Url>) -> Command<crate::pages::Message> {
-        let active_dialog = self.active_dialog;
-        self.active_dialog = ActiveDialog::None;
-
-        if let Some(selection) = selections.first() {
-            let Ok(path) = selection.to_file_path() else {
-                tracing::error!(path = selection.path(), "not a valid file path");
-                return Command::none();
-            };
-
-            match active_dialog {
-                ActiveDialog::AddFolder => {
-                    if path.is_dir() {
-                        tracing::info!(?path, "opening new folder");
-
-                        let _res = self.config.set_current_folder(Some(path.clone()));
-
-                        // Add the selected folder to the recent folders list.
-                        self.add_recent_folder(path.clone());
-
-                        // Select that folder in the recent folders list.
-                        for (id, recent) in self.config.recent_folders().iter().enumerate() {
-                            if &path == recent {
-                                self.categories.selected = Some(Category::RecentFolder(id));
-                            }
-                        }
-
-                        // Load the wallpapers from the selected folder into the view.
-                        return cosmic::command::future(async move {
-                            crate::pages::Message::DesktopWallpaper(Message::ChangeFolder(
-                                change_folder(path).await,
-                            ))
-                        });
-                    }
-                }
-
-                ActiveDialog::AddImage => {
-                    if path.is_file() {
-                        tracing::info!(?path, "opening custom image");
-
-                        // Loads a single custom image and its thumbnail for display in the backgrounds view.
-                        return cosmic::command::future(async move {
-                            let result =
-                                wallpaper::load_image_with_thumbnail(&mut Vec::new(), path).await;
-
-                            crate::pages::Message::DesktopWallpaper(Message::ImageAdd(
-                                result.map(Arc::new),
-                            ))
-                        });
-                    }
-                }
-
-                ActiveDialog::None => {
-                    tracing::error!("not actively handling a dialog");
-                }
-            }
-        }
-
-        Command::none()
-    }
-
     fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
         let current_folder = self.config.current_folder().to_owned();
 
@@ -270,7 +202,6 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 impl Default for Page {
     fn default() -> Self {
         let mut page = Page {
-            active_dialog: ActiveDialog::None,
             active_output: None,
             cached_display_handle: None,
             categories: {
@@ -304,7 +235,7 @@ impl Default for Page {
             color_dialog: window::Id::unique(),
             color_model: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, Some(Color::WHITE)),
             config: Config::new(),
-            fit_options: vec![fl!("fit-to-screen"), fl!("stretch"), fl!("zoom")],
+            fit_options: vec![fl!("fill"), fl!("fit-to-screen")],
             outputs: SingleSelectModel::default(),
             rotation_frequency: 300,
             rotation_options: vec![
@@ -380,18 +311,6 @@ impl Page {
         let temp_image;
 
         let image = match self.selected_fit {
-            FIT => image,
-
-            STRETCH => {
-                temp_image = image::imageops::resize(
-                    image,
-                    SIMULATED_WIDTH as u32,
-                    SIMULATED_HEIGHT as u32,
-                    Lanczos3,
-                );
-                &temp_image
-            }
-
             ZOOM => {
                 let (w, h) = (image.width(), image.height());
 
@@ -416,6 +335,8 @@ impl Page {
 
                 &temp_image
             }
+
+            FIT => image,
 
             _ => return,
         };
@@ -585,16 +506,19 @@ impl Page {
             }
 
             Category::AddFolder => {
-                self.active_dialog = ActiveDialog::AddFolder;
-                return cosmic::command::message(crate::Message::FileChooser(
-                    crate::app::FileChooser::Open {
-                        title: fl!("wallpaper", "folder-dialog"),
-                        accept_label: fl!("dialog-add"),
-                        include_directories: true,
-                        modal: false,
-                        multiple_files: false,
-                    },
-                ));
+                return cosmic::command::future(async {
+                    let dialog_result = file_chooser::open::Dialog::new()
+                        .title(fl!("wallpaper", "folder-dialog"))
+                        .accept_label(fl!("dialog-add"))
+                        .modal(false)
+                        .open_folder()
+                        .await
+                        .map(|response| response.url().to_owned());
+
+                    let message = Message::AddFolder(Arc::new(dialog_result));
+                    let page_message = crate::pages::Message::DesktopWallpaper(message);
+                    crate::Message::PageMessage(page_message)
+                });
             }
         }
 
@@ -628,9 +552,8 @@ impl Page {
     /// Updates configuration for wallpaper image.
     fn config_wallpaper_entry(&self, output: String, path: PathBuf) -> Option<Entry> {
         let scaling_mode = match self.selected_fit {
-            FIT => ScalingMode::Fit([0.0, 0.0, 0.0]),
-            STRETCH => ScalingMode::Stretch,
             ZOOM => ScalingMode::Zoom,
+            FIT => ScalingMode::Fit([0.0, 0.0, 0.0]),
             _ => return None,
         };
 
@@ -749,16 +672,19 @@ impl Page {
             }
 
             Message::ImageAddDialog => {
-                self.active_dialog = ActiveDialog::AddImage;
-                return cosmic::command::message(crate::Message::FileChooser(
-                    crate::app::FileChooser::Open {
-                        title: fl!("wallpaper", "image-dialog"),
-                        accept_label: fl!("dialog-add"),
-                        include_directories: false,
-                        modal: false,
-                        multiple_files: false,
-                    },
-                ));
+                return cosmic::command::future(async {
+                    let dialog_result = file_chooser::open::Dialog::new()
+                        .title(fl!("wallpaper", "image-dialog"))
+                        .accept_label(fl!("dialog-add"))
+                        .modal(false)
+                        .open_file()
+                        .await
+                        .map(|response| response.url().to_owned());
+
+                    let message = Message::AddFile(Arc::new(dialog_result));
+                    let page_message = crate::pages::Message::DesktopWallpaper(message);
+                    crate::Message::PageMessage(page_message)
+                });
             }
 
             Message::ImageRemove(image) => {
@@ -803,6 +729,75 @@ impl Page {
                     self.cache_display_image();
                 } else {
                     self.select_first_wallpaper();
+                }
+            }
+
+            Message::AddFolder(result) => {
+                let selection = match Arc::into_inner(result) {
+                    Some(Ok(response)) => response,
+                    Some(Err(why)) => {
+                        // TODO:
+                        return Command::none();
+                    }
+                    None => return Command::none(),
+                };
+
+                let Ok(path) = selection.to_file_path() else {
+                    tracing::error!(path = selection.path(), "not a valid file path");
+                    return Command::none();
+                };
+
+                if path.is_dir() {
+                    tracing::info!(?path, "opening new folder");
+
+                    let _res = self.config.set_current_folder(Some(path.clone()));
+
+                    // Add the selected folder to the recent folders list.
+                    self.add_recent_folder(path.clone());
+
+                    // Select that folder in the recent folders list.
+                    for (id, recent) in self.config.recent_folders().iter().enumerate() {
+                        if &path == recent {
+                            self.categories.selected = Some(Category::RecentFolder(id));
+                        }
+                    }
+
+                    // Load the wallpapers from the selected folder into the view.
+                    return cosmic::command::future(async move {
+                        let message = Message::ChangeFolder(change_folder(path).await);
+                        let page_message = crate::pages::Message::DesktopWallpaper(message);
+                        crate::Message::PageMessage(page_message)
+                    });
+                }
+            }
+
+            Message::AddFile(result) => {
+                let selection = match Arc::into_inner(result) {
+                    Some(Ok(response)) => response,
+                    Some(Err(why)) => {
+                        // TODO:
+                        return Command::none();
+                    }
+                    None => return Command::none(),
+                };
+
+                let Ok(path) = selection.to_file_path() else {
+                    tracing::error!(path = selection.path(), "not a valid file path");
+                    return Command::none();
+                };
+
+                if path.is_file() {
+                    tracing::info!(?path, "opening custom image");
+
+                    // Loads a single custom image and its thumbnail for display in the backgrounds view.
+                    return cosmic::command::future(async move {
+                        let result =
+                            wallpaper::load_image_with_thumbnail(&mut Vec::new(), path).await;
+
+                        let message = Message::ImageAdd(result.map(Arc::new));
+                        let page_message = crate::pages::Message::DesktopWallpaper(message);
+                        crate::Message::PageMessage(page_message)
+                    });
                 }
             }
 
@@ -905,9 +900,8 @@ impl Page {
         };
 
         match entry.scaling_mode {
+            ScalingMode::Zoom | ScalingMode::Stretch => self.selected_fit = ZOOM,
             ScalingMode::Fit(_) => self.selected_fit = FIT,
-            ScalingMode::Stretch => self.selected_fit = STRETCH,
-            ScalingMode::Zoom => self.selected_fit = ZOOM,
         }
 
         match entry.rotation_frequency {
@@ -1079,7 +1073,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .height(Length::Fixed(32.0))
                     .into()
             } else {
-                segmented_selection::horizontal(&page.outputs)
+                view_switcher::horizontal(&page.outputs)
                     .on_activate(Message::Output)
                     .into()
             });
