@@ -7,7 +7,7 @@ use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::prelude::*;
 use cosmic::widget::{button, container, space};
 use cosmic::{iced, Element};
-use cosmic_settings_desktop::wallpaper;
+use cosmic_settings_wallpaper as wallpaper;
 use slotmap::DefaultKey;
 
 const COLOR_WIDTH: u16 = 70;

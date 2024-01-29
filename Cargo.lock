@@ -1083,7 +1083,7 @@ dependencies = [
 [[package]]
 name = "cosmic-randr-shell"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-randr?rev=c35172c#c35172c637865d498ac509848a9194ba345d1350"
+source = "git+https://github.com/pop-os/cosmic-randr#88c570cf8b88beae1cf4f3e2d412cc64ec49cd7c"
 dependencies = [
  "kdl",
  "slotmap",
@@ -1104,10 +1104,10 @@ dependencies = [
  "cosmic-comp-config",
  "cosmic-panel-config",
  "cosmic-randr-shell",
- "cosmic-settings-desktop",
  "cosmic-settings-page",
  "cosmic-settings-system",
  "cosmic-settings-time",
+ "cosmic-settings-wallpaper",
  "derivative",
  "derive_setters",
  "dirs 5.0.1",
@@ -1134,24 +1134,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "url",
-]
-
-[[package]]
-name = "cosmic-settings-desktop"
-version = "0.1.0"
-dependencies = [
- "cosmic-bg-config",
- "cosmic-config",
- "dirs 5.0.1",
- "freedesktop-icons",
- "futures-lite 2.2.0",
- "image",
- "infer",
- "rayon",
- "smithay-client-toolkit 0.18.0",
- "tokio",
- "tracing",
- "wayland-client 0.31.2",
 ]
 
 [[package]]
@@ -1188,6 +1170,23 @@ dependencies = [
  "icu_timezone",
  "timedate-zbus",
  "zbus",
+]
+
+[[package]]
+name = "cosmic-settings-wallpaper"
+version = "0.1.0"
+dependencies = [
+ "cosmic-bg-config",
+ "cosmic-config",
+ "cosmic-randr-shell",
+ "dirs 5.0.1",
+ "freedesktop-icons",
+ "futures-lite 2.2.0",
+ "image",
+ "infer",
+ "rayon",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]

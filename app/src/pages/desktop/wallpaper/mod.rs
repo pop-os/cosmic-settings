@@ -40,9 +40,9 @@ use cosmic::{
     widget::{color_picker::ColorPickerUpdate, ColorPickerModel},
     Element,
 };
-use cosmic_settings_desktop::wallpaper::{self, Entry, ScalingMode};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
@@ -93,7 +93,13 @@ pub enum Message {
     /// Removes a custom image from the wallpaper view.
     ImageRemove(DefaultKey),
     /// Initializes the view.
-    Init(Box<(wallpaper::Config, HashMap<String, String>, Context)>),
+    Init(
+        Box<(
+            wallpaper::Config,
+            HashMap<String, (String, (u32, u32))>,
+            Context,
+        )>,
+    ),
     /// Changes the active output display that is to be configured.
     Output(segmented_button::Entity),
     /// Changes the rotation frequency of wallpaper images in slideshow mode.
@@ -184,7 +190,7 @@ impl page::Page<crate::pages::Message> for Page {
         let current_folder = self.config.current_folder().to_owned();
 
         command::future(async move {
-            let (wallpaper_service_config, outputs) = wallpaper::config();
+            let (wallpaper_service_config, outputs) = wallpaper::config().await;
 
             let update = change_folder(current_folder).await;
 
@@ -414,7 +420,7 @@ impl Page {
     fn wallpaper_service_config_update(
         &mut self,
         wallpaper_service_config: wallpaper::Config,
-        displays: HashMap<String, String>,
+        displays: HashMap<String, (String, (u32, u32))>,
         selection: Context,
     ) {
         self.wallpaper_service_config = wallpaper_service_config;
@@ -422,11 +428,11 @@ impl Page {
         self.outputs.clear();
 
         let mut first = None;
-        for (name, model) in displays {
+        for (name, (_model, physical)) in displays {
             let entity = self
                 .outputs
                 .insert()
-                .text(format!("{model} ({name})"))
+                .text(crate::utils::display_name(&name, physical))
                 .data(name);
 
             if first.is_none() {
