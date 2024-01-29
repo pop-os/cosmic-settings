@@ -18,9 +18,8 @@ use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
 use cosmic::app::DbusActivationMessage;
-use cosmic::dialog::file_chooser;
 use cosmic::iced::Subscription;
-use cosmic::widget::row;
+use cosmic::widget::{button, row, text_input};
 use cosmic::{
     app::{Command, Core},
     cosmic_config::config_subscription,
@@ -30,7 +29,7 @@ use cosmic::{
         window, Length,
     },
     prelude::*,
-    widget::{column, container, icon, nav_bar, scrollable, search, segmented_button, settings},
+    widget::{column, container, icon, nav_bar, scrollable, segmented_button, settings},
     Element,
 };
 use cosmic_panel_config::CosmicPanelConfig;
@@ -44,7 +43,6 @@ pub struct SettingsApp {
     active_page: page::Entity,
     config: Config,
     core: Core,
-    file_chooser: Option<(file_chooser::Sender, page::Entity)>,
     nav_model: nav_bar::Model,
     pages: page::Binder<crate::pages::Message>,
     search_active: bool,
@@ -70,7 +68,6 @@ impl SettingsApp {
 #[derive(Clone, Debug)]
 pub enum Message {
     DesktopInfo,
-    FileChooser(FileChooser),
     Error(String),
     Page(page::Entity),
     PageMessage(crate::pages::Message),
@@ -79,26 +76,10 @@ pub enum Message {
     SearchChanged(String),
     SearchClear,
     SearchSubmit,
-    Search(search::Message),
     SetWindowTitle,
     OpenContextDrawer(Cow<'static, str>),
     CloseContextDrawer,
     SetTheme(cosmic::theme::Theme),
-}
-
-#[derive(Clone, Debug)]
-pub enum FileChooser {
-    Closed,
-    Init(file_chooser::Sender),
-    Open {
-        title: String,
-        accept_label: String,
-        include_directories: bool,
-        modal: bool,
-        multiple_files: bool,
-    },
-    Opened,
-    Selected(Vec<url::Url>),
 }
 
 impl cosmic::Application for SettingsApp {
@@ -121,7 +102,6 @@ impl cosmic::Application for SettingsApp {
             active_page: page::Entity::default(),
             config: Config::new(),
             core,
-            file_chooser: None,
             nav_model: nav_bar::Model::default(),
             pages: page::Binder::default(),
             search_active: false,
@@ -158,7 +138,7 @@ impl cosmic::Application for SettingsApp {
         let mut widgets = Vec::new();
 
         widgets.push(if self.search_active {
-            cosmic::widget::text_input::search_input("", &self.search_input)
+            text_input::search_input("", &self.search_input)
                 .width(Length::Fixed(240.0))
                 .id(self.search_id.clone())
                 .on_clear(Message::SearchClear)
@@ -166,7 +146,11 @@ impl cosmic::Application for SettingsApp {
                 .on_submit(Message::SearchSubmit)
                 .into()
         } else {
-            cosmic::widget::search::button(Message::SearchActivate)
+            icon::from_name("system-search-symbolic")
+                .apply(button::icon)
+                .padding([0, 16])
+                .on_press(Message::SearchActivate)
+                .into()
         });
 
         widgets
@@ -234,53 +218,19 @@ impl cosmic::Application for SettingsApp {
         Subscription::batch(vec![
             window_break,
             desktop_files(0).map(|_| Message::DesktopInfo),
-            config_subscription(0, "com.system76.CosmicPanel.Panel".into(), 1).map(
-                |(_, e)| match e {
-                    Ok(config) => Message::PanelConfig(config),
-                    Err((errors, config)) => {
-                        for why in errors {
-                            tracing::error!(?why, "panel config load error");
-                        }
-                        Message::PanelConfig(config)
-                    }
-                },
-            ),
-            config_subscription(0, "com.system76.CosmicPanel.Dock".into(), 1).map(
-                |(_, e)| match e {
-                    Ok(config) => Message::PanelConfig(config),
-                    Err((errors, config)) => {
-                        for why in errors {
-                            tracing::error!(?why, "dock config load error");
-                        }
-                        Message::PanelConfig(config)
-                    }
-                },
-            ),
-            file_chooser::subscription(|response| match response {
-                file_chooser::Message::Closed => Message::FileChooser(FileChooser::Closed),
-
-                file_chooser::Message::Opened => Message::FileChooser(FileChooser::Opened),
-
-                file_chooser::Message::Selected(files) => {
-                    Message::FileChooser(FileChooser::Selected(files.uris().to_owned()))
+            config_subscription(0, "com.system76.CosmicPanel.Panel".into(), 1).map(|update| {
+                for why in update.errors {
+                    tracing::error!(?why, "panel config load error");
                 }
 
-                file_chooser::Message::Err(why) => {
-                    let mut source: &dyn std::error::Error = &why;
-                    let mut string =
-                        format!("open dialog subscription errored\n    cause: {source}");
-
-                    while let Some(new_source) = source.source() {
-                        string.push_str(&format!("\n    cause: {new_source}"));
-                        source = new_source;
-                    }
-
-                    Message::Error(string)
+                Message::PanelConfig(update.config)
+            }),
+            config_subscription(0, "com.system76.CosmicPanel.Dock".into(), 1).map(|update| {
+                for why in update.errors {
+                    tracing::error!(?why, "dock config load error");
                 }
 
-                file_chooser::Message::Init(sender) => {
-                    Message::FileChooser(FileChooser::Init(sender))
-                }
+                Message::PanelConfig(update.config)
             }),
         ])
     }
@@ -381,50 +331,6 @@ impl cosmic::Application for SettingsApp {
                 }
             },
 
-            Message::FileChooser(message) => match message {
-                FileChooser::Selected(files) => {
-                    return self.pages.page[self.active_page]
-                        .file_chooser(files)
-                        .map(crate::app::Message::PageMessage)
-                        .map(cosmic::app::Message::App)
-                }
-
-                FileChooser::Closed => {}
-
-                FileChooser::Opened => {
-                    if let Some((sender, _)) = self.file_chooser.as_mut() {
-                        return sender.response().map(|_| cosmic::app::Message::None);
-                    }
-                }
-
-                FileChooser::Open {
-                    title,
-                    accept_label,
-                    include_directories,
-                    modal,
-                    multiple_files,
-                } => {
-                    if let Some((sender, entity)) = self.file_chooser.as_mut() {
-                        if let Some(dialog) = file_chooser::open_file() {
-                            *entity = self.active_page;
-
-                            return dialog
-                                .title(title)
-                                .accept_label(accept_label)
-                                .include_directories(include_directories)
-                                .modal(modal)
-                                .multiple_files(multiple_files)
-                                .create(sender)
-                                .map(|_| cosmic::app::message::none());
-                        }
-                    }
-                }
-
-                FileChooser::Init(sender) => {
-                    self.file_chooser = Some((sender, page::Entity::default()));
-                }
-            },
-
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
                 page::update!(
                     self.pages,
@@ -477,7 +383,7 @@ impl cosmic::Application for SettingsApp {
                 }
             }
 
-            Message::PanelConfig(_) | Message::Search(_) => {}
+            Message::PanelConfig(_) => {}
 
             Message::SetTheme(t) => return cosmic::app::command::set_theme(t),
 

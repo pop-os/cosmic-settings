@@ -1,6 +1,7 @@
 [workspace]
 members = ["app", "page", "pages/*"]
 default-members = ["app"]
+resolver = "2"
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
@@ -22,9 +23,7 @@ git = "https://github.com/pop-os/cosmic-panel"
 [workspace.dependencies.sctk]
 git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
-rev = "2e9bf9f"
+rev = "f3587a93"
 
 [profile.release]
 opt-level = 3
-# debug = true
-# lto = "thin"

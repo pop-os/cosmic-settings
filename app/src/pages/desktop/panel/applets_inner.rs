@@ -351,7 +351,13 @@ impl Page {
                     return Command::none();
                 };
                 let Some((list, _)) = config.plugins_wings.as_mut() else {
-                    config.plugins_wings = Some((start_list.into_iter().map(|a: Applet| a.id.into()).collect(), Vec::new()));
+                    config.plugins_wings = Some((
+                        start_list
+                            .into_iter()
+                            .map(|a: Applet| a.id.into())
+                            .collect(),
+                        Vec::new(),
+                    ));
                     return Command::none();
                 };
                 *list = start_list.into_iter().map(|a| a.id.into()).collect();
@@ -361,7 +367,12 @@ impl Page {
                     return Command::none();
                 };
                 let Some(list) = config.plugins_center.as_mut() else {
-                    config.plugins_center = Some(center_list.into_iter().map(|a: Applet| a.id.into()).collect());
+                    config.plugins_center = Some(
+                        center_list
+                            .into_iter()
+                            .map(|a: Applet| a.id.into())
+                            .collect(),
+                    );
                     return Command::none();
                 };
                 *list = center_list.into_iter().map(|a| a.id.into()).collect();
@@ -371,7 +382,10 @@ impl Page {
                     return Command::none();
                 };
                 let Some((_, list)) = config.plugins_wings.as_mut() else {
-                    config.plugins_wings = Some((Vec::new(), end_list.into_iter().map(|a: Applet| a.id.into()).collect()));
+                    config.plugins_wings = Some((
+                        Vec::new(),
+                        end_list.into_iter().map(|a: Applet| a.id.into()).collect(),
+                    ));
                     return Command::none();
                 };
                 *list = end_list.into_iter().map(|a| a.id.into()).collect();
@@ -504,9 +518,7 @@ pub fn lists<
     Section::default().view::<P>(move |_binder, page, _section| {
         let page = page.inner();
         let Some(config) = page.current_config.as_ref() else {
-            return Element::from(
-                text(fl!("unknown"))
-            );
+            return Element::from(text(fl!("unknown")));
         };
 
         let button = button::standard(fl!("add-applet"));

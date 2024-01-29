@@ -350,7 +350,7 @@ impl PageInner {
     pub fn update(&mut self, message: Message) {
         let helper = self.config_helper.as_ref().unwrap();
         let Some(mut panel_config) = self.panel_config.as_mut() else {
-            return
+            return;
         };
 
         match message {

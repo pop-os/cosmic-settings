@@ -17,12 +17,14 @@ impl Info {
     pub async fn load(proxy: &TimeDateProxy<'_>) -> Option<Info> {
         let can_ntp = proxy.can_ntp().await.unwrap_or_default();
 
-        let Ok(timezone) = proxy.timezone()
+        let Ok(timezone) = proxy
+            .timezone()
             .await
             .unwrap_or_default()
-            .parse::<CustomTimeZone>() else {
-                return None;
-            };
+            .parse::<CustomTimeZone>()
+        else {
+            return None;
+        };
 
         let Ok(duration) = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) else {
             return None;

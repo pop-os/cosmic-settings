@@ -228,11 +228,10 @@ add-image = Add image
 all-displays = All Displays
 colors = Colors
 dialog-add = _Add
+fill = Fill
 fit-to-screen = Fit to Screen
 open-new-folder = Open new folder
 recent-folders = Recent Folders
-stretch = Stretch
-zoom = Zoom
 
 x-minutes = { $number } minutes
 x-hours = { $number ->

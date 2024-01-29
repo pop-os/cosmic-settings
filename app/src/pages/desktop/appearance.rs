@@ -719,7 +719,9 @@ impl Page {
                 let Ok(path) = f.to_file_path() else {
                     return Command::none();
                 };
-                let Ok(builder) = ron::ser::to_string_pretty(&self.theme_builder, PrettyConfig::default()) else {
+                let Ok(builder) =
+                    ron::ser::to_string_pretty(&self.theme_builder, PrettyConfig::default())
+                else {
                     return Command::none();
                 };
                 Command::perform(
