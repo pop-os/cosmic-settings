@@ -1,5 +1,5 @@
 [package]
-name = "cosmic-settings-desktop"
+name = "cosmic-settings-wallpaper"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,13 +8,12 @@ edition = "2021"
 [dependencies]
 cosmic-bg-config = { workspace = true }
 cosmic-config = { workspace = true }
+cosmic-randr-shell = { workspace = true }
 dirs = "5.0.1"
 freedesktop-icons = "0.2.5"
 futures-lite = "2.2.0"
 image = "0.24.8"
 infer = "0.15.0"
 rayon = "1.8.1"
-sctk = { workspace = true }
 tokio = { version = "1.35.1", features = ["sync"] }
 tracing = "0.1.40"
-wayland-client = "0.31.2"

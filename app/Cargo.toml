@@ -9,8 +9,8 @@ rust-version = "1.65.0"
 apply = "0.3.0"
 async-channel = "2.1.1"
 color-eyre = "0.6.2"
-cosmic-randr-shell = { git = "https://github.com/pop-os/cosmic-randr", rev = "c35172c" }
-cosmic-settings-desktop = { path = "../pages/desktop" }
+cosmic-randr-shell = { workspace = true }
+cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-system = { path = "../pages/system" }
 cosmic-settings-time = { path = "../pages/time" }

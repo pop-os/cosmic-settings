@@ -15,10 +15,10 @@ pub mod config;
 #[macro_use]
 pub mod localize;
 pub mod pages;
-pub mod theme;
-pub mod widget;
-
 pub mod subscription;
+pub mod theme;
+pub mod utils;
+pub mod widget;
 
 use clap::{Parser, Subcommand};
 use cosmic::{app::CosmicFlags, iced::Limits};

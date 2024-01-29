@@ -470,24 +470,9 @@ impl Page {
                 continue;
             };
 
-            let inches =
-                ((output.physical.0.pow(2) + output.physical.1.pow(2)) as f32).sqrt() * 0.039_370_1;
-
-            let inches_string = format!("{inches:.1}\"");
-
             self.display_tabs
                 .insert()
-                .text(match name {
-                    "eDP-1" | "LVDS1" => {
-                        fl!("display", "laptop", size = inches_string.as_str())
-                    }
-                    output => fl!(
-                        "display",
-                        "external",
-                        size = inches_string.as_str(),
-                        output = output
-                    ),
-                })
+                .text(crate::utils::display_name(&output.name, output.physical))
                 .data::<OutputKey>(id);
         }
 

@@ -43,14 +43,12 @@ pub const DEFAULT_COLORS: &[Color] = &[
     }),
 ];
 
-pub fn config() -> (Config, HashMap<String, String>) {
+pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
     let mut displays = HashMap::new();
 
-    if let Ok(outputs) = crate::outputs::outputs() {
-        for output in outputs {
-            if let Some(name) = output.name {
-                displays.insert(name, output.make);
-            }
+    if let Ok(list) = cosmic_randr_shell::list().await {
+        for (_key, output) in list.outputs {
+            displays.insert(output.name, (output.model, output.physical));
         }
     }
 

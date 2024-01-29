@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
-use cosmic_settings_desktop::wallpaper;
+use cosmic_settings_wallpaper as wallpaper;
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 

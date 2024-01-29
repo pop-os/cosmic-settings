@@ -19,9 +19,9 @@ use cosmic::widget::{
     settings, spin_button, text, ColorPickerModel,
 };
 use cosmic::{command, Command, Element};
-use cosmic_settings_desktop::wallpaper;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use cosmic_settings_wallpaper as wallpaper;
 use once_cell::sync::Lazy;
 use ron::ser::PrettyConfig;
 use slotmap::SlotMap;

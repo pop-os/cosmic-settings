@@ -20,6 +20,9 @@ git = "https://github.com/pop-os/cosmic-comp"
 [workspace.dependencies.cosmic-panel-config]
 git = "https://github.com/pop-os/cosmic-panel"
 
+[workspace.dependencies.cosmic-randr-shell]
+git = "https://github.com/pop-os/cosmic-randr"
+
 [workspace.dependencies.sctk]
 git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
