@@ -60,6 +60,81 @@ window-management = Zarządzanie Oknami
     .active-hint = Rozmiar wyróżnienia aktywnego okna
     .gaps = Przerwa między ramkami okien w trybie kafelków
 
+## Desktop: Display
+
+-requires-restart = Wymagany restart
+
+color = Kolor
+    .depth = Głębia koloru
+    .profile =Profil koloru
+    .sidebar = Profile Koloru
+    .temperature = Temperatura koloru
+
+display = Wyświetlacz
+    .desc = Zarządzaj wyświetlaczami, zmianami karty graficznej i nocnym światłem
+    .arrangement = Układ wyświetlaczy
+    .arrangement-desc = Przeciągaj wyświetlacze by zmienić układ.
+    .enable = Włącz wyświetlacz
+    .external = { $size } { $output } Zewnętrzny Wyświetlacz
+    .laptop = { $size } Wyświetlacz Laptopa
+    .options = Opcje Wyświetlacza
+    .refresh-rate = Prędkość odświeżania ekranu
+    .resolution = Rozdzielczość
+    .scale = Skala
+
+graphics-mode = Tryb Graficzny
+    .mode = { $mode ->
+        [compute] Obliczeniowy
+        *[hybrid] Hybrydowy
+        [integrated] Zintegrowany
+        [nvidia] NVIDIA
+    } graphics
+    .enable = Włącz { $mode ->
+        [compute] Obliczeniowy
+        *[hybrid] Hybrydowy
+        [integrated] Zintegrowany
+        [nvidia] NVIDIA
+    } graphics
+    .desc = { $mode ->
+        [compute] Używa dedykowanej karty graficznej tylko do pracy obliczeniowej. Wyłącza zewnętrzne ekrany. { -requires-restart }.
+        *[hybrid] Aplikacje używają zintegrowanej karty graficznej, chyba że bezpośredio kazano im używać dedykowanej karty graficznej. { -requires-restart }.
+        [integrated] Wyłącz dedykowaną kartę graficzną by zwiększyć czas pracy na baterii i zmniejszyć głośność wentylatorów.
+        [nvidia] Najwydajniejszy tryb graficzny wiążący się z najwyższym zapotrzebowaniem na prąd. { -requires-restart }.
+    }
+    .restart = Uruchomić ponownie i zmienić na { $mode }?
+    .restart-desc = Zmiana na { $mode } zamknie wszystkie otwarte aplikacje
+
+mirroring = Lustrzane Odbicie
+    .id = Lustrzane Odbicie { $id }
+    .dont = Nie stosuj Lustrzanego Odbicia
+    .mirror = Zastosuj Lustrzene Odbicie { $display }
+    .project = Rzutuj na { $display ->
+        [all] wszystkie wyświetlacze
+        *[other] { $display }
+    }
+    .project-count = Rzutuj na { $count} { $count ->
+        [1] inny
+        [Few] inne
+        *[other] innych
+    } { $count ->
+        [1] wyświetlacz
+        [Few] wyświetlacze
+        *[other] wyświetlaczy
+    }
+
+night-light = Nocne Światło
+    .auto = Automatyczne (od świtu do zmierzchu)
+    .desc = Zmniejsza ilość niebieskiego światła i ociepla kolory.
+
+orientation = Kierunek
+    .landscape = Poziomy
+    .landscape-flipped = Poziomy (Obrócony)
+    .portrait = Pionowy
+    .portrait-flipped = Pionowy (Obrócony)
+
+scheduling = Harmonogram
+    .manual = Ręcznie ustawiony harmonogram
+
 ## Desktop: Notifications
 
 notifications = Powiadomienia
