@@ -48,8 +48,8 @@ use image::{ImageBuffer, Rgba};
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 use static_init::dynamic;
 
-const FIT: usize = 0;
-const ZOOM: usize = 1;
+const ZOOM: usize = 0;
+const FIT: usize = 1;
 
 const SIMULATED_WIDTH: u16 = 300;
 const SIMULATED_HEIGHT: u16 = 169;
