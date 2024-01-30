@@ -387,7 +387,15 @@ impl Page {
         };
 
         if self.wallpaper_service_config.same_on_all {
+            self.wallpaper_service_config.backgrounds.clear();
             self.wallpaper_service_config.outputs.clear();
+        } else if let Some(pos) = self
+            .wallpaper_service_config
+            .backgrounds
+            .iter()
+            .position(|entry| entry.output == output)
+        {
+            let _removed = self.wallpaper_service_config.backgrounds.swap_remove(pos);
         }
 
         let entry = match self.selection.active {
@@ -416,11 +424,6 @@ impl Page {
                 Entry::new(output.clone(), wallpaper::Source::Color(color.clone()))
             }
         };
-
-        if output != "all" {
-            self.wallpaper_service_config.backgrounds.clear();
-            self.wallpaper_service_config.outputs.clear();
-        }
 
         wallpaper::set(&mut self.wallpaper_service_config, entry);
     }
@@ -455,6 +458,11 @@ impl Page {
             self.outputs.activate(id);
         }
 
+        self.apply_active_selection();
+    }
+
+    /// Apply the selection for the active output.
+    fn apply_active_selection(&mut self) {
         if self.wallpaper_service_config.same_on_all
             || self.wallpaper_service_config.backgrounds.is_empty()
         {
@@ -493,11 +501,8 @@ impl Page {
                 if self.config.current_folder.is_some() {
                     let _ = self.config.set_current_folder(None);
                     command = cosmic::command::future(async move {
-                        crate::app::Message::PageMessage(crate::pages::Message::DesktopWallpaper(
-                            Message::ChangeFolder(
-                                change_folder(Config::default_folder().to_owned()).await,
-                            ),
-                        ))
+                        let folder = change_folder(Config::default_folder().to_owned()).await;
+                        Message::ChangeFolder(folder).into()
                     });
                 } else {
                     self.select_first_wallpaper();
@@ -516,9 +521,7 @@ impl Page {
                     }
 
                     command = cosmic::command::future(async move {
-                        crate::app::Message::PageMessage(crate::pages::Message::DesktopWallpaper(
-                            Message::ChangeFolder(change_folder(path).await),
-                        ))
+                        Message::ChangeFolder(change_folder(path).await).into()
                     });
                 }
             }
@@ -547,9 +550,13 @@ impl Page {
     /// Changes the output being configured
     pub fn change_output(&mut self, entity: segmented_button::Entity) {
         self.outputs.activate(entity);
-        if let Some(name) = self.outputs.data::<String>(entity) {
-            self.active_output = Some(name.clone());
+
+        if let Some(name) = self.outputs.data::<OutputName>(entity) {
+            self.active_output = Some(name.0.clone());
         }
+
+        self.apply_active_selection();
+        self.cache_display_image();
     }
 
     /// Changes the slideshow wallpaper rotation frequency
@@ -738,7 +745,10 @@ impl Page {
                 self.cache_display_image();
             }
 
-            Message::Output(id) => self.change_output(id),
+            Message::Output(id) => {
+                self.change_output(id);
+                return Command::none();
+            }
 
             Message::RotationFrequency(pos) => self.change_rotation_frequency(pos),
 
