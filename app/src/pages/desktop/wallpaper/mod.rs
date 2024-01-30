@@ -739,18 +739,12 @@ impl Page {
             }
 
             Message::AddFolder(result) => {
-                let selection = match Arc::into_inner(result) {
-                    Some(Ok(response)) => response,
-                    Some(Err(why)) => {
-                        // TODO:
+                let path = match dialog_response(result) {
+                    DialogResponse::Path(path) => path,
+                    DialogResponse::Error(why) => {
+                        tracing::error!(why, "dialog response error");
                         return Command::none();
                     }
-                    None => return Command::none(),
-                };
-
-                let Ok(path) = selection.to_file_path() else {
-                    tracing::error!(path = selection.path(), "not a valid file path");
-                    return Command::none();
                 };
 
                 if path.is_dir() {
@@ -778,18 +772,12 @@ impl Page {
             }
 
             Message::AddFile(result) => {
-                let selection = match Arc::into_inner(result) {
-                    Some(Ok(response)) => response,
-                    Some(Err(why)) => {
-                        // TODO:
+                let path = match dialog_response(result) {
+                    DialogResponse::Path(path) => path,
+                    DialogResponse::Error(why) => {
+                        tracing::error!(why, "dialog response error");
                         return Command::none();
                     }
-                    None => return Command::none(),
-                };
-
-                let Ok(path) = selection.to_file_path() else {
-                    tracing::error!(path = selection.path(), "not a valid file path");
-                    return Command::none();
                 };
 
                 if path.is_file() {
@@ -1267,4 +1255,36 @@ pub fn color_picker_view<Message: Clone + 'static>(
         .height(Length::Fill)
         .align_items(cosmic::iced_core::Alignment::Center)
         .apply(Element::from)
+}
+
+enum DialogResponse {
+    Error(String),
+    Path(PathBuf),
+}
+
+fn dialog_response(result: Arc<Result<Url, file_chooser::Error>>) -> DialogResponse {
+    let Some(result) = Arc::into_inner(result) else {
+        return DialogResponse::Error(String::from("Arc::into_inner returned None"));
+    };
+
+    let selection = match result {
+        Ok(response) => response,
+        Err(why) => {
+            let mut source: &dyn std::error::Error = &why;
+            let mut string = format!("open dialog subscription errored\n    cause: {source}");
+
+            while let Some(new_source) = source.source() {
+                string.push_str(&format!("\n    cause: {new_source}"));
+                source = new_source;
+            }
+
+            return DialogResponse::Error(string);
+        }
+    };
+
+    let Ok(path) = selection.to_file_path() else {
+        return DialogResponse::Error(format!("not a valid file path: {}", selection.path()));
+    };
+
+    DialogResponse::Path(path)
 }
