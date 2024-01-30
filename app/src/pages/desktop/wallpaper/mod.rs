@@ -63,6 +63,16 @@ const HOUR_2: usize = 5;
 
 pub type Image = ImageBuffer<Rgba<u8>, Vec<u8>>;
 
+#[derive(Clone, Debug)]
+struct OutputName(String);
+
+#[derive(Clone, Debug)]
+pub struct InitUpdate {
+    service_config: wallpaper::Config,
+    displays: HashMap<String, (String, (u32, u32))>,
+    selection: Context,
+}
+
 /// Messages for the wallpaper view.
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -93,13 +103,7 @@ pub enum Message {
     /// Removes a custom image from the wallpaper view.
     ImageRemove(DefaultKey),
     /// Initializes the view.
-    Init(
-        Box<(
-            wallpaper::Config,
-            HashMap<String, (String, (u32, u32))>,
-            Context,
-        )>,
-    ),
+    Init(Box<InitUpdate>),
     /// Changes the active output display that is to be configured.
     Output(segmented_button::Entity),
     /// Changes the rotation frequency of wallpaper images in slideshow mode.
@@ -110,6 +114,13 @@ pub enum Message {
     Select(DefaultKey),
     /// Changes the slideshow parameter.
     Slideshow(bool),
+}
+
+impl From<Message> for crate::app::Message {
+    fn from(message: Message) -> Self {
+        let page_message = crate::pages::Message::DesktopWallpaper(message);
+        crate::app::Message::PageMessage(page_message)
+    }
 }
 
 /// Messages defined for the category dropdown menu.
@@ -170,6 +181,9 @@ pub struct Page {
 
     /// Stores custom colors, custom images, and all image data for every wallpaper.
     selection: Context,
+
+    /// When set, applys a config update after images are loaded.
+    update_config: Option<(usize, HashMap<String, (String, (u32, u32))>)>,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -190,15 +204,15 @@ impl page::Page<crate::pages::Message> for Page {
         let current_folder = self.config.current_folder().to_owned();
 
         command::future(async move {
-            let (wallpaper_service_config, outputs) = wallpaper::config().await;
+            let (service_config, displays) = wallpaper::config().await;
 
-            let update = change_folder(current_folder).await;
+            let selection = change_folder(current_folder).await;
 
-            crate::pages::Message::DesktopWallpaper(Message::Init(Box::new((
-                wallpaper_service_config,
-                outputs,
-                update,
-            ))))
+            crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
+                service_config,
+                displays,
+                selection,
+            })))
         })
     }
 }
@@ -268,6 +282,7 @@ impl Default for Page {
             selected_fit: 0,
             selected_rotation: 0,
             selection: Context::default(),
+            update_config: None,
         };
 
         page.assign_recent_folders();
@@ -358,7 +373,10 @@ impl Page {
         if self.wallpaper_service_config.same_on_all {
             Some(String::from("all"))
         } else {
-            self.outputs.active_data::<String>().cloned()
+            self.outputs
+                .active_data::<OutputName>()
+                .cloned()
+                .map(|name| name.0)
         }
     }
 
@@ -417,25 +435,18 @@ impl Page {
     }
 
     /// Updates configuration from the wallpaper service.
-    fn wallpaper_service_config_update(
-        &mut self,
-        wallpaper_service_config: wallpaper::Config,
-        displays: HashMap<String, (String, (u32, u32))>,
-        selection: Context,
-    ) {
-        self.wallpaper_service_config = wallpaper_service_config;
-        self.selection = selection;
-        self.outputs.clear();
-
+    fn wallpaper_service_config_update(&mut self, displays: HashMap<String, (String, (u32, u32))>) {
         let mut first = None;
         for (name, (_model, physical)) in displays {
+            let is_internal = "eDP-1" == name;
+
             let entity = self
                 .outputs
                 .insert()
                 .text(crate::utils::display_name(&name, physical))
-                .data(name);
+                .data(OutputName(name));
 
-            if first.is_none() {
+            if is_internal || first.is_none() {
                 first = Some(entity.id());
             }
         }
@@ -449,16 +460,17 @@ impl Page {
         {
             let entry = self.wallpaper_service_config.default_background.clone();
             self.select_wallpaper_entry(&entry);
-        } else if let Some(data) = self.outputs.active_data::<String>() {
+        } else if let Some(OutputName(output)) = self.outputs.active_data() {
             let mut wallpapers = Vec::new();
+
             std::mem::swap(
                 &mut self.wallpaper_service_config.backgrounds,
                 &mut wallpapers,
             );
 
             for wallpaper in &wallpapers {
-                if &wallpaper.output == data {
-                    self.active_output = Some(data.clone());
+                if wallpaper.output == *output {
+                    self.active_output = Some(output.clone());
                     self.select_wallpaper_entry(wallpaper);
 
                     break;
@@ -675,6 +687,17 @@ impl Page {
                         selection.into_vec(),
                     ),
                 );
+
+                // If an update was queued, apply it after all custom images have been added.
+                if let Some((mut remaining, displays)) = self.update_config.take() {
+                    remaining -= 1;
+                    if remaining == 0 {
+                        self.wallpaper_service_config_update(displays);
+                        self.config_apply();
+                    } else {
+                        self.update_config = Some((remaining, displays));
+                    }
+                }
             }
 
             Message::ImageAddDialog => {
@@ -796,8 +819,9 @@ impl Page {
             }
 
             Message::Init(update) => {
-                self.wallpaper_service_config_update(update.0, update.1, update.2);
-                self.config_apply();
+                self.outputs.clear();
+                self.wallpaper_service_config = update.service_config;
+                self.selection = update.selection;
 
                 // Sync custom colors from config.
                 for color in self.config.custom_colors() {
@@ -814,21 +838,21 @@ impl Page {
                     }
                 }
 
-                // Load preview images for each custom image stored in the on-disk config.
-                return cosmic::command::batch(self.config.custom_images().iter().cloned().map(
-                    |path| {
-                        cosmic::command::future(async move {
-                            let result =
-                                wallpaper::load_image_with_thumbnail(&mut Vec::new(), path).await;
+                // These will need to be loaded before applying the service config.
+                let custom_images = self.config.custom_images();
 
-                            crate::app::Message::PageMessage(
-                                crate::pages::Message::DesktopWallpaper(Message::ImageAdd(
-                                    result.map(Arc::new),
-                                )),
-                            )
-                        })
-                    },
-                ));
+                // Make note of how many images are to be loaded, with the display update for the service config.
+                self.update_config = Some((custom_images.len(), update.displays));
+
+                // Load preview images concurrently for each custom image stored in the on-disk config.
+                return cosmic::command::batch(custom_images.iter().cloned().map(|path| {
+                    cosmic::command::future(async move {
+                        let result =
+                            wallpaper::load_image_with_thumbnail(&mut Vec::new(), path).await;
+
+                        Message::ImageAdd(result.map(Arc::new)).into()
+                    })
+                }));
             }
         }
 
@@ -1181,23 +1205,6 @@ pub fn settings() -> Section<crate::pages::Message> {
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWallpaper)
         })
-}
-
-/// Sets the current wallpaper directory.
-fn entry_directory(current_folder: &Path, entry: &wallpaper::Entry) -> Option<PathBuf> {
-    Some(match entry.source {
-        wallpaper::Source::Path(ref path) => {
-            if path.is_dir() {
-                path.clone()
-            } else if let Some(path) = path.parent() {
-                path.to_path_buf()
-            } else {
-                return None;
-            }
-        }
-
-        wallpaper::Source::Color(_) => PathBuf::from(current_folder),
-    })
 }
 
 fn color_picker_window_settings(window_id: window::Id) -> SctkWindowSettings {
