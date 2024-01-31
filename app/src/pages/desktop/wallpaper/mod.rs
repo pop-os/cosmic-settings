@@ -315,10 +315,19 @@ impl Page {
     }
 
     fn cache_display_image(&mut self) {
+        self.cached_display_handle = None;
+
         let choice = match self.selection.active {
             Choice::Wallpaper(id) => self.selection.display_images.get(id),
 
-            Choice::Slideshow => self.selection.display_images.values().next(),
+            Choice::Slideshow => self
+                .config_output()
+                .and_then(|output| {
+                    let path = wallpaper::current_image(output).ok()?;
+                    let id = self.wallpaper_id_from_path(&path)?;
+                    Some(&self.selection.display_images[id])
+                })
+                .or(self.selection.display_images.values().next()),
 
             Choice::Color(_) => None,
         };
@@ -326,8 +335,6 @@ impl Page {
         let Some(image) = choice else {
             return;
         };
-
-        self.cached_display_handle = None;
 
         let temp_image;
 
@@ -369,20 +376,19 @@ impl Page {
         ));
     }
 
-    fn config_output(&self) -> Option<String> {
+    fn config_output(&self) -> Option<&str> {
         if self.wallpaper_service_config.same_on_all {
-            Some(String::from("all"))
+            Some("all")
         } else {
             self.outputs
                 .active_data::<OutputName>()
-                .cloned()
-                .map(|name| name.0)
+                .map(|name| name.0.as_str())
         }
     }
 
     /// Applies the current settings to cosmic-bg.
     pub fn config_apply(&mut self) {
-        let Some(output) = self.config_output() else {
+        let Some(output) = self.config_output().map(String::from) else {
             return;
         };
 
@@ -400,10 +406,9 @@ impl Page {
 
         let entry = match self.selection.active {
             Choice::Slideshow => {
-                match self.config_wallpaper_entry(
-                    output.clone(),
-                    self.config.current_folder().to_path_buf(),
-                ) {
+                match self
+                    .config_wallpaper_entry(output, self.config.current_folder().to_path_buf())
+                {
                     Some(entry) => entry,
                     None => return,
                 }
@@ -411,7 +416,7 @@ impl Page {
 
             Choice::Wallpaper(key) => {
                 if let Some(path) = self.selection.paths.get(key) {
-                    match self.config_wallpaper_entry(output.clone(), path.clone()) {
+                    match self.config_wallpaper_entry(output, path.clone()) {
                         Some(entry) => entry,
                         None => return,
                     }
@@ -420,9 +425,7 @@ impl Page {
                 }
             }
 
-            Choice::Color(ref color) => {
-                Entry::new(output.clone(), wallpaper::Source::Color(color.clone()))
-            }
+            Choice::Color(ref color) => Entry::new(output, wallpaper::Source::Color(color.clone())),
         };
 
         wallpaper::set(&mut self.wallpaper_service_config, entry);
@@ -767,6 +770,20 @@ impl Page {
                     self.selection.active = Choice::Slideshow;
                     self.cache_display_image();
                 } else {
+                    if let Some(output) = self.config_output() {
+                        if let Ok(path) = wallpaper::current_image(output) {
+                            if let Some(entity) = self.wallpaper_id_from_path(&path) {
+                                if let Some(entry) =
+                                    self.config_wallpaper_entry(output.to_owned(), path)
+                                {
+                                    self.select_wallpaper(&entry, entity, false);
+                                    self.config_apply();
+                                    return Command::none();
+                                }
+                            }
+                        }
+                    }
+
                     self.select_first_wallpaper();
                 }
             }
@@ -908,8 +925,9 @@ impl Page {
         };
 
         if let Some(output) = self.config_output() {
-            if let Some(entry) = self.config_wallpaper_entry(output, path.clone()) {
-                self.select_wallpaper(&entry, entity, path.is_dir());
+            let is_slideshow = path.is_dir();
+            if let Some(entry) = self.config_wallpaper_entry(output.to_owned(), path.clone()) {
+                self.select_wallpaper(&entry, entity, is_slideshow);
             }
         }
     }
