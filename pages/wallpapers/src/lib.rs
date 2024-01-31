@@ -43,6 +43,10 @@ pub const DEFAULT_COLORS: &[Color] = &[
     }),
 ];
 
+pub fn current_image(output: &str) -> Result<PathBuf, cosmic_config::Error> {
+    cosmic_bg_config::context()?.current_image(output)
+}
+
 pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
     let mut displays = HashMap::new();
 
@@ -52,9 +56,9 @@ pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
         }
     }
 
-    let helper = Config::helper().expect("failed to get helper for cosmic bg config");
+    let context = cosmic_bg_config::context().expect("failed to get helper for cosmic bg config");
 
-    let config = match Config::load(&helper) {
+    let config = match Config::load(&context) {
         Ok(conf) => conf,
         Err(why) => {
             tracing::warn!(?why, "Config file error, falling back to defaults");
@@ -66,8 +70,8 @@ pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
 }
 
 pub fn set(config: &mut Config, entry: Entry) {
-    if let Ok(context) = Config::helper() {
-        let _res = Config::set_same_on_all(&context, config.same_on_all);
+    if let Ok(context) = cosmic_bg_config::context() {
+        let _res = context.set_same_on_all(config.same_on_all);
 
         if let Err(why) = config.set_entry(&context, entry) {
             tracing::error!(?why, "failed to set background");
