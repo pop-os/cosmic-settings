@@ -4,8 +4,8 @@
 use cosmic::iced_core::renderer::Quad;
 use cosmic::iced_core::widget::{tree, Tree};
 use cosmic::iced_core::{
-    self as core, Clipboard, Element, Layout, Length, Rectangle, Renderer as IcedRenderer, Shell,
-    Size, Widget,
+    self as core, Border, Clipboard, Element, Layout, Length, Rectangle, Renderer as IcedRenderer,
+    Shell, Size, Widget,
 };
 use cosmic::iced_core::{alignment, event, text};
 use cosmic::iced_core::{layout, mouse, renderer, touch, Point};
@@ -63,7 +63,7 @@ impl<'a, Message> Arrangement<'a, Message> {
     }
 }
 
-impl<'a, Message: Clone> Widget<Message, Renderer> for Arrangement<'a, Message> {
+impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'a, Message> {
     fn tag(&self) -> tree::Tag {
         tree::Tag::of::<State>()
     }
@@ -72,12 +72,11 @@ impl<'a, Message: Clone> Widget<Message, Renderer> for Arrangement<'a, Message> 
         tree::State::new(State::default())
     }
 
-    fn width(&self) -> Length {
-        self.width
-    }
-
-    fn height(&self) -> Length {
-        self.height
+    fn size(&self) -> Size<Length> {
+        Size {
+            width: self.width,
+            height: self.height,
+        }
     }
 
     fn layout(
@@ -129,7 +128,7 @@ impl<'a, Message: Clone> Widget<Message, Renderer> for Arrangement<'a, Message> 
             .width(Length::Fixed(width))
             .height(Length::Fixed(height));
 
-        let size = limits.resolve(Size::ZERO);
+        let size = limits.resolve(width, height, Size::ZERO);
 
         layout::Node::new(size)
     }
@@ -289,9 +288,12 @@ impl<'a, Message: Clone> Widget<Message, Renderer> for Arrangement<'a, Message> 
             renderer.fill_quad(
                 Quad {
                     bounds: region,
-                    border_radius: 4.0.into(),
-                    border_width: 3.0,
-                    border_color: border_color.into(),
+                    border: Border {
+                        color: border_color.into(),
+                        radius: 4.0.into(),
+                        width: 3.0,
+                    },
+                    shadow: Default::default(),
                 },
                 core::Background::Color(background.into()),
             );
@@ -306,9 +308,11 @@ impl<'a, Message: Clone> Widget<Message, Renderer> for Arrangement<'a, Message> 
             renderer.fill_quad(
                 Quad {
                     bounds: id_bounds,
-                    border_radius: 30.0.into(),
-                    border_width: 0.0,
-                    border_color: core::Color::TRANSPARENT,
+                    border: Border {
+                        radius: 30.0.into(),
+                        ..Default::default()
+                    },
+                    shadow: Default::default(),
                 },
                 core::Background::Color(cosmic_theme.palette.neutral_1.into()),
             );

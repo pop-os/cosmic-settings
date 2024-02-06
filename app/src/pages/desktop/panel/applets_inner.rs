@@ -201,6 +201,7 @@ impl Page {
             error!("No panel config helper. Failed to save applets.");
             return;
         };
+        dbg!("writing applet config");
         if let Err(e) = config.write_entry(helper) {
             error!("Failed to save applets: {:?}", e);
         }
@@ -765,10 +766,10 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 .padding(8)
                 .style(theme::Container::Custom(Box::new(move |theme| {
                     let mut style = theme.appearance(&theme::Container::Primary);
-                    style.border_radius = 8.0.into();
+                    style.border.radius = 8.0.into();
                     if is_dragged {
-                        style.border_color = theme.cosmic().accent_color().into();
-                        style.border_width = 2.0;
+                        style.border.color = theme.cosmic().accent_color().into();
+                        style.border.width = 2.0;
                     }
                     style
                 })))
@@ -798,9 +799,9 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 .padding(8)
                 .style(theme::Container::Custom(Box::new(move |theme| {
                     let mut style = theme.appearance(&theme::Container::Primary);
-                    style.border_radius = 8.0.into();
-                    style.border_color = theme.cosmic().bg_divider().into();
-                    style.border_width = 2.0;
+                    style.border.radius = 8.0.into();
+                    style.border.color = theme.cosmic().bg_divider().into();
+                    style.border.width = 2.0;
                     style.background = Some(Color::TRANSPARENT.into());
                     style
                 })))
@@ -855,7 +856,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 .padding(8)
                 .style(theme::Container::Custom(Box::new(move |theme| {
                     let mut style = theme.appearance(&theme::Container::Primary);
-                    style.border_radius = 8.0.into();
+                    style.border.radius = 8.0.into();
                     style
                 })))
                 .into()
@@ -931,7 +932,8 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
     }
 }
 
-impl<'a, Message: 'static> Widget<Message, cosmic::Renderer> for AppletReorderList<'a, Message>
+impl<'a, Message: 'static> Widget<Message, cosmic::Theme, cosmic::Renderer>
+    for AppletReorderList<'a, Message>
 where
     Message: Clone,
 {
@@ -951,12 +953,8 @@ where
         tree.diff_children(&mut [&mut self.inner]);
     }
 
-    fn width(&self) -> Length {
-        Length::Fill
-    }
-
-    fn height(&self) -> Length {
-        Length::Shrink
+    fn size(&self) -> Size<Length> {
+        Size::new(Length::Fill, Length::Shrink)
     }
 
     fn layout(
@@ -1475,7 +1473,7 @@ where
         tree: &'b mut Tree,
         layout: layout::Layout<'_>,
         renderer: &cosmic::Renderer,
-    ) -> Option<overlay::Element<'b, Message, cosmic::Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, cosmic::Theme, cosmic::Renderer>> {
         self.inner.as_widget_mut().overlay(
             &mut tree.children[0],
             layout.children().next().unwrap(),

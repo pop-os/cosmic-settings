@@ -5,6 +5,7 @@ use cosmic::{
         widget::{self, horizontal_space},
         window, Length,
     },
+    iced_core::Border,
     iced_style, theme,
     widget::{button, container, icon, radio, settings},
 };
@@ -98,9 +99,11 @@ fn popover_menu() -> cosmic::Element<'static, Message> {
             icon_color: Some(theme.cosmic().background.on.into()),
             text_color: Some(theme.cosmic().background.on.into()),
             background: Some(iced::Color::from(theme.cosmic().background.base).into()),
-            border_radius: cosmic.corner_radii.radius_m.into(),
-            border_width: 0.0,
-            border_color: iced::Color::TRANSPARENT,
+            border: Border {
+                radius: cosmic.corner_radii.radius_m.into(),
+                ..Default::default()
+            },
+            shadow: Default::default(),
         }
     }))
     .into()
