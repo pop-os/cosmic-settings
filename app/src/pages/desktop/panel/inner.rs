@@ -416,6 +416,7 @@ impl PageInner {
             Message::OutputAdded(name, output) => {
                 self.outputs.push(name.clone());
                 self.outputs_map.insert(output.id(), (name, output));
+                return;
             }
             Message::OutputRemoved(output) => {
                 if let Some((name, _)) = self.outputs_map.remove(&output.id()) {
@@ -435,6 +436,8 @@ impl PageInner {
         } else {
             panel_config.border_radius = 0;
         }
+
+        dbg!("writing config");
 
         _ = panel_config.write_entry(helper);
     }

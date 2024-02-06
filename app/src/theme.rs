@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::theme;
+use cosmic::{iced_core::Border, theme};
 
 #[must_use]
 pub fn display_container_frame() -> cosmic::theme::Container {
@@ -11,9 +11,12 @@ pub fn display_container_frame() -> cosmic::theme::Container {
             icon_color: None,
             text_color: None,
             background: Some(cosmic::iced::Background::Color(cosmic::iced::Color::WHITE)),
-            border_color: cosmic::iced::Color::WHITE,
-            border_radius: cosmic.corner_radii.radius_xs.into(),
-            border_width: 3.0,
+            border: Border {
+                color: cosmic::iced::Color::WHITE,
+                radius: cosmic.corner_radii.radius_xs.into(),
+                width: 3.0,
+            },
+            shadow: Default::default(),
         }
     })
 }
@@ -26,9 +29,12 @@ pub fn display_container_screen() -> cosmic::theme::Container {
             icon_color: None,
             text_color: None,
             background: Some(cosmic::iced::Background::Color(cosmic::iced::Color::BLACK)),
-            border_color: cosmic::iced::Color::BLACK,
-            border_radius: cosmic.corner_radii.radius_0.into(),
-            border_width: 0.0,
+            border: Border {
+                color: cosmic::iced::Color::BLACK,
+                radius: cosmic.corner_radii.radius_0.into(),
+                width: 0.0,
+            },
+            shadow: Default::default(),
         }
     })
 }

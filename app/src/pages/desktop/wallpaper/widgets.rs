@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use super::Message;
+use cosmic::iced::Radius;
+use cosmic::iced_core::Border;
 use cosmic::iced_core::{self, gradient::Linear, Background, Color, Degrees, Length};
 use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::prelude::*;
@@ -68,11 +70,15 @@ pub fn color_image<'a, M: 'a>(
                         Background::Gradient(iced_core::Gradient::Linear(linear))
                     }
                 }),
-                border_radius: border_radius
-                    .map(|br| br.into())
-                    .unwrap_or_else(|| theme.cosmic().corner_radii.radius_s.into()),
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
+
+                border: Border {
+                    radius: border_radius.map_or_else(
+                        || Radius::from(theme.cosmic().corner_radii.radius_s),
+                        |br| br.into(),
+                    ),
+                    ..Default::default()
+                },
+                shadow: Default::default(),
             }
         }))
         .padding(0)

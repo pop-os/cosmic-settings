@@ -5,17 +5,20 @@ resolver = "2"
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-features = ["single-instance", "tokio", "wayland", "xdg-portal"]
+features = ["single-instance", "tokio", "wayland", "xdg-portal", "wgpu"]
+# TODO remove before merging
+branch = "update-iced-latest"
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
+# TODO remove before merging
+branch = "update-iced-latest"
 
 [workspace.dependencies.cosmic-bg-config]
 git = "https://github.com/pop-os/cosmic-bg"
 
 [workspace.dependencies.cosmic-comp-config]
 git = "https://github.com/pop-os/cosmic-comp"
-# path = "../cosmic-comp/cosmic-comp-config"
 
 [workspace.dependencies.cosmic-panel-config]
 git = "https://github.com/pop-os/cosmic-panel"
@@ -30,3 +33,10 @@ rev = "2e9bf9f"
 
 [profile.release]
 opt-level = 3
+
+[patch.crates-io]
+wgpu = { git = "https://github.com/gfx-rs/wgpu", rev = "faed98b" }
+
+[patch."https://github.com/pop-os/libcosmic"]
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "update-iced-latest"}
+cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "update-iced-latest"}
