@@ -2,116 +2,309 @@ app = COSMIC Inställningar
 
 unknown = Okänd
 
-## Desktop
+## Skrivbord
 
 desktop = Skrivbord
 
-## Desktop: Appearance
+## Skrivbord: Utseende
 
 appearance = Utseende
-    .desc = Accent färger och COSMIC tema. 
+    .desc = Accentfärger och COSMIC tema.
 
-## Desktop: Dock & Panel
+accent-color = Accentfärg
+app-background = Applikation- eller fönsterbakgrund
+auto = Automatisk
+close = Stäng
+color-picker = Färgväljare
+copied-to-clipboard = Kopierat till urklipp
+copy-to-clipboard = Kopiera till urklipp
+dark = Mörkt
+export = Exportera
+hex = Hex
+import = Importera
+light = Ljust
+mode-and-colors = Läge och färger
+recent-colors = Senaste färger
+reset-default = Återställ till standard
+reset-to-default = Återställ till standard
+rgb = RGB
+window-hint-accent = Aktivt fönsterhinting färg
+window-hint-accent-toggle =Använd temaaccentfärg som aktiv fönsterhinting
 
-dock = Appbås & Övre Panel
-    .desc = Anpassa storlek, positioner, och mer för appbåset och övre panelen.
+auto-switch = Växla automatiskt från ljust till mörkt läge
+    .desc = Växlar till ljustläge vid soluppgång
 
-## Desktop: Notifications
+container-background = Behållarbakgrund
+    .desc-detail = Behållarens bakgrundsfärg används för navigeringssidofält, sidolåda, dialogrutor och liknande widgets. Som standard härleds den automatiskt från applikationens eller fönstrets bakgrund.
+    .reset = Återställ till automatiskt
+    .desc = Primär behållarfärg används för navigeringssidofält, sidolåda, dialogrutor och liknande widgets.
 
-notifications = Notifikationer
-    .desc = Stör ej, låskärm notifikationer, och inställningar per applikation.
+control-tint = Kontrollkomponentens nyans
+    .desc = Används för bakgrunder av standardknappar, sökinmatningar, textinmatningar och liknande komponenter.
 
+frosted = Frostat glaseffekt på systemgränssnittet
+    .desc = Tillämpar bakgrundsoskärpa på panel, docka, appletar, startprogram och programbibliotek.
 
-## Desktop: Options
+text-tint = Gränssnittstextton
+    .desc = Färg som används för att härleda gränssnittstextfärger som har tillräcklig kontrast på olika ytor.
 
-desktop-panel-options = Skrivbordsalternativ
-    .desc = Supertangent funktion, heta hörn, och fönsterkontroll alternativ.
+style = Stil
+    .round = Rund
+    .slightly-round = Lite rund
+    .square = Fyrkant
 
-super-key-action = Supertangentfunktion
-    .launcher = Start
+# gränssnittstäthet utelämnad för tillfället
+window-management = Fönsterhantering
+    .active-hint = Storlek på aktivt fönsterhinting
+    .gaps = Springor runt kaklade fönster
+
+## Skrivbord: Skärm
+
+-requires-restart = Kräver omstart
+
+color = Färg
+    .depth = Färgdjup
+    .profile = Färgprofiler
+    .sidebar = Färgprofiler
+    .temperature = Färgtemperatur
+display = Skärmar
+    .desc = Hantera skärmar, grafikväxling och nattljus
+    .arrangement = Visningsarrangemang
+    .arrangement-desc = Dra skärmar för att ordna om dem.
+    .enable = Aktivera skärm
+    .external = { $size } { $output } Extern skärm
+    .laptop = { $size } Laptop skärm
+    .options = Skärmalternativ
+    .refresh-rate = Uppdateringsfrekvens
+    .resolution = Upplösning
+    .scale = Skala
+
+graphics-mode = Grafikläge
+    .mode = { $mode ->
+        [compute] Beräkna
+        *[hybrid] Hybrid
+        [integrated] Integrerad
+        [nvidia] NVIDIA
+    } graphics
+    .enable = Enable { $mode ->
+        [compute] beräkna
+        *[hybrid] hybrid
+        [integrated] integrerad
+        [nvidia] NVIDIA
+    } graphics
+    .desc = { $mode ->
+        [compute] Använder dedikerad grafik endast för beräkningsarbete. Inaktiverar externa bildskärmar. { -requires-restart }.
+        *[hybrid] Applikationer använder integrerad grafik om det inte uttryckligen uppmanas att använda dedikerad grafik. { -requires-restart }.
+        [integrated] Stänger av dedikerad grafik för längre batteritid och mindre fläktljud.
+        [nvidia] Bättre grafisk upplevelse och högsta strömförbrukning. { -requires-restart }.
+    }
+    .restart = Starta om och ändra till { $mode }?
+    .restart-desc = Om du byter till { $mode } stängs alla öppna applikationer
+
+mirroring = Spegling
+    .id = Spegling { $id }
+    .dont = Spegla inte
+    .mirror = Spegla { $display }
+    .project = Projicera till { $display ->
+        [all] alla skärmar
+        *[other] { $display }
+    }
+    .project-count = Projicerar till { $count} andra { $count ->
+        [1] skärm
+        *[other] skärmar
+    }
+
+night-light = Nattljus
+    .auto = Automatiskt (solnedgång till soluppgång)
+    .desc = Reducera blått ljus med varmare färger.
+
+orientation = Orientering
+    .landscape = Landskap
+    .landscape-flipped = Landskap (Vänd)
+    .portrait = Porträtt
+    .portrait-flipped = Porträtt (Vänd)
+
+scheduling = Schemaläggning
+    .manual = Manuellt schema
+
+## Skrivbord: Aviseringar
+
+notifications = Aviseringar
+    .desc = Stör ej, aviseringar på låsskärmen och inställningar per applikation.
+
+## Skrivbord: Alternativ
+
+desktop-panel-options = Skrivbord och Panel
+    .desc = Supertangentåtgärd, varma hörn, fönsterkontrollalternativ.
+
+desktop-panels-and-applets = Skrivbordspaneler och applets
+
+dock = Docka
+    .desc = Panel med fästa applikationer.
+
+hot-corner = Het hörn
+    .top-left-corner = Aktivera det övre vänstra hörnet för arbetsytor
+
+super-key-action = Supertangent åtgärd
+    .launcher = Programstartare
     .workspaces = Arbetsytor
     .applications = Applikationer
 
-hot-corner = Heta Hörn
-    .top-left-corner = Aktivera det övre vänstra heta hörnet för arbetsytor
-
 top-panel = Övre Panel
-    .workspaces = Visa Arbetsytorknapp
-    .applications = Visa Applikationerknapp
+    .workspaces = Visa knappen arbetsytor
+    .applications = Visa knappen applikationer
 
-window-controls = Window Controls Fönster kontroll
-    .minimize = Visa Minimiseringknapp
-    .maximize = Visa Maximeringknapp
+window-controls = Fönsterkontroller
+    .minimize = Visa minimera knapp
+    .maximize = Visa maximera knapp
 
-## Desktop: Wallpaper
+## Skrivbord: Panel
+
+panel = Panel
+    .desc = Översta fältet med skrivbordskontroller och menyer.
+
+add = Lägg till
+add-applet = Lägg till Applet
+all = Alla
+applets = Applets
+center-segment = Mittsegment
+drop-here = Släpp applets här
+end-segment = Slutsegment
+large = Stor
+no-applets-found = Inga applets hittades...
+panel-bottom = Längst ned
+panel-left = Vänster
+panel-right = Höger
+panel-top = Högst upp
+search-applets = Sök efter applets...
+small = Liten
+start-segment = Startsegment
+
+panel-appearance = Utseende
+    .match = Matcha skrivbordet
+    .light = Ljust
+    .dark = Mörkt
+
+panel-behavior-and-position = Beteende och positioner
+    .autohide = Automatiskt dölj panel
+    .dock-autohide = Automatiskt dölj docka
+    .position = Position på skärm
+    .display = Visa på skärm
+
+panel-style = Stil
+    .anchor-gap = Glapp mellan panel och skärmkanter
+    .dock-anchor-gap = Glapp mellan docka och skärmkanter
+    .extend = Förläng panelen till skärmkanterna
+    .dock-extend = Förläng docka till skärmkanterna
+    .appearance = Utseende
+    .size = Storlek
+    .background-opacity = Bakgrundens opacitet
+
+panel-applets = Konfiguera
+    .dock-desc = Konfigurera dockans applets.
+    .desc = Konfigurera panelens applets.
+
+panel-missing = Panelkonfiguration saknas
+    .desc = Panelkonfigurationsfilen saknas på grund av användning av en anpassad konfiguration eller så är den skadad.
+    .fix = Återställ till standard
+
+## Desktop: Bakgrundsbild
 
 wallpaper = Bakgrundsbild
-    .desc = Bakgrundsbilder, färger, och bildspel alternativ.
+    .change = Byt bild var
+    .desc = Bakgrundsbilder, färger, och bildspelsalternativ.
+    .fit = Bakgrundsbildspassning
+    .folder-dialog = Välj katalog med bakgrundsbilder
+    .image-dialog = Välj bakgrundsbild
+    .plural = Bakgrundsbilder
     .same = Samma bakgrundsbild på alla skärmar
-    .fit = Passa i bakgrunden
     .slide = Bildspel
-    .change = Byt bild varje
 
+add-color = Lägg till färg
+add-image = Lägg till bild
+all-displays = Alla skärmar
+colors = Färger
+dialog-add = _Lägg till
+fill = Fyll
+fit-to-screen = Anpassa till skärm
+open-new-folder = Öppna ny katalog
+recent-folders = Senaste kataloger
 
-## Desktop: Workspaces
+x-minutes = { $number } minuter
+x-hours = { $number ->
+    [1] 1 timme
+    *[other] { $number } timmar
+}
+
+## Skrivbord: Arbetsytor
 
 workspaces = Arbetsytor
-    .desc = Set workspace number, behavior, and placement.
+    .desc = Ställ in nummer av arbetsytor, beteende och placering.
 
-workspaces-behavior = Workspace Behavior
-    .dynamic = Dynamiskt antal arbetsytor
-    .fixed = Statiskt antal arbetsytor
+workspaces-behavior = Beteende för arbetsytor
+    .dynamic = Dynamiska arbetsytor
+    .dynamic-desc = Tar automatiskt bort tomma arbetsytor.
+    .fixed = Fast antal arbetsytor
+    .fixed-desc = Lägg till eller ta bort arbetsytor i översikten.
 
-workspaces-multi-behavior = Multi-skärm Beteende
-    .span = Arbetsytor sträcker sig över skärmar
+workspaces-multi-behavior = Beteende med flera skärmar
+    .span = Arbetsytor spänner skärmar
     .separate = Skärmar har separata arbetsytor
 
-## Networking: Wired
+workspaces-overview-thumbnails = Arbetsyta Översikt Miniatyrer
+    .show-number = Visa arbetsytans nummer
+    .show-name = Visa arbetsytans namn
 
-wired = Tråduppkoppling
-    .desc = Tråduppkoppling, nätverksprofiler
+workspaces-orientation = Arbetsytor Orientering
+    .vertical = Vertikal
+    .horizontal = Horisontell
 
-## Networking: Online Accounts
+## Nätverk: Trådbunden anslutning
 
-online-accounts = Online-konton
-    .desc = Lägg till konton, IMAP och SMTP, företagslogin
+wired = Trådbunden anslutning
+    .desc = Trådbunden anslutning, anslutningsprofiler
 
-## Time & Language
+## Nätverk: Onlinekonton
 
-time = Tid & Språk
-    .desc = Ej tillämpligt
+online-accounts = Onlinekonton
+    .desc = Lägg till konton, IMAP och SMTP, företagsinloggningar
 
-time-date = Datum & Tid
-    .desc = Tidzon, automatisk klockinställning, och viss tidsformatering
-    .auto = Set automatiskt
+## Tid & språk
+
+time = Tid & språk
+    .desc = N/A
+
+time-date = Datum & tid
+    .desc = Tidszon, automatiska klockinställningar och viss tidsformatering.
+    .auto = Ställ in automatiskt
 
 time-zone = Tidszon
-    .auto = Automatisktidszon
-    .auto-info = Kräver lokaliseringstjänser och internetuppkoppling
+    .auto = Automatisk tidszon
+    .auto-info = Kräver platstjänster och internetåtkomst
 
-time-format = Datum & Tidsformat
-    .twenty-four = 24-timmar tid
-    .first = Första veckodag
+time-format = Datum & tidsformat
+    .twenty-four = 24-timmars tid
+    .first = Första dagen på veckan
 
-time-region = Region & Språk
-    .desc = Formatera datum, tider, och språk baserat på din region
+time-region = Region & språk
+    .desc = Formatera datum, tider och siffror baserat på din region
 
-## Sound
+## Ljud
 
-sound = Sound
-    .desc = Ej tillämpligt
+sound = Ljud
+    .desc = N/A
 
-sound-output = Utsignal
-    .volume = Utsignalsvolym
-    .device = Utsignalsapparat
-    .level = Utsignalsnivå
+sound-output = Utgång
+    .volume = Utgångsvolym
+    .device = Utgångsenhet
+    .level = Utgångsnivå
     .config = Konfiguration
     .balance = Balans
 
-sound-input = Insignal
-    .volume = Insignalsvolym
-    .device = Insignalsapparat
-    .level = Insignalsnivå
+sound-input = Ingång
+    .volume = Ingångsvolym
+    .device = Ingångsenhet
+    .level = Ingångsnivå
 
 sound-alerts = Larm
     .volume = Larmvolym
@@ -122,15 +315,15 @@ sound-applications = Applikationer
 
 ## System
 
-system = System & Konton
+system = System & konton
 
-## System: About
+## System: Om
 
 about = Om
-    .desc = Apparatnamn, hårvaruinformation, operativsystemstandarder.
+    .desc = Enhetsnamn, hårvaruinformation, operativsystemstandarder.
 
-about-device = Apparatnamn
-    .desc = Namnet för denna apparat som visas upp för andra apparater på samma nätverk eller bluetooth.
+about-device = Enhetsnamn
+    .desc = Detta namn visas för andra nätverks eller bluetooth-enheter.
 
 about-hardware = Hårdvara
     .model = Hårdvarumodell
@@ -148,12 +341,69 @@ about-os = Operativsystem
 about-related = Relaterade inställningar
     .support = Få support
 
-## System: Firmware
+## System: Fast programvara
 
-firmware = Inbyggd programvara
-    .desc = Inbyggd programvaradetajler.
+firmware = Fast programvara
+    .desc = Fastprogramvara detaljer.
 
-## System: Users
+## System: Användare
 
 users = Användare
     .desc = Autentisering och login, låsskärm.
+
+## Inmatning
+
+input = Inmatning
+    .desc = Inmatning
+
+## Input: Tangentbord
+
+keyboard = Tangentbord
+    .desc = Tangentbordsinmatning
+
+keyboard-sources = Inmatningskällor
+    .desc = Ingångskällor kan växlas med tangentkombinationen Super+Mellanslag. Detta kan anpassas i inställningarna för kortkommandon.
+    .move-up = Flytta upp
+    .move-down = Flytta ned
+    .settings = Inställningar
+    .view-layout = Visa tangentbordslayout
+    .remove = Ta bort
+
+keyboard-special-char = Specialteckenssinmatning
+    .alternate = Alternativa tecken-knapp
+    .compose = Compose knapp
+
+## Inmatning: Tangentbord: Genvägar
+
+keyboard-shortcuts = Tangentbordsgenvägar
+    .desc = Visa och anpassa genvägar
+
+## Inmatning: Mus
+mouse = Mus
+    .desc = Mushastighet, acceleration, naturlig rullning.
+    .primary-button = Primär knapp
+    .primary-button-left = Vänster
+    .primary-button-right = Höger
+    .speed = Mushastighet
+    .acceleration = Aktivera mus acceleration
+    .acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
+    .double-click-speed = Dubbelklickshastighet
+    .double-click-speed-desc = Ändrar hur snabba dubbelklick måste vara för att registreras.
+
+mouse-scrolling = Rullning
+    .speed = Rullningshastighet
+    .natural = Naturlig rullning
+    .natural-desc = Rulla igenom innehållet istället för vyn
+
+## Inmatning: Pekplatta
+
+touchpad = Pekplatta
+    .desc = Pekplattans hastighet, klickalternativ, gester.
+    .primary-button = Primär knapp
+    .primary-button-left = Vänster
+    .primary-button-right = Höger
+    .speed = Pekplattans hastighet
+    .acceleration = Aktivera pekplattans acceleration
+    .acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
+    .double-click-speed = Dubbelklickshastighet
+    .double-click-speed-desc = Ändrar hur snabba dubbelklick måste vara för att registreras.
