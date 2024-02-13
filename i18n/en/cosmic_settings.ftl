@@ -70,7 +70,7 @@ color = Color
     .sidebar = Color Profiles
     .temperature = Color temperature
 
-display = Display
+display = Displays
     .desc = Manage displays, graphics switching, and night light
     .arrangement = Display Arrangement
     .arrangement-desc = Drag displays to rearrange them.
@@ -356,8 +356,8 @@ users = Users
 
 ## Input
 
-input = Input
-    .desc = Input
+input-devices = Input Devices
+    .desc = Input Devices
 
 ## Input: Keyboard
 
