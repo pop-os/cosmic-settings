@@ -51,6 +51,6 @@ version = "0.14.1"
 features = ["fluent-system", "desktop-requester"]
 
 [features]
-default = ["wgpu"]
+default = []
 wgpu = ["libcosmic/wgpu"]
 test = []

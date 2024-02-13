@@ -5,7 +5,7 @@ resolver = "2"
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-features = ["single-instance", "tokio", "wayland", "xdg-portal", "wgpu"]
+features = ["single-instance", "tokio", "wayland", "xdg-portal"]
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
