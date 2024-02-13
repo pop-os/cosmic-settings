@@ -33,7 +33,6 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
-            sections.insert(distributor_logo()),
             sections.insert(device()),
             sections.insert(hardware()),
             sections.insert(os()),
@@ -72,21 +71,6 @@ fn device() -> Section<crate::pages::Message> {
                 .control(text(&page.info.device_name));
 
             list_column().add(device_name).into()
-        })
-}
-
-fn distributor_logo() -> Section<crate::pages::Message> {
-    Section::default()
-        .search_ignore()
-        .view::<Page>(|_binder, _page, _section| {
-            row!(
-                horizontal_space(Length::Fill),
-                icon::from_name("distributor-logo").size(78).icon(),
-                horizontal_space(Length::Fill),
-            )
-            // Add extra padding to reach 40px from the first section.
-            .padding([0, 16, 0, 16])
-            .into()
         })
 }
 
