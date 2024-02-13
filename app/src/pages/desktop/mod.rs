@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 pub mod appearance;
-pub mod display;
 pub mod dock;
 pub mod notifications;
 pub mod options;
@@ -27,8 +26,7 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        page.sub_page::<display::Page>()
-            .sub_page::<options::Page>()
+        page.sub_page::<options::Page>()
             .sub_page::<wallpaper::Page>()
             .sub_page::<appearance::Page>()
             .sub_page::<workspaces::Page>()

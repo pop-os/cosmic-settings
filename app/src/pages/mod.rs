@@ -4,6 +4,7 @@
 use cosmic_settings_page::Entity;
 
 pub mod desktop;
+pub mod display;
 pub mod input;
 pub mod networking;
 pub mod sound;
@@ -18,7 +19,7 @@ pub enum Message {
     Desktop(desktop::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
     DesktopWorkspaces(desktop::workspaces::Message),
-    Displays(desktop::display::Message),
+    Displays(display::Message),
     Dock(desktop::dock::Message),
     DockApplet(desktop::dock::applets::Message),
     External { id: String, message: Vec<u8> },

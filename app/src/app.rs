@@ -13,7 +13,7 @@ use crate::pages::desktop::{
     },
 };
 use crate::pages::input::{self, keyboard};
-use crate::pages::{sound, system, time};
+use crate::pages::{display, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
@@ -111,10 +111,11 @@ impl cosmic::Application for SettingsApp {
         };
 
         let desktop_id = app.insert_page::<desktop::Page>().id();
+        app.insert_page::<input::Page>();
+        app.insert_page::<display::Page>();
         app.insert_page::<sound::Page>();
         app.insert_page::<system::Page>();
         app.insert_page::<time::Page>();
-        app.insert_page::<input::Page>();
 
         let active_id = match flags.subcommand {
             Some(p) => app.subcommand_to_page(&p),
@@ -283,7 +284,7 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 crate::pages::Message::Displays(message) => {
-                    if let Some(page) = self.pages.page_mut::<desktop::display::Page>() {
+                    if let Some(page) = self.pages.page_mut::<display::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);
                     }
                 }
