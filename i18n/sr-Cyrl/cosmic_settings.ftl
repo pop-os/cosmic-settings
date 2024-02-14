@@ -70,7 +70,7 @@ color = Боја
     .sidebar = Профили боје
     .temperature = Температура боје
 
-display = Екран
+display = Екрани
     .desc = Управљајте екранима, пребацивањем графике и ноћним светлом
     .arrangement = Распоред екрана
     .arrangement-desc = Превуците екране да бисте их преуредили.
@@ -123,9 +123,9 @@ night-light = Ноћно светло
 
 orientation = Оријентација
     .landscape = Положено
-	.landscape-flipped = Положено (преокренуто)
+    .landscape-flipped = Положено (преокренуто)
     .portrait = Усправно
-	.portrait-flipped = Усправно (преокренуто)
+    .portrait-flipped = Усправно (преокренуто)
 
 scheduling = Распоред
     .manual = Ручни распоред
@@ -216,8 +216,8 @@ panel-missing = Недостаје конфигурација панела
 wallpaper = Позадина
     .change = Промени слику сваких
     .desc = Позадине радне површине, боје, и слајд-шоу.
-	.fit = Скалирање позадине
-	.folder-dialog = Изаберите фасциклу за позадине
+    .fit = Скалирање позадине
+    .folder-dialog = Изаберите фасциклу за позадине
     .image-dialog = Изаберите слику позадине
     .plural = Позадине
     .same = Иста позадина на свим екранима
@@ -227,12 +227,11 @@ add-color = Додај боју
 add-image = Додај слику
 all-displays = Сви екрани
 colors = Боје
-dialog-add = _Add
+dialog-add = _Додај
+fill = Попуни
 fit-to-screen = Уклопи у екран
 open-new-folder = Отвори нову фасциклу
 recent-folders = Недавне фасцикле
-stretch = Развуци
-zoom = Увећај
 
 x-minutes = { $number } мин.
 x-hours = { $number ->
@@ -247,9 +246,9 @@ workspaces = Радни простори
 
 workspaces-behavior = Понашање радних простора
     .dynamic = Динамични радни простори
-	.dynamic-desc = Аутоматски уклања празне радне просторе.
+    .dynamic-desc = Аутоматски уклања празне радне просторе.
     .fixed = Фиксни број радних простора
-	.fixed-desc = Додајте или уклоните радне просторе у прегледу.
+    .fixed-desc = Додајте или уклоните радне просторе у прегледу.
 
 workspaces-multi-behavior = Понашање са више монитора
     .span = Радни простори су заједнички за све екране
@@ -357,7 +356,7 @@ users = Корисници
 
 ## Input
 
-input = Унос
+input-devices = Унос
     .desc = Унос
 
 ## Input: Keyboard
