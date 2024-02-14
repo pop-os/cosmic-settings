@@ -437,8 +437,6 @@ impl PageInner {
             panel_config.border_radius = 0;
         }
 
-        dbg!("writing config");
-
         _ = panel_config.write_entry(helper);
     }
 }

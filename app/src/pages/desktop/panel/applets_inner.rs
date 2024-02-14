@@ -77,7 +77,7 @@ pub struct Page {
     pub(crate) current_config: Option<CosmicPanelConfig>,
     pub(crate) reorder_widget_state: ReorderWidgetState,
     pub(crate) search: String,
-    pub(crate) has_dialogue: bool,
+    pub(crate) has_dialog: bool,
 }
 
 impl Default for Page {
@@ -98,7 +98,7 @@ impl Default for Page {
             current_config,
             reorder_widget_state: ReorderWidgetState::default(),
             search: String::new(),
-            has_dialogue: false,
+            has_dialog: false,
         }
     }
 }
@@ -155,10 +155,10 @@ pub enum Message {
     DnDCommand(Arc<Box<dyn Send + Sync + Fn() -> ActionInner>>),
     Search(String),
     AddApplet(Applet<'static>),
-    AddAppletDialogue,
-    CloseAppletDialogue,
-    ClosedAppletDialogue,
-    DragAppletDialogue,
+    AddAppletDialog,
+    CloseAppletDialog,
+    ClosedAppletDialog,
+    DragAppletDialog,
     Save,
     Cancel,
 }
@@ -183,10 +183,10 @@ impl Debug for Message {
             Message::Cancel => write!(f, "Cancel"),
             Message::Search(_) => write!(f, "Search"),
             Message::AddApplet(_) => write!(f, "AddApplet"),
-            Message::AddAppletDialogue => write!(f, "AddAppletDialogue"),
-            Message::CloseAppletDialogue => write!(f, "CloseAppletDialogue"),
-            Message::DragAppletDialogue => write!(f, "DragAppletDialogue"),
-            Message::ClosedAppletDialogue => write!(f, "ClosedAppletDialogue"),
+            Message::AddAppletDialog => write!(f, "AddAppletDialogue"),
+            Message::CloseAppletDialog => write!(f, "CloseAppletDialogue"),
+            Message::DragAppletDialog => write!(f, "DragAppletDialogue"),
+            Message::ClosedAppletDialog => write!(f, "ClosedAppletDialogue"),
         }
     }
 }
@@ -201,7 +201,6 @@ impl Page {
             error!("No panel config helper. Failed to save applets.");
             return;
         };
-        dbg!("writing applet config");
         if let Err(e) = config.write_entry(helper) {
             error!("Failed to save applets: {:?}", e);
         }
@@ -304,10 +303,10 @@ impl Page {
             header_bar()
                 .title(fl!("add-applet"))
                 .on_close(app::Message::PageMessage(msg_map(
-                    Message::CloseAppletDialogue,
+                    Message::CloseAppletDialog,
                 )))
                 .on_drag(app::Message::PageMessage(msg_map(
-                    Message::DragAppletDialogue,
+                    Message::DragAppletDialog,
                 )))
                 .into(),
             container(
@@ -473,8 +472,8 @@ impl Page {
                 self.save();
                 return commands::window::close_window(window_id);
             }
-            Message::AddAppletDialogue => {
-                self.has_dialogue = true;
+            Message::AddAppletDialog => {
+                self.has_dialog = true;
                 let window_settings = SctkWindowSettings {
                     window_id,
                     app_id: Some("com.system76.CosmicSettings".to_string()),
@@ -494,14 +493,14 @@ impl Page {
                 };
                 return commands::window::get_window(window_settings);
             }
-            Message::ClosedAppletDialogue => {
-                self.has_dialogue = false;
+            Message::ClosedAppletDialog => {
+                self.has_dialog = false;
             }
-            Message::CloseAppletDialogue => {
-                self.has_dialogue = false;
+            Message::CloseAppletDialog => {
+                self.has_dialog = false;
                 return commands::window::close_window(window_id);
             }
-            Message::DragAppletDialogue => {
+            Message::DragAppletDialog => {
                 return commands::window::start_drag_window(window_id);
             }
         };
@@ -528,12 +527,8 @@ pub fn lists<
             column::with_children(vec![
                 row::with_children(vec![
                     text(fl!("applets")).width(Length::Fill).size(24).into(),
-                    (if page.has_dialogue {
-                        button
-                    } else {
-                        button.on_press(Message::AddAppletDialogue)
-                    })
-                    .into(),
+                    (button.on_press_maybe((!page.has_dialog).then_some(Message::AddAppletDialog)))
+                        .into(),
                 ])
                 .into(),
                 text(fl!("start-segment")).into(),
