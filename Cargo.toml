@@ -29,8 +29,3 @@ rev = "2e9bf9f"
 
 [profile.release]
 opt-level = 3
-
-[patch.crates-io]
-wgpu = { git = "https://github.com/gfx-rs/wgpu", rev = "faed98b" }
-
-

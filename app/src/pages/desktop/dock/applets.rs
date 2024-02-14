@@ -38,7 +38,7 @@ impl Default for Page {
                 current_config,
                 reorder_widget_state: ReorderWidgetState::default(),
                 search: String::new(),
-                has_dialogue: false,
+                has_dialog: false,
             },
         }
     }

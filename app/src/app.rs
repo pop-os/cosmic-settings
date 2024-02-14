@@ -159,11 +159,11 @@ impl cosmic::Application for SettingsApp {
     fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
         let message = if id == *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID {
             Message::PageMessage(crate::pages::Message::PanelApplet(
-                applets_inner::Message::ClosedAppletDialogue,
+                applets_inner::Message::ClosedAppletDialog,
             ))
         } else if id == *ADD_DOCK_APPLET_DIALOGUE_ID {
             Message::PageMessage(crate::pages::Message::DockApplet(dock::applets::Message(
-                applets_inner::Message::ClosedAppletDialogue,
+                applets_inner::Message::ClosedAppletDialog,
             )))
         } else if id == *COLOR_PICKER_DIALOG_ID {
             Message::PageMessage(crate::pages::Message::Appearance(
