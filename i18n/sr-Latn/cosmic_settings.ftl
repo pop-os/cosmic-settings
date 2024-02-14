@@ -70,7 +70,7 @@ color = Boja
     .sidebar = Profili boje
     .temperature = Temperatura boje
 
-display = Ekran
+display = Ekrani
     .desc = Upravljajte ekranima, prebacivanjem grafike i noćnim svetlom
     .arrangement = Raspored ekrana
     .arrangement-desc = Prevucite ekrane da biste ih preuredili.
@@ -123,9 +123,9 @@ night-light = Noćno svetlo
 
 orientation = Orijentacija
     .landscape = Položeno
-	.landscape-flipped = Položeno (preokrenuto)
+    .landscape-flipped = Položeno (preokrenuto)
     .portrait = Uspravno
-	.portrait-flipped = Uspravno (preokrenuto)
+    .portrait-flipped = Uspravno (preokrenuto)
 
 scheduling = Planiranje
     .manual = Ručni raspored
@@ -214,10 +214,10 @@ panel-missing = Nedostaje konfiguracija panela
 ## Desktop: Wallpaper
 
 wallpaper = Pozadina
-	.change = Promeni sliku svakih
+    .change = Promeni sliku svakih
     .desc = Pozadine radne površine, boje, i slajd-šou.
-	.fit = Skaliranje pozadine
-	.folder-dialog = Izaberite fasciklu za pozadine
+    .fit = Skaliranje pozadine
+    .folder-dialog = Izaberite fasciklu za pozadine
     .image-dialog = Izaberite sliku pozadine
     .plural = Pozadine
     .same = Ista pozadina na svim ekranima
@@ -227,12 +227,11 @@ add-color = Dodaj boju
 add-image = Dodaj sliku
 all-displays = Svi ekrani
 colors = Boje
-dialog-add = _Add
+dialog-add = _Dodaj
+fill = Popuni
 fit-to-screen = Uklopi u ekran
 open-new-folder = Otvori novu fasciklu
 recent-folders = Nedavne fascikle
-stretch = Razvuci
-zoom = Uvećaj
 
 x-minutes = { $number } min.
 x-hours = { $number ->
@@ -247,9 +246,9 @@ workspaces = Radni prostori
 
 workspaces-behavior = Ponašanje radnih prostora
     .dynamic = Dinamični radni prostori
-	.dynamic-desc = Automatski uklanja prazne radne prostore.
+    .dynamic-desc = Automatski uklanja prazne radne prostore.
     .fixed = Fiksni broj radnih prostora
-	.fixed-desc = Dodajte ili uklonite radne prostore u pregledu.
+    .fixed-desc = Dodajte ili uklonite radne prostore u pregledu.
 
 workspaces-multi-behavior = Ponašanje sa više monitora
     .span = Radni prostori su zajednički za sve ekrane
@@ -357,7 +356,7 @@ users = Korisnici
 
 ## Input
 
-input = Unos
+input-devices = Unos
     .desc = Unos
 
 ## Input: Keyboard
