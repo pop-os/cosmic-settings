@@ -7,12 +7,10 @@ use apply::Apply;
 use cosmic::widget::settings;
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::widget::{column, radio, text},
+    widget::radio,
     Element,
 };
-use cosmic_comp_config::workspace::{
-    WorkspaceAmount, WorkspaceConfig, WorkspaceLayout, WorkspaceMode,
-};
+use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slotmap::SlotMap;
@@ -20,7 +18,6 @@ use tracing::error;
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    SetWorkspaceAmount(WorkspaceAmount),
     SetWorkspaceMode(WorkspaceMode),
     OrientationButtonSelected(cosmic::widget::segmented_button::Entity),
     SetShowName(bool),
@@ -74,7 +71,6 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
-            sections.insert(behavior()),
             sections.insert(multi_behavior()),
             sections.insert(overview_thumbnails()),
             sections.insert(workspace_orientation()),
@@ -102,10 +98,6 @@ impl Page {
 
     pub fn update(&mut self, message: Message) {
         match message {
-            Message::SetWorkspaceAmount(value) => {
-                self.comp_workspace_config.workspace_amount = value;
-                self.save_comp_config();
-            }
             Message::SetWorkspaceMode(value) => {
                 self.comp_workspace_config.workspace_mode = value;
                 self.save_comp_config();
@@ -135,48 +127,6 @@ impl Page {
             }
         }
     }
-}
-
-fn behavior() -> Section<crate::pages::Message> {
-    Section::default()
-        .title(fl!("workspaces-behavior"))
-        .descriptions(vec![
-            fl!("workspaces-behavior", "dynamic"),
-            fl!("workspaces-behavior", "dynamic-desc"),
-            fl!("workspaces-behavior", "fixed"),
-            fl!("workspaces-behavior", "fixed-desc"),
-        ])
-        .view::<Page>(|_binder, page, section| {
-            let descriptions = &section.descriptions;
-
-            let fixed_workspaces =
-                page.comp_workspace_config.workspace_amount != WorkspaceAmount::Dynamic;
-            settings::view_section(&section.title)
-                // TODO subtitle postiion as part of radio?
-                .add(column![
-                    settings::item_row(vec![radio(
-                        &descriptions[0],
-                        false,
-                        Some(fixed_workspaces),
-                        |_| Message::SetWorkspaceAmount(WorkspaceAmount::Dynamic)
-                    )
-                    .into()]),
-                    text(&descriptions[1]).size(10)
-                ])
-                .add(column![
-                    settings::item_row(vec![radio(
-                        &descriptions[2],
-                        true,
-                        Some(fixed_workspaces),
-                        // TODO Selector for number
-                        |_| Message::SetWorkspaceAmount(WorkspaceAmount::Static(10)),
-                    )
-                    .into()]),
-                    text(&descriptions[3]).size(10)
-                ])
-                .apply(Element::from)
-                .map(crate::pages::Message::DesktopWorkspaces)
-        })
 }
 
 fn multi_behavior() -> Section<crate::pages::Message> {
