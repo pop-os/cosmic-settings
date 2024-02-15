@@ -89,7 +89,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
         let mut max_dimensions = (0, 0);
         let mut display_area = (0, 0);
 
-        for (_key, output) in self.list.outputs.iter() {
+        for output in self.list.outputs.values() {
             if !output.enabled {
                 continue;
             }
@@ -102,11 +102,15 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                 continue;
             };
 
-            let (width, height) = if output.transform.map_or(true, is_landscape) {
+            let (mut width, mut height) = if output.transform.map_or(true, is_landscape) {
                 (mode.size.0, mode.size.1)
             } else {
                 (mode.size.1, mode.size.0)
             };
+
+            // Scale dimensions of the display with the output scale.
+            width = (width as f64 / output.scale) as u32;
+            height = (height as f64 / output.scale) as u32;
 
             max_dimensions.0 = max_dimensions.0.max(width);
             max_dimensions.1 = max_dimensions.1.max(height);
@@ -115,8 +119,8 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
             display_area.1 = display_area.1.max(height as i32 + output.position.1);
         }
 
-        let width = (max_dimensions.0 as i32 * 3 + display_area.0) as f32 / UNIT_PIXELS;
-        let height = (max_dimensions.1 as i32 * 3 + display_area.1) as f32 / UNIT_PIXELS;
+        let width = (max_dimensions.0 as i32 * 2 + display_area.0) as f32 / UNIT_PIXELS;
+        let height = (max_dimensions.1 as i32 * 2 + display_area.1) as f32 / UNIT_PIXELS;
 
         let state = tree.state.downcast_mut::<State>();
         state.max_dimensions = (
@@ -382,8 +386,8 @@ fn display_regions<'a>(
             };
 
             let (mut width, mut height) = (
-                (mode.size.0 as f32) / UNIT_PIXELS,
-                (mode.size.1 as f32) / UNIT_PIXELS,
+                (mode.size.0 as f32 / output.scale as f32) / UNIT_PIXELS,
+                (mode.size.1 as f32 / output.scale as f32) / UNIT_PIXELS,
             );
 
             (width, height) = if output.transform.map_or(true, is_landscape) {
@@ -431,11 +435,6 @@ fn update_dragged_region(
     (x, y): (f32, f32),
 ) {
     let mut dragged_region = Rectangle { x, y, ..*region };
-
-    // Prevent display from exceeding boundaries.
-    if !dragged_region.is_within_strict(bounds) {
-        return;
-    }
 
     let mut nearest = f32::MAX;
     let mut nearest_region = Rectangle::default();
@@ -535,11 +534,6 @@ fn update_dragged_region(
         <= 8.0
     {
         dragged_region.y = nearest_region.y + nearest_region.height - dragged_region.height;
-    }
-
-    // Prevent display from exceeding boundaries.
-    if !dragged_region.is_within_strict(bounds) {
-        return;
     }
 
     // Prevent display from overlapping with other displays.
