@@ -448,8 +448,8 @@ fn update_dragged_region(
 
         let center = dragged_region.center();
 
-        let eastward = distance(east_point(&other_region), center) * 1.5;
-        let westward = distance(west_point(&other_region), center) * 1.5;
+        let eastward = distance(east_point(&other_region), center) * 1.25;
+        let westward = distance(west_point(&other_region), center) * 1.25;
         let northward = distance(north_point(&other_region), center);
         let southward = distance(south_point(&other_region), center);
 
