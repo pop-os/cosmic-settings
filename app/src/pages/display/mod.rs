@@ -362,9 +362,14 @@ impl Page {
 
     /// View for the display arrangement section.
     pub fn display_arrangement_view(&self) -> Element<pages::Message> {
+        let theme = cosmic::theme::active();
+
         column()
-            .padding(cosmic::iced::Padding::from([16, 24]))
-            .spacing(10)
+            .padding(cosmic::iced::Padding::from([
+                theme.cosmic().space_s(),
+                theme.cosmic().space_m(),
+            ]))
+            .spacing(theme.cosmic().space_xs())
             .push(cosmic::widget::text::body(&*text::DISPLAY_ARRANGEMENT_DESC))
             .push({
                 Arrangement::new(&self.list, &self.display_tabs)
@@ -383,6 +388,8 @@ impl Page {
 
     /// View for the display configuration section.
     pub fn display_view(&self) -> Element<pages::Message> {
+        let theme = cosmic::theme::active();
+
         let Some(&active_id) = self.display_tabs.active_data::<OutputKey>() else {
             return column().into();
         };
@@ -436,7 +443,7 @@ impl Page {
             ));
 
         column()
-            .spacing(24)
+            .spacing(theme.cosmic().space_m())
             .push(view_switcher::horizontal(&self.display_tabs).on_activate(Message::Display))
             .push(display_meta)
             .push(cosmic::widget::text::heading(&*text::DISPLAY_OPTIONS))
@@ -541,7 +548,7 @@ impl Page {
                 .iter()
                 .filter_map(|&id| self.list.modes.get(id).map(|m| (id, m)))
             {
-                let refresh_rates = self.cache.modes.entry(mode.size).or_insert_with(Vec::new);
+                let refresh_rates = self.cache.modes.entry(mode.size).or_default();
 
                 refresh_rates.push(mode.refresh_rate);
 
