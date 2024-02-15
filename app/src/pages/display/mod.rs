@@ -9,8 +9,7 @@ use crate::{app, pages};
 use apply::Apply;
 use arrangement::Arrangement;
 use cosmic::iced::Length;
-use cosmic::iced_core::Alignment;
-use cosmic::iced_widget::scrollable::{Direction, Properties};
+use cosmic::iced_widget::scrollable::{Direction, Properties, RelativeOffset};
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{
     column, container, dropdown, list_column, segmented_button, toggler, view_switcher,
@@ -116,7 +115,6 @@ enum Randr {
 }
 
 /// The page struct for the display settings page.
-#[derive(Default)]
 pub struct Page {
     list: List,
     display_tabs: segmented_button::SingleSelectModel,
@@ -124,6 +122,21 @@ pub struct Page {
     config: Config,
     cache: ViewCache,
     context: Option<ContextDrawer>,
+    display_arrangement_scrollable: cosmic::widget::Id,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        Self {
+            list: List::default(),
+            display_tabs: segmented_button::SingleSelectModel::default(),
+            active_display: OutputKey::default(),
+            config: Config::default(),
+            cache: ViewCache::default(),
+            context: None,
+            display_arrangement_scrollable: cosmic::widget::Id::unique(),
+        }
+    }
 }
 
 #[derive(Default)]
@@ -360,7 +373,10 @@ impl Page {
             }
         }
 
-        Command::none()
+        cosmic::iced::widget::scrollable::snap_to(
+            self.display_arrangement_scrollable.clone(),
+            RelativeOffset { x: 0.5, y: 0.5 },
+        )
     }
 
     /// View for the display arrangement section.
@@ -379,6 +395,7 @@ impl Page {
                     .on_select(|id| pages::Message::Displays(Message::Display(id)))
                     .on_placement(|id, x, y| pages::Message::Displays(Message::Position(id, x, y)))
                     .apply(cosmic::widget::scrollable)
+                    .id(self.display_arrangement_scrollable.clone())
                     .width(Length::Shrink)
                     .direction(Direction::Horizontal(Properties::new()))
                     .apply(container)
