@@ -624,9 +624,16 @@ impl SettingsApp {
             let section = &self.pages.sections[id];
             let model = &self.pages.page[self.active_page];
 
-            column_widgets.push(
-                (section.view_fn)(&self.pages, model.as_ref(), section).map(Message::PageMessage),
-            );
+            if section
+                .show_while
+                .as_ref()
+                .map_or(true, |func| func(model.as_ref()))
+            {
+                column_widgets.push(
+                    (section.view_fn)(&self.pages, model.as_ref(), section)
+                        .map(Message::PageMessage),
+                );
+            }
         }
 
         settings::view_column(column_widgets).into()
@@ -680,12 +687,18 @@ impl SettingsApp {
                 sections.push(search_header(&self.pages, page));
             }
 
-            let section = (section.view_fn)(&self.pages, model.as_ref(), section)
-                .map(Message::PageMessage)
-                .apply(iced::widget::container)
-                .padding([0, 0, 0, cosmic::theme::active().cosmic().space_xl()]);
+            if section
+                .show_while
+                .as_ref()
+                .map_or(true, |func| func(model.as_ref()))
+            {
+                let section = (section.view_fn)(&self.pages, model.as_ref(), section)
+                    .map(Message::PageMessage)
+                    .apply(iced::widget::container)
+                    .padding([0, 0, 0, cosmic::theme::active().cosmic().space_xl()]);
 
-            sections.push(section.into());
+                sections.push(section.into());
+            }
         }
 
         settings::view_column(sections).into()

@@ -11,6 +11,7 @@ use arrangement::Arrangement;
 use cosmic::iced::Length;
 use cosmic::iced_core::Alignment;
 use cosmic::iced_widget::scrollable::{Direction, Properties};
+use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{
     column, container, dropdown, list_column, segmented_button, toggler, view_switcher,
 };
@@ -179,6 +180,8 @@ impl page::Page<crate::pages::Message> for Page {
                         text::DISPLAY_ARRANGEMENT.clone(),
                         text::DISPLAY_ARRANGEMENT_DESC.clone(),
                     ])
+                    // Show section when there is more than 1 display
+                    .show_while::<Page>(|page| page.list.outputs.len() > 1)
                     .view::<Page>(|_binder, page, _section| page.display_arrangement_view()),
             ),
             // Display configuration
@@ -444,7 +447,11 @@ impl Page {
 
         column()
             .spacing(theme.cosmic().space_m())
-            .push(view_switcher::horizontal(&self.display_tabs).on_activate(Message::Display))
+            .push_maybe(if self.list.outputs.len() > 1 {
+                Some(view_switcher::horizontal(&self.display_tabs).on_activate(Message::Display))
+            } else {
+                None
+            })
             .push(display_meta)
             .push(cosmic::widget::text::heading(&*text::DISPLAY_OPTIONS))
             .push(display_options)
