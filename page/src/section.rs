@@ -11,6 +11,8 @@ slotmap::new_key_type! {
     pub struct Entity;
 }
 
+pub type ShowWhileFn<Message> = Box<dyn for<'a> Fn(&'a dyn Page<Message>) -> bool>;
+
 pub type ViewFn<Message> = Box<
     dyn for<'a> Fn(
         &'a Binder<Message>,
@@ -29,6 +31,8 @@ pub struct Section<Message> {
     pub title: String,
     pub descriptions: Vec<String>,
     #[setters(skip)]
+    pub show_while: Option<ShowWhileFn<Message>>,
+    #[setters(skip)]
     pub view_fn: ViewFn<Message>,
     #[setters(bool)]
     pub search_ignore: bool,
@@ -39,6 +43,7 @@ impl<Message: 'static> Default for Section<Message> {
         Self {
             title: String::new(),
             descriptions: Vec::new(),
+            show_while: None,
             view_fn: Box::new(unimplemented),
             search_ignore: false,
         }
@@ -63,6 +68,23 @@ impl<Message: 'static> Section<Message> {
         }
 
         false
+    }
+
+    pub fn show_while<Model: Page<Message>>(
+        mut self,
+        func: impl for<'a> Fn(&'a Model) -> bool + 'static,
+    ) -> Self {
+        self.show_while = Some(Box::new(move |model: &dyn Page<Message>| {
+            let model = model.downcast_ref::<Model>().unwrap_or_else(|| {
+                panic!(
+                    "page model type mismatch: expected {}",
+                    std::any::type_name::<Model>()
+                )
+            });
+
+            func(model)
+        }));
+        self
     }
 
     /// # Panics
