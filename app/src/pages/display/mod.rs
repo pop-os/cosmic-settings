@@ -9,6 +9,7 @@ use crate::{app, pages};
 use apply::Apply;
 use arrangement::Arrangement;
 use cosmic::iced::Length;
+use cosmic::iced_core::Alignment;
 use cosmic::iced_widget::scrollable::{Direction, Properties};
 use cosmic::widget::{
     column, container, dropdown, list_column, segmented_button, toggler, view_switcher,
@@ -371,10 +372,7 @@ impl Page {
                     .on_placement(|id, x, y| pages::Message::Displays(Message::Position(id, x, y)))
                     .apply(cosmic::widget::scrollable)
                     .width(Length::Shrink)
-                    .direction(Direction::Both {
-                        horizontal: Properties::new(),
-                        vertical: Properties::new(),
-                    })
+                    .direction(Direction::Horizontal(Properties::new()))
                     .apply(container)
                     .center_x()
                     .width(Length::Fill)
