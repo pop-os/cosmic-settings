@@ -416,11 +416,6 @@ impl Page {
 
         let active_output = &self.list.outputs[active_id];
 
-        let display_meta = list_column().add(cosmic::widget::settings::item(
-            &*text::DISPLAY_ENABLE,
-            toggler(None, active_output.enabled, Message::DisplayToggle),
-        ));
-
         let display_options = list_column()
             .add(cosmic::widget::settings::item(
                 &*text::DISPLAY_RESOLUTION,
@@ -462,14 +457,21 @@ impl Page {
                 ),
             ));
 
-        column()
-            .spacing(theme.cosmic().space_m())
-            .push_maybe(if self.list.outputs.len() > 1 {
-                Some(view_switcher::horizontal(&self.display_tabs).on_activate(Message::Display))
-            } else {
-                None
-            })
-            .push(display_meta)
+        let mut content = column().spacing(theme.cosmic().space_m());
+
+        if self.list.outputs.len() > 1 {
+            let display_switcher =
+                view_switcher::horizontal(&self.display_tabs).on_activate(Message::Display);
+
+            let display_enable = list_column().add(cosmic::widget::settings::item(
+                &*text::DISPLAY_ENABLE,
+                toggler(None, active_output.enabled, Message::DisplayToggle),
+            ));
+
+            content = content.push(display_switcher).push(display_enable);
+        }
+
+        content
             .push(cosmic::widget::text::heading(&*text::DISPLAY_OPTIONS))
             .push(display_options)
             .apply(Element::from)
