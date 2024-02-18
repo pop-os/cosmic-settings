@@ -18,6 +18,7 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(vec![
             sections.insert(touchpad()),
+            sections.insert(tapping_and_pinching()),
             sections.insert(scrolling()),
         ])
     }
@@ -84,6 +85,39 @@ fn touchpad() -> Section<crate::pages::Message> {
                         .control(widget::slider(0..=100, 0, |x| {
                             Message::SetDoubleClickSpeed(x, true)
                         })),
+                )
+                .apply(Element::from)
+                .map(crate::pages::Message::Input)
+        })
+}
+
+fn tapping_and_pinching() -> Section<crate::pages::Message> {
+    Section::default()
+        .title(fl!("tapping-and-pinching"))
+        .descriptions(vec![
+            fl!("touchpad", "tap-to-click"),
+            fl!("touchpad", "tap-to-click-desc"),
+            fl!("touchpad", "pinch-to-zoom"),
+            fl!("touchpad", "pinch-to-zoom-desc"),
+        ])
+        .view::<Page>(|binder, _page, section| {
+            let descriptions = &section.descriptions;
+
+            let input = binder.page::<super::Page>().expect("input page not found");
+
+            settings::view_section(&section.title)
+                .add(
+                    settings::item::builder(&descriptions[0])
+                        .description(&descriptions[1])
+                        .toggler(
+                            input
+                                .input_touchpad
+                                .tap_config
+                                .as_ref()
+                                .and_then(|x| Some(x.enabled))
+                                .unwrap_or(false),
+                            |x: bool| Message::TapToClick(x, true),
+                        ),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)

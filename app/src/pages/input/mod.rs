@@ -6,7 +6,7 @@ use cosmic::{
     iced_widget::core::layout,
 };
 use cosmic_comp_config::{
-    input::{AccelProfile, InputConfig},
+    input::{AccelProfile, InputConfig, TapButtonMap, TapConfig},
     XkbConfig,
 };
 use cosmic_settings_page as page;
@@ -25,6 +25,9 @@ pub enum Message {
     SetDoubleClickSpeed(u32, bool),
     SetMouseSpeed(f64, bool),
     PrimaryButtonSelected(cosmic::widget::segmented_button::Entity, bool),
+    // Tapping and Pinching
+    TapToClick(bool, bool),
+    PinchToZoom(bool, bool),
     // seperate close message, to make sure another isn't closed?
     ExpandInputSourcePopover(Option<String>),
     OpenSpecialCharacterDialog(keyboard::SpecialKey),
@@ -155,6 +158,14 @@ impl Page {
                 let left_entity = select_model.entity_at(1).unwrap();
                 let left_handed = select_model.active() == left_entity;
                 self.update_input(touchpad, |x| x.left_handed = Some(left_handed));
+            }
+            Message::TapToClick(value, touchpad) => self.update_input(touchpad, |x| {
+                x.tap_config
+                .get_or_insert(TapConfig { enabled: true, button_map: Some(TapButtonMap::LeftRightMiddle), drag: true, drag_lock: false })
+                .enabled = value
+            }),
+            Message::PinchToZoom(value, touchpad) => {
+                // TODO
             }
             Message::ExpandInputSourcePopover(value) => {
                 self.expanded_source_popover = value;

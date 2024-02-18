@@ -400,6 +400,8 @@ mouse-scrolling = Scrolling
 
 ## Input: Touchpad
 
+tapping-and-pinching = Tapping and Pinching
+
 touchpad = Touchpad
     .desc = Touchpad speed, click options, gestures.
     .primary-button = Primary button
@@ -410,3 +412,7 @@ touchpad = Touchpad
     .acceleration-desc = Automatically adjusts tracking sensitivty based on speed.
     .double-click-speed = Double-click speed
     .double-click-speed-desc = Changes how fast double-clicks have to be to register.
+    .tap-to-click = Tap to click
+    .tap-to-click-desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
+    .pinch-to-zoom = Pinch to zoom
+    .pinch-to-zoom-desc = Use two fingers to zoom innto content, for applications that support zoom.
