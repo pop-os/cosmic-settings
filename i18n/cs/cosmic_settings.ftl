@@ -224,8 +224,19 @@ users = Uživatelé
 
 ## Input
 
-input = Vstup
-    .desc = Vstup
+acceleration-desc = Automaticky upravit citlivost sledování na základě rychlosti.
+
+double-click-speed = Rychlost dvojtého kliknutí
+    .desc = Změní jak rychle je třeba zmáčknout dvakrát pro zaznamenání dvojkliku.
+
+primary-button = Hlavní tlačítko
+    .left = Levé
+    .right = Pravé
+
+scrolling = Skrolování
+    .speed = Rychlost skrolování
+    .natural = Přirozené skrolování
+    .natural-desc = Převrátí směr skrolování
 
 ## Input: Keyboard
 
@@ -250,31 +261,15 @@ keyboard-shortcuts = Klávesové zkratky
     .desc = Zobrazit a změnit klávesové zkratky
 
 ## Input: Mouse
+
 mouse = Myš
     .desc = Citlivost myši, akcelerace, přirozené skrolování.
-    .primary-button = Hlavní tlačítko
-    .primary-button-left = Levé
-    .primary-button-right = Pravé
     .speed = Citlivost myši
     .acceleration = Zapnout akceleraci myši
-    .acceleration-desc = Automaticky upravit citlivost sledování na základě rychlosti.
-    .double-click-speed = Rychlost dvojtého kliknutí
-    .double-click-speed-desc = Změní jak rychle je třeba zmáčknout dvakrát pro zaznamenání dvojkliku.
-
-mouse-scrolling = Skrolování
-    .speed = Rychlost skrolování
-    .natural = Přirozené skrolování
-    .natural-desc = Převrátí směr skrolování
 
 ## Input: Touchpad
 
 touchpad = Touchpad
     .desc = Citlivost touchpadu, nastavení klikání, gesta.
-    .primary-button = Hlavní tlačítko
-    .primary-button-left = Levé
-    .primary-button-right = Pravé
     .speed = Citlivost touchpadu
     .acceleration = Zapnout akceleraci touchpadu
-    .acceleration-desc = Automaticky upravit citlivost sledování na základě rychlosti.
-    .double-click-speed = Rychlost dvojtého kliknutí
-    .double-click-speed-desc = Změní jak rychle je třeba zmáčknout dvakrát pro zaznamenání dvojkliku.

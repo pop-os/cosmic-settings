@@ -295,8 +295,19 @@ users = Пользователи
 
 ## Input
 
-input = Ввод
-    .desc = Ввод
+acceleration-desc = Автоматически регулирует чувствительность панели в зависимости от скорости.
+
+double-click-speed = Скорость двойного нажатия
+    .desc = Изменить скорость регистрации двойных нажатий.
+
+primary-button = Основная кнопка
+    .left = Левая
+    .right = Правая
+
+scrolling = Прокрутка
+    .speed = Скорость прокрутки
+    .natural = Естественная прокрутка
+    .natural-desc = Прокручивать содержимое, а не представление
 
 ## Input: Keyboard
 
@@ -323,29 +334,12 @@ keyboard-shortcuts = Сочетания клавиш
 ## Input: Mouse
 mouse = Мышь
     .desc = Скорость и ускорение мыши, естественная прокрутка.
-    .primary-button = Основная кнопка
-    .primary-button-left = Левая
-    .primary-button-right = Правая
     .speed = Скорость мыши
     .acceleration = Включить ускорение мыши
-    .acceleration-desc = Автоматически регулирует чувствительность мыши в зависимости от скорости.
-    .double-click-speed = Скорость двойного нажатия
-    .double-click-speed-desc = Изменить скорость регистрации двойных нажатий.
-
-mouse-scrolling = Прокрутка
-    .speed = Скорость прокрутки
-    .natural = Естественная прокрутка
-    .natural-desc = Прокручивать содержимое, а не представление
 
 ## Input: Touchpad
 
 touchpad = Сенсорная панель
     .desc = Скорость сенсорной панели, параметры нажатия, жесты.
-    .primary-button = Основная кнопка
-    .primary-button-left = Левая
-    .primary-button-right = Правая
     .speed = Скорость сенсорной панели
     .acceleration = Включить ускорение сенсорной панели
-    .acceleration-desc = Автоматически регулирует чувствительность панели в зависимости от скорости.
-    .double-click-speed = Скорость двойного нажатия
-    .double-click-speed-desc = Изменить скорость регистрации двойных нажатий.

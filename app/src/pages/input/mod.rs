@@ -6,7 +6,9 @@ use cosmic::{
     iced_widget::core::layout,
 };
 use cosmic_comp_config::{
-    input::{AccelProfile, InputConfig},
+    input::{
+        AccelConfig, AccelProfile, InputConfig, ScrollConfig, ScrollMethod, TapButtonMap, TapConfig,
+    },
     XkbConfig,
 };
 use cosmic_settings_page as page;
@@ -17,19 +19,34 @@ pub mod keyboard;
 mod mouse;
 mod touchpad;
 
+crate::cache_dynamic_lazy! {
+    static ACCELERAION_DESC: String = fl!("acceleration-desc");
+    static DISABLE_WHILE_TYPING: String = fl!("disable-while-typing");
+    static DOUBLE_CLICK_SPEED_DESC: String = fl!("double-click-speed", "desc");
+    static DOUBLE_CLICK_SPEED: String = fl!("double-click-speed");
+    static PRIMARY_BUTTON: String = fl!("primary-button");
+    static SCROLLING_NATURAL_DESC: String = fl!("scrolling", "natural-desc");
+    static SCROLLING_NATURAL: String = fl!("scrolling", "natural");
+    static SCROLLING_SPEED: String = fl!("scrolling", "speed");
+}
+
 #[derive(Clone, Debug)]
 pub enum Message {
-    SetAcceleration(bool, bool),
-    SetNaturalScroll(bool, bool),
-    SetScrollFactor(f64, bool),
-    SetDoubleClickSpeed(u32, bool),
-    SetMouseSpeed(f64, bool),
-    PrimaryButtonSelected(cosmic::widget::segmented_button::Entity, bool),
+    CloseSpecialCharacterDialog,
     // seperate close message, to make sure another isn't closed?
+    DisableWhileTyping(bool, bool),
     ExpandInputSourcePopover(Option<String>),
     OpenSpecialCharacterDialog(keyboard::SpecialKey),
-    CloseSpecialCharacterDialog,
+    PinchToZoom(bool),
+    PrimaryButtonSelected(cosmic::widget::segmented_button::Entity, bool),
+    SetAcceleration(bool, bool),
+    SetDoubleClickSpeed(u32, bool),
+    SetMouseSpeed(f64, bool),
+    SetNaturalScroll(bool, bool),
+    SetScrollFactor(f64, bool),
+    SetScrollMethod(Option<ScrollMethod>, bool),
     SpecialCharacterSelect(Option<&'static str>),
+    TapToClick(bool),
 }
 
 pub struct Page {
@@ -55,8 +72,8 @@ fn get_config<T: Default + serde::de::DeserializeOwned>(
     config: &cosmic_config::Config,
     key: &str,
 ) -> T {
-    config.get(key).unwrap_or_else(|err| {
-        error!(?err, "Failed to read config '{}'", key);
+    config.get(key).unwrap_or_else(|why| {
+        error!(?why, "Failed to read config '{}'", key);
         T::default()
     })
 }
@@ -69,19 +86,11 @@ impl Default for Page {
         let xkb = get_config(&config, "xkb_config");
 
         let mut primary_button = mouse::default_primary_button();
-        let idx = if input_default.left_handed.unwrap_or(false) {
-            1
-        } else {
-            0
-        };
+        let idx = input_default.left_handed.unwrap_or(false) as u16;
         primary_button.activate_position(idx);
 
         let mut touchpad_primary_button = mouse::default_primary_button();
-        let idx = if input_touchpad.left_handed.unwrap_or(false) {
-            1
-        } else {
-            0
-        };
+        let idx = input_touchpad.left_handed.unwrap_or(false) as u16;
         touchpad_primary_button.activate_position(idx);
 
         Self {
@@ -117,6 +126,7 @@ impl Page {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> iced::Command<app::Message> {
         match message {
             Message::SetAcceleration(value, touchpad) => {
@@ -125,26 +135,46 @@ impl Page {
                 } else {
                     AccelProfile::Flat
                 };
+
                 self.update_input(touchpad, |x| {
-                    x.acceleration.get_or_insert(Default::default()).profile = Some(profile);
+                    x.acceleration.get_or_insert(AccelConfig::default()).profile = Some(profile);
                 });
             }
-            Message::SetNaturalScroll(value, touchpad) => self.update_input(touchpad, |x| {
-                x.scroll_config
-                    .get_or_insert(Default::default())
-                    .natural_scroll = Some(value);
+
+            Message::SetMouseSpeed(value, touchpad) => self.update_input(touchpad, |x| {
+                x.acceleration.get_or_insert(AccelConfig::default()).speed = value;
             }),
-            Message::SetScrollFactor(value, touchpad) => self.update_input(touchpad, |x| {
-                x.scroll_config
-                    .get_or_insert(Default::default())
-                    .scroll_factor = Some(value)
-            }),
+
             Message::SetDoubleClickSpeed(_value, _touchpad) => {
                 // TODO
             }
-            Message::SetMouseSpeed(value, touchpad) => self.update_input(touchpad, |x| {
-                x.acceleration.get_or_insert(Default::default()).speed = value
+
+            Message::DisableWhileTyping(disabled, touchpad) => {
+                self.update_input(touchpad, |conf| {
+                    conf.disable_while_typing = Some(disabled);
+                });
+            }
+
+            Message::SetNaturalScroll(enabled, touchpad) => self.update_input(touchpad, |x| {
+                x.scroll_config
+                    .get_or_insert(ScrollConfig::default())
+                    .natural_scroll = Some(enabled);
             }),
+
+            Message::SetScrollFactor(value, touchpad) => self.update_input(touchpad, |x| {
+                x.scroll_config
+                    .get_or_insert(ScrollConfig::default())
+                    .scroll_factor = Some(value);
+            }),
+
+            Message::SetScrollMethod(method, touchpad) => {
+                self.update_input(touchpad, |conf| {
+                    conf.scroll_config
+                        .get_or_insert(ScrollConfig::default())
+                        .method = method;
+                });
+            }
+
             Message::PrimaryButtonSelected(entity, touchpad) => {
                 let select_model = if touchpad {
                     &mut self.touchpad_primary_button
@@ -152,13 +182,19 @@ impl Page {
                     &mut self.primary_button
                 };
                 select_model.activate(entity);
-                let left_entity = select_model.entity_at(1).unwrap();
+
+                let Some(left_entity) = select_model.entity_at(1) else {
+                    return cosmic::Command::none();
+                };
+
                 let left_handed = select_model.active() == left_entity;
                 self.update_input(touchpad, |x| x.left_handed = Some(left_handed));
             }
+
             Message::ExpandInputSourcePopover(value) => {
                 self.expanded_source_popover = value;
             }
+
             Message::OpenSpecialCharacterDialog(special_key) => {
                 self.special_character_dialog = Some(special_key);
                 let window_settings = SctkWindowSettings {
@@ -180,10 +216,12 @@ impl Page {
                 };
                 return commands::window::get_window(window_settings);
             }
+
             Message::CloseSpecialCharacterDialog => {
                 self.special_character_dialog = None;
                 return commands::window::close_window(*keyboard::SPECIAL_CHARACTER_DIALOGUE_ID);
             }
+
             Message::SpecialCharacterSelect(id) => {
                 if let Some(special_key) = self.special_character_dialog {
                     let options = self.xkb.options.as_deref().unwrap_or("");
@@ -191,7 +229,7 @@ impl Page {
                     let new_options = options
                         .split(',')
                         .filter(|x| !x.starts_with(prefix))
-                        .chain(id.into_iter())
+                        .chain(id)
                         .join(",");
                     self.xkb.options = Some(new_options).filter(|x| !x.is_empty());
                     if let Err(err) = self.config.set("xkb_config", &self.xkb) {
@@ -199,8 +237,24 @@ impl Page {
                     }
                 }
             }
+
+            Message::PinchToZoom(_enabled) => {}
+
+            Message::TapToClick(enabled) => {
+                self.update_input(true, |conf| {
+                    conf.tap_config
+                        .get_or_insert(TapConfig {
+                            enabled: true,
+                            button_map: Some(TapButtonMap::LeftRightMiddle),
+                            drag: true,
+                            drag_lock: false,
+                        })
+                        .enabled = enabled;
+                });
+            }
         }
-        iced::Command::none()
+
+        cosmic::Command::none()
     }
 }
 
