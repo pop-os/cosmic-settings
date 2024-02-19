@@ -412,13 +412,6 @@ edge-scrolling = Edge scrolling
 pinch-to-zoom = Pinch to zoom
     .desc = Use two fingers to zoom into content, for applications that support zoom.
 
-swiping = Swiping
-    .four-finger-down = Four-finger swipe down
-    .four-finger-left = Four-finger swipe left
-    .four-finger-right = Four-finger swipe right
-    .four-finger-up = Four-finger swipe up
-    .three-finger-any = Three-finger swip any direction
-
 tap-to-click = Tap to click
     .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
 
@@ -430,3 +423,18 @@ touchpad = Touchpad
     .speed = Touchpad speed
 
 two-finger-scrolling = Two-finger scrolling
+
+## Input: Gestures
+
+swiping = Swiping
+    .four-finger-down = Four-finger swipe down
+    .four-finger-left = Four-finger swipe left
+    .four-finger-right = Four-finger swipe right
+    .four-finger-up = Four-finger swipe up
+    .three-finger-any = Three-finger swip any direction
+
+switch-between-windows = Switch between windows
+switch-to-next-workspace = Switch to next workspace
+switch-to-prev-workspace = Switch to prev workspace
+open-application-library = Open Application Library
+open-workspaces-view = Open Workspaces Overview
