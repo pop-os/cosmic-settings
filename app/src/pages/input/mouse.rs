@@ -40,12 +40,12 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 fn mouse() -> Section<crate::pages::Message> {
     Section::default()
         .descriptions(vec![
-            fl!("mouse", "primary-button"),
-            fl!("mouse", "speed"),
-            fl!("mouse", "acceleration"),
-            fl!("mouse", "acceleration-desc"),
-            fl!("mouse", "double-click-speed"),
-            fl!("mouse", "double-click-speed-desc"),
+            fl!("mouse", "primary-button").into(),
+            fl!("mouse", "speed").into(),
+            fl!("mouse", "acceleration").into(),
+            fl!("mouse", "acceleration-desc").into(),
+            fl!("mouse", "double-click-speed").into(),
+            fl!("mouse", "double-click-speed-desc").into(),
         ])
         .view::<Page>(|binder, _page, section| {
             let descriptions = &section.descriptions;
@@ -54,12 +54,12 @@ fn mouse() -> Section<crate::pages::Message> {
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     cosmic::widget::segmented_selection::horizontal(&input.primary_button)
                         .on_activate(|x| Message::PrimaryButtonSelected(x, false)),
                 ))
                 .add(
-                    settings::item::builder(&descriptions[1]).control(widget::slider(
+                    settings::item::builder(&*descriptions[1]).control(widget::slider(
                         0.0..=100.0,
                         (input
                             .input_default
@@ -72,8 +72,8 @@ fn mouse() -> Section<crate::pages::Message> {
                     )),
                 )
                 .add(
-                    settings::item::builder(&descriptions[2])
-                        .description(&descriptions[3])
+                    settings::item::builder(&*descriptions[2])
+                        .description(&*descriptions[3])
                         .toggler(
                             input
                                 .input_default
@@ -84,8 +84,8 @@ fn mouse() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&descriptions[4])
-                        .description(&descriptions[5])
+                    settings::item::builder(&*descriptions[4])
+                        .description(&*descriptions[5])
                         .control(widget::slider(0..=100, 0, |x| {
                             Message::SetDoubleClickSpeed(x, false)
                         })),
@@ -99,9 +99,9 @@ fn scrolling() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("mouse-scrolling"))
         .descriptions(vec![
-            fl!("mouse-scrolling", "speed"),
-            fl!("mouse-scrolling", "natural"),
-            fl!("mouse-scrolling", "natural-desc"),
+            fl!("mouse-scrolling", "speed").into(),
+            fl!("mouse-scrolling", "natural").into(),
+            fl!("mouse-scrolling", "natural-desc").into(),
         ])
         .view::<Page>(|binder, _page, section| {
             let descriptions = &section.descriptions;
@@ -110,7 +110,7 @@ fn scrolling() -> Section<crate::pages::Message> {
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     // TODO show numeric value
                     // TODO desired range?
                     widget::slider(
@@ -128,8 +128,8 @@ fn scrolling() -> Section<crate::pages::Message> {
                     ),
                 ))
                 .add(
-                    settings::item::builder(&descriptions[1])
-                        .description(&descriptions[2])
+                    settings::item::builder(&*descriptions[1])
+                        .description(&*descriptions[2])
                         .toggler(
                             input
                                 .input_default

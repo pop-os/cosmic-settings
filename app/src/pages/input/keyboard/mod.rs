@@ -265,8 +265,8 @@ fn special_character_entry() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("keyboard-special-char"))
         .descriptions(vec![
-            fl!("keyboard-special-char", "alternate"),
-            fl!("keyboard-special-char", "compose"),
+            fl!("keyboard-special-char", "alternate").into(),
+            fl!("keyboard-special-char", "compose").into(),
         ])
         .view::<Page>(|_binder, _page, section| {
             let descriptions = &section.descriptions;
@@ -274,11 +274,11 @@ fn special_character_entry() -> Section<crate::pages::Message> {
             // TODO dialogs
             settings::view_section(&section.title)
                 .add(go_next_item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     Message::OpenSpecialCharacterDialog(SpecialKey::AlternateCharacters),
                 ))
                 .add(go_next_item(
-                    &descriptions[1],
+                    &*descriptions[1],
                     Message::OpenSpecialCharacterDialog(SpecialKey::Compose),
                 ))
                 .apply(cosmic::Element::from)
@@ -289,7 +289,7 @@ fn special_character_entry() -> Section<crate::pages::Message> {
 fn keyboard_shortcuts() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("keyboard-shortcuts"))
-        .descriptions(vec![fl!("keyboard-shortcuts", "desc")])
+        .descriptions(vec![fl!("keyboard-shortcuts", "desc").into()])
         .view::<Page>(|binder, _page, section| {
             let descriptions = &section.descriptions;
 
@@ -300,7 +300,7 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
                 .find(|(_, v)| v.id == "keyboard-shortcuts")
             {
                 section = section.add(go_next_item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     crate::pages::Message::Page(shortcuts_entity),
                 ));
             }

@@ -5,8 +5,21 @@ use cosmic_comp_config::input::AccelProfile;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slotmap::SlotMap;
+use std::borrow::Cow;
 
 use super::Message;
+
+crate::cache_dynamic_lazy! {
+    static MOUSE_SCROLL_SPEED: String = fl!("mouse-scrolling", "speed");
+    static MOUSE_SCROLL_NATURAL: String = fl!("mouse-scrolling", "natural");
+    static MOUSE_SCROLL_NATURAL_DESC: String = fl!("mouse-scrolling", "natural-desc");
+    static TOUCHPAD_PRIMARY_BUTTON: String = fl!("touchpad", "primary-button");
+    static TOUCHPAD_SPEED: String = fl!("touchpad", "speed");
+    static TOUCHPAD_ACCELERAION: String = fl!("touchpad", "acceleration");
+    static TOUCHPAD_ACCELERAION_DESC: String = fl!("touchpad", "acceleration-desc");
+    static TOUCHPAD_DOUBLE_CLICK_SPEED: String = fl!("touchpad", "double-click-speed");
+    static TOUCHPAD_DOUBLE_CLICK_SPEED_DESC: String = fl!("touchpad", "double-click-speed-desc");
+}
 
 #[derive(Default)]
 pub struct Page;
@@ -34,26 +47,24 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 fn touchpad() -> Section<crate::pages::Message> {
     Section::default()
         .descriptions(vec![
-            fl!("touchpad", "primary-button"),
-            fl!("touchpad", "speed"),
-            fl!("touchpad", "acceleration"),
-            fl!("touchpad", "acceleration-desc"),
-            fl!("touchpad", "double-click-speed"),
-            fl!("touchpad", "double-click-speed-desc"),
+            TOUCHPAD_PRIMARY_BUTTON.as_str().into(),
+            TOUCHPAD_SPEED.as_str().into(),
+            TOUCHPAD_ACCELERAION.as_str().into(),
+            TOUCHPAD_ACCELERAION_DESC.as_str().into(),
+            TOUCHPAD_DOUBLE_CLICK_SPEED.as_str().into(),
+            TOUCHPAD_DOUBLE_CLICK_SPEED_DESC.as_str().into(),
         ])
         .view::<Page>(|binder, _page, section| {
-            let descriptions = &section.descriptions;
-
             let input = binder.page::<super::Page>().expect("input page not found");
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*TOUCHPAD_PRIMARY_BUTTON,
                     cosmic::widget::segmented_selection::horizontal(&input.touchpad_primary_button)
                         .on_activate(|x| Message::PrimaryButtonSelected(x, true)),
                 ))
                 .add(
-                    settings::item::builder(&descriptions[1]).control(widget::slider(
+                    settings::item::builder(&*TOUCHPAD_SPEED).control(widget::slider(
                         0.0..=100.0,
                         (input
                             .input_touchpad
@@ -66,8 +77,8 @@ fn touchpad() -> Section<crate::pages::Message> {
                     )),
                 )
                 .add(
-                    settings::item::builder(&descriptions[2])
-                        .description(&descriptions[3])
+                    settings::item::builder(&*TOUCHPAD_ACCELERAION)
+                        .description(&*TOUCHPAD_ACCELERAION_DESC)
                         .toggler(
                             input
                                 .input_touchpad
@@ -79,8 +90,8 @@ fn touchpad() -> Section<crate::pages::Message> {
                 )
                 // TODO disable while typing
                 .add(
-                    settings::item::builder(&descriptions[4])
-                        .description(&descriptions[5])
+                    settings::item::builder(&*TOUCHPAD_DOUBLE_CLICK_SPEED)
+                        .description(&*TOUCHPAD_DOUBLE_CLICK_SPEED_DESC)
                         .control(widget::slider(0..=100, 0, |x| {
                             Message::SetDoubleClickSpeed(x, true)
                         })),
@@ -94,18 +105,16 @@ fn scrolling() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("mouse-scrolling"))
         .descriptions(vec![
-            fl!("mouse-scrolling", "speed"),
-            fl!("mouse-scrolling", "natural"),
-            fl!("mouse-scrolling", "natural-desc"),
+            MOUSE_SCROLL_SPEED.as_str().into(),
+            MOUSE_SCROLL_NATURAL.as_str().into(),
+            MOUSE_SCROLL_NATURAL_DESC.as_str().into(),
         ])
         .view::<Page>(|binder, _page, section| {
-            let descriptions = &section.descriptions;
-
             let input = binder.page::<super::Page>().expect("input page not found");
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*MOUSE_SCROLL_SPEED,
                     // TODO show numeric value
                     // TODO desired range?
                     widget::slider(
@@ -123,8 +132,8 @@ fn scrolling() -> Section<crate::pages::Message> {
                     ),
                 ))
                 .add(
-                    settings::item::builder(&descriptions[1])
-                        .description(&descriptions[2])
+                    settings::item::builder(&*MOUSE_SCROLL_NATURAL)
+                        .description(&*MOUSE_SCROLL_NATURAL_DESC)
                         .toggler(
                             input
                                 .input_touchpad
