@@ -78,7 +78,7 @@ fn touchpad() -> Section<crate::pages::Message> {
                 ))
                 .add(
                     settings::item::builder(&*TOUCHPAD_SPEED).control(widget::slider(
-                        0.0..=100.0,
+                        10.0..=90.0,
                         (input
                             .input_touchpad
                             .acceleration

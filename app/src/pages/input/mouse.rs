@@ -62,7 +62,7 @@ fn mouse() -> Section<crate::pages::Message> {
                 ))
                 .add(
                     settings::item::builder(&*MOUSE_SPEED).control(widget::slider(
-                        0.0..=100.0,
+                        1.0..=80.0,
                         (input
                             .input_default
                             .acceleration
