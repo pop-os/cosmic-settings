@@ -265,9 +265,6 @@ users = 使用者
 
 acceleration-desc = 自動依照觸控板移動加速度即時變更滑鼠速度
 
-double-click-speed = 按兩下觸控板的速度
-    .desc = 設定按兩下觸控板要以多短的間隔才會觸發按兩下事件
-
 primary-button = 主要按鈕
     .left = 左
     .right = 右

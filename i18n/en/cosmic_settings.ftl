@@ -360,9 +360,6 @@ acceleration-desc = Automatically adjusts tracking sensitivity based on speed.
 
 disable-while-typing = Disable while typing
 
-double-click-speed = Double-click speed
-    .desc = Changes how fast double-clicks have to be to register.
-
 input-devices = Input Devices
     .desc = Input Devices
 

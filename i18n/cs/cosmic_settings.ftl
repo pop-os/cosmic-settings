@@ -226,9 +226,6 @@ users = Uživatelé
 
 acceleration-desc = Automaticky upravit citlivost sledování na základě rychlosti.
 
-double-click-speed = Rychlost dvojtého kliknutí
-    .desc = Změní jak rychle je třeba zmáčknout dvakrát pro zaznamenání dvojkliku.
-
 primary-button = Hlavní tlačítko
     .left = Levé
     .right = Pravé

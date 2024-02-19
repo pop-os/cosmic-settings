@@ -65,8 +65,6 @@ fn touchpad() -> Section<crate::pages::Message> {
             TOUCHPAD_ACCELERAION.as_str().into(),
             super::ACCELERAION_DESC.as_str().into(),
             super::DISABLE_WHILE_TYPING.as_str().into(),
-            super::DOUBLE_CLICK_SPEED.as_str().into(),
-            super::DOUBLE_CLICK_SPEED_DESC.as_str().into(),
         ])
         .view::<Page>(|binder, _page, section| {
             let input = binder.page::<super::Page>().expect("input page not found");
@@ -108,13 +106,6 @@ fn touchpad() -> Section<crate::pages::Message> {
                         input.input_touchpad.disable_while_typing.unwrap_or(false),
                         |enabled| Message::DisableWhileTyping(enabled, true),
                     ),
-                )
-                .add(
-                    settings::item::builder(&*super::DOUBLE_CLICK_SPEED)
-                        .description(&*super::DOUBLE_CLICK_SPEED_DESC)
-                        .control(widget::slider(0..=100, 0, |x| {
-                            Message::SetDoubleClickSpeed(x, true)
-                        })),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)

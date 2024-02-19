@@ -22,8 +22,6 @@ mod touchpad;
 crate::cache_dynamic_lazy! {
     static ACCELERAION_DESC: String = fl!("acceleration-desc");
     static DISABLE_WHILE_TYPING: String = fl!("disable-while-typing");
-    static DOUBLE_CLICK_SPEED_DESC: String = fl!("double-click-speed", "desc");
-    static DOUBLE_CLICK_SPEED: String = fl!("double-click-speed");
     static PRIMARY_BUTTON: String = fl!("primary-button");
     static SCROLLING_NATURAL_DESC: String = fl!("scrolling", "natural-desc");
     static SCROLLING_NATURAL: String = fl!("scrolling", "natural");

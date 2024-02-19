@@ -359,9 +359,6 @@ users = Korisnici
 
 acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
 
-double-click-speed = Brzina dvostrukog klika
-    .desc = Menja potrebnu brzinu za registrovanje dvostrukih klikova.
-
 primary-button = Primarno dugme
     .left = Levo
     .right = Desno

@@ -297,9 +297,6 @@ users = Utenti
 
 acceleration-desc = Aggiusta automaticamente la sensibilità di tracciamento in base alla velocità.
 
-double-click-speed = Velocità doppio-click
-    .desc = Cambia quanto deve essere veloce il doppio-click per essere riconosciuto tale.
-
 primary-button = Tasto principale
     .left = Sinistro
     .right = Destro
