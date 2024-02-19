@@ -48,7 +48,7 @@ fn mouse() -> Section<crate::pages::Message> {
             super::PRIMARY_BUTTON.as_str().into(),
             MOUSE_SPEED.as_str().into(),
             MOUSE_ACCELERATION.as_str().into(),
-            super::ACCELERAION_DESC.as_str().into(),
+            super::ACCELERATION_DESC.as_str().into(),
         ])
         .view::<Page>(|binder, _page, section| {
             let input = binder.page::<super::Page>().expect("input page not found");
@@ -75,7 +75,7 @@ fn mouse() -> Section<crate::pages::Message> {
                 )
                 .add(
                     settings::item::builder(&*MOUSE_ACCELERATION)
-                        .description(&*super::ACCELERAION_DESC)
+                        .description(&*super::ACCELERATION_DESC)
                         .toggler(
                             input
                                 .input_default
