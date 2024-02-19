@@ -129,7 +129,7 @@ pub fn hardware_model(bump: &Bump, hardware_model: &mut String) {
                     None => name,
                 };
 
-                strcat!(&mut *hardware_model, " " name);
+                let _str = strcat!(&mut *hardware_model, " " name);
             }
 
             let buffer = &mut bumpalo::collections::Vec::new_in(bump);
@@ -137,7 +137,7 @@ pub fn hardware_model(bump: &Bump, hardware_model: &mut String) {
                 version = version.trim();
 
                 if !version.is_empty() && !VERSION_IGNORING_PRODUCTS.contains(&name) {
-                    strcat!(hardware_model, " (" version.trim() ")");
+                    let _str = strcat!(hardware_model, " (" version.trim() ")");
                 }
             }
         }

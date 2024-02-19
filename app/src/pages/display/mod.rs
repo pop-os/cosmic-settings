@@ -17,7 +17,6 @@ use cosmic::{command, Command, Element};
 use cosmic_randr_shell::{List, Output, OutputKey, Transform};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::{Key, SlotMap};
-use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::{process::ExitStatus, sync::Arc};
 
