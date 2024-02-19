@@ -20,7 +20,7 @@ mod mouse;
 mod touchpad;
 
 crate::cache_dynamic_lazy! {
-    static ACCELERAION_DESC: String = fl!("acceleration-desc");
+    static ACCELERATION_DESC: String = fl!("acceleration-desc");
     static DISABLE_WHILE_TYPING: String = fl!("disable-while-typing");
     static PRIMARY_BUTTON: String = fl!("primary-button");
     static SCROLLING_NATURAL_DESC: String = fl!("scrolling", "natural-desc");

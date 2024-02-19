@@ -1,4 +1,3 @@
-use cosmic::iced::Length;
 use cosmic::widget::{self, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_comp_config::input::{AccelProfile, ScrollMethod};
@@ -63,7 +62,7 @@ fn touchpad() -> Section<crate::pages::Message> {
             super::PRIMARY_BUTTON.as_str().into(),
             TOUCHPAD_SPEED.as_str().into(),
             TOUCHPAD_ACCELERAION.as_str().into(),
-            super::ACCELERAION_DESC.as_str().into(),
+            super::ACCELERATION_DESC.as_str().into(),
             super::DISABLE_WHILE_TYPING.as_str().into(),
         ])
         .view::<Page>(|binder, _page, section| {
@@ -91,7 +90,7 @@ fn touchpad() -> Section<crate::pages::Message> {
                 )
                 .add(
                     settings::item::builder(&*TOUCHPAD_ACCELERAION)
-                        .description(&*super::ACCELERAION_DESC)
+                        .description(&*super::ACCELERATION_DESC)
                         .toggler(
                             input
                                 .input_touchpad
