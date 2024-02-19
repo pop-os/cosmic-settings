@@ -351,12 +351,23 @@ firmware = Fast programvara
 users = Användare
     .desc = Autentisering och login, låsskärm.
 
-## Inmatning
+## Input
 
-input = Inmatning
-    .desc = Inmatning
+acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
 
-## Input: Tangentbord
+double-click-speed = Dubbelklickshastighet
+    .desc = Ändrar hur snabba dubbelklick måste vara för att registreras.
+
+primary-button = Primär knapp
+    .left = Vänster
+    .right = Höger
+
+scrolling = Rullning
+    .speed = Rullningshastighet
+    .natural = Naturlig rullning
+    .natural-desc = Rulla igenom innehållet istället för vyn
+
+## Input: Keyboard
 
 keyboard = Tangentbord
     .desc = Tangentbordsinmatning
@@ -373,37 +384,21 @@ keyboard-special-char = Specialteckenssinmatning
     .alternate = Alternativa tecken-knapp
     .compose = Compose knapp
 
-## Inmatning: Tangentbord: Genvägar
+## Input: Keyboard shortcuts
 
 keyboard-shortcuts = Tangentbordsgenvägar
     .desc = Visa och anpassa genvägar
 
-## Inmatning: Mus
+## Input: Mouse
+
 mouse = Mus
     .desc = Mushastighet, acceleration, naturlig rullning.
-    .primary-button = Primär knapp
-    .primary-button-left = Vänster
-    .primary-button-right = Höger
     .speed = Mushastighet
     .acceleration = Aktivera mus acceleration
-    .acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
-    .double-click-speed = Dubbelklickshastighet
-    .double-click-speed-desc = Ändrar hur snabba dubbelklick måste vara för att registreras.
 
-mouse-scrolling = Rullning
-    .speed = Rullningshastighet
-    .natural = Naturlig rullning
-    .natural-desc = Rulla igenom innehållet istället för vyn
-
-## Inmatning: Pekplatta
+## Input: Touchpad
 
 touchpad = Pekplatta
     .desc = Pekplattans hastighet, klickalternativ, gester.
-    .primary-button = Primär knapp
-    .primary-button-left = Vänster
-    .primary-button-right = Höger
     .speed = Pekplattans hastighet
     .acceleration = Aktivera pekplattans acceleration
-    .acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
-    .double-click-speed = Dubbelklickshastighet
-    .double-click-speed-desc = Ändrar hur snabba dubbelklick måste vara för att registreras.
