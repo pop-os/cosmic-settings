@@ -32,8 +32,8 @@ pub struct PageInner {
 impl Default for PageInner {
     fn default() -> Self {
         Self {
-            config_helper: Default::default(),
-            panel_config: Default::default(),
+            config_helper: Option::default(),
+            panel_config: Option::default(),
             outputs: vec![fl!("all")],
             anchors: vec![
                 Anchor(PanelAnchor::Left).to_string(),
@@ -46,8 +46,8 @@ impl Default for PageInner {
                 Appearance::Light.to_string(),
                 Appearance::Dark.to_string(),
             ],
-            container_config: Default::default(),
-            outputs_map: Default::default(),
+            container_config: Option::default(),
+            outputs_map: HashMap::default(),
         }
     }
 }
@@ -282,10 +282,10 @@ pub struct Anchor(PanelAnchor);
 impl ToString for Anchor {
     fn to_string(&self) -> String {
         match self.0 {
-            PanelAnchor::Top => fl!("panel-top").into(),
-            PanelAnchor::Bottom => fl!("panel-bottom").into(),
-            PanelAnchor::Left => fl!("panel-left").into(),
-            PanelAnchor::Right => fl!("panel-right").into(),
+            PanelAnchor::Top => fl!("panel-top"),
+            PanelAnchor::Bottom => fl!("panel-bottom"),
+            PanelAnchor::Left => fl!("panel-left"),
+            PanelAnchor::Right => fl!("panel-right"),
         }
     }
 }
@@ -349,7 +349,7 @@ impl PageInner {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) {
         let helper = self.config_helper.as_ref().unwrap();
-        let Some(mut panel_config) = self.panel_config.as_mut() else {
+        let Some(panel_config) = self.panel_config.as_mut() else {
             return;
         };
 
@@ -384,7 +384,7 @@ impl PageInner {
                 if i == 0 {
                     panel_config.output = CosmicPanelOuput::All;
                 } else {
-                    panel_config.output = CosmicPanelOuput::Name(self.outputs[i].clone())
+                    panel_config.output = CosmicPanelOuput::Name(self.outputs[i].clone());
                 }
             }
             Message::AnchorGap(enabled) => {

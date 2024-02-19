@@ -10,7 +10,7 @@ use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
 use cosmic::iced::wayland::actions::window::SctkWindowSettings;
 use cosmic::iced::window;
-use cosmic::iced_core::{alignment, layout, Alignment, Color, Length};
+use cosmic::iced_core::{alignment, layout, Color, Length};
 use cosmic::iced_sctk::commands::window::{close_window, get_window};
 use cosmic::iced_widget::scrollable;
 use cosmic::widget::icon::{from_name, icon};
@@ -300,7 +300,7 @@ impl Page {
                 *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
 
                 let theme_builder = self.theme_builder.clone();
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
                         // TODO set the values of the theme builder
                         theme_builder.build(),
@@ -312,7 +312,6 @@ impl Page {
                 if let Some(config) = self.theme_mode_config.as_ref() {
                     _ = config.set::<bool>("auto_switch", enabled);
                 }
-                if !enabled {}
                 Command::none()
             }
             Message::AccentWindowHint(u) => {
@@ -419,7 +418,7 @@ impl Page {
                 let cmd = match &u {
                     ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
                         theme_builder_needs_update = true;
-                        Command::perform(async {}, |_| crate::app::Message::CloseContextDrawer)
+                        Command::perform(async {}, |()| crate::app::Message::CloseContextDrawer)
                     }
                     ColorPickerUpdate::ActionFinished => {
                         theme_builder_needs_update = true;
@@ -429,9 +428,9 @@ impl Page {
                         Command::none()
                     }
                     ColorPickerUpdate::Cancel => {
-                        Command::perform(async {}, |_| crate::app::Message::CloseContextDrawer)
+                        Command::perform(async {}, |()| crate::app::Message::CloseContextDrawer)
                     }
-                    ColorPickerUpdate::ToggleColorPicker => Command::perform(async {}, |_| {
+                    ColorPickerUpdate::ToggleColorPicker => Command::perform(async {}, |()| {
                         crate::app::Message::OpenContextDrawer(fl!("container-background").into())
                     }),
                     _ => Command::none(),
@@ -591,7 +590,7 @@ impl Page {
             Message::Entered => {
                 *self = Self::default();
                 let theme_builder = self.theme_builder.clone();
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
                         // TODO set the values of the theme builder
                         theme_builder.build(),
@@ -600,7 +599,7 @@ impl Page {
                 // Load the current theme builders and mode
                 // Set the theme for the application to match the current mode instead of the system theme?
             }
-            Message::Left => Command::perform(async {}, |_| {
+            Message::Left => Command::perform(async {}, |()| {
                 app::Message::SetTheme(cosmic::theme::system_preference())
             }),
             Message::PaletteAccent(c) => {
@@ -631,7 +630,7 @@ impl Page {
                 }
 
                 *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
                 })
             }
@@ -639,7 +638,7 @@ impl Page {
                 async {
                     SelectedFiles::open_file()
                         .modal(true)
-                        .filter(FileFilter::glob(FileFilter::new("ron").into(), "*.ron"))
+                        .filter(FileFilter::glob(FileFilter::new("ron"), "*.ron"))
                         .send()
                         .await?
                         .response()
@@ -688,7 +687,7 @@ impl Page {
                 )
             }
             Message::ImportFile(f) => {
-                let Some(f) = f.uris().get(0) else {
+                let Some(f) = f.uris().first() else {
                     return Command::none();
                 };
                 if f.scheme() != "file" {
@@ -715,7 +714,7 @@ impl Page {
                 )
             }
             Message::ExportFile(f) => {
-                let Some(f) = f.uris().get(0) else {
+                let Some(f) = f.uris().first() else {
                     return Command::none();
                 };
                 if f.scheme() != "file" {
@@ -775,7 +774,7 @@ impl Page {
                 }
 
                 *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
                 })
             }
@@ -811,7 +810,7 @@ impl Page {
                         );
                     _ = self.accent_window_hint.update::<app::Message>(
                         ColorPickerUpdate::ActiveColor(Hsv::from_color(window_hint)),
-                    )
+                    );
                 };
                 Command::none()
             }
@@ -859,7 +858,7 @@ impl Page {
             let theme_builder = self.theme_builder.clone();
             ret = Command::batch(vec![
                 ret,
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
                         theme_builder.build(),
                     )))
@@ -969,7 +968,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Command<crate::pages::Message> {
-        Command::perform(async {}, |_| {
+        Command::perform(async {}, |()| {
             crate::pages::Message::Appearance(Message::Left)
         })
     }

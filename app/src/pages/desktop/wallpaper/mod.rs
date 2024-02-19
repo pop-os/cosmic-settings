@@ -46,7 +46,6 @@ use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
-use std::borrow::Cow;
 
 const ZOOM: usize = 0;
 const FIT: usize = 1;
