@@ -49,8 +49,6 @@ fn mouse() -> Section<crate::pages::Message> {
             MOUSE_SPEED.as_str().into(),
             MOUSE_ACCELERATION.as_str().into(),
             super::ACCELERAION_DESC.as_str().into(),
-            super::DOUBLE_CLICK_SPEED.as_str().into(),
-            super::DOUBLE_CLICK_SPEED_DESC.as_str().into(),
         ])
         .view::<Page>(|binder, _page, section| {
             let input = binder.page::<super::Page>().expect("input page not found");
@@ -86,13 +84,6 @@ fn mouse() -> Section<crate::pages::Message> {
                                 .map_or(true, |x| x.profile == Some(AccelProfile::Adaptive)),
                             |x| Message::SetAcceleration(x, false),
                         ),
-                )
-                .add(
-                    settings::item::builder(&*super::DOUBLE_CLICK_SPEED)
-                        .description(&*super::DOUBLE_CLICK_SPEED_DESC)
-                        .control(widget::slider(0..=100, 0, |x| {
-                            Message::SetDoubleClickSpeed(x, false)
-                        })),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)

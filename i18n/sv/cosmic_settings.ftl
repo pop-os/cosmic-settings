@@ -355,9 +355,6 @@ users = Användare
 
 acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
 
-double-click-speed = Dubbelklickshastighet
-    .desc = Ändrar hur snabba dubbelklick måste vara för att registreras.
-
 primary-button = Primär knapp
     .left = Vänster
     .right = Höger

@@ -369,9 +369,6 @@ users = Użytkownicy
 
 acceleration-desc = Automatycznie dostosuj dokładność śledzenia opierając się na szybkości ruchu myszki.
 
-double-click-speed = Prędkość podwójnego kliknięcia
-    .desc = Ustawia to, jak szybkie musi być podwójnego kliknięcia, by było zarejestrowane.
-
 input-devices = Urządzenia Wejściowe
     .desc = Urządzenia Wejściowe
 
