@@ -1,5 +1,5 @@
 use cosmic::iced::Length;
-use cosmic::widget::{self, settings};
+use cosmic::widget::{self, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_comp_config::input::{AccelProfile, ScrollMethod};
 use cosmic_settings_page::Section;
@@ -14,22 +14,22 @@ crate::cache_dynamic_lazy! {
     static TWO_FINGER_SCROLLING: String = fl!("two-finger-scrolling");
     static PINCH_TO_ZOOM_DESC: String = fl!("pinch-to-zoom", "desc");
     static PINCH_TO_ZOOM: String = fl!("pinch-to-zoom");
-    // static SWIPING_FOUR_FINGER_DOWN: String = fl!("swiping", "four-finger-down");
-    // static SWIPING_FOUR_FINGER_LEFT: String = fl!("swiping", "four-finger-left");
-    // static SWIPING_FOUR_FINGER_RIGHT: String = fl!("swiping", "four-finger-right");
-    // static SWIPING_FOUR_FINGER_UP: String = fl!("swiping", "four-finger-up");
-    // static SWIPING_THREE_FINGER_ANY: String = fl!("swiping", "three-finger-any");
-    // static SWIPING: String = fl!("swiping");
     static TAP_TO_CLICK_DESC: String = fl!("tap-to-click", "desc");
     static TAP_TO_CLICK: String = fl!("tap-to-click");
     static TAPPING_AND_PINCHING: String = fl!("tapping-and-pinching");
     static TOUCHPAD_ACCELERAION: String = fl!("touchpad", "acceleration");
     static TOUCHPAD_SPEED: String = fl!("touchpad", "speed");
-    // static SWITCH_BETWEEN_WINDOWS: String = fl!("switch-between-windows");
-    // static SWITCH_TO_NEXT_WORKSPACE: String = fl!("switch-to-next-workspace");
-    // static SWITCH_TO_PREV_WORKSPACE: String = fl!("switch-to-prev-workspace");
-    // static OPEN_APPLICATION_LIBRARY: String = fl!("open-application-library");
 
+    static OPEN_APPLICATION_LIBRARY: String = fl!("open-application-library");
+    static OPEN_WORKSPACES_VIEW: String = fl!("open-workspaces-view");
+    static SWIPING_FOUR_FINGER_DOWN: String = fl!("swiping", "four-finger-down");
+    static SWIPING_FOUR_FINGER_LEFT: String = fl!("swiping", "four-finger-left");
+    static SWIPING_FOUR_FINGER_RIGHT: String = fl!("swiping", "four-finger-right");
+    static SWIPING_FOUR_FINGER_UP: String = fl!("swiping", "four-finger-up");
+    static SWIPING_THREE_FINGER_ANY: String = fl!("swiping", "three-finger-any");
+    static SWITCH_BETWEEN_WINDOWS: String = fl!("switch-between-windows");
+    static SWITCH_TO_NEXT_WORKSPACE: String = fl!("switch-to-next-workspace");
+    static SWITCH_TO_PREV_WORKSPACE: String = fl!("switch-to-prev-workspace");
 }
 
 #[derive(Default)]
@@ -44,7 +44,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(touchpad()),
             sections.insert(tapping_and_pinching()),
             sections.insert(scrolling()),
-            // sections.insert(swiping()),
+            sections.insert(swiping()),
         ])
     }
 
@@ -235,14 +235,39 @@ fn scrolling() -> Section<crate::pages::Message> {
         })
 }
 
-// fn swiping() -> Section<crate::pages::Message> {
-//     Section::default()
-//         .title(&*SWIPING)
-//         .descriptions(vec![
-//             SWIPING_FOUR_FINGER_DOWN.as_str().into(),
-//             SWIPING_FOUR_FINGER_LEFT.as_str().into(),
-//             SWIPING_FOUR_FINGER_RIGHT.as_str().into(),
-//             SWIPING_FOUR_FINGER_UP.as_str().into(),
-//             SWIPING_THREE_FINGER_ANY.as_str().into(),
-//         ])
-// }
+fn swiping() -> Section<crate::pages::Message> {
+    Section::default()
+        .title(fl!("swiping"))
+        .descriptions(vec![
+            SWIPING_FOUR_FINGER_DOWN.as_str().into(),
+            SWIPING_FOUR_FINGER_LEFT.as_str().into(),
+            SWIPING_FOUR_FINGER_RIGHT.as_str().into(),
+            SWIPING_FOUR_FINGER_UP.as_str().into(),
+            SWIPING_THREE_FINGER_ANY.as_str().into(),
+        ])
+        .view::<Page>(|_binder, _page, section| {
+            settings::view_section(&*section.title)
+                .add(
+                    settings::item::builder(&*SWIPING_THREE_FINGER_ANY)
+                        .control(text(&*SWITCH_BETWEEN_WINDOWS)),
+                )
+                .add(
+                    settings::item::builder(&*SWIPING_FOUR_FINGER_UP)
+                        .control(text(&*SWITCH_TO_PREV_WORKSPACE)),
+                )
+                .add(
+                    settings::item::builder(&*SWIPING_FOUR_FINGER_DOWN)
+                        .control(text(&*SWITCH_TO_NEXT_WORKSPACE)),
+                )
+                .add(
+                    settings::item::builder(&*SWIPING_FOUR_FINGER_LEFT)
+                        .control(text(&*OPEN_WORKSPACES_VIEW)),
+                )
+                .add(
+                    settings::item::builder(&*SWIPING_FOUR_FINGER_RIGHT)
+                        .control(text(&*OPEN_APPLICATION_LIBRARY)),
+                )
+                .apply(Element::from)
+                .map(crate::pages::Message::Input)
+        })
+}
