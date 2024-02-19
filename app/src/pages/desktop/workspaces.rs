@@ -133,21 +133,21 @@ fn multi_behavior() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("workspaces-multi-behavior"))
         .descriptions(vec![
-            fl!("workspaces-multi-behavior", "span"),
-            fl!("workspaces-multi-behavior", "separate"),
+            fl!("workspaces-multi-behavior", "span").into(),
+            fl!("workspaces-multi-behavior", "separate").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .add(settings::item_row(vec![radio(
-                    &descriptions[0],
+                    &*descriptions[0],
                     WorkspaceMode::Global,
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
                 )
                 .into()]))
                 .add(settings::item_row(vec![radio(
-                    &descriptions[1],
+                    &*descriptions[1],
                     WorkspaceMode::OutputBound,
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
@@ -162,18 +162,18 @@ fn overview_thumbnails() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("workspaces-overview-thumbnails"))
         .descriptions(vec![
-            fl!("workspaces-overview-thumbnails", "show-number"),
-            fl!("workspaces-overview-thumbnails", "show-name"),
+            fl!("workspaces-overview-thumbnails", "show-number").into(),
+            fl!("workspaces-overview-thumbnails", "show-name").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .add(
-                    settings::item::builder(&descriptions[0])
+                    settings::item::builder(&*descriptions[0])
                         .toggler(page.show_workspace_number, Message::SetShowNumber),
                 )
                 .add(
-                    settings::item::builder(&descriptions[1])
+                    settings::item::builder(&*descriptions[1])
                         .toggler(page.show_workspace_name, Message::SetShowName),
                 )
                 .apply(Element::from)

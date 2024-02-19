@@ -51,13 +51,13 @@ fn alerts() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("sound-alerts"))
         .descriptions(vec![
-            fl!("sound-alerts", "volume"),
-            fl!("sound-alerts", "sound"),
+            fl!("sound-alerts", "volume").into(),
+            fl!("sound-alerts", "sound").into(),
         ])
         .view::<Page>(|_binder, _page, section| {
             settings::view_section(&section.title)
-                .add(settings::item(&section.descriptions[0], text("TODO")))
-                .add(settings::item(&section.descriptions[1], text("TODO")))
+                .add(settings::item(&*section.descriptions[0], text("TODO")))
+                .add(settings::item(&*section.descriptions[1], text("TODO")))
                 .into()
         })
 }
@@ -65,10 +65,10 @@ fn alerts() -> Section<crate::pages::Message> {
 fn applications() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("sound-applications"))
-        .descriptions(vec![fl!("sound-applications", "desc")])
+        .descriptions(vec![fl!("sound-applications", "desc").into()])
         .view::<Page>(|_binder, _page, section| {
             settings::view_section(&section.title)
-                .add(settings::item(&section.descriptions[0], text("TODO")))
+                .add(settings::item(&*section.descriptions[0], text("TODO")))
                 .into()
         })
 }
@@ -77,15 +77,15 @@ fn input() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("sound-input"))
         .descriptions(vec![
-            fl!("sound-input", "volume"),
-            fl!("sound-input", "device"),
-            fl!("sound-input", "level"),
+            fl!("sound-input", "volume").into(),
+            fl!("sound-input", "device").into(),
+            fl!("sound-input", "level").into(),
         ])
         .view::<Page>(|_binder, _page, section| {
             settings::view_section(&section.title)
-                .add(settings::item(&section.descriptions[0], text("TODO")))
-                .add(settings::item(&section.descriptions[1], text("TODO")))
-                .add(settings::item(&section.descriptions[2], text("TODO")))
+                .add(settings::item(&*section.descriptions[0], text("TODO")))
+                .add(settings::item(&*section.descriptions[1], text("TODO")))
+                .add(settings::item(&*section.descriptions[2], text("TODO")))
                 .into()
         })
 }
@@ -94,18 +94,18 @@ fn output() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("sound-output"))
         .descriptions(vec![
-            fl!("sound-output", "volume"),
-            fl!("sound-output", "device"),
-            fl!("sound-output", "level"),
-            fl!("sound-output", "config"),
-            fl!("sound-output", "balance"),
+            fl!("sound-output", "volume").into(),
+            fl!("sound-output", "device").into(),
+            fl!("sound-output", "level").into(),
+            fl!("sound-output", "config").into(),
+            fl!("sound-output", "balance").into(),
         ])
         .view::<Page>(|_binder, _page, section| {
             settings::view_section(&section.title)
-                .add(settings::item(&section.descriptions[0], text("TODO")))
-                .add(settings::item(&section.descriptions[1], text("TODO")))
-                .add(settings::item(&section.descriptions[2], text("TODO")))
-                .add(settings::item(&section.descriptions[3], text("TODO")))
+                .add(settings::item(&*section.descriptions[0], text("TODO")))
+                .add(settings::item(&*section.descriptions[1], text("TODO")))
+                .add(settings::item(&*section.descriptions[2], text("TODO")))
+                .add(settings::item(&*section.descriptions[3], text("TODO")))
                 .into()
         })
 }

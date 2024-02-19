@@ -46,7 +46,7 @@ use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
-use static_init::dynamic;
+use std::borrow::Cow;
 
 const ZOOM: usize = 0;
 const FIT: usize = 1;
@@ -1056,26 +1056,21 @@ pub async fn change_folder(current_folder: PathBuf) -> Context {
     update
 }
 
-#[dynamic]
-static WALLPAPER_SAME: String = fl!("wallpaper", "same");
-
-#[dynamic]
-static WALLPAPER_FIT: String = fl!("wallpaper", "fit");
-
-#[dynamic]
-static WALLPAPER_SLIDE: String = fl!("wallpaper", "slide");
-
-#[dynamic]
-static WALLPAPER_CHANGE: String = fl!("wallpaper", "change");
+crate::cache_dynamic_lazy! {
+    static WALLPAPER_SAME: String = fl!("wallpaper", "same");
+    static WALLPAPER_FIT: String = fl!("wallpaper", "fit");
+    static WALLPAPER_SLIDE: String = fl!("wallpaper", "slide");
+    static WALLPAPER_CHANGE: String = fl!("wallpaper", "change");
+}
 
 #[allow(clippy::too_many_lines)]
 pub fn settings() -> Section<crate::pages::Message> {
     Section::default()
         .descriptions(vec![
-            WALLPAPER_SAME.clone(),
-            WALLPAPER_FIT.clone(),
-            WALLPAPER_SLIDE.clone(),
-            WALLPAPER_CHANGE.clone(),
+            WALLPAPER_SAME.as_str().into(),
+            WALLPAPER_FIT.as_str().into(),
+            WALLPAPER_SLIDE.as_str().into(),
+            WALLPAPER_CHANGE.as_str().into(),
         ])
         .view::<Page>(|_binder, page, _section| {
             let mut children = Vec::with_capacity(3);
