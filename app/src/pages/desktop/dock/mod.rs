@@ -126,7 +126,7 @@ impl Default for Page {
 
 pub(crate) fn enable() -> Section<crate::pages::Message> {
     Section::default()
-        .descriptions(vec![fl!("dock")])
+        .descriptions(vec![fl!("dock").into()])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
             let Some(container_config) = page.inner.container_config.as_ref() else {
@@ -134,7 +134,7 @@ pub(crate) fn enable() -> Section<crate::pages::Message> {
             };
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     toggler(
                         None,
                         container_config

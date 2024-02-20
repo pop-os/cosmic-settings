@@ -3,6 +3,7 @@
 
 use derive_setters::Setters;
 use regex::Regex;
+use std::borrow::Cow;
 
 use crate::{Binder, Page};
 
@@ -10,6 +11,8 @@ slotmap::new_key_type! {
     /// The unique ID of a section of page.
     pub struct Entity;
 }
+
+pub type ShowWhileFn<Message> = Box<dyn for<'a> Fn(&'a dyn Page<Message>) -> bool>;
 
 pub type ViewFn<Message> = Box<
     dyn for<'a> Fn(
@@ -27,7 +30,10 @@ pub type ViewFn<Message> = Box<
 pub struct Section<Message> {
     #[setters(into)]
     pub title: String,
-    pub descriptions: Vec<String>,
+    #[setters(into)]
+    pub descriptions: Vec<Cow<'static, str>>,
+    #[setters(skip)]
+    pub show_while: Option<ShowWhileFn<Message>>,
     #[setters(skip)]
     pub view_fn: ViewFn<Message>,
     #[setters(bool)]
@@ -39,6 +45,7 @@ impl<Message: 'static> Default for Section<Message> {
         Self {
             title: String::new(),
             descriptions: Vec::new(),
+            show_while: None,
             view_fn: Box::new(unimplemented),
             search_ignore: false,
         }
@@ -56,13 +63,30 @@ impl<Message: 'static> Section<Message> {
             return true;
         }
 
-        for description in &self.descriptions {
-            if rule.is_match(description.as_str()) {
+        for description in &*self.descriptions {
+            if rule.is_match(description) {
                 return true;
             }
         }
 
         false
+    }
+
+    pub fn show_while<Model: Page<Message>>(
+        mut self,
+        func: impl for<'a> Fn(&'a Model) -> bool + 'static,
+    ) -> Self {
+        self.show_while = Some(Box::new(move |model: &dyn Page<Message>| {
+            let model = model.downcast_ref::<Model>().unwrap_or_else(|| {
+                panic!(
+                    "page model type mismatch: expected {}",
+                    std::any::type_name::<Model>()
+                )
+            });
+
+            func(model)
+        }));
+        self
     }
 
     /// # Panics

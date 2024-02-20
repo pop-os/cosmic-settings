@@ -149,7 +149,7 @@ impl cosmic::Application for SettingsApp {
         } else {
             icon::from_name("system-search-symbolic")
                 .apply(button::icon)
-                .padding([0, 16])
+                .padding([0, cosmic::theme::active().cosmic().space_s()])
                 .on_press(Message::SearchActivate)
                 .into()
         });
@@ -420,6 +420,8 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn view(&self) -> Element<Message> {
+        let theme = cosmic::theme::active();
+
         let page_view = if self.search_active {
             self.search_view()
         } else if let Some(content) = self.pages.content(self.active_page) {
@@ -430,14 +432,18 @@ impl cosmic::Application for SettingsApp {
             panic!("page without sub-pages or content");
         };
 
-        let padding = if self.core.is_condensed() { 0 } else { 64 };
+        let padding = if self.core.is_condensed() {
+            0
+        } else {
+            theme.cosmic().space_l()
+        };
 
         container(page_view)
             .max_width(800)
             .width(Length::Fill)
             .apply(container)
             .center_x()
-            .padding([0, padding])
+            .padding([theme.cosmic().space_xxs(), padding])
             .width(Length::Fill)
             .apply(scrollable)
             .into()
@@ -601,9 +607,10 @@ impl SettingsApp {
                 Message::Page(parent),
             );
 
-            let mut page_header_content = row::with_capacity(2)
-                .align_items(iced::Alignment::End)
-                .push(page_header);
+            let mut page_header_content: cosmic::iced_widget::Row<'_, Message, Theme> =
+                row::with_capacity(2)
+                    .align_items(iced::Alignment::End)
+                    .push(page_header);
 
             if let Some(element) = page.header_view() {
                 page_header_content = page_header_content.push(element.map(Message::from));
@@ -617,12 +624,19 @@ impl SettingsApp {
             let section = &self.pages.sections[id];
             let model = &self.pages.page[self.active_page];
 
-            column_widgets.push(
-                (section.view_fn)(&self.pages, model.as_ref(), section).map(Message::PageMessage),
-            );
+            if section
+                .show_while
+                .as_ref()
+                .map_or(true, |func| func(model.as_ref()))
+            {
+                column_widgets.push(
+                    (section.view_fn)(&self.pages, model.as_ref(), section)
+                        .map(Message::PageMessage),
+                );
+            }
         }
 
-        settings::view_column(column_widgets).padding(0).into()
+        settings::view_column(column_widgets).into()
     }
 
     fn search_changed(&mut self, phrase: String) {
@@ -673,12 +687,18 @@ impl SettingsApp {
                 sections.push(search_header(&self.pages, page));
             }
 
-            let section = (section.view_fn)(&self.pages, model.as_ref(), section)
-                .map(Message::PageMessage)
-                .apply(iced::widget::container)
-                .padding([0, 0, 0, 48]);
+            if section
+                .show_while
+                .as_ref()
+                .map_or(true, |func| func(model.as_ref()))
+            {
+                let section = (section.view_fn)(&self.pages, model.as_ref(), section)
+                    .map(Message::PageMessage)
+                    .apply(iced::widget::container)
+                    .padding([0, 0, 0, cosmic::theme::active().cosmic().space_xl()]);
 
-            sections.push(section.into());
+                sections.push(section.into());
+            }
         }
 
         settings::view_column(sections).into()
@@ -686,7 +706,9 @@ impl SettingsApp {
 
     /// Displays the sub-pages view of a page.
     fn sub_page_view(&self, sub_pages: &[page::Entity]) -> cosmic::Element<Message> {
-        let mut page_list = column::with_capacity(sub_pages.len()).spacing(18);
+        let theme = cosmic::theme::active();
+        let mut page_list =
+            column::with_capacity(sub_pages.len()).spacing(theme.cosmic().space_s());
 
         for entity in sub_pages.iter().copied() {
             let sub_page = &self.pages.info[entity];
@@ -701,7 +723,8 @@ impl SettingsApp {
         column::with_capacity(2)
             .push(page_title(&self.pages.info[self.active_page]))
             .push(Element::from(page_list).map(Message::Page))
-            .spacing(24)
+            .spacing(theme.cosmic().space_m())
+            .padding(0)
             .into()
     }
 }

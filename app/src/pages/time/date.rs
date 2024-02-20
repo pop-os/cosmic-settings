@@ -61,15 +61,18 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 fn date() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("time-date"))
-        .descriptions(vec![fl!("time-date", "auto"), fl!("time-date")])
+        .descriptions(vec![
+            fl!("time-date", "auto").into(),
+            fl!("time-date").into(),
+        ])
         .view::<Page>(|_binder, page, section| {
             settings::view_section(&section.title)
                 .add(
-                    settings::item::builder(&section.descriptions[0])
+                    settings::item::builder(&*section.descriptions[0])
                         .toggler(page.auto, Message::Automatic),
                 )
                 .add(settings::item(
-                    &section.descriptions[1],
+                    &*section.descriptions[1],
                     horizontal_space(Length::Fill),
                 ))
                 .apply(cosmic::Element::from)
@@ -81,19 +84,19 @@ fn format() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("time-format"))
         .descriptions(vec![
-            fl!("time-format", "twenty-four"),
-            fl!("time-format", "first"),
+            fl!("time-format", "twenty-four").into(),
+            fl!("time-format", "first").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             settings::view_section(&section.title)
                 // 24-hour toggle
                 .add(
-                    settings::item::builder(&section.descriptions[0])
+                    settings::item::builder(&*section.descriptions[0])
                         .toggler(page.military_time, Message::MilitaryTime),
                 )
                 // First day of week
                 .add(settings::item(
-                    &section.descriptions[1],
+                    &*section.descriptions[1],
                     horizontal_space(Length::Fill),
                 ))
                 .apply(cosmic::Element::from)
@@ -105,21 +108,21 @@ fn timezone() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("time-zone"))
         .descriptions(vec![
-            fl!("time-zone", "auto"),
-            fl!("time-zone", "auto-info"),
-            fl!("time-zone"),
+            fl!("time-zone", "auto").into(),
+            fl!("time-zone", "auto-info").into(),
+            fl!("time-zone").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             settings::view_section(&section.title)
                 // Automatic timezone toggle
                 .add(
-                    settings::item::builder(&section.descriptions[0])
-                        .description(&section.descriptions[1])
+                    settings::item::builder(&*section.descriptions[0])
+                        .description(&*section.descriptions[1])
                         .toggler(page.auto_timezone, Message::AutomaticTimezone),
                 )
                 // Time zone select
                 .add(
-                    settings::item::builder(&section.descriptions[2])
+                    settings::item::builder(&*section.descriptions[2])
                         .control(horizontal_space(Length::Fill)),
                 )
                 .apply(cosmic::Element::from)

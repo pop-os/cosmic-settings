@@ -434,13 +434,7 @@ impl Page {
                 list.retain(|id| id != &to_remove);
                 self.save();
             }
-            Message::DetailStart(_) => {
-                // TODO ask design team
-            }
-            Message::DetailCenter(_) => {
-                // TODO ask design team
-            }
-            Message::DetailEnd(_) => {
+            Message::DetailStart(_) | Message::DetailCenter(_) | Message::DetailEnd(_) => {
                 // TODO ask design team
             }
             Message::Cancel => {

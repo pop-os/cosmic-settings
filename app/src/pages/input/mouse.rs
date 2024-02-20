@@ -8,10 +8,15 @@ use slotmap::SlotMap;
 
 use super::Message;
 
+crate::cache_dynamic_lazy! {
+    static MOUSE_ACCELERATION: String = fl!("mouse", "acceleration");
+    static MOUSE_SPEED: String = fl!("mouse", "speed");
+}
+
 pub fn default_primary_button() -> cosmic::widget::segmented_button::SingleSelectModel {
     let mut model = cosmic::widget::segmented_button::SingleSelectModel::builder()
-        .insert(|b| b.text(fl!("mouse", "primary-button-left")))
-        .insert(|b| b.text(fl!("mouse", "primary-button-right")))
+        .insert(|b| b.text(fl!("primary-button", "left")))
+        .insert(|b| b.text(fl!("primary-button", "right")))
         .build();
     model.activate_position(0);
     model
@@ -40,27 +45,24 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 fn mouse() -> Section<crate::pages::Message> {
     Section::default()
         .descriptions(vec![
-            fl!("mouse", "primary-button"),
-            fl!("mouse", "speed"),
-            fl!("mouse", "acceleration"),
-            fl!("mouse", "acceleration-desc"),
-            fl!("mouse", "double-click-speed"),
-            fl!("mouse", "double-click-speed-desc"),
+            super::PRIMARY_BUTTON.as_str().into(),
+            MOUSE_SPEED.as_str().into(),
+            MOUSE_ACCELERATION.as_str().into(),
+            super::ACCELERATION_DESC.as_str().into(),
         ])
         .view::<Page>(|binder, _page, section| {
-            let descriptions = &section.descriptions;
-
             let input = binder.page::<super::Page>().expect("input page not found");
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*super::PRIMARY_BUTTON,
                     cosmic::widget::segmented_selection::horizontal(&input.primary_button)
+                        .minimum_button_width(0)
                         .on_activate(|x| Message::PrimaryButtonSelected(x, false)),
                 ))
                 .add(
-                    settings::item::builder(&descriptions[1]).control(widget::slider(
-                        0.0..=100.0,
+                    settings::item::builder(&*MOUSE_SPEED).control(widget::slider(
+                        1.0..=80.0,
                         (input
                             .input_default
                             .acceleration
@@ -72,8 +74,8 @@ fn mouse() -> Section<crate::pages::Message> {
                     )),
                 )
                 .add(
-                    settings::item::builder(&descriptions[2])
-                        .description(&descriptions[3])
+                    settings::item::builder(&*MOUSE_ACCELERATION)
+                        .description(&*super::ACCELERATION_DESC)
                         .toggler(
                             input
                                 .input_default
@@ -83,13 +85,6 @@ fn mouse() -> Section<crate::pages::Message> {
                             |x| Message::SetAcceleration(x, false),
                         ),
                 )
-                .add(
-                    settings::item::builder(&descriptions[4])
-                        .description(&descriptions[5])
-                        .control(widget::slider(0..=100, 0, |x| {
-                            Message::SetDoubleClickSpeed(x, false)
-                        })),
-                )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
         })
@@ -97,11 +92,11 @@ fn mouse() -> Section<crate::pages::Message> {
 
 fn scrolling() -> Section<crate::pages::Message> {
     Section::default()
-        .title(fl!("mouse-scrolling"))
+        .title(fl!("scrolling"))
         .descriptions(vec![
-            fl!("mouse-scrolling", "speed"),
-            fl!("mouse-scrolling", "natural"),
-            fl!("mouse-scrolling", "natural-desc"),
+            fl!("scrolling", "speed").into(),
+            fl!("scrolling", "natural").into(),
+            fl!("scrolling", "natural-desc").into(),
         ])
         .view::<Page>(|binder, _page, section| {
             let descriptions = &section.descriptions;
@@ -110,7 +105,7 @@ fn scrolling() -> Section<crate::pages::Message> {
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     // TODO show numeric value
                     // TODO desired range?
                     widget::slider(
@@ -128,8 +123,8 @@ fn scrolling() -> Section<crate::pages::Message> {
                     ),
                 ))
                 .add(
-                    settings::item::builder(&descriptions[1])
-                        .description(&descriptions[2])
+                    settings::item::builder(&*descriptions[1])
+                        .description(&*descriptions[2])
                         .toggler(
                             input
                                 .input_default

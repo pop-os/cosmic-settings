@@ -367,8 +367,19 @@ users = Użytkownicy
 
 ## Input
 
-input = Wprowadzanie Danych
-    .desc = Wprowadzanie Danych
+acceleration-desc = Automatycznie dostosuj dokładność śledzenia opierając się na szybkości ruchu myszki.
+
+input-devices = Urządzenia Wejściowe
+    .desc = Urządzenia Wejściowe
+
+primary-button = Główny przycisk
+    .left = Lewy
+    .right = Prawy
+
+scrolling = Przewijanie
+    .speed = Prędkość przewijania
+    .natural = Naturalne przewijanie
+    .natural-desc = Przewijaj zawartość, nie widok
 
 ## Input: Keyboard
 
@@ -395,29 +406,12 @@ keyboard-shortcuts = Skróty Klawiaturowe
 ## Input: Mouse
 mouse = Myszka
     .desc = Prędkość, przyśpieszenie i naturalne przewijanie myszki
-    .primary-button = Główny przycisk
-    .primary-button-left = Lewy
-    .primary-button-right = Prawy
     .speed = Prędkość myszki
     .acceleration = Włącz przyśpieszenie myszki
-    .acceleration-desc = Automatycznie dostosuj dokładność śledzenia opierając się na szybkości ruchu myszki.
-    .double-click-speed = Prędkość podwójnego kliknięcia
-    .double-click-speed-desc = Ustawia to, jak szybkie musi być podwójnego kliknięcia, by było zarejestrowane.
-
-mouse-scrolling = Przewijanie
-    .speed = Prędkość przewijania
-    .natural = Naturalne przewijanie
-    .natural-desc = Przewijaj zawartość, nie widok
 
 ## Input: Touchpad
 
 touchpad = Gładzik
     .desc = Prędkość, opcje klikania i gesty gładzikiem.
-    .primary-button = Główny przycisk
-    .primary-button-left = Lewy
-    .primary-button-right = Prawy
     .speed = Prędkość Gładzika
     .acceleration = Włącz przyśpieszenie gładzika
-    .acceleration-desc = Automatycznie dostosuj dokładność śledzenia opierając się na szybkości ruchu gładzika.
-    .double-click-speed = Prędkość podwójnego kliknięcia
-    .double-click-speed-desc = Ustawia to, jak szybkie musi być podwójnego kliknięcia, by było zarejestrowane.

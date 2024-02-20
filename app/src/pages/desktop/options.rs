@@ -48,24 +48,24 @@ pub fn super_key_action() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("super-key-action"))
         .descriptions(vec![
-            fl!("super-key-action", "launcher"),
-            fl!("super-key-action", "workspaces"),
-            fl!("super-key-action", "applications"),
+            fl!("super-key-action", "launcher").into(),
+            fl!("super-key-action", "workspaces").into(),
+            fl!("super-key-action", "applications").into(),
         ])
         .view::<Page>(|_binder, _page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     horizontal_space(Length::Fill),
                 ))
                 .add(settings::item(
-                    &descriptions[1],
+                    &*descriptions[1],
                     horizontal_space(Length::Fill),
                 ))
                 .add(settings::item(
-                    &descriptions[2],
+                    &*descriptions[2],
                     horizontal_space(Length::Fill),
                 ))
                 .into()
@@ -76,8 +76,8 @@ pub fn window_controls() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("window-controls"))
         .descriptions(vec![
-            fl!("window-controls", "minimize"),
-            fl!("window-controls", "maximize"),
+            fl!("window-controls", "minimize").into(),
+            fl!("window-controls", "maximize").into(),
         ])
         .view::<Page>(|binder, _page, section| {
             let desktop = binder
@@ -87,7 +87,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     toggler(
                         None,
                         desktop.show_minimize_button,
@@ -95,7 +95,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     ),
                 ))
                 .add(settings::item(
-                    &descriptions[1],
+                    &*descriptions[1],
                     toggler(
                         None,
                         desktop.show_maximize_button,
