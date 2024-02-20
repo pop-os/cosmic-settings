@@ -161,8 +161,8 @@ pub(crate) fn style<
                         inner.backgrounds.as_slice(),
                         match panel_config.background {
                             CosmicPanelBackground::ThemeDefault => Some(0),
-                            CosmicPanelBackground::Dark => Some(1),
-                            CosmicPanelBackground::Light => Some(2),
+                            CosmicPanelBackground::Light => Some(1),
+                            CosmicPanelBackground::Dark => Some(2),
                             CosmicPanelBackground::Color(_) => None,
                         },
                         Message::Appearance,
