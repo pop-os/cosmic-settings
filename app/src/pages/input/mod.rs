@@ -38,7 +38,6 @@ pub enum Message {
     PinchToZoom(bool),
     PrimaryButtonSelected(cosmic::widget::segmented_button::Entity, bool),
     SetAcceleration(bool, bool),
-    SetDoubleClickSpeed(u32, bool),
     SetMouseSpeed(f64, bool),
     SetNaturalScroll(bool, bool),
     SetScrollFactor(f64, bool),
@@ -142,10 +141,6 @@ impl Page {
             Message::SetMouseSpeed(value, touchpad) => self.update_input(touchpad, |x| {
                 x.acceleration.get_or_insert(AccelConfig::default()).speed = value;
             }),
-
-            Message::SetDoubleClickSpeed(_value, _touchpad) => {
-                // TODO
-            }
 
             Message::DisableWhileTyping(disabled, touchpad) => {
                 self.update_input(touchpad, |conf| {
