@@ -1,4 +1,5 @@
-use cosmic::widget::{self, settings, text};
+use cosmic::iced::Alignment;
+use cosmic::widget::{self, row, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_comp_config::input::{AccelProfile, ScrollMethod};
 use cosmic_settings_page::Section;
@@ -67,6 +68,7 @@ fn touchpad() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|binder, _page, section| {
             let input = binder.page::<super::Page>().expect("input page not found");
+            let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
                 .add(settings::item(
@@ -75,19 +77,27 @@ fn touchpad() -> Section<crate::pages::Message> {
                         .minimum_button_width(0)
                         .on_activate(|x| Message::PrimaryButtonSelected(x, true)),
                 ))
-                .add(
-                    settings::item::builder(&*TOUCHPAD_SPEED).control(widget::slider(
-                        10.0..=90.0,
-                        (input
-                            .input_touchpad
-                            .acceleration
-                            .as_ref()
-                            .map_or(0.0, |x| x.speed)
-                            + 1.0)
-                            * 50.0,
-                        |value| Message::SetMouseSpeed((value / 50.0) - 1.0, true),
-                    )),
-                )
+                .add(settings::item::builder(&*TOUCHPAD_SPEED).control({
+                    let value = (input
+                        .input_touchpad
+                        .acceleration
+                        .as_ref()
+                        .map_or(0.0, |x| x.speed)
+                        + 1.0)
+                        * 50.0;
+
+                    let slider = widget::slider(10.0..=90.0, value, |value| {
+                        Message::SetMouseSpeed((value / 50.0) - 1.0, true)
+                    })
+                    .width(250.0)
+                    .breakpoints(&[50.0]);
+
+                    row::with_capacity(2)
+                        .align_items(Alignment::Center)
+                        .spacing(theme.cosmic().space_s())
+                        .push(text(format!("{:.0}", value.round())))
+                        .push(slider)
+                }))
                 .add(
                     settings::item::builder(&*TOUCHPAD_ACCELERAION)
                         .description(&*super::ACCELERATION_DESC)
@@ -156,26 +166,33 @@ fn scrolling() -> Section<crate::pages::Message> {
             let page = binder
                 .page::<super::Page>()
                 .expect("input devices page not found");
+            let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
                 // Scroll speed slider
-                .add(settings::item(
-                    &*super::SCROLLING_SPEED,
-                    // TODO show numeric value
-                    // TODO desired range?
-                    widget::slider(
-                        1.0..=1000.0,
-                        page.input_touchpad
-                            .scroll_config
-                            .as_ref()
-                            .and_then(|x| x.scroll_factor)
-                            .unwrap_or(1.)
-                            .log(2.)
-                            * 10.0
-                            + 50.0,
-                        |value| Message::SetScrollFactor(2f64.powf((value - 50.0) / 10.0), true),
-                    ),
-                ))
+                .add(settings::item(&*super::SCROLLING_SPEED, {
+                    let value = page
+                        .input_touchpad
+                        .scroll_config
+                        .as_ref()
+                        .and_then(|x| x.scroll_factor)
+                        .unwrap_or(1.)
+                        .log(2.)
+                        * 10.0
+                        + 50.0;
+
+                    let slider = widget::slider(1.0..=100.0, value, |value| {
+                        Message::SetScrollFactor(2f64.powf((value - 50.0) / 10.0), true)
+                    })
+                    .width(250.0)
+                    .breakpoints(&[50.0]);
+
+                    row::with_capacity(2)
+                        .align_items(Alignment::Center)
+                        .spacing(theme.cosmic().space_s())
+                        .push(text(format!("{:.0}", value.round())))
+                        .push(slider)
+                }))
                 // Natural scrolling toggle
                 .add(
                     settings::item::builder(&*super::SCROLLING_NATURAL)

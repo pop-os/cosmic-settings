@@ -2,10 +2,10 @@ use cosmic::{
     cctk::sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
     cosmic_config::{self, CosmicConfigEntry},
     iced::Length,
-    iced_widget::slider,
     theme,
     widget::{
-        button, container, dropdown, horizontal_space, icon, list, row, settings, text, toggler,
+        button, container, dropdown, horizontal_space, icon, list, row, settings, slider, text,
+        toggler,
     },
     Element,
 };
@@ -208,6 +208,7 @@ pub(crate) fn style<
                         slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
                             Message::Opacity(v as f32 / 100.0)
                         })
+                        .breakpoints(&[50])
                         .into(),
                         text(fl!("number", HashMap::from_iter(vec![("number", 100)]))).into(),
                     ])
