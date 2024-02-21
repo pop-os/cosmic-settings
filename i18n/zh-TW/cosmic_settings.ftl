@@ -263,8 +263,16 @@ users = 使用者
 
 ## Input
 
-input = 輸入
-    .desc = 輸入
+acceleration-desc = 自動依照觸控板移動加速度即時變更滑鼠速度
+
+primary-button = 主要按鈕
+    .left = 左
+    .right = 右
+
+scrolling = 捲動
+    .speed = 捲動速度
+    .natural = 自然捲動
+    .natural-desc = 捲動內容而非視界
 
 ## Input: Keyboard
 
@@ -289,31 +297,15 @@ keyboard-shortcuts = 鍵盤快捷鍵
     .desc = 顯示與修改快捷鍵
 
 ## Input: Mouse
+
 mouse = 滑鼠
     .desc = 滑鼠靈敏度、加速及捲動設定
-    .primary-button = 主要按鈕
-    .primary-button-left = 左
-    .primary-button-right = 右
     .speed = 滑鼠速度
     .acceleration = 啟用滑鼠加速
-    .acceleration-desc = 自動依照滑鼠移動加速度即時變更滑鼠速度
-    .double-click-speed = 按兩下按鈕的速度
-    .double-click-speed-desc = 設定雙按兩下按鈕要以多短的間隔才會觸發按兩下事件
-
-mouse-scrolling = 捲動
-    .speed = 捲動速度
-    .natural = 自然捲動
-    .natural-desc = 捲動內容而非視界
 
 ## Input: Touchpad
 
 touchpad = 觸控板
     .desc = 觸控靈敏度、點擊和手勢
-    .primary-button = 主要按鈕
-    .primary-button-left = 左
-    .primary-button-right = 右
     .speed = 觸控靈敏度
     .acceleration = 啟用觸控板加速
-    .acceleration-desc = 自動依照觸控板移動加速度即時變更滑鼠速度
-    .double-click-speed = 按兩下觸控板的速度
-    .double-click-speed-desc = 設定按兩下觸控板要以多短的間隔才會觸發按兩下事件

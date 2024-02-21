@@ -10,7 +10,7 @@ use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
 use cosmic::iced::wayland::actions::window::SctkWindowSettings;
 use cosmic::iced::window;
-use cosmic::iced_core::{alignment, layout, Alignment, Color, Length};
+use cosmic::iced_core::{alignment, layout, Color, Length};
 use cosmic::iced_sctk::commands::window::{close_window, get_window};
 use cosmic::iced_widget::scrollable;
 use cosmic::widget::icon::{from_name, icon};
@@ -32,6 +32,11 @@ use crate::app;
 use super::wallpaper::widgets::color_image;
 
 pub static COLOR_PICKER_DIALOG_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
+
+crate::cache_dynamic_lazy! {
+    static HEX: String = fl!("hex");
+    static RGB: String = fl!("rgb");
+}
 
 enum NamedColorPicker {
     CustomAccent,
@@ -116,38 +121,38 @@ impl From<(Option<Config>, ThemeMode, Option<Config>, ThemeBuilder)> for Page {
             },
             roundness: theme_builder.corner_radii.into(),
             custom_accent: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
+                &*HEX,
+                &*RGB,
                 None,
                 custom_accent.map(Color::from),
             ),
             application_background: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
+                &*HEX,
+                &*RGB,
                 Some(theme.background.base.into()),
                 theme_builder.bg_color.map(Color::from),
             ),
             container_background: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
+                &*HEX,
+                &*RGB,
                 None,
                 theme_builder.primary_container_bg.map(Color::from),
             ),
             interface_text: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
+                &*HEX,
+                &*RGB,
                 Some(theme.background.on.into()),
                 theme_builder.text_tint.map(Color::from),
             ),
             control_component: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
+                &*HEX,
+                &*RGB,
                 Some(theme.palette.neutral_5.into()),
                 theme_builder.neutral_tint.map(Color::from),
             ),
             accent_window_hint: ColorPickerModel::new(
-                fl!("hex"),
-                fl!("rgb"),
+                &*HEX,
+                &*RGB,
                 None,
                 theme_builder.window_hint.map(Color::from),
             ),
@@ -295,7 +300,7 @@ impl Page {
                 *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
 
                 let theme_builder = self.theme_builder.clone();
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
                         // TODO set the values of the theme builder
                         theme_builder.build(),
@@ -307,7 +312,6 @@ impl Page {
                 if let Some(config) = self.theme_mode_config.as_ref() {
                     _ = config.set::<bool>("auto_switch", enabled);
                 }
-                if !enabled {}
                 Command::none()
             }
             Message::AccentWindowHint(u) => {
@@ -414,7 +418,7 @@ impl Page {
                 let cmd = match &u {
                     ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
                         theme_builder_needs_update = true;
-                        Command::perform(async {}, |_| crate::app::Message::CloseContextDrawer)
+                        Command::perform(async {}, |()| crate::app::Message::CloseContextDrawer)
                     }
                     ColorPickerUpdate::ActionFinished => {
                         theme_builder_needs_update = true;
@@ -424,9 +428,9 @@ impl Page {
                         Command::none()
                     }
                     ColorPickerUpdate::Cancel => {
-                        Command::perform(async {}, |_| crate::app::Message::CloseContextDrawer)
+                        Command::perform(async {}, |()| crate::app::Message::CloseContextDrawer)
                     }
-                    ColorPickerUpdate::ToggleColorPicker => Command::perform(async {}, |_| {
+                    ColorPickerUpdate::ToggleColorPicker => Command::perform(async {}, |()| {
                         crate::app::Message::OpenContextDrawer(fl!("container-background").into())
                     }),
                     _ => Command::none(),
@@ -586,7 +590,7 @@ impl Page {
             Message::Entered => {
                 *self = Self::default();
                 let theme_builder = self.theme_builder.clone();
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
                         // TODO set the values of the theme builder
                         theme_builder.build(),
@@ -595,7 +599,7 @@ impl Page {
                 // Load the current theme builders and mode
                 // Set the theme for the application to match the current mode instead of the system theme?
             }
-            Message::Left => Command::perform(async {}, |_| {
+            Message::Left => Command::perform(async {}, |()| {
                 app::Message::SetTheme(cosmic::theme::system_preference())
             }),
             Message::PaletteAccent(c) => {
@@ -626,7 +630,7 @@ impl Page {
                 }
 
                 *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
                 })
             }
@@ -683,7 +687,7 @@ impl Page {
                 )
             }
             Message::ImportFile(f) => {
-                let Some(f) = f.uris().get(0) else {
+                let Some(f) = f.uris().first() else {
                     return Command::none();
                 };
                 if f.scheme() != "file" {
@@ -710,7 +714,7 @@ impl Page {
                 )
             }
             Message::ExportFile(f) => {
-                let Some(f) = f.uris().get(0) else {
+                let Some(f) = f.uris().first() else {
                     return Command::none();
                 };
                 if f.scheme() != "file" {
@@ -770,7 +774,7 @@ impl Page {
                 }
 
                 *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
                 })
             }
@@ -806,7 +810,7 @@ impl Page {
                         );
                     _ = self.accent_window_hint.update::<app::Message>(
                         ColorPickerUpdate::ActiveColor(Hsv::from_color(window_hint)),
-                    )
+                    );
                 };
                 Command::none()
             }
@@ -854,7 +858,7 @@ impl Page {
             let theme_builder = self.theme_builder.clone();
             ret = Command::batch(vec![
                 ret,
-                Command::perform(async {}, |_| {
+                Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
                         theme_builder.build(),
                     )))
@@ -964,7 +968,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Command<crate::pages::Message> {
-        Command::perform(async {}, |_| {
+        Command::perform(async {}, |()| {
             crate::pages::Message::Appearance(Message::Left)
         })
     }
@@ -999,29 +1003,29 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
         .title(fl!("mode-and-colors"))
         .descriptions(vec![
             // 0
-            fl!("auto-switch"),
-            fl!("auto-switch", "desc"),
+            fl!("auto-switch").into(),
+            fl!("auto-switch", "desc").into(),
             //2
-            fl!("accent-color"),
+            fl!("accent-color").into(),
             //3
-            fl!("app-background"),
+            fl!("app-background").into(),
             //4
-            fl!("container-background"),
-            fl!("container-background", "desc"),
-            fl!("container-background", "desc-detail"),
-            fl!("container-background", "reset"),
+            fl!("container-background").into(),
+            fl!("container-background", "desc").into(),
+            fl!("container-background", "desc-detail").into(),
+            fl!("container-background", "reset").into(),
             // 8
-            fl!("text-tint"),
-            fl!("text-tint", "desc"),
+            fl!("text-tint").into(),
+            fl!("text-tint", "desc").into(),
             // 10
-            fl!("control-tint"),
-            fl!("control-tint", "desc"),
+            fl!("control-tint").into(),
+            fl!("control-tint", "desc").into(),
             // 12
-            fl!("window-hint-accent-toggle"),
-            fl!("window-hint-accent"),
+            fl!("window-hint-accent-toggle").into(),
+            fl!("window-hint-accent").into(),
             // 14
-            fl!("dark"),
-            fl!("light"),
+            fl!("dark").into(),
+            fl!("light").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
@@ -1044,7 +1048,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .padding([8, 0])
                                 .selected(page.theme_mode.is_dark)
                                 .on_press(Message::DarkMode(true)),
-                                text(&descriptions[14])
+                                text(&*descriptions[14])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1059,7 +1063,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .selected(!page.theme_mode.is_dark)
                                 .padding([8, 0])
                                 .on_press(Message::DarkMode(false)),
-                                text(&descriptions[15])
+                                text(&*descriptions[15])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1073,13 +1077,13 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                     .align_x(cosmic::iced_core::alignment::Horizontal::Center),
                 )
                 .add(
-                    settings::item::builder(&descriptions[0])
-                        .description(&descriptions[1])
+                    settings::item::builder(&*descriptions[0])
+                        .description(&*descriptions[1])
                         .toggler(page.theme_mode.auto_switch, Message::Autoswitch),
                 )
                 .add(
                     cosmic::iced::widget::column![
-                        text(&descriptions[2]),
+                        text(&*descriptions[2]),
                         scrollable(
                             cosmic::iced::widget::row![
                                 color_button(
@@ -1175,7 +1179,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                     .spacing(8),
                 )
                 .add(
-                    settings::item::builder(&descriptions[3]).control(
+                    settings::item::builder(&*descriptions[3]).control(
                         page.application_background
                             .picker_button(Message::ApplicationBackground, Some(24))
                             .width(Length::Fixed(48.0))
@@ -1183,8 +1187,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                     ),
                 )
                 .add(
-                    settings::item::builder(&descriptions[4])
-                        .description(&descriptions[5])
+                    settings::item::builder(&*descriptions[4])
+                        .description(&*descriptions[5])
                         .control(
                             if let Some(c) = page.container_background.get_applied_color() {
                                 container(color_button(
@@ -1208,8 +1212,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&descriptions[8])
-                        .description(&descriptions[9])
+                    settings::item::builder(&*descriptions[8])
+                        .description(&*descriptions[9])
                         .control(
                             page.interface_text
                                 .picker_button(Message::InterfaceText, Some(24))
@@ -1218,8 +1222,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&descriptions[10])
-                        .description(&descriptions[11])
+                    settings::item::builder(&*descriptions[10])
+                        .description(&*descriptions[11])
                         .control(
                             page.control_component
                                 .picker_button(Message::ControlComponent, Some(24))
@@ -1228,12 +1232,12 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&descriptions[12])
+                    settings::item::builder(&*descriptions[12])
                         .toggler(page.no_custom_window_hint, Message::UseDefaultWindowHint),
                 );
             if !page.no_custom_window_hint {
                 section = section.add(
-                    settings::item::builder(&descriptions[13]).control(
+                    settings::item::builder(&*descriptions[13]).control(
                         page.accent_window_hint
                             .picker_button(Message::AccentWindowHint, Some(24))
                             .width(Length::Fixed(48.0))
@@ -1252,11 +1256,11 @@ pub fn style() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("style"))
         .descriptions(vec![
-            fl!("style", "round"),
-            fl!("style", "slightly-round"),
-            fl!("style", "square"),
-            fl!("frosted"),
-            fl!("frosted", "desc"),
+            fl!("style", "round").into(),
+            fl!("style", "slightly-round").into(),
+            fl!("style", "square").into(),
+            fl!("frosted").into(),
+            fl!("frosted", "desc").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
@@ -1282,7 +1286,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::Round)),
-                                text(&descriptions[0])
+                                text(&*descriptions[0])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1304,7 +1308,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::SlightlyRound)),
-                                text(&descriptions[1])
+                                text(&*descriptions[1])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1327,7 +1331,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::Square)),
-                                text(&descriptions[2])
+                                text(&*descriptions[2])
                             ]
                             .spacing(8)
                             .align_items(cosmic::iced_core::Alignment::Center)
@@ -1341,8 +1345,8 @@ pub fn style() -> Section<crate::pages::Message> {
                     .align_x(cosmic::iced_core::alignment::Horizontal::Center),
                 )
                 .add(
-                    settings::item::builder(&descriptions[3])
-                        .description(&descriptions[4])
+                    settings::item::builder(&*descriptions[3])
+                        .description(&*descriptions[4])
                         .toggler(page.theme_builder.is_frosted, Message::Frosted),
                 )
                 .apply(Element::from)
@@ -1355,20 +1359,20 @@ pub fn window_management() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("window-management"))
         .descriptions(vec![
-            fl!("window-management", "active-hint"),
-            fl!("window-management", "gaps"),
+            fl!("window-management", "active-hint").into(),
+            fl!("window-management", "gaps").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
-                .add(settings::item::builder(&descriptions[0]).control(
+                .add(settings::item::builder(&*descriptions[0]).control(
                     cosmic::widget::spin_button(
                         page.theme_builder.active_hint.to_string(),
                         Message::WindowHintSize,
                     ),
                 ))
-                .add(settings::item::builder(&descriptions[1]).control(
+                .add(settings::item::builder(&*descriptions[1]).control(
                     cosmic::widget::spin_button(
                         page.theme_builder.gaps.1.to_string(),
                         Message::GapSize,
@@ -1382,12 +1386,12 @@ pub fn window_management() -> Section<crate::pages::Message> {
 #[allow(clippy::too_many_lines)]
 pub fn reset_button() -> Section<crate::pages::Message> {
     Section::default()
-        .descriptions(vec![fl!("reset-default")])
+        .descriptions(vec![fl!("reset-default").into()])
         .view::<Page>(|_binder, page, section| {
             let spacing = &page.theme_builder.spacing;
             let descriptions = &section.descriptions;
             if page.can_reset {
-                cosmic::iced::widget::row![button(text(&descriptions[0]))
+                cosmic::iced::widget::row![button(text(&*descriptions[0]))
                     .on_press(Message::Reset)
                     .padding([spacing.space_xxs, spacing.space_xs])]
                 .apply(Element::from)

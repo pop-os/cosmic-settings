@@ -40,16 +40,16 @@ container-background = Pozadina kontejnera
     .desc-detail = Boja pozadine kontejnera se koristi za bočnu traku za navigaciju, bočni meni, dijaloške okvire i druge slične vidžete. Podrazumevano, automatski se izvodi iz pozadine aplikacija ili prozora.
     .reset = Vrati na automatsko
     .desc = Boja pozadine kontejnera se koristi za bočnu traku za navigaciju, bočni meni, dijaloške okvire i druge slične vidžete.
-	
+
 control-tint = Nijansa kontrolnih komponenti
     .desc = Koristi se za pozadinu standardnih dugmadi, unosa za pretragu, unosa teksta i sličnih komponenti.
-	
+
 frosted = Efekat mat stakla na interfejsu sistema
     .desc = Primenjuje zamućenje pozadine na panel, dok, aplete, pokretač i biblioteku aplikacija.
-	
+
 text-tint = Nijansa teksta interfejsa
     .desc = Boja koja se koristi za dobijanje boja teksta interfejsa koje imaju dovoljan kontrast na različitim površinama.
-	
+
 style = Stil
     .round = Okrugli
     .slightly-round = Blago okrugli
@@ -139,12 +139,12 @@ notifications = Obaveštenja
 
 desktop-panel-options = Radna površina i panel
     .desc = Uloga Super tastera, lepljivi uglovi, kontrola prozora.
-	
+
 desktop-panels-and-applets = Paneli radne površine i apleti
 
 dock = Dok
     .desc = Traka sa zakačenim aplikacijama.
-	
+
 hot-corner = Lepljivi uglovi
     .top-left-corner = Uključiti gornji levi lepljivi ugao za radne prostore
 
@@ -165,7 +165,7 @@ window-controls = Kontrola prozora
 
 panel = Gornji panel
     .desc = Gornja traka sa kontrolama radne površine i menijima.
-	
+
 add = Dodaj
 add-applet = Dodaj aplet
 all = Sve
@@ -254,7 +254,7 @@ workspaces-behavior = Ponašanje radnih prostora
 workspaces-multi-behavior = Ponašanje sa više monitora
     .span = Radni prostori su zajednički za sve ekrane
     .separate = Ekrani imaju odvojene radne prostore
-	
+
 workspaces-overview-thumbnails = Prikaz radnih prostora u pregledu
     .show-number = Prikaži broj radnog prostora
     .show-name = Prikaži ime radnog prostora
@@ -357,8 +357,16 @@ users = Korisnici
 
 ## Input
 
-input = Unos
-    .desc = Unos
+acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
+
+primary-button = Primarno dugme
+    .left = Levo
+    .right = Desno
+
+scrolling = Pomeranje
+    .speed = Brzina pomeranja
+    .natural = Prirodno pomeranje
+    .natural-desc = Okretanje točka pomera sadržaj umesto prikaza.
 
 ## Input: Keyboard
 
@@ -383,31 +391,15 @@ keyboard-shortcuts = Prečice na tastaturi
     .desc = Pregledajte i prilagodite prečice
 
 ## Input: Mouse
+
 mouse = Miš
     .desc = Brzina miša, ubrzanje, prirodno pomeranje.
-    .primary-button = Primarno dugme
-    .primary-button-left = Levo
-    .primary-button-right = Desno
     .speed = Brzina miša
     .acceleration = Omogući ubrzanje miša
-    .acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
-    .double-click-speed = Brzina dvostrukog klika
-    .double-click-speed-desc = Menja potrebnu brzinu za registrovanje dvostrukih klikova.
-
-mouse-scrolling = Pomeranje
-    .speed = Brzina pomeranja
-    .natural = Prirodno pomeranje
-    .natural-desc = Okretanje točka pomera sadržaj umesto prikaza.
 
 ## Input: Touchpad
 
 touchpad = Dodirna tabla
     .desc = Brzina dodirne table, opcije klika, pokreti.
-    .primary-button = Primarno dugme
-    .primary-button-left = Levo
-    .primary-button-right = Desno
     .speed = Brzina dodirne table
     .acceleration = Omogući ubrzanje dodirne table
-    .acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
-    .double-click-speed = Brzina dvostrukog klika
-    .double-click-speed-desc = Menja potrebnu brzinu za registrovanje dvostrukih klikova.

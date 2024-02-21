@@ -356,8 +356,21 @@ users = Users
 
 ## Input
 
+acceleration-desc = Automatically adjusts tracking sensitivity based on speed.
+
+disable-while-typing = Disable while typing
+
 input-devices = Input Devices
     .desc = Input Devices
+
+primary-button = Primary button
+    .left = Left
+    .right = Right
+
+scrolling = Scrolling
+    .speed = Scrolling speed
+    .natural = Natural scrolling
+    .natural-desc = Scroll the content, instead of the view
 
 ## Input: Keyboard
 
@@ -382,31 +395,43 @@ keyboard-shortcuts = Keyboard Shortcuts
     .desc = View and customize shortcuts
 
 ## Input: Mouse
+
 mouse = Mouse
     .desc = Mouse speed, acceleration, natural scrolling.
-    .primary-button = Primary button
-    .primary-button-left = Left
-    .primary-button-right = Right
     .speed = Mouse speed
     .acceleration = Enable mouse acceleration
-    .acceleration-desc = Automatically adjusts tracking sensitivty based on speed.
-    .double-click-speed = Double-click speed
-    .double-click-speed-desc = Changes how fast double-clicks have to be to register.
-
-mouse-scrolling = Scrolling
-    .speed = Scrolling speed
-    .natural = Natural scrolling
-    .natural-desc = Scroll the content, instead of the view
 
 ## Input: Touchpad
 
+edge-scrolling = Edge scrolling
+    .desc = Scroll using the edge of the touchpad.
+
+pinch-to-zoom = Pinch to zoom
+    .desc = Use two fingers to zoom into content, for applications that support zoom.
+
+tap-to-click = Tap to click
+    .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
+
+tapping-and-pinching = Tapping and Pinching
+
 touchpad = Touchpad
-    .desc = Touchpad speed, click options, gestures.
-    .primary-button = Primary button
-    .primary-button-left = Left
-    .primary-button-right = Right
-    .speed = Touchpad speed
     .acceleration = Enable touchpad acceleration
-    .acceleration-desc = Automatically adjusts tracking sensitivty based on speed.
-    .double-click-speed = Double-click speed
-    .double-click-speed-desc = Changes how fast double-clicks have to be to register.
+    .desc = Touchpad speed, click options, gestures.
+    .speed = Touchpad speed
+
+two-finger-scrolling = Two-finger scrolling
+
+## Input: Gestures
+
+swiping = Swiping
+    .four-finger-down = Four-finger swipe down
+    .four-finger-left = Four-finger swipe left
+    .four-finger-right = Four-finger swipe right
+    .four-finger-up = Four-finger swipe up
+    .three-finger-any = Three-finger swip any direction
+
+switch-between-windows = Switch between windows
+switch-to-next-workspace = Switch to next workspace
+switch-to-prev-workspace = Switch to prev workspace
+open-application-library = Open Application Library
+open-workspaces-view = Open Workspaces Overview

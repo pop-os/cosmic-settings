@@ -32,8 +32,8 @@ pub struct PageInner {
 impl Default for PageInner {
     fn default() -> Self {
         Self {
-            config_helper: Default::default(),
-            panel_config: Default::default(),
+            config_helper: Option::default(),
+            panel_config: Option::default(),
             outputs: vec![fl!("all")],
             anchors: vec![
                 Anchor(PanelAnchor::Left).to_string(),
@@ -46,8 +46,8 @@ impl Default for PageInner {
                 Appearance::Light.to_string(),
                 Appearance::Dark.to_string(),
             ],
-            container_config: Default::default(),
-            outputs_map: Default::default(),
+            container_config: Option::default(),
+            outputs_map: HashMap::default(),
         }
     }
 }
@@ -78,9 +78,9 @@ pub(crate) fn behavior_and_position<
     Section::default()
         .title(fl!("panel-behavior-and-position"))
         .descriptions(vec![
-            p.autohide_label(),
-            fl!("panel-behavior-and-position", "position"),
-            fl!("panel-behavior-and-position", "display"),
+            p.autohide_label().into(),
+            fl!("panel-behavior-and-position", "position").into(),
+            fl!("panel-behavior-and-position", "display").into(),
         ])
         .view::<P>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
@@ -90,13 +90,13 @@ pub(crate) fn behavior_and_position<
             };
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     toggler(None, panel_config.autohide.is_some(), |value| {
                         Message::AutoHidePanel(value)
                     }),
                 ))
                 .add(settings::item(
-                    &descriptions[1],
+                    &*descriptions[1],
                     dropdown(
                         page.anchors.as_slice(),
                         Some(panel_config.anchor as usize),
@@ -104,7 +104,7 @@ pub(crate) fn behavior_and_position<
                     ),
                 ))
                 .add(settings::item(
-                    &descriptions[2],
+                    &*descriptions[2],
                     dropdown(
                         page.outputs.as_slice(),
                         match &panel_config.output {
@@ -130,11 +130,11 @@ pub(crate) fn style<
     Section::default()
         .title(fl!("panel-style"))
         .descriptions(vec![
-            p.gap_label(),
-            p.extend_label(),
-            fl!("panel-style", "appearance"),
-            fl!("panel-style", "size"),
-            fl!("panel-style", "background-opacity"),
+            p.gap_label().into(),
+            p.extend_label().into(),
+            fl!("panel-style", "appearance").into(),
+            fl!("panel-style", "size").into(),
+            fl!("panel-style", "background-opacity").into(),
         ])
         .view::<P>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
@@ -144,32 +144,32 @@ pub(crate) fn style<
             };
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[0],
+                    &*descriptions[0],
                     toggler(None, panel_config.anchor_gap, |value| {
                         Message::AnchorGap(value)
                     }),
                 ))
                 .add(settings::item(
-                    &descriptions[1],
+                    &*descriptions[1],
                     toggler(None, panel_config.expand_to_edges, |value| {
                         Message::ExtendToEdge(value)
                     }),
                 ))
                 .add(settings::item(
-                    &descriptions[2],
+                    &*descriptions[2],
                     dropdown(
                         inner.backgrounds.as_slice(),
                         match panel_config.background {
                             CosmicPanelBackground::ThemeDefault => Some(0),
-                            CosmicPanelBackground::Dark => Some(1),
-                            CosmicPanelBackground::Light => Some(2),
+                            CosmicPanelBackground::Light => Some(1),
+                            CosmicPanelBackground::Dark => Some(2),
                             CosmicPanelBackground::Color(_) => None,
                         },
                         Message::Appearance,
                     ),
                 ))
                 .add(settings::item(
-                    &descriptions[3],
+                    &*descriptions[3],
                     // TODO custom discrete slider variant
                     row::with_children(vec![
                         text(fl!("small")).into(),
@@ -202,7 +202,7 @@ pub(crate) fn style<
                     .spacing(12),
                 ))
                 .add(settings::item(
-                    &descriptions[4],
+                    &*descriptions[4],
                     row::with_children(vec![
                         text(fl!("number", HashMap::from_iter(vec![("number", 0)]))).into(),
                         slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
@@ -223,7 +223,7 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
 ) -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("panel-applets"))
-        .descriptions(vec![p.configure_applets_label()])
+        .descriptions(vec![p.configure_applets_label().into()])
         .view::<P>(move |binder, page, section| {
             let mut settings = settings::view_section(&section.title);
             let descriptions = &section.descriptions;
@@ -238,7 +238,7 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                 ]);
 
                 settings.add(
-                    settings::item::builder(&descriptions[0])
+                    settings::item::builder(&*descriptions[0])
                         .control(control)
                         .spacing(16)
                         .apply(container)
@@ -265,8 +265,8 @@ pub(crate) fn add_panel<
     Section::default()
         .title(fl!("panel-missing"))
         .descriptions(vec![
-            fl!("panel-missing", "desc"),
-            fl!("panel-missing", "fix"),
+            fl!("panel-missing", "desc").into(),
+            fl!("panel-missing", "fix").into(),
         ])
         .view::<P>(move |_binder, _page, section| {
             // _descriptions = &section.descriptions;
@@ -349,7 +349,7 @@ impl PageInner {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) {
         let helper = self.config_helper.as_ref().unwrap();
-        let Some(mut panel_config) = self.panel_config.as_mut() else {
+        let Some(panel_config) = self.panel_config.as_mut() else {
             return;
         };
 
@@ -384,7 +384,7 @@ impl PageInner {
                 if i == 0 {
                     panel_config.output = CosmicPanelOuput::All;
                 } else {
-                    panel_config.output = CosmicPanelOuput::Name(self.outputs[i].clone())
+                    panel_config.output = CosmicPanelOuput::Name(self.outputs[i].clone());
                 }
             }
             Message::AnchorGap(enabled) => {

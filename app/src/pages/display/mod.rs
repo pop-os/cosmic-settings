@@ -10,7 +10,6 @@ use apply::Apply;
 use arrangement::Arrangement;
 use cosmic::iced::Length;
 use cosmic::iced_widget::scrollable::{Direction, Properties, RelativeOffset};
-use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{
     column, container, dropdown, list_column, segmented_button, toggler, view_switcher,
 };
@@ -174,14 +173,14 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(
                 Section::default()
                     .descriptions(vec![
-                        text::GRAPHICS_MODE.clone(),
-                        text::GRAPHICS_MODE_COMPUTE_DESC.clone(),
-                        text::GRAPHICS_MODE_HYBRID_DESC.clone(),
-                        text::GRAPHICS_MODE_INTEGRATED_DESC.clone(),
-                        text::GRAPHICS_MODE_NVIDIA_DESC.clone(),
-                        text::NIGHT_LIGHT.clone(),
-                        text::NIGHT_LIGHT_AUTO.clone(),
-                        text::NIGHT_LIGHT_DESCRIPTION.clone(),
+                        text::GRAPHICS_MODE.as_str().into(),
+                        text::GRAPHICS_MODE_COMPUTE_DESC.as_str().into(),
+                        text::GRAPHICS_MODE_HYBRID_DESC.as_str().into(),
+                        text::GRAPHICS_MODE_INTEGRATED_DESC.as_str().into(),
+                        text::GRAPHICS_MODE_NVIDIA_DESC.as_str().into(),
+                        text::NIGHT_LIGHT.as_str().into(),
+                        text::NIGHT_LIGHT_AUTO.as_str().into(),
+                        text::NIGHT_LIGHT_DESCRIPTION.as_str().into(),
                     ])
                     .view::<Page>(|_binder, page, _section| page.graphics_mode_view()),
             ),
@@ -190,8 +189,8 @@ impl page::Page<crate::pages::Message> for Page {
                 Section::default()
                     .title(&*text::DISPLAY_ARRANGEMENT)
                     .descriptions(vec![
-                        text::DISPLAY_ARRANGEMENT.clone(),
-                        text::DISPLAY_ARRANGEMENT_DESC.clone(),
+                        text::DISPLAY_ARRANGEMENT.as_str().into(),
+                        text::DISPLAY_ARRANGEMENT_DESC.as_str().into(),
                     ])
                     // Show section when there is more than 1 display
                     .show_while::<Page>(|page| page.list.outputs.len() > 1)
@@ -200,13 +199,13 @@ impl page::Page<crate::pages::Message> for Page {
             // Display configuration
             sections.insert(
                 Section::default()
-                    .descriptions(vec![
-                        text::DISPLAY.clone(),
-                        text::DISPLAY_REFRESH_RATE.clone(),
-                        text::DISPLAY_SCALE.clone(),
-                        text::ORIENTATION.clone(),
-                        text::ORIENTATION_LANDSCAPE.clone(),
-                        text::ORIENTATION_PORTRAIT.clone(),
+                    .descriptions([
+                        text::DISPLAY.as_str().into(),
+                        text::DISPLAY_REFRESH_RATE.as_str().into(),
+                        text::DISPLAY_SCALE.as_str().into(),
+                        text::ORIENTATION.as_str().into(),
+                        text::ORIENTATION_LANDSCAPE.as_str().into(),
+                        text::ORIENTATION_PORTRAIT.as_str().into(),
                     ])
                     .view::<Page>(|_binder, page, _section| page.display_view()),
             ),
@@ -416,11 +415,6 @@ impl Page {
 
         let active_output = &self.list.outputs[active_id];
 
-        let display_meta = list_column().add(cosmic::widget::settings::item(
-            &*text::DISPLAY_ENABLE,
-            toggler(None, active_output.enabled, Message::DisplayToggle),
-        ));
-
         let display_options = list_column()
             .add(cosmic::widget::settings::item(
                 &*text::DISPLAY_RESOLUTION,
@@ -462,14 +456,21 @@ impl Page {
                 ),
             ));
 
-        column()
-            .spacing(theme.cosmic().space_m())
-            .push_maybe(if self.list.outputs.len() > 1 {
-                Some(view_switcher::horizontal(&self.display_tabs).on_activate(Message::Display))
-            } else {
-                None
-            })
-            .push(display_meta)
+        let mut content = column().spacing(theme.cosmic().space_m());
+
+        if self.list.outputs.len() > 1 {
+            let display_switcher =
+                view_switcher::horizontal(&self.display_tabs).on_activate(Message::Display);
+
+            let display_enable = list_column().add(cosmic::widget::settings::item(
+                &*text::DISPLAY_ENABLE,
+                toggler(None, active_output.enabled, Message::DisplayToggle),
+            ));
+
+            content = content.push(display_switcher).push(display_enable);
+        }
+
+        content
             .push(cosmic::widget::text::heading(&*text::DISPLAY_OPTIONS))
             .push(display_options)
             .apply(Element::from)

@@ -29,13 +29,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 fn shortcuts() -> Section<crate::pages::Message> {
     Section::default()
         .descriptions(vec![])
-        .view::<Page>(|binder, _page, section| {
-            let _descriptions = &section.descriptions;
-
-            let _input = binder
-                .page::<super::super::Page>()
-                .expect("input page not found");
-
+        .view::<Page>(|_binder, _page, section| {
             // TODO need something more custom
             /*
             settings::view_section(&section.title)

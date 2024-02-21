@@ -295,8 +295,16 @@ users = Utenti
 
 ## Input
 
-input = Input
-    .desc = Input
+acceleration-desc = Aggiusta automaticamente la sensibilità di tracciamento in base alla velocità.
+
+primary-button = Tasto principale
+    .left = Sinistro
+    .right = Destro
+
+scrolling = Scorrimento
+    .speed = Velocità di scorrimento
+    .natural = Scorrimento naturale
+    .natural-desc = Scorri il contenuto invece che la visualizzazione
 
 ## Input: Keyboard
 
@@ -321,31 +329,15 @@ keyboard-shortcuts = Scorciatoie da Tastiera
     .desc = Vedi e personalizza le scorciatoie
 
 ## Input: Mouse
+
 mouse = Mouse
     .desc = Velocità, accelerazione, scorrimento naturale del mouse.
-    .primary-button = Tasto principale
-    .primary-button-left = Sinistro
-    .primary-button-right = Destro
     .speed = Velocità mouse
     .acceleration = Abilita accelerazione mouse
-    .acceleration-desc = Aggiusta automaticamente la sensibilità di tracciamento in base alla velocità.
-    .double-click-speed = Velocità doppio-click
-    .double-click-speed-desc = Cambia quanto deve essere veloce il doppio-click per essere riconosciuto tale.
-
-mouse-scrolling = Scorrimento
-    .speed = Velocità di scorrimento
-    .natural = Scorrimento naturale
-    .natural-desc = Scorri il contenuto invece che la visualizzazione
 
 ## Input: Touchpad
 
 touchpad = Touchpad
     .desc = Velocità, opzioni click e movimenti sul touchpad.
-    .primary-button = Tasto principale
-    .primary-button-left = Sinistro
-    .primary-button-right = Destro
     .speed = Velocità touchpad
     .acceleration = Abilita accelerazione touchpad
-    .acceleration-desc = Aggiusta automaticamente la sensibilità di tracciamento in base alla velocità.
-    .double-click-speed = Velocità doppio-click
-    .double-click-speed-desc = Cambia quanto deve essere veloce il doppio-click per essere riconosciuto tale.

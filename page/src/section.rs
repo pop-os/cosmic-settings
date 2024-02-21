@@ -3,6 +3,7 @@
 
 use derive_setters::Setters;
 use regex::Regex;
+use std::borrow::Cow;
 
 use crate::{Binder, Page};
 
@@ -29,7 +30,8 @@ pub type ViewFn<Message> = Box<
 pub struct Section<Message> {
     #[setters(into)]
     pub title: String,
-    pub descriptions: Vec<String>,
+    #[setters(into)]
+    pub descriptions: Vec<Cow<'static, str>>,
     #[setters(skip)]
     pub show_while: Option<ShowWhileFn<Message>>,
     #[setters(skip)]
@@ -61,8 +63,8 @@ impl<Message: 'static> Section<Message> {
             return true;
         }
 
-        for description in &self.descriptions {
-            if rule.is_match(description.as_str()) {
+        for description in &*self.descriptions {
+            if rule.is_match(description) {
                 return true;
             }
         }
