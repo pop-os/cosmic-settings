@@ -428,7 +428,7 @@ swiping = Swiping
     .four-finger-left = Four-finger swipe left
     .four-finger-right = Four-finger swipe right
     .four-finger-up = Four-finger swipe up
-    .three-finger-any = Three-finger swip any direction
+    .three-finger-any = Three-finger swipe any direction
 
 switch-between-windows = Switch between windows
 switch-to-next-workspace = Switch to next workspace

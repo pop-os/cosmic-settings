@@ -70,7 +70,7 @@ color = Боја
     .sidebar = Профили боје
     .temperature = Температура боје
 
-display = Екран
+display = Екрани
     .desc = Управљајте екранима, пребацивањем графике и ноћним светлом
     .arrangement = Распоред екрана
     .arrangement-desc = Превуците екране да бисте их преуредили.
@@ -123,9 +123,9 @@ night-light = Ноћно светло
 
 orientation = Оријентација
     .landscape = Положено
-	.landscape-flipped = Положено (преокренуто)
+    .landscape-flipped = Положено (преокренуто)
     .portrait = Усправно
-	.portrait-flipped = Усправно (преокренуто)
+    .portrait-flipped = Усправно (преокренуто)
 
 scheduling = Распоред
     .manual = Ручни распоред
@@ -216,8 +216,8 @@ panel-missing = Недостаје конфигурација панела
 wallpaper = Позадина
     .change = Промени слику сваких
     .desc = Позадине радне површине, боје, и слајд-шоу.
-	.fit = Скалирање позадине
-	.folder-dialog = Изаберите фасциклу за позадине
+    .fit = Скалирање позадине
+    .folder-dialog = Изаберите фасциклу за позадине
     .image-dialog = Изаберите слику позадине
     .plural = Позадине
     .same = Иста позадина на свим екранима
@@ -227,12 +227,11 @@ add-color = Додај боју
 add-image = Додај слику
 all-displays = Сви екрани
 colors = Боје
-dialog-add = _Add
+dialog-add = _Додај
+fill = Попуни
 fit-to-screen = Уклопи у екран
 open-new-folder = Отвори нову фасциклу
 recent-folders = Недавне фасцикле
-stretch = Развуци
-zoom = Увећај
 
 x-minutes = { $number } мин.
 x-hours = { $number ->
@@ -247,9 +246,9 @@ workspaces = Радни простори
 
 workspaces-behavior = Понашање радних простора
     .dynamic = Динамични радни простори
-	.dynamic-desc = Аутоматски уклања празне радне просторе.
+    .dynamic-desc = Аутоматски уклања празне радне просторе.
     .fixed = Фиксни број радних простора
-	.fixed-desc = Додајте или уклоните радне просторе у прегледу.
+    .fixed-desc = Додајте или уклоните радне просторе у прегледу.
 
 workspaces-multi-behavior = Понашање са више монитора
     .span = Радни простори су заједнички за све екране
@@ -359,6 +358,11 @@ users = Корисници
 
 acceleration-desc = Аутоматски подешава осетљивост праћења на основу брзине.
 
+disable-while-typing = Онемогући током куцања
+
+input-devices = Унос
+    .desc = Унос
+
 primary-button = Примарно дугме
     .left = Лево
     .right = Десно
@@ -391,6 +395,7 @@ keyboard-shortcuts = Пречице на тастатури
     .desc = Прегледајте и прилагодите пречице
 
 ## Input: Mouse
+
 mouse = Миш
     .desc = Брзина миша, убрзање, природно померање.
     .speed = Брзина миша
@@ -398,7 +403,35 @@ mouse = Миш
 
 ## Input: Touchpad
 
+edge-scrolling = Померање са ивицама
+    .desc = Померајте помоћу ивица додирне табле.
+
+pinch-to-zoom = Стисните прсте за зумирање
+    .desc = Користите два прста за зумирање садржаја, за апликације које подржавају зумирање.
+
+tap-to-click = Додир за клик
+    .desc = Омогућава додир једним прстом за примарни клик, два прста за секундарни клик и три прста за средњи клик.
+
+tapping-and-pinching = Додир и зумирање
+
 touchpad = Додирна табла
     .desc = Брзина додирне табле, опције клика, покрети.
     .speed = Брзина додирне табле
     .acceleration = Омогући убрзање додирне табле
+
+two-finger-scrolling = Померање са два прста
+
+## Input: Gestures
+
+swiping = Покрети
+    .four-finger-down = Превуците према доле са четири прста
+    .four-finger-left = Превуците према лево са четири прста
+    .four-finger-right = Превуците према десно са четири прста
+    .four-finger-up = Превуците према горе са четири прста
+    .three-finger-any = Превуците са три прста у било ком смеру
+
+switch-between-windows = Пребацивање између прозора
+switch-to-next-workspace = Пређи на следећи радни простор
+switch-to-prev-workspace = Пређи на претходни радни простор
+open-application-library = Отвори библиотеку апликација
+open-workspaces-view = Отвори преглед радних простора
