@@ -131,7 +131,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("panel_applets", "preferences-pop-desktop-dock-symbolic")
+        page::Info::new("panel_applets", "preferences-dock-symbolic")
         // .title(fl!("applets"))
     }
 }

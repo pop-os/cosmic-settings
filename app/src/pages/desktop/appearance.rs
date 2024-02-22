@@ -958,7 +958,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("appearance", "preferences-pop-desktop-appearance-symbolic")
+        page::Info::new("appearance", "preferences-appearance-symbolic")
             .title(fl!("appearance"))
             .description(fl!("appearance", "desc"))
     }
