@@ -78,7 +78,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("workspaces", "preferences-pop-desktop-workspaces-symbolic")
+        page::Info::new("workspaces", "preferences-workspaces-symbolic")
             .title(fl!("workspaces"))
             .description(fl!("workspaces", "desc"))
     }
