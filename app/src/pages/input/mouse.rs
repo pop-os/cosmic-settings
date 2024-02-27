@@ -58,7 +58,7 @@ fn mouse() -> Section<crate::pages::Message> {
             settings::view_section(&section.title)
                 .add(settings::item(
                     &*super::PRIMARY_BUTTON,
-                    cosmic::widget::segmented_selection::horizontal(&input.primary_button)
+                    cosmic::widget::segmented_control::horizontal(&input.primary_button)
                         .minimum_button_width(0)
                         .on_activate(|x| Message::PrimaryButtonSelected(x, false)),
                 ))

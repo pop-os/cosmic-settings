@@ -20,7 +20,7 @@ use cosmic::{
     widget::{
         button, dropdown, list_column, row,
         segmented_button::{self, SingleSelectModel},
-        settings, text, toggler, view_switcher,
+        settings, tab_bar, text, toggler,
     },
 };
 use cosmic::{
@@ -1113,7 +1113,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .height(Length::Fixed(32.0))
                     .into()
             } else {
-                view_switcher::horizontal(&page.outputs)
+                tab_bar::horizontal(&page.outputs)
                     .on_activate(Message::Output)
                     .into()
             });

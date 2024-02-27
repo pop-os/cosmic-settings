@@ -11,7 +11,7 @@ use arrangement::Arrangement;
 use cosmic::iced::Length;
 use cosmic::iced_widget::scrollable::{Direction, Properties, RelativeOffset};
 use cosmic::widget::{
-    column, container, dropdown, list_column, segmented_button, toggler, view_switcher,
+    column, container, dropdown, list_column, segmented_button, tab_bar, toggler,
 };
 use cosmic::{command, Command, Element};
 use cosmic_randr_shell::{List, Output, OutputKey, Transform};
@@ -460,7 +460,7 @@ impl Page {
 
         if self.list.outputs.len() > 1 {
             let display_switcher =
-                view_switcher::horizontal(&self.display_tabs).on_activate(Message::Display);
+                tab_bar::horizontal(&self.display_tabs).on_activate(Message::Display);
 
             let display_enable = list_column().add(cosmic::widget::settings::item(
                 &*text::DISPLAY_ENABLE,

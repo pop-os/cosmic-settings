@@ -188,7 +188,7 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
         .view::<Page>(|_binder, page, section| {
             settings::view_section(&section.title)
                 .add(
-                    cosmic::widget::segmented_selection::horizontal(&page.orientation_model)
+                    cosmic::widget::segmented_control::horizontal(&page.orientation_model)
                         .on_activate(Message::OrientationButtonSelected),
                 )
                 .apply(Element::from)
