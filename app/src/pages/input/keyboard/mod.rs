@@ -122,7 +122,7 @@ fn popover_button(input_source: &InputSource, expanded: bool) -> cosmic::Element
         .on_press(on_press);
 
     if expanded {
-        cosmic::widget::popover(button, popover_menu()).into()
+        cosmic::widget::popover(button).popup(popover_menu()).into()
     } else {
         button.into()
     }

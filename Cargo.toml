@@ -27,12 +27,17 @@ git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
 rev = "2e9bf9f"
 
+[profile.dev]
+debug = true
+lto = false
+opt-level = 3
+
 [profile.release]
 opt-level = 3
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/libcosmic']
-# # libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=slider", branch = "slider" }
-# # cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=slider", branch = "slider" }
-# libcosmic = { path = "../libcosmic" }
-# cosmic-config = { path = "../libcosmic/cosmic-config" }
+#[patch.'https://github.com/pop-os/libcosmic']
+#libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=slider", branch = "slider" }
+#cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=slider", branch = "slider" }
+#libcosmic = { path = "../libcosmic" }
+#cosmic-config = { path = "../libcosmic/cosmic-config" }

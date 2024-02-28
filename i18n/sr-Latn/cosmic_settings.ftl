@@ -403,23 +403,16 @@ mouse = Miš
 
 ## Input: Touchpad
 
-edge-scrolling = Pomeranje sa ivicama
-    .desc = Pomerajte pomoću ivica dodirne table.
-
 pinch-to-zoom = Stisnite prste za zumiranje
     .desc = Koristite dva prsta za zumiranje sadržaja, za aplikacije koje podržavaju zumiranje.
 
 tap-to-click = Dodir za klik
     .desc = Omogućava dodir jednim prstom za primarni klik, dva prsta za sekundarni klik i tri prsta za srednji klik.
 
-tapping-and-pinching = Dodir i zumiranje
-
 touchpad = Dodirna tabla
     .desc = Brzina dodirne table, opcije klika, pokreti.
     .speed = Brzina dodirne table
     .acceleration = Omogući ubrzanje dodirne table
-
-two-finger-scrolling = Pomeranje sa dva prsta
 
 ## Input: Gestures
 

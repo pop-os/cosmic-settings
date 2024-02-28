@@ -403,24 +403,6 @@ mouse = Mouse
 
 ## Input: Touchpad
 
-edge-scrolling = Edge scrolling
-    .desc = Scroll using the edge of the touchpad.
-
-pinch-to-zoom = Pinch to zoom
-    .desc = Use two fingers to zoom into content, for applications that support zoom.
-
-tap-to-click = Tap to click
-    .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
-
-tapping-and-pinching = Tapping and Pinching
-
-touchpad = Touchpad
-    .acceleration = Enable touchpad acceleration
-    .desc = Touchpad speed, click options, gestures.
-    .speed = Touchpad speed
-
-two-finger-scrolling = Two-finger scrolling
-
 ## Input: Gestures
 
 swiping = Swiping

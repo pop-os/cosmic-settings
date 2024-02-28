@@ -403,23 +403,16 @@ mouse = Rato
 
 ## Input: Touchpad
 
-edge-scrolling = Deslocação nas margens
-    .desc = Deslocar utilizando a extremidade do painel tátil.
-
 pinch-to-zoom = Apertar para ampliar
     .desc = Utilize dois dedos para fazer zoom no conteúdo, para aplicações que suportem ampliação.
 
 tap-to-click = Tocar para clicar
     .desc = Permite o toque com um dedo para o clique principal, o toque com dois dedos para o clique secundário e o toque com três dedos para o clique no botão do meio.
 
-tapping-and-pinching = Tocar e apertar
-
 touchpad = Painel tátil
     .acceleration = Ativar a aceleração do painel tátil
     .desc = Velocidade do painel tátil, opções de clique, gestos.
     .speed = Velocidade do painel tátil
-
-two-finger-scrolling = Deslocação com dois dedos
 
 ## Input: Gestures
 

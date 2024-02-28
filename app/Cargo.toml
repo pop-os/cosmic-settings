@@ -17,7 +17,7 @@ cosmic-settings-time = { path = "../pages/time" }
 derivative = "2.2.0"
 derive_setters = "0.1.6"
 dirs = "5.0.1"
-generator = "0.7.5"
+generator = "=0.7.5"
 i18n-embed-fl = "0.7.0"
 itertools = "0.12.0"
 libcosmic = {workspace = true}

@@ -368,6 +368,8 @@ primary-button = Primary button
     .right = Right
 
 scrolling = Scrolling
+    .two-finger = Scroll with two fingers
+    .edge = Scroll along the edge with one finger
     .speed = Scrolling speed
     .natural = Natural scrolling
     .natural-desc = Scroll the content, instead of the view
@@ -403,8 +405,9 @@ mouse = Mouse
 
 ## Input: Touchpad
 
-edge-scrolling = Edge scrolling
-    .desc = Scroll using the edge of the touchpad.
+click-behavior = Click Behavior
+    .click-finger = Secondary click with two fingers and middle-click with three fingers
+    .button-areas = Secondary click in bottom right corner and middle-click in bottom center
 
 pinch-to-zoom = Pinch to zoom
     .desc = Use two fingers to zoom into content, for applications that support zoom.
@@ -412,14 +415,10 @@ pinch-to-zoom = Pinch to zoom
 tap-to-click = Tap to click
     .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
 
-tapping-and-pinching = Tapping and Pinching
-
 touchpad = Touchpad
     .acceleration = Enable touchpad acceleration
     .desc = Touchpad speed, click options, gestures.
     .speed = Touchpad speed
-
-two-finger-scrolling = Two-finger scrolling
 
 ## Input: Gestures
 

@@ -1,7 +1,7 @@
 use cosmic::iced::Alignment;
 use cosmic::widget::{self, row, settings, text};
 use cosmic::{Apply, Element};
-use cosmic_comp_config::input::{AccelProfile, ScrollMethod};
+use cosmic_comp_config::input::{AccelProfile, ClickMethod, ScrollMethod};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slotmap::SlotMap;
@@ -9,14 +9,12 @@ use slotmap::SlotMap;
 use super::Message;
 
 crate::cache_dynamic_lazy! {
-    static EDGE_SCROLLING_DESC: String = fl!("edge-scrolling", "desc");
-    static EDGE_SCROLLING: String = fl!("edge-scrolling");
-    static TWO_FINGER_SCROLLING: String = fl!("two-finger-scrolling");
-    static PINCH_TO_ZOOM_DESC: String = fl!("pinch-to-zoom", "desc");
-    static PINCH_TO_ZOOM: String = fl!("pinch-to-zoom");
-    static TAP_TO_CLICK_DESC: String = fl!("tap-to-click", "desc");
+    static CLICK_BEHAVIOR_CLICK_FINGER: String = fl!("click-behavior", "click-finger");
+    static CLICK_BEHAVIOR_BUTTON_AREAS: String = fl!("click-behavior", "button-areas");
+
     static TAP_TO_CLICK: String = fl!("tap-to-click");
-    static TAPPING_AND_PINCHING: String = fl!("tapping-and-pinching");
+    static TAP_TO_CLICK_DESC: String = fl!("tap-to-click", "desc");
+
     static TOUCHPAD_ACCELERAION: String = fl!("touchpad", "acceleration");
     static TOUCHPAD_SPEED: String = fl!("touchpad", "speed");
 
@@ -42,7 +40,7 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(vec![
             sections.insert(touchpad()),
-            sections.insert(tapping_and_pinching()),
+            sections.insert(click_behavior()),
             sections.insert(scrolling()),
             sections.insert(swiping()),
         ])
@@ -86,11 +84,11 @@ fn touchpad() -> Section<crate::pages::Message> {
                         + 1.0)
                         * 50.0;
 
-                    let slider = widget::slider(10.0..=90.0, value, |value| {
+                    let slider = widget::slider(10.0..=80.0, value, |value| {
                         Message::SetMouseSpeed((value / 50.0) - 1.0, true)
                     })
                     .width(250.0)
-                    .breakpoints(&[50.0]);
+                    .breakpoints(&[45.0]);
 
                     row::with_capacity(2)
                         .align_items(Alignment::Center)
@@ -121,21 +119,51 @@ fn touchpad() -> Section<crate::pages::Message> {
         })
 }
 
-fn tapping_and_pinching() -> Section<crate::pages::Message> {
+fn click_behavior() -> Section<crate::pages::Message> {
     Section::default()
-        .title(fl!("tapping-and-pinching"))
+        .title(fl!("click-behavior"))
         .descriptions(vec![
+            CLICK_BEHAVIOR_CLICK_FINGER.as_str().into(),
+            CLICK_BEHAVIOR_BUTTON_AREAS.as_str().into(),
             TAP_TO_CLICK.as_str().into(),
             TAP_TO_CLICK_DESC.as_str().into(),
-            PINCH_TO_ZOOM.as_str().into(),
-            PINCH_TO_ZOOM_DESC.as_str().into(),
         ])
-        .view::<Page>(|binder, _page, _section| {
+        .view::<Page>(|binder, _page, section| {
             let page = binder
                 .page::<super::Page>()
                 .expect("input devices page not found");
 
-            settings::view_section(&*TAPPING_AND_PINCHING)
+            settings::view_section(&*section.title)
+                // Secondary click via two fingers, and middle-click via three fingers
+                .add(
+                    settings::item::builder(&*CLICK_BEHAVIOR_CLICK_FINGER).toggler(
+                        page.input_touchpad
+                            .click_method
+                            .as_ref()
+                            .map_or(false, |x| matches!(x, ClickMethod::Clickfinger)),
+                        |enabled| {
+                            Message::SetSecondaryClickBehavior(
+                                enabled.then_some(ClickMethod::Clickfinger),
+                                true,
+                            )
+                        },
+                    ),
+                )
+                // Secondary and middle-click via button areas.
+                .add(
+                    settings::item::builder(&*CLICK_BEHAVIOR_BUTTON_AREAS).toggler(
+                        page.input_touchpad
+                            .click_method
+                            .as_ref()
+                            .map_or(false, |x| matches!(x, ClickMethod::ButtonAreas)),
+                        |enabled| {
+                            Message::SetSecondaryClickBehavior(
+                                enabled.then_some(ClickMethod::ButtonAreas),
+                                true,
+                            )
+                        },
+                    ),
+                )
                 .add(
                     settings::item::builder(&*TAP_TO_CLICK).toggler(
                         page.input_touchpad
@@ -145,7 +173,6 @@ fn tapping_and_pinching() -> Section<crate::pages::Message> {
                         Message::TapToClick,
                     ),
                 )
-                .add(settings::item::builder(&*PINCH_TO_ZOOM).toggler(false, Message::PinchToZoom))
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
         })
@@ -155,12 +182,11 @@ fn scrolling() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("scrolling"))
         .descriptions(vec![
+            super::SCROLLING_TWO_FINGER.as_str().into(),
+            super::SCROLLING_EDGE.as_str().into(),
             super::SCROLLING_SPEED.as_str().into(),
             super::SCROLLING_NATURAL.as_str().into(),
             super::SCROLLING_NATURAL_DESC.as_str().into(),
-            TWO_FINGER_SCROLLING.as_str().into(),
-            EDGE_SCROLLING.as_str().into(),
-            EDGE_SCROLLING_DESC.as_str().into(),
         ])
         .view::<Page>(|binder, _page, section| {
             let page = binder
@@ -169,6 +195,33 @@ fn scrolling() -> Section<crate::pages::Message> {
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
+                // Two-finger scrolling toggle
+                .add(
+                    settings::item::builder(&*super::SCROLLING_TWO_FINGER).toggler(
+                        page.input_touchpad
+                            .scroll_config
+                            .as_ref()
+                            .map_or(false, |x| matches!(x.method, Some(ScrollMethod::TwoFinger))),
+                        |enabled| {
+                            Message::SetScrollMethod(
+                                enabled.then_some(ScrollMethod::TwoFinger),
+                                true,
+                            )
+                        },
+                    ),
+                )
+                // Edge scrolling toggle
+                .add(
+                    settings::item::builder(&*super::SCROLLING_EDGE).toggler(
+                        page.input_touchpad
+                            .scroll_config
+                            .as_ref()
+                            .map_or(false, |x| matches!(x.method, Some(ScrollMethod::Edge))),
+                        |enabled| {
+                            Message::SetScrollMethod(enabled.then_some(ScrollMethod::Edge), true)
+                        },
+                    ),
+                )
                 // Scroll speed slider
                 .add(settings::item(&*super::SCROLLING_SPEED, {
                     let value = page
@@ -203,38 +256,6 @@ fn scrolling() -> Section<crate::pages::Message> {
                                 .as_ref()
                                 .map_or(false, |conf| conf.natural_scroll.unwrap_or(false)),
                             |enabled| Message::SetNaturalScroll(enabled, true),
-                        ),
-                )
-                // Two-finger scrolling toggle
-                .add(
-                    settings::item::builder(&*TWO_FINGER_SCROLLING).toggler(
-                        page.input_touchpad
-                            .scroll_config
-                            .as_ref()
-                            .map_or(false, |x| matches!(x.method, Some(ScrollMethod::TwoFinger))),
-                        |enabled| {
-                            Message::SetScrollMethod(
-                                enabled.then_some(ScrollMethod::TwoFinger),
-                                true,
-                            )
-                        },
-                    ),
-                )
-                // Edge scrolling toggle
-                .add(
-                    settings::item::builder(&*EDGE_SCROLLING)
-                        .description(&*EDGE_SCROLLING_DESC)
-                        .toggler(
-                            page.input_touchpad
-                                .scroll_config
-                                .as_ref()
-                                .map_or(false, |x| matches!(x.method, Some(ScrollMethod::Edge))),
-                            |enabled| {
-                                Message::SetScrollMethod(
-                                    enabled.then_some(ScrollMethod::Edge),
-                                    true,
-                                )
-                            },
                         ),
                 )
                 .apply(Element::from)

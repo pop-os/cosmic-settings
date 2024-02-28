@@ -7,7 +7,8 @@ use cosmic::{
 };
 use cosmic_comp_config::{
     input::{
-        AccelConfig, AccelProfile, InputConfig, ScrollConfig, ScrollMethod, TapButtonMap, TapConfig,
+        AccelConfig, AccelProfile, ClickMethod, InputConfig, ScrollConfig, ScrollMethod,
+        TapButtonMap, TapConfig,
     },
     XkbConfig,
 };
@@ -23,9 +24,11 @@ crate::cache_dynamic_lazy! {
     static ACCELERATION_DESC: String = fl!("acceleration-desc");
     static DISABLE_WHILE_TYPING: String = fl!("disable-while-typing");
     static PRIMARY_BUTTON: String = fl!("primary-button");
+    static SCROLLING_EDGE: String = fl!("scrolling", "edge");
     static SCROLLING_NATURAL_DESC: String = fl!("scrolling", "natural-desc");
     static SCROLLING_NATURAL: String = fl!("scrolling", "natural");
     static SCROLLING_SPEED: String = fl!("scrolling", "speed");
+    static SCROLLING_TWO_FINGER: String = fl!("scrolling", "two-finger");
 }
 
 #[derive(Clone, Debug)]
@@ -35,11 +38,11 @@ pub enum Message {
     DisableWhileTyping(bool, bool),
     ExpandInputSourcePopover(Option<String>),
     OpenSpecialCharacterDialog(keyboard::SpecialKey),
-    PinchToZoom(bool),
     PrimaryButtonSelected(cosmic::widget::segmented_button::Entity, bool),
     SetAcceleration(bool, bool),
     SetMouseSpeed(f64, bool),
     SetNaturalScroll(bool, bool),
+    SetSecondaryClickBehavior(Option<ClickMethod>, bool),
     SetScrollFactor(f64, bool),
     SetScrollMethod(Option<ScrollMethod>, bool),
     SpecialCharacterSelect(Option<&'static str>),
@@ -154,6 +157,12 @@ impl Page {
                     .natural_scroll = Some(enabled);
             }),
 
+            Message::SetSecondaryClickBehavior(click_method, touchpad) => {
+                self.update_input(touchpad, |x| {
+                    x.click_method = click_method;
+                })
+            }
+
             Message::SetScrollFactor(value, touchpad) => self.update_input(touchpad, |x| {
                 x.scroll_config
                     .get_or_insert(ScrollConfig::default())
@@ -230,8 +239,6 @@ impl Page {
                     }
                 }
             }
-
-            Message::PinchToZoom(_enabled) => {}
 
             Message::TapToClick(enabled) => {
                 self.update_input(true, |conf| {
