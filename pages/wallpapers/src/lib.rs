@@ -43,10 +43,6 @@ pub const DEFAULT_COLORS: &[Color] = &[
     }),
 ];
 
-pub fn current_image(output: &str) -> Result<PathBuf, cosmic_config::Error> {
-    cosmic_bg_config::context()?.current_image(output)
-}
-
 pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
     let mut displays = HashMap::new();
 

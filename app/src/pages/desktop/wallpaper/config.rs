@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
+use cosmic_bg_config::Source;
 use cosmic_settings_wallpaper as wallpaper;
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
@@ -16,6 +17,7 @@ const RECENT_FOLDERS: &str = "recent-folders";
 #[derive(Debug, Default)]
 pub struct Config {
     context: Option<cosmic_config::Config>,
+    state: Option<cosmic_config::Config>,
     pub(super) current_folder: Option<PathBuf>,
     custom_colors: Vec<wallpaper::Color>,
     custom_images: Vec<PathBuf>,
@@ -30,6 +32,15 @@ impl Config {
             Ok(context) => context,
             Err(why) => {
                 tracing::warn!(?why, "failed to get config");
+                return Self::default();
+            }
+        };
+
+        let state = match cosmic_config::Config::new_state("com.system76.CosmicBackground", VERSION)
+        {
+            Ok(state) => state,
+            Err(why) => {
+                tracing::warn!(?why, "failed to get state");
                 return Self::default();
             }
         };
@@ -82,6 +93,7 @@ impl Config {
         }
 
         config.context = Some(context);
+        config.state = Some(state);
 
         config
     }
@@ -149,6 +161,24 @@ impl Config {
         }
 
         Ok(())
+    }
+
+    #[must_use]
+    pub fn current_image(&self, output: &str) -> Option<Source> {
+        let mut wallpapers = self
+            .state
+            .as_ref()?
+            .get::<Vec<(String, Source)>>("wallpapers")
+            .ok()?
+            .into_iter();
+
+        let wallpaper = if output == "all" {
+            wallpapers.next()
+        } else {
+            wallpapers.find(|(name, _path)| name == output)
+        };
+
+        wallpaper.map(|(_name, path)| path)
     }
 
     #[must_use]

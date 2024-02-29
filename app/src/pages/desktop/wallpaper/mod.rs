@@ -40,6 +40,7 @@ use cosmic::{
     widget::{color_picker::ColorPickerUpdate, ColorPickerModel},
     Element,
 };
+use cosmic_bg_config::Source;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
@@ -321,10 +322,13 @@ impl Page {
 
             Choice::Slideshow => self
                 .config_output()
-                .and_then(|output| {
-                    let path = wallpaper::current_image(output).ok()?;
-                    let id = self.wallpaper_id_from_path(&path)?;
-                    Some(&self.selection.display_images[id])
+                .and_then(|output| match self.config.current_image(output)? {
+                    Source::Path(path) => {
+                        let id = self.wallpaper_id_from_path(&path)?;
+                        Some(&self.selection.display_images[id])
+                    }
+
+                    Source::Color(_color) => None,
                 })
                 .or(self.selection.display_images.values().next()),
 
@@ -770,16 +774,20 @@ impl Page {
                     self.cache_display_image();
                 } else {
                     if let Some(output) = self.config_output() {
-                        if let Ok(path) = wallpaper::current_image(output) {
-                            if let Some(entity) = self.wallpaper_id_from_path(&path) {
-                                if let Some(entry) =
-                                    self.config_wallpaper_entry(output.to_owned(), path)
-                                {
-                                    self.select_wallpaper(&entry, entity, false);
-                                    self.config_apply();
-                                    return Command::none();
+                        match self.config.current_image(output) {
+                            Some(Source::Path(path)) => {
+                                if let Some(entity) = self.wallpaper_id_from_path(&path) {
+                                    if let Some(entry) =
+                                        self.config_wallpaper_entry(output.to_owned(), path)
+                                    {
+                                        self.select_wallpaper(&entry, entity, false);
+                                        self.config_apply();
+                                        return Command::none();
+                                    }
                                 }
                             }
+
+                            _ => (),
                         }
                     }
 

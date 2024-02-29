@@ -1142,6 +1142,7 @@ dependencies = [
  "async-channel",
  "clap",
  "color-eyre",
+ "cosmic-bg-config",
  "cosmic-comp-config",
  "cosmic-panel-config",
  "cosmic-randr-shell",

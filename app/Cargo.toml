@@ -9,6 +9,7 @@ rust-version = "1.65.0"
 apply = "0.3.0"
 async-channel = "2.1.1"
 color-eyre = "0.6.2"
+cosmic-bg-config = { workspace = true }
 cosmic-randr-shell = { workspace = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-page = { path = "../page" }
