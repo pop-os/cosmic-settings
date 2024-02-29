@@ -121,12 +121,6 @@ night-light = Night Light
     .auto = Automatic (sunset to sunrise)
     .desc = Reduce blue light with warmer colors.
 
-orientation = Orientation
-    .landscape = Landscape
-    .landscape-flipped = Landscape (Flipped)
-    .portrait = Portrait
-    .portrait-flipped = Portrait (Flipped)
-
 scheduling = Scheduling
     .manual = Manual schedule
 

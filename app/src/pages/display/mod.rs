@@ -204,8 +204,8 @@ impl page::Page<crate::pages::Message> for Page {
                         text::DISPLAY_REFRESH_RATE.as_str().into(),
                         text::DISPLAY_SCALE.as_str().into(),
                         text::ORIENTATION.as_str().into(),
-                        text::ORIENTATION_LANDSCAPE.as_str().into(),
-                        text::ORIENTATION_PORTRAIT.as_str().into(),
+                        text::ORIENTATION_STANDARD.as_str().into(),
+                        text::ORIENTATION_ROTATE_90.as_str().into(),
                     ])
                     .view::<Page>(|_binder, page, _section| page.display_view()),
             ),
@@ -364,10 +364,10 @@ impl Page {
                 }
 
                 self.cache.orientations = [
-                    text::ORIENTATION_LANDSCAPE.as_str(),
-                    text::ORIENTATION_PORTRAIT.as_str(),
-                    text::ORIENTATION_LANDSCAPE_FLIPPED.as_str(),
-                    text::ORIENTATION_PORTRAIT_FLIPPED.as_str(),
+                    text::ORIENTATION_STANDARD.as_str(),
+                    text::ORIENTATION_ROTATE_90.as_str(),
+                    text::ORIENTATION_ROTATE_180.as_str(),
+                    text::ORIENTATION_ROTATE_270.as_str(),
                 ];
             }
         }
@@ -449,8 +449,8 @@ impl Page {
                         Message::Orientation(match id {
                             0 => Transform::Normal,
                             1 => Transform::Rotate90,
-                            2 => Transform::Flipped,
-                            _ => Transform::Flipped90,
+                            2 => Transform::Rotate180,
+                            _ => Transform::Rotate270,
                         })
                     },
                 ),
@@ -544,8 +544,8 @@ impl Page {
         self.cache.orientation_selected = match output.transform {
             Some(Transform::Normal) => Some(0),
             Some(Transform::Rotate90) => Some(1),
-            Some(Transform::Flipped) => Some(2),
-            Some(Transform::Flipped90) => Some(3),
+            Some(Transform::Rotate180) => Some(2),
+            Some(Transform::Rotate270) => Some(3),
             _ => None,
         };
         self.cache.resolution_selected = None;
@@ -605,7 +605,7 @@ impl Page {
         self.cache.orientation_selected = match transform {
             Transform::Normal => Some(0),
             Transform::Rotate90 => Some(1),
-            Transform::Flipped => Some(2),
+            Transform::Rotate180 => Some(2),
             _ => Some(3),
         };
 

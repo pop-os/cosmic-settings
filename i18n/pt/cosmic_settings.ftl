@@ -122,10 +122,6 @@ night-light = Luz noturna
     .desc = Reduz a luz azul com cores mais quentes.
 
 orientation = Orientação
-    .landscape = Horizontal
-    .landscape-flipped = Horizontal (invertida)
-    .portrait = Vertical
-    .portrait-flipped = Vertical (invertida)
 
 scheduling = Agendamento
     .manual = Agendamento manual

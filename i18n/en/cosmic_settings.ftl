@@ -122,10 +122,10 @@ night-light = Night Light
     .desc = Reduce blue light with warmer colors.
 
 orientation = Orientation
-    .landscape = Landscape
-    .landscape-flipped = Landscape (Flipped)
-    .portrait = Portrait
-    .portrait-flipped = Portrait (Flipped)
+    .standard = Standard
+    .rotate-90 = Rotate 90
+    .rotate-180 = Rotate 180
+    .rotate-270 = Rotate 270
 
 scheduling = Scheduling
     .manual = Manual schedule

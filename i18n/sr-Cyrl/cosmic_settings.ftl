@@ -122,10 +122,6 @@ night-light = Ноћно светло
     .desc = Смањите плаво светло топлијим бојама.
 
 orientation = Оријентација
-    .landscape = Положено
-    .landscape-flipped = Положено (преокренуто)
-    .portrait = Усправно
-    .portrait-flipped = Усправно (преокренуто)
 
 scheduling = Распоред
     .manual = Ручни распоред

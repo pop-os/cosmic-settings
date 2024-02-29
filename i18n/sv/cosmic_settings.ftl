@@ -119,10 +119,6 @@ night-light = Nattljus
     .desc = Reducera blått ljus med varmare färger.
 
 orientation = Orientering
-    .landscape = Landskap
-    .landscape-flipped = Landskap (Vänd)
-    .portrait = Porträtt
-    .portrait-flipped = Porträtt (Vänd)
 
 scheduling = Schemaläggning
     .manual = Manuellt schema

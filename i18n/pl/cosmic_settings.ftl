@@ -127,10 +127,6 @@ night-light = Nocne Światło
     .desc = Zmniejsza ilość niebieskiego światła i ociepla kolory.
 
 orientation = Kierunek
-    .landscape = Poziomy
-    .landscape-flipped = Poziomy (Obrócony)
-    .portrait = Pionowy
-    .portrait-flipped = Pionowy (Obrócony)
 
 scheduling = Harmonogram
     .manual = Ręcznie ustawiony harmonogram
