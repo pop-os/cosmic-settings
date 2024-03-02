@@ -12,6 +12,7 @@ desktop = Scrivania
 
 appearance = Aspetto
     .desc = Colori d'accento e tema Cosmic.
+
 accent-color = Colore d'accento
 app-background = Sfondo applicazione o finestra
 auto = Automatico
@@ -59,24 +60,93 @@ window-management = Gestione delle finestre
     .active-hint = Dimensioni dei suggerimenti sulla finestra
     .gaps = Spazio attorno tra le finestre a piastrelle
 
+    ## Desktop: Display
+
+-requires-restart = Richiede un riavvio
+
+color = Color
+    .depth = Profondità colore
+    .profile = Profilo colore
+    .sidebar = Profili colore
+    .temperature = Temperatura colore
+
+display = Schermi
+    .desc = Gestisci schermi, cambio scheda grafica e luce notturna
+    .arrangement = Disposizione schermi
+    .arrangement-desc = Trascina schermi per riorganizzarli.
+    .enable = abilita schermo
+    .external = { $size } { $output } Schermo esterno
+    .laptop = { $size } Schermo del portatile
+    .options = Opzioni schermo
+    .refresh-rate = Frequenza di aggiornamento
+    .resolution = Risoluzione
+    .scale = Scalemento
+
+graphics-mode = Modalità grafica
+    .mode = { $mode ->
+        [compute] Calcolo
+        *[hybrid] Ibrida
+        [integrated] Integrata
+        [nvidia] NVIDIA
+    } graphics
+    .enable = Abilita modalità grafica { $mode ->
+        [compute] calcolo
+        *[hybrid] ibrida
+        [integrated] integrata
+        [nvidia] NVIDIA
+    }
+    .desc = { $mode ->
+        [compute] Utilizza la scheda grafica dedicata solo per carichi di lavoro computazionali. Disabilita schermi esterni { -requires-restart }.
+        *[hybrid] Le applicazioni utilizzano la scheda grafica integrata, a meno che non richiedano esplicitamente di utilizzare quella dedicata. { -requires-restart }.
+        [integrated] Speche la scheda grafica dedicata pere una maggiore durata della batteria e minore rumore delle ventole.
+        [nvidia] La migliore esperienza grafica e il maggiore utilizzo di energia. { -requires-restart }.
+    }
+    .restart = Riavvia e passa alla modalità { $mode }?
+    .restart-desc = Passare alla modalità { $mode } chiuderà tutte le applicazioni aperte
+
+mirroring = Duplicazione schermo
+    .id = Duplicazione { $id }
+    .dont = Non duplicare
+    .mirror = Duplica { $display }
+    .project = Proietta verso { $display ->
+        [all] tutti gli schermi
+        *[other] { $display }
+    }
+    .project-count = Proiettare verso { $count} { $count ->
+        [1] schermo
+        *[other] schermi
+    }
+
+night-light = Luce Notturna
+    .auto = Automatica (dall'alba al tramonto)
+    .desc = Riduce la luce blu tramite colori più caldi.
+
+orientation = Orientamento
+    .landscape = Normale
+    .landscape-flipped = Ruotato di 90°
+    .portrait = Ruotato di 180°
+    .portrait-flipped = Ruotato di 270°
+
+scheduling = Pianificazione
+    .manual = Pianificazione manuale
+
 ## Desktop: Notifications
 
 notifications = Notifiche
     .desc = Non disturbare, notifiche blocco schermo, e impostazioni specifiche per applicazione.
 
-
 ## Desktop: Options
 
 desktop-panel-options = Scrivania e Pannello
-    .desc = Azione per il Tasto Super, hot corners, opzioni di controllo finestra.
+    .desc = Azione per il Tasto Super, angoli caldi, opzioni di controllo finestra.
 
 desktop-panels-and-applets = Pannelli Scrivania e Applet
 
 dock = Barra applicazioni
-    .desc = Pannello con le applicazioni appuntate.
+    .desc = Pannello con le applicazioni preferite.
 
-hot-corner = Hot Corner
-    .top-left-corner = Abilita hot corner in alto a sinistra per spazi di lavoro
+hot-corner = Angolo Caldo
+    .top-left-corner = Abilita angolo caldo in alto a sinistra per spazi di lavoro
 
 super-key-action = Azione per il Tasto Super
     .launcher = Avviatore
@@ -84,8 +154,8 @@ super-key-action = Azione per il Tasto Super
     .applications = Applicazioni
 
 top-panel = Pannello Superiore
-    .workspaces = Mostra Tasto Spazi di Lavoro
-    .applications = Mostra tasto Applicazioni
+    .workspaces = Tasto Mostra Spazi di Lavoro
+    .applications = Tasto Mostra Applicazioni
 
 window-controls = Controlli Finestra
     .minimize = Mostra Tasto Minimizza
@@ -113,7 +183,7 @@ small = Piccolo
 start-segment = Segmento Iniziale
 
 panel-appearance = Aspetto
-    .match = Abbina con scrivania
+    .match = Abbina alla scrivania
     .light = Chiaro
     .dark = Scuro
 
@@ -123,14 +193,11 @@ panel-behavior-and-position = Comportamento e Posizioni
     .position = Posizione sullo schermo
     .display = Mostra su schermo
 
-
-
-
 panel-style = Stile
     .anchor-gap = Spazio tra il pannello e bordi dello schermo
-    .dock-anchor-gap = Spazio tra la barra applicazioni e i bordi del pannello
+    .dock-anchor-gap = Spazio tra la barra applicazioni e i bordi dello schermo
     .extend = Estendi pannello fino ai bordi dello schermo
-    .dock-extend = Espandi il pannello fino ai bordi dello schermo
+    .dock-extend = Espandi la barra applicazioni fino ai bordi dello schermo
     .appearance = Aspetto
     .size = Dimensioni
     .background-opacity = Opacità dello sfondo
@@ -142,14 +209,6 @@ panel-applets = Configurazione
 panel-missing = Configurazione Pannello non trovata
     .desc = Il file di configurazione del pannello non è stato trovato a causa dell'utilizzo di una configurazione personalizzata oppure si è corrotto.
     .fix = Reimposta predefinito
-
-
-
-
-
-
-
-
 
 ## Desktop: Wallpaper
 
@@ -168,11 +227,10 @@ add-image = Aggiungi immagine
 all-displays = Tutti gli Schermi
 colors = Colori
 dialog-add = _Aggiungi
+fill = Fill
 fit-to-screen = Adatta allo Schermo
 open-new-folder = Apri nuova cartella
 recent-folders = Cartelle recenti
-stretch = Allarga
-zoom = Zoom
 
 x-minutes = { $number } minuti
 x-hours = { $number ->
@@ -187,13 +245,15 @@ workspaces = Spazi di lavoro
 
 workspaces-behavior = Comportamento spazi di lavoro
     .dynamic = Spazi di lavoro dinamici
+    .dynamic-desc = Rimuovi automaticamente spazi di lavoro vuoti.
     .fixed = Numero fisso di spazi di lavoro
+    .fixed-desc = Aggiungi o rimuovi spazi di lavoro nell'anteprima.
 
 workspaces-multi-behavior = Comportamento con più schermi
     .span = Gli spazi di lavoro comprendono più schermi
     .separate = Ogni schermo ha il suo spazio di lavoro
 
-workspaces-overview-thumbnails = Anteprime spazio di lavoro
+workspaces-overview-thumbnails = Anteprime Spazio di Lavoro
     .show-number = Mostra Numero Spazio di Lavoro
     .show-name = Mostra Nome Spazio di Lavoro
 
@@ -262,10 +322,10 @@ system = Sistema e Account
 ## System: About
 
 about = Descrizione
-    .desc = Nome dispositivo, informazioni hardware, sistema operativo.
+    .desc = Nome dispositivo, informazioni hardware, predefiniti sistema operativo.
 
 about-device = Nome dispositivo
-    .desc = Questo nome appare a altri dispositivi in rete o bluetooth.
+    .desc = Questo nome appare a altri dispositivi in rete o via bluetooth.
 
 about-hardware = Hardware
     .model = Modello hardware
@@ -297,11 +357,18 @@ users = Utenti
 
 acceleration-desc = Aggiusta automaticamente la sensibilità di tracciamento in base alla velocità.
 
+disable-while-typing = Disabilita mentre si scrive
+
+input-devices = Dispositivi di Input
+    .desc = Dispositivi di Input
+
 primary-button = Tasto principale
     .left = Sinistro
     .right = Destro
 
 scrolling = Scorrimento
+    .two-finger = Scorri con due dita
+    .edge = Scorri lungo il bordo con un dito
     .speed = Velocità di scorrimento
     .natural = Scorrimento naturale
     .natural-desc = Scorri il contenuto invece che la visualizzazione
@@ -337,7 +404,32 @@ mouse = Mouse
 
 ## Input: Touchpad
 
+click-behavior = Comportamento sul Click
+    .click-finger = Click secondario con due dita e tasto centrale con tre dita
+    .button-areas = Click secondario nell'angolo in basso a destra e tasto centrale in basso al centro
+
+pinch-to-zoom = Pizzica per Ingrandire
+    .desc = Utilizza due dita per ingrandire il contenuto, per applicazione che supportano l'ingrandimento.
+
+tap-to-click = Tocca per fare click
+    .desc = Abilita tocco con un dito per il click principale, due dita per il click secondario e tre dita per la pressione del tasto centrale.
+
 touchpad = Touchpad
-    .desc = Velocità, opzioni click e movimenti sul touchpad.
-    .speed = Velocità touchpad
-    .acceleration = Abilita accelerazione touchpad
+    .acceleration = Abilita accelerazione sul touchpad
+    .desc = Velocità, opzioni click e gesti sul touchpad.
+    .speed = Velocità sul touchpad
+
+## Input: Gestures
+
+swiping = Trascinamenti
+    .four-finger-down = Trascina verso il basso con quattro dita
+    .four-finger-left = Trascina verso sinistra con quattro dita
+    .four-finger-right = Trascina verso destra con quattro dita
+    .four-finger-up = Trascina verso l'altro con quattro dita
+    .three-finger-any = Trascina verso qualsiasi direzione con tre dita
+
+switch-between-windows = Scorri tra le finestre
+switch-to-next-workspace = Passa al prossimo spazio di lavoro
+switch-to-prev-workspace = Passa al precedente spazio di lavoro
+open-application-library = Apri Libreria Applicazioni
+open-workspaces-view = Apri Panoramica Spazi di Lavoro
