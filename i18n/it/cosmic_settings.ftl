@@ -45,7 +45,7 @@ control-tint = Tinta per componenti di controllo
     .desc = Usata come sfondo per i pulsanti, caselle di ricerca, caselle di testo e componenti simili.
 
 frosted = Effetto "vetro smerigliato" per l'interfaccia
-    .desc = Applica un effetto di sfocatura al pannello, il dock, gli applet, il launcher e la libreria della applicazioni.
+    .desc = Applica un effetto di sfocatura al pannello, alla barra delle applicazioni, gli applet, il launcher e la libreria della applicazioni.
 
 text-tint = Tinta per il testo dell'interfaccia
     .desc = Colore su cui si basano i colori del testo con sufficiente contrasto in diverse superfici.
@@ -142,7 +142,7 @@ desktop-panel-options = Desktop e Pannello
 
 desktop-panels-and-applets = Pannello e applet
 
-dock = Dock
+dock = Barra delle applicazioni
     .desc = Pannello contenente le applicazioni fissate.
 
 hot-corner = Bordi reattivi
@@ -190,21 +190,21 @@ panel-appearance = Tema
 
 panel-behavior-and-position = Comportamento e posizione
     .autohide = Nascondi automaticamente il pannello
-    .dock-autohide = Nascondi automaticamente il dock
+    .dock-autohide = Nascondi automaticamente la barra delle applicazioni
     .position = Posizione nello schermo
     .display = Mostra nel display
 
 panel-style = Stile
     .anchor-gap = Spazio tra il pannello e i bordi dello schermo
-    .dock-anchor-gap = Spazio tra il dock e i bordi dello schermo
+    .dock-anchor-gap = Spazio tra la barra delle applicazioni e i bordi dello schermo
     .extend = Estendi pannello ai bordi dello schermo
-    .dock-extend = Estendi dock ai bordi dello schermo
+    .dock-extend = Estendi la barra delle applicazioni ai bordi dello schermo
     .appearance = Aspetto
     .size = Grandezza
     .background-opacity = Opacità sfondo
 
 panel-applets = Configurazione
-    .dock-desc = Configura gli applet del dock
+    .dock-desc = Configura gli applet della barra delle applicazioni
     .desc = Configura gli applet del pannello
 
 panel-missing = La configurazione del pannello è mancante
