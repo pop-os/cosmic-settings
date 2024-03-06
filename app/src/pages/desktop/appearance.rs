@@ -1189,27 +1189,23 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&*descriptions[4])
                         .description(&*descriptions[5])
-                        .control(
-                            if let Some(c) = page.container_background.get_applied_color() {
-                                container(color_button(
-                                    Some(Message::ContainerBackground(
+                        .control(if page.container_background.get_applied_color().is_some() {
+                            Element::from(
+                                page.container_background
+                                    .picker_button(Message::ContainerBackground, Some(24))
+                                    .width(Length::Fixed(48.0))
+                                    .height(Length::Fixed(24.0)),
+                            )
+                        } else {
+                            container(
+                                button::text(fl!("auto"))
+                                    .trailing_icon(from_name("go-next-symbolic"))
+                                    .on_press(Message::ContainerBackground(
                                         ColorPickerUpdate::ToggleColorPicker,
                                     )),
-                                    c,
-                                    true,
-                                    48,
-                                    24,
-                                ))
-                            } else {
-                                container(
-                                    button::text(fl!("auto"))
-                                        .trailing_icon(from_name("go-next-symbolic"))
-                                        .on_press(Message::ContainerBackground(
-                                            ColorPickerUpdate::ToggleColorPicker,
-                                        )),
-                                )
-                            },
-                        ),
+                            )
+                            .into()
+                        }),
                 )
                 .add(
                     settings::item::builder(&*descriptions[8])
