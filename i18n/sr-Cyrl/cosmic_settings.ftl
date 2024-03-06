@@ -27,7 +27,6 @@ import = Увези
 light = Светло
 mode-and-colors = Режим и боје
 recent-colors = Недавне боје
-reset-default = Врати на подразумевано
 reset-to-default = Врати на подразумевано
 rgb = RGB
 window-hint-accent = Боја наговештаја активног прозора

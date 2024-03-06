@@ -27,7 +27,6 @@ import = Importar
 light = Claro
 mode-and-colors = Modo e cores
 recent-colors = Cores recentes
-reset-default = Repor a predefinição
 reset-to-default = Repor a predefinição
 rgb = RGB
 window-hint-accent = Cor da sugestão da janela ativa

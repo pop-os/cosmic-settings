@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::config::Config;
-use crate::pages::desktop::appearance::COLOR_PICKER_DIALOG_ID;
 use crate::pages::desktop::{
     self, appearance,
     dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
@@ -166,10 +165,6 @@ impl cosmic::Application for SettingsApp {
             Message::PageMessage(crate::pages::Message::DockApplet(dock::applets::Message(
                 applets_inner::Message::ClosedAppletDialog,
             )))
-        } else if id == *COLOR_PICKER_DIALOG_ID {
-            Message::PageMessage(crate::pages::Message::Appearance(
-                appearance::Message::CloseRequested,
-            ))
         } else {
             return None;
         };
@@ -461,12 +456,6 @@ impl cosmic::Application for SettingsApp {
             .then(|| self.pages.page::<applets_inner::Page>())
         {
             return page.add_applet_view(crate::pages::Message::PanelApplet);
-        }
-
-        if let Some(Some(page)) = (id == *appearance::COLOR_PICKER_DIALOG_ID)
-            .then(|| self.pages.page::<appearance::Page>())
-        {
-            return page.color_picker_view();
         }
 
         if let Some(Some(page)) =
