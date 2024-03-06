@@ -127,7 +127,7 @@ pub fn panel_dock_links() -> Section<crate::pages::Message> {
                         .control(control)
                         .spacing(16)
                         .apply(container)
-                        .style(theme::Container::custom(list::style))
+                        .style(theme::Container::List)
                         .apply(button)
                         .style(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(panel_entity)),
@@ -150,7 +150,7 @@ pub fn panel_dock_links() -> Section<crate::pages::Message> {
                         .control(control)
                         .spacing(16)
                         .apply(container)
-                        .style(theme::Container::custom(list::style))
+                        .style(theme::Container::List)
                         .apply(button)
                         .style(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(dock_entity)),

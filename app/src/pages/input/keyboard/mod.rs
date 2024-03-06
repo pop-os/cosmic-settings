@@ -67,12 +67,7 @@ impl SpecialKey {
 fn popover_menu_row(label: String) -> cosmic::Element<'static, Message> {
     widget::text(label)
         .apply(widget::container)
-        .style(cosmic::theme::Container::custom(|theme| {
-            iced_style::container::Appearance {
-                background: None,
-                ..cosmic::widget::list::style(theme)
-            }
-        }))
+        .style(cosmic::theme::Container::List)
         .apply(button)
         .style(theme::Button::Transparent)
         .into()
@@ -319,9 +314,7 @@ fn go_next_control<Msg: Clone + 'static>() -> cosmic::Element<'static, Msg> {
 fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::Element<'_, Msg> {
     settings::item(description, go_next_control())
         .apply(widget::container)
-        .style(cosmic::theme::Container::custom(
-            cosmic::widget::list::style,
-        ))
+        .style(cosmic::theme::Container::List)
         .apply(button)
         .style(theme::Button::Transparent)
         .on_press(msg)
