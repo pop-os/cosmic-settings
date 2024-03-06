@@ -31,14 +31,14 @@ reset-default = デフォルトに戻す
 reset-to-default = デフォルトに戻す
 rgb = RGB
 window-hint-accent = アクティブなウィンドウのハイライトカラー
-window-hint-accent-toggle = アクティブなUse theme accent color as active window hint
+window-hint-accent-toggle = テーマのアクセントカラーをアクティブなウィンドウのヒントとして使う
 
 auto-switch = 自動的にライトモードからダークモードに切り替える
     .desc = 日の出になるとライトモードに切り替えます。
 
 container-background = Container background
     .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
-    .reset = Reset to auto
+    .reset = 自動的な選択に戻す
     .desc = Primary container color is used for navigation sidebar, side drawer, dialogs and similar widgets.
 
 control-tint = Control component tint
@@ -50,82 +50,80 @@ frosted = Frosted glass effect on system interface
 text-tint = Interface text tint
     .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
 
-style = Style
+style = スタイル
     .round = 丸い
     .slightly-round = 少し丸い
     .square = 四角い
 
 # interface density left out for now
-window-management = Window Management
+window-management = ウィンドウマネジメント
     .active-hint = Active window hint size
-    .gaps = Gaps around tiled windows
+    .gaps = タイル型ウィンドウ
 
 ## Desktop: Display
 
--requires-restart = Requires restart
+-requires-restart = 再起動が必要です
 
-color = Color
-    .depth = Color depth
-    .profile = Color profile
-    .sidebar = Color Profiles
-    .temperature = Color temperature
+color = 色
+    .depth = 色深度
+    .profile = カラープロファイル
+    .sidebar = カラープロファイル
+    .temperature = 色温度
 
-display = Displays
+display = ディスプレイ
     .desc = Manage displays, graphics switching, and night light
-    .arrangement = Display Arrangement
+    .arrangement = ディスプレイの配列
     .arrangement-desc = Drag displays to rearrange them.
-    .enable = Enable display
-    .external = { $size } { $output } External Display
-    .laptop = { $size } Laptop Display
-    .options = Display Options
+    .enable = ディスプレイを有効にする
+    .external = { $size } { $output } 外付けディスプレイ
+    .laptop = { $size }ラップトップディスプレイ
+    .options = ディスプレイの設定
     .refresh-rate = Refresh rate
     .resolution = Resolution
     .scale = Scale
 
-graphics-mode = Graphics mode
+graphics-mode = グラフィックスモード
     .mode = { $mode ->
-        [compute] Compute
-        *[hybrid] Hybrid
-        [integrated] Integrated
+        [compute] 計算
+        *[hybrid] ハイブリッド
+        [integrated] 内蔵
         [nvidia] NVIDIA
     } graphics
-    .enable = Enable { $mode ->
-        [compute] compute
-        *[hybrid] hybrid
-        [integrated] integrated
+    .enable =  { $mode ->
+        [compute] 計算
+        *[hybrid] ハイブリッド
+        [integrated] 内蔵
         [nvidia] NVIDIA
-    } graphics
+    }グラフィックス
     .desc = { $mode ->
-        [compute] Uses dedicated graphics for computational workloads only. Disables external displays. { -requires-restart }.
-        *[hybrid] Applications use integrated graphics unless explicitly requested to use dedicated graphics. { -requires-restart }.
-        [integrated] Turns off dedicated graphics for a longer battery life and less fan noise.
+        [compute] 計算の作業負荷だけで専用グラフィックスを使います。外付けディスプレイを無効にします。{ -requires-restart }
+        *[hybrid] Applications use integrated graphics unless explicitly requested to use dedicated graphics. { -requires-restart }
+        [integrated] バッテリー寿命を強化してファン騒音を低減するように専用グラフィックスを無効にします。
         [nvidia] Better graphical experience and highest power usage. { -requires-restart }.
     }
-    .restart = Restart and switch to { $mode }?
-    .restart-desc = Switching to { $mode } will close all open applications
+    .restart = 再起動して{ $mode }に切り替えますか？
+    .restart-desc = { $mode }に切り替えると全てのアプリケーションを閉じます。
 
 mirroring = Mirroring
     .id = Mirroring { $id }
     .dont = Don't mirror
     .mirror = Mirror { $display }
-    .project = Project to { $display ->
-        [all] all displays
+    .project = { $display ->
+        [all] 全てのディスプレイ
         *[other] { $display }
-    }
-    .project-count = Projecting to { $count} other { $count ->
-        [1] display
-        *[other] displays
-    }
+    }に投影する
+
+    .project-count = 他の{ $count}つのディスプレイに投影している
 
 night-light = ナイトライト
     .auto = 自動的（日の入りから日の出まで）
     .desc = 暖色で青い光を減らします。
 
-orientation = Orientation
-    .standard = Standard
-    .rotate-90 = Rotate 90
-    .rotate-180 = Rotate 180
-    .rotate-270 = Rotate 270
+orientation = 画面の向き
+    .standard = 回さない
+    .rotate-90 = 90度回転
+    .rotate-180 = 180度回転
+    .rotate-270 = 270度回転
 
 scheduling = Scheduling
     .manual = Manual schedule
@@ -138,7 +136,7 @@ notifications = 通知
 ## Desktop: Options
 
 desktop-panel-options = デスクトップとパネル
-    .desc = Super Key action, hot corners, window control options.
+    .desc = スーパーキーの行動、ホットコーナー、ウィンドウコントロールの設定。
 
 desktop-panels-and-applets = デスクトップパネルとアプレット
 
@@ -146,7 +144,7 @@ dock = ドック
     .desc = Panel with pinned applications.
 
 hot-corner = ホットコーナー
-    .top-left-corner = Enable top-left hot corner for Workspaces
+    .top-left-corner = ワークスペースための左上のホットコーナーを有効にする
 
 super-key-action = スーパーキーの行動
     .launcher = Launcher
@@ -166,27 +164,27 @@ window-controls = Window Controls
 panel = パネル
     .desc = Top bar with desktop controls and menus.
 
-add = Add
-add-applet = Add Applet
-all = All
-applets = Applets
+add = 追加
+add-applet = アプレットを追加
+all = すべて
+applets = アプレット
 center-segment = Center Segment
-drop-here = Drop applets here
+drop-here = ここにアプレットを入れてください
 end-segment = End Segment
-large = Large
-no-applets-found = No applets found...
-panel-bottom = Bottom
-panel-left = Left
-panel-right = Right
-panel-top = Top
-search-applets = Search applets...
-small = Small
+large = 大きい
+no-applets-found = アプレットは見つけられませんでした...
+panel-bottom = 下
+panel-left = 左
+panel-right = 右
+panel-top = 上
+search-applets = アプレットを検索...
+small = 小さい
 start-segment = Start Segment
 
 panel-appearance = 外観
-    .match = Match desktop
-    .light = Light
-    .dark = Dark
+    .match = システム設定に従う
+    .light = ライト
+    .dark = ダーク
 
 panel-behavior-and-position = Behavior and Positions
     .autohide = Automatically hide panel
@@ -199,9 +197,9 @@ panel-style = パネルスタイル
     .dock-anchor-gap = Gap between dock and screen edges
     .extend = Extend panel to screen edges
     .dock-extend = Extend dock to screen edges
-    .appearance = Appearance
-    .size = Size
-    .background-opacity = Background opacity
+    .appearance = 外観
+    .size = 大きさ
+    .background-opacity = 背景の不透明度
 
 panel-applets = 構成
     .dock-desc = Configure dock applets.
@@ -214,30 +212,27 @@ panel-missing = パネル構成は見つけられません
 ## Desktop: Wallpaper
 
 wallpaper = 背景
-    .change = Change image every
+    .change = この期間ごとに画像を変える：
     .desc = Wallpaper images, colors, and slideshow options.
     .fit = Wallpaper fit
     .folder-dialog = Choose wallpaper folder
     .image-dialog = Choose wallpaper image
     .plural = Wallpapers
     .same = Same wallpaper on all displays
-    .slide = Slideshow
+    .slide = スライドショー
 
-add-color = Add color
-add-image = Add image
-all-displays = All Displays
-colors = Colors
-dialog-add = _Add
+add-color = 色を追加
+add-image = 画像を追加
+all-displays = 全てのディスプレイ
+colors = 色
+dialog-add = _追加
 fill = Fill
-fit-to-screen = Fit to Screen
-open-new-folder = Open new folder
-recent-folders = Recent Folders
+fit-to-screen = 画面に合わせる
+open-new-folder = 新しいフォルダを開く
+recent-folders = 最近のフォルダ
 
-x-minutes = { $number } minutes
-x-hours = { $number ->
-    [1] 1 hour
-    *[other] { $number } hours
-}
+x-minutes = { $number }分
+x-hours = { $number }時間
 
 ## Desktop: Workspaces
 
@@ -245,8 +240,8 @@ workspaces = ワークスペース
     .desc = Set workspace number, behavior, and placement.
 
 workspaces-behavior = ワークスペースの動作
-    .dynamic = Dynamic workspaces
-    .dynamic-desc = Automatically removes empty workspaces.
+    .dynamic = ダイナミックワークスペース
+    .dynamic-desc = 自動的に空のワークスペースを削除します。
     .fixed = Fixed Number of Workspaces
     .fixed-desc = Add or remove workspaces in the overview.
 
@@ -279,7 +274,7 @@ time = 日付と時刻
 
 time-date = 日付と時刻
     .desc = Time zone, automatic clock settings, and some time formatting.
-    .auto = Set automatically
+    .auto = 自動的に設定する
 
 time-zone = 等時帯
     .auto = Automatic time zone
@@ -323,7 +318,7 @@ system = システムとアカウント
 ## System: About
 
 about = このデバイスについて
-    .desc = Device name, hardware information, operating system defaults.
+    .desc = デバイス名、ハードウェアの情報、OSのデフォルト。
 
 about-device = デバイス名
     .desc = This name appears to other network or bluetooth devices.
@@ -342,12 +337,12 @@ about-os = オペレーティングシステム
     .windowing-system = Windowing system
 
 about-related = 関係がある設定
-    .support = Get support
+    .support = 
 
 ## System: Firmware
 
 firmware = ファームウェア
-    .desc = Firmware details.
+    .desc = ファームウェアの情報。
 
 ## System: Users
 
