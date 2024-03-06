@@ -27,7 +27,6 @@ import = Importa
 light = Chiaro
 mode-and-colors = Modalità e colori
 recent-colors = Colori recenti
-reset-default = Ripristina predefinito
 reset-to-default = Ripristina predefinito
 rgb = RGB
 window-hint-accent = Colore d'accento per la finestra attiva

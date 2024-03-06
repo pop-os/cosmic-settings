@@ -25,7 +25,6 @@ import = Importera
 light = Ljust
 mode-and-colors = Läge och färger
 recent-colors = Senaste färger
-reset-default = Återställ till standard
 reset-to-default = Återställ till standard
 rgb = RGB
 window-hint-accent = Aktivt fönsterhinting färg

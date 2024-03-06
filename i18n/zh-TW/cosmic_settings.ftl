@@ -42,7 +42,7 @@ style = 風格
     .square = 正角
 frosted = 系統介面呈現磨砂玻璃的透明效果
     .desc = 將磨砂玻璃的透明效果套用至面板、容器、Dock、啟動器及程式庫
-reset-default = 重設至預設值
+
 # interface density left out for now
 
 window-management = 視窗管理
