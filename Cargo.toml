@@ -2,6 +2,7 @@
 members = ["app", "page", "pages/*"]
 default-members = ["app"]
 resolver = "2"
+rust-version = "1.71.0"
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
