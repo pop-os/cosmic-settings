@@ -91,7 +91,7 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
         .spacing(16)
         .apply(container)
         .padding([20, 24])
-        .style(theme::Container::custom(list::style))
+        .style(theme::Container::List)
         .apply(button)
         .style(theme::Button::Transparent)
         .on_press(message)
