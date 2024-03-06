@@ -1,16 +1,27 @@
-rootdir := ''
-prefix := '/usr'
-
 # Installation command
-[private]
+[no-cd, private]
 install-cmd options src dest:
     install {{options}} {{src}} {{dest}}
 
-[private]
+[no-cd, private]
 install-bin src dest: (install-cmd '-Dm0755' src dest)
 
-[private]
+[no-cd, private]
 install-file src dest: (install-cmd '-Dm0644' src dest)
+
+# Check if required dependencies are installed on the system
+dep-check:
+    #!/bin/sh
+    echo "{{lib-depends}}" | while read -r lib; do
+        if [ -n "${lib}" ]; then
+            just dep-lib "${lib}" || exit 1
+        fi
+    done
+    echo "{{cmd-depends}}" | while read -r cmd; do
+        if [ -n "${cmd}" ]; then
+            just dep-cmd "${cmd}" || exit 1
+        fi
+    done
 
 # Errors if a command does not exist
 [private]
@@ -20,7 +31,7 @@ dep-cmd cmd:
 # Errors if a library does not exist
 [private]
 dep-lib lib:
-    @pkg-config --libs {{lib}} >/dev/null 2>&1 || (just print-error 'missing dependency' 'library' {{lib}}; exit 1)
+    @pkg-config --exists {{lib}} || (just print-error 'missing dependency' 'library' {{lib}}; exit 1)
 
 # Display a formatted error for the user.
 [private]
