@@ -44,8 +44,8 @@ container-background = Container background
 control-tint = Control component tint
     .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components.
 
-frosted = Frosted glass effect on system interface
-    .desc = Applies background blur to panel, dock, applets, launcher, and application library.
+frosted = システムインターフェイスのすりガラス効果
+    .desc = パネル、ドック、アプレット、ランチャー、アプリケーションライブラリの背景をぼかします。
 
 text-tint = Interface text tint
     .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
@@ -80,7 +80,7 @@ display = ディスプレイ
     .options = ディスプレイの設定
     .refresh-rate = Refresh rate
     .resolution = Resolution
-    .scale = Scale
+    .scale = スケーリング
 
 graphics-mode = グラフィックスモード
     .mode = { $mode ->
@@ -89,25 +89,25 @@ graphics-mode = グラフィックスモード
         [integrated] 内蔵
         [nvidia] NVIDIA
     } graphics
-    .enable =  { $mode ->
+    .enable = { $mode ->
         [compute] 計算
         *[hybrid] ハイブリッド
         [integrated] 内蔵
         [nvidia] NVIDIA
-    }グラフィックス
+    }グラフィックスを有効にする
     .desc = { $mode ->
         [compute] 計算の作業負荷だけで専用グラフィックスを使います。外付けディスプレイを無効にします。{ -requires-restart }
-        *[hybrid] Applications use integrated graphics unless explicitly requested to use dedicated graphics. { -requires-restart }
+        *[hybrid] 専用グラフィックスを使用する要求がない限り、プログラムは統合グラフィックスを使用します。 { -requires-restart }
         [integrated] バッテリー寿命を強化してファン騒音を低減するように専用グラフィックスを無効にします。
-        [nvidia] Better graphical experience and highest power usage. { -requires-restart }.
+        [nvidia] 改善されたグラッフィク体験と最高消費電力です。 { -requires-restart }.
     }
     .restart = 再起動して{ $mode }に切り替えますか？
     .restart-desc = { $mode }に切り替えると全てのアプリケーションを閉じます。
 
-mirroring = Mirroring
-    .id = Mirroring { $id }
-    .dont = Don't mirror
-    .mirror = Mirror { $display }
+mirroring = ミラーリング
+    .id = { $id }をミラーリングしています
+    .dont = ミラーリングしない
+    .mirror = { $display }をミラーリングする
     .project = { $display ->
         [all] 全てのディスプレイ
         *[other] { $display }
@@ -147,30 +147,30 @@ hot-corner = ホットコーナー
     .top-left-corner = ワークスペースための左上のホットコーナーを有効にする
 
 super-key-action = スーパーキーの行動
-    .launcher = Launcher
-    .workspaces = Workspaces
-    .applications = Applications
+    .launcher = ランチャー
+    .workspaces = ワークスペース
+    .applications = アプリケーション
 
 top-panel = トップパネル
-    .workspaces = Show Workspaces Button
-    .applications = Show Applications Button
+    .workspaces = ワークスペースボタンを表示
+    .applications = アプリケーションボタンを表示
 
-window-controls = Window Controls
-    .minimize = Show Minimize Button
-    .maximize = Show Maximize Button
+window-controls = ウィンドウコントロール
+    .minimize = 最小化ボタンを表示
+    .maximize = 最大化ボタンを表示
 
 ## Desktop: Panel
 
 panel = パネル
-    .desc = Top bar with desktop controls and menus.
+    .desc = デスクトップコントロールとメニューありトップパネル。
 
 add = 追加
 add-applet = アプレットを追加
 all = すべて
 applets = アプレット
-center-segment = Center Segment
+center-segment = 中心の部分
 drop-here = ここにアプレットを入れてください
-end-segment = End Segment
+end-segment = 最後の部分
 large = 大きい
 no-applets-found = アプレットは見つけられませんでした...
 panel-bottom = 下
@@ -179,7 +179,7 @@ panel-right = 右
 panel-top = 上
 search-applets = アプレットを検索...
 small = 小さい
-start-segment = Start Segment
+start-segment = 最初の部分
 
 panel-appearance = 外観
     .match = システム設定に従う
@@ -206,8 +206,8 @@ panel-applets = 構成
     .desc = Configure panel applets.
 
 panel-missing = パネル構成は見つけられません
-    .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
-    .fix = Reset to default
+    .desc = パネル構成ファイルは壊れているか、カスタム構成の使用により見つけられません。
+    .fix = デフォルトに戻す
 
 ## Desktop: Wallpaper
 
@@ -265,7 +265,7 @@ wired = Wired
 ## Networking: Online Accounts
 
 online-accounts = オンラインアカウント
-    .desc = Add accounts, IMAP and SMTP, enterprise logins
+    .desc = アカウント、IMAPとSMTP、エンタプライズログインを追加
 
 ## Time & Language
 
@@ -280,7 +280,7 @@ time-zone = 等時帯
     .auto = Automatic time zone
     .auto-info = Requires location services and internet access
 
-time-format = Date & Time Format
+time-format = 日付と時刻
     .twenty-four = 24-hour time
     .first = First day of week
 
@@ -293,20 +293,20 @@ sound = サウンド
     .desc = N/A
 
 sound-output = 出力
-    .volume = Output volume
-    .device = Output device
-    .level = Output level
-    .config = Configuration
-    .balance = Balance
+    .volume = 出力音量
+    .device = 出力デバイス
+    .level = 出力レベル
+    .config = 構成
+    .balance = バランス
 
 sound-input = 入力
-    .volume = Input volume
-    .device = Input device
-    .level = Input level
+    .volume = 入力音量
+    .device = 入力デバイス
+    .level = 入力レベル
 
 sound-alerts = アラート
-    .volume = Alerts volume
-    .sound = Alerts sound
+    .volume = アラート音量
+    .sound = アラート音
 
 sound-applications = アプリケーション
     .desc = Application volumes and settings
@@ -321,13 +321,13 @@ about = このデバイスについて
     .desc = デバイス名、ハードウェアの情報、OSのデフォルト。
 
 about-device = デバイス名
-    .desc = This name appears to other network or bluetooth devices.
+    .desc = この名前は他のネットワークまたはBluetoothデバイスに表示されます。
 
 about-hardware = ハードウェア
     .model = Hardware model
-    .memory = Memory
-    .processor = Processor
-    .graphics = Graphics
+    .memory = メモリー
+    .processor = プロセッサー
+    .graphics = グラフィックス
     .disk-capacity = Disk Capacity
 
 about-os = オペレーティングシステム
@@ -347,7 +347,7 @@ firmware = ファームウェア
 ## System: Users
 
 users = ユーザー
-    .desc = Authentication and login, lock screen.
+    .desc = 認証とログイン、ロック画面。
 
 ## Input
 
@@ -355,14 +355,14 @@ acceleration-desc = Automatically adjusts tracking sensitivity based on speed.
 
 disable-while-typing = Disable while typing
 
-input-devices = Input Devices
-    .desc = Input Devices
+input-devices = 入力デバイス
+    .desc = 入力デバイス
 
 primary-button = Primary button
-    .left = Left
-    .right = Right
+    .left = 左
+    .right = 右
 
-scrolling = Scrolling
+scrolling = スクロール
     .two-finger = Scroll with two fingers
     .edge = Scroll along the edge with one finger
     .speed = Scrolling speed
@@ -371,16 +371,16 @@ scrolling = Scrolling
 
 ## Input: Keyboard
 
-keyboard = Keyboard
-    .desc = Keyboard input
+keyboard = キーボード
+    .desc = キーボードの入力
 
 keyboard-sources = Input Sources
     .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
     .move-up = Move up
     .move-down = Move down
-    .settings = Settings
+    .settings = 設定
     .view-layout = View keyboard layout
-    .remove = Remove
+    .remove = 削除
 
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
@@ -393,7 +393,7 @@ keyboard-shortcuts = Keyboard Shortcuts
 
 ## Input: Mouse
 
-mouse = Mouse
+mouse = マウス
     .desc = Mouse speed, acceleration, natural scrolling.
     .speed = Mouse speed
     .acceleration = Enable mouse acceleration
@@ -407,7 +407,7 @@ click-behavior = Click Behavior
 pinch-to-zoom = Pinch to zoom
     .desc = Use two fingers to zoom into content, for applications that support zoom.
 
-tap-to-click = Tap to click
+tap-to-click = タップでクリック
     .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
 
 touchpad = Touchpad
@@ -417,7 +417,7 @@ touchpad = Touchpad
 
 ## Input: Gestures
 
-swiping = Swiping
+swiping = スワイプ
     .four-finger-down = Four-finger swipe down
     .four-finger-left = Four-finger swipe left
     .four-finger-right = Four-finger swipe right
