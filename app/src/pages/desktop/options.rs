@@ -6,7 +6,7 @@ use apply::Apply;
 use cosmic::{
     iced::Length,
     theme,
-    widget::{button, container, horizontal_space, icon, list, row, settings, toggler},
+    widget::{button, container, horizontal_space, icon, row, settings, toggler},
     Element,
 };
 
@@ -90,7 +90,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     &*descriptions[0],
                     toggler(
                         None,
-                        desktop.show_minimize_button,
+                        desktop.cosmic_tk.show_minimize,
                         Message::ShowMinimizeButton,
                     ),
                 ))
@@ -98,7 +98,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     &*descriptions[1],
                     toggler(
                         None,
-                        desktop.show_maximize_button,
+                        desktop.cosmic_tk.show_maximize,
                         Message::ShowMaximizeButton,
                     ),
                 ))

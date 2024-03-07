@@ -9,13 +9,34 @@ pub mod panel;
 pub mod wallpaper;
 pub mod workspaces;
 
+use cosmic::{config::CosmicTk, cosmic_config::CosmicConfigEntry};
 use cosmic_settings_page as page;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Page {
-    pub show_minimize_button: bool,
-    pub show_maximize_button: bool,
+    pub cosmic_config: Option<cosmic::cosmic_config::Config>,
+    pub cosmic_tk: CosmicTk,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        let (cosmic_tk, cosmic_config) = CosmicTk::config().map_or_else(
+            |why| {
+                tracing::error!(?why, "failed to read CosmicTk config");
+                (CosmicTk::default(), None)
+            },
+            |config| match CosmicTk::get_entry(&config) {
+                Ok(tk) => (tk, Some(config)),
+                Err((_errors, tk)) => (tk, Some(config)),
+            },
+        );
+
+        Self {
+            cosmic_config,
+            cosmic_tk,
+        }
+    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -43,8 +64,17 @@ pub enum Message {
 impl Page {
     pub fn update(&mut self, message: Message) {
         match message {
-            Message::ShowMaximizeButton(value) => self.show_maximize_button = value,
-            Message::ShowMinimizeButton(value) => self.show_minimize_button = value,
+            Message::ShowMaximizeButton(value) => {
+                if let Some(config) = self.cosmic_config.as_mut() {
+                    let _res = self.cosmic_tk.set_show_maximize(config, value);
+                }
+            }
+
+            Message::ShowMinimizeButton(value) => {
+                if let Some(config) = self.cosmic_config.as_mut() {
+                    let _res = self.cosmic_tk.set_show_minimize(config, value);
+                }
+            }
         }
     }
 }
