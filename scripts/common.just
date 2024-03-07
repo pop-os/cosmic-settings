@@ -31,7 +31,16 @@ dep-cmd cmd:
 # Errors if a library does not exist
 [private]
 dep-lib lib:
-    @pkg-config --exists {{lib}} || (just print-error 'missing dependency' 'library' {{lib}}; exit 1)
+    #!/bin/sh
+    if echo {{lib}} | grep = >/dev/null; then
+        name=$(echo {{lib}} | cut -d= -f1)
+        version=$(echo {{lib}} | cut -d= -f2)
+        pkg-config --exists ${name} --atleast-version ${version} || (
+            has=$(pkg-config --modversion ${name})
+            just print-error "expected version ${version}, found ${has}" 'library' ${name}; exit 1)
+    else
+        pkg-config --exists {{lib}} || (just print-error 'missing dependency' 'library' {{lib}}; exit 1)
+    fi
 
 # Display a formatted error for the user.
 [private]

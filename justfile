@@ -50,6 +50,6 @@ fontconfig
 freetype2
 libinput
 libudev
-wayland-client
+wayland-client=1.20
 xkbcommon
 "
