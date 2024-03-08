@@ -5,7 +5,9 @@ use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
 
-use crate::pages::desktop::panel::inner::{add_panel, behavior_and_position, configuration, style};
+use crate::pages::desktop::panel::inner::{
+    add_panel, behavior_and_position, configuration, reset_button, style,
+};
 
 use self::inner::{PageInner, PanelPage};
 
@@ -69,6 +71,20 @@ impl Default for Page {
             // If the config is not present, it will be created with the default values and the name will not match
             (panel_config.name == "Panel").then_some(panel_config)
         });
+        let system_default = cosmic::cosmic_config::Config::system(
+            &format!("{}.Panel", cosmic_panel_config::NAME),
+            CosmicPanelConfig::VERSION,
+        )
+        .map(|c| match CosmicPanelConfig::get_entry(&c) {
+            Ok(c) => c,
+            Err((errs, c)) => {
+                for err in errs {
+                    tracing::error!(?err, "Failed to load Panel system config.");
+                }
+                c
+            }
+        })
+        .ok();
         let container_config = CosmicPanelContainerConfig::load().ok();
         Self {
             inner: PageInner {
@@ -76,6 +92,7 @@ impl Default for Page {
                 panel_config,
                 container_config,
                 outputs_map: HashMap::new(),
+                system_default,
                 ..Default::default()
             },
         }
@@ -98,6 +115,9 @@ impl page::Page<crate::pages::Message> for Page {
                     crate::pages::Message::Panel(Message(m))
                 })),
                 sections.insert(configuration::<Page>(self)),
+                sections.insert(reset_button::<Page, _>(|m| {
+                    crate::pages::Message::Panel(Message(m))
+                })),
             ]
         } else {
             vec![sections.insert(add_panel::<Page, _>(|m| {
