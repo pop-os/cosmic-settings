@@ -29,7 +29,6 @@ rev = "2e9bf9f"
 
 [profile.release]
 opt-level = 3
-lto = "thin"
 
 # For development and testing purposes
 #[patch.'https://github.com/pop-os/libcosmic']
