@@ -31,8 +31,8 @@ rev = "2e9bf9f"
 opt-level = 3
 
 # For development and testing purposes
-#[patch.'https://github.com/pop-os/libcosmic']
+# [patch.'https://github.com/pop-os/libcosmic']
 #libcosmic = { git = "https://github.com/pop-os/libcosmic?rev=slider", branch = "slider" }
 #cosmic-config = { git = "https://github.com/pop-os/libcosmic?rev=slider", branch = "slider" }
-#libcosmic = { path = "../libcosmic" }
-#cosmic-config = { path = "../libcosmic/cosmic-config" }
+# libcosmic = { path = "../libcosmic" }
+# cosmic-config = { path = "../libcosmic/cosmic-config" }

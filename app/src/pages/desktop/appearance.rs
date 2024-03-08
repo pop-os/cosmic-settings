@@ -8,7 +8,9 @@ use apply::Apply;
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
-use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
+use cosmic::cosmic_theme::{
+    CornerRadii, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID,
+};
 use cosmic::iced_core::{alignment, Color, Length};
 use cosmic::iced_widget::scrollable;
 use cosmic::prelude::CollectionWidget;
@@ -283,6 +285,71 @@ impl From<CornerRadii> for Roundness {
 }
 
 impl Page {
+    /// Syncs changes for dark and light theme.
+    /// Roundness and window management settings should be consistent between dark / light mode.
+    fn sync_changes(&self) -> Result<(), cosmic::cosmic_config::Error> {
+        let (other_builder_config, other_theme_config) = if self.theme_mode.is_dark {
+            (ThemeBuilder::light_config()?, Theme::light_config()?)
+        } else {
+            (ThemeBuilder::dark_config()?, Theme::dark_config()?)
+        };
+
+        let mut theme_builder = match ThemeBuilder::get_entry(&other_builder_config) {
+            Ok(t) => t,
+            Err((errs, t)) => {
+                for err in errs {
+                    tracing::error!(?err, "Error loading theme builder");
+                }
+                t
+            }
+        };
+        let mut theme = match Theme::get_entry(&other_theme_config) {
+            Ok(t) => t,
+            Err((errs, t)) => {
+                for err in errs {
+                    tracing::error!(?err, "Error loading theme");
+                }
+                t
+            }
+        };
+        if theme_builder.active_hint != self.theme_builder.active_hint {
+            if let Err(err) =
+                theme_builder.set_active_hint(&other_builder_config, self.theme_builder.active_hint)
+            {
+                tracing::error!(?err, "Error setting active hint");
+            }
+            if let Err(err) =
+                theme.set_active_hint(&other_theme_config, self.theme_builder.active_hint)
+            {
+                tracing::error!(?err, "Error setting active hint");
+            }
+        }
+        if theme_builder.gaps != self.theme_builder.gaps {
+            if let Err(err) = theme_builder.set_gaps(&other_builder_config, self.theme_builder.gaps)
+            {
+                tracing::error!(?err, "Error setting gaps");
+            }
+            if let Err(err) = theme.set_gaps(&other_theme_config, self.theme_builder.gaps) {
+                tracing::error!(?err, "Error setting gaps");
+            }
+        }
+        if theme_builder.corner_radii != self.theme_builder.corner_radii {
+            if let Err(err) = theme_builder
+                .set_corner_radii(&other_builder_config, self.theme_builder.corner_radii)
+            {
+                tracing::error!(?err, "Error setting corner radii");
+            }
+
+            if let Err(err) =
+                theme.set_corner_radii(&other_theme_config, self.theme_builder.corner_radii)
+            {
+                tracing::error!(?err, "Error setting corner radii");
+            }
+        }
+
+        Ok(())
+    }
+
     fn color_picker_context_view(
         &self,
         description: Option<Cow<'static, str>>,
@@ -307,7 +374,7 @@ impl Page {
                     .align_x(alignment::Horizontal::Center)
                     .apply(container)
                     .width(Length::Fill)
-                    .align_x(alignment::Horizontal::Center)
+                    .align_x(alignment::Horizontal::Center),
             )
             .padding(self.theme_builder.spacing.space_l)
             .align_items(cosmic::iced_core::Alignment::Center)
@@ -320,7 +387,7 @@ impl Page {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Command<app::Message> {
         self.theme_builder_needs_update = false;
-
+        let mut needs_sync = false;
         let mut ret = match message {
             Message::DarkMode(enabled) => {
                 self.theme_mode.is_dark = enabled;
@@ -348,6 +415,7 @@ impl Page {
                 Command::none()
             }
             Message::AccentWindowHint(u) => {
+                needs_sync = true;
                 let cmd = self.update_color_picker(
                     &u,
                     ContextView::AccentWindowHint,
@@ -361,6 +429,7 @@ impl Page {
                 Command::none()
             }
             Message::WindowHintSize(msg) => {
+                needs_sync = true;
                 self.theme_builder_needs_update = true;
                 self.theme_builder.active_hint = match msg {
                     spin_button::Message::Increment => {
@@ -373,6 +442,7 @@ impl Page {
                 Command::none()
             }
             Message::GapSize(msg) => {
+                needs_sync = true;
                 self.theme_builder_needs_update = true;
                 self.theme_builder.gaps.1 = match msg {
                     spin_button::Message::Increment => self.theme_builder.gaps.1.saturating_add(1),
@@ -434,6 +504,7 @@ impl Page {
                 Command::batch(vec![cmd, self.control_component.update::<app::Message>(u)])
             }
             Message::Roundness(r) => {
+                needs_sync = true;
                 self.roundness = r;
                 self.theme_builder.corner_radii = self.roundness.into();
                 self.theme_builder_needs_update = true;
@@ -461,9 +532,39 @@ impl Page {
             }
             Message::Reset => {
                 self.theme_builder = if self.theme_mode.is_dark {
-                    ThemeBuilder::dark()
+                    cosmic::cosmic_config::Config::system(
+                        DARK_THEME_BUILDER_ID,
+                        ThemeBuilder::VERSION,
+                    )
+                    .map_or_else(
+                        |_| ThemeBuilder::dark(),
+                        |config| match ThemeBuilder::get_entry(&config) {
+                            Ok(t) => t,
+                            Err((errs, t)) => {
+                                for err in errs {
+                                    tracing::warn!(?err, "Error getting system theme builder");
+                                }
+                                t
+                            }
+                        },
+                    )
                 } else {
-                    ThemeBuilder::light()
+                    cosmic::cosmic_config::Config::system(
+                        LIGHT_THEME_BUILDER_ID,
+                        ThemeBuilder::VERSION,
+                    )
+                    .map_or_else(
+                        |_| ThemeBuilder::light(),
+                        |config| match ThemeBuilder::get_entry(&config) {
+                            Ok(t) => t,
+                            Err((errs, t)) => {
+                                for err in errs {
+                                    tracing::warn!(?err, "Error getting system theme builder");
+                                }
+                                t
+                            }
+                        },
+                    )
                 };
                 if let Some(config) = self.theme_builder_config.as_ref() {
                     _ = self.theme_builder.write_entry(config);
@@ -720,6 +821,12 @@ impl Page {
         } else {
             self.theme_builder != ThemeBuilder::light()
         };
+
+        if needs_sync {
+            if let Err(err) = self.sync_changes() {
+                tracing::error!(?err, "Error syncing theme changes.");
+            }
+        }
 
         ret
     }
