@@ -36,13 +36,13 @@ window-hint-accent-toggle = テーマのアクセントカラーをアクティ�
 auto-switch = 自動的にライトモードからダークモードに切り替える
     .desc = 日の出になるとライトモードに切り替えます。
 
-container-background = Container background
-    .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
+container-background = コンテナー背景
+    .desc-detail = サイドバー、ダイアログ、類似ウィジェットで使用されます。 規定では、アプリケーションまたはウィンドウの背景から自動的に選択されています。
     .reset = 自動的な選択に戻す
     .desc = Primary container color is used for navigation sidebar, side drawer, dialogs and similar widgets.
 
-control-tint = Control component tint
-    .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components.
+control-tint = コントロールコンポーネントティント
+    .desc = スタンダードボタン、検索入力、テキスト入力、類似コンポーネントで使用されます。
 
 frosted = システムインターフェイスのすりガラス効果
     .desc = パネル、ドック、アプレット、ランチャー、アプリケーションライブラリの背景をぼかします。
@@ -62,7 +62,7 @@ window-management = ウィンドウマネジメント
 
 ## Desktop: Display
 
--requires-restart = 再起動が必要です
+-requires-restart = 再起動が必要です。
 
 color = 色
     .depth = 色深度
@@ -131,7 +131,7 @@ scheduling = Scheduling
 ## Desktop: Notifications
 
 notifications = 通知
-    .desc = Do Not Disturb, lockscreen notifications, and per-application settings.
+    .desc = 通知ポップアップの表示、ロック画面の通知、アプリケーションごとの設定。
 
 ## Desktop: Options
 
@@ -141,7 +141,7 @@ desktop-panel-options = デスクトップとパネル
 desktop-panels-and-applets = デスクトップパネルとアプレット
 
 dock = ドック
-    .desc = Panel with pinned applications.
+    .desc = 固定されたアプリケーションありパネル。
 
 hot-corner = ホットコーナー
     .top-left-corner = ワークスペースための左上のホットコーナーを有効にする
@@ -202,8 +202,8 @@ panel-style = パネルスタイル
     .background-opacity = 背景の不透明度
 
 panel-applets = 構成
-    .dock-desc = Configure dock applets.
-    .desc = Configure panel applets.
+    .dock-desc = ドックのアプレットを構成
+    .desc = パネルのアプレットを構成
 
 panel-missing = パネル構成は見つけられません
     .desc = パネル構成ファイルは壊れているか、カスタム構成の使用により見つけられません。
@@ -213,12 +213,12 @@ panel-missing = パネル構成は見つけられません
 
 wallpaper = 背景
     .change = この期間ごとに画像を変える：
-    .desc = Wallpaper images, colors, and slideshow options.
+    .desc = 背景の画像、色、スライドショー設定。
     .fit = Wallpaper fit
-    .folder-dialog = Choose wallpaper folder
-    .image-dialog = Choose wallpaper image
-    .plural = Wallpapers
-    .same = Same wallpaper on all displays
+    .folder-dialog = 背景のフォルダを選択
+    .image-dialog = 背景の画像を選択
+    .plural = 背景
+    .same = すべてのディスプレイで同じ背景を使う
     .slide = スライドショー
 
 add-color = 色を追加
@@ -242,16 +242,16 @@ workspaces = ワークスペース
 workspaces-behavior = ワークスペースの動作
     .dynamic = ダイナミックワークスペース
     .dynamic-desc = 自動的に空のワークスペースを削除します。
-    .fixed = Fixed Number of Workspaces
-    .fixed-desc = Add or remove workspaces in the overview.
+    .fixed = ワークスペース数を固定
+    .fixed-desc = オーバービューでワークスペース数を変えられます。
 
 workspaces-multi-behavior = マルチモニターの動作
     .span = Workspaces Span Displays
     .separate = Displays Have Separate Workspaces
 
-workspaces-overview-thumbnails = Workspace Overview Thumbnails
-    .show-number = Show Workspace Number
-    .show-name = Show Workspace Name
+workspaces-overview-thumbnails = ワークスペースオーバービューサムネール
+    .show-number = ワークスペース番号を表示
+    .show-name = ワークスペース名を表示
 
 workspaces-orientation = Workspaces Orientation
     .vertical = Vertical
@@ -259,8 +259,8 @@ workspaces-orientation = Workspaces Orientation
 
 ## Networking: Wired
 
-wired = Wired
-    .desc = Wired connection, connection profiles
+wired = 有線
+    .desc = 有線接続、接続プロファイル
 
 ## Networking: Online Accounts
 
