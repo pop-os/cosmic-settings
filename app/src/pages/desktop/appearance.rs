@@ -295,14 +295,19 @@ impl Page {
             .push(
                 model(self)
                     .builder(on_update)
-                    .width(Length::Fixed(248.0))
-                    .height(Length::Fixed(158.0))
                     .reset_label(reset)
+                    .height(Length::Fixed(158.0))
                     .build(
                         fl!("recent-colors"),
                         fl!("copy-to-clipboard"),
                         fl!("copied-to-clipboard"),
-                    ),
+                    )
+                    .apply(container)
+                    .width(Length::Fixed(248.0))
+                    .align_x(alignment::Horizontal::Center)
+                    .apply(container)
+                    .width(Length::Fill)
+                    .align_x(alignment::Horizontal::Center)
             )
             .padding(self.theme_builder.spacing.space_l)
             .align_items(cosmic::iced_core::Alignment::Center)
