@@ -47,8 +47,8 @@ control-tint = コントロールコンポーネントティント
 frosted = システムインターフェイスのすりガラス効果
     .desc = パネル、ドック、アプレット、ランチャー、アプリケーションライブラリの背景をぼかします。
 
-text-tint = Interface text tint
-    .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
+text-tint = インターフェイステキストヒント
+    .desc = 色々な表面に十分なコントラストがあるインターフェイスのテキストの色ために使用されます。
 
 style = スタイル
     .round = 丸い
@@ -57,7 +57,7 @@ style = スタイル
 
 # interface density left out for now
 window-management = ウィンドウマネジメント
-    .active-hint = Active window hint size
+    .active-hint = アクティブウィンドウヒントの大きさ
     .gaps = タイル型ウィンドウ
 
 ## Desktop: Display
@@ -88,7 +88,7 @@ graphics-mode = グラフィックスモード
         *[hybrid] ハイブリッド
         [integrated] 内蔵
         [nvidia] NVIDIA
-    } graphics
+    }グラフィックス
     .enable = { $mode ->
         [compute] 計算
         *[hybrid] ハイブリッド
@@ -97,9 +97,9 @@ graphics-mode = グラフィックスモード
     }グラフィックスを有効にする
     .desc = { $mode ->
         [compute] 計算の作業負荷だけで専用グラフィックスを使います。外付けディスプレイを無効にします。{ -requires-restart }
-        *[hybrid] 専用グラフィックスを使用する要求がない限り、プログラムは統合グラフィックスを使用します。 { -requires-restart }
+        *[hybrid] 専用グラフィックスを使用する要求がない限り、プログラムは統合グラフィックスを使用します。{ -requires-restart }
         [integrated] バッテリー寿命を強化してファン騒音を低減するように専用グラフィックスを無効にします。
-        [nvidia] 改善されたグラッフィク体験と最高消費電力です。 { -requires-restart }.
+        [nvidia] 改善されたグラッフィク体験と最高消費電力です。{ -requires-restart }
     }
     .restart = 再起動して{ $mode }に切り替えますか？
     .restart-desc = { $mode }に切り替えると全てのアプリケーションを閉じます。
@@ -285,7 +285,7 @@ time-format = 日付と時刻
     .first = First day of week
 
 time-region = 地方と言語
-    .desc = Format dates, times, and numbers based on your region
+    .desc = お住む地方によって日付、時刻、数値の形式を変える
 
 ## Sound
 
@@ -309,7 +309,7 @@ sound-alerts = アラート
     .sound = アラート音
 
 sound-applications = アプリケーション
-    .desc = Application volumes and settings
+    .desc = アプリケーションの音量と設定
 
 ## System
 
@@ -337,7 +337,7 @@ about-os = オペレーティングシステム
     .windowing-system = Windowing system
 
 about-related = 関係がある設定
-    .support = 
+    .support = サポート
 
 ## System: Firmware
 
@@ -351,9 +351,9 @@ users = ユーザー
 
 ## Input
 
-acceleration-desc = Automatically adjusts tracking sensitivity based on speed.
+acceleration-desc = 速度に基づいて自動的にトラッキング感動を調節します。
 
-disable-while-typing = Disable while typing
+disable-while-typing = 入力中に無効にする
 
 input-devices = 入力デバイス
     .desc = 入力デバイス
@@ -374,29 +374,29 @@ scrolling = スクロール
 keyboard = キーボード
     .desc = キーボードの入力
 
-keyboard-sources = Input Sources
-    .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
+keyboard-sources = 入力ソース
+    .desc = 入力ソースはスーパー+スペースキーコンボで切り替えられます。これをキーボードショットカットの設定で構成できます。
     .move-up = Move up
     .move-down = Move down
     .settings = 設定
-    .view-layout = View keyboard layout
+    .view-layout = キーボードレイアウトを表示
     .remove = 削除
 
-keyboard-special-char = Special Character Entry
-    .alternate = Alternate characters key
-    .compose = Compose key
+keyboard-special-char = 特殊文字の入力
+    .alternate = 代替文字キー
+    .compose = コムポーズキー
 
 ## Input: Keyboard: Shortcuts
 
-keyboard-shortcuts = Keyboard Shortcuts
+keyboard-shortcuts = キーボードショットカット
     .desc = View and customize shortcuts
 
 ## Input: Mouse
 
 mouse = マウス
-    .desc = Mouse speed, acceleration, natural scrolling.
-    .speed = Mouse speed
-    .acceleration = Enable mouse acceleration
+    .desc = マウスの速度、アクセラレーション、自然なスクロールリング
+    .speed = マウスの速度
+    .acceleration = マウスアクセラレーションを有効にする
 
 ## Input: Touchpad
 
@@ -404,16 +404,16 @@ click-behavior = Click Behavior
     .click-finger = Secondary click with two fingers and middle-click with three fingers
     .button-areas = Secondary click in bottom right corner and middle-click in bottom center
 
-pinch-to-zoom = Pinch to zoom
+pinch-to-zoom = ピンチでズーム
     .desc = Use two fingers to zoom into content, for applications that support zoom.
 
 tap-to-click = タップでクリック
     .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
 
-touchpad = Touchpad
+touchpad = タッチパッド
     .acceleration = Enable touchpad acceleration
     .desc = Touchpad speed, click options, gestures.
-    .speed = Touchpad speed
+    .speed = タッチパッドの速度
 
 ## Input: Gestures
 
