@@ -138,6 +138,9 @@ pub enum Category {
 
 /// The page struct for the wallpaper view.
 pub struct Page {
+    /// Whether to show the tab_bar or not.
+    show_tab_bar: bool,
+
     /// The display that is currently being configured.
     ///
     /// If set to `None`, all displays will have the same wallpaper.
@@ -222,6 +225,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 impl Default for Page {
     fn default() -> Self {
         let mut page = Page {
+            show_tab_bar: false,
             active_output: None,
             cached_display_handle: None,
             categories: {
@@ -856,6 +860,7 @@ impl Page {
                 self.outputs.clear();
                 self.wallpaper_service_config = update.service_config;
                 self.selection = update.selection;
+                self.show_tab_bar = update.displays.len() > 1;
 
                 // Sync custom colors from config.
                 for color in self.config.custom_colors() {
@@ -1109,8 +1114,8 @@ pub fn settings() -> Section<crate::pages::Message> {
                 },
             ));
 
-            children.push(if page.wallpaper_service_config.same_on_all {
-                text(fl!("all-displays"))
+            if page.wallpaper_service_config.same_on_all {
+                let element = text(fl!("all-displays"))
                     .font(cosmic::font::FONT_SEMIBOLD)
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .vertical_alignment(alignment::Vertical::Center)
@@ -1118,13 +1123,14 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .height(Length::Fill)
                     .apply(cosmic::widget::container)
                     .width(Length::Fill)
-                    .height(Length::Fixed(32.0))
-                    .into()
-            } else {
-                tab_bar::horizontal(&page.outputs)
-                    .on_activate(Message::Output)
-                    .into()
-            });
+                    .height(Length::Fixed(32.0));
+
+                children.push(element.into());
+            } else if page.show_tab_bar {
+                let element = tab_bar::horizontal(&page.outputs).on_activate(Message::Output);
+
+                children.push(element.into());
+            }
 
             let wallpaper_fit =
                 cosmic::widget::dropdown(&page.fit_options, Some(page.selected_fit), Message::Fit);
