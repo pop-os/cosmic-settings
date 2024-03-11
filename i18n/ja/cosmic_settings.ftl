@@ -27,7 +27,6 @@ import = インポート
 light = ライト
 mode-and-colors = モードと色
 recent-colors = 最近の色
-reset-default = デフォルトに戻す
 reset-to-default = デフォルトに戻す
 rgb = RGB
 window-hint-accent = アクティブなウィンドウのハイライトカラー
@@ -39,7 +38,7 @@ auto-switch = 自動的にライトモードからダークモードに切り替
 container-background = コンテナー背景
     .desc-detail = サイドバー、ダイアログ、類似ウィジェットで使用されます。 規定では、アプリケーションまたはウィンドウの背景から自動的に選択されています。
     .reset = 自動的な選択に戻す
-    .desc = Primary container color is used for navigation sidebar, side drawer, dialogs and similar widgets.
+    .desc = サイドバー、ダイアログ、類似ウィジェットで使用されます。 規定では、アプリケーションまたはウィンドウの背景から自動的に選択されています。
 
 control-tint = コントロールコンポーネントティント
     .desc = スタンダードボタン、検索入力、テキスト入力、類似コンポーネントで使用されます。
@@ -71,15 +70,15 @@ color = 色
     .temperature = 色温度
 
 display = ディスプレイ
-    .desc = Manage displays, graphics switching, and night light
+    .desc = ディスプレイ、グラフィックス切り替え、ナイトライトの操作
     .arrangement = ディスプレイの配列
-    .arrangement-desc = Drag displays to rearrange them.
+    .arrangement-desc = ディスプレイを並べ替えるためにドラッグできます。
     .enable = ディスプレイを有効にする
     .external = { $size } { $output } 外付けディスプレイ
     .laptop = { $size }ラップトップディスプレイ
     .options = ディスプレイの設定
-    .refresh-rate = Refresh rate
-    .resolution = Resolution
+    .refresh-rate = リフレッシュレート
+    .resolution = 解像度
     .scale = スケーリング
 
 graphics-mode = グラフィックスモード
@@ -88,13 +87,13 @@ graphics-mode = グラフィックスモード
         *[hybrid] ハイブリッド
         [integrated] 内蔵
         [nvidia] NVIDIA
-    }グラフィックス
+    }モード
     .enable = { $mode ->
         [compute] 計算
         *[hybrid] ハイブリッド
         [integrated] 内蔵
         [nvidia] NVIDIA
-    }グラフィックスを有効にする
+    }モードを有効にする
     .desc = { $mode ->
         [compute] 計算の作業負荷だけで専用グラフィックスを使います。外付けディスプレイを無効にします。{ -requires-restart }
         *[hybrid] 専用グラフィックスを使用する要求がない限り、プログラムは統合グラフィックスを使用します。{ -requires-restart }
@@ -186,17 +185,17 @@ panel-appearance = 外観
     .light = ライト
     .dark = ダーク
 
-panel-behavior-and-position = Behavior and Positions
-    .autohide = Automatically hide panel
-    .dock-autohide = Automatically hide dock
-    .position = Position on screen
-    .display = Show on display
+panel-behavior-and-position = 行動と位置
+    .autohide = パネルを自動的にかくす
+    .dock-autohide = ドックを自動的に隠す
+    .position = 画面上の位置
+    .display = ディスプレイに表示y
 
 panel-style = パネルスタイル
-    .anchor-gap = Gap between panel and screen edges
-    .dock-anchor-gap = Gap between dock and screen edges
-    .extend = Extend panel to screen edges
-    .dock-extend = Extend dock to screen edges
+    .anchor-gap = パネルと画面の端の間の隙間
+    .dock-anchor-gap = ドックと画面の端の間の隙間
+    .extend = パネルを画面の端まで拡張
+    .dock-extend = ドックを画面の端まで拡張
     .appearance = 外観
     .size = 大きさ
     .background-opacity = 背景の不透明度
@@ -237,7 +236,7 @@ x-hours = { $number }時間
 ## Desktop: Workspaces
 
 workspaces = ワークスペース
-    .desc = Set workspace number, behavior, and placement.
+    .desc = ワークスペースの数、行動、位置の設定
 
 workspaces-behavior = ワークスペースの動作
     .dynamic = ダイナミックワークスペース
@@ -246,16 +245,16 @@ workspaces-behavior = ワークスペースの動作
     .fixed-desc = オーバービューでワークスペース数を変えられます。
 
 workspaces-multi-behavior = マルチモニターの動作
-    .span = Workspaces Span Displays
-    .separate = Displays Have Separate Workspaces
+    .span = ワークスペースはディスプレイを超える
+    .separate = ディスプレイはそれぞれのワークスペースがある
 
 workspaces-overview-thumbnails = ワークスペースオーバービューサムネール
     .show-number = ワークスペース番号を表示
     .show-name = ワークスペース名を表示
 
-workspaces-orientation = Workspaces Orientation
-    .vertical = Vertical
-    .horizontal = Horizontal
+workspaces-orientation = ワークスペース方向
+    .vertical = 垂直
+    .horizontal = 水平
 
 ## Networking: Wired
 
@@ -281,8 +280,8 @@ time-zone = 等時帯
     .auto-info = Requires location services and internet access
 
 time-format = 日付と時刻
-    .twenty-four = 24-hour time
-    .first = First day of week
+    .twenty-four = 24時間制
+    .first = 週の初めの日
 
 time-region = 地方と言語
     .desc = お住む地方によって日付、時刻、数値の形式を変える
@@ -333,7 +332,7 @@ about-hardware = ハードウェア
 about-os = オペレーティングシステム
     .os = Operating system
     .os-architecture = Operating system architecture
-    .desktop-environment = Desktop environment
+    .desktop-environment = デスクトップ環境
     .windowing-system = Windowing system
 
 about-related = 関係がある設定
@@ -358,16 +357,16 @@ disable-while-typing = 入力中に無効にする
 input-devices = 入力デバイス
     .desc = 入力デバイス
 
-primary-button = Primary button
+primary-button = 一次内ボタン
     .left = 左
     .right = 右
 
 scrolling = スクロール
     .two-finger = Scroll with two fingers
     .edge = Scroll along the edge with one finger
-    .speed = Scrolling speed
-    .natural = Natural scrolling
-    .natural-desc = Scroll the content, instead of the view
+    .speed = スクロールの速度
+    .natural = 自然なスクロール
+    .natural-desc = 表示の代わりに内容をスクロール
 
 ## Input: Keyboard
 
@@ -376,8 +375,8 @@ keyboard = キーボード
 
 keyboard-sources = 入力ソース
     .desc = 入力ソースはスーパー+スペースキーコンボで切り替えられます。これをキーボードショットカットの設定で構成できます。
-    .move-up = Move up
-    .move-down = Move down
+    .move-up = 上に移動
+    .move-down = 下に移動
     .settings = 設定
     .view-layout = キーボードレイアウトを表示
     .remove = 削除
@@ -389,7 +388,7 @@ keyboard-special-char = 特殊文字の入力
 ## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = キーボードショットカット
-    .desc = View and customize shortcuts
+    .desc = キーボードショットカットの表示と構成
 
 ## Input: Mouse
 
@@ -400,32 +399,32 @@ mouse = マウス
 
 ## Input: Touchpad
 
-click-behavior = Click Behavior
-    .click-finger = Secondary click with two fingers and middle-click with three fingers
-    .button-areas = Secondary click in bottom right corner and middle-click in bottom center
+click-behavior = クリックの行動
+    .click-finger = 指二本で二次クリックと指三本で中クリック
+    .button-areas = 右下で二次クリックと下中央で中クリック
 
 pinch-to-zoom = ピンチでズーム
     .desc = Use two fingers to zoom into content, for applications that support zoom.
 
 tap-to-click = タップでクリック
-    .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
+    .desc = 指一本で一次クリック、指二本で二次クリック、指三本で中クリックを有効にします。
 
 touchpad = タッチパッド
-    .acceleration = Enable touchpad acceleration
-    .desc = Touchpad speed, click options, gestures.
+    .acceleration = タッチパッドの加速を有効にする
+    .desc = タッチパッドの速度、クリックの設定、ジェスチャー。
     .speed = タッチパッドの速度
 
 ## Input: Gestures
 
 swiping = スワイプ
-    .four-finger-down = Four-finger swipe down
-    .four-finger-left = Four-finger swipe left
-    .four-finger-right = Four-finger swipe right
-    .four-finger-up = Four-finger swipe up
-    .three-finger-any = Three-finger swipe any direction
+    .four-finger-down = 指四本で下向きのスワイプ
+    .four-finger-left = 指四本で左向きのスワイプ
+    .four-finger-right = 指四本で右向きのスワイプ
+    .four-finger-up = 指四本で上向きのスワイプ
+    .three-finger-any = 指三本で好きな方向のスワイプ
 
-switch-between-windows = Switch between windows
-switch-to-next-workspace = Switch to next workspace
-switch-to-prev-workspace = Switch to prev workspace
-open-application-library = Open Application Library
-open-workspaces-view = Open Workspaces Overview
+switch-between-windows = ウィンドウを切り替える
+switch-to-next-workspace = 次のワークスペースに切り替える
+switch-to-prev-workspace = 前のワークスペースに切り替える
+open-application-library = アプリケーションライブラリを開く
+open-workspaces-view = ワークスペースのか概要を開く
