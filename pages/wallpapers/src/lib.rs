@@ -1,5 +1,6 @@
 pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
 
+use futures_lite::{Future, Stream};
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
 use std::{
     borrow::Cow,
@@ -7,8 +8,8 @@ use std::{
     hash::{Hash, Hasher},
     io::Read,
     path::{Path, PathBuf},
+    pin::Pin,
 };
-use tokio::sync::mpsc::{self, Receiver};
 
 pub const DEFAULT_COLORS: &[Color] = &[
     Color::Single([0.580, 0.922, 0.922]),
@@ -87,12 +88,10 @@ pub fn cache_dir() -> Option<PathBuf> {
 
 /// Loads wallpapers in parallel by spawning tasks with a rayon thread pool.
 #[must_use]
-pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaImage)> {
-    let (tx, rx) = mpsc::channel(1);
-
-    tokio::task::spawn(async move {
-        // Scratch space for storing images into.
-        let mut buffer = Vec::new();
+pub async fn load_each_from_path(
+    path: PathBuf,
+) -> Pin<Box<dyn Send + Stream<Item = (PathBuf, RgbaImage, RgbaImage)>>> {
+    let wallpapers = tokio::task::spawn_blocking(move || {
         // Directories to search recursively.
         let mut paths = vec![path];
         // Discovered image files that will be loaded as wallpapers.
@@ -123,18 +122,24 @@ pub fn load_each_from_path(path: PathBuf) -> Receiver<(PathBuf, RgbaImage, RgbaI
             }
         }
 
-        for path in wallpapers {
-            if let Some(value) = load_image_with_thumbnail(&mut buffer, path).await {
-                let _res = tx.send(value).await;
-            }
-        }
+        wallpapers
     });
 
-    rx
+    if let Ok(wallpapers) = wallpapers.await {
+        use futures_util::StreamExt;
+        let future = futures_util::stream::iter(wallpapers)
+            .map(|path| tokio::task::spawn_blocking(|| load_image_with_thumbnail(path)))
+            .buffered(4)
+            .filter_map(|value| async { value.ok()? });
+
+        Box::pin(future)
+    } else {
+        Box::pin(futures_lite::stream::empty())
+    }
 }
 
-pub async fn load_image_with_thumbnail(
-    buffer: &mut Vec<u8>,
+#[must_use]
+pub fn load_image_with_thumbnail(
     path: PathBuf,
 ) -> Option<(
     PathBuf,
@@ -142,54 +147,48 @@ pub async fn load_image_with_thumbnail(
     ImageBuffer<Rgba<u8>, Vec<u8>>,
 )> {
     let cache_dir = cache_dir();
-    let image_operation = load_thumbnail(buffer, cache_dir.as_deref(), &path);
-
-    let (tx, rx) = tokio::sync::oneshot::channel();
+    let image_operation = load_thumbnail(&mut Vec::new(), cache_dir.as_deref(), &path);
 
     if let Some(image_operation) = image_operation {
         let tokio_handle = tokio::runtime::Handle::current();
 
-        rayon::spawn_fifo(move || {
-            let display_thumbnail = match image_operation {
-                ImageOperation::Cached(thumbnail) => thumbnail.to_rgba8(),
+        let display_thumbnail = match image_operation {
+            ImageOperation::Cached(thumbnail) => thumbnail.to_rgba8(),
 
-                ImageOperation::GenerateThumbnail { path, image } => {
-                    let image = image.thumbnail(300, 169).to_rgba8();
+            ImageOperation::GenerateThumbnail { path, image } => {
+                let image = image.thumbnail(300, 169).to_rgba8();
 
-                    if let Some(path) = path {
-                        // Save thumbnail to disk without blocking.
-                        tokio_handle.spawn_blocking({
-                            let image = image.clone();
-                            move || {
-                                if let Err(why) = image.save(&path) {
-                                    tracing::error!(?path, ?why, "failed to save image thumbnail");
+                if let Some(path) = path {
+                    // Save thumbnail to disk without blocking.
+                    tokio_handle.spawn_blocking({
+                        let image = image.clone();
+                        move || {
+                            if let Err(why) = image.save(&path) {
+                                tracing::error!(?path, ?why, "failed to save image thumbnail");
 
-                                    let _res = std::fs::remove_file(&path);
-                                }
+                                let _res = std::fs::remove_file(&path);
                             }
-                        });
-                    }
-
-                    image
+                        }
+                    });
                 }
-            };
 
-            let mut selection_thumbnail = image::imageops::resize(
-                &display_thumbnail,
-                158,
-                105,
-                image::imageops::FilterType::Lanczos3,
-            );
+                image
+            }
+        };
 
-            round(&mut selection_thumbnail, [8, 8, 8, 8]);
+        let mut selection_thumbnail = image::imageops::resize(
+            &display_thumbnail,
+            158,
+            105,
+            image::imageops::FilterType::Lanczos3,
+        );
 
-            let _res = tx.send(Some((path, display_thumbnail, selection_thumbnail)));
-        });
+        round(&mut selection_thumbnail, [8, 8, 8, 8]);
+
+        Some((path, display_thumbnail, selection_thumbnail))
     } else {
-        let _res = tx.send(None);
+        None
     }
-
-    rx.await.unwrap_or(None)
 }
 
 enum ImageOperation {

@@ -5,6 +5,7 @@ mod config;
 pub mod widgets;
 
 pub use config::Config;
+use futures::StreamExt;
 use url::Url;
 
 use std::{
@@ -846,8 +847,7 @@ impl Page {
 
                     // Loads a single custom image and its thumbnail for display in the backgrounds view.
                     return cosmic::command::future(async move {
-                        let result =
-                            wallpaper::load_image_with_thumbnail(&mut Vec::new(), path).await;
+                        let result = wallpaper::load_image_with_thumbnail(path);
 
                         let message = Message::ImageAdd(result.map(Arc::new));
                         let page_message = crate::pages::Message::DesktopWallpaper(message);
@@ -886,8 +886,7 @@ impl Page {
                 // Load preview images concurrently for each custom image stored in the on-disk config.
                 return cosmic::command::batch(custom_images.iter().cloned().map(|path| {
                     cosmic::command::future(async move {
-                        let result =
-                            wallpaper::load_image_with_thumbnail(&mut Vec::new(), path).await;
+                        let result = wallpaper::load_image_with_thumbnail(path);
 
                         Message::ImageAdd(result.map(Arc::new)).into()
                     })
@@ -1049,9 +1048,11 @@ impl Context {
 
 pub async fn change_folder(current_folder: PathBuf) -> Context {
     let mut update = Context::default();
-    let mut wallpapers = wallpaper::load_each_from_path(current_folder);
+    let mut start = std::time::Instant::now();
 
-    while let Some((path, display_image, selection_image)) = wallpapers.recv().await {
+    let mut wallpapers = wallpaper::load_each_from_path(current_folder).await;
+
+    while let Some((path, display_image, selection_image)) = wallpapers.next().await {
         let id = update.paths.insert(path);
 
         update.display_images.insert(id, display_image);
@@ -1064,6 +1065,9 @@ pub async fn change_folder(current_folder: PathBuf) -> Context {
 
         update.selection_handles.insert(id, selection_handle);
     }
+
+    let elapsed = std::time::Instant::now().duration_since(start);
+    tracing::info!(?elapsed, "time to load backgrounds");
 
     update
 }
