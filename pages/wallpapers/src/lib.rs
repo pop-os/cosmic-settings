@@ -1,6 +1,6 @@
 pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
 
-use futures_lite::{Future, Stream};
+use futures_lite::Stream;
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
 use std::{
     borrow::Cow,
@@ -90,6 +90,7 @@ pub fn cache_dir() -> Option<PathBuf> {
 #[must_use]
 pub async fn load_each_from_path(
     path: PathBuf,
+    recurse: bool,
 ) -> Pin<Box<dyn Send + Stream<Item = (PathBuf, RgbaImage, RgbaImage)>>> {
     let wallpapers = tokio::task::spawn_blocking(move || {
         // Directories to search recursively.
@@ -107,7 +108,7 @@ pub async fn load_each_from_path(
                     let path = entry.path();
 
                     // Recursively search directories, while storing only image files.
-                    if file_type.is_dir() {
+                    if recurse && file_type.is_dir() {
                         paths.push(path);
                     } else if file_type.is_file() {
                         let Ok(Some(kind)) = infer::get_from_path(&path) else {

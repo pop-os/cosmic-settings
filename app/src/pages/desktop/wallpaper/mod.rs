@@ -207,10 +207,12 @@ impl page::Page<crate::pages::Message> for Page {
     fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
         let current_folder = self.config.current_folder().to_owned();
 
+        let recurse = self.categories.selected == Some(Category::Wallpapers);
+
         command::future(async move {
             let (service_config, displays) = wallpaper::config().await;
 
-            let selection = change_folder(current_folder).await;
+            let selection = change_folder(current_folder, recurse).await;
 
             crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
                 service_config,
@@ -512,7 +514,7 @@ impl Page {
                 if self.config.current_folder.is_some() {
                     let _ = self.config.set_current_folder(None);
                     command = cosmic::command::future(async move {
-                        let folder = change_folder(Config::default_folder().to_owned()).await;
+                        let folder = change_folder(Config::default_folder().to_owned(), true).await;
                         Message::ChangeFolder(folder).into()
                     });
                 } else {
@@ -532,7 +534,7 @@ impl Page {
                     }
 
                     command = cosmic::command::future(async move {
-                        Message::ChangeFolder(change_folder(path).await).into()
+                        Message::ChangeFolder(change_folder(path, false).await).into()
                     });
                 }
             }
@@ -824,9 +826,12 @@ impl Page {
                         }
                     }
 
+                    // Avoid walking user-selected folders.
+                    let recurse = self.categories.selected == Some(Category::Wallpapers);
+
                     // Load the wallpapers from the selected folder into the view.
                     return cosmic::command::future(async move {
-                        let message = Message::ChangeFolder(change_folder(path).await);
+                        let message = Message::ChangeFolder(change_folder(path, recurse).await);
                         let page_message = crate::pages::Message::DesktopWallpaper(message);
                         crate::Message::PageMessage(page_message)
                     });
@@ -1046,11 +1051,9 @@ impl Context {
     }
 }
 
-pub async fn change_folder(current_folder: PathBuf) -> Context {
+pub async fn change_folder(current_folder: PathBuf, recurse: bool) -> Context {
     let mut update = Context::default();
-    let mut start = std::time::Instant::now();
-
-    let mut wallpapers = wallpaper::load_each_from_path(current_folder).await;
+    let mut wallpapers = wallpaper::load_each_from_path(current_folder, recurse).await;
 
     while let Some((path, display_image, selection_image)) = wallpapers.next().await {
         let id = update.paths.insert(path);
@@ -1065,9 +1068,6 @@ pub async fn change_folder(current_folder: PathBuf) -> Context {
 
         update.selection_handles.insert(id, selection_handle);
     }
-
-    let elapsed = std::time::Instant::now().duration_since(start);
-    tracing::info!(?elapsed, "time to load backgrounds");
 
     update
 }
