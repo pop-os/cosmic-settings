@@ -209,7 +209,8 @@ pub fn read_to_string<'a, P: AsRef<OsStr>>(
 }
 
 fn format_size(size: u64) -> String {
-    byte_unit::Byte::from_u64(size)
-        .get_appropriate_unit(byte_unit::UnitType::Binary)
-        .to_string()
+    format!(
+        "{:.2}",
+        byte_unit::Byte::from_u64(size).get_appropriate_unit(byte_unit::UnitType::Binary)
+    )
 }
