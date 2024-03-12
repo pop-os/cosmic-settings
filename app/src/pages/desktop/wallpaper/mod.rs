@@ -5,6 +5,7 @@ mod config;
 pub mod widgets;
 
 pub use config::Config;
+use futures::StreamExt;
 use url::Url;
 
 use std::{
@@ -114,6 +115,8 @@ pub enum Message {
     Select(DefaultKey),
     /// Changes the slideshow parameter.
     Slideshow(bool),
+    /// State change from cosmic-bg
+    UpdateState(cosmic_bg_config::state::State),
 }
 
 impl From<Message> for crate::app::Message {
@@ -138,6 +141,9 @@ pub enum Category {
 
 /// The page struct for the wallpaper view.
 pub struct Page {
+    /// Whether to show the tab_bar or not.
+    show_tab_bar: bool,
+
     /// The display that is currently being configured.
     ///
     /// If set to `None`, all displays will have the same wallpaper.
@@ -203,10 +209,12 @@ impl page::Page<crate::pages::Message> for Page {
     fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
         let current_folder = self.config.current_folder().to_owned();
 
+        let recurse = self.categories.selected == Some(Category::Wallpapers);
+
         command::future(async move {
             let (service_config, displays) = wallpaper::config().await;
 
-            let selection = change_folder(current_folder).await;
+            let selection = change_folder(current_folder, recurse).await;
 
             crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
                 service_config,
@@ -222,6 +230,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 impl Default for Page {
     fn default() -> Self {
         let mut page = Page {
+            show_tab_bar: false,
             active_output: None,
             cached_display_handle: None,
             categories: {
@@ -507,7 +516,7 @@ impl Page {
                 if self.config.current_folder.is_some() {
                     let _ = self.config.set_current_folder(None);
                     command = cosmic::command::future(async move {
-                        let folder = change_folder(Config::default_folder().to_owned()).await;
+                        let folder = change_folder(Config::default_folder().to_owned(), true).await;
                         Message::ChangeFolder(folder).into()
                     });
                 } else {
@@ -527,7 +536,7 @@ impl Page {
                     }
 
                     command = cosmic::command::future(async move {
-                        Message::ChangeFolder(change_folder(path).await).into()
+                        Message::ChangeFolder(change_folder(path, false).await).into()
                     });
                 }
             }
@@ -608,6 +617,12 @@ impl Page {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
         match message {
+            Message::UpdateState(_state) => {
+                if let Choice::Slideshow = self.selection.active {
+                    self.cache_display_image();
+                }
+            }
+
             Message::DragColorDialog => {
                 return cosmic::iced_sctk::commands::window::start_drag_window(self.color_dialog)
             }
@@ -819,9 +834,12 @@ impl Page {
                         }
                     }
 
+                    // Avoid walking user-selected folders.
+                    let recurse = self.categories.selected == Some(Category::Wallpapers);
+
                     // Load the wallpapers from the selected folder into the view.
                     return cosmic::command::future(async move {
-                        let message = Message::ChangeFolder(change_folder(path).await);
+                        let message = Message::ChangeFolder(change_folder(path, recurse).await);
                         let page_message = crate::pages::Message::DesktopWallpaper(message);
                         crate::Message::PageMessage(page_message)
                     });
@@ -842,8 +860,7 @@ impl Page {
 
                     // Loads a single custom image and its thumbnail for display in the backgrounds view.
                     return cosmic::command::future(async move {
-                        let result =
-                            wallpaper::load_image_with_thumbnail(&mut Vec::new(), path).await;
+                        let result = wallpaper::load_image_with_thumbnail(path);
 
                         let message = Message::ImageAdd(result.map(Arc::new));
                         let page_message = crate::pages::Message::DesktopWallpaper(message);
@@ -856,6 +873,7 @@ impl Page {
                 self.outputs.clear();
                 self.wallpaper_service_config = update.service_config;
                 self.selection = update.selection;
+                self.show_tab_bar = update.displays.len() > 1;
 
                 // Sync custom colors from config.
                 for color in self.config.custom_colors() {
@@ -881,8 +899,7 @@ impl Page {
                 // Load preview images concurrently for each custom image stored in the on-disk config.
                 return cosmic::command::batch(custom_images.iter().cloned().map(|path| {
                     cosmic::command::future(async move {
-                        let result =
-                            wallpaper::load_image_with_thumbnail(&mut Vec::new(), path).await;
+                        let result = wallpaper::load_image_with_thumbnail(path);
 
                         Message::ImageAdd(result.map(Arc::new)).into()
                     })
@@ -1042,11 +1059,11 @@ impl Context {
     }
 }
 
-pub async fn change_folder(current_folder: PathBuf) -> Context {
+pub async fn change_folder(current_folder: PathBuf, recurse: bool) -> Context {
     let mut update = Context::default();
-    let mut wallpapers = wallpaper::load_each_from_path(current_folder);
+    let mut wallpapers = wallpaper::load_each_from_path(current_folder, recurse).await;
 
-    while let Some((path, display_image, selection_image)) = wallpapers.recv().await {
+    while let Some((path, display_image, selection_image)) = wallpapers.next().await {
         let id = update.paths.insert(path);
 
         update.display_images.insert(id, display_image);
@@ -1109,8 +1126,8 @@ pub fn settings() -> Section<crate::pages::Message> {
                 },
             ));
 
-            children.push(if page.wallpaper_service_config.same_on_all {
-                text(fl!("all-displays"))
+            if page.wallpaper_service_config.same_on_all {
+                let element = text(fl!("all-displays"))
                     .font(cosmic::font::FONT_SEMIBOLD)
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .vertical_alignment(alignment::Vertical::Center)
@@ -1118,13 +1135,16 @@ pub fn settings() -> Section<crate::pages::Message> {
                     .height(Length::Fill)
                     .apply(cosmic::widget::container)
                     .width(Length::Fill)
-                    .height(Length::Fixed(32.0))
-                    .into()
-            } else {
-                tab_bar::horizontal(&page.outputs)
-                    .on_activate(Message::Output)
-                    .into()
-            });
+                    .height(Length::Fixed(32.0));
+
+                children.push(element.into());
+            } else if page.show_tab_bar {
+                let element = tab_bar::horizontal(&page.outputs)
+                    .button_alignment(Alignment::Center)
+                    .on_activate(Message::Output);
+
+                children.push(element.into());
+            }
 
             let wallpaper_fit =
                 cosmic::widget::dropdown(&page.fit_options, Some(page.selected_fit), Message::Fit);

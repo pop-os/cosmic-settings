@@ -259,7 +259,7 @@ impl Page {
                     button(text(fl!("add")))
                         .style(button::Style::Custom {
                             active: Box::new(|focused, theme| {
-                                let mut style = theme.active(focused, &button::Style::Text);
+                                let mut style = theme.active(focused, false, &button::Style::Text);
                                 style.text_color = Some(theme.cosmic().accent_color().into());
                                 style
                             }),
@@ -271,12 +271,12 @@ impl Page {
                                 style
                             }),
                             hovered: Box::new(|focused, theme| {
-                                let mut style = theme.hovered(focused, &theme::Button::Text);
+                                let mut style = theme.hovered(focused, false, &theme::Button::Text);
                                 style.text_color = Some(theme.cosmic().accent_color().into());
                                 style
                             }),
                             pressed: Box::new(|focused, theme| {
-                                let mut style = theme.pressed(focused, &theme::Button::Text);
+                                let mut style = theme.pressed(focused, false, &theme::Button::Text);
                                 style.text_color = Some(theme.cosmic().accent_color().into());
                                 style
                             }),
