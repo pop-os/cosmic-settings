@@ -117,6 +117,10 @@ pub async fn load_each_from_path(
 
                         if infer::MatcherType::Image == kind.matcher_type() {
                             wallpapers.insert(path);
+
+                            if wallpapers.len() > 99 {
+                                break;
+                            }
                         }
                     }
                 }
