@@ -12,7 +12,7 @@ use crate::pages::desktop::{
     },
 };
 use crate::pages::input::{self, keyboard};
-use crate::pages::{display, sound, system, time};
+use crate::pages::{self, display, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
@@ -21,7 +21,7 @@ use cosmic::iced::Subscription;
 use cosmic::widget::{button, row, text_input};
 use cosmic::{
     app::{Command, Core},
-    cosmic_config::config_subscription,
+    cosmic_config::{config_state_subscription, config_subscription},
     iced::{
         self,
         event::{self, wayland, PlatformSpecific},
@@ -227,6 +227,11 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 Message::PanelConfig(update.config)
+            }),
+            config_state_subscription(0, cosmic_bg_config::NAME.into(), 1).map(|update| {
+                Message::PageMessage(pages::Message::DesktopWallpaper(
+                    pages::desktop::wallpaper::Message::UpdateState(update.config),
+                ))
             }),
         ])
     }

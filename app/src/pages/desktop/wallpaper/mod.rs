@@ -115,6 +115,8 @@ pub enum Message {
     Select(DefaultKey),
     /// Changes the slideshow parameter.
     Slideshow(bool),
+    /// State change from cosmic-bg
+    UpdateState(cosmic_bg_config::state::State),
 }
 
 impl From<Message> for crate::app::Message {
@@ -615,6 +617,12 @@ impl Page {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
         match message {
+            Message::UpdateState(_state) => {
+                if let Choice::Slideshow = self.selection.active {
+                    self.cache_display_image();
+                }
+            }
+
             Message::DragColorDialog => {
                 return cosmic::iced_sctk::commands::window::start_drag_window(self.color_dialog)
             }
