@@ -8,7 +8,7 @@ pub mod text;
 use crate::{app, pages};
 use apply::Apply;
 use arrangement::Arrangement;
-use cosmic::iced::Length;
+use cosmic::iced::{Alignment, Length};
 use cosmic::iced_widget::scrollable::{Direction, Properties, RelativeOffset};
 use cosmic::widget::{
     column, container, dropdown, list_column, segmented_button, tab_bar, toggler,
@@ -459,8 +459,9 @@ impl Page {
         let mut content = column().spacing(theme.cosmic().space_m());
 
         if self.list.outputs.len() > 1 {
-            let display_switcher =
-                tab_bar::horizontal(&self.display_tabs).on_activate(Message::Display);
+            let display_switcher = tab_bar::horizontal(&self.display_tabs)
+                .button_alignment(Alignment::Center)
+                .on_activate(Message::Display);
 
             let display_enable = list_column().add(cosmic::widget::settings::item(
                 &*text::DISPLAY_ENABLE,
