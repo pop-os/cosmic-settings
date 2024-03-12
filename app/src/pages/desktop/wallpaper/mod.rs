@@ -1131,7 +1131,9 @@ pub fn settings() -> Section<crate::pages::Message> {
 
                 children.push(element.into());
             } else if page.show_tab_bar {
-                let element = tab_bar::horizontal(&page.outputs).on_activate(Message::Output);
+                let element = tab_bar::horizontal(&page.outputs)
+                    .button_alignment(Alignment::Center)
+                    .on_activate(Message::Output);
 
                 children.push(element.into());
             }
