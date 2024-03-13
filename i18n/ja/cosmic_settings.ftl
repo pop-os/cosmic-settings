@@ -1,4 +1,4 @@
-app = COSMIC Settings
+app = COSMIC設定
 
 unknown = 不明
 
@@ -124,8 +124,8 @@ orientation = 画面の向き
     .rotate-180 = 180度回転
     .rotate-270 = 270度回転
 
-scheduling = Scheduling
-    .manual = Manual schedule
+scheduling = 計画
+    .manual = 手動計画
 
 ## Desktop: Notifications
 
@@ -189,7 +189,7 @@ panel-behavior-and-position = 行動と位置
     .autohide = パネルを自動的にかくす
     .dock-autohide = ドックを自動的に隠す
     .position = 画面上の位置
-    .display = ディスプレイに表示y
+    .display = ディスプレイに表示
 
 panel-style = パネルスタイル
     .anchor-gap = パネルと画面の端の間の隙間
@@ -272,13 +272,13 @@ time = 日付と時刻
     .desc = N/A
 
 time-date = 日付と時刻
-    .desc = Time zone, automatic clock settings, and some time formatting.
+    .desc = 時間帯、自動的なクロック設定、時刻形式
     .auto = 自動的に設定する
 
-time-zone = 等時帯
-    .auto = Automatic time zone
-    .auto-info = Requires location services and internet access
-
+time-zone = 時間帯
+    .auto = 自動的に時間帯を設定
+    .auto-info = 位置情報サービスとインターネット接続が必要です
+    
 time-format = 日付と時刻
     .twenty-four = 24時間制
     .first = 週の初めの日
@@ -317,23 +317,23 @@ system = システムとアカウント
 ## System: About
 
 about = このデバイスについて
-    .desc = デバイス名、ハードウェアの情報、OSのデフォルト。
+    .desc = デバイス名、ハードウェアの情報、オペレーティングシステムのデフォルト。
 
 about-device = デバイス名
     .desc = この名前は他のネットワークまたはBluetoothデバイスに表示されます。
 
 about-hardware = ハードウェア
-    .model = Hardware model
+    .model = ハードウェアモデル
     .memory = メモリー
     .processor = プロセッサー
     .graphics = グラフィックス
-    .disk-capacity = Disk Capacity
+    .disk-capacity = ディスク容量
 
 about-os = オペレーティングシステム
-    .os = Operating system
-    .os-architecture = Operating system architecture
+    .os = オペレーティングシステム
+    .os-architecture = オペレーティングシステムアーキテクチャ
     .desktop-environment = デスクトップ環境
-    .windowing-system = Windowing system
+    .windowing-system = ウィンドウシステム
 
 about-related = 関係がある設定
     .support = サポート
@@ -362,8 +362,8 @@ primary-button = 一次内ボタン
     .right = 右
 
 scrolling = スクロール
-    .two-finger = Scroll with two fingers
-    .edge = Scroll along the edge with one finger
+    .two-finger = 指二本でスクロール
+    .edge = 指一本で橋に沿ってスクロール
     .speed = スクロールの速度
     .natural = 自然なスクロール
     .natural-desc = 表示の代わりに内容をスクロール
@@ -404,7 +404,7 @@ click-behavior = クリックの行動
     .button-areas = 右下で二次クリックと下中央で中クリック
 
 pinch-to-zoom = ピンチでズーム
-    .desc = Use two fingers to zoom into content, for applications that support zoom.
+    .desc = 指二本のピンチで内容をズーム（サポートされた場合）
 
 tap-to-click = タップでクリック
     .desc = 指一本で一次クリック、指二本で二次クリック、指三本で中クリックを有効にします。
