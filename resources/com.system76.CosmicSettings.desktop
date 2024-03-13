@@ -8,4 +8,3 @@ Keywords=Gnome;GTK;
 OnlyShowIn=GNOME;Unity;COSMIC
 Icon=org.gnome.Settings
 StartupNotify=true
-NoDisplay=true

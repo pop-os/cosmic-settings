@@ -27,7 +27,6 @@ import = Importer
 light = Clair
 mode-and-colors = Mode et Couleur
 recent-colors = Couleurs récentes
-reset-default = Réinitialiser
 reset-to-default = Réinitialiser
 rgb = RVB
 window-hint-accent = Couleur de l'indice de la fenêtre active Active window hint color

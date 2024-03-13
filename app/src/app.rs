@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::config::Config;
-use crate::pages::desktop::appearance::COLOR_PICKER_DIALOG_ID;
 use crate::pages::desktop::{
     self, appearance,
     dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
@@ -13,7 +12,7 @@ use crate::pages::desktop::{
     },
 };
 use crate::pages::input::{self, keyboard};
-use crate::pages::{display, sound, system, time};
+use crate::pages::{self, display, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
@@ -22,7 +21,7 @@ use cosmic::iced::Subscription;
 use cosmic::widget::{button, row, text_input};
 use cosmic::{
     app::{Command, Core},
-    cosmic_config::config_subscription,
+    cosmic_config::{config_state_subscription, config_subscription},
     iced::{
         self,
         event::{self, wayland, PlatformSpecific},
@@ -166,10 +165,6 @@ impl cosmic::Application for SettingsApp {
             Message::PageMessage(crate::pages::Message::DockApplet(dock::applets::Message(
                 applets_inner::Message::ClosedAppletDialog,
             )))
-        } else if id == *COLOR_PICKER_DIALOG_ID {
-            Message::PageMessage(crate::pages::Message::Appearance(
-                appearance::Message::CloseRequested,
-            ))
         } else {
             return None;
         };
@@ -232,6 +227,11 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 Message::PanelConfig(update.config)
+            }),
+            config_state_subscription(0, cosmic_bg_config::NAME.into(), 1).map(|update| {
+                Message::PageMessage(pages::Message::DesktopWallpaper(
+                    pages::desktop::wallpaper::Message::UpdateState(update.config),
+                ))
             }),
         ])
     }
@@ -461,12 +461,6 @@ impl cosmic::Application for SettingsApp {
             .then(|| self.pages.page::<applets_inner::Page>())
         {
             return page.add_applet_view(crate::pages::Message::PanelApplet);
-        }
-
-        if let Some(Some(page)) = (id == *appearance::COLOR_PICKER_DIALOG_ID)
-            .then(|| self.pages.page::<appearance::Page>())
-        {
-            return page.color_picker_view();
         }
 
         if let Some(Some(page)) =

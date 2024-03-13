@@ -6,7 +6,7 @@ use apply::Apply;
 use cosmic::{
     iced::Length,
     theme,
-    widget::{button, container, horizontal_space, icon, list, row, settings, toggler},
+    widget::{button, container, horizontal_space, icon, row, settings, toggler},
     Element,
 };
 
@@ -90,7 +90,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     &*descriptions[0],
                     toggler(
                         None,
-                        desktop.show_minimize_button,
+                        desktop.cosmic_tk.show_minimize,
                         Message::ShowMinimizeButton,
                     ),
                 ))
@@ -98,7 +98,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     &*descriptions[1],
                     toggler(
                         None,
-                        desktop.show_maximize_button,
+                        desktop.cosmic_tk.show_maximize,
                         Message::ShowMaximizeButton,
                     ),
                 ))
@@ -127,7 +127,7 @@ pub fn panel_dock_links() -> Section<crate::pages::Message> {
                         .control(control)
                         .spacing(16)
                         .apply(container)
-                        .style(theme::Container::custom(list::style))
+                        .style(theme::Container::List)
                         .apply(button)
                         .style(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(panel_entity)),
@@ -150,7 +150,7 @@ pub fn panel_dock_links() -> Section<crate::pages::Message> {
                         .control(control)
                         .spacing(16)
                         .apply(container)
-                        .style(theme::Container::custom(list::style))
+                        .style(theme::Container::List)
                         .apply(button)
                         .style(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(dock_entity)),

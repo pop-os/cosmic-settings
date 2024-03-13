@@ -27,7 +27,6 @@ import = Import
 light = Light
 mode-and-colors = Mode and Colors
 recent-colors = Recent colors
-reset-default = Reset to default
 reset-to-default = Reset to default
 rgb = RGB
 window-hint-accent = Active window hint color

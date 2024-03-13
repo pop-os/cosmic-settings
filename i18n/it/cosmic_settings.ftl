@@ -1,4 +1,4 @@
-app = Impostazioni COSMIC
+app = Impostazioni di COSMIC
 
 unknown = Sconosciuto
 
@@ -6,17 +6,18 @@ number = { $number }
 
 ## Desktop
 
-desktop = Scrivania
+desktop = Desktop
 
 ## Desktop: Appearance
 
 appearance = Aspetto
-    .desc = Colori d'accento e tema Cosmic.
+    .desc = Colore d'accento e tema COSMIC.
+
 accent-color = Colore d'accento
 app-background = Sfondo applicazione o finestra
 auto = Automatico
 close = Chiudi
-color-picker = Selezione Colore
+color-picker = Selezione colore
 copied-to-clipboard = Copiato negli appunti
 copy-to-clipboard = Copia negli appunti
 dark = Scuro
@@ -26,155 +27,215 @@ import = Importa
 light = Chiaro
 mode-and-colors = Modalità e colori
 recent-colors = Colori recenti
-reset-default = Reimposta predefinito
-reset-to-default = Reimposta predefinito
+reset-to-default = Ripristina predefinito
 rgb = RGB
-window-hint-accent = Colore di suggerimento della finestra attiva
-window-hint-accent-toggle = Usa il colore d'accento del tema come suggerimento della finestra attiva
+window-hint-accent = Colore d'accento per la finestra attiva
+window-hint-accent-toggle = Usa il colore del tema come colore d'accento
 
-auto-switch = Passa automaticamente dalla modalità Chiara a quella Scura
-    .desc = All'alba passa automaticamente alla modalità Chiara
+auto-switch = Cambia automaticamente del tema schiaro al tema scuro
+    .desc = All'alba, cambia al tema Chiaro
 
-container-background = Sfondo del contenitore
-    .desc-detail = Lo sfondo del contenitore è utilizzato per la barra laterale di navigazione, per il cassetto laterale, per le finestre di dialogo e cose simili.
-    .reset = Reimpostazione a quello automatico
-    .desc = Il colore primario del contenitore è utilizzato per la barra di navigazione laterale, per il cassetto laterale, per le finestre di dialogo e cose simili.
+container-background = Sfondo container
+    .desc-detail = Il colore di sfondo del container viene usato per la barra laterale di navigazione, finestre di dialogo e widget simili. Il valore predefinito deriva dallo sfondo dell'applicazione o finestra.
+    .reset = Ripristina in "Automatico"
+    .desc = Il colore primario del container usato per la barra laterale, finestre di dialogo e vari widget.
 
-control-tint =  Tinta del componente di controllo
-    .desc = Utilizzata come sfondo per tasti, input di ricerca, input di testo e componenti simili.
+control-tint = Tinta per componenti di controllo
+    .desc = Usata come sfondo per i pulsanti, caselle di ricerca, caselle di testo e componenti simili.
 
-frosted = Effetto vetro ghiacciato sull'interfaccia di sistema
-    .desc = Applica una sfocatura agli sfondi di pannello, barra applicazioni, applet, avviatore e libreria applicazioni.
+frosted = Effetto "vetro smerigliato" per l'interfaccia
+    .desc = Applica un effetto di sfocatura al pannello, la barra delle applicazioni, gli applet, il launcher e la libreria della applicazioni.
 
-text-tint = Tinta dell'interfaccia di testo
-    .desc = Colore usato per generare i colori dell'interfaccia di testo che abbiano un contrasto sufficiente con le varie superfici.
+text-tint = Tinta per il testo dell'interfaccia
+    .desc = Colore su cui si basano i colori del testo con sufficiente contrasto in diverse superfici.
 
 style = Stile
     .round = Arrotondato
     .slightly-round = Leggermente arrotondato
-    .square = Squadrato
+    .square = Spigoloso
 
 # interface density left out for now
-window-management = Gestione delle finestre
-    .active-hint = Dimensioni dei suggerimenti sulla finestra
-    .gaps = Spazio attorno tra le finestre a piastrelle
+window-management = Gestione finestre
+    .active-hint = Dimensione bordo finestra attiva
+    .gaps = Spaziatura finestre in modalità tiling
+
+## Desktop: Display
+
+-requires-restart = Richiede il riavvio
+
+color = Colore
+    .depth = Profondità colore
+    .profile = Profilo colore
+    .sidebar = Profili colore
+    .temperature = Temperatura colore
+
+display = Schermi
+    .desc = Gestione schermi, modalità GPU e modalità notturna
+    .arrangement = Ordinamento schermi
+    .arrangement-desc = Trascina gli schermi per ordinarli.
+    .enable = Attiva schermo
+    .external = { $size } { $output } Schermo esterno
+    .laptop = { $size } Schermo laptop
+    .options = Opzioni schermo
+    .refresh-rate = Frequenza d'aggiornamento
+    .resolution = Risoluzione
+    .scale = Scala
+
+graphics-mode = Modalità GPU
+    .mode = { $mode ->
+        [compute] Compute
+        *[hybrid] Ibrida
+        [integrated] Integrata
+        [nvidia] NVIDIA
+    }
+    .enable = Abilita modalità { $mode ->
+        [compute] compute
+        *[hybrid] ibrida
+        [integrated] integrata
+        [nvidia] NVIDIA
+    }
+    .desc = { $mode ->
+        [compute] Usa la GPU dedicata solo per l'elaborazione. Disabilita gli schermi esterni. { -requires-restart }.
+        *[hybrid] Le applicazioni useranno la GPU integrata a meno che non venga richiesto esplicitamente l'uso della GPU dedicata. { -requires-restart }.
+        [integrated] Disattiva la GPU dedicata per una maggior durata della batteria e meno rumore proveniente dalle ventole.
+        [nvidia] Miglior esperienza grafica ma maggior consumo energetico. { -requires-restart }.
+    }
+    .restart = Riavviare in modalità { $mode }?
+    .restart-desc = Il riavvio in modalità { $mode } chiuderà tutte le applicazioni aperte.
+
+mirroring = Duplicazione
+    .id = Duplicazione { $id }
+    .dont = Non duplicare
+    .mirror = Duplica { $display }
+    .project = Proietta su { $display ->
+        [all] tutti gli schermi
+        *[other] { $display }
+    }
+    .project-count = Proiettamento su { $count} { $count ->
+        [1] altro schermo
+        *[other] altri schermi
+    }
+
+night-light = Modalità notturna
+    .auto = Automatica (dal tramonto all'alba)
+    .desc = Riduci la luce blu usando colori più caldi.
+
+orientation = Orientamento
+    .standard = Standard
+    .rotate-90 = 90 gradi in senso orario
+    .rotate-180 = 180 gradi
+    .rotate-270 = 90 gradi in senso antiorario
+
+scheduling = Pianificazione
+    .manual = Pianificazione manuale
 
 ## Desktop: Notifications
 
 notifications = Notifiche
-    .desc = Non disturbare, notifiche blocco schermo, e impostazioni specifiche per applicazione.
-
+    .desc = Non disturbare, notifiche nel blocco schermo e impostazioni per le applicazioni
 
 ## Desktop: Options
 
-desktop-panel-options = Scrivania e Pannello
-    .desc = Azione per il Tasto Super, hot corners, opzioni di controllo finestra.
+desktop-panel-options = Desktop e Pannello
+    .desc = Azione tasto Super, bordi reattivi e opzioni controllo finestre.
 
-desktop-panels-and-applets = Pannelli Scrivania e Applet
+desktop-panels-and-applets = Pannello e applet
 
-dock = Barra applicazioni
-    .desc = Pannello con le applicazioni appuntate.
+dock = Barra delle applicazioni
+    .desc = Pannello contenente le applicazioni fissate.
 
-hot-corner = Hot Corner
-    .top-left-corner = Abilita hot corner in alto a sinistra per spazi di lavoro
+hot-corner = Bordi reattivi
+    .top-left-corner = Abilita bordo reattivo in alto a sinistra per gli spazi di lavoro
 
-super-key-action = Azione per il Tasto Super
-    .launcher = Avviatore
+super-key-action = Azione tasto Super
+    .launcher = Launcher
     .workspaces = Spazi di lavoro
     .applications = Applicazioni
 
-top-panel = Pannello Superiore
-    .workspaces = Mostra Tasto Spazi di Lavoro
-    .applications = Mostra tasto Applicazioni
+top-panel = Pannello superiore
+    .workspaces = Pulsante "mostra spazi di lavoro"
+    .applications = Pulsante "mostra applicazioni"
 
-window-controls = Controlli Finestra
-    .minimize = Mostra Tasto Minimizza
-    .maximize = Mostra tasto Massimizza
+window-controls = Controlli finestra
+    .minimize = Mostra pulsante "minimizza"
+    .maximize = Mostra pulsante "massimizza"
 
 ## Desktop: Panel
+
 panel = Pannello
-    .desc = Barra superiore con controlli scrivania e menu.
+    .desc = Barra superiore con controlli desktop e menu
 
 add = Aggiungi
-add-applet = Aggiungi Applet
-all = Tutte
+add-applet = Aggungi applet
+all = Tutti
 applets = Applet
-center-segment = Segmento Centrale
-drop-here = Rilascia applet qui
-end-segment = Segmento Finale
+center-segment = Segmento centrale
+drop-here = Trascina gli applet quì
+end-segment = Segmento finale
 large = Grande
-no-applets-found = Nessun applet trovato...
-panel-bottom = Basso
-panel-left = Sinistra
-panel-right = Destra
-panel-top = Alto
-search-applets = Cerca applet...
+no-applets-found = Nessun applet trovato
+panel-bottom = In basso
+panel-left = A sinistra
+panel-right = A destra
+panel-top = In alto
+search-applets = Ricerca applet
 small = Piccolo
-start-segment = Segmento Iniziale
+start-segment = Segmento iniziale
 
-panel-appearance = Aspetto
-    .match = Abbina con scrivania
+panel-appearance = Tema
+    .match = Combacia col desktop
     .light = Chiaro
     .dark = Scuro
 
-panel-behavior-and-position = Comportamento e Posizioni
-    .autohide = Nascondi pannello automaticamente
-    .dock-autohide = Nascondi automaticamente barra applicazioni
-    .position = Posizione sullo schermo
-    .display = Mostra su schermo
-
-
-
+panel-behavior-and-position = Comportamento e posizione
+    .autohide = Nascondi automaticamente il pannello
+    .dock-autohide = Nascondi automaticamente la barra delle applicazioni
+    .position = Posizione nello schermo
+    .display = Mostra nel display
 
 panel-style = Stile
-    .anchor-gap = Spazio tra il pannello e bordi dello schermo
-    .dock-anchor-gap = Spazio tra la barra applicazioni e i bordi del pannello
-    .extend = Estendi pannello fino ai bordi dello schermo
-    .dock-extend = Espandi il pannello fino ai bordi dello schermo
+    .anchor-gap = Spazio tra il pannello e i bordi dello schermo
+    .dock-anchor-gap = Spazio tra la barra delle applicazioni e i bordi dello schermo
+    .extend = Estendi pannello ai bordi dello schermo
+    .dock-extend = Estendi dock ai bordi dello schermo
     .appearance = Aspetto
-    .size = Dimensioni
-    .background-opacity = Opacità dello sfondo
+    .size = Grandezza
+    .background-opacity = Opacità sfondo
 
 panel-applets = Configurazione
-    .dock-desc = Configura gli applet della barra applicazioni.
-    .desc = Configura applets del pannello.
+    .dock-desc = Configura gli applet del dock
+    .desc = Configura gli applet del pannello
 
-panel-missing = Configurazione Pannello non trovata
-    .desc = Il file di configurazione del pannello non è stato trovato a causa dell'utilizzo di una configurazione personalizzata oppure si è corrotto.
-    .fix = Reimposta predefinito
-
-
-
-
-
-
-
-
+panel-missing = La configurazione del pannello è mancante
+    .desc = Il file di configurazione è corrotto o non è stato trovato per via di una configurazione non prevista
+    .fix = Ripristina configurazione predefinita
 
 ## Desktop: Wallpaper
 
 wallpaper = Sfondo
     .change = Cambia immagine ogni
-    .desc = Immagini di sfondo, colori e opzioni presentazione.
+    .desc = Immagine di sfondo, colori e sfondo periodico.
     .fit = Adatta sfondo
-    .folder-dialog = Cambia la cartella degli sfondi
-    .image-dialog = Scegli l'immagine di sfondo
+    .folder-dialog = Scegliere la cartella in cui si trova lo sfondo
+    .image-dialog = Scegliere l'immagine di sfondo
     .plural = Sfondi
-    .same = Stesso sfondo su tutti gli schermi
-    .slide = Presentazione
+    .same = Stessa immagine in tutti gli schermi
+    .slide = Sfondo periodico
 
 add-color = Aggiungi colore
 add-image = Aggiungi immagine
-all-displays = Tutti gli Schermi
+all-displays = Tutti i display
 colors = Colori
 dialog-add = _Aggiungi
-fit-to-screen = Adatta allo Schermo
+fill = Riempi
+fit-to-screen = Adatta allo schermo
 open-new-folder = Apri nuova cartella
 recent-folders = Cartelle recenti
-stretch = Allarga
-zoom = Zoom
 
-x-minutes = { $number } minuti
+x-minutes = { $number ->
+    [1] 1 minuto
+    *[other] { $number } minuti
+}
 x-hours = { $number ->
     [1] 1 ora
     *[other] { $number } ore
@@ -183,161 +244,195 @@ x-hours = { $number ->
 ## Desktop: Workspaces
 
 workspaces = Spazi di lavoro
-    .desc = Imposta numero, comportamento e posizione degli spazi di lavoro.
+    .desc = Imposta numero spazi di lavoro, il loro comportamento e la loro posizione.
 
 workspaces-behavior = Comportamento spazi di lavoro
     .dynamic = Spazi di lavoro dinamici
-    .fixed = Numero fisso di spazi di lavoro
+    .dynamic-desc = Rimuovi automaticamente gli spazi di lavoro vuoti
+    .fixed = Spazi di lavoro limitati
+    .fixed-desc = Aggiungi o rimuovi gli spazi di lavoro
 
-workspaces-multi-behavior = Comportamento con più schermi
-    .span = Gli spazi di lavoro comprendono più schermi
-    .separate = Ogni schermo ha il suo spazio di lavoro
+workspaces-multi-behavior = Comportamento multi-schermo
+    .span = Gli spazi di lavoro si espandono in tutti gli schermi
+    .separate = Ogni schermo ha gli spazi di lavoro separati
 
-workspaces-overview-thumbnails = Anteprime spazio di lavoro
-    .show-number = Mostra Numero Spazio di Lavoro
-    .show-name = Mostra Nome Spazio di Lavoro
+workspaces-overview-thumbnails = Anteprima spazi di lavoro
+    .show-number = Mostra il numero dello spazio di lavoro
+    .show-name = Mostra il nome dello spazio di lavoro
 
-workspaces-orientation = Orientamento Spazi di Lavoro
+workspaces-orientation = Orientamento spazi di lavoro
     .vertical = Verticale
     .horizontal = Orizzontale
 
 ## Networking: Wired
 
-wired = Cablata
-    .desc = Connessione cablata, profili di connessione
+wired = Via cavo
+    .desc = Connessione via cavo, profili di connessione
 
 ## Networking: Online Accounts
 
-online-accounts = Account Online
-    .desc = Aggiungi account, IMAP e SMTP, login aziendali
+online-accounts = Account online
+    .desc = Aggiungi account IMAP, SMTP e enterprise
 
 ## Time & Language
 
-time = Ora e Lingua
+time = Orario e linguaggio
     .desc = N/A
 
 time-date = Data e ora
-    .desc = Fuso orario, impostazioni orologio automatiche, e alcuni formati ora.
+    .desc = Fuso orario, impostazioni orologio automatico e formattazione orario
     .auto = Imposta automaticamente
 
 time-zone = Fuso orario
     .auto = Fuso orario automatico
-    .auto-info = Richiede geolocalizzazione e accesso a internet
+    .auto-info = Richiede i servizi di posizione e l'accesso a internet
 
 time-format = Formato data e ora
-    .twenty-four = formato 24 ore
+    .twenty-four = Formato 24 ore
     .first = Primo giorno della settimana
 
-time-region = Regione e Lingua
-    .desc = Formato date, ora e numeri in base alla tua regione
+time-region = Lingua e località
+    .desc = Formattazione data, ora e numeri basata sulla località
 
 ## Sound
 
 sound = Suono
     .desc = N/A
 
-sound-output = Uscita
-    .volume = Volume in uscita
-    .device = Dispositivo in uscita
-    .level = Livello in uscita
+sound-output = Output
+    .volume = Volume di output
+    .device = Dispositivo di output
+    .level = Livello di output
     .config = Configurazione
     .balance = Bilanciamento
 
-sound-input = Ingresso
-    .volume = Volume in ingresso
-    .device = Dispositivo in ingresso
-    .level = Livello in ingresso
+sound-input = Input
+    .volume = Volume di input
+    .device = Dispositivo di input
+    .level = Livello di input
 
-sound-alerts = Notifiche
-    .volume = Volume notifiche
-    .sound = Suono notifiche
+sound-alerts = Suoni di sistema
+    .volume = Volume dei suoni di sistema
+    .sound = Tipo suono di sistema
 
 sound-applications = Applicazioni
-    .desc = Volume applicazioni e impostazioni
+    .desc = Volumi delle applicazioni
 
 ## System
 
-system = Sistema e Account
+system = Sistema e account
 
 ## System: About
 
-about = Descrizione
-    .desc = Nome dispositivo, informazioni hardware, sistema operativo.
+about = Informazioni
+    .desc = Nome dispositivo, informazioni hardware e impostazioni predefinite di sistema
 
 about-device = Nome dispositivo
-    .desc = Questo nome appare a altri dispositivi in rete o bluetooth.
+    .desc = Ai dispositivi bluetooth, o a una rete, apparirà questo nome
 
 about-hardware = Hardware
     .model = Modello hardware
-    .memory = RAM
+    .memory = Memoria
     .processor = Processore
-    .graphics = Scheda grafica
-    .disk-capacity = Memoria di massa
+    .graphics = GPU
+    .disk-capacity = Capacità archiviazione
 
 about-os = Sistema Operativo
     .os = Sistema Operativo
-    .os-architecture = Architettura del sistema operativo
-    .desktop-environment = Ambiente grafico
-    .windowing-system = Gestore grafico
+    .os-architecture = Architettura Sistema Operativo
+    .desktop-environment = Ambiente Desktop
+    .windowing-system = Gestore finestre
 
 about-related = Impostazioni correlate
-    .support = Chiedi aiuto
+    .support = Ottieni supporto
 
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Dettagli firmware.
+    .desc = Dettagli del firmware
 
 ## System: Users
 
 users = Utenti
-    .desc = Autenticazione e login, blocco schermo.
+    .desc = Autenticazione, login e blocco schermo
 
 ## Input
 
-acceleration-desc = Aggiusta automaticamente la sensibilità di tracciamento in base alla velocità.
+acceleration-desc = La velocità del puntatore viene basata sulla sua velocità
 
-primary-button = Tasto principale
+disable-while-typing = Disabilita durante la digitazione
+
+input-devices = Dispositivi di immissione
+    .desc = Dispositivi di immissione (come mouse e tastiera)
+
+primary-button = Pulsante principale
     .left = Sinistro
     .right = Destro
 
 scrolling = Scorrimento
+    .two-finger = Scorrimento con due dita
+    .edge = Scorrimento nel bordo con un dito
     .speed = Velocità di scorrimento
     .natural = Scorrimento naturale
-    .natural-desc = Scorri il contenuto invece che la visualizzazione
+    .natural-desc = Fa scorrere il contenuto invece che la visualizzazione
 
 ## Input: Keyboard
 
 keyboard = Tastiera
-    .desc = Input da tastiera
+    .desc = Immissione con la tastiera
 
-keyboard-sources = Sorgenti Input
-    .desc = Si può saltare tra le varie sorgenti input utilizzando la combinazione di tasti Super+Spazio. Questa può essere configurata nelle impostazioni sulle scorciatoie di sistema.
-    .move-up = Muovi su
-    .move-down = Muovi giù
+keyboard-sources = Sorgenti di immissione
+    .desc = Le sorgenti di immissione possono essere cambiate usando la combinazione Super + Spazio. Ciò può essere personalizzato nelle impostazioni delle scorciatorie da tastiera.
+    .move-up = Sposta in alto
+    .move-down = Sposta in basso
     .settings = Impostazioni
-    .view-layout = Visualizza la disposizione della tastiera
+    .view-layout = Visualizza il layout della tastiera
     .remove = Rimuovi
 
-keyboard-special-char = Inserimento Caratteri Speciali
-    .alternate = Tasto per i caratteri alternativi
+keyboard-special-char = Immissione caratteri speciali
+    .alternate = Tasto per i caratteri speciali
     .compose = Tasto di composizione
 
 ## Input: Keyboard: Shortcuts
 
-keyboard-shortcuts = Scorciatoie da Tastiera
-    .desc = Vedi e personalizza le scorciatoie
+keyboard-shortcuts = Scorciatoie da tastiera
+    .desc = Visualizza e modifica le scorciatoie
 
 ## Input: Mouse
 
 mouse = Mouse
-    .desc = Velocità, accelerazione, scorrimento naturale del mouse.
+    .desc = Velocità mouse, accelerazione e scorrimento naturale
     .speed = Velocità mouse
     .acceleration = Abilita accelerazione mouse
 
 ## Input: Touchpad
 
+click-behavior = Comportamento click
+    .click-finger = Click secondario con due dita e click centrale con tre dita
+    .button-areas = Click secondario nel bordo in basso a destra e click centrale nel bordo centrale in basso
+
+pinch-to-zoom = Pizzica per lo zoom
+    .desc = Usa due dita per ingrandire i contenuti nelle applicazioni che supportano l'ingrandimento
+
+tap-to-click = Tocca per fare click
+    .desc = Abilita il tocco singolo per il click principale, il tocco a due dita per il click secondario e il tocco con tre dita per il click centrale
+
 touchpad = Touchpad
-    .desc = Velocità, opzioni click e movimenti sul touchpad.
-    .speed = Velocità touchpad
-    .acceleration = Abilita accelerazione touchpad
+    .acceleration = Abilita l'accelerazione del touchpad
+    .desc = Velocità del touchpad, opzioni click e gestures.
+    .speed = Velocità del touchpad
+
+## Input: Gestures
+
+swiping = Scorrimento
+    .four-finger-down = Scorri in basso usando quattro dita
+    .four-finger-left = Scorri a sinistra usando quattro dita
+    .four-finger-right = Scorri a destra usando quattro dita
+    .four-finger-up = Scorri in alto usando quattro dita
+    .three-finger-any = Scorri in qualsiasi direzione usando tre dita
+
+switch-between-windows = Scorri tra le varie finestre
+switch-to-next-workspace = Vai al prossimo spazio di lavoro
+switch-to-prev-workspace = Vai allo spazio di lavoro precedente
+open-application-library = Apri la libreria delle applicazioni
+open-workspaces-view = Riepilogo degli spazi di lavoro

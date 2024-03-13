@@ -1,60 +1,62 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use std::borrow::Cow;
 use std::sync::Arc;
 
 use apply::Apply;
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
-use cosmic::cosmic_theme::{CornerRadii, Theme, ThemeBuilder, ThemeMode};
-use cosmic::iced::wayland::actions::window::SctkWindowSettings;
-use cosmic::iced::window;
-use cosmic::iced_core::{alignment, layout, Color, Length};
-use cosmic::iced_sctk::commands::window::{close_window, get_window};
+use cosmic::cosmic_theme::{
+    CornerRadii, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID,
+};
+use cosmic::iced_core::{alignment, Color, Length};
 use cosmic::iced_widget::scrollable;
+use cosmic::prelude::CollectionWidget;
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, header_bar, horizontal_space, row,
-    settings, spin_button, text, ColorPickerModel,
+    button, color_picker::ColorPickerUpdate, container, horizontal_space, row, settings,
+    spin_button, text, ColorPickerModel,
 };
 use cosmic::{command, Command, Element};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use cosmic_settings_wallpaper as wallpaper;
-use once_cell::sync::Lazy;
 use ron::ser::PrettyConfig;
 use slotmap::SlotMap;
-use tracing::warn;
 
 use crate::app;
 
 use super::wallpaper::widgets::color_image;
 
-pub static COLOR_PICKER_DIALOG_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
-
 crate::cache_dynamic_lazy! {
     static HEX: String = fl!("hex");
     static RGB: String = fl!("rgb");
+    static RESET_TO_DEFAULT: String = fl!("reset-to-default");
 }
 
-enum NamedColorPicker {
-    CustomAccent,
-    ApplicationBackground,
-    InterfaceText,
-    ControlComponent,
+#[derive(Clone, Copy, Debug)]
+enum ContextView {
     AccentWindowHint,
+    ApplicationBackground,
+    ContainerBackground,
+    ControlComponent,
+    CustomAccent,
+    InterfaceText,
 }
+
 // TODO integrate with settings backend
 pub struct Page {
     can_reset: bool,
+    theme_builder_needs_update: bool,
+    context_view: Option<ContextView>,
     custom_accent: ColorPickerModel,
     accent_window_hint: ColorPickerModel,
     application_background: ColorPickerModel,
     container_background: ColorPickerModel,
     interface_text: ColorPickerModel,
     control_component: ColorPickerModel,
-    active_dialog: Option<NamedColorPicker>,
     roundness: Roundness,
     no_custom_window_hint: bool,
 
@@ -119,6 +121,8 @@ impl From<(Option<Config>, ThemeMode, Option<Config>, ThemeBuilder)> for Page {
             } else {
                 theme_builder == ThemeBuilder::light()
             },
+            theme_builder_needs_update: false,
+            context_view: None,
             roundness: theme_builder.corner_radii.into(),
             custom_accent: ColorPickerModel::new(
                 &*HEX,
@@ -157,7 +161,6 @@ impl From<(Option<Config>, ThemeMode, Option<Config>, ThemeBuilder)> for Page {
                 theme_builder.window_hint.map(Color::from),
             ),
             no_custom_window_hint: theme_builder.accent.is_some(),
-            active_dialog: None,
             theme_mode_config,
             theme_builder_config,
             theme_mode,
@@ -206,7 +209,6 @@ impl From<(Option<Config>, ThemeMode)> for Page {
 pub enum Message {
     Entered,
     DarkMode(bool),
-    DragColorPicker,
     Autoswitch(bool),
     Frosted(bool),
     WindowHintSize(spin_button::Message),
@@ -218,7 +220,6 @@ pub enum Message {
     CustomAccent(ColorPickerUpdate),
     InterfaceText(ColorPickerUpdate),
     ControlComponent(ColorPickerUpdate),
-    CloseRequested,
     Roundness(Roundness),
     StartImport,
     StartExport,
@@ -284,10 +285,109 @@ impl From<CornerRadii> for Roundness {
 }
 
 impl Page {
+    /// Syncs changes for dark and light theme.
+    /// Roundness and window management settings should be consistent between dark / light mode.
+    fn sync_changes(&self) -> Result<(), cosmic::cosmic_config::Error> {
+        let (other_builder_config, other_theme_config) = if self.theme_mode.is_dark {
+            (ThemeBuilder::light_config()?, Theme::light_config()?)
+        } else {
+            (ThemeBuilder::dark_config()?, Theme::dark_config()?)
+        };
+
+        let mut theme_builder = match ThemeBuilder::get_entry(&other_builder_config) {
+            Ok(t) => t,
+            Err((errs, t)) => {
+                for err in errs {
+                    tracing::error!(?err, "Error loading theme builder");
+                }
+                t
+            }
+        };
+        let mut theme = match Theme::get_entry(&other_theme_config) {
+            Ok(t) => t,
+            Err((errs, t)) => {
+                for err in errs {
+                    tracing::error!(?err, "Error loading theme");
+                }
+                t
+            }
+        };
+        if theme_builder.active_hint != self.theme_builder.active_hint {
+            if let Err(err) =
+                theme_builder.set_active_hint(&other_builder_config, self.theme_builder.active_hint)
+            {
+                tracing::error!(?err, "Error setting active hint");
+            }
+            if let Err(err) =
+                theme.set_active_hint(&other_theme_config, self.theme_builder.active_hint)
+            {
+                tracing::error!(?err, "Error setting active hint");
+            }
+        }
+        if theme_builder.gaps != self.theme_builder.gaps {
+            if let Err(err) = theme_builder.set_gaps(&other_builder_config, self.theme_builder.gaps)
+            {
+                tracing::error!(?err, "Error setting gaps");
+            }
+            if let Err(err) = theme.set_gaps(&other_theme_config, self.theme_builder.gaps) {
+                tracing::error!(?err, "Error setting gaps");
+            }
+        }
+        if theme_builder.corner_radii != self.theme_builder.corner_radii {
+            if let Err(err) = theme_builder
+                .set_corner_radii(&other_builder_config, self.theme_builder.corner_radii)
+            {
+                tracing::error!(?err, "Error setting corner radii");
+            }
+
+            if let Err(err) =
+                theme.set_corner_radii(&other_theme_config, self.theme_builder.corner_radii)
+            {
+                tracing::error!(?err, "Error setting corner radii");
+            }
+        }
+
+        Ok(())
+    }
+
+    fn color_picker_context_view(
+        &self,
+        description: Option<Cow<'static, str>>,
+        reset: Cow<'static, str>,
+        on_update: fn(ColorPickerUpdate) -> Message,
+        model: impl Fn(&Self) -> &ColorPickerModel,
+    ) -> Element<'_, crate::pages::Message> {
+        cosmic::widget::column()
+            .push_maybe(description.map(|description| text(description).width(Length::Fill)))
+            .push(
+                model(self)
+                    .builder(on_update)
+                    .reset_label(reset)
+                    .height(Length::Fixed(158.0))
+                    .build(
+                        fl!("recent-colors"),
+                        fl!("copy-to-clipboard"),
+                        fl!("copied-to-clipboard"),
+                    )
+                    .apply(container)
+                    .width(Length::Fixed(248.0))
+                    .align_x(alignment::Horizontal::Center)
+                    .apply(container)
+                    .width(Length::Fill)
+                    .align_x(alignment::Horizontal::Center),
+            )
+            .padding(self.theme_builder.spacing.space_l)
+            .align_items(cosmic::iced_core::Alignment::Center)
+            .spacing(self.theme_builder.spacing.space_m)
+            .width(Length::Fill)
+            .apply(Element::from)
+            .map(crate::pages::Message::Appearance)
+    }
+
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Command<app::Message> {
-        let mut theme_builder_needs_update = false;
-
+        self.theme_builder_needs_update = false;
+        let mut needs_sync = false;
         let mut ret = match message {
             Message::DarkMode(enabled) => {
                 self.theme_mode.is_dark = enabled;
@@ -315,48 +415,22 @@ impl Page {
                 Command::none()
             }
             Message::AccentWindowHint(u) => {
-                let cmd = match &u {
-                    ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
-                        // close the color picker dialog
-                        // apply changes
-                        theme_builder_needs_update = true;
-                        self.active_dialog = None;
-                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    // TODO apply changes
-                    ColorPickerUpdate::ActionFinished => {
-                        theme_builder_needs_update = true;
-                        _ = self
-                            .accent_window_hint
-                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
-                        Command::none()
-                    }
-                    ColorPickerUpdate::Cancel => {
-                        // close the color picker dialog
-                        self.active_dialog = None;
-                        close_window(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    ColorPickerUpdate::ToggleColorPicker => {
-                        let prev = self
-                            .active_dialog
-                            .replace(NamedColorPicker::AccentWindowHint);
-                        if prev.is_none() {
-                            get_window(color_picker_window_settings())
-                        } else {
-                            Command::none()
-                        }
-                    }
-                    _ => Command::none(),
-                };
+                needs_sync = true;
+                let cmd = self.update_color_picker(
+                    &u,
+                    ContextView::AccentWindowHint,
+                    fl!("window-hint-accent").into(),
+                );
                 Command::batch(vec![cmd, self.accent_window_hint.update::<app::Message>(u)])
             }
             Message::Frosted(enabled) => {
-                theme_builder_needs_update = true;
+                self.theme_builder_needs_update = true;
                 self.theme_builder.is_frosted = enabled;
                 Command::none()
             }
             Message::WindowHintSize(msg) => {
-                theme_builder_needs_update = true;
+                needs_sync = true;
+                self.theme_builder_needs_update = true;
                 self.theme_builder.active_hint = match msg {
                     spin_button::Message::Increment => {
                         self.theme_builder.active_hint.saturating_add(1)
@@ -368,7 +442,8 @@ impl Page {
                 Command::none()
             }
             Message::GapSize(msg) => {
-                theme_builder_needs_update = true;
+                needs_sync = true;
+                self.theme_builder_needs_update = true;
                 self.theme_builder.gaps.1 = match msg {
                     spin_button::Message::Increment => self.theme_builder.gaps.1.saturating_add(1),
                     spin_button::Message::Decrement => self.theme_builder.gaps.1.saturating_sub(1),
@@ -376,215 +451,63 @@ impl Page {
                 Command::none()
             }
             Message::ApplicationBackground(u) => {
-                let cmd = match &u {
-                    ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
-                        // close the color picker dialog
-                        // apply changes
-                        theme_builder_needs_update = true;
-                        self.active_dialog = None;
-                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    // TODO apply changes
-                    ColorPickerUpdate::ActionFinished => {
-                        theme_builder_needs_update = true;
-                        _ = self
-                            .application_background
-                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
-                        Command::none()
-                    }
-                    ColorPickerUpdate::Cancel => {
-                        // close the color picker dialog
-                        self.active_dialog = None;
-                        close_window(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    ColorPickerUpdate::ToggleColorPicker => {
-                        let prev = self
-                            .active_dialog
-                            .replace(NamedColorPicker::ApplicationBackground);
-                        if prev.is_none() {
-                            get_window(color_picker_window_settings())
-                        } else {
-                            Command::none()
-                        }
-                    }
-                    _ => Command::none(),
-                };
+                let cmd = self.update_color_picker(
+                    &u,
+                    ContextView::ApplicationBackground,
+                    fl!("app-background").into(),
+                );
+
                 Command::batch(vec![
                     cmd,
                     self.application_background.update::<app::Message>(u),
                 ])
             }
             Message::ContainerBackground(u) => {
-                let cmd = match &u {
-                    ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
-                        theme_builder_needs_update = true;
-                        Command::perform(async {}, |()| crate::app::Message::CloseContextDrawer)
-                    }
-                    ColorPickerUpdate::ActionFinished => {
-                        theme_builder_needs_update = true;
-                        _ = self
-                            .container_background
-                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
-                        Command::none()
-                    }
-                    ColorPickerUpdate::Cancel => {
-                        Command::perform(async {}, |()| crate::app::Message::CloseContextDrawer)
-                    }
-                    ColorPickerUpdate::ToggleColorPicker => Command::perform(async {}, |()| {
-                        crate::app::Message::OpenContextDrawer(fl!("container-background").into())
-                    }),
-                    _ => Command::none(),
-                };
+                let cmd = self.update_color_picker(
+                    &u,
+                    ContextView::ContainerBackground,
+                    fl!("container-background").into(),
+                );
+
                 Command::batch(vec![
                     cmd,
                     self.container_background.update::<app::Message>(u),
                 ])
             }
             Message::CustomAccent(u) => {
-                let cmd = match &u {
-                    ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
-                        // close the color picker dialog
-                        // apply changes
-                        theme_builder_needs_update = true;
-                        self.active_dialog = None;
-                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    // TODO apply changes
-                    ColorPickerUpdate::ActionFinished => {
-                        theme_builder_needs_update = true;
-                        _ = self
-                            .custom_accent
-                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
-                        Command::none()
-                    }
-                    ColorPickerUpdate::Cancel => {
-                        // close the color picker dialog
-                        self.active_dialog = None;
-                        close_window(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    ColorPickerUpdate::ToggleColorPicker => {
-                        let prev = self.active_dialog.replace(NamedColorPicker::CustomAccent);
-                        if prev.is_none() {
-                            get_window(color_picker_window_settings())
-                        } else {
-                            Command::none()
-                        }
-                    }
-                    _ => Command::none(),
-                };
+                let cmd = self.update_color_picker(
+                    &u,
+                    ContextView::CustomAccent,
+                    fl!("accent-color").into(),
+                );
+
                 let cmd2 = self.custom_accent.update::<app::Message>(u);
 
                 self.theme_builder.accent = self.custom_accent.get_applied_color().map(Srgb::from);
                 Command::batch(vec![cmd, cmd2])
             }
             Message::InterfaceText(u) => {
-                let cmd = match &u {
-                    ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
-                        // close the color picker dialog
-                        // apply changes
-                        theme_builder_needs_update = true;
-                        self.active_dialog = None;
-                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    // TODO apply changes
-                    ColorPickerUpdate::ActionFinished => {
-                        theme_builder_needs_update = true;
-                        _ = self
-                            .interface_text
-                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
-                        Command::none()
-                    }
-                    ColorPickerUpdate::Cancel => {
-                        // close the color picker dialog
-                        self.active_dialog = None;
-                        close_window(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    ColorPickerUpdate::ToggleColorPicker => {
-                        let prev = self.active_dialog.replace(NamedColorPicker::InterfaceText);
-                        if prev.is_none() {
-                            get_window(color_picker_window_settings())
-                        } else {
-                            Command::none()
-                        }
-                    }
-                    _ => Command::none(),
-                };
+                let cmd = self.update_color_picker(
+                    &u,
+                    ContextView::InterfaceText,
+                    fl!("text-tint").into(),
+                );
+
                 Command::batch(vec![cmd, self.interface_text.update::<app::Message>(u)])
             }
             Message::ControlComponent(u) => {
-                let cmd = match &u {
-                    ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
-                        // close the color picker dialog
-                        // apply changes
-                        theme_builder_needs_update = true;
-                        self.active_dialog = None;
-                        close_window::<app::Message>(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    // TODO apply changes
-                    ColorPickerUpdate::ActionFinished => {
-                        theme_builder_needs_update = true;
-                        _ = self
-                            .control_component
-                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
-                        Command::none()
-                    }
-                    ColorPickerUpdate::Cancel => {
-                        // close the color picker dialog
-                        self.active_dialog = None;
-                        close_window(*COLOR_PICKER_DIALOG_ID)
-                    }
-                    ColorPickerUpdate::ToggleColorPicker => {
-                        let prev = self
-                            .active_dialog
-                            .replace(NamedColorPicker::ControlComponent);
-                        if prev.is_none() {
-                            get_window(color_picker_window_settings())
-                        } else {
-                            Command::none()
-                        }
-                    }
-                    _ => Command::none(),
-                };
+                let cmd = self.update_color_picker(
+                    &u,
+                    ContextView::ControlComponent,
+                    fl!("control-tint").into(),
+                );
                 Command::batch(vec![cmd, self.control_component.update::<app::Message>(u)])
             }
-            Message::CloseRequested => {
-                match self.active_dialog.take() {
-                    Some(NamedColorPicker::ApplicationBackground) => {
-                        _ = self
-                            .application_background
-                            .update::<app::Message>(ColorPickerUpdate::Cancel);
-                    }
-                    Some(NamedColorPicker::ControlComponent) => {
-                        _ = self
-                            .control_component
-                            .update::<app::Message>(ColorPickerUpdate::Cancel);
-                    }
-                    Some(NamedColorPicker::CustomAccent) => {
-                        _ = self
-                            .custom_accent
-                            .update::<app::Message>(ColorPickerUpdate::Cancel);
-                    }
-                    Some(NamedColorPicker::InterfaceText) => {
-                        _ = self
-                            .interface_text
-                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
-                    }
-                    Some(NamedColorPicker::AccentWindowHint) => {
-                        _ = self
-                            .accent_window_hint
-                            .update::<app::Message>(ColorPickerUpdate::AppliedColor);
-                    }
-                    None => {
-                        theme_builder_needs_update = false;
-                        warn!("Unknown appearance dialog closed.");
-                    }
-                };
-                Command::none()
-            }
             Message::Roundness(r) => {
+                needs_sync = true;
                 self.roundness = r;
                 self.theme_builder.corner_radii = self.roundness.into();
-                theme_builder_needs_update = true;
+                self.theme_builder_needs_update = true;
                 Command::none()
             }
             Message::Entered => {
@@ -604,14 +527,44 @@ impl Page {
             }),
             Message::PaletteAccent(c) => {
                 self.theme_builder.accent = Some(c.into());
-                theme_builder_needs_update = true;
+                self.theme_builder_needs_update = true;
                 Command::none()
             }
             Message::Reset => {
                 self.theme_builder = if self.theme_mode.is_dark {
-                    ThemeBuilder::dark()
+                    cosmic::cosmic_config::Config::system(
+                        DARK_THEME_BUILDER_ID,
+                        ThemeBuilder::VERSION,
+                    )
+                    .map_or_else(
+                        |_| ThemeBuilder::dark(),
+                        |config| match ThemeBuilder::get_entry(&config) {
+                            Ok(t) => t,
+                            Err((errs, t)) => {
+                                for err in errs {
+                                    tracing::warn!(?err, "Error getting system theme builder");
+                                }
+                                t
+                            }
+                        },
+                    )
                 } else {
-                    ThemeBuilder::light()
+                    cosmic::cosmic_config::Config::system(
+                        LIGHT_THEME_BUILDER_ID,
+                        ThemeBuilder::VERSION,
+                    )
+                    .map_or_else(
+                        |_| ThemeBuilder::light(),
+                        |config| match ThemeBuilder::get_entry(&config) {
+                            Ok(t) => t,
+                            Err((errs, t)) => {
+                                for err in errs {
+                                    tracing::warn!(?err, "Error getting system theme builder");
+                                }
+                                t
+                            }
+                        },
+                    )
                 };
                 if let Some(config) = self.theme_builder_config.as_ref() {
                     _ = self.theme_builder.write_entry(config);
@@ -780,7 +733,7 @@ impl Page {
             }
             Message::UseDefaultWindowHint(v) => {
                 self.no_custom_window_hint = v;
-                theme_builder_needs_update = true;
+                self.theme_builder_needs_update = true;
                 let theme = if self.theme_mode.is_dark {
                     Theme::dark_default()
                 } else {
@@ -814,12 +767,9 @@ impl Page {
                 };
                 Command::none()
             }
-            Message::DragColorPicker => {
-                cosmic::iced_sctk::commands::window::start_drag_window(*COLOR_PICKER_DIALOG_ID)
-            }
         };
 
-        if theme_builder_needs_update {
+        if self.theme_builder_needs_update {
             let Some(config) = self.theme_builder_config.as_ref() else {
                 return ret;
             };
@@ -872,52 +822,43 @@ impl Page {
             self.theme_builder != ThemeBuilder::light()
         };
 
+        if needs_sync {
+            if let Err(err) = self.sync_changes() {
+                tracing::error!(?err, "Error syncing theme changes.");
+            }
+        }
+
         ret
     }
 
-    pub fn color_picker_view(&self) -> Element<crate::app::Message> {
-        let (picker, msg): (_, fn(ColorPickerUpdate) -> Message) = match self.active_dialog {
-            Some(NamedColorPicker::ApplicationBackground) => {
-                (&self.application_background, Message::ApplicationBackground)
+    fn update_color_picker(
+        &mut self,
+        message: &ColorPickerUpdate,
+        context_view: ContextView,
+        context_title: Cow<'static, str>,
+    ) -> Command<app::Message> {
+        match message {
+            ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
+                self.theme_builder_needs_update = true;
+                cosmic::command::message(crate::app::Message::CloseContextDrawer)
             }
-            Some(NamedColorPicker::ControlComponent) => {
-                (&self.control_component, Message::ControlComponent)
+
+            ColorPickerUpdate::ActionFinished => {
+                self.theme_builder_needs_update = true;
+                Command::none()
             }
-            Some(NamedColorPicker::CustomAccent) => (&self.custom_accent, Message::CustomAccent),
-            Some(NamedColorPicker::InterfaceText) => (&self.interface_text, Message::InterfaceText),
-            Some(NamedColorPicker::AccentWindowHint) => {
-                (&self.accent_window_hint, Message::AccentWindowHint)
+
+            ColorPickerUpdate::Cancel => {
+                cosmic::command::message(crate::app::Message::CloseContextDrawer)
             }
-            None => return text("OOPS!").into(),
-        };
-        cosmic::iced::widget::column![
-            header_bar()
-                .title(fl!("color-picker"))
-                .on_close(msg(ColorPickerUpdate::AppliedColor))
-                .on_drag(Message::DragColorPicker),
-            container(
-                picker
-                    .builder(msg)
-                    .width(Length::Fixed(254.0))
-                    .height(Length::Fixed(174.0))
-                    .reset_label(fl!("reset-to-default"))
-                    .build(
-                        fl!("recent-colors"),
-                        fl!("copy-to-clipboard"),
-                        fl!("copied-to-clipboard"),
-                    )
-            )
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .align_x(cosmic::iced_core::alignment::Horizontal::Center)
-            .style(cosmic::theme::style::Container::Background)
-        ]
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .align_items(cosmic::iced_core::Alignment::Center)
-        .apply(Element::from)
-        .map(crate::pages::Message::Appearance)
-        .map(crate::app::Message::PageMessage)
+
+            ColorPickerUpdate::ToggleColorPicker => {
+                self.context_view = Some(context_view);
+                cosmic::command::message(crate::app::Message::OpenContextDrawer(context_title))
+            }
+
+            _ => Command::none(),
+        }
     }
 }
 
@@ -964,36 +905,59 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn reload(&mut self, _: page::Entity) -> Command<crate::pages::Message> {
-        command::future(async move { crate::pages::Message::Appearance(Message::Entered) })
+        command::message(crate::pages::Message::Appearance(Message::Entered))
     }
 
     fn on_leave(&mut self) -> Command<crate::pages::Message> {
-        Command::perform(async {}, |()| {
-            crate::pages::Message::Appearance(Message::Left)
-        })
+        command::message(crate::pages::Message::Appearance(Message::Left))
     }
 
     fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
-        Some(
-            cosmic::iced::widget::column![
-                text(fl!("container-background", "desc-detail")).width(Length::Fill),
-                self.container_background
-                    .builder(Message::ContainerBackground)
-                    .width(Length::Fixed(248.0))
-                    .height(Length::Fixed(158.0))
-                    .reset_label(fl!("container-background", "reset"))
-                    .build(
-                        fl!("recent-colors"),
-                        fl!("copy-to-clipboard"),
-                        fl!("copied-to-clipboard"),
-                    )
-            ]
-            .padding(self.theme_builder.spacing.space_l)
-            .align_items(cosmic::iced_core::Alignment::Center)
-            .spacing(self.theme_builder.spacing.space_m)
-            .apply(Element::from)
-            .map(crate::pages::Message::Appearance),
-        )
+        let view = match self.context_view? {
+            ContextView::AccentWindowHint => self.color_picker_context_view(
+                None,
+                RESET_TO_DEFAULT.as_str().into(),
+                Message::AccentWindowHint,
+                |this| &this.accent_window_hint,
+            ),
+
+            ContextView::ApplicationBackground => self.color_picker_context_view(
+                None,
+                RESET_TO_DEFAULT.as_str().into(),
+                Message::ApplicationBackground,
+                |this| &this.application_background,
+            ),
+
+            ContextView::ContainerBackground => self.color_picker_context_view(
+                Some(fl!("container-background", "desc-detail").into()),
+                fl!("container-background", "reset").into(),
+                Message::ContainerBackground,
+                |this| &this.container_background,
+            ),
+
+            ContextView::ControlComponent => self.color_picker_context_view(
+                None,
+                RESET_TO_DEFAULT.as_str().into(),
+                Message::ControlComponent,
+                |this| &this.control_component,
+            ),
+
+            ContextView::CustomAccent => self.color_picker_context_view(
+                None,
+                RESET_TO_DEFAULT.as_str().into(),
+                Message::CustomAccent,
+                |this| &this.custom_accent,
+            ),
+
+            ContextView::InterfaceText => self.color_picker_context_view(
+                None,
+                RESET_TO_DEFAULT.as_str().into(),
+                Message::InterfaceText,
+                |this| &this.interface_text,
+            ),
+        };
+
+        Some(view)
     }
 }
 
@@ -1189,27 +1153,23 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&*descriptions[4])
                         .description(&*descriptions[5])
-                        .control(
-                            if let Some(c) = page.container_background.get_applied_color() {
-                                container(color_button(
-                                    Some(Message::ContainerBackground(
+                        .control(if page.container_background.get_applied_color().is_some() {
+                            Element::from(
+                                page.container_background
+                                    .picker_button(Message::ContainerBackground, Some(24))
+                                    .width(Length::Fixed(48.0))
+                                    .height(Length::Fixed(24.0)),
+                            )
+                        } else {
+                            container(
+                                button::text(fl!("auto"))
+                                    .trailing_icon(from_name("go-next-symbolic"))
+                                    .on_press(Message::ContainerBackground(
                                         ColorPickerUpdate::ToggleColorPicker,
                                     )),
-                                    c,
-                                    true,
-                                    48,
-                                    24,
-                                ))
-                            } else {
-                                container(
-                                    button::text(fl!("auto"))
-                                        .trailing_icon(from_name("go-next-symbolic"))
-                                        .on_press(Message::ContainerBackground(
-                                            ColorPickerUpdate::ToggleColorPicker,
-                                        )),
-                                )
-                            },
-                        ),
+                            )
+                            .into()
+                        }),
                 )
                 .add(
                     settings::item::builder(&*descriptions[8])
@@ -1386,7 +1346,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
 #[allow(clippy::too_many_lines)]
 pub fn reset_button() -> Section<crate::pages::Message> {
     Section::default()
-        .descriptions(vec![fl!("reset-default").into()])
+        .descriptions(vec![fl!("reset-to-default").into()])
         .view::<Page>(|_binder, page, section| {
             let spacing = &page.theme_builder.spacing;
             let descriptions = &section.descriptions;
@@ -1402,26 +1362,6 @@ pub fn reset_button() -> Section<crate::pages::Message> {
         })
 }
 impl page::AutoBind<crate::pages::Message> for Page {}
-
-fn color_picker_window_settings() -> SctkWindowSettings {
-    SctkWindowSettings {
-        window_id: *COLOR_PICKER_DIALOG_ID,
-        app_id: Some("com.system76.CosmicSettings".to_string()),
-        title: Some(fl!("color-picker")),
-        parent: Some(window::Id::MAIN),
-        autosize: false,
-        size_limits: layout::Limits::NONE
-            .min_width(300.0)
-            .max_width(800.0)
-            .min_height(520.0)
-            .max_height(1080.0),
-        size: (300, 520),
-        resizable: Some(8.0),
-        client_decorations: true,
-        transparent: true,
-        ..Default::default()
-    }
-}
 
 /// A button for selecting a color or gradient.
 pub fn color_button<'a, Message: 'a + Clone>(

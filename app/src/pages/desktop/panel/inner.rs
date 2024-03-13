@@ -4,8 +4,7 @@ use cosmic::{
     iced::Length,
     theme,
     widget::{
-        button, container, dropdown, horizontal_space, icon, list, row, settings, slider, text,
-        toggler,
+        button, container, dropdown, horizontal_space, icon, row, settings, slider, text, toggler,
     },
     Element,
 };
@@ -27,6 +26,8 @@ pub struct PageInner {
     pub(crate) container_config: Option<CosmicPanelContainerConfig>,
     // TODO move these into panel config
     pub(crate) outputs_map: HashMap<ObjectId, (String, WlOutput)>,
+    pub(crate) system_default: Option<CosmicPanelConfig>,
+    pub(crate) system_container: Option<CosmicPanelContainerConfig>,
 }
 
 impl Default for PageInner {
@@ -48,6 +49,23 @@ impl Default for PageInner {
             ],
             container_config: Option::default(),
             outputs_map: HashMap::default(),
+            system_default: None,
+            system_container: cosmic::cosmic_config::Config::system(
+                cosmic_panel_config::NAME,
+                CosmicPanelConfig::VERSION,
+            )
+            .map(
+                |c| match CosmicPanelContainerConfig::load_from_config(&c, true) {
+                    Ok(c) => c,
+                    Err((errs, c)) => {
+                        for err in errs {
+                            tracing::error!(?err, "Error when loading Panel container config.");
+                        }
+                        c
+                    }
+                },
+            )
+            .ok(),
         }
     }
 }
@@ -243,7 +261,7 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                         .control(control)
                         .spacing(16)
                         .apply(container)
-                        .style(theme::Container::custom(list::style))
+                        .style(theme::Container::List)
                         .apply(button)
                         .style(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(panel_applets_entity)),
@@ -265,15 +283,36 @@ pub(crate) fn add_panel<
 ) -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("panel-missing"))
-        .descriptions(vec![
-            fl!("panel-missing", "desc").into(),
-            fl!("panel-missing", "fix").into(),
-        ])
+        .descriptions(vec![fl!("reset-to-default").into()])
         .view::<P>(move |_binder, _page, section| {
-            // _descriptions = &section.descriptions;
-            settings::view_section(&section.title)
+            let descriptions = &section.descriptions;
+            cosmic::iced::widget::row![button(text(&*descriptions[0])).on_press(Message::FullReset)]
                 .apply(Element::from)
                 .map(msg_map)
+        })
+}
+
+#[allow(clippy::too_many_lines)]
+pub fn reset_button<
+    P: page::Page<crate::pages::Message> + PanelPage,
+    T: Fn(Message) -> crate::pages::Message + Copy + 'static,
+>(
+    msg_map: T,
+) -> Section<crate::pages::Message> {
+    Section::default()
+        .descriptions(vec![fl!("reset-to-default").into()])
+        .view::<P>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+            let inner = page.inner();
+            if inner.system_default == inner.panel_config {
+                horizontal_space(1).apply(Element::from)
+            } else {
+                cosmic::iced::widget::row![
+                    button(text(&*descriptions[0])).on_press(Message::ResetPanel)
+                ]
+                .apply(Element::from)
+            }
+            .map(msg_map)
         })
 }
 
@@ -344,12 +383,41 @@ pub enum Message {
     OutputAdded(String, WlOutput),
     OutputRemoved(WlOutput),
     PanelConfig(CosmicPanelConfig),
+    ResetPanel,
+    FullReset,
 }
 
 impl PageInner {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) {
-        let helper = self.config_helper.as_ref().unwrap();
+        let Some(helper) = self.config_helper.as_ref() else {
+            return;
+        };
+        match &message {
+            Message::ResetPanel => {
+                if let Some((default, config)) = self
+                    .system_default
+                    .as_ref()
+                    .zip(self.config_helper.as_ref())
+                {
+                    self.panel_config = self.system_default.clone();
+                    if let Err(err) = default.write_entry(config) {
+                        tracing::error!(?err, "Error resetting panel config.");
+                    }
+                } else {
+                    tracing::error!("Panel config default is missing.");
+                }
+            }
+            Message::FullReset => {
+                if let Some(container) = self.system_container.as_ref() {
+                    if let Err(err) = container.write_entries() {
+                        tracing::error!(?err, "Error fully resetting the panel config.");
+                    }
+                }
+            }
+            _ => {}
+        };
+
         let Some(panel_config) = self.panel_config.as_mut() else {
             return;
         };
@@ -430,6 +498,7 @@ impl PageInner {
                 self.panel_config = Some(c);
                 return;
             }
+            Message::ResetPanel | Message::FullReset => {}
         }
 
         if panel_config.anchor_gap || !panel_config.expand_to_edges {

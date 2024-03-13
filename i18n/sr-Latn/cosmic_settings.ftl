@@ -27,7 +27,6 @@ import = Uvezi
 light = Svetlo
 mode-and-colors = Režim i boje
 recent-colors = Nedavne boje
-reset-default = Vrati na podrazumevano
 reset-to-default = Vrati na podrazumevano
 rgb = RGB
 window-hint-accent = Boja nagoveštaja aktivnog prozora
