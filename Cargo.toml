@@ -31,10 +31,10 @@ rev = "2e9bf9f"
 opt-level = 3
 
 # For development and testing purposes
-[patch.'https://github.com/pop-os/libcosmic']
-libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
-cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
-cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
+# [patch.'https://github.com/pop-os/libcosmic']
+# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
+# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
 # libcosmic = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
