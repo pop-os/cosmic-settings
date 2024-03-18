@@ -46,6 +46,9 @@ control-tint = Control component tint
 frosted = Frosted glass effect on system interface
     .desc = Applies background blur to panel, dock, applets, launcher, and application library.
 
+enable-export = Apply this theme to GNOME apps.
+    .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
+
 text-tint = Interface text tint
     .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
 

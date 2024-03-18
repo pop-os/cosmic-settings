@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use apply::Apply;
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
+use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{
@@ -66,6 +67,9 @@ pub struct Page {
     // Configs
     theme_mode_config: Option<Config>,
     theme_builder_config: Option<Config>,
+
+    tk_config: Option<Config>,
+    tk: CosmicTk,
 }
 
 impl Default for Page {
@@ -88,13 +92,24 @@ impl Default for Page {
     }
 }
 
-impl From<(Option<Config>, ThemeMode, Option<Config>, ThemeBuilder)> for Page {
+impl
+    From<(
+        Option<Config>,
+        ThemeMode,
+        Option<Config>,
+        ThemeBuilder,
+        Option<Config>,
+        CosmicTk,
+    )> for Page
+{
     fn from(
-        (theme_mode_config, theme_mode, theme_builder_config, theme_builder): (
+        (theme_mode_config, theme_mode, theme_builder_config, theme_builder, tk_config, tk): (
             Option<Config>,
             ThemeMode,
             Option<Config>,
             ThemeBuilder,
+            Option<Config>,
+            CosmicTk,
         ),
     ) -> Self {
         let theme = if theme_mode.is_dark {
@@ -165,6 +180,8 @@ impl From<(Option<Config>, ThemeMode, Option<Config>, ThemeBuilder)> for Page {
             theme_builder_config,
             theme_mode,
             theme_builder,
+            tk_config,
+            tk,
         }
     }
 }
@@ -195,11 +212,25 @@ impl From<(Option<Config>, ThemeMode)> for Page {
                 }
             },
         );
+
+        let tk_config = CosmicTk::config().ok();
+        let tk = match tk_config.as_ref().map(CosmicTk::get_entry) {
+            Some(Ok(c)) => c,
+            Some(Err((errs, c))) => {
+                for err in errs {
+                    tracing::error!(?err, "Error loading CosmicTk");
+                }
+                c
+            }
+            None => CosmicTk::default(),
+        };
         (
             theme_mode_config,
             theme_mode,
             theme_builder_config,
             theme_builder,
+            tk_config,
+            tk,
         )
             .into()
     }
@@ -211,6 +242,7 @@ pub enum Message {
     DarkMode(bool),
     Autoswitch(bool),
     Frosted(bool),
+    ApplyThemeGlobal(bool),
     WindowHintSize(spin_button::Message),
     GapSize(spin_button::Message),
     AccentWindowHint(ColorPickerUpdate),
@@ -767,6 +799,14 @@ impl Page {
                 };
                 Command::none()
             }
+            Message::ApplyThemeGlobal(enabled) => {
+                if let Some(tk_config) = self.tk_config.as_ref() {
+                    _ = self.tk.set_apply_theme_global(tk_config, enabled);
+                } else {
+                    tracing::error!("Failed to apply theme to GNOME config because the CosmicTK config does not exist.");
+                }
+                Command::none()
+            }
         };
 
         if self.theme_builder_needs_update {
@@ -1221,6 +1261,8 @@ pub fn style() -> Section<crate::pages::Message> {
             fl!("style", "square").into(),
             fl!("frosted").into(),
             fl!("frosted", "desc").into(),
+            fl!("enable-export").into(),
+            fl!("enable-export", "desc").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
@@ -1308,6 +1350,11 @@ pub fn style() -> Section<crate::pages::Message> {
                     settings::item::builder(&*descriptions[3])
                         .description(&*descriptions[4])
                         .toggler(page.theme_builder.is_frosted, Message::Frosted),
+                )
+                .add(
+                    settings::item::builder(&*descriptions[5])
+                        .description(&*descriptions[6])
+                        .toggler(page.tk.apply_theme_global, Message::ApplyThemeGlobal),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
