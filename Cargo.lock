@@ -99,6 +99,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3aa2999eb46af81abb65c2d30d446778d7e613b60bbf4e174a027e80f90a3c14"
 
 [[package]]
+name = "android-tzdata"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e999941b234f3131b00bc13c22d06e8c5ff726d1b6318ac7eb276997bbb4fef0"
+
+[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -787,6 +793,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77e53693616d3075149f4ead59bdeecd204ac6b8192d8969757601b74bddf00f"
 
 [[package]]
+name = "chrono"
+version = "0.4.35"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8eaf5903dcbc0a39312feb77df2ff4c76387d591b9fc7b04a238dcf8bb62639a"
+dependencies = [
+ "android-tzdata",
+ "iana-time-zone",
+ "js-sys",
+ "num-traits",
+ "wasm-bindgen",
+ "windows-targets 0.52.4",
+]
+
+[[package]]
 name = "clap"
 version = "4.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -825,6 +845,43 @@ name = "clap_lex"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98cc8fbded0c607b7ba9dd60cd98df59af97e84d24e49c8557331cfc26d301ce"
+
+[[package]]
+name = "clipboard-win"
+version = "5.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d517d4b86184dbb111d3556a10f1c8a04da7428d2987bf1081602bf11c3aa9ee"
+dependencies = [
+ "error-code",
+]
+
+[[package]]
+name = "clipboard_macos"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/window_clipboard.git?tag=pop-mime-types#c3e9e794b94a2e79419517145424dc2035a572da"
+dependencies = [
+ "objc",
+ "objc-foundation",
+ "objc_id",
+]
+
+[[package]]
+name = "clipboard_wayland"
+version = "0.2.2"
+source = "git+https://github.com/pop-os/window_clipboard.git?tag=pop-mime-types#c3e9e794b94a2e79419517145424dc2035a572da"
+dependencies = [
+ "mime",
+ "smithay-clipboard",
+]
+
+[[package]]
+name = "clipboard_x11"
+version = "0.4.2"
+source = "git+https://github.com/pop-os/window_clipboard.git?tag=pop-mime-types#c3e9e794b94a2e79419517145424dc2035a572da"
+dependencies = [
+ "thiserror",
+ "x11rb",
+]
 
 [[package]]
 name = "cocoa"
@@ -1086,7 +1143,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "atomicwrites",
  "calloop",
@@ -1104,7 +1161,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -1273,15 +1330,17 @@ dependencies = [
 [[package]]
 name = "cosmic-theme"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "almost",
  "cosmic-config",
  "csscolorparser",
+ "dirs 5.0.1",
  "lazy_static",
  "palette",
  "ron",
  "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -1655,6 +1714,12 @@ dependencies = [
  "libc",
  "windows-sys 0.52.0",
 ]
+
+[[package]]
+name = "error-code"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0474425d51df81997e2f90a21591180b38eccf27292d755f3e30750225c175b"
 
 [[package]]
 name = "etagere"
@@ -2557,9 +2622,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "iana-time-zone"
+version = "0.1.60"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7ffbb5a1b541ea2561f8c41c087286cc091e21e556a4f09a8f6cbf17b69b141"
+dependencies = [
+ "android_system_properties",
+ "core-foundation-sys",
+ "iana-time-zone-haiku",
+ "js-sys",
+ "wasm-bindgen",
+ "windows-core",
+]
+
+[[package]]
+name = "iana-time-zone-haiku"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "iced"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "iced_accessibility",
  "iced_core",
@@ -2569,12 +2657,13 @@ dependencies = [
  "iced_widget",
  "image",
  "thiserror",
+ "window_clipboard",
 ]
 
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "accesskit",
  "accesskit_unix",
@@ -2583,7 +2672,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "bitflags 1.3.2",
  "iced_accessibility",
@@ -2596,13 +2685,14 @@ dependencies = [
  "smol_str",
  "thiserror",
  "web-time",
+ "window_clipboard",
  "xxhash-rust",
 ]
 
 [[package]]
 name = "iced_futures"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "futures",
  "iced_core",
@@ -2615,7 +2705,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
@@ -2639,7 +2729,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -2651,19 +2741,20 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "iced_accessibility",
  "iced_core",
  "iced_futures",
  "smithay-client-toolkit 0.18.0",
  "thiserror",
+ "window_clipboard",
 ]
 
 [[package]]
 name = "iced_sctk"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "enum-repr",
  "float-cmp",
@@ -2676,11 +2767,11 @@ dependencies = [
  "lazy_static",
  "raw-window-handle 0.6.0",
  "smithay-client-toolkit 0.18.0",
- "smithay-clipboard",
  "thiserror",
  "tracing",
  "wayland-backend",
  "wayland-protocols",
+ "window_clipboard",
  "xkbcommon",
  "xkbcommon-dl",
  "xkeysym",
@@ -2689,7 +2780,7 @@ dependencies = [
 [[package]]
 name = "iced_style"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "iced_core",
  "once_cell",
@@ -2699,7 +2790,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2716,7 +2807,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "bitflags 1.3.2",
  "bytemuck",
@@ -2735,7 +2826,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "iced_renderer",
  "iced_runtime",
@@ -3132,10 +3223,11 @@ checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
 [[package]]
 name = "libcosmic"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#64ecb0ea48f262e13b1036757211b70432fd42e5"
+source = "git+https://github.com/pop-os/libcosmic#1b62b9686c3d4d0843f426928abf61137eedc39c"
 dependencies = [
  "apply",
  "ashpd 0.7.0",
+ "chrono",
  "cosmic-client-toolkit",
  "cosmic-config",
  "cosmic-theme",
@@ -3416,6 +3508,14 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.52",
+]
+
+[[package]]
+name = "mime"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/window_clipboard.git?tag=pop-mime-types#c3e9e794b94a2e79419517145424dc2035a572da"
+dependencies = [
+ "smithay-clipboard",
 ]
 
 [[package]]
@@ -4704,9 +4804,8 @@ dependencies = [
 
 [[package]]
 name = "smithay-clipboard"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c091e7354ea8059d6ad99eace06dd13ddeedbb0ac72d40a9a6e7ff790525882d"
+version = "0.8.0"
+source = "git+https://github.com/pop-os/smithay-clipboard?tag=pop-mime-types#cc0101c1f9ccc937a413bd3af3c0f6217f27e935"
 dependencies = [
  "libc",
  "smithay-client-toolkit 0.18.1",
@@ -5908,6 +6007,20 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[package]]
+name = "window_clipboard"
+version = "0.4.1"
+source = "git+https://github.com/pop-os/window_clipboard.git?tag=pop-mime-types#c3e9e794b94a2e79419517145424dc2035a572da"
+dependencies = [
+ "clipboard-win",
+ "clipboard_macos",
+ "clipboard_wayland",
+ "clipboard_x11",
+ "mime",
+ "raw-window-handle 0.6.0",
+ "thiserror",
+]
 
 [[package]]
 name = "windows"
