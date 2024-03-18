@@ -33,6 +33,10 @@ desktop-dest := clean(rootdir / prefix) / 'share' / 'applications' / desktop
 
 iconsdir := clean(rootdir / prefix) / 'share' / 'icons' / 'hicolor'
 
+metainfo := appid + '.metainfo.xml'
+metainfo-src := 'resources' / metainfo
+metainfo-dst := clean(rootdir / prefix) / 'share' / 'metainfo' / metainfo
+
 [private]
 default: build-release
 
@@ -73,7 +77,7 @@ install-bin src dest: (install-cmd '-Dm0755' src dest)
 install-file src dest: (install-cmd '-Dm0644' src dest)
 
 # Install everything
-install: (install-bin bin-src bin-dest) (install-file desktop-src desktop-dest)
+install: (install-bin bin-src bin-dest) (install-file desktop-src desktop-dest) (install-file metainfo-src metainfo-dst)
     find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'default_schema'/{} {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
 
