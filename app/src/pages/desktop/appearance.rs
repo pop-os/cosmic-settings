@@ -8,7 +8,6 @@ use std::sync::Arc;
 
 use apply::Apply;
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
-use cosmic::cctk::sctk::reexports::protocols::xdg;
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
@@ -442,7 +441,7 @@ impl Page {
                         _ = config.set::<bool>("is_dark", enabled);
                     }
                 }
-                *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
+                self.reload_theme_mode();
 
                 let theme_builder = self.theme_builder.clone();
                 Command::perform(async {}, |()| {
@@ -648,7 +647,8 @@ impl Page {
                     tracing::error!("Failed to get the theme config.");
                 }
 
-                *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
+                self.reload_theme_mode();
+
                 Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
                 })
@@ -792,7 +792,7 @@ impl Page {
                     tracing::error!("Failed to get the theme config.");
                 }
 
-                *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
+                self.reload_theme_mode();
                 Command::perform(async {}, |()| {
                     crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
                 })
@@ -903,6 +903,16 @@ impl Page {
         }
 
         ret
+    }
+
+    fn reload_theme_mode(&mut self) {
+        let icon_themes = std::mem::take(&mut self.icon_themes);
+        let icon_theme_active = self.icon_theme_active.take();
+
+        *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
+
+        self.icon_themes = icon_themes;
+        self.icon_theme_active = icon_theme_active;
     }
 
     fn update_color_picker(
