@@ -1490,7 +1490,7 @@ async fn fetch_icon_themes() -> Message {
                 continue;
             };
 
-            for entry in read_dir.filter_map(Result::ok) {
+            'icon_dir: for entry in read_dir.filter_map(Result::ok) {
                 let Ok(path) = entry.path().canonicalize() else {
                     continue;
                 };
@@ -1516,7 +1516,7 @@ async fn fetch_icon_themes() -> Message {
 
                     if let Some(is_hidden) = buffer.strip_prefix("Hidden=") {
                         if is_hidden.trim() == "true" {
-                            break;
+                            continue 'icon_dir;
                         }
                     } else if name.is_none() {
                         if let Some(value) = buffer.strip_prefix("Name=") {
