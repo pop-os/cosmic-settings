@@ -49,6 +49,9 @@ frosted = Frosted glass effect on system interface
 enable-export = Apply this theme to GNOME apps.
     .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
 
+icon-theme = Icon theme
+    .desc = Applies a different set of icons to applications.
+
 text-tint = Interface text tint
     .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
 
