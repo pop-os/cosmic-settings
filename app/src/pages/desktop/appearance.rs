@@ -3,11 +3,12 @@
 
 use std::borrow::Cow;
 use std::collections::BTreeSet;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use apply::Apply;
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
+use cosmic::cctk::sctk::reexports::protocols::xdg;
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
@@ -1482,54 +1483,71 @@ async fn fetch_icon_themes() -> Message {
 
     let mut buffer = String::new();
 
-    if let Ok(data_dirs) = std::env::var("XDG_DATA_DIRS") {
-        for dir in data_dirs.split_terminator(':') {
-            let icon_dir = Path::new(dir).join("icons");
+    let xdg_data_home = std::env::var("XDG_DATA_HOME")
+        .ok()
+        .and_then(|value| {
+            if value.is_empty() {
+                None
+            } else {
+                Some(PathBuf::from(value))
+            }
+        })
+        .or_else(dirs::home_dir)
+        .map(|dir| dir.join(".local/share/icons"));
 
-            let Ok(read_dir) = std::fs::read_dir(&icon_dir) else {
+    let xdg_data_dirs = std::env::var("XDG_DATA_DIRS");
+
+    let xdg_data_dirs = xdg_data_dirs
+        .as_ref()
+        .ok()
+        .into_iter()
+        .flat_map(|data_dirs| data_dirs.split_terminator(':'))
+        .map(|dir| Path::new(dir).join("icons"));
+
+    for icon_dir in xdg_data_dirs.chain(xdg_data_home) {
+        let Ok(read_dir) = std::fs::read_dir(&icon_dir) else {
+            continue;
+        };
+
+        'icon_dir: for entry in read_dir.filter_map(Result::ok) {
+            let Ok(path) = entry.path().canonicalize() else {
                 continue;
             };
 
-            'icon_dir: for entry in read_dir.filter_map(Result::ok) {
-                let Ok(path) = entry.path().canonicalize() else {
-                    continue;
-                };
+            let manifest = path.join("index.theme");
 
-                let manifest = path.join("index.theme");
+            if !manifest.exists() {
+                continue;
+            }
 
-                if !manifest.exists() {
-                    continue;
+            let Ok(file) = tokio::fs::File::open(&manifest).await else {
+                continue;
+            };
+
+            buffer.clear();
+            let mut name = None;
+
+            let mut line_reader = tokio::io::BufReader::new(file);
+            while let Ok(read) = line_reader.read_line(&mut buffer).await {
+                if read == 0 {
+                    break;
                 }
 
-                let Ok(file) = tokio::fs::File::open(&manifest).await else {
-                    continue;
-                };
+                if let Some(is_hidden) = buffer.strip_prefix("Hidden=") {
+                    if is_hidden.trim() == "true" {
+                        continue 'icon_dir;
+                    }
+                } else if name.is_none() {
+                    if let Some(value) = buffer.strip_prefix("Name=") {
+                        name = Some(value.trim().to_owned());
+                    }
+                }
 
                 buffer.clear();
-                let mut name = None;
+            }
 
-                let mut line_reader = tokio::io::BufReader::new(file);
-                while let Ok(read) = line_reader.read_line(&mut buffer).await {
-                    if read == 0 {
-                        break;
-                    }
-
-                    if let Some(is_hidden) = buffer.strip_prefix("Hidden=") {
-                        if is_hidden.trim() == "true" {
-                            continue 'icon_dir;
-                        }
-                    } else if name.is_none() {
-                        if let Some(value) = buffer.strip_prefix("Name=") {
-                            name = Some(value.trim().to_owned());
-                        }
-                    }
-
-                    buffer.clear();
-                }
-
-                if let Some(name) = name {
-                    icon_themes.insert(name);
-                }
+            if let Some(name) = name {
+                icon_themes.insert(name);
             }
         }
     }
