@@ -6,7 +6,6 @@ use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use apply::Apply;
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
@@ -23,6 +22,7 @@ use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, horizontal_space, row, settings,
     spin_button, text, ColorPickerModel,
 };
+use cosmic::Apply;
 use cosmic::{command, Command, Element};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -55,7 +55,6 @@ enum ContextView {
     InterfaceText,
 }
 
-// TODO integrate with settings backend
 pub struct Page {
     can_reset: bool,
     no_custom_window_hint: bool,
@@ -473,12 +472,25 @@ impl Page {
                 Command::none()
             }
             Message::IconTheme(id) => {
-                if let Some(theme) = self.icon_themes.get(id) {
+                if let Some(theme) = self.icon_themes.get(id).cloned() {
                     self.icon_theme_active = Some(id);
                     self.tk.icon_theme = theme.clone();
+
                     if let Some(ref config) = self.tk_config {
                         let _ = self.tk.write_entry(config);
                     }
+
+                    tokio::spawn(async move {
+                        let _res = tokio::process::Command::new("gsettings")
+                            .args(&[
+                                "set",
+                                "org.gnome.desktop.interface",
+                                "icon-theme",
+                                theme.as_str(),
+                            ])
+                            .status()
+                            .await;
+                    });
                 }
 
                 Command::none()
