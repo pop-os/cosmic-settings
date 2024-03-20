@@ -3,11 +3,10 @@
 
 use super::{Message, NightLight};
 use crate::pages;
-use apply::Apply;
 use cosmic::iced_core::{Alignment, Length, Padding};
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{button, column, icon, list_column, row, toggler};
-use cosmic::{Command, Element};
+use cosmic::{Apply, Command, Element};
 use std::sync::Arc;
 
 pub const INTEGRATED: &str = "integrated";

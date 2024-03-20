@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use super::Message;
-use apply::Apply;
 use cosmic::{
     iced::Length,
     theme,
     widget::{button, container, horizontal_space, icon, row, settings, toggler},
-    Element,
+    Apply, Element,
 };
 
 use cosmic_settings_page::Section;

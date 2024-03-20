@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use apply::Apply;
+use cosmic::Apply;
 use cosmic::{
     cosmic_config::{ConfigSet, CosmicConfigEntry},
     widget::{settings, text, toggler},
@@ -8,8 +8,8 @@ use cosmic::{
 };
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, section, Section};
-use log::error;
 use slotmap::SlotMap;
+use tracing::error;
 
 use crate::pages::desktop::panel::inner::{
     add_panel, behavior_and_position, configuration, reset_button, style,

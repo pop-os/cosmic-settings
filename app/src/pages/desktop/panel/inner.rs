@@ -9,7 +9,7 @@ use cosmic::{
     Element,
 };
 
-use apply::Apply;
+use cosmic::Apply;
 use cosmic_panel_config::{
     AutoHide, CosmicPanelBackground, CosmicPanelConfig, CosmicPanelContainerConfig,
     CosmicPanelOuput, PanelAnchor, PanelSize,

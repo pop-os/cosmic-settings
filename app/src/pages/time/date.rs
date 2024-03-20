@@ -1,10 +1,10 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use apply::Apply;
 use cosmic::{
     iced::{widget::horizontal_space, Length},
     widget::settings,
+    Apply,
 };
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};

@@ -3,12 +3,11 @@
 
 // TODO make settings work
 
-use apply::Apply;
 use cosmic::widget::settings;
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
     widget::radio,
-    Element,
+    Apply, Element,
 };
 use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
 use cosmic_settings_page::Section;

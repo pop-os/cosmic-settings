@@ -6,14 +6,13 @@ pub mod graphics;
 pub mod text;
 
 use crate::{app, pages};
-use apply::Apply;
 use arrangement::Arrangement;
 use cosmic::iced::{Alignment, Length};
 use cosmic::iced_widget::scrollable::{Direction, Properties, RelativeOffset};
 use cosmic::widget::{
     column, container, dropdown, list_column, segmented_button, tab_bar, toggler,
 };
-use cosmic::{command, Command, Element};
+use cosmic::{command, Apply, Command, Element};
 use cosmic_randr_shell::{List, Output, OutputKey, Transform};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::{Key, SlotMap};

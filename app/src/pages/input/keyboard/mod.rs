@@ -1,4 +1,3 @@
-use apply::Apply;
 use cosmic::{
     iced::{
         self,
@@ -8,6 +7,7 @@ use cosmic::{
     iced_core::Border,
     iced_style, theme,
     widget::{button, container, icon, radio, settings},
+    Apply,
 };
 use cosmic_settings_page::{self as page, section, Section};
 use once_cell::sync::Lazy;

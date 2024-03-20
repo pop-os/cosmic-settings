@@ -1,7 +1,6 @@
-use apply::Apply;
 use cosmic::iced::Alignment;
 use cosmic::widget::{self, row, settings, text};
-use cosmic::Element;
+use cosmic::{Apply, Element};
 use cosmic_comp_config::input::AccelProfile;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};

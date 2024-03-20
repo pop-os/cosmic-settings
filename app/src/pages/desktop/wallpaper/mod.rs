@@ -14,8 +14,7 @@ use std::{
     sync::Arc,
 };
 
-use apply::Apply;
-use cosmic::{command, Command};
+use cosmic::{command, Apply, Command};
 use cosmic::{
     dialog::file_chooser,
     widget::{
