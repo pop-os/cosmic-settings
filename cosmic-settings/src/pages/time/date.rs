@@ -4,7 +4,7 @@
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced::{widget::horizontal_space, Length},
-    widget::settings,
+    widget::{dropdown, settings},
     Apply,
 };
 use cosmic_settings_page::Section;
@@ -19,6 +19,7 @@ pub struct Page {
     auto: bool,
     auto_timezone: bool,
     military_time: bool,
+    first_day_of_week: usize,
     show_date_in_top_panel: bool,
     // info: Option<cosmic_settings_time::Info>,
 }
@@ -30,6 +31,10 @@ impl Default for Page {
             error!(?err, "Failed to read config 'military_time'");
             false
         });
+        let first_day_of_week = config.get("first_day_of_week").unwrap_or_else(|err| {
+            error!(?err, "Failed to read config 'first_day_of_week'");
+            6
+        });
         let show_date_in_top_panel = config.get("show_date_in_top_panel").unwrap_or_else(|err| {
             error!(?err, "Failed to read config 'show_date_in_top_panel'");
             true
@@ -39,6 +44,7 @@ impl Default for Page {
             auto: false,
             auto_timezone: false,
             military_time,
+            first_day_of_week,
             show_date_in_top_panel,
         }
     }
@@ -74,6 +80,12 @@ impl Page {
                     error!(?err, "Failed to set config 'military_time'");
                 }
             }
+            Message::FirstDayOfWeek(weekday) => {
+                self.first_day_of_week = weekday;
+                if let Err(err) = self.config.set("first_day_of_week", weekday) {
+                    error!(?err, "Failed to set config 'first_day_of_week'");
+                }
+            }
             Message::ShowDate(enable) => {
                 self.show_date_in_top_panel = enable;
                 if let Err(err) = self.config.set("show_date_in_top_panel", enable) {
@@ -89,6 +101,7 @@ pub enum Message {
     Automatic(bool),
     AutomaticTimezone(bool),
     MilitaryTime(bool),
+    FirstDayOfWeek(usize),
     ShowDate(bool),
 }
 
@@ -132,10 +145,25 @@ fn format() -> Section<crate::pages::Message> {
                         .toggler(page.military_time, Message::MilitaryTime),
                 )
                 // First day of week
-                .add(settings::item(
-                    &*section.descriptions[1],
-                    horizontal_space(Length::Fill),
-                ))
+                .add(
+                    settings::item::builder(&*section.descriptions[1]).control(dropdown(
+                        &["Friday", "Saturday", "Sunday", "Monday"],
+                        match page.first_day_of_week {
+                            4 => Some(0), // friday
+                            5 => Some(1), // saturday
+                            0 => Some(3), // monday
+                            _ => Some(2), // sunday
+                        },
+                        |v| {
+                            match v {
+                                0 => Message::FirstDayOfWeek(4), // friday
+                                1 => Message::FirstDayOfWeek(5), // saturday
+                                3 => Message::FirstDayOfWeek(0), // monday
+                                _ => Message::FirstDayOfWeek(6), // sunday
+                            }
+                        },
+                    )),
+                )
                 // Date on top panel toggle
                 .add(
                     settings::item::builder(&*section.descriptions[2])
