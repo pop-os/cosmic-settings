@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=COSMIC Settings
+Name=Touchpad
+Comment=Touchpad speed, click options, gestures.
 Type=Settings
-Exec=cosmic-settings
+Exec=cosmic-settings touchpad
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC

@@ -12,7 +12,7 @@ use crate::pages::desktop::{
     },
 };
 use crate::pages::input::{self, keyboard};
-use crate::pages::{self, display, sound, system, time};
+use crate::pages::{self, display, networking, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
@@ -53,13 +53,25 @@ pub struct SettingsApp {
 impl SettingsApp {
     fn subcommand_to_page(&self, cmd: &PageCommands) -> Option<Entity> {
         match cmd {
-            // PageCommands::Bluetooth => self.pages.page_id::<system::bluetooth::Page>(),
-            // PageCommands::Network => self.pages.page_id::<system::network::Page>(),
-            // PageCommands::Notifications => self.pages.page_id::<notifications::Page>(),
-            // PageCommands::Power => self.pages.page_id::<system::power::Page>(),
+            PageCommands::About => self.pages.page_id::<system::about::Page>(),
+            PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
+            PageCommands::Bluetooth => None,
+            PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
+            PageCommands::DesktopPanel => self.pages.page_id::<desktop::options::Page>(),
+            PageCommands::Displays => self.pages.page_id::<display::Page>(),
+            PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
+            PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
+            PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
+            PageCommands::Network => None,
+            PageCommands::Notifications => self.pages.page_id::<desktop::notifications::Page>(),
+            PageCommands::Power => None,
+            PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
             PageCommands::Time => self.pages.page_id::<time::Page>(),
-            _ => None,
+            PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
+            PageCommands::Users => self.pages.page_id::<system::users::Page>(),
+            PageCommands::Wallpaper => self.pages.page_id::<desktop::wallpaper::Page>(),
+            PageCommands::Workspaces => self.pages.page_id::<desktop::workspaces::Page>(),
         }
     }
 }

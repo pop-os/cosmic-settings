@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=COSMIC Settings
+Name=Date & Time
+Comment=Time zone, automatic clock settings, and time formatting.
 Type=Settings
-Exec=cosmic-settings
+Exec=cosmic-settings date-time
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC

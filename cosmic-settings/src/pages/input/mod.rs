@@ -17,8 +17,8 @@ use itertools::Itertools;
 use tracing::error;
 
 pub mod keyboard;
-mod mouse;
-mod touchpad;
+pub mod mouse;
+pub mod touchpad;
 
 crate::cache_dynamic_lazy! {
     static ACCELERATION_DESC: String = fl!("acceleration-desc");

@@ -480,17 +480,7 @@ impl Page {
                         let _ = self.tk.write_entry(config);
                     }
 
-                    tokio::spawn(async move {
-                        let _res = tokio::process::Command::new("gsettings")
-                            .args(&[
-                                "set",
-                                "org.gnome.desktop.interface",
-                                "icon-theme",
-                                theme.as_str(),
-                            ])
-                            .status()
-                            .await;
-                    });
+                    tokio::spawn(set_gnome_icon_theme(theme));
                 }
 
                 Command::none()
@@ -1500,6 +1490,7 @@ pub fn color_button<'a, Message: 'a + Clone>(
     .into()
 }
 
+/// Find all icon themes available on the system.
 async fn fetch_icon_themes() -> Message {
     let mut icon_themes = BTreeSet::new();
 
@@ -1575,4 +1566,17 @@ async fn fetch_icon_themes() -> Message {
     }
 
     Message::Entered(icon_themes.into_iter().collect())
+}
+
+/// Set the preferred icon theme for GNOME/GTK applications.
+async fn set_gnome_icon_theme(theme: String) {
+    let _res = tokio::process::Command::new("gsettings")
+        .args(&[
+            "set",
+            "org.gnome.desktop.interface",
+            "icon-theme",
+            theme.as_str(),
+        ])
+        .status()
+        .await;
 }

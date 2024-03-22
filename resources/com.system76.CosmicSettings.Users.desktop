@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=COSMIC Settings
+Name=Users
+Comment=Authentication and login, lock screen.
 Type=Settings
-Exec=cosmic-settings
+Exec=cosmic-settings users
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC

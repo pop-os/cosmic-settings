@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=COSMIC Settings
+Name=Firmware
+Comment=View and update firmware.
 Type=Settings
-Exec=cosmic-settings
+Exec=cosmic-settings firmware
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC

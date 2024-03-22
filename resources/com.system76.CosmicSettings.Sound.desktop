@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=COSMIC Settings
+Name=Sound
+Comment=Audio settings for devices, alerts, and applications.
 Type=Settings
-Exec=cosmic-settings
+Exec=cosmic-settings sound
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC
