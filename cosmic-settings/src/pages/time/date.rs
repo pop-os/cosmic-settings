@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::{
+    cosmic_config::{self, ConfigGet, ConfigSet},
     iced::{widget::horizontal_space, Length},
     widget::settings,
     Apply,
@@ -11,13 +12,30 @@ use cosmic_settings_page::{self as page, section};
 // use icu::calendar::{DateTime, Gregorian};
 
 use slotmap::SlotMap;
+use tracing::error;
 
-#[derive(Default)]
 pub struct Page {
+    config: cosmic_config::Config,
     auto: bool,
     auto_timezone: bool,
     military_time: bool,
     // info: Option<cosmic_settings_time::Info>,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        let config = cosmic_config::Config::new("com.system76.CosmicAppletTime", 1).unwrap();
+        let military_time = config.get("military_time").unwrap_or_else(|err| {
+            error!(?err, "Failed to read config 'military_time'");
+            false
+        });
+        Self {
+            config,
+            auto: false,
+            auto_timezone: false,
+            military_time,
+        }
+    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -44,7 +62,12 @@ impl Page {
         match message {
             Message::Automatic(enable) => self.auto = enable,
             Message::AutomaticTimezone(enable) => self.auto_timezone = enable,
-            Message::MilitaryTime(enable) => self.military_time = enable,
+            Message::MilitaryTime(enable) => {
+                self.military_time = enable;
+                if let Err(err) = self.config.set("military_time", enable) {
+                    error!(?err, "Failed to set config 'military_time'");
+                }
+            }
         }
     }
 }
