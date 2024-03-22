@@ -298,6 +298,7 @@ time-zone = Strefa Czasowa
 time-format = Format Daty i Czasu
     .twenty-four = Czas 24-godzinny
     .first = Pierwszy dzień tygodnia
+    .show-date = Pokaż Datę w Górnym Panelu
 
 time-region = Region i Język
     .desc = Format dat, czasu i numerów na podstawie wybranego regionu

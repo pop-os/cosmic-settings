@@ -19,6 +19,7 @@ pub struct Page {
     auto: bool,
     auto_timezone: bool,
     military_time: bool,
+    show_date_in_top_panel: bool,
     // info: Option<cosmic_settings_time::Info>,
 }
 
@@ -29,11 +30,16 @@ impl Default for Page {
             error!(?err, "Failed to read config 'military_time'");
             false
         });
+        let show_date_in_top_panel = config.get("show_date_in_top_panel").unwrap_or_else(|err| {
+            error!(?err, "Failed to read config 'show_date_in_top_panel'");
+            true
+        });
         Self {
             config,
             auto: false,
             auto_timezone: false,
             military_time,
+            show_date_in_top_panel,
         }
     }
 }
@@ -68,6 +74,12 @@ impl Page {
                     error!(?err, "Failed to set config 'military_time'");
                 }
             }
+            Message::ShowDate(enable) => {
+                self.show_date_in_top_panel = enable;
+                if let Err(err) = self.config.set("show_date_in_top_panel", enable) {
+                    error!(?err, "Failed to set config 'show_date_in_top_panel'");
+                }
+            }
         }
     }
 }
@@ -77,6 +89,7 @@ pub enum Message {
     Automatic(bool),
     AutomaticTimezone(bool),
     MilitaryTime(bool),
+    ShowDate(bool),
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -109,6 +122,7 @@ fn format() -> Section<crate::pages::Message> {
         .descriptions(vec![
             fl!("time-format", "twenty-four").into(),
             fl!("time-format", "first").into(),
+            fl!("time-format", "show-date").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             settings::view_section(&section.title)
@@ -122,6 +136,11 @@ fn format() -> Section<crate::pages::Message> {
                     &*section.descriptions[1],
                     horizontal_space(Length::Fill),
                 ))
+                // Date on top panel toggle
+                .add(
+                    settings::item::builder(&*section.descriptions[2])
+                        .toggler(page.show_date_in_top_panel, Message::ShowDate),
+                )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)
         })
