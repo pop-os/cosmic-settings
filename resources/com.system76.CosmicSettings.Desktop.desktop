@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=COSMIC Settings
+Name=Desktop and Panel
+Comment=Super key action, hot corners, and window control options
 Type=Settings
-Exec=cosmic-settings
+Exec=cosmic-settings desktop-panel
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC

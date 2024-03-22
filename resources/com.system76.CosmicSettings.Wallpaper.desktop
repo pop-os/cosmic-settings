@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=COSMIC Settings
+Name=Wallpaper
+Comment=Wallpaper images, colors, and slideshow options.
 Type=Settings
-Exec=cosmic-settings
+Exec=cosmic-settings wallpaper
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC

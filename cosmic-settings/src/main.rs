@@ -37,18 +37,44 @@ pub struct Args {
 
 #[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
 pub enum PageCommands {
-    /// Open the settings bluetooth page
+    /// About settings page
+    About,
+    /// Appearance settings page
+    Appearance,
+    /// Bluetooth settings page
     Bluetooth,
-    /// Open the settings network page
+    /// DateTime settings page
+    DateTime,
+    /// Desktop and panel settings page
+    DesktopPanel,
+    /// Displays settings page
+    Displays,
+    /// Firmware settings page
+    Firmware,
+    /// Keyboard settings page
+    Keyboard,
+    /// Mouse settings page
+    Mouse,
+    /// Network settings page
     Network,
-    /// Open the settings notifications page
+    /// Notifications settings page
     Notifications,
-    /// Open the settings power page
+    /// Power settings page
     Power,
-    /// Open the settings sound page
+    /// Region & Language settings page
+    RegionLanguage,
+    /// Sound settings page
     Sound,
-    /// Open the settings time page
+    /// Time settings page
     Time,
+    /// Touchpad settings page
+    Touchpad,
+    /// Users settings page
+    Users,
+    /// Wallpaper settings page
+    Wallpaper,
+    /// Workspaces settings page
+    Workspaces,
 }
 
 impl FromStr for PageCommands {

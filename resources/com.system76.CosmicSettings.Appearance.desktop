@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=COSMIC Settings
+Name=Appearance
+Comment=Accent colors and COSMIC theming.
 Type=Settings
-Exec=cosmic-settings
+Exec=cosmic-settings appearance
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC

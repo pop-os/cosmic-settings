@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=COSMIC Settings
+Name=Region & Language
+Comment=Format dates, times, and numbers based on your region.
 Type=Settings
-Exec=cosmic-settings
+Exec=cosmic-settings region-language
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC
