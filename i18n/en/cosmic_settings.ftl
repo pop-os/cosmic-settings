@@ -293,6 +293,7 @@ time-zone = Time Zone
 time-format = Date & Time Format
     .twenty-four = 24-hour time
     .first = First day of week
+    .show-date = Show Date on Top Panel
 
 time-region = Region & Language
     .desc = Format dates, times, and numbers based on your region
