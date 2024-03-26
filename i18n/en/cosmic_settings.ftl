@@ -294,6 +294,10 @@ time-format = Date & Time Format
     .twenty-four = 24-hour time
     .first = First day of week
     .show-date = Show Date on Top Panel
+    .friday = Friday
+    .saturday = Saturday
+    .sunday = Sunday
+    .monday = Monday
 
 time-region = Region & Language
     .desc = Format dates, times, and numbers based on your region
