@@ -299,6 +299,10 @@ time-format = Format Daty i Czasu
     .twenty-four = Czas 24-godzinny
     .first = Pierwszy dzień tygodnia
     .show-date = Pokaż Datę w Górnym Panelu
+    .friday = Piątek
+    .saturday = Sobota
+    .sunday = Niedziela
+    .monday = Poniedziałek
 
 time-region = Region i Język
     .desc = Format dat, czasu i numerów na podstawie wybranego regionu

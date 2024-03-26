@@ -18,6 +18,7 @@ crate::cache_dynamic_lazy! {
     static TIME_FORMAT_TWENTY_FOUR: String = fl!("time-format", "twenty-four");
     static TIME_FORMAT_FIRST: String = fl!("time-format", "first");
     static TIME_FORMAT_SHOW_DATE: String = fl!("time-format", "show-date");
+    static TIME_FORMAT_WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
 }
 
 pub struct Page {
@@ -153,7 +154,7 @@ fn format() -> Section<crate::pages::Message> {
                 // First day of week
                 .add(
                     settings::item::builder(&*TIME_FORMAT_FIRST).control(dropdown(
-                        &["Friday", "Saturday", "Sunday", "Monday"],
+                        &*TIME_FORMAT_WEEKDAYS,
                         match page.first_day_of_week {
                             4 => Some(0), // friday
                             5 => Some(1), // saturday
