@@ -27,7 +27,6 @@ linker-arg := if clang-path != '' {
 export RUSTFLAGS := linker-arg + env_var_or_default('RUSTFLAGS', '')
 
 # Compile with debug profile
-[no-cd]
 build-debug *args:
     cargo build {{args}}
 
