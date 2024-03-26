@@ -14,6 +14,12 @@ use cosmic_settings_page::{self as page, section};
 use slotmap::SlotMap;
 use tracing::error;
 
+crate::cache_dynamic_lazy! {
+    static TIME_FORMAT_TWENTY_FOUR: String = fl!("time-format", "twenty-four");
+    static TIME_FORMAT_FIRST: String = fl!("time-format", "first");
+    static TIME_FORMAT_SHOW_DATE: String = fl!("time-format", "show-date");
+}
+
 pub struct Page {
     config: cosmic_config::Config,
     auto: bool,
@@ -133,20 +139,20 @@ fn format() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("time-format"))
         .descriptions(vec![
-            fl!("time-format", "twenty-four").into(),
-            fl!("time-format", "first").into(),
-            fl!("time-format", "show-date").into(),
+            TIME_FORMAT_TWENTY_FOUR.as_str().into(),
+            TIME_FORMAT_FIRST.as_str().into(),
+            TIME_FORMAT_SHOW_DATE.as_str().into(),
         ])
         .view::<Page>(|_binder, page, section| {
             settings::view_section(&section.title)
                 // 24-hour toggle
                 .add(
-                    settings::item::builder(&*section.descriptions[0])
+                    settings::item::builder(&*TIME_FORMAT_TWENTY_FOUR)
                         .toggler(page.military_time, Message::MilitaryTime),
                 )
                 // First day of week
                 .add(
-                    settings::item::builder(&*section.descriptions[1]).control(dropdown(
+                    settings::item::builder(&*TIME_FORMAT_FIRST).control(dropdown(
                         &["Friday", "Saturday", "Sunday", "Monday"],
                         match page.first_day_of_week {
                             4 => Some(0), // friday
@@ -166,7 +172,7 @@ fn format() -> Section<crate::pages::Message> {
                 )
                 // Date on top panel toggle
                 .add(
-                    settings::item::builder(&*section.descriptions[2])
+                    settings::item::builder(&*TIME_FORMAT_SHOW_DATE)
                         .toggler(page.show_date_in_top_panel, Message::ShowDate),
                 )
                 .apply(cosmic::Element::from)
