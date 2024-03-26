@@ -207,7 +207,8 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        let window_break = event::listen_with(|event, _| match event {
+        // Handling of Wayland-specific events received.
+        let wayland_events = event::listen_with(|event, _| match event {
             iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Output(
                 wayland::OutputEvent::Created(Some(info)),
                 o,
@@ -224,27 +225,37 @@ impl cosmic::Application for SettingsApp {
         });
 
         Subscription::batch(vec![
-            window_break,
+            wayland_events,
+            // Watch for changes to installed desktop entries
             desktop_files(0).map(|_| Message::DesktopInfo),
-            config_subscription(0, "com.system76.CosmicPanel.Panel".into(), 1).map(|update| {
-                for why in update.errors {
-                    tracing::error!(?why, "panel config load error");
-                }
+            // Watch for configuration changes to the panel.
+            self.core()
+                .watch_config::<CosmicPanelConfig>("com.system76.CosmicPanel.Panel")
+                .map(|update| {
+                    for why in update.errors {
+                        tracing::error!(?why, "panel config load error");
+                    }
 
-                Message::PanelConfig(update.config)
-            }),
-            config_subscription(0, "com.system76.CosmicPanel.Dock".into(), 1).map(|update| {
-                for why in update.errors {
-                    tracing::error!(?why, "dock config load error");
-                }
+                    Message::PanelConfig(update.config)
+                }),
+            // Watch for configuration changes to the dock
+            self.core()
+                .watch_config::<CosmicPanelConfig>("com.system76.CosmicPanel.Dock")
+                .map(|update| {
+                    for why in update.errors {
+                        tracing::error!(?why, "dock config load error");
+                    }
 
-                Message::PanelConfig(update.config)
-            }),
-            config_state_subscription(0, cosmic_bg_config::NAME.into(), 1).map(|update| {
-                Message::PageMessage(pages::Message::DesktopWallpaper(
-                    pages::desktop::wallpaper::Message::UpdateState(update.config),
-                ))
-            }),
+                    Message::PanelConfig(update.config)
+                }),
+            // Watch for state changes from the cosmic-bg session service.
+            self.core()
+                .watch_state::<cosmic_bg_config::state::State>(cosmic_bg_config::NAME)
+                .map(|update| {
+                    Message::PageMessage(pages::Message::DesktopWallpaper(
+                        pages::desktop::wallpaper::Message::UpdateState(update.config),
+                    ))
+                }),
         ])
     }
 
