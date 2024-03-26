@@ -6,6 +6,7 @@ Exec=cosmic-settings workspaces
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC
+NoDisplay=true
 OnlyShowIn=COSMIC
 Icon=com.system76.CosmicSettings
 StartupNotify=true
