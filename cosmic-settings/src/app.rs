@@ -60,7 +60,6 @@ impl SettingsApp {
             PageCommands::DesktopPanel => self.pages.page_id::<desktop::options::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
-            PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             PageCommands::Network => None,
             PageCommands::Notifications => self.pages.page_id::<desktop::notifications::Page>(),
@@ -523,6 +522,12 @@ impl cosmic::Application for SettingsApp {
         } else {
             None
         }
+    }
+
+    fn dialog(&self) -> Option<Element<Self::Message>> {
+        self.pages
+            .dialog(self.active_page)
+            .map(|e| e.map(Message::PageMessage))
     }
 }
 
