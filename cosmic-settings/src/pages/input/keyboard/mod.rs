@@ -1,22 +1,19 @@
 use cosmic::{
+    cosmic_config::{self, ConfigSet},
     iced::{
         self,
         widget::{self, horizontal_space},
-        window, Length,
+        Length,
     },
     iced_core::Border,
     iced_style, theme,
     widget::{button, container, icon, radio, settings},
-    Apply,
+    Apply, Command, Element,
 };
+use cosmic_comp_config::XkbConfig;
 use cosmic_settings_page::{self as page, section, Section};
-use once_cell::sync::Lazy;
+use itertools::Itertools;
 use slotmap::SlotMap;
-
-use super::Message;
-
-pub static ADD_INPUT_SOURCE_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
-pub static SPECIAL_CHARACTER_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
 
 static COMPOSE_OPTIONS: &[(&str, &str)] = &[
     // ("Left Alt", "compose:lalt"), XXX?
@@ -41,6 +38,39 @@ static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
     // ("Scroll Lock", "lv3:"), XXX
     // ("Print Screen", "lv3"), XXX
 ];
+
+#[derive(Clone, Debug)]
+pub enum Message {
+    ExpandInputSourcePopover(Option<String>),
+    OpenSpecialCharacterContext(SpecialKey),
+    SpecialCharacterSelect(Option<&'static str>),
+}
+
+pub struct Page {
+    config: cosmic_config::Config,
+    context: Option<Context>,
+    expanded_source_popover: Option<String>,
+    sources: Vec<InputSource>,
+    xkb: XkbConfig,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+
+        Self {
+            context: None,
+            expanded_source_popover: None,
+            sources: default_input_sources(),
+            xkb: super::get_config(&config, "xkb_config"),
+            config,
+        }
+    }
+}
+
+enum Context {
+    SpecialCharacter(SpecialKey),
+}
 
 #[derive(Copy, Clone, Debug)]
 pub enum SpecialKey {
@@ -144,54 +174,6 @@ pub struct InputSource {
     label: String,
 }
 
-impl super::Page {
-    pub fn add_input_source_view(&self) -> cosmic::Element<'static, crate::app::Message> {
-        widget::column![].into()
-    }
-
-    pub fn special_character_key_view(&self) -> cosmic::Element<'_, crate::app::Message> {
-        let Some(special_key) = self.special_character_dialog else {
-            return widget::text("").into();
-        };
-
-        let options = match special_key {
-            SpecialKey::Compose => COMPOSE_OPTIONS,
-            SpecialKey::AlternateCharacters => ALTERNATE_CHARACTER_OPTIONS,
-        };
-        let prefix = special_key.prefix();
-        let current = self
-            .xkb
-            .options
-            .iter()
-            .flat_map(|x| x.split(','))
-            .find(|x| x.starts_with(prefix));
-
-        // TODO description, layout default
-
-        let mut list = cosmic::widget::list_column();
-        list = list.add(special_char_radio_row("None", None, current));
-        for (desc, id) in options {
-            list = list.add(special_char_radio_row(desc, Some(id), current));
-        }
-        widget::column![
-            cosmic::widget::header_bar()
-                .title(special_key.title())
-                .on_close(Message::CloseSpecialCharacterDialog),
-            cosmic::widget::container(
-                cosmic::widget::scrollable(cosmic::widget::container(list).padding(24))
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-            )
-            .style(theme::Container::Background)
-            .width(Length::Fill)
-            .height(Length::Fill)
-        ]
-        .apply(cosmic::Element::from)
-        .map(crate::pages::Message::Input)
-        .map(crate::app::Message::PageMessage)
-    }
-}
-
 fn special_char_radio_row<'a>(
     desc: &'a str,
     value: Option<&'static str>,
@@ -203,9 +185,6 @@ fn special_char_radio_row<'a>(
     .into()])
     .into()
 }
-
-#[derive(Default)]
-pub struct Page;
 
 // XXX
 pub fn default_input_sources() -> Vec<InputSource> {
@@ -232,6 +211,85 @@ impl page::Page<crate::pages::Message> for Page {
             .title(fl!("keyboard"))
             .description(fl!("keyboard", "desc"))
     }
+
+    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+        match self.context {
+            Some(Context::SpecialCharacter(special_key)) => self
+                .special_character_key_view(special_key)
+                .map(crate::pages::Message::Keyboard)
+                .apply(Some),
+
+            None => None,
+        }
+    }
+}
+
+impl Page {
+    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+        match message {
+            Message::ExpandInputSourcePopover(value) => {
+                self.expanded_source_popover = value;
+            }
+
+            Message::OpenSpecialCharacterContext(key) => {
+                self.context = Some(Context::SpecialCharacter(key));
+                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    key.title().into(),
+                ));
+            }
+
+            Message::SpecialCharacterSelect(id) => {
+                if let Some(Context::SpecialCharacter(special_key)) = self.context {
+                    let options = self.xkb.options.as_deref().unwrap_or("");
+                    let prefix = special_key.prefix();
+                    let new_options = options
+                        .split(',')
+                        .filter(|x| !x.starts_with(prefix))
+                        .chain(id)
+                        .join(",");
+
+                    self.xkb.options = Some(new_options).filter(|x| !x.is_empty());
+
+                    if let Err(err) = self.config.set("xkb_config", &self.xkb) {
+                        tracing::error!(?err, "Failed to set config 'xkb_config'");
+                    }
+                }
+            }
+        }
+
+        Command::none()
+    }
+
+    pub fn add_input_source_view(&self) -> cosmic::Element<'static, crate::app::Message> {
+        widget::column![].into()
+    }
+
+    fn special_character_key_view(&self, special_key: SpecialKey) -> cosmic::Element<'_, Message> {
+        let options = match special_key {
+            SpecialKey::Compose => COMPOSE_OPTIONS,
+            SpecialKey::AlternateCharacters => ALTERNATE_CHARACTER_OPTIONS,
+        };
+        let prefix = special_key.prefix();
+        let current = self
+            .xkb
+            .options
+            .iter()
+            .flat_map(|x| x.split(','))
+            .find(|x| x.starts_with(prefix));
+
+        // TODO description, layout default
+
+        let mut list = cosmic::widget::list_column();
+        list = list.add(special_char_radio_row("None", None, current));
+        for (desc, id) in options {
+            list = list.add(special_char_radio_row(desc, Some(id), current));
+        }
+
+        cosmic::widget::scrollable(cosmic::widget::container(list).padding(24))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into()
+    }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {
@@ -244,20 +302,18 @@ fn input_sources() -> Section<crate::pages::Message> {
     // TODO desc
     Section::default()
         .title(fl!("keyboard-sources"))
-        .view::<Page>(|binder, _page, section| {
-            let input = binder.page::<super::Page>().expect("input page not found");
-
+        .view::<Page>(|_binder, page, section| {
             // TODO Need something more custom, with drag and drop
             let mut section = settings::view_section(&section.title);
 
-            let expanded_source = input.expanded_source_popover.as_deref();
-            for source in &input.sources {
+            let expanded_source = page.expanded_source_popover.as_deref();
+            for source in &page.sources {
                 section = section.add(input_source(source, expanded_source));
             }
 
             section
                 .apply(cosmic::Element::from)
-                .map(crate::pages::Message::Input)
+                .map(crate::pages::Message::Keyboard)
         })
 }
 
@@ -271,18 +327,17 @@ fn special_character_entry() -> Section<crate::pages::Message> {
         .view::<Page>(|_binder, _page, section| {
             let descriptions = &section.descriptions;
 
-            // TODO dialogs
             settings::view_section(&section.title)
                 .add(go_next_item(
                     &*descriptions[0],
-                    Message::OpenSpecialCharacterDialog(SpecialKey::AlternateCharacters),
+                    Message::OpenSpecialCharacterContext(SpecialKey::AlternateCharacters),
                 ))
                 .add(go_next_item(
                     &*descriptions[1],
-                    Message::OpenSpecialCharacterDialog(SpecialKey::Compose),
+                    Message::OpenSpecialCharacterContext(SpecialKey::Compose),
                 ))
                 .apply(cosmic::Element::from)
-                .map(crate::pages::Message::Input)
+                .map(crate::pages::Message::Keyboard)
         })
 }
 

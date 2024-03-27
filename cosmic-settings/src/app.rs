@@ -317,6 +317,12 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                crate::pages::Message::Keyboard(message) => {
+                    if let Some(page) = self.pages.page_mut::<input::keyboard::Page>() {
+                        return page.update(message).map(cosmic::app::Message::App);
+                    }
+                }
+
                 crate::pages::Message::Input(message) => {
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);
@@ -499,17 +505,17 @@ impl cosmic::Application for SettingsApp {
             });
         }
 
-        if let Some(Some(page)) = (id == *keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID)
-            .then(|| self.pages.page::<input::Page>())
-        {
-            return page.add_input_source_view();
-        }
+        // if let Some(Some(page)) = (id == *keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID)
+        //     .then(|| self.pages.page::<input::Page>())
+        // {
+        //     return page.add_input_source_view();
+        // }
 
-        if let Some(Some(page)) = (id == *keyboard::SPECIAL_CHARACTER_DIALOGUE_ID)
-            .then(|| self.pages.page::<input::Page>())
-        {
-            return page.special_character_key_view();
-        }
+        // if let Some(Some(page)) = (id == *keyboard::SPECIAL_CHARACTER_DIALOGUE_ID)
+        //     .then(|| self.pages.page::<input::Page>())
+        // {
+        //     return page.special_character_key_view();
+        // }
 
         if let Some(page) = self.pages.page::<desktop::wallpaper::Page>() {
             if id == page.color_dialog {
@@ -528,6 +534,12 @@ impl cosmic::Application for SettingsApp {
         } else {
             None
         }
+    }
+
+    fn dialog(&self) -> Option<Element<Self::Message>> {
+        self.pages
+            .dialog(self.active_page)
+            .map(|e| e.map(Message::PageMessage))
     }
 }
 
