@@ -431,24 +431,18 @@ impl Page {
     pub fn update(&mut self, message: Message) -> Command<app::Message> {
         self.theme_builder_needs_update = false;
         let mut needs_sync = false;
-        let mut ret = match message {
+        let ret = match message {
             Message::DarkMode(enabled) => {
-                self.theme_mode.is_dark = enabled;
                 if let Some(config) = self.theme_mode_config.as_ref() {
-                    // only update dark mode if autoswitch is disabled
-                    if !self.theme_mode.auto_switch {
-                        _ = config.set::<bool>("is_dark", enabled);
+                    // must disable auto switch if the user manually switches the theme
+                    if let Err(err) = self.theme_mode.set_auto_switch(config, false) {
+                        tracing::error!(?err, "Error setting auto switch");
+                    }
+                    if let Err(err) = self.theme_mode.set_is_dark(config, enabled) {
+                        tracing::error!(?err, "Error setting dark mode");
                     }
                 }
-                self.reload_theme_mode();
-
-                let theme_builder = self.theme_builder.clone();
-                Command::perform(async {}, |()| {
-                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
-                        // TODO set the values of the theme builder
-                        theme_builder.build(),
-                    )))
-                })
+                Command::none()
             }
             Message::Autoswitch(enabled) => {
                 self.theme_mode.auto_switch = enabled;
@@ -576,18 +570,7 @@ impl Page {
                     .icon_themes
                     .iter()
                     .position(|theme| theme == &self.tk.icon_theme);
-
-                let theme_builder = self.theme_builder.clone();
-
-                cosmic::command::future(async {
-                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
-                        // TODO set the values of the theme builder
-                        theme_builder.build(),
-                    )))
-                })
-
-                // Load the current theme builders and mode
-                // Set the theme for the application to match the current mode instead of the system theme?
+                Command::none()
             }
             Message::Left => Command::perform(async {}, |()| {
                 app::Message::SetTheme(cosmic::theme::system_preference())
@@ -650,10 +633,7 @@ impl Page {
                 }
 
                 self.reload_theme_mode();
-
-                Command::perform(async {}, |()| {
-                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
-                })
+                Command::none()
             }
             Message::StartImport => Command::perform(
                 async {
@@ -795,9 +775,7 @@ impl Page {
                 }
 
                 self.reload_theme_mode();
-                Command::perform(async {}, |()| {
-                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(new_theme)))
-                })
+                Command::none()
             }
             Message::UseDefaultWindowHint(v) => {
                 self.no_custom_window_hint = v;
@@ -881,15 +859,6 @@ impl Page {
             } else {
                 tracing::error!("Failed to get the theme config.");
             }
-            let theme_builder = self.theme_builder.clone();
-            ret = Command::batch(vec![
-                ret,
-                Command::perform(async {}, |()| {
-                    crate::Message::SetTheme(cosmic::theme::Theme::custom(Arc::new(
-                        theme_builder.build(),
-                    )))
-                }),
-            ]);
         }
 
         self.can_reset = if self.theme_mode.is_dark {
@@ -1571,7 +1540,7 @@ async fn fetch_icon_themes() -> Message {
 /// Set the preferred icon theme for GNOME/GTK applications.
 async fn set_gnome_icon_theme(theme: String) {
     let _res = tokio::process::Command::new("gsettings")
-        .args(&[
+        .args([
             "set",
             "org.gnome.desktop.interface",
             "icon-theme",
