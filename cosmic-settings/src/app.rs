@@ -60,6 +60,7 @@ impl SettingsApp {
             PageCommands::DesktopPanel => self.pages.page_id::<desktop::options::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
+            PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             PageCommands::Network => None,
             PageCommands::Notifications => self.pages.page_id::<desktop::notifications::Page>(),
@@ -311,6 +312,12 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                crate::pages::Message::Keyboard(message) => {
+                    if let Some(page) = self.pages.page_mut::<input::keyboard::Page>() {
+                        return page.update(message).map(cosmic::app::Message::App);
+                    }
+                }
+
                 crate::pages::Message::Input(message) => {
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);
@@ -493,17 +500,17 @@ impl cosmic::Application for SettingsApp {
             });
         }
 
-        if let Some(Some(page)) = (id == *keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID)
-            .then(|| self.pages.page::<input::Page>())
-        {
-            return page.add_input_source_view();
-        }
+        // if let Some(Some(page)) = (id == *keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID)
+        //     .then(|| self.pages.page::<input::Page>())
+        // {
+        //     return page.add_input_source_view();
+        // }
 
-        if let Some(Some(page)) = (id == *keyboard::SPECIAL_CHARACTER_DIALOGUE_ID)
-            .then(|| self.pages.page::<input::Page>())
-        {
-            return page.special_character_key_view();
-        }
+        // if let Some(Some(page)) = (id == *keyboard::SPECIAL_CHARACTER_DIALOGUE_ID)
+        //     .then(|| self.pages.page::<input::Page>())
+        // {
+        //     return page.special_character_key_view();
+        // }
 
         if let Some(page) = self.pages.page::<desktop::wallpaper::Page>() {
             if id == page.color_dialog {
