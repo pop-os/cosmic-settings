@@ -3,6 +3,8 @@ members = ["cosmic-settings", "page", "pages/*"]
 default-members = ["cosmic-settings"]
 resolver = "2"
 rust-version = "1.71.0"
+sunrise_sunset = "1.0.1"
+
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
