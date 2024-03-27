@@ -33,11 +33,8 @@ crate::cache_dynamic_lazy! {
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    CloseSpecialCharacterDialog,
     // seperate close message, to make sure another isn't closed?
     DisableWhileTyping(bool, bool),
-    ExpandInputSourcePopover(Option<String>),
-    OpenSpecialCharacterDialog(keyboard::SpecialKey),
     PrimaryButtonSelected(cosmic::widget::segmented_button::Entity, bool),
     SetAcceleration(bool, bool),
     SetMouseSpeed(f64, bool),
@@ -45,7 +42,6 @@ pub enum Message {
     SetSecondaryClickBehavior(Option<ClickMethod>, bool),
     SetScrollFactor(f64, bool),
     SetScrollMethod(Option<ScrollMethod>, bool),
-    SpecialCharacterSelect(Option<&'static str>),
     TapToClick(bool),
 }
 
@@ -60,12 +56,6 @@ pub struct Page {
 
     // Touchpad
     touchpad_primary_button: cosmic::widget::segmented_button::SingleSelectModel,
-
-    // Keyboard
-    expanded_source_popover: Option<String>,
-    sources: Vec<keyboard::InputSource>,
-    special_character_dialog: Option<keyboard::SpecialKey>,
-    xkb: XkbConfig,
 }
 
 fn get_config<T: Default + serde::de::DeserializeOwned>(
@@ -83,7 +73,6 @@ impl Default for Page {
         let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
         let input_default: InputConfig = get_config(&config, "input_default");
         let input_touchpad: InputConfig = get_config(&config, "input_touchpad");
-        let xkb = get_config(&config, "xkb_config");
 
         let mut primary_button = mouse::default_primary_button();
         let idx = input_default.left_handed.unwrap_or(false) as u16;
@@ -103,12 +92,6 @@ impl Default for Page {
 
             // Touchpad
             touchpad_primary_button,
-
-            // Keyboard
-            expanded_source_popover: None,
-            sources: keyboard::default_input_sources(),
-            special_character_dialog: None,
-            xkb,
         }
     }
 }
@@ -160,7 +143,7 @@ impl Page {
             Message::SetSecondaryClickBehavior(click_method, touchpad) => {
                 self.update_input(touchpad, |x| {
                     x.click_method = click_method;
-                })
+                });
             }
 
             Message::SetScrollFactor(value, touchpad) => self.update_input(touchpad, |x| {
@@ -191,53 +174,6 @@ impl Page {
 
                 let left_handed = select_model.active() == left_entity;
                 self.update_input(touchpad, |x| x.left_handed = Some(left_handed));
-            }
-
-            Message::ExpandInputSourcePopover(value) => {
-                self.expanded_source_popover = value;
-            }
-
-            Message::OpenSpecialCharacterDialog(special_key) => {
-                self.special_character_dialog = Some(special_key);
-                let window_settings = SctkWindowSettings {
-                    window_id: *keyboard::SPECIAL_CHARACTER_DIALOGUE_ID,
-                    app_id: Some("com.system76.CosmicSettings".to_string()),
-                    title: Some(special_key.title()),
-                    parent: Some(window::Id::MAIN),
-                    autosize: false,
-                    size_limits: layout::Limits::NONE
-                        .min_width(300.0)
-                        .max_width(800.0)
-                        .min_height(200.0)
-                        .max_height(1080.0),
-                    size: (512, 420),
-                    resizable: None,
-                    client_decorations: true,
-                    transparent: true,
-                    ..Default::default()
-                };
-                return commands::window::get_window(window_settings);
-            }
-
-            Message::CloseSpecialCharacterDialog => {
-                self.special_character_dialog = None;
-                return commands::window::close_window(*keyboard::SPECIAL_CHARACTER_DIALOGUE_ID);
-            }
-
-            Message::SpecialCharacterSelect(id) => {
-                if let Some(special_key) = self.special_character_dialog {
-                    let options = self.xkb.options.as_deref().unwrap_or("");
-                    let prefix = special_key.prefix();
-                    let new_options = options
-                        .split(',')
-                        .filter(|x| !x.starts_with(prefix))
-                        .chain(id)
-                        .join(",");
-                    self.xkb.options = Some(new_options).filter(|x| !x.is_empty());
-                    if let Err(err) = self.config.set("xkb_config", &self.xkb) {
-                        error!(?err, "Failed to set config 'xkb_config'");
-                    }
-                }
             }
 
             Message::TapToClick(enabled) => {

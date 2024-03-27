@@ -23,6 +23,7 @@ pub enum Message {
     Dock(desktop::dock::Message),
     DockApplet(desktop::dock::applets::Message),
     External { id: String, message: Vec<u8> },
+    Keyboard(input::keyboard::Message),
     Input(input::Message),
     Page(Entity),
     Panel(desktop::panel::Message),
