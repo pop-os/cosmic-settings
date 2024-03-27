@@ -1220,7 +1220,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                     .spacing(8),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[3]).control(
+                    settings::item::builder(&*descriptions[2]).control(
                         page.application_background
                             .picker_button(Message::ApplicationBackground, Some(24))
                             .width(Length::Fixed(48.0))
@@ -1228,8 +1228,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                     ),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[4])
-                        .description(&*descriptions[5])
+                    settings::item::builder(&*descriptions[3])
+                        .description(&*descriptions[4])
                         .control(if page.container_background.get_applied_color().is_some() {
                             Element::from(
                                 page.container_background
@@ -1249,8 +1249,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         }),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[8])
-                        .description(&*descriptions[9])
+                    settings::item::builder(&*descriptions[7])
+                        .description(&*descriptions[8])
                         .control(
                             page.interface_text
                                 .picker_button(Message::InterfaceText, Some(24))
@@ -1259,8 +1259,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[10])
-                        .description(&*descriptions[11])
+                    settings::item::builder(&*descriptions[9])
+                        .description(&*descriptions[10])
                         .control(
                             page.control_component
                                 .picker_button(Message::ControlComponent, Some(24))
@@ -1269,12 +1269,12 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[12])
+                    settings::item::builder(&*descriptions[11])
                         .toggler(page.no_custom_window_hint, Message::UseDefaultWindowHint),
                 );
             if !page.no_custom_window_hint {
                 section = section.add(
-                    settings::item::builder(&*descriptions[13]).control(
+                    settings::item::builder(&*descriptions[12]).control(
                         page.accent_window_hint
                             .picker_button(Message::AccentWindowHint, Some(24))
                             .width(Length::Fixed(48.0))
