@@ -76,8 +76,12 @@ pub struct Page {
     theme_builder_needs_update: bool,
     theme_builder_config: Option<Config>,
 
+    auto_switch_descs: [Cow<'static, str>; 4],
+
     tk: CosmicTk,
     tk_config: Option<Config>,
+
+    day_time: bool,
 }
 
 impl Default for Page {
@@ -192,6 +196,13 @@ impl
             theme_builder,
             tk_config,
             tk,
+            day_time: true,
+            auto_switch_descs: [
+                fl!("auto-switch", "sunrise").into(),
+                fl!("auto-switch", "sunset").into(),
+                fl!("auto-switch", "next-sunrise").into(),
+                fl!("auto-switch", "next-sunset").into(),
+            ],
         }
     }
 }
@@ -275,6 +286,7 @@ pub enum Message {
     StartImport,
     UseDefaultWindowHint(bool),
     WindowHintSize(spin_button::Message),
+    Daytime(bool),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -434,10 +446,6 @@ impl Page {
         let ret = match message {
             Message::DarkMode(enabled) => {
                 if let Some(config) = self.theme_mode_config.as_ref() {
-                    // must disable auto switch if the user manually switches the theme
-                    if let Err(err) = self.theme_mode.set_auto_switch(config, false) {
-                        tracing::error!(?err, "Error setting auto switch");
-                    }
                     if let Err(err) = self.theme_mode.set_is_dark(config, enabled) {
                         tracing::error!(?err, "Error setting dark mode");
                     }
@@ -821,6 +829,10 @@ impl Page {
                 }
                 Command::none()
             }
+            Message::Daytime(day_time) => {
+                self.day_time = day_time;
+                Command::none()
+            }
         };
 
         if self.theme_builder_needs_update {
@@ -879,9 +891,9 @@ impl Page {
     fn reload_theme_mode(&mut self) {
         let icon_themes = std::mem::take(&mut self.icon_themes);
         let icon_theme_active = self.icon_theme_active.take();
-
+        let day_time = self.day_time;
         *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
-
+        self.day_time = day_time;
         self.icon_themes = icon_themes;
         self.icon_theme_active = icon_theme_active;
     }
@@ -1023,26 +1035,25 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
         .descriptions(vec![
             // 0
             fl!("auto-switch").into(),
-            fl!("auto-switch", "desc").into(),
-            //2
+            //1
             fl!("accent-color").into(),
-            //3
+            //2
             fl!("app-background").into(),
-            //4
+            //3
             fl!("container-background").into(),
             fl!("container-background", "desc").into(),
             fl!("container-background", "desc-detail").into(),
             fl!("container-background", "reset").into(),
-            // 8
+            // 7
             fl!("text-tint").into(),
             fl!("text-tint", "desc").into(),
-            // 10
+            // 9
             fl!("control-tint").into(),
             fl!("control-tint", "desc").into(),
-            // 12
+            // 11
             fl!("window-hint-accent-toggle").into(),
             fl!("window-hint-accent").into(),
-            // 14
+            // 13
             fl!("dark").into(),
             fl!("light").into(),
         ])
@@ -1067,7 +1078,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .padding([8, 0])
                                 .selected(page.theme_mode.is_dark)
                                 .on_press(Message::DarkMode(true)),
-                                text(&*descriptions[14])
+                                text(&*descriptions[13])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1082,7 +1093,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .selected(!page.theme_mode.is_dark)
                                 .padding([8, 0])
                                 .on_press(Message::DarkMode(false)),
-                                text(&*descriptions[15])
+                                text(&*descriptions[14])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1097,7 +1108,18 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 )
                 .add(
                     settings::item::builder(&*descriptions[0])
-                        .description(&*descriptions[1])
+                        .description(
+                            if page.day_time && !page.theme_mode.is_dark {
+                                &page.auto_switch_descs[0]
+                            } else if !page.day_time && page.theme_mode.is_dark {
+                                &page.auto_switch_descs[1]
+                            } else if page.day_time && page.theme_mode.is_dark {
+                                &page.auto_switch_descs[2]
+                            } else {
+                                &page.auto_switch_descs[3]
+                            }
+                            .clone(),
+                        )
                         .toggler(page.theme_mode.auto_switch, Message::Autoswitch),
                 )
                 .add(

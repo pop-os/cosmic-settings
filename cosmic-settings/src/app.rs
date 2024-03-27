@@ -225,6 +225,11 @@ impl cosmic::Application for SettingsApp {
         });
 
         Subscription::batch(vec![
+            crate::subscription::daytime().map(|daytime| {
+                Message::PageMessage(pages::Message::Appearance(appearance::Message::Daytime(
+                    daytime,
+                )))
+            }),
             wayland_events,
             // Watch for changes to installed desktop entries
             desktop_files(0).map(|_| Message::DesktopInfo),
