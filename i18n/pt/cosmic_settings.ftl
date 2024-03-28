@@ -10,7 +10,7 @@ desktop = Ambiente de trabalho
 
 ## Desktop: Appearance
 
-appearance = Aspeto
+appearance = Aparência
     .desc = Cores de destaque e temas COSMIC.
 
 accent-color = Cor de destaque
@@ -45,6 +45,12 @@ control-tint = Controlar a tonalidade dos componentes
 
 frosted = Efeito de vidro fosco na interface do sistema
     .desc = Aplica uma desfocagem de fundo ao painel, à doca, aos applets, ao lançador e à biblioteca de aplicações.
+
+enable-export = Aplicar este tema a aplicações GNOME.
+    .desc = Nem todos os toolkits suportam a troca automática. As aplicações não-COSMIC poderão ter de ser reiniciadas após uma mudança de tema.
+
+icon-theme = Tema de ícones
+    .desc = Aplica um conjunto diferente de ícones às aplicações.
 
 text-tint = Tonalidade do texto da interface
     .desc = Cor utilizada para derivar cores de texto de interface que tenham contraste suficiente em várias superfícies.
@@ -121,6 +127,10 @@ night-light = Luz noturna
     .desc = Reduz a luz azul com cores mais quentes.
 
 orientation = Orientação
+    .standard = Padrão
+    .rotate-90 = Rodar 90
+    .rotate-180 = Rodar 180
+    .rotate-270 = Rodar 270
 
 scheduling = Agendamento
     .manual = Agendamento manual
@@ -363,9 +373,11 @@ primary-button = Primary button
     .right = Right
 
 scrolling = Deslocação
+    .two-finger = Deslocar com dois dedos
+    .edge = Deslocar ao longo da margem com um dedo
     .speed = Velocidade de deslocação
     .natural = Deslocação natural
-    .natural-desc = Percorrer o conteúdo, em vez da visualização
+    .natural-desc = Deslocar o conteúdo, em vez da visualização
 
 ## Input: Keyboard
 
@@ -397,6 +409,10 @@ mouse = Rato
     .acceleration = Ativar a aceleração do rato
 
 ## Input: Touchpad
+
+click-behavior = Comportamento do clique
+    .click-finger = Clique secundário com dois dedos e clique do meio com três dedos
+    .button-areas = Clique secundário no canto inferior direito e clique do meio no centro inferior
 
 pinch-to-zoom = Apertar para ampliar
     .desc = Utilize dois dedos para fazer zoom no conteúdo, para aplicações que suportem ampliação.
