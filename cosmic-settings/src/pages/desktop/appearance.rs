@@ -1124,7 +1124,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 )
                 .add(
                     cosmic::iced::widget::column![
-                        text(&*descriptions[2]),
+                        text(&*descriptions[1]),
                         scrollable(
                             cosmic::iced::widget::row![
                                 color_button(
