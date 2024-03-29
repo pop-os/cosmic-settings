@@ -11,15 +11,15 @@ desktop = Bureau
 ## Desktop: Appearance
 
 appearance = Apparence
-    .desc = Couleur d'accentuation et personalisation COSMIC.
+    .desc = Couleur d'accentuation et personnalisation COSMIC.
 
 accent-color = Couleur d'accentuation
 app-background = Application ou arrière plan de fenêtre
 auto = Auto
 close = Fermer
 color-picker = Pipette à couleurs
-copied-to-clipboard = Copié dans le presse-pappier
-copy-to-clipboard = Copier dans le presse-pappier
+copied-to-clipboard = Copié dans le presse-papier
+copy-to-clipboard = Copier dans le presse-papier
 dark = Sombre
 export = Exporter
 hex = Hex
@@ -27,13 +27,16 @@ import = Importer
 light = Clair
 mode-and-colors = Mode et Couleur
 recent-colors = Couleurs récentes
-reset-to-default = Réinitialiser
+reset-to-default = Réinitialiser aux paramètres par défaut
 rgb = RVB
-window-hint-accent = Couleur de l'indice de la fenêtre active Active window hint color
-window-hint-accent-toggle = Utiliser la couleur d'accentuation comme indice de fenêtre active
+window-hint-accent = Couleur d'indice de fenêtre active
+window-hint-accent-toggle = Utiliser la couleur d'accentuation du thème comme indice de fenêtre active
 
 auto-switch = Passer automatiquement du mode clair au mode sombre
-    .desc = Passe en mode Lumière au lever du soleil
+    .sunrise = Passe au mode clair au lever du soleil
+    .sunset = Passe au mode clair au coucher du soleil
+    .next-sunrise = Passe au mode clair au prochain lever du soleil
+    .next-sunset = Passe au mode clair au prochain coucher du soleil
 
 container-background = Fond de conteneur
     .desc-detail = La couleur d’arrière-plan du conteneur est utilisée pour la barre latérale de navigation, le tiroir latéral, les boîtes de dialogue et les widgets similaires. Par défaut, il est automatiquement dérivé de l'arrière-plan de l'application ou de la fenêtre.
@@ -46,8 +49,14 @@ control-tint = Teinte des composants de contrôle
 frosted = Effet verre dépoli sur l'interface système
     .desc = Applique un flou d'arrière-plan au panneau, au dock, aux applets, au lanceur et à la bibliothèque d'applications.
 
+enable-export = Appliquer ce thème aux applications GNOME.
+    .desc = Pas tous les toolkits ne supportent le changement automatique de thème. Les applications non-COSMIC peuvent nécessiter un redémarrage après un changement de thème.
+
+icon-theme = Thème d'icônes
+    .desc = Applique un set d'icônes différent aux applications.
+
 text-tint = Teinte du texte de l'interface
-    .desc = Couleur utilisée pour dériver des couleurs de texte d'interface présentant un contraste suffisant sur diverses surfaces.
+    .desc = Couleur utilisée pour dériver les couleurs de texte d'interface présentant un contraste suffisant sur différentes surfaces.
 
 style = Style
     .round = Rond
@@ -56,72 +65,78 @@ style = Style
 
 # interface density left out for now
 window-management = Gestion des fenêtres
-    .active-hint = Taille de l'indice de la fenêtre active
-    .gaps = Gaps around tiled windows
+    .active-hint = Taille de l'indice de fenêtre active
+    .gaps = Espaces entre les fenêtres en mosaïque
 
 ## Desktop: Display
 
 -requires-restart = Nécessite un redémarrage
 
 color = Couleur
-    .depth = Profondeur de la couleur
+    .depth = Profondeur de couleur
     .profile = Profil de couleur
     .sidebar = Profils de couleurs
-    .temperature = Température de la couleur
+    .temperature = Température de couleur
 
-display = Displays
-    .desc = Manage displays, graphics switching, and night light
-    .arrangement = Display Arrangement
-    .arrangement-desc = Drag displays to rearrange them.
-    .enable = Enable display
-    .external = { $size } { $output } External Display
-    .laptop = { $size } Laptop Display
-    .options = Display Options
-    .refresh-rate = Refresh rate
-    .resolution = Resolution
-    .scale = Scale
+display = Écrans
+    .desc = Gérer les écrans, les modes graphiques, et le mode nuit
+    .arrangement = Disposition des écrans
+    .arrangement-desc = Faire glisser les écrans pour les réorganiser.
+    .enable = Activer écran
+    .external = { $size } { $output } Écran externe
+    .laptop = { $size } Écran de l'ordinateur portable
+    .options = Options d'écran
+    .refresh-rate = Fréquence de rafraîchissement
+    .resolution = Résolution
+    .scale = Échelle
 
 graphics-mode = Graphics mode
     .mode = { $mode ->
-        [compute] Compute
-        *[hybrid] Hybrid
-        [integrated] Integrated
+        [compute] Calcul
+        *[hybrid] Hybride
+        [integrated] Intégré
         [nvidia] NVIDIA
     } graphics
     .enable = Enable { $mode ->
-        [compute] compute
-        *[hybrid] hybrid
-        [integrated] integrated
+        [compute] Calcul
+        *[hybrid] Hybride
+        [integrated] Intégré
         [nvidia] NVIDIA
     } graphics
     .desc = { $mode ->
-        [compute] Uses dedicated graphics for computational workloads only. Disables external displays. { -requires-restart }.
-        *[hybrid] Applications use integrated graphics unless explicitly requested to use dedicated graphics. { -requires-restart }.
-        [integrated] Turns off dedicated graphics for a longer battery life and less fan noise.
-        [nvidia] Better graphical experience and highest power usage. { -requires-restart }.
+        [compute] Utilise les graphiques dédies seulement pour les charges de calcul. Désactive les écrans externes. { -requires-restart }.
+        *[hybrid] Les applications utilisent des graphiques intégrés, sauf s'il est explicitement demandé d'utiliser des graphiques dédiés. { -requires-restart }.
+        [integrated] Désactive les graphiques dédiés pour une meilleure autonomie de la batterie et moins de bruit de ventilateur.
+        [nvidia] Meilleure expérience graphique et plus grande consommation d'énergie. { -requires-restart }.
     }
-    .restart = Restart and switch to { $mode }?
-    .restart-desc = Switching to { $mode } will close all open applications
+    .restart = Redémarrer et basculer vers { $mode } ?
+    .restart-desc = Basculer vers { $mode } fermera toutes les applications ouvertes
 
-mirroring = Mirroring
-    .id = Mirroring { $id }
-    .dont = Don't mirror
-    .mirror = Mirror { $display }
-    .project = Project to { $display ->
-        [all] all displays
+mirroring = Duplication de l'écran
+    .id = Duplication de { $id }
+    .dont = Ne pas dupliquer
+    .mirror = Dupliquer { $display }
+    .project = Projeter vers { $display ->
+        [all] tous les écrans
         *[other] { $display }
     }
-    .project-count = Projecting to { $count} other { $count ->
-        [1] display
-        *[other] displays
+    .project-count = Projection sur { $count} { $count ->
+        [1] autre écran
+        *[other] autres écrans
     }
 
-night-light = Night Light
-    .auto = Automatic (sunset to sunrise)
-    .desc = Reduce blue light with warmer colors.
+night-light = Mode nuit
+    .auto = Automatique (du coucher au lever du soleil)
+    .desc = Réduire la lumière bleue avec des couleurs plus chaudes.
 
-scheduling = Scheduling
-    .manual = Manual schedule
+orientation = Orientation
+    .standard = Standard
+    .rotate-90 = Rotation à 90 degrés
+    .rotate-180 = Rotation à 180 degrés
+    .rotate-270 = Rotation à 270 degrés
+
+scheduling = Programmation
+    .manual = Programmation manuelle
 
 ## Desktop: Notifications
 
@@ -130,135 +145,135 @@ notifications = Notifications
 
 ## Desktop: Options
 
-desktop-panel-options = Options Bureau
-    .desc = Action de la Touche Super, coins actifs, options du contrôle des fenêtres.
+desktop-panel-options = Bureau et Panneau
+    .desc = Action de la touche Super, coin actif, options du contrôle des fenêtres.
 
 desktop-panels-and-applets = Barres du bureau et Applets
 
 dock = Dock
     .desc = Barre avec des applications épinglées.
 
-hot-corner = Coins Actifs
+hot-corner = Coin Actif
     .top-left-corner = Activer le coin actif supérieur gauche pour les Espaces de Travail
 
-super-key-action = Action Touche Super
+super-key-action = Action de la touche Super
     .launcher = Lanceur
     .workspaces = Espaces de Travail
     .applications = Applications
 
-top-panel = Barre d'Applets
-    .workspaces = Afficher le button Espace de Travail
-    .applications = Afficher le button Application
+top-panel = Panneau supérieur
+    .workspaces = Afficher le bouton Espace de Travail
+    .applications = Afficher le bouton Applications
 
 window-controls = Contrôles Fenêtre
     .minimize = Afficher le bouton Minimiser
-    .maximize = Afficher le Bouton Maximiser
+    .maximize = Afficher le bouton Maximiser
 
 ## Desktop: Panel
 
-panel = Barre d'Applets
-    .desc = Barre customizable avec différent applets
+panel = Panneau
+    .desc = Barre supérieure avec commandes du bureau et menus.
 
 add = Ajouter
 add-applet = Ajouter Applet
 all = Tous
 applets = Applets
-center-segment = Center Segment
-drop-here = Drop applets here
-end-segment = End Segment
+center-segment = Segment central
+drop-here = Déposer des applets ici
+end-segment = Segment de fin
 large = Large
-no-applets-found = Aucun applets trouvé...
+no-applets-found = Aucun applet trouvé...
 panel-bottom = Bas
 panel-left = Gauche
 panel-right = Droite
 panel-top = Haut
 search-applets = Rechercher des applets...
 small = Petit
-start-segment = Start Segment
+start-segment = Segment de début
 
 panel-appearance = Apparence
-    .match = Match desktop
+    .match = Correspondre au bureau
     .light = Clair
     .dark = Sombre
 
 panel-behavior-and-position = Comportement et Positions
-    .autohide = Cacher automatiquement
-    .dock-autohide = Cacher automatiquement
+    .autohide = Masquer automatiquement le panneau
+    .dock-autohide = Masquer automatiquement le dock
     .position = Position sur l'écran
-    .display = Afficher sur l'écran
+    .display = Afficher à l'écran
 
 panel-style = Style
-    .anchor-gap = Espace entre la Barre d'Applets et les bords de l'écran
-    .dock-anchor-gap = Espace entre le Dock et les bords de l'écran
-    .extend = Étendre la Barre d'Applets jusqu'aux bords de l'écran
+    .anchor-gap = Espace entre le panneau et les bords de l'écran
+    .dock-anchor-gap = Espace entre le dock et les bords de l'écran
+    .extend = Étendre le panneau jusqu'aux bords de l'écran
     .dock-extend = Étendre le dock jusqu'aux bords de l'écran
     .appearance = Apparence
     .size = Taille
     .background-opacity = Opacité de l'arrière-plan
 
 panel-applets = Configuration
-    .dock-desc = Configuration des applets de la barre d'Applets.
-    .desc = Configuration des applets du Dock.
+    .dock-desc = Configuration des applets du dock.
+    .desc = Configuration des applets du panneau.
 
-panel-missing = Panel Configuration is Missing
-    .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
-    .fix = Reset to default
+panel-missing = La configuration du panneau est manquante
+    .desc = Le fichier de configuration du panneau est manquant à cause d'une configuration personnalisée ou il est corrompu.
+    .fix = Réinitialiser aux paramètres par défaut
 
 ## Desktop: Wallpaper
 
-wallpaper = Wallpaper
-    .change = Change image every
-    .desc = Wallpaper images, colors, and slideshow options.
-    .fit = Wallpaper fit
-    .folder-dialog = Choose wallpaper folder
-    .image-dialog = Choose wallpaper image
-    .plural = Wallpapers
-    .same = Same wallpaper on all displays
-    .slide = Slideshow
+wallpaper = Fond d’écran
+    .change = Changer l'image tous les
+    .desc = Images de fond d’écran, couleurs et options de diaporama.
+    .fit = Adapter le fond d’écran
+    .folder-dialog = Choisir le dossier de fond d’écran
+    .image-dialog = Choisir l'image de fond d’écran
+    .plural = Fonds d’écran
+    .same = Même fond d'écran sur tous les écrans
+    .slide = Diaporama
 
-add-color = Add color
-add-image = Add image
-all-displays = All Displays
-colors = Colors
-dialog-add = _Add
-fill = Fill
-fit-to-screen = Fit to Screen
-open-new-folder = Open new folder
-recent-folders = Recent Folders
+add-color = Ajouter couleur
+add-image = Ajouter image
+all-displays = Tous les écrans
+colors = Couleurs
+dialog-add = _Ajouter
+fill = Remplir
+fit-to-screen = Adapter à l'écran
+open-new-folder = Ouvrir nouveau dossier
+recent-folders = Dossiers récents
 
 x-minutes = { $number } minutes
 x-hours = { $number ->
-    [1] 1 hour
-    *[other] { $number } hours
+    [1] 1 heure
+    *[other] { $number } heures
 }
 
 ## Desktop: Workspaces
 
 workspaces = Espaces de travail
-    .desc = Définir le nombre, le comportement et le placement d'espaces de travail.
+    .desc = Définir le nombre, le comportement et l'emplacement d'espaces de travail.
 
 workspaces-behavior = Comportement des espaces de travail
-    .dynamic = Espaces de travail dynamique
+    .dynamic = Espaces de travail dynamiques
     .dynamic-desc = Supprime automatiquement les espaces de travail vides.
     .fixed = Nombre fixe d'espaces de travail
-    .fixed-desc = Supprimer ou ajouter des espaces de travail dans l'aperçu.
+    .fixed-desc = Ajouter ou supprimer des espaces de travail dans l'aperçu.
 
-workspaces-multi-behavior = Comportement Multi-écran
-    .span = Workspaces Span Displays
-    .separate = Displays Have Separate Workspaces
+workspaces-multi-behavior = Comportement multi-écrans
+    .span = Les espaces de travail s'étendent sur tous les écrans
+    .separate = Les écrans ont des espaces de travail séparés
 
-workspaces-overview-thumbnails = Workspace Overview Thumbnails
-    .show-number = Show Workspace Number
-    .show-name = Show Workspace Name
+workspaces-overview-thumbnails = Vignettes d'aperçu de l'espace de travail
+    .show-number = Afficher le numéro de l'espace de travail
+    .show-name = Afficher le nom de l'espace de travail
 
-workspaces-orientation = Orientation des Espaces de Travail
+workspaces-orientation = Orientation des espaces de travail
     .vertical = Vertical
     .horizontal = Horizontal
 
 ## Networking: Wired
 
 wired = Filaire
-    .desc = Connexion filaire, profil de connexion
+    .desc = Connexion filaire, profils de connexion
 
 ## Networking: Online Accounts
 
@@ -267,11 +282,11 @@ online-accounts = Comptes en lignes
 
 ## Time & Language
 
-time = Heure et Language
+time = Heure et Langue
     .desc = N/A
 
 time-date = Date et Heure
-    .desc = Fuseau horaire, réglage de l'heure automatique, et format de l'heure.
+    .desc = Fuseau horaire, réglage de l'heure automatique et format de l'heure.
     .auto = Régler automatiquement
 
 time-zone = Fuseau Horaire
@@ -279,11 +294,16 @@ time-zone = Fuseau Horaire
     .auto-info = Nécessite les services de localisation et l'accès à internet
 
 time-format = Format date et heure
-    .twenty-four = 24 heures
-    .first = Premiers jour de la semaine
+    .twenty-four = Format 24 heures
+    .first = Premier jour de la semaine
+    .show-date = Afficher la date sur le panneau supérieur
+    .friday = Vendredi
+    .saturday = Samedi
+    .sunday = Dimanche
+    .monday = Lundi
 
-time-region = Région et Language
-    .desc = Format de dates, heures, et nombres basés sur votre région
+time-region = Région et Langue
+    .desc = Formater les dates, les heures et les nombres en fonction de votre région
 
 ## Sound
 
@@ -322,7 +342,7 @@ about-device = Nom de l'appareil
     .desc = Ce nom apparaît aux autres périphériques réseau ou bluetooth.
 
 about-hardware = Matériel
-    .model = Nom du matériel
+    .model = Modèle du matériel
     .memory = Mémoire vive
     .processor = Processeur
     .graphics = Carte graphique
@@ -345,22 +365,24 @@ firmware = Micrologiciel
 ## System: Users
 
 users = Utilisateurs
-    .desc = Authentication et connexion, écran de verrouillage.
+    .desc = Authentification et connexion, écran de verrouillage.
 
 ## Input
 
-acceleration-desc = Automatically adjusts tracking sensitivity based on speed.
+acceleration-desc = Ajuste automatiquement la sensibilité du suivi en fonction de la vitesse.
 
-disable-while-typing = Disable while typing
+disable-while-typing = Désactiver pendant la saisie
 
-input-devices = Input Devices
-    .desc = Input Devices
+input-devices = Périphériques d'entrée
+    .desc = Périphériques d'entrée
 
 primary-button = Boutton principal
     .left = Gauche
     .right = Droite
 
 scrolling = Défilement
+    .two-finger = Défiler avec deux doigts
+    .edge = Défiler au bord avec un doigt
     .speed = Vitesse de défilement
     .natural = Défilement naturel
     .natural-desc = Le défilement déplace le contenu, pas la vue
@@ -368,45 +390,60 @@ scrolling = Défilement
 ## Input: Keyboard
 
 keyboard = Clavier
-    .desc = Keyboard input
+    .desc = Saisie du clavier
 
-keyboard-sources = Input Sources
-    .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
+keyboard-sources = Sources de saisie
+    .desc = Les sources d'entrée peuvent être changées en utilisant la combinaison de touches Super+Espace. Cette combinaison peut être modifiée dans les paramètres de raccourci clavier.
     .move-up = Remonter
     .move-down = Descendre
-    .settings = Paramètre
+    .settings = Paramètres
     .view-layout = Afficher l'agencement du clavier
     .remove = Supprimer
 
-keyboard-special-char = Special Character Entry
-    .alternate = Alternate characters key
-    .compose = Compose key
+keyboard-special-char = Saisie de caractères spéciaux
+    .alternate = Touche de caractères alternatifs
+    .compose = Touche de composition
 
 ## Input: Keyboard: Shortcuts
 
-keyboard-shortcuts = Keyboard Shortcuts
-    .desc = View and customize shortcuts
+keyboard-shortcuts = Raccourcis clavier
+    .desc = Voir et personnaliser les raccourcis
 
 ## Input: Mouse
 
-mouse = Mouse
-    .desc = Mouse speed, acceleration, natural scrolling.
-    .speed = Mouse speed
-    .acceleration = Enable mouse acceleration
+mouse = Souris
+    .desc = Vitesse de la souris, accélération, défilement naturel.
+    .speed = Vitesse de la souris
+    .acceleration = Activer l'accélération de la souris
 
 ## Input: Touchpad
 
+click-behavior = Comportement de clic
+    .click-finger = Clic secondaire avec deux doigts et clic du milieu avec trois doigts
+    .button-areas = Clic secondaire dans le coin inférieur secondaire et clic du milieu dans la partie inférieure centrale
+
+pinch-to-zoom = Pincer pour zoomer
+    .desc = Utiliser deux doigts pour zoomer dans le contenu, pour les applications qui prennent en charge le zoom.
+
+tap-to-click = Taper pour cliquer
+    .desc = Active le tapotement à un doigt pour le clic principal, le tapotement à deux doigts pour le clic secondaire et le tapotement à trois doigts pour le clic du milieu.
+
+touchpad = Pavé tactile
+    .acceleration = Activer l'accélération du pavé tactile
+    .desc = Vitesse du pavé tactile, options de clic, gestes.
+    .speed = Vitesse du pavé tactile
+
 ## Input: Gestures
 
-swiping = Swiping
-    .four-finger-down = Four-finger swipe down
-    .four-finger-left = Four-finger swipe left
-    .four-finger-right = Four-finger swipe right
-    .four-finger-up = Four-finger swipe up
-    .three-finger-any = Three-finger swip any direction
+swiping = Gestes
+    .four-finger-down = Balayage à quatre doigts vers le bas
+    .four-finger-left = Balayage à quatre doigts vers la gauche
+    .four-finger-right = Balayage à quatre doigts vers la droite
+    .four-finger-up = Balayage à quatre doigts vers le haut
+    .three-finger-any = Balayage à trois doigts dans n'importe quelle direction
 
-switch-between-windows = Switch between windows
-switch-to-next-workspace = Switch to next workspace
-switch-to-prev-workspace = Switch to prev workspace
-open-application-library = Open Application Library
-open-workspaces-view = Open Workspaces Overview
+switch-between-windows = Basculer entre les fenêtres
+switch-to-next-workspace = Basculer vers le prochain espace de travail
+switch-to-prev-workspace = Basculer vers l'espace de travail précédent
+open-application-library = Ouvrir la bibliothèque d'applications
+open-workspaces-view = Ouvrir l'aperçu des espaces de travail
