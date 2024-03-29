@@ -1,5 +1,5 @@
 [workspace]
-members = ["cosmic-settings", "page", "pages/*"]
+members = [ "cosmic-settings", "page", "pages/*"]
 default-members = ["cosmic-settings"]
 resolver = "2"
 rust-version = "1.71.0"
