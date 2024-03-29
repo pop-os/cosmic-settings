@@ -192,7 +192,7 @@ small = Petit
 start-segment = Segment de début
 
 panel-appearance = Apparence
-    .match = Correspondre au bureau
+    .match = Assortir au bureau
     .light = Clair
     .dark = Sombre
 
