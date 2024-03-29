@@ -399,10 +399,13 @@ keyboard-sources = Input Sources
     .settings = Settings
     .view-layout = View keyboard layout
     .remove = Remove
+    .add = Add input source
 
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
     .compose = Compose key
+
+added = Added
 
 ## Input: Keyboard: Shortcuts
 
