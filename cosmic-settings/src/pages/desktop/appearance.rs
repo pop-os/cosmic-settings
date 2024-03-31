@@ -1499,14 +1499,14 @@ async fn fetch_icon_themes() -> Message {
         .or_else(dirs::home_dir)
         .map(|dir| dir.join(".local/share/icons"));
 
-    let xdg_data_dirs = std::env::var("XDG_DATA_DIRS");
+    let xdg_data_dirs = std::env::var("XDG_DATA_DIRS").ok();
 
     let xdg_data_dirs = xdg_data_dirs
-        .as_ref()
-        .ok()
+        .as_deref()
+        // Default from the XDG Base Directory Specification
+        .or(Some("/usr/local/share/:/usr/share/"))
         .into_iter()
-        .flat_map(|data_dirs| data_dirs.split_terminator(':'))
-        .map(|dir| Path::new(dir).join("icons"));
+        .flat_map(|arg| std::env::split_paths(arg).map(|dir| dir.join("icons")));
 
     for icon_dir in xdg_data_dirs.chain(xdg_data_home) {
         let Ok(read_dir) = std::fs::read_dir(&icon_dir) else {
