@@ -1109,9 +1109,9 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&*descriptions[0])
                         .description(
-                            if page.day_time && !page.theme_mode.is_dark {
+                            if !page.day_time && page.theme_mode.is_dark {
                                 &page.auto_switch_descs[0]
-                            } else if !page.day_time && page.theme_mode.is_dark {
+                            } else if page.day_time && !page.theme_mode.is_dark {
                                 &page.auto_switch_descs[1]
                             } else if page.day_time && page.theme_mode.is_dark {
                                 &page.auto_switch_descs[2]
