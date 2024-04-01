@@ -406,6 +406,7 @@ keyboard-special-char = Special Character Entry
     .compose = Compose key
 
 added = Added
+type-to-search = Type to search...
 
 ## Input: Keyboard: Shortcuts
 

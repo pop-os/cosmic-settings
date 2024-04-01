@@ -38,6 +38,7 @@ static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
 #[derive(Clone, Debug)]
 pub enum Message {
     ExpandInputSourcePopover(Option<DefaultKey>),
+    InputSourceSearch(String),
     OpenSpecialCharacterContext(SpecialKey),
     ShowInputSourcesContext,
     SourceAdd(DefaultKey),
@@ -61,10 +62,11 @@ pub type Description = String;
 pub struct Page {
     config: cosmic_config::Config,
     context: Option<Context>,
-    expanded_source_popover: Option<DefaultKey>,
+    input_source_search: String,
+    xkb: XkbConfig,
     keyboard_layouts: SlotMap<DefaultKey, (Locale, Variant, Description)>,
     active_layouts: Vec<DefaultKey>,
-    xkb: XkbConfig,
+    expanded_source_popover: Option<DefaultKey>,
 }
 
 impl Default for Page {
@@ -77,6 +79,7 @@ impl Default for Page {
             keyboard_layouts: SlotMap::new(),
             active_layouts: Vec::new(),
             xkb: XkbConfig::default(),
+            input_source_search: String::new(),
             config,
         }
     }
@@ -303,6 +306,10 @@ impl page::Page<crate::pages::Message> for Page {
 impl Page {
     pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
         match message {
+            Message::InputSourceSearch(search) => {
+                self.input_source_search = search;
+            }
+
             Message::SourceAdd(id) => {
                 self.context = None;
 
@@ -398,13 +405,23 @@ impl Page {
     }
 
     pub fn add_input_source_view(&self) -> Element<'_, crate::pages::Message> {
+        let search = widget::search_input(fl!("type-to-search"), &self.input_source_search)
+            .on_input(Message::InputSourceSearch)
+            .on_clear(Message::InputSourceSearch(String::new()));
+
         let mut list = widget::list_column();
 
+        let search_input = self.input_source_search.trim();
+
         for (id, (_locale, variant, description)) in &self.keyboard_layouts {
-            list = list.add(self.input_source_item(id, description, !variant.is_empty()));
+            if search_input.is_empty() || description.contains(search_input) {
+                list = list.add(self.input_source_item(id, description, !variant.is_empty()));
+            }
         }
 
         widget::column()
+            .spacing(32)
+            .push(search)
             .push(list)
             .apply(Element::from)
             .map(crate::pages::Message::Keyboard)
