@@ -411,10 +411,10 @@ impl Page {
 
         let mut list = widget::list_column();
 
-        let search_input = self.input_source_search.trim();
+        let search_input = &self.input_source_search.trim().to_lowercase();
 
         for (id, (_locale, variant, description)) in &self.keyboard_layouts {
-            if search_input.is_empty() || description.contains(search_input) {
+            if search_input.is_empty() || description.to_lowercase().contains(search_input) {
                 list = list.add(self.input_source_item(id, description, !variant.is_empty()));
             }
         }
