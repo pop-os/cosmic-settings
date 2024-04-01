@@ -66,6 +66,16 @@ install: install-desktop-entries (install-bin bin-src bin-dest) (install-file me
     find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'default_schema'/{} {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
 
+[private]
+install-cmd options src dest:
+    install {{options}} {{src}} {{dest}}
+
+[private]
+install-bin src dest: (install-cmd '-Dm0755' src dest)
+
+[private]
+install-file src dest: (install-cmd '-Dm0644' src dest)
+
 # Uninstalls everything (requires same arguments as given to install)
 uninstall:
     rm -rf {{bin-dest}} \
