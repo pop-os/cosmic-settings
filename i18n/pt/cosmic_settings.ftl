@@ -33,7 +33,10 @@ window-hint-accent = Cor da sugestão da janela ativa
 window-hint-accent-toggle = Usar a cor de destaque do tema como sugestão de janela ativa
 
 auto-switch = Mudar automaticamente do modo Claro para Escuro
-    .desc = Muda para o modo Claro ao nascer do sol
+    .sunrise = Muda para o modo Claro ao nascer do sol
+    .sunset = Muda para o modo Claro ao pôr do sol
+    .next-sunrise = Muda para o modo Claro no próximo nascer do sol
+    .next-sunset = Muda para o modo Claro no próximo pôr do sol
 
 container-background = Fundo do contentor
     .desc-detail = A cor de fundo do contentor é usada na barra lateral de navegação, gaveta lateral, nas caixas de diálogo e em widgets semelhantes. Por predefinição, é automaticamente derivada do fundo da aplicação ou da janela.
@@ -293,6 +296,11 @@ time-zone = Fuso horário
 time-format = Formato de Data e Hora
     .twenty-four = Formato de 24 horas
     .first = Primeiro dia da semana
+    .show-date = Mostrar a data no painel superior
+    .friday = Sexta-feira
+    .saturday = Sábado
+    .sunday = Domingo
+    .monday = Segunda-feira
 
 time-region = Região e Idioma
     .desc = Formatar datas, horas e números baseado na sua região
@@ -391,10 +399,14 @@ keyboard-sources = Fontes de entrada
     .settings = Definições
     .view-layout = Ver esquema do teclado
     .remove = Remover
+    .add = Adicionar fonte de entrada
 
 keyboard-special-char = Entrada de carateres especiais
     .alternate = Tecla de caracteres alternativos
     .compose = Tecla de composição
+
+added = Adicionado
+type-to-search = Escreva para procurar...
 
 ## Input: Keyboard: Shortcuts
 
