@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use std::borrow::Cow;
-use std::collections::BTreeSet;
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -14,12 +14,11 @@ use cosmic::cosmic_theme::{
     CornerRadii, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID,
 };
 use cosmic::iced_core::{alignment, Color, Length};
-use cosmic::iced_widget::scrollable;
+use cosmic::iced_widget::{scrollable, Column};
 use cosmic::prelude::CollectionWidget;
-use cosmic::widget::dropdown;
-use cosmic::widget::icon::{from_name, icon};
+use cosmic::widget::icon::{self, from_name, icon};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, horizontal_space, row, settings,
+    button, color_picker::ColorPickerUpdate, column, container, horizontal_space, row, settings,
     spin_button, text, ColorPickerModel,
 };
 use cosmic::Apply;
@@ -36,6 +35,7 @@ use crate::app;
 use super::wallpaper::widgets::color_image;
 
 type IconThemes = Vec<String>;
+type IconHandles = Vec<[icon::Handle; 3]>;
 
 crate::cache_dynamic_lazy! {
     static HEX: String = fl!("hex");
@@ -68,7 +68,8 @@ pub struct Page {
     roundness: Roundness,
 
     icon_theme_active: Option<usize>,
-    icon_themes: Vec<String>,
+    icon_themes: IconThemes,
+    icon_handles: IconHandles,
 
     theme_mode: ThemeMode,
     theme_mode_config: Option<Config>,
@@ -190,6 +191,7 @@ impl
             no_custom_window_hint: theme_builder.accent.is_some(),
             icon_theme_active: None,
             icon_themes: Vec::new(),
+            icon_handles: Vec::new(),
             theme_mode_config,
             theme_builder_config,
             theme_mode,
@@ -267,7 +269,7 @@ pub enum Message {
     ControlComponent(ColorPickerUpdate),
     CustomAccent(ColorPickerUpdate),
     DarkMode(bool),
-    Entered(IconThemes),
+    Entered((IconThemes, IconHandles)),
     ExportError,
     ExportFile(Arc<SelectedFiles>),
     ExportSuccess,
@@ -569,7 +571,7 @@ impl Page {
                 self.theme_builder_needs_update = true;
                 Command::none()
             }
-            Message::Entered(icon_themes) => {
+            Message::Entered((icon_themes, icon_handles)) => {
                 *self = Self::default();
 
                 // Set the icon themes, and define the active icon theme.
@@ -578,6 +580,7 @@ impl Page {
                     .icon_themes
                     .iter()
                     .position(|theme| theme == &self.tk.icon_theme);
+                self.icon_handles = icon_handles;
                 Command::none()
             }
             Message::Left => Command::perform(async {}, |()| {
@@ -1398,11 +1401,27 @@ pub fn style() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&*ICON_THEME)
                         .description(&*ICON_THEME_DESC)
-                        .control(dropdown(
-                            &page.icon_themes,
-                            page.icon_theme_active,
-                            Message::IconTheme,
-                        )),
+                        .control(
+                            //     dropdown(
+                            //     &page.icon_themes,
+                            //     page.icon_theme_active,
+                            //     Message::IconTheme,
+                            // )
+                            scrollable(column::with_children(
+                                page.icon_themes
+                                    .iter()
+                                    .zip(page.icon_handles.iter())
+                                    .enumerate()
+                                    .map(|(i, (theme, handles))| {
+                                        icon_theme_button(theme, handles, i)
+                                    })
+                                    .collect(),
+                            ))
+                            .direction(scrollable::Direction::Vertical(
+                                scrollable::Properties::new(),
+                            ))
+                            .height(Length::Fixed(64.0)),
+                        ),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
@@ -1483,7 +1502,7 @@ pub fn color_button<'a, Message: 'a + Clone>(
 
 /// Find all icon themes available on the system.
 async fn fetch_icon_themes() -> Message {
-    let mut icon_themes = BTreeSet::new();
+    let mut icon_themes = BTreeMap::new();
 
     let mut buffer = String::new();
 
@@ -1551,12 +1570,16 @@ async fn fetch_icon_themes() -> Message {
             }
 
             if let Some(name) = name {
-                icon_themes.insert(name);
+                // `icon::from_name` may perform blocking I/O
+                let theme = name.clone();
+                if let Ok(handles) = tokio::task::spawn_blocking(|| preview_handles(theme)).await {
+                    icon_themes.insert(name, handles);
+                }
             }
         }
     }
 
-    Message::Entered(icon_themes.into_iter().collect())
+    Message::Entered(icon_themes.into_iter().unzip())
 }
 
 /// Set the preferred icon theme for GNOME/GTK applications.
@@ -1570,4 +1593,48 @@ async fn set_gnome_icon_theme(theme: String) {
         ])
         .status()
         .await;
+}
+
+/// Generate [icon::Handle]s to use for icon theme previews.
+fn preview_handles(theme: String) -> [icon::Handle; 3] {
+    // Cache current default and set icon theme as the new default.
+    let default = cosmic::icon_theme::default();
+    cosmic::icon_theme::set_default(theme);
+
+    // Evaluate handles with the current theme
+    let handles = [
+        icon_handle("folder"),
+        icon_handle("folder"),
+        icon_handle("folder"),
+    ];
+
+    // Reset default icon theme.
+    cosmic::icon_theme::set_default(default);
+    handles
+}
+
+fn icon_handle(icon_name: &str) -> icon::Handle {
+    icon::from_name(icon_name)
+        // Get the path to the icon for the currently set theme.
+        // Without the exact path, the handles will all resolve to icons from the same theme in
+        // [`icon_theme_button`] rather than the icons for each different theme
+        .path()
+        .map(icon::from_path)
+        // Fallback icon handle
+        .unwrap_or_else(|| icon::from_name(icon_name).handle())
+}
+
+/// Button with a preview of the icon theme.
+fn icon_theme_button(
+    theme: &str,
+    handles: &[icon::Handle],
+    id: usize,
+) -> Element<'static, Message> {
+    button(
+        column::with_capacity(2)
+            .push(text(theme.to_owned()))
+            .push(row::with_capacity(3).extend(handles.iter().map(|handle| handle.clone().icon()))),
+    )
+    .on_press(Message::IconTheme(id))
+    .into()
 }
