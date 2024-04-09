@@ -34,8 +34,9 @@ use crate::app;
 
 use super::wallpaper::widgets::color_image;
 
+const NUM_HANDLES: usize = 5;
 type IconThemes = Vec<String>;
-type IconHandles = Vec<[icon::Handle; 3]>;
+type IconHandles = Vec<[icon::Handle; NUM_HANDLES]>;
 
 crate::cache_dynamic_lazy! {
     static HEX: String = fl!("hex");
@@ -1398,31 +1399,28 @@ pub fn style() -> Section<crate::pages::Message> {
                         .description(&*descriptions[6])
                         .toggler(page.tk.apply_theme_global, Message::ApplyThemeGlobal),
                 )
-                .add(
+                .add({
+                    let active = page.icon_theme_active;
                     settings::item::builder(&*ICON_THEME)
                         .description(&*ICON_THEME_DESC)
                         .control(
-                            //     dropdown(
-                            //     &page.icon_themes,
-                            //     page.icon_theme_active,
-                            //     Message::IconTheme,
-                            // )
                             scrollable(column::with_children(
                                 page.icon_themes
                                     .iter()
                                     .zip(page.icon_handles.iter())
                                     .enumerate()
                                     .map(|(i, (theme, handles))| {
-                                        icon_theme_button(theme, handles, i)
+                                        let selected = active.map(|j| i == j).unwrap_or_default();
+                                        icon_theme_button(theme, handles, i, selected)
                                     })
                                     .collect(),
                             ))
                             .direction(scrollable::Direction::Vertical(
                                 scrollable::Properties::new(),
                             ))
-                            .height(Length::Fixed(64.0)),
-                        ),
-                )
+                            .height(Length::Fixed(96.0)),
+                        )
+                })
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
@@ -1596,7 +1594,7 @@ async fn set_gnome_icon_theme(theme: String) {
 }
 
 /// Generate [icon::Handle]s to use for icon theme previews.
-fn preview_handles(theme: String) -> [icon::Handle; 3] {
+fn preview_handles(theme: String) -> [icon::Handle; NUM_HANDLES] {
     // Cache current default and set icon theme as the new default.
     let default = cosmic::icon_theme::default();
     cosmic::icon_theme::set_default(theme);
@@ -1604,8 +1602,10 @@ fn preview_handles(theme: String) -> [icon::Handle; 3] {
     // Evaluate handles with the current theme
     let handles = [
         icon_handle("folder"),
-        icon_handle("folder"),
-        icon_handle("folder"),
+        icon_handle("text-x-generic"),
+        icon_handle("audio-x-generic"),
+        icon_handle("video-x-generic"),
+        icon_handle("image-x-generic"),
     ];
 
     // Reset default icon theme.
@@ -1626,15 +1626,23 @@ fn icon_handle(icon_name: &str) -> icon::Handle {
 
 /// Button with a preview of the icon theme.
 fn icon_theme_button(
-    theme: &str,
+    name: &str,
     handles: &[icon::Handle],
     id: usize,
+    selected: bool,
 ) -> Element<'static, Message> {
+    let theme = cosmic::theme::active();
     button(
-        column::with_capacity(2)
-            .push(text(theme.to_owned()))
-            .push(row::with_capacity(3).extend(handles.iter().map(|handle| handle.clone().icon()))),
+        row::with_capacity(2)
+            .push(
+                row::with_capacity(NUM_HANDLES)
+                    .extend(handles.iter().map(|handle| handle.clone().icon())),
+            )
+            .push(text(name.to_owned()))
+            .spacing(theme.cosmic().space_m()),
     )
     .on_press(Message::IconTheme(id))
+    .selected(selected)
+    .style(button::Style::Icon)
     .into()
 }
