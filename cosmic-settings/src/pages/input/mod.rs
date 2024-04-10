@@ -1,4 +1,5 @@
 use crate::app;
+use clap::builder::OsStr;
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced::{self, wayland::actions::window::SctkWindowSettings, window},
@@ -205,8 +206,31 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        page.sub_page::<keyboard::Page>()
-            .sub_page::<mouse::Page>()
-            .sub_page::<touchpad::Page>()
+        let insert = page.sub_page::<keyboard::Page>().sub_page::<mouse::Page>();
+
+        if system_has_touchpad() {
+            insert.sub_page::<touchpad::Page>()
+        } else {
+            insert
+        }
     }
+}
+
+/// Uses `udev` to check if a touchpad device exists on the system.
+fn system_has_touchpad() -> bool {
+    let Ok(mut enumerator) = udev::Enumerator::new() else {
+        return false;
+    };
+
+    let _res = enumerator.match_subsystem("input");
+
+    let Ok(mut devices) = enumerator.scan_devices() else {
+        return false;
+    };
+
+    devices.any(|device| {
+        device
+            .property_value("ID_INPUT_TOUCHPAD")
+            .map_or(false, |value| value == "1")
+    })
 }
