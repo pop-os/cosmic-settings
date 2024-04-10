@@ -20,6 +20,9 @@ metainfo := appid + '.metainfo.xml'
 metainfo-src := 'resources' / metainfo
 metainfo-dst := clean(rootdir / prefix) / 'share' / 'metainfo' / metainfo
 
+polkit-rules-src := 'resources' / 'polkit-1' / 'rules.d' / 'cosmic-settings.rules'
+polkit-rules-dst := clean(rootdir / prefix) / 'share' / 'polkit-1' / 'rules.d' / 'cosmic-settings.rules'
+
 # Desktop entries
 entry-settings := appid + '.desktop'
 entry-about := appid + '.About.desktop'
@@ -62,7 +65,7 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-workspaces}}' '{{appdir}}/{{entry-workspaces}}'
 
 # Install everything
-install: install-desktop-entries (install-bin bin-src bin-dest) (install-file metainfo-src metainfo-dst)
+install: install-desktop-entries (install-bin bin-src bin-dest) (install-file metainfo-src metainfo-dst) (install-file polkit-rules-src polkit-rules-dst)
     find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'default_schema'/{} {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
 
