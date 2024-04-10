@@ -781,20 +781,6 @@ dependencies = [
 
 [[package]]
 name = "calloop"
-version = "0.12.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fba7adb4dd5aa98e5553510223000e7148f621165ec5f9acd7113f6ca4995298"
-dependencies = [
- "bitflags 2.5.0",
- "log",
- "polling 3.6.0",
- "rustix 0.38.32",
- "slab",
- "thiserror",
-]
-
-[[package]]
-name = "calloop"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b99da2f8558ca23c71f4fd15dc57c906239752dd27ff3c00a1d56b685b7cbfec"
@@ -809,23 +795,11 @@ dependencies = [
 
 [[package]]
 name = "calloop-wayland-source"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f0ea9b9476c7fad82841a8dbb380e2eae480c21910feba80725b46931ed8f02"
-dependencies = [
- "calloop 0.12.4",
- "rustix 0.38.32",
- "wayland-backend",
- "wayland-client",
-]
-
-[[package]]
-name = "calloop-wayland-source"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95a66a987056935f7efce4ab5668920b5d0dac4a7c99991a67395f13702ddd20"
 dependencies = [
- "calloop 0.13.0",
+ "calloop",
  "rustix 0.38.32",
  "wayland-backend",
  "wayland-client",
@@ -1216,7 +1190,7 @@ source = "git+https://github.com/pop-os/cosmic-protocols?rev=e4e6f8c#e4e6f8ca4d7
 dependencies = [
  "cosmic-protocols",
  "libc",
- "smithay-client-toolkit 0.18.0 (git+https://github.com/smithay/client-toolkit?rev=3bed072)",
+ "smithay-client-toolkit",
  "wayland-client",
 ]
 
@@ -1236,7 +1210,7 @@ version = "0.1.0"
 source = "git+https://github.com/pop-os/libcosmic#62d527b6e539ae4b6e60607971e5f260eb674f90"
 dependencies = [
  "atomicwrites",
- "calloop 0.13.0",
+ "calloop",
  "cosmic-config-derive",
  "cosmic-settings-daemon",
  "dirs 5.0.1",
@@ -1269,7 +1243,7 @@ dependencies = [
  "cosmic-config",
  "ron",
  "serde",
- "smithay-client-toolkit 0.18.0 (git+https://github.com/smithay/client-toolkit?rev=2e9bf9f)",
+ "smithay-client-toolkit",
  "tracing",
  "wayland-protocols-wlr",
  "xdg-shell-wrapper-config",
@@ -1730,7 +1704,7 @@ dependencies = [
  "bitflags 2.5.0",
  "mime",
  "raw-window-handle 0.6.0",
- "smithay-client-toolkit 0.18.0 (git+https://github.com/smithay/client-toolkit?rev=3bed072)",
+ "smithay-client-toolkit",
  "smithay-clipboard",
 ]
 
@@ -2827,7 +2801,7 @@ dependencies = [
  "palette",
  "raw-window-handle 0.6.0",
  "serde",
- "smithay-client-toolkit 0.18.0 (git+https://github.com/smithay/client-toolkit?rev=3bed072)",
+ "smithay-client-toolkit",
  "smol_str",
  "thiserror",
  "web-time",
@@ -2893,7 +2867,7 @@ dependencies = [
  "iced_accessibility",
  "iced_core",
  "iced_futures",
- "smithay-client-toolkit 0.18.0 (git+https://github.com/smithay/client-toolkit?rev=3bed072)",
+ "smithay-client-toolkit",
  "thiserror",
  "window_clipboard",
 ]
@@ -2913,7 +2887,7 @@ dependencies = [
  "itertools",
  "lazy_static",
  "raw-window-handle 0.6.0",
- "smithay-client-toolkit 0.18.0 (git+https://github.com/smithay/client-toolkit?rev=3bed072)",
+ "smithay-client-toolkit",
  "thiserror",
  "tracing",
  "wayland-backend",
@@ -2981,7 +2955,7 @@ dependencies = [
  "iced_style",
  "num-traits",
  "ouroboros",
- "smithay-client-toolkit 0.18.0 (git+https://github.com/smithay/client-toolkit?rev=3bed072)",
+ "smithay-client-toolkit",
  "thiserror",
  "unicode-segmentation",
  "window_clipboard",
@@ -5106,39 +5080,12 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 [[package]]
 name = "smithay-client-toolkit"
 version = "0.18.0"
-source = "git+https://github.com/smithay/client-toolkit?rev=2e9bf9f#2e9bf9f31698851ca373e5f1e7ba3e6e804e4db1"
+source = "git+https://github.com/smithay/client-toolkit//?rev=3bed072#3bed072b966022f5f929d12f3aff089b1ace980b"
 dependencies = [
  "bitflags 2.5.0",
  "bytemuck",
- "calloop 0.12.4",
- "calloop-wayland-source 0.2.0",
- "cursor-icon",
- "libc",
- "log",
- "memmap2 0.9.4",
- "pkg-config",
- "rustix 0.38.32",
- "thiserror",
- "wayland-backend",
- "wayland-client",
- "wayland-csd-frame",
- "wayland-cursor",
- "wayland-protocols",
- "wayland-protocols-wlr",
- "wayland-scanner",
- "xkbcommon",
- "xkeysym",
-]
-
-[[package]]
-name = "smithay-client-toolkit"
-version = "0.18.0"
-source = "git+https://github.com/smithay/client-toolkit?rev=3bed072#3bed072b966022f5f929d12f3aff089b1ace980b"
-dependencies = [
- "bitflags 2.5.0",
- "bytemuck",
- "calloop 0.13.0",
- "calloop-wayland-source 0.3.0",
+ "calloop",
+ "calloop-wayland-source",
  "cursor-icon",
  "libc",
  "log",
@@ -5164,7 +5111,7 @@ source = "git+https://github.com/pop-os/smithay-clipboard?tag=pop-dnd-3#2f2430be
 dependencies = [
  "libc",
  "raw-window-handle 0.6.0",
- "smithay-client-toolkit 0.18.0 (git+https://github.com/smithay/client-toolkit?rev=3bed072)",
+ "smithay-client-toolkit",
  "wayland-backend",
 ]
 

@@ -29,10 +29,13 @@ git = "https://github.com/pop-os/cosmic-randr"
 [workspace.dependencies.sctk]
 git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
-rev = "2e9bf9f"
+rev = "3bed072"
 
 [profile.release]
 opt-level = 3
+
+[patch.'https://github.com/smithay/client-toolkit/']
+smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "3bed072" }
 
 # For development and testing purposes
 # [patch.'https://github.com/pop-os/libcosmic']
