@@ -1329,6 +1329,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "udev",
  "url",
  "xkb-data",
 ]
