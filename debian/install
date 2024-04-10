@@ -16,6 +16,7 @@
 /usr/share/applications/com.system76.CosmicSettings.Wallpaper.desktop
 /usr/share/applications/com.system76.CosmicSettings.Workspaces.desktop
 /usr/share/metainfo/com.system76.CosmicSettings.metainfo.xml
+/usr/share/polkit-1/rules.d/cosmic-settings.rules
 /usr/share/cosmic/com.system76.CosmicTheme.Dark
 /usr/share/cosmic/com.system76.CosmicTheme.Dark.Builder
 /usr/share/cosmic/com.system76.CosmicTheme.Light

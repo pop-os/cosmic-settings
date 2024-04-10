@@ -48,6 +48,9 @@ itoa = "1.0.10"
 futures = { package = "futures-lite", version = "2.2.0" }
 xkb-data = "0.1.0"
 udev = "0.8.0"
+hostname-validator = "1.1.1"
+hostname1-zbus = "0.1.0"
+zbus = { version = "3.15.2", features = ["tokio"] }
 
 [dependencies.i18n-embed]
 version = "0.14.1"
