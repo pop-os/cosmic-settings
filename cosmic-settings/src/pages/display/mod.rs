@@ -487,6 +487,12 @@ impl Page {
 
     /// Reloads the display list, and all information relevant to the active display.
     pub fn update_displays(&mut self, list: List) {
+        let active_display_name = self
+            .display_tabs
+            .text_remove(self.display_tabs.active())
+            .unwrap_or_default();
+        let mut active_tab_pos: u16 = 0;
+
         self.active_display = OutputKey::null();
         self.display_tabs.clear();
         self.list = list;
@@ -498,18 +504,21 @@ impl Page {
             .map(|(key, output)| (&*output.name, key))
             .collect::<BTreeMap<_, _>>();
 
-        for (name, id) in sorted_outputs {
+        for (pos, (name, id)) in sorted_outputs.into_iter().enumerate() {
             let Some(output) = self.list.outputs.get(id) else {
                 continue;
             };
 
-            self.display_tabs
-                .insert()
-                .text(crate::utils::display_name(&output.name, output.physical))
-                .data::<OutputKey>(id);
+            let text = crate::utils::display_name(&output.name, output.physical);
+
+            if text == active_display_name {
+                active_tab_pos = pos as u16;
+            }
+
+            self.display_tabs.insert().text(text).data::<OutputKey>(id);
         }
 
-        self.display_tabs.activate_position(0);
+        self.display_tabs.activate_position(active_tab_pos);
 
         // Retrieve data for the first, activated display.
         self.set_display(self.display_tabs.active());
