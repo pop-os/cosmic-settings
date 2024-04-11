@@ -9,6 +9,7 @@ use crate::{app, pages};
 use arrangement::Arrangement;
 use cosmic::iced::{Alignment, Length};
 use cosmic::iced_widget::scrollable::{Direction, Properties, RelativeOffset};
+use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{
     column, container, dropdown, list_column, segmented_button, tab_bar, toggler,
 };
@@ -414,46 +415,48 @@ impl Page {
 
         let active_output = &self.list.outputs[active_id];
 
-        let display_options = list_column()
-            .add(cosmic::widget::settings::item(
-                &*text::DISPLAY_RESOLUTION,
-                dropdown(
-                    &self.cache.resolutions,
-                    self.cache.resolution_selected,
-                    Message::Resolution,
-                ),
-            ))
-            .add(cosmic::widget::settings::item(
-                &*text::DISPLAY_REFRESH_RATE,
-                dropdown(
-                    &self.cache.refresh_rates,
-                    self.cache.refresh_rate_selected,
-                    Message::RefreshRate,
-                ),
-            ))
-            .add(cosmic::widget::settings::item(
-                &*text::DISPLAY_SCALE,
-                dropdown(
-                    &["50%", "75%", "100%", "125%", "150%", "175%", "200%"],
-                    self.cache.scale_selected,
-                    Message::Scale,
-                ),
-            ))
-            .add(cosmic::widget::settings::item(
-                &*text::ORIENTATION,
-                dropdown(
-                    &self.cache.orientations,
-                    self.cache.orientation_selected,
-                    |id| {
-                        Message::Orientation(match id {
-                            0 => Transform::Normal,
-                            1 => Transform::Rotate90,
-                            2 => Transform::Rotate180,
-                            _ => Transform::Rotate270,
-                        })
-                    },
-                ),
-            ));
+        let display_options = active_output.enabled.then(|| {
+            list_column()
+                .add(cosmic::widget::settings::item(
+                    &*text::DISPLAY_RESOLUTION,
+                    dropdown(
+                        &self.cache.resolutions,
+                        self.cache.resolution_selected,
+                        Message::Resolution,
+                    ),
+                ))
+                .add(cosmic::widget::settings::item(
+                    &*text::DISPLAY_REFRESH_RATE,
+                    dropdown(
+                        &self.cache.refresh_rates,
+                        self.cache.refresh_rate_selected,
+                        Message::RefreshRate,
+                    ),
+                ))
+                .add(cosmic::widget::settings::item(
+                    &*text::DISPLAY_SCALE,
+                    dropdown(
+                        &["50%", "75%", "100%", "125%", "150%", "175%", "200%"],
+                        self.cache.scale_selected,
+                        Message::Scale,
+                    ),
+                ))
+                .add(cosmic::widget::settings::item(
+                    &*text::ORIENTATION,
+                    dropdown(
+                        &self.cache.orientations,
+                        self.cache.orientation_selected,
+                        |id| {
+                            Message::Orientation(match id {
+                                0 => Transform::Normal,
+                                1 => Transform::Rotate90,
+                                2 => Transform::Rotate180,
+                                _ => Transform::Rotate270,
+                            })
+                        },
+                    ),
+                ))
+        });
 
         let mut content = column().spacing(theme.cosmic().space_m());
 
@@ -472,7 +475,7 @@ impl Page {
 
         content
             .push(cosmic::widget::text::heading(&*text::DISPLAY_OPTIONS))
-            .push(display_options)
+            .push_maybe(display_options)
             .apply(Element::from)
             .map(pages::Message::Displays)
     }
