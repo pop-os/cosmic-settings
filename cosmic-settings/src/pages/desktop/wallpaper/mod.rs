@@ -1099,7 +1099,18 @@ pub fn settings() -> Section<crate::pages::Message> {
             let mut children = Vec::with_capacity(3);
 
             let mut show_slideshow_toggle = true;
-            let mut slideshow_enabled = false;
+            // Slideshow is enabled if the background path from cosmic-bg is a directory
+            let mut slideshow_enabled = page
+                .config_output()
+                .and_then(|output| page.wallpaper_service_config.entry(output))
+                .map(|entry| {
+                    if let Source::Path(path) = &entry.source {
+                        path.is_dir()
+                    } else {
+                        false
+                    }
+                })
+                .unwrap_or(false);
 
             children.push(crate::widget::display_container(
                 match page.selection.active {
