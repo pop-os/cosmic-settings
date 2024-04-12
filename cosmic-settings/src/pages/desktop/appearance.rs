@@ -34,9 +34,11 @@ use crate::app;
 
 use super::wallpaper::widgets::color_image;
 
-const NUM_HANDLES: usize = 5;
+const ICON_PREV_N: usize = 6;
+const ICON_PREV_ROW: usize = 3;
+const ICON_PREV_SIZE: u16 = 32;
 type IconThemes = Vec<String>;
-type IconHandles = Vec<[icon::Handle; NUM_HANDLES]>;
+type IconHandles = Vec<[icon::Handle; ICON_PREV_N]>;
 
 crate::cache_dynamic_lazy! {
     static HEX: String = fl!("hex");
@@ -1594,18 +1596,19 @@ async fn set_gnome_icon_theme(theme: String) {
 }
 
 /// Generate [icon::Handle]s to use for icon theme previews.
-fn preview_handles(theme: String) -> [icon::Handle; NUM_HANDLES] {
-    // Cache current default and set icon theme as the new default.
+fn preview_handles(theme: String) -> [icon::Handle; ICON_PREV_N] {
+    // Cache current default and set icon theme as a temporary default
     let default = cosmic::icon_theme::default();
     cosmic::icon_theme::set_default(theme);
 
-    // Evaluate handles with the current theme
+    // Evaluate handles with the temporary theme
     let handles = [
         icon_handle("folder"),
-        icon_handle("text-x-generic"),
+        icon_handle("user-home"),
+        icon_handle("preferences-system"),
+        icon_handle("image-x-generic"),
         icon_handle("audio-x-generic"),
         icon_handle("video-x-generic"),
-        icon_handle("image-x-generic"),
     ];
 
     // Reset default icon theme.
@@ -1632,17 +1635,35 @@ fn icon_theme_button(
     selected: bool,
 ) -> Element<'static, Message> {
     let theme = cosmic::theme::active();
-    button(
-        row::with_capacity(2)
-            .push(
-                row::with_capacity(NUM_HANDLES)
-                    .extend(handles.iter().map(|handle| handle.clone().icon())),
-            )
-            .push(text(name.to_owned()))
-            .spacing(theme.cosmic().space_m()),
-    )
-    .on_press(Message::IconTheme(id))
-    .selected(selected)
-    .style(button::Style::Icon)
+    let theme = theme.cosmic();
+    cosmic::iced::widget::column![
+        button(
+            cosmic::iced::widget::column![
+                row::Row::new()
+                    .extend(
+                        handles
+                            .iter()
+                            .take(ICON_PREV_ROW)
+                            .cloned()
+                            .map(|handle| handle.icon().size(ICON_PREV_SIZE))
+                    )
+                    .spacing(theme.space_xs()),
+                row::Row::new()
+                    .extend(
+                        handles
+                            .iter()
+                            .skip(ICON_PREV_ROW)
+                            .cloned()
+                            .map(|handle| handle.icon().size(ICON_PREV_SIZE))
+                    )
+                    .spacing(theme.space_xs()),
+            ]
+            .spacing(theme.space_xs()),
+        )
+        .on_press(Message::IconTheme(id))
+        .selected(selected)
+        .style(button::Style::Icon),
+        text(name.to_owned())
+    ]
     .into()
 }
