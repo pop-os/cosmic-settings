@@ -55,6 +55,7 @@ enum ContextView {
     ContainerBackground,
     ControlComponent,
     CustomAccent,
+    Experimental,
     InterfaceText,
 }
 
@@ -273,6 +274,7 @@ pub enum Message {
     CustomAccent(ColorPickerUpdate),
     DarkMode(bool),
     Entered((IconThemes, IconHandles)),
+    ExperimentalContextDrawer,
     ExportError,
     ExportFile(Arc<SelectedFiles>),
     ExportSuccess,
@@ -442,6 +444,42 @@ impl Page {
             .width(Length::Fill)
             .apply(Element::from)
             .map(crate::pages::Message::Appearance)
+    }
+
+    fn experimental_context_view(
+        &self,
+        reset: Cow<'static, str>,
+    ) -> Element<'_, crate::pages::Message> {
+        let active = self.icon_theme_active;
+        cosmic::iced::widget::column![
+            // Export theme choice to GNOME
+            settings::item::builder(fl!("enable-export"))
+                .description(fl!("enable-export", "desc"))
+                .toggler(self.tk.apply_theme_global, Message::ApplyThemeGlobal),
+            // Icon theme previews
+            settings::item::builder(&*ICON_THEME)
+                .description(&*ICON_THEME_DESC)
+                .control(
+                    scrollable(column::with_children(
+                        self.icon_themes
+                            .iter()
+                            .zip(self.icon_handles.iter())
+                            .enumerate()
+                            .map(|(i, (theme, handles))| {
+                                let selected = active.map(|j| i == j).unwrap_or_default();
+                                icon_theme_button(theme, handles, i, selected)
+                            })
+                            .collect(),
+                    ))
+                    .direction(scrollable::Direction::Vertical(
+                        scrollable::Properties::new(),
+                    ))
+                    .height(Length::Fixed(96.0)),
+                )
+        ]
+        .width(Length::Fill)
+        .apply(Element::from)
+        .map(crate::pages::Message::Appearance)
     }
 
     #[allow(clippy::too_many_lines)]
@@ -835,6 +873,13 @@ impl Page {
                 }
                 Command::none()
             }
+            Message::ExperimentalContextDrawer => {
+                self.context_view = Some(ContextView::Experimental);
+
+                cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    fl!("experimental").into(),
+                ))
+            }
             Message::Daytime(day_time) => {
                 self.day_time = day_time;
                 Command::none()
@@ -944,6 +989,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(mode_and_colors()),
             sections.insert(style()),
             sections.insert(window_management()),
+            sections.insert(experimental()),
             sections.insert(reset_button()),
         ])
     }
@@ -1021,6 +1067,10 @@ impl page::Page<crate::pages::Message> for Page {
                 Message::CustomAccent,
                 |this| &this.custom_accent,
             ),
+
+            ContextView::Experimental => {
+                self.experimental_context_view(RESET_TO_DEFAULT.as_str().into())
+            }
 
             ContextView::InterfaceText => self.color_picker_context_view(
                 None,
@@ -1304,10 +1354,6 @@ pub fn style() -> Section<crate::pages::Message> {
             fl!("style", "square").into(),
             fl!("frosted").into(),
             fl!("frosted", "desc").into(),
-            fl!("enable-export").into(),
-            fl!("enable-export", "desc").into(),
-            ICON_THEME.as_str().into(),
-            ICON_THEME_DESC.as_str().into(),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
@@ -1396,33 +1442,6 @@ pub fn style() -> Section<crate::pages::Message> {
                         .description(&*descriptions[4])
                         .toggler(page.theme_builder.is_frosted, Message::Frosted),
                 )
-                .add(
-                    settings::item::builder(&*descriptions[5])
-                        .description(&*descriptions[6])
-                        .toggler(page.tk.apply_theme_global, Message::ApplyThemeGlobal),
-                )
-                .add({
-                    let active = page.icon_theme_active;
-                    settings::item::builder(&*ICON_THEME)
-                        .description(&*ICON_THEME_DESC)
-                        .control(
-                            scrollable(column::with_children(
-                                page.icon_themes
-                                    .iter()
-                                    .zip(page.icon_handles.iter())
-                                    .enumerate()
-                                    .map(|(i, (theme, handles))| {
-                                        let selected = active.map(|j| i == j).unwrap_or_default();
-                                        icon_theme_button(theme, handles, i, selected)
-                                    })
-                                    .collect(),
-                            ))
-                            .direction(scrollable::Direction::Vertical(
-                                scrollable::Properties::new(),
-                            ))
-                            .height(Length::Fixed(96.0)),
-                        )
-                })
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
@@ -1455,6 +1474,20 @@ pub fn window_management() -> Section<crate::pages::Message> {
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
+}
+
+pub fn experimental() -> Section<crate::pages::Message> {
+    Section::default().view::<Page>(|_binder, _page, _section| {
+        settings::view_section("")
+            .add(
+                settings::item::builder(fl!("experimental")).control(
+                    button::icon(from_name("go-next-symbolic"))
+                        .on_press(Message::ExperimentalContextDrawer),
+                ),
+            )
+            .apply(Element::from)
+            .map(crate::pages::Message::Appearance)
+    })
 }
 
 #[allow(clippy::too_many_lines)]
