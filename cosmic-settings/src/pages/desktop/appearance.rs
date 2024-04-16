@@ -449,7 +449,10 @@ impl Page {
                     if let Err(err) = self.theme_mode.set_is_dark(config, enabled) {
                         tracing::error!(?err, "Error setting dark mode");
                     }
+
+                    self.reload_theme_mode();
                 }
+
                 Command::none()
             }
             Message::Autoswitch(enabled) => {
