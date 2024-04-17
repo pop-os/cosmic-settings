@@ -3,7 +3,7 @@
 
 use std::borrow::Cow;
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
@@ -13,13 +13,13 @@ use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{
     CornerRadii, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID,
 };
-use cosmic::iced_core::{alignment, Color, Length};
-use cosmic::iced_widget::{scrollable, Column};
+use cosmic::iced_core::{alignment, Background, Color, Length};
+use cosmic::iced_widget::scrollable;
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::icon::{self, from_name, icon};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, column, container, horizontal_space, row, settings,
-    spin_button, text, ColorPickerModel,
+    button, color_picker::ColorPickerUpdate, column, container, flex_row, horizontal_space, row,
+    settings, spin_button, text, ColorPickerModel,
 };
 use cosmic::Apply;
 use cosmic::{command, Command, Element};
@@ -446,37 +446,40 @@ impl Page {
             .map(crate::pages::Message::Appearance)
     }
 
-    fn experimental_context_view(
-        &self,
-        reset: Cow<'static, str>,
-    ) -> Element<'_, crate::pages::Message> {
+    fn experimental_context_view(&self) -> Element<'_, crate::pages::Message> {
         let active = self.icon_theme_active;
+        let theme = cosmic::theme::active();
+        let theme = theme.cosmic();
         cosmic::iced::widget::column![
             // Export theme choice to GNOME
-            settings::item::builder(fl!("enable-export"))
-                .description(fl!("enable-export", "desc"))
-                .toggler(self.tk.apply_theme_global, Message::ApplyThemeGlobal),
+            settings::view_section("").add(
+                settings::item::builder(fl!("enable-export"))
+                    .description(fl!("enable-export", "desc"))
+                    .toggler(self.tk.apply_theme_global, Message::ApplyThemeGlobal)
+            ),
             // Icon theme previews
-            settings::item::builder(&*ICON_THEME)
-                .description(&*ICON_THEME_DESC)
-                .control(
-                    scrollable(column::with_children(
-                        self.icon_themes
-                            .iter()
-                            .zip(self.icon_handles.iter())
-                            .enumerate()
-                            .map(|(i, (theme, handles))| {
-                                let selected = active.map(|j| i == j).unwrap_or_default();
-                                icon_theme_button(theme, handles, i, selected)
-                            })
-                            .collect(),
-                    ))
-                    .direction(scrollable::Direction::Vertical(
-                        scrollable::Properties::new(),
-                    ))
-                    .height(Length::Fixed(96.0)),
+            // cosmic::iced::widget::column![text(&*ICON_THEME), text(&*ICON_THEME_DESC).size(10)]
+            //     .spacing(2),
+            text(&*ICON_THEME),
+            scrollable(
+                flex_row(
+                    self.icon_themes
+                        .iter()
+                        .zip(self.icon_handles.iter())
+                        .enumerate()
+                        .map(|(i, (theme, handles))| {
+                            let selected = active.map(|j| i == j).unwrap_or_default();
+                            icon_theme_button(theme, handles, i, selected)
+                        })
+                        .collect(),
                 )
+                .row_spacing(theme.space_xs())
+                .column_spacing(theme.space_xs())
+            )
         ]
+        // .padding(theme.space_s())
+        .spacing(theme.space_m())
+        // .align_items(cosmic::iced_core::Alignment::Center)
         .width(Length::Fill)
         .apply(Element::from)
         .map(crate::pages::Message::Appearance)
@@ -1068,9 +1071,7 @@ impl page::Page<crate::pages::Message> for Page {
                 |this| &this.custom_accent,
             ),
 
-            ContextView::Experimental => {
-                self.experimental_context_view(RESET_TO_DEFAULT.as_str().into())
-            }
+            ContextView::Experimental => self.experimental_context_view(),
 
             ContextView::InterfaceText => self.color_picker_context_view(
                 None,
@@ -1477,17 +1478,20 @@ pub fn window_management() -> Section<crate::pages::Message> {
 }
 
 pub fn experimental() -> Section<crate::pages::Message> {
-    Section::default().view::<Page>(|_binder, _page, _section| {
-        settings::view_section("")
-            .add(
-                settings::item::builder(fl!("experimental")).control(
-                    button::icon(from_name("go-next-symbolic"))
-                        .on_press(Message::ExperimentalContextDrawer),
-                ),
-            )
-            .apply(Element::from)
-            .map(crate::pages::Message::Appearance)
-    })
+    Section::default()
+        .descriptions(vec![fl!("experimental").into()])
+        .view::<Page>(|_binder, _page, section| {
+            let descriptions = &*section.descriptions;
+            settings::view_section("")
+                .add(
+                    settings::item::builder(&*descriptions[0]).control(
+                        button::icon(from_name("go-next-symbolic"))
+                            .on_press(Message::ExperimentalContextDrawer),
+                    ),
+                )
+                .apply(Element::from)
+                .map(crate::pages::Message::Appearance)
+        })
 }
 
 #[allow(clippy::too_many_lines)]
@@ -1695,8 +1699,34 @@ fn icon_theme_button(
         )
         .on_press(Message::IconTheme(id))
         .selected(selected)
-        .style(button::Style::Icon),
-        text(name.to_owned())
+        .style(button::Style::Custom {
+            active: Box::new(move |focused, theme| icon_theme_style(theme, selected, focused)),
+            disabled: Box::new(move |theme| icon_theme_style(theme, selected, false)),
+            hovered: Box::new(move |focused, theme| icon_theme_style(theme, selected, focused)),
+            pressed: Box::new(move |focused, theme| icon_theme_style(theme, selected, focused))
+        }),
+        text(name.to_owned()).width(Length::Fixed((ICON_PREV_SIZE * 3) as _))
     ]
+    .spacing(theme.space_xs())
     .into()
+}
+
+/// Icon preview button style.
+fn icon_theme_style(
+    theme: &cosmic::theme::Theme,
+    selected: bool,
+    _focused: bool,
+) -> button::Appearance {
+    let cosmic = theme.cosmic();
+    let mut appearance = button::Appearance::new();
+
+    appearance.background = Some(Background::Color(cosmic.palette.neutral_4.into()));
+
+    if selected {
+        appearance.border_width = 2.0;
+        appearance.border_color = cosmic.accent.base.into();
+        appearance.icon_color = Some(cosmic.accent.base.into());
+    }
+
+    appearance
 }
