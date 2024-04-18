@@ -451,7 +451,7 @@ impl Page {
         let theme = cosmic::theme::active();
         let theme = theme.cosmic();
         cosmic::iced::widget::column![
-            // Export theme choice to GNOME
+            // Export theme choice
             settings::view_section("").add(
                 settings::item::builder(fl!("enable-export"))
                     .description(fl!("enable-export", "desc"))
@@ -460,22 +460,25 @@ impl Page {
             // Icon theme previews
             // cosmic::iced::widget::column![text(&*ICON_THEME), text(&*ICON_THEME_DESC).size(10)]
             //     .spacing(2),
-            text(&*ICON_THEME),
-            scrollable(
-                flex_row(
-                    self.icon_themes
-                        .iter()
-                        .zip(self.icon_handles.iter())
-                        .enumerate()
-                        .map(|(i, (theme, handles))| {
-                            let selected = active.map(|j| i == j).unwrap_or_default();
-                            icon_theme_button(theme, handles, i, selected)
-                        })
-                        .collect(),
+            cosmic::iced::widget::column![
+                text(&*ICON_THEME),
+                scrollable(
+                    flex_row(
+                        self.icon_themes
+                            .iter()
+                            .zip(self.icon_handles.iter())
+                            .enumerate()
+                            .map(|(i, (theme, handles))| {
+                                let selected = active.map(|j| i == j).unwrap_or_default();
+                                icon_theme_button(theme, handles, i, selected)
+                            })
+                            .collect(),
+                    )
+                    .row_spacing(theme.space_xs())
+                    .column_spacing(theme.space_xxxs())
                 )
-                .row_spacing(theme.space_xs())
-                .column_spacing(theme.space_xs())
-            )
+            ]
+            .spacing(theme.space_xxs())
         ]
         // .padding(theme.space_s())
         .spacing(theme.space_m())
@@ -878,10 +881,7 @@ impl Page {
             }
             Message::ExperimentalContextDrawer => {
                 self.context_view = Some(ContextView::Experimental);
-
-                cosmic::command::message(crate::app::Message::OpenContextDrawer(
-                    fl!("experimental").into(),
-                ))
+                cosmic::command::message(crate::app::Message::OpenContextDrawer("".into()))
             }
             Message::Daytime(day_time) => {
                 self.day_time = day_time;
@@ -1479,7 +1479,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
 
 pub fn experimental() -> Section<crate::pages::Message> {
     Section::default()
-        .descriptions(vec![fl!("experimental").into()])
+        .descriptions(vec![fl!("experimental-settings").into()])
         .view::<Page>(|_binder, _page, section| {
             let descriptions = &*section.descriptions;
             settings::view_section("")
@@ -1673,60 +1673,89 @@ fn icon_theme_button(
 ) -> Element<'static, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
-    cosmic::iced::widget::column![
-        button(
-            cosmic::iced::widget::column![
-                row::Row::new()
-                    .extend(
-                        handles
-                            .iter()
-                            .take(ICON_PREV_ROW)
-                            .cloned()
-                            .map(|handle| handle.icon().size(ICON_PREV_SIZE))
+    // let image_style = cosmic::theme::Button::Image;
+    let background = theme.palette.neutral_4.into();
+
+    cosmic::widget::column()
+        .push(
+            button::Button::new_image(
+                cosmic::iced::widget::column![
+                    cosmic::widget::row::row()
+                        .extend(
+                            handles
+                                .iter()
+                                .take(ICON_PREV_ROW)
+                                .cloned()
+                                .map(|handle| handle.icon().size(ICON_PREV_SIZE))
+                        )
+                        .spacing(theme.space_xs()),
+                    row::Row::new()
+                        .extend(
+                            handles
+                                .iter()
+                                .skip(ICON_PREV_ROW)
+                                .cloned()
+                                .map(|handle| handle.icon().size(ICON_PREV_SIZE))
+                        )
+                        .spacing(theme.space_xs()),
+                ]
+                .spacing(theme.space_xs()),
+                None,
+            )
+            .on_press(Message::IconTheme(id))
+            .selected(selected)
+            .style(button::Style::Custom {
+                active: Box::new(move |focused, theme| {
+                    icon_theme_style(
+                        <cosmic::theme::Theme as button::StyleSheet>::active(
+                            theme,
+                            focused,
+                            selected,
+                            &cosmic::theme::Button::Image,
+                        ),
+                        background,
                     )
-                    .spacing(theme.space_xs()),
-                row::Row::new()
-                    .extend(
-                        handles
-                            .iter()
-                            .skip(ICON_PREV_ROW)
-                            .cloned()
-                            .map(|handle| handle.icon().size(ICON_PREV_SIZE))
+                }),
+                disabled: Box::new(move |theme| {
+                    icon_theme_style(
+                        <cosmic::theme::Theme as button::StyleSheet>::disabled(
+                            theme,
+                            &cosmic::theme::Button::Image,
+                        ),
+                        background,
                     )
-                    .spacing(theme.space_xs()),
-            ]
-            .spacing(theme.space_xs()),
+                }),
+                hovered: Box::new(move |focused, theme| {
+                    icon_theme_style(
+                        <cosmic::theme::Theme as button::StyleSheet>::hovered(
+                            theme,
+                            focused,
+                            selected,
+                            &cosmic::theme::Button::Image,
+                        ),
+                        background,
+                    )
+                }),
+                pressed: Box::new(move |focused, theme| {
+                    icon_theme_style(
+                        <cosmic::theme::Theme as button::StyleSheet>::pressed(
+                            theme,
+                            focused,
+                            selected,
+                            &cosmic::theme::Button::Image,
+                        ),
+                        background,
+                    )
+                }),
+            }),
         )
-        .on_press(Message::IconTheme(id))
-        .selected(selected)
-        .style(button::Style::Custom {
-            active: Box::new(move |focused, theme| icon_theme_style(theme, selected, focused)),
-            disabled: Box::new(move |theme| icon_theme_style(theme, selected, false)),
-            hovered: Box::new(move |focused, theme| icon_theme_style(theme, selected, focused)),
-            pressed: Box::new(move |focused, theme| icon_theme_style(theme, selected, focused))
-        }),
-        text(name.to_owned()).width(Length::Fixed((ICON_PREV_SIZE * 3) as _))
-    ]
-    .spacing(theme.space_xs())
-    .into()
+        .push(text(name.to_owned()).width(Length::Fixed((ICON_PREV_SIZE * 3) as _)))
+        .spacing(theme.space_xs())
+        .into()
 }
 
-/// Icon preview button style.
-fn icon_theme_style(
-    theme: &cosmic::theme::Theme,
-    selected: bool,
-    _focused: bool,
-) -> button::Appearance {
-    let cosmic = theme.cosmic();
-    let mut appearance = button::Appearance::new();
-
-    appearance.background = Some(Background::Color(cosmic.palette.neutral_4.into()));
-
-    if selected {
-        appearance.border_width = 2.0;
-        appearance.border_color = cosmic.accent.base.into();
-        appearance.icon_color = Some(cosmic.accent.base.into());
-    }
-
+/// Add background color to the thumbnails button.
+fn icon_theme_style(mut appearance: button::Appearance, background: Color) -> button::Appearance {
+    appearance.background = Some(Background::Color(background));
     appearance
 }
