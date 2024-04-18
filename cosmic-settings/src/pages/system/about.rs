@@ -34,7 +34,6 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(device()),
             sections.insert(hardware()),
             sections.insert(os()),
-            sections.insert(related()),
         ])
     }
 
@@ -185,16 +184,17 @@ fn os() -> Section<crate::pages::Message> {
         })
 }
 
-fn related() -> Section<crate::pages::Message> {
-    Section::default()
-        .title(fl!("about-related"))
-        .descriptions(vec![fl!("about-related", "support").into()])
-        .view::<Page>(|_binder, _page, section| {
-            settings::view_section(&section.title)
-                .add(settings::item(&*section.descriptions[0], text("TODO")))
-                .into()
-        })
-}
+// Related settings: for 2nd COSMIC release
+// fn related() -> Section<crate::pages::Message> {
+//     Section::default()
+//         .title(fl!("about-related"))
+//         .descriptions(vec![fl!("about-related", "support").into()])
+//         .view::<Page>(|_binder, _page, section| {
+//             settings::view_section(&section.title)
+//                 .add(settings::item(&*section.descriptions[0], text("TODO")))
+//                 .into()
+//         })
+// }
 
 // fn page(app: &crate::SettingsApp) -> &Page {
 //     app.pages
