@@ -16,6 +16,7 @@ Build-Depends:
     mold,
     pkg-config,
     rust-all,
+Recommends: adw-gtk3
 Standards-Version: 4.6.2
 Homepage: https://github.com/pop-os/cosmic-settings
 
