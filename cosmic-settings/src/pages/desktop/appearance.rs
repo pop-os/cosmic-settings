@@ -18,8 +18,8 @@ use cosmic::iced_widget::scrollable;
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::icon::{self, from_name, icon};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, column, container, flex_row, horizontal_space, row,
-    settings, spin_button, text, ColorPickerModel,
+    button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, row, settings,
+    spin_button, text, ColorPickerModel,
 };
 use cosmic::Apply;
 use cosmic::{command, Command, Element};
@@ -460,8 +460,8 @@ impl Page {
             // Icon theme previews
             // cosmic::iced::widget::column![text(&*ICON_THEME), text(&*ICON_THEME_DESC).size(10)]
             //     .spacing(2),
-            cosmic::iced::widget::column![
-                text(&*ICON_THEME),
+            cosmic::widget::column::with_children(vec![
+                text::heading(&*ICON_THEME).into(),
                 scrollable(
                     flex_row(
                         self.icon_themes
@@ -477,7 +477,8 @@ impl Page {
                     .row_spacing(theme.space_xs())
                     .column_spacing(theme.space_xxxs())
                 )
-            ]
+                .into()
+            ])
             .spacing(theme.space_xxs())
         ]
         // .padding(theme.space_s())
@@ -1673,89 +1674,91 @@ fn icon_theme_button(
 ) -> Element<'static, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
-    // let image_style = cosmic::theme::Button::Image;
-    let background = theme.palette.neutral_4.into();
+    let background = Background::Color(theme.palette.neutral_4.into());
 
     cosmic::widget::column()
         .push(
-            button::Button::new_image(
-                cosmic::iced::widget::column![
-                    cosmic::widget::row::row()
+            cosmic::widget::button::custom_image_button(
+                cosmic::widget::column::with_children(vec![
+                    cosmic::widget::row()
                         .extend(
                             handles
                                 .iter()
                                 .take(ICON_PREV_ROW)
                                 .cloned()
-                                .map(|handle| handle.icon().size(ICON_PREV_SIZE))
+                                // TODO: Maybe allow choosable sizes/zooming
+                                .map(|handle| handle.icon().size(ICON_PREV_SIZE)),
                         )
-                        .spacing(theme.space_xs()),
-                    row::Row::new()
+                        .spacing(theme.space_xxs())
+                        .into(),
+                    cosmic::widget::row()
                         .extend(
                             handles
                                 .iter()
                                 .skip(ICON_PREV_ROW)
                                 .cloned()
-                                .map(|handle| handle.icon().size(ICON_PREV_SIZE))
+                                // TODO: Maybe allow choosable sizes/zooming
+                                .map(|handle| handle.icon().size(ICON_PREV_SIZE)),
                         )
-                        .spacing(theme.space_xs()),
-                ]
+                        .spacing(theme.space_xxs())
+                        .into(),
+                ])
                 .spacing(theme.space_xs()),
                 None,
             )
             .on_press(Message::IconTheme(id))
             .selected(selected)
+            .padding(theme.space_xxs())
+            // Image button's style mostly works, but it needs a background to fit the design
             .style(button::Style::Custom {
                 active: Box::new(move |focused, theme| {
-                    icon_theme_style(
-                        <cosmic::theme::Theme as button::StyleSheet>::active(
-                            theme,
-                            focused,
-                            selected,
-                            &cosmic::theme::Button::Image,
-                        ),
-                        background,
-                    )
+                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::active(
+                        theme,
+                        focused,
+                        selected,
+                        &cosmic::theme::Button::Image,
+                    );
+                    appearance.background = Some(background);
+                    appearance
                 }),
                 disabled: Box::new(move |theme| {
-                    icon_theme_style(
-                        <cosmic::theme::Theme as button::StyleSheet>::disabled(
-                            theme,
-                            &cosmic::theme::Button::Image,
-                        ),
-                        background,
-                    )
+                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::disabled(
+                        theme,
+                        &cosmic::theme::Button::Image,
+                    );
+                    appearance.background = Some(background);
+                    appearance
                 }),
                 hovered: Box::new(move |focused, theme| {
-                    icon_theme_style(
-                        <cosmic::theme::Theme as button::StyleSheet>::hovered(
-                            theme,
-                            focused,
-                            selected,
-                            &cosmic::theme::Button::Image,
-                        ),
-                        background,
-                    )
+                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::hovered(
+                        theme,
+                        focused,
+                        selected,
+                        &cosmic::theme::Button::Image,
+                    );
+                    appearance.background = Some(background);
+                    appearance
                 }),
                 pressed: Box::new(move |focused, theme| {
-                    icon_theme_style(
-                        <cosmic::theme::Theme as button::StyleSheet>::pressed(
-                            theme,
-                            focused,
-                            selected,
-                            &cosmic::theme::Button::Image,
-                        ),
-                        background,
-                    )
+                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::pressed(
+                        theme,
+                        focused,
+                        selected,
+                        &cosmic::theme::Button::Image,
+                    );
+                    appearance.background = Some(background);
+                    appearance
                 }),
             }),
         )
-        .push(text(name.to_owned()).width(Length::Fixed((ICON_PREV_SIZE * 3) as _)))
+        .push(
+            text(if name.len() > 18 {
+                format!("{name:.20}...")
+            } else {
+                name.into()
+            })
+            .width(Length::Fixed((ICON_PREV_SIZE * 3) as _)),
+        )
         .spacing(theme.space_xs())
         .into()
-}
-
-/// Add background color to the thumbnails button.
-fn icon_theme_style(mut appearance: button::Appearance, background: Color) -> button::Appearance {
-    appearance.background = Some(Background::Color(background));
-    appearance
 }
