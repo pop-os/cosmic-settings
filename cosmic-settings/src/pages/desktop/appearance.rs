@@ -36,7 +36,9 @@ use super::wallpaper::widgets::color_image;
 
 const ICON_PREV_N: usize = 6;
 const ICON_PREV_ROW: usize = 3;
-const ICON_PREV_SIZE: u16 = 32;
+const ICON_TRY_SIZES: [u16; 3] = [32, 48, 64];
+const ICON_THUMB_SIZE: u16 = 32;
+const ICON_NAME_TRUNC: usize = 20;
 type IconThemes = Vec<String>;
 type IconHandles = Vec<[icon::Handle; ICON_PREV_N]>;
 
@@ -1655,12 +1657,18 @@ fn preview_handles(theme: String) -> [icon::Handle; ICON_PREV_N] {
 }
 
 fn icon_handle(icon_name: &str) -> icon::Handle {
-    icon::from_name(icon_name)
-        // Get the path to the icon for the currently set theme.
-        // Without the exact path, the handles will all resolve to icons from the same theme in
-        // [`icon_theme_button`] rather than the icons for each different theme
-        .path()
-        .map(icon::from_path)
+    ICON_TRY_SIZES
+        .iter()
+        .find_map(|&size| {
+            icon::from_name(icon_name)
+                // Set the size on the handle to evaluate the correct icon
+                .size(size)
+                // Get the path to the icon for the currently set theme.
+                // Without the exact path, the handles will all resolve to icons from the same theme in
+                // [`icon_theme_button`] rather than the icons for each different theme
+                .path()
+                .map(icon::from_path)
+        })
         // Fallback icon handle
         .unwrap_or_else(|| icon::from_name(icon_name).handle())
 }
@@ -1687,7 +1695,7 @@ fn icon_theme_button(
                                 .take(ICON_PREV_ROW)
                                 .cloned()
                                 // TODO: Maybe allow choosable sizes/zooming
-                                .map(|handle| handle.icon().size(ICON_PREV_SIZE)),
+                                .map(|handle| handle.icon().size(ICON_THUMB_SIZE)),
                         )
                         .spacing(theme.space_xxs())
                         .into(),
@@ -1698,7 +1706,7 @@ fn icon_theme_button(
                                 .skip(ICON_PREV_ROW)
                                 .cloned()
                                 // TODO: Maybe allow choosable sizes/zooming
-                                .map(|handle| handle.icon().size(ICON_PREV_SIZE)),
+                                .map(|handle| handle.icon().size(ICON_THUMB_SIZE)),
                         )
                         .spacing(theme.space_xxs())
                         .into(),
@@ -1752,12 +1760,12 @@ fn icon_theme_button(
             }),
         )
         .push(
-            text(if name.len() > 18 {
-                format!("{name:.20}...")
+            text(if name.len() > ICON_NAME_TRUNC {
+                format!("{name:.ICON_NAME_TRUNC$}...")
             } else {
                 name.into()
             })
-            .width(Length::Fixed((ICON_PREV_SIZE * 3) as _)),
+            .width(Length::Fixed((ICON_THUMB_SIZE * 3) as _)),
         )
         .spacing(theme.space_xs())
         .into()
