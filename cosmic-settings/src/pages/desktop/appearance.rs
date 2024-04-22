@@ -1543,6 +1543,7 @@ pub fn color_button<'a, Message: 'a + Clone>(
 /// Find all icon themes available on the system.
 async fn fetch_icon_themes() -> Message {
     let mut icon_themes = BTreeMap::new();
+    let mut theme_paths: BTreeMap<String, PathBuf> = BTreeMap::new();
 
     let mut buffer = String::new();
 
@@ -1589,6 +1590,7 @@ async fn fetch_icon_themes() -> Message {
 
             buffer.clear();
             let mut name = None;
+            let mut valid_dirs = Vec::new();
 
             let mut line_reader = tokio::io::BufReader::new(file);
             while let Ok(read) = line_reader.read_line(&mut buffer).await {
@@ -1606,13 +1608,39 @@ async fn fetch_icon_themes() -> Message {
                     }
                 }
 
+                if valid_dirs.is_empty() {
+                    if let Some(value) = buffer.strip_prefix("Inherits=") {
+                        valid_dirs.extend(value.trim().split(',').map(|fallback| {
+                            if let Some(path) = theme_paths.get(fallback) {
+                                path.iter()
+                                    .last()
+                                    .and_then(|os| os.to_str().map(ToOwned::to_owned))
+                                    .unwrap_or_else(|| fallback.to_owned())
+                            } else {
+                                fallback.to_owned()
+                            }
+                        }));
+                    }
+                }
+
                 buffer.clear();
             }
 
             if let Some(name) = name {
-                // `icon::from_name` may perform blocking I/O
+                // Name of the directory theme was found in (e.g. Pop for Pop)
+                valid_dirs.push(
+                    path.iter()
+                        .last()
+                        .and_then(|os| os.to_str().map(ToOwned::to_owned))
+                        .unwrap_or_else(|| name.clone()),
+                );
+                theme_paths.entry(name.clone()).or_insert(path);
+
                 let theme = name.clone();
-                if let Ok(handles) = tokio::task::spawn_blocking(|| preview_handles(theme)).await {
+                // `icon::from_name` may perform blocking I/O
+                if let Ok(handles) =
+                    tokio::task::spawn_blocking(|| preview_handles(theme, valid_dirs)).await
+                {
                     icon_themes.insert(name, handles);
                 }
             }
@@ -1636,19 +1664,23 @@ async fn set_gnome_icon_theme(theme: String) {
 }
 
 /// Generate [icon::Handle]s to use for icon theme previews.
-fn preview_handles(theme: String) -> [icon::Handle; ICON_PREV_N] {
+fn preview_handles(theme: String, inherits: Vec<String>) -> [icon::Handle; ICON_PREV_N] {
     // Cache current default and set icon theme as a temporary default
     let default = cosmic::icon_theme::default();
     cosmic::icon_theme::set_default(theme);
 
     // Evaluate handles with the temporary theme
     let handles = [
-        icon_handle("folder"),
-        icon_handle("user-home"),
-        icon_handle("preferences-system"),
-        icon_handle("image-x-generic"),
-        icon_handle("audio-x-generic"),
-        icon_handle("video-x-generic"),
+        icon_handle("folder", "folder-symbolic", &inherits),
+        icon_handle("user-home", "user-home-symbolic", &inherits),
+        icon_handle(
+            "preferences-system",
+            "preferences-system-symbolic",
+            &inherits,
+        ),
+        icon_handle("image-x-generic", "images-x-generic-symbolic", &inherits),
+        icon_handle("audio-x-generic", "audio-x-generic-symbolic", &inherits),
+        icon_handle("video-x-generic", "video-x-generic-symbolic", &inherits),
     ];
 
     // Reset default icon theme.
@@ -1656,21 +1688,57 @@ fn preview_handles(theme: String) -> [icon::Handle; ICON_PREV_N] {
     handles
 }
 
-fn icon_handle(icon_name: &str) -> icon::Handle {
+/// Evaluate an icon handle for a specific theme.
+///
+/// `alternate` is a fallback icon name such as a symbolic variant.
+///
+/// `valid_dirs` should be a slice of directories from which we consider an icon to be valid. Valid
+/// directories would usually be inherited themes as well as the actual theme's location.
+fn icon_handle(icon_name: &str, alternate: &str, valid_dirs: &[String]) -> icon::Handle {
     ICON_TRY_SIZES
         .iter()
-        .find_map(|&size| {
-            icon::from_name(icon_name)
+        .zip(std::iter::repeat(icon_name).take(ICON_TRY_SIZES.len()))
+        // Try fallback icon name after the default
+        .chain(
+            ICON_TRY_SIZES
+                .iter()
+                .zip(std::iter::repeat(alternate))
+                .take(ICON_TRY_SIZES.len()),
+        )
+        .find_map(|(&size, name)| {
+            icon::from_name(name)
                 // Set the size on the handle to evaluate the correct icon
                 .size(size)
                 // Get the path to the icon for the currently set theme.
                 // Without the exact path, the handles will all resolve to icons from the same theme in
                 // [`icon_theme_button`] rather than the icons for each different theme
                 .path()
-                .map(icon::from_path)
+                // `libcosmic` should always return a path if the default theme is installed
+                // The returned path has to be verified as an icon from the set theme or an
+                // inherited theme
+                .and_then(|path| {
+                    let mut theme_dir = &*path;
+                    while let Some(parent) = theme_dir.parent() {
+                        if parent.ends_with("icons") {
+                            break;
+                        }
+                        theme_dir = parent;
+                    }
+
+                    if let Some(dir_name) =
+                        theme_dir.iter().last().and_then(std::ffi::OsStr::to_str)
+                    {
+                        valid_dirs
+                            .iter()
+                            .any(|valid| dir_name == valid)
+                            .then(|| icon::from_path(path))
+                    } else {
+                        None
+                    }
+                })
         })
         // Fallback icon handle
-        .unwrap_or_else(|| icon::from_name(icon_name).handle())
+        .unwrap_or_else(|| icon::from_name(icon_name).size(ICON_THUMB_SIZE).handle())
 }
 
 /// Button with a preview of the icon theme.
