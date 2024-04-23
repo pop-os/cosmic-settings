@@ -38,10 +38,10 @@ opt-level = 3
 smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "3bed072" }
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/libcosmic']
+[patch.'https://github.com/pop-os/libcosmic']
 # libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
 # cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
 # cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
-# libcosmic = { path = "../libcosmic" }
-# cosmic-config = { path = "../libcosmic/cosmic-config" }
-# cosmic-theme = { path = "../libcosmic/cosmic-theme" }
+libcosmic = { path = "../libcosmic" }
+cosmic-config = { path = "../libcosmic/cosmic-config" }
+cosmic-theme = { path = "../libcosmic/cosmic-theme" }

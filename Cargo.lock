@@ -356,7 +356,7 @@ dependencies = [
  "futures-io",
  "futures-lite 2.3.0",
  "parking",
- "polling 3.6.0",
+ "polling 3.7.0",
  "rustix 0.38.34",
  "slab",
  "tracing",
@@ -792,7 +792,7 @@ checksum = "b99da2f8558ca23c71f4fd15dc57c906239752dd27ff3c00a1d56b685b7cbfec"
 dependencies = [
  "bitflags 2.5.0",
  "log",
- "polling 3.6.0",
+ "polling 3.7.0",
  "rustix 0.38.34",
  "slab",
  "thiserror",
@@ -1213,7 +1213,6 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "atomicwrites",
  "calloop",
@@ -1234,7 +1233,6 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -1416,7 +1414,6 @@ dependencies = [
 [[package]]
 name = "cosmic-theme"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "almost",
  "cosmic-config",
@@ -2769,7 +2766,6 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "dnd",
  "iced_accessibility",
@@ -2787,7 +2783,6 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "accesskit",
  "accesskit_unix",
@@ -2796,7 +2791,6 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "bitflags 2.5.0",
  "dnd",
@@ -2818,7 +2812,6 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "futures",
  "iced_core",
@@ -2831,7 +2824,6 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "bitflags 2.5.0",
  "bytemuck",
@@ -2855,7 +2847,6 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -2867,7 +2858,6 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "dnd",
  "iced_accessibility",
@@ -2881,7 +2871,6 @@ dependencies = [
 [[package]]
 name = "iced_sctk"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "enum-repr",
  "float-cmp",
@@ -2907,7 +2896,6 @@ dependencies = [
 [[package]]
 name = "iced_style"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "iced_core",
  "once_cell",
@@ -2917,7 +2905,6 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -2934,7 +2921,6 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "bitflags 2.5.0",
  "bytemuck",
@@ -2953,7 +2939,6 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "dnd",
  "iced_renderer",
@@ -3411,7 +3396,6 @@ checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
 [[package]]
 name = "libcosmic"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#1adeadacf60c7f7381ec270710fcdab706d4175e"
 dependencies = [
  "apply",
  "ashpd 0.7.0",
@@ -4285,9 +4269,9 @@ dependencies = [
 
 [[package]]
 name = "polling"
-version = "3.6.0"
+version = "3.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0c976a60b2d7e99d6f229e414670a9b85d13ac305cc6d1e9c134de58c5aaaf6"
+checksum = "645493cf344456ef24219d02a768cf1fb92ddf8c92161679ae3d91b91a637be3"
 dependencies = [
  "cfg-if",
  "concurrent-queue",
