@@ -49,6 +49,8 @@ control-tint = Controlar a tonalidade dos componentes
 frosted = Efeito de vidro fosco na interface do sistema
     .desc = Aplica uma desfocagem de fundo ao painel, à doca, aos applets, ao lançador e à biblioteca de aplicações.
 
+experimental-settings = Definições experimentais
+
 enable-export = Aplicar este tema a aplicações GNOME.
     .desc = Nem todos os toolkits suportam a troca automática. As aplicações não-COSMIC poderão ter de ser reiniciadas após uma mudança de tema.
 
