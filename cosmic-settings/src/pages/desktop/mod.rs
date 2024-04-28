@@ -6,6 +6,7 @@ pub mod dock;
 pub mod notifications;
 pub mod options;
 pub mod panel;
+pub mod themes;
 pub mod wallpaper;
 pub mod workspaces;
 
@@ -50,6 +51,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
         page.sub_page::<options::Page>()
             .sub_page::<wallpaper::Page>()
             .sub_page::<appearance::Page>()
+            .sub_page::<themes::Page>()
             .sub_page::<workspaces::Page>()
             .sub_page::<notifications::Page>()
     }

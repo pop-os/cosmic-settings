@@ -15,6 +15,7 @@ pub mod time;
 pub enum Message {
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
+    Themes(desktop::themes::Message),
     DateAndTime(time::date::Message),
     Desktop(desktop::Message),
     DesktopWallpaper(desktop::wallpaper::Message),

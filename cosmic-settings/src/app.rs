@@ -2,15 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::config::Config;
-use crate::pages::desktop::{
-    self, appearance,
-    dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
-    panel::{
-        self,
-        applets_inner::{self, AppletsPage, APPLET_DND_ICON_ID},
-        inner as _panel,
-    },
-};
+use crate::pages::desktop::{self, appearance, dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID}, panel::{
+    self,
+    applets_inner::{self, AppletsPage, APPLET_DND_ICON_ID},
+    inner as _panel,
+}, themes};
 use crate::pages::input::{self, keyboard};
 use crate::pages::{self, display, networking, sound, system, time};
 use crate::subscription::desktop_files;
@@ -361,6 +357,12 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::Appearance(message) => {
                     if let Some(page) = self.pages.page_mut::<appearance::Page>() {
+                        return page.update(message).map(cosmic::app::Message::App);
+                    }
+                }
+
+                crate::pages::Message::Themes(message) => {
+                    if let Some(page) = self.pages.page_mut::<themes::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);
                     }
                 }
