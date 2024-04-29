@@ -72,8 +72,7 @@ window-management = Window Management
 
 ## Desktop: Color Schemes
 color-schemes = Color Schemes
-color-schemes-description = Change the system color scheme
-color-scheme = Color scheme
+color-schemes-description = Change the system color scheme.
 color-schemes-error = Error fetching color schemes.
 
 ## Desktop: Display
