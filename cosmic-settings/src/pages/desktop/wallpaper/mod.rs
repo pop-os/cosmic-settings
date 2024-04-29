@@ -213,7 +213,30 @@ impl page::Page<crate::pages::Message> for Page {
         command::future(async move {
             let (service_config, displays) = wallpaper::config().await;
 
-            let selection = change_folder(current_folder, recurse).await;
+            let mut selection = change_folder(current_folder, recurse).await;
+
+            // `selection.active` is usually empty because `change_folder` creates a fresh context.
+            // This leads to blank previews in certain conditions when the program is restarted.
+            let fix_active = match selection.active {
+                Choice::Wallpaper(key) if !selection.paths.contains_key(key) => true,
+                Choice::Color(ref color) if !selection.custom_colors.contains(color) => true,
+                _ => false,
+            };
+            if fix_active {
+                selection.active = match service_config.default_background.source {
+                    Source::Path(ref path) if !path.is_dir() => selection
+                        .paths
+                        .iter()
+                        .find(|(_key, valid_path)| path == valid_path.as_path())
+                        .map(|(key, _)| Choice::Wallpaper(key))
+                        .unwrap_or_default(),
+                    Source::Path(_) => Choice::Slideshow,
+                    Source::Color(ref color) => {
+                        selection.add_custom_color(color.clone());
+                        Choice::Color(color.clone())
+                    }
+                }
+            }
 
             crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
                 service_config,
@@ -888,6 +911,11 @@ impl Page {
                         }
                     }
                 }
+
+                // Cache preview early for non-custom wallpapers and colors
+                // This prevents empty previews but doesn't interfere with previews for custom
+                // wallpapers
+                self.cache_display_image();
 
                 // These will need to be loaded before applying the service config.
                 let custom_images = self.config.custom_images();
