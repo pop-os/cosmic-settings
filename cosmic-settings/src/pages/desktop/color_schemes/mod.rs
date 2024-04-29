@@ -3,25 +3,25 @@ pub mod page;
 
 pub use page::{Message, Page};
 
-use crate::pages::desktop::themes::config::Theme;
+use crate::pages::desktop::color_schemes::config::ColorSchemeVariant;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::os::unix::raw::off_t;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
-static THEMES: OnceLock<Vec<GlobalTheme>> = OnceLock::new();
+static COLOR_SCHEMES: OnceLock<Vec<ColorScheme>> = OnceLock::new();
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct GlobalTheme {
+pub struct ColorScheme {
     name: String,
-    light: Theme,
-    dark: Theme,
+    light: ColorSchemeVariant,
+    dark: ColorSchemeVariant,
 }
 
-impl GlobalTheme {
-    pub fn init_themes() -> anyhow::Result<()> {
-        let mut themes = vec![];
+impl ColorScheme {
+    pub fn fetch_color_schemes() -> anyhow::Result<()> {
+        let mut color_schemes = vec![];
         let xdg_data_home = std::env::var("XDG_DATA_HOME")
             .ok()
             .and_then(|value| {
@@ -54,35 +54,25 @@ impl GlobalTheme {
                     let theme_file = path.join("theme.ron");
                     if theme_file.exists() {
                         let theme_data = fs::read_to_string(theme_file)?;
-                        let mut theme: GlobalTheme = ron::from_str(&theme_data)?;
+                        let mut color_scheme: ColorScheme = ron::from_str(&theme_data)?;
 
-                        theme.light.path = path
-                            .join(&theme.light.path)
+                        color_scheme.light.path = path
+                            .join(&color_scheme.light.path)
                             .to_str()
                             .unwrap_or_default()
                             .to_string();
-                        theme.dark.path = path
-                            .join(&theme.dark.path)
+                        color_scheme.dark.path = path
+                            .join(&color_scheme.dark.path)
                             .to_str()
                             .unwrap_or_default()
                             .to_string();
-                        theme.light.wallpaper = path
-                            .join(&theme.light.wallpaper)
-                            .to_str()
-                            .unwrap_or_default()
-                            .to_string();
-                        theme.dark.wallpaper = path
-                            .join(&theme.dark.wallpaper)
-                            .to_str()
-                            .unwrap_or_default()
-                            .to_string();
-                        themes.push(theme);
+                        color_schemes.push(color_scheme);
                     }
                 }
             }
         }
 
-        THEMES.get_or_init(|| themes);
+        COLOR_SCHEMES.get_or_init(|| color_schemes);
         Ok(())
     }
 }

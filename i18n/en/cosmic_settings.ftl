@@ -70,6 +70,12 @@ window-management = Window Management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
 
+## Desktop: Color Schemes
+color-schemes = Color Schemes
+color-schemes-description = Change the system color scheme
+color-scheme = Color scheme
+color-schemes-error = Error fetching color schemes.
+
 ## Desktop: Display
 
 -requires-restart = Requires restart
