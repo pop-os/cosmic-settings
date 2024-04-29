@@ -4,31 +4,21 @@ pub mod page;
 pub use page::{Message, Page};
 
 use crate::pages::desktop::themes::config::Theme;
-use cosmic::cosmic_theme::ThemeBuilder;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::sync::OnceLock;
+
+static THEMES: OnceLock<Vec<GlobalTheme>> = OnceLock::new();
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct GlobalTheme {
-    pub name: String,
-    pub light: Theme,
-    pub dark: Theme,
+    name: String,
+    light: Theme,
+    dark: Theme,
 }
 
 impl GlobalTheme {
-    pub fn theme_name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn light_name(&self) -> &str {
-        &self.light.name
-    }
-
-    pub fn dark_name(&self) -> &str {
-        &self.dark.name
-    }
-
-    pub fn get_themes() -> anyhow::Result<Vec<GlobalTheme>> {
+    pub fn init_themes() -> anyhow::Result<()> {
         let mut themes = vec![];
 
         for entry in fs::read_dir("resources/themes")? {
@@ -62,6 +52,7 @@ impl GlobalTheme {
             }
         }
 
-        Ok(themes)
+        THEMES.get_or_init(|| themes);
+        Ok(())
     }
 }

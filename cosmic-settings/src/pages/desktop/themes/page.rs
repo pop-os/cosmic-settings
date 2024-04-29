@@ -8,7 +8,7 @@ use cosmic_settings_page::{AutoBind, Info, Page as SettingsPage, Section};
 use crate::app;
 use crate::pages::desktop::appearance::color_button;
 use crate::pages::desktop::themes::config::Theme;
-use crate::pages::desktop::themes::GlobalTheme;
+use crate::pages::desktop::themes::{GlobalTheme, THEMES};
 use cosmic_settings_page::section::Entity;
 
 pub struct Page {
@@ -69,14 +69,19 @@ impl Page {
         Section::default()
             .descriptions(vec![fl!("reset-to-default").into()])
             .view::<Page>(move |_binder, page, _section| {
-                let Ok(themes) = GlobalTheme::get_themes() else {
+                let Ok(()) = GlobalTheme::init_themes() else {
                     return widget::row::with_children(vec![
                         widget::text("Error fetching themes").into()
                     ])
+                    .align_items(Alignment::Center)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
                     .into();
                 };
 
-                let themes: Vec<Element<crate::pages::Message>> = themes
+                let themes: Vec<Element<crate::pages::Message>> = THEMES
+                    .get()
+                    .unwrap_or(&vec![])
                     .iter()
                     .map(|theme| {
                         widget::container(
