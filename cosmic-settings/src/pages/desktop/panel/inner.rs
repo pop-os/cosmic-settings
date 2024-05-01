@@ -503,54 +503,15 @@ impl PageInner {
         }
 
         if panel_config.anchor_gap || !panel_config.expand_to_edges {
-            let radii = Self::get_corner_radii().radius_xl[0] as u32;
+            let radii = cosmic::theme::system_preference()
+                .cosmic()
+                .corner_radii
+                .radius_xl[0] as u32;
             panel_config.border_radius = radii;
         } else {
             panel_config.border_radius = 0;
         }
 
         _ = panel_config.write_entry(helper);
-    }
-
-    fn get_corner_radii() -> CornerRadii {
-        let theme_mode_config = ThemeMode::config().ok();
-        let theme_mode = theme_mode_config
-            .as_ref()
-            .map(|c| match ThemeMode::get_entry(c) {
-                Ok(t) => t,
-                Err((errors, t)) => {
-                    for e in errors {
-                        tracing::error!("{e}");
-                    }
-                    t
-                }
-            })
-            .unwrap_or_default();
-
-        let theme_builder_config = if theme_mode.is_dark {
-            ThemeBuilder::dark_config()
-        } else {
-            ThemeBuilder::light_config()
-        }
-        .ok();
-        let theme_builder = theme_builder_config.as_ref().map_or_else(
-            || {
-                if theme_mode.is_dark {
-                    ThemeBuilder::dark()
-                } else {
-                    ThemeBuilder::light()
-                }
-            },
-            |c| match ThemeBuilder::get_entry(c) {
-                Ok(t) => t,
-                Err((errors, t)) => {
-                    for e in errors {
-                        tracing::error!("{e}");
-                    }
-                    t
-                }
-            },
-        );
-        theme_builder.corner_radii
     }
 }
