@@ -73,10 +73,6 @@ pub struct Page {
     interface_text: ColorPickerModel,
     control_component: ColorPickerModel,
     roundness: Roundness,
-    dock_config_helper: Option<Config>,
-    dock_config: Option<CosmicPanelConfig>,
-    panel_config_helper: Option<Config>,
-    panel_config: Option<CosmicPanelConfig>,
 
     icon_theme_active: Option<usize>,
     icon_themes: IconThemes,
@@ -154,17 +150,6 @@ impl
                 && c != theme.palette.accent_yellow
         });
 
-        let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
-        let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
-        let panel_config = panel_config_helper.as_ref().and_then(|config_helper| {
-            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
-            (panel_config.name == "Panel").then_some(panel_config)
-        });
-        let dock_config = dock_config_helper.as_ref().and_then(|config_helper| {
-            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
-            (panel_config.name == "Dock").then_some(panel_config)
-        });
-
         Self {
             can_reset: if theme_mode.is_dark {
                 theme_builder == ThemeBuilder::dark()
@@ -174,10 +159,6 @@ impl
             theme_builder_needs_update: false,
             context_view: None,
             roundness: theme_builder.corner_radii.into(),
-            dock_config_helper,
-            dock_config,
-            panel_config_helper,
-            panel_config,
             custom_accent: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
@@ -642,7 +623,7 @@ impl Page {
                 self.roundness = r;
                 self.theme_builder.corner_radii = self.roundness.into();
                 self.theme_builder_needs_update = true;
-                self.update_panel_radii(r);
+                Self::update_panel_radii(r);
                 Command::none()
             }
             Message::Entered((icon_themes, icon_handles)) => {
@@ -1009,9 +990,20 @@ impl Page {
         }
     }
 
-    fn update_panel_radii(&mut self, roundness: Roundness) {
-        if let Some(panel_config_helper) = self.panel_config_helper.as_ref() {
-            if let Some(panel_config) = self.panel_config.as_mut() {
+    fn update_panel_radii(roundness: Roundness) {
+        let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
+        let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
+        let mut panel_config = panel_config_helper.as_ref().and_then(|config_helper| {
+            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
+            (panel_config.name == "Panel").then_some(panel_config)
+        });
+        let mut dock_config = dock_config_helper.as_ref().and_then(|config_helper| {
+            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
+            (panel_config.name == "Dock").then_some(panel_config)
+        });
+
+        if let Some(panel_config_helper) = panel_config_helper.as_ref() {
+            if let Some(panel_config) = panel_config.as_mut() {
                 let radii = if panel_config.anchor_gap || !panel_config.expand_to_edges {
                     let cornder_radii: CornerRadii = roundness.into();
                     cornder_radii.radius_xl[0] as u32
@@ -1025,8 +1017,8 @@ impl Page {
             }
         };
 
-        if let Some(dock_config_helper) = self.dock_config_helper.as_ref() {
-            if let Some(dock_config) = self.dock_config.as_mut() {
+        if let Some(dock_config_helper) = dock_config_helper.as_ref() {
+            if let Some(dock_config) = dock_config.as_mut() {
                 let radii = if dock_config.anchor_gap || !dock_config.expand_to_edges {
                     let cornder_radii: CornerRadii = roundness.into();
                     cornder_radii.radius_xl[0] as u32
