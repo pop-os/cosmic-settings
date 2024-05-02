@@ -1006,7 +1006,7 @@ impl Page {
             if let Some(panel_config) = panel_config.as_mut() {
                 let radii = if panel_config.anchor_gap || !panel_config.expand_to_edges {
                     let cornder_radii: CornerRadii = roundness.into();
-                    cornder_radii.radius_xl[0] as u32
+                    cornder_radii.radius_s[0] as u32
                 } else {
                     0
                 };
@@ -1021,7 +1021,7 @@ impl Page {
             if let Some(dock_config) = dock_config.as_mut() {
                 let radii = if dock_config.anchor_gap || !dock_config.expand_to_edges {
                     let cornder_radii: CornerRadii = roundness.into();
-                    cornder_radii.radius_xl[0] as u32
+                    cornder_radii.radius_s[0] as u32
                 } else {
                     0
                 };

@@ -506,7 +506,7 @@ impl PageInner {
             let radii = cosmic::theme::system_preference()
                 .cosmic()
                 .corner_radii
-                .radius_xl[0] as u32;
+                .radius_s[0] as u32;
             panel_config.border_radius = radii;
         } else {
             panel_config.border_radius = 0;
