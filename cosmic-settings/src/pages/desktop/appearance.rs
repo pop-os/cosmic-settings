@@ -698,6 +698,8 @@ impl Page {
                     tracing::error!("Failed to get the theme config.");
                 }
 
+                Self::update_panel_radii(self.roundness);
+
                 self.reload_theme_mode();
                 Command::none()
             }

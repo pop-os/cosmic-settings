@@ -1,7 +1,6 @@
 use cosmic::{
     cctk::sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
-    cosmic_config::{self, Config, CosmicConfigEntry},
-    cosmic_theme::{CornerRadii, ThemeBuilder, ThemeMode},
+    cosmic_config::{self, CosmicConfigEntry},
     iced::Length,
     theme,
     widget::{
@@ -398,13 +397,22 @@ impl PageInner {
             Message::ResetPanel => {
                 if let Some((default, config)) = self
                     .system_default
-                    .as_ref()
+                    .as_mut()
                     .zip(self.config_helper.as_ref())
                 {
-                    self.panel_config = self.system_default.clone();
+                    if default.anchor_gap || !default.expand_to_edges {
+                        let radii = cosmic::theme::system_preference()
+                            .cosmic()
+                            .corner_radii
+                            .radius_xl[0] as u32;
+                        default.border_radius = radii;
+                    } else {
+                        default.border_radius = 0;
+                    }
                     if let Err(err) = default.write_entry(config) {
                         tracing::error!(?err, "Error resetting panel config.");
                     }
+                    self.panel_config = self.system_default.clone();
                 } else {
                     tracing::error!("Panel config default is missing.");
                 }
