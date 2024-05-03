@@ -80,6 +80,8 @@ pub enum Message {
     AddFolder(Arc<Result<Url, file_chooser::Error>>),
     /// Adds a new image file the system wallpaper folder.
     AddFile(Arc<Result<Url, file_chooser::Error>>),
+    /// Cache currently displayed image.
+    CacheDisplayImage,
     /// Selects an option in the category dropdown menu.
     ChangeCategory(Category),
     /// Changes the displayed images in the wallpaper view.
@@ -649,6 +651,8 @@ impl Page {
                 return cosmic::iced_sctk::commands::window::start_drag_window(self.color_dialog)
             }
 
+            Message::CacheDisplayImage => self.cache_display_image(),
+
             Message::ColorDialogUpdate(update) => {
                 let cmd = match update {
                     ColorPickerUpdate::AppliedColor
@@ -912,11 +916,6 @@ impl Page {
                     }
                 }
 
-                // Cache preview early for non-custom wallpapers and colors
-                // This prevents empty previews but doesn't interfere with previews for custom
-                // wallpapers
-                self.cache_display_image();
-
                 // These will need to be loaded before applying the service config.
                 let custom_images = self.config.custom_images();
 
@@ -924,13 +923,22 @@ impl Page {
                 self.update_config = Some((custom_images.len(), update.displays));
 
                 // Load preview images concurrently for each custom image stored in the on-disk config.
-                return cosmic::command::batch(custom_images.iter().cloned().map(|path| {
-                    cosmic::command::future(async move {
-                        let result = wallpaper::load_image_with_thumbnail(path);
+                return cosmic::command::batch(
+                    custom_images
+                        .iter()
+                        .cloned()
+                        .map(|path| {
+                            cosmic::command::future(async move {
+                                let result = wallpaper::load_image_with_thumbnail(path);
 
-                        Message::ImageAdd(result.map(Arc::new)).into()
-                    })
-                }));
+                                Message::ImageAdd(result.map(Arc::new)).into()
+                            })
+                        })
+                        // Cache wallpaper preview early to prevent blank previews on reload
+                        .chain(std::iter::once(cosmic::command::message(
+                            Message::CacheDisplayImage.into(),
+                        ))),
+                );
             }
         }
 
