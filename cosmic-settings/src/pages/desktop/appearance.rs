@@ -1735,11 +1735,7 @@ fn preview_handles(theme: String, inherits: Vec<String>) -> [icon::Handle; ICON_
     let handles = [
         icon_handle("folder", "folder-symbolic", &inherits),
         icon_handle("user-home", "user-home-symbolic", &inherits),
-        icon_handle(
-            "preferences-system",
-            "preferences-system-symbolic",
-            &inherits,
-        ),
+        icon_handle("text-x-generic", "text-x-generic-symbolic", &inherits),
         icon_handle("image-x-generic", "images-x-generic-symbolic", &inherits),
         icon_handle("audio-x-generic", "audio-x-generic-symbolic", &inherits),
         icon_handle("video-x-generic", "video-x-generic-symbolic", &inherits),
