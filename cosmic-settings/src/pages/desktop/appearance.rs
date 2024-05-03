@@ -40,7 +40,7 @@ const ICON_PREV_ROW: usize = 3;
 const ICON_TRY_SIZES: [u16; 3] = [32, 48, 64];
 const ICON_THUMB_SIZE: u16 = 32;
 const ICON_NAME_TRUNC: usize = 20;
-type IconThemes = Vec<String>;
+type IconThemes = Vec<IconTheme>;
 type IconHandles = Vec<[icon::Handle; ICON_PREV_N]>;
 
 crate::cache_dynamic_lazy! {
@@ -60,6 +60,14 @@ enum ContextView {
     CustomAccent,
     Experimental,
     InterfaceText,
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+struct IconTheme {
+    // GTK uses the name of the theme as specified in its index file
+    name: String,
+    // COSMIC uses the file name of the folder containing the theme
+    id: String,
 }
 
 pub struct Page {
@@ -473,7 +481,7 @@ impl Page {
                             .enumerate()
                             .map(|(i, (theme, handles))| {
                                 let selected = active.map(|j| i == j).unwrap_or_default();
-                                icon_theme_button(theme, handles, i, selected)
+                                icon_theme_button(&theme.name, handles, i, selected)
                             })
                             .collect(),
                     )
@@ -532,13 +540,13 @@ impl Page {
             Message::IconTheme(id) => {
                 if let Some(theme) = self.icon_themes.get(id).cloned() {
                     self.icon_theme_active = Some(id);
-                    self.tk.icon_theme = theme.clone();
+                    self.tk.icon_theme = theme.id.clone();
 
                     if let Some(ref config) = self.tk_config {
                         let _ = self.tk.write_entry(config);
                     }
 
-                    tokio::spawn(set_gnome_icon_theme(theme));
+                    tokio::spawn(set_gnome_icon_theme(theme.name));
                 }
 
                 Command::none()
@@ -634,7 +642,7 @@ impl Page {
                 self.icon_theme_active = self
                     .icon_themes
                     .iter()
-                    .position(|theme| theme == &self.tk.icon_theme);
+                    .position(|theme| &theme.id == &self.tk.icon_theme);
                 self.icon_handles = icon_handles;
                 Command::none()
             }
@@ -1628,6 +1636,10 @@ async fn fetch_icon_themes() -> Message {
                 continue;
             };
 
+            let Some(id) = entry.file_name().to_str().map(|x| x.to_string()) else {
+                continue;
+            };
+
             let manifest = path.join("index.theme");
 
             if !manifest.exists() {
@@ -1686,12 +1698,12 @@ async fn fetch_icon_themes() -> Message {
                 );
                 theme_paths.entry(name.clone()).or_insert(path);
 
-                let theme = name.clone();
+                let theme = id.clone();
                 // `icon::from_name` may perform blocking I/O
                 if let Ok(handles) =
                     tokio::task::spawn_blocking(|| preview_handles(theme, valid_dirs)).await
                 {
-                    icon_themes.insert(name, handles);
+                    icon_themes.insert(IconTheme { id, name }, handles);
                 }
             }
         }
