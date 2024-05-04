@@ -2,8 +2,8 @@ use button::StyleSheet as ButtonStyleSheet;
 use cosmic::iced_style::container::StyleSheet;
 
 use cosmic::widget::{
-    button, column, container, header_bar, horizontal_space, icon, list_column, row, scrollable,
-    text, text_input, Column,
+    self, button, column, container, header_bar, horizontal_space, icon, list_column, row,
+    scrollable, text, text_input, Column,
 };
 
 use cosmic::{
@@ -69,7 +69,6 @@ const SPACING: f32 = 8.0;
 const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
 
 pub static APPLET_DND_ICON_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
-pub static ADD_PANEL_APPLET_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
 
 pub struct Page {
     pub(crate) available_entries: Vec<Applet<'static>>,
@@ -77,7 +76,7 @@ pub struct Page {
     pub(crate) current_config: Option<CosmicPanelConfig>,
     pub(crate) reorder_widget_state: ReorderWidgetState,
     pub(crate) search: String,
-    pub(crate) has_dialog: bool,
+    pub(crate) context: Option<ContextDrawer>,
 }
 
 impl Default for Page {
@@ -98,7 +97,7 @@ impl Default for Page {
             current_config,
             reorder_widget_state: ReorderWidgetState::default(),
             search: String::new(),
-            has_dialog: false,
+            context: None,
         }
     }
 }
@@ -134,6 +133,16 @@ impl page::Page<crate::pages::Message> for Page {
         page::Info::new("panel_applets", "preferences-dock-symbolic")
         // .title(fl!("applets"))
     }
+
+    fn context_drawer(&self) -> Option<Element<pages::Message>> {
+        Some(match self.context {
+            Some(ContextDrawer::AddApplet) => {
+                self.add_applet_view(crate::pages::Message::PanelApplet)
+            }
+
+            None => return None,
+        })
+    }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -156,9 +165,6 @@ pub enum Message {
     Search(String),
     AddApplet(Applet<'static>),
     AddAppletDialog,
-    CloseAppletDialog,
-    ClosedAppletDialog,
-    DragAppletDialog,
     Save,
     Cancel,
 }
@@ -184,11 +190,12 @@ impl Debug for Message {
             Message::Search(_) => write!(f, "Search"),
             Message::AddApplet(_) => write!(f, "AddApplet"),
             Message::AddAppletDialog => write!(f, "AddAppletDialogue"),
-            Message::CloseAppletDialog => write!(f, "CloseAppletDialogue"),
-            Message::DragAppletDialog => write!(f, "DragAppletDialogue"),
-            Message::ClosedAppletDialog => write!(f, "ClosedAppletDialogue"),
         }
     }
+}
+
+pub enum ContextDrawer {
+    AddApplet,
 }
 
 impl Page {
@@ -216,7 +223,7 @@ impl Page {
     pub fn add_applet_view<T: Fn(Message) -> crate::pages::Message + Copy + 'static>(
         &self,
         msg_map: T,
-    ) -> Element<app::Message> {
+    ) -> Element<crate::pages::Message> {
         let mut list_column = list_column();
         let mut has_some = false;
         for info in self
@@ -282,9 +289,7 @@ impl Page {
                             }),
                         })
                         .padding(8.0)
-                        .on_press(app::Message::PageMessage(msg_map(Message::AddApplet(
-                            info.clone(),
-                        ))))
+                        .on_press(msg_map(Message::AddApplet(info.clone())))
                         .into(),
                 ])
                 .padding([0, 32, 0, 32])
@@ -299,48 +304,23 @@ impl Page {
                     .horizontal_alignment(Horizontal::Center),
             );
         }
+
         column::with_children(vec![
-            header_bar()
-                .title(fl!("add-applet"))
-                .on_close(app::Message::PageMessage(msg_map(
-                    Message::CloseAppletDialog,
-                )))
-                .on_drag(app::Message::PageMessage(msg_map(
-                    Message::DragAppletDialog,
-                )))
+            text_input::search_input(fl!("search-applets"), &self.search)
+                .on_input(move |s| msg_map(Message::Search(s)))
+                .on_paste(move |s| msg_map(Message::Search(s)))
+                .width(Length::Fixed(312.0))
                 .into(),
-            container(
-                scrollable(
-                    column::with_children(vec![
-                        text(fl!("add-applet")).size(24).width(Length::Fill).into(),
-                        text_input::search_input(fl!("search-applets"), &self.search)
-                            .on_input(move |s| {
-                                app::Message::PageMessage(msg_map(Message::Search(s)))
-                            })
-                            .on_paste(move |s| {
-                                app::Message::PageMessage(msg_map(Message::Search(s)))
-                            })
-                            .width(Length::Fixed(312.0))
-                            .into(),
-                        list_column.into(),
-                    ])
-                    .padding([0, 64, 32, 64])
-                    .align_items(Alignment::Center)
-                    .spacing(8.0),
-                )
-                .width(Length::Fill)
-                .height(Length::Fill),
-            )
-            .style(theme::Container::Background)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .into(),
+            scrollable(list_column).into(),
         ])
+        .padding([0, 64, 32, 64])
+        .align_items(Alignment::Center)
+        .spacing(8.0)
         .into()
     }
 
     #[allow(clippy::too_many_lines)]
-    pub fn update(&mut self, message: Message, window_id: window::Id) -> Command<app::Message> {
+    pub fn update(&mut self, message: Message) -> Command<app::Message> {
         match message {
             Message::PanelConfig(c) => {
                 self.current_config = Some(c);
@@ -464,38 +444,12 @@ impl Page {
 
                 list.push(applet.id.to_string());
                 self.save();
-                return commands::window::close_window(window_id);
             }
             Message::AddAppletDialog => {
-                self.has_dialog = true;
-                let window_settings = SctkWindowSettings {
-                    window_id,
-                    app_id: Some("com.system76.CosmicSettings".to_string()),
-                    title: Some(fl!("add-applet")),
-                    parent: Some(window::Id::MAIN),
-                    autosize: false,
-                    size_limits: layout::Limits::NONE
-                        .min_width(300.0)
-                        .max_width(800.0)
-                        .min_height(200.0)
-                        .max_height(1080.0),
-                    size: (512, 420),
-                    resizable: None,
-                    client_decorations: true,
-                    transparent: true,
-                    ..Default::default()
-                };
-                return commands::window::get_window(window_settings);
-            }
-            Message::ClosedAppletDialog => {
-                self.has_dialog = false;
-            }
-            Message::CloseAppletDialog => {
-                self.has_dialog = false;
-                return commands::window::close_window(window_id);
-            }
-            Message::DragAppletDialog => {
-                return commands::window::start_drag_window(window_id);
+                self.context = Some(ContextDrawer::AddApplet);
+                return cosmic::command::message(app::Message::OpenContextDrawer(Cow::Owned(fl!(
+                    "add-applet"
+                ))));
             }
         };
         Command::none()
@@ -521,8 +475,7 @@ pub fn lists<
             column::with_children(vec![
                 row::with_children(vec![
                     text(fl!("applets")).width(Length::Fill).size(24).into(),
-                    (button.on_press_maybe((!page.has_dialog).then_some(Message::AddAppletDialog)))
-                        .into(),
+                    (button.on_press(Message::AddAppletDialog)).into(),
                 ])
                 .into(),
                 text(fl!("start-segment")).into(),

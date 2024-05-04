@@ -3,8 +3,7 @@
 
 use crate::config::Config;
 use crate::pages::desktop::{
-    self, appearance,
-    dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
+    self, appearance, dock,
     panel::{
         self,
         applets_inner::{self, AppletsPage, APPLET_DND_ICON_ID},
@@ -168,22 +167,6 @@ impl cosmic::Application for SettingsApp {
         widgets
     }
 
-    fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
-        let message = if id == *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID {
-            Message::PageMessage(crate::pages::Message::PanelApplet(
-                applets_inner::Message::ClosedAppletDialog,
-            ))
-        } else if id == *ADD_DOCK_APPLET_DIALOGUE_ID {
-            Message::PageMessage(crate::pages::Message::DockApplet(dock::applets::Message(
-                applets_inner::Message::ClosedAppletDialog,
-            )))
-        } else {
-            return None;
-        };
-
-        Some(message)
-    }
-
     fn on_escape(&mut self) -> Command<Self::Message> {
         if self.search_active {
             self.search_active = false;
@@ -343,9 +326,7 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::PanelApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
-                        return page
-                            .update(message, *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID)
-                            .map(cosmic::app::Message::App);
+                        return page.update(message).map(cosmic::app::Message::App);
                     }
                 }
 
@@ -375,10 +356,7 @@ impl cosmic::Application for SettingsApp {
 
                 if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                     return page
-                        .update(
-                            applets_inner::Message::PanelConfig(config),
-                            *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID,
-                        )
+                        .update(applets_inner::Message::PanelConfig(config))
                         .map(cosmic::app::Message::App);
                 }
             }
@@ -410,10 +388,7 @@ impl cosmic::Application for SettingsApp {
                 );
                 if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                     return page
-                        .update(
-                            applets_inner::Message::Applets(info_list),
-                            *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID,
-                        )
+                        .update(applets_inner::Message::Applets(info_list))
                         .map(cosmic::app::Message::App);
                 }
             }
@@ -490,32 +465,6 @@ impl cosmic::Application for SettingsApp {
         {
             return page.dnd_icon();
         }
-
-        if let Some(Some(page)) = (id == *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID)
-            .then(|| self.pages.page::<applets_inner::Page>())
-        {
-            return page.add_applet_view(crate::pages::Message::PanelApplet);
-        }
-
-        if let Some(Some(page)) =
-            (id == *ADD_DOCK_APPLET_DIALOGUE_ID).then(|| self.pages.page::<dock::applets::Page>())
-        {
-            return page.inner().add_applet_view(|msg| {
-                crate::pages::Message::DockApplet(dock::applets::Message(msg))
-            });
-        }
-
-        // if let Some(Some(page)) = (id == *keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID)
-        //     .then(|| self.pages.page::<input::Page>())
-        // {
-        //     return page.add_input_source_view();
-        // }
-
-        // if let Some(Some(page)) = (id == *keyboard::SPECIAL_CHARACTER_DIALOGUE_ID)
-        //     .then(|| self.pages.page::<input::Page>())
-        // {
-        //     return page.special_character_key_view();
-        // }
 
         if let Some(page) = self.pages.page::<desktop::wallpaper::Page>() {
             if id == page.color_dialog {
