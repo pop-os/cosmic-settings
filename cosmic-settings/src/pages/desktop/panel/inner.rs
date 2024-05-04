@@ -453,9 +453,7 @@ impl PageInner {
                     PanelAnchor::Bottom,
                 ]
                 .iter()
-                .find(|a| {
-                    Anchor(**a).to_string() == self.anchors[i]
-                })
+                .find(|a| Anchor(**a).to_string() == self.anchors[i])
                 {
                     panel_config.anchor = *anchor;
                 }
