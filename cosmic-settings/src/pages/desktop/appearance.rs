@@ -1544,12 +1544,16 @@ pub fn experimental() -> Section<crate::pages::Message> {
         .view::<Page>(|_binder, _page, section| {
             let descriptions = &*section.descriptions;
             settings::view_section("")
-                .add(
-                    settings::item::builder(&*descriptions[0]).control(
-                        button::icon(from_name("go-next-symbolic"))
-                            .on_press(Message::ExperimentalContextDrawer),
-                    ),
-                )
+                .add(settings::item(
+                    &*descriptions[0],
+                    cosmic::widget::row::with_children(vec![
+                        cosmic::widget::horizontal_space(Length::Fill).into(),
+                        icon::from_name("go-next-symbolic").size(16).icon().into(),
+                    ]),
+                ))
+                .apply(button)
+                .on_press(Message::ExperimentalContextDrawer)
+                .style(cosmic::theme::Button::Transparent)
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
