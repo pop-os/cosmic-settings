@@ -15,6 +15,7 @@ bin-src := cargo-target-dir / 'release' / name
 bin-dest := clean(rootdir / prefix) / 'bin' / name
 
 iconsdir := clean(rootdir / prefix) / 'share' / 'icons' / 'hicolor'
+themesdir := clean(rootdir / prefix) / 'share' / 'themes'
 
 metainfo := appid + '.metainfo.xml'
 metainfo-src := 'resources' / metainfo
@@ -64,10 +65,12 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-wallpaper}}' '{{appdir}}/{{entry-wallpaper}}'
     install -Dm0644 'resources/{{entry-workspaces}}' '{{appdir}}/{{entry-workspaces}}'
 
+
 # Install everything
 install: install-desktop-entries (install-bin bin-src bin-dest) (install-file metainfo-src metainfo-dst) (install-file polkit-rules-src polkit-rules-dst)
     find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'default_schema'/{} {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
+    find 'resources'/'themes' -type f -name '*.ron' -exec echo {} \; | rev | cut -d'/' -f-2 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'themes'/{} {{themesdir}}/{}
 
 [private]
 install-cmd options src dest:

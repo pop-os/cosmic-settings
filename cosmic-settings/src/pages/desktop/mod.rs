@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 pub mod appearance;
+pub mod color_schemes;
 pub mod dock;
 pub mod notifications;
 pub mod options;
@@ -50,6 +51,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
         page.sub_page::<options::Page>()
             .sub_page::<wallpaper::Page>()
             .sub_page::<appearance::Page>()
+            .sub_page::<color_schemes::Page>()
             .sub_page::<workspaces::Page>()
             .sub_page::<notifications::Page>()
     }
