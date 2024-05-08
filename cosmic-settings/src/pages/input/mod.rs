@@ -4,8 +4,8 @@ use cosmic::{
     iced,
 };
 use cosmic_comp_config::input::{
-    AccelConfig, AccelProfile, ClickMethod, InputConfig, ScrollConfig, ScrollMethod,
-    TapButtonMap, TapConfig,
+    AccelConfig, AccelProfile, ClickMethod, InputConfig, ScrollConfig, ScrollMethod, TapButtonMap,
+    TapConfig,
 };
 use cosmic_settings_page as page;
 use tracing::error;
