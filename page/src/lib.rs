@@ -59,9 +59,12 @@ pub trait Page<Message: 'static>: Downcast {
     }
 
     /// Reload page metadata via a Command.
-    #[must_use]
     #[allow(unused)]
-    fn reload(&mut self, page: crate::Entity) -> Command<Message> {
+    fn on_enter(
+        &mut self,
+        page: crate::Entity,
+        sender: tokio::sync::mpsc::Sender<Message>,
+    ) -> Command<Message> {
         Command::none()
     }
 

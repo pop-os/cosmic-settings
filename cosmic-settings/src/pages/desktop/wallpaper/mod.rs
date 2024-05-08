@@ -207,7 +207,11 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("wallpaper", "desc"))
     }
 
-    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         let current_folder = self.config.current_folder().to_owned();
 
         let recurse = self.categories.selected == Some(Category::Wallpapers);

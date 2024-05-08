@@ -219,12 +219,20 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     #[cfg(not(feature = "test"))]
-    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
-        command::future(reload())
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
+        command::future(on_enter())
     }
 
     #[cfg(feature = "test")]
-    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         command::future(async move {
             let mut randr = List::default();
 
@@ -287,7 +295,7 @@ impl Page {
                 }
 
                 return cosmic::command::future(async {
-                    crate::Message::PageMessage(reload().await)
+                    crate::Message::PageMessage(on_enter().await)
                 });
             }
 
@@ -805,7 +813,7 @@ fn cache_rates(cached_rates: &mut Vec<String>, rates: &[u32]) {
         .collect();
 }
 
-pub async fn reload() -> crate::pages::Message {
+pub async fn on_enter() -> crate::pages::Message {
     let graphics_fut = graphics::fetch();
     let randr_fut = cosmic_randr_shell::list();
     let (graphics, randr) = futures::future::zip(graphics_fut, randr_fut).await;

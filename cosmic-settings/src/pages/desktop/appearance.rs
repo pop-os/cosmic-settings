@@ -1087,7 +1087,11 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("appearance", "desc"))
     }
 
-    fn reload(&mut self, _: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _: page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         command::future(fetch_icon_themes()).map(crate::pages::Message::Appearance)
     }
 

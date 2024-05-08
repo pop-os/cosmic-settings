@@ -5,6 +5,8 @@ resolver = "2"
 rust-version = "1.71.0"
 sunrise_sunset = "1.0.1"
 
+[workspace.dependencies]
+tokio = { version = "1.37.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"

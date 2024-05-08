@@ -6,16 +6,17 @@ use crate::pages::desktop::{
     self, appearance, dock,
     panel::{
         self,
-        applets_inner::{self, AppletsPage, APPLET_DND_ICON_ID},
+        applets_inner::{self, APPLET_DND_ICON_ID},
         inner as _panel,
     },
 };
-use crate::pages::input::{self, keyboard};
-use crate::pages::{self, display, networking, sound, system, time};
+use crate::pages::input::{self};
+use crate::pages::{self, display, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
 use cosmic::app::DbusActivationMessage;
+use cosmic::iced::futures::SinkExt;
 use cosmic::iced::Subscription;
 use cosmic::widget::{button, row, text_input};
 use cosmic::{
@@ -42,6 +43,7 @@ pub struct SettingsApp {
     config: Config,
     core: Core,
     nav_model: nav_bar::Model,
+    page_sender: Option<tokio::sync::mpsc::Sender<crate::pages::Message>>,
     pages: page::Binder<crate::pages::Message>,
     search_active: bool,
     search_id: cosmic::widget::Id,
@@ -77,19 +79,21 @@ impl SettingsApp {
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    CloseContextDrawer,
+    DelayedInit(page::Entity),
     DesktopInfo,
     Error(String),
+    OpenContextDrawer(Cow<'static, str>),
     Page(page::Entity),
     PageMessage(crate::pages::Message),
     PanelConfig(CosmicPanelConfig),
+    RegisterSubscriptionSender(tokio::sync::mpsc::Sender<pages::Message>),
     SearchActivate,
     SearchChanged(String),
     SearchClear,
     SearchSubmit,
-    SetWindowTitle,
-    OpenContextDrawer(Cow<'static, str>),
-    CloseContextDrawer,
     SetTheme(cosmic::theme::Theme),
+    SetWindowTitle,
 }
 
 impl cosmic::Application for SettingsApp {
@@ -113,6 +117,7 @@ impl cosmic::Application for SettingsApp {
             config: Config::new(),
             core,
             nav_model: nav_bar::Model::default(),
+            page_sender: None,
             pages: page::Binder::default(),
             search_active: false,
             search_id: cosmic::widget::Id::unique(),
@@ -136,9 +141,10 @@ impl cosmic::Application for SettingsApp {
         }
         .unwrap_or(desktop_id);
 
-        let command = app.activate_page(active_id);
-
-        (app, command)
+        (
+            app,
+            cosmic::command::message(cosmic::app::message::app(Message::DelayedInit(active_id))),
+        )
     }
 
     fn nav_model(&self) -> Option<&nav_bar::Model> {
@@ -208,6 +214,23 @@ impl cosmic::Application for SettingsApp {
         });
 
         Subscription::batch(vec![
+            // Creates a channel that listens to messages from pages.
+            // The sender is given back to the application so that it may pass it on.
+            cosmic::iced::subscription::channel(
+                std::any::TypeId::of::<Self>(),
+                4,
+                move |mut output| async move {
+                    let (tx, mut rx) = tokio::sync::mpsc::channel::<pages::Message>(4);
+
+                    let _res = output.send(Message::RegisterSubscriptionSender(tx)).await;
+
+                    while let Some(event) = rx.recv().await {
+                        let _res = output.send(Message::PageMessage(event)).await;
+                    }
+
+                    futures::future::pending().await
+                },
+            ),
             crate::subscription::daytime().map(|daytime| {
                 Message::PageMessage(pages::Message::Appearance(appearance::Message::Daytime(
                     daytime,
@@ -409,6 +432,21 @@ impl cosmic::Application for SettingsApp {
             Message::Error(error) => {
                 tracing::error!(error, "error occurred");
             }
+
+            Message::RegisterSubscriptionSender(sender) => {
+                self.page_sender = Some(sender);
+            }
+
+            // It is necessary to delay init to allow time for the page sender to be initialized
+            Message::DelayedInit(active_id) => {
+                if self.page_sender.is_none() {
+                    return cosmic::command::message(cosmic::app::message::app(
+                        Message::DelayedInit(active_id),
+                    ));
+                }
+
+                return self.activate_page(active_id);
+            }
         }
 
         Command::none()
@@ -438,7 +476,7 @@ impl cosmic::Application for SettingsApp {
         } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
             self.sub_page_view(sub_pages)
         } else {
-            panic!("page without sub-pages or content");
+            return row::row().into();
         };
 
         let padding = if self.core.is_condensed() {
@@ -518,9 +556,14 @@ impl SettingsApp {
         self.search_active = false;
         self.activate_navbar(page);
 
+        let sender = self
+            .page_sender
+            .clone()
+            .expect("sender should be available");
+
         let page_command = self
             .pages
-            .page_reload(page)
+            .on_enter(page, sender)
             .map(Message::PageMessage)
             .map(cosmic::app::Message::App);
 

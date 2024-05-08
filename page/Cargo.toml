@@ -11,4 +11,5 @@ libcosmic = { workspace = true }
 generator = "0.7.5"
 downcast-rs = "1.2.0"
 once_cell = "1.19.0"
+tokio.workspace = true
 url = "2.5.0"

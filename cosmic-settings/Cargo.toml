@@ -6,7 +6,7 @@ license = "GPL-3.0"
 rust-version = "1.65.0"
 
 [dependencies]
-tokio = { version = "1.35.1", features = ["macros"] }
+tokio.workspace = true
 async-channel = "2.1.1"
 color-eyre = "0.6.2"
 cosmic-bg-config = { workspace = true }
