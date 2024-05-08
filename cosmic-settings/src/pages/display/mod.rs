@@ -721,16 +721,15 @@ impl Page {
 
     /// Applies a display configuration via `cosmic-randr`.
     fn exec_randr(&self, output: &Output, request: Randr) -> Command<app::Message> {
-        let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
-            return Command::none();
-        };
-
         let name = &*output.name;
-
         let mut command = tokio::process::Command::new("cosmic-randr");
 
         match request {
             Randr::Position(x, y) => {
+                let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
+                    return Command::none();
+                };
+
                 command
                     .arg("mode")
                     .arg("--pos-x")
@@ -743,6 +742,10 @@ impl Page {
             }
 
             Randr::RefreshRate(rate) => {
+                let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
+                    return Command::none();
+                };
+
                 command
                     .arg("mode")
                     .arg("--refresh")
@@ -768,6 +771,10 @@ impl Page {
             }
 
             Randr::Scale(scale) => {
+                let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
+                    return Command::none();
+                };
+
                 command
                     .arg("mode")
                     .arg("--scale")
@@ -791,6 +798,10 @@ impl Page {
             }
 
             Randr::Transform(transform) => {
+                let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
+                    return Command::none();
+                };
+
                 command
                     .arg("mode")
                     .arg("--transform")
