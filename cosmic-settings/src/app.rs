@@ -165,7 +165,6 @@ impl cosmic::Application for SettingsApp {
         } else {
             icon::from_name("system-search-symbolic")
                 .apply(button::icon)
-                .padding([0, cosmic::theme::active().cosmic().space_s()])
                 .on_press(Message::SearchActivate)
                 .into()
         });
