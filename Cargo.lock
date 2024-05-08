@@ -1208,7 +1208,7 @@ name = "cosmic-client-toolkit"
 version = "0.1.0"
 source = "git+https://github.com/pop-os/cosmic-protocols?rev=e4e6f8c#e4e6f8ca4d7c239c02a8cdfd48a74cb0969425eb"
 dependencies = [
- "cosmic-protocols 0.1.0 (git+https://github.com/pop-os/cosmic-protocols?rev=e4e6f8c)",
+ "cosmic-protocols",
  "libc",
  "smithay-client-toolkit",
  "wayland-client",
@@ -1272,20 +1272,7 @@ dependencies = [
 [[package]]
 name = "cosmic-protocols"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-protocols?rev=e4e6f8c#e4e6f8ca4d7c239c02a8cdfd48a74cb0969425eb"
-dependencies = [
- "bitflags 2.5.0",
- "wayland-backend",
- "wayland-client",
- "wayland-protocols",
- "wayland-scanner",
- "wayland-server",
-]
-
-[[package]]
-name = "cosmic-protocols"
-version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-protocols.git#1316f9e1148ec65351471d8a046ffc82171b066e"
+source = "git+https://github.com/pop-os/cosmic-protocols//?rev=1316f9e#1316f9e1148ec65351471d8a046ffc82171b066e"
 dependencies = [
  "bitflags 2.5.0",
  "wayland-backend",
@@ -1301,7 +1288,7 @@ name = "cosmic-randr"
 version = "0.1.0"
 source = "git+https://github.com/pop-os/cosmic-randr#8ad117e7c57848f113fbc87986e91209f2262b5a"
 dependencies = [
- "cosmic-protocols 0.1.0 (git+https://github.com/pop-os/cosmic-protocols.git)",
+ "cosmic-protocols",
  "futures-lite 2.3.0",
  "indexmap",
  "tachyonix",
