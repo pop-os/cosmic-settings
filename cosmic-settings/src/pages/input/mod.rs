@@ -1,20 +1,13 @@
 use crate::app;
-use clap::builder::OsStr;
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::{self, wayland::actions::window::SctkWindowSettings, window},
-    iced_sctk::commands,
-    iced_widget::core::layout,
+    iced,
 };
-use cosmic_comp_config::{
-    input::{
-        AccelConfig, AccelProfile, ClickMethod, InputConfig, ScrollConfig, ScrollMethod,
-        TapButtonMap, TapConfig,
-    },
-    XkbConfig,
+use cosmic_comp_config::input::{
+    AccelConfig, AccelProfile, ClickMethod, InputConfig, ScrollConfig, ScrollMethod,
+    TapButtonMap, TapConfig,
 };
 use cosmic_settings_page as page;
-use itertools::Itertools;
 use tracing::error;
 
 pub mod keyboard;

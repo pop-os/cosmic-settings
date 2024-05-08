@@ -624,9 +624,9 @@ impl SettingsApp {
     fn page_view(&self, content: &[section::Entity]) -> cosmic::Element<Message> {
         let page = &self.pages.page[self.active_page];
         let page_info = &self.pages.info[self.active_page];
-        let mut column_widgets = Vec::with_capacity(1);
+        let mut column_widgets = Vec::with_capacity(1 + content.len());
 
-        if let Some(parent) = page_info.parent {
+        column_widgets.push(if let Some(parent) = page_info.parent {
             let page_header = crate::widget::sub_page_header(
                 page_info.title.as_str(),
                 self.pages.info[parent].title.as_str(),
@@ -642,10 +642,11 @@ impl SettingsApp {
                 page_header_content = page_header_content.push(element.map(Message::from));
             }
 
-            column_widgets.push(page_header_content.into());
-        }
+            page_header_content.into()
+        } else {
+            cosmic::widget::text::title3(&page_info.title).into()
+        });
 
-        column_widgets.reserve_exact(1 + content.len());
         for id in content.iter().copied() {
             let section = &self.pages.sections[id];
             let model = &self.pages.page[self.active_page];
