@@ -1349,6 +1349,7 @@ dependencies = [
  "once_cell",
  "regex",
  "slotmap",
+ "tokio",
  "url",
 ]
 

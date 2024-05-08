@@ -166,9 +166,13 @@ impl<Message: 'static> Binder<Message> {
     }
 
     /// Calls a page's load function to refresh its data.
-    pub fn page_reload(&mut self, id: crate::Entity) -> Command<Message> {
+    pub fn on_enter(
+        &mut self,
+        id: crate::Entity,
+        sender: tokio::sync::mpsc::Sender<Message>,
+    ) -> Command<Message> {
         if let Some(page) = self.page.get_mut(id) {
-            return page.reload(id);
+            return page.on_enter(id, sender);
         }
 
         Command::none()

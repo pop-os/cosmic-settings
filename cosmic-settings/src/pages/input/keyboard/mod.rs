@@ -250,7 +250,11 @@ impl page::Page<crate::pages::Message> for Page {
         }
     }
 
-    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
         match xkb_data::keyboard_layouts() {
             Ok(keyboard_layouts) => {

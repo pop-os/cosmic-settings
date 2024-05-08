@@ -43,7 +43,11 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("about", "desc"))
     }
 
-    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         command::future(async move {
             crate::pages::Message::About(Message::Info(Box::new(Info::load())))
         })
