@@ -1032,9 +1032,12 @@ where
                                         mime_types: vec![MIME_TYPE.to_string()],
                                         actions: DndAction::Move,
                                         origin_id: window_id,
-                                        icon_id: Some(DndIcon::Widget(
-                                            icon_id,
-                                            Box::new(state_clone.clone()),
+                                        icon_id: Some((
+                                            DndIcon::Widget(
+                                                icon_id,
+                                                Box::new(state_clone.clone()),
+                                            ),
+                                            cosmic::iced::Vector::ZERO
                                         )),
                                         data: Box::new(AppletString(p.clone())),
                                     }
