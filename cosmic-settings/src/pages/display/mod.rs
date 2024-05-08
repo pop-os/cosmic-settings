@@ -80,6 +80,8 @@ pub enum Message {
     Orientation(Transform),
     /// Status of an applied display change.
     RandrResult(Arc<std::io::Result<ExitStatus>>),
+    /// Request to reload the page.
+    Refresh,
     /// Set the refresh rate of a display.
     RefreshRate(usize),
     /// Set the resolution of a display.
@@ -118,6 +120,7 @@ pub struct Page {
     list: List,
     display_tabs: segmented_button::SingleSelectModel,
     active_display: OutputKey,
+    background_service: Option<tokio::task::JoinHandle<()>>,
     config: Config,
     cache: ViewCache,
     context: Option<ContextDrawer>,
@@ -130,6 +133,7 @@ impl Default for Page {
             list: List::default(),
             display_tabs: segmented_button::SingleSelectModel::default(),
             active_display: OutputKey::default(),
+            background_service: None,
             config: Config::default(),
             cache: ViewCache::default(),
             context: None,
@@ -224,7 +228,41 @@ impl page::Page<crate::pages::Message> for Page {
         _page: page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Command<crate::pages::Message> {
+        if let Some(task) = self.background_service.take() {
+            task.abort();
+        }
+
+        // Spawns a background service to monitor for display state changes.
+        // This must be spawned onto its own thread because `*mut wayland_sys::client::wl_display` is not Send-able.
+        let runtime = tokio::runtime::Handle::current();
+        self.background_service = Some(tokio::task::spawn_blocking(move || {
+            runtime.block_on(async move {
+                let (tx, mut rx) = tachyonix::channel(5);
+                let Ok((mut context, mut event_queue)) = cosmic_randr::connect(tx) else {
+                    return;
+                };
+
+                while context.dispatch(&mut event_queue).await.is_ok() {
+                    while let Ok(message) = rx.try_recv() {
+                        if let cosmic_randr::Message::ManagerDone = message {
+                            let _ = sender
+                                .send(pages::Message::Displays(Message::Refresh))
+                                .await;
+                        }
+                    }
+                }
+            });
+        }));
+
         command::future(on_enter())
+    }
+
+    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+        if let Some(task) = self.background_service.take() {
+            task.abort();
+        }
+
+        Command::none()
     }
 
     #[cfg(feature = "test")]
@@ -295,10 +333,6 @@ impl Page {
                 if let Some(Err(why)) = Arc::into_inner(result) {
                     tracing::error!(?why, "cosmic-randr error");
                 }
-
-                return cosmic::command::future(async {
-                    crate::Message::PageMessage(on_enter().await)
-                });
             }
 
             Message::Display(display) => self.set_display(display),
@@ -343,6 +377,12 @@ impl Page {
             Message::Orientation(orientation) => return self.set_orientation(orientation),
 
             Message::Position(display, x, y) => return self.set_position(display, x, y),
+
+            Message::Refresh => {
+                return cosmic::command::future(async move {
+                    crate::Message::PageMessage(on_enter().await)
+                });
+            }
 
             Message::RefreshRate(rate) => return self.set_refresh_rate(rate),
 

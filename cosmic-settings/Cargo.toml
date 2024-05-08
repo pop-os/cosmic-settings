@@ -6,51 +6,52 @@ license = "GPL-3.0"
 rust-version = "1.65.0"
 
 [dependencies]
-tokio.workspace = true
+anyhow = "1.0"
+ashpd = { version = "0.7", default-features = false }
 async-channel = "2.1.1"
+chrono = "0.4.37"
+clap = { version = "4.4.18", features = ["derive"] }
 color-eyre = "0.6.2"
-cosmic-bg-config = { workspace = true }
-cosmic-randr-shell = { workspace = true }
-cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
+cosmic-bg-config.workspace = true
+cosmic-comp-config.workspace = true
+cosmic-panel-config.workspace = true
+cosmic-randr-shell.workspace = true
+cosmic-randr.workspace = true
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-system = { path = "../pages/system" }
 cosmic-settings-time = { path = "../pages/time" }
+cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 derivative = "2.2.0"
 derive_setters = "0.1.6"
 dirs = "5.0.1"
-generator = "=0.7.5"
-i18n-embed-fl = "0.7.0"
-itertools = "0.12.0"
-libcosmic = { workspace = true }
-once_cell = "1.19.0"
-regex = "1.10.3"
-rust-embed = "8.2.0"
-slotmap = "1.0.7"
 downcast-rs = "1.2.0"
-cosmic-comp-config = { workspace = true }
-# TODO: migrate this dependency to the pages/desktop crate.
-cosmic-panel-config = { workspace = true }
-chrono = "0.4.37"
-sunrise = "1.0.1"
-tracing = "0.1.40"
-tracing-subscriber = "0.3.18"
-url = "2.5.0"
 freedesktop-desktop-entry = "0.5.0"
-notify = "6.1.1"
-anyhow = "1.0"
-image = "0.25"
-serde = { version = "1.0.196", features = ["derive"] }
-ashpd = { version = "0.7", default-features = false }
-ron = "0.8"
-static_init = "1.0.3"
-clap = { version = "4.4.18", features = ["derive"] }
-itoa = "1.0.10"
 futures = { package = "futures-lite", version = "2.2.0" }
-xkb-data = "0.1.0"
-udev = "0.8.0"
+generator = "=0.7.5"
 hostname-validator = "1.1.1"
 hostname1-zbus = "0.1.0"
+i18n-embed-fl = "0.7.0"
+image = "0.25"
+itertools = "0.12.0"
+itoa = "1.0.10"
+libcosmic.workspace = true
+notify = "6.1.1"
+once_cell = "1.19.0"
+regex = "1.10.3"
+ron = "0.8"
+rust-embed = "8.2.0"
+serde = { version = "1.0.196", features = ["derive"] }
+slotmap = "1.0.7"
+static_init = "1.0.3"
+sunrise = "1.0.1"
+tokio.workspace = true
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
+udev = "0.8.0"
+url = "2.5.0"
+xkb-data = "0.1.0"
 zbus = { version = "3.15.2", features = ["tokio"] }
+tachyonix = "0.2.1"
 
 [dependencies.i18n-embed]
 version = "0.14.1"
