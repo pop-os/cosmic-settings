@@ -472,22 +472,19 @@ impl Page {
             //     .spacing(2),
             cosmic::widget::column::with_children(vec![
                 text::heading(&*ICON_THEME).into(),
-                scrollable(
-                    flex_row(
-                        self.icon_themes
-                            .iter()
-                            .zip(self.icon_handles.iter())
-                            .enumerate()
-                            .map(|(i, (theme, handles))| {
-                                let selected = active.map(|j| i == j).unwrap_or_default();
-                                icon_theme_button(&theme.name, handles, i, selected)
-                            })
-                            .collect(),
-                    )
-                    .row_spacing(theme.space_xs())
-                    .column_spacing(theme.space_xxxs())
+                flex_row(
+                    self.icon_themes
+                        .iter()
+                        .zip(self.icon_handles.iter())
+                        .enumerate()
+                        .map(|(i, (theme, handles))| {
+                            let selected = active.map(|j| i == j).unwrap_or_default();
+                            icon_theme_button(&theme.name, handles, i, selected)
+                        })
+                        .collect(),
                 )
-                .into()
+                .row_spacing(theme.space_xs())
+                .column_spacing(theme.space_xxxs()).into()
             ])
             .spacing(theme.space_xxs())
         ]
