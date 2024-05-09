@@ -484,7 +484,8 @@ impl Page {
                         .collect(),
                 )
                 .row_spacing(theme.space_xs())
-                .column_spacing(theme.space_xxxs()).into()
+                .column_spacing(theme.space_xxxs())
+                .into()
             ])
             .spacing(theme.space_xxs())
         ]
