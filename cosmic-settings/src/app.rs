@@ -21,7 +21,6 @@ use cosmic::iced::Subscription;
 use cosmic::widget::{button, row, text_input};
 use cosmic::{
     app::{Command, Core},
-    cosmic_config::{config_state_subscription, config_subscription},
     iced::{
         self,
         event::{self, wayland, PlatformSpecific},
@@ -64,7 +63,6 @@ impl SettingsApp {
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             PageCommands::Network => None,
-            PageCommands::Notifications => self.pages.page_id::<desktop::notifications::Page>(),
             PageCommands::Power => None,
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
