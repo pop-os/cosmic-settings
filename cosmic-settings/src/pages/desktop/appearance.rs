@@ -1532,17 +1532,22 @@ pub fn experimental() -> Section<crate::pages::Message> {
         .descriptions(vec![fl!("experimental-settings").into()])
         .view::<Page>(|_binder, _page, section| {
             let descriptions = &*section.descriptions;
+
+            let control = row::with_children(vec![
+                horizontal_space(Length::Fill).into(),
+                icon::from_name("go-next-symbolic").size(16).into(),
+            ]);
+
             settings::view_section("")
-                .add(settings::item(
-                    &*descriptions[0],
-                    cosmic::widget::row::with_children(vec![
-                        cosmic::widget::horizontal_space(Length::Fill).into(),
-                        icon::from_name("go-next-symbolic").size(16).icon().into(),
-                    ]),
-                ))
-                .apply(button)
-                .on_press(Message::ExperimentalContextDrawer)
-                .style(cosmic::theme::Button::Transparent)
+                .add(
+                    settings::item::builder(&*descriptions[0])
+                        .control(control)
+                        .apply(container)
+                        .style(cosmic::theme::Container::List)
+                        .apply(button)
+                        .style(cosmic::theme::Button::Transparent)
+                        .on_press(Message::ExperimentalContextDrawer),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
