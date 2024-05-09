@@ -71,7 +71,6 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(vec![
             sections.insert(multi_behavior()),
-            sections.insert(overview_thumbnails()),
             sections.insert(workspace_orientation()),
         ])
     }
@@ -152,29 +151,6 @@ fn multi_behavior() -> Section<crate::pages::Message> {
                     Message::SetWorkspaceMode,
                 )
                 .into()]))
-                .apply(Element::from)
-                .map(crate::pages::Message::DesktopWorkspaces)
-        })
-}
-
-fn overview_thumbnails() -> Section<crate::pages::Message> {
-    Section::default()
-        .title(fl!("workspaces-overview-thumbnails"))
-        .descriptions(vec![
-            fl!("workspaces-overview-thumbnails", "show-number").into(),
-            fl!("workspaces-overview-thumbnails", "show-name").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
-            let descriptions = &section.descriptions;
-            settings::view_section(&section.title)
-                .add(
-                    settings::item::builder(&*descriptions[0])
-                        .toggler(page.show_workspace_number, Message::SetShowNumber),
-                )
-                .add(
-                    settings::item::builder(&*descriptions[1])
-                        .toggler(page.show_workspace_name, Message::SetShowName),
-                )
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })
