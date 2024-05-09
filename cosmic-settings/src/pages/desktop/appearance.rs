@@ -289,7 +289,6 @@ pub enum Message {
     ExportError,
     ExportFile(Arc<SelectedFiles>),
     ExportSuccess,
-    Frosted(bool),
     GapSize(spin_button::Message),
     IconTheme(usize),
     ImportError,
@@ -531,11 +530,6 @@ impl Page {
                     fl!("window-hint-accent").into(),
                 );
                 Command::batch(vec![cmd, self.accent_window_hint.update::<app::Message>(u)])
-            }
-            Message::Frosted(enabled) => {
-                self.theme_builder_needs_update = true;
-                self.theme_builder.is_frosted = enabled;
-                Command::none()
             }
             Message::IconTheme(id) => {
                 if let Some(theme) = self.icon_themes.get(id).cloned() {
@@ -1418,8 +1412,6 @@ pub fn style() -> Section<crate::pages::Message> {
             fl!("style", "round").into(),
             fl!("style", "slightly-round").into(),
             fl!("style", "square").into(),
-            fl!("frosted").into(),
-            fl!("frosted", "desc").into(),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
@@ -1502,11 +1494,6 @@ pub fn style() -> Section<crate::pages::Message> {
                     )
                     .width(Length::Fill)
                     .align_x(cosmic::iced_core::alignment::Horizontal::Center),
-                )
-                .add(
-                    settings::item::builder(&*descriptions[3])
-                        .description(&*descriptions[4])
-                        .toggler(page.theme_builder.is_frosted, Message::Frosted),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
