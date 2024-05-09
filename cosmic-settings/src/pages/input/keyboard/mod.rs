@@ -476,10 +476,7 @@ impl Page {
             list = list.add(special_char_radio_row(desc, Some(id), current));
         }
 
-        cosmic::widget::scrollable(cosmic::widget::container(list).padding(24))
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .into()
+        cosmic::widget::container(list).padding(24).into()
     }
 
     fn update_xkb_config(&mut self) {
