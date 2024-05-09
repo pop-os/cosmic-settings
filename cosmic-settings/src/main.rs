@@ -57,8 +57,6 @@ pub enum PageCommands {
     Mouse,
     /// Network settings page
     Network,
-    /// Notifications settings page
-    Notifications,
     /// Power settings page
     Power,
     /// Region & Language settings page
