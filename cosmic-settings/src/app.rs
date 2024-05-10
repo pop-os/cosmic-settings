@@ -525,6 +525,16 @@ impl cosmic::Application for SettingsApp {
             .dialog(self.active_page)
             .map(|e| e.map(Message::PageMessage))
     }
+
+    fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
+        if id == window::Id::MAIN {
+            std::thread::spawn(|| {
+                std::thread::sleep(tokio::time::Duration::from_millis(100));
+                std::process::exit(0);
+            });
+        }
+        None
+    }
 }
 
 impl SettingsApp {
