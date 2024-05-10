@@ -1,7 +1,6 @@
-use cosmic::{cosmic_config::CosmicConfigEntry, iced::window, iced_runtime::Command, Element};
+use cosmic::{cosmic_config::CosmicConfigEntry, iced_runtime::Command, Element};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section, Section};
-use once_cell::sync::Lazy;
 use slotmap::SlotMap;
 use std::borrow::Cow;
 

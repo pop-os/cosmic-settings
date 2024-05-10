@@ -2,8 +2,7 @@ use button::StyleSheet as ButtonStyleSheet;
 use cosmic::iced_style::container::StyleSheet;
 
 use cosmic::widget::{
-    self, button, column, container, header_bar, horizontal_space, icon, list_column, row,
-    scrollable, text, text_input, Column,
+    button, column, container, horizontal_space, icon, list_column, row, text, text_input, Column,
 };
 
 use cosmic::{
@@ -17,15 +16,11 @@ use cosmic::{
             PlatformSpecific,
         },
         mouse, overlay, touch,
-        wayland::actions::{
-            data_device::{ActionInner, DataFromMimeType, DndIcon},
-            window::SctkWindowSettings,
-        },
+        wayland::actions::data_device::{ActionInner, DataFromMimeType, DndIcon},
         wayland::data_device::action as data_device_action,
         window, Alignment, Color, Length, Point, Rectangle, Size,
     },
     iced_runtime::{command::platform_specific, core::id::Id, Command},
-    iced_sctk::commands,
     iced_widget::{
         core::{
             layout, renderer,
@@ -252,11 +247,7 @@ impl Page {
             has_some = true;
             list_column = list_column.add(
                 row::with_children(vec![
-                    icon::from_name(&*info.icon)
-                        .size(32)
-                        .symbolic(true)
-                        .icon()
-                        .into(),
+                    icon::from_name(&*info.icon).size(32).icon().into(),
                     column::with_capacity(2)
                         .push(text(info.name.clone()))
                         .push(text(info.description.clone()).size(10))
@@ -684,7 +675,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                             .symbolic(true)
                             .size(16)
                             .into(),
-                        icon::from_name(info.icon).size(32).symbolic(true).into(),
+                        icon::from_name(info.icon).size(32).into(),
                         column::with_capacity(2)
                             .spacing(4.0)
                             .width(Length::Fill)
@@ -773,10 +764,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                             .size(16)
                             .symbolic(true)
                             .into(),
-                        icon::from_name(info.icon.into_owned())
-                            .size(32)
-                            .symbolic(true)
-                            .into(),
+                        icon::from_name(info.icon.into_owned()).size(32).into(),
                         column::with_capacity(2)
                             .spacing(4.0)
                             .width(Length::Fill)
