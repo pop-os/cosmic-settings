@@ -311,9 +311,8 @@ impl Page {
                 .on_paste(move |s| msg_map(Message::Search(s)))
                 .width(Length::Fixed(312.0))
                 .into(),
-            scrollable(list_column).into(),
+            list_column.into(),
         ])
-        .padding([0, 64, 32, 64])
         .align_items(Alignment::Center)
         .spacing(8.0)
         .into()
