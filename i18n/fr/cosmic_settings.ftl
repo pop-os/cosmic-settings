@@ -90,28 +90,6 @@ display = Écrans
     .resolution = Résolution
     .scale = Échelle
 
-graphics-mode = Graphics mode
-    .mode = { $mode ->
-        [compute] Calcul
-        *[hybrid] Hybride
-        [integrated] Intégré
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Enable { $mode ->
-        [compute] Calcul
-        *[hybrid] Hybride
-        [integrated] Intégré
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Utilise les graphiques dédies seulement pour les charges de calcul. Désactive les écrans externes. { -requires-restart }.
-        *[hybrid] Les applications utilisent des graphiques intégrés, sauf s'il est explicitement demandé d'utiliser des graphiques dédiés. { -requires-restart }.
-        [integrated] Désactive les graphiques dédiés pour une meilleure autonomie de la batterie et moins de bruit de ventilateur.
-        [nvidia] Meilleure expérience graphique et plus grande consommation d'énergie. { -requires-restart }.
-    }
-    .restart = Redémarrer et basculer vers { $mode } ?
-    .restart-desc = Basculer vers { $mode } fermera toutes les applications ouvertes
-
 mirroring = Duplication de l'écran
     .id = Duplication de { $id }
     .dont = Ne pas dupliquer

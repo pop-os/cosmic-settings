@@ -78,28 +78,6 @@ display = Skärmar
     .resolution = Upplösning
     .scale = Skala
 
-graphics-mode = Grafikläge
-    .mode = { $mode ->
-        [compute] Beräkna
-        *[hybrid] Hybrid
-        [integrated] Integrerad
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Enable { $mode ->
-        [compute] beräkna
-        *[hybrid] hybrid
-        [integrated] integrerad
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Använder dedikerad grafik endast för beräkningsarbete. Inaktiverar externa bildskärmar. { -requires-restart }.
-        *[hybrid] Applikationer använder integrerad grafik om det inte uttryckligen uppmanas att använda dedikerad grafik. { -requires-restart }.
-        [integrated] Stänger av dedikerad grafik för längre batteritid och mindre fläktljud.
-        [nvidia] Bättre grafisk upplevelse och högsta strömförbrukning. { -requires-restart }.
-    }
-    .restart = Starta om och ändra till { $mode }?
-    .restart-desc = Om du byter till { $mode } stängs alla öppna applikationer
-
 mirroring = Spegling
     .id = Spegling { $id }
     .dont = Spegla inte

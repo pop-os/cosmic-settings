@@ -81,28 +81,6 @@ display = ディスプレイ
     .resolution = 解像度
     .scale = スケーリング
 
-graphics-mode = グラフィックスモード
-    .mode = { $mode ->
-        [compute] 計算
-        *[hybrid] ハイブリッド
-        [integrated] 内蔵
-        [nvidia] NVIDIA
-    }モード
-    .enable = { $mode ->
-        [compute] 計算
-        *[hybrid] ハイブリッド
-        [integrated] 内蔵
-        [nvidia] NVIDIA
-    }モードを有効にする
-    .desc = { $mode ->
-        [compute] 計算の作業負荷だけで専用グラフィックスを使います。外付けディスプレイを無効にします。{ -requires-restart }
-        *[hybrid] 専用グラフィックスを使用する要求がない限り、プログラムは統合グラフィックスを使用します。{ -requires-restart }
-        [integrated] バッテリー寿命を強化してファン騒音を低減するように専用グラフィックスを無効にします。
-        [nvidia] 改善されたグラッフィク体験と最高消費電力です。{ -requires-restart }
-    }
-    .restart = 再起動して{ $mode }に切り替えますか？
-    .restart-desc = { $mode }に切り替えると全てのアプリケーションを閉じます。
-
 mirroring = ミラーリング
     .id = { $id }をミラーリングしています
     .dont = ミラーリングしない

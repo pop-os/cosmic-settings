@@ -92,28 +92,6 @@ display = Displays
     .resolution = Resolution
     .scale = Scale
 
-graphics-mode = Graphics mode
-    .mode = { $mode ->
-        [compute] Compute
-        *[hybrid] Hybrid
-        [integrated] Integrated
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Enable { $mode ->
-        [compute] compute
-        *[hybrid] hybrid
-        [integrated] integrated
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Uses dedicated graphics for computational workloads only. Disables external displays. { -requires-restart }.
-        *[hybrid] Applications use integrated graphics unless explicitly requested to use dedicated graphics. { -requires-restart }.
-        [integrated] Turns off dedicated graphics for a longer battery life and less fan noise.
-        [nvidia] Better graphical experience and highest power usage. { -requires-restart }.
-    }
-    .restart = Restart and switch to { $mode }?
-    .restart-desc = Switching to { $mode } will close all open applications
-
 mirroring = Mirroring
     .id = Mirroring { $id }
     .dont = Don't mirror

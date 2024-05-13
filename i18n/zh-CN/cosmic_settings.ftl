@@ -92,28 +92,6 @@ display = 显示器
     .resolution = 分辨率
     .scale = 缩放
 
-graphics-mode = 显示模式
-    .mode = { $mode ->
-        [compute] 计算
-        *[hybrid] 混合
-        [integrated] 集成
-        [nvidia] NVIDIA
-    } 图形
-    .enable = 启用 { $mode ->
-        [compute] 计算
-        *[hybrid] 混合
-        [integrated] 集成
-        [nvidia] NVIDIA
-    } 图形
-    .desc = { $mode ->
-        [compute] 仅将独立显卡用于计算工作负载。禁用外部显示器。 { -requires-restart }。
-        *[hybrid] 应用程序使用集成显卡，除非明确要求使用独立显卡。 { -requires-restart }。
-        [integrated] 关闭独立显卡以延长电池寿命并减少风扇噪音。
-        [nvidia] 更好的显示体验和最高的功耗。 { -requires-restart }。
-    }
-    .restart = 重新启动并切换到 { $mode }？
-    .restart-desc = 切换到 { $mode } 将关闭所有打开的应用程序
-
 mirroring = 镜像显示
     .id = 镜像 { $id }
     .dont = 不镜像显示
