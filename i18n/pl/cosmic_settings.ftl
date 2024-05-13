@@ -90,28 +90,6 @@ display = Wyświetlacz
     .resolution = Rozdzielczość
     .scale = Skala
 
-graphics-mode = Tryb Graficzny
-    .mode = { $mode ->
-        [compute] Obliczeniowy
-        *[hybrid] Hybrydowy
-        [integrated] Zintegrowany
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Włącz { $mode ->
-        [compute] Obliczeniowy
-        *[hybrid] Hybrydowy
-        [integrated] Zintegrowany
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Używa dedykowanej karty graficznej tylko do pracy obliczeniowej. Wyłącza zewnętrzne ekrany. { -requires-restart }.
-        *[hybrid] Aplikacje używają zintegrowanej karty graficznej, chyba że bezpośredio kazano im używać dedykowanej karty graficznej. { -requires-restart }.
-        [integrated] Wyłącz dedykowaną kartę graficzną by zwiększyć czas pracy na baterii i zmniejszyć głośność wentylatorów.
-        [nvidia] Najwydajniejszy tryb graficzny wiążący się z najwyższym zapotrzebowaniem na prąd. { -requires-restart }.
-    }
-    .restart = Uruchomić ponownie i zmienić na { $mode }?
-    .restart-desc = Zmiana na { $mode } zamknie wszystkie otwarte aplikacje
-
 mirroring = Lustrzane Odbicie
     .id = Lustrzane Odbicie { $id }
     .dont = Nie stosuj Lustrzanego Odbicia

@@ -92,28 +92,6 @@ display = 螢幕
     .resolution = 解析度
     .scale = 縮放比例
 
-graphics-mode = 顯卡運作模式
-    .mode = { $mode ->
-        [compute] 高效能模式
-        *[hybrid] 混合模式
-        [integrated] 省電模式
-        [nvidia] NVIDIA 模式
-    } graphics
-    .enable = Enable { $mode ->
-        [compute] 高效能模式
-        *[hybrid] 混合模式
-        [integrated] 省電模式
-        [nvidia] NVIDIA 模式
-    } graphics
-    .desc = { $mode ->
-        [compute] 只啟用獨立顯示卡獲得最好的運算效能，可能會關閉外接螢幕。{ -requires-restart }.
-        *[hybrid] 應用程式預設使用整合式顯示卡，除非程式主動要求使用獨立顯示卡。{ -requires-restart }.
-        [integrated] 關閉獨立顯示卡，只啟用整合式顯示卡以獲得更好的省電效果及更低的風扇噪音。
-        [nvidia] Nvidia 顯示卡將消耗更多的電源來獲得更好的運算與顯示體驗。 { -requires-restart }.
-    }
-    .restart = 重啟並切換至 { $mode }?
-    .restart-desc = 切換至 { $mode } 將關閉全部的應用程式
-
 mirroring = 投影
     .id = 正在投影 { $id }
     .dont = 不要投影
