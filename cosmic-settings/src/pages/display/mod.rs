@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 pub mod arrangement;
+// pub mod night_light;
 pub mod text;
 
 use crate::{app, pages};
@@ -23,6 +24,10 @@ use std::{process::ExitStatus, sync::Arc};
 #[derive(Clone, Copy, Debug)]
 pub struct ColorDepth(usize);
 
+/// Identifies the content to display in the context drawer
+// pub enum ContextDrawer {
+//     NightLight,
+// }
 
 /// Display mirroring options
 #[derive(Clone, Copy, Debug)]
@@ -32,6 +37,19 @@ pub enum Mirroring {
     Project(OutputKey),
     Mirror(OutputKey),
 }
+
+/// Night light preferences
+// #[derive(Clone, Copy, Debug)]
+// pub enum NightLight {
+    /// Toggles night light's automatic scheduling.
+//     AutoSchedule(bool),
+    /// Sets the night light schedule.
+//     ManualSchedule,
+    /// Changes the preferred night light temperature.
+//     Temperature(f32),
+    /// Toggles night light mode
+//     Toggle(bool),
+// }
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -47,6 +65,10 @@ pub enum Message {
     DisplayToggle(bool),
     /// Configures mirroring status of a display.
     Mirroring(Mirroring),
+    /// Handle night light preferences.
+//  NightLight(NightLight),
+    /// Show the night light mode context drawer.
+//  NightLightContext,
     /// Set the orientation of a display.
     Orientation(Transform),
     /// Status of an applied display change.
@@ -91,6 +113,7 @@ pub struct Page {
     background_service: Option<tokio::task::JoinHandle<()>>,
     config: Config,
     cache: ViewCache,
+//  context: Option<ContextDrawer>,
     display_arrangement_scrollable: cosmic::widget::Id,
 }
 
@@ -103,6 +126,7 @@ impl Default for Page {
             background_service: None,
             config: Config::default(),
             cache: ViewCache::default(),
+//          context: None,
             display_arrangement_scrollable: cosmic::widget::Id::unique(),
         }
     }
@@ -110,6 +134,8 @@ impl Default for Page {
 
 #[derive(Default)]
 struct Config {
+    /// Whether night light is enabled.
+//  night_light_enabled: bool,
     refresh_rate: Option<u32>,
     resolution: Option<(u32, u32)>,
     scale: u32,
@@ -136,6 +162,16 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
+            // Night light
+//            sections.insert(
+//                Section::default()
+//                    .descriptions(vec![
+//                        text::NIGHT_LIGHT.as_str().into(),
+//                        text::NIGHT_LIGHT_AUTO.as_str().into(),
+//                        text::NIGHT_LIGHT_DESCRIPTION.as_str().into(),
+//                    ])
+//                    .view::<Page>(|_binder, page, _section| page.night_light_view()),
+//            ),
             // Display arrangement
             sections.insert(
                 Section::default()
@@ -261,6 +297,15 @@ impl page::Page<crate::pages::Message> for Page {
             })
         })
     }
+    
+//    fn context_drawer(&self) -> Option<Element<pages::Message>> {
+//        Some(match self.context {
+
+//            Some(ContextDrawer::NightLight) => self.night_light_context_view(),
+
+//            None => return None,
+//        })
+//    }
 }
 
 impl Page {
@@ -286,6 +331,15 @@ impl Page {
                 Mirroring::Project(target_display) => (),
                 Mirroring::ProjectToAll => (),
             },
+            
+//            Message::NightLight(night_light) => {}
+//
+//            Message::NightLightContext => {
+//                self.context = Some(ContextDrawer::NightLight);
+//                return cosmic::command::message(app::Message::OpenContextDrawer(
+//                    text::NIGHT_LIGHT.clone().into(),
+//                ));
+//            }
 
             Message::Orientation(orientation) => return self.set_orientation(orientation),
 
@@ -430,6 +484,11 @@ impl Page {
             .apply(Element::from)
             .map(pages::Message::Displays)
     }
+    
+    /// Displays the night light context drawer.
+//    pub fn night_light_context_view(&self) -> Element<pages::Message> {
+//        column().into()
+//    }
 
     /// Reloads the display list, and all information relevant to the active display.
     pub fn update_displays(&mut self, list: List) {
