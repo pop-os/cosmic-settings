@@ -1,6 +1,7 @@
 use button::StyleSheet as ButtonStyleSheet;
 use cosmic::iced_style::container::StyleSheet;
 
+use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{
     button, column, container, horizontal_space, icon, list_column, row, text, text_input, Column,
 };
@@ -671,7 +672,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 let is_dragged = active_dnd.as_ref().map_or(false, |dnd| dnd.id == info.id);
                 container(
                     row::with_children(vec![
-                        icon::from_name("open-menu-symbolic")
+                        icon::from_name("grip-lines-symbolic")
                             .symbolic(true)
                             .size(16)
                             .into(),
@@ -680,15 +681,15 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                             .spacing(4.0)
                             .width(Length::Fill)
                             .push(text(info.name))
-                            .push(text::caption(info.description))
+                            .push_maybe(if info.description.is_empty() {
+                                None
+                            } else {
+                                Some(text::caption(info.description))
+                            })
                             .into(),
                         button::icon(icon::from_name("edit-delete-symbolic"))
                             .extra_small()
                             .on_press(on_remove(id_clone.clone()))
-                            .into(),
-                        button::icon(icon::from_name("open-menu-symbolic"))
-                            .extra_small()
-                            .on_press(on_details(id_clone))
                             .into(),
                     ])
                     .spacing(12)
@@ -760,7 +761,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             inner: if let Some(info) = state.dragged_applet() {
                 container(
                     row::with_children(vec![
-                        icon::from_name("open-menu-symbolic")
+                        icon::from_name("grip-lines-symbolic")
                             .size(16)
                             .symbolic(true)
                             .into(),
@@ -772,9 +773,6 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                             .push(text::caption(info.description))
                             .into(),
                         button::icon(icon::from_name("edit-delete-symbolic"))
-                            .extra_small()
-                            .into(),
-                        button::icon(icon::from_name("open-menu-symbolic"))
                             .extra_small()
                             .into(),
                     ])

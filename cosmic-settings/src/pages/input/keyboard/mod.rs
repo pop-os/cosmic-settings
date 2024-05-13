@@ -183,7 +183,7 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
 fn popover_button(id: DefaultKey, expanded: bool) -> cosmic::Element<'static, Message> {
     let on_press = Message::ExpandInputSourcePopover(if expanded { None } else { Some(id) });
 
-    let button = button::icon(icon::from_name("open-menu-symbolic"))
+    let button = button::icon(icon::from_name("view-more-symbolic"))
         .extra_small()
         .on_press(on_press);
 
