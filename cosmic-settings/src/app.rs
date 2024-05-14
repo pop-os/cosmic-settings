@@ -456,7 +456,7 @@ impl cosmic::Application for SettingsApp {
     fn view(&self) -> Element<Message> {
         let theme = cosmic::theme::active();
 
-        let page_view = if self.search_active {
+        let page_view = if self.search_active && !self.search_input.is_empty() {
             self.search_view()
         } else if let Some(content) = self.pages.content(self.active_page) {
             self.page_view(content)
