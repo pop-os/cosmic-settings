@@ -1,3 +1,5 @@
+use std::cmp;
+
 use cosmic::{
     cosmic_config::{self, ConfigSet},
     iced::{self, Length},
@@ -34,6 +36,8 @@ static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
     // ("Scroll Lock", "lv3:"), XXX
     // ("Print Screen", "lv3"), XXX
 ];
+
+const STR_ORDER: &str = "`str` is always comparable";
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -257,24 +261,52 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Command<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
         match xkb_data::keyboard_layouts() {
-            Ok(keyboard_layouts) => {
+            Ok(mut keyboard_layouts) => {
                 self.active_layouts.clear();
                 self.keyboard_layouts.clear();
 
-                for layout in keyboard_layouts.layouts() {
+                let sorted_layouts = keyboard_layouts.layouts_mut();
+                sorted_layouts.sort_unstable_by(|a, b| {
+                    match (a.name(), b.name()) {
+                        // Place US at the top of the list as it's the default
+                        ("us", _) => cmp::Ordering::Less,
+                        (_, "us") => cmp::Ordering::Greater,
+                        // Place custom at the bottom
+                        ("custom", _) => cmp::Ordering::Greater,
+                        (_, "custom") => cmp::Ordering::Less,
+                        // Compare everything else by description because it looks nicer (e.g. all
+                        // English grouped together)
+                        _ => a
+                            .description()
+                            .partial_cmp(b.description())
+                            .expect(STR_ORDER),
+                    }
+                });
+
+                for layout in sorted_layouts {
                     self.keyboard_layouts.insert((
                         layout.name().to_owned(),
                         String::new(),
                         layout.description().to_owned(),
                     ));
 
-                    if let Some(variants) = layout.variants() {
-                        for variant in variants {
-                            self.keyboard_layouts.insert((
+                    if let Some(variants) = layout.variants().map(|variants| {
+                        variants.iter().map(|variant| {
+                            (
                                 layout.name().to_owned(),
                                 variant.name().to_owned(),
                                 variant.description().to_owned(),
-                            ));
+                            )
+                        })
+                    }) {
+                        let mut variants: Vec<_> = variants.collect();
+                        variants.sort_unstable_by(|(_, _, desc_a), (_, _, desc_b)| {
+                            desc_a.partial_cmp(desc_b).expect(STR_ORDER)
+                        });
+
+                        for (layout_name, name, description) in variants {
+                            self.keyboard_layouts
+                                .insert((layout_name, name, description));
                         }
                     }
                 }
