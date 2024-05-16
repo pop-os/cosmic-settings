@@ -1,5 +1,5 @@
 [workspace]
-members = [ "cosmic-settings", "page", "pages/*"]
+members = ["cosmic-settings", "page", "pages/*"]
 default-members = ["cosmic-settings"]
 resolver = "2"
 rust-version = "1.71.0"
@@ -41,13 +41,13 @@ opt-level = 3
 smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "3bed072" }
 
 [patch.'https://github.com/pop-os/cosmic-protocols']
-cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "1316f9e"}
+cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "1316f9e" }
 
 # For development and testing purposes
 # [patch.'https://github.com/pop-os/libcosmic']
-# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
-# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-export-gtk" }
+# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "zbus-4" }
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "zbus-4" }
+# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "zbus-4" }
 # libcosmic = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
