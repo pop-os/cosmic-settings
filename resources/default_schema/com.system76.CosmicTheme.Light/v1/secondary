@@ -1,1 +1,100 @@
-(base:(red:0.7764706,green:0.7764706,blue:0.7764706,alpha:1.0),component:(base:(red:0.75329685,green:0.75329703,blue:0.75329673,alpha:1.0),hover:(red:0.77796715,green:0.77796733,blue:0.77796704,alpha:1.0),pressed:(red:0.80263746,green:0.80263764,blue:0.8026374,alpha:1.0),selected:(red:0.77796715,green:0.77796733,blue:0.77796704,alpha:1.0),selected_text:(red:0.0,green:0.28627452,blue:0.42745098,alpha:1.0),focus:(red:0.0,green:0.28627452,blue:0.42745098,alpha:1.0),divider:(red:0.017722936,green:0.017722905,blue:0.017722849,alpha:0.2),on:(red:0.017722936,green:0.017722905,blue:0.017722849,alpha:1.0),disabled:(red:0.75329685,green:0.75329703,blue:0.75329673,alpha:1.0),on_disabled:(red:0.3855099,green:0.38550997,blue:0.3855098,alpha:1.0),border:(red:0.1882353,green:0.1882353,blue:0.1882353,alpha:1.0),disabled_border:(red:0.1882353,green:0.1882353,blue:0.1882353,alpha:0.5)),divider:(red:0.62702733,green:0.62702733,blue:0.6270273,alpha:1.0),on:(red:0.029254153,green:0.029254114,blue:0.02925403,alpha:1.0))
+(
+    base: (
+        red: 0.7764706,
+        green: 0.7764706,
+        blue: 0.7764706,
+        alpha: 1.0,
+    ),
+    component: (
+        base: (
+            red: 0.82977223,
+            green: 0.82977235,
+            blue: 0.8297721,
+            alpha: 1.0,
+        ),
+        hover: (
+            red: 0.746795,
+            green: 0.7467951,
+            blue: 0.7467949,
+            alpha: 1.0,
+        ),
+        pressed: (
+            red: 0.6638178,
+            green: 0.6638179,
+            blue: 0.6638177,
+            alpha: 1.0,
+        ),
+        selected: (
+            red: 0.746795,
+            green: 0.7467951,
+            blue: 0.7467949,
+            alpha: 1.0,
+        ),
+        selected_text: (
+            red: 0.0,
+            green: 0.28627452,
+            blue: 0.42745098,
+            alpha: 1.0,
+        ),
+        focus: (
+            red: 0.0,
+            green: 0.28627452,
+            blue: 0.42745098,
+            alpha: 1.0,
+        ),
+        divider: (
+            red: 0.061619133,
+            green: 0.06161908,
+            blue: 0.06161897,
+            alpha: 0.2,
+        ),
+        on: (
+            red: 0.061619133,
+            green: 0.06161908,
+            blue: 0.06161897,
+            alpha: 1.0,
+        ),
+        disabled: (
+            red: 0.82977223,
+            green: 0.82977235,
+            blue: 0.8297721,
+            alpha: 1.0,
+        ),
+        on_disabled: (
+            red: 0.4456957,
+            green: 0.44569573,
+            blue: 0.44569555,
+            alpha: 1.0,
+        ),
+        border: (
+            red: 0.1882353,
+            green: 0.1882353,
+            blue: 0.1882353,
+            alpha: 1.0,
+        ),
+        disabled_border: (
+            red: 0.1882353,
+            green: 0.1882353,
+            blue: 0.1882353,
+            alpha: 0.5,
+        ),
+    ),
+    divider: (
+        red: 0.62702733,
+        green: 0.62702733,
+        blue: 0.6270273,
+        alpha: 1.0,
+    ),
+    on: (
+        red: 0.029254153,
+        green: 0.029254114,
+        blue: 0.02925403,
+        alpha: 1.0,
+    ),
+    small_widget: (
+        red: 0.85556674,
+        green: 0.85556674,
+        blue: 0.85556674,
+        alpha: 0.25,
+    ),
+)
