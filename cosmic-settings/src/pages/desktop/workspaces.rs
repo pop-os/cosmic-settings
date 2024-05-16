@@ -18,7 +18,7 @@ use tracing::error;
 #[derive(Clone, Debug)]
 pub enum Message {
     SetWorkspaceMode(WorkspaceMode),
-    OrientationButtonSelected(cosmic::widget::segmented_button::Entity),
+    SetWorkspaceLayout(WorkspaceLayout),
     SetShowName(bool),
     SetShowNumber(bool),
 }
@@ -29,7 +29,6 @@ pub struct Page {
     comp_workspace_config: WorkspaceConfig,
     show_workspace_name: bool,
     show_workspace_number: bool,
-    orientation_model: cosmic::widget::segmented_button::SingleSelectModel,
 }
 
 impl Default for Page {
@@ -39,11 +38,6 @@ impl Default for Page {
             error!(?err, "Failed to read config 'workspaces'");
             WorkspaceConfig::default()
         });
-        let mut orientation_model = cosmic::widget::segmented_button::SingleSelectModel::builder()
-            .insert(|b| b.text(fl!("workspaces-orientation", "vertical")))
-            .insert(|b| b.text(fl!("workspaces-orientation", "horizontal")))
-            .build();
-        orientation_model.activate_position(0);
         let config = cosmic_config::Config::new("com.system76.CosmicWorkspaces", 1).unwrap();
         let show_workspace_name = config.get("show_workspace_name").unwrap_or_else(|err| {
             error!(?err, "Failed to read config 'show_workspace_name'");
@@ -59,7 +53,6 @@ impl Default for Page {
             comp_workspace_config,
             show_workspace_name,
             show_workspace_number,
-            orientation_model,
         }
     }
 }
@@ -100,15 +93,8 @@ impl Page {
                 self.comp_workspace_config.workspace_mode = value;
                 self.save_comp_config();
             }
-            Message::OrientationButtonSelected(entity) => {
-                self.orientation_model.activate(entity);
-                let horizontal_entity = self.orientation_model.entity_at(1).unwrap();
-                let layout = if self.orientation_model.active() == horizontal_entity {
-                    WorkspaceLayout::Horizontal
-                } else {
-                    WorkspaceLayout::Vertical
-                };
-                self.comp_workspace_config.workspace_layout = layout;
+            Message::SetWorkspaceLayout(value) => {
+                self.comp_workspace_config.workspace_layout = value;
                 self.save_comp_config();
             }
             Message::SetShowName(value) => {
@@ -159,13 +145,27 @@ fn multi_behavior() -> Section<crate::pages::Message> {
 fn workspace_orientation() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("workspaces-orientation"))
-        .descriptions(vec![])
+        .descriptions(vec![
+            fl!("workspaces-orientation", "vertical").into(),
+            fl!("workspaces-orientation", "horizontal").into(),
+        ])
         .view::<Page>(|_binder, page, section| {
+            let descriptions = &section.descriptions;
             settings::view_section(&section.title)
-                .add(
-                    cosmic::widget::segmented_control::horizontal(&page.orientation_model)
-                        .on_activate(Message::OrientationButtonSelected),
+                .add(settings::item_row(vec![radio(
+                    &*descriptions[0],
+                    WorkspaceLayout::Vertical,
+                    Some(page.comp_workspace_config.workspace_layout),
+                    Message::SetWorkspaceLayout,
                 )
+                .into()]))
+                .add(settings::item_row(vec![radio(
+                    &*descriptions[1],
+                    WorkspaceLayout::Horizontal,
+                    Some(page.comp_workspace_config.workspace_layout),
+                    Message::SetWorkspaceLayout,
+                )
+                .into()]))
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })
