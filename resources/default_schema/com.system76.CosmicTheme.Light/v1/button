@@ -1,1 +1,74 @@
-(base:(red:0.2784314,green:0.2784314,blue:0.2784314,alpha:0.25),hover:(red:0.3654902,green:0.3654902,blue:0.3654902,alpha:0.625),pressed:(red:0.4282353,green:0.4282353,blue:0.4282353,alpha:0.625),selected:(red:0.3654902,green:0.3654902,blue:0.3654902,alpha:0.625),selected_text:(red:0.0,green:0.28627452,blue:0.42745098,alpha:1.0),focus:(red:0.0,green:0.28627452,blue:0.42745098,alpha:1.0),divider:(red:0.17235574,green:0.1723558,blue:0.17235562,alpha:0.2),on:(red:0.17235574,green:0.1723558,blue:0.17235562,alpha:1.0),disabled:(red:0.21198754,green:0.21198754,blue:0.21198754,alpha:0.34375),on_disabled:(red:0.14186415,green:0.14186418,blue:0.14186409,alpha:0.625),border:(red:0.1882353,green:0.1882353,blue:0.1882353,alpha:1.0),disabled_border:(red:0.1882353,green:0.1882353,blue:0.1882353,alpha:0.5))
+(
+    base: (
+        red: 0.2784314,
+        green: 0.2784314,
+        blue: 0.2784314,
+        alpha: 0.25,
+    ),
+    hover: (
+        red: 0.23254903,
+        green: 0.23254903,
+        blue: 0.23254903,
+        alpha: 0.4,
+    ),
+    pressed: (
+        red: 0.44392157,
+        green: 0.44392157,
+        blue: 0.44392157,
+        alpha: 0.625,
+    ),
+    selected: (
+        red: 0.23254903,
+        green: 0.23254903,
+        blue: 0.23254903,
+        alpha: 0.4,
+    ),
+    selected_text: (
+        red: 0.0,
+        green: 0.28627452,
+        blue: 0.42745098,
+        alpha: 1.0,
+    ),
+    focus: (
+        red: 0.0,
+        green: 0.28627452,
+        blue: 0.42745098,
+        alpha: 1.0,
+    ),
+    divider: (
+        red: 0.17235574,
+        green: 0.1723558,
+        blue: 0.17235562,
+        alpha: 0.2,
+    ),
+    on: (
+        red: 0.17235574,
+        green: 0.1723558,
+        blue: 0.17235562,
+        alpha: 1.0,
+    ),
+    disabled: (
+        red: 0.21198754,
+        green: 0.21198754,
+        blue: 0.21198754,
+        alpha: 0.34375,
+    ),
+    on_disabled: (
+        red: 0.14186415,
+        green: 0.14186418,
+        blue: 0.14186409,
+        alpha: 0.625,
+    ),
+    border: (
+        red: 0.1882353,
+        green: 0.1882353,
+        blue: 0.1882353,
+        alpha: 1.0,
+    ),
+    disabled_border: (
+        red: 0.1882353,
+        green: 0.1882353,
+        blue: 0.1882353,
+        alpha: 0.5,
+    ),
+)
