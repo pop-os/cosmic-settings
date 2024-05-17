@@ -1,4 +1,5 @@
 use button::StyleSheet as ButtonStyleSheet;
+use cosmic::iced::alignment;
 use cosmic::iced_style::container::StyleSheet;
 
 use cosmic::prelude::CollectionWidget;
@@ -58,8 +59,6 @@ pub type OnDndCommand<'a, Message> = Box<
         ) -> Message
         + 'a,
 >;
-
-const SPACING: f32 = 8.0;
 
 // radius is 8.0
 const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
@@ -126,8 +125,26 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("panel_applets", "preferences-dock-symbolic")
-        // .title(fl!("applets"))
+        page::Info::new("panel_applets", "preferences-dock-symbolic").title(fl!("applets"))
+    }
+
+    fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
+        let theme = cosmic::theme::active();
+        let spacing = theme.cosmic().spacing;
+        let content = row::with_capacity(2)
+            .spacing(spacing.space_xxs)
+            .push(
+                button(text(fl!("add-applet")))
+                    .on_press(Message::AddAppletDialog)
+                    .padding([spacing.space_xxs, spacing.space_xs]),
+            )
+            .apply(container)
+            .width(Length::Fill)
+            .align_x(alignment::Horizontal::Right)
+            .apply(Element::from)
+            .map(crate::pages::Message::PanelApplet);
+
+        Some(content)
     }
 
     fn context_drawer(&self) -> Option<Element<pages::Message>> {
@@ -220,6 +237,7 @@ impl Page {
         &self,
         msg_map: T,
     ) -> Element<crate::pages::Message> {
+        let spacing = cosmic::theme::active().cosmic().spacing;
         let mut list_column = list_column();
         let mut has_some = false;
         for info in self
@@ -252,7 +270,7 @@ impl Page {
                     column::with_capacity(2)
                         .push(text(info.name.clone()))
                         .push(text(info.description.clone()).size(10))
-                        .spacing(4.0)
+                        .spacing(spacing.space_xxxs)
                         .width(Length::Fill)
                         .into(),
                     button(text(fl!("add")))
@@ -285,7 +303,7 @@ impl Page {
                         .into(),
                 ])
                 .padding([0, 32, 0, 32])
-                .spacing(12)
+                .spacing(spacing.space_xs)
                 .align_items(Alignment::Center),
             );
         }
@@ -306,7 +324,7 @@ impl Page {
             list_column.into(),
         ])
         .align_items(Alignment::Center)
-        .spacing(8.0)
+        .spacing(spacing.space_xxs)
         .into()
     }
 
@@ -455,20 +473,14 @@ pub fn lists<
     msg_map: T,
 ) -> Section<crate::pages::Message> {
     Section::default().view::<P>(move |_binder, page, _section| {
+        let spacing = cosmic::theme::active().cosmic().spacing;
         let page = page.inner();
         let Some(config) = page.current_config.as_ref() else {
             return Element::from(text(fl!("unknown")));
         };
 
-        let button = button::standard(fl!("add-applet"));
-
         column::with_children(vec![
             column::with_children(vec![
-                row::with_children(vec![
-                    text(fl!("applets")).width(Length::Fill).size(24).into(),
-                    (button.on_press(Message::AddAppletDialog)).into(),
-                ])
-                .into(),
                 text(fl!("start-segment")).into(),
                 AppletReorderList::new(
                     config
@@ -498,7 +510,7 @@ pub fn lists<
                 )
                 .into(),
             ])
-            .spacing(8.0)
+            .spacing(spacing.space_xxs)
             .into(),
             column::with_children(vec![
                 text(fl!("center-segment")).into(),
@@ -529,7 +541,7 @@ pub fn lists<
                 )
                 .into(),
             ])
-            .spacing(8.0)
+            .spacing(spacing.space_xxs)
             .into(),
             column::with_children(vec![
                 text(fl!("end-segment")).into(),
@@ -561,7 +573,7 @@ pub fn lists<
                 )
                 .into(),
             ])
-            .spacing(8.0)
+            .spacing(spacing.space_xxs)
             .into(),
         ])
         .padding([0, 16, 0, 16])
@@ -664,6 +676,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
         on_cancel: Message,
         active_dnd: Option<&Applet<'a>>,
     ) -> Self {
+        let spacing = cosmic::theme::active().cosmic().spacing;
         let applet_buttons = info
             .clone()
             .into_iter()
@@ -678,7 +691,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                             .into(),
                         icon::from_name(info.icon).size(32).into(),
                         column::with_capacity(2)
-                            .spacing(4.0)
+                            .spacing(spacing.space_xxxs)
                             .width(Length::Fill)
                             .push(text(info.name))
                             .push_maybe(if info.description.is_empty() {
@@ -692,7 +705,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                             .on_press(on_remove(id_clone.clone()))
                             .into(),
                     ])
-                    .spacing(12)
+                    .spacing(spacing.space_xs)
                     .align_items(Alignment::Center),
                 )
                 .width(Length::Fill)
@@ -741,7 +754,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 .into()
             } else {
                 Column::with_children(applet_buttons)
-                    .spacing(SPACING)
+                    .spacing(spacing.space_xxs)
                     .into()
             },
         }
@@ -805,6 +818,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
         pos: Point,
         offered_applet: Applet<'a>,
     ) -> Vec<Applet<'a>> {
+        let spacing = cosmic::theme::active().cosmic().spacing;
         let mut reordered: Vec<_> = self.info.clone();
 
         if !layout.bounds().contains(pos) {
@@ -825,7 +839,8 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             return reordered;
         }
 
-        let height = (layout.bounds().height - SPACING * (self.info.len() - 1) as f32)
+        let height = (layout.bounds().height
+            - spacing.space_xxs as f32 * (self.info.len() - 1) as f32)
             / self.info.len() as f32;
 
         let mut found = false;
@@ -835,7 +850,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             if i == 0 || i == reordered.len() {
                 y += height / 2.0;
             } else {
-                y += height + SPACING;
+                y += height + spacing.space_xxs as f32;
             }
             if pos.y <= y {
                 reordered.insert(i, offered_applet.clone());
@@ -924,6 +939,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
+        let spacing = cosmic::theme::active().cosmic().spacing;
         let mut ret = match self.inner.as_widget_mut().on_event(
             &mut tree.children[0],
             event.clone(),
@@ -939,7 +955,7 @@ where
         };
 
         let height = (layout.bounds().height
-            - SPACING * (self.info.len().saturating_sub(1)) as f32)
+            - spacing.space_xxs as f32 * (self.info.len().saturating_sub(1)) as f32)
             / self.info.len() as f32;
         let state = tree.state.downcast_mut::<ReorderWidgetState>();
 
@@ -997,7 +1013,8 @@ where
                             if let Some((_, applet)) =
                                 self.info.iter().enumerate().find(|(i, _)| {
                                     start.y
-                                        < layout.bounds().y + (*i + 1) as f32 * (height + SPACING)
+                                        < layout.bounds().y
+                                            + (*i + 1) as f32 * (height + spacing.space_xxs as f32)
                                 })
                             {
                                 let (window_id, icon_id) = self.surface_ids.unwrap();
