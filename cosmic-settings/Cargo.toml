@@ -7,7 +7,7 @@ rust-version = "1.65.0"
 
 [dependencies]
 anyhow = "1.0"
-ashpd = { version = "0.7", default-features = false }
+ashpd = { version = "0.8", default-features = false }
 async-channel = "2.1.1"
 chrono = "0.4.37"
 clap = { version = "4.4.18", features = ["derive"] }
@@ -29,7 +29,7 @@ freedesktop-desktop-entry = "0.5.0"
 futures = { package = "futures-lite", version = "2.2.0" }
 generator = "=0.7.5"
 hostname-validator = "1.1.1"
-hostname1-zbus = "0.1.0"
+hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 i18n-embed-fl = "0.7.0"
 image = "0.25"
 itertools = "0.12.0"
@@ -50,7 +50,7 @@ tracing-subscriber = "0.3.18"
 udev = "0.8.0"
 url = "2.5.0"
 xkb-data = "0.1.0"
-zbus = { version = "3.15.2", features = ["tokio"] }
+zbus = { version = "4.2.1", features = ["tokio"] }
 tachyonix = "0.2.1"
 
 [dependencies.i18n-embed]
