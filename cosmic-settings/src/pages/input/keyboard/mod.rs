@@ -312,7 +312,12 @@ impl page::Page<crate::pages::Message> for Page {
                 }
 
                 // Xkb layouts currently enabled.
-                let layouts = self.xkb.layout.split_terminator(',');
+                let layouts = if self.xkb.layout.is_empty() {
+                    "us"
+                } else {
+                    &self.xkb.layout
+                }
+                .split_terminator(',');
 
                 // Xkb variants for each layout. Repeat empty strings in case there's more layouts than variants.
                 let variants = self
