@@ -369,6 +369,10 @@ scrolling = Scrolling
 
 ## Input: Keyboard
 
+slow = Slow
+fast = Fast
+short = Short
+long = Long
 keyboard = Keyboard
     .desc = Keyboard input
 
@@ -384,6 +388,10 @@ keyboard-sources = Input Sources
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
     .compose = Compose key
+
+keyboard-typing-assist = Typing
+    .repeat-rate = Repeat rate
+    .repeat-delay = Repeat delay
 
 added = Added
 type-to-search = Type to search...
