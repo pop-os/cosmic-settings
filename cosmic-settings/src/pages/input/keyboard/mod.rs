@@ -5,7 +5,7 @@ use cosmic::{
     iced::{self, Length},
     iced_core::Border,
     iced_style, theme,
-    widget::{self, button, container, icon, radio, settings},
+    widget::{self, button, container, icon, radio, row, settings},
     Apply, Command, Element,
 };
 use cosmic_comp_config::XkbConfig;
@@ -48,6 +48,8 @@ pub enum Message {
     SourceAdd(DefaultKey),
     SourceContext(SourceContext),
     SpecialCharacterSelect(Option<&'static str>),
+    SetRepeatKeysDelay(u32),
+    SetRepeatKeysRate(u32),
 }
 
 #[derive(Clone, Debug)]
@@ -62,6 +64,13 @@ pub enum SourceContext {
 pub type Locale = String;
 pub type Variant = String;
 pub type Description = String;
+
+const KB_REPEAT_DELAY_DEFAULT: u32 = 600;
+const KB_REPEAT_RATE_DEFAULT: u32 = 25;
+const KB_REPEAT_DELAY_MAX: u32 = 1000;
+const KB_REPEAT_DELAY_MIN: u32 = 200;
+const KB_REPEAT_RATE_MAX: u32 = 45;
+const KB_REPEAT_RATE_MIN: u32 = 5;
 
 pub struct Page {
     config: cosmic_config::Config,
@@ -233,6 +242,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(input_sources()),
             sections.insert(special_character_entry()),
             sections.insert(keyboard_shortcuts()),
+            sections.insert(keyboard_typing_assist()),
         ])
     }
 
@@ -440,6 +450,14 @@ impl Page {
                     }
                 }
             }
+            Message::SetRepeatKeysDelay(delay) => {
+                self.xkb.repeat_delay = delay;
+                self.update_xkb_config();
+            }
+            Message::SetRepeatKeysRate(rate) => {
+                self.xkb.repeat_rate = rate;
+                self.update_xkb_config();
+            }
         }
 
         Command::none()
@@ -620,6 +638,63 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
                 ));
             }
             section.apply(cosmic::Element::from)
+        })
+}
+
+fn keyboard_typing_assist() -> Section<crate::pages::Message> {
+    Section::default()
+        .title(fl!("keyboard-typing-assist"))
+        .descriptions(vec![
+            fl!("keyboard-typing-assist", "repeat-delay").into(),
+            fl!("keyboard-typing-assist", "repeat-rate").into(),
+            fl!("short").into(),
+            fl!("long").into(),
+            fl!("slow").into(),
+            fl!("fast").into(),
+        ])
+        .view::<Page>(|_binder, page, section| {
+            let descriptions = &section.descriptions;
+            let theme = cosmic::theme::active();
+
+            settings::view_section(&section.title)
+                .add(settings::item(&*descriptions[0], {
+                    // Delay
+                    let delay_slider = cosmic::widget::slider(
+                        KB_REPEAT_DELAY_MIN..=KB_REPEAT_DELAY_MAX,
+                        page.xkb.repeat_delay,
+                        Message::SetRepeatKeysDelay,
+                    )
+                    .width(250.0)
+                    .breakpoints(&[KB_REPEAT_DELAY_DEFAULT])
+                    .step(50_u32);
+
+                    row::with_capacity(3)
+                        .align_items(iced::Alignment::Center)
+                        .spacing(theme.cosmic().space_s())
+                        .push(&*descriptions[2])
+                        .push(delay_slider)
+                        .push(&*descriptions[3])
+                }))
+                .add(settings::item(&*descriptions[1], {
+                    // Repeat rate
+                    let rate_slider = cosmic::widget::slider(
+                        KB_REPEAT_RATE_MIN..=KB_REPEAT_RATE_MAX,
+                        page.xkb.repeat_rate,
+                        Message::SetRepeatKeysRate,
+                    )
+                    .width(250.0)
+                    .breakpoints(&[KB_REPEAT_RATE_DEFAULT])
+                    .step(5_u32);
+
+                    row::with_capacity(3)
+                        .align_items(iced::Alignment::Center)
+                        .spacing(theme.cosmic().space_s())
+                        .push(&*descriptions[4])
+                        .push(rate_slider)
+                        .push(&*descriptions[5])
+                }))
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::Keyboard)
         })
 }
 
