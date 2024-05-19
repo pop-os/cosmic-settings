@@ -326,7 +326,7 @@ impl From<Roundness> for CornerRadii {
             },
             Roundness::SlightlyRound => CornerRadii {
                 radius_0: [0.0; 4],
-                radius_xs: [2.0; 4],
+                radius_xs: [4.0; 4],
                 radius_s: [8.0; 4],
                 radius_m: [8.0; 4],
                 radius_l: [8.0; 4],
