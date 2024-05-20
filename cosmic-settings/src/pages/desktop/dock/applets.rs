@@ -1,4 +1,10 @@
-use cosmic::{cosmic_config::CosmicConfigEntry, iced_runtime::Command, Element};
+use cosmic::{
+    cosmic_config::CosmicConfigEntry,
+    iced::{alignment, Length},
+    iced_runtime::Command,
+    widget::{button, container, row, text},
+    Apply, Element,
+};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
@@ -74,7 +80,26 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("dock_applets", "preferences-dock-symbolic")
+        page::Info::new("dock_applets", "preferences-dock-symbolic").title(fl!("applets"))
+    }
+
+    fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
+        let theme = cosmic::theme::active();
+        let spacing = theme.cosmic().spacing;
+        let content = row::with_capacity(2)
+            .spacing(spacing.space_xxs)
+            .push(
+                button(text(fl!("add-applet")))
+                    .on_press(Message(applets_inner::Message::AddAppletDrawer))
+                    .padding([spacing.space_xxs, spacing.space_xs]),
+            )
+            .apply(container)
+            .width(Length::Fill)
+            .align_x(alignment::Horizontal::Right)
+            .apply(Element::from)
+            .map(crate::pages::Message::DockApplet);
+
+        Some(content)
     }
 
     fn context_drawer(&self) -> Option<Element<crate::pages::Message>> {

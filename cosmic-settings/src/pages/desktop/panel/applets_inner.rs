@@ -135,7 +135,7 @@ impl page::Page<crate::pages::Message> for Page {
             .spacing(spacing.space_xxs)
             .push(
                 button(text(fl!("add-applet")))
-                    .on_press(Message::AddAppletDialog)
+                    .on_press(Message::AddAppletDrawer)
                     .padding([spacing.space_xxs, spacing.space_xs]),
             )
             .apply(container)
@@ -177,7 +177,7 @@ pub enum Message {
     DnDCommand(Arc<Box<dyn Send + Sync + Fn() -> ActionInner>>),
     Search(String),
     AddApplet(Applet<'static>),
-    AddAppletDialog,
+    AddAppletDrawer,
     Save,
     Cancel,
 }
@@ -202,7 +202,7 @@ impl Debug for Message {
             Message::Cancel => write!(f, "Cancel"),
             Message::Search(_) => write!(f, "Search"),
             Message::AddApplet(_) => write!(f, "AddApplet"),
-            Message::AddAppletDialog => write!(f, "AddAppletDialogue"),
+            Message::AddAppletDrawer => write!(f, "AddAppletDialogue"),
         }
     }
 }
@@ -454,7 +454,7 @@ impl Page {
                 list.push(applet.id.to_string());
                 self.save();
             }
-            Message::AddAppletDialog => {
+            Message::AddAppletDrawer => {
                 self.context = Some(ContextDrawer::AddApplet);
                 return cosmic::command::message(app::Message::OpenContextDrawer(Cow::Owned(fl!(
                     "add-applet"
