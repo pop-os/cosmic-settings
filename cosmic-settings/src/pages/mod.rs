@@ -10,12 +10,14 @@ pub mod networking;
 pub mod sound;
 pub mod system;
 pub mod time;
+pub mod power;
 
 #[derive(Clone, Debug)]
 pub enum Message {
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
     DateAndTime(time::date::Message),
+    PowerProfile(power::profiles::Message),
     Desktop(desktop::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
     DesktopWorkspaces(desktop::workspaces::Message),

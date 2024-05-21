@@ -11,10 +11,11 @@ use crate::pages::desktop::{
     },
 };
 use crate::pages::input::{self};
-use crate::pages::{self, display, sound, system, time};
+use crate::pages::{self, display, power, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
+use cosmic::app::command::message;
 use cosmic::app::DbusActivationMessage;
 use cosmic::iced::futures::SinkExt;
 use cosmic::iced::Subscription;
@@ -63,7 +64,7 @@ impl SettingsApp {
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             PageCommands::Network => None,
-            PageCommands::Power => None,
+            PageCommands::Power => self.pages.page_id::<power::Page>(),
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
             PageCommands::Time => self.pages.page_id::<time::Page>(),
@@ -129,6 +130,7 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<sound::Page>();
         app.insert_page::<system::Page>();
         app.insert_page::<time::Page>();
+        app.insert_page::<power::Page>();
 
         let active_id = match flags.subcommand {
             Some(p) => app.subcommand_to_page(&p),
@@ -364,6 +366,10 @@ impl cosmic::Application for SettingsApp {
                     if let Some(page) = self.pages.page_mut::<appearance::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);
                     }
+                }
+
+                crate::pages::Message::PowerProfile(message) => {
+                    page::update!(self.pages, message, power::profiles::Page)
                 }
             },
 
