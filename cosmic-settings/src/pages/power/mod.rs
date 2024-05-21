@@ -5,12 +5,11 @@ pub mod profiles;
 #[derive(Default)]
 pub struct Page;
 
-// TO-DO implement localization after find out how it works 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
-        page::Info::new("power", "preferences-system-time-symbolic")
-            .title("Power & Sleep")
-            .description("Settings for power and sleep")
+        page::Info::new("power", "battery-symbolic")
+            .title(fl!("power"))
+            .description(fl!("power", "desc"))
     }
 }
 

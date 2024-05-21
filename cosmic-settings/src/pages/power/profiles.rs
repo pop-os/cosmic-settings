@@ -1,5 +1,3 @@
-//Localization TO-DO
-
 use cosmic::iced::widget;
 use cosmic::{
     widget::settings,
@@ -10,6 +8,8 @@ use cosmic_settings_page::{self as page, section};
 use slotmap::SlotMap;
 use std::error::Error;
 use std::process::Command;
+
+static POWER_PROFILES_DAEMON : &str = "powerprofilesctl";
 
 #[derive(Default)]
 pub struct Page;
@@ -31,9 +31,9 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("power-profiles", "preferences-desktop-locale-symbolic")
-            .title("Power Profiles")
-            .description("Manage power profiles")
+        page::Info::new("power-profiles", "battery-symbolic")
+            .title(fl!("power-profiles"))
+            .description(fl!("power-profiles", "desc"))
     }
 }
 
@@ -44,22 +44,19 @@ pub enum Message {
 
 fn profiles() -> Section<crate::pages::Message> {
     Section::default()
-        .title("Power Settings")
-        .descriptions(vec!["power settings into".into()])
+        .title(fl!("power-profiles"))
+        .descriptions(vec![fl!("power", "desc").into()])
         .view::<Page>(|_binder, page, section| {
             // Safe to do we are always returning ok
             let profiles = load_profiles().unwrap();
 
-            let mut section = settings::view_section(&section.title); // Note the mutable binding
+            let mut section = settings::view_section(&section.title);
 
             let mut widgets = Vec::new();
             
             for v in profiles.into_iter() {
-                println!("{}", get_selected_profile());
                 let selected = if get_selected_profile() == v { 
-                    
                     Some(true)
-                
                 } else {
                     None
                 };
@@ -72,7 +69,6 @@ fn profiles() -> Section<crate::pages::Message> {
                 widgets.push(item);
             }
 
-            // Now add all widgets to the section
             for item in widgets {
                 section = section.add(item);
             }
@@ -86,7 +82,7 @@ fn profiles() -> Section<crate::pages::Message> {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn load_profiles() -> Result<Vec<String>, Box<dyn Error>> {
-    let output = match Command::new("powerprofilesctl").arg("list").output() {
+    let output = match Command::new(POWER_PROFILES_DAEMON).arg("list").output() {
         Ok(output) => output,
         Err(err) => {
             println!("Power profiles deamon is not installed.");
@@ -96,48 +92,33 @@ fn load_profiles() -> Result<Vec<String>, Box<dyn Error>> {
 
     let content = String::from_utf8_lossy(&output.stdout);
 
-
     let content = content.replace("*", "").replace(" ", "");
 
     let mut profiles = Vec::new();
 
     for l in content.lines() {
-        let mut profile = l.replace(":", "").replace("-", " ");
-
-        if let Some(first_char) = profile.chars().next() {
-            if first_char.is_ascii_uppercase() {
-                continue;
-            }
-        }
-    
+        let profile = prepare_for_display(&l.to_string());
         if !profile.is_empty() {
-            profile = profile[..1].to_uppercase() + &profile[1..];
             profiles.push(profile);
         }
     }
-    
 
-   
     Ok(profiles)
 }
 
-
 fn update_selected_profile(mut profile_name: String) {
-    profile_name = profile_name.replace(" ", "-");
+    profile_name = prepare_for_command(&profile_name);
 
-    profile_name = profile_name.to_lowercase();
-
-    match Command::new("powerprofilesctl").arg("set").arg(profile_name).output() {
+    match Command::new(POWER_PROFILES_DAEMON).arg("set").arg(profile_name).output() {
         Ok(output) => output,
-        Err(_) => return
+        Err(_) => return,
     };
 
     println!("Power profile updated.");
-
 }
 
 fn get_selected_profile() -> String {
-    let output = match Command::new("powerprofilesctl").arg("get").output() {
+    let output = match Command::new(POWER_PROFILES_DAEMON).arg("get").output() {
         Ok(output) => output,
         Err(err) => {
             println!("Power profiles deamon is not installed.");
@@ -147,17 +128,22 @@ fn get_selected_profile() -> String {
 
     let profile_name = String::from_utf8_lossy(&output.stdout).to_string();
 
-    profile_name[0..1].to_uppercase() + &profile_name[1..profile_name.len()].trim_end_matches("\n")
-
+    prepare_for_display(&profile_name)
 }
 
-// TO-DO move char logic here
-fn prepare_for_display(str: &String){
-
+fn prepare_for_display(str: &String) -> String {
+    let mut profile = str.replace(":", "").replace("-", " ");
+    if let Some(first_char) = profile.chars().next() {
+        if first_char.is_ascii_uppercase() {
+            return String::new();
+        }
+    }
+    if !profile.is_empty() {
+        profile = profile[..1].to_uppercase() + &profile[1..];
+    }
+    profile.trim().to_string()
 }
 
-
-// TO-DO move char logic here
-fn prepare_for_command(str: &String){
-
+fn prepare_for_command(str: &String) -> String {
+    str.replace(" ", "-").to_lowercase()
 }
