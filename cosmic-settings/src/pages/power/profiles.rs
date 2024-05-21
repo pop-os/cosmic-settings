@@ -1,3 +1,5 @@
+//Localization TO-DO
+
 use cosmic::iced::widget;
 use cosmic::{
     widget::settings,
