@@ -431,3 +431,16 @@ switch-to-next-workspace = Switch to next workspace
 switch-to-prev-workspace = Switch to prev workspace
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
+
+## Power 
+
+power = Power
+  .desc = Manage power settings 
+
+power-profiles = Power Profiles
+  .performance = Performance Mode
+  .balanced = Balanced Mode
+  .battery = Power Save Mode
+  .performance-desc = Maximum performance but high power consumption.
+  .balanced-desc = Balanced performance and power consumption.
+  .battery-desc = Low performance but low power consumption.
