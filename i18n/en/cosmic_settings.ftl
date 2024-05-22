@@ -438,7 +438,6 @@ power = Power
   .desc = Manage power settings 
 
 power-profiles = Power Profiles
-  .desc = Adjust power profiles
   .performance = Performance Mode
   .balanced = Balanced Mode
   .battery = Power Save Mode

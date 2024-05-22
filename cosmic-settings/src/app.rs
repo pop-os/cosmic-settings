@@ -368,8 +368,8 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
-                crate::pages::Message::PowerProfile(message) => {
-                    page::update!(self.pages, message, power::profiles::Page)
+                crate::pages::Message::Power(message) => {
+                    page::update!(self.pages, message, power::Page)
                 }
             },
 

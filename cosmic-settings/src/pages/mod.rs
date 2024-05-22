@@ -17,7 +17,7 @@ pub enum Message {
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
     DateAndTime(time::date::Message),
-    PowerProfile(power::profiles::Message),
+    Power(power::Message),
     Desktop(desktop::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
     DesktopWorkspaces(desktop::workspaces::Message),
