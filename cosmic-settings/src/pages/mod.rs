@@ -7,10 +7,10 @@ pub mod desktop;
 pub mod display;
 pub mod input;
 pub mod networking;
+pub mod power;
 pub mod sound;
 pub mod system;
 pub mod time;
-pub mod power;
 
 #[derive(Clone, Debug)]
 pub enum Message {
