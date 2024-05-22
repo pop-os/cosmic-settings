@@ -624,11 +624,28 @@ impl Page {
             FIT => ScalingMode::Fit([0.0, 0.0, 0.0]),
             _ => return None,
         };
+        let old_entry = if output == "all" {
+            Some(&self.wallpaper_service_config.default_background)
+        } else {
+            self.wallpaper_service_config
+                .backgrounds
+                .iter()
+                .find(|entry| entry.output == output)
+        };
 
-        Entry::new(output, wallpaper::Source::Path(path))
+        let entry = Entry::new(output, wallpaper::Source::Path(path))
             .scaling_mode(scaling_mode)
-            .rotation_frequency(self.rotation_frequency)
-            .apply(Some)
+            .rotation_frequency(self.rotation_frequency);
+
+        if let Some(old_entry) = old_entry {
+            entry
+                .sampling_method(old_entry.sampling_method)
+                .filter_method(old_entry.filter_method.clone())
+                .filter_by_theme(old_entry.filter_by_theme)
+        } else {
+            entry
+        }
+        .apply(Some)
     }
 
     #[must_use]
