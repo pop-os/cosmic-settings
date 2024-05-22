@@ -2,6 +2,8 @@ use cosmic_settings_page as page;
 
 pub mod profiles;
 
+pub mod backend;
+
 #[derive(Default)]
 pub struct Page;
 
