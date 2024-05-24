@@ -49,6 +49,8 @@ control-tint = Control component tint
 frosted = Frosted glass effect on system interface
     .desc = Applies background blur to panel, dock, applets, launcher, and application library.
 
+experimental-settings = Experimental settings
+
 enable-export = Apply this theme to GNOME apps.
     .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
 
@@ -89,28 +91,6 @@ display = Displays
     .refresh-rate = Refresh rate
     .resolution = Resolution
     .scale = Scale
-
-graphics-mode = Graphics mode
-    .mode = { $mode ->
-        [compute] Compute
-        *[hybrid] Hybrid
-        [integrated] Integrated
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Enable { $mode ->
-        [compute] compute
-        *[hybrid] hybrid
-        [integrated] integrated
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Uses dedicated graphics for computational workloads only. Disables external displays. { -requires-restart }.
-        *[hybrid] Applications use integrated graphics unless explicitly requested to use dedicated graphics. { -requires-restart }.
-        [integrated] Turns off dedicated graphics for a longer battery life and less fan noise.
-        [nvidia] Better graphical experience and highest power usage. { -requires-restart }.
-    }
-    .restart = Restart and switch to { $mode }?
-    .restart-desc = Switching to { $mode } will close all open applications
 
 mirroring = Mirroring
     .id = Mirroring { $id }
@@ -389,6 +369,10 @@ scrolling = Scrolling
 
 ## Input: Keyboard
 
+slow = Slow
+fast = Fast
+short = Short
+long = Long
 keyboard = Keyboard
     .desc = Keyboard input
 
@@ -399,10 +383,18 @@ keyboard-sources = Input Sources
     .settings = Settings
     .view-layout = View keyboard layout
     .remove = Remove
+    .add = Add input source
 
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
     .compose = Compose key
+
+keyboard-typing-assist = Typing
+    .repeat-rate = Repeat rate
+    .repeat-delay = Repeat delay
+
+added = Added
+type-to-search = Type to search...
 
 ## Input: Keyboard: Shortcuts
 
@@ -447,3 +439,16 @@ switch-to-next-workspace = Switch to next workspace
 switch-to-prev-workspace = Switch to prev workspace
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
+
+## Power 
+
+power = Power
+  .desc = Manage power settings 
+
+power-profiles = Power Profiles
+  .performance = Performance Mode
+  .balanced = Balanced Mode
+  .battery = Power Save Mode
+  .performance-desc = Maximum performance but high power consumption.
+  .balanced-desc = Balanced performance and power consumption.
+  .battery-desc = Low performance but low power consumption.

@@ -19,35 +19,6 @@ crate::cache_dynamic_lazy! {
     pub static DISPLAY_RESOLUTION: String = fl!("display", "resolution");
     pub static DISPLAY_SCALE: String = fl!("display", "scale");
 
-    pub static GRAPHICS_MODE: String = fl!("graphics-mode");
-    pub static GRAPHICS_MODE_COMPUTE: String =
-        fl!("graphics-mode", "mode", mode = super::graphics::COMPUTE);
-    pub static GRAPHICS_MODE_COMPUTE_ENABLE: String =
-        fl!("graphics-mode", "enable", mode = super::graphics::COMPUTE);
-    pub static GRAPHICS_MODE_COMPUTE_DESC: String =
-        fl!("graphics-mode", "desc", mode = super::graphics::COMPUTE);
-    pub static GRAPHICS_MODE_HYBRID: String =
-        fl!("graphics-mode", "mode", mode = super::graphics::HYBRID);
-    pub static GRAPHICS_MODE_HYBRID_ENABLE: String =
-        fl!("graphics-mode", "enable", mode = super::graphics::HYBRID);
-    pub static GRAPHICS_MODE_HYBRID_DESC: String =
-        fl!("graphics-mode", "desc", mode = super::graphics::HYBRID);
-    pub static GRAPHICS_MODE_INTEGRATED: String =
-        fl!("graphics-mode", "mode", mode = super::graphics::INTEGRATED);
-    pub static GRAPHICS_MODE_INTEGRATED_ENABLE: String = fl!(
-        "graphics-mode",
-        "enable",
-        mode = super::graphics::INTEGRATED
-    );
-    pub static GRAPHICS_MODE_INTEGRATED_DESC: String =
-        fl!("graphics-mode", "desc", mode = super::graphics::INTEGRATED);
-    pub static GRAPHICS_MODE_NVIDIA: String =
-        fl!("graphics-mode", "mode", mode = super::graphics::NVIDIA);
-    pub static GRAPHICS_MODE_NVIDIA_ENABLE: String =
-        fl!("graphics-mode", "enable", mode = super::graphics::NVIDIA);
-    pub static GRAPHICS_MODE_NVIDIA_DESC: String =
-        fl!("graphics-mode", "desc", mode = super::graphics::NVIDIA);
-
     pub static MIRRORING: String = fl!("mirroring");
 
     pub static NIGHT_LIGHT: String = fl!("night-light");

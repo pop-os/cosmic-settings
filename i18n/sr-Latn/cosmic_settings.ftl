@@ -81,28 +81,6 @@ display = Ekrani
     .resolution = Rezolucija
     .scale = Razmera
 
-graphics-mode = Grafički režim
-    .mode = { $mode ->
-        [compute] Računska
-        *[hybrid] Hibridna
-        [integrated] Integrisana
-        [nvidia] NVIDIA
-    } grafika
-    .enable = Omogući { $mode ->
-        [compute] računsku
-        *[hybrid] hibridnu
-        [integrated] integrisanu
-        [nvidia] NVIDIA
-    } grafiku
-    .desc = { $mode ->
-        [compute] Koristi namensku grafiku samo za računska opterećenja. Isljučuje spoljne ekrane. { -requires-restart }.
-        *[hybrid] Aplikacije koriste integrisanu grafiku osim ako se izričito ne zahteva korišćenje namenske grafike. { -requires-restart }.
-        [integrated] Isključuje namensku grafiku radi dužeg trajanja baterije i manje buke ventilatora.
-        [nvidia] Bolje grafičko iskustvo i najveća potrošnja energije. { -requires-restart }.
-    }
-    .restart = Ponovo pokreni i prebaci na { $mode }?
-    .restart-desc = Prebacivanje na { $mode } će zatvoriti sve otvorene aplikacije
-
 mirroring = Preslikavanje
     .id = Preslikavanje { $id }
     .dont = Ne preslikavaj

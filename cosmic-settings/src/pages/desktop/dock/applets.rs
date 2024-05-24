@@ -1,7 +1,12 @@
-use cosmic::{cosmic_config::CosmicConfigEntry, iced::window, iced_runtime::Command};
+use cosmic::{
+    cosmic_config::CosmicConfigEntry,
+    iced::{alignment, Length},
+    iced_runtime::Command,
+    widget::{button, container, row, text},
+    Apply, Element,
+};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section, Section};
-use once_cell::sync::Lazy;
 use slotmap::SlotMap;
 use std::borrow::Cow;
 
@@ -9,11 +14,11 @@ use crate::{
     app,
     pages::{
         self,
-        desktop::panel::applets_inner::{self, lists, AppletsPage, ReorderWidgetState},
+        desktop::panel::applets_inner::{
+            self, lists, AppletsPage, ContextDrawer, ReorderWidgetState,
+        },
     },
 };
-
-pub static ADD_DOCK_APPLET_DIALOGUE_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
 
 pub(crate) struct Page {
     inner: applets_inner::Page,
@@ -38,7 +43,7 @@ impl Default for Page {
                 current_config,
                 reorder_widget_state: ReorderWidgetState::default(),
                 search: String::new(),
-                has_dialog: false,
+                context: None,
             },
         }
     }
@@ -59,7 +64,7 @@ pub struct Message(pub applets_inner::Message);
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Command<app::Message> {
-        self.inner.update(message.0, *ADD_DOCK_APPLET_DIALOGUE_ID)
+        self.inner.update(message.0)
     }
 }
 
@@ -75,8 +80,36 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("dock_applets", "preferences-dock-symbolic")
-        // .title(fl!("applets"))
+        page::Info::new("dock_applets", "preferences-dock-symbolic").title(fl!("applets"))
+    }
+
+    fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
+        let theme = cosmic::theme::active();
+        let spacing = theme.cosmic().spacing;
+        let content = row::with_capacity(2)
+            .spacing(spacing.space_xxs)
+            .push(
+                button(text(fl!("add-applet")))
+                    .on_press(Message(applets_inner::Message::AddAppletDrawer))
+                    .padding([spacing.space_xxs, spacing.space_xs]),
+            )
+            .apply(container)
+            .width(Length::Fill)
+            .align_x(alignment::Horizontal::Right)
+            .apply(Element::from)
+            .map(crate::pages::Message::DockApplet);
+
+        Some(content)
+    }
+
+    fn context_drawer(&self) -> Option<Element<crate::pages::Message>> {
+        Some(match self.inner.context {
+            Some(ContextDrawer::AddApplet) => self
+                .inner
+                .add_applet_view(|msg| crate::pages::Message::DockApplet(Message(msg))),
+
+            None => return None,
+        })
     }
 }
 

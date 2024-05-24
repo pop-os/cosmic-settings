@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use std::borrow::Cow;
-use std::collections::BTreeSet;
-use std::path::{Path, PathBuf};
+use std::collections::BTreeMap;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
@@ -13,17 +13,17 @@ use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{
     CornerRadii, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID,
 };
-use cosmic::iced_core::{alignment, Color, Length};
+use cosmic::iced_core::{alignment, Background, Color, Length};
 use cosmic::iced_widget::scrollable;
 use cosmic::prelude::CollectionWidget;
-use cosmic::widget::dropdown;
-use cosmic::widget::icon::{from_name, icon};
+use cosmic::widget::icon::{self, from_name, icon};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, horizontal_space, row, settings,
+    button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, row, settings,
     spin_button, text, ColorPickerModel,
 };
 use cosmic::Apply;
 use cosmic::{command, Command, Element};
+use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use cosmic_settings_wallpaper as wallpaper;
@@ -35,7 +35,13 @@ use crate::app;
 
 use super::wallpaper::widgets::color_image;
 
-type IconThemes = Vec<String>;
+const ICON_PREV_N: usize = 6;
+const ICON_PREV_ROW: usize = 3;
+const ICON_TRY_SIZES: [u16; 3] = [32, 48, 64];
+const ICON_THUMB_SIZE: u16 = 32;
+const ICON_NAME_TRUNC: usize = 20;
+type IconThemes = Vec<IconTheme>;
+type IconHandles = Vec<[icon::Handle; ICON_PREV_N]>;
 
 crate::cache_dynamic_lazy! {
     static HEX: String = fl!("hex");
@@ -52,7 +58,16 @@ enum ContextView {
     ContainerBackground,
     ControlComponent,
     CustomAccent,
+    Experimental,
     InterfaceText,
+}
+
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+struct IconTheme {
+    // GTK uses the name of the theme as specified in its index file
+    name: String,
+    // COSMIC uses the file name of the folder containing the theme
+    id: String,
 }
 
 pub struct Page {
@@ -68,7 +83,8 @@ pub struct Page {
     roundness: Roundness,
 
     icon_theme_active: Option<usize>,
-    icon_themes: Vec<String>,
+    icon_themes: IconThemes,
+    icon_handles: IconHandles,
 
     theme_mode: ThemeMode,
     theme_mode_config: Option<Config>,
@@ -190,6 +206,7 @@ impl
             no_custom_window_hint: theme_builder.accent.is_some(),
             icon_theme_active: None,
             icon_themes: Vec::new(),
+            icon_handles: Vec::new(),
             theme_mode_config,
             theme_builder_config,
             theme_mode,
@@ -267,11 +284,11 @@ pub enum Message {
     ControlComponent(ColorPickerUpdate),
     CustomAccent(ColorPickerUpdate),
     DarkMode(bool),
-    Entered(IconThemes),
+    Entered((IconThemes, IconHandles)),
+    ExperimentalContextDrawer,
     ExportError,
     ExportFile(Arc<SelectedFiles>),
     ExportSuccess,
-    Frosted(bool),
     GapSize(spin_button::Message),
     IconTheme(usize),
     ImportError,
@@ -439,6 +456,47 @@ impl Page {
             .map(crate::pages::Message::Appearance)
     }
 
+    fn experimental_context_view(&self) -> Element<'_, crate::pages::Message> {
+        let active = self.icon_theme_active;
+        let theme = cosmic::theme::active();
+        let theme = theme.cosmic();
+        cosmic::iced::widget::column![
+            // Export theme choice
+            settings::view_section("").add(
+                settings::item::builder(fl!("enable-export"))
+                    .description(fl!("enable-export", "desc"))
+                    .toggler(self.tk.apply_theme_global, Message::ApplyThemeGlobal)
+            ),
+            // Icon theme previews
+            // cosmic::iced::widget::column![text(&*ICON_THEME), text(&*ICON_THEME_DESC).size(10)]
+            //     .spacing(2),
+            cosmic::widget::column::with_children(vec![
+                text::heading(&*ICON_THEME).into(),
+                flex_row(
+                    self.icon_themes
+                        .iter()
+                        .zip(self.icon_handles.iter())
+                        .enumerate()
+                        .map(|(i, (theme, handles))| {
+                            let selected = active.map(|j| i == j).unwrap_or_default();
+                            icon_theme_button(&theme.name, handles, i, selected)
+                        })
+                        .collect(),
+                )
+                .row_spacing(theme.space_xs())
+                .column_spacing(theme.space_xxxs())
+                .into()
+            ])
+            .spacing(theme.space_xxs())
+        ]
+        // .padding(theme.space_s())
+        .spacing(theme.space_m())
+        // .align_items(cosmic::iced_core::Alignment::Center)
+        .width(Length::Fill)
+        .apply(Element::from)
+        .map(crate::pages::Message::Appearance)
+    }
+
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Command<app::Message> {
         self.theme_builder_needs_update = false;
@@ -449,7 +507,10 @@ impl Page {
                     if let Err(err) = self.theme_mode.set_is_dark(config, enabled) {
                         tracing::error!(?err, "Error setting dark mode");
                     }
+
+                    self.reload_theme_mode();
                 }
+
                 Command::none()
             }
             Message::Autoswitch(enabled) => {
@@ -468,21 +529,16 @@ impl Page {
                 );
                 Command::batch(vec![cmd, self.accent_window_hint.update::<app::Message>(u)])
             }
-            Message::Frosted(enabled) => {
-                self.theme_builder_needs_update = true;
-                self.theme_builder.is_frosted = enabled;
-                Command::none()
-            }
             Message::IconTheme(id) => {
                 if let Some(theme) = self.icon_themes.get(id).cloned() {
                     self.icon_theme_active = Some(id);
-                    self.tk.icon_theme = theme.clone();
+                    self.tk.icon_theme = theme.id.clone();
 
                     if let Some(ref config) = self.tk_config {
                         let _ = self.tk.write_entry(config);
                     }
 
-                    tokio::spawn(set_gnome_icon_theme(theme));
+                    tokio::spawn(set_gnome_icon_theme(theme.name));
                 }
 
                 Command::none()
@@ -567,9 +623,10 @@ impl Page {
                 self.roundness = r;
                 self.theme_builder.corner_radii = self.roundness.into();
                 self.theme_builder_needs_update = true;
+                Self::update_panel_radii(r);
                 Command::none()
             }
-            Message::Entered(icon_themes) => {
+            Message::Entered((icon_themes, icon_handles)) => {
                 *self = Self::default();
 
                 // Set the icon themes, and define the active icon theme.
@@ -577,7 +634,8 @@ impl Page {
                 self.icon_theme_active = self
                     .icon_themes
                     .iter()
-                    .position(|theme| theme == &self.tk.icon_theme);
+                    .position(|theme| &theme.id == &self.tk.icon_theme);
+                self.icon_handles = icon_handles;
                 Command::none()
             }
             Message::Left => Command::perform(async {}, |()| {
@@ -639,6 +697,8 @@ impl Page {
                 } else {
                     tracing::error!("Failed to get the theme config.");
                 }
+
+                Self::update_panel_radii(self.roundness);
 
                 self.reload_theme_mode();
                 Command::none()
@@ -829,6 +889,10 @@ impl Page {
                 }
                 Command::none()
             }
+            Message::ExperimentalContextDrawer => {
+                self.context_view = Some(ContextView::Experimental);
+                cosmic::command::message(crate::app::Message::OpenContextDrawer("".into()))
+            }
             Message::Daytime(day_time) => {
                 self.day_time = day_time;
                 Command::none()
@@ -927,6 +991,49 @@ impl Page {
             _ => Command::none(),
         }
     }
+
+    fn update_panel_radii(roundness: Roundness) {
+        let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
+        let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
+        let mut panel_config = panel_config_helper.as_ref().and_then(|config_helper| {
+            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
+            (panel_config.name == "Panel").then_some(panel_config)
+        });
+        let mut dock_config = dock_config_helper.as_ref().and_then(|config_helper| {
+            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
+            (panel_config.name == "Dock").then_some(panel_config)
+        });
+
+        if let Some(panel_config_helper) = panel_config_helper.as_ref() {
+            if let Some(panel_config) = panel_config.as_mut() {
+                let radii = if panel_config.anchor_gap || !panel_config.expand_to_edges {
+                    let cornder_radii: CornerRadii = roundness.into();
+                    cornder_radii.radius_xl[0] as u32
+                } else {
+                    0
+                };
+                let update = panel_config.set_border_radius(panel_config_helper, radii);
+                if let Err(err) = update {
+                    tracing::error!(?err, "Error updating panel corner radii");
+                }
+            }
+        };
+
+        if let Some(dock_config_helper) = dock_config_helper.as_ref() {
+            if let Some(dock_config) = dock_config.as_mut() {
+                let radii = if dock_config.anchor_gap || !dock_config.expand_to_edges {
+                    let cornder_radii: CornerRadii = roundness.into();
+                    cornder_radii.radius_xl[0] as u32
+                } else {
+                    0
+                };
+                let update = dock_config.set_border_radius(dock_config_helper, radii);
+                if let Err(err) = update {
+                    tracing::error!(?err, "Error updating dock corner radii");
+                }
+            }
+        };
+    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -938,6 +1045,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(mode_and_colors()),
             sections.insert(style()),
             sections.insert(window_management()),
+            sections.insert(experimental()),
             sections.insert(reset_button()),
         ])
     }
@@ -971,7 +1079,11 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("appearance", "desc"))
     }
 
-    fn reload(&mut self, _: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _: page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         command::future(fetch_icon_themes()).map(crate::pages::Message::Appearance)
     }
 
@@ -1015,6 +1127,8 @@ impl page::Page<crate::pages::Message> for Page {
                 Message::CustomAccent,
                 |this| &this.custom_accent,
             ),
+
+            ContextView::Experimental => self.experimental_context_view(),
 
             ContextView::InterfaceText => self.color_picker_context_view(
                 None,
@@ -1109,9 +1223,9 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&*descriptions[0])
                         .description(
-                            if page.day_time && !page.theme_mode.is_dark {
+                            if !page.day_time && page.theme_mode.is_dark {
                                 &page.auto_switch_descs[0]
-                            } else if !page.day_time && page.theme_mode.is_dark {
+                            } else if page.day_time && !page.theme_mode.is_dark {
                                 &page.auto_switch_descs[1]
                             } else if page.day_time && page.theme_mode.is_dark {
                                 &page.auto_switch_descs[2]
@@ -1296,12 +1410,6 @@ pub fn style() -> Section<crate::pages::Message> {
             fl!("style", "round").into(),
             fl!("style", "slightly-round").into(),
             fl!("style", "square").into(),
-            fl!("frosted").into(),
-            fl!("frosted", "desc").into(),
-            fl!("enable-export").into(),
-            fl!("enable-export", "desc").into(),
-            ICON_THEME.as_str().into(),
-            ICON_THEME_DESC.as_str().into(),
         ])
         .view::<Page>(|_binder, page, section| {
             let descriptions = &section.descriptions;
@@ -1385,25 +1493,6 @@ pub fn style() -> Section<crate::pages::Message> {
                     .width(Length::Fill)
                     .align_x(cosmic::iced_core::alignment::Horizontal::Center),
                 )
-                .add(
-                    settings::item::builder(&*descriptions[3])
-                        .description(&*descriptions[4])
-                        .toggler(page.theme_builder.is_frosted, Message::Frosted),
-                )
-                .add(
-                    settings::item::builder(&*descriptions[5])
-                        .description(&*descriptions[6])
-                        .toggler(page.tk.apply_theme_global, Message::ApplyThemeGlobal),
-                )
-                .add(
-                    settings::item::builder(&*ICON_THEME)
-                        .description(&*ICON_THEME_DESC)
-                        .control(dropdown(
-                            &page.icon_themes,
-                            page.icon_theme_active,
-                            Message::IconTheme,
-                        )),
-                )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
@@ -1433,6 +1522,32 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         Message::GapSize,
                     ),
                 ))
+                .apply(Element::from)
+                .map(crate::pages::Message::Appearance)
+        })
+}
+
+pub fn experimental() -> Section<crate::pages::Message> {
+    Section::default()
+        .descriptions(vec![fl!("experimental-settings").into()])
+        .view::<Page>(|_binder, _page, section| {
+            let descriptions = &*section.descriptions;
+
+            let control = row::with_children(vec![
+                horizontal_space(Length::Fill).into(),
+                icon::from_name("go-next-symbolic").size(16).into(),
+            ]);
+
+            settings::view_section("")
+                .add(
+                    settings::item::builder(&*descriptions[0])
+                        .control(control)
+                        .apply(container)
+                        .style(cosmic::theme::Container::List)
+                        .apply(button)
+                        .style(cosmic::theme::Button::Transparent)
+                        .on_press(Message::ExperimentalContextDrawer),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
@@ -1483,7 +1598,8 @@ pub fn color_button<'a, Message: 'a + Clone>(
 
 /// Find all icon themes available on the system.
 async fn fetch_icon_themes() -> Message {
-    let mut icon_themes = BTreeSet::new();
+    let mut icon_themes = BTreeMap::new();
+    let mut theme_paths: BTreeMap<String, PathBuf> = BTreeMap::new();
 
     let mut buffer = String::new();
 
@@ -1499,14 +1615,14 @@ async fn fetch_icon_themes() -> Message {
         .or_else(dirs::home_dir)
         .map(|dir| dir.join(".local/share/icons"));
 
-    let xdg_data_dirs = std::env::var("XDG_DATA_DIRS");
+    let xdg_data_dirs = std::env::var("XDG_DATA_DIRS").ok();
 
     let xdg_data_dirs = xdg_data_dirs
-        .as_ref()
-        .ok()
+        .as_deref()
+        // Default from the XDG Base Directory Specification
+        .or(Some("/usr/local/share/:/usr/share/"))
         .into_iter()
-        .flat_map(|data_dirs| data_dirs.split_terminator(':'))
-        .map(|dir| Path::new(dir).join("icons"));
+        .flat_map(|arg| std::env::split_paths(arg).map(|dir| dir.join("icons")));
 
     for icon_dir in xdg_data_dirs.chain(xdg_data_home) {
         let Ok(read_dir) = std::fs::read_dir(&icon_dir) else {
@@ -1515,6 +1631,10 @@ async fn fetch_icon_themes() -> Message {
 
         'icon_dir: for entry in read_dir.filter_map(Result::ok) {
             let Ok(path) = entry.path().canonicalize() else {
+                continue;
+            };
+
+            let Some(id) = entry.file_name().to_str().map(|x| x.to_string()) else {
                 continue;
             };
 
@@ -1530,6 +1650,7 @@ async fn fetch_icon_themes() -> Message {
 
             buffer.clear();
             let mut name = None;
+            let mut valid_dirs = Vec::new();
 
             let mut line_reader = tokio::io::BufReader::new(file);
             while let Ok(read) = line_reader.read_line(&mut buffer).await {
@@ -1547,16 +1668,46 @@ async fn fetch_icon_themes() -> Message {
                     }
                 }
 
+                if valid_dirs.is_empty() {
+                    if let Some(value) = buffer.strip_prefix("Inherits=") {
+                        valid_dirs.extend(value.trim().split(',').map(|fallback| {
+                            if let Some(path) = theme_paths.get(fallback) {
+                                path.iter()
+                                    .last()
+                                    .and_then(|os| os.to_str().map(ToOwned::to_owned))
+                                    .unwrap_or_else(|| fallback.to_owned())
+                            } else {
+                                fallback.to_owned()
+                            }
+                        }));
+                    }
+                }
+
                 buffer.clear();
             }
 
             if let Some(name) = name {
-                icon_themes.insert(name);
+                // Name of the directory theme was found in (e.g. Pop for Pop)
+                valid_dirs.push(
+                    path.iter()
+                        .last()
+                        .and_then(|os| os.to_str().map(ToOwned::to_owned))
+                        .unwrap_or_else(|| name.clone()),
+                );
+                theme_paths.entry(name.clone()).or_insert(path);
+
+                let theme = id.clone();
+                // `icon::from_name` may perform blocking I/O
+                if let Ok(handles) =
+                    tokio::task::spawn_blocking(|| preview_handles(theme, valid_dirs)).await
+                {
+                    icon_themes.insert(IconTheme { id, name }, handles);
+                }
             }
         }
     }
 
-    Message::Entered(icon_themes.into_iter().collect())
+    Message::Entered(icon_themes.into_iter().unzip())
 }
 
 /// Set the preferred icon theme for GNOME/GTK applications.
@@ -1570,4 +1721,176 @@ async fn set_gnome_icon_theme(theme: String) {
         ])
         .status()
         .await;
+}
+
+/// Generate [icon::Handle]s to use for icon theme previews.
+fn preview_handles(theme: String, inherits: Vec<String>) -> [icon::Handle; ICON_PREV_N] {
+    // Cache current default and set icon theme as a temporary default
+    let default = cosmic::icon_theme::default();
+    cosmic::icon_theme::set_default(theme);
+
+    // Evaluate handles with the temporary theme
+    let handles = [
+        icon_handle("folder", "folder-symbolic", &inherits),
+        icon_handle("user-home", "user-home-symbolic", &inherits),
+        icon_handle("text-x-generic", "text-x-generic-symbolic", &inherits),
+        icon_handle("image-x-generic", "images-x-generic-symbolic", &inherits),
+        icon_handle("audio-x-generic", "audio-x-generic-symbolic", &inherits),
+        icon_handle("video-x-generic", "video-x-generic-symbolic", &inherits),
+    ];
+
+    // Reset default icon theme.
+    cosmic::icon_theme::set_default(default);
+    handles
+}
+
+/// Evaluate an icon handle for a specific theme.
+///
+/// `alternate` is a fallback icon name such as a symbolic variant.
+///
+/// `valid_dirs` should be a slice of directories from which we consider an icon to be valid. Valid
+/// directories would usually be inherited themes as well as the actual theme's location.
+fn icon_handle(icon_name: &str, alternate: &str, valid_dirs: &[String]) -> icon::Handle {
+    ICON_TRY_SIZES
+        .iter()
+        .zip(std::iter::repeat(icon_name).take(ICON_TRY_SIZES.len()))
+        // Try fallback icon name after the default
+        .chain(
+            ICON_TRY_SIZES
+                .iter()
+                .zip(std::iter::repeat(alternate))
+                .take(ICON_TRY_SIZES.len()),
+        )
+        .find_map(|(&size, name)| {
+            icon::from_name(name)
+                // Set the size on the handle to evaluate the correct icon
+                .size(size)
+                // Get the path to the icon for the currently set theme.
+                // Without the exact path, the handles will all resolve to icons from the same theme in
+                // [`icon_theme_button`] rather than the icons for each different theme
+                .path()
+                // `libcosmic` should always return a path if the default theme is installed
+                // The returned path has to be verified as an icon from the set theme or an
+                // inherited theme
+                .and_then(|path| {
+                    let mut theme_dir = &*path;
+                    while let Some(parent) = theme_dir.parent() {
+                        if parent.ends_with("icons") {
+                            break;
+                        }
+                        theme_dir = parent;
+                    }
+
+                    if let Some(dir_name) =
+                        theme_dir.iter().last().and_then(std::ffi::OsStr::to_str)
+                    {
+                        valid_dirs
+                            .iter()
+                            .any(|valid| dir_name == valid)
+                            .then(|| icon::from_path(path))
+                    } else {
+                        None
+                    }
+                })
+        })
+        // Fallback icon handle
+        .unwrap_or_else(|| icon::from_name(icon_name).size(ICON_THUMB_SIZE).handle())
+}
+
+/// Button with a preview of the icon theme.
+fn icon_theme_button(
+    name: &str,
+    handles: &[icon::Handle],
+    id: usize,
+    selected: bool,
+) -> Element<'static, Message> {
+    let theme = cosmic::theme::active();
+    let theme = theme.cosmic();
+    let background = Background::Color(theme.palette.neutral_4.into());
+
+    cosmic::widget::column()
+        .push(
+            cosmic::widget::button::custom_image_button(
+                cosmic::widget::column::with_children(vec![
+                    cosmic::widget::row()
+                        .extend(
+                            handles
+                                .iter()
+                                .take(ICON_PREV_ROW)
+                                .cloned()
+                                // TODO: Maybe allow choosable sizes/zooming
+                                .map(|handle| handle.icon().size(ICON_THUMB_SIZE)),
+                        )
+                        .spacing(theme.space_xxs())
+                        .into(),
+                    cosmic::widget::row()
+                        .extend(
+                            handles
+                                .iter()
+                                .skip(ICON_PREV_ROW)
+                                .cloned()
+                                // TODO: Maybe allow choosable sizes/zooming
+                                .map(|handle| handle.icon().size(ICON_THUMB_SIZE)),
+                        )
+                        .spacing(theme.space_xxs())
+                        .into(),
+                ])
+                .spacing(theme.space_xs()),
+                None,
+            )
+            .on_press(Message::IconTheme(id))
+            .selected(selected)
+            .padding(theme.space_xxs())
+            // Image button's style mostly works, but it needs a background to fit the design
+            .style(button::Style::Custom {
+                active: Box::new(move |focused, theme| {
+                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::active(
+                        theme,
+                        focused,
+                        selected,
+                        &cosmic::theme::Button::Image,
+                    );
+                    appearance.background = Some(background);
+                    appearance
+                }),
+                disabled: Box::new(move |theme| {
+                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::disabled(
+                        theme,
+                        &cosmic::theme::Button::Image,
+                    );
+                    appearance.background = Some(background);
+                    appearance
+                }),
+                hovered: Box::new(move |focused, theme| {
+                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::hovered(
+                        theme,
+                        focused,
+                        selected,
+                        &cosmic::theme::Button::Image,
+                    );
+                    appearance.background = Some(background);
+                    appearance
+                }),
+                pressed: Box::new(move |focused, theme| {
+                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::pressed(
+                        theme,
+                        focused,
+                        selected,
+                        &cosmic::theme::Button::Image,
+                    );
+                    appearance.background = Some(background);
+                    appearance
+                }),
+            }),
+        )
+        .push(
+            text(if name.len() > ICON_NAME_TRUNC {
+                format!("{name:.ICON_NAME_TRUNC$}...")
+            } else {
+                name.into()
+            })
+            .width(Length::Fixed((ICON_THUMB_SIZE * 3) as _)),
+        )
+        .spacing(theme.space_xs())
+        .into()
 }

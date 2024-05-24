@@ -1,1 +1,74 @@
-(base:(red:0.627451,green:0.14509805,blue:0.16862746,alpha:1.0),hover:(red:0.62352943,green:0.38235295,blue:0.39411765,alpha:1.0),pressed:(red:0.6862745,green:0.44509804,blue:0.45686275,alpha:1.0),selected:(red:0.62352943,green:0.38235295,blue:0.39411765,alpha:1.0),selected_text:(red:0.0,green:0.28627452,blue:0.42745098,alpha:1.0),focus:(red:0.0,green:0.28627452,blue:0.42745098,alpha:1.0),divider:(red:0.8862745,green:0.8862745,blue:0.8862745,alpha:1.0),on:(red:1.0,green:1.0,blue:1.0,alpha:1.0),disabled:(red:0.627451,green:0.14509805,blue:0.16862746,alpha:1.0),on_disabled:(red:1.0,green:1.0,blue:1.0,alpha:0.5),border:(red:0.627451,green:0.14509805,blue:0.16862746,alpha:1.0),disabled_border:(red:0.627451,green:0.14509805,blue:0.16862746,alpha:0.5))
+(
+    base: (
+        red: 0.627451,
+        green: 0.14509805,
+        blue: 0.16862746,
+        alpha: 1.0,
+    ),
+    hover: (
+        red: 0.5952941,
+        green: 0.20941177,
+        blue: 0.2282353,
+        alpha: 1.0,
+    ),
+    pressed: (
+        red: 0.7019608,
+        green: 0.46078432,
+        blue: 0.47254902,
+        alpha: 1.0,
+    ),
+    selected: (
+        red: 0.5952941,
+        green: 0.20941177,
+        blue: 0.2282353,
+        alpha: 1.0,
+    ),
+    selected_text: (
+        red: 0.0,
+        green: 0.28627452,
+        blue: 0.42745098,
+        alpha: 1.0,
+    ),
+    focus: (
+        red: 0.0,
+        green: 0.28627452,
+        blue: 0.42745098,
+        alpha: 1.0,
+    ),
+    divider: (
+        red: 0.8862745,
+        green: 0.8862745,
+        blue: 0.8862745,
+        alpha: 1.0,
+    ),
+    on: (
+        red: 1.0,
+        green: 1.0,
+        blue: 1.0,
+        alpha: 1.0,
+    ),
+    disabled: (
+        red: 0.627451,
+        green: 0.14509805,
+        blue: 0.16862746,
+        alpha: 1.0,
+    ),
+    on_disabled: (
+        red: 1.0,
+        green: 1.0,
+        blue: 1.0,
+        alpha: 0.5,
+    ),
+    border: (
+        red: 0.627451,
+        green: 0.14509805,
+        blue: 0.16862746,
+        alpha: 1.0,
+    ),
+    disabled_border: (
+        red: 0.627451,
+        green: 0.14509805,
+        blue: 0.16862746,
+        alpha: 0.5,
+    ),
+)

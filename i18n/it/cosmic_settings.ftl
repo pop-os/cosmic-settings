@@ -81,28 +81,6 @@ display = Schermi
     .resolution = Risoluzione
     .scale = Scala
 
-graphics-mode = Modalità GPU
-    .mode = { $mode ->
-        [compute] Compute
-        *[hybrid] Ibrida
-        [integrated] Integrata
-        [nvidia] NVIDIA
-    }
-    .enable = Abilita modalità { $mode ->
-        [compute] compute
-        *[hybrid] ibrida
-        [integrated] integrata
-        [nvidia] NVIDIA
-    }
-    .desc = { $mode ->
-        [compute] Usa la GPU dedicata solo per l'elaborazione. Disabilita gli schermi esterni. { -requires-restart }.
-        *[hybrid] Le applicazioni useranno la GPU integrata a meno che non venga richiesto esplicitamente l'uso della GPU dedicata. { -requires-restart }.
-        [integrated] Disattiva la GPU dedicata per una maggior durata della batteria e meno rumore proveniente dalle ventole.
-        [nvidia] Miglior esperienza grafica ma maggior consumo energetico. { -requires-restart }.
-    }
-    .restart = Riavviare in modalità { $mode }?
-    .restart-desc = Il riavvio in modalità { $mode } chiuderà tutte le applicazioni aperte.
-
 mirroring = Duplicazione
     .id = Duplicazione { $id }
     .dont = Non duplicare

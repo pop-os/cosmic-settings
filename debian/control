@@ -16,11 +16,19 @@ Build-Depends:
     mold,
     pkg-config,
     rust-all,
+Recommends: adw-gtk3
 Standards-Version: 4.6.2
 Homepage: https://github.com/pop-os/cosmic-settings
 
 Package: cosmic-settings
 Architecture: amd64 arm64
-Depends: ${misc:Depends}, ${shlibs:Depends}, cosmic-randr
+Depends:
+    ${misc:Depends},
+    ${shlibs:Depends},
+    accountsservice,
+    cosmic-randr,
+    gettext,
+    iso-codes,
+    xkb-data,
 Description: Settings application for the COSMIC desktop environment
  Settings application for the COSMIC desktop environment

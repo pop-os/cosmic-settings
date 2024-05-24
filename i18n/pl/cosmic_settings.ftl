@@ -33,7 +33,10 @@ window-hint-accent = Kolor wyróżnienia aktywnego okna
 window-hint-accent-toggle = Użycie koloru z motywu jako wyróżnienia aktywnego okna
 
 auto-switch = Automatycznie zmieniaj z trybu Jasnego na Ciemny
-    .desc = Zmieniaj na tryb Jasny o świcie
+    .sunrise = Zmienia na Jasny tryb o świcie
+    .sunset = Zmienia na Jasny tryb o zmierzchu
+    .next-sunrise = Zmienia na Jasny tryb podczas następnego świtu
+    .next-sunset = Zmienia na Jasny tryb podczas następnego zmierzchu
 
 container-background = Tło kontenera
     .desc-detail = Kolor tła kontenera jest używany do nawigacji panelem bocznym, bocznym szkicownikiem, dialogami i podobnymi widżetami. Domyślnie wywodzi się on z Aplikacji lub tła okna.
@@ -45,7 +48,13 @@ control-tint = Sterowanie odcieniami komponentów
 
 frosted = Efekt zmrożonego szkła na interfejsie systemowym
     .desc = Nakłada efekt rozmycia na panel, dok, aplety, program startowy oraz bibliotekę aplikacji.
-
+    
+enable-export = Użyj tego motywu do apek GNOME.
+    .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Apki inne niż COSMIC mogą wymagać restartu do zmiany motywu.
+    
+icon-theme = Motyw ikon
+    .desc = Zastosuj inny zbiór ikon do aplikacji.
+    
 text-tint = Odcień tekstu interfejsu
     .desc = Kolor używany do uzyskania odcienia tekstu interfejsu, który ma wystarczający kontrast na różnych powierzchniach.
 
@@ -80,28 +89,6 @@ display = Wyświetlacz
     .refresh-rate = Prędkość odświeżania ekranu
     .resolution = Rozdzielczość
     .scale = Skala
-
-graphics-mode = Tryb Graficzny
-    .mode = { $mode ->
-        [compute] Obliczeniowy
-        *[hybrid] Hybrydowy
-        [integrated] Zintegrowany
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Włącz { $mode ->
-        [compute] Obliczeniowy
-        *[hybrid] Hybrydowy
-        [integrated] Zintegrowany
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Używa dedykowanej karty graficznej tylko do pracy obliczeniowej. Wyłącza zewnętrzne ekrany. { -requires-restart }.
-        *[hybrid] Aplikacje używają zintegrowanej karty graficznej, chyba że bezpośredio kazano im używać dedykowanej karty graficznej. { -requires-restart }.
-        [integrated] Wyłącz dedykowaną kartę graficzną by zwiększyć czas pracy na baterii i zmniejszyć głośność wentylatorów.
-        [nvidia] Najwydajniejszy tryb graficzny wiążący się z najwyższym zapotrzebowaniem na prąd. { -requires-restart }.
-    }
-    .restart = Uruchomić ponownie i zmienić na { $mode }?
-    .restart-desc = Zmiana na { $mode } zamknie wszystkie otwarte aplikacje
 
 mirroring = Lustrzane Odbicie
     .id = Lustrzane Odbicie { $id }
@@ -235,8 +222,6 @@ dialog-add = _Add
 fit-to-screen = Dopasuj do rozmiaru ekranu
 open-new-folder = Otwórz nowy katalog
 recent-folders = Ostatnie Katalogi
-stretch = Rozciągnij
-zoom = Przybliż
 
 x-minutes = { $number ->
     [1] 1 minuta
@@ -371,8 +356,23 @@ users = Użytkownicy
 
 ## Input
 
-input = Wprowadzanie Danych
-    .desc = Wprowadzanie Danych
+acceleration-desc = Automatycznie dostosuj dokładność śledzenia do prędkości ruchu.
+
+disable-while-typing = Wyłącz podczas pisania
+
+input = Urządzenia do Wprowadzania Danych
+    .desc = Urządzenia do Wprowadzania Danych
+    
+primary-button = Główny przycisk
+    .left = Lewy
+    .right = Prawy
+    
+scrolling = Przewijanie
+    .two-finger = Przewijaj dwoma palcami
+    .edge = Przewijaj jednym palcem przy krawędzi
+    .speed = Prędkość przewijania
+    .natural = Naturalne przewijanie
+    .natural-desc = Przewijaj zawartość, nie widok
 
 ## Input: Keyboard
 
@@ -386,10 +386,14 @@ keyboard-sources = Żródła Wprowadzania Danych
     .settings = Ustawienia
     .view-layout = Pokaż układ klawiatury
     .remove = Usuń
+    .add = Dodaj źródło przewijania
 
 keyboard-special-char = Wpis Znaków Specjalnych
     .alternate = Alternatywne klawisze znaków
     .compose = Ustaw klawisz
+    
+added = Dodany
+type-to-search = Naciśnij by wyszukać...
 
 ## Input: Keyboard: Shortcuts
 
@@ -397,34 +401,28 @@ keyboard-shortcuts = Skróty Klawiaturowe
     .desc = Obejrzyj i spersonalizuj skróty
 
 ## Input: Mouse
+
 mouse = Myszka
     .desc = Prędkość, przyśpieszenie i naturalne przewijanie myszki
-    .primary-button = Główny przycisk
-    .primary-button-left = Lewy
-    .primary-button-right = Prawy
     .speed = Prędkość myszki
     .acceleration = Włącz przyśpieszenie myszki
-    .acceleration-desc = Automatycznie dostosuj dokładność śledzenia opierając się na szybkości ruchu myszki.
-    .double-click-speed = Prędkość podwójnego kliknięcia
-    .double-click-speed-desc = Ustawia to, jak szybkie musi być podwójnego kliknięcia, by było zarejestrowane.
-
-mouse-scrolling = Przewijanie
-    .speed = Prędkość przewijania
-    .natural = Naturalne przewijanie
-    .natural-desc = Przewijaj zawartość, nie widok
 
 ## Input: Touchpad
 
+click-behavior = Funkcjonowanie Kliknięć
+    .click-finger = Drugi przycisk uzyskujemy kliknięciem dwoma palcami, a środkowy przycisk trzema
+    .button-areas = Drugi przycisk uzyskujemy kliknięciem w prawy dolny róg, a środkowy przycisk kliknięciem w środek dołu
+    
+pinch-to-zoom = Uszczypnij by przybliżyć
+    .desc = Zbliż dwa palce do siebie by przybliżyć zawartość, w aplikacjach używających przybliżenia.
+    
+tap-to-click = Tap to click
+    .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
+
 touchpad = Gładzik
-    .desc = Prędkość, opcje klikania i gesty gładzikiem.
-    .primary-button = Główny przycisk
-    .primary-button-left = Lewy
-    .primary-button-right = Prawy
-    .speed = Prędkość Gładzika
     .acceleration = Włącz przyśpieszenie gładzika
-    .acceleration-desc = Automatycznie dostosuj dokładność śledzenia opierając się na szybkości ruchu gładzika.
-    .double-click-speed = Prędkość podwójnego kliknięcia
-    .double-click-speed-desc = Ustawia to, jak szybkie musi być podwójnego kliknięcia, by było zarejestrowane.
+    .desc = Prędkość, opcje klikania i gesty gładzikiem.
+    .speed = Prędkość Gładzika
     
 ## Input: Gestures
 

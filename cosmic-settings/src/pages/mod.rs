@@ -7,6 +7,7 @@ pub mod desktop;
 pub mod display;
 pub mod input;
 pub mod networking;
+pub mod power;
 pub mod sound;
 pub mod system;
 pub mod time;
@@ -16,6 +17,7 @@ pub enum Message {
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
     DateAndTime(time::date::Message),
+    Power(power::Message),
     Desktop(desktop::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
     DesktopWorkspaces(desktop::workspaces::Message),
@@ -23,6 +25,7 @@ pub enum Message {
     Dock(desktop::dock::Message),
     DockApplet(desktop::dock::applets::Message),
     External { id: String, message: Vec<u8> },
+    Keyboard(input::keyboard::Message),
     Input(input::Message),
     Page(Entity),
     Panel(desktop::panel::Message),

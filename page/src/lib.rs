@@ -28,6 +28,7 @@ pub trait Page<Message: 'static>: Downcast {
     /// Information about the page
     fn info(&self) -> Info;
 
+    /// Initialize the sections used by this page.
     #[must_use]
     fn content(
         &self,
@@ -36,8 +37,14 @@ pub trait Page<Message: 'static>: Downcast {
         None
     }
 
+    /// Display a context drawer for the page.
     #[must_use]
     fn context_drawer(&self) -> Option<Element<'_, Message>> {
+        None
+    }
+
+    /// Display an inner app dialog for the page.
+    fn dialog(&self) -> Option<Element<'_, Message>> {
         None
     }
 
@@ -46,13 +53,18 @@ pub trait Page<Message: 'static>: Downcast {
         Command::none()
     }
 
+    /// Alter the contents of the page's header view.
     fn header_view(&self) -> Option<Element<'_, Message>> {
         None
     }
 
-    #[must_use]
+    /// Reload page metadata via a Command.
     #[allow(unused)]
-    fn reload(&mut self, page: crate::Entity) -> Command<Message> {
+    fn on_enter(
+        &mut self,
+        page: crate::Entity,
+        sender: tokio::sync::mpsc::Sender<Message>,
+    ) -> Command<Message> {
         Command::none()
     }
 

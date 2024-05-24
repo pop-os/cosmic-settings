@@ -90,6 +90,7 @@ display = Écrans
     .resolution = Résolution
     .scale = Échelle
 
+<<<<<<< HEAD
 graphics-mode = Graphics mode
     .mode = { $mode ->
         [compute] Calcul
@@ -112,6 +113,8 @@ graphics-mode = Graphics mode
     .restart = Redémarrer et basculer vers { $mode } ?
     .restart-desc = Basculer vers { $mode } fermera toutes les applications ouvertes
 
+=======
+>>>>>>> 3160fc1bd8a18b1555fcc4755d403198e432a1fb
 mirroring = Duplication de l'écran
     .id = Duplication de { $id }
     .dont = Ne pas dupliquer

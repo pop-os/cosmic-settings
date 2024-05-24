@@ -10,7 +10,7 @@ desktop = Ambiente de trabalho
 
 ## Desktop: Appearance
 
-appearance = Aspeto
+appearance = Aparência
     .desc = Cores de destaque e temas COSMIC.
 
 accent-color = Cor de destaque
@@ -33,7 +33,10 @@ window-hint-accent = Cor da sugestão da janela ativa
 window-hint-accent-toggle = Usar a cor de destaque do tema como sugestão de janela ativa
 
 auto-switch = Mudar automaticamente do modo Claro para Escuro
-    .desc = Muda para o modo Claro ao nascer do sol
+    .sunrise = Muda para o modo Claro ao nascer do sol
+    .sunset = Muda para o modo Claro ao pôr do sol
+    .next-sunrise = Muda para o modo Claro no próximo nascer do sol
+    .next-sunset = Muda para o modo Claro no próximo pôr do sol
 
 container-background = Fundo do contentor
     .desc-detail = A cor de fundo do contentor é usada na barra lateral de navegação, gaveta lateral, nas caixas de diálogo e em widgets semelhantes. Por predefinição, é automaticamente derivada do fundo da aplicação ou da janela.
@@ -45,6 +48,14 @@ control-tint = Controlar a tonalidade dos componentes
 
 frosted = Efeito de vidro fosco na interface do sistema
     .desc = Aplica uma desfocagem de fundo ao painel, à doca, aos applets, ao lançador e à biblioteca de aplicações.
+
+experimental-settings = Definições experimentais
+
+enable-export = Aplicar este tema a aplicações GNOME.
+    .desc = Nem todos os toolkits suportam a troca automática. As aplicações não-COSMIC poderão ter de ser reiniciadas após uma mudança de tema.
+
+icon-theme = Tema de ícones
+    .desc = Aplica um conjunto diferente de ícones às aplicações.
 
 text-tint = Tonalidade do texto da interface
     .desc = Cor utilizada para derivar cores de texto de interface que tenham contraste suficiente em várias superfícies.
@@ -81,28 +92,6 @@ display = Ecrãs
     .resolution = Resolução
     .scale = Escala
 
-graphics-mode = Modo gráfico
-    .mode = { $mode ->
-        [compute] Calcular
-        *[hybrid] Híbrido
-        [integrated] Integrado
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Ativar { $mode ->
-        [compute] calcular
-        *[hybrid] híbrido
-        [integrated] integrado
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Utiliza gráficos dedicados apenas para cargas de trabalho computacionais. Desativa os ecrãs externos. { -requires-restart }.
-        *[hybrid] As aplicações utilizam gráficos integrados, exceto se for explicitamente solicitada a utilização de gráficos dedicados. { -requires-restart }.
-        [integrated] Desliga os gráficos dedicados para uma maior duração da bateria e menos ruído da ventoinha.
-        [nvidia] Melhor experiência gráfica e maior consumo de energia. { -requires-restart }.
-    }
-    .restart = Reiniciar e mudar para { $mode }?
-    .restart-desc = Mudar para { $mode } fechará todas as aplicações abertas
-
 mirroring = Espelhar
     .id = Espelhar { $id }
     .dont = Não espelhar
@@ -121,6 +110,10 @@ night-light = Luz noturna
     .desc = Reduz a luz azul com cores mais quentes.
 
 orientation = Orientação
+    .standard = Padrão
+    .rotate-90 = Rodar 90
+    .rotate-180 = Rodar 180
+    .rotate-270 = Rodar 270
 
 scheduling = Agendamento
     .manual = Agendamento manual
@@ -283,6 +276,11 @@ time-zone = Fuso horário
 time-format = Formato de Data e Hora
     .twenty-four = Formato de 24 horas
     .first = Primeiro dia da semana
+    .show-date = Mostrar a data no painel superior
+    .friday = Sexta-feira
+    .saturday = Sábado
+    .sunday = Domingo
+    .monday = Segunda-feira
 
 time-region = Região e Idioma
     .desc = Formatar datas, horas e números baseado na sua região
@@ -363,9 +361,11 @@ primary-button = Primary button
     .right = Right
 
 scrolling = Deslocação
+    .two-finger = Deslocar com dois dedos
+    .edge = Deslocar ao longo da margem com um dedo
     .speed = Velocidade de deslocação
     .natural = Deslocação natural
-    .natural-desc = Percorrer o conteúdo, em vez da visualização
+    .natural-desc = Deslocar o conteúdo, em vez da visualização
 
 ## Input: Keyboard
 
@@ -379,10 +379,14 @@ keyboard-sources = Fontes de entrada
     .settings = Definições
     .view-layout = Ver esquema do teclado
     .remove = Remover
+    .add = Adicionar fonte de entrada
 
 keyboard-special-char = Entrada de carateres especiais
     .alternate = Tecla de caracteres alternativos
     .compose = Tecla de composição
+
+added = Adicionado
+type-to-search = Escreva para procurar...
 
 ## Input: Keyboard: Shortcuts
 
@@ -397,6 +401,10 @@ mouse = Rato
     .acceleration = Ativar a aceleração do rato
 
 ## Input: Touchpad
+
+click-behavior = Comportamento do clique
+    .click-finger = Clique secundário com dois dedos e clique do meio com três dedos
+    .button-areas = Clique secundário no canto inferior direito e clique do meio no centro inferior
 
 pinch-to-zoom = Apertar para ampliar
     .desc = Utilize dois dedos para fazer zoom no conteúdo, para aplicações que suportem ampliação.

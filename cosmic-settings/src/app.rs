@@ -3,25 +3,25 @@
 
 use crate::config::Config;
 use crate::pages::desktop::{
-    self, appearance,
-    dock::{self, applets::ADD_DOCK_APPLET_DIALOGUE_ID},
+    self, appearance, dock,
     panel::{
         self,
-        applets_inner::{self, AppletsPage, APPLET_DND_ICON_ID},
+        applets_inner::{self, APPLET_DND_ICON_ID},
         inner as _panel,
     },
 };
-use crate::pages::input::{self, keyboard};
-use crate::pages::{self, display, networking, sound, system, time};
+use crate::pages::input::{self};
+use crate::pages::{self, display, power, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
+use cosmic::app::command::message;
 use cosmic::app::DbusActivationMessage;
+use cosmic::iced::futures::SinkExt;
 use cosmic::iced::Subscription;
 use cosmic::widget::{button, row, text_input};
 use cosmic::{
     app::{Command, Core},
-    cosmic_config::{config_state_subscription, config_subscription},
     iced::{
         self,
         event::{self, wayland, PlatformSpecific},
@@ -43,6 +43,7 @@ pub struct SettingsApp {
     config: Config,
     core: Core,
     nav_model: nav_bar::Model,
+    page_sender: Option<tokio::sync::mpsc::Sender<crate::pages::Message>>,
     pages: page::Binder<crate::pages::Message>,
     search_active: bool,
     search_id: cosmic::widget::Id,
@@ -63,8 +64,7 @@ impl SettingsApp {
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             PageCommands::Network => None,
-            PageCommands::Notifications => self.pages.page_id::<desktop::notifications::Page>(),
-            PageCommands::Power => None,
+            PageCommands::Power => self.pages.page_id::<power::Page>(),
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
             PageCommands::Time => self.pages.page_id::<time::Page>(),
@@ -78,19 +78,21 @@ impl SettingsApp {
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    CloseContextDrawer,
+    DelayedInit(page::Entity),
     DesktopInfo,
     Error(String),
+    OpenContextDrawer(Cow<'static, str>),
     Page(page::Entity),
     PageMessage(crate::pages::Message),
     PanelConfig(CosmicPanelConfig),
+    RegisterSubscriptionSender(tokio::sync::mpsc::Sender<pages::Message>),
     SearchActivate,
     SearchChanged(String),
     SearchClear,
     SearchSubmit,
-    SetWindowTitle,
-    OpenContextDrawer(Cow<'static, str>),
-    CloseContextDrawer,
     SetTheme(cosmic::theme::Theme),
+    SetWindowTitle,
 }
 
 impl cosmic::Application for SettingsApp {
@@ -114,6 +116,7 @@ impl cosmic::Application for SettingsApp {
             config: Config::new(),
             core,
             nav_model: nav_bar::Model::default(),
+            page_sender: None,
             pages: page::Binder::default(),
             search_active: false,
             search_id: cosmic::widget::Id::unique(),
@@ -127,6 +130,7 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<sound::Page>();
         app.insert_page::<system::Page>();
         app.insert_page::<time::Page>();
+        app.insert_page::<power::Page>();
 
         let active_id = match flags.subcommand {
             Some(p) => app.subcommand_to_page(&p),
@@ -137,9 +141,10 @@ impl cosmic::Application for SettingsApp {
         }
         .unwrap_or(desktop_id);
 
-        let command = app.activate_page(active_id);
-
-        (app, command)
+        (
+            app,
+            cosmic::command::message(cosmic::app::message::app(Message::DelayedInit(active_id))),
+        )
     }
 
     fn nav_model(&self) -> Option<&nav_bar::Model> {
@@ -160,28 +165,11 @@ impl cosmic::Application for SettingsApp {
         } else {
             icon::from_name("system-search-symbolic")
                 .apply(button::icon)
-                .padding([0, cosmic::theme::active().cosmic().space_s()])
                 .on_press(Message::SearchActivate)
                 .into()
         });
 
         widgets
-    }
-
-    fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
-        let message = if id == *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID {
-            Message::PageMessage(crate::pages::Message::PanelApplet(
-                applets_inner::Message::ClosedAppletDialog,
-            ))
-        } else if id == *ADD_DOCK_APPLET_DIALOGUE_ID {
-            Message::PageMessage(crate::pages::Message::DockApplet(dock::applets::Message(
-                applets_inner::Message::ClosedAppletDialog,
-            )))
-        } else {
-            return None;
-        };
-
-        Some(message)
     }
 
     fn on_escape(&mut self) -> Command<Self::Message> {
@@ -225,6 +213,23 @@ impl cosmic::Application for SettingsApp {
         });
 
         Subscription::batch(vec![
+            // Creates a channel that listens to messages from pages.
+            // The sender is given back to the application so that it may pass it on.
+            cosmic::iced::subscription::channel(
+                std::any::TypeId::of::<Self>(),
+                4,
+                move |mut output| async move {
+                    let (tx, mut rx) = tokio::sync::mpsc::channel::<pages::Message>(4);
+
+                    let _res = output.send(Message::RegisterSubscriptionSender(tx)).await;
+
+                    while let Some(event) = rx.recv().await {
+                        let _res = output.send(Message::PageMessage(event)).await;
+                    }
+
+                    futures::future::pending().await
+                },
+            ),
             crate::subscription::daytime().map(|daytime| {
                 Message::PageMessage(pages::Message::Appearance(appearance::Message::Daytime(
                     daytime,
@@ -317,6 +322,12 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                crate::pages::Message::Keyboard(message) => {
+                    if let Some(page) = self.pages.page_mut::<input::keyboard::Page>() {
+                        return page.update(message).map(cosmic::app::Message::App);
+                    }
+                }
+
                 crate::pages::Message::Input(message) => {
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
                         return page.update(message).map(cosmic::app::Message::App);
@@ -337,9 +348,7 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::PanelApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
-                        return page
-                            .update(message, *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID)
-                            .map(cosmic::app::Message::App);
+                        return page.update(message).map(cosmic::app::Message::App);
                     }
                 }
 
@@ -358,6 +367,10 @@ impl cosmic::Application for SettingsApp {
                         return page.update(message).map(cosmic::app::Message::App);
                     }
                 }
+
+                crate::pages::Message::Power(message) => {
+                    page::update!(self.pages, message, power::Page)
+                }
             },
 
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
@@ -369,10 +382,7 @@ impl cosmic::Application for SettingsApp {
 
                 if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                     return page
-                        .update(
-                            applets_inner::Message::PanelConfig(config),
-                            *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID,
-                        )
+                        .update(applets_inner::Message::PanelConfig(config))
                         .map(cosmic::app::Message::App);
                 }
             }
@@ -404,10 +414,7 @@ impl cosmic::Application for SettingsApp {
                 );
                 if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                     return page
-                        .update(
-                            applets_inner::Message::Applets(info_list),
-                            *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID,
-                        )
+                        .update(applets_inner::Message::Applets(info_list))
                         .map(cosmic::app::Message::App);
                 }
             }
@@ -427,6 +434,21 @@ impl cosmic::Application for SettingsApp {
 
             Message::Error(error) => {
                 tracing::error!(error, "error occurred");
+            }
+
+            Message::RegisterSubscriptionSender(sender) => {
+                self.page_sender = Some(sender);
+            }
+
+            // It is necessary to delay init to allow time for the page sender to be initialized
+            Message::DelayedInit(active_id) => {
+                if self.page_sender.is_none() {
+                    return cosmic::command::message(cosmic::app::message::app(
+                        Message::DelayedInit(active_id),
+                    ));
+                }
+
+                return self.activate_page(active_id);
             }
         }
 
@@ -450,14 +472,14 @@ impl cosmic::Application for SettingsApp {
     fn view(&self) -> Element<Message> {
         let theme = cosmic::theme::active();
 
-        let page_view = if self.search_active {
+        let page_view = if self.search_active && !self.search_input.is_empty() {
             self.search_view()
         } else if let Some(content) = self.pages.content(self.active_page) {
             self.page_view(content)
         } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
             self.sub_page_view(sub_pages)
         } else {
-            panic!("page without sub-pages or content");
+            return row::row().into();
         };
 
         let padding = if self.core.is_condensed() {
@@ -485,32 +507,6 @@ impl cosmic::Application for SettingsApp {
             return page.dnd_icon();
         }
 
-        if let Some(Some(page)) = (id == *applets_inner::ADD_PANEL_APPLET_DIALOGUE_ID)
-            .then(|| self.pages.page::<applets_inner::Page>())
-        {
-            return page.add_applet_view(crate::pages::Message::PanelApplet);
-        }
-
-        if let Some(Some(page)) =
-            (id == *ADD_DOCK_APPLET_DIALOGUE_ID).then(|| self.pages.page::<dock::applets::Page>())
-        {
-            return page.inner().add_applet_view(|msg| {
-                crate::pages::Message::DockApplet(dock::applets::Message(msg))
-            });
-        }
-
-        if let Some(Some(page)) = (id == *keyboard::ADD_INPUT_SOURCE_DIALOGUE_ID)
-            .then(|| self.pages.page::<input::Page>())
-        {
-            return page.add_input_source_view();
-        }
-
-        if let Some(Some(page)) = (id == *keyboard::SPECIAL_CHARACTER_DIALOGUE_ID)
-            .then(|| self.pages.page::<input::Page>())
-        {
-            return page.special_character_key_view();
-        }
-
         if let Some(page) = self.pages.page::<desktop::wallpaper::Page>() {
             if id == page.color_dialog {
                 return page.show_color_dialog();
@@ -528,6 +524,22 @@ impl cosmic::Application for SettingsApp {
         } else {
             None
         }
+    }
+
+    fn dialog(&self) -> Option<Element<Self::Message>> {
+        self.pages
+            .dialog(self.active_page)
+            .map(|e| e.map(Message::PageMessage))
+    }
+
+    fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
+        if id == window::Id::MAIN {
+            std::thread::spawn(|| {
+                std::thread::sleep(tokio::time::Duration::from_millis(100));
+                std::process::exit(0);
+            });
+        }
+        None
     }
 }
 
@@ -557,9 +569,14 @@ impl SettingsApp {
         self.search_active = false;
         self.activate_navbar(page);
 
+        let sender = self
+            .page_sender
+            .clone()
+            .expect("sender should be available");
+
         let page_command = self
             .pages
-            .page_reload(page)
+            .on_enter(page, sender)
             .map(Message::PageMessage)
             .map(cosmic::app::Message::App);
 
@@ -620,9 +637,9 @@ impl SettingsApp {
     fn page_view(&self, content: &[section::Entity]) -> cosmic::Element<Message> {
         let page = &self.pages.page[self.active_page];
         let page_info = &self.pages.info[self.active_page];
-        let mut column_widgets = Vec::with_capacity(1);
+        let mut column_widgets = Vec::with_capacity(1 + content.len());
 
-        if let Some(parent) = page_info.parent {
+        column_widgets.push(if let Some(parent) = page_info.parent {
             let page_header = crate::widget::sub_page_header(
                 page_info.title.as_str(),
                 self.pages.info[parent].title.as_str(),
@@ -638,10 +655,11 @@ impl SettingsApp {
                 page_header_content = page_header_content.push(element.map(Message::from));
             }
 
-            column_widgets.push(page_header_content.into());
-        }
+            page_header_content.into()
+        } else {
+            cosmic::widget::text::title3(&page_info.title).into()
+        });
 
-        column_widgets.reserve_exact(1 + content.len());
         for id in content.iter().copied() {
             let section = &self.pages.sections[id];
             let model = &self.pages.page[self.active_page];

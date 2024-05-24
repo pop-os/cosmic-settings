@@ -136,11 +136,18 @@ impl<Message: 'static> Binder<Message> {
         page.downcast_ref::<P>()
     }
 
-    /// Obtain a reference to a page by its type ID.
+    /// Create a context drawer for the given page.
     #[must_use]
     pub fn context_drawer(&self, id: crate::Entity) -> Option<Element<'_, Message>> {
         let page = self.page.get(id)?;
         page.context_drawer()
+    }
+
+    /// Create a dialog for the given page.
+    #[must_use]
+    pub fn dialog(&self, id: crate::Entity) -> Option<Element<'_, Message>> {
+        let page = self.page.get(id)?;
+        page.dialog()
     }
 
     /// Obtain a reference to a page by its type ID.
@@ -159,9 +166,13 @@ impl<Message: 'static> Binder<Message> {
     }
 
     /// Calls a page's load function to refresh its data.
-    pub fn page_reload(&mut self, id: crate::Entity) -> Command<Message> {
+    pub fn on_enter(
+        &mut self,
+        id: crate::Entity,
+        sender: tokio::sync::mpsc::Sender<Message>,
+    ) -> Command<Message> {
         if let Some(page) = self.page.get_mut(id) {
-            return page.reload(id);
+            return page.on_enter(id, sender);
         }
 
         Command::none()

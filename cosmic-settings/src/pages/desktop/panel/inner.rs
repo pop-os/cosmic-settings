@@ -397,13 +397,22 @@ impl PageInner {
             Message::ResetPanel => {
                 if let Some((default, config)) = self
                     .system_default
-                    .as_ref()
+                    .as_mut()
                     .zip(self.config_helper.as_ref())
                 {
-                    self.panel_config = self.system_default.clone();
+                    if default.anchor_gap || !default.expand_to_edges {
+                        let radii = cosmic::theme::system_preference()
+                            .cosmic()
+                            .corner_radii
+                            .radius_xl[0] as u32;
+                        default.border_radius = radii;
+                    } else {
+                        default.border_radius = 0;
+                    }
                     if let Err(err) = default.write_entry(config) {
                         tracing::error!(?err, "Error resetting panel config.");
                     }
+                    self.panel_config = self.system_default.clone();
                 } else {
                     tracing::error!("Panel config default is missing.");
                 }
@@ -444,7 +453,7 @@ impl PageInner {
                     PanelAnchor::Bottom,
                 ]
                 .iter()
-                .find(|a| a.to_string() == self.anchors[i])
+                .find(|a| Anchor(**a).to_string() == self.anchors[i])
                 {
                     panel_config.anchor = *anchor;
                 }
@@ -502,7 +511,11 @@ impl PageInner {
         }
 
         if panel_config.anchor_gap || !panel_config.expand_to_edges {
-            panel_config.border_radius = 8;
+            let radii = cosmic::theme::system_preference()
+                .cosmic()
+                .corner_radii
+                .radius_xl[0] as u32;
+            panel_config.border_radius = radii;
         } else {
             panel_config.border_radius = 0;
         }

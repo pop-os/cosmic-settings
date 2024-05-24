@@ -80,6 +80,8 @@ pub enum Message {
     AddFolder(Arc<Result<Url, file_chooser::Error>>),
     /// Adds a new image file the system wallpaper folder.
     AddFile(Arc<Result<Url, file_chooser::Error>>),
+    /// Cache currently displayed image.
+    CacheDisplayImage,
     /// Selects an option in the category dropdown menu.
     ChangeCategory(Category),
     /// Changes the displayed images in the wallpaper view.
@@ -205,7 +207,11 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("wallpaper", "desc"))
     }
 
-    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         let current_folder = self.config.current_folder().to_owned();
 
         let recurse = self.categories.selected == Some(Category::Wallpapers);
@@ -213,7 +219,30 @@ impl page::Page<crate::pages::Message> for Page {
         command::future(async move {
             let (service_config, displays) = wallpaper::config().await;
 
-            let selection = change_folder(current_folder, recurse).await;
+            let mut selection = change_folder(current_folder, recurse).await;
+
+            // `selection.active` is usually empty because `change_folder` creates a fresh context.
+            // This leads to blank previews in certain conditions when the program is restarted.
+            let fix_active = match selection.active {
+                Choice::Wallpaper(key) if !selection.paths.contains_key(key) => true,
+                Choice::Color(ref color) if !selection.custom_colors.contains(color) => true,
+                _ => false,
+            };
+            if fix_active {
+                selection.active = match service_config.default_background.source {
+                    Source::Path(ref path) if !path.is_dir() => selection
+                        .paths
+                        .iter()
+                        .find(|(_key, valid_path)| path == valid_path.as_path())
+                        .map(|(key, _)| Choice::Wallpaper(key))
+                        .unwrap_or_default(),
+                    Source::Path(_) => Choice::Slideshow,
+                    Source::Color(ref color) => {
+                        selection.add_custom_color(color.clone());
+                        Choice::Color(color.clone())
+                    }
+                }
+            }
 
             crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
                 service_config,
@@ -595,11 +624,28 @@ impl Page {
             FIT => ScalingMode::Fit([0.0, 0.0, 0.0]),
             _ => return None,
         };
+        let old_entry = if output == "all" {
+            Some(&self.wallpaper_service_config.default_background)
+        } else {
+            self.wallpaper_service_config
+                .backgrounds
+                .iter()
+                .find(|entry| entry.output == output)
+        };
 
-        Entry::new(output, wallpaper::Source::Path(path))
+        let entry = Entry::new(output, wallpaper::Source::Path(path))
             .scaling_mode(scaling_mode)
-            .rotation_frequency(self.rotation_frequency)
-            .apply(Some)
+            .rotation_frequency(self.rotation_frequency);
+
+        if let Some(old_entry) = old_entry {
+            entry
+                .sampling_method(old_entry.sampling_method)
+                .filter_method(old_entry.filter_method.clone())
+                .filter_by_theme(old_entry.filter_by_theme)
+        } else {
+            entry
+        }
+        .apply(Some)
     }
 
     #[must_use]
@@ -625,6 +671,8 @@ impl Page {
             Message::DragColorDialog => {
                 return cosmic::iced_sctk::commands::window::start_drag_window(self.color_dialog)
             }
+
+            Message::CacheDisplayImage => self.cache_display_image(),
 
             Message::ColorDialogUpdate(update) => {
                 let cmd = match update {
@@ -896,13 +944,22 @@ impl Page {
                 self.update_config = Some((custom_images.len(), update.displays));
 
                 // Load preview images concurrently for each custom image stored in the on-disk config.
-                return cosmic::command::batch(custom_images.iter().cloned().map(|path| {
-                    cosmic::command::future(async move {
-                        let result = wallpaper::load_image_with_thumbnail(path);
+                return cosmic::command::batch(
+                    custom_images
+                        .iter()
+                        .cloned()
+                        .map(|path| {
+                            cosmic::command::future(async move {
+                                let result = wallpaper::load_image_with_thumbnail(path);
 
-                        Message::ImageAdd(result.map(Arc::new)).into()
-                    })
-                }));
+                                Message::ImageAdd(result.map(Arc::new)).into()
+                            })
+                        })
+                        // Cache wallpaper preview early to prevent blank previews on reload
+                        .chain(std::iter::once(cosmic::command::message(
+                            Message::CacheDisplayImage.into(),
+                        ))),
+                );
             }
         }
 
@@ -1099,7 +1156,18 @@ pub fn settings() -> Section<crate::pages::Message> {
             let mut children = Vec::with_capacity(3);
 
             let mut show_slideshow_toggle = true;
-            let mut slideshow_enabled = false;
+            // Slideshow is enabled if the background path from cosmic-bg is a directory
+            let mut slideshow_enabled = page
+                .config_output()
+                .and_then(|output| page.wallpaper_service_config.entry(output))
+                .map(|entry| {
+                    if let Source::Path(path) = &entry.source {
+                        path.is_dir()
+                    } else {
+                        false
+                    }
+                })
+                .unwrap_or(false);
 
             children.push(crate::widget::display_container(
                 match page.selection.active {
