@@ -469,12 +469,23 @@ impl Page {
                 .button_alignment(Alignment::Center)
                 .on_activate(Message::Display);
 
-            let display_enable = list_column().add(cosmic::widget::settings::item(
-                &*text::DISPLAY_ENABLE,
-                toggler(None, active_output.enabled, Message::DisplayToggle),
-            ));
+            let display_enable = (self
+                // Don't allow disabling display if it's the only active
+                .list
+                .outputs
+                .values()
+                .filter(|display| display.enabled)
+                .count()
+                > 1
+                || !active_output.enabled)
+                .then(|| {
+                    list_column().add(cosmic::widget::settings::item(
+                        &*text::DISPLAY_ENABLE,
+                        toggler(None, active_output.enabled, Message::DisplayToggle),
+                    ))
+                });
 
-            content = content.push(display_switcher).push(display_enable);
+            content = content.push(display_switcher).push_maybe(display_enable);
         }
 
         content
