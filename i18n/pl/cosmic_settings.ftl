@@ -48,6 +48,8 @@ control-tint = Sterowanie odcieniami komponentów
 
 frosted = Efekt zmrożonego szkła na interfejsie systemowym
     .desc = Nakłada efekt rozmycia na panel, dok, aplety, program startowy oraz bibliotekę aplikacji.
+
+experimental-settings = Ustawienia eksperymentalne
     
 enable-export = Użyj tego motywu do apek GNOME.
     .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Apki inne niż COSMIC mogą wymagać restartu do zmiany motywu.
@@ -376,6 +378,10 @@ scrolling = Przewijanie
 
 ## Input: Keyboard
 
+slow = Wolno
+fast = Szybko
+short = Któtko
+long = Długo
 keyboard = Klawiatura
     .desc = Wprowadzanie danych na klawiaturze
 
@@ -438,3 +444,16 @@ switch-to-next-workspace = Przełączenie do następnego obszaru roboczego
 switch-to-prev-workspace = Przełączenie do poprzedniego obszaru roboczego
 open-application-library = Otwarcie biblioteki aplikacji
 open-workspaces-view = Otwarcie podglądu obszarów roboczych
+
+## Power
+
+power = Zasilanie
+  .desc = Zarządzaj ustawieniami zasilania
+
+power-profiles = Profile Zasilania
+  .performance = Tryb Wysokowydajny
+  .balanced = Tryb Zbalansowany
+  .battery = Tryb Oszczędzania Energii
+  .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
+  .balanced-desc = Standardowa wydajność i zużycie baterii.
+  .battery-desc = Zmniejszone zużycie energii i zmniejszona wydajność.
