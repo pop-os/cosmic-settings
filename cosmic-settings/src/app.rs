@@ -628,7 +628,7 @@ impl SettingsApp {
         self.nav_model
             .insert()
             .text(page.title.clone())
-            .icon(icon::from_name(&*page.icon_name).into())
+            .icon(icon::from_name(&*page.icon_name))
             .data(id)
             .with_id(|nav_id| self.pages.data_set(id, nav_id))
     }

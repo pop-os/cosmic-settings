@@ -14,7 +14,7 @@ use std::{
     sync::Arc,
 };
 
-use cosmic::{command, Apply, Command};
+use cosmic::{app, command, Apply, Command};
 use cosmic::{
     dialog::file_chooser,
     widget::{
@@ -545,7 +545,7 @@ impl Page {
                     let _ = self.config.set_current_folder(None);
                     command = cosmic::command::future(async move {
                         let folder = change_folder(Config::default_folder().to_owned(), true).await;
-                        Message::ChangeFolder(folder).into()
+                        Message::ChangeFolder(folder)
                     });
                 } else {
                     self.select_first_wallpaper();
@@ -564,7 +564,7 @@ impl Page {
                     }
 
                     command = cosmic::command::future(async move {
-                        Message::ChangeFolder(change_folder(path, false).await).into()
+                        Message::ChangeFolder(change_folder(path, false).await)
                     });
                 }
             }
@@ -952,12 +952,15 @@ impl Page {
                             cosmic::command::future(async move {
                                 let result = wallpaper::load_image_with_thumbnail(path);
 
-                                Message::ImageAdd(result.map(Arc::new)).into()
+                                Message::ImageAdd(result.map(Arc::new))
                             })
                         })
                         // Cache wallpaper preview early to prevent blank previews on reload
-                        .chain(std::iter::once(cosmic::command::message(
-                            Message::CacheDisplayImage.into(),
+                        .chain(std::iter::once(cosmic::command::message::<
+                            _,
+                            crate::app::Message,
+                        >(
+                            Message::CacheDisplayImage
                         ))),
                 );
             }

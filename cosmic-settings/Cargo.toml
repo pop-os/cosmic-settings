@@ -27,12 +27,12 @@ dirs = "5.0.1"
 downcast-rs = "1.2.0"
 freedesktop-desktop-entry = "0.5.0"
 futures = { package = "futures-lite", version = "2.2.0" }
-generator = "=0.7.5"
+generator = "=0.8.1"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
-i18n-embed-fl = "0.7.0"
+i18n-embed-fl = "0.8.0"
 image = "0.25"
-itertools = "0.12.0"
+itertools = "0.13.0"
 itoa = "1.0.10"
 libcosmic.workspace = true
 notify = "6.1.1"
