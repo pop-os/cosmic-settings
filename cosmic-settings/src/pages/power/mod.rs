@@ -87,6 +87,10 @@ fn profiles() -> Section<crate::pages::Message> {
                         section = section.add(item);
                     }
             }
+            else {
+                let item = widget::Text::new(fl!("power-profiles", "nobackend"));
+                section = section.add(item);
+            }
 
             section
             .apply(cosmic::Element::from)

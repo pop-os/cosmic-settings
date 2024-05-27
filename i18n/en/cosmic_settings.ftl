@@ -452,3 +452,4 @@ power-profiles = Power Profiles
   .performance-desc = Maximum performance but high power consumption.
   .balanced-desc = Balanced performance and power consumption.
   .battery-desc = Low performance but low power consumption.
+  .nobackend = Backend not found. Install S76Power or PowerProfiles.
