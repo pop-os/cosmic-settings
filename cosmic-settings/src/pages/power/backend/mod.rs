@@ -1,7 +1,7 @@
 use zbus::Connection;
 
-mod s76powerdaemon;
 mod ppdaemon;
+mod s76powerdaemon;
 
 pub trait SetPowerProfile {
     async fn set_power_profile(&self, profile: PowerProfile);
@@ -38,23 +38,17 @@ pub trait PowerBackend: SetPowerProfile + GetCurrentPowerProfile {}
 
 pub async fn get_backend() -> Option<PowerBackendEnum> {
     match get_s76power_daemon_proxy().await {
-       Ok(p) => {
-            match p.get_profile().await {
-                Ok(_) => Some(PowerBackendEnum::S76(S76Backend{})),
-                Err(_) => {
-                    match get_power_profiles_proxy().await {
-                        Ok(pr) => {
-                            match pr.active_profile().await {
-                                Ok(_) => Some(PowerBackendEnum::PP(PPBackend{})),
-                                Err(_) => None
-                            }
-                        }
-                        Err(()) => None
-                    }
-                }
-            }
-       }
-       Err(()) => None
+        Ok(p) => match p.get_profile().await {
+            Ok(_) => Some(PowerBackendEnum::S76(S76Backend {})),
+            Err(_) => match get_power_profiles_proxy().await {
+                Ok(pr) => match pr.active_profile().await {
+                    Ok(_) => Some(PowerBackendEnum::PP(PPBackend {})),
+                    Err(_) => None,
+                },
+                Err(()) => None,
+            },
+        },
+        Err(()) => None,
     }
 }
 
@@ -112,7 +106,7 @@ impl SetPowerProfile for S76Backend {
                 return;
             }
         };
-    
+
         match profile {
             PowerProfile::Performance => match daemon.performance().await {
                 Ok(x) => println!("[Cosmic Settings] Performance mode activated."),
@@ -140,7 +134,7 @@ impl GetCurrentPowerProfile for S76Backend {
                 return PowerProfile::Balanced;
             }
         };
-    
+
         match daemon.get_profile().await {
             Ok(p) => PowerProfile::from_string(p.as_str()),
             //Default
@@ -184,7 +178,7 @@ impl SetPowerProfile for PPBackend {
                 return;
             }
         };
-    
+
         match profile {
             PowerProfile::Performance => match daemon.set_active_profile("performance").await {
                 Ok(x) => println!("[Cosmic Settings] Performance mode activated."),

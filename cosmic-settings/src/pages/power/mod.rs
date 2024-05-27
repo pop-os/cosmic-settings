@@ -42,7 +42,7 @@ impl Page {
                 if let Some(b) = backend {
                     runtime.block_on(b.set_power_profile(p));
                 }
-            },
+            }
         };
     }
 }
@@ -52,51 +52,47 @@ fn profiles() -> Section<crate::pages::Message> {
         .title(fl!("power-profiles"))
         .descriptions(vec![fl!("power", "desc").into()])
         .view::<Page>(|_binder, page, section| {
-            
             let mut section = settings::view_section(&section.title);
 
             let runtime = tokio::runtime::Runtime::new().unwrap();
 
             let backend = runtime.block_on(backend::get_backend());
 
-           if let Some(b) = backend {
-                    let profiles = backend::get_power_profiles();
+            if let Some(b) = backend {
+                let profiles = backend::get_power_profiles();
 
-                    let current_profile = runtime.block_on(b.get_current_power_profile());
-        
-        
-                    let mut widgets = Vec::new();
-        
-                    for profile in profiles {
-                        let selected = if current_profile == profile {
-                            Some(true)
-                        } else {
-                            None
-                        };
-        
-                        let widget = widget::Radio::new("", true, selected, |_| {
-                            Message::PowerProfileChange(profile.clone())
-                        });
-                        let item = settings::item::builder(profile.title())
-                            .description(profile.description())
-                            .control(widget);
-                        widgets.push(item);
-                    }
-        
-                    for item in widgets {
-                        section = section.add(item);
-                    }
-            }
-            else {
+                let current_profile = runtime.block_on(b.get_current_power_profile());
+
+                let mut widgets = Vec::new();
+
+                for profile in profiles {
+                    let selected = if current_profile == profile {
+                        Some(true)
+                    } else {
+                        None
+                    };
+
+                    let widget = widget::Radio::new("", true, selected, |_| {
+                        Message::PowerProfileChange(profile.clone())
+                    });
+                    let item = settings::item::builder(profile.title())
+                        .description(profile.description())
+                        .control(widget);
+                    widgets.push(item);
+                }
+
+                for item in widgets {
+                    section = section.add(item);
+                }
+            } else {
                 let item = widget::Text::new(fl!("power-profiles", "nobackend"));
                 section = section.add(item);
             }
 
             section
-            .apply(cosmic::Element::from)
-            .map(crate::pages::Message::Power)
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::Power)
         })
 }
-
 
 impl page::AutoBind<crate::pages::Message> for Page {}
