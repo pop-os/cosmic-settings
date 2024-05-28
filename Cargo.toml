@@ -11,7 +11,7 @@ tokio = { version = "1.37.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-features = ["dbus-config", "single-instance", "tokio", "wayland", "xdg-portal"]
+features = ["dbus-config", "single-instance", "tokio", "wayland", "wgpu", "xdg-portal"]
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
