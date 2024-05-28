@@ -102,22 +102,22 @@ impl SetPowerProfile for S76Backend {
         let daemon = match get_s76power_daemon_proxy().await {
             Ok(c) => c,
             Err(e) => {
-                tracing::error!("[Cosmic Settings] Problem while setting power profile.");
+                tracing::error!("Problem while setting power profile.");
                 return;
             }
         };
 
         match profile {
             PowerProfile::Performance => match daemon.performance().await {
-                Ok(x) => tracing::info!("[Cosmic Settings] Performance mode activated."),
+                Ok(x) => tracing::info!("Performance mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Balanced => match daemon.balanced().await {
-                Ok(x) => tracing::info!("[Cosmic Settings] Balanced mode activated."),
+                Ok(x) => tracing::info!("Balanced mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Battery => match daemon.battery().await {
-                Ok(x) => tracing::info!("[Cosmic Settings] Battery mode activated."),
+                Ok(x) => tracing::info!("Battery mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
         }
@@ -129,7 +129,7 @@ impl GetCurrentPowerProfile for S76Backend {
         let daemon = match get_s76power_daemon_proxy().await {
             Ok(c) => c,
             Err(e) => {
-                tracing::error!("[Cosmic Settings] Problem while getting power profile.");
+                tracing::error!("Problem while getting power profile.");
                 //Default
                 return PowerProfile::Balanced;
             }
@@ -139,7 +139,7 @@ impl GetCurrentPowerProfile for S76Backend {
             Ok(p) => PowerProfile::from_string(p.as_str()),
             //Default
             Err(_) => {
-                tracing::error!("[Cosmic Settings] Problem while getting power profile.");
+                tracing::error!("Problem while getting power profile.");
                 //Default
                 PowerProfile::Balanced
             }
@@ -151,7 +151,7 @@ async fn get_s76power_daemon_proxy<'a>() -> Result<s76powerdaemon::PowerDaemonPr
     let connection = match Connection::system().await {
         Ok(c) => c,
         Err(e) => {
-            tracing::error!("[Cosmic Settings] zbus connection failed. {e}");
+            tracing::error!("zbus connection failed. {e}");
             return Err(());
         }
     };
@@ -160,7 +160,7 @@ async fn get_s76power_daemon_proxy<'a>() -> Result<s76powerdaemon::PowerDaemonPr
         Ok(d) => Ok(d),
         Err(e) => {
             tracing::error!(
-                "[S76PowerDaemon] Power daemon proxy can't created. Is it installed? {e}"
+                "Power daemon proxy can't created. Is it installed? {e}"
             );
             Err(())
         }
@@ -176,22 +176,22 @@ impl SetPowerProfile for PPBackend {
         let daemon = match get_power_profiles_proxy().await {
             Ok(c) => c,
             Err(e) => {
-                tracing::error!("[Cosmic Settings] Problem while setting power profile.");
+                tracing::error!("Problem while setting power profile.");
                 return;
             }
         };
 
         match profile {
             PowerProfile::Performance => match daemon.set_active_profile("performance").await {
-                Ok(x) => tracing::info!("[Cosmic Settings] Performance mode activated."),
+                Ok(x) => tracing::info!("Performance mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Balanced => match daemon.set_active_profile("balanced").await {
-                Ok(x) => tracing::info!("[Cosmic Settings] Balanced mode activated."),
+                Ok(x) => tracing::info!("Balanced mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Battery => match daemon.set_active_profile("power-saver").await {
-                Ok(x) => tracing::info!("[Cosmic Settings] Battery mode activated."),
+                Ok(x) => tracing::info!("Battery mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
         }
@@ -203,7 +203,7 @@ impl GetCurrentPowerProfile for PPBackend {
         let daemon = match get_power_profiles_proxy().await {
             Ok(c) => c,
             Err(e) => {
-                tracing::error!("[Cosmic Settings] Problem while getting power profile.");
+                tracing::error!("Problem while getting power profile.");
                 //Default
                 return PowerProfile::Balanced;
             }
@@ -212,7 +212,7 @@ impl GetCurrentPowerProfile for PPBackend {
         let profile = match daemon.active_profile().await {
             Ok(p) => p,
             Err(e) => {
-                tracing::error!("[Cosmic Settings] Problem while getting power profile.");
+                tracing::error!("Problem while getting power profile.");
                 //Default
                 return PowerProfile::Balanced;
             }
@@ -226,7 +226,7 @@ async fn get_power_profiles_proxy<'a>() -> Result<ppdaemon::PowerProfilesProxy<'
     let connection = match Connection::system().await {
         Ok(c) => c,
         Err(e) => {
-            tracing::error!("[Cosmic Settings] zbus connection failed. {e}");
+            tracing::error!("zbus connection failed. {e}");
             return Err(());
         }
     };
@@ -235,7 +235,7 @@ async fn get_power_profiles_proxy<'a>() -> Result<ppdaemon::PowerProfilesProxy<'
         Ok(d) => Ok(d),
         Err(e) => {
             tracing::error!(
-                "[S76PowerDaemon] Power daemon proxy can't created. Is it installed? {e}"
+                "Power daemon proxy can't created. Is it installed? {e}"
             );
             Err(())
         }
