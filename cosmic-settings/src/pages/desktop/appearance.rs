@@ -64,10 +64,10 @@ enum ContextView {
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 struct IconTheme {
-    // GTK uses the name of the theme as specified in its index file
-    name: String,
     // COSMIC uses the file name of the folder containing the theme
     id: String,
+    // GTK uses the name of the theme as specified in its index file
+    name: String,
 }
 
 pub struct Page {
@@ -468,8 +468,6 @@ impl Page {
                     .toggler(self.tk.apply_theme_global, Message::ApplyThemeGlobal)
             ),
             // Icon theme previews
-            // cosmic::iced::widget::column![text(&*ICON_THEME), text(&*ICON_THEME_DESC).size(10)]
-            //     .spacing(2),
             cosmic::widget::column::with_children(vec![
                 text::heading(&*ICON_THEME).into(),
                 flex_row(
@@ -489,9 +487,7 @@ impl Page {
             ])
             .spacing(theme.space_xxs())
         ]
-        // .padding(theme.space_s())
         .spacing(theme.space_m())
-        // .align_items(cosmic::iced_core::Alignment::Center)
         .width(Length::Fill)
         .apply(Element::from)
         .map(crate::pages::Message::Appearance)
@@ -954,11 +950,14 @@ impl Page {
 
     fn reload_theme_mode(&mut self) {
         let icon_themes = std::mem::take(&mut self.icon_themes);
+        let icon_handles = std::mem::take(&mut self.icon_handles);
         let icon_theme_active = self.icon_theme_active.take();
         let day_time = self.day_time;
+
         *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
         self.day_time = day_time;
         self.icon_themes = icon_themes;
+        self.icon_handles = icon_handles;
         self.icon_theme_active = icon_theme_active;
     }
 
@@ -1634,7 +1633,7 @@ async fn fetch_icon_themes() -> Message {
                 continue;
             };
 
-            let Some(id) = entry.file_name().to_str().map(|x| x.to_string()) else {
+            let Some(id) = entry.file_name().to_str().map(String::from) else {
                 continue;
             };
 
