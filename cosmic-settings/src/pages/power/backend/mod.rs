@@ -159,9 +159,7 @@ async fn get_s76power_daemon_proxy<'a>() -> Result<s76powerdaemon::PowerDaemonPr
     match s76powerdaemon::PowerDaemonProxy::new(&connection).await {
         Ok(d) => Ok(d),
         Err(e) => {
-            tracing::error!(
-                "Power daemon proxy can't created. Is it installed? {e}"
-            );
+            tracing::error!("Power daemon proxy can't created. Is it installed? {e}");
             Err(())
         }
     }
@@ -234,9 +232,7 @@ async fn get_power_profiles_proxy<'a>() -> Result<ppdaemon::PowerProfilesProxy<'
     match ppdaemon::PowerProfilesProxy::new(&connection).await {
         Ok(d) => Ok(d),
         Err(e) => {
-            tracing::error!(
-                "Power daemon proxy can't created. Is it installed? {e}"
-            );
+            tracing::error!("Power daemon proxy can't created. Is it installed? {e}");
             Err(())
         }
     }
