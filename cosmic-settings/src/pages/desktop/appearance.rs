@@ -1548,12 +1548,10 @@ pub fn reset_button() -> Section<crate::pages::Message> {
     Section::default()
         .descriptions(vec![fl!("reset-to-default").into()])
         .view::<Page>(|_binder, page, section| {
-            let spacing = &page.theme_builder.spacing;
             let descriptions = &section.descriptions;
             if page.can_reset {
                 button::standard(&*descriptions[0])
                     .on_press(Message::Reset)
-                    .padding([spacing.space_xxs, spacing.space_xs])
                     .into()
             } else {
                 horizontal_space(1).apply(Element::from)
