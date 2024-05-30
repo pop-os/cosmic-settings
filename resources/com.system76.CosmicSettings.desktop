@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=COSMIC Settings
+Name=Ustawienia COSMIC
 Type=Settings
 Exec=cosmic-settings
 Terminal=false
