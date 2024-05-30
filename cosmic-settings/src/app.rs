@@ -15,7 +15,6 @@ use crate::pages::{self, display, power, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
-use cosmic::app::command::message;
 use cosmic::app::DbusActivationMessage;
 use cosmic::iced::futures::SinkExt;
 use cosmic::iced::Subscription;
@@ -28,7 +27,9 @@ use cosmic::{
         window, Length,
     },
     prelude::*,
-    widget::{column, container, icon, nav_bar, scrollable, segmented_button, settings},
+    widget::{
+        column, container, icon, id_container, nav_bar, scrollable, segmented_button, settings,
+    },
     Element,
 };
 use cosmic_panel_config::CosmicPanelConfig;
@@ -73,6 +74,11 @@ impl SettingsApp {
             PageCommands::Wallpaper => self.pages.page_id::<desktop::wallpaper::Page>(),
             PageCommands::Workspaces => self.pages.page_id::<desktop::workspaces::Page>(),
         }
+    }
+
+    fn id(&self) -> cosmic::iced_core::id::Id {
+        let cur_page_name = self.pages.info[self.active_page].id.as_ref();
+        cosmic::iced_core::id::Id::new(cur_page_name.to_owned())
     }
 }
 
@@ -496,6 +502,7 @@ impl cosmic::Application for SettingsApp {
             .padding([theme.cosmic().space_xxs(), padding])
             .width(Length::Fill)
             .apply(scrollable)
+            .apply(|w| id_container(w, self.id()))
             .into()
     }
 
