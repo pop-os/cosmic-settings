@@ -1050,19 +1050,10 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
-        let spacing = self.theme_builder.spacing;
         let content = row::with_capacity(2)
             .spacing(self.theme_builder.spacing.space_xxs)
-            .push(
-                button(text(fl!("import")))
-                    .on_press(Message::StartImport)
-                    .padding([spacing.space_xxs, spacing.space_xs]),
-            )
-            .push(
-                button(text(fl!("export")))
-                    .on_press(Message::StartExport)
-                    .padding([spacing.space_xxs, spacing.space_xs]),
-            )
+            .push(button::standard(fl!("import")).on_press(Message::StartImport))
+            .push(button::standard(fl!("export")).on_press(Message::StartExport))
             .apply(container)
             .width(Length::Fill)
             .align_x(alignment::Horizontal::Right)
@@ -1560,10 +1551,10 @@ pub fn reset_button() -> Section<crate::pages::Message> {
             let spacing = &page.theme_builder.spacing;
             let descriptions = &section.descriptions;
             if page.can_reset {
-                cosmic::iced::widget::row![button(text(&*descriptions[0]))
+                button::standard(&*descriptions[0])
                     .on_press(Message::Reset)
-                    .padding([spacing.space_xxs, spacing.space_xs])]
-                .apply(Element::from)
+                    .padding([spacing.space_xxs, spacing.space_xs])
+                    .into()
             } else {
                 horizontal_space(1).apply(Element::from)
             }

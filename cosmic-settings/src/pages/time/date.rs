@@ -153,7 +153,7 @@ fn format() -> Section<crate::pages::Message> {
                 )
                 // First day of week
                 .add(
-                    settings::item::builder(&*TIME_FORMAT_FIRST).control(dropdown(
+                    settings::item::builder(&*TIME_FORMAT_FIRST).flex_control(dropdown(
                         &*TIME_FORMAT_WEEKDAYS,
                         match page.first_day_of_week {
                             4 => Some(0), // friday

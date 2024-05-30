@@ -107,13 +107,13 @@ pub(crate) fn behavior_and_position<
                 return Element::from(text(fl!("unknown")));
             };
             settings::view_section(&section.title)
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[0],
                     toggler(None, panel_config.autohide.is_some(), |value| {
                         Message::AutoHidePanel(value)
                     }),
                 ))
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[1],
                     dropdown(
                         page.anchors.as_slice(),
@@ -121,7 +121,7 @@ pub(crate) fn behavior_and_position<
                         Message::PanelAnchor,
                     ),
                 ))
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[2],
                     dropdown(
                         page.outputs.as_slice(),
@@ -161,19 +161,19 @@ pub(crate) fn style<
                 return Element::from(text(fl!("unknown")));
             };
             settings::view_section(&section.title)
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[0],
                     toggler(None, panel_config.anchor_gap, |value| {
                         Message::AnchorGap(value)
                     }),
                 ))
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[1],
                     toggler(None, panel_config.expand_to_edges, |value| {
                         Message::ExtendToEdge(value)
                     }),
                 ))
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[2],
                     dropdown(
                         inner.backgrounds.as_slice(),
@@ -186,7 +186,7 @@ pub(crate) fn style<
                         Message::Appearance,
                     ),
                 ))
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[3],
                     // TODO custom discrete slider variant
                     row::with_children(vec![
@@ -219,7 +219,7 @@ pub(crate) fn style<
                     ])
                     .spacing(12),
                 ))
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[4],
                     row::with_children(vec![
                         text(fl!("number", HashMap::from_iter(vec![("number", 0)]))).into(),
@@ -286,7 +286,8 @@ pub(crate) fn add_panel<
         .descriptions(vec![fl!("reset-to-default").into()])
         .view::<P>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
-            cosmic::iced::widget::row![button(text(&*descriptions[0])).on_press(Message::FullReset)]
+            button::standard(&*descriptions[0])
+                .on_press(Message::FullReset)
                 .apply(Element::from)
                 .map(msg_map)
         })
@@ -305,12 +306,11 @@ pub fn reset_button<
             let descriptions = &section.descriptions;
             let inner = page.inner();
             if inner.system_default == inner.panel_config {
-                horizontal_space(1).apply(Element::from)
+                Element::from(horizontal_space(1))
             } else {
-                cosmic::iced::widget::row![
-                    button(text(&*descriptions[0])).on_press(Message::ResetPanel)
-                ]
-                .apply(Element::from)
+                button::standard(&*descriptions[0])
+                    .on_press(Message::ResetPanel)
+                    .into()
             }
             .map(msg_map)
         })

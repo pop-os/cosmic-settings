@@ -85,7 +85,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[0],
                     toggler(
                         None,
@@ -93,7 +93,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                         Message::ShowMinimizeButton,
                     ),
                 ))
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*descriptions[1],
                     toggler(
                         None,

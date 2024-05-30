@@ -128,7 +128,7 @@ fn device() -> Section<crate::pages::Message> {
 
             let device_name = settings::item::builder(&*desc[0])
                 .description(&*desc[1])
-                .control(hostname_row);
+                .flex_control(hostname_row);
 
             list_column()
                 .add(device_name)
@@ -151,16 +151,22 @@ fn hardware() -> Section<crate::pages::Message> {
             let desc = &section.descriptions;
 
             let mut sections = settings::view_section(&section.title)
-                .add(settings::item(&*desc[0], text(&page.info.hardware_model)))
-                .add(settings::item(&*desc[1], text(&page.info.memory)))
-                .add(settings::item(&*desc[2], text(&page.info.processor)));
+                .add(settings::flex_item(
+                    &*desc[0],
+                    text(&page.info.hardware_model),
+                ))
+                .add(settings::flex_item(&*desc[1], text(&page.info.memory)))
+                .add(settings::flex_item(&*desc[2], text(&page.info.processor)));
 
             for card in &page.info.graphics {
-                sections = sections.add(settings::item(&*desc[3], text(card.as_str())));
+                sections = sections.add(settings::flex_item(&*desc[3], text(card.as_str())));
             }
 
             sections
-                .add(settings::item(&*desc[4], text(&page.info.disk_capacity)))
+                .add(settings::flex_item(
+                    &*desc[4],
+                    text(&page.info.disk_capacity),
+                ))
                 .into()
         })
 }
@@ -177,13 +183,22 @@ fn os() -> Section<crate::pages::Message> {
         .view::<Page>(|_binder, page, section| {
             let desc = &section.descriptions;
             settings::view_section(&section.title)
-                .add(settings::item(&*desc[0], text(&page.info.operating_system)))
-                .add(settings::item(&*desc[1], text(&page.info.os_architecture)))
-                .add(settings::item(
+                .add(settings::flex_item(
+                    &*desc[0],
+                    text(&page.info.operating_system),
+                ))
+                .add(settings::flex_item(
+                    &*desc[1],
+                    text(&page.info.os_architecture),
+                ))
+                .add(settings::flex_item(
                     &*desc[2],
                     text(&page.info.desktop_environment),
                 ))
-                .add(settings::item(&*desc[3], text(&page.info.windowing_system)))
+                .add(settings::flex_item(
+                    &*desc[3],
+                    text(&page.info.windowing_system),
+                ))
                 .into()
         })
 }

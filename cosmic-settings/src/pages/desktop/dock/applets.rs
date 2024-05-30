@@ -89,9 +89,8 @@ impl page::Page<crate::pages::Message> for Page {
         let content = row::with_capacity(2)
             .spacing(spacing.space_xxs)
             .push(
-                button(text(fl!("add-applet")))
-                    .on_press(Message(applets_inner::Message::AddAppletDrawer))
-                    .padding([spacing.space_xxs, spacing.space_xs]),
+                button::standard(fl!("add-applet"))
+                    .on_press(Message(applets_inner::Message::AddAppletDrawer)),
             )
             .apply(container)
             .width(Length::Fill)

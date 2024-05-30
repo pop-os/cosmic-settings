@@ -421,7 +421,7 @@ impl Page {
 
         let display_options = active_output.enabled.then(|| {
             list_column()
-                .add(cosmic::widget::settings::item(
+                .add(cosmic::widget::settings::flex_item(
                     &*text::DISPLAY_RESOLUTION,
                     dropdown(
                         &self.cache.resolutions,
@@ -429,7 +429,7 @@ impl Page {
                         Message::Resolution,
                     ),
                 ))
-                .add(cosmic::widget::settings::item(
+                .add(cosmic::widget::settings::flex_item(
                     &*text::DISPLAY_REFRESH_RATE,
                     dropdown(
                         &self.cache.refresh_rates,
@@ -437,7 +437,7 @@ impl Page {
                         Message::RefreshRate,
                     ),
                 ))
-                .add(cosmic::widget::settings::item(
+                .add(cosmic::widget::settings::flex_item(
                     &*text::DISPLAY_SCALE,
                     dropdown(
                         &["50%", "75%", "100%", "125%", "150%", "175%", "200%"],
@@ -445,7 +445,7 @@ impl Page {
                         Message::Scale,
                     ),
                 ))
-                .add(cosmic::widget::settings::item(
+                .add(cosmic::widget::settings::flex_item(
                     &*text::ORIENTATION,
                     dropdown(
                         &self.cache.orientations,
@@ -479,7 +479,7 @@ impl Page {
                 > 1
                 || !active_output.enabled)
                 .then(|| {
-                    list_column().add(cosmic::widget::settings::item(
+                    list_column().add(cosmic::widget::settings::flex_item(
                         &*text::DISPLAY_ENABLE,
                         toggler(None, active_output.enabled, Message::DisplayToggle),
                     ))

@@ -133,11 +133,7 @@ impl page::Page<crate::pages::Message> for Page {
         let spacing = theme.cosmic().spacing;
         let content = row::with_capacity(2)
             .spacing(spacing.space_xxs)
-            .push(
-                button(text(fl!("add-applet")))
-                    .on_press(Message::AddAppletDrawer)
-                    .padding([spacing.space_xxs, spacing.space_xs]),
-            )
+            .push(button::standard(fl!("add-applet")).on_press(Message::AddAppletDrawer))
             .apply(container)
             .width(Length::Fill)
             .align_x(alignment::Horizontal::Right)

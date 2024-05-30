@@ -216,7 +216,7 @@ fn input_source(
 ) -> cosmic::Element<Message> {
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
-    settings::item(description, popover_button(id, expanded)).into()
+    settings::flex_item(description, popover_button(id, expanded)).into()
 }
 
 pub mod shortcuts;
@@ -267,7 +267,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_enter(
         &mut self,
         _page: page::Entity,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Command<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
         match xkb_data::keyboard_layouts() {
@@ -657,7 +657,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
-                .add(settings::item(&*descriptions[0], {
+                .add(settings::flex_item(&*descriptions[0], {
                     // Delay
                     let delay_slider = cosmic::widget::slider(
                         KB_REPEAT_DELAY_MIN..=KB_REPEAT_DELAY_MAX,
@@ -675,7 +675,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                         .push(delay_slider)
                         .push(&*descriptions[3])
                 }))
-                .add(settings::item(&*descriptions[1], {
+                .add(settings::flex_item(&*descriptions[1], {
                     // Repeat rate
                     let rate_slider = cosmic::widget::slider(
                         KB_REPEAT_RATE_MIN..=KB_REPEAT_RATE_MAX,

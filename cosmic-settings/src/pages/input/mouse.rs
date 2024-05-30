@@ -55,13 +55,13 @@ fn mouse() -> Section<crate::pages::Message> {
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*super::PRIMARY_BUTTON,
                     cosmic::widget::segmented_control::horizontal(&input.primary_button)
                         .minimum_button_width(0)
                         .on_activate(|x| Message::PrimaryButtonSelected(x, false)),
                 ))
-                .add(settings::item::builder(&*MOUSE_SPEED).control({
+                .add(settings::item::builder(&*MOUSE_SPEED).flex_control({
                     let value = (input
                         .input_default
                         .acceleration
@@ -112,7 +112,7 @@ fn scrolling() -> Section<crate::pages::Message> {
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
-                .add(settings::item(&*super::SCROLLING_SPEED, {
+                .add(settings::flex_item(&*super::SCROLLING_SPEED, {
                     let value = input
                         .input_default
                         .scroll_config

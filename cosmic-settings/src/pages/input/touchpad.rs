@@ -69,13 +69,13 @@ fn touchpad() -> Section<crate::pages::Message> {
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*super::PRIMARY_BUTTON,
                     cosmic::widget::segmented_control::horizontal(&input.touchpad_primary_button)
                         .minimum_button_width(0)
                         .on_activate(|x| Message::PrimaryButtonSelected(x, true)),
                 ))
-                .add(settings::item::builder(&*TOUCHPAD_SPEED).control({
+                .add(settings::item::builder(&*TOUCHPAD_SPEED).flex_control({
                     let value = (input
                         .input_touchpad
                         .acceleration
@@ -277,23 +277,23 @@ fn swiping() -> Section<crate::pages::Message> {
             settings::view_section(&*section.title)
                 .add(
                     settings::item::builder(&*SWIPING_THREE_FINGER_ANY)
-                        .control(text(&*SWITCH_BETWEEN_WINDOWS)),
+                        .flex_control(text(&*SWITCH_BETWEEN_WINDOWS)),
                 )
                 .add(
                     settings::item::builder(&*SWIPING_FOUR_FINGER_UP)
-                        .control(text(&*SWITCH_TO_PREV_WORKSPACE)),
+                        .flex_control(text(&*SWITCH_TO_PREV_WORKSPACE)),
                 )
                 .add(
                     settings::item::builder(&*SWIPING_FOUR_FINGER_DOWN)
-                        .control(text(&*SWITCH_TO_NEXT_WORKSPACE)),
+                        .flex_control(text(&*SWITCH_TO_NEXT_WORKSPACE)),
                 )
                 .add(
                     settings::item::builder(&*SWIPING_FOUR_FINGER_LEFT)
-                        .control(text(&*OPEN_WORKSPACES_VIEW)),
+                        .flex_control(text(&*OPEN_WORKSPACES_VIEW)),
                 )
                 .add(
                     settings::item::builder(&*SWIPING_FOUR_FINGER_RIGHT)
-                        .control(text(&*OPEN_APPLICATION_LIBRARY)),
+                        .flex_control(text(&*OPEN_APPLICATION_LIBRARY)),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
