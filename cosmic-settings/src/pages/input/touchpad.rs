@@ -275,10 +275,10 @@ fn swiping() -> Section<crate::pages::Message> {
         ])
         .view::<Page>(|_binder, _page, section| {
             settings::view_section(&*section.title)
-                .add(
-                    settings::item::builder(&*SWIPING_THREE_FINGER_ANY)
-                        .flex_control(text(&*SWITCH_BETWEEN_WINDOWS)),
-                )
+                // .add(
+                //     settings::item::builder(&*SWIPING_THREE_FINGER_ANY)
+                //         .flex_control(text(&*SWITCH_BETWEEN_WINDOWS)),
+                // )
                 .add(
                     settings::item::builder(&*SWIPING_FOUR_FINGER_UP)
                         .flex_control(text(&*SWITCH_TO_PREV_WORKSPACE)),
@@ -287,14 +287,14 @@ fn swiping() -> Section<crate::pages::Message> {
                     settings::item::builder(&*SWIPING_FOUR_FINGER_DOWN)
                         .flex_control(text(&*SWITCH_TO_NEXT_WORKSPACE)),
                 )
-                .add(
-                    settings::item::builder(&*SWIPING_FOUR_FINGER_LEFT)
-                        .flex_control(text(&*OPEN_WORKSPACES_VIEW)),
-                )
-                .add(
-                    settings::item::builder(&*SWIPING_FOUR_FINGER_RIGHT)
-                        .flex_control(text(&*OPEN_APPLICATION_LIBRARY)),
-                )
+                // .add(
+                //     settings::item::builder(&*SWIPING_FOUR_FINGER_LEFT)
+                //         .flex_control(text(&*OPEN_WORKSPACES_VIEW)),
+                // )
+                // .add(
+                //     settings::item::builder(&*SWIPING_FOUR_FINGER_RIGHT)
+                //         .flex_control(text(&*OPEN_APPLICATION_LIBRARY)),
+                // )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
         })
