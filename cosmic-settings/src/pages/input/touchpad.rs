@@ -20,11 +20,11 @@ crate::cache_dynamic_lazy! {
 
     static OPEN_APPLICATION_LIBRARY: String = fl!("open-application-library");
     static OPEN_WORKSPACES_VIEW: String = fl!("open-workspaces-view");
-    static SWIPING_FOUR_FINGER_DOWN: String = fl!("swiping", "four-finger-down");
-    static SWIPING_FOUR_FINGER_LEFT: String = fl!("swiping", "four-finger-left");
-    static SWIPING_FOUR_FINGER_RIGHT: String = fl!("swiping", "four-finger-right");
-    static SWIPING_FOUR_FINGER_UP: String = fl!("swiping", "four-finger-up");
-    static SWIPING_THREE_FINGER_ANY: String = fl!("swiping", "three-finger-any");
+    static SWIPING_FOUR_FINGER_DOWN: String = fl!("gestures", "four-finger-down");
+    static SWIPING_FOUR_FINGER_LEFT: String = fl!("gestures", "four-finger-left");
+    static SWIPING_FOUR_FINGER_RIGHT: String = fl!("gestures", "four-finger-right");
+    static SWIPING_FOUR_FINGER_UP: String = fl!("gestures", "four-finger-up");
+    static SWIPING_THREE_FINGER_ANY: String = fl!("gestures", "three-finger-any");
     static SWITCH_BETWEEN_WINDOWS: String = fl!("switch-between-windows");
     static SWITCH_TO_NEXT_WORKSPACE: String = fl!("switch-to-next-workspace");
     static SWITCH_TO_PREV_WORKSPACE: String = fl!("switch-to-prev-workspace");
@@ -265,7 +265,7 @@ fn scrolling() -> Section<crate::pages::Message> {
 
 fn swiping() -> Section<crate::pages::Message> {
     Section::default()
-        .title(fl!("swiping"))
+        .title(fl!("gestures"))
         .descriptions(vec![
             SWIPING_FOUR_FINGER_DOWN.as_str().into(),
             SWIPING_FOUR_FINGER_LEFT.as_str().into(),

@@ -427,7 +427,7 @@ touchpad = Touchpad
 
 ## Input: Gestures
 
-swiping = Swiping
+gestures = Gestures
     .four-finger-down = Four-finger swipe down
     .four-finger-left = Four-finger swipe left
     .four-finger-right = Four-finger swipe right
