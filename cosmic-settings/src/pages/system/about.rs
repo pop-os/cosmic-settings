@@ -122,13 +122,9 @@ fn device() -> Section<crate::pages::Message> {
             .on_input(Message::HostnameInput)
             .on_submit(Message::HostnameSubmit);
 
-            let hostname_row = widget::row::with_capacity(2)
-                .push(widget::horizontal_space(Length::Fill))
-                .push(hostname_input);
-
             let device_name = settings::item::builder(&*desc[0])
                 .description(&*desc[1])
-                .flex_control(hostname_row);
+                .flex_control(hostname_input);
 
             list_column()
                 .add(device_name)
