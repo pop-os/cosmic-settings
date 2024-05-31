@@ -116,7 +116,7 @@ pub fn main() -> color_eyre::Result<()> {
     let args = Args::parse();
 
     let settings = cosmic::app::Settings::default()
-        .size_limits(Limits::NONE.min_width(400.0).min_height(300.0))
+        .size_limits(Limits::NONE.min_width(280.0).min_height(300.0))
         .exit_on_close(false);
 
     cosmic::app::run_single_instance::<app::SettingsApp>(settings, args)?;

@@ -149,7 +149,7 @@ impl cosmic::Application for SettingsApp {
 
         (
             app,
-            cosmic::command::message(cosmic::app::message::app(Message::DelayedInit(active_id))),
+            cosmic::command::message(Message::DelayedInit(active_id)),
         )
     }
 
@@ -449,9 +449,7 @@ impl cosmic::Application for SettingsApp {
             // It is necessary to delay init to allow time for the page sender to be initialized
             Message::DelayedInit(active_id) => {
                 if self.page_sender.is_none() {
-                    return cosmic::command::message(cosmic::app::message::app(
-                        Message::DelayedInit(active_id),
-                    ));
+                    return cosmic::command::message(Message::DelayedInit(active_id));
                 }
 
                 return self.activate_page(active_id);
