@@ -124,8 +124,8 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
 
         let state = tree.state.downcast_mut::<State>();
         state.max_dimensions = (
-            max_dimensions.0 as f32 * 1.25 / UNIT_PIXELS,
-            max_dimensions.1 as f32 * 1.25 / UNIT_PIXELS,
+            max_dimensions.0 as f32 / UNIT_PIXELS,
+            max_dimensions.1 as f32 / UNIT_PIXELS,
         );
 
         let limits = limits
