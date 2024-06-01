@@ -1,5 +1,5 @@
 use backend::PowerProfile;
-use cosmic::iced::widget;
+use cosmic::widget;
 use cosmic::{widget::settings, Apply};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
@@ -85,7 +85,7 @@ fn profiles() -> Section<crate::pages::Message> {
                     section = section.add(item);
                 }
             } else {
-                let item = cosmic::widget::text::body(fl!("power-mode", "nobackend"));
+                let item = widget::text::body(fl!("power-mode", "nobackend"));
                 section = section.add(item);
             }
 
