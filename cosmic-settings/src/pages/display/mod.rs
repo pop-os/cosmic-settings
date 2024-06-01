@@ -314,6 +314,11 @@ impl Page {
             Message::RandrResult(result) => {
                 if let Some(Err(why)) = Arc::into_inner(result) {
                     tracing::error!(?why, "cosmic-randr error");
+                } else {
+                    // Reload display info
+                    return cosmic::command::future(async move {
+                        crate::Message::PageMessage(on_enter().await)
+                    });
                 }
             }
 
