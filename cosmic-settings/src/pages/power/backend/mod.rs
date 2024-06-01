@@ -54,42 +54,42 @@ pub async fn get_backend() -> Option<PowerBackendEnum> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum PowerProfile {
-    Performance,
-    Balanced,
     Battery,
+    Balanced,
+    Performance,
 }
 
 impl PowerProfile {
     fn from_string(s: &str) -> PowerProfile {
         match s {
-            "Performance" | "performance" => Self::Performance,
             "Battery" | "power-saver" => Self::Battery,
+            "Performance" | "performance" => Self::Performance,
             _ => Self::Balanced,
         }
     }
 
     pub fn title(&self) -> String {
         match self {
-            Self::Performance => fl!("power-profiles", "performance"),
-            Self::Balanced => fl!("power-profiles", "balanced"),
-            Self::Battery => fl!("power-profiles", "battery"),
+            Self::Battery => fl!("power-mode", "battery"),
+            Self::Balanced => fl!("power-mode", "balanced"),
+            Self::Performance => fl!("power-mode", "performance"),
         }
     }
 
     pub fn description(&self) -> String {
         match self {
-            Self::Performance => fl!("power-profiles", "performance-desc"),
-            Self::Balanced => fl!("power-profiles", "balanced-desc"),
-            Self::Battery => fl!("power-profiles", "battery-desc"),
+            Self::Battery => fl!("power-mode", "battery-desc"),
+            Self::Balanced => fl!("power-mode", "balanced-desc"),
+            Self::Performance => fl!("power-mode", "performance-desc"),
         }
     }
 }
 
 pub fn get_power_profiles() -> Vec<PowerProfile> {
     vec![
-        PowerProfile::Performance,
-        PowerProfile::Balanced,
         PowerProfile::Battery,
+        PowerProfile::Balanced,
+        PowerProfile::Performance,
     ]
 }
 
@@ -108,16 +108,16 @@ impl SetPowerProfile for S76Backend {
         };
 
         match profile {
-            PowerProfile::Performance => match daemon.performance().await {
-                Ok(x) => tracing::info!("Performance mode activated."),
+            PowerProfile::Battery => match daemon.battery().await {
+                Ok(x) => tracing::info!("Battery mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Balanced => match daemon.balanced().await {
                 Ok(x) => tracing::info!("Balanced mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
-            PowerProfile::Battery => match daemon.battery().await {
-                Ok(x) => tracing::info!("Battery mode activated."),
+            PowerProfile::Performance => match daemon.performance().await {
+                Ok(x) => tracing::info!("Performance mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
         }
@@ -159,7 +159,7 @@ async fn get_s76power_daemon_proxy<'a>() -> Result<s76powerdaemon::PowerDaemonPr
     match s76powerdaemon::PowerDaemonProxy::new(&connection).await {
         Ok(d) => Ok(d),
         Err(e) => {
-            tracing::error!("Power daemon proxy can't created. Is it installed? {e}");
+            tracing::error!("Power daemon proxy can't be created. Is it installed? {e}");
             Err(())
         }
     }
@@ -180,16 +180,16 @@ impl SetPowerProfile for PPBackend {
         };
 
         match profile {
-            PowerProfile::Performance => match daemon.set_active_profile("performance").await {
-                Ok(x) => tracing::info!("Performance mode activated."),
+            PowerProfile::Battery => match daemon.set_active_profile("power-saver").await {
+                Ok(x) => tracing::info!("Battery mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Balanced => match daemon.set_active_profile("balanced").await {
                 Ok(x) => tracing::info!("Balanced mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
-            PowerProfile::Battery => match daemon.set_active_profile("power-saver").await {
-                Ok(x) => tracing::info!("Battery mode activated."),
+            PowerProfile::Performance => match daemon.set_active_profile("performance").await {
+                Ok(x) => tracing::info!("Performance mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
         }
@@ -232,7 +232,7 @@ async fn get_power_profiles_proxy<'a>() -> Result<ppdaemon::PowerProfilesProxy<'
     match ppdaemon::PowerProfilesProxy::new(&connection).await {
         Ok(d) => Ok(d),
         Err(e) => {
-            tracing::error!("Power daemon proxy can't created. Is it installed? {e}");
+            tracing::error!("Power daemon proxy can't be created. Is it installed? {e}");
             Err(())
         }
     }

@@ -1,5 +1,5 @@
 use backend::PowerProfile;
-use cosmic::iced::widget;
+use cosmic::widget;
 use cosmic::{widget::settings, Apply};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
@@ -49,7 +49,7 @@ impl Page {
 
 fn profiles() -> Section<crate::pages::Message> {
     Section::default()
-        .title(fl!("power-profiles"))
+        .title(fl!("power-mode"))
         .descriptions(vec![fl!("power", "desc").into()])
         .view::<Page>(|_binder, page, section| {
             let mut section = settings::view_section(&section.title);
@@ -85,7 +85,7 @@ fn profiles() -> Section<crate::pages::Message> {
                     section = section.add(item);
                 }
             } else {
-                let item = widget::Text::new(fl!("power-profiles", "nobackend"));
+                let item = widget::text::body(fl!("power-mode", "nobackend"));
                 section = section.add(item);
             }
 
