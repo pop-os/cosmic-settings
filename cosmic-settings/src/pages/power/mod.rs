@@ -49,7 +49,7 @@ impl Page {
 
 fn profiles() -> Section<crate::pages::Message> {
     Section::default()
-        .title(fl!("power-profiles"))
+        .title(fl!("power-mode"))
         .descriptions(vec![fl!("power", "desc").into()])
         .view::<Page>(|_binder, page, section| {
             let mut section = settings::view_section(&section.title);
@@ -85,7 +85,7 @@ fn profiles() -> Section<crate::pages::Message> {
                     section = section.add(item);
                 }
             } else {
-                let item = widget::Text::new(fl!("power-profiles", "nobackend"));
+                let item = widget::Text::new(fl!("power-mode", "nobackend"));
                 section = section.add(item);
             }
 

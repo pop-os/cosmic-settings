@@ -70,17 +70,17 @@ impl PowerProfile {
 
     pub fn title(&self) -> String {
         match self {
-            Self::Performance => fl!("power-profiles", "performance"),
-            Self::Balanced => fl!("power-profiles", "balanced"),
-            Self::Battery => fl!("power-profiles", "battery"),
+            Self::Performance => fl!("power-mode", "performance"),
+            Self::Balanced => fl!("power-mode", "balanced"),
+            Self::Battery => fl!("power-mode", "battery"),
         }
     }
 
     pub fn description(&self) -> String {
         match self {
-            Self::Performance => fl!("power-profiles", "performance-desc"),
-            Self::Balanced => fl!("power-profiles", "balanced-desc"),
-            Self::Battery => fl!("power-profiles", "battery-desc"),
+            Self::Performance => fl!("power-mode", "performance-desc"),
+            Self::Balanced => fl!("power-mode", "balanced-desc"),
+            Self::Battery => fl!("power-mode", "battery-desc"),
         }
     }
 }
@@ -159,7 +159,7 @@ async fn get_s76power_daemon_proxy<'a>() -> Result<s76powerdaemon::PowerDaemonPr
     match s76powerdaemon::PowerDaemonProxy::new(&connection).await {
         Ok(d) => Ok(d),
         Err(e) => {
-            tracing::error!("Power daemon proxy can't created. Is it installed? {e}");
+            tracing::error!("Power daemon proxy can't be created. Is it installed? {e}");
             Err(())
         }
     }
@@ -232,7 +232,7 @@ async fn get_power_profiles_proxy<'a>() -> Result<ppdaemon::PowerProfilesProxy<'
     match ppdaemon::PowerProfilesProxy::new(&connection).await {
         Ok(d) => Ok(d),
         Err(e) => {
-            tracing::error!("Power daemon proxy can't created. Is it installed? {e}");
+            tracing::error!("Power daemon proxy can't be created. Is it installed? {e}");
             Err(())
         }
     }
