@@ -85,7 +85,7 @@ fn profiles() -> Section<crate::pages::Message> {
                     section = section.add(item);
                 }
             } else {
-                let item = widget::Text::new(fl!("power-mode", "nobackend"));
+                let item = cosmic::widget::text::body(fl!("power-mode", "nobackend"));
                 section = section.add(item);
             }
 
