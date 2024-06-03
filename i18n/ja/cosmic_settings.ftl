@@ -271,6 +271,11 @@ time-zone = 時間帯
 time-format = 日付と時刻
     .twenty-four = 24時間制
     .first = 週の初めの日
+    .show-date = トップパネルに日付を表示
+    .friday = 金
+    .saturday = 土
+    .sunday = 日
+    .monday = 月
 
 time-region = 地方と言語
     .desc = お住む地方によって日付、時刻、数値の形式を変える
@@ -325,7 +330,7 @@ about-os = オペレーティングシステム
     .windowing-system = ウィンドウシステム
 
 about-related = 関係がある設定
-    .support = サポート
+    .support = サポートを受ける
 
 ## System: Firmware
 
