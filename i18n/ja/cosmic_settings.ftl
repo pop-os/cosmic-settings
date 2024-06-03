@@ -417,3 +417,17 @@ switch-to-next-workspace = 次のワークスペースに切り替える
 switch-to-prev-workspace = 前のワークスペースに切り替える
 open-application-library = アプリケーションライブラリを開く
 open-workspaces-view = ワークスペースのか概要を開く
+
+## Power 
+
+power = 電源
+  .desc = 電源設定を管理 
+
+power-mode = 電源モード
+  .performance = ハイパフォーマンス
+  .balanced = バランス
+  .battery = 長いバッテリー寿命
+  .performance-desc = 一番高い性能と電力消費量。
+  .balanced-desc = 静かな性能と程度な電力消費量。
+  .battery-desc = 低い電力消費量と静粛な性能。
+  .nobackend = バックエンドは見つかれませんでした。 system76-powerまたはpower-profiles-daemonをインストールして下さい。
