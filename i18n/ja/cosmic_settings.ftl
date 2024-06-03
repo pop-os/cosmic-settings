@@ -359,6 +359,10 @@ scrolling = スクロール
 
 ## Input: Keyboard
 
+slow = 遅い
+fast = 速い
+short = 短い
+long = 長い
 keyboard = キーボード
     .desc = キーボードの入力
 
@@ -369,10 +373,18 @@ keyboard-sources = 入力ソース
     .settings = 設定
     .view-layout = キーボードレイアウトを表示
     .remove = 削除
+    .add = 入力ソースを追加
 
 keyboard-special-char = 特殊文字の入力
     .alternate = 代替文字キー
     .compose = コムポーズキー
+
+keyboard-typing-assist = タイピング
+    .repeat-rate = リピートレート
+    .repeat-delay = リピート遅延
+
+added = 追加された
+type-to-search = 入力して検索...
 
 ## Input: Keyboard: Shortcuts
 
