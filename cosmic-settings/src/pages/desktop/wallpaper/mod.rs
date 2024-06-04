@@ -434,7 +434,7 @@ impl Page {
 
         if self.wallpaper_service_config.same_on_all {
             self.wallpaper_service_config.backgrounds.clear();
-            self.wallpaper_service_config.outputs.clear();
+            // self.wallpaper_service_config.outputs.clear();
         } else if let Some(pos) = self
             .wallpaper_service_config
             .backgrounds
@@ -938,14 +938,20 @@ impl Page {
                 }
 
                 // These will need to be loaded before applying the service config.
-                let custom_images = self.config.custom_images();
+                let custom_images = self.config.custom_images().len();
 
-                // Make note of how many images are to be loaded, with the display update for the service config.
-                self.update_config = Some((custom_images.len(), update.displays));
+                if custom_images == 0 {
+                    self.wallpaper_service_config_update(update.displays);
+                    self.config_apply();
+                } else {
+                    // Make note of how many images are to be loaded, with the display update for the service config.
+                    self.update_config = Some((custom_images, update.displays));
+                }
 
                 // Load preview images concurrently for each custom image stored in the on-disk config.
                 return cosmic::command::batch(
-                    custom_images
+                    self.config
+                        .custom_images()
                         .iter()
                         .cloned()
                         .map(|path| {
@@ -1163,14 +1169,13 @@ pub fn settings() -> Section<crate::pages::Message> {
             let mut slideshow_enabled = page
                 .config_output()
                 .and_then(|output| page.wallpaper_service_config.entry(output))
-                .map(|entry| {
+                .map_or(false, |entry| {
                     if let Source::Path(path) = &entry.source {
                         path.is_dir()
                     } else {
                         false
                     }
-                })
-                .unwrap_or(false);
+                });
 
             children.push(crate::widget::display_container(
                 match page.selection.active {
