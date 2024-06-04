@@ -18,6 +18,7 @@ crate::cache_dynamic_lazy! {
     static TIME_FORMAT_TWENTY_FOUR: String = fl!("time-format", "twenty-four");
     static TIME_FORMAT_FIRST: String = fl!("time-format", "first");
     static TIME_FORMAT_SHOW_DATE: String = fl!("time-format", "show-date");
+    static TIME_FORMAT_SHOW_DAY_NAME: String = fl!("time-format", "show-day-name");
     static TIME_FORMAT_WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
 }
 
@@ -28,6 +29,7 @@ pub struct Page {
     military_time: bool,
     first_day_of_week: usize,
     show_date_in_top_panel: bool,
+    show_day_name_in_top_panel: bool,
     // info: Option<cosmic_settings_time::Info>,
 }
 
@@ -46,6 +48,14 @@ impl Default for Page {
             error!(?err, "Failed to read config 'show_date_in_top_panel'");
             true
         });
+
+        let show_day_name_in_top_panel =
+            config
+                .get("show_day_name_in_top_panel")
+                .unwrap_or_else(|err| {
+                    error!(?err, "Failed to read config 'show_day_name_in_top_panel'");
+                    true
+                });
         Self {
             config,
             auto: false,
@@ -53,6 +63,7 @@ impl Default for Page {
             military_time,
             first_day_of_week,
             show_date_in_top_panel,
+            show_day_name_in_top_panel,
         }
     }
 }
@@ -99,6 +110,12 @@ impl Page {
                     error!(?err, "Failed to set config 'show_date_in_top_panel'");
                 }
             }
+            Message::ShowDayName(enable) => {
+                self.show_day_name_in_top_panel = enable;
+                if let Err(err) = self.config.set("show_day_name_in_top_panel", enable) {
+                    error!(?err, "Failed to set config 'show_day_name_in_top_panel'");
+                }
+            }
         }
     }
 }
@@ -110,6 +127,7 @@ pub enum Message {
     MilitaryTime(bool),
     FirstDayOfWeek(usize),
     ShowDate(bool),
+    ShowDayName(bool),
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -143,6 +161,7 @@ fn format() -> Section<crate::pages::Message> {
             TIME_FORMAT_TWENTY_FOUR.as_str().into(),
             TIME_FORMAT_FIRST.as_str().into(),
             TIME_FORMAT_SHOW_DATE.as_str().into(),
+            TIME_FORMAT_SHOW_DAY_NAME.as_str().into(),
         ])
         .view::<Page>(|_binder, page, section| {
             settings::view_section(&section.title)
@@ -175,6 +194,10 @@ fn format() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&*TIME_FORMAT_SHOW_DATE)
                         .toggler(page.show_date_in_top_panel, Message::ShowDate),
+                )
+                .add(
+                    settings::item::builder(&*TIME_FORMAT_SHOW_DAY_NAME)
+                        .toggler(page.show_day_name_in_top_panel, Message::ShowDayName),
                 )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)

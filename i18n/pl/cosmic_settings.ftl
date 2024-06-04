@@ -286,6 +286,7 @@ time-format = Format Daty i Czasu
     .twenty-four = Czas 24-godzinny
     .first = Pierwszy dzień tygodnia
     .show-date = Pokaż Datę w Górnym Panelu
+    .show-day-name = Pokaż nazwe dnia w górnym panelu
     .friday = Piątek
     .saturday = Sobota
     .sunday = Niedziela
