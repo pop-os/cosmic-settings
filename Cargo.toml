@@ -2,8 +2,9 @@
 members = ["cosmic-settings", "page", "pages/*"]
 default-members = ["cosmic-settings"]
 resolver = "2"
-rust-version = "1.71.0"
-sunrise_sunset = "1.0.1"
+
+[workspace.package]
+rust-version = "1.75.0"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
@@ -11,7 +12,7 @@ tokio = { version = "1.37.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-features = ["dbus-config", "single-instance", "tokio", "wayland", "wgpu", "xdg-portal"]
+features = ["dbus-config", "single-instance", "multi-window", "tokio", "wayland", "wgpu", "xdg-portal"]
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
@@ -34,8 +35,13 @@ git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
 rev = "3bed072"
 
+[profile.dev]
+opt-level = 3
+lto = false
+
 [profile.release]
 opt-level = 3
+lto = "thin"
 
 [patch.'https://github.com/smithay/client-toolkit/']
 smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "3bed072" }

@@ -38,4 +38,21 @@ impl<'a, Message: 'static> Insert<'a, Message> {
 
         self
     }
+
+    #[allow(clippy::return_self_not_must_use)]
+    #[allow(clippy::must_use_candidate)]
+    pub fn sub_page_with_id<P: AutoBind<Message>>(&mut self) -> Entity {
+        let sub_page = self.model.register::<P>().id();
+
+        self.model.info[sub_page].parent = Some(self.id);
+
+        self.model
+            .sub_pages
+            .entry(self.id)
+            .expect("parent page missing")
+            .and_modify(|v| v.push(sub_page))
+            .or_insert_with(|| vec![sub_page]);
+
+        sub_page
+    }
 }

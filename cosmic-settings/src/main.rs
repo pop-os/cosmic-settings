@@ -5,6 +5,7 @@
 #![allow(clippy::cast_sign_loss)]
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::cast_lossless)]
+#![allow(clippy::too_many_lines)]
 
 pub mod app;
 use std::str::FromStr;

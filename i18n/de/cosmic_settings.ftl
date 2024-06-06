@@ -26,11 +26,6 @@ notifications = Benachrichtigungen
 desktop-options = Desktopoptionen
     .desc = Super Key Aktion, hot corners, Fenstersteuerung.
 
-super-key-action = Super Key Aktion
-    .launcher = Launcher
-    .workspaces = Arbeitsbereiche
-    .applications = Apps
-
 hot-corner = Hot Corner
     .top-left-corner = Enable top-left hot corner for Workspaces
 

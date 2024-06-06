@@ -118,11 +118,6 @@ dock = Docka
 hot-corner = Het hörn
     .top-left-corner = Aktivera det övre vänstra hörnet för arbetsytor
 
-super-key-action = Supertangent åtgärd
-    .launcher = Programstartare
-    .workspaces = Arbetsytor
-    .applications = Applikationer
-
 top-panel = Övre Panel
     .workspaces = Visa knappen arbetsytor
     .applications = Visa knappen applikationer

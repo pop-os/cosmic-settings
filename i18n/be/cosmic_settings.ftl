@@ -135,11 +135,6 @@ dock = Док
 hot-corner = Гарачы вугал
     .top-left-corner = Уключыць верхні левы гарачы вугал для працоўных прастораў
 
-super-key-action = Дзеянне клавішы Super
-    .launcher = Запускальнік
-    .workspaces = Працоўныя прасторы
-    .applications = Праграмы
-
 top-panel = Верхняя панэль
     .workspaces = Паказаць кнопку Працоўныя прасторы
     .applications = Паказаць кнопку Праграмы

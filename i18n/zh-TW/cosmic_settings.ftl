@@ -136,11 +136,6 @@ dock = Dock
 hot-corner = 螢幕角落熱點
     .top-left-corner = 為工作區啟用位於左上方的螢幕角落熱點
 
-super-key-action = Super 按鍵行為
-    .launcher = 啟動器
-    .workspaces = 工作區
-    .applications = 應用程式
-
 top-panel = 頂部面板
     .workspaces = 顯示工作區按鈕
     .applications = 顯示應用程式按鈕

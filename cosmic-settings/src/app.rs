@@ -312,6 +312,10 @@ impl cosmic::Application for SettingsApp {
                     page::update!(self.pages, message, desktop::Page);
                 }
 
+                crate::pages::Message::DesktopOptions(message) => {
+                    page::update!(self.pages, message, desktop::options::Page);
+                }
+
                 crate::pages::Message::DesktopWallpaper(message) => {
                     if let Some(page) = self.pages.page_mut::<desktop::wallpaper::Page>() {
                         return page.update(message).map(Into::into);
@@ -330,6 +334,66 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::Keyboard(message) => {
                     if let Some(page) = self.pages.page_mut::<input::keyboard::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::KeyboardShortcuts(message) => {
+                    if let Some(page) = self.pages.page_mut::<input::keyboard::shortcuts::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::CustomShortcuts(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<input::keyboard::shortcuts::custom::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::ManageWindowShortcuts(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<input::keyboard::shortcuts::manage_windows::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::MoveWindowShortcuts(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<input::keyboard::shortcuts::move_window::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::NavShortcuts(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<input::keyboard::shortcuts::nav::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::SystemShortcuts(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<input::keyboard::shortcuts::system::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::TilingShortcuts(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<input::keyboard::shortcuts::tiling::Page>()
+                    {
                         return page.update(message).map(Into::into);
                     }
                 }
@@ -641,7 +705,9 @@ impl SettingsApp {
         let page_info = &self.pages.info[self.active_page];
         let mut column_widgets = Vec::with_capacity(1 + content.len());
 
-        column_widgets.push(if let Some(parent) = page_info.parent {
+        column_widgets.push(if let Some(custom_header) = page.header() {
+            custom_header.map(Message::from)
+        } else if let Some(parent) = page_info.parent {
             let page_header = crate::widget::sub_page_header(
                 page_info.title.as_str(),
                 self.pages.info[parent].title.as_str(),

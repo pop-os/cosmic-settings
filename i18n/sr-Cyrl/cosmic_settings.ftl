@@ -121,11 +121,6 @@ dock = Док
 hot-corner = Лепљиви углови
     .top-left-corner = Укључити горњи леви лепљиви угао за радне просторе
 
-super-key-action = Улога Super тастера
-    .launcher = Покретач апликација
-    .workspaces = Радни простори
-    .applications = Апликације
-
 top-panel = Горњи панел
     .workspaces = Дугме за приказивање радних простора
     .applications = Дугме за приказивање апликација

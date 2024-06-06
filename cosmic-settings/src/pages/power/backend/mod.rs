@@ -99,12 +99,9 @@ impl PowerBackend for S76Backend {}
 
 impl SetPowerProfile for S76Backend {
     async fn set_power_profile(&self, profile: PowerProfile) {
-        let daemon = match get_s76power_daemon_proxy().await {
-            Ok(c) => c,
-            Err(e) => {
-                tracing::error!("Problem while setting power profile.");
-                return;
-            }
+        let Ok(daemon) = get_s76power_daemon_proxy().await else {
+            tracing::error!("Problem while setting power profile.");
+            return;
         };
 
         match profile {
@@ -126,19 +123,15 @@ impl SetPowerProfile for S76Backend {
 
 impl GetCurrentPowerProfile for S76Backend {
     async fn get_current_power_profile(&self) -> PowerProfile {
-        let daemon = match get_s76power_daemon_proxy().await {
-            Ok(c) => c,
-            Err(e) => {
-                tracing::error!("Problem while getting power profile.");
-                //Default
-                return PowerProfile::Balanced;
-            }
+        let Ok(daemon) = get_s76power_daemon_proxy().await else {
+            tracing::error!("Problem while getting power profile.");
+            return PowerProfile::Balanced;
         };
 
         match daemon.get_profile().await {
             Ok(p) => PowerProfile::from_string(p.as_str()),
             //Default
-            Err(_) => {
+            Err(_why) => {
                 tracing::error!("Problem while getting power profile.");
                 //Default
                 PowerProfile::Balanced
@@ -173,7 +166,7 @@ impl SetPowerProfile for PPBackend {
     async fn set_power_profile(&self, profile: PowerProfile) {
         let daemon = match get_power_profiles_proxy().await {
             Ok(c) => c,
-            Err(e) => {
+            Err(()) => {
                 tracing::error!("Problem while setting power profile.");
                 return;
             }
@@ -198,18 +191,14 @@ impl SetPowerProfile for PPBackend {
 
 impl GetCurrentPowerProfile for PPBackend {
     async fn get_current_power_profile(&self) -> PowerProfile {
-        let daemon = match get_power_profiles_proxy().await {
-            Ok(c) => c,
-            Err(e) => {
-                tracing::error!("Problem while getting power profile.");
-                //Default
-                return PowerProfile::Balanced;
-            }
+        let Ok(daemon) = get_power_profiles_proxy().await else {
+            tracing::error!("Problem while getting power profile.");
+            return PowerProfile::Balanced;
         };
 
         let profile = match daemon.active_profile().await {
             Ok(p) => p,
-            Err(e) => {
+            Err(_e) => {
                 tracing::error!("Problem while getting power profile.");
                 //Default
                 return PowerProfile::Balanced;

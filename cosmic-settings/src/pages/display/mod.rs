@@ -311,8 +311,8 @@ impl Page {
 
             Message::Mirroring(mirroring) => match mirroring {
                 Mirroring::Disable => (),
-                Mirroring::Mirror(target_display) => (),
-                Mirroring::Project(target_display) => (),
+                Mirroring::Mirror(_target_display) => (),
+                Mirroring::Project(_target_display) => (),
                 Mirroring::ProjectToAll => (),
             },
 
@@ -411,12 +411,12 @@ impl Page {
     }
 
     /// Changes the color depth of the active display.
-    pub fn set_color_depth(&mut self, depth: ColorDepth) -> Command<app::Message> {
+    pub fn set_color_depth(&mut self, _depth: ColorDepth) -> Command<app::Message> {
         unimplemented!()
     }
 
     /// Changes the color profile of the active display.
-    pub fn set_color_profile(&mut self, profile: usize) -> Command<app::Message> {
+    pub fn set_color_profile(&mut self, _profile: usize) -> Command<app::Message> {
         unimplemented!()
     }
 

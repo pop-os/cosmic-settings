@@ -136,11 +136,6 @@ dock = Doca
 hot-corner = Canto ativo
     .top-left-corner = Ativar o canto superior esquerdo para as áreas de trabalho
 
-super-key-action = Ação da tecla Super
-    .launcher = Lançador
-    .workspaces = Áreas de trabalho
-    .applications = Aplicações
-
 top-panel = Painel superior
     .workspaces = Mostrar o botão das áreas de trabalho
     .applications = Mostrar o botão das aplicações

@@ -64,7 +64,7 @@ enum ContextView {
 }
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-struct IconTheme {
+pub struct IconTheme {
     // COSMIC uses the file name of the folder containing the theme
     id: String,
     // GTK uses the name of the theme as specified in its index file
@@ -1073,7 +1073,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_enter(
         &mut self,
         _: page::Entity,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Command<crate::pages::Message> {
         command::future(fetch_icon_themes()).map(crate::pages::Message::Appearance)
     }

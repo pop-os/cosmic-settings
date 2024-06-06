@@ -43,6 +43,11 @@ pub trait Page<Message: 'static>: Downcast {
         None
     }
 
+    /// Set a custom page header
+    fn header(&self) -> Option<Element<'_, Message>> {
+        None
+    }
+
     /// Display an inner app dialog for the page.
     fn dialog(&self) -> Option<Element<'_, Message>> {
         None
@@ -116,6 +121,7 @@ impl Info {
 #[macro_export]
 macro_rules! update {
     ($binder:expr, $message:expr, $page:ty) => {{
+        #[allow(unused_must_use)]
         if let Some(page) = $binder.page_mut::<$page>() {
             page.update($message);
         }
