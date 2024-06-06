@@ -4,31 +4,10 @@ use cosmic::{Apply, Element};
 use cosmic_comp_config::input::{AccelProfile, ClickMethod, ScrollMethod};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use slab::Slab;
 use slotmap::SlotMap;
 
 use super::Message;
-
-crate::cache_dynamic_lazy! {
-    static CLICK_BEHAVIOR_CLICK_FINGER: String = fl!("click-behavior", "click-finger");
-    static CLICK_BEHAVIOR_BUTTON_AREAS: String = fl!("click-behavior", "button-areas");
-
-    static TAP_TO_CLICK: String = fl!("tap-to-click");
-    static TAP_TO_CLICK_DESC: String = fl!("tap-to-click", "desc");
-
-    static TOUCHPAD_ACCELERAION: String = fl!("touchpad", "acceleration");
-    static TOUCHPAD_SPEED: String = fl!("touchpad", "speed");
-
-    static OPEN_APPLICATION_LIBRARY: String = fl!("open-application-library");
-    static OPEN_WORKSPACES_VIEW: String = fl!("open-workspaces-view");
-    static SWIPING_FOUR_FINGER_DOWN: String = fl!("gestures", "four-finger-down");
-    static SWIPING_FOUR_FINGER_LEFT: String = fl!("gestures", "four-finger-left");
-    static SWIPING_FOUR_FINGER_RIGHT: String = fl!("gestures", "four-finger-right");
-    static SWIPING_FOUR_FINGER_UP: String = fl!("gestures", "four-finger-up");
-    static SWIPING_THREE_FINGER_ANY: String = fl!("gestures", "three-finger-any");
-    static SWITCH_BETWEEN_WINDOWS: String = fl!("switch-between-windows");
-    static SWITCH_TO_NEXT_WORKSPACE: String = fl!("switch-to-next-workspace");
-    static SWITCH_TO_PREV_WORKSPACE: String = fl!("switch-to-prev-workspace");
-}
 
 #[derive(Default)]
 pub struct Page;
@@ -56,49 +35,54 @@ impl page::Page<crate::pages::Message> for Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn touchpad() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let primary_button = descriptions.insert(fl!("primary-button"));
+    let touchpad_speed = descriptions.insert(fl!("touchpad", "speed"));
+    let acceleration = descriptions.insert(fl!("touchpad", "acceleration"));
+    let acceleration_desc = descriptions.insert(fl!("acceleration-desc"));
+    let disable_while_typing = descriptions.insert(fl!("disable-while-typing"));
+
     Section::default()
-        .descriptions(vec![
-            super::PRIMARY_BUTTON.as_str().into(),
-            TOUCHPAD_SPEED.as_str().into(),
-            TOUCHPAD_ACCELERAION.as_str().into(),
-            super::ACCELERATION_DESC.as_str().into(),
-            super::DISABLE_WHILE_TYPING.as_str().into(),
-        ])
-        .view::<Page>(|binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _page, section| {
+            let descriptions = &section.descriptions;
             let input = binder.page::<super::Page>().expect("input page not found");
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
                 .add(settings::flex_item(
-                    &*super::PRIMARY_BUTTON,
+                    &descriptions[primary_button],
                     cosmic::widget::segmented_control::horizontal(&input.touchpad_primary_button)
                         .minimum_button_width(0)
                         .on_activate(|x| Message::PrimaryButtonSelected(x, true)),
                 ))
-                .add(settings::item::builder(&*TOUCHPAD_SPEED).flex_control({
-                    let value = (input
-                        .input_touchpad
-                        .acceleration
-                        .as_ref()
-                        .map_or(0.0, |x| x.speed)
-                        + 1.0)
-                        * 50.0;
-
-                    let slider = widget::slider(10.0..=80.0, value, |value| {
-                        Message::SetMouseSpeed((value / 50.0) - 1.0, true)
-                    })
-                    .width(250.0)
-                    .breakpoints(&[45.0]);
-
-                    row::with_capacity(2)
-                        .align_items(Alignment::Center)
-                        .spacing(theme.cosmic().space_s())
-                        .push(text(format!("{:.0}", value.round())))
-                        .push(slider)
-                }))
                 .add(
-                    settings::item::builder(&*TOUCHPAD_ACCELERAION)
-                        .description(&*super::ACCELERATION_DESC)
+                    settings::item::builder(&descriptions[touchpad_speed]).flex_control({
+                        let value = (input
+                            .input_touchpad
+                            .acceleration
+                            .as_ref()
+                            .map_or(0.0, |x| x.speed)
+                            + 1.0)
+                            * 50.0;
+
+                        let slider = widget::slider(10.0..=80.0, value, |value| {
+                            Message::SetMouseSpeed((value / 50.0) - 1.0, true)
+                        })
+                        .width(250.0)
+                        .breakpoints(&[45.0]);
+
+                        row::with_capacity(2)
+                            .align_items(Alignment::Center)
+                            .spacing(theme.cosmic().space_s())
+                            .push(text(format!("{:.0}", value.round())))
+                            .push(slider)
+                    }),
+                )
+                .add(
+                    settings::item::builder(&descriptions[acceleration])
+                        .description(&descriptions[acceleration_desc])
                         .toggler(
                             input
                                 .input_touchpad
@@ -109,7 +93,7 @@ fn touchpad() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&*super::DISABLE_WHILE_TYPING).toggler(
+                    settings::item::builder(&descriptions[disable_while_typing]).toggler(
                         input.input_touchpad.disable_while_typing.unwrap_or(false),
                         |enabled| Message::DisableWhileTyping(enabled, true),
                     ),
@@ -120,15 +104,18 @@ fn touchpad() -> Section<crate::pages::Message> {
 }
 
 fn click_behavior() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let click_finger = descriptions.insert(fl!("click-behavior", "click-finger"));
+    let button_areas = descriptions.insert(fl!("click-behavior", "button-areas"));
+    let tap_to_click = descriptions.insert(fl!("tap-to-click"));
+    let _tap_to_click_desc = descriptions.insert(fl!("tap-to-click", "desc"));
+
     Section::default()
         .title(fl!("click-behavior"))
-        .descriptions(vec![
-            CLICK_BEHAVIOR_CLICK_FINGER.as_str().into(),
-            CLICK_BEHAVIOR_BUTTON_AREAS.as_str().into(),
-            TAP_TO_CLICK.as_str().into(),
-            TAP_TO_CLICK_DESC.as_str().into(),
-        ])
-        .view::<Page>(|binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _page, section| {
+            let descriptions = &section.descriptions;
             let page = binder
                 .page::<super::Page>()
                 .expect("input devices page not found");
@@ -136,7 +123,7 @@ fn click_behavior() -> Section<crate::pages::Message> {
             settings::view_section(&*section.title)
                 // Secondary click via two fingers, and middle-click via three fingers
                 .add(settings::item_row(vec![widget::radio(
-                    &*CLICK_BEHAVIOR_CLICK_FINGER,
+                    &descriptions[click_finger],
                     ClickMethod::Clickfinger,
                     page.input_touchpad.click_method,
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
@@ -144,14 +131,14 @@ fn click_behavior() -> Section<crate::pages::Message> {
                 .into()]))
                 // Secondary and middle-click via button areas.
                 .add(settings::item_row(vec![widget::radio(
-                    &*CLICK_BEHAVIOR_BUTTON_AREAS,
+                    &descriptions[button_areas],
                     ClickMethod::ButtonAreas,
                     page.input_touchpad.click_method,
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
                 )
                 .into()]))
                 .add(
-                    settings::item::builder(&*TAP_TO_CLICK).toggler(
+                    settings::item::builder(&descriptions[tap_to_click]).toggler(
                         page.input_touchpad
                             .tap_config
                             .as_ref()
@@ -165,16 +152,19 @@ fn click_behavior() -> Section<crate::pages::Message> {
 }
 
 fn scrolling() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let edge = descriptions.insert(fl!("scrolling", "edge"));
+    let natural = descriptions.insert(fl!("scrolling", "natural"));
+    let natural_desc = descriptions.insert(fl!("scrolling", "natural-desc"));
+    let scroll_speed = descriptions.insert(fl!("scrolling", "speed"));
+    let two_finger = descriptions.insert(fl!("scrolling", "two-finger"));
+
     Section::default()
         .title(fl!("scrolling"))
-        .descriptions(vec![
-            super::SCROLLING_TWO_FINGER.as_str().into(),
-            super::SCROLLING_EDGE.as_str().into(),
-            super::SCROLLING_SPEED.as_str().into(),
-            super::SCROLLING_NATURAL.as_str().into(),
-            super::SCROLLING_NATURAL_DESC.as_str().into(),
-        ])
-        .view::<Page>(|binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _page, section| {
+            let descriptions = &section.descriptions;
             let page = binder
                 .page::<super::Page>()
                 .expect("input devices page not found");
@@ -183,7 +173,7 @@ fn scrolling() -> Section<crate::pages::Message> {
             settings::view_section(&section.title)
                 // Two-finger scrolling toggle
                 .add(settings::item_row(vec![widget::radio(
-                    &*super::SCROLLING_TWO_FINGER,
+                    &descriptions[two_finger],
                     ScrollMethod::TwoFinger,
                     page.input_touchpad
                         .scroll_config
@@ -194,7 +184,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                 .into()]))
                 // Edge scrolling toggle
                 .add(settings::item_row(vec![widget::radio(
-                    &*super::SCROLLING_EDGE,
+                    &descriptions[edge],
                     ScrollMethod::Edge,
                     page.input_touchpad
                         .scroll_config
@@ -204,7 +194,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                 )
                 .into()]))
                 // Scroll speed slider
-                .add(settings::item(&*super::SCROLLING_SPEED, {
+                .add(settings::item(&descriptions[scroll_speed], {
                     let value = page
                         .input_touchpad
                         .scroll_config
@@ -229,8 +219,8 @@ fn scrolling() -> Section<crate::pages::Message> {
                 }))
                 // Natural scrolling toggle
                 .add(
-                    settings::item::builder(&*super::SCROLLING_NATURAL)
-                        .description(&*super::SCROLLING_NATURAL_DESC)
+                    settings::item::builder(&descriptions[natural])
+                        .description(&descriptions[natural_desc])
                         .toggler(
                             page.input_touchpad
                                 .scroll_config
@@ -245,36 +235,46 @@ fn scrolling() -> Section<crate::pages::Message> {
 }
 
 fn swiping() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let four_finger_down = descriptions.insert(fl!("gestures", "four-finger-down"));
+    // let four_finger_left = descriptions.insert(fl!("gestures", "four-finger-left"));
+    // let four_finger_right = descriptions.insert(fl!("gestures", "four-finger-right"));
+    let four_finger_up = descriptions.insert(fl!("gestures", "four-finger-up"));
+    // let three_finger_any = descriptions.insert(fl!("gestures", "three-finger-any"));
+
+    // let open_application_library = descriptions.insert(fl!("open-application-library"));
+    // let open_workspaces_view = descriptions.insert(fl!("open-workspaces-view"));
+    // let switch_between_windows = descriptions.insert(fl!("switch-between-windows"));
+    let switch_to_next_workspace = descriptions.insert(fl!("switch-to-next-workspace"));
+    let switch_to_prev_workspace = descriptions.insert(fl!("switch-to-prev-workspace"));
+
     Section::default()
         .title(fl!("gestures"))
-        .descriptions(vec![
-            SWIPING_FOUR_FINGER_DOWN.as_str().into(),
-            SWIPING_FOUR_FINGER_LEFT.as_str().into(),
-            SWIPING_FOUR_FINGER_RIGHT.as_str().into(),
-            SWIPING_FOUR_FINGER_UP.as_str().into(),
-            SWIPING_THREE_FINGER_ANY.as_str().into(),
-        ])
-        .view::<Page>(|_binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, _page, section| {
+            let descriptions = &section.descriptions;
+
             settings::view_section(&*section.title)
                 // .add(
-                //     settings::item::builder(&*SWIPING_THREE_FINGER_ANY)
-                //         .flex_control(text(&*SWITCH_BETWEEN_WINDOWS)),
+                //     settings::item::builder(&descriptions[three_finger_any])
+                //         .flex_control(text(&descriptions[switch_between_windows])),
                 // )
                 .add(
-                    settings::item::builder(&*SWIPING_FOUR_FINGER_UP)
-                        .flex_control(text(&*SWITCH_TO_PREV_WORKSPACE)),
+                    settings::item::builder(&descriptions[four_finger_up])
+                        .flex_control(text(&descriptions[switch_to_prev_workspace])),
                 )
                 .add(
-                    settings::item::builder(&*SWIPING_FOUR_FINGER_DOWN)
-                        .flex_control(text(&*SWITCH_TO_NEXT_WORKSPACE)),
+                    settings::item::builder(&descriptions[four_finger_down])
+                        .flex_control(text(&descriptions[switch_to_next_workspace])),
                 )
                 // .add(
-                //     settings::item::builder(&*SWIPING_FOUR_FINGER_LEFT)
-                //         .flex_control(text(&*OPEN_WORKSPACES_VIEW)),
+                //     settings::item::builder(&descriptions[four_finger_left])
+                //         .flex_control(text(&descriptions[open_workspaces_view])),
                 // )
                 // .add(
-                //     settings::item::builder(&*SWIPING_FOUR_FINGER_RIGHT)
-                //         .flex_control(text(&*OPEN_APPLICATION_LIBRARY)),
+                //     settings::item::builder(&descriptions[four_finger_right])
+                //         .flex_control(text(&descriptions[open_application_library])),
                 // )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)

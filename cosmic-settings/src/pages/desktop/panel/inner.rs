@@ -15,6 +15,7 @@ use cosmic_panel_config::{
     CosmicPanelOuput, PanelAnchor, PanelSize,
 };
 use cosmic_settings_page::{self as page, Section};
+use slab::Slab;
 use std::collections::HashMap;
 
 pub struct PageInner {
@@ -93,13 +94,15 @@ pub(crate) fn behavior_and_position<
     p: &P,
     msg_map: T,
 ) -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let autohide_label = descriptions.insert(p.autohide_label());
+    let position = descriptions.insert(fl!("panel-behavior-and-position", "position"));
+    let display = descriptions.insert(fl!("panel-behavior-and-position", "display"));
+
     Section::default()
         .title(fl!("panel-behavior-and-position"))
-        .descriptions(vec![
-            p.autohide_label().into(),
-            fl!("panel-behavior-and-position", "position").into(),
-            fl!("panel-behavior-and-position", "display").into(),
-        ])
+        .descriptions(descriptions)
         .view::<P>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let page = page.inner();
@@ -108,13 +111,13 @@ pub(crate) fn behavior_and_position<
             };
             settings::view_section(&section.title)
                 .add(settings::flex_item(
-                    &*descriptions[0],
+                    &descriptions[autohide_label],
                     toggler(None, panel_config.autohide.is_some(), |value| {
                         Message::AutoHidePanel(value)
                     }),
                 ))
                 .add(settings::flex_item(
-                    &*descriptions[1],
+                    &descriptions[position],
                     dropdown(
                         page.anchors.as_slice(),
                         Some(panel_config.anchor as usize),
@@ -122,7 +125,7 @@ pub(crate) fn behavior_and_position<
                     ),
                 ))
                 .add(settings::flex_item(
-                    &*descriptions[2],
+                    &descriptions[display],
                     dropdown(
                         page.outputs.as_slice(),
                         match &panel_config.output {
@@ -145,15 +148,17 @@ pub(crate) fn style<
     p: &P,
     msg_map: T,
 ) -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let gap_label = descriptions.insert(p.gap_label());
+    let extend_label = descriptions.insert(p.extend_label());
+    let appearance = descriptions.insert(fl!("panel-style", "appearance"));
+    let background_opacity = descriptions.insert(fl!("panel-style", "background-opacity"));
+    let size = descriptions.insert(fl!("panel-style", "size"));
+
     Section::default()
         .title(fl!("panel-style"))
-        .descriptions(vec![
-            p.gap_label().into(),
-            p.extend_label().into(),
-            fl!("panel-style", "appearance").into(),
-            fl!("panel-style", "size").into(),
-            fl!("panel-style", "background-opacity").into(),
-        ])
+        .descriptions(descriptions)
         .view::<P>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let inner = page.inner();
@@ -162,19 +167,19 @@ pub(crate) fn style<
             };
             settings::view_section(&section.title)
                 .add(settings::flex_item(
-                    &*descriptions[0],
+                    &descriptions[gap_label],
                     toggler(None, panel_config.anchor_gap, |value| {
                         Message::AnchorGap(value)
                     }),
                 ))
                 .add(settings::flex_item(
-                    &*descriptions[1],
+                    &descriptions[extend_label],
                     toggler(None, panel_config.expand_to_edges, |value| {
                         Message::ExtendToEdge(value)
                     }),
                 ))
                 .add(settings::flex_item(
-                    &*descriptions[2],
+                    &descriptions[appearance],
                     dropdown(
                         inner.backgrounds.as_slice(),
                         match panel_config.background {
@@ -187,7 +192,7 @@ pub(crate) fn style<
                     ),
                 ))
                 .add(settings::flex_item(
-                    &*descriptions[3],
+                    &descriptions[size],
                     // TODO custom discrete slider variant
                     row::with_children(vec![
                         text(fl!("small")).into(),
@@ -220,7 +225,7 @@ pub(crate) fn style<
                     .spacing(12),
                 ))
                 .add(settings::flex_item(
-                    &*descriptions[4],
+                    &descriptions[background_opacity],
                     row::with_children(vec![
                         text(fl!("number", HashMap::from_iter(vec![("number", 0)]))).into(),
                         slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
@@ -240,9 +245,13 @@ pub(crate) fn style<
 pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
     p: &P,
 ) -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let applets_label = descriptions.insert(p.configure_applets_label());
+
     Section::default()
         .title(fl!("panel-applets"))
-        .descriptions(vec![p.configure_applets_label().into()])
+        .descriptions(descriptions)
         .view::<P>(move |binder, page, section| {
             let mut settings = settings::view_section(&section.title);
             let descriptions = &section.descriptions;
@@ -257,7 +266,7 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                 ]);
 
                 settings.add(
-                    settings::item::builder(&*descriptions[0])
+                    settings::item::builder(&*descriptions[applets_label])
                         .control(control)
                         .spacing(16)
                         .apply(container)
@@ -281,12 +290,16 @@ pub(crate) fn add_panel<
 >(
     msg_map: T,
 ) -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let reset_to_default = descriptions.insert(fl!("reset-to-default"));
+
     Section::default()
         .title(fl!("panel-missing"))
-        .descriptions(vec![fl!("reset-to-default").into()])
+        .descriptions(descriptions)
         .view::<P>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
-            button::standard(&*descriptions[0])
+            button::standard(&descriptions[reset_to_default])
                 .on_press(Message::FullReset)
                 .apply(Element::from)
                 .map(msg_map)
@@ -300,15 +313,19 @@ pub fn reset_button<
 >(
     msg_map: T,
 ) -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let reset_to_default = descriptions.insert(fl!("reset-to-default"));
+
     Section::default()
-        .descriptions(vec![fl!("reset-to-default").into()])
+        .descriptions(descriptions)
         .view::<P>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let inner = page.inner();
             if inner.system_default == inner.panel_config {
                 Element::from(horizontal_space(1))
             } else {
-                button::standard(&*descriptions[0])
+                button::standard(&descriptions[reset_to_default])
                     .on_press(Message::ResetPanel)
                     .into()
             }

@@ -12,6 +12,7 @@ use cosmic::{
 use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -114,24 +115,26 @@ impl Page {
 }
 
 fn multi_behavior() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let span = descriptions.insert(fl!("workspaces-multi-behavior", "span"));
+    let separate = descriptions.insert(fl!("workspaces-multi-behavior", "separate"));
+
     Section::default()
         .title(fl!("workspaces-multi-behavior"))
-        .descriptions(vec![
-            fl!("workspaces-multi-behavior", "span").into(),
-            fl!("workspaces-multi-behavior", "separate").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .add(settings::item_row(vec![radio(
-                    &*descriptions[0],
+                    &descriptions[span],
                     WorkspaceMode::Global,
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
                 )
                 .into()]))
                 .add(settings::item_row(vec![radio(
-                    &*descriptions[1],
+                    &descriptions[separate],
                     WorkspaceMode::OutputBound,
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
@@ -143,24 +146,26 @@ fn multi_behavior() -> Section<crate::pages::Message> {
 }
 
 fn workspace_orientation() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let vertical = descriptions.insert(fl!("workspaces-orientation", "vertical"));
+    let horizontal = descriptions.insert(fl!("workspaces-orientation", "horizontal"));
+
     Section::default()
         .title(fl!("workspaces-orientation"))
-        .descriptions(vec![
-            fl!("workspaces-orientation", "vertical").into(),
-            fl!("workspaces-orientation", "horizontal").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .add(settings::item_row(vec![radio(
-                    &*descriptions[0],
+                    &*descriptions[vertical],
                     WorkspaceLayout::Vertical,
                     Some(page.comp_workspace_config.workspace_layout),
                     Message::SetWorkspaceLayout,
                 )
                 .into()]))
                 .add(settings::item_row(vec![radio(
-                    &*descriptions[1],
+                    &*descriptions[horizontal],
                     WorkspaceLayout::Horizontal,
                     Some(page.comp_workspace_config.workspace_layout),
                     Message::SetWorkspaceLayout,

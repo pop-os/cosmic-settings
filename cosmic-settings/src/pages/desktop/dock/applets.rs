@@ -2,7 +2,7 @@ use cosmic::{
     cosmic_config::CosmicConfigEntry,
     iced::{alignment, Length},
     iced_runtime::Command,
-    widget::{button, container, row, text},
+    widget::{button, container, row},
     Apply, Element,
 };
 use cosmic_panel_config::CosmicPanelConfig;

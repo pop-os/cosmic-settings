@@ -11,6 +11,7 @@ use cosmic::{
 
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use slab::Slab;
 use slotmap::SlotMap;
 
 #[derive(Default)]
@@ -44,27 +45,29 @@ impl page::AutoBind<crate::pages::Message> for Page {
 }
 
 pub fn super_key_action() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let launcher = descriptions.insert(fl!("super-key-action", "launcher"));
+    let workspaces = descriptions.insert(fl!("super-key-action", "workspaces"));
+    let applications = descriptions.insert(fl!("super-key-action", "applications"));
+
     Section::default()
         .title(fl!("super-key-action"))
-        .descriptions(vec![
-            fl!("super-key-action", "launcher").into(),
-            fl!("super-key-action", "workspaces").into(),
-            fl!("super-key-action", "applications").into(),
-        ])
-        .view::<Page>(|_binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &*descriptions[0],
+                    &descriptions[launcher],
                     horizontal_space(Length::Fill),
                 ))
                 .add(settings::item(
-                    &*descriptions[1],
+                    &descriptions[workspaces],
                     horizontal_space(Length::Fill),
                 ))
                 .add(settings::item(
-                    &*descriptions[2],
+                    &descriptions[applications],
                     horizontal_space(Length::Fill),
                 ))
                 .into()
@@ -72,13 +75,15 @@ pub fn super_key_action() -> Section<crate::pages::Message> {
 }
 
 pub fn window_controls() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let minimize = descriptions.insert(fl!("window-controls", "minimize"));
+    let maximize = descriptions.insert(fl!("window-controls", "maximize"));
+
     Section::default()
         .title(fl!("window-controls"))
-        .descriptions(vec![
-            fl!("window-controls", "minimize").into(),
-            fl!("window-controls", "maximize").into(),
-        ])
-        .view::<Page>(|binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _page, section| {
             let desktop = binder
                 .page::<super::Page>()
                 .expect("desktop page not found");
@@ -86,7 +91,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
 
             settings::view_section(&section.title)
                 .add(settings::flex_item(
-                    &*descriptions[0],
+                    &descriptions[minimize],
                     toggler(
                         None,
                         desktop.cosmic_tk.show_minimize,
@@ -94,7 +99,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     ),
                 ))
                 .add(settings::flex_item(
-                    &*descriptions[1],
+                    &descriptions[maximize],
                     toggler(
                         None,
                         desktop.cosmic_tk.show_maximize,
@@ -109,7 +114,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
 pub fn panel_dock_links() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("desktop-panels-and-applets"))
-        .view::<Page>(|binder, _page, section| {
+        .view::<Page>(move |binder, _page, section| {
             // TODO probably a way of getting the entity and its info
             let mut settings = settings::view_section(&section.title);
             settings = if let Some((panel_entity, panel_info)) =

@@ -2,6 +2,7 @@ use cosmic::widget::{column, settings};
 use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use slab::Slab;
 use slotmap::SlotMap;
 
 #[derive(Default)]
@@ -27,9 +28,11 @@ impl page::Page<crate::pages::Message> for Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn shortcuts() -> Section<crate::pages::Message> {
+    let descriptions = Slab::new();
+
     Section::default()
-        .descriptions(vec![])
-        .view::<Page>(|_binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, _page, section| {
             // TODO need something more custom
             /*
             settings::view_section(&section.title)

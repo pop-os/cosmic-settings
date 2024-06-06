@@ -9,16 +9,12 @@ use cosmic::{
 };
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
-// use icu::calendar::{DateTime, Gregorian};
-
+use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
 crate::cache_dynamic_lazy! {
-    static TIME_FORMAT_TWENTY_FOUR: String = fl!("time-format", "twenty-four");
-    static TIME_FORMAT_FIRST: String = fl!("time-format", "first");
-    static TIME_FORMAT_SHOW_DATE: String = fl!("time-format", "show-date");
-    static TIME_FORMAT_WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
+    static WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
 }
 
 pub struct Page {
@@ -28,7 +24,6 @@ pub struct Page {
     military_time: bool,
     first_day_of_week: usize,
     show_date_in_top_panel: bool,
-    // info: Option<cosmic_settings_time::Info>,
 }
 
 impl Default for Page {
@@ -115,20 +110,22 @@ pub enum Message {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn date() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let auto = descriptions.insert(fl!("time-date", "auto"));
+    let title = descriptions.insert(fl!("time-date"));
+
     Section::default()
         .title(fl!("time-date"))
-        .descriptions(vec![
-            fl!("time-date", "auto").into(),
-            fl!("time-date").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             settings::view_section(&section.title)
                 .add(
-                    settings::item::builder(&*section.descriptions[0])
+                    settings::item::builder(&*section.descriptions[auto])
                         .toggler(page.auto, Message::Automatic),
                 )
                 .add(settings::item(
-                    &*section.descriptions[1],
+                    &*section.descriptions[title],
                     horizontal_space(Length::Fill),
                 ))
                 .apply(cosmic::Element::from)
@@ -137,24 +134,26 @@ fn date() -> Section<crate::pages::Message> {
 }
 
 fn format() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let military = descriptions.insert(fl!("time-format", "twenty-four"));
+    let first = descriptions.insert(fl!("time-format", "first"));
+    let show_date = descriptions.insert(fl!("time-format", "show-date"));
+
     Section::default()
         .title(fl!("time-format"))
-        .descriptions(vec![
-            TIME_FORMAT_TWENTY_FOUR.as_str().into(),
-            TIME_FORMAT_FIRST.as_str().into(),
-            TIME_FORMAT_SHOW_DATE.as_str().into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             settings::view_section(&section.title)
                 // 24-hour toggle
                 .add(
-                    settings::item::builder(&*TIME_FORMAT_TWENTY_FOUR)
+                    settings::item::builder(&section.descriptions[military])
                         .toggler(page.military_time, Message::MilitaryTime),
                 )
                 // First day of week
                 .add(
-                    settings::item::builder(&*TIME_FORMAT_FIRST).flex_control(dropdown(
-                        &*TIME_FORMAT_WEEKDAYS,
+                    settings::item::builder(&section.descriptions[first]).flex_control(dropdown(
+                        &*WEEKDAYS,
                         match page.first_day_of_week {
                             4 => Some(0), // friday
                             5 => Some(1), // saturday
@@ -173,7 +172,7 @@ fn format() -> Section<crate::pages::Message> {
                 )
                 // Date on top panel toggle
                 .add(
-                    settings::item::builder(&*TIME_FORMAT_SHOW_DATE)
+                    settings::item::builder(&section.descriptions[show_date])
                         .toggler(page.show_date_in_top_panel, Message::ShowDate),
                 )
                 .apply(cosmic::Element::from)
@@ -182,24 +181,26 @@ fn format() -> Section<crate::pages::Message> {
 }
 
 fn timezone() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let auto = descriptions.insert(fl!("time-zone", "auto"));
+    let auto_info = descriptions.insert(fl!("time-zone", "auto-info"));
+    let time_zone = descriptions.insert(fl!("time-zone"));
+
     Section::default()
         .title(fl!("time-zone"))
-        .descriptions(vec![
-            fl!("time-zone", "auto").into(),
-            fl!("time-zone", "auto-info").into(),
-            fl!("time-zone").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             settings::view_section(&section.title)
                 // Automatic timezone toggle
                 .add(
-                    settings::item::builder(&*section.descriptions[0])
-                        .description(&*section.descriptions[1])
+                    settings::item::builder(&*section.descriptions[auto])
+                        .description(&*section.descriptions[auto_info])
                         .toggler(page.auto_timezone, Message::AutomaticTimezone),
                 )
                 // Time zone select
                 .add(
-                    settings::item::builder(&*section.descriptions[2])
+                    settings::item::builder(&*section.descriptions[time_zone])
                         .control(horizontal_space(Length::Fill)),
                 )
                 .apply(cosmic::Element::from)

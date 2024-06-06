@@ -109,15 +109,15 @@ impl SetPowerProfile for S76Backend {
 
         match profile {
             PowerProfile::Battery => match daemon.battery().await {
-                Ok(x) => tracing::info!("Battery mode activated."),
+                Ok(()) => tracing::info!("Battery mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Balanced => match daemon.balanced().await {
-                Ok(x) => tracing::info!("Balanced mode activated."),
+                Ok(()) => tracing::info!("Balanced mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Performance => match daemon.performance().await {
-                Ok(x) => tracing::info!("Performance mode activated."),
+                Ok(()) => tracing::info!("Performance mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
         }
@@ -181,15 +181,15 @@ impl SetPowerProfile for PPBackend {
 
         match profile {
             PowerProfile::Battery => match daemon.set_active_profile("power-saver").await {
-                Ok(x) => tracing::info!("Battery mode activated."),
+                Ok(()) => tracing::info!("Battery mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Balanced => match daemon.set_active_profile("balanced").await {
-                Ok(x) => tracing::info!("Balanced mode activated."),
+                Ok(()) => tracing::info!("Balanced mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
             PowerProfile::Performance => match daemon.set_active_profile("performance").await {
-                Ok(x) => tracing::info!("Performance mode activated."),
+                Ok(()) => tracing::info!("Performance mode activated."),
                 Err(e) => tracing::error!("{e}"),
             },
         }

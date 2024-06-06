@@ -14,17 +14,6 @@ pub mod keyboard;
 pub mod mouse;
 pub mod touchpad;
 
-crate::cache_dynamic_lazy! {
-    static ACCELERATION_DESC: String = fl!("acceleration-desc");
-    static DISABLE_WHILE_TYPING: String = fl!("disable-while-typing");
-    static PRIMARY_BUTTON: String = fl!("primary-button");
-    static SCROLLING_EDGE: String = fl!("scrolling", "edge");
-    static SCROLLING_NATURAL_DESC: String = fl!("scrolling", "natural-desc");
-    static SCROLLING_NATURAL: String = fl!("scrolling", "natural");
-    static SCROLLING_SPEED: String = fl!("scrolling", "speed");
-    static SCROLLING_TWO_FINGER: String = fl!("scrolling", "two-finger");
-}
-
 #[derive(Clone, Debug)]
 pub enum Message {
     // seperate close message, to make sure another isn't closed?

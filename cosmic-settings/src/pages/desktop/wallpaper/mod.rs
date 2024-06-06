@@ -14,7 +14,7 @@ use std::{
     sync::Arc,
 };
 
-use cosmic::{app, command, Apply, Command};
+use cosmic::{command, Apply, Command};
 use cosmic::{
     dialog::file_chooser,
     widget::{
@@ -46,6 +46,7 @@ use cosmic_settings_page::{self as page, section};
 use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
+use slab::Slab;
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 
 const ZOOM: usize = 0;
@@ -1145,23 +1146,19 @@ pub async fn change_folder(current_folder: PathBuf, recurse: bool) -> Context {
     update
 }
 
-crate::cache_dynamic_lazy! {
-    static WALLPAPER_SAME: String = fl!("wallpaper", "same");
-    static WALLPAPER_FIT: String = fl!("wallpaper", "fit");
-    static WALLPAPER_SLIDE: String = fl!("wallpaper", "slide");
-    static WALLPAPER_CHANGE: String = fl!("wallpaper", "change");
-}
-
 #[allow(clippy::too_many_lines)]
 pub fn settings() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let same_label = descriptions.insert(fl!("wallpaper", "same"));
+    let fit_label = descriptions.insert(fl!("wallpaper", "fit"));
+    let slide_label = descriptions.insert(fl!("wallpaper", "slide"));
+    let change_label = descriptions.insert(fl!("wallpaper", "change"));
+
     Section::default()
-        .descriptions(vec![
-            WALLPAPER_SAME.as_str().into(),
-            WALLPAPER_FIT.as_str().into(),
-            WALLPAPER_SLIDE.as_str().into(),
-            WALLPAPER_CHANGE.as_str().into(),
-        ])
-        .view::<Page>(|_binder, page, _section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
             let mut children = Vec::with_capacity(3);
 
             let mut show_slideshow_toggle = true;
@@ -1227,18 +1224,18 @@ pub fn settings() -> Section<crate::pages::Message> {
             children.push({
                 let mut column = list_column()
                     .add(settings::flex_item(
-                        &*WALLPAPER_SAME,
+                        &descriptions[same_label],
                         toggler(
                             None,
                             page.wallpaper_service_config.same_on_all,
                             Message::SameWallpaper,
                         ),
                     ))
-                    .add(settings::flex_item(&*WALLPAPER_FIT, wallpaper_fit));
+                    .add(settings::flex_item(&descriptions[fit_label], wallpaper_fit));
 
                 if show_slideshow_toggle {
                     column = column.add(settings::flex_item(
-                        &*WALLPAPER_SLIDE,
+                        &descriptions[slide_label],
                         toggler(None, slideshow_enabled, Message::Slideshow),
                     ));
                 }
@@ -1247,7 +1244,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                 if slideshow_enabled {
                     column
                         .add(settings::flex_item(
-                            &*WALLPAPER_CHANGE,
+                            &descriptions[change_label],
                             dropdown(
                                 &page.rotation_options,
                                 Some(page.selected_rotation),

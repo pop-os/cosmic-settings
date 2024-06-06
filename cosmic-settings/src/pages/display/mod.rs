@@ -3,7 +3,6 @@
 
 pub mod arrangement;
 // pub mod night_light;
-pub mod text;
 
 use crate::{app, pages};
 use arrangement::Arrangement;
@@ -16,6 +15,7 @@ use cosmic::widget::{
 use cosmic::{command, Apply, Command, Element};
 use cosmic_randr_shell::{List, Output, OutputKey, Transform};
 use cosmic_settings_page::{self as page, section, Section};
+use slab::Slab;
 use slotmap::{Key, SlotMap};
 use std::collections::BTreeMap;
 use std::{process::ExitStatus, sync::Arc};
@@ -145,7 +145,7 @@ struct Config {
 #[derive(Default)]
 struct ViewCache {
     modes: BTreeMap<(u32, u32), Vec<u32>>,
-    orientations: [&'static str; 4],
+    orientations: [String; 4],
     refresh_rates: Vec<String>,
     resolutions: Vec<String>,
     orientation_selected: Option<usize>,
@@ -170,33 +170,12 @@ impl page::Page<crate::pages::Message> for Page {
             //                        text::NIGHT_LIGHT_AUTO.as_str().into(),
             //                        text::NIGHT_LIGHT_DESCRIPTION.as_str().into(),
             //                    ])
-            //                    .view::<Page>(|_binder, page, _section| page.night_light_view()),
+            //                    .view::<Page>(move |_binder, page, _section| page.night_light_view()),
             //            ),
             // Display arrangement
-            sections.insert(
-                Section::default()
-                    .title(&*text::DISPLAY_ARRANGEMENT)
-                    .descriptions(vec![
-                        text::DISPLAY_ARRANGEMENT.as_str().into(),
-                        text::DISPLAY_ARRANGEMENT_DESC.as_str().into(),
-                    ])
-                    // Show section when there is more than 1 display
-                    .show_while::<Page>(|page| page.list.outputs.len() > 1)
-                    .view::<Page>(|_binder, page, _section| page.display_arrangement_view()),
-            ),
+            sections.insert(display_arrangement()),
             // Display configuration
-            sections.insert(
-                Section::default()
-                    .descriptions([
-                        text::DISPLAY.as_str().into(),
-                        text::DISPLAY_REFRESH_RATE.as_str().into(),
-                        text::DISPLAY_SCALE.as_str().into(),
-                        text::ORIENTATION.as_str().into(),
-                        text::ORIENTATION_STANDARD.as_str().into(),
-                        text::ORIENTATION_ROTATE_90.as_str().into(),
-                    ])
-                    .view::<Page>(|_binder, page, _section| page.display_view()),
-            ),
+            sections.insert(display_configuration()),
         ])
     }
 
@@ -368,10 +347,10 @@ impl Page {
                 }
 
                 self.cache.orientations = [
-                    text::ORIENTATION_STANDARD.as_str(),
-                    text::ORIENTATION_ROTATE_90.as_str(),
-                    text::ORIENTATION_ROTATE_180.as_str(),
-                    text::ORIENTATION_ROTATE_270.as_str(),
+                    fl!("orientation", "standard"),
+                    fl!("orientation", "rotate-90"),
+                    fl!("orientation", "rotate-180"),
+                    fl!("orientation", "rotate-270"),
                 ];
             }
         }
@@ -380,119 +359,6 @@ impl Page {
             self.display_arrangement_scrollable.clone(),
             RelativeOffset { x: 0.5, y: 0.5 },
         )
-    }
-
-    /// View for the display arrangement section.
-    pub fn display_arrangement_view(&self) -> Element<pages::Message> {
-        let theme = cosmic::theme::active();
-
-        column()
-            .padding(cosmic::iced::Padding::from([
-                theme.cosmic().space_s(),
-                theme.cosmic().space_m(),
-            ]))
-            .spacing(theme.cosmic().space_xs())
-            .push(cosmic::widget::text::body(&*text::DISPLAY_ARRANGEMENT_DESC))
-            .push({
-                Arrangement::new(&self.list, &self.display_tabs)
-                    .on_select(|id| pages::Message::Displays(Message::Display(id)))
-                    .on_placement(|id, x, y| pages::Message::Displays(Message::Position(id, x, y)))
-                    .apply(cosmic::widget::scrollable)
-                    .id(self.display_arrangement_scrollable.clone())
-                    .width(Length::Shrink)
-                    .direction(Direction::Horizontal(Properties::new()))
-                    .apply(container)
-                    .center_x()
-                    .width(Length::Fill)
-            })
-            .apply(cosmic::widget::list::container)
-            .into()
-    }
-
-    /// View for the display configuration section.
-    pub fn display_view(&self) -> Element<pages::Message> {
-        let theme = cosmic::theme::active();
-
-        let Some(&active_id) = self.display_tabs.active_data::<OutputKey>() else {
-            return column().into();
-        };
-
-        let active_output = &self.list.outputs[active_id];
-
-        let display_options = active_output.enabled.then(|| {
-            list_column()
-                .add(cosmic::widget::settings::flex_item(
-                    &*text::DISPLAY_RESOLUTION,
-                    dropdown(
-                        &self.cache.resolutions,
-                        self.cache.resolution_selected,
-                        Message::Resolution,
-                    ),
-                ))
-                .add(cosmic::widget::settings::flex_item(
-                    &*text::DISPLAY_REFRESH_RATE,
-                    dropdown(
-                        &self.cache.refresh_rates,
-                        self.cache.refresh_rate_selected,
-                        Message::RefreshRate,
-                    ),
-                ))
-                .add(cosmic::widget::settings::flex_item(
-                    &*text::DISPLAY_SCALE,
-                    dropdown(
-                        &["50%", "75%", "100%", "125%", "150%", "175%", "200%"],
-                        self.cache.scale_selected,
-                        Message::Scale,
-                    ),
-                ))
-                .add(cosmic::widget::settings::flex_item(
-                    &*text::ORIENTATION,
-                    dropdown(
-                        &self.cache.orientations,
-                        self.cache.orientation_selected,
-                        |id| {
-                            Message::Orientation(match id {
-                                0 => Transform::Normal,
-                                1 => Transform::Rotate90,
-                                2 => Transform::Rotate180,
-                                _ => Transform::Rotate270,
-                            })
-                        },
-                    ),
-                ))
-        });
-
-        let mut content = column().spacing(theme.cosmic().space_m());
-
-        if self.list.outputs.len() > 1 {
-            let display_switcher = tab_bar::horizontal(&self.display_tabs)
-                .button_alignment(Alignment::Center)
-                .on_activate(Message::Display);
-
-            let display_enable = (self
-                // Don't allow disabling display if it's the only active
-                .list
-                .outputs
-                .values()
-                .filter(|display| display.enabled)
-                .count()
-                > 1
-                || !active_output.enabled)
-                .then(|| {
-                    list_column().add(cosmic::widget::settings::flex_item(
-                        &*text::DISPLAY_ENABLE,
-                        toggler(None, active_output.enabled, Message::DisplayToggle),
-                    ))
-                });
-
-            content = content.push(display_switcher).push_maybe(display_enable);
-        }
-
-        content
-            .push(cosmic::widget::text::heading(&*text::DISPLAY_OPTIONS))
-            .push_maybe(display_options)
-            .apply(Element::from)
-            .map(pages::Message::Displays)
     }
 
     /// Displays the night light context drawer.
@@ -519,7 +385,7 @@ impl Page {
             .map(|(key, output)| (&*output.name, key))
             .collect::<BTreeMap<_, _>>();
 
-        for (pos, (name, id)) in sorted_outputs.into_iter().enumerate() {
+        for (pos, (_name, id)) in sorted_outputs.into_iter().enumerate() {
             let Some(output) = self.list.outputs.get(id) else {
                 continue;
             };
@@ -822,6 +688,151 @@ impl Page {
             app::Message::from(Message::RandrResult(Arc::new(command.status().await)))
         })
     }
+}
+
+/// View for the display arrangement section.
+pub fn display_arrangement() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    _ = descriptions.insert(fl!("display", "arrangement"));
+    let display_arrangement_desc = descriptions.insert(fl!("display", "arrangement-desc"));
+
+    Section::default()
+        .title(fl!("display", "arrangement"))
+        .descriptions(descriptions)
+        // Show section when there is more than 1 display
+        .show_while::<Page>(|page| page.list.outputs.len() > 1)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+            let theme = cosmic::theme::active();
+
+            column()
+                .padding(cosmic::iced::Padding::from([
+                    theme.cosmic().space_s(),
+                    theme.cosmic().space_m(),
+                ]))
+                .spacing(theme.cosmic().space_xs())
+                .push(cosmic::widget::text::body(
+                    &descriptions[display_arrangement_desc],
+                ))
+                .push({
+                    Arrangement::new(&page.list, &page.display_tabs)
+                        .on_select(|id| pages::Message::Displays(Message::Display(id)))
+                        .on_placement(|id, x, y| {
+                            pages::Message::Displays(Message::Position(id, x, y))
+                        })
+                        .apply(cosmic::widget::scrollable)
+                        .id(page.display_arrangement_scrollable.clone())
+                        .width(Length::Shrink)
+                        .direction(Direction::Horizontal(Properties::new()))
+                        .apply(container)
+                        .center_x()
+                        .width(Length::Fill)
+                })
+                .apply(cosmic::widget::list::container)
+                .into()
+        })
+}
+
+/// View for the display configuration section.
+pub fn display_configuration() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let _display = descriptions.insert(fl!("display"));
+    let refresh_rate = descriptions.insert(fl!("display", "refresh-rate"));
+    let resolution = descriptions.insert(fl!("display", "resolution"));
+    let scale = descriptions.insert(fl!("display", "scale"));
+    let orientation = descriptions.insert(fl!("orientation"));
+    let enable_label = descriptions.insert(fl!("display", "enable"));
+    let options_label = descriptions.insert(fl!("display", "options"));
+
+    Section::default()
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+            let theme = cosmic::theme::active();
+
+            let Some(&active_id) = page.display_tabs.active_data::<OutputKey>() else {
+                return column().into();
+            };
+
+            let active_output = &page.list.outputs[active_id];
+
+            let display_options = active_output.enabled.then(|| {
+                list_column()
+                    .add(cosmic::widget::settings::flex_item(
+                        &descriptions[resolution],
+                        dropdown(
+                            &page.cache.resolutions,
+                            page.cache.resolution_selected,
+                            Message::Resolution,
+                        ),
+                    ))
+                    .add(cosmic::widget::settings::flex_item(
+                        &descriptions[refresh_rate],
+                        dropdown(
+                            &page.cache.refresh_rates,
+                            page.cache.refresh_rate_selected,
+                            Message::RefreshRate,
+                        ),
+                    ))
+                    .add(cosmic::widget::settings::flex_item(
+                        &descriptions[scale],
+                        dropdown(
+                            &["50%", "75%", "100%", "125%", "150%", "175%", "200%"],
+                            page.cache.scale_selected,
+                            Message::Scale,
+                        ),
+                    ))
+                    .add(cosmic::widget::settings::flex_item(
+                        &descriptions[orientation],
+                        dropdown(
+                            &page.cache.orientations,
+                            page.cache.orientation_selected,
+                            |id| {
+                                Message::Orientation(match id {
+                                    0 => Transform::Normal,
+                                    1 => Transform::Rotate90,
+                                    2 => Transform::Rotate180,
+                                    _ => Transform::Rotate270,
+                                })
+                            },
+                        ),
+                    ))
+            });
+
+            let mut content = column().spacing(theme.cosmic().space_m());
+
+            if page.list.outputs.len() > 1 {
+                let display_switcher = tab_bar::horizontal(&page.display_tabs)
+                    .button_alignment(Alignment::Center)
+                    .on_activate(Message::Display);
+
+                let display_enable = (page
+                    // Don't allow disabling display if it's the only active
+                    .list
+                    .outputs
+                    .values()
+                    .filter(|display| display.enabled)
+                    .count()
+                    > 1
+                    || !active_output.enabled)
+                    .then(|| {
+                        list_column().add(cosmic::widget::settings::flex_item(
+                            &descriptions[enable_label],
+                            toggler(None, active_output.enabled, Message::DisplayToggle),
+                        ))
+                    });
+
+                content = content.push(display_switcher).push_maybe(display_enable);
+            }
+
+            content
+                .push(cosmic::widget::text::heading(&descriptions[options_label]))
+                .push_maybe(display_options)
+                .apply(Element::from)
+                .map(pages::Message::Displays)
+        })
 }
 
 fn cache_rates(cached_rates: &mut Vec<String>, rates: &[u32]) {

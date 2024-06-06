@@ -28,6 +28,7 @@ use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use cosmic_settings_wallpaper as wallpaper;
 use ron::ser::PrettyConfig;
+use slab::Slab;
 use slotmap::SlotMap;
 use tokio::io::AsyncBufReadExt;
 
@@ -40,15 +41,15 @@ const ICON_PREV_ROW: usize = 3;
 const ICON_TRY_SIZES: [u16; 3] = [32, 48, 64];
 const ICON_THUMB_SIZE: u16 = 32;
 const ICON_NAME_TRUNC: usize = 20;
-type IconThemes = Vec<IconTheme>;
-type IconHandles = Vec<[icon::Handle; ICON_PREV_N]>;
+
+pub type IconThemes = Vec<IconTheme>;
+pub type IconHandles = Vec<[icon::Handle; ICON_PREV_N]>;
 
 crate::cache_dynamic_lazy! {
     static HEX: String = fl!("hex");
     static RGB: String = fl!("rgb");
     static RESET_TO_DEFAULT: String = fl!("reset-to-default");
     static ICON_THEME: String = fl!("icon-theme");
-    static ICON_THEME_DESC: String = fl!("icon-theme", "desc");
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -1134,34 +1135,26 @@ impl page::Page<crate::pages::Message> for Page {
 
 #[allow(clippy::too_many_lines)]
 pub fn mode_and_colors() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let auto_switch = descriptions.insert(fl!("auto-switch"));
+    let accent_color = descriptions.insert(fl!("accent-color"));
+    let app_bg = descriptions.insert(fl!("app-background"));
+    let container_bg = descriptions.insert(fl!("container-background"));
+    let container_bg_desc = descriptions.insert(fl!("container-background", "desc"));
+    let text_tint = descriptions.insert(fl!("text-tint"));
+    let text_tint_desc = descriptions.insert(fl!("text-tint", "desc"));
+    let control_tint = descriptions.insert(fl!("control-tint"));
+    let control_tint_desc = descriptions.insert(fl!("control-tint", "desc"));
+    let window_hint_toggle = descriptions.insert(fl!("window-hint-accent-toggle"));
+    let window_hint = descriptions.insert(fl!("window-hint-accent"));
+    let dark = descriptions.insert(fl!("dark"));
+    let light = descriptions.insert(fl!("light"));
+
     Section::default()
         .title(fl!("mode-and-colors"))
-        .descriptions(vec![
-            // 0
-            fl!("auto-switch").into(),
-            //1
-            fl!("accent-color").into(),
-            //2
-            fl!("app-background").into(),
-            //3
-            fl!("container-background").into(),
-            fl!("container-background", "desc").into(),
-            fl!("container-background", "desc-detail").into(),
-            fl!("container-background", "reset").into(),
-            // 7
-            fl!("text-tint").into(),
-            fl!("text-tint", "desc").into(),
-            // 9
-            fl!("control-tint").into(),
-            fl!("control-tint", "desc").into(),
-            // 11
-            fl!("window-hint-accent-toggle").into(),
-            fl!("window-hint-accent").into(),
-            // 13
-            fl!("dark").into(),
-            fl!("light").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let palette = &page.theme_builder.palette.as_ref();
             let cur_accent = page
@@ -1182,7 +1175,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .padding([8, 0])
                                 .selected(page.theme_mode.is_dark)
                                 .on_press(Message::DarkMode(true)),
-                                text(&*descriptions[13])
+                                text(&descriptions[dark])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1197,7 +1190,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .selected(!page.theme_mode.is_dark)
                                 .padding([8, 0])
                                 .on_press(Message::DarkMode(false)),
-                                text(&*descriptions[14])
+                                text(&descriptions[light])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1211,7 +1204,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                     .align_x(cosmic::iced_core::alignment::Horizontal::Center),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[0])
+                    settings::item::builder(&descriptions[auto_switch])
                         .description(
                             if !page.day_time && page.theme_mode.is_dark {
                                 &page.auto_switch_descs[0]
@@ -1228,7 +1221,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 )
                 .add(
                     cosmic::iced::widget::column![
-                        text(&*descriptions[1]),
+                        text(&descriptions[accent_color]),
                         scrollable(
                             cosmic::iced::widget::row![
                                 color_button(
@@ -1324,7 +1317,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                     .spacing(8),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[2]).control(
+                    settings::item::builder(&descriptions[app_bg]).control(
                         page.application_background
                             .picker_button(Message::ApplicationBackground, Some(24))
                             .width(Length::Fixed(48.0))
@@ -1332,8 +1325,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                     ),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[3])
-                        .description(&*descriptions[4])
+                    settings::item::builder(&descriptions[container_bg])
+                        .description(&descriptions[container_bg_desc])
                         .control(if page.container_background.get_applied_color().is_some() {
                             Element::from(
                                 page.container_background
@@ -1353,8 +1346,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         }),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[7])
-                        .description(&*descriptions[8])
+                    settings::item::builder(&descriptions[text_tint])
+                        .description(&descriptions[text_tint_desc])
                         .control(
                             page.interface_text
                                 .picker_button(Message::InterfaceText, Some(24))
@@ -1363,8 +1356,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[9])
-                        .description(&*descriptions[10])
+                    settings::item::builder(&descriptions[control_tint])
+                        .description(&descriptions[control_tint_desc])
                         .control(
                             page.control_component
                                 .picker_button(Message::ControlComponent, Some(24))
@@ -1373,12 +1366,12 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         ),
                 )
                 .add(
-                    settings::item::builder(&*descriptions[11])
+                    settings::item::builder(&descriptions[window_hint_toggle])
                         .toggler(page.no_custom_window_hint, Message::UseDefaultWindowHint),
                 );
             if !page.no_custom_window_hint {
                 section = section.add(
-                    settings::item::builder(&*descriptions[12]).control(
+                    settings::item::builder(&descriptions[window_hint]).control(
                         page.accent_window_hint
                             .picker_button(Message::AccentWindowHint, Some(24))
                             .width(Length::Fixed(48.0))
@@ -1394,14 +1387,16 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
 
 #[allow(clippy::too_many_lines)]
 pub fn style() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let round = descriptions.insert(fl!("style", "round"));
+    let slightly_round = descriptions.insert(fl!("style", "slightly-round"));
+    let square = descriptions.insert(fl!("style", "square"));
+
     Section::default()
         .title(fl!("style"))
-        .descriptions(vec![
-            fl!("style", "round").into(),
-            fl!("style", "slightly-round").into(),
-            fl!("style", "square").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
@@ -1425,7 +1420,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::Round)),
-                                text(&*descriptions[0])
+                                text(&descriptions[round])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1447,7 +1442,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::SlightlyRound)),
-                                text(&*descriptions[1])
+                                text(&descriptions[slightly_round])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1470,7 +1465,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::Square)),
-                                text(&*descriptions[2])
+                                text(&descriptions[square])
                             ]
                             .spacing(8)
                             .align_items(cosmic::iced_core::Alignment::Center)
@@ -1490,23 +1485,25 @@ pub fn style() -> Section<crate::pages::Message> {
 
 #[allow(clippy::too_many_lines)]
 pub fn window_management() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let active_hint = descriptions.insert(fl!("window-management", "active-hint"));
+    let gaps = descriptions.insert(fl!("window-management", "gaps"));
+
     Section::default()
         .title(fl!("window-management"))
-        .descriptions(vec![
-            fl!("window-management", "active-hint").into(),
-            fl!("window-management", "gaps").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
-                .add(settings::item::builder(&*descriptions[0]).control(
+                .add(settings::item::builder(&descriptions[active_hint]).control(
                     cosmic::widget::spin_button(
                         page.theme_builder.active_hint.to_string(),
                         Message::WindowHintSize,
                     ),
                 ))
-                .add(settings::item::builder(&*descriptions[1]).control(
+                .add(settings::item::builder(&descriptions[gaps]).control(
                     cosmic::widget::spin_button(
                         page.theme_builder.gaps.1.to_string(),
                         Message::GapSize,
@@ -1518,10 +1515,14 @@ pub fn window_management() -> Section<crate::pages::Message> {
 }
 
 pub fn experimental() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let experimental_label = descriptions.insert(fl!("experimental-settings"));
+
     Section::default()
-        .descriptions(vec![fl!("experimental-settings").into()])
-        .view::<Page>(|_binder, _page, section| {
-            let descriptions = &*section.descriptions;
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, _page, section| {
+            let descriptions = &section.descriptions;
 
             let control = row::with_children(vec![
                 horizontal_space(Length::Fill).into(),
@@ -1530,7 +1531,7 @@ pub fn experimental() -> Section<crate::pages::Message> {
 
             settings::view_section("")
                 .add(
-                    settings::item::builder(&*descriptions[0])
+                    settings::item::builder(&descriptions[experimental_label])
                         .control(control)
                         .apply(container)
                         .style(cosmic::theme::Container::List)
@@ -1545,12 +1546,16 @@ pub fn experimental() -> Section<crate::pages::Message> {
 
 #[allow(clippy::too_many_lines)]
 pub fn reset_button() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let reset_to_default = descriptions.insert(fl!("reset-to-default"));
+
     Section::default()
-        .descriptions(vec![fl!("reset-to-default").into()])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             if page.can_reset {
-                button::standard(&*descriptions[0])
+                button::standard(&descriptions[reset_to_default])
                     .on_press(Message::Reset)
                     .into()
             } else {

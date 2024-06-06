@@ -1,12 +1,12 @@
+mod backend;
+use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::PowerProfile;
+
 use cosmic::widget;
 use cosmic::{widget::settings, Apply};
 use cosmic_settings_page::{self as page, section, Section};
+use slab::Slab;
 use slotmap::SlotMap;
-
-use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
-
-mod backend;
 
 #[derive(Default)]
 pub struct Page;
@@ -48,10 +48,14 @@ impl Page {
 }
 
 fn profiles() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let _power_desc = descriptions.insert(fl!("power", "desc"));
+
     Section::default()
         .title(fl!("power-mode"))
-        .descriptions(vec![fl!("power", "desc").into()])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, _page, section| {
             let mut section = settings::view_section(&section.title);
 
             let runtime = tokio::runtime::Runtime::new().unwrap();

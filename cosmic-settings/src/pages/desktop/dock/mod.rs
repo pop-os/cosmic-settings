@@ -8,6 +8,7 @@ use cosmic::{
 };
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, section, Section};
+use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -142,16 +143,20 @@ impl Default for Page {
 }
 
 pub(crate) fn enable() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let dock = descriptions.insert(fl!("dock"));
+
     Section::default()
-        .descriptions(vec![fl!("dock").into()])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let Some(container_config) = page.inner.container_config.as_ref() else {
                 return Element::from(text(fl!("unknown")));
             };
             settings::view_section(&section.title)
                 .add(settings::flex_item(
-                    &*descriptions[0],
+                    &descriptions[dock],
                     toggler(
                         None,
                         container_config

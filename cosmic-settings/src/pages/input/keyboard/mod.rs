@@ -11,6 +11,7 @@ use cosmic::{
 use cosmic_comp_config::XkbConfig;
 use cosmic_settings_page::{self as page, section, Section};
 use itertools::Itertools;
+use slab::Slab;
 use slotmap::{DefaultKey, SlotMap};
 
 static COMPOSE_OPTIONS: &[(&str, &str)] = &[
@@ -568,7 +569,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
 fn input_sources() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("keyboard-sources"))
-        .view::<Page>(|_binder, page, section| {
+        .view::<Page>(move |_binder, page, section| {
             // TODO Need something more custom, with drag and drop
             let mut section = settings::view_section(&section.title);
 
@@ -596,22 +597,24 @@ fn input_sources() -> Section<crate::pages::Message> {
 }
 
 fn special_character_entry() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let alternate = descriptions.insert(fl!("keyboard-special-char", "alternate"));
+    let compose = descriptions.insert(fl!("keyboard-special-char", "compose"));
+
     Section::default()
         .title(fl!("keyboard-special-char"))
-        .descriptions(vec![
-            fl!("keyboard-special-char", "alternate").into(),
-            fl!("keyboard-special-char", "compose").into(),
-        ])
-        .view::<Page>(|_binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
                 .add(go_next_item(
-                    &*descriptions[0],
+                    &*descriptions[alternate],
                     Message::OpenSpecialCharacterContext(SpecialKey::AlternateCharacters),
                 ))
                 .add(go_next_item(
-                    &*descriptions[1],
+                    &*descriptions[compose],
                     Message::OpenSpecialCharacterContext(SpecialKey::Compose),
                 ))
                 .apply(cosmic::Element::from)
@@ -620,10 +623,14 @@ fn special_character_entry() -> Section<crate::pages::Message> {
 }
 
 fn keyboard_shortcuts() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let shortcuts_desc = descriptions.insert(fl!("keyboard-shortcuts", "desc"));
+
     Section::default()
         .title(fl!("keyboard-shortcuts"))
-        .descriptions(vec![fl!("keyboard-shortcuts", "desc").into()])
-        .view::<Page>(|binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _page, section| {
             let descriptions = &section.descriptions;
 
             let mut section = settings::view_section(&section.title);
@@ -633,7 +640,7 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
                 .find(|(_, v)| v.id == "keyboard-shortcuts")
             {
                 section = section.add(go_next_item(
-                    &*descriptions[0],
+                    &descriptions[shortcuts_desc],
                     crate::pages::Message::Page(shortcuts_entity),
                 ));
             }
@@ -642,22 +649,24 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
 }
 
 fn keyboard_typing_assist() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let repeat_delay = descriptions.insert(fl!("keyboard-typing-assist", "repeat-delay"));
+    let repeat_rate = descriptions.insert(fl!("keyboard-typing-assist", "repeat-rate"));
+    let short = descriptions.insert(fl!("short"));
+    let long = descriptions.insert(fl!("long"));
+    let slow = descriptions.insert(fl!("slow"));
+    let fast = descriptions.insert(fl!("fast"));
+
     Section::default()
         .title(fl!("keyboard-typing-assist"))
-        .descriptions(vec![
-            fl!("keyboard-typing-assist", "repeat-delay").into(),
-            fl!("keyboard-typing-assist", "repeat-rate").into(),
-            fl!("short").into(),
-            fl!("long").into(),
-            fl!("slow").into(),
-            fl!("fast").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
-                .add(settings::flex_item(&*descriptions[0], {
+                .add(settings::flex_item(&descriptions[repeat_delay], {
                     // Delay
                     let delay_slider = cosmic::widget::slider(
                         KB_REPEAT_DELAY_MIN..=KB_REPEAT_DELAY_MAX,
@@ -671,11 +680,11 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                     row::with_capacity(3)
                         .align_items(iced::Alignment::Center)
                         .spacing(theme.cosmic().space_s())
-                        .push(&*descriptions[2])
+                        .push(widget::text::body(&descriptions[short]))
                         .push(delay_slider)
-                        .push(&*descriptions[3])
+                        .push(widget::text::body(&descriptions[long]))
                 }))
-                .add(settings::flex_item(&*descriptions[1], {
+                .add(settings::flex_item(&descriptions[repeat_rate], {
                     // Repeat rate
                     let rate_slider = cosmic::widget::slider(
                         KB_REPEAT_RATE_MIN..=KB_REPEAT_RATE_MAX,
@@ -689,9 +698,9 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                     row::with_capacity(3)
                         .align_items(iced::Alignment::Center)
                         .spacing(theme.cosmic().space_s())
-                        .push(&*descriptions[4])
+                        .push(widget::text::body(&descriptions[slow]))
                         .push(rate_slider)
-                        .push(&*descriptions[5])
+                        .push(widget::text::body(&descriptions[fast]))
                 }))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Keyboard)

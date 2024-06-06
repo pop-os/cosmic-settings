@@ -1,12 +1,12 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::iced::Length;
 use cosmic_settings_page::{self as page, section, Section};
 
-use cosmic::widget::{self, editable_input, list_column, settings, text};
+use cosmic::widget::{editable_input, list_column, settings, text};
 use cosmic::{command, Apply, Command};
 use cosmic_settings_system::about::Info;
+use slab::Slab;
 use slotmap::SlotMap;
 
 #[derive(Clone, Debug)]
@@ -105,12 +105,14 @@ impl Page {
 }
 
 fn device() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let device = descriptions.insert(fl!("about-device"));
+    let device_desc = descriptions.insert(fl!("about-device", "desc"));
+
     Section::default()
-        .descriptions(vec![
-            fl!("about-device").into(),
-            fl!("about-device", "desc").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
 
             let hostname_input = editable_input(
@@ -122,8 +124,8 @@ fn device() -> Section<crate::pages::Message> {
             .on_input(Message::HostnameInput)
             .on_submit(Message::HostnameSubmit);
 
-            let device_name = settings::item::builder(&*desc[0])
-                .description(&*desc[1])
+            let device_name = settings::item::builder(&*desc[device])
+                .description(&*desc[device_desc])
                 .flex_control(hostname_input);
 
             list_column()
@@ -134,33 +136,38 @@ fn device() -> Section<crate::pages::Message> {
 }
 
 fn hardware() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let model = descriptions.insert(fl!("about-hardware", "model"));
+    let memory = descriptions.insert(fl!("about-hardware", "memory"));
+    let processor = descriptions.insert(fl!("about-hardware", "processor"));
+    let graphics = descriptions.insert(fl!("about-hardware", "graphics"));
+    let disk_capacity = descriptions.insert(fl!("about-hardware", "disk-capacity"));
+
     Section::default()
         .title(fl!("about-hardware"))
-        .descriptions(vec![
-            fl!("about-hardware", "model").into(),
-            fl!("about-hardware", "memory").into(),
-            fl!("about-hardware", "processor").into(),
-            fl!("about-hardware", "graphics").into(),
-            fl!("about-hardware", "disk-capacity").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
 
             let mut sections = settings::view_section(&section.title)
                 .add(settings::flex_item(
-                    &*desc[0],
+                    &*desc[model],
                     text(&page.info.hardware_model),
                 ))
-                .add(settings::flex_item(&*desc[1], text(&page.info.memory)))
-                .add(settings::flex_item(&*desc[2], text(&page.info.processor)));
+                .add(settings::flex_item(&*desc[memory], text(&page.info.memory)))
+                .add(settings::flex_item(
+                    &*desc[processor],
+                    text(&page.info.processor),
+                ));
 
             for card in &page.info.graphics {
-                sections = sections.add(settings::flex_item(&*desc[3], text(card.as_str())));
+                sections = sections.add(settings::flex_item(&*desc[graphics], text(card.as_str())));
             }
 
             sections
                 .add(settings::flex_item(
-                    &*desc[4],
+                    &*desc[disk_capacity],
                     text(&page.info.disk_capacity),
                 ))
                 .into()
@@ -168,31 +175,33 @@ fn hardware() -> Section<crate::pages::Message> {
 }
 
 fn os() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let os = descriptions.insert(fl!("about-os", "os"));
+    let os_arch = descriptions.insert(fl!("about-os", "os-architecture"));
+    let desktop = descriptions.insert(fl!("about-os", "desktop-environment"));
+    let windowing_system = descriptions.insert(fl!("about-os", "windowing-system"));
+
     Section::default()
         .title(fl!("about-os"))
-        .descriptions(vec![
-            fl!("about-os", "os").into(),
-            fl!("about-os", "os-architecture").into(),
-            fl!("about-os", "desktop-environment").into(),
-            fl!("about-os", "windowing-system").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
             settings::view_section(&section.title)
                 .add(settings::flex_item(
-                    &*desc[0],
+                    &*desc[os],
                     text(&page.info.operating_system),
                 ))
                 .add(settings::flex_item(
-                    &*desc[1],
+                    &*desc[os_arch],
                     text(&page.info.os_architecture),
                 ))
                 .add(settings::flex_item(
-                    &*desc[2],
+                    &*desc[desktop],
                     text(&page.info.desktop_environment),
                 ))
                 .add(settings::flex_item(
-                    &*desc[3],
+                    &*desc[windowing_system],
                     text(&page.info.windowing_system),
                 ))
                 .into()
@@ -204,7 +213,7 @@ fn os() -> Section<crate::pages::Message> {
 //     Section::default()
 //         .title(fl!("about-related"))
 //         .descriptions(vec![fl!("about-related", "support").into()])
-//         .view::<Page>(|_binder, _page, section| {
+//         .view::<Page>(move |_binder, _page, section| {
 //             settings::view_section(&section.title)
 //                 .add(settings::item(&*section.descriptions[0], text("TODO")))
 //                 .into()
