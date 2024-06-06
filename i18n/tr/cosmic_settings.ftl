@@ -24,11 +24,6 @@ notifications = Bildirimler
 desktop-panel-options = Masaüstü ve Panel
     .desc = Logo Tuşu eylemi, hızlı köşeler, pencere kontrol seçenekleri.
 
-super-key-action = Logo Tuşu Eylemi
-    .launcher = Başlatıcı
-    .workspaces = Çalışma Alanları
-    .applications = Uygulamalar
-
 hot-corner = Hızlı Köşe
     .top-left-corner = Çalışma Alanları için sol-üst hızlı köşeyi etkinleştir
 

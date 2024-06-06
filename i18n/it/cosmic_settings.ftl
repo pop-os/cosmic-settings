@@ -125,11 +125,6 @@ dock = Barra delle applicazioni
 hot-corner = Bordi reattivi
     .top-left-corner = Abilita bordo reattivo in alto a sinistra per gli spazi di lavoro
 
-super-key-action = Azione tasto Super
-    .launcher = Launcher
-    .workspaces = Spazi di lavoro
-    .applications = Applicazioni
-
 top-panel = Pannello superiore
     .workspaces = Pulsante "mostra spazi di lavoro"
     .applications = Pulsante "mostra applicazioni"

@@ -1,3 +1,5 @@
+pub mod shortcuts;
+
 use std::cmp;
 
 use cosmic::{
@@ -404,11 +406,11 @@ impl Page {
                         }
                     }
 
-                    SourceContext::Settings(id) => {
+                    SourceContext::Settings(_id) => {
                         eprintln!("settings not implemented");
                     }
 
-                    SourceContext::ViewLayout(id) => {
+                    SourceContext::ViewLayout(_id) => {
                         eprintln!("view layout not implemented");
                     }
                 }

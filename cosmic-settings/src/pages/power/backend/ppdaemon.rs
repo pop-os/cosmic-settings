@@ -1,4 +1,4 @@
-use zbus::{proxy, Connection};
+use zbus::proxy;
 
 #[proxy(
     interface = "org.freedesktop.UPower.PowerProfiles",

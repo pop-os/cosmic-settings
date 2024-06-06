@@ -134,11 +134,6 @@ dock = ドック
 hot-corner = ホットコーナー
     .top-left-corner = ワークスペースための左上のホットコーナーを有効にする
 
-super-key-action = スーパーキーの行動
-    .launcher = ランチャー
-    .workspaces = ワークスペース
-    .applications = アプリケーション
-
 top-panel = トップパネル
     .workspaces = ワークスペースボタンを表示
     .applications = アプリケーションボタンを表示

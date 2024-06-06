@@ -136,11 +136,6 @@ dock = Dock
 hot-corner = Esquina Activa
     .top-left-corner = Habilitar esquina superior izquierda para Espacios de Trabajo
 
-super-key-action = Acción de la tecla Super
-    .launcher = Lanzador
-    .workspaces = Espacios de Trabajo
-    .applications = Aplicaciones
-
 top-panel = Panel Superior
     .workspaces = Mostrar botón de Espacios de Trabajo
     .applications = Mostrar botón de Aplicaciones

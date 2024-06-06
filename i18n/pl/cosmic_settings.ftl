@@ -141,11 +141,6 @@ dock = Dok
 hot-corner = Narożniki Funkcyjne
     .top-left-corner = Włącz Obszary Robocze w lewym górnym narożniku funkcyjnym.
 
-super-key-action = Akcje Klawisza Super
-    .launcher = Program Startowy
-    .workspaces = Obszary Robocze
-    .applications = Aplikacje
-
 top-panel = Górny Panel
     .workspaces = Pokaż Przycisk Obszarów Roboczych
     .applications = Pokaż Przycisk Aplikacji

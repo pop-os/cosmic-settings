@@ -211,7 +211,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_enter(
         &mut self,
         _page: page::Entity,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Command<crate::pages::Message> {
         let current_folder = self.config.current_folder().to_owned();
 

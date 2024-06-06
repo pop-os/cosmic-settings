@@ -136,11 +136,6 @@ dock = Док
 hot-corner = Активные углы
     .top-left-corner = Открывать рабочие места при наведении в левый верхний угол
 
-super-key-action = Действие кнопки Super
-    .launcher = Панель запуска
-    .workspaces = Рабочие места
-    .applications = Приложения
-
 top-panel = Верхняя панель
     .workspaces = Отображать кнопку «Рабочие места»
     .applications = Отображать кнопку «Приложения»

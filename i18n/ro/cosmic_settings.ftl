@@ -136,11 +136,6 @@ dock = Dock
 hot-corner = Marginea ecranului
     .top-left-corner = Activați marginea din stânga sus pentru Spații de lucru
 
-super-key-action = Acțiunea butonului Super
-    .launcher = Lansator
-    .workspaces = Spații de lucru
-    .applications = Aplicații
-
 top-panel = Panoul de sus
     .workspaces = Afișați butonul pentru Spații de lucru
     .applications = Afișați butonul pentru aplicații

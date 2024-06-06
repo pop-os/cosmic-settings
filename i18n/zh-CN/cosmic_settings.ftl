@@ -136,11 +136,6 @@ dock = 程序坞
 hot-corner = 热区
     .top-left-corner = 启用左上角热区来查看工作区概览
 
-super-key-action = Super 键行为
-    .launcher = 启动器
-    .workspaces = 工作区概览
-    .applications = 应用程序库
-
 top-panel = 顶部面板
     .workspaces = 显示工作区概览按钮
     .applications = 显示应用程序库按钮

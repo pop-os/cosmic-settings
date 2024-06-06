@@ -1,4 +1,5 @@
-use zbus::{proxy, Connection};
+use zbus::proxy;
+
 #[proxy(
     interface = "com.system76.PowerDaemon",
     default_path = "/com/system76/PowerDaemon",
