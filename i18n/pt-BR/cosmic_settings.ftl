@@ -302,7 +302,7 @@ sound-input = Entrada
     .device = Dispositivo de entrada
     .level = Nível de entrada
 
-sound-alerts = Aletras
+sound-alerts = Alertas
     .volume = Volume dos alertas
     .sound = Som dos alertas
 
