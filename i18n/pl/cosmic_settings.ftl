@@ -362,7 +362,7 @@ acceleration-desc = Automatycznie dostosuj dokładność śledzenia do prędkoś
 
 disable-while-typing = Wyłącz podczas pisania
 
-input = Urządzenia do Wprowadzania Danych
+input-devices = Urządzenia do Wprowadzania Danych
     .desc = Urządzenia do Wprowadzania Danych
     
 primary-button = Główny przycisk
