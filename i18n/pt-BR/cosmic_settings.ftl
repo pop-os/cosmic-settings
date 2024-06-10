@@ -394,7 +394,7 @@ keyboard-typing-assist = Digitação
     .repeat-delay = Taxa de atraso
 
 added = Adicionado
-type-to-search = TEscreva para procurar...
+type-to-search = Digite para pesquisar...
 
 ## Input: Keyboard: Shortcuts
 
