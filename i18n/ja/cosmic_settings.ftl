@@ -33,7 +33,10 @@ window-hint-accent = アクティブなウィンドウのハイライトカラ�
 window-hint-accent-toggle = テーマのアクセントカラーをアクティブなウィンドウのヒントとして使う
 
 auto-switch = 自動的にライトモードからダークモードに切り替える
-    .desc = 日の出になるとライトモードに切り替えます。
+    .sunrise = 日の出にライトモードに切り替えます
+    .sunset = 日の入りにライトモードに切り替えます
+    .next-sunrise = 次の日の出にライトモードに切り替えます
+    .next-sunset = 次の日の入りにライトモードに切り替えます
 
 container-background = コンテナー背景
     .desc-detail = サイドバー、ダイアログ、類似ウィジェットで使用されます。 規定では、アプリケーションまたはウィンドウの背景から自動的に選択されています。
@@ -45,6 +48,14 @@ control-tint = コントロールコンポーネントティント
 
 frosted = システムインターフェイスのすりガラス効果
     .desc = パネル、ドック、アプレット、ランチャー、アプリケーションライブラリの背景をぼかします。
+
+experimental-settings = 試験的な設定
+
+enable-export = このテーマをGNOMEアプリケーションに適用
+    .desc = あるツールキットは自動的な切り替えをサポートしません。 テーマを切り替えると、非COSMICのアプリケーションは再起動が必要の可能性があります。
+
+icon-theme = アイコンテーマ
+    .desc = アプリケーションに他のテーマを適用します。
 
 text-tint = インターフェイステキストヒント
     .desc = 色々な表面に十分なコントラストがあるインターフェイスのテキストの色ために使用されます。
@@ -260,6 +271,11 @@ time-zone = 時間帯
 time-format = 日付と時刻
     .twenty-four = 24時間制
     .first = 週の初めの日
+    .show-date = トップパネルに日付を表示
+    .friday = 金
+    .saturday = 土
+    .sunday = 日
+    .monday = 月
 
 time-region = 地方と言語
     .desc = お住む地方によって日付、時刻、数値の形式を変える
@@ -314,7 +330,7 @@ about-os = オペレーティングシステム
     .windowing-system = ウィンドウシステム
 
 about-related = 関係がある設定
-    .support = サポート
+    .support = サポートを受ける
 
 ## System: Firmware
 
@@ -348,6 +364,10 @@ scrolling = スクロール
 
 ## Input: Keyboard
 
+slow = 遅い
+fast = 速い
+short = 短い
+long = 長い
 keyboard = キーボード
     .desc = キーボードの入力
 
@@ -358,10 +378,18 @@ keyboard-sources = 入力ソース
     .settings = 設定
     .view-layout = キーボードレイアウトを表示
     .remove = 削除
+    .add = 入力ソースを追加
 
 keyboard-special-char = 特殊文字の入力
     .alternate = 代替文字キー
     .compose = コムポーズキー
+
+keyboard-typing-assist = タイピング
+    .repeat-rate = リピートレート
+    .repeat-delay = リピート遅延
+
+added = 追加された
+type-to-search = 入力して検索...
 
 ## Input: Keyboard: Shortcuts
 
@@ -406,3 +434,17 @@ switch-to-next-workspace = 次のワークスペースに切り替える
 switch-to-prev-workspace = 前のワークスペースに切り替える
 open-application-library = アプリケーションライブラリを開く
 open-workspaces-view = ワークスペースのか概要を開く
+
+## Power 
+
+power = 電源
+  .desc = 電源設定を管理 
+
+power-mode = 電源モード
+  .performance = ハイパフォーマンス
+  .balanced = バランス
+  .battery = 長いバッテリー寿命
+  .performance-desc = 一番高い性能と電力消費量。
+  .balanced-desc = 静かな性能と程度な電力消費量。
+  .battery-desc = 低い電力消費量と静粛な性能。
+  .nobackend = バックエンドは見つかれませんでした。 system76-powerまたはpower-profiles-daemonをインストールして下さい。
