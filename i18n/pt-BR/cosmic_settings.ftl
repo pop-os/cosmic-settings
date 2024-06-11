@@ -14,7 +14,7 @@ appearance = Aparência
     .desc = Cores de destaque e temas COSMIC.
 
 accent-color = Cor de destaque
-app-background = Fundo da aplicativo ou da janela
+app-background = Fundo de aplicativo ou da janela
 auto = Automático
 close = Fechar
 color-picker = Seletor de cores
