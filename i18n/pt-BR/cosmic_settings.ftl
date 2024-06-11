@@ -14,7 +14,7 @@ appearance = Aparência
     .desc = Cores de destaque e temas COSMIC.
 
 accent-color = Cor de destaque
-app-background = Fundo da aplicação ou da janela
+app-background = Fundo da aplicativo ou da janela
 auto = Automático
 close = Fechar
 color-picker = Seletor de cores
@@ -39,7 +39,7 @@ auto-switch = Alternar automaticamente do modo Claro para o modo Escuro
     .next-sunset = Altera para o modo Claro no próximo pôr do sol
 
 container-background = Fundo do contêiner
-    .desc-detail = A cor de fundo do contêiner é usada para a barra lateral de navegação, gaveta lateral, nas caixas de diálogos e em widgets similares. Por padrão, ela é automaticamente derivada do fundo da aplicação ou da janela. 
+    .desc-detail = A cor de fundo do contêiner é usada para a barra lateral de navegação, gaveta lateral, nas caixas de diálogos e em widgets similares. Por padrão, ela é automaticamente derivada do fundo do aplicativo ou da janela. 
     .reset = Restaurar para automático
     .desc = A cor primária do contêiner é usada para a barra lateral de navegação, gaveta lateral, caixas de diálogos, e widgets similares.
 
@@ -121,14 +121,14 @@ scheduling = Agendamento
 ## Desktop: Notifications
 
 notifications = Notificações
-    .desc = Não perturbe, notificações da tela de bloqueio, e configurações por aplicação.
+    .desc = Não perturbe, notificações da tela de bloqueio e configurações por aplicativo.
 
 ## Desktop: Options
 
 desktop-panel-options = Área de Trabalho e Painel
     .desc = Ações da tecla Super, cantos ativos, opções de controle de janela.
 
-desktop-panels-and-applets = Painés e Aplicativos de Área de Trabalho
+desktop-panels-and-applets = Painéis e Aplicativos de Área de Trabalho
 
 dock = Dock
     .desc = Painel com aplicativos fixados.
@@ -139,11 +139,11 @@ hot-corner = Canto ativo
 super-key-action = Ações da tecla Super
     .launcher = Inicializador
     .workspaces = Áreas de Trabalho
-    .applications = Aplicações
+    .applications = Aplicativos
 
 top-panel = Painel superior
     .workspaces = Mostrar Botão de Áreas de Trabalho
-    .applications = Mostrar Botão de Aplicações
+    .applications = Mostrar Botão de Aplicativos
 
 window-controls = Controles da Janela
     .minimize = Mostrar Botão de Minimizar
@@ -306,8 +306,8 @@ sound-alerts = Alertas
     .volume = Volume dos alertas
     .sound = Som dos alertas
 
-sound-applications = Aplicações
-    .desc = Volumes e definições das aplicações
+sound-applications = Aplicativos
+    .desc = Volumes e definições dos aplicativos
 
 ## System
 
