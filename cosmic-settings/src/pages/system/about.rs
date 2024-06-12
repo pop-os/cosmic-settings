@@ -150,7 +150,7 @@ fn hardware() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
 
-            let mut sections = settings::view_section(&section.title)
+            let sections = settings::view_section(&section.title)
                 .add(settings::flex_item(
                     &*desc[model],
                     text(&page.info.hardware_model),
@@ -161,11 +161,12 @@ fn hardware() -> Section<crate::pages::Message> {
                     text(&page.info.processor),
                 ));
 
-            for card in &page.info.graphics {
-                sections = sections.add(settings::flex_item(&*desc[graphics], text(card.as_str())));
-            }
-
-            sections
+            page.info
+                .graphics
+                .iter()
+                .fold(sections, |sections, card| {
+                    sections.add(settings::flex_item(&*desc[graphics], text(card.as_str())))
+                })
                 .add(settings::flex_item(
                     &*desc[disk_capacity],
                     text(&page.info.disk_capacity),

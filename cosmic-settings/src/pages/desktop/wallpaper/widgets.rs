@@ -86,32 +86,29 @@ pub fn color_image<'a, M: 'a>(
 }
 
 /// Color selection list
+///
+/// Begin with removable custom colors, and chain with non-removable default colors.
 #[must_use]
 pub fn color_select_options(
     context: &super::Context,
     selected: Option<&wallpaper::Color>,
 ) -> Element<'static, Message> {
-    let mut vec = Vec::with_capacity(wallpaper::DEFAULT_COLORS.len());
-
-    // Place removable custom colors first
-    for color in context.custom_colors.iter().rev() {
-        vec.push(color_button(
-            color.clone(),
-            true,
-            selected.map_or(false, |selection| selection == color),
-        ));
-    }
-
-    // Then non-removable default colors
-    for color in wallpaper::DEFAULT_COLORS {
-        vec.push(color_button(
-            color.clone(),
-            false,
-            selected.map_or(false, |selection| selection == color),
-        ));
-    }
-
-    flex_select_row(vec)
+    flex_select_row(
+        context
+            .custom_colors
+            .iter()
+            .rev()
+            .map(|color| (color, true))
+            .chain(wallpaper::DEFAULT_COLORS.iter().map(|color| (color, false)))
+            .map(|(color, removable)| {
+                color_button(
+                    color.clone(),
+                    removable,
+                    selected.map_or(false, |selection| selection == color),
+                )
+            })
+            .collect::<Vec<_>>(),
+    )
 }
 
 /// Background selection list

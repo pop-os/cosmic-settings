@@ -26,6 +26,7 @@ pub enum Message {
     DockApplet(desktop::dock::applets::Message),
     External { id: String, message: Vec<u8> },
     Keyboard(input::keyboard::Message),
+    KeyboardShortcuts(input::keyboard::shortcuts::Message),
     Input(input::Message),
     Page(Entity),
     Panel(desktop::panel::Message),
