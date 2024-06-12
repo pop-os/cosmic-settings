@@ -314,7 +314,7 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::DesktopWallpaper(message) => {
                     if let Some(page) = self.pages.page_mut::<desktop::wallpaper::Page>() {
-                        return page.update(message).map(cosmic::app::Message::App);
+                        return page.update(message).map(Into::into);
                     }
                 }
 
@@ -324,19 +324,19 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::Displays(message) => {
                     if let Some(page) = self.pages.page_mut::<display::Page>() {
-                        return page.update(message).map(cosmic::app::Message::App);
+                        return page.update(message).map(Into::into);
                     }
                 }
 
                 crate::pages::Message::Keyboard(message) => {
                     if let Some(page) = self.pages.page_mut::<input::keyboard::Page>() {
-                        return page.update(message).map(cosmic::app::Message::App);
+                        return page.update(message).map(Into::into);
                     }
                 }
 
                 crate::pages::Message::Input(message) => {
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
-                        return page.update(message).map(cosmic::app::Message::App);
+                        return page.update(message).map(Into::into);
                     }
                 }
 
@@ -354,7 +354,7 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::PanelApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
-                        return page.update(message).map(cosmic::app::Message::App);
+                        return page.update(message).map(Into::into);
                     }
                 }
 
@@ -364,18 +364,18 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::DockApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<dock::applets::Page>() {
-                        return page.update(message).map(cosmic::app::Message::App);
+                        return page.update(message).map(Into::into);
                     }
                 }
 
                 crate::pages::Message::Appearance(message) => {
                     if let Some(page) = self.pages.page_mut::<appearance::Page>() {
-                        return page.update(message).map(cosmic::app::Message::App);
+                        return page.update(message).map(Into::into);
                     }
                 }
 
                 crate::pages::Message::Power(message) => {
-                    page::update!(self.pages, message, power::Page)
+                    page::update!(self.pages, message, power::Page);
                 }
             },
 
@@ -389,7 +389,7 @@ impl cosmic::Application for SettingsApp {
                 if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                     return page
                         .update(applets_inner::Message::PanelConfig(config))
-                        .map(cosmic::app::Message::App);
+                        .map(Into::into);
                 }
             }
 
@@ -421,7 +421,7 @@ impl cosmic::Application for SettingsApp {
                 if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                     return page
                         .update(applets_inner::Message::Applets(info_list))
-                        .map(cosmic::app::Message::App);
+                        .map(Into::into);
                 }
             }
 
@@ -554,9 +554,7 @@ impl SettingsApp {
         let current_page = self.active_page;
         self.active_page = page;
 
-        let mut leave_command = iced::Command::none()
-            .map(Message::PageMessage)
-            .map(cosmic::app::Message::App);
+        let mut leave_command = iced::Command::none();
 
         if current_page != page {
             leave_command = self
@@ -564,7 +562,7 @@ impl SettingsApp {
                 .on_leave(current_page)
                 .unwrap_or(iced::Command::none())
                 .map(Message::PageMessage)
-                .map(cosmic::app::Message::App);
+                .map(Into::into);
             self.config.active_page = Box::from(&*self.pages.info[page].id);
             self.config
                 .set_active_page(Box::from(&*self.pages.info[page].id));
@@ -583,13 +581,12 @@ impl SettingsApp {
             .pages
             .on_enter(page, sender)
             .map(Message::PageMessage)
-            .map(cosmic::app::Message::App);
+            .map(Into::into);
 
         Command::batch(vec![
             leave_command,
             page_command,
-            cosmic::command::future(async { Message::SetWindowTitle })
-                .map(cosmic::app::Message::App),
+            cosmic::command::future(async { Message::SetWindowTitle }),
         ])
     }
 
@@ -681,7 +678,7 @@ impl SettingsApp {
             }
         }
 
-        settings::view_column(column_widgets).into()
+        settings::view_column(column_widgets).padding(0).into()
     }
 
     fn search_changed(&mut self, phrase: String) {
@@ -746,28 +743,37 @@ impl SettingsApp {
             }
         }
 
-        settings::view_column(sections).into()
+        settings::view_column(sections).padding(0).into()
     }
 
     /// Displays the sub-pages view of a page.
     fn sub_page_view(&self, sub_pages: &[page::Entity]) -> cosmic::Element<Message> {
         let theme = cosmic::theme::active();
-        let mut page_list =
-            column::with_capacity(sub_pages.len()).spacing(theme.cosmic().space_s());
 
-        for entity in sub_pages.iter().copied() {
-            let sub_page = &self.pages.info[entity];
-            page_list = page_list.push(crate::widget::page_list_item(
-                sub_page.title.as_str(),
-                sub_page.description.as_str(),
-                &sub_page.icon_name,
-                entity,
-            ));
-        }
+        let page_list = sub_pages
+            .iter()
+            .copied()
+            .fold(
+                column::with_capacity(sub_pages.len()),
+                |page_list, entity| {
+                    let sub_page = &self.pages.info[entity];
+
+                    page_list.push(crate::widget::page_list_item(
+                        sub_page.title.as_str(),
+                        sub_page.description.as_str(),
+                        &sub_page.icon_name,
+                        entity,
+                    ))
+                },
+            )
+            .spacing(theme.cosmic().space_s())
+            .padding(0)
+            .apply(cosmic::Element::from)
+            .map(Message::Page);
 
         column::with_capacity(2)
             .push(page_title(&self.pages.info[self.active_page]))
-            .push(Element::from(page_list).map(Message::Page))
+            .push(page_list)
             .spacing(theme.cosmic().space_m())
             .padding(0)
             .into()

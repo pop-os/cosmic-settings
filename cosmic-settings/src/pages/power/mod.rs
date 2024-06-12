@@ -67,27 +67,24 @@ fn profiles() -> Section<crate::pages::Message> {
 
                 let current_profile = runtime.block_on(b.get_current_power_profile());
 
-                let mut widgets = Vec::new();
+                section = profiles
+                    .into_iter()
+                    .map(|profile| {
+                        let selected = if current_profile == profile {
+                            Some(true)
+                        } else {
+                            None
+                        };
 
-                for profile in profiles {
-                    let selected = if current_profile == profile {
-                        Some(true)
-                    } else {
-                        None
-                    };
+                        let widget = widget::Radio::new("", true, selected, |_| {
+                            Message::PowerProfileChange(profile.clone())
+                        });
 
-                    let widget = widget::Radio::new("", true, selected, |_| {
-                        Message::PowerProfileChange(profile.clone())
-                    });
-                    let item = settings::item::builder(profile.title())
-                        .description(profile.description())
-                        .control(widget);
-                    widgets.push(item);
-                }
-
-                for item in widgets {
-                    section = section.add(item);
-                }
+                        settings::item::builder(profile.title())
+                            .description(profile.description())
+                            .control(widget)
+                    })
+                    .fold(section, settings::Section::add);
             } else {
                 let item = widget::text::body(fl!("power-mode", "nobackend"));
                 section = section.add(item);

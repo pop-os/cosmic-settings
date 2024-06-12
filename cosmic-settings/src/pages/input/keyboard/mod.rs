@@ -5,7 +5,7 @@ use cosmic::{
     iced::{self, Length},
     iced_core::Border,
     iced_style, theme,
-    widget::{self, button, container, icon, radio, row, settings},
+    widget::{self, button, container, icon, radio, row, settings, ListColumn},
     Apply, Command, Element,
 };
 use cosmic_comp_config::XkbConfig;
@@ -219,8 +219,6 @@ fn input_source(
 
     settings::flex_item(description, popover_button(id, expanded)).into()
 }
-
-pub mod shortcuts;
 
 fn special_char_radio_row<'a>(
     desc: &'a str,
@@ -526,11 +524,13 @@ impl Page {
 
         // TODO description, layout default
 
-        let mut list = cosmic::widget::list_column();
-        list = list.add(special_char_radio_row("None", None, current));
-        for (desc, id) in options {
-            list = list.add(special_char_radio_row(desc, Some(id), current));
-        }
+        let mut list =
+            cosmic::widget::list_column().add(special_char_radio_row("None", None, current));
+
+        list = options
+            .iter()
+            .map(|(desc, id)| special_char_radio_row(desc, Some(id), current))
+            .fold(list, ListColumn::add);
 
         cosmic::widget::container(list).padding(24).into()
     }
