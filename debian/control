@@ -16,7 +16,6 @@ Build-Depends:
     mold,
     pkg-config,
     rust-all,
-Recommends: adw-gtk3
 Standards-Version: 4.6.2
 Homepage: https://github.com/pop-os/cosmic-settings
 
@@ -30,5 +29,6 @@ Depends:
     gettext,
     iso-codes,
     xkb-data,
+Recommends: adw-gtk3
 Description: Settings application for the COSMIC desktop environment
  Settings application for the COSMIC desktop environment
