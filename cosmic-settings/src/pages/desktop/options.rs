@@ -205,7 +205,7 @@ fn super_key_active_config() -> Option<usize> {
     let super_binding = Binding::new(shortcuts::Modifiers::new().logo(), None);
 
     let config = shortcuts::context().ok()?;
-    let shortcuts = config.get::<Shortcuts>("shortcuts").ok()?;
+    let shortcuts = shortcuts::shortcuts(&config);
 
     let new_id = shortcuts
         .iter()
@@ -225,7 +225,7 @@ fn super_key_set(action: shortcuts::action::System) {
         return;
     };
 
-    let Ok(mut shortcuts) = config.get::<Shortcuts>("shortcuts") else {
+    let Ok(mut shortcuts) = config.get::<Shortcuts>("custom") else {
         return;
     };
 
@@ -234,5 +234,5 @@ fn super_key_set(action: shortcuts::action::System) {
         Action::System(action),
     );
 
-    _ = config.set("shortcuts", &shortcuts);
+    _ = config.set("custom", &shortcuts);
 }
