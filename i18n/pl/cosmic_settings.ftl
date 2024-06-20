@@ -34,9 +34,9 @@ window-hint-accent-toggle = Użycie koloru z motywu jako wyróżnienia aktywnego
 
 auto-switch = Automatycznie zmieniaj z trybu Jasnego na Ciemny
     .sunrise = Zmienia na Jasny tryb o świcie
-    .sunset = Zmienia na Jasny tryb o zmierzchu
+    .sunset = Zmienia na Ciemny tryb o zmierzchu
     .next-sunrise = Zmienia na Jasny tryb podczas następnego świtu
-    .next-sunset = Zmienia na Jasny tryb podczas następnego zmierzchu
+    .next-sunset = Zmienia na Ciemny tryb podczas następnego zmierzchu
 
 container-background = Tło kontenera
     .desc-detail = Kolor tła kontenera jest używany do nawigacji panelem bocznym, bocznym szkicownikiem, dialogami i podobnymi widżetami. Domyślnie wywodzi się on z Aplikacji lub tła okna.
