@@ -1,5 +1,4 @@
 use super::{ShortcutMessage, ShortcutModel};
-use cascade::cascade;
 use cosmic::{Command, Element};
 use cosmic_settings_config::shortcuts::action::ResizeDirection;
 use cosmic_settings_config::shortcuts::{Action, Shortcuts};
@@ -59,34 +58,23 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-pub fn bindings(keybindings: &Shortcuts) -> Slab<ShortcutModel> {
-    cascade! {
-        let shortcuts = Slab::new();
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Close,
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Maximize,
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Minimize,
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Resizing(ResizeDirection::Inwards),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Resizing(ResizeDirection::Outwards),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::ToggleSticky,
-        ));
-    }
+#[must_use]
+pub const fn actions() -> &'static [Action] {
+    &[
+        Action::Close,
+        Action::Maximize,
+        Action::Minimize,
+        Action::Resizing(ResizeDirection::Inwards),
+        Action::Resizing(ResizeDirection::Outwards),
+        Action::ToggleSticky,
+    ]
+}
+
+fn bindings(keybindings: &Shortcuts) -> Slab<ShortcutModel> {
+    actions().iter().fold(Slab::new(), |mut slab, action| {
+        slab.insert(ShortcutModel::new(keybindings, action.clone()));
+        slab
+    })
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {

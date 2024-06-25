@@ -934,12 +934,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cascade"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d499b43edbf784dd81e16f0395f5b4350a35b477da8a074251087adefc11cb52"
-
-[[package]]
 name = "cc"
 version = "1.0.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1451,7 +1445,6 @@ dependencies = [
  "anyhow",
  "ashpd",
  "async-channel",
- "cascade",
  "chrono",
  "clap",
  "color-eyre",
@@ -1504,9 +1497,10 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-daemon?branch=keybindings#cda61216c15f4ce51170eae35045e3489ad826cb"
+source = "git+https://github.com/pop-os/cosmic-settings-daemon?branch=keybindings#c445104b51c5bc6ec012a2abde953ed14eaef004"
 dependencies = [
  "cosmic-config",
+ "heck 0.5.0",
  "serde",
  "serde_with",
  "thiserror",

@@ -429,6 +429,8 @@ custom-shortcuts = Custom Shortcuts
     .context = Add Custom Shortcut
     .none = No custom shortcuts
 
+modified = { $count } modified
+
 nav-shortcuts = Navigation
     .prev-output = Focus previous output
     .next-output = Focus next output

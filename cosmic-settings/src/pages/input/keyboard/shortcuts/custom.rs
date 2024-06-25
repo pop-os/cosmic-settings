@@ -14,10 +14,9 @@ use slotmap::SlotMap;
 pub struct Page {
     model: super::Model,
     add_shortcut: AddShortcut,
-    replace_dialog: Option<(Binding, Action, String)>,
+    replace_dialog: Vec<(Binding, Action, String)>,
     command_id: widget::Id,
     name_id: widget::Id,
-    key_id: widget::Id,
 }
 
 impl Default for Page {
@@ -25,16 +24,17 @@ impl Default for Page {
         Self {
             model: super::Model::default().custom(),
             add_shortcut: AddShortcut::default(),
-            replace_dialog: None,
+            replace_dialog: Vec::new(),
             command_id: widget::Id::unique(),
             name_id: widget::Id::unique(),
-            key_id: widget::Id::unique(),
         }
     }
 }
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    /// Adds a new key binding input
+    AddKeybinding,
     /// Add a new custom shortcut to the config
     AddShortcut,
     /// Clear the command text input
@@ -42,13 +42,11 @@ pub enum Message {
     /// Update the command text input
     CommandInput(String),
     /// Toggle editing of the key text input
-    EditCombination(bool),
-    /// Focus the edit input
-    FocusEditInput,
+    EditCombination,
     /// Clear the key text input
-    KeyClear,
+    KeyClear(usize),
     /// Update the key text input
-    KeyInput(String),
+    KeyInput(usize, String),
     /// Clear the name text input
     NameClear,
     /// Update the name text input
@@ -70,17 +68,24 @@ struct AddShortcut {
     pub active: bool,
     pub name: String,
     pub command: String,
-    pub combination: String,
-    pub editing_combination: bool,
+    pub keys: Slab<(String, widget::Id)>,
 }
 
 impl AddShortcut {
     pub fn enable(&mut self) {
         self.active = true;
-        self.editing_combination = false;
         self.name.clear();
         self.command.clear();
-        self.combination.clear();
+
+        if self.keys.is_empty() {
+            self.keys.insert((String::new(), widget::Id::unique()));
+        } else {
+            while self.keys.len() > 1 {
+                self.keys.remove(self.keys.len() - 1);
+            }
+
+            self.keys[0].0.clear();
+        }
     }
 }
 
@@ -91,57 +96,71 @@ impl Page {
                 self.add_shortcut.command = text;
             }
 
-            Message::KeyInput(text) => {
-                self.add_shortcut.combination = text;
+            Message::KeyInput(id, text) => {
+                self.add_shortcut.keys[id].0 = text;
             }
 
             Message::NameInput(text) => {
                 self.add_shortcut.name = text;
             }
 
+            Message::AddKeybinding => {
+                let new_id = widget::Id::unique();
+                self.add_shortcut
+                    .keys
+                    .insert((String::new(), new_id.clone()));
+                return widget::text_input::focus(new_id);
+            }
+
             Message::AddShortcut => {
                 let name = self.add_shortcut.name.trim();
                 let command = self.add_shortcut.command.trim();
-                let keys = self.add_shortcut.combination.trim();
 
-                if name.is_empty() || command.is_empty() || keys.is_empty() {
+                if name.is_empty() || command.is_empty() {
                     return Command::none();
                 }
 
-                let Ok(binding) = Binding::from_str(keys) else {
-                    self.add_shortcut.combination.clear();
-                    return Command::none();
-                };
+                let mut addable_bindings = Vec::new();
 
-                if let Some(action) = self.model.config_contains(&binding) {
-                    let action_str = super::localize_action(&action);
-                    self.replace_dialog = Some((binding, action, action_str));
-                    return Command::none();
+                for (id, (keys, key_id)) in &self.add_shortcut.keys {
+                    if keys.is_empty() {
+                        continue;
+                    }
+
+                    let Ok(binding) = Binding::from_str(keys) else {
+                        return Command::none();
+                    };
+
+                    if !binding.is_set() {
+                        return Command::none();
+                    }
+
+                    if let Some(action) = self.model.config_contains(&binding) {
+                        let action_str = super::localize_action(&action);
+                        self.replace_dialog.push((binding, action, action_str));
+                        continue;
+                    }
+
+                    addable_bindings.push(binding);
                 }
 
-                self.add_shortcut(binding);
+                for binding in addable_bindings {
+                    self.add_shortcut(binding);
+                }
+
+                self.model.on_enter(bindings);
             }
 
             Message::CommandClear => {
                 self.add_shortcut.command.clear();
             }
 
-            Message::EditCombination(enable) => {
-                self.add_shortcut.editing_combination = enable;
-                if enable {
-                    return cosmic::command::future(async {
-                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                        crate::pages::Message::CustomShortcuts(Message::FocusEditInput)
-                    });
-                }
+            Message::EditCombination => {
+                return widget::text_input::focus(self.add_shortcut.keys[0].1.clone());
             }
 
-            Message::FocusEditInput => {
-                return widget::text_input::focus(self.key_id.clone());
-            }
-
-            Message::KeyClear => {
-                self.add_shortcut.combination.clear();
+            Message::KeyClear(id) => {
+                self.add_shortcut.keys[id].0.clear();
             }
 
             Message::NameClear => {
@@ -155,14 +174,21 @@ impl Page {
             }
 
             Message::ReplaceApply => {
-                if let Some((binding, old_action, _)) = self.replace_dialog.take() {
+                if let Some((binding, old_action, _)) = self.replace_dialog.pop() {
                     self.model.config_remove(&old_action, &binding);
                     self.add_shortcut(binding);
+
+                    if self.replace_dialog.is_empty() {
+                        self.model.on_enter(bindings);
+                    }
                 }
             }
 
             Message::ReplaceCancel => {
-                self.replace_dialog = None;
+                _ = self.replace_dialog.pop();
+                if self.replace_dialog.is_empty() {
+                    self.model.on_enter(bindings);
+                }
             }
 
             Message::Shortcut(message) => {
@@ -197,7 +223,7 @@ impl Page {
         let command_input = widget::text_input("", &self.add_shortcut.command)
             .on_clear(Message::CommandClear)
             .on_input(Message::CommandInput)
-            .on_submit(Message::EditCombination(true))
+            .on_submit(Message::EditCombination)
             .id(self.command_id.clone());
 
         let name_control = widget::column()
@@ -215,17 +241,23 @@ impl Page {
             .push(name_control)
             .push(command_control);
 
-        let key_combination =
-            widget::text_input(fl!("type-key-combination"), &self.add_shortcut.combination)
-                .style(cosmic::theme::TextInput::Inline)
-                .on_clear(Message::KeyClear)
-                .on_input(Message::KeyInput)
-                .on_submit(Message::AddShortcut)
-                .id(self.key_id.clone());
+        let keys = self.add_shortcut.keys.iter().fold(
+            widget::column(),
+            |column, (id, (text, widget_id))| {
+                let key_combination = widget::text_input(fl!("type-key-combination"), text)
+                    .style(cosmic::theme::TextInput::Inline)
+                    .on_clear(Message::KeyClear(id))
+                    .on_input(move |input| Message::KeyInput(id, input))
+                    .on_submit(Message::AddKeybinding)
+                    .id(widget_id.clone());
+
+                column.push(key_combination)
+            },
+        );
 
         let controls = widget::settings::view_section("")
             .add(input_fields)
-            .add(key_combination);
+            .add(keys);
 
         let add_keybinding_button = widget::button::standard(fl!("add-keybinding"))
             .on_press(Message::AddShortcut)
@@ -242,11 +274,10 @@ impl Page {
     }
 
     fn add_shortcut(&mut self, mut binding: Binding) {
-        binding.description = Some(std::mem::take(&mut self.add_shortcut.name));
-        let new_action = Action::Spawn(std::mem::take(&mut self.add_shortcut.command));
+        self.add_shortcut.active = !self.replace_dialog.is_empty();
+        binding.description = Some(self.add_shortcut.name.clone());
+        let new_action = Action::Spawn(self.add_shortcut.command.clone());
         self.model.config_add(new_action, binding);
-        self.model.on_enter(bindings);
-        self.add_shortcut.active = false;
     }
 }
 
@@ -265,7 +296,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
         // Check if a new shortcut is being added that requires a replace dialog.
-        if let Some((binding, _action, action_str)) = self.replace_dialog.as_ref() {
+        if let Some((binding, _action, action_str)) = self.replace_dialog.last() {
             let primary_action = button::suggested(fl!("replace")).on_press(Message::ReplaceApply);
 
             let secondary_action = button::standard(fl!("cancel")).on_press(Message::ReplaceCancel);
@@ -326,27 +357,35 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 fn bindings(keybindings: &Shortcuts) -> Slab<ShortcutModel> {
     keybindings
         .iter()
-        .filter_map(|(binding, action)| {
+        .fold(Slab::new(), |mut slab, (binding, action)| {
             if let Action::Spawn(command) = action {
-                return Some(ShortcutModel {
-                    action: action.clone(),
-                    bindings: {
-                        let id = widget::Id::unique();
-                        let mut slab = Slab::new();
-                        slab.insert((id, binding.clone(), String::new(), false));
-                        slab
-                    },
-                    description: binding
-                        .description
-                        .clone()
-                        .unwrap_or_else(|| command.to_owned()),
-                });
+                let description = binding
+                    .description
+                    .clone()
+                    .unwrap_or_else(|| command.to_owned());
+
+                if let Some((_, existing_model)) =
+                    slab.iter_mut().find(|(_, m)| &m.action == action)
+                {
+                    let id = widget::Id::unique();
+                    existing_model.description = description;
+                    existing_model
+                        .bindings
+                        .insert((id, binding.clone(), String::new(), false));
+                } else {
+                    slab.insert(ShortcutModel {
+                        action: action.clone(),
+                        bindings: {
+                            let id = widget::Id::unique();
+                            let mut slab = Slab::new();
+                            slab.insert((id, binding.clone(), String::new(), false));
+                            slab
+                        },
+                        description,
+                    });
+                }
             }
 
-            None
-        })
-        .fold(Slab::new(), |mut slab, model| {
-            slab.insert(model);
             slab
         })
 }

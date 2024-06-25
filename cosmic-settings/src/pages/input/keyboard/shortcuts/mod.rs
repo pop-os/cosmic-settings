@@ -1,3 +1,6 @@
+mod common;
+pub use common::{Model, ShortcutMessage, ShortcutModel};
+
 pub mod custom;
 pub mod manage_windows;
 pub mod move_window;
@@ -8,48 +11,60 @@ pub mod tiling;
 use cosmic::iced::alignment::Horizontal;
 use cosmic::iced::{Alignment, Length};
 use cosmic::prelude::CollectionWidget;
-use cosmic::widget::{self, button, icon, settings, text, Column};
+use cosmic::widget::{self, icon, settings, text};
 use cosmic::{command, theme, Apply, Command, Element};
-use cosmic_config::{ConfigGet, ConfigSet};
+use cosmic_config::ConfigGet;
 use cosmic_settings_config::shortcuts::action::{
     Direction, FocusDirection, Orientation, ResizeDirection,
 };
-use cosmic_settings_config::shortcuts::{self, Action, Binding, Shortcuts};
+use cosmic_settings_config::shortcuts::{self, Action, Shortcuts};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use shortcuts::action::System as SystemAction;
 use slab::Slab;
-use slotmap::{Key, SlotMap};
+use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
 use std::borrow::Cow;
-use std::io;
-use std::str::FromStr;
 
 pub struct Page {
-    custom_page: page::Entity,
-    manage_window_page: page::Entity,
-    move_window_page: page::Entity,
-    nav_page: page::Entity,
-    system_page: page::Entity,
-    window_tiling_page: page::Entity,
+    modified: Modified,
+    search: Search,
+    search_model: Model,
+    shortcuts_context: Option<cosmic_config::Config>,
+    sub_pages: SubPages,
 }
 
-#[derive(Clone, Copy, Debug)]
-pub enum Message {
-    Category(Category),
+#[derive(Default)]
+struct Modified {
+    manage_windows: u16,
+    move_windows: u16,
+    nav: u16,
+    system: u16,
+    window_tiling: u16,
+    custom: u16,
+}
+
+struct SubPages {
+    custom: page::Entity,
+    manage_window: page::Entity,
+    move_window: page::Entity,
+    nav: page::Entity,
+    system: page::Entity,
+    window_tiling: page::Entity,
+}
+
+#[derive(Default)]
+struct Search {
+    input: String,
+    actions: SlotMap<DefaultKey, Action>,
+    localized: SecondaryMap<DefaultKey, String>,
+    shortcuts: Shortcuts,
 }
 
 #[derive(Clone, Debug)]
-pub enum ShortcutMessage {
-    AddKeybinding,
-    ApplyReplace,
-    CancelReplace,
-    ClearBinding(usize),
-    DeleteBinding(usize),
-    DeleteShortcut(usize),
-    EditBinding(usize, bool),
-    InputBinding(usize, String),
-    ShowShortcut(usize, String),
-    SubmitBinding(usize),
+pub enum Message {
+    Category(Category),
+    Search(String),
+    SearchShortcut(ShortcutMessage),
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -65,12 +80,18 @@ pub enum Category {
 impl Default for Page {
     fn default() -> Self {
         Self {
-            custom_page: page::Entity::null(),
-            manage_window_page: page::Entity::null(),
-            move_window_page: page::Entity::null(),
-            nav_page: page::Entity::null(),
-            system_page: page::Entity::null(),
-            window_tiling_page: page::Entity::null(),
+            modified: Modified::default(),
+            search: Search::default(),
+            search_model: Model::default(),
+            shortcuts_context: None,
+            sub_pages: SubPages {
+                custom: page::Entity::null(),
+                manage_window: page::Entity::null(),
+                move_window: page::Entity::null(),
+                nav: page::Entity::null(),
+                system: page::Entity::null(),
+                window_tiling: page::Entity::null(),
+            },
         }
     }
 }
@@ -88,31 +109,132 @@ impl page::Page<crate::pages::Message> for Page {
             .title(fl!("keyboard-shortcuts"))
             .description(fl!("keyboard-shortcuts", "desc"))
     }
+
+    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+        if self.search_model.shortcut_models.is_empty() {
+            None
+        } else {
+            self.search_model.context_drawer().map(|el| {
+                el.map(|msg| crate::pages::Message::KeyboardShortcuts(Message::SearchShortcut(msg)))
+            })
+        }
+    }
+
+    fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
+        if self.search_model.shortcut_models.is_empty() {
+            None
+        } else {
+            self.search_model.dialog().map(|el| {
+                el.map(|msg| crate::pages::Message::KeyboardShortcuts(Message::SearchShortcut(msg)))
+            })
+        }
+    }
+
+    fn on_enter(
+        &mut self,
+        _page: cosmic_settings_page::Entity,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
+        if self.shortcuts_context.is_none() {
+            self.shortcuts_context = cosmic_settings_config::shortcuts::context().ok();
+        }
+
+        if let Some(context) = self.shortcuts_context.as_ref() {
+            let mut defaults = context.get::<Shortcuts>("defaults").unwrap_or_default();
+            let custom = context.get::<Shortcuts>("custom").unwrap_or_default();
+
+            for (custom_binding, custom_action) in &custom.0 {
+                // Skip bindings for the super key
+                if custom_binding.is_super() {
+                    continue;
+                }
+
+                // Check if a custom binding overrides a default binding, or is in addition to it.
+                match defaults.0.get(custom_binding) {
+                    Some(default_action) if default_action == custom_action => continue,
+                    _ => (),
+                }
+
+                match action_category(custom_action) {
+                    Some(Category::ManageWindow) => self.modified.manage_windows += 1,
+                    Some(Category::MoveWindow) => self.modified.move_windows += 1,
+                    Some(Category::Nav) => self.modified.nav += 1,
+                    Some(Category::System) => self.modified.system += 1,
+                    Some(Category::WindowTiling) => self.modified.window_tiling += 1,
+                    None | Some(Category::Custom) => (),
+                }
+            }
+
+            defaults.0.extend(custom.0);
+
+            self.search.shortcuts = defaults;
+        }
+
+        Command::none()
+    }
+
+    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+        self.search.actions.clear();
+        self.search.localized.clear();
+        self.search.input.clear();
+        self.search_model.on_clear();
+        self.modified.custom = 0;
+        self.modified.manage_windows = 0;
+        self.modified.move_windows = 0;
+        self.modified.nav = 0;
+        self.modified.system = 0;
+        Command::none()
+    }
 }
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
         match message {
             Message::Category(category) => match category {
-                Category::Custom => command::message(crate::app::Message::Page(self.custom_page)),
+                Category::Custom => {
+                    command::message(crate::app::Message::Page(self.sub_pages.custom))
+                }
 
                 Category::ManageWindow => {
-                    command::message(crate::app::Message::Page(self.manage_window_page))
+                    command::message(crate::app::Message::Page(self.sub_pages.manage_window))
                 }
 
                 Category::MoveWindow => {
-                    command::message(crate::app::Message::Page(self.move_window_page))
+                    command::message(crate::app::Message::Page(self.sub_pages.move_window))
                 }
 
-                Category::Nav => command::message(crate::app::Message::Page(self.nav_page)),
+                Category::Nav => command::message(crate::app::Message::Page(self.sub_pages.nav)),
 
-                Category::System => command::message(crate::app::Message::Page(self.system_page)),
+                Category::System => {
+                    command::message(crate::app::Message::Page(self.sub_pages.system))
+                }
 
                 Category::WindowTiling => {
-                    command::message(crate::app::Message::Page(self.window_tiling_page))
+                    command::message(crate::app::Message::Page(self.sub_pages.window_tiling))
                 }
             },
+
+            Message::Search(input) => {
+                self.search(input);
+                Command::none()
+            }
+
+            Message::SearchShortcut(message) => self.search_model.update(message),
         }
+    }
+
+    fn search(&mut self, input: String) {
+        self.search.input = input;
+        if self.search.input.is_empty() {
+            self.search_model.on_clear();
+            return;
+        }
+
+        if self.search.actions.is_empty() {
+            self.search.cache_localized_actions();
+        }
+
+        self.search_model.shortcut_models = self.search.shortcut_models();
     }
 }
 
@@ -120,352 +242,46 @@ impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(
         mut page: cosmic_settings_page::Insert<crate::pages::Message>,
     ) -> cosmic_settings_page::Insert<crate::pages::Message> {
-        let custom_page = page.sub_page_with_id::<custom::Page>();
-        let manage_window_page = page.sub_page_with_id::<manage_windows::Page>();
-        let move_window_page = page.sub_page_with_id::<move_window::Page>();
-        let nav_page = page.sub_page_with_id::<nav::Page>();
-        let system_page = page.sub_page_with_id::<system::Page>();
-        let window_tiling_page = page.sub_page_with_id::<tiling::Page>();
+        let custom = page.sub_page_with_id::<custom::Page>();
+        let manage_window = page.sub_page_with_id::<manage_windows::Page>();
+        let move_window = page.sub_page_with_id::<move_window::Page>();
+        let nav = page.sub_page_with_id::<nav::Page>();
+        let system = page.sub_page_with_id::<system::Page>();
+        let window_tiling = page.sub_page_with_id::<tiling::Page>();
 
         let model = page.model.page_mut::<Page>().unwrap();
-        model.custom_page = custom_page;
-        model.manage_window_page = manage_window_page;
-        model.move_window_page = move_window_page;
-        model.nav_page = nav_page;
-        model.system_page = system_page;
-        model.window_tiling_page = window_tiling_page;
+        model.sub_pages.custom = custom;
+        model.sub_pages.manage_window = manage_window;
+        model.sub_pages.move_window = move_window;
+        model.sub_pages.nav = nav;
+        model.sub_pages.system = system;
+        model.sub_pages.window_tiling = window_tiling;
 
         page
     }
 }
 
-#[must_use]
-#[derive(Debug)]
-pub struct ShortcutModel {
-    pub action: Action,
-    pub bindings: Slab<(widget::Id, Binding, String, bool)>,
-    pub description: String,
-}
+impl Search {
+    fn cache_localized_actions(&mut self) {
+        self.actions.clear();
+        self.localized.clear();
 
-impl ShortcutModel {
-    pub fn new(shortcuts: &Shortcuts, action: Action) -> Self {
-        Self {
-            bindings: shortcuts
-                .shortcuts(&action)
-                .fold(Slab::new(), |mut slab, binding| {
-                    let id = widget::Id::unique();
-                    slab.insert((id, binding.clone(), String::new(), false));
-                    slab
-                }),
-            description: localize_action(&action),
-            action,
+        for action in all_actions() {
+            let localized = localize_action(action);
+            let id = self.actions.insert(action.clone());
+            self.localized.insert(id, localized);
         }
     }
-}
 
-#[must_use]
-pub struct Model {
-    replace_dialog: Option<(usize, Binding, Action, String)>,
-    shortcut_models: Slab<ShortcutModel>,
-    shortcut_context: Option<usize>,
-    config: cosmic_config::Config,
-    custom: bool,
-}
-
-impl Default for Model {
-    fn default() -> Self {
-        Self {
-            replace_dialog: None,
-            shortcut_models: Slab::new(),
-            shortcut_context: None,
-            config: shortcuts::context().unwrap(),
-            custom: false,
-        }
-    }
-}
-
-impl Model {
-    pub fn custom(mut self) -> Self {
-        self.custom = true;
-        self
-    }
-
-    fn context_drawer(&self) -> Option<Element<'_, ShortcutMessage>> {
-        self.shortcut_context
-            .as_ref()
-            .map(|id| context_drawer(&self.shortcut_models, *id, self.custom))
-    }
-
-    fn dialog(&self) -> Option<Element<'_, ShortcutMessage>> {
-        if let Some(&(id, _, _, ref action)) = self.replace_dialog.as_ref() {
-            if let Some(short_id) = self.shortcut_context {
-                if let Some(model) = self.shortcut_models.get(short_id) {
-                    if let Some((_, binding, shortcut, _)) = model.bindings.get(id) {
-                        let primary_action = button::suggested(fl!("replace"))
-                            .on_press(ShortcutMessage::ApplyReplace);
-
-                        let secondary_action = button::standard(fl!("cancel"))
-                            .on_press(ShortcutMessage::CancelReplace);
-
-                        let dialog = cosmic::widget::dialog(fl!("replace-shortcut-dialog"))
-                            .icon(icon::from_name("dialog-warning").size(64))
-                            .body(fl!(
-                                "replace-shortcut-dialog",
-                                "desc",
-                                shortcut = shortcut.clone(),
-                                name = binding.description.as_ref().unwrap_or(action).to_owned()
-                            ))
-                            .primary_action(primary_action)
-                            .secondary_action(secondary_action);
-
-                        return Some(dialog.into());
-                    }
-                }
-            }
-        }
-
-        None
-    }
-
-    fn on_enter(&mut self, bindings: fn(&Shortcuts) -> Slab<ShortcutModel>) {
-        let mut shortcuts = self.config.get::<Shortcuts>("defaults").unwrap_or_default();
-
-        if let Ok(custom) = self.config.get::<Shortcuts>("custom") {
-            shortcuts.0.extend(custom.0);
-        }
-
-        self.shortcut_models = bindings(&shortcuts);
-    }
-
-    fn on_clear(&mut self) {
-        self.shortcut_models.clear();
-    }
-
-    fn view(&self) -> Element<ShortcutMessage> {
-        self.shortcut_models
+    fn shortcut_models(&mut self) -> Slab<ShortcutModel> {
+        self.actions
             .iter()
-            .map(|(id, shortcut)| shortcut_item(self.custom, id, shortcut))
-            .fold(settings::view_section(""), settings::Section::add)
-            .into()
-    }
+            .filter(|(id, _)| self.localized[*id].contains(&self.input))
+            .fold(Slab::new(), |mut slab, (_, action)| {
+                slab.insert(ShortcutModel::new(&self.shortcuts, action.clone()));
 
-    #[allow(clippy::too_many_lines)]
-    fn update(&mut self, message: ShortcutMessage) -> Command<crate::app::Message> {
-        match message {
-            ShortcutMessage::AddKeybinding => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        let id = cosmic::widget::Id::unique();
-                        model.bindings.insert((
-                            id.clone(),
-                            Binding::default(),
-                            String::new(),
-                            true,
-                        ));
-
-                        return cosmic::widget::text_input::focus(id);
-                    }
-                }
-            }
-
-            ShortcutMessage::ApplyReplace => {
-                if let Some((id, new_binding, action, _)) = self.replace_dialog.take() {
-                    if let Some(short_id) = self.shortcut_context {
-                        // Remove conflicting bindings that are saved on disk.
-                        self.config_remove(&action, &new_binding);
-
-                        // Clear any binding that matches this in the current model
-                        for (_, model) in &mut self.shortcut_models {
-                            if let Some(id) = model
-                                .bindings
-                                .iter()
-                                .find(|(_, (_, binding, ..))| binding == &new_binding)
-                                .map(|(id, _)| id)
-                            {
-                                model.bindings.remove(id);
-                                break;
-                            }
-                        }
-
-                        // Update the current model and save the binding to disk.
-                        if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                            if let Some((_, binding, editing, is_editing)) =
-                                model.bindings.get_mut(id)
-                            {
-                                let prev_binding = binding.clone();
-
-                                *binding = new_binding.clone();
-                                editing.clear();
-                                *is_editing = false;
-
-                                let action = model.action.clone();
-                                self.config_remove(&action, &prev_binding);
-                                self.config_add(action, new_binding);
-                            }
-                        }
-                    }
-                }
-            }
-
-            ShortcutMessage::CancelReplace => self.replace_dialog = None,
-
-            ShortcutMessage::ClearBinding(id) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        if let Some((_, _, editing, _)) = model.bindings.get_mut(id) {
-                            editing.clear();
-                        }
-                    }
-                }
-            }
-
-            ShortcutMessage::DeleteBinding(id) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        let (_, removed, ..) = model.bindings.remove(id);
-                        let action = model.action.clone();
-                        self.config_remove(&action, &removed);
-                    }
-                }
-            }
-
-            ShortcutMessage::DeleteShortcut(id) => {
-                let model = self.shortcut_models.remove(id);
-                for (_, (_, binding, ..)) in model.bindings {
-                    eprintln!("removing {binding:?} for {:?}", model.action);
-                    self.config_remove(&model.action, &binding);
-                }
-            }
-
-            ShortcutMessage::EditBinding(id, enable) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        if let Some(&mut (_, _, _, ref mut is_editing)) = model.bindings.get_mut(id)
-                        {
-                            *is_editing = enable;
-                        }
-                    }
-                }
-            }
-
-            ShortcutMessage::InputBinding(id, text) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        if let Some(&mut (_, _, ref mut editing, _)) = model.bindings.get_mut(id) {
-                            *editing = text;
-                        }
-                    }
-                }
-            }
-
-            ShortcutMessage::ShowShortcut(id, description) => {
-                self.shortcut_context = Some(id);
-                self.replace_dialog = None;
-                return command::message(crate::app::Message::OpenContextDrawer(
-                    description.into(),
-                ));
-            }
-
-            ShortcutMessage::SubmitBinding(id) => {
-                if let Some(short_id) = self.shortcut_context {
-                    let mut apply_binding = None;
-
-                    // Check for conflicts with the new binding.
-                    if let Some(model) = self.shortcut_models.get(short_id) {
-                        if let Some((_, _, editing, _)) = model.bindings.get(id) {
-                            match Binding::from_str(editing) {
-                                Ok(new_binding) => {
-                                    if let Some(action) = self.config_contains(&new_binding) {
-                                        let action_str = localize_action(&action);
-                                        self.replace_dialog =
-                                            Some((id, new_binding, action, action_str));
-                                        return Command::none();
-                                    }
-
-                                    apply_binding = Some(new_binding);
-                                }
-
-                                Err(why) => {
-                                    tracing::error!(why, "keybinding input invalid");
-                                }
-                            }
-                        }
-                    }
-
-                    // Apply if no conflict was found.
-                    if let Some(new_binding) = apply_binding {
-                        if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                            if let Some((_, binding, editing, is_editing)) =
-                                model.bindings.get_mut(id)
-                            {
-                                let prev_binding = binding.clone();
-
-                                *binding = new_binding.clone();
-                                editing.clear();
-                                *is_editing = false;
-
-                                let action = model.action.clone();
-                                self.config_remove(&action, &prev_binding);
-                                self.config_add(action, new_binding);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Command::none()
-    }
-
-    /// Gets the custom configuration for keyboard shortcuts.
-    fn shortcuts_config(&self) -> Shortcuts {
-        match self.config.get::<Shortcuts>("custom") {
-            Ok(shortcuts) => shortcuts,
-            Err(cosmic_config::Error::GetKey(_, why)) if why.kind() == io::ErrorKind::NotFound => {
-                Shortcuts::default()
-            }
-            Err(why) => {
-                tracing::error!(?why, "unable to get the current shortcuts config");
-                Shortcuts::default()
-            }
-        }
-    }
-
-    /// Gets the system configuration for keyboard shortcuts.
-    fn shortcuts_system_config(&self) -> Shortcuts {
-        let mut shortcuts = self.config.get::<Shortcuts>("defaults").unwrap_or_default();
-
-        if let Ok(custom) = self.config.get::<Shortcuts>("custom") {
-            shortcuts.0.extend(custom.0);
-        }
-
-        shortcuts
-    }
-
-    /// Writes a new configuration to the keyboard shortcuts config file.
-    fn shortcuts_config_set(&self, shortcuts: Shortcuts) {
-        if let Err(why) = self.config.set("custom", shortcuts) {
-            tracing::error!(?why, "failed to write shortcuts config");
-        }
-    }
-
-    /// Adds a new binding to the shortcuts config
-    fn config_add(&self, action: Action, binding: Binding) {
-        let mut shortcuts = self.shortcuts_config();
-        shortcuts.0.insert(binding, action);
-        self.shortcuts_config_set(shortcuts);
-    }
-
-    /// Check if a binding is already set
-    fn config_contains(&self, binding: &Binding) -> Option<Action> {
-        self.shortcuts_system_config().0.get(binding).cloned()
-    }
-
-    /// Removes a binding from the shortcuts config
-    fn config_remove(&self, action: &Action, binding: &Binding) {
-        let mut shortcuts = self.shortcuts_config();
-        shortcuts.0.retain(|b, a| a != action && b != binding);
-        self.shortcuts_config_set(shortcuts);
+                slab
+            })
     }
 }
 
@@ -481,34 +297,75 @@ fn shortcuts() -> Section<crate::pages::Message> {
 
     Section::default()
         .descriptions(descriptions)
-        .view::<Page>(move |_binder, _page, section| {
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            settings::view_section("")
-                .add(category_item(
-                    Category::ManageWindow,
-                    &descriptions[manage_window_label],
-                ))
-                .add(category_item(
-                    Category::MoveWindow,
-                    &descriptions[move_window_label],
-                ))
-                .add(category_item(Category::Nav, &descriptions[nav_label]))
-                .add(category_item(Category::System, &descriptions[system_label]))
-                .add(category_item(
-                    Category::WindowTiling,
-                    &descriptions[window_tiling_label],
-                ))
-                .add(category_item(Category::Custom, &descriptions[custom_label]))
+            let search = widget::search_input("", &page.search.input)
+                .on_clear(Message::Search(String::new()))
+                .on_input(Message::Search);
+
+            // If the search input is not empty, show the category view, else the search results.
+            let content = if page.search.input.is_empty() {
+                settings::view_section("")
+                    .add(category_item(
+                        Category::ManageWindow,
+                        &descriptions[manage_window_label],
+                        page.modified.manage_windows,
+                    ))
+                    .add(category_item(
+                        Category::MoveWindow,
+                        &descriptions[move_window_label],
+                        page.modified.move_windows,
+                    ))
+                    .add(category_item(
+                        Category::Nav,
+                        &descriptions[nav_label],
+                        page.modified.nav,
+                    ))
+                    .add(category_item(
+                        Category::System,
+                        &descriptions[system_label],
+                        page.modified.system,
+                    ))
+                    .add(category_item(
+                        Category::WindowTiling,
+                        &descriptions[window_tiling_label],
+                        page.modified.window_tiling,
+                    ))
+                    .add(category_item(
+                        Category::Custom,
+                        &descriptions[custom_label],
+                        page.modified.custom,
+                    ))
+                    .apply(Element::from)
+            } else {
+                page.search_model.view().map(Message::SearchShortcut)
+            };
+
+            widget::column::with_capacity(2)
+                .spacing(12)
+                .push(search)
+                .push(content)
                 .apply(Element::from)
                 .map(crate::pages::Message::KeyboardShortcuts)
         })
 }
 
 /// Display a category as a list item
-fn category_item(category: Category, name: &str) -> Element<Message> {
+fn category_item(category: Category, name: &str, modified: u16) -> Element<Message> {
+    let icon = icon::from_name("go-next-symbolic").size(16);
+
+    let control = if modified == 0 {
+        Element::from(icon)
+    } else {
+        widget::row()
+            .push(text::body(fl!("modified", count = modified)))
+            .push(icon)
+            .into()
+    };
+
     settings::item::builder(name)
-        .control(icon::from_name("go-next-symbolic").size(16))
+        .control(control)
         .spacing(16)
         .apply(widget::container)
         .style(theme::Container::List)
@@ -526,15 +383,18 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<Short
         Show,
     }
 
-    let shortcuts: Element<LocalMessage> = if data.bindings.is_empty() {
+    let bindings = data
+        .bindings
+        .iter()
+        .take(3)
+        .filter(|(_, (_, b, ..))| b.is_set())
+        .map(|(_, (_, b, ..))| widget::text::body(b.to_string()).into())
+        .collect::<Vec<_>>();
+
+    let shortcuts: Element<LocalMessage> = if bindings.is_empty() {
         widget::text::body(fl!("disabled")).into()
     } else {
-        data.bindings
-            .iter()
-            .take(3)
-            .filter(|(_, (_, b, ..))| b.is_set())
-            .map(|(_, (_, b, ..))| widget::text::body(b.to_string()))
-            .fold(widget::column(), Column::push)
+        widget::column::with_children(bindings)
             .align_items(Alignment::End)
             .into()
     };
@@ -621,6 +481,109 @@ fn context_drawer(
         .push(bindings)
         .push(add_keybinding_button)
         .into()
+}
+
+fn action_category(action: &Action) -> Option<Category> {
+    Some(if manage_windows::actions().contains(action) {
+        Category::ManageWindow
+    } else if move_window::actions().contains(action) {
+        Category::MoveWindow
+    } else if nav::actions().contains(action) {
+        Category::Nav
+    } else if system::actions().contains(action) {
+        Category::System
+    } else {
+        return None;
+    })
+}
+
+fn all_actions() -> &'static [Action] {
+    &[
+        Action::Close,
+        Action::Debug,
+        Action::Focus(FocusDirection::Down),
+        Action::Focus(FocusDirection::In),
+        Action::Focus(FocusDirection::Left),
+        Action::Focus(FocusDirection::Out),
+        Action::Focus(FocusDirection::Right),
+        Action::Focus(FocusDirection::Up),
+        Action::LastWorkspace,
+        Action::Maximize,
+        Action::MigrateWorkspaceToNextOutput,
+        Action::MigrateWorkspaceToOutput(Direction::Down),
+        Action::MigrateWorkspaceToOutput(Direction::Left),
+        Action::MigrateWorkspaceToOutput(Direction::Right),
+        Action::MigrateWorkspaceToOutput(Direction::Up),
+        Action::MigrateWorkspaceToPreviousOutput,
+        Action::Minimize,
+        Action::Move(Direction::Down),
+        Action::Move(Direction::Left),
+        Action::Move(Direction::Right),
+        Action::Move(Direction::Up),
+        Action::MoveToLastWorkspace,
+        Action::MoveToNextOutput,
+        Action::MoveToNextWorkspace,
+        Action::MoveToOutput(Direction::Down),
+        Action::MoveToOutput(Direction::Left),
+        Action::MoveToOutput(Direction::Right),
+        Action::MoveToOutput(Direction::Up),
+        Action::MoveToPreviousOutput,
+        Action::MoveToPreviousWorkspace,
+        Action::MoveToWorkspace(1),
+        Action::MoveToWorkspace(2),
+        Action::MoveToWorkspace(3),
+        Action::MoveToWorkspace(4),
+        Action::MoveToWorkspace(5),
+        Action::MoveToWorkspace(6),
+        Action::MoveToWorkspace(7),
+        Action::MoveToWorkspace(8),
+        Action::MoveToWorkspace(9),
+        Action::NextOutput,
+        Action::NextWorkspace,
+        Action::Orientation(Orientation::Horizontal),
+        Action::Orientation(Orientation::Vertical),
+        Action::PreviousOutput,
+        Action::PreviousWorkspace,
+        Action::Resizing(ResizeDirection::Inwards),
+        Action::Resizing(ResizeDirection::Outwards),
+        Action::SwapWindow,
+        Action::SwitchOutput(Direction::Down),
+        Action::SwitchOutput(Direction::Left),
+        Action::SwitchOutput(Direction::Right),
+        Action::SwitchOutput(Direction::Up),
+        Action::System(SystemAction::AppLibrary),
+        Action::System(SystemAction::BrightnessDown),
+        Action::System(SystemAction::BrightnessUp),
+        Action::System(SystemAction::HomeFolder),
+        Action::System(SystemAction::KeyboardBrightnessDown),
+        Action::System(SystemAction::KeyboardBrightnessUp),
+        Action::System(SystemAction::Launcher),
+        Action::System(SystemAction::LockScreen),
+        Action::System(SystemAction::Mute),
+        Action::System(SystemAction::MuteMic),
+        Action::System(SystemAction::Screenshot),
+        Action::System(SystemAction::Terminal),
+        Action::System(SystemAction::VolumeLower),
+        Action::System(SystemAction::VolumeRaise),
+        Action::System(SystemAction::WebBrowser),
+        Action::System(SystemAction::WindowSwitcher),
+        Action::System(SystemAction::WorkspaceOverview),
+        Action::Terminate,
+        Action::ToggleOrientation,
+        Action::ToggleStacking,
+        Action::ToggleSticky,
+        Action::ToggleTiling,
+        Action::ToggleWindowFloating,
+        Action::Workspace(1),
+        Action::Workspace(2),
+        Action::Workspace(3),
+        Action::Workspace(4),
+        Action::Workspace(5),
+        Action::Workspace(6),
+        Action::Workspace(7),
+        Action::Workspace(8),
+        Action::Workspace(9),
+    ]
 }
 
 fn localize_action(action: &Action) -> String {

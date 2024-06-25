@@ -55,7 +55,6 @@ xkb-data = "0.1.0"
 zbus = { version = "4.2.1", features = ["tokio"] }
 tachyonix = "0.2.1"
 slab = "0.4.9"
-cascade = "1.0.1"
 
 [dependencies.i18n-embed]
 version = "0.14.1"

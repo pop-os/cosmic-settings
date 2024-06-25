@@ -1,5 +1,4 @@
 use super::{ShortcutMessage, ShortcutModel};
-use cascade::cascade;
 use cosmic::{Command, Element};
 use cosmic_settings_config::shortcuts::action::{Direction, FocusDirection};
 use cosmic_settings_config::shortcuts::{Action, Shortcuts};
@@ -59,70 +58,32 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-pub fn bindings(keybindings: &Shortcuts) -> Slab<ShortcutModel> {
-    cascade! {
-        let shortcuts = Slab::new();
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Focus(FocusDirection::Left),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Focus(FocusDirection::Right),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Focus(FocusDirection::Up),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Focus(FocusDirection::Down),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Focus(FocusDirection::In),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::Focus(FocusDirection::Out),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::PreviousWorkspace,
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::NextWorkspace,
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::LastWorkspace,
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::PreviousOutput,
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::NextOutput,
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::SwitchOutput(Direction::Left),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::SwitchOutput(Direction::Right),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::SwitchOutput(Direction::Up),
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::SwitchOutput(Direction::Down),
-        ));
-    }
+#[must_use]
+pub const fn actions() -> &'static [Action] {
+    &[
+        Action::Focus(FocusDirection::Left),
+        Action::Focus(FocusDirection::Right),
+        Action::Focus(FocusDirection::Up),
+        Action::Focus(FocusDirection::Down),
+        Action::Focus(FocusDirection::In),
+        Action::Focus(FocusDirection::Out),
+        Action::PreviousWorkspace,
+        Action::NextWorkspace,
+        Action::LastWorkspace,
+        Action::PreviousOutput,
+        Action::NextOutput,
+        Action::SwitchOutput(Direction::Left),
+        Action::SwitchOutput(Direction::Right),
+        Action::SwitchOutput(Direction::Up),
+        Action::SwitchOutput(Direction::Down),
+    ]
+}
+
+fn bindings(keybindings: &Shortcuts) -> Slab<ShortcutModel> {
+    actions().iter().fold(Slab::new(), |mut slab, action| {
+        slab.insert(ShortcutModel::new(keybindings, action.clone()));
+        slab
+    })
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {

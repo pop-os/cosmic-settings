@@ -1,5 +1,4 @@
 use super::{ShortcutMessage, ShortcutModel};
-use cascade::cascade;
 use cosmic::{Command, Element};
 use cosmic_settings_config::shortcuts::action::System as SystemAction;
 use cosmic_settings_config::shortcuts::{Action, Shortcuts};
@@ -59,78 +58,34 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-pub fn bindings(keybindings: &Shortcuts) -> Slab<ShortcutModel> {
-    cascade! {
-        let shortcuts = Slab::new();
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::AppLibrary)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::Launcher)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::WorkspaceOverview)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::WindowSwitcher)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::LockScreen)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::VolumeLower)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::VolumeRaise)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::Mute)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::MuteMic)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::BrightnessDown)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::BrightnessUp)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::KeyboardBrightnessDown)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::KeyboardBrightnessUp)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::Screenshot)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::Terminal)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::HomeFolder)
-        ));
-        ..insert(ShortcutModel::new(
-            keybindings,
-            Action::System(SystemAction::WebBrowser)
-        ));
-    }
+#[must_use]
+pub const fn actions() -> &'static [Action] {
+    &[
+        Action::System(SystemAction::AppLibrary),
+        Action::System(SystemAction::Launcher),
+        Action::System(SystemAction::WorkspaceOverview),
+        Action::System(SystemAction::WindowSwitcher),
+        Action::System(SystemAction::LockScreen),
+        Action::System(SystemAction::VolumeLower),
+        Action::System(SystemAction::VolumeRaise),
+        Action::System(SystemAction::Mute),
+        Action::System(SystemAction::MuteMic),
+        Action::System(SystemAction::BrightnessDown),
+        Action::System(SystemAction::BrightnessUp),
+        Action::System(SystemAction::KeyboardBrightnessDown),
+        Action::System(SystemAction::KeyboardBrightnessUp),
+        Action::System(SystemAction::Screenshot),
+        Action::System(SystemAction::Terminal),
+        Action::System(SystemAction::HomeFolder),
+        Action::System(SystemAction::WebBrowser),
+    ]
+}
+
+fn bindings(keybindings: &Shortcuts) -> Slab<ShortcutModel> {
+    actions().iter().fold(Slab::new(), |mut slab, action| {
+        slab.insert(ShortcutModel::new(keybindings, action.clone()));
+        slab
+    })
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {
