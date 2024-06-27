@@ -1,13 +1,25 @@
 use super::{ShortcutMessage, ShortcutModel};
 use cosmic::{Command, Element};
 use cosmic_settings_config::shortcuts::action::Orientation;
-use cosmic_settings_config::shortcuts::{Action, Shortcuts};
+use cosmic_settings_config::shortcuts::Action;
 use cosmic_settings_page::{self as page, section, Section};
 use slab::Slab;
 
-#[derive(Default)]
 pub struct Page {
     model: super::Model,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        Self {
+            model: super::Model::default().actions(|defaults, keybindings| {
+                actions().iter().fold(Slab::new(), |mut slab, action| {
+                    slab.insert(ShortcutModel::new(defaults, keybindings, action.clone()));
+                    slab
+                })
+            }),
+        }
+    }
 }
 
 impl Page {
@@ -45,7 +57,7 @@ impl page::Page<crate::pages::Message> for Page {
         _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Command<crate::pages::Message> {
-        self.model.on_enter(bindings);
+        self.model.on_enter();
 
         Command::none()
     }
@@ -69,13 +81,6 @@ pub fn actions() -> &'static [Action] {
         Action::Orientation(Orientation::Horizontal),
         Action::SwapWindow,
     ]
-}
-
-fn bindings(keybindings: &Shortcuts) -> Slab<ShortcutModel> {
-    actions().iter().fold(Slab::new(), |mut slab, action| {
-        slab.insert(ShortcutModel::new(keybindings, action.clone()));
-        slab
-    })
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {

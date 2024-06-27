@@ -1,8 +1,12 @@
-use cosmic::widget::{self, button, icon, settings};
-use cosmic::{command, Command, Element};
+use cosmic::iced::alignment::Horizontal;
+use cosmic::iced::{Alignment, Length};
+use cosmic::prelude::CollectionWidget;
+use cosmic::widget::{self, button, icon, settings, text};
+use cosmic::{command, theme, Apply, Command, Element};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::shortcuts::{self, Action, Binding, Shortcuts};
 use slab::Slab;
+use std::borrow::Cow;
 use std::io;
 use std::str::FromStr;
 
@@ -16,26 +20,41 @@ pub enum ShortcutMessage {
     DeleteShortcut(usize),
     EditBinding(usize, bool),
     InputBinding(usize, String),
+    ResetBindings,
     ShowShortcut(usize, String),
     SubmitBinding(usize),
+}
+
+#[derive(Debug)]
+pub struct ShortcutBinding {
+    pub id: widget::Id,
+    pub binding: Binding,
+    pub input: String,
+    pub editing: bool,
+    pub is_default: bool,
 }
 
 #[must_use]
 #[derive(Debug)]
 pub struct ShortcutModel {
     pub action: Action,
-    pub bindings: Slab<(widget::Id, Binding, String, bool)>,
+    pub bindings: Slab<ShortcutBinding>,
     pub description: String,
 }
 
 impl ShortcutModel {
-    pub fn new(shortcuts: &Shortcuts, action: Action) -> Self {
+    pub fn new(defaults: &Shortcuts, shortcuts: &Shortcuts, action: Action) -> Self {
         Self {
             bindings: shortcuts
                 .shortcuts(&action)
                 .fold(Slab::new(), |mut slab, binding| {
-                    let id = widget::Id::unique();
-                    slab.insert((id, binding.clone(), String::new(), false));
+                    slab.insert(ShortcutBinding {
+                        id: widget::Id::unique(),
+                        binding: binding.clone(),
+                        input: String::new(),
+                        editing: false,
+                        is_default: defaults.0.get(binding) == Some(&action),
+                    });
                     slab
                 }),
             description: super::localize_action(&action),
@@ -52,6 +71,7 @@ pub struct Model {
     pub shortcut_context: Option<usize>,
     pub config: cosmic_config::Config,
     pub custom: bool,
+    pub actions: fn(&Shortcuts, &Shortcuts) -> Slab<ShortcutModel>,
 }
 
 impl Default for Model {
@@ -63,40 +83,70 @@ impl Default for Model {
             shortcut_context: None,
             config: shortcuts::context().unwrap(),
             custom: false,
+            actions: |_, _| Slab::new(),
         }
     }
 }
 
 impl Model {
+    pub fn actions(mut self, actions: fn(&Shortcuts, &Shortcuts) -> Slab<ShortcutModel>) -> Self {
+        self.actions = actions;
+        self
+    }
+
     pub fn custom(mut self) -> Self {
         self.custom = true;
         self
     }
 
+    /// Adds a new binding to the shortcuts config
+    pub(super) fn config_add(&self, action: Action, binding: Binding) {
+        let mut shortcuts = self.shortcuts_config();
+        shortcuts.0.insert(binding, action);
+        self.shortcuts_config_set(shortcuts);
+    }
+
+    /// Check if a binding is already set
+    pub(super) fn config_contains(&self, binding: &Binding) -> Option<Action> {
+        self.shortcuts_system_config().0.get(binding).cloned()
+    }
+
+    /// Removes a binding from the shortcuts config
+    pub(super) fn config_remove(&self, binding: &Binding) {
+        let mut shortcuts = self.shortcuts_config();
+        shortcuts.0.retain(|b, _| b != binding);
+        self.shortcuts_config_set(shortcuts);
+    }
+
     pub(super) fn context_drawer(&self) -> Option<Element<'_, ShortcutMessage>> {
         self.shortcut_context
             .as_ref()
-            .map(|id| super::context_drawer(&self.shortcut_models, *id, self.custom))
+            .map(|id| context_drawer(&self.shortcut_models, *id, self.custom))
     }
 
     pub(super) fn dialog(&self) -> Option<Element<'_, ShortcutMessage>> {
         if let Some(&(id, _, _, ref action)) = self.replace_dialog.as_ref() {
             if let Some(short_id) = self.shortcut_context {
                 if let Some(model) = self.shortcut_models.get(short_id) {
-                    if let Some((_, binding, shortcut, _)) = model.bindings.get(id) {
+                    if let Some(shortcut) = model.bindings.get(id) {
                         let primary_action = button::suggested(fl!("replace"))
                             .on_press(ShortcutMessage::ApplyReplace);
 
                         let secondary_action = button::standard(fl!("cancel"))
                             .on_press(ShortcutMessage::CancelReplace);
 
-                        let dialog = cosmic::widget::dialog(fl!("replace-shortcut-dialog"))
+                        let dialog = widget::dialog(fl!("replace-shortcut-dialog"))
                             .icon(icon::from_name("dialog-warning").size(64))
                             .body(fl!(
                                 "replace-shortcut-dialog",
                                 "desc",
-                                shortcut = shortcut.clone(),
-                                name = binding.description.as_ref().unwrap_or(action).to_owned()
+                                shortcut = shortcut.input.clone(),
+                                name = shortcut
+                                    .binding
+                                    .description
+                                    .as_ref()
+                                    .unwrap_or(action)
+                                    .to_owned()
                             ))
                             .primary_action(primary_action)
                             .secondary_action(secondary_action);
@@ -110,7 +160,7 @@ impl Model {
         None
     }
 
-    pub(super) fn on_enter(&mut self, bindings: fn(&Shortcuts) -> Slab<ShortcutModel>) {
+    pub(super) fn on_enter(&mut self) {
         let mut shortcuts = self.config.get::<Shortcuts>("defaults").unwrap_or_default();
 
         self.defaults = shortcuts.clone();
@@ -122,191 +172,11 @@ impl Model {
             }
         }
 
-        self.shortcut_models = bindings(&shortcuts);
+        self.shortcut_models = (self.actions)(&self.defaults, &shortcuts);
     }
 
     pub(super) fn on_clear(&mut self) {
         self.shortcut_models.clear();
-    }
-
-    pub(super) fn view(&self) -> Element<ShortcutMessage> {
-        self.shortcut_models
-            .iter()
-            .map(|(id, shortcut)| super::shortcut_item(self.custom, id, shortcut))
-            .fold(settings::view_section(""), settings::Section::add)
-            .into()
-    }
-
-    #[allow(clippy::too_many_lines)]
-    pub(super) fn update(&mut self, message: ShortcutMessage) -> Command<crate::app::Message> {
-        match message {
-            ShortcutMessage::AddKeybinding => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        let id = cosmic::widget::Id::unique();
-                        model.bindings.insert((
-                            id.clone(),
-                            Binding::default(),
-                            String::new(),
-                            true,
-                        ));
-
-                        return cosmic::widget::text_input::focus(id);
-                    }
-                }
-            }
-
-            ShortcutMessage::ApplyReplace => {
-                if let Some((id, new_binding, action, _)) = self.replace_dialog.take() {
-                    if let Some(short_id) = self.shortcut_context {
-                        // Remove conflicting bindings that are saved on disk.
-                        self.config_remove(&action, &new_binding);
-
-                        // Clear any binding that matches this in the current model
-                        for (_, model) in &mut self.shortcut_models {
-                            if let Some(id) = model
-                                .bindings
-                                .iter()
-                                .find(|(_, (_, binding, ..))| binding == &new_binding)
-                                .map(|(id, _)| id)
-                            {
-                                model.bindings.remove(id);
-                                break;
-                            }
-                        }
-
-                        // Update the current model and save the binding to disk.
-                        if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                            if let Some((_, binding, editing, is_editing)) =
-                                model.bindings.get_mut(id)
-                            {
-                                let prev_binding = binding.clone();
-
-                                *binding = new_binding.clone();
-                                editing.clear();
-                                *is_editing = false;
-
-                                let action = model.action.clone();
-                                self.config_remove(&action, &prev_binding);
-                                self.config_add(action, new_binding);
-                            }
-                        }
-                    }
-                }
-            }
-
-            ShortcutMessage::CancelReplace => self.replace_dialog = None,
-
-            ShortcutMessage::ClearBinding(id) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        if let Some((_, _, editing, _)) = model.bindings.get_mut(id) {
-                            editing.clear();
-                        }
-                    }
-                }
-            }
-
-            ShortcutMessage::DeleteBinding(id) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        let (_, removed, ..) = model.bindings.remove(id);
-                        let action = model.action.clone();
-                        self.config_remove(&action, &removed);
-                    }
-                }
-            }
-
-            ShortcutMessage::DeleteShortcut(id) => {
-                let model = self.shortcut_models.remove(id);
-                for (_, (_, binding, ..)) in model.bindings {
-                    self.config_remove(&model.action, &binding);
-                }
-            }
-
-            ShortcutMessage::EditBinding(id, enable) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        if let Some(&mut (_, _, _, ref mut is_editing)) = model.bindings.get_mut(id)
-                        {
-                            *is_editing = enable;
-                        }
-                    }
-                }
-            }
-
-            ShortcutMessage::InputBinding(id, text) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        if let Some(&mut (_, _, ref mut editing, _)) = model.bindings.get_mut(id) {
-                            *editing = text;
-                        }
-                    }
-                }
-            }
-
-            ShortcutMessage::ShowShortcut(id, description) => {
-                self.shortcut_context = Some(id);
-                self.replace_dialog = None;
-                return command::message(crate::app::Message::OpenContextDrawer(
-                    description.into(),
-                ));
-            }
-
-            ShortcutMessage::SubmitBinding(id) => {
-                if let Some(short_id) = self.shortcut_context {
-                    let mut apply_binding = None;
-
-                    // Check for conflicts with the new binding.
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        if let Some((_, _, editing, _)) = model.bindings.get_mut(id) {
-                            match Binding::from_str(editing) {
-                                Ok(new_binding) => {
-                                    if !new_binding.is_set() {
-                                        editing.clear();
-                                        return Command::none();
-                                    }
-
-                                    if let Some(action) = self.config_contains(&new_binding) {
-                                        let action_str = super::localize_action(&action);
-                                        self.replace_dialog =
-                                            Some((id, new_binding, action, action_str));
-                                        return Command::none();
-                                    }
-
-                                    apply_binding = Some(new_binding);
-                                }
-
-                                Err(why) => {
-                                    tracing::error!(why, "keybinding input invalid");
-                                }
-                            }
-                        }
-                    }
-
-                    // Apply if no conflict was found.
-                    if let Some(new_binding) = apply_binding {
-                        if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                            if let Some((_, binding, editing, is_editing)) =
-                                model.bindings.get_mut(id)
-                            {
-                                let prev_binding = binding.clone();
-
-                                *binding = new_binding.clone();
-                                editing.clear();
-                                *is_editing = false;
-
-                                let action = model.action.clone();
-                                self.config_remove(&action, &prev_binding);
-                                self.config_add(action, new_binding);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Command::none()
     }
 
     /// Gets the custom configuration for keyboard shortcuts.
@@ -341,22 +211,354 @@ impl Model {
         }
     }
 
-    /// Adds a new binding to the shortcuts config
-    pub(super) fn config_add(&self, action: Action, binding: Binding) {
-        let mut shortcuts = self.shortcuts_config();
-        shortcuts.0.insert(binding, action);
-        self.shortcuts_config_set(shortcuts);
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn update(&mut self, message: ShortcutMessage) -> Command<crate::app::Message> {
+        match message {
+            ShortcutMessage::AddKeybinding => {
+                if let Some(short_id) = self.shortcut_context {
+                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                        // If an empty entry exists, focus it instead of creating a new input.
+                        for (_, shortcut) in &mut model.bindings {
+                            if shortcut.binding.is_set()
+                                || Binding::from_str(&shortcut.input).is_ok()
+                            {
+                                continue;
+                            }
+
+                            shortcut.input.clear();
+
+                            return widget::text_input::focus(shortcut.id.clone());
+                        }
+
+                        // Create a new input and focus it.
+                        let id = widget::Id::unique();
+                        model.bindings.insert(ShortcutBinding {
+                            id: id.clone(),
+                            binding: Binding::default(),
+                            input: String::new(),
+                            editing: true,
+                            is_default: false,
+                        });
+
+                        return widget::text_input::focus(id);
+                    }
+                }
+            }
+
+            ShortcutMessage::ApplyReplace => {
+                if let Some((id, new_binding, ..)) = self.replace_dialog.take() {
+                    if let Some(short_id) = self.shortcut_context {
+                        // Remove conflicting bindings that are saved on disk.
+                        self.config_remove(&new_binding);
+
+                        // Clear any binding that matches this in the current model
+                        for (_, model) in &mut self.shortcut_models {
+                            if let Some(id) = model
+                                .bindings
+                                .iter()
+                                .find(|(_, shortcut)| shortcut.binding == new_binding)
+                                .map(|(id, _)| id)
+                            {
+                                model.bindings.remove(id);
+                                break;
+                            }
+                        }
+
+                        // Update the current model and save the binding to disk.
+                        if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                            if let Some(shortcut) = model.bindings.get_mut(id) {
+                                let prev_binding = shortcut.binding.clone();
+
+                                shortcut.binding = new_binding.clone();
+                                shortcut.input.clear();
+                                shortcut.editing = false;
+
+                                let action = model.action.clone();
+                                self.config_remove(&prev_binding);
+                                self.config_add(action, new_binding);
+                            }
+                        }
+                    }
+                }
+            }
+
+            ShortcutMessage::CancelReplace => self.replace_dialog = None,
+
+            ShortcutMessage::ClearBinding(id) => {
+                if let Some(short_id) = self.shortcut_context {
+                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                        if let Some(shortcut) = model.bindings.get_mut(id) {
+                            shortcut.input.clear();
+                        }
+                    }
+                }
+            }
+
+            ShortcutMessage::DeleteBinding(id) => {
+                if let Some(short_id) = self.shortcut_context {
+                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                        let shortcut = model.bindings.remove(id);
+                        self.config_remove(&shortcut.binding);
+                        self.on_enter();
+                    }
+                }
+            }
+
+            ShortcutMessage::DeleteShortcut(id) => {
+                let model = self.shortcut_models.remove(id);
+                for (_, shortcut) in model.bindings {
+                    self.config_remove(&shortcut.binding);
+                    self.on_enter();
+                }
+            }
+
+            ShortcutMessage::EditBinding(id, enable) => {
+                if let Some(short_id) = self.shortcut_context {
+                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                        if let Some(shortcut) = model.bindings.get_mut(id) {
+                            shortcut.editing = enable;
+                        }
+                    }
+                }
+            }
+
+            ShortcutMessage::InputBinding(id, text) => {
+                if let Some(short_id) = self.shortcut_context {
+                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                        if let Some(shortcut) = model.bindings.get_mut(id) {
+                            shortcut.input = text;
+                        }
+                    }
+                }
+            }
+
+            // Removes all bindings from the active shortcut context, and reloads the shortcuts model.
+            ShortcutMessage::ResetBindings => {
+                if let Some(short_id) = self.shortcut_context {
+                    if let Some(model) = self.shortcut_models.get(short_id) {
+                        for (_, shortcut) in &model.bindings {
+                            self.config_remove(&shortcut.binding);
+                        }
+
+                        if let Ok(defaults) = self.config.get::<Shortcuts>("defaults") {
+                            for (binding, action) in defaults.0 {
+                                if action == model.action {
+                                    self.config_remove(&binding);
+                                }
+                            }
+                        }
+                    }
+
+                    self.on_enter();
+                }
+            }
+
+            ShortcutMessage::ShowShortcut(id, description) => {
+                self.shortcut_context = Some(id);
+                self.replace_dialog = None;
+
+                let mut commands = vec![command::message(crate::app::Message::OpenContextDrawer(
+                    description.into(),
+                ))];
+
+                if let Some(model) = self.shortcut_models.get(0) {
+                    if let Some(shortcut) = model.bindings.get(0) {
+                        commands.push(widget::text_input::focus(shortcut.id.clone()));
+                        commands.push(widget::text_input::select_all(shortcut.id.clone()));
+                    }
+                }
+
+                return Command::batch(commands);
+            }
+
+            ShortcutMessage::SubmitBinding(id) => {
+                if let Some(short_id) = self.shortcut_context {
+                    let mut apply_binding = None;
+
+                    // Check for conflicts with the new binding.
+                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                        if let Some(shortcut) = model.bindings.get_mut(id) {
+                            match Binding::from_str(&shortcut.input) {
+                                Ok(new_binding) => {
+                                    if !new_binding.is_set() {
+                                        shortcut.input.clear();
+                                        return Command::none();
+                                    }
+
+                                    if let Some(action) = self.config_contains(&new_binding) {
+                                        let action_str = super::localize_action(&action);
+                                        self.replace_dialog =
+                                            Some((id, new_binding, action, action_str));
+                                        return Command::none();
+                                    }
+
+                                    apply_binding = Some(new_binding);
+                                }
+
+                                Err(why) => {
+                                    tracing::error!(why, "keybinding input invalid");
+                                }
+                            }
+                        }
+                    }
+
+                    // Apply if no conflict was found.
+                    if let Some(new_binding) = apply_binding {
+                        if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                            if let Some(shortcut) = model.bindings.get_mut(id) {
+                                let prev_binding = shortcut.binding.clone();
+
+                                shortcut.binding = new_binding.clone();
+                                shortcut.input.clear();
+                                shortcut.editing = false;
+
+                                let action = model.action.clone();
+                                self.config_remove(&prev_binding);
+                                self.config_add(action, new_binding);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Command::none()
     }
 
-    /// Check if a binding is already set
-    pub(super) fn config_contains(&self, binding: &Binding) -> Option<Action> {
-        self.shortcuts_system_config().0.get(binding).cloned()
+    pub(super) fn view(&self) -> Element<ShortcutMessage> {
+        self.shortcut_models
+            .iter()
+            .map(|(id, shortcut)| shortcut_item(self.custom, id, shortcut))
+            .fold(settings::view_section(""), settings::Section::add)
+            .into()
+    }
+}
+
+fn context_drawer(
+    shortcuts: &Slab<ShortcutModel>,
+    id: usize,
+    show_action: bool,
+) -> Element<ShortcutMessage> {
+    let model = &shortcuts[id];
+
+    let action = show_action.then(|| {
+        let description = if let Action::Spawn(command) = &model.action {
+            Cow::Borrowed(command.as_str())
+        } else {
+            Cow::Owned(super::localize_action(&model.action))
+        };
+
+        text::body(description)
+    });
+
+    let bindings = model.bindings.iter().enumerate().fold(
+        settings::view_section(""),
+        |section, (_, (bind_id, shortcut))| {
+            let text: Cow<'_, str> = if !shortcut.editing && shortcut.binding.is_set() {
+                Cow::Owned(shortcut.binding.to_string())
+            } else {
+                Cow::Borrowed(&shortcut.input)
+            };
+
+            let input = if shortcut.is_default {
+                widget::text_input("", text).style(cosmic::theme::TextInput::EditableText)
+            } else {
+                widget::editable_input("", text, shortcut.editing, move |enable| {
+                    ShortcutMessage::EditBinding(bind_id, enable)
+                })
+                .select_on_focus(true)
+                .on_clear(ShortcutMessage::ClearBinding(bind_id))
+                .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
+                .on_submit(ShortcutMessage::SubmitBinding(bind_id))
+            };
+
+            let input = input.id(shortcut.id.clone()).into();
+
+            let delete_button = if shortcut.is_default {
+                widget::horizontal_space(Length::Fixed(32.0)).into()
+            } else {
+                widget::button::icon(icon::from_name("edit-delete-symbolic"))
+                    .on_press(ShortcutMessage::DeleteBinding(bind_id))
+                    .into()
+            };
+
+            section.add(settings::flex_item_row(vec![input, delete_button]))
+        },
+    );
+
+    // TODO: Detect when it is necessary
+    let reset_keybinding_button = if show_action {
+        None
+    } else {
+        let button = widget::button::standard(fl!("reset-to-default"))
+            .on_press(ShortcutMessage::ResetBindings);
+        Some(button)
+    };
+
+    let add_keybinding_button =
+        widget::button::standard(fl!("add-keybinding")).on_press(ShortcutMessage::AddKeybinding);
+
+    let button_container = widget::row::with_capacity(2)
+        .push_maybe(reset_keybinding_button)
+        .push(add_keybinding_button)
+        .spacing(12)
+        .apply(widget::container)
+        .width(Length::Fill)
+        .align_x(Horizontal::Right);
+
+    widget::column::with_capacity(if show_action { 3 } else { 2 })
+        .spacing(24)
+        .push_maybe(action)
+        .push(bindings)
+        .push(button_container)
+        .into()
+}
+
+/// Display a shortcut as a list item
+fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<ShortcutMessage> {
+    #[derive(Copy, Clone, Debug)]
+    enum LocalMessage {
+        Remove,
+        Show,
     }
 
-    /// Removes a binding from the shortcuts config
-    pub(super) fn config_remove(&self, action: &Action, binding: &Binding) {
-        let mut shortcuts = self.shortcuts_config();
-        shortcuts.0.retain(|b, a| a != action && b != binding);
-        self.shortcuts_config_set(shortcuts);
-    }
+    let bindings = data
+        .bindings
+        .iter()
+        .take(3)
+        .filter(|(_, shortcut)| shortcut.binding.is_set())
+        .map(|(_, shortcut)| widget::text::body(shortcut.binding.to_string()).into())
+        .collect::<Vec<_>>();
+
+    let shortcuts: Element<LocalMessage> = if bindings.is_empty() {
+        widget::text::body(fl!("disabled")).into()
+    } else {
+        widget::column::with_children(bindings)
+            .align_items(Alignment::End)
+            .into()
+    };
+
+    let control = widget::row::with_capacity(if custom { 3 } else { 2 })
+        .push(shortcuts)
+        .push(icon::from_name("go-next-symbolic").size(16))
+        .push_maybe(custom.then(|| {
+            widget::button::icon(icon::from_name("edit-delete-symbolic"))
+                .on_press(LocalMessage::Remove)
+        }))
+        .align_items(Alignment::Center)
+        .spacing(4);
+
+    settings::item::builder(&data.description)
+        .flex_control(control)
+        .spacing(16)
+        .apply(widget::container)
+        .style(theme::Container::List)
+        .apply(widget::button)
+        .style(theme::Button::Transparent)
+        .on_press(LocalMessage::Show)
+        .apply(Element::from)
+        .map(move |message| match message {
+            LocalMessage::Show => ShortcutMessage::ShowShortcut(id, data.description.clone()),
+            LocalMessage::Remove => ShortcutMessage::DeleteShortcut(id),
+        })
 }

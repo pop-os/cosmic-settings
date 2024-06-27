@@ -1,5 +1,5 @@
 mod common;
-pub use common::{Model, ShortcutMessage, ShortcutModel};
+pub use common::{Model, ShortcutBinding, ShortcutMessage, ShortcutModel};
 
 pub mod custom;
 pub mod manage_windows;
@@ -8,9 +8,6 @@ pub mod nav;
 pub mod system;
 pub mod tiling;
 
-use cosmic::iced::alignment::Horizontal;
-use cosmic::iced::{Alignment, Length};
-use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{self, icon, settings, text};
 use cosmic::{command, theme, Apply, Command, Element};
 use cosmic_config::ConfigGet;
@@ -23,7 +20,6 @@ use cosmic_settings_page::{self as page, section};
 use shortcuts::action::System as SystemAction;
 use slab::Slab;
 use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
-use std::borrow::Cow;
 
 pub struct Page {
     modified: Modified,
@@ -58,6 +54,7 @@ struct Search {
     actions: SlotMap<DefaultKey, Action>,
     localized: SecondaryMap<DefaultKey, String>,
     shortcuts: Shortcuts,
+    defaults: Shortcuts,
 }
 
 #[derive(Clone, Debug)]
@@ -165,8 +162,8 @@ impl page::Page<crate::pages::Message> for Page {
                 }
             }
 
+            self.search.defaults = defaults.clone();
             defaults.0.extend(custom.0);
-
             self.search.shortcuts = defaults;
         }
 
@@ -278,7 +275,11 @@ impl Search {
             .iter()
             .filter(|(id, _)| self.localized[*id].contains(&self.input))
             .fold(Slab::new(), |mut slab, (_, action)| {
-                slab.insert(ShortcutModel::new(&self.shortcuts, action.clone()));
+                slab.insert(ShortcutModel::new(
+                    &self.defaults,
+                    &self.shortcuts,
+                    action.clone(),
+                ));
 
                 slab
             })
@@ -294,6 +295,11 @@ fn shortcuts() -> Section<crate::pages::Message> {
     let nav_label = descriptions.insert(fl!("nav-shortcuts"));
     let system_label = descriptions.insert(fl!("system-shortcut"));
     let window_tiling_label = descriptions.insert(fl!("window-tiling"));
+
+    // Make these searchable in the global settings search.
+    for action in all_actions() {
+        descriptions.insert(localize_action(action));
+    }
 
     Section::default()
         .descriptions(descriptions)
@@ -372,114 +378,6 @@ fn category_item(category: Category, name: &str, modified: u16) -> Element<Messa
         .apply(widget::button)
         .style(theme::Button::Transparent)
         .on_press(Message::Category(category))
-        .into()
-}
-
-/// Display a shortcut as a list item
-fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<ShortcutMessage> {
-    #[derive(Copy, Clone, Debug)]
-    enum LocalMessage {
-        Remove,
-        Show,
-    }
-
-    let bindings = data
-        .bindings
-        .iter()
-        .take(3)
-        .filter(|(_, (_, b, ..))| b.is_set())
-        .map(|(_, (_, b, ..))| widget::text::body(b.to_string()).into())
-        .collect::<Vec<_>>();
-
-    let shortcuts: Element<LocalMessage> = if bindings.is_empty() {
-        widget::text::body(fl!("disabled")).into()
-    } else {
-        widget::column::with_children(bindings)
-            .align_items(Alignment::End)
-            .into()
-    };
-
-    let control = widget::row::with_capacity(if custom { 3 } else { 2 })
-        .push(shortcuts)
-        .push(icon::from_name("go-next-symbolic").size(16))
-        .push_maybe(custom.then(|| {
-            widget::button::icon(icon::from_name("edit-delete-symbolic"))
-                .on_press(LocalMessage::Remove)
-        }))
-        .align_items(Alignment::Center)
-        .spacing(4);
-
-    settings::item::builder(&data.description)
-        .flex_control(control)
-        .spacing(16)
-        .apply(widget::container)
-        .style(theme::Container::List)
-        .apply(widget::button)
-        .style(theme::Button::Transparent)
-        .on_press(LocalMessage::Show)
-        .apply(Element::from)
-        .map(move |message| match message {
-            LocalMessage::Show => ShortcutMessage::ShowShortcut(id, data.description.clone()),
-            LocalMessage::Remove => ShortcutMessage::DeleteShortcut(id),
-        })
-}
-
-fn context_drawer(
-    shortcuts: &Slab<ShortcutModel>,
-    id: usize,
-    show_action: bool,
-) -> Element<ShortcutMessage> {
-    let model = &shortcuts[id];
-
-    let action = show_action.then(|| {
-        let description = if let Action::Spawn(command) = &model.action {
-            Cow::Borrowed(command.as_str())
-        } else {
-            Cow::Owned(localize_action(&model.action))
-        };
-
-        text::body(description)
-    });
-
-    let bindings = model.bindings.iter().enumerate().fold(
-        settings::view_section(""),
-        |section, (_, (bind_id, (id, binding, edit, is_editing)))| {
-            let text: Cow<'_, str> = if *is_editing {
-                Cow::Borrowed(edit)
-            } else if binding.is_set() {
-                Cow::Owned(binding.to_string())
-            } else {
-                Cow::Borrowed("")
-            };
-
-            let input = widget::editable_input("", text, *is_editing, move |enable| {
-                ShortcutMessage::EditBinding(bind_id, enable)
-            })
-            .on_clear(ShortcutMessage::ClearBinding(bind_id))
-            .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
-            .on_submit(ShortcutMessage::SubmitBinding(bind_id))
-            .id(id.clone())
-            .into();
-
-            let delete_button = widget::button::icon(icon::from_name("edit-delete-symbolic"))
-                .on_press(ShortcutMessage::DeleteBinding(bind_id))
-                .into();
-
-            section.add(settings::flex_item_row(vec![input, delete_button]))
-        },
-    );
-
-    let add_keybinding_button = widget::button::standard(fl!("add-keybinding"))
-        .on_press(ShortcutMessage::AddKeybinding)
-        .apply(widget::container)
-        .width(Length::Fill)
-        .align_x(Horizontal::Right);
-
-    widget::column::with_capacity(if show_action { 3 } else { 2 })
-        .spacing(24)
-        .push_maybe(action)
-        .push(bindings)
-        .push(add_keybinding_button)
         .into()
 }
 

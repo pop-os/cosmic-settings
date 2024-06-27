@@ -17,8 +17,7 @@ cosmic-config.workspace = true
 cosmic-panel-config.workspace = true
 cosmic-randr-shell.workspace = true
 cosmic-randr.workspace = true
-cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", branch = "keybindings" }
-# cosmic-settings-config = { path = "../../cosmic-settings-daemon/config/" }
+cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon" }
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-system = { path = "../pages/system" }
 cosmic-settings-time = { path = "../pages/time" }

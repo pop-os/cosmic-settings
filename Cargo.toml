@@ -35,10 +35,13 @@ git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
 rev = "3bed072"
 
+[profile.dev]
+opt-level = 3
+lto = false
+
 [profile.release]
 opt-level = 3
-# debug = true
-# lto = false
+lto = "thin"
 
 [patch.'https://github.com/smithay/client-toolkit/']
 smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "3bed072" }
