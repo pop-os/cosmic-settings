@@ -8,6 +8,7 @@ pub mod nav;
 pub mod system;
 pub mod tiling;
 
+use cosmic::iced::Length;
 use cosmic::widget::{self, icon, settings, text};
 use cosmic::{command, theme, Apply, Command, Element};
 use cosmic_config::ConfigGet;
@@ -307,9 +308,13 @@ fn shortcuts() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            let search = widget::search_input("", &page.search.input)
+            let search = widget::search_input(fl!("type-to-search"), &page.search.input)
+                .width(314)
                 .on_clear(Message::Search(String::new()))
-                .on_input(Message::Search);
+                .on_input(Message::Search)
+                .apply(widget::container)
+                .center_x()
+                .width(Length::Fill);
 
             // If the search input is not empty, show the category view, else the search results.
             let content = if page.search.input.is_empty() {
@@ -350,7 +355,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
             };
 
             widget::column::with_capacity(2)
-                .spacing(12)
+                .spacing(32)
                 .push(search)
                 .push(content)
                 .apply(Element::from)
