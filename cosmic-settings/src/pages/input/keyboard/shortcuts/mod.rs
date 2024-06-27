@@ -271,9 +271,10 @@ impl Search {
     }
 
     fn shortcut_models(&mut self) -> Slab<ShortcutModel> {
+        let input = self.input.to_lowercase();
         self.actions
             .iter()
-            .filter(|(id, _)| self.localized[*id].contains(&self.input))
+            .filter(|(id, _)| self.localized[*id].to_lowercase().contains(&input))
             .fold(Slab::new(), |mut slab, (_, action)| {
                 slab.insert(ShortcutModel::new(
                     &self.defaults,
