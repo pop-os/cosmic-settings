@@ -37,8 +37,6 @@ pub enum Message {
     AddKeybinding,
     /// Add a new custom shortcut to the config
     AddShortcut,
-    /// Clear the command text input
-    CommandClear,
     /// Update the command text input
     CommandInput(String),
     /// Toggle editing of the key text input
@@ -49,8 +47,6 @@ pub enum Message {
     KeyEditing(usize, bool),
     /// Update the key text input
     KeyInput(usize, String),
-    /// Clear the name text input
-    NameClear,
     /// Update the name text input
     NameInput(String),
     /// Enter key pressed in the name text input
@@ -172,10 +168,6 @@ impl Page {
                 self.model.on_enter();
             }
 
-            Message::CommandClear => {
-                self.add_shortcut.command.clear();
-            }
-
             Message::EditCombination => {
                 let (_, id, editing) = &mut self.add_shortcut.keys[0];
                 *editing = true;
@@ -187,10 +179,6 @@ impl Page {
 
             Message::KeyClear(id) => {
                 self.add_shortcut.keys[id].0.clear();
-            }
-
-            Message::NameClear => {
-                self.add_shortcut.name.clear();
             }
 
             Message::NameSubmit => {
@@ -241,13 +229,13 @@ impl Page {
 
     fn add_keybinding_context(&self) -> Element<'_, Message> {
         let name_input = widget::text_input("", &self.add_shortcut.name)
-            .on_clear(Message::NameClear)
+            .padding([6, 12])
             .on_input(Message::NameInput)
             .on_submit(Message::NameSubmit)
             .id(self.name_id.clone());
 
         let command_input = widget::text_input("", &self.add_shortcut.command)
-            .on_clear(Message::CommandClear)
+            .padding([6, 12])
             .on_input(Message::CommandInput)
             .on_submit(Message::EditCombination)
             .id(self.command_id.clone());
@@ -263,12 +251,13 @@ impl Page {
             .push(command_input);
 
         let input_fields = widget::column()
-            .spacing(24)
+            .spacing(12)
             .push(name_control)
-            .push(command_control);
+            .push(command_control)
+            .padding([16, 24]);
 
         let keys = self.add_shortcut.keys.iter().fold(
-            widget::column(),
+            widget::list_column().spacing(0),
             |column, (id, (text, widget_id, editing))| {
                 let key_combination = widget::editable_input(
                     fl!("type-key-combination"),
@@ -276,18 +265,19 @@ impl Page {
                     *editing,
                     move |enable| Message::KeyEditing(id, enable),
                 )
+                .padding([0, 12])
                 .on_clear(Message::KeyClear(id))
                 .on_input(move |input| Message::KeyInput(id, input))
                 .on_submit(Message::AddKeybinding)
-                .id(widget_id.clone());
+                .id(widget_id.clone())
+                .apply(widget::container)
+                .padding([8, 24]);
 
-                column.push(key_combination)
+                column.add(key_combination)
             },
         );
 
-        let controls = widget::settings::view_section("")
-            .add(input_fields)
-            .add(keys);
+        let controls = widget::list_column().add(input_fields).add(keys).spacing(0);
 
         let add_keybinding_button = widget::button::standard(fl!("add-keybinding"))
             .on_press(Message::AddShortcut)
@@ -296,10 +286,9 @@ impl Page {
             .align_x(Horizontal::Right);
 
         widget::column()
-            .spacing(24)
+            .spacing(32)
             .push(controls)
             .push(add_keybinding_button)
-            .padding([24, 24])
             .into()
     }
 
