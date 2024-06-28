@@ -461,7 +461,7 @@ fn context_drawer(
     });
 
     let bindings = model.bindings.iter().enumerate().fold(
-        widget::list_column(),
+        widget::list_column().spacing(8),
         |section, (_, (bind_id, shortcut))| {
             let text: Cow<'_, str> = if !shortcut.editing && shortcut.binding.is_set() {
                 Cow::Owned(shortcut.binding.to_string())
@@ -476,7 +476,7 @@ fn context_drawer(
             .on_clear(ShortcutMessage::ClearBinding(bind_id))
             .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
             .on_submit(ShortcutMessage::SubmitBinding(bind_id))
-            .padding([6, 12])
+            .padding([0, 12])
             .id(shortcut.id.clone())
             .into();
 
@@ -484,7 +484,10 @@ fn context_drawer(
                 .on_press(ShortcutMessage::DeleteBinding(bind_id))
                 .into();
 
-            section.add(settings::flex_item_row(vec![input, delete_button]))
+            let flex_control =
+                settings::flex_item_row(vec![input, delete_button]).align_items(Alignment::Center);
+
+            section.add(flex_control)
         },
     );
 
@@ -509,7 +512,7 @@ fn context_drawer(
         .align_x(Horizontal::Right);
 
     widget::column::with_capacity(if show_action { 3 } else { 2 })
-        .spacing(24)
+        .spacing(32)
         .push_maybe(action)
         .push(bindings)
         .push(button_container)
