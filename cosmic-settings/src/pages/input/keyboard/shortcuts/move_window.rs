@@ -99,9 +99,12 @@ pub const fn actions() -> &'static [Action] {
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {
-    let descriptions = Slab::new();
+    let mut descriptions = Slab::new();
 
-    // TODO: Add shortcuts to descriptions
+    // Make these searchable in the global settings search.
+    for action in actions() {
+        descriptions.insert(super::localize_action(action));
+    }
 
     Section::default()
         .descriptions(descriptions)

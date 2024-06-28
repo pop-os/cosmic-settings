@@ -298,11 +298,6 @@ fn shortcuts() -> Section<crate::pages::Message> {
     let system_label = descriptions.insert(fl!("system-shortcut"));
     let window_tiling_label = descriptions.insert(fl!("window-tiling"));
 
-    // Make these searchable in the global settings search.
-    for action in all_actions() {
-        descriptions.insert(localize_action(action));
-    }
-
     Section::default()
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
@@ -493,6 +488,7 @@ fn all_actions() -> &'static [Action] {
 fn localize_action(action: &Action) -> String {
     match action {
         Action::Close => fl!("manage-windows", "close"),
+        Action::Disable => fl!("disabled"),
         Action::Focus(FocusDirection::Down) => fl!("nav-shortcuts", "focus", direction = "down"),
         Action::Focus(FocusDirection::In) => fl!("nav-shortcuts", "focus", direction = "in"),
         Action::Focus(FocusDirection::Left) => fl!("nav-shortcuts", "focus", direction = "left"),
