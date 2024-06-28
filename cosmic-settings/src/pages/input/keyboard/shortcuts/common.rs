@@ -108,7 +108,11 @@ impl Model {
 
     /// Check if a binding is already set
     pub(super) fn config_contains(&self, binding: &Binding) -> Option<Action> {
-        self.shortcuts_system_config().0.get(binding).cloned()
+        self.shortcuts_system_config()
+            .0
+            .get(binding)
+            .cloned()
+            .filter(|action| *action != Action::Disable)
     }
 
     /// Removes a binding from the shortcuts config
@@ -298,7 +302,12 @@ impl Model {
                 if let Some(short_id) = self.shortcut_context {
                     if let Some(model) = self.shortcut_models.get_mut(short_id) {
                         let shortcut = model.bindings.remove(id);
-                        self.config_remove(&shortcut.binding);
+                        if shortcut.is_default {
+                            self.config_add(Action::Disable, shortcut.binding.clone());
+                        } else {
+                            self.config_remove(&shortcut.binding);
+                        }
+
                         self.on_enter();
                     }
                 }
@@ -429,7 +438,7 @@ impl Model {
         self.shortcut_models
             .iter()
             .map(|(id, shortcut)| shortcut_item(self.custom, id, shortcut))
-            .fold(settings::view_section(""), settings::Section::add)
+            .fold(widget::list_column(), widget::ListColumn::add)
             .into()
     }
 }
@@ -452,7 +461,7 @@ fn context_drawer(
     });
 
     let bindings = model.bindings.iter().enumerate().fold(
-        settings::view_section(""),
+        widget::list_column(),
         |section, (_, (bind_id, shortcut))| {
             let text: Cow<'_, str> = if !shortcut.editing && shortcut.binding.is_set() {
                 Cow::Owned(shortcut.binding.to_string())
@@ -460,27 +469,20 @@ fn context_drawer(
                 Cow::Borrowed(&shortcut.input)
             };
 
-            let input = if shortcut.is_default {
-                widget::text_input("", text).style(cosmic::theme::TextInput::EditableText)
-            } else {
-                widget::editable_input("", text, shortcut.editing, move |enable| {
-                    ShortcutMessage::EditBinding(bind_id, enable)
-                })
-                .select_on_focus(true)
-                .on_clear(ShortcutMessage::ClearBinding(bind_id))
-                .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
-                .on_submit(ShortcutMessage::SubmitBinding(bind_id))
-            };
+            let input = widget::editable_input("", text, shortcut.editing, move |enable| {
+                ShortcutMessage::EditBinding(bind_id, enable)
+            })
+            .select_on_focus(true)
+            .on_clear(ShortcutMessage::ClearBinding(bind_id))
+            .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
+            .on_submit(ShortcutMessage::SubmitBinding(bind_id))
+            .padding([6, 12])
+            .id(shortcut.id.clone())
+            .into();
 
-            let input = input.id(shortcut.id.clone()).into();
-
-            let delete_button = if shortcut.is_default {
-                widget::horizontal_space(Length::Fixed(32.0)).into()
-            } else {
-                widget::button::icon(icon::from_name("edit-delete-symbolic"))
-                    .on_press(ShortcutMessage::DeleteBinding(bind_id))
-                    .into()
-            };
+            let delete_button = widget::button::icon(icon::from_name("edit-delete-symbolic"))
+                .on_press(ShortcutMessage::DeleteBinding(bind_id))
+                .into();
 
             section.add(settings::flex_item_row(vec![input, delete_button]))
         },

@@ -1508,7 +1508,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-daemon#5d01e287112dca46cf96d58fa64c6fb0485b11a2"
+source = "git+https://github.com/pop-os/cosmic-settings-daemon#ad0e0703549f7b135746d0429c6408cc8a7cc037"
 dependencies = [
  "cosmic-config",
  "heck 0.5.0",
