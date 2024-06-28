@@ -163,6 +163,27 @@ impl page::Page<crate::pages::Message> for Page {
                 }
             }
 
+            // Check if default bindings are missing
+            for (binding, action) in &defaults.0 {
+                if binding.is_super() {
+                    continue;
+                }
+
+                match custom.0.get(binding) {
+                    Some(custom_action) if action != custom_action => (),
+                    _ => continue,
+                };
+
+                match action_category(action) {
+                    Some(Category::ManageWindow) => self.modified.manage_windows += 1,
+                    Some(Category::MoveWindow) => self.modified.move_windows += 1,
+                    Some(Category::Nav) => self.modified.nav += 1,
+                    Some(Category::System) => self.modified.system += 1,
+                    Some(Category::WindowTiling) => self.modified.window_tiling += 1,
+                    None | Some(Category::Custom) => (),
+                }
+            }
+
             self.search.defaults = defaults.clone();
             defaults.0.extend(custom.0);
             self.search.shortcuts = defaults;

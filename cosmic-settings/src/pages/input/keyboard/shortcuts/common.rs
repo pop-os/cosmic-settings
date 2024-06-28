@@ -39,25 +39,42 @@ pub struct ShortcutModel {
     pub action: Action,
     pub bindings: Slab<ShortcutBinding>,
     pub description: String,
+    pub modified: u16,
 }
 
 impl ShortcutModel {
     pub fn new(defaults: &Shortcuts, shortcuts: &Shortcuts, action: Action) -> Self {
-        Self {
-            bindings: shortcuts
+        let (bindings, modified) =
+            shortcuts
                 .shortcuts(&action)
-                .fold(Slab::new(), |mut slab, binding| {
+                .fold((Slab::new(), 0), |(mut slab, modified), binding| {
+                    let is_default = defaults.0.get(binding) == Some(&action);
+
                     slab.insert(ShortcutBinding {
                         id: widget::Id::unique(),
                         binding: binding.clone(),
                         input: String::new(),
                         editing: false,
-                        is_default: defaults.0.get(binding) == Some(&action),
+                        is_default,
                     });
-                    slab
-                }),
+
+                    (slab, if is_default { modified } else { modified + 1 })
+                });
+
+        Self {
             description: super::localize_action(&action),
+            modified: defaults.0.iter().filter(|(_, a)| **a == action).fold(
+                modified,
+                |modified, (binding, _)| {
+                    if bindings.iter().any(|(_, model)| model.binding == *binding) {
+                        modified
+                    } else {
+                        modified + 1
+                    }
+                },
+            ),
             action,
+            bindings,
         }
     }
 }
@@ -281,6 +298,8 @@ impl Model {
                                 self.config_add(action, new_binding);
                             }
                         }
+
+                        self.on_enter();
                     }
                 }
             }
@@ -417,6 +436,7 @@ impl Model {
                                 let action = model.action.clone();
                                 self.config_remove(&prev_binding);
                                 self.config_add(action, new_binding);
+                                self.on_enter();
                             }
                         }
                     }
@@ -535,7 +555,14 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<Short
             .into()
     };
 
-    let control = widget::row::with_capacity(if custom { 3 } else { 2 })
+    let modified = if data.modified == 0 {
+        None
+    } else {
+        Some(widget::text::body(fl!("modified", count = data.modified)))
+    };
+
+    let control = widget::row::with_capacity(4)
+        .push_maybe(modified)
         .push(shortcuts)
         .push(icon::from_name("go-next-symbolic").size(16))
         .push_maybe(custom.then(|| {
@@ -543,7 +570,7 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<Short
                 .on_press(LocalMessage::Remove)
         }))
         .align_items(Alignment::Center)
-        .spacing(4);
+        .spacing(8);
 
     settings::item::builder(&data.description)
         .flex_control(control)

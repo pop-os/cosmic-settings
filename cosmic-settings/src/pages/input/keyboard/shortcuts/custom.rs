@@ -395,6 +395,7 @@ fn bindings(_defaults: &Shortcuts, keybindings: &Shortcuts) -> Slab<ShortcutMode
                             slab
                         },
                         description,
+                        modified: 0,
                     });
                 }
             }
