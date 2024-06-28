@@ -32,7 +32,7 @@ rgb = RGB
 window-hint-accent = Colore d'accento per la finestra attiva
 window-hint-accent-toggle = Usa il colore del tema come colore d'accento
 
-auto-switch = Cambia automaticamente del tema chiaro al tema scuro
+auto-switch = Cambia automaticamente dal tema chiaro al tema scuro
     .desc = All'alba, cambia al tema Chiaro
 
 container-background = Sfondo container
