@@ -41,8 +41,6 @@ pub enum Message {
     CommandInput(String),
     /// Toggle editing of the key text input
     EditCombination,
-    /// Clear the key text input
-    KeyClear(usize),
     /// Toggle editability of the key text input
     KeyEditing(usize, bool),
     /// Update the key text input
@@ -177,10 +175,6 @@ impl Page {
                 ]);
             }
 
-            Message::KeyClear(id) => {
-                self.add_shortcut.keys[id].0.clear();
-            }
-
             Message::NameSubmit => {
                 if !self.add_shortcut.name.trim().is_empty() {
                     return widget::text_input::focus(self.command_id.clone());
@@ -266,7 +260,6 @@ impl Page {
                     move |enable| Message::KeyEditing(id, enable),
                 )
                 .padding([0, 12])
-                .on_clear(Message::KeyClear(id))
                 .on_input(move |input| Message::KeyInput(id, input))
                 .on_submit(Message::AddKeybinding)
                 .id(widget_id.clone())

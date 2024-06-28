@@ -15,7 +15,6 @@ pub enum ShortcutMessage {
     AddKeybinding,
     ApplyReplace,
     CancelReplace,
-    ClearBinding(usize),
     DeleteBinding(usize),
     DeleteShortcut(usize),
     EditBinding(usize, bool),
@@ -288,16 +287,6 @@ impl Model {
 
             ShortcutMessage::CancelReplace => self.replace_dialog = None,
 
-            ShortcutMessage::ClearBinding(id) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        if let Some(shortcut) = model.bindings.get_mut(id) {
-                            shortcut.input.clear();
-                        }
-                    }
-                }
-            }
-
             ShortcutMessage::DeleteBinding(id) => {
                 if let Some(short_id) = self.shortcut_context {
                     if let Some(model) = self.shortcut_models.get_mut(short_id) {
@@ -326,6 +315,10 @@ impl Model {
                     if let Some(model) = self.shortcut_models.get_mut(short_id) {
                         if let Some(shortcut) = model.bindings.get_mut(id) {
                             shortcut.editing = enable;
+                            if enable {
+                                shortcut.input = shortcut.binding.to_string();
+                                return widget::text_input::select_all(shortcut.id.clone());
+                            }
                         }
                     }
                 }
@@ -473,7 +466,6 @@ fn context_drawer(
                 ShortcutMessage::EditBinding(bind_id, enable)
             })
             .select_on_focus(true)
-            .on_clear(ShortcutMessage::ClearBinding(bind_id))
             .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
             .on_submit(ShortcutMessage::SubmitBinding(bind_id))
             .padding([0, 12])
