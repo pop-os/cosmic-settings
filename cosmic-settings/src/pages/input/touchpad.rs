@@ -64,14 +64,14 @@ fn touchpad() -> Section<crate::pages::Message> {
                             .acceleration
                             .as_ref()
                             .map_or(0.0, |x| x.speed)
-                            + 1.0)
-                            * 50.0;
+                            + 0.81)
+                            * 70.71;
 
-                        let slider = widget::slider(10.0..=80.0, value, |value| {
-                            Message::SetMouseSpeed((value / 50.0) - 1.0, true)
+                        let slider = widget::slider(1.0..=100.0, value, |value| {
+                            Message::SetMouseSpeed((value / 70.71) - 0.81, true)
                         })
                         .width(250.0)
-                        .breakpoints(&[45.0]);
+                        .breakpoints(&[50.0]);
 
                         row::with_capacity(2)
                             .align_items(Alignment::Center)
