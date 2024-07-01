@@ -78,7 +78,7 @@ pub fn actions() -> &'static [Action] {
         Action::ToggleWindowFloating,
         Action::ToggleOrientation,
         Action::Orientation(Orientation::Horizontal),
-        Action::Orientation(Orientation::Horizontal),
+        Action::Orientation(Orientation::Vertical),
         Action::SwapWindow,
     ]
 }
