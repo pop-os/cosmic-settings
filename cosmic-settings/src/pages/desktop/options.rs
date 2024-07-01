@@ -225,9 +225,7 @@ fn super_key_set(action: shortcuts::action::System) {
         return;
     };
 
-    let Ok(mut shortcuts) = config.get::<Shortcuts>("custom") else {
-        return;
-    };
+    let mut shortcuts = config.get::<Shortcuts>("custom").unwrap_or_default();
 
     shortcuts.0.insert(
         Binding::new(shortcuts::Modifiers::new().logo(), None),
