@@ -6,19 +6,18 @@ pub mod arrangement;
 
 use crate::{app, pages};
 use arrangement::Arrangement;
-use cosmic::iced::{Alignment, Length};
+use cosmic::iced::{time, Alignment, Length};
 use cosmic::iced_widget::scrollable::{Direction, Properties, RelativeOffset};
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{
-    column, container, dropdown, list_column, segmented_button, tab_bar, toggler,
+    self, column, container, dropdown, list_column, segmented_button, tab_bar, toggler,
 };
 use cosmic::{command, Apply, Command, Element};
 use cosmic_randr_shell::{List, Output, OutputKey, Transform};
 use cosmic_settings_page::{self as page, section, Section};
 use slab::Slab;
 use slotmap::{Key, SlotMap};
-use std::collections::BTreeMap;
-use std::{process::ExitStatus, sync::Arc};
+use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
 
 /// Display color depth options
 #[derive(Clone, Copy, Debug)]
@@ -61,6 +60,12 @@ pub enum Message {
     ColorDepth(ColorDepth),
     /// Set the color profile of a display.
     ColorProfile(usize),
+    /// The dialog was cancelled, and will revert settings.
+    DialogCancel,
+    /// The dialog was completed.
+    DialogComplete,
+    /// How long until the dialog automatically cancelles, in seconds.
+    DialogCountdown,
     /// Toggles display on or off.
     DisplayToggle(bool),
     /// Configures mirroring status of a display.
@@ -95,7 +100,7 @@ impl From<Message> for app::Message {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum Randr {
     Position(i32, i32),
     RefreshRate(u32),
@@ -115,6 +120,10 @@ pub struct Page {
     cache: ViewCache,
     //  context: Option<ContextDrawer>,
     display_arrangement_scrollable: cosmic::widget::Id,
+    /// The setting to revert to if the next dialog page is cancelled.
+    dialog: Option<Randr>,
+    /// the instant the setting was changed.
+    dialog_countdown: usize,
 }
 
 impl Default for Page {
@@ -128,6 +137,8 @@ impl Default for Page {
             cache: ViewCache::default(),
             //          context: None,
             display_arrangement_scrollable: cosmic::widget::Id::unique(),
+            dialog: None,
+            dialog_countdown: 0,
         }
     }
 }
@@ -285,6 +296,31 @@ impl page::Page<crate::pages::Message> for Page {
     //            None => return None,
     //        })
     //    }
+
+    /// Opens a dialog to confirm the display settings.
+    ///
+    /// This dialog has a 10 (arbitrary) second counter which will
+    /// automatically revert to the original display settings when depleted.
+    ///
+    /// To make a setting activate this dialog. Call the `set_dialog` method with
+    /// the Randr enum value which undos the current change. Makde sure the
+    /// return value is returned with the `exec_value` return value within a batch
+    /// command.
+    fn dialog(&self) -> Option<Element<pages::Message>> {
+        self.dialog?;
+        let element = widget::dialog(fl!("dialog", "title"))
+            .body(fl!("dialog", "change-prompt", time = self.dialog_countdown))
+            .primary_action(
+                widget::button::suggested(fl!("dialog", "keep-changes"))
+                    .on_press(pages::Message::Displays(Message::DialogComplete)),
+            )
+            .secondary_action(
+                widget::button::standard(fl!("dialog", "revert-settings"))
+                    .on_press(pages::Message::Displays(Message::DialogCancel)),
+            )
+            .into();
+        Some(element)
+    }
 }
 
 impl Page {
@@ -297,6 +333,37 @@ impl Page {
                     // Reload display info
                     return cosmic::command::future(async move {
                         crate::Message::PageMessage(on_enter().await)
+                    });
+                }
+            }
+
+            Message::DialogCancel => {
+                let Some(request) = self.dialog else {
+                    return Command::none();
+                };
+                let Some(output) = self.list.outputs.get(self.active_display) else {
+                    return Command::none();
+                };
+                self.dialog = None;
+                self.dialog_countdown = 0;
+                return self.exec_randr(output, request);
+            }
+
+            Message::DialogComplete => {
+                self.dialog = None;
+                self.dialog_countdown = 0;
+            }
+
+            Message::DialogCountdown => {
+                if self.dialog_countdown == 0 {
+                    if self.dialog.is_some() {
+                        return command::message(app::Message::from(Message::DialogCancel));
+                    }
+                } else {
+                    self.dialog_countdown -= 1;
+                    return command::future(async move {
+                        tokio::time::sleep(time::Duration::from_secs(1)).await;
+                        Message::DialogCountdown
                     });
                 }
             }
@@ -410,6 +477,24 @@ impl Page {
         self.set_display(self.display_tabs.active());
     }
 
+    /// Sets the dialog to be shown to the user. Will not show a dialog if the
+    /// current request does not change anything.
+    fn set_dialog(
+        &mut self,
+        revert_request: Randr,
+        current_request: &Randr,
+    ) -> Command<app::Message> {
+        if revert_request == *current_request {
+            return Command::none();
+        }
+        self.dialog = Some(revert_request);
+        self.dialog_countdown = 10;
+        command::future(async {
+            tokio::time::sleep(time::Duration::from_secs(1)).await;
+            app::Message::from(Message::DialogCountdown)
+        })
+    }
+
     /// Changes the color depth of the active display.
     pub fn set_color_depth(&mut self, _depth: ColorDepth) -> Command<app::Message> {
         unimplemented!()
@@ -496,6 +581,22 @@ impl Page {
 
     /// Change display orientation.
     pub fn set_orientation(&mut self, transform: Transform) -> Command<app::Message> {
+        let request = Randr::Transform(transform);
+
+        let mut commands = Vec::with_capacity(2);
+        commands.push(match self.cache.orientation_selected {
+            Some(orientation) => self.set_dialog(
+                Randr::Transform(match orientation {
+                    1 => Transform::Rotate90,
+                    2 => Transform::Flipped180,
+                    3 => Transform::Flipped270,
+                    _ => Transform::Normal,
+                }),
+                &request,
+            ),
+            None => Command::none(),
+        });
+
         let Some(output) = self.list.outputs.get(self.active_display) else {
             return Command::none();
         };
@@ -507,7 +608,9 @@ impl Page {
             _ => Some(3),
         };
 
-        self.exec_randr(output, Randr::Transform(transform))
+        commands.push(self.exec_randr(output, Randr::Transform(transform)));
+
+        Command::batch(commands)
     }
 
     /// Changes the position of the display.
@@ -548,6 +651,8 @@ impl Page {
 
     /// Change the resolution of the active display.
     pub fn set_resolution(&mut self, option: usize) -> Command<app::Message> {
+        let mut commands = Vec::with_capacity(2);
+
         let Some(output) = self.list.outputs.get(self.active_display) else {
             return Command::none();
         };
@@ -563,40 +668,73 @@ impl Page {
             return Command::none();
         };
 
+        let request = Randr::Resolution(resolution.0, resolution.1);
+        let mut revert_request = request;
+        if let Some(resolution) = self.config.resolution {
+            revert_request = Randr::Resolution(resolution.0, resolution.1);
+        }
+
         self.config.refresh_rate = Some(rate);
         self.config.resolution = Some(resolution);
         self.cache.refresh_rate_selected = Some(0);
         self.cache.resolution_selected = Some(option);
-        self.exec_randr(output, Randr::Resolution(resolution.0, resolution.1))
+        commands.push(self.exec_randr(output, Randr::Resolution(resolution.0, resolution.1)));
+        commands.push(self.set_dialog(revert_request, &request));
+
+        Command::batch(commands)
     }
 
     /// Set the scale of the active display.
     pub fn set_scale(&mut self, option: usize) -> Command<app::Message> {
+        let mut commands = Vec::with_capacity(2);
+
         let Some(output) = self.list.outputs.get(self.active_display) else {
             return Command::none();
         };
 
         let scale = (option * 25 + 50) as u32;
 
+        let request = Randr::Scale(scale);
+        let revert_request = Randr::Scale(self.config.scale);
+
         self.cache.scale_selected = Some(option);
         self.config.scale = scale;
-        self.exec_randr(output, Randr::Scale(scale))
+        commands.push(self.exec_randr(output, Randr::Scale(scale)));
+        commands.push(self.set_dialog(revert_request, &request));
+        Command::batch(commands)
     }
 
     /// Enables or disables the active display.
     pub fn toggle_display(&mut self, enable: bool) -> Command<app::Message> {
+        let mut commands = Vec::with_capacity(2);
+        let request = Randr::Toggle(enable);
+
         let Some(output) = self.list.outputs.get_mut(self.active_display) else {
             return Command::none();
         };
 
+        let revert_request = Randr::Toggle(output.enabled);
+        let current_request = request;
+
         output.enabled = enable;
 
         let output = &self.list.outputs[self.active_display];
-        self.exec_randr(output, Randr::Toggle(output.enabled))
+        commands.push(self.exec_randr(output, request));
+        commands.push(self.set_dialog(revert_request, &current_request));
+        Command::batch(commands)
     }
 
     /// Applies a display configuration via `cosmic-randr`.
     fn exec_randr(&self, output: &Output, request: Randr) -> Command<app::Message> {
+        let mut commands = Vec::with_capacity(2);
+
+        // Removes the dialog if no change is being made
+        if Some(request) == self.dialog {
+            commands.push(command::message(app::Message::from(
+                Message::DialogComplete,
+            )));
+        }
+
         let name = &*output.name;
         let mut command = tokio::process::Command::new("cosmic-randr");
 
@@ -688,10 +826,11 @@ impl Page {
             }
         }
 
-        cosmic::command::future(async move {
+        commands.push(cosmic::command::future(async move {
             tracing::debug!(?command, "executing");
             app::Message::from(Message::RandrResult(Arc::new(command.status().await)))
-        })
+        }));
+        Command::batch(commands)
     }
 }
 

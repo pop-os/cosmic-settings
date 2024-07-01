@@ -118,6 +118,12 @@ orientation = Orientation
 scheduling = Scheduling
     .manual = Manual schedule
 
+dialog = Dialog
+    .title = Keep These Display Settings?
+    .keep-changes = Keep Changes
+    .change-prompt = Settings changes will automatically revert in { $time } seconds.
+    .revert-settings = Revert Settings
+
 ## Desktop: Notifications
 
 notifications = Notifications
