@@ -16,6 +16,7 @@ Translation files may be found in the [i18n directory](./i18n). New translations
 - libexpat1-dev
 - libfontconfig-dev
 - libfreetype-dev
+- libinput-dev
 - pkg-config
 
 ### Install
