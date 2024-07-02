@@ -1508,7 +1508,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-daemon#8d12bd17a34cd7fccc84bc402959a4fc69836124"
+source = "git+https://github.com/pop-os/cosmic-settings-daemon#b88b2aff1c68ec94cddcae6877167c461c40b6e3"
 dependencies = [
  "cosmic-config",
  "serde",
@@ -1722,7 +1722,7 @@ version = "0.19.0"
 source = "git+https://github.com/gfx-rs/wgpu?rev=20fda69#20fda698341efbdc870b8027d6d49f5bf3f36109"
 dependencies = [
  "bitflags 2.6.0",
- "libloading 0.8.4",
+ "libloading 0.7.4",
  "winapi",
 ]
 
@@ -1897,7 +1897,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
- "libloading 0.8.4",
+ "libloading 0.7.4",
 ]
 
 [[package]]
@@ -2746,7 +2746,7 @@ dependencies = [
  "bitflags 2.6.0",
  "com",
  "libc",
- "libloading 0.8.4",
+ "libloading 0.7.4",
  "thiserror",
  "widestring",
  "winapi",
@@ -6910,7 +6910,7 @@ dependencies = [
  "js-sys",
  "khronos-egl",
  "libc",
- "libloading 0.8.4",
+ "libloading 0.7.4",
  "log",
  "metal",
  "naga",
