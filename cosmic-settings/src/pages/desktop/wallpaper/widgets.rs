@@ -11,6 +11,7 @@ use cosmic::widget::{button, container, space};
 use cosmic::{iced, Element};
 use cosmic_settings_wallpaper as wallpaper;
 use slotmap::DefaultKey;
+use std::sync::OnceLock;
 
 const COLOR_WIDTH: u16 = 70;
 const COLUMN_SPACING: u16 = 12;
@@ -93,12 +94,28 @@ pub fn color_select_options(
     context: &super::Context,
     selected: Option<&wallpaper::Color>,
 ) -> Element<'static, Message> {
+    static SORTED: OnceLock<Vec<wallpaper::Color>> = OnceLock::new();
+    let sorted = &**SORTED.get_or_init(|| {
+        let mut sorted = wallpaper::DEFAULT_COLORS.to_vec();
+        sorted.sort_by(|a, b| a.partial_cmp(b).expect("Neither slices should have NaNs"));
+        sorted
+    });
+
     flex_select_row(
         context
             .custom_colors
             .iter()
             .rev()
-            .map(|color| (color, true))
+            .filter_map(|color| {
+                sorted
+                    .binary_search_by(|probe| {
+                        probe
+                            .partial_cmp(color)
+                            .expect("Neither slices should have NaNs")
+                    })
+                    .is_err()
+                    .then_some((color, true))
+            })
             .chain(wallpaper::DEFAULT_COLORS.iter().map(|color| (color, false)))
             .map(|(color, removable)| {
                 color_button(
