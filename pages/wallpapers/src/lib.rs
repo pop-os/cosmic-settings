@@ -28,19 +28,23 @@ pub const DEFAULT_COLORS: &[Color] = &[
     Color::Single([0.584, 0.769, 0.988]),
     Color::Gradient(Gradient {
         colors: Cow::Borrowed(&[[1.000, 0.678, 0.000], [0.282, 0.725, 0.78]]),
-        radius: 270.0,
+        radius: 180.0,
     }),
     Color::Gradient(Gradient {
         colors: Cow::Borrowed(&[[1.000, 0.843, 0.631], [0.58, 0.922, 0.922]]),
-        radius: 270.0,
+        radius: 180.0,
     }),
     Color::Gradient(Gradient {
         colors: Cow::Borrowed(&[[1.000, 0.612, 0.867], [0.976, 0.29, 0.514]]),
-        radius: 270.0,
+        radius: 180.0,
     }),
     Color::Gradient(Gradient {
         colors: Cow::Borrowed(&[[0.584, 0.769, 0.988], [0.063, 0.165, 0.298]]),
-        radius: 270.0,
+        radius: 180.0,
+    }),
+    Color::Gradient(Gradient {
+        colors: Cow::Borrowed(&[[0.969, 0.878, 0.384], [0.333, 0.278, 0.259]]),
+        radius: 180.0,
     }),
 ];
 
