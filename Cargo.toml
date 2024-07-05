@@ -4,7 +4,7 @@ default-members = ["cosmic-settings"]
 resolver = "2"
 
 [workspace.package]
-rust-version = "1.75.0"
+rust-version = "1.79.0"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }

@@ -16,7 +16,7 @@ use cosmic::{command, Apply, Command, Element};
 use cosmic_randr_shell::{List, Output, OutputKey, Transform};
 use cosmic_settings_page::{self as page, section, Section};
 use slab::Slab;
-use slotmap::{Key, SlotMap};
+use slotmap::{Key, SecondaryMap, SlotMap};
 use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
 
 /// Display color depth options
@@ -29,10 +29,10 @@ pub struct ColorDepth(usize);
 // }
 
 /// Display mirroring options
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Mirroring {
     Disable,
-    ProjectToAll,
+    // ProjectToAll,
     Project(OutputKey),
     Mirror(OutputKey),
 }
@@ -102,6 +102,7 @@ impl From<Message> for app::Message {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Randr {
+    Mirror(OutputKey),
     Position(i32, i32),
     RefreshRate(u32),
     Resolution(u32, u32),
@@ -114,16 +115,19 @@ enum Randr {
 pub struct Page {
     list: List,
     display_tabs: segmented_button::SingleSelectModel,
+    mirror_map: SecondaryMap<OutputKey, OutputKey>,
+    mirror_menu: widget::dropdown::multi::Model<String, Mirroring>,
     active_display: OutputKey,
     background_service: Option<tokio::task::JoinHandle<()>>,
     config: Config,
     cache: ViewCache,
     //  context: Option<ContextDrawer>,
-    display_arrangement_scrollable: cosmic::widget::Id,
+    display_arrangement_scrollable: widget::Id,
     /// The setting to revert to if the next dialog page is cancelled.
     dialog: Option<Randr>,
     /// the instant the setting was changed.
     dialog_countdown: usize,
+    show_display_options: bool,
 }
 
 impl Default for Page {
@@ -131,14 +135,17 @@ impl Default for Page {
         Self {
             list: List::default(),
             display_tabs: segmented_button::SingleSelectModel::default(),
+            mirror_map: SecondaryMap::new(),
+            mirror_menu: widget::dropdown::multi::model(),
             active_display: OutputKey::default(),
             background_service: None,
             config: Config::default(),
             cache: ViewCache::default(),
             //          context: None,
-            display_arrangement_scrollable: cosmic::widget::Id::unique(),
+            display_arrangement_scrollable: widget::Id::unique(),
             dialog: None,
             dialog_countdown: 0,
+            show_display_options: true,
         }
     }
 }
@@ -377,10 +384,23 @@ impl Page {
             Message::DisplayToggle(enable) => return self.toggle_display(enable),
 
             Message::Mirroring(mirroring) => match mirroring {
-                Mirroring::Disable => (),
-                Mirroring::Mirror(_target_display) => (),
-                Mirroring::Project(_target_display) => (),
-                Mirroring::ProjectToAll => (),
+                Mirroring::Disable => return self.toggle_display(true),
+
+                Mirroring::Mirror(from_display) => {
+                    let Some(output) = self.list.outputs.get(self.active_display) else {
+                        return Command::none();
+                    };
+
+                    return self.exec_randr(output, Randr::Mirror(from_display));
+                }
+
+                Mirroring::Project(to_display) => {
+                    let Some(output) = self.list.outputs.get(to_display) else {
+                        return Command::none();
+                    };
+
+                    return self.exec_randr(output, Randr::Mirror(self.active_display));
+                } // Mirroring::ProjectToAll => (),
             },
 
             //            Message::NightLight(night_light) => {}
@@ -448,6 +468,7 @@ impl Page {
 
         self.active_display = OutputKey::null();
         self.display_tabs.clear();
+        self.mirror_map.clear();
         self.list = list;
 
         let sorted_outputs = self
@@ -461,6 +482,15 @@ impl Page {
             let Some(output) = self.list.outputs.get(id) else {
                 continue;
             };
+
+            if let Some(mirroring_from) = output.mirroring.as_deref() {
+                for (other_id, other_output) in &self.list.outputs {
+                    if other_output.name == mirroring_from {
+                        self.mirror_map.insert(id, other_id);
+                        break;
+                    }
+                }
+            }
 
             let text = crate::utils::display_name(&output.name, output.physical);
 
@@ -577,6 +607,61 @@ impl Page {
                 cache_rates(&mut self.cache.refresh_rates, rates);
             }
         }
+
+        self.mirror_menu.clear();
+
+        self.mirror_menu.insert(widget::dropdown::multi::list(
+            None,
+            vec![(fl!("mirroring", "dont"), Mirroring::Disable)],
+        ));
+
+        self.mirror_menu.insert(widget::dropdown::multi::list(
+            None,
+            self.list
+                .outputs
+                .iter()
+                .filter(|&(other_id, _)| other_id != output_id)
+                .map(|(other_id, other_output)| {
+                    (
+                        fl!("mirroring", "project", display = other_output.name.as_str()),
+                        Mirroring::Project(other_id),
+                    )
+                })
+                .collect::<Vec<_>>(),
+        ));
+
+        self.mirror_menu.insert(widget::dropdown::multi::list(
+            None,
+            self.list
+                .outputs
+                .iter()
+                .filter(|&(other_id, _)| other_id != output_id)
+                .map(|(other_id, other_output)| {
+                    (
+                        fl!("mirroring", "mirror", display = other_output.name.as_str()),
+                        Mirroring::Mirror(other_id),
+                    )
+                })
+                .collect::<Vec<_>>(),
+        ));
+
+        self.mirror_menu.selected = self
+            .mirror_map
+            .get(output_id)
+            .map(|id| Mirroring::Mirror(*id));
+
+        self.show_display_options = self.mirror_menu.selected.is_none();
+
+        if self.mirror_menu.selected.is_none() {
+            self.mirror_menu.selected = self
+                .mirror_map
+                .iter()
+                .find(|&(_, mirrored_id)| *mirrored_id == output_id)
+                .map(|(projected_id, _)| Mirroring::Project(projected_id));
+        }
+
+        // If mirror menu is not set, set it to don't mirror.
+        self.mirror_menu.selected = Some(Mirroring::Disable);
     }
 
     /// Change display orientation.
@@ -739,6 +824,17 @@ impl Page {
         let mut command = tokio::process::Command::new("cosmic-randr");
 
         match request {
+            Randr::Mirror(from_id) => {
+                let Some(from_output) = self.list.outputs.get(from_id) else {
+                    return Command::none();
+                };
+
+                command
+                    .arg("mirror")
+                    .arg(&output.name)
+                    .arg(&from_output.name);
+            }
+
             Randr::Position(x, y) => {
                 let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
                     return Command::none();
@@ -856,16 +952,14 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                     theme.cosmic().space_m(),
                 ]))
                 .spacing(theme.cosmic().space_xs())
-                .push(cosmic::widget::text::body(
-                    &descriptions[display_arrangement_desc],
-                ))
+                .push(widget::text::body(&descriptions[display_arrangement_desc]))
                 .push({
                     Arrangement::new(&page.list, &page.display_tabs)
                         .on_select(|id| pages::Message::Displays(Message::Display(id)))
                         .on_placement(|id, x, y| {
                             pages::Message::Displays(Message::Position(id, x, y))
                         })
-                        .apply(cosmic::widget::scrollable)
+                        .apply(widget::scrollable)
                         .id(page.display_arrangement_scrollable.clone())
                         .width(Length::Shrink)
                         .direction(Direction::Horizontal(Properties::new()))
@@ -873,7 +967,7 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                         .center_x()
                         .width(Length::Fill)
                 })
-                .apply(cosmic::widget::list::container)
+                .apply(widget::list::container)
                 .into()
         })
 }
@@ -889,6 +983,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
     let orientation = descriptions.insert(fl!("orientation"));
     let enable_label = descriptions.insert(fl!("display", "enable"));
     let options_label = descriptions.insert(fl!("display", "options"));
+    let mirroring_label = descriptions.insert(fl!("mirroring"));
 
     Section::default()
         .descriptions(descriptions)
@@ -902,9 +997,9 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
 
             let active_output = &page.list.outputs[active_id];
 
-            let display_options = active_output.enabled.then(|| {
+            let display_options = (page.show_display_options && active_output.enabled).then(|| {
                 list_column()
-                    .add(cosmic::widget::settings::flex_item(
+                    .add(widget::settings::flex_item(
                         &descriptions[resolution],
                         dropdown(
                             &page.cache.resolutions,
@@ -912,7 +1007,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                             Message::Resolution,
                         ),
                     ))
-                    .add(cosmic::widget::settings::flex_item(
+                    .add(widget::settings::flex_item(
                         &descriptions[refresh_rate],
                         dropdown(
                             &page.cache.refresh_rates,
@@ -920,7 +1015,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                             Message::RefreshRate,
                         ),
                     ))
-                    .add(cosmic::widget::settings::flex_item(
+                    .add(widget::settings::flex_item(
                         &descriptions[scale],
                         dropdown(
                             &["50%", "75%", "100%", "125%", "150%", "175%", "200%"],
@@ -928,7 +1023,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                             Message::Scale,
                         ),
                     ))
-                    .add(cosmic::widget::settings::flex_item(
+                    .add(widget::settings::flex_item(
                         &descriptions[orientation],
                         dropdown(
                             &page.cache.orientations,
@@ -962,17 +1057,25 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     > 1
                     || !active_output.enabled)
                     .then(|| {
-                        list_column().add(cosmic::widget::settings::flex_item(
-                            &descriptions[enable_label],
-                            toggler(None, active_output.enabled, Message::DisplayToggle),
-                        ))
+                        list_column()
+                            .add(widget::settings::flex_item(
+                                &descriptions[enable_label],
+                                toggler(None, active_output.enabled, Message::DisplayToggle),
+                            ))
+                            .add(widget::settings::flex_item(
+                                &descriptions[mirroring_label],
+                                widget::dropdown::multi::dropdown(
+                                    &page.mirror_menu,
+                                    Message::Mirroring,
+                                ),
+                            ))
                     });
 
                 content = content.push(display_switcher).push_maybe(display_enable);
             }
 
             content
-                .push(cosmic::widget::text::heading(&descriptions[options_label]))
+                .push(widget::text::heading(&descriptions[options_label]))
                 .push_maybe(display_options)
                 .apply(Element::from)
                 .map(pages::Message::Displays)
@@ -988,9 +1091,8 @@ fn cache_rates(cached_rates: &mut Vec<String>, rates: &[u32]) {
 
 pub async fn on_enter() -> crate::pages::Message {
     let randr_fut = cosmic_randr_shell::list();
-    let randr = futures::future::ready(randr_fut).await;
 
     crate::pages::Message::Displays(Message::Update {
-        randr: Arc::new(randr.await),
+        randr: Arc::new(randr_fut.await),
     })
 }
