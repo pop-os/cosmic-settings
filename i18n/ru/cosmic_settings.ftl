@@ -410,11 +410,11 @@ keyboard-shortcuts = Сочетания клавиш
 add-keybinding = Добавить привязку клавиш
 cancel = Отменить
 command = Команда
-custom = Пользовательская
+custom = Пользовательские
 debug = Отладка
 disabled = Отключено
-migrate-workspace-prev = Перенести рабочее место на предыдущий выход
-migrate-workspace-next = Перенести рабочее место на следующий выход
+migrate-workspace-prev = Перенести рабочее место на пред. выход
+migrate-workspace-next = Перенести рабочее место на след. выход
 migrate-workspace = Перенести рабочее место на выход { $direction ->
     *[down] снизу
     [left] слева
@@ -445,9 +445,9 @@ nav-shortcuts = Навигация
     .next-workspace = Фокус на следующем рабочем месте
     .focus = Фокус на окне { $direction ->
         *[down] снизу
-        [in] активировать
+        [in] установить
         [left] слева
-        [out] деактивировать
+        [out] убрать
         [right] справа
         [up] сверху
     }
@@ -480,16 +480,16 @@ move-windows = Перемещение окон
         [right] справа
         [up] сверху
     }
-    .workspace = Переместить окно на раб. место { $direction ->
+    .workspace = Переместить окно на рабочее место { $direction ->
         *[below] ниже
         [left] левее
         [right] правее
         [above] выше
     }
     .workspace-num = Переместить окно на рабочее место { $num }
-    .prev-workspace = Переместить окно на пред. раб. место
-    .next-workspace = Переместить окно на след. раб. место
-    .last-workspace = Переместить окно на посл. раб. место
+    .prev-workspace = Переместить окно на пред. рабочее место
+    .next-workspace = Переместить окно на след. рабочее место
+    .last-workspace = Переместить окно на посл. рабочее место
     .next-display = Переместить окно на след. монитор
     .prev-display = Переместить окно на пред. монитор
     .send-to-prev-workspace = Переместить окно на предыдущее рабочее место
@@ -505,12 +505,12 @@ system-shortcut = Системные
     .launcher = Открыть панель запуска
     .lock-screen = Заблокировать экран
     .mute = Приглушить аудиовыход
-    .mute-mic = Приглушает аудиовход микрофона
+    .mute-mic = Приглушить аудиовход микрофона
     .screenshot = Сделать снимок экрана
     .terminal = Открыть терминал
     .volume-lower = Уменьшить громкость аудиовыхода
     .volume-raise = Увеличить громкость аудиовыхода
-    .web-browser = Открывает веб-браузер
+    .web-browser = Открыть веб-браузер
     .window-switcher = Переключение между открытыми окнами
     .workspace-overview = Открыть обзор рабочих мест
 
