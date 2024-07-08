@@ -1,13 +1,5 @@
 import "common.just"
 
-# Return an error if the system does not contain the minimum required Rust version.
-min-rust-version := '>=' + `grep rust-version Cargo.toml | cut -d' ' -f3 | cut -c 2-7`
-rust-version-check := if semver_matches(`rustc --version | cut -c 7-12`, min-rust-version) == "false" {
-    error('Requires rustc version ' + min-rust-version)
-} else {
-    "passed"
-}
-
 cargo-target-dir := env('CARGO_TARGET_DIR', 'target')
 
 # Use mold linker if clang and mold exists.
