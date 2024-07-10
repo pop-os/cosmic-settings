@@ -332,6 +332,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                     horizontal_alignment: alignment::Horizontal::Center,
                     vertical_alignment: alignment::Vertical::Center,
                     shaping: text::Shaping::Basic,
+                    wrap: text::Wrap::Word,
                 },
                 core::Point {
                     x: id_bounds.center_x(),
