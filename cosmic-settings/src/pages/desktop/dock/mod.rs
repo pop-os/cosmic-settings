@@ -155,7 +155,7 @@ pub(crate) fn enable() -> Section<crate::pages::Message> {
                 return Element::from(text(fl!("unknown")));
             };
             settings::view_section(&section.title)
-                .add(settings::flex_item(
+                .add(settings::item(
                     &descriptions[dock],
                     toggler(
                         None,

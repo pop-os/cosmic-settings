@@ -1001,7 +1001,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
 
             let display_options = (page.show_display_options && active_output.enabled).then(|| {
                 list_column()
-                    .add(widget::settings::flex_item(
+                    .add(widget::settings::item(
                         &descriptions[resolution],
                         dropdown(
                             &page.cache.resolutions,
@@ -1009,7 +1009,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                             Message::Resolution,
                         ),
                     ))
-                    .add(widget::settings::flex_item(
+                    .add(widget::settings::item(
                         &descriptions[refresh_rate],
                         dropdown(
                             &page.cache.refresh_rates,
@@ -1017,7 +1017,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                             Message::RefreshRate,
                         ),
                     ))
-                    .add(widget::settings::flex_item(
+                    .add(widget::settings::item(
                         &descriptions[scale],
                         dropdown(
                             &["50%", "75%", "100%", "125%", "150%", "175%", "200%"],
@@ -1025,7 +1025,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                             Message::Scale,
                         ),
                     ))
-                    .add(widget::settings::flex_item(
+                    .add(widget::settings::item(
                         &descriptions[orientation],
                         dropdown(
                             &page.cache.orientations,
@@ -1060,11 +1060,11 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     || !active_output.enabled)
                     .then(|| {
                         list_column()
-                            .add(widget::settings::flex_item(
+                            .add(widget::settings::item(
                                 &descriptions[enable_label],
                                 toggler(None, active_output.enabled, Message::DisplayToggle),
                             ))
-                            .add(widget::settings::flex_item(
+                            .add(widget::settings::item(
                                 &descriptions[mirroring_label],
                                 widget::dropdown::multi::dropdown(
                                     &page.mirror_menu,

@@ -152,7 +152,7 @@ fn format() -> Section<crate::pages::Message> {
                 )
                 // First day of week
                 .add(
-                    settings::item::builder(&section.descriptions[first]).flex_control(dropdown(
+                    settings::item::builder(&section.descriptions[first]).control(dropdown(
                         &*WEEKDAYS,
                         match page.first_day_of_week {
                             4 => Some(0), // friday

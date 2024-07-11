@@ -110,13 +110,13 @@ pub(crate) fn behavior_and_position<
                 return Element::from(text(fl!("unknown")));
             };
             settings::view_section(&section.title)
-                .add(settings::flex_item(
+                .add(settings::item(
                     &descriptions[autohide_label],
                     toggler(None, panel_config.autohide.is_some(), |value| {
                         Message::AutoHidePanel(value)
                     }),
                 ))
-                .add(settings::flex_item(
+                .add(settings::item(
                     &descriptions[position],
                     dropdown(
                         page.anchors.as_slice(),
@@ -124,7 +124,7 @@ pub(crate) fn behavior_and_position<
                         Message::PanelAnchor,
                     ),
                 ))
-                .add(settings::flex_item(
+                .add(settings::item(
                     &descriptions[display],
                     dropdown(
                         page.outputs.as_slice(),
@@ -166,19 +166,19 @@ pub(crate) fn style<
                 return Element::from(text(fl!("unknown")));
             };
             settings::view_section(&section.title)
-                .add(settings::flex_item(
+                .add(settings::item(
                     &descriptions[gap_label],
                     toggler(None, panel_config.anchor_gap, |value| {
                         Message::AnchorGap(value)
                     }),
                 ))
-                .add(settings::flex_item(
+                .add(settings::item(
                     &descriptions[extend_label],
                     toggler(None, panel_config.expand_to_edges, |value| {
                         Message::ExtendToEdge(value)
                     }),
                 ))
-                .add(settings::flex_item(
+                .add(settings::item(
                     &descriptions[appearance],
                     dropdown(
                         inner.backgrounds.as_slice(),

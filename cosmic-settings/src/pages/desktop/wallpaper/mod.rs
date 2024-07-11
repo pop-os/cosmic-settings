@@ -1223,7 +1223,7 @@ pub fn settings() -> Section<crate::pages::Message> {
 
             children.push({
                 let mut column = list_column()
-                    .add(settings::flex_item(
+                    .add(settings::item(
                         &descriptions[same_label],
                         toggler(
                             None,
@@ -1231,10 +1231,10 @@ pub fn settings() -> Section<crate::pages::Message> {
                             Message::SameWallpaper,
                         ),
                     ))
-                    .add(settings::flex_item(&descriptions[fit_label], wallpaper_fit));
+                    .add(settings::item(&descriptions[fit_label], wallpaper_fit));
 
                 if show_slideshow_toggle {
-                    column = column.add(settings::flex_item(
+                    column = column.add(settings::item(
                         &descriptions[slide_label],
                         toggler(None, slideshow_enabled, Message::Slideshow),
                     ));
@@ -1243,7 +1243,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                 // The rotation frequency dropdown should only be shown when the slideshow is enabled.
                 if slideshow_enabled {
                     column
-                        .add(settings::flex_item(
+                        .add(settings::item(
                             &descriptions[change_label],
                             dropdown(
                                 &page.rotation_options,
