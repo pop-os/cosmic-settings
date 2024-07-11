@@ -660,8 +660,10 @@ impl Page {
                 .map(|(projected_id, _)| Mirroring::Project(projected_id));
         }
 
-        // If mirror menu is not set, set it to don't mirror.
-        self.mirror_menu.selected = Some(Mirroring::Disable);
+        if self.mirror_menu.selected.is_none() {
+            // If mirror menu is not set, set it to don't mirror.
+            self.mirror_menu.selected = Some(Mirroring::Disable);
+        }
     }
 
     /// Change display orientation.
