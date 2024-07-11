@@ -675,9 +675,11 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                         page.xkb.repeat_delay,
                         Message::SetRepeatKeysDelay,
                     )
-                    .width(250.0)
+                    .width(Length::Fill)
                     .breakpoints(&[KB_REPEAT_DELAY_DEFAULT])
-                    .step(50_u32);
+                    .step(50_u32)
+                    .apply(widget::container)
+                    .max_width(250);
 
                     row::with_capacity(3)
                         .align_items(iced::Alignment::Center)
@@ -693,9 +695,11 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                         page.xkb.repeat_rate,
                         Message::SetRepeatKeysRate,
                     )
-                    .width(250.0)
+                    .width(Length::Fill)
                     .breakpoints(&[KB_REPEAT_RATE_DEFAULT])
-                    .step(5_u32);
+                    .step(5_u32)
+                    .apply(widget::container)
+                    .max_width(250);
 
                     row::with_capacity(3)
                         .align_items(iced::Alignment::Center)

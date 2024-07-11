@@ -1,4 +1,4 @@
-use cosmic::iced::Alignment;
+use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, row, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_comp_config::input::AccelProfile;
@@ -73,8 +73,10 @@ fn mouse() -> Section<crate::pages::Message> {
                         let slider = widget::slider(0.0..=100.0, value, |value| {
                             Message::SetMouseSpeed((value / 70.71) - 0.81, false)
                         })
-                        .width(250.0)
-                        .breakpoints(&[50.0]);
+                        .width(Length::Fill)
+                        .breakpoints(&[50.0])
+                        .apply(widget::container)
+                        .max_width(250);
 
                         row::with_capacity(2)
                             .align_items(Alignment::Center)
@@ -130,8 +132,10 @@ fn scrolling() -> Section<crate::pages::Message> {
                     let slider = widget::slider(1.0..=100.0, value, |value| {
                         Message::SetScrollFactor(2f64.powf((value - 50.0) / 10.0), false)
                     })
-                    .width(250.0)
-                    .breakpoints(&[50.0]);
+                    .width(Length::Fill)
+                    .breakpoints(&[50.0])
+                    .apply(widget::container)
+                    .max_width(250);
 
                     row::with_capacity(2)
                         .align_items(Alignment::Center)
