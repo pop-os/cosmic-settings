@@ -7,6 +7,7 @@ pub mod desktop;
 pub mod display;
 pub mod input;
 pub mod networking;
+pub mod power;
 pub mod sound;
 pub mod system;
 pub mod time;
@@ -15,19 +16,28 @@ pub mod time;
 pub enum Message {
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
+    CustomShortcuts(input::keyboard::shortcuts::custom::Message),
     DateAndTime(time::date::Message),
     Desktop(desktop::Message),
+    DesktopOptions(desktop::options::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
     DesktopWorkspaces(desktop::workspaces::Message),
     Displays(display::Message),
     Dock(desktop::dock::Message),
     DockApplet(desktop::dock::applets::Message),
     External { id: String, message: Vec<u8> },
-    Keyboard(input::keyboard::Message),
     Input(input::Message),
+    Keyboard(input::keyboard::Message),
+    KeyboardShortcuts(input::keyboard::shortcuts::Message),
+    ManageWindowShortcuts(input::keyboard::shortcuts::ShortcutMessage),
+    MoveWindowShortcuts(input::keyboard::shortcuts::ShortcutMessage),
+    NavShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     Page(Entity),
     Panel(desktop::panel::Message),
     PanelApplet(desktop::panel::applets_inner::Message),
+    Power(power::Message),
+    SystemShortcuts(input::keyboard::shortcuts::ShortcutMessage),
+    TilingShortcuts(input::keyboard::shortcuts::ShortcutMessage),
 }
 
 impl From<Message> for crate::Message {

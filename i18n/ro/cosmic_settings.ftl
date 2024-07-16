@@ -92,28 +92,6 @@ display = Ecrane
     .resolution = Rezoluție
     .scale = Scală
 
-graphics-mode = Modul de grafică
-    .mode = { $mode ->
-        [compute] Compute
-        *[hybrid] Hibrid
-        [integrated] Integrat
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Activează { $mode ->
-        [compute] compute
-        *[hybrid] hibrid
-        [integrated] integrat
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Folosește grafica dedicată doar pentru activități computaționale. { -requires-restart }.
-        *[hybrid] Aplicațiile folosesc grafica integrată numai dacă nu cer folosirea graficii dedicate. { -requires-restart }.
-        [integrated] Dezactivează grafica dedicată pentru o durată de viață mai lungă a bateriei și mai puțin zgomot.
-        [nvidia] O experiență grafică superioară cu consum de energie ridicat. { -requires-restart }.
-    }
-    .restart = Reporniți și utilizați { $mode }?
-    .restart-desc = Schimbarea la modul { $mode } va închide toate aplicațiile
-
 mirroring = Oglindire
     .id = Oglindirea { $id }
     .dont = Nu oglindiți
@@ -157,11 +135,6 @@ dock = Dock
 
 hot-corner = Marginea ecranului
     .top-left-corner = Activați marginea din stânga sus pentru Spații de lucru
-
-super-key-action = Acțiunea butonului Super
-    .launcher = Lansator
-    .workspaces = Spații de lucru
-    .applications = Aplicații
 
 top-panel = Panoul de sus
     .workspaces = Afișați butonul pentru Spații de lucru

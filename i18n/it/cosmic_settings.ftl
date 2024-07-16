@@ -32,13 +32,13 @@ rgb = RGB
 window-hint-accent = Colore d'accento per la finestra attiva
 window-hint-accent-toggle = Usa il colore del tema come colore d'accento
 
-auto-switch = Cambia automaticamente del tema schiaro al tema scuro
-    .desc = All'alba, cambia al tema Chiaro
+auto-switch = Cambia automaticamente dal tema chiaro al tema scuro
+    .desc = All'alba, cambia al tema chiaro
 
-container-background = Sfondo container
-    .desc-detail = Il colore di sfondo del container viene usato per la barra laterale di navigazione, finestre di dialogo e widget simili. Il valore predefinito deriva dallo sfondo dell'applicazione o finestra.
+container-background = Sfondo contenitore
+    .desc-detail = Il colore di sfondo del contenitore viene usato per la barra laterale di navigazione, finestre di dialogo e widget simili. Il valore predefinito deriva dallo sfondo dell'applicazione o finestra.
     .reset = Ripristina in "Automatico"
-    .desc = Il colore primario del container usato per la barra laterale, finestre di dialogo e vari widget.
+    .desc = Il colore primario del contenitore usato per la barra laterale, finestre di dialogo e vari widget.
 
 control-tint = Tinta per componenti di controllo
     .desc = Usata come sfondo per i pulsanti, caselle di ricerca, caselle di testo e componenti simili.
@@ -80,28 +80,6 @@ display = Schermi
     .refresh-rate = Frequenza d'aggiornamento
     .resolution = Risoluzione
     .scale = Scala
-
-graphics-mode = Modalità GPU
-    .mode = { $mode ->
-        [compute] Compute
-        *[hybrid] Ibrida
-        [integrated] Integrata
-        [nvidia] NVIDIA
-    }
-    .enable = Abilita modalità { $mode ->
-        [compute] compute
-        *[hybrid] ibrida
-        [integrated] integrata
-        [nvidia] NVIDIA
-    }
-    .desc = { $mode ->
-        [compute] Usa la GPU dedicata solo per l'elaborazione. Disabilita gli schermi esterni. { -requires-restart }.
-        *[hybrid] Le applicazioni useranno la GPU integrata a meno che non venga richiesto esplicitamente l'uso della GPU dedicata. { -requires-restart }.
-        [integrated] Disattiva la GPU dedicata per una maggior durata della batteria e meno rumore proveniente dalle ventole.
-        [nvidia] Miglior esperienza grafica ma maggior consumo energetico. { -requires-restart }.
-    }
-    .restart = Riavviare in modalità { $mode }?
-    .restart-desc = Il riavvio in modalità { $mode } chiuderà tutte le applicazioni aperte.
 
 mirroring = Duplicazione
     .id = Duplicazione { $id }
@@ -146,11 +124,6 @@ dock = Barra delle applicazioni
 
 hot-corner = Bordi reattivi
     .top-left-corner = Abilita bordo reattivo in alto a sinistra per gli spazi di lavoro
-
-super-key-action = Azione tasto Super
-    .launcher = Launcher
-    .workspaces = Spazi di lavoro
-    .applications = Applicazioni
 
 top-panel = Pannello superiore
     .workspaces = Pulsante "mostra spazi di lavoro"

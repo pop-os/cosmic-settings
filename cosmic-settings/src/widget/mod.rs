@@ -3,8 +3,7 @@
 
 use cosmic::iced::Length;
 use cosmic::widget::{
-    button, column, container, divider, horizontal_space, icon, list, row, settings, text,
-    vertical_space,
+    button, column, container, divider, horizontal_space, icon, row, settings, text, vertical_space,
 };
 use cosmic::{theme, Apply, Element};
 use cosmic_settings_page as page;

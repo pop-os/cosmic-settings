@@ -1,36 +1,18 @@
 use crate::app;
-use clap::builder::OsStr;
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::{self, wayland::actions::window::SctkWindowSettings, window},
-    iced_sctk::commands,
-    iced_widget::core::layout,
+    iced,
 };
-use cosmic_comp_config::{
-    input::{
-        AccelConfig, AccelProfile, ClickMethod, InputConfig, ScrollConfig, ScrollMethod,
-        TapButtonMap, TapConfig,
-    },
-    XkbConfig,
+use cosmic_comp_config::input::{
+    AccelConfig, AccelProfile, ClickMethod, InputConfig, ScrollConfig, ScrollMethod, TapButtonMap,
+    TapConfig,
 };
 use cosmic_settings_page as page;
-use itertools::Itertools;
 use tracing::error;
 
 pub mod keyboard;
 pub mod mouse;
 pub mod touchpad;
-
-crate::cache_dynamic_lazy! {
-    static ACCELERATION_DESC: String = fl!("acceleration-desc");
-    static DISABLE_WHILE_TYPING: String = fl!("disable-while-typing");
-    static PRIMARY_BUTTON: String = fl!("primary-button");
-    static SCROLLING_EDGE: String = fl!("scrolling", "edge");
-    static SCROLLING_NATURAL_DESC: String = fl!("scrolling", "natural-desc");
-    static SCROLLING_NATURAL: String = fl!("scrolling", "natural");
-    static SCROLLING_SPEED: String = fl!("scrolling", "speed");
-    static SCROLLING_TWO_FINGER: String = fl!("scrolling", "two-finger");
-}
 
 #[derive(Clone, Debug)]
 pub enum Message {

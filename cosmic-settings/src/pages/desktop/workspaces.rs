@@ -12,13 +12,14 @@ use cosmic::{
 use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
 #[derive(Clone, Debug)]
 pub enum Message {
     SetWorkspaceMode(WorkspaceMode),
-    OrientationButtonSelected(cosmic::widget::segmented_button::Entity),
+    SetWorkspaceLayout(WorkspaceLayout),
     SetShowName(bool),
     SetShowNumber(bool),
 }
@@ -29,7 +30,6 @@ pub struct Page {
     comp_workspace_config: WorkspaceConfig,
     show_workspace_name: bool,
     show_workspace_number: bool,
-    orientation_model: cosmic::widget::segmented_button::SingleSelectModel,
 }
 
 impl Default for Page {
@@ -39,11 +39,6 @@ impl Default for Page {
             error!(?err, "Failed to read config 'workspaces'");
             WorkspaceConfig::default()
         });
-        let mut orientation_model = cosmic::widget::segmented_button::SingleSelectModel::builder()
-            .insert(|b| b.text(fl!("workspaces-orientation", "vertical")))
-            .insert(|b| b.text(fl!("workspaces-orientation", "horizontal")))
-            .build();
-        orientation_model.activate_position(0);
         let config = cosmic_config::Config::new("com.system76.CosmicWorkspaces", 1).unwrap();
         let show_workspace_name = config.get("show_workspace_name").unwrap_or_else(|err| {
             error!(?err, "Failed to read config 'show_workspace_name'");
@@ -59,7 +54,6 @@ impl Default for Page {
             comp_workspace_config,
             show_workspace_name,
             show_workspace_number,
-            orientation_model,
         }
     }
 }
@@ -71,7 +65,6 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(vec![
             sections.insert(multi_behavior()),
-            sections.insert(overview_thumbnails()),
             sections.insert(workspace_orientation()),
         ])
     }
@@ -101,15 +94,8 @@ impl Page {
                 self.comp_workspace_config.workspace_mode = value;
                 self.save_comp_config();
             }
-            Message::OrientationButtonSelected(entity) => {
-                self.orientation_model.activate(entity);
-                let horizontal_entity = self.orientation_model.entity_at(1).unwrap();
-                let layout = if self.orientation_model.active() == horizontal_entity {
-                    WorkspaceLayout::Horizontal
-                } else {
-                    WorkspaceLayout::Vertical
-                };
-                self.comp_workspace_config.workspace_layout = layout;
+            Message::SetWorkspaceLayout(value) => {
+                self.comp_workspace_config.workspace_layout = value;
                 self.save_comp_config();
             }
             Message::SetShowName(value) => {
@@ -129,24 +115,26 @@ impl Page {
 }
 
 fn multi_behavior() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let span = descriptions.insert(fl!("workspaces-multi-behavior", "span"));
+    let separate = descriptions.insert(fl!("workspaces-multi-behavior", "separate"));
+
     Section::default()
         .title(fl!("workspaces-multi-behavior"))
-        .descriptions(vec![
-            fl!("workspaces-multi-behavior", "span").into(),
-            fl!("workspaces-multi-behavior", "separate").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .add(settings::item_row(vec![radio(
-                    &*descriptions[0],
+                    &descriptions[span],
                     WorkspaceMode::Global,
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
                 )
                 .into()]))
                 .add(settings::item_row(vec![radio(
-                    &*descriptions[1],
+                    &descriptions[separate],
                     WorkspaceMode::OutputBound,
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
@@ -157,39 +145,32 @@ fn multi_behavior() -> Section<crate::pages::Message> {
         })
 }
 
-fn overview_thumbnails() -> Section<crate::pages::Message> {
-    Section::default()
-        .title(fl!("workspaces-overview-thumbnails"))
-        .descriptions(vec![
-            fl!("workspaces-overview-thumbnails", "show-number").into(),
-            fl!("workspaces-overview-thumbnails", "show-name").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
-            let descriptions = &section.descriptions;
-            settings::view_section(&section.title)
-                .add(
-                    settings::item::builder(&*descriptions[0])
-                        .toggler(page.show_workspace_number, Message::SetShowNumber),
-                )
-                .add(
-                    settings::item::builder(&*descriptions[1])
-                        .toggler(page.show_workspace_name, Message::SetShowName),
-                )
-                .apply(Element::from)
-                .map(crate::pages::Message::DesktopWorkspaces)
-        })
-}
-
 fn workspace_orientation() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let vertical = descriptions.insert(fl!("workspaces-orientation", "vertical"));
+    let horizontal = descriptions.insert(fl!("workspaces-orientation", "horizontal"));
+
     Section::default()
         .title(fl!("workspaces-orientation"))
-        .descriptions(vec![])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
             settings::view_section(&section.title)
-                .add(
-                    cosmic::widget::segmented_control::horizontal(&page.orientation_model)
-                        .on_activate(Message::OrientationButtonSelected),
+                .add(settings::item_row(vec![radio(
+                    &*descriptions[vertical],
+                    WorkspaceLayout::Vertical,
+                    Some(page.comp_workspace_config.workspace_layout),
+                    Message::SetWorkspaceLayout,
                 )
+                .into()]))
+                .add(settings::item_row(vec![radio(
+                    &*descriptions[horizontal],
+                    WorkspaceLayout::Horizontal,
+                    Some(page.comp_workspace_config.workspace_layout),
+                    Message::SetWorkspaceLayout,
+                )
+                .into()]))
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })

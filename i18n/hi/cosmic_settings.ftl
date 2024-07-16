@@ -27,11 +27,6 @@ notifications = सूचनाएं
 desktop-options = डेस्कटॉप विकल्प
     .desc = सुपर की एक्शन, हॉट कॉर्नर, विंडो कंट्रोल विकल्प।
 
-super-key-action = सुपर की एक्शन
-    .launcher = लांचर
-    .workspaces = कार्यस्थानों
-    .applications = अनुप्रयोग
-
 hot-corner = गर्म कोना
     .top-left-corner = कार्यस्थानों के लिए शीर्ष-बाएँ हॉट कॉर्नर को सक्षम करें
 

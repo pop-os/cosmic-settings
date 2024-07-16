@@ -92,28 +92,6 @@ display = Ecrãs
     .resolution = Resolução
     .scale = Escala
 
-graphics-mode = Modo gráfico
-    .mode = { $mode ->
-        [compute] Calcular
-        *[hybrid] Híbrido
-        [integrated] Integrado
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Ativar { $mode ->
-        [compute] calcular
-        *[hybrid] híbrido
-        [integrated] integrado
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Utiliza gráficos dedicados apenas para cargas de trabalho computacionais. Desativa os ecrãs externos. { -requires-restart }.
-        *[hybrid] As aplicações utilizam gráficos integrados, exceto se for explicitamente solicitada a utilização de gráficos dedicados. { -requires-restart }.
-        [integrated] Desliga os gráficos dedicados para uma maior duração da bateria e menos ruído da ventoinha.
-        [nvidia] Melhor experiência gráfica e maior consumo de energia. { -requires-restart }.
-    }
-    .restart = Reiniciar e mudar para { $mode }?
-    .restart-desc = Mudar para { $mode } fechará todas as aplicações abertas
-
 mirroring = Espelhar
     .id = Espelhar { $id }
     .dont = Não espelhar
@@ -157,11 +135,6 @@ dock = Doca
 
 hot-corner = Canto ativo
     .top-left-corner = Ativar o canto superior esquerdo para as áreas de trabalho
-
-super-key-action = Ação da tecla Super
-    .launcher = Lançador
-    .workspaces = Áreas de trabalho
-    .applications = Aplicações
 
 top-panel = Painel superior
     .workspaces = Mostrar o botão das áreas de trabalho

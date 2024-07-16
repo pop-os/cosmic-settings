@@ -23,11 +23,6 @@ notifications = اعلانات
 desktop-panel-options = تنظیمات پنل میزکار
     .desc = عملکرد کلید سوپر، گوشه‌های داغ، گزینه‌های کنترل پنجره.
 
-super-key-action = عملکرد کلید سوپر
-    .launcher = راه انداز
-    .workspaces = فضاهای کاری
-    .applications = برنامه‌ها
-
 hot-corner = گوشه‌داغ
     .top-left-corner = فعال سازی گوشه‌داغ بالا چپ برای فضاهای کاری
 

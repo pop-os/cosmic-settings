@@ -43,6 +43,11 @@ pub trait Page<Message: 'static>: Downcast {
         None
     }
 
+    /// Set a custom page header
+    fn header(&self) -> Option<Element<'_, Message>> {
+        None
+    }
+
     /// Display an inner app dialog for the page.
     fn dialog(&self) -> Option<Element<'_, Message>> {
         None
@@ -59,9 +64,12 @@ pub trait Page<Message: 'static>: Downcast {
     }
 
     /// Reload page metadata via a Command.
-    #[must_use]
     #[allow(unused)]
-    fn reload(&mut self, page: crate::Entity) -> Command<Message> {
+    fn on_enter(
+        &mut self,
+        page: crate::Entity,
+        sender: tokio::sync::mpsc::Sender<Message>,
+    ) -> Command<Message> {
         Command::none()
     }
 
@@ -113,6 +121,7 @@ impl Info {
 #[macro_export]
 macro_rules! update {
     ($binder:expr, $message:expr, $page:ty) => {{
+        #[allow(unused_must_use)]
         if let Some(page) = $binder.page_mut::<$page>() {
             page.update($message);
         }

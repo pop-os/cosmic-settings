@@ -34,9 +34,9 @@ window-hint-accent-toggle = Use theme accent color as active window hint
 
 auto-switch = Automatically switch from Light to Dark mode
     .sunrise = Switches to Light mode at sunrise
-    .sunset = Switches to Light mode at sunset
+    .sunset = Switches to Dark mode at sunset
     .next-sunrise = Switches to Light mode at next sunrise
-    .next-sunset = Switches to Light mode at next sunset
+    .next-sunset = Switches to Dark mode at next sunset
 
 container-background = Container background
     .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
@@ -92,28 +92,6 @@ display = Displays
     .resolution = Resolution
     .scale = Scale
 
-graphics-mode = Graphics mode
-    .mode = { $mode ->
-        [compute] Compute
-        *[hybrid] Hybrid
-        [integrated] Integrated
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Enable { $mode ->
-        [compute] compute
-        *[hybrid] hybrid
-        [integrated] integrated
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Uses dedicated graphics for computational workloads only. Disables external displays. { -requires-restart }.
-        *[hybrid] Applications use integrated graphics unless explicitly requested to use dedicated graphics. { -requires-restart }.
-        [integrated] Turns off dedicated graphics for a longer battery life and less fan noise.
-        [nvidia] Better graphical experience and highest power usage. { -requires-restart }.
-    }
-    .restart = Restart and switch to { $mode }?
-    .restart-desc = Switching to { $mode } will close all open applications
-
 mirroring = Mirroring
     .id = Mirroring { $id }
     .dont = Don't mirror
@@ -140,6 +118,12 @@ orientation = Orientation
 scheduling = Scheduling
     .manual = Manual schedule
 
+dialog = Dialog
+    .title = Keep These Display Settings?
+    .keep-changes = Keep Changes
+    .change-prompt = Settings changes will automatically revert in { $time } seconds.
+    .revert-settings = Revert Settings
+
 ## Desktop: Notifications
 
 notifications = Notifications
@@ -158,10 +142,10 @@ dock = Dock
 hot-corner = Hot Corner
     .top-left-corner = Enable top-left hot corner for Workspaces
 
-super-key-action = Super Key Action
-    .launcher = Launcher
-    .workspaces = Workspaces
-    .applications = Applications
+super-key = Super key
+    .launcher = Open Launcher
+    .workspaces = Open Workspaces
+    .applications = Open Applications
 
 top-panel = Top Panel
     .workspaces = Show Workspaces Button
@@ -391,6 +375,10 @@ scrolling = Scrolling
 
 ## Input: Keyboard
 
+slow = Slow
+fast = Fast
+short = Short
+long = Long
 keyboard = Keyboard
     .desc = Keyboard input
 
@@ -407,6 +395,10 @@ keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
     .compose = Compose key
 
+keyboard-typing-assist = Typing
+    .repeat-rate = Repeat rate
+    .repeat-delay = Repeat delay
+
 added = Added
 type-to-search = Type to search...
 
@@ -414,6 +406,125 @@ type-to-search = Type to search...
 
 keyboard-shortcuts = Keyboard Shortcuts
     .desc = View and customize shortcuts
+
+add-keybinding = Add keybinding
+cancel = Cancel
+command = Command
+custom = Custom
+debug = Debug
+disabled = Disabled
+migrate-workspace-prev = Migrate workspace to previous output
+migrate-workspace-next = Migrate workspace to next output
+migrate-workspace = Migrate workspace to output { $direction ->
+    *[down] down
+    [left] left
+    [right] right
+    [up] up
+}
+navigate = Navigate
+replace = Replace
+shortcut-name = Shortcut name
+system-controls = System controls
+terminate = Terminate
+toggle-stacking = Toggle window stacking
+type-key-combination = Type key combination
+unknown = Unknown
+
+custom-shortcuts = Custom Shortcuts
+    .add = Add shortcut
+    .context = Add Custom Shortcut
+    .none = No custom shortcuts
+
+modified = { $count } modified
+
+nav-shortcuts = Navigation
+    .prev-output = Focus previous output
+    .next-output = Focus next output
+    .last-workspace = Focus last workspace
+    .prev-workspace = Focus previous workspace
+    .next-workspace = Focus next workspace
+    .focus = Focus window { $direction ->
+        *[down] down
+        [in] in
+        [left] left
+        [out] out
+        [right] right
+        [up] up
+    }
+    .output = Switch to output { $direction ->
+        *[down] down
+        [left] left
+        [right] right
+        [up] up
+    }
+    .workspace = Switch to workspace { $num }
+
+manage-windows = Manage windows
+    .close = Close window
+    .maximize = Maximize window
+    .minimize = Minimize window
+    .resize-inwards = Resize window inwards
+    .resize-outwards = Resize window outwards
+    .toggle-sticky = Toggle sticky window
+
+move-windows = Move Windows
+    .direction = Move window { $direction ->
+        *[down] down
+        [left] left
+        [right] right
+        [up] up
+    }
+    .display = Move window one monitor { $direction ->
+        *[down] down
+        [left] left
+        [right] right
+        [up] up
+    }
+    .workspace = Move window one workspace { $direction ->
+        *[below] below
+        [left] left
+        [right] right
+        [above] above
+    }
+    .workspace-num = Move window to workspace { $num }
+    .prev-workspace = Move window to prev workspace
+    .next-workspace = Move window to next workspace
+    .last-workspace = Move window to last workspace
+    .next-display = Move window to next display
+    .prev-display = Move window to prev display
+    .send-to-prev-workspace = Move window to previous workspace
+    .send-to-next-workspace = Move window to next workspace
+
+system-shortcut = System
+    .app-library = Open the app library
+    .brightness-down = Decrease display brightness
+    .brightness-up = Increase display brightness
+    .home-folder = Open home folder
+    .keyboard-brightness-down = Decrease keyboard brightness
+    .keyboard-brightness-up = Increase keyboard brightness
+    .launcher = Open the launcher
+    .lock-screen = Lock the screen
+    .mute = Mute audio output
+    .mute-mic = Mutes microphone input
+    .screenshot = Take a screenshot
+    .terminal = Open a terminal
+    .volume-lower = Decrease audio output volume
+    .volume-raise = Increase audio output volume
+    .web-browser = Opens a web browser
+    .window-switcher = Switch between open windows
+    .workspace-overview = Open the workspace overview
+
+window-tiling = Window tiling
+    .horizontal = Set horizontal orientation
+    .vertical = Set vertical orientation
+    .swap-window = Swap window
+    .toggle-tiling = Toggle window tiling
+    .toggle-stacking = Toggle window stacking
+    .toggle-floating = Toggle window floating
+    .toggle-orientation = Toggle orientation
+
+replace-shortcut-dialog = Replace Shortcut?
+    .desc = { $shortcut } is used by { $name }. If you replace it, { $name } will be disabled.
 
 ## Input: Mouse
 
@@ -441,7 +552,7 @@ touchpad = Touchpad
 
 ## Input: Gestures
 
-swiping = Swiping
+gestures = Gestures
     .four-finger-down = Four-finger swipe down
     .four-finger-left = Four-finger swipe left
     .four-finger-right = Four-finger swipe right
@@ -453,3 +564,17 @@ switch-to-next-workspace = Switch to next workspace
 switch-to-prev-workspace = Switch to prev workspace
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
+
+## Power 
+
+power = Power
+    .desc = Manage power settings 
+
+power-mode = Power Mode
+    .performance = High performance
+    .balanced = Balanced
+    .battery = Extended battery life
+    .performance-desc = Peak performance and power usage.
+    .balanced-desc = Quiet performance and moderate power usage.
+    .battery-desc = Reduced power usage and silent performance.
+    .nobackend = Backend not found. Install system76-power or power-profiles-daemon.

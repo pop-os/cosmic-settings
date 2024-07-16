@@ -23,11 +23,6 @@ notifications = Oznámení
 desktop-panel-options = Plocha a Panel
     .desc = Činnost super klávesy, roh obrazovky, nastavení ovládání oken.
 
-super-key-action = Činnost super klávesy
-    .launcher = Spouštěč
-    .workspaces = Pracovní plochy
-    .applications = Applikace
-
 hot-corner = Rohy
     .top-left-corner = Povolit použití levého horního rohu pro otevření pracovních ploch
 

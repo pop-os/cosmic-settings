@@ -3,7 +3,7 @@
 
 use derive_setters::Setters;
 use regex::Regex;
-use std::borrow::Cow;
+use slab::Slab;
 
 use crate::{Binder, Page};
 
@@ -31,7 +31,7 @@ pub struct Section<Message> {
     #[setters(into)]
     pub title: String,
     #[setters(into)]
-    pub descriptions: Vec<Cow<'static, str>>,
+    pub descriptions: Slab<String>,
     #[setters(skip)]
     pub show_while: Option<ShowWhileFn<Message>>,
     #[setters(skip)]
@@ -44,7 +44,7 @@ impl<Message: 'static> Default for Section<Message> {
     fn default() -> Self {
         Self {
             title: String::new(),
-            descriptions: Vec::new(),
+            descriptions: Slab::new(),
             show_while: None,
             view_fn: Box::new(unimplemented),
             search_ignore: false,
@@ -63,7 +63,7 @@ impl<Message: 'static> Section<Message> {
             return true;
         }
 
-        for description in &*self.descriptions {
+        for (_, description) in &self.descriptions {
             if rule.is_match(description) {
                 return true;
             }

@@ -1,14 +1,19 @@
+pub mod shortcuts;
+
+use std::cmp;
+
 use cosmic::{
     cosmic_config::{self, ConfigSet},
     iced::{self, Length},
     iced_core::Border,
     iced_style, theme,
-    widget::{self, button, container, icon, radio, settings},
+    widget::{self, button, container, icon, radio, row, settings, ListColumn},
     Apply, Command, Element,
 };
 use cosmic_comp_config::XkbConfig;
 use cosmic_settings_page::{self as page, section, Section};
 use itertools::Itertools;
+use slab::Slab;
 use slotmap::{DefaultKey, SlotMap};
 
 static COMPOSE_OPTIONS: &[(&str, &str)] = &[
@@ -35,6 +40,8 @@ static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
     // ("Print Screen", "lv3"), XXX
 ];
 
+const STR_ORDER: &str = "`str` is always comparable";
+
 #[derive(Clone, Debug)]
 pub enum Message {
     ExpandInputSourcePopover(Option<DefaultKey>),
@@ -44,6 +51,8 @@ pub enum Message {
     SourceAdd(DefaultKey),
     SourceContext(SourceContext),
     SpecialCharacterSelect(Option<&'static str>),
+    SetRepeatKeysDelay(u32),
+    SetRepeatKeysRate(u32),
 }
 
 #[derive(Clone, Debug)]
@@ -58,6 +67,13 @@ pub enum SourceContext {
 pub type Locale = String;
 pub type Variant = String;
 pub type Description = String;
+
+const KB_REPEAT_DELAY_DEFAULT: u32 = 600;
+const KB_REPEAT_RATE_DEFAULT: u32 = 25;
+const KB_REPEAT_DELAY_MAX: u32 = 1000;
+const KB_REPEAT_DELAY_MIN: u32 = 200;
+const KB_REPEAT_RATE_MAX: u32 = 45;
+const KB_REPEAT_RATE_MIN: u32 = 5;
 
 pub struct Page {
     config: cosmic_config::Config,
@@ -183,7 +199,7 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
 fn popover_button(id: DefaultKey, expanded: bool) -> cosmic::Element<'static, Message> {
     let on_press = Message::ExpandInputSourcePopover(if expanded { None } else { Some(id) });
 
-    let button = button::icon(icon::from_name("open-menu-symbolic"))
+    let button = button::icon(icon::from_name("view-more-symbolic"))
         .extra_small()
         .on_press(on_press);
 
@@ -203,10 +219,8 @@ fn input_source(
 ) -> cosmic::Element<Message> {
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
-    settings::item(description, popover_button(id, expanded)).into()
+    settings::flex_item(description, popover_button(id, expanded)).into()
 }
-
-pub mod shortcuts;
 
 fn special_char_radio_row<'a>(
     desc: &'a str,
@@ -229,6 +243,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(input_sources()),
             sections.insert(special_character_entry()),
             sections.insert(keyboard_shortcuts()),
+            sections.insert(keyboard_typing_assist()),
         ])
     }
 
@@ -250,33 +265,70 @@ impl page::Page<crate::pages::Message> for Page {
         }
     }
 
-    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
         match xkb_data::keyboard_layouts() {
-            Ok(keyboard_layouts) => {
+            Ok(mut keyboard_layouts) => {
                 self.active_layouts.clear();
                 self.keyboard_layouts.clear();
 
-                for layout in keyboard_layouts.layouts() {
+                let sorted_layouts = keyboard_layouts.layouts_mut();
+                sorted_layouts.sort_unstable_by(|a, b| {
+                    match (a.name(), b.name()) {
+                        // Place US at the top of the list as it's the default
+                        ("us", _) => cmp::Ordering::Less,
+                        (_, "us") => cmp::Ordering::Greater,
+                        // Place custom at the bottom
+                        ("custom", _) => cmp::Ordering::Greater,
+                        (_, "custom") => cmp::Ordering::Less,
+                        // Compare everything else by description because it looks nicer (e.g. all
+                        // English grouped together)
+                        _ => a
+                            .description()
+                            .partial_cmp(b.description())
+                            .expect(STR_ORDER),
+                    }
+                });
+
+                for layout in sorted_layouts {
                     self.keyboard_layouts.insert((
                         layout.name().to_owned(),
                         String::new(),
                         layout.description().to_owned(),
                     ));
 
-                    if let Some(variants) = layout.variants() {
-                        for variant in variants {
-                            self.keyboard_layouts.insert((
+                    if let Some(variants) = layout.variants().map(|variants| {
+                        variants.iter().map(|variant| {
+                            (
                                 layout.name().to_owned(),
                                 variant.name().to_owned(),
                                 variant.description().to_owned(),
-                            ));
+                            )
+                        })
+                    }) {
+                        let mut variants: Vec<_> = variants.collect();
+                        variants.sort_unstable_by(|(_, _, desc_a), (_, _, desc_b)| {
+                            desc_a.partial_cmp(desc_b).expect(STR_ORDER)
+                        });
+
+                        for (layout_name, name, description) in variants {
+                            self.keyboard_layouts
+                                .insert((layout_name, name, description));
                         }
                     }
                 }
 
                 // Xkb layouts currently enabled.
-                let layouts = self.xkb.layout.split_terminator(',');
+                let layouts = if self.xkb.layout.is_empty() {
+                    "us"
+                } else {
+                    &self.xkb.layout
+                }
+                .split_terminator(',');
 
                 // Xkb variants for each layout. Repeat empty strings in case there's more layouts than variants.
                 let variants = self
@@ -354,11 +406,11 @@ impl Page {
                         }
                     }
 
-                    SourceContext::Settings(id) => {
+                    SourceContext::Settings(_id) => {
                         eprintln!("settings not implemented");
                     }
 
-                    SourceContext::ViewLayout(id) => {
+                    SourceContext::ViewLayout(_id) => {
                         eprintln!("view layout not implemented");
                     }
                 }
@@ -398,6 +450,14 @@ impl Page {
                         tracing::error!(?err, "Failed to set config 'xkb_config'");
                     }
                 }
+            }
+            Message::SetRepeatKeysDelay(delay) => {
+                self.xkb.repeat_delay = delay;
+                self.update_xkb_config();
+            }
+            Message::SetRepeatKeysRate(rate) => {
+                self.xkb.repeat_rate = rate;
+                self.update_xkb_config();
             }
         }
 
@@ -466,16 +526,15 @@ impl Page {
 
         // TODO description, layout default
 
-        let mut list = cosmic::widget::list_column();
-        list = list.add(special_char_radio_row("None", None, current));
-        for (desc, id) in options {
-            list = list.add(special_char_radio_row(desc, Some(id), current));
-        }
+        let mut list =
+            cosmic::widget::list_column().add(special_char_radio_row("None", None, current));
 
-        cosmic::widget::scrollable(cosmic::widget::container(list).padding(24))
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .into()
+        list = options
+            .iter()
+            .map(|(desc, id)| special_char_radio_row(desc, Some(id), current))
+            .fold(list, ListColumn::add);
+
+        cosmic::widget::container(list).padding(24).into()
     }
 
     fn update_xkb_config(&mut self) {
@@ -512,7 +571,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
 fn input_sources() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("keyboard-sources"))
-        .view::<Page>(|_binder, page, section| {
+        .view::<Page>(move |_binder, page, section| {
             // TODO Need something more custom, with drag and drop
             let mut section = settings::view_section(&section.title);
 
@@ -540,22 +599,24 @@ fn input_sources() -> Section<crate::pages::Message> {
 }
 
 fn special_character_entry() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let alternate = descriptions.insert(fl!("keyboard-special-char", "alternate"));
+    let compose = descriptions.insert(fl!("keyboard-special-char", "compose"));
+
     Section::default()
         .title(fl!("keyboard-special-char"))
-        .descriptions(vec![
-            fl!("keyboard-special-char", "alternate").into(),
-            fl!("keyboard-special-char", "compose").into(),
-        ])
-        .view::<Page>(|_binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
                 .add(go_next_item(
-                    &*descriptions[0],
+                    &*descriptions[alternate],
                     Message::OpenSpecialCharacterContext(SpecialKey::AlternateCharacters),
                 ))
                 .add(go_next_item(
-                    &*descriptions[1],
+                    &*descriptions[compose],
                     Message::OpenSpecialCharacterContext(SpecialKey::Compose),
                 ))
                 .apply(cosmic::Element::from)
@@ -564,10 +625,14 @@ fn special_character_entry() -> Section<crate::pages::Message> {
 }
 
 fn keyboard_shortcuts() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let shortcuts_desc = descriptions.insert(fl!("keyboard-shortcuts", "desc"));
+
     Section::default()
         .title(fl!("keyboard-shortcuts"))
-        .descriptions(vec![fl!("keyboard-shortcuts", "desc").into()])
-        .view::<Page>(|binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _page, section| {
             let descriptions = &section.descriptions;
 
             let mut section = settings::view_section(&section.title);
@@ -577,11 +642,74 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
                 .find(|(_, v)| v.id == "keyboard-shortcuts")
             {
                 section = section.add(go_next_item(
-                    &*descriptions[0],
+                    &descriptions[shortcuts_desc],
                     crate::pages::Message::Page(shortcuts_entity),
                 ));
             }
             section.apply(cosmic::Element::from)
+        })
+}
+
+fn keyboard_typing_assist() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let repeat_delay = descriptions.insert(fl!("keyboard-typing-assist", "repeat-delay"));
+    let repeat_rate = descriptions.insert(fl!("keyboard-typing-assist", "repeat-rate"));
+    let short = descriptions.insert(fl!("short"));
+    let long = descriptions.insert(fl!("long"));
+    let slow = descriptions.insert(fl!("slow"));
+    let fast = descriptions.insert(fl!("fast"));
+
+    Section::default()
+        .title(fl!("keyboard-typing-assist"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+            let theme = cosmic::theme::active();
+
+            settings::view_section(&section.title)
+                .add(settings::flex_item(&descriptions[repeat_delay], {
+                    // Delay
+                    let delay_slider = cosmic::widget::slider(
+                        KB_REPEAT_DELAY_MIN..=KB_REPEAT_DELAY_MAX,
+                        page.xkb.repeat_delay,
+                        Message::SetRepeatKeysDelay,
+                    )
+                    .width(Length::Fill)
+                    .breakpoints(&[KB_REPEAT_DELAY_DEFAULT])
+                    .step(50_u32)
+                    .apply(widget::container)
+                    .max_width(250);
+
+                    row::with_capacity(3)
+                        .align_items(iced::Alignment::Center)
+                        .spacing(theme.cosmic().space_s())
+                        .push(widget::text::body(&descriptions[short]))
+                        .push(delay_slider)
+                        .push(widget::text::body(&descriptions[long]))
+                }))
+                .add(settings::flex_item(&descriptions[repeat_rate], {
+                    // Repeat rate
+                    let rate_slider = cosmic::widget::slider(
+                        KB_REPEAT_RATE_MIN..=KB_REPEAT_RATE_MAX,
+                        page.xkb.repeat_rate,
+                        Message::SetRepeatKeysRate,
+                    )
+                    .width(Length::Fill)
+                    .breakpoints(&[KB_REPEAT_RATE_DEFAULT])
+                    .step(5_u32)
+                    .apply(widget::container)
+                    .max_width(250);
+
+                    row::with_capacity(3)
+                        .align_items(iced::Alignment::Center)
+                        .spacing(theme.cosmic().space_s())
+                        .push(widget::text::body(&descriptions[slow]))
+                        .push(rate_slider)
+                        .push(widget::text::body(&descriptions[fast]))
+                }))
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::Keyboard)
         })
 }
 

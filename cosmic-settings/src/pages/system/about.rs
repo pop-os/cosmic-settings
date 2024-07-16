@@ -1,12 +1,12 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::iced::Length;
 use cosmic_settings_page::{self as page, section, Section};
 
-use cosmic::widget::{self, editable_input, list_column, settings, text};
+use cosmic::widget::{editable_input, list_column, settings, text};
 use cosmic::{command, Apply, Command};
 use cosmic_settings_system::about::Info;
+use slab::Slab;
 use slotmap::SlotMap;
 
 #[derive(Clone, Debug)]
@@ -43,7 +43,11 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("about", "desc"))
     }
 
-    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         command::future(async move {
             crate::pages::Message::About(Message::Info(Box::new(Info::load())))
         })
@@ -101,12 +105,14 @@ impl Page {
 }
 
 fn device() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let device = descriptions.insert(fl!("about-device"));
+    let device_desc = descriptions.insert(fl!("about-device", "desc"));
+
     Section::default()
-        .descriptions(vec![
-            fl!("about-device").into(),
-            fl!("about-device", "desc").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
 
             let hostname_input = editable_input(
@@ -118,13 +124,9 @@ fn device() -> Section<crate::pages::Message> {
             .on_input(Message::HostnameInput)
             .on_submit(Message::HostnameSubmit);
 
-            let hostname_row = widget::row::with_capacity(2)
-                .push(widget::horizontal_space(Length::Fill))
-                .push(hostname_input);
-
-            let device_name = settings::item::builder(&*desc[0])
-                .description(&*desc[1])
-                .control(hostname_row);
+            let device_name = settings::item::builder(&*desc[device])
+                .description(&*desc[device_desc])
+                .flex_control(hostname_input);
 
             list_column()
                 .add(device_name)
@@ -134,52 +136,75 @@ fn device() -> Section<crate::pages::Message> {
 }
 
 fn hardware() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let model = descriptions.insert(fl!("about-hardware", "model"));
+    let memory = descriptions.insert(fl!("about-hardware", "memory"));
+    let processor = descriptions.insert(fl!("about-hardware", "processor"));
+    let graphics = descriptions.insert(fl!("about-hardware", "graphics"));
+    let disk_capacity = descriptions.insert(fl!("about-hardware", "disk-capacity"));
+
     Section::default()
         .title(fl!("about-hardware"))
-        .descriptions(vec![
-            fl!("about-hardware", "model").into(),
-            fl!("about-hardware", "memory").into(),
-            fl!("about-hardware", "processor").into(),
-            fl!("about-hardware", "graphics").into(),
-            fl!("about-hardware", "disk-capacity").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
 
-            let mut sections = settings::view_section(&section.title)
-                .add(settings::item(&*desc[0], text(&page.info.hardware_model)))
-                .add(settings::item(&*desc[1], text(&page.info.memory)))
-                .add(settings::item(&*desc[2], text(&page.info.processor)));
+            let sections = settings::view_section(&section.title)
+                .add(settings::flex_item(
+                    &*desc[model],
+                    text(&page.info.hardware_model),
+                ))
+                .add(settings::flex_item(&*desc[memory], text(&page.info.memory)))
+                .add(settings::flex_item(
+                    &*desc[processor],
+                    text(&page.info.processor),
+                ));
 
-            for card in &page.info.graphics {
-                sections = sections.add(settings::item(&*desc[3], text(card.as_str())));
-            }
-
-            sections
-                .add(settings::item(&*desc[4], text(&page.info.disk_capacity)))
+            page.info
+                .graphics
+                .iter()
+                .fold(sections, |sections, card| {
+                    sections.add(settings::flex_item(&*desc[graphics], text(card.as_str())))
+                })
+                .add(settings::flex_item(
+                    &*desc[disk_capacity],
+                    text(&page.info.disk_capacity),
+                ))
                 .into()
         })
 }
 
 fn os() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let os = descriptions.insert(fl!("about-os", "os"));
+    let os_arch = descriptions.insert(fl!("about-os", "os-architecture"));
+    let desktop = descriptions.insert(fl!("about-os", "desktop-environment"));
+    let windowing_system = descriptions.insert(fl!("about-os", "windowing-system"));
+
     Section::default()
         .title(fl!("about-os"))
-        .descriptions(vec![
-            fl!("about-os", "os").into(),
-            fl!("about-os", "os-architecture").into(),
-            fl!("about-os", "desktop-environment").into(),
-            fl!("about-os", "windowing-system").into(),
-        ])
-        .view::<Page>(|_binder, page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
             settings::view_section(&section.title)
-                .add(settings::item(&*desc[0], text(&page.info.operating_system)))
-                .add(settings::item(&*desc[1], text(&page.info.os_architecture)))
-                .add(settings::item(
-                    &*desc[2],
+                .add(settings::flex_item(
+                    &*desc[os],
+                    text(&page.info.operating_system),
+                ))
+                .add(settings::flex_item(
+                    &*desc[os_arch],
+                    text(&page.info.os_architecture),
+                ))
+                .add(settings::flex_item(
+                    &*desc[desktop],
                     text(&page.info.desktop_environment),
                 ))
-                .add(settings::item(&*desc[3], text(&page.info.windowing_system)))
+                .add(settings::flex_item(
+                    &*desc[windowing_system],
+                    text(&page.info.windowing_system),
+                ))
                 .into()
         })
 }
@@ -189,7 +214,7 @@ fn os() -> Section<crate::pages::Message> {
 //     Section::default()
 //         .title(fl!("about-related"))
 //         .descriptions(vec![fl!("about-related", "support").into()])
-//         .view::<Page>(|_binder, _page, section| {
+//         .view::<Page>(move |_binder, _page, section| {
 //             settings::view_section(&section.title)
 //                 .add(settings::item(&*section.descriptions[0], text("TODO")))
 //                 .into()

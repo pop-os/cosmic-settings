@@ -1,17 +1,13 @@
-use cosmic::iced::Alignment;
+use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, row, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_comp_config::input::AccelProfile;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use slab::Slab;
 use slotmap::SlotMap;
 
 use super::Message;
-
-crate::cache_dynamic_lazy! {
-    static MOUSE_ACCELERATION: String = fl!("mouse", "acceleration");
-    static MOUSE_SPEED: String = fl!("mouse", "speed");
-}
 
 pub fn default_primary_button() -> cosmic::widget::segmented_button::SingleSelectModel {
     let mut model = cosmic::widget::segmented_button::SingleSelectModel::builder()
@@ -43,48 +39,55 @@ impl page::Page<crate::pages::Message> for Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn mouse() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let mouse_acceleration = descriptions.insert(fl!("mouse", "acceleration"));
+    let mouse_speed = descriptions.insert(fl!("mouse", "speed"));
+    let primary_button = descriptions.insert(fl!("primary-button"));
+    let acceleration_desc = descriptions.insert(fl!("acceleration-desc"));
+
     Section::default()
-        .descriptions(vec![
-            super::PRIMARY_BUTTON.as_str().into(),
-            MOUSE_SPEED.as_str().into(),
-            MOUSE_ACCELERATION.as_str().into(),
-            super::ACCELERATION_DESC.as_str().into(),
-        ])
-        .view::<Page>(|binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _page, section| {
+            let descriptions = &section.descriptions;
             let input = binder.page::<super::Page>().expect("input page not found");
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
-                .add(settings::item(
-                    &*super::PRIMARY_BUTTON,
+                .add(settings::flex_item(
+                    &descriptions[primary_button],
                     cosmic::widget::segmented_control::horizontal(&input.primary_button)
                         .minimum_button_width(0)
                         .on_activate(|x| Message::PrimaryButtonSelected(x, false)),
                 ))
-                .add(settings::item::builder(&*MOUSE_SPEED).control({
-                    let value = (input
-                        .input_default
-                        .acceleration
-                        .as_ref()
-                        .map_or(0.0, |x| x.speed)
-                        + 1.0)
-                        * 50.0;
-
-                    let slider = widget::slider(10.0..=80.0, value, |value| {
-                        Message::SetMouseSpeed((value / 50.0) - 1.0, false)
-                    })
-                    .width(250.0)
-                    .breakpoints(&[45.0]);
-
-                    row::with_capacity(2)
-                        .align_items(Alignment::Center)
-                        .spacing(theme.cosmic().space_s())
-                        .push(text(format!("{:.0}", value.round())))
-                        .push(slider)
-                }))
                 .add(
-                    settings::item::builder(&*MOUSE_ACCELERATION)
-                        .description(&*super::ACCELERATION_DESC)
+                    settings::item::builder(&descriptions[mouse_speed]).flex_control({
+                        let value = (input
+                            .input_default
+                            .acceleration
+                            .as_ref()
+                            .map_or(0.0, |x| x.speed)
+                            + 0.81)
+                            * 70.71;
+
+                        let slider = widget::slider(0.0..=100.0, value, |value| {
+                            Message::SetMouseSpeed((value / 70.71) - 0.81, false)
+                        })
+                        .width(Length::Fill)
+                        .breakpoints(&[50.0])
+                        .apply(widget::container)
+                        .max_width(250);
+
+                        row::with_capacity(2)
+                            .align_items(Alignment::Center)
+                            .spacing(theme.cosmic().space_s())
+                            .push(text(format!("{:.0}", value.round())))
+                            .push(slider)
+                    }),
+                )
+                .add(
+                    settings::item::builder(&descriptions[mouse_acceleration])
+                        .description(&descriptions[acceleration_desc])
                         .toggler(
                             input
                                 .input_default
@@ -100,19 +103,22 @@ fn mouse() -> Section<crate::pages::Message> {
 }
 
 fn scrolling() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let natural = descriptions.insert(fl!("scrolling", "natural"));
+    let natural_desc = descriptions.insert(fl!("scrolling", "natural-desc"));
+    let scroll_speed = descriptions.insert(fl!("scrolling", "speed"));
+
     Section::default()
         .title(fl!("scrolling"))
-        .descriptions(vec![
-            super::SCROLLING_SPEED.as_str().into(),
-            super::SCROLLING_NATURAL.as_str().into(),
-            super::SCROLLING_NATURAL_DESC.as_str().into(),
-        ])
-        .view::<Page>(|binder, _page, section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _page, section| {
+            let descriptions = &section.descriptions;
             let input = binder.page::<super::Page>().expect("input page not found");
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
-                .add(settings::item(&*super::SCROLLING_SPEED, {
+                .add(settings::flex_item(&descriptions[scroll_speed], {
                     let value = input
                         .input_default
                         .scroll_config
@@ -126,8 +132,10 @@ fn scrolling() -> Section<crate::pages::Message> {
                     let slider = widget::slider(1.0..=100.0, value, |value| {
                         Message::SetScrollFactor(2f64.powf((value - 50.0) / 10.0), false)
                     })
-                    .width(250.0)
-                    .breakpoints(&[50.0]);
+                    .width(Length::Fill)
+                    .breakpoints(&[50.0])
+                    .apply(widget::container)
+                    .max_width(250);
 
                     row::with_capacity(2)
                         .align_items(Alignment::Center)
@@ -136,8 +144,8 @@ fn scrolling() -> Section<crate::pages::Message> {
                         .push(slider)
                 }))
                 .add(
-                    settings::item::builder(&*super::SCROLLING_NATURAL)
-                        .description(&*super::SCROLLING_NATURAL_DESC)
+                    settings::item::builder(&descriptions[natural])
+                        .description(&descriptions[natural_desc])
                         .toggler(
                             input
                                 .input_default

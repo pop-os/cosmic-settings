@@ -14,7 +14,7 @@ appearance = Apparence
     .desc = Couleur d'accentuation et personnalisation COSMIC.
 
 accent-color = Couleur d'accentuation
-app-background = Application ou arrière plan de fenêtre
+app-background = Arrière-plan d'applications ou fenêtres
 auto = Auto
 close = Fermer
 color-picker = Pipette à couleurs
@@ -25,7 +25,7 @@ export = Exporter
 hex = Hex
 import = Importer
 light = Clair
-mode-and-colors = Mode et Couleur
+mode-and-colors = Mode et couleurs
 recent-colors = Couleurs récentes
 reset-to-default = Réinitialiser aux paramètres par défaut
 rgb = RVB
@@ -39,15 +39,17 @@ auto-switch = Passer automatiquement du mode clair au mode sombre
     .next-sunset = Passe au mode clair au prochain coucher du soleil
 
 container-background = Fond de conteneur
-    .desc-detail = La couleur d’arrière-plan du conteneur est utilisée pour la barre latérale de navigation, le tiroir latéral, les boîtes de dialogue et les widgets similaires. Par défaut, il est automatiquement dérivé de l'arrière-plan de l'application ou de la fenêtre.
+    .desc-detail = La couleur d’arrière-plan du conteneur est utilisée pour la barre latérale de navigation, le panneau latéral, les boîtes de dialogue et les widgets similaires. Par défaut, il est automatiquement dérivé de l'arrière-plan de l'application ou de la fenêtre.
     .reset = Réinitialiser en mode automatique
-    .desc = La couleur principale du conteneur est utilisée pour la barre latérale de navigation, le tiroir latéral, les boîtes de dialogue et les widgets similaires.
+    .desc = La couleur principale du conteneur est utilisée pour la barre latérale de navigation, le panneau latéral, les boîtes de dialogue et les widgets similaires.
 
 control-tint = Teinte des composants de contrôle
     .desc = Utilisé pour les arrière-plans des boutons standard, les entrées de recherche, les entrées de texte et les composants similaires.
 
-frosted = Effet verre dépoli sur l'interface système
-    .desc = Applique un flou d'arrière-plan au panneau, au dock, aux applets, au lanceur et à la bibliothèque d'applications.
+frosted = Effet de verre sur l'interface système
+    .desc = Applique un effet de flou d'arrière-plan au panneau, au dock, aux applets, au lanceur et à la bibliothèque d'applications.
+
+experimental-settings = Paramètres expérimentaux
 
 enable-export = Appliquer ce thème aux applications GNOME.
     .desc = Pas tous les toolkits ne supportent le changement automatique de thème. Les applications non-COSMIC peuvent nécessiter un redémarrage après un changement de thème.
@@ -89,28 +91,6 @@ display = Écrans
     .refresh-rate = Fréquence de rafraîchissement
     .resolution = Résolution
     .scale = Échelle
-
-graphics-mode = Graphics mode
-    .mode = { $mode ->
-        [compute] Calcul
-        *[hybrid] Hybride
-        [integrated] Intégré
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Enable { $mode ->
-        [compute] Calcul
-        *[hybrid] Hybride
-        [integrated] Intégré
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Utilise les graphiques dédies seulement pour les charges de calcul. Désactive les écrans externes. { -requires-restart }.
-        *[hybrid] Les applications utilisent des graphiques intégrés, sauf s'il est explicitement demandé d'utiliser des graphiques dédiés. { -requires-restart }.
-        [integrated] Désactive les graphiques dédiés pour une meilleure autonomie de la batterie et moins de bruit de ventilateur.
-        [nvidia] Meilleure expérience graphique et plus grande consommation d'énergie. { -requires-restart }.
-    }
-    .restart = Redémarrer et basculer vers { $mode } ?
-    .restart-desc = Basculer vers { $mode } fermera toutes les applications ouvertes
 
 mirroring = Duplication de l'écran
     .id = Duplication de { $id }
@@ -155,11 +135,6 @@ dock = Dock
 
 hot-corner = Coin Actif
     .top-left-corner = Activer le coin actif supérieur gauche pour les Espaces de Travail
-
-super-key-action = Action de la touche Super
-    .launcher = Lanceur
-    .workspaces = Espaces de Travail
-    .applications = Applications
 
 top-panel = Panneau supérieur
     .workspaces = Afficher le bouton Espace de Travail
@@ -389,6 +364,10 @@ scrolling = Défilement
 
 ## Input: Keyboard
 
+slow = Lent
+fast = Rapide
+short = Court
+long = Long
 keyboard = Clavier
     .desc = Saisie du clavier
 
@@ -399,10 +378,18 @@ keyboard-sources = Sources de saisie
     .settings = Paramètres
     .view-layout = Afficher l'agencement du clavier
     .remove = Supprimer
+    .add = Ajouter une source de saisie
 
 keyboard-special-char = Saisie de caractères spéciaux
     .alternate = Touche de caractères alternatifs
     .compose = Touche de composition
+
+keyboard-typing-assist = Saisie
+    .repeat-rate = Taux de répétition
+    .repeat-delay = Délai de répétition
+
+added = Ajouté
+type-to-search = Tapez pour rechercher...
 
 ## Input: Keyboard: Shortcuts
 
@@ -447,3 +434,16 @@ switch-to-next-workspace = Basculer vers le prochain espace de travail
 switch-to-prev-workspace = Basculer vers l'espace de travail précédent
 open-application-library = Ouvrir la bibliothèque d'applications
 open-workspaces-view = Ouvrir l'aperçu des espaces de travail
+
+## Power 
+
+power = Énergie
+  .desc = Gérer les paramètres d'alimentation 
+
+power-profiles = Modes d'énergie
+  .performance = Performance
+  .balanced = Équilibré
+  .battery = Économie d'énergie
+  .performance-desc = Performances maximales mais force consommation d'énergie.
+  .balanced-desc = Performances et consommation d'énergie équilibré.
+  .battery-desc = Performances réduites mais consommation d'énergie réduite.

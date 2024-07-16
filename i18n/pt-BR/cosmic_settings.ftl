@@ -49,6 +49,8 @@ control-tint = Tonalidade dos componentes de controle
 frosted = Efeito de vidro fosco na interface do sistema
     .desc = Ativa desfoque de fundo ao painel, dock, applets, lançador e biblioteca de aplicativos.
 
+experimental-settings = Configurações experimentais
+
 enable-export = Aplicar este tema aos aplicativos GNOME.
     .desc = Nem todos os conjuntos de ferramenta suportam troca automática. Aplicativos não-COSMIC podem precisar ser reiniciados após uma mudança de tema.
 
@@ -89,28 +91,6 @@ display = Monitores
     .refresh-rate = Taxa de atualização
     .resolution = Resolução
     .scale = Escala
-
-graphics-mode = Graphics mode
-    .mode = { $mode ->
-        [compute] Calcular
-        *[hybrid] Híbrido
-        [integrated] Integrado
-        [nvidia] NVIDIA
-    } graphics
-    .enable = Ativar { $mode ->
-        [compute] calcular
-        *[hybrid] híbrido
-        [integrated] integrado
-        [nvidia] NVIDIA
-    } graphics
-    .desc = { $mode ->
-        [compute] Utiliza gráficos dedicados apenas para cargas  de trabalho computacionais. Desativa monitores externos. { -requires-restart }.
-        *[hybrid] Aplicativos usam os gráficos integrados, a menos que solicitado explicitamente para usar os gráficos dedicados. { -requires-restart }.
-        [integrated] Desativa os gráficos integrados, exceto se for explicitamente solicitada a utilização de gráficos dedicados.
-        [nvidia] Melhor experiência gráfica e maior consumo de energia. { -requires-restart }.
-    }
-    .restart = Reiniciar e alterar para { $mode }?
-    .restart-desc = Alterar para { $mode } fechará todos as aplicações abertas
 
 mirroring = Espelhar
     .id = Espelhar { $id }
@@ -155,11 +135,6 @@ dock = Dock
 
 hot-corner = Canto ativo
     .top-left-corner = Ativar o canto superior esquerdo para áreas de trabalho
-
-super-key-action = Ações da tecla Super
-    .launcher = Inicializador
-    .workspaces = Áreas de Trabalho
-    .applications = Aplicações
 
 top-panel = Painel superior
     .workspaces = Mostrar Botão de Áreas de Trabalho
@@ -322,7 +297,7 @@ sound-input = Entrada
     .device = Dispositivo de entrada
     .level = Nível de entrada
 
-sound-alerts = Aletras
+sound-alerts = Alertas
     .volume = Volume dos alertas
     .sound = Som dos alertas
 
@@ -354,7 +329,7 @@ about-os = Sistema Operacional
     .desktop-environment = Ambiente de trabalho
     .windowing-system = Sistema de janelas
 
-about-related = Definições relacionadas
+about-related = Configurações relacionadas
     .support = Obter ajuda
 
 ## System: Firmware
@@ -364,7 +339,7 @@ firmware = Firmware
 
 ## System: Users
 
-users = Users
+users = Usuários
     .desc = Autenticação e acesso, tela de bloqueio.
 
 ## Input
@@ -389,6 +364,10 @@ scrolling = Rolagem
 
 ## Input: Keyboard
 
+slow = Devagar
+fast = Rápido
+short = Curto
+long = Longo
 keyboard = Teclado
     .desc = Entrada do teclado
 
@@ -399,10 +378,18 @@ keyboard-sources = Fontes de Entrada
     .settings = Configurações
     .view-layout = Ver layout do teclado
     .remove = Remover
+    .add = Adicionar fonte de entrada
 
 keyboard-special-char = Entrada de Caracteres Especiais
     .alternate = Tecla de caracteres alternativos
     .compose = Tecla de composição
+
+keyboard-typing-assist = Digitação
+    .repeat-rate = Taxa de repetição
+    .repeat-delay = Taxa de atraso
+
+added = Adicionado
+type-to-search = Digite para pesquisar...
 
 ## Input: Keyboard: Shortcuts
 
@@ -447,3 +434,17 @@ switch-to-next-workspace = Alternar para próxima área de trabalho
 switch-to-prev-workspace = Alternar para área de trabalho anterior
 open-application-library = Abrir Biblioteca de Aplicativos
 open-workspaces-view = Abrir Visão Geral das Áreas de Trabalho
+
+## Power 
+
+power = Energia
+  .desc = Gerencie as configurações de energia 
+
+power-mode = Modo de Energia
+  .performance = Alta performance
+  .balanced = Balanceado
+  .battery = Economia de bateria
+  .performance-desc = Alta performance e consumo de energia.
+  .balanced-desc = Performance ajustada e consumo de energia moderado.
+  .battery-desc = Baixo consumo de energia and performance limitada.
+  .nobackend = Processo não encontrado. Instale system76-power ou power-profiles-daemon.

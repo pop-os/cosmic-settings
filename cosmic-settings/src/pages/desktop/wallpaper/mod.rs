@@ -46,6 +46,7 @@ use cosmic_settings_page::{self as page, section};
 use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
+use slab::Slab;
 use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 
 const ZOOM: usize = 0;
@@ -207,7 +208,11 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("wallpaper", "desc"))
     }
 
-    fn reload(&mut self, _page: page::Entity) -> Command<crate::pages::Message> {
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Command<crate::pages::Message> {
         let current_folder = self.config.current_folder().to_owned();
 
         let recurse = self.categories.selected == Some(Category::Wallpapers);
@@ -430,7 +435,7 @@ impl Page {
 
         if self.wallpaper_service_config.same_on_all {
             self.wallpaper_service_config.backgrounds.clear();
-            self.wallpaper_service_config.outputs.clear();
+            // self.wallpaper_service_config.outputs.clear();
         } else if let Some(pos) = self
             .wallpaper_service_config
             .backgrounds
@@ -541,7 +546,7 @@ impl Page {
                     let _ = self.config.set_current_folder(None);
                     command = cosmic::command::future(async move {
                         let folder = change_folder(Config::default_folder().to_owned(), true).await;
-                        Message::ChangeFolder(folder).into()
+                        Message::ChangeFolder(folder)
                     });
                 } else {
                     self.select_first_wallpaper();
@@ -560,7 +565,7 @@ impl Page {
                     }
 
                     command = cosmic::command::future(async move {
-                        Message::ChangeFolder(change_folder(path, false).await).into()
+                        Message::ChangeFolder(change_folder(path, false).await)
                     });
                 }
             }
@@ -620,11 +625,28 @@ impl Page {
             FIT => ScalingMode::Fit([0.0, 0.0, 0.0]),
             _ => return None,
         };
+        let old_entry = if output == "all" {
+            Some(&self.wallpaper_service_config.default_background)
+        } else {
+            self.wallpaper_service_config
+                .backgrounds
+                .iter()
+                .find(|entry| entry.output == output)
+        };
 
-        Entry::new(output, wallpaper::Source::Path(path))
+        let entry = Entry::new(output, wallpaper::Source::Path(path))
             .scaling_mode(scaling_mode)
-            .rotation_frequency(self.rotation_frequency)
-            .apply(Some)
+            .rotation_frequency(self.rotation_frequency);
+
+        if let Some(old_entry) = old_entry {
+            entry
+                .sampling_method(old_entry.sampling_method)
+                .filter_method(old_entry.filter_method.clone())
+                .filter_by_theme(old_entry.filter_by_theme)
+        } else {
+            entry
+        }
+        .apply(Some)
     }
 
     #[must_use]
@@ -917,26 +939,35 @@ impl Page {
                 }
 
                 // These will need to be loaded before applying the service config.
-                let custom_images = self.config.custom_images();
+                let custom_images = self.config.custom_images().len();
 
-                // Make note of how many images are to be loaded, with the display update for the service config.
-                self.update_config = Some((custom_images.len(), update.displays));
+                if custom_images == 0 {
+                    self.wallpaper_service_config_update(update.displays);
+                    self.config_apply();
+                } else {
+                    // Make note of how many images are to be loaded, with the display update for the service config.
+                    self.update_config = Some((custom_images, update.displays));
+                }
 
                 // Load preview images concurrently for each custom image stored in the on-disk config.
                 return cosmic::command::batch(
-                    custom_images
+                    self.config
+                        .custom_images()
                         .iter()
                         .cloned()
                         .map(|path| {
                             cosmic::command::future(async move {
                                 let result = wallpaper::load_image_with_thumbnail(path);
 
-                                Message::ImageAdd(result.map(Arc::new)).into()
+                                Message::ImageAdd(result.map(Arc::new))
                             })
                         })
                         // Cache wallpaper preview early to prevent blank previews on reload
-                        .chain(std::iter::once(cosmic::command::message(
-                            Message::CacheDisplayImage.into(),
+                        .chain(std::iter::once(cosmic::command::message::<
+                            _,
+                            crate::app::Message,
+                        >(
+                            Message::CacheDisplayImage
                         ))),
                 );
             }
@@ -1115,23 +1146,19 @@ pub async fn change_folder(current_folder: PathBuf, recurse: bool) -> Context {
     update
 }
 
-crate::cache_dynamic_lazy! {
-    static WALLPAPER_SAME: String = fl!("wallpaper", "same");
-    static WALLPAPER_FIT: String = fl!("wallpaper", "fit");
-    static WALLPAPER_SLIDE: String = fl!("wallpaper", "slide");
-    static WALLPAPER_CHANGE: String = fl!("wallpaper", "change");
-}
-
 #[allow(clippy::too_many_lines)]
 pub fn settings() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let same_label = descriptions.insert(fl!("wallpaper", "same"));
+    let fit_label = descriptions.insert(fl!("wallpaper", "fit"));
+    let slide_label = descriptions.insert(fl!("wallpaper", "slide"));
+    let change_label = descriptions.insert(fl!("wallpaper", "change"));
+
     Section::default()
-        .descriptions(vec![
-            WALLPAPER_SAME.as_str().into(),
-            WALLPAPER_FIT.as_str().into(),
-            WALLPAPER_SLIDE.as_str().into(),
-            WALLPAPER_CHANGE.as_str().into(),
-        ])
-        .view::<Page>(|_binder, page, _section| {
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
             let mut children = Vec::with_capacity(3);
 
             let mut show_slideshow_toggle = true;
@@ -1139,14 +1166,13 @@ pub fn settings() -> Section<crate::pages::Message> {
             let mut slideshow_enabled = page
                 .config_output()
                 .and_then(|output| page.wallpaper_service_config.entry(output))
-                .map(|entry| {
+                .map_or(false, |entry| {
                     if let Source::Path(path) = &entry.source {
                         path.is_dir()
                     } else {
                         false
                     }
-                })
-                .unwrap_or(false);
+                });
 
             children.push(crate::widget::display_container(
                 match page.selection.active {
@@ -1198,18 +1224,18 @@ pub fn settings() -> Section<crate::pages::Message> {
             children.push({
                 let mut column = list_column()
                     .add(settings::item(
-                        &*WALLPAPER_SAME,
+                        &descriptions[same_label],
                         toggler(
                             None,
                             page.wallpaper_service_config.same_on_all,
                             Message::SameWallpaper,
                         ),
                     ))
-                    .add(settings::item(&*WALLPAPER_FIT, wallpaper_fit));
+                    .add(settings::item(&descriptions[fit_label], wallpaper_fit));
 
                 if show_slideshow_toggle {
                     column = column.add(settings::item(
-                        &*WALLPAPER_SLIDE,
+                        &descriptions[slide_label],
                         toggler(None, slideshow_enabled, Message::Slideshow),
                     ));
                 }
@@ -1218,7 +1244,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                 if slideshow_enabled {
                     column
                         .add(settings::item(
-                            &*WALLPAPER_CHANGE,
+                            &descriptions[change_label],
                             dropdown(
                                 &page.rotation_options,
                                 Some(page.selected_rotation),
