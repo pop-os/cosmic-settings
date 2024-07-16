@@ -32,7 +32,7 @@ rgb = RGB
 window-hint-accent = Active window hint color
 window-hint-accent-toggle = Use theme accent color as active window hint
 
-auto-switch = Automatically switch from Light to Dark mode
+auto-switch = Automatically switch between Light and Dark modes
     .sunrise = Switches to Light mode at sunrise
     .sunset = Switches to Dark mode at sunset
     .next-sunrise = Switches to Light mode at next sunrise
