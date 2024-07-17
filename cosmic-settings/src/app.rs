@@ -16,6 +16,8 @@ use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
 use cosmic::app::DbusActivationMessage;
+use cosmic::cctk::sctk::output::OutputInfo;
+use cosmic::cctk::wayland_client::protocol::wl_output::WlOutput;
 use cosmic::iced::futures::SinkExt;
 use cosmic::iced::Subscription;
 use cosmic::widget::{button, row, text_input};
@@ -89,6 +91,8 @@ pub enum Message {
     DesktopInfo,
     Error(String),
     OpenContextDrawer(Cow<'static, str>),
+    OutputAdded(OutputInfo, WlOutput),
+    OutputRemoved(WlOutput),
     Page(page::Entity),
     PageMessage(crate::pages::Message),
     PanelConfig(CosmicPanelConfig),
@@ -202,21 +206,16 @@ impl cosmic::Application for SettingsApp {
 
     fn subscription(&self) -> Subscription<Message> {
         // Handling of Wayland-specific events received.
-        let wayland_events = event::listen_with(|event, _| match event {
-            iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Output(
-                wayland::OutputEvent::Created(Some(info)),
-                o,
-            ))) if info.name.is_some() => Some(Message::PageMessage(crate::pages::Message::Panel(
-                panel::Message(_panel::Message::OutputAdded(info.name.unwrap(), o)),
-            ))),
-            iced::Event::PlatformSpecific(PlatformSpecific::Wayland(wayland::Event::Output(
-                wayland::OutputEvent::Removed,
-                o,
-            ))) => Some(Message::PageMessage(crate::pages::Message::Panel(
-                panel::Message(_panel::Message::OutputRemoved(o)),
-            ))),
-            _ => None,
-        });
+        let wayland_events =
+            event::listen_with(|event, _| match event {
+                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::Output(wayland::OutputEvent::Created(Some(info)), o),
+                )) if info.name.is_some() => Some(Message::OutputAdded(info, o)),
+                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::Output(wayland::OutputEvent::Removed, o),
+                )) => Some(Message::OutputRemoved(o)),
+                _ => None,
+            });
 
         Subscription::batch(vec![
             // Creates a channel that listens to messages from pages.
@@ -443,6 +442,34 @@ impl cosmic::Application for SettingsApp {
                 }
             },
 
+            Message::OutputAdded(info, output) => {
+                if let Some(page) = self.pages.page_mut::<panel::Page>() {
+                    page.update(panel::Message(_panel::Message::OutputAdded(
+                        info.name.clone().unwrap_or_default(),
+                        output.clone(),
+                    )));
+                }
+                // dock
+                if let Some(page) = self.pages.page_mut::<dock::Page>() {
+                    page.update(dock::Message::Inner(_panel::Message::OutputAdded(
+                        info.name.unwrap_or_default(),
+                        output,
+                    )));
+                }
+            }
+
+            Message::OutputRemoved(output) => {
+                if let Some(page) = self.pages.page_mut::<panel::Page>() {
+                    page.update(panel::Message(_panel::Message::OutputRemoved(
+                        output.clone(),
+                    )));
+                }
+                // dock
+                if let Some(page) = self.pages.page_mut::<dock::Page>() {
+                    page.update(dock::Message::Inner(_panel::Message::OutputRemoved(output)));
+                }
+            }
+
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
                 page::update!(
                     self.pages,
@@ -470,6 +497,8 @@ impl cosmic::Application for SettingsApp {
                 );
             }
 
+            Message::PanelConfig(_) => {}
+
             Message::DesktopInfo => {
                 let info_list: Vec<_> = freedesktop_desktop_entry::Iter::new(
                     freedesktop_desktop_entry::default_paths(),
@@ -488,8 +517,6 @@ impl cosmic::Application for SettingsApp {
                         .map(Into::into);
                 }
             }
-
-            Message::PanelConfig(_) => {}
 
             Message::SetTheme(t) => return cosmic::app::command::set_theme(t),
 
