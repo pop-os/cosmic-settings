@@ -8,5 +8,5 @@ Categories=COSMIC
 Keywords=COSMIC
 NoDisplay=true
 OnlyShowIn=COSMIC
-Icon=com.system76.CosmicSettings
+Icon=preferences-input-devices-touchpad
 StartupNotify=true
