@@ -12,7 +12,15 @@ tokio = { version = "1.37.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
-features = ["dbus-config", "single-instance", "multi-window", "tokio", "wayland", "wgpu", "xdg-portal"]
+features = [
+    "dbus-config",
+    "single-instance",
+    "multi-window",
+    "tokio",
+    "wayland",
+    "wgpu",
+    "xdg-portal",
+]
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
@@ -34,10 +42,6 @@ git = "https://github.com/pop-os/cosmic-randr"
 git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
 rev = "3bed072"
-
-[profile.dev]
-opt-level = 2
-lto = false
 
 [profile.release]
 opt-level = 3
