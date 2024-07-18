@@ -76,6 +76,8 @@ pub enum Message {
     //  NightLightContext,
     /// Set the orientation of a display.
     Orientation(Transform),
+    /// Pan the displays view
+    Pan(arrangement::Pan),
     /// Status of an applied display change.
     RandrResult(Arc<std::io::Result<ExitStatus>>),
     /// Request to reload the page.
@@ -123,6 +125,8 @@ pub struct Page {
     cache: ViewCache,
     //  context: Option<ContextDrawer>,
     display_arrangement_scrollable: widget::Id,
+    /// Tracks the last pan status.
+    last_pan: f32,
     /// The setting to revert to if the next dialog page is cancelled.
     dialog: Option<Randr>,
     /// the instant the setting was changed.
@@ -143,6 +147,7 @@ impl Default for Page {
             cache: ViewCache::default(),
             //          context: None,
             display_arrangement_scrollable: widget::Id::unique(),
+            last_pan: 0.5,
             dialog: None,
             dialog_countdown: 0,
             show_display_options: true,
@@ -413,6 +418,21 @@ impl Page {
             //            }
             Message::Orientation(orientation) => return self.set_orientation(orientation),
 
+            Message::Pan(pan) => {
+                match pan {
+                    arrangement::Pan::Left => self.last_pan = 0.0f32.max(self.last_pan - 0.01),
+                    arrangement::Pan::Right => self.last_pan = 1.0f32.min(self.last_pan + 0.01),
+                }
+
+                return cosmic::iced::widget::scrollable::snap_to(
+                    self.display_arrangement_scrollable.clone(),
+                    RelativeOffset {
+                        x: self.last_pan,
+                        y: 0.0,
+                    },
+                );
+            }
+
             Message::Position(display, x, y) => return self.set_position(display, x, y),
 
             Message::Refresh => {
@@ -447,6 +467,7 @@ impl Page {
             }
         }
 
+        self.last_pan = 0.5;
         cosmic::iced::widget::scrollable::snap_to(
             self.display_arrangement_scrollable.clone(),
             RelativeOffset { x: 0.5, y: 0.5 },
@@ -958,6 +979,7 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                 .push({
                     Arrangement::new(&page.list, &page.display_tabs)
                         .on_select(|id| pages::Message::Displays(Message::Display(id)))
+                        .on_pan(|pan| pages::Message::Displays(Message::Pan(pan)))
                         .on_placement(|id, x, y| {
                             pages::Message::Displays(Message::Position(id, x, y))
                         })

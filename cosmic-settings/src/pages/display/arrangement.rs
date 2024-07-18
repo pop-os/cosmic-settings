@@ -19,6 +19,12 @@ const UNIT_PIXELS: f32 = 12.0;
 pub type OnPlacementFunc<Message> = Box<dyn Fn(OutputKey, i32, i32) -> Message>;
 pub type OnSelectFunc<Message> = Box<dyn Fn(segmented_button::Entity) -> Message>;
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum Pan {
+    Left,
+    Right,
+}
+
 #[must_use]
 #[derive(derive_setters::Setters)]
 pub struct Arrangement<'a, Message> {
@@ -26,6 +32,8 @@ pub struct Arrangement<'a, Message> {
     list: &'a randr::List,
     #[setters(skip)]
     tab_model: &'a SingleSelectModel,
+    #[setters(skip)]
+    on_pan: Option<Box<dyn Fn(Pan) -> Message>>,
     #[setters(skip)]
     on_placement: Option<OnPlacementFunc<Message>>,
     #[setters(skip)]
@@ -39,11 +47,17 @@ impl<'a, Message> Arrangement<'a, Message> {
         Self {
             list,
             tab_model,
+            on_pan: None,
             on_placement: None,
             on_select: None,
             width: Length::Shrink,
             height: Length::Shrink,
         }
+    }
+
+    pub fn on_pan(mut self, on_pan: impl Fn(Pan) -> Message + 'static) -> Self {
+        self.on_pan = Some(Box::new(on_pan));
+        self
     }
 
     pub fn on_placement(
@@ -119,8 +133,8 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
             display_area.1 = display_area.1.max(height as i32 + output.position.1);
         }
 
-        let width = (max_dimensions.0 as i32 * 2 + display_area.0) as f32 / UNIT_PIXELS;
-        let height = (max_dimensions.1 as i32 * 2 + display_area.1) as f32 / UNIT_PIXELS;
+        let width = ((max_dimensions.0 as f32 * 2.0) as i32 + display_area.0) as f32 / UNIT_PIXELS;
+        let height = ((max_dimensions.1 as f32 * 2.0) as i32 + display_area.1) as f32 / UNIT_PIXELS;
 
         let state = tree.state.downcast_mut::<State>();
         state.max_dimensions = (
@@ -146,16 +160,25 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
-        _viewport: &Rectangle,
+        viewport: &Rectangle,
     ) -> event::Status {
         let bounds = layout.bounds();
 
         match event {
-            core::Event::Mouse(mouse::Event::CursorMoved { .. })
-            | core::Event::Touch(touch::Event::FingerMoved { .. }) => {
-                if let Some(position) = cursor.position() {
-                    let state = tree.state.downcast_mut::<State>();
-                    if let Some((output_key, region)) = state.dragging.as_mut() {
+            core::Event::Mouse(mouse::Event::CursorMoved { position, .. })
+            | core::Event::Touch(touch::Event::FingerMoved { position, .. }) => {
+                let state = tree.state.downcast_mut::<State>();
+
+                if let Some((output_key, region)) = state.dragging.as_mut() {
+                    if let Some(ref mut on_pan) = self.on_pan {
+                        if bounds.x + viewport.width - 150.0 < position.x {
+                            shell.publish(on_pan(Pan::Right));
+                        } else if bounds.x + 150.0 > position.x {
+                            shell.publish(on_pan(Pan::Left));
+                        }
+                    }
+
+                    if let Some(inner_position) = cursor.position() {
                         update_dragged_region(
                             self.tab_model,
                             self.list,
@@ -163,7 +186,10 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                             *output_key,
                             region,
                             state.max_dimensions,
-                            (position.x - state.offset.0, position.y - state.offset.1),
+                            (
+                                inner_position.x - state.offset.0,
+                                inner_position.y - state.offset.1,
+                            ),
                         );
 
                         return event::Status::Captured;
