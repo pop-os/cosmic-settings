@@ -32,7 +32,7 @@ rgb = RGB
 window-hint-accent = Color que se muestra al destacar la ventana en uso
 window-hint-accent-toggle = Usar color de acento del tema como color de la ventana en uso
 
-auto-switch = Cambiar automáticamente de modo claro a oscuro
+auto-switch = Cambia automáticamente entre los modos claro y oscuro
     .sunrise = Cambia a modo claro al amanecer
     .sunset = Cambia a modo oscuro al atardecer
     .next-sunrise = Cambia a modo claro en el próximo amanecer
@@ -221,7 +221,7 @@ add-color = Añadir color
 add-image = Añadir imagen
 all-displays = Todas las pantallas
 colors = Colores
-dialog-add = _Añadir
+dialog-add = Añadir
 fill = Rellenar
 fit-to-screen = Ajustar a la pantalla
 open-new-folder = Abrir nueva carpeta
