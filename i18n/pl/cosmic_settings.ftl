@@ -123,6 +123,16 @@ orientation = Kierunek
 scheduling = Harmonogram
     .manual = Ręcznie ustawiony harmonogram
 
+dialog = Dialog
+    .title = Czy Zachować Te Ustawienia Wyświetlacza?
+    .keep-changes = Zachowaj Zmiany
+    .change-prompt = Ustawienia automatycznie powrócą do poprzednich za { $time ->
+        [1] sekundę.
+        [few] {$time} sekundy.
+        [other] {$time} sekund.
+    }
+    .revert-settings = Powróć Do Poprzednich Ustawień
+    
 ## Desktop: Notifications
 
 notifications = Powiadomienia
@@ -140,6 +150,11 @@ dock = Dok
 
 hot-corner = Narożniki Funkcyjne
     .top-left-corner = Włącz Obszary Robocze w lewym górnym narożniku funkcyjnym.
+
+super-key-action = Akcje Klawisza Super
+    .launcher = Program Startowy
+    .workspaces = Obszary Robocze
+    .applications = Aplikacje
 
 top-panel = Górny Panel
     .workspaces = Pokaż Przycisk Obszarów Roboczych
@@ -357,8 +372,8 @@ acceleration-desc = Automatycznie dostosuj dokładność śledzenia do prędkoś
 
 disable-while-typing = Wyłącz podczas pisania
 
-input-devices = Urządzenia do Wprowadzania Danych
-    .desc = Urządzenia do Wprowadzania Danych
+input-devices = Urządzenia Wprowadzania Danych
+    .desc = Urządzenia Wprowadzania Danych
     
 primary-button = Główny przycisk
     .left = Lewy
@@ -392,6 +407,10 @@ keyboard-sources = Żródła Wprowadzania Danych
 keyboard-special-char = Wpis Znaków Specjalnych
     .alternate = Alternatywne klawisze znaków
     .compose = Ustaw klawisz
+
+keyboard-typing-assist = Pisanie
+    .repeat-rate = Tempo powtarzania
+    .repeat-delay = Opóżnienie powtarzania
     
 added = Dodany
 type-to-search = Naciśnij by wyszukać...
@@ -400,6 +419,125 @@ type-to-search = Naciśnij by wyszukać...
 
 keyboard-shortcuts = Skróty Klawiaturowe
     .desc = Obejrzyj i spersonalizuj skróty
+    
+add-keybinding = Dodaj skrót klawiszowy
+cancel = Anuluj
+command = Komenda
+custom = Własne
+debug = Debuguj
+disabled = Wyłączone
+migrate-workspace-prev = Migruj obszar roboczy do następnego ekranu
+migrate-workspace-next = Migruj obszar roboczy do poprzedniego ekranu
+migrate-workspace = Migruj obszar roboczy do { $direction ->
+    *[down] dolnego
+    [left] lewego
+    [right] prawego
+    [up] górnego
+} ekranu
+navigate = Nawiguj
+replace = Zastąp
+shortcut-name = Nazwa skrótu klawiszowego
+system-controls = Panel kontrolny systemu
+terminate = Zakończ sesję
+toggle-stacking = Przełącznik grupowania w kartach
+type-key-combination = Wpisz kombinację klawiszy
+unknown = Nieznane
+
+custom-shortcuts = Własne skróty klawiszowe
+    .add = Dodaj skrót klawiszowy
+    .context = Dodaj Własny skrót klawiszowy
+    .none = Nie masz własych skrótów klawiszowych
+
+modified = { $count } zmodyfikowane
+
+nav-shortcuts = Nawigacja
+    .prev-output = Przełącz na poprzedni ekran
+    .next-output = Przełącz na następny ekran
+    .last-workspace = Przełącz na ostatni obszar roboczy
+    .prev-workspace = Przełącz na poprzedni obszar roboczy
+    .next-workspace = Przełącz na następny obszar roboczy
+    .focus = Przełącz { $direction ->
+        *[down] na dolne okno
+        [in] na okno
+        [left] na lewe okno
+        [out] z okna
+        [right] na prawe okno
+        [up] na górne okno
+    } 
+    .output = Zmień na  { $direction ->
+        *[down] dolny
+        [left] lewy
+        [right] prawy
+        [up] górny
+    } ekran
+    .workspace = Zmień na obszar roboczy { $num }
+
+manage-windows = Zarządzanie oknami
+    .close = Zamknij okno
+    .maximize = Maksymalizuj okno
+    .minimize = Minimalizuj okno
+    .resize-inwards = Powiększ okno
+    .resize-outwards = Powiększ okno
+    .toggle-sticky = Przełącznik przylepnych okien
+
+move-windows = Move Windows
+    .direction = Przemieść okno { $direction ->
+        *[down] w dół
+        [left] w lewo
+        [right] na prawo
+        [up] w górę
+    }
+    .display = Przenieś okno o jeden monitor { $direction ->
+        *[down] w dół
+        [left] w lewo
+        [right] na prawo
+        [up] w górę
+    }
+    .workspace = Przenieś okno o jeden obszar roboczy { $direction ->
+        *[below] niżej
+        [left] w lewo
+        [right] w prawo
+        [above] wyżej
+    }
+    .workspace-num = Przenieś okno do obszaru roboczego { $num }
+    .prev-workspace = Przenieś okno do poprzedeniego obszaru roboczego
+    .next-workspace = Przenieś okno do następnego obszaru roboczego
+    .last-workspace = Przenieś okno do ostatniego obszaru roboczego
+    .next-display = Przenieś okno do następnego wyświetlacza
+    .prev-display = Przenieś okno do poprzedniego wyświetlacza
+    .send-to-prev-workspace = Przenieś okno do poprzedeniego obszaru roboczego
+    .send-to-next-workspace = Przenieś okno do następnego obszaru roboczego
+
+system-shortcut = System
+    .app-library = Otwórz bibliotekę apek
+    .brightness-down = Zmniejsz jasność wyświetlacza
+    .brightness-up = Zwiększ jasność wyświetlacza
+    .home-folder = Otwórz katalog domowy
+    .keyboard-brightness-down = Zmniejsz jasność klawiatury
+    .keyboard-brightness-up = Zwiększ jasność klawiatury
+    .launcher = Otwórz program startowy
+    .lock-screen = Zablokuj ekran
+    .mute = Wycisz dzwięk wyjścia
+    .mute-mic = Wycisz wejście mikrofonu
+    .screenshot = Zrób zrzut ekranu
+    .terminal = Otwórz terminal
+    .volume-lower = Zmniejsz głośność wyjścia dźwięku
+    .volume-raise = Zwiększ głośność wyjścia dźwięku
+    .web-browser = Otwórz przeglądarkę
+    .window-switcher = Przełącz między otwartymi oknami
+    .workspace-overview = Otwórz podgląd obszaru roboczego
+
+window-tiling = Kafelkowanie okien
+    .horizontal = Ustaw kierunek poziomy
+    .vertical = Ustaw kierunek pionowy
+    .swap-window = Zamień okna
+    .toggle-tiling = Przełącz na kafelkowanie okien
+    .toggle-stacking = Przełącznik grupowania w kartach
+    .toggle-floating = Przełącz na pływające okna
+    .toggle-orientation = Przełącznik kierunku
+
+replace-shortcut-dialog = Zmienić skrót?
+    .desc = { $shortcut } jest używany przez { $name }. Jeśli go zamienisz, skrót do{ $name } będzie wyłączony.
 
 ## Input: Mouse
 
