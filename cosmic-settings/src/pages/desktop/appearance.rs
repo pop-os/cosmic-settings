@@ -483,7 +483,7 @@ impl Page {
                         .collect(),
                 )
                 .row_spacing(theme.space_xs())
-                .column_spacing(theme.space_xxxs())
+                .column_spacing(theme.space_xs())
                 .into()
             ])
             .spacing(theme.space_xxs())
@@ -1814,7 +1814,7 @@ fn icon_theme_button(
                                 // TODO: Maybe allow choosable sizes/zooming
                                 .map(|handle| handle.icon().size(ICON_THUMB_SIZE)),
                         )
-                        .spacing(theme.space_xxs())
+                        .spacing(theme.space_xxxs())
                         .into(),
                     cosmic::widget::row()
                         .extend(
@@ -1825,15 +1825,15 @@ fn icon_theme_button(
                                 // TODO: Maybe allow choosable sizes/zooming
                                 .map(|handle| handle.icon().size(ICON_THUMB_SIZE)),
                         )
-                        .spacing(theme.space_xxs())
+                        .spacing(theme.space_xxxs())
                         .into(),
                 ])
-                .spacing(theme.space_xs()),
+                .spacing(theme.space_xxxs()),
                 None,
             )
             .on_press(Message::IconTheme(id))
             .selected(selected)
-            .padding(theme.space_xxs())
+            .padding([theme.space_xs(), theme.space_xs() + 1])
             // Image button's style mostly works, but it needs a background to fit the design
             .style(button::Style::Custom {
                 active: Box::new(move |focused, theme| {
@@ -1884,6 +1884,6 @@ fn icon_theme_button(
             })
             .width(Length::Fixed((ICON_THUMB_SIZE * 3) as _)),
         )
-        .spacing(theme.space_xs())
+        .spacing(theme.space_xxs())
         .into()
 }
