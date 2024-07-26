@@ -101,7 +101,7 @@ mirroring = Віддзеркалення
         *[other] { $display }
     }
     .project-count = Проектування на { $count} { $count ->
-        [1] дисплей
+        [one] дисплей
         [few] дисплеї
         *[other] дисплеїв
     }
@@ -122,7 +122,11 @@ scheduling = Планування
 dialog = Діалог
     .title = Залишити ці налаштування дисплея?
     .keep-changes = Зберегти
-    .change-prompt = Повернення до попередніх налаштувань буде виконано за { $time } секунд.
+    .change-prompt = Повернення до попередніх налаштувань буде виконано за { $time } { $time ->
+        [one] секунду
+        [few] секунди
+        *[other] секунд
+    }.
     .revert-settings = Повернути
 
 ## Desktop: Notifications
@@ -179,7 +183,7 @@ small = Малий
 start-segment = Початковий сегмент
 
 panel-appearance = Вигляд
-    .match = Як на стільниці
+    .match = Як в системі
     .light = Світлий
     .dark = Темний
 
@@ -228,10 +232,15 @@ fit-to-screen = Припасувати до екрана
 open-new-folder = Відкрити нову теку
 recent-folders = Нещодавні теки
 
-x-minutes = { $number } хвилин
-x-hours = { $number ->
-    [1] 1 годину
-    *[other] { $number } години
+x-minutes = { $number } { $number ->
+    [one] хвилину
+    [few] хвилини
+    *[other] хвилин
+}
+x-hours = { $number } { $number ->
+    [one] годину
+    [few] години
+    *[other] годин
 }
 
 ## Desktop: Workspaces
@@ -573,9 +582,9 @@ power = Живлення
 
 power-mode = Режим живлення
     .performance = Висока продуктивність
-    .balanced = Збалансований
-    .battery = Подовжений час автономної роботи
-    .performance-desc = Пікова продуктивність та споживання енергії.
+    .balanced = Збалансовано
+    .battery = Подовження часу автономної роботи
+    .performance-desc = Пік продуктивності та споживання енергії.
     .balanced-desc = Тиха робота та помірне споживання енергії.
     .battery-desc = Зменшене споживання енергії та безшумна робота.
     .nobackend = Бекенд не знайдено. Встановіть system76-power або power-profiles-daemon.
