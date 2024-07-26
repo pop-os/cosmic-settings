@@ -129,7 +129,7 @@ dialog = Dialog
     .change-prompt = Ustawienia automatycznie powrócą do poprzednich za { $time ->
         [1] sekundę.
         [few] {$time} sekundy.
-        [other] {$time} sekund.
+        *[other] {$time} sekund.
     }
     .revert-settings = Powróć Do Poprzednich Ustawień
     
