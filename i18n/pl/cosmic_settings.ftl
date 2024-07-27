@@ -478,7 +478,7 @@ manage-windows = Zarządzanie oknami
     .minimize = Minimalizuj okno
     .resize-inwards = Powiększ okno
     .resize-outwards = Powiększ okno
-    .toggle-sticky = Przełącznik przylepnych okien
+    .toggle-sticky = Przełącznik zakrywających okien
 
 move-windows = Move Windows
     .direction = Przemieść okno { $direction ->
