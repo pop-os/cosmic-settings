@@ -480,7 +480,7 @@ manage-windows = Zarządzanie oknami
     .resize-outwards = Powiększ okno
     .toggle-sticky = Przełącznik zakrywających okien
 
-move-windows = Move Windows
+move-windows = Przemieszczanie okien
     .direction = Przemieść okno { $direction ->
         *[down] w dół
         [left] w lewo
