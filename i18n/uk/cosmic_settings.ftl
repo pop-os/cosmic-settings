@@ -10,8 +10,8 @@ desktop = Стільниця
 
 ## Desktop: Appearance
 
-appearance = Вигляд
-    .desc = Кольори акценту та оздоблення COSMIC.
+appearance = Зовнішній вигляд
+    .desc = Кольори акценту та теми COSMIC.
 
 accent-color = Колір акценту
 app-background = Тло застосунку чи вікна
@@ -182,8 +182,8 @@ search-applets = Шукати аплети...
 small = Малий
 start-segment = Початковий сегмент
 
-panel-appearance = Вигляд
-    .match = Як в системі
+panel-appearance = Зовнішній вигляд
+    .match = Системний
     .light = Світлий
     .dark = Темний
 
@@ -198,7 +198,7 @@ panel-style = Стиль
     .dock-anchor-gap = Відступ між доком та краями екрана
     .extend = Розширити панель до країв екрана
     .dock-extend = Розширити док до країв екрана
-    .appearance = Вигляд
+    .appearance = Зовнішній вигляд
     .size = Розмір
     .background-opacity = Непрозорість тла
 
