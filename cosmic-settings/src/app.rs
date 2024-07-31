@@ -756,12 +756,16 @@ impl SettingsApp {
             }
         }
 
-        let view = self.page_container(settings::view_column(sections_column).padding(0));
+        let view = self
+            .page_container(settings::view_column(sections_column).padding(0))
+            .apply(scrollable)
+            .height(Length::Fill)
+            .apply(|w| id_container(w, self.id()));
 
         widget::column::with_capacity(3)
             .push(self.page_container(header))
             .push(widget::vertical_space(24))
-            .push(scrollable(view).height(Length::Fill))
+            .push(view)
             .height(Length::Fill)
             .into()
     }
