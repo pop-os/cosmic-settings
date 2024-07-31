@@ -863,11 +863,11 @@ impl SettingsApp {
             .apply(Element::from)
             .map(Message::Page);
 
-        column::with_capacity(2)
-            .push(page_title(&self.pages.info[self.active_page]))
+        widget::column::with_capacity(3)
+            .push(self.page_container(page_title(&self.pages.info[self.active_page])))
+            .push(widget::vertical_space(theme.cosmic().space_m()))
             .push(page_list)
-            .spacing(theme.cosmic().space_m())
-            .padding(0)
+            .height(Length::Fill)
             .into()
     }
 
