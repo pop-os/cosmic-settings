@@ -57,8 +57,8 @@ test *args:
 [no-cd]
 vendor:
     mkdir -p .cargo
-    cargo vendor | head -n -1 > .cargo/config
-    echo 'directory = "vendor"' >> .cargo/config
+    cargo vendor | head -n -1 > .cargo/config.toml
+    echo 'directory = "vendor"' >> .cargo/config.toml
     tar pcf vendor.tar vendor
     rm -rf vendor
 

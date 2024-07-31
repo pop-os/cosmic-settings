@@ -50,8 +50,8 @@ lto = "thin"
 # [patch.'https://github.com/smithay/client-toolkit/']
 # smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }
 
-# [patch.'https://github.com/pop-os/cosmic-protocols']
-# cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "bd65e0f2d55429954839c9e6c7bc5b0d198b85f0" }
+[patch.'https://github.com/pop-os/cosmic-protocols']
+cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "bd65e0f2d55429954839c9e6c7bc5b0d198b85f0" }
 
 # For development and testing purposes
 # [patch.'https://github.com/pop-os/libcosmic']
