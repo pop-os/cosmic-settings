@@ -10,9 +10,9 @@ license = "GPL-3.0-only"
 byte-unit = "5.1.4"
 const_format = "0.2.32"
 concat-in-place = "1.1.0"
-sysinfo = "0.30.5"
-memchr = "2.7.1"
+sysinfo = "0.30.13"
+memchr = "2.7.4"
 
 [dependencies.bumpalo]
-version = "3.14.0"
+version = "3.16.0"
 features = ["collections"]

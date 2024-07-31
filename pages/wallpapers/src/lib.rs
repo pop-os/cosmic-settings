@@ -275,7 +275,7 @@ fn open_image(input_buffer: &mut Vec<u8>, path: &Path) -> Option<DynamicImage> {
     }
 
     let input_cursor = std::io::Cursor::new(input_buffer);
-    let mut image_decoder = image::io::Reader::new(input_cursor);
+    let mut image_decoder = image::ImageReader::new(input_cursor);
 
     image_decoder = if let Ok(decoder) = image_decoder.with_guessed_format() {
         decoder

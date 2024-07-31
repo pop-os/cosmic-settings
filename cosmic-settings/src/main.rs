@@ -109,8 +109,6 @@ pub fn main() -> color_eyre::Result<()> {
         std::env::set_var("RUST_SPANTRACE", "0");
     }
 
-    std::env::set_var("WGPU_POWER_PREF", "low");
-
     init_logger();
     init_localizer();
 

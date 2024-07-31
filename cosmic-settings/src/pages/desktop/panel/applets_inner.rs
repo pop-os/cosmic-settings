@@ -600,15 +600,15 @@ impl<'a> TryFrom<Cow<'a, Path>> for Applet<'static> {
 
     fn try_from(path: Cow<'a, Path>) -> Result<Self, Self::Error> {
         let content = std::fs::read_to_string(path.as_ref())?;
-        let entry = DesktopEntry::decode(path.as_ref(), &content)?;
+        let entry = DesktopEntry::from_str(path.as_ref(), &content, None::<&[&str]>)?;
         if entry.desktop_entry("X-CosmicApplet").is_none() {
             anyhow::bail!("Not an applet");
         }
 
         Ok(Self {
             id: Cow::from(entry.id().to_string()),
-            name: Cow::from(entry.name(None).unwrap_or_default().to_string()),
-            description: Cow::from(entry.comment(None).unwrap_or_default().to_string()),
+            name: Cow::from(entry.name::<&str>(&[]).unwrap_or_default().to_string()),
+            description: Cow::from(entry.comment::<&str>(&[]).unwrap_or_default().to_string()),
             icon: Cow::from(entry.icon().unwrap_or_default().to_string()),
             path: Cow::from(path.into_owned()),
         })

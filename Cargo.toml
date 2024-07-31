@@ -8,7 +8,7 @@ rust-version = "1.79.0"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
-tokio = { version = "1.37.0", features = ["macros"] }
+tokio = { version = "1.39.2", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic"
@@ -41,17 +41,17 @@ git = "https://github.com/pop-os/cosmic-randr"
 [workspace.dependencies.sctk]
 git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
-rev = "3bed072"
+# rev = "c583de8"
 
 [profile.release]
 opt-level = 3
 lto = "thin"
 
-[patch.'https://github.com/smithay/client-toolkit/']
-smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "3bed072" }
+# [patch.'https://github.com/smithay/client-toolkit/']
+# smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }
 
-[patch.'https://github.com/pop-os/cosmic-protocols']
-cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "1316f9e" }
+# [patch.'https://github.com/pop-os/cosmic-protocols']
+# cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "bd65e0f2d55429954839c9e6c7bc5b0d198b85f0" }
 
 # For development and testing purposes
 # [patch.'https://github.com/pop-os/libcosmic']

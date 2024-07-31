@@ -10,10 +10,10 @@ cosmic-bg-config = { workspace = true }
 cosmic-config = { workspace = true }
 cosmic-randr-shell = { workspace = true }
 dirs = "5.0.1"
-freedesktop-icons = "0.2.5"
-futures-lite = "2.2.0"
+freedesktop-icons = "0.2.6"
+futures-lite = "2.3.0"
 futures-util = "0.3.30"
-image = "0.25.0"
+image = "0.25.2"
 infer = "0.15.0"
-tokio = { version = "1.35.1", features = ["sync"] }
+tokio = { version = "1.39.2", features = ["sync"] }
 tracing = "0.1.40"
