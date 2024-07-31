@@ -20,7 +20,7 @@ use cosmic::cctk::sctk::output::OutputInfo;
 use cosmic::cctk::wayland_client::protocol::wl_output::WlOutput;
 use cosmic::iced::futures::SinkExt;
 use cosmic::iced::Subscription;
-use cosmic::widget::{button, row, text_input};
+use cosmic::widget::{self, button, row, text_input};
 use cosmic::{
     app::{Command, Core},
     iced::{
@@ -565,33 +565,18 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn view(&self) -> Element<Message> {
-        let theme = cosmic::theme::active();
-
-        let page_view = if self.search_active && !self.search_input.is_empty() {
+        let view = if self.search_active && !self.search_input.is_empty() {
             self.search_view()
         } else if let Some(content) = self.pages.content(self.active_page) {
             self.page_view(content)
         } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
             self.sub_page_view(sub_pages)
         } else {
-            return row::row().into();
+            return self.page_container(row::row());
         };
 
-        let padding = if self.core.is_condensed() {
-            0
-        } else {
-            theme.cosmic().space_l()
-        };
-
-        container(page_view)
-            .max_width(800)
-            .width(Length::Fill)
-            .apply(container)
-            .center_x()
-            .padding([theme.cosmic().space_xxs(), padding])
-            .width(Length::Fill)
-            .apply(scrollable)
-            .apply(|w| id_container(w, self.id()))
+        container(view)
+            .padding([cosmic::theme::active().cosmic().space_xxs(), 0])
             .into()
     }
 
@@ -730,9 +715,9 @@ impl SettingsApp {
     fn page_view(&self, content: &[section::Entity]) -> cosmic::Element<Message> {
         let page = &self.pages.page[self.active_page];
         let page_info = &self.pages.info[self.active_page];
-        let mut column_widgets = Vec::with_capacity(1 + content.len());
+        let mut sections_column = Vec::with_capacity(content.len());
 
-        column_widgets.push(if let Some(custom_header) = page.header() {
+        let header = if let Some(custom_header) = page.header() {
             custom_header.map(Message::from)
         } else if let Some(parent) = page_info.parent {
             let page_header = crate::widget::sub_page_header(
@@ -753,7 +738,7 @@ impl SettingsApp {
             page_header_content.into()
         } else {
             cosmic::widget::text::title3(&page_info.title).into()
-        });
+        };
 
         for id in content.iter().copied() {
             let section = &self.pages.sections[id];
@@ -764,14 +749,21 @@ impl SettingsApp {
                 .as_ref()
                 .map_or(true, |func| func(model.as_ref()))
             {
-                column_widgets.push(
+                sections_column.push(
                     (section.view_fn)(&self.pages, model.as_ref(), section)
                         .map(Message::PageMessage),
                 );
             }
         }
 
-        settings::view_column(column_widgets).padding(0).into()
+        let view = self.page_container(settings::view_column(sections_column).padding(0));
+
+        widget::column::with_capacity(3)
+            .push(self.page_container(header))
+            .push(widget::vertical_space(24))
+            .push(scrollable(view).height(Length::Fill))
+            .height(Length::Fill)
+            .into()
     }
 
     fn search_changed(&mut self, phrase: String) {
@@ -836,7 +828,9 @@ impl SettingsApp {
             }
         }
 
-        settings::view_column(sections).padding(0).into()
+        self.page_container(settings::view_column(sections).padding(0))
+            .apply(scrollable)
+            .into()
     }
 
     /// Displays the sub-pages view of a page.
@@ -861,7 +855,8 @@ impl SettingsApp {
             )
             .spacing(theme.cosmic().space_s())
             .padding(0)
-            .apply(cosmic::Element::from)
+            .apply(|widget| scrollable(self.page_container(widget)))
+            .apply(Element::from)
             .map(Message::Page);
 
         column::with_capacity(2)
@@ -869,6 +864,28 @@ impl SettingsApp {
             .push(page_list)
             .spacing(theme.cosmic().space_m())
             .padding(0)
+            .into()
+    }
+
+    fn page_container<'a, Message: 'static>(
+        &self,
+        content: impl Into<cosmic::Element<'a, Message>>,
+    ) -> cosmic::Element<'a, Message> {
+        let theme = cosmic::theme::active();
+
+        let padding = if self.core.is_condensed() {
+            0
+        } else {
+            theme.cosmic().space_l()
+        };
+
+        container(content.into())
+            .max_width(800)
+            .width(Length::Fill)
+            .apply(container)
+            .center_x()
+            .padding([0, padding])
+            .width(Length::Fill)
             .into()
     }
 }
