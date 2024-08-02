@@ -33,9 +33,7 @@ pub struct Info {
 }
 
 pub struct Page {
-    auto_timezone: bool,
     cosmic_applet_config: cosmic_config::Config,
-    cosmic_settings_config: cosmic_config::Config,
     first_day_of_week: usize,
     military_time: bool,
     ntp_enabled: bool,
@@ -72,20 +70,8 @@ impl Default for Page {
                 true
             });
 
-        let cosmic_settings_config =
-            cosmic_config::Config::new("com.system76.CosmicSettings", 1).unwrap();
-
-        let auto_timezone = cosmic_settings_config
-            .get("auto_timezone")
-            .unwrap_or_else(|err| {
-                error!(?err, "Failed to read config 'auto_timezone'");
-                false
-            });
-
         Self {
-            auto_timezone,
             cosmic_applet_config,
-            cosmic_settings_config,
             first_day_of_week,
             formatted_date: String::new(),
             local_time: None,
@@ -179,14 +165,6 @@ impl Page {
                 });
             }
 
-            Message::AutomaticTimezone(enable) => {
-                self.auto_timezone = enable;
-
-                if let Err(err) = self.cosmic_settings_config.set("auto_timezone", enable) {
-                    error!(?err, "Failed to set config `auto_timezone`")
-                }
-            }
-
             Message::MilitaryTime(enable) => {
                 self.military_time = enable;
                 self.update_local_time();
@@ -277,7 +255,6 @@ impl Page {
 #[derive(Clone, Debug)]
 pub enum Message {
     Automatic(bool),
-    AutomaticTimezone(bool),
     Error(String),
     MilitaryTime(bool),
     None,
@@ -364,8 +341,6 @@ fn format() -> Section<crate::pages::Message> {
 fn timezone() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let auto = descriptions.insert(fl!("time-zone", "auto"));
-    let auto_info = descriptions.insert(fl!("time-zone", "auto-info"));
     let time_zone = descriptions.insert(fl!("time-zone"));
 
     Section::default()
@@ -373,12 +348,6 @@ fn timezone() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             settings::view_section(&section.title)
-                // Automatic timezone toggle
-                .add(
-                    settings::item::builder(&*section.descriptions[auto])
-                        .description(&*section.descriptions[auto_info])
-                        .toggler(page.auto_timezone, Message::AutomaticTimezone),
-                )
                 // Time zone select
                 .add(
                     settings::item::builder(&*section.descriptions[time_zone]).control(
