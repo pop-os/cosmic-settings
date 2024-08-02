@@ -859,7 +859,7 @@ impl SettingsApp {
             )
             .spacing(theme.cosmic().space_s())
             .padding(0)
-            .apply(|widget| scrollable(self.page_container(widget)))
+            .apply(|widget| scrollable(self.page_container(widget)).height(Length::Fill))
             .apply(Element::from)
             .map(Message::Page);
 
