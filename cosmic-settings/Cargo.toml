@@ -20,7 +20,6 @@ cosmic-randr.workspace = true
 cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon" }
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-system = { path = "../pages/system" }
-cosmic-settings-time = { path = "../pages/time" }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 derivative = "2.2.0"
 derive_setters = "0.1.6"
@@ -31,6 +30,7 @@ futures = { package = "futures-lite", version = "2.3.0" }
 generator = "=0.8.1"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
+timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 i18n-embed-fl = "0.8.0"
 image = "0.25"
 itertools = "0.13.0"
@@ -54,6 +54,10 @@ xkb-data = "0.1.0"
 zbus = { version = "4.4.0", features = ["tokio"] }
 tachyonix = "0.3.0"
 slab = "0.4.9"
+
+[dependencies.icu]
+version = "1.4.0"
+features = ["experimental", "compiled_data", "icu_datetime_experimental"]
 
 [dependencies.i18n-embed]
 version = "0.14.1"
