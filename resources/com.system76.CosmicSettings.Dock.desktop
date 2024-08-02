@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Dock
+Comment=Panel with pinned applications in the app tray and other applets.
+Type=Settings
+Exec=cosmic-settings dock
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-desktop-dock
+StartupNotify=true

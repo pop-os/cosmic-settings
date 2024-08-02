@@ -8,10 +8,38 @@ number = { $number }
 
 desktop = Desktop
 
+## Desktop: Wallpaper
+
+wallpaper = Wallpaper
+    .change = Change image every
+    .desc = Wallpaper images, colors, and slideshow options.
+    .fit = Wallpaper fit
+    .folder-dialog = Choose wallpaper folder
+    .image-dialog = Choose wallpaper image
+    .plural = Wallpapers
+    .same = Same wallpaper on all displays
+    .slide = Slideshow
+
+add-color = Add color
+add-image = Add image
+all-displays = All Displays
+colors = Colors
+dialog-add = Add
+fill = Fill
+fit-to-screen = Fit to Screen
+open-new-folder = Open new folder
+recent-folders = Recent Folders
+
+x-minutes = { $number } minutes
+x-hours = { $number ->
+    [1] 1 hour
+    *[other] { $number } hours
+}
+
 ## Desktop: Appearance
 
 appearance = Appearance
-    .desc = Accent colors and COSMIC theming.
+    .desc = Accent colors and theming.
 
 accent-color = Accent color
 app-background = Application or window background
@@ -66,11 +94,111 @@ style = Style
     .square = Square
 
 # interface density left out for now
-window-management = Window Management
+window-management-appearance = Window Management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
 
-## Desktop: Display
+## Desktop: Notifications
+
+notifications = Notifications
+    .desc = Do Not Disturb, lockscreen notifications, and per-application settings.
+
+## Desktop: Panel
+
+panel = Panel
+    .desc = Top bar with desktop controls and menus.
+
+add = Add
+add-applet = Add Applet
+all = All
+applets = Applets
+center-segment = Center Segment
+drop-here = Drop applets here
+end-segment = End Segment
+large = Large
+no-applets-found = No applets found...
+panel-bottom = Bottom
+panel-left = Left
+panel-right = Right
+panel-top = Top
+search-applets = Search applets...
+small = Small
+start-segment = Start Segment
+
+panel-appearance = Appearance
+    .match = Match desktop
+    .light = Light
+    .dark = Dark
+
+panel-behavior-and-position = Behavior and Positions
+    .autohide = Automatically hide panel
+    .dock-autohide = Automatically hide dock
+    .position = Position on screen
+    .display = Show on display
+
+panel-style = Style
+    .anchor-gap = Gap between panel and screen edges
+    .dock-anchor-gap = Gap between dock and screen edges
+    .extend = Extend panel to screen edges
+    .dock-extend = Extend dock to screen edges
+    .appearance = Appearance
+    .size = Size
+    .background-opacity = Background opacity
+
+panel-applets = Configuration
+    .dock-desc = Configure dock applets.
+    .desc = Configure panel applets.
+
+panel-missing = Panel Configuration is Missing
+    .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
+    .fix = Reset to default
+
+## Desktop: Dock
+
+dock = Dock
+    .desc = Panel with pinned applications in the app tray and other applets.
+
+## Desktop: Window management
+
+window-management = Window management
+    .desc = Super key action, window control options, and additional window tiling options.
+
+super-key = Super key
+    .launcher = Open Launcher
+    .workspaces = Open Workspaces
+    .applications = Open Applications
+
+window-controls = Window Controls
+    .minimize = Show minimize button
+    .maximize = Show maximize button
+
+## Desktop: Workspaces
+
+workspaces = Workspaces
+    .desc = Workspace orientation and behavior.
+
+workspaces-behavior = Workspace Behavior
+    .dynamic = Dynamic workspaces
+    .dynamic-desc = Automatically removes empty workspaces.
+    .fixed = Fixed Number of Workspaces
+    .fixed-desc = Add or remove workspaces in the overview.
+
+workspaces-multi-behavior = Multi-monitor Behavior
+    .span = Workspaces Span Displays
+    .separate = Displays Have Separate Workspaces
+
+workspaces-overview-thumbnails = Workspace Overview Thumbnails
+    .show-number = Show Workspace Number
+    .show-name = Show Workspace Name
+
+workspaces-orientation = Workspaces Orientation
+    .vertical = Vertical
+    .horizontal = Horizontal
+
+hot-corner = Hot Corner
+    .top-left-corner = Enable top-left hot corner for Workspaces
+
+## Displays
 
 -requires-restart = Requires restart
 
@@ -123,143 +251,6 @@ dialog = Dialog
     .keep-changes = Keep Changes
     .change-prompt = Settings changes will automatically revert in { $time } seconds.
     .revert-settings = Revert Settings
-
-## Desktop: Notifications
-
-notifications = Notifications
-    .desc = Do Not Disturb, lockscreen notifications, and per-application settings.
-
-## Desktop: Options
-
-desktop-panel-options = Desktop and Panel
-    .desc = Super Key action, hot corners, window control options.
-
-desktop-panels-and-applets = Desktop Panels and Applets
-
-dock = Dock
-    .desc = Panel with pinned applications.
-
-hot-corner = Hot Corner
-    .top-left-corner = Enable top-left hot corner for Workspaces
-
-top-panel = Top Panel
-    .workspaces = Show Workspaces Button
-    .applications = Show Applications Button
-
-## Desktop: Panel
-
-panel = Panel
-    .desc = Top bar with desktop controls and menus.
-
-add = Add
-add-applet = Add Applet
-all = All
-applets = Applets
-center-segment = Center Segment
-drop-here = Drop applets here
-end-segment = End Segment
-large = Large
-no-applets-found = No applets found...
-panel-bottom = Bottom
-panel-left = Left
-panel-right = Right
-panel-top = Top
-search-applets = Search applets...
-small = Small
-start-segment = Start Segment
-
-panel-appearance = Appearance
-    .match = Match desktop
-    .light = Light
-    .dark = Dark
-
-panel-behavior-and-position = Behavior and Positions
-    .autohide = Automatically hide panel
-    .dock-autohide = Automatically hide dock
-    .position = Position on screen
-    .display = Show on display
-
-panel-style = Style
-    .anchor-gap = Gap between panel and screen edges
-    .dock-anchor-gap = Gap between dock and screen edges
-    .extend = Extend panel to screen edges
-    .dock-extend = Extend dock to screen edges
-    .appearance = Appearance
-    .size = Size
-    .background-opacity = Background opacity
-
-panel-applets = Configuration
-    .dock-desc = Configure dock applets.
-    .desc = Configure panel applets.
-
-panel-missing = Panel Configuration is Missing
-    .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
-    .fix = Reset to default
-
-## Desktop: Wallpaper
-
-wallpaper = Wallpaper
-    .change = Change image every
-    .desc = Wallpaper images, colors, and slideshow options.
-    .fit = Wallpaper fit
-    .folder-dialog = Choose wallpaper folder
-    .image-dialog = Choose wallpaper image
-    .plural = Wallpapers
-    .same = Same wallpaper on all displays
-    .slide = Slideshow
-
-add-color = Add color
-add-image = Add image
-all-displays = All Displays
-colors = Colors
-dialog-add = Add
-fill = Fill
-fit-to-screen = Fit to Screen
-open-new-folder = Open new folder
-recent-folders = Recent Folders
-
-x-minutes = { $number } minutes
-x-hours = { $number ->
-    [1] 1 hour
-    *[other] { $number } hours
-}
-
-## Desktop: Window management
-
-window-management = Window management
-    .desc = Super key action, window control options, and additional window tiling options.
-
-super-key = Super key
-    .launcher = Open Launcher
-    .workspaces = Open Workspaces
-    .applications = Open Applications
-
-window-controls = Window Controls
-    .minimize = Show minimize button
-    .maximize = Show maximize button
-
-## Desktop: Workspaces
-
-workspaces = Workspaces
-    .desc = Set workspace number, behavior, and placement.
-
-workspaces-behavior = Workspace Behavior
-    .dynamic = Dynamic workspaces
-    .dynamic-desc = Automatically removes empty workspaces.
-    .fixed = Fixed Number of Workspaces
-    .fixed-desc = Add or remove workspaces in the overview.
-
-workspaces-multi-behavior = Multi-monitor Behavior
-    .span = Workspaces Span Displays
-    .separate = Displays Have Separate Workspaces
-
-workspaces-overview-thumbnails = Workspace Overview Thumbnails
-    .show-number = Show Workspace Number
-    .show-name = Show Workspace Name
-
-workspaces-orientation = Workspaces Orientation
-    .vertical = Vertical
-    .horizontal = Horizontal
 
 ## Networking: Wired
 

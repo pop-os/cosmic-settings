@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Panel
+Comment=Top bar with desktop controls and menus.
+Type=Settings
+Exec=cosmic-settings panel
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-desktop-panel
+StartupNotify=true

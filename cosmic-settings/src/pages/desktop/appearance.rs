@@ -1487,11 +1487,11 @@ pub fn style() -> Section<crate::pages::Message> {
 pub fn window_management() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let active_hint = descriptions.insert(fl!("window-management", "active-hint"));
-    let gaps = descriptions.insert(fl!("window-management", "gaps"));
+    let active_hint = descriptions.insert(fl!("window-management-appearance", "active-hint"));
+    let gaps = descriptions.insert(fl!("window-management-appearance", "gaps"));
 
     Section::default()
-        .title(fl!("window-management"))
+        .title(fl!("window-management-appearance"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
