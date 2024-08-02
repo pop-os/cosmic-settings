@@ -61,7 +61,8 @@ impl SettingsApp {
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
             PageCommands::Bluetooth => None,
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
-            PageCommands::DesktopPanel => self.pages.page_id::<desktop::options::Page>(),
+            PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
+            PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
@@ -74,6 +75,9 @@ impl SettingsApp {
             PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
             PageCommands::Users => self.pages.page_id::<system::users::Page>(),
             PageCommands::Wallpaper => self.pages.page_id::<desktop::wallpaper::Page>(),
+            PageCommands::WindowManagement => {
+                self.pages.page_id::<desktop::window_management::Page>()
+            }
             PageCommands::Workspaces => self.pages.page_id::<desktop::workspaces::Page>(),
         }
     }
@@ -311,14 +315,14 @@ impl cosmic::Application for SettingsApp {
                     page::update!(self.pages, message, desktop::Page);
                 }
 
-                crate::pages::Message::DesktopOptions(message) => {
-                    page::update!(self.pages, message, desktop::options::Page);
-                }
-
                 crate::pages::Message::DesktopWallpaper(message) => {
                     if let Some(page) = self.pages.page_mut::<desktop::wallpaper::Page>() {
                         return page.update(message).map(Into::into);
                     }
+                }
+
+                crate::pages::Message::WindowManagement(message) => {
+                    page::update!(self.pages, message, desktop::window_management::Page);
                 }
 
                 crate::pages::Message::DesktopWorkspaces(message) => {
