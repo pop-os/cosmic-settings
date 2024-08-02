@@ -20,7 +20,6 @@ pub enum Message {
     DateAndTime(time::date::Message),
     Desktop(desktop::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
-    WindowManagement(desktop::window_management::Message),
     DesktopWorkspaces(desktop::workspaces::Message),
     Displays(display::Message),
     Dock(desktop::dock::Message),
@@ -38,6 +37,7 @@ pub enum Message {
     Power(power::Message),
     SystemShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     TilingShortcuts(input::keyboard::shortcuts::ShortcutMessage),
+    WindowManagement(desktop::window_management::Message),
 }
 
 impl From<Message> for crate::Message {
