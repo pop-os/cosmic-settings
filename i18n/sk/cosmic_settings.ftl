@@ -25,7 +25,7 @@ export = Exportovať
 hex = Hex
 import = Importovať
 light = Svetlý
-mode-and-colors = Mode and Colors
+mode-and-colors = Režim a farby
 recent-colors = Posledné farby
 reset-to-default = Predvolené nastavenie
 rgb = RGB
@@ -80,15 +80,15 @@ color = Farba
     .sidebar = Farebné profily
     .temperature = Teplota farieb
 
-display = Obrazovky
-    .desc = Správa displejov, prepínania grafiky a nočného osvetlenia
+display = Obrazovka
+    .desc = Správa obrazoviek, prepínania grafiky a nočného osvetlenia
     .arrangement = Usporiadanie obrazoviek
     .arrangement-desc = Usporiadajte obrazovky ich presunutím.
     .enable = Povoliť obrazovku
     .external = { $size } { $output } Externá obrazovka
     .laptop = { $size } Obrazovka notebooku
     .options = Možnosti obrazovky
-    .refresh-rate = Obnovovania frekvencia
+    .refresh-rate = Obnovovacia frekvencia
     .resolution = Rozlíšenie
     .scale = Škálovanie
 
@@ -119,7 +119,7 @@ scheduling = Plánovanie
     .manual = Manuálne plánovanie
 
 dialog = Dialog
-    .title = Uchovať tieto nastavenia?
+    .title = Ponechať tieto nastavenia?
     .keep-changes = Ponechať nastavenia
     .change-prompt = Pôvodné nastavenia sa automaticky obnovia o { $time } sekúnd.
     .revert-settings = Obnoviť pôvodné nastavenia
@@ -131,8 +131,8 @@ notifications = Oznámenia
 
 ## Desktop: Options
 
-desktop-panel-options = Plocha a Panel
-    .desc = Činnosť super klávesy, roh obrazovky, nastavenia ovládania okien.
+desktop-panel-options = Plocha a panel
+    .desc = Správanie klávesy Super, roh obrazovky, nastavenia ovládania okien.
 
 desktop-panels-and-applets = Panely na ploche a applety
 
@@ -142,9 +142,9 @@ dock = Dok
 hot-corner = Rohy
     .top-left-corner = Povoliť použitie ľavého horného rohu pre otvorenie pracovných plôch
 
-super-key = Klávesa super
-    .launcher = Otvoriť spúštač
-    .workspaces = Otvoriť pracovné prostredia
+super-key = Klávesa Super
+    .launcher = Otvoriť spúšťač
+    .workspaces = Otvoriť prehľad pracovných plôch
     .applications = Otvoriť aplikácie
 
 top-panel = Horný panel
@@ -214,15 +214,15 @@ panel-missing = Nastavenia panelu chýbajú
 
 ## Desktop: Wallpaper
 
-wallpaper = Wallpaper
-    .change = Change image every
-    .desc = Wallpaper images, colors, and slideshow options.
-    .fit = Wallpaper fit
-    .folder-dialog = Choose wallpaper folder
-    .image-dialog = Choose wallpaper image
-    .plural = Wallpapers
-    .same = Same wallpaper on all displays
-    .slide = Slideshow
+wallpaper = Pozadie
+    .change = Zmeniť pozadie každých
+    .desc = Obrázky pozadia, farby a nastavenia prezentácie.
+    .fit = Prispôsobenie pozadia
+    .folder-dialog = Vybrať priečinok s pozadiami
+    .image-dialog = Vybrať obrázok pozadia
+    .plural = Pozadia
+    .same = Použiť rovnaké pozadie na všetkých obrazovkách
+    .slide = Prezentácia
 
 add-color = Pridať farbu
 add-image = Pridať obrázok
@@ -275,10 +275,10 @@ online-accounts = Online účty
 
 ## Time & Language
 
-time = Čas a Jazyk
+time = Čas a jazyk
     .desc = N/A
 
-time-date = Dátum a Čas
+time-date = Dátum a čas
     .desc = Časová zóna, automatické nastavenie času, formátovanie času.
     .auto = Nastaviť automaticky
 
@@ -294,7 +294,7 @@ time-format = Formát dátumu a času
     .sunday = Nedeľa
     .monday = Pondelok
 
-time-region = Oblasť a Jazyk
+time-region = Oblasť a jazyk
     .desc = Formát dátumu, času, a čísel podľa oblasti
 
 ## Sound
@@ -445,9 +445,9 @@ modified = { $count } zmenené
 nav-shortcuts = Navigácia
     .prev-output = Zamerať sa na predchádzajúci výstup
     .next-output = Zamerať sa na ďalší výstup
-    .last-workspace = Zamerať sa na posledné pracovné prostredie
-    .prev-workspace = Zamerať sa na predchádzajúce pracovné prostredie
-    .next-workspace = Zamerať sa na ďalšie pracovné prostredie
+    .last-workspace = Zamerať sa na poslednú pracovnú plochu
+    .prev-workspace = Zamerať sa na predchádzajúcu pracovnú plochu
+    .next-workspace = Zamerať sa na ďalšiu pracovnú plochu
     .focus = Zamerať okno { $direction ->
         *[down] dole
         [in] v
