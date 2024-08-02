@@ -61,13 +61,13 @@ impl SettingsApp {
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
             PageCommands::Bluetooth => None,
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
-            PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
-            PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
+            PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
             PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             PageCommands::Network => None,
+            PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
             PageCommands::Power => self.pages.page_id::<power::Page>(),
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
@@ -321,10 +321,6 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
-                crate::pages::Message::WindowManagement(message) => {
-                    page::update!(self.pages, message, desktop::window_management::Page);
-                }
-
                 crate::pages::Message::DesktopWorkspaces(message) => {
                     page::update!(self.pages, message, desktop::workspaces::Page);
                 }
@@ -443,6 +439,10 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::Power(message) => {
                     page::update!(self.pages, message, power::Page);
+                }
+
+                crate::pages::Message::WindowManagement(message) => {
+                    page::update!(self.pages, message, desktop::window_management::Page);
                 }
             },
 

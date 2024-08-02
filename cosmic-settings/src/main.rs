@@ -46,12 +46,10 @@ pub enum PageCommands {
     Bluetooth,
     /// DateTime settings page
     DateTime,
-    /// Panel settings page
-    Panel,
-    /// Dock settings page
-    Dock,
     /// Displays settings page
     Displays,
+    /// Dock settings page
+    Dock,
     /// Firmware settings page
     Firmware,
     /// Keyboard settings page
@@ -60,6 +58,8 @@ pub enum PageCommands {
     Mouse,
     /// Network settings page
     Network,
+    /// Panel settings page
+    Panel,
     /// Power settings page
     Power,
     /// Region & Language settings page
