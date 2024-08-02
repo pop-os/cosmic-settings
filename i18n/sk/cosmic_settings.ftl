@@ -102,7 +102,8 @@ mirroring = Zrkadlenie
     }
     .project-count = Premietam na { $count} { $count ->
         [1] obrazovku
-        *[other] obrazovky
+        [few] obrazovky
+        *[other] obrazoviek
     }
 
 night-light = Nočné osvetlenie
@@ -237,6 +238,7 @@ recent-folders = Posledné priečinky
 x-minutes = { $number } minút
 x-hours = { $number ->
     [1] 1 hodinu
+    [few] {$number} hodiny
     *[other] { $number } hodín
 }
 
