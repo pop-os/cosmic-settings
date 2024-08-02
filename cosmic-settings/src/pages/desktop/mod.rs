@@ -3,9 +3,9 @@
 
 pub mod appearance;
 pub mod dock;
-pub mod options;
 pub mod panel;
 pub mod wallpaper;
+pub mod window_management;
 pub mod workspaces;
 
 use cosmic::{config::CosmicTk, cosmic_config::CosmicConfigEntry};
@@ -46,9 +46,11 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        page.sub_page::<options::Page>()
-            .sub_page::<wallpaper::Page>()
+        page.sub_page::<wallpaper::Page>()
             .sub_page::<appearance::Page>()
+            .sub_page::<panel::Page>()
+            .sub_page::<dock::Page>()
+            .sub_page::<window_management::Page>()
             .sub_page::<workspaces::Page>()
     }
 }

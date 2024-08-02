@@ -142,18 +142,9 @@ dock = Dock
 hot-corner = Hot Corner
     .top-left-corner = Enable top-left hot corner for Workspaces
 
-super-key = Super key
-    .launcher = Open Launcher
-    .workspaces = Open Workspaces
-    .applications = Open Applications
-
 top-panel = Top Panel
     .workspaces = Show Workspaces Button
     .applications = Show Applications Button
-
-window-controls = Window Controls
-    .minimize = Show Minimize Button
-    .maximize = Show Maximize Button
 
 ## Desktop: Panel
 
@@ -232,6 +223,20 @@ x-hours = { $number ->
     [1] 1 hour
     *[other] { $number } hours
 }
+
+## Desktop: Window management
+
+window-management = Window management
+    .desc = Super key action, window control options, and additional window tiling options.
+
+super-key = Super key
+    .launcher = Open Launcher
+    .workspaces = Open Workspaces
+    .applications = Open Applications
+
+window-controls = Window Controls
+    .minimize = Show minimize button
+    .maximize = Show maximize button
 
 ## Desktop: Workspaces
 
@@ -565,10 +570,10 @@ switch-to-prev-workspace = Switch to prev workspace
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
 
-## Power 
+## Power
 
 power = Power
-    .desc = Manage power settings 
+    .desc = Manage power settings
 
 power-mode = Power Mode
     .performance = High performance

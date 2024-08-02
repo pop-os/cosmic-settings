@@ -46,8 +46,10 @@ pub enum PageCommands {
     Bluetooth,
     /// DateTime settings page
     DateTime,
-    /// Desktop and panel settings page
-    DesktopPanel,
+    /// Panel settings page
+    Panel,
+    /// Dock settings page
+    Dock,
     /// Displays settings page
     Displays,
     /// Firmware settings page
@@ -72,6 +74,8 @@ pub enum PageCommands {
     Users,
     /// Wallpaper settings page
     Wallpaper,
+    /// Window management page
+    WindowManagement,
     /// Workspaces settings page
     Workspaces,
 }

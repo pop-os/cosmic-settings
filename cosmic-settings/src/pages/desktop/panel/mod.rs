@@ -127,7 +127,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("panel", "preferences-dock-symbolic")
+        page::Info::new("panel", "preferences-panel-symbolic")
             .title(fl!("panel"))
             .description(fl!("panel", "desc"))
     }

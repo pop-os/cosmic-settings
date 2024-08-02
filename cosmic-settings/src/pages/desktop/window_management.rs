@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::{
-    iced::Length,
-    theme,
-    widget::{self, button, container, horizontal_space, icon, row, settings, toggler},
+    widget::{self, settings, toggler},
     Apply, Element,
 };
 
@@ -65,23 +63,20 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![
             sections.insert(super_key_action()),
             sections.insert(window_controls()),
-            sections.insert(panel_dock_links()),
         ])
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("desktop-panel-options", "video-display-symbolic")
-            .title(fl!("desktop-panel-options"))
-            .description(fl!("desktop-panel-options", "desc"))
+        page::Info::new(
+            "window-management",
+            "preferences-window-management-symbolic",
+        )
+        .title(fl!("window-management"))
+        .description(fl!("window-management", "desc"))
     }
 }
 
-impl page::AutoBind<crate::pages::Message> for Page {
-    fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        page.sub_page::<super::panel::Page>()
-            .sub_page::<super::dock::Page>()
-    }
-}
+impl page::AutoBind<crate::pages::Message> for Page {}
 
 pub fn super_key_action() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
@@ -105,7 +100,7 @@ pub fn super_key_action() -> Section<crate::pages::Message> {
                     )),
                 )
                 .apply(Element::from)
-                .map(crate::pages::Message::DesktopOptions)
+                .map(crate::pages::Message::WindowManagement)
         })
 }
 
@@ -143,61 +138,6 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Desktop)
-        })
-}
-
-pub fn panel_dock_links() -> Section<crate::pages::Message> {
-    Section::default()
-        .title(fl!("desktop-panels-and-applets"))
-        .view::<Page>(move |binder, _page, section| {
-            // TODO probably a way of getting the entity and its info
-            let mut settings = settings::view_section(&section.title);
-
-            if let Some((panel_entity, panel_info)) =
-                binder.info.iter().find(|(_, v)| v.id == "panel")
-            {
-                let control = row::with_children(vec![
-                    horizontal_space(Length::Fill).into(),
-                    icon::from_name("go-next-symbolic").size(16).into(),
-                ]);
-
-                settings = settings.add(
-                    settings::item::builder(panel_info.title.clone())
-                        .description(panel_info.description.clone())
-                        .control(control)
-                        .spacing(16)
-                        .apply(container)
-                        .style(theme::Container::List)
-                        .apply(button)
-                        .style(theme::Button::Transparent)
-                        .on_press(crate::pages::Message::Page(panel_entity)),
-                );
-            }
-
-            settings = if let Some((dock_entity, dock_info)) =
-                binder.info.iter().find(|(_, v)| v.id == "dock")
-            {
-                let control = row::with_children(vec![
-                    horizontal_space(Length::Fill).into(),
-                    icon::from_name("go-next-symbolic").size(16).into(),
-                ]);
-
-                settings.add(
-                    settings::item::builder(dock_info.title.clone())
-                        .description(dock_info.description.clone())
-                        .control(control)
-                        .spacing(16)
-                        .apply(container)
-                        .style(theme::Container::List)
-                        .apply(button)
-                        .style(theme::Button::Transparent)
-                        .on_press(crate::pages::Message::Page(dock_entity)),
-                )
-            } else {
-                settings
-            };
-
-            Element::from(settings)
         })
 }
 
