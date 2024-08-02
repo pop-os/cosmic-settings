@@ -85,8 +85,8 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
 ) -> Element<'a, Message> {
     cosmic::widget::settings::item::builder(title)
         .description(description)
-        .icon(icon::from_name(icon).size(16))
-        .control(icon::from_name("go-next-symbolic").size(16))
+        .icon(icon::from_name(icon).size(20))
+        .control(icon::from_name("go-next-symbolic").size(20))
         .spacing(16)
         .apply(container)
         .padding([20, 24])
