@@ -399,7 +399,7 @@ keyboard-sources = Żródła Wprowadzania Danych
     .settings = Ustawienia
     .view-layout = Pokaż układ klawiatury
     .remove = Usuń
-    .add = Dodaj źródło przewijania
+    .add = Dodaj źródło wprowadzania danych
 
 keyboard-special-char = Wpis Znaków Specjalnych
     .alternate = Alternatywne klawisze znaków
