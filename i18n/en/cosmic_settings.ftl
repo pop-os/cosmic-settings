@@ -255,7 +255,7 @@ dialog = Dialog
 ## Networking: Wired
 
 wired = Wired
-    .desc = Wired connection, connection profiles
+    .desc = Wired connections and connection profiles
 
 ## Networking: Online Accounts
 
@@ -347,7 +347,7 @@ firmware = Firmware
 ## System: Users
 
 users = Users
-    .desc = Authentication and login, lock screen.
+    .desc = Authentication and user accounts.
 
 ## Input
 
@@ -376,7 +376,7 @@ fast = Fast
 short = Short
 long = Long
 keyboard = Keyboard
-    .desc = Keyboard input
+    .desc = Input sources, switching, special character entry, shortcuts.
 
 keyboard-sources = Input Sources
     .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.

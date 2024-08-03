@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Users
-Comment=Authentication and login, lock screen.
+Comment=Authentication and user accounts.
 Type=Settings
 Exec=cosmic-settings users
 Terminal=false
