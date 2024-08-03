@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Appearance
-Comment=Accent colors and COSMIC theming.
+Comment=Accent colors and theming.
 Type=Settings
 Exec=cosmic-settings appearance
 Terminal=false

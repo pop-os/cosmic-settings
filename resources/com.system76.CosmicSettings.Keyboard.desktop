@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Keyboard
-Comment=Keyboard input settings.
+Comment=Input sources, switching, special character entry, shortcuts.
 Type=Settings
 Exec=cosmic-settings keyboard
 Terminal=false

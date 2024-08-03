@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Workspaces
-Comment=Set workspace number, behavior, and placement.
+Comment=Workspace orientation and behavior.
 Type=Settings
 Exec=cosmic-settings workspaces
 Terminal=false
