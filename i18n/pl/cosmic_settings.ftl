@@ -25,6 +25,7 @@ add-image = Dodaj obraz
 all-displays = Wszystkie Wyświetlacze
 colors = Kolory
 dialog-add = Dodaj
+fill = Wypełnij
 fit-to-screen = Dopasuj do rozmiaru ekranu
 open-new-folder = Otwórz nowy katalog
 recent-folders = Ostatnie Katalogi
