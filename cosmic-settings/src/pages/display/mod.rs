@@ -1109,7 +1109,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
 fn cache_rates(cached_rates: &mut Vec<String>, rates: &[u32]) {
     *cached_rates = rates
         .iter()
-        .map(|&rate| format!("{} Hz", rate / 1000))
+        .map(|&rate| format!("{} Hz", (rate as f32 / 1000.0).round() as u32))
         .collect();
 }
 
