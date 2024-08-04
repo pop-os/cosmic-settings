@@ -180,7 +180,7 @@ impl Page {
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         // XXX icon?
-        page::Info::new("input-devices", "input-keyboard-symbolic")
+        page::Info::new("input-devices", "preferences-input-devices-symbolic")
             .title(fl!("input-devices"))
             .description(fl!("input-devices", "desc"))
     }

@@ -4,6 +4,16 @@ unknown = Unknown
 
 number = { $number }
 
+## Networking: Wired
+
+wired = Wired
+    .desc = Wired connections and connection profiles
+
+## Networking: Online Accounts
+
+online-accounts = Online Accounts
+    .desc = Add accounts, IMAP and SMTP, enterprise logins
+
 ## Desktop
 
 desktop = Desktop
@@ -252,41 +262,6 @@ dialog = Dialog
     .change-prompt = Settings changes will automatically revert in { $time } seconds.
     .revert-settings = Revert Settings
 
-## Networking: Wired
-
-wired = Wired
-    .desc = Wired connections and connection profiles
-
-## Networking: Online Accounts
-
-online-accounts = Online Accounts
-    .desc = Add accounts, IMAP and SMTP, enterprise logins
-
-## Time & Language
-
-time = Time & Language
-    .desc = N/A
-
-time-date = Date & Time
-    .desc = Time zone, automatic clock settings, and some time formatting.
-    .auto = Set automatically
-
-time-zone = Time Zone
-    .auto = Automatic time zone
-    .auto-info = Requires location services and internet access
-
-time-format = Date & Time Format
-    .twenty-four = 24-hour time
-    .first = First day of week
-    .show-date = Show Date on Top Panel
-    .friday = Friday
-    .saturday = Saturday
-    .sunday = Sunday
-    .monday = Monday
-
-time-region = Region & Language
-    .desc = Format dates, times, and numbers based on your region
-
 ## Sound
 
 sound = Sound
@@ -311,43 +286,19 @@ sound-alerts = Alerts
 sound-applications = Applications
     .desc = Application volumes and settings
 
-## System
+## Power
 
-system = System & Accounts
+power = Power & Battery
+    .desc = Manage power settings
 
-## System: About
-
-about = About
-    .desc = Device name, hardware information, operating system defaults.
-
-about-device = Device name
-    .desc = This name appears to other network or bluetooth devices.
-
-about-hardware = Hardware
-    .model = Hardware model
-    .memory = Memory
-    .processor = Processor
-    .graphics = Graphics
-    .disk-capacity = Disk Capacity
-
-about-os = Operating System
-    .os = Operating system
-    .os-architecture = Operating system architecture
-    .desktop-environment = Desktop environment
-    .windowing-system = Windowing system
-
-about-related = Related settings
-    .support = Get support
-
-## System: Firmware
-
-firmware = Firmware
-    .desc = Firmware details.
-
-## System: Users
-
-users = Users
-    .desc = Authentication and user accounts.
+power-mode = Power Mode
+    .battery = Extended battery life
+    .battery-desc = Reduced power usage and silent performance.
+    .balanced = Balanced
+    .balanced-desc = Quiet performance and moderate power usage.
+    .performance = High performance
+    .performance-desc = Peak performance and power usage.
+    .nobackend = Backend not found. Install system76-power or power-profiles-daemon.
 
 ## Input
 
@@ -561,16 +512,65 @@ switch-to-prev-workspace = Switch to prev workspace
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
 
-## Power
+## Time & Language
 
-power = Power
-    .desc = Manage power settings
+time = Time & Language
+    .desc = N/A
 
-power-mode = Power Mode
-    .performance = High performance
-    .balanced = Balanced
-    .battery = Extended battery life
-    .performance-desc = Peak performance and power usage.
-    .balanced-desc = Quiet performance and moderate power usage.
-    .battery-desc = Reduced power usage and silent performance.
-    .nobackend = Backend not found. Install system76-power or power-profiles-daemon.
+time-date = Date & Time
+    .desc = Time zone, automatic clock settings, and some time formatting.
+    .auto = Set automatically
+
+time-zone = Time Zone
+    .auto = Automatic time zone
+    .auto-info = Requires location services and internet access
+
+time-format = Date & Time Format
+    .twenty-four = 24-hour time
+    .first = First day of week
+    .show-date = Show Date on Top Panel
+    .friday = Friday
+    .saturday = Saturday
+    .sunday = Sunday
+    .monday = Monday
+
+time-region = Region & Language
+    .desc = Format dates, times, and numbers based on your region
+
+## System
+
+system = System & Accounts
+
+## System: About
+
+about = About
+    .desc = Device name, hardware information, operating system defaults.
+
+about-device = Device name
+    .desc = This name appears to other network or bluetooth devices.
+
+about-hardware = Hardware
+    .model = Hardware model
+    .memory = Memory
+    .processor = Processor
+    .graphics = Graphics
+    .disk-capacity = Disk Capacity
+
+about-os = Operating System
+    .os = Operating system
+    .os-architecture = Operating system architecture
+    .desktop-environment = Desktop environment
+    .windowing-system = Windowing system
+
+about-related = Related settings
+    .support = Get support
+
+## System: Firmware
+
+firmware = Firmware
+    .desc = Firmware details.
+
+## System: Users
+
+users = Users
+    .desc = Authentication and user accounts.

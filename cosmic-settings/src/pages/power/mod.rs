@@ -13,7 +13,7 @@ pub struct Page;
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
-        page::Info::new("power", "battery-symbolic")
+        page::Info::new("power", "preferences-power-and-battery-symbolic")
             .title(fl!("power"))
             .description(fl!("power", "desc"))
     }

@@ -11,7 +11,7 @@ pub struct Page;
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
-        page::Info::new("time", "preferences-system-time-symbolic")
+        page::Info::new("time", "preferences-time-and-language-symbolic")
             .title(fl!("time"))
             .description(fl!("time", "desc"))
     }
