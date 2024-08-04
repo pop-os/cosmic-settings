@@ -139,12 +139,12 @@ impl cosmic::Application for SettingsApp {
         };
 
         let desktop_id = app.insert_page::<desktop::Page>().id();
-        app.insert_page::<input::Page>();
         app.insert_page::<display::Page>();
         //app.insert_page::<sound::Page>();
-        app.insert_page::<system::Page>();
-        app.insert_page::<time::Page>();
         app.insert_page::<power::Page>();
+        app.insert_page::<input::Page>();
+        app.insert_page::<time::Page>();
+        app.insert_page::<system::Page>();
 
         let active_id = match flags.subcommand {
             Some(p) => app.subcommand_to_page(&p),
