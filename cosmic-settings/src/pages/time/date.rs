@@ -6,8 +6,10 @@ use std::str::FromStr;
 use chrono::{Datelike, Timelike};
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
+    iced::Length,
+    iced_core::text::Wrap,
     widget::{self, dropdown, settings},
-    Apply, Command,
+    Apply, Command, Element,
 };
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -16,6 +18,7 @@ use icu::{
     datetime::DateTimeFormatter,
     locid::Locale,
 };
+use itertools::Itertools;
 use slab::Slab;
 use slotmap::SlotMap;
 pub use timedate_zbus::TimeDateProxy;
@@ -38,9 +41,11 @@ pub struct Page {
     military_time: bool,
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
+    timezone_context: bool,
     local_time: Option<DateTime<Iso>>,
     timezone: Option<usize>,
     timezone_list: Vec<String>,
+    timezone_search: String,
     formatted_date: String,
 }
 
@@ -79,7 +84,9 @@ impl Default for Page {
             ntp_enabled: false,
             show_date_in_top_panel,
             timezone: None,
+            timezone_context: false,
             timezone_list: Vec::new(),
+            timezone_search: String::new(),
         }
     }
 }
@@ -136,6 +143,14 @@ impl page::Page<crate::pages::Message> for Page {
         })
         .map(crate::pages::Message::DateAndTime)
     }
+
+    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+        if self.timezone_context {
+            return Some(self.timezone_context_view());
+        }
+
+        None
+    }
 }
 
 impl Page {
@@ -165,6 +180,14 @@ impl Page {
                 });
             }
 
+            Message::TimezoneContext => {
+                self.timezone_search.clear();
+                self.timezone_context = true;
+                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    fl!("time-zone").into(),
+                ));
+            }
+
             Message::MilitaryTime(enable) => {
                 self.military_time = enable;
                 self.update_local_time();
@@ -191,6 +214,10 @@ impl Page {
                 {
                     error!(?err, "Failed to set config 'show_date_in_top_panel'");
                 }
+            }
+
+            Message::TimezoneSearch(text) => {
+                self.timezone_search = text;
             }
 
             Message::Timezone(timezone_id) => {
@@ -242,7 +269,40 @@ impl Page {
         Command::none()
     }
 
-    pub fn update_local_time(&mut self) {
+    fn timezone_context_view(&self) -> Element<'_, crate::pages::Message> {
+        let search = widget::search_input(fl!("type-to-search"), &self.timezone_search)
+            .on_input(Message::TimezoneSearch)
+            .on_clear(Message::TimezoneSearch(String::new()));
+
+        let mut list = widget::list_column();
+
+        let search_input = &self.timezone_search.trim().to_lowercase();
+
+        for (id, timezone) in self.timezone_list.iter().enumerate() {
+            if search_input.is_empty() || timezone.to_lowercase().contains(search_input) {
+                list = list.add(self.timezone_context_item(id, timezone));
+            }
+        }
+
+        widget::column()
+            .spacing(32)
+            .push(search)
+            .push(widget::container(list).apply(widget::container))
+            .apply(Element::from)
+            .map(crate::pages::Message::DateAndTime)
+    }
+
+    fn timezone_context_item<'a>(&self, id: usize, timezone: &'a str) -> Element<'a, Message> {
+        widget::button(widget::settings::item_row(vec![
+            widget::text::body(timezone).wrap(Wrap::Word).into(),
+            widget::horizontal_space(Length::Fill).into(),
+        ]))
+        .on_press(Message::Timezone(id))
+        .style(cosmic::theme::Button::Icon)
+        .into()
+    }
+
+    fn update_local_time(&mut self) {
         self.local_time = Some(update_local_time());
 
         self.formatted_date = match self.local_time {
@@ -262,6 +322,8 @@ pub enum Message {
     Refresh(Info),
     ShowDate(bool),
     Timezone(usize),
+    TimezoneContext,
+    TimezoneSearch(String),
     UpdateTime,
 }
 
@@ -347,12 +409,30 @@ fn timezone() -> Section<crate::pages::Message> {
         .title(fl!("time-zone"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
+            let timezone_context_button = settings::item_row(vec![
+                widget::text(
+                    page.timezone
+                        .map(|id| &*page.timezone_list[id])
+                        .unwrap_or_default(),
+                )
+                .wrap(Wrap::Word)
+                .into(),
+                widget::icon::from_name("go-next-symbolic")
+                    .size(16)
+                    .icon()
+                    .into(),
+            ])
+            .apply(widget::container)
+            .style(cosmic::theme::Container::List)
+            .apply(widget::button)
+            .style(cosmic::theme::Button::Transparent)
+            .on_press(Message::TimezoneContext);
+
             settings::view_section(&section.title)
                 // Time zone select
                 .add(
-                    settings::item::builder(&*section.descriptions[time_zone]).control(
-                        widget::dropdown(&page.timezone_list, page.timezone, Message::Timezone),
-                    ),
+                    settings::item::builder(&*section.descriptions[time_zone])
+                        .control(timezone_context_button),
                 )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)
