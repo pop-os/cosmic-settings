@@ -611,11 +611,11 @@ fn special_character_entry() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
-                .add(go_next_item(
+                .add(crate::widget::go_next_item(
                     &*descriptions[alternate],
                     Message::OpenSpecialCharacterContext(SpecialKey::AlternateCharacters),
                 ))
-                .add(go_next_item(
+                .add(crate::widget::go_next_item(
                     &*descriptions[compose],
                     Message::OpenSpecialCharacterContext(SpecialKey::Compose),
                 ))
@@ -641,7 +641,7 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
                 .iter()
                 .find(|(_, v)| v.id == "keyboard-shortcuts")
             {
-                section = section.add(go_next_item(
+                section = section.add(crate::widget::go_next_item(
                     &descriptions[shortcuts_desc],
                     crate::pages::Message::Page(shortcuts_entity),
                 ));
@@ -711,22 +711,4 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Keyboard)
         })
-}
-
-fn go_next_control<Msg: Clone + 'static>() -> cosmic::Element<'static, Msg> {
-    widget::row::with_children(vec![
-        widget::horizontal_space(Length::Fill).into(),
-        icon::from_name("go-next-symbolic").size(16).icon().into(),
-    ])
-    .into()
-}
-
-fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::Element<'_, Msg> {
-    settings::item(description, go_next_control())
-        .apply(widget::container)
-        .style(cosmic::theme::Container::List)
-        .apply(button)
-        .style(theme::Button::Transparent)
-        .on_press(msg)
-        .into()
 }

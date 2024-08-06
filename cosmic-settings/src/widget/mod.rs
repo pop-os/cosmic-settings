@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::iced::Length;
+use cosmic::iced_core::text::Wrap;
 use cosmic::widget::{
-    button, column, container, divider, horizontal_space, icon, row, settings, text, vertical_space,
+    self, button, column, container, divider, horizontal_space, icon, row, settings, text,
+    vertical_space,
 };
 use cosmic::{theme, Apply, Element};
 use cosmic_settings_page as page;
@@ -119,4 +121,18 @@ pub fn sub_page_header<'a, Message: 'static + Clone>(
         .spacing(6)
         .width(Length::Shrink)
         .into()
+}
+
+pub fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::Element<'_, Msg> {
+    settings::item_row(vec![
+        text(description).wrap(Wrap::Word).into(),
+        horizontal_space(Length::Fill).into(),
+        icon::from_name("go-next-symbolic").size(16).icon().into(),
+    ])
+    .apply(widget::container)
+    .style(cosmic::theme::Container::List)
+    .apply(button)
+    .style(theme::Button::Transparent)
+    .on_press(msg)
+    .into()
 }

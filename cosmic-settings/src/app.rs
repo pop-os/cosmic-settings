@@ -308,7 +308,9 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 crate::pages::Message::DateAndTime(message) => {
-                    page::update!(self.pages, message, time::date::Page);
+                    if let Some(page) = self.pages.page_mut::<time::date::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
                 }
 
                 crate::pages::Message::Desktop(message) => {
