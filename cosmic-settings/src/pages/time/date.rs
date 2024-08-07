@@ -18,7 +18,6 @@ use icu::{
     datetime::DateTimeFormatter,
     locid::Locale,
 };
-use itertools::Itertools;
 use slab::Slab;
 use slotmap::SlotMap;
 pub use timedate_zbus::TimeDateProxy;
@@ -156,30 +155,6 @@ impl page::Page<crate::pages::Message> for Page {
 impl Page {
     pub fn update(&mut self, message: Message) -> Command<crate::Message> {
         match message {
-            Message::Automatic(enable) => {
-                self.ntp_enabled = enable;
-
-                tokio::task::spawn(async move {
-                    let client = match zbus::Connection::system().await {
-                        Ok(client) => client,
-                        Err(why) => {
-                            tracing::error!(?why, "zbus client error");
-                            return;
-                        }
-                    };
-
-                    let timedate_proxy = match TimeDateProxy::new(&client).await {
-                        Ok(timedate_proxy) => timedate_proxy,
-                        Err(why) => {
-                            tracing::error!(?why, "zbus client error");
-                            return;
-                        }
-                    };
-
-                    _ = timedate_proxy.set_ntp(enable, true).await;
-                });
-            }
-
             Message::TimezoneContext => {
                 self.timezone_search.clear();
                 self.timezone_context = true;
@@ -251,9 +226,16 @@ impl Page {
 
             Message::Error(why) => {
                 tracing::error!(why, "failed to set timezone");
+                self.timezone_context = false;
+                return cosmic::command::message(crate::Message::CloseContextDrawer);
             }
 
-            Message::UpdateTime => self.update_local_time(),
+            Message::UpdateTime => {
+                self.set_ntp(true);
+                self.update_local_time();
+                self.timezone_context = false;
+                return cosmic::command::message(crate::Message::CloseContextDrawer);
+            }
 
             Message::Refresh(info) => {
                 self.ntp_enabled = info.ntp_enabled;
@@ -267,6 +249,30 @@ impl Page {
         }
 
         Command::none()
+    }
+
+    fn set_ntp(&mut self, enable: bool) {
+        self.ntp_enabled = enable;
+
+        tokio::task::spawn(async move {
+            let client = match zbus::Connection::system().await {
+                Ok(client) => client,
+                Err(why) => {
+                    tracing::error!(?why, "zbus client error");
+                    return;
+                }
+            };
+
+            let timedate_proxy = match TimeDateProxy::new(&client).await {
+                Ok(timedate_proxy) => timedate_proxy,
+                Err(why) => {
+                    tracing::error!(?why, "zbus client error");
+                    return;
+                }
+            };
+
+            _ = timedate_proxy.set_ntp(enable, true).await;
+        });
     }
 
     fn timezone_context_view(&self) -> Element<'_, crate::pages::Message> {
@@ -285,9 +291,10 @@ impl Page {
         }
 
         widget::column()
+            .padding([2, 0])
             .spacing(32)
             .push(search)
-            .push(widget::container(list).apply(widget::container))
+            .push(list)
             .apply(Element::from)
             .map(crate::pages::Message::DateAndTime)
     }
@@ -314,7 +321,6 @@ impl Page {
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    Automatic(bool),
     Error(String),
     MilitaryTime(bool),
     None,
@@ -341,13 +347,10 @@ fn date() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             settings::view_section(&section.title)
                 .add(
-                    settings::item::builder(&*section.descriptions[auto])
-                        .toggler(page.ntp_enabled, Message::Automatic),
+                    settings::item::builder(&*section.descriptions[title])
+                        .description(fl!("time-date", "auto-ntp"))
+                        .control(widget::text(&page.formatted_date)),
                 )
-                .add(settings::item(
-                    &*section.descriptions[title],
-                    widget::text(&page.formatted_date),
-                ))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)
         })
@@ -409,24 +412,22 @@ fn timezone() -> Section<crate::pages::Message> {
         .title(fl!("time-zone"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            let timezone_context_button = settings::item_row(vec![
-                widget::text(
-                    page.timezone
-                        .map(|id| &*page.timezone_list[id])
-                        .unwrap_or_default(),
+            let timezone_context_button = widget::row::with_capacity(2)
+                .spacing(12)
+                .push(
+                    widget::text(
+                        page.timezone
+                            .map(|id| &*page.timezone_list[id])
+                            .unwrap_or_default(),
+                    )
+                    .wrap(Wrap::Word),
                 )
-                .wrap(Wrap::Word)
-                .into(),
-                widget::icon::from_name("go-next-symbolic")
-                    .size(16)
-                    .icon()
-                    .into(),
-            ])
-            .apply(widget::container)
-            .style(cosmic::theme::Container::List)
-            .apply(widget::button)
-            .style(cosmic::theme::Button::Transparent)
-            .on_press(Message::TimezoneContext);
+                .push(widget::icon::from_name("go-next-symbolic").size(16).icon())
+                .apply(widget::container)
+                .style(cosmic::theme::Container::List)
+                .apply(widget::button)
+                .style(cosmic::theme::Button::Transparent)
+                .on_press(Message::TimezoneContext);
 
             settings::view_section(&section.title)
                 // Time zone select

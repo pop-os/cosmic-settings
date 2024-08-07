@@ -523,6 +523,7 @@ time = Time & Language
 time-date = Date & Time
     .desc = Time zone, automatic clock settings, and some time formatting.
     .auto = Set automatically
+    .auto-ntp = Date & time will update automatically when the time zone is set.
 
 time-zone = Time Zone
     .auto = Automatic time zone

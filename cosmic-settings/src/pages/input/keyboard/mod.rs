@@ -480,6 +480,7 @@ impl Page {
         }
 
         widget::column()
+            .padding([2, 0])
             .spacing(32)
             .push(search)
             .push(list)
