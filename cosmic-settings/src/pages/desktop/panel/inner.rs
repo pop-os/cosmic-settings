@@ -429,7 +429,7 @@ impl PageInner {
                     if let Err(err) = default.write_entry(config) {
                         tracing::error!(?err, "Error resetting panel config.");
                     }
-                    self.panel_config = self.system_default.clone();
+                    self.panel_config.clone_from(&self.system_default);
                 } else {
                     tracing::error!("Panel config default is missing.");
                 }
@@ -451,15 +451,18 @@ impl PageInner {
         match message {
             Message::AutoHidePanel(enabled) => {
                 if enabled {
-                    panel_config.exclusive_zone = false;
-                    panel_config.autohide = Some(AutoHide {
-                        wait_time: 1000,
-                        transition_time: 200,
-                        handle_size: 4,
-                    });
+                    _ = panel_config.set_exclusive_zone(helper, false);
+                    _ = panel_config.set_autohide(
+                        helper,
+                        Some(AutoHide {
+                            wait_time: 1000,
+                            transition_time: 200,
+                            handle_size: 4,
+                        }),
+                    );
                 } else {
-                    panel_config.exclusive_zone = true;
-                    panel_config.autohide = None;
+                    _ = panel_config.set_exclusive_zone(helper, true);
+                    _ = panel_config.set_autohide(helper, None);
                 }
             }
             Message::PanelAnchor(i) => {
@@ -472,41 +475,42 @@ impl PageInner {
                 .iter()
                 .find(|a| Anchor(**a).to_string() == self.anchors[i])
                 {
-                    panel_config.anchor = *anchor;
+                    _ = panel_config.set_anchor(helper, *anchor);
                 }
             }
             Message::Output(i) => {
                 if i == 0 {
-                    panel_config.output = CosmicPanelOuput::All;
+                    _ = panel_config.set_output(helper, CosmicPanelOuput::All);
                 } else {
-                    panel_config.output = CosmicPanelOuput::Name(self.outputs[i].clone());
+                    _ = panel_config
+                        .set_output(helper, CosmicPanelOuput::Name(self.outputs[i].clone()));
                 }
             }
             Message::AnchorGap(enabled) => {
-                panel_config.anchor_gap = enabled;
+                _ = panel_config.set_anchor_gap(helper, enabled);
 
                 if enabled {
-                    panel_config.margin = 4;
+                    _ = panel_config.set_margin(helper, 4);
                 } else {
-                    panel_config.margin = 0;
+                    _ = panel_config.set_margin(helper, 0);
                 }
             }
             Message::PanelSize(size) => {
-                panel_config.size = size;
+                _ = panel_config.set_size(helper, size);
             }
             Message::Appearance(a) => {
                 if let Some(b) = [Appearance::Match, Appearance::Light, Appearance::Dark]
                     .iter()
                     .find(|b| b.to_string() == self.backgrounds[a])
                 {
-                    panel_config.background = (*b).into();
+                    _ = panel_config.set_background(helper, (*b).into());
                 }
             }
             Message::ExtendToEdge(enabled) => {
-                panel_config.expand_to_edges = enabled;
+                _ = panel_config.set_expand_to_edges(helper, enabled);
             }
             Message::Opacity(opacity) => {
-                panel_config.opacity = opacity;
+                _ = panel_config.set_opacity(helper, opacity);
             }
             Message::OutputAdded(name, output) => {
                 self.outputs.push(name.clone());
@@ -532,11 +536,9 @@ impl PageInner {
                 .cosmic()
                 .corner_radii
                 .radius_xl[0] as u32;
-            panel_config.border_radius = radii;
+            _ = panel_config.set_border_radius(helper, radii);
         } else {
-            panel_config.border_radius = 0;
+            _ = panel_config.set_border_radius(helper, 0);
         }
-
-        _ = panel_config.write_entry(helper);
     }
 }
