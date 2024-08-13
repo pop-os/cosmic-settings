@@ -35,6 +35,7 @@ entry-keyboard := appid + '.Keyboard.desktop'
 entry-mouse := appid + '.Mouse.desktop'
 entry-notifications := appid + '.Notifications.desktop'
 entry-panel := appid + '.Panel.desktop'
+entry-power := appid + '.Power.desktop'
 entry-region-language := appid + '.RegionLanguage.desktop'
 entry-sound := appid + '.Sound.desktop'
 entry-touchpad := appid + '.Touchpad.desktop'
@@ -60,6 +61,7 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-mouse}}' '{{appdir}}/{{entry-mouse}}'
     install -Dm0644 'resources/{{entry-notifications}}' '{{appdir}}/{{entry-notifications}}'
     install -Dm0644 'resources/{{entry-panel}}' '{{appdir}}/{{entry-panel}}'
+    install -Dm0644 'resources/{{entry-power}}' '{{appdir}}/{{entry-power}}'
     install -Dm0644 'resources/{{entry-region-language}}' '{{appdir}}/{{entry-region-language}}'
     install -Dm0644 'resources/{{entry-sound}}' '{{appdir}}/{{entry-sound}}'
     install -Dm0644 'resources/{{entry-touchpad}}' '{{appdir}}/{{entry-touchpad}}'
@@ -97,6 +99,7 @@ uninstall:
         '{{appdir}}/{{entry-mouse}}' \
         '{{appdir}}/{{entry-notifications}}' \
         '{{appdir}}/{{entry-panel}}' \
+        '{{appdir}}/{{entry-power}}' \
         '{{appdir}}/{{entry-region-language}}' \
         '{{appdir}}/{{entry-sound}}' \
         '{{appdir}}/{{entry-touchpad}}' \
