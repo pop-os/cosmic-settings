@@ -36,16 +36,25 @@ impl Default for Page {
     fn default() -> Self {
         let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
         let comp_workspace_config = comp_config.get("workspaces").unwrap_or_else(|err| {
-            error!(?err, "Failed to read config 'workspaces'");
+            if !matches!(cosmic_config::Error::NoConfigDirectory, err) {
+                error!(?err, "Failed to read config 'workspaces'");
+            }
+
             WorkspaceConfig::default()
         });
         let config = cosmic_config::Config::new("com.system76.CosmicWorkspaces", 1).unwrap();
         let show_workspace_name = config.get("show_workspace_name").unwrap_or_else(|err| {
-            error!(?err, "Failed to read config 'show_workspace_name'");
+            if !matches!(cosmic_config::Error::NoConfigDirectory, err) {
+                error!(?err, "Failed to read config 'show_workspace_name'");
+            }
+
             false
         });
         let show_workspace_number = config.get("show_workspace_number").unwrap_or_else(|err| {
-            error!(?err, "Failed to read config 'show_workspace_number'");
+            if !matches!(cosmic_config::Error::NoConfigDirectory, err) {
+                error!(?err, "Failed to read config 'show_workspace_number'");
+            }
+
             false
         });
         Self {
