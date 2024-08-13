@@ -15,25 +15,25 @@ use slotmap::SlotMap;
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    // Get default sinks/sources and their volumes/mute status.
+    /// Get default sinks/sources and their volumes/mute status.
     Pulse(pulse::Event),
-    // Get ALSA cards and their profiles.
+    /// Get ALSA cards and their profiles.
     Pipewire(pipewire::DeviceEvent),
-    // Change the default microphone input.
+    /// Change the default microphone input.
     SinkChanged(usize),
-    // Request to change the default microphone volume.
+    /// Request to change the default microphone volume.
     SinkVolumeChanged(u32),
-    // Change the microphone volume.
+    /// Change the microphone volume.
     SinkVolumeApply(NodeId),
-    // Toggle the mute status of the microphone.
+    /// Toggle the mute status of the microphone.
     SinkMuteToggle,
-    // Change the default speaker output.
+    /// Change the default speaker output.
     SourceChanged(usize),
-    // Request to change the speaker volume.
+    /// Request to change the speaker volume.
     SourceVolumeChanged(u32),
-    // Change the speaker volume.
+    /// Change the speaker volume.
     SourceVolumeApply(NodeId),
-    // Toggle the mute status of the speaker output.
+    /// Toggle the mute status of the speaker output.
     SourceMuteToggle,
 }
 
@@ -168,6 +168,8 @@ impl page::Page<crate::pages::Message> for Page {
             _ = cancellation.send(());
             _ = terminate.send(());
         }
+
+        *self = Page::default();
 
         Command::none()
     }
