@@ -1621,7 +1621,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-subscriptions"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-subscriptions?branch=sound-settings#177d4781f1e976ac62af6d6f3f193f96c1544d76"
+source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#10d168ccdee6b6746c5ada4a6804833c021b40d8"
 dependencies = [
  "futures",
  "iced_futures",
