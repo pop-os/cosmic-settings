@@ -35,6 +35,7 @@ pub enum Message {
     Panel(desktop::panel::Message),
     PanelApplet(desktop::panel::applets_inner::Message),
     Power(power::Message),
+    Sound(sound::Message),
     SystemShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     TilingShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     WindowManagement(desktop::window_management::Message),

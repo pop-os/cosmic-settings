@@ -26,7 +26,7 @@ derive_setters = "0.1.6"
 dirs = "5.0.1"
 downcast-rs = "1.2.1"
 freedesktop-desktop-entry = "0.7.0"
-futures = { package = "futures-lite", version = "2.3.0" }
+futures = "0.3.30"
 generator = "=0.8.1"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
@@ -54,6 +54,12 @@ xkb-data = "0.1.0"
 zbus = { version = "4.4.0", features = ["tokio"] }
 tachyonix = "0.3.0"
 slab = "0.4.9"
+
+[dependencies.cosmic-settings-subscriptions]
+git = "https://github.com/pop-os/cosmic-settings-subscriptions"
+branch = "sound-settings"
+# path = "../../cosmic-settings-subscriptions"
+features = ["pipewire", "pulse"]
 
 [dependencies.icu]
 version = "1.4.0"
