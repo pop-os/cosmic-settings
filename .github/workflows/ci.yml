@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: install toolchain
-        run: rustup toolchain install 1.70.0 --component rustfmt
+        run: rustup toolchain install 1.80.1 --component rustfmt
       - name: fmt
         run: cargo fmt --all --check
 
@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install system dependencies
-        run: sudo apt-get update && sudo apt-get install lld cmake libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
+        run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
       - uses: actions/checkout@v3
       - name: install toolchain
-        run: rustup toolchain install 1.70.0 --component clippy
+        run: rustup toolchain install 1.80.1 --component clippy
       - name: clippy
         run: cargo clippy --all-features
 
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install system dependencies
-        run: sudo apt-get update && sudo apt-get install lld cmake libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
+        run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
       - uses: actions/checkout@v3
       - name: install toolchain
         run: rustup show
