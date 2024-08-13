@@ -92,7 +92,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("sound", "multimedia-volume-control-symbolic")
+        page::Info::new("sound", "preferences-sound-symbolic")
             .title(fl!("sound"))
             .description(fl!("sound", "desc"))
     }

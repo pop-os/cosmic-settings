@@ -1,12 +1,12 @@
 [Desktop Entry]
-Name=Sound
-Comment=Audio settings for devices, alerts, and applications.
+Name=Power & Battery
+Comment=Power modes and power saving options.
 Type=Settings
-Exec=cosmic-settings sound
+Exec=cosmic-settings power
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC
 NoDisplay=true
 OnlyShowIn=COSMIC
-Icon=preferences-sound
+Icon=preferences-power-and-battery
 StartupNotify=true
