@@ -18,7 +18,7 @@ jobs:
 
   clippy:
     name: Clippy Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: install system dependencies
         run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
@@ -30,7 +30,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: install system dependencies
         run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
