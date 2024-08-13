@@ -1621,7 +1621,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-subscriptions"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#10d168ccdee6b6746c5ada4a6804833c021b40d8"
+source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#9634f708d079f4b6336e02ed3e22ede6ee7f7cdb"
 dependencies = [
  "futures",
  "iced_futures",
@@ -1805,7 +1805,7 @@ version = "0.19.0"
 source = "git+https://github.com/gfx-rs/wgpu?rev=20fda69#20fda698341efbdc870b8027d6d49f5bf3f36109"
 dependencies = [
  "bitflags 2.6.0",
- "libloading 0.8.5",
+ "libloading 0.7.4",
  "winapi",
 ]
 
@@ -1960,7 +1960,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
- "libloading 0.8.5",
+ "libloading 0.7.4",
 ]
 
 [[package]]
@@ -2829,7 +2829,7 @@ dependencies = [
  "bitflags 2.6.0",
  "com",
  "libc",
- "libloading 0.8.5",
+ "libloading 0.7.4",
  "thiserror",
  "widestring",
  "winapi",
@@ -3000,7 +3000,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#4dd0f72f155b8705a30c2d42282f0bf1e5159e10"
+source = "git+https://github.com/pop-os/libcosmic#c9f8f485373e02ef849c83d3bbdf0fdd2bf4a24c"
 dependencies = [
  "accesskit",
  "accesskit_unix",
@@ -3009,7 +3009,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#4dd0f72f155b8705a30c2d42282f0bf1e5159e10"
+source = "git+https://github.com/pop-os/libcosmic#c9f8f485373e02ef849c83d3bbdf0fdd2bf4a24c"
 dependencies = [
  "bitflags 2.6.0",
  "dnd",
@@ -7449,7 +7449,7 @@ dependencies = [
  "js-sys",
  "khronos-egl",
  "libc",
- "libloading 0.8.5",
+ "libloading 0.7.4",
  "log",
  "metal",
  "naga",

@@ -37,7 +37,6 @@ pub enum Message {
     SourceMuteToggle,
 }
 
-pub type CardId = u32;
 pub type NodeId = u32;
 pub type ProfileId = u32;
 
@@ -52,11 +51,17 @@ struct Profile {
     identifier: String,
 }
 
+#[derive(Clone, Eq, Hash, PartialEq)]
+enum DeviceId {
+    Alsa(u32),
+    Bluez5(String),
+}
+
 #[derive(Default)]
 pub struct Page {
     pipewire_thread: Option<(tokio::sync::oneshot::Sender<()>, pipewire::Sender<()>)>,
     pulse_thread: Option<tokio::sync::oneshot::Sender<()>>,
-    alsa_cards: HashMap<CardId, Card>,
+    devices: HashMap<DeviceId, Card>,
     default_sink: String,
     default_source: String,
 
@@ -179,7 +184,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl Page {
     fn set_default_sink(&mut self) {
-        for card in self.alsa_cards.values() {
+        for card in self.devices.values() {
             if let pipewire::MediaClass::Sink = card.class {
                 for (&node_id, profile) in &card.profiles {
                     if profile.identifier == self.default_sink {
@@ -192,7 +197,7 @@ impl Page {
     }
 
     fn set_default_source(&mut self) {
-        for card in self.alsa_cards.values() {
+        for card in self.devices.values() {
             if let pipewire::MediaClass::Source = card.class {
                 for (&node_id, profile) in &card.profiles {
                     if profile.identifier == self.default_source {
@@ -304,8 +309,15 @@ impl Page {
                 }
 
                 let card = self
-                    .alsa_cards
-                    .entry(device.alsa_card)
+                    .devices
+                    .entry(match device.variant {
+                        pipewire::DeviceVariant::Alsa { alsa_card, .. } => {
+                            DeviceId::Alsa(alsa_card)
+                        }
+                        pipewire::DeviceVariant::Bluez5 { address, .. } => {
+                            DeviceId::Bluez5(address)
+                        }
+                    })
                     .or_insert_with(|| Card {
                         class: device.media_class,
                         // name: device.alsa_card_name,
@@ -323,17 +335,17 @@ impl Page {
 
             Message::Pipewire(pipewire::DeviceEvent::Remove(device_id)) => {
                 let mut remove = None;
-                for (card_id, card) in &mut self.alsa_cards {
+                for (card_id, card) in &mut self.devices {
                     if card.profiles.remove(&device_id).is_some() {
                         if card.profiles.is_empty() {
-                            remove = Some(*card_id);
+                            remove = Some(card_id.clone());
                         }
                         break;
                     }
                 }
 
                 if let Some(card_id) = remove {
-                    _ = self.alsa_cards.remove(&card_id);
+                    _ = self.devices.remove(&card_id);
                 }
 
                 if let Some(pos) = self.sink_ids.iter().position(|&id| id == device_id) {
