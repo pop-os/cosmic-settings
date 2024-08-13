@@ -5,11 +5,12 @@ Maintainer: Michael Murphy <mmstick@pm.me>
 Build-Depends:
     debhelper-compat (=13),
     cmake,
-    just (>= 1.13.0),
+    just,
     libexpat1-dev,
     libfontconfig-dev,
     libfreetype-dev,
     libinput-dev,
+    libpulse-dev,
     libudev-dev,
     libwayland-dev,
     libxkbcommon-dev,

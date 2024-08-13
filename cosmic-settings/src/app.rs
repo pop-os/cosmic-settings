@@ -140,7 +140,7 @@ impl cosmic::Application for SettingsApp {
 
         let desktop_id = app.insert_page::<desktop::Page>().id();
         app.insert_page::<display::Page>();
-        //app.insert_page::<sound::Page>();
+        app.insert_page::<sound::Page>();
         app.insert_page::<power::Page>();
         app.insert_page::<input::Page>();
         app.insert_page::<time::Page>();
@@ -377,6 +377,12 @@ impl cosmic::Application for SettingsApp {
                         .pages
                         .page_mut::<input::keyboard::shortcuts::nav::Page>()
                     {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::Sound(message) => {
+                    if let Some(page) = self.pages.page_mut::<sound::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
