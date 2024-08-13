@@ -10,14 +10,7 @@ Translation files may be found in the [i18n directory](./i18n). New translations
 
 ### Dependencies
 
-- rust (>= 1.71.0)
-- [just][just]
-- cmake
-- libexpat1-dev
-- libfontconfig-dev
-- libfreetype-dev
-- libinput-dev
-- pkg-config
+See the `Build-Depends` section of the [debian control file](./debian/control).
 
 ### Install
 
