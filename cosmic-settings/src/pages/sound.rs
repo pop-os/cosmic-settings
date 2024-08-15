@@ -435,16 +435,28 @@ impl Page {
             }
 
             Message::SinkChanged(pos) => {
-                if let Some(&node_id) = self.sink_ids.get(pos) {
-                    self.active_sink = Some(pos);
-                    wpctl_set_default(node_id);
+                if let Some(node_id) = self.sink_ids.get(pos) {
+                    for card in self.devices.values() {
+                        for (nid, device) in &card.devices {
+                            if node_id == nid {
+                                self.active_sink = Some(pos);
+                                pactl_set_default_sink(device.identifier.clone());
+                            }
+                        }
+                    }
                 }
             }
 
             Message::SourceChanged(pos) => {
-                if let Some(&node_id) = self.source_ids.get(pos) {
-                    self.active_source = Some(pos);
-                    wpctl_set_default(node_id);
+                if let Some(node_id) = self.source_ids.get(pos) {
+                    for card in self.devices.values() {
+                        for (nid, device) in &card.devices {
+                            if node_id == nid {
+                                self.active_source = Some(pos);
+                                pactl_set_default_source(device.identifier.clone());
+                            }
+                        }
+                    }
                 }
             }
 
@@ -660,11 +672,19 @@ fn pactl_set_card_profile(id: String, profile: String) {
     });
 }
 
-fn wpctl_set_default(id: u32) {
+fn pactl_set_default_sink(id: String) {
     tokio::task::spawn(async move {
-        let default = id.to_string();
-        _ = tokio::process::Command::new("wpctl")
-            .args(&["set-default", default.as_str()])
+        _ = tokio::process::Command::new("pactl")
+            .args(&["set-default-sink", id.as_str()])
+            .status()
+            .await;
+    });
+}
+
+fn pactl_set_default_source(id: String) {
+    tokio::task::spawn(async move {
+        _ = tokio::process::Command::new("pactl")
+            .args(&["set-default-source", id.as_str()])
             .status()
             .await;
     });
