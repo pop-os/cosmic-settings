@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{collections::BTreeMap, time::Duration};
+use std::time::Duration;
 
 use cosmic::{
     widget::{self, settings},
@@ -10,8 +10,12 @@ use cosmic::{
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::{pipewire, pulse};
 use futures::StreamExt;
+use indexmap::IndexMap;
 use slab::Slab;
 use slotmap::SlotMap;
+
+pub type NodeId = u32;
+pub type ProfileId = u32;
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -23,6 +27,8 @@ pub enum Message {
     SinkChanged(usize),
     /// Change the active profile for an output.
     SinkProfileChanged(usize),
+    /// Select a device from the given card after a profile change.
+    SinkProfileSelect(DeviceId),
     /// Request to change the default output volume.
     SinkVolumeChanged(u32),
     /// Change the output volume.
@@ -33,6 +39,8 @@ pub enum Message {
     SourceChanged(usize),
     /// Change the active profile for an output.
     SourceProfileChanged(usize),
+    /// Select a device from the given card after a profile change.
+    SourceProfileSelect(DeviceId),
     /// Request to change the input volume.
     SourceVolumeChanged(u32),
     /// Change the input volume.
@@ -41,22 +49,20 @@ pub enum Message {
     SourceMuteToggle,
 }
 
-pub type NodeId = u32;
-pub type ProfileId = u32;
-
 #[derive(Debug)]
 struct Card {
-    devices: BTreeMap<NodeId, Port>,
+    devices: IndexMap<NodeId, Device>,
 }
 
 #[derive(Debug)]
-struct Port {
+struct Device {
     class: pipewire::MediaClass,
     identifier: String,
+    description: String,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
-enum DeviceId {
+pub enum DeviceId {
     Alsa(u32),
     Bluez5(String),
 }
@@ -65,11 +71,10 @@ enum DeviceId {
 pub struct Page {
     pipewire_thread: Option<(tokio::sync::oneshot::Sender<()>, pipewire::Sender<()>)>,
     pulse_thread: Option<tokio::sync::oneshot::Sender<()>>,
-    devices: BTreeMap<DeviceId, Card>,
-    card_names: BTreeMap<DeviceId, String>,
-    card_ports: BTreeMap<DeviceId, Vec<pulse::CardPort>>,
-    card_profiles: BTreeMap<DeviceId, Vec<pulse::CardProfile>>,
-    active_profiles: BTreeMap<DeviceId, Option<String>>,
+    devices: IndexMap<DeviceId, Card>,
+    card_names: IndexMap<DeviceId, String>,
+    card_profiles: IndexMap<DeviceId, Vec<pulse::CardProfile>>,
+    active_profiles: IndexMap<DeviceId, Option<String>>,
 
     default_sink: String,
     default_source: String,
@@ -99,6 +104,9 @@ pub struct Page {
     active_source: Option<usize>,
     active_source_device: Option<DeviceId>,
     active_source_profile: Option<usize>,
+
+    changing_sink_profile: bool,
+    changing_source_profile: bool,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -234,7 +242,16 @@ impl Page {
         ) = self.device_profiles(device_id);
     }
 
-    fn set_default_sink(&mut self) {
+    fn set_default_sink(&mut self, sink: String) {
+        if self.default_sink == sink {
+            return;
+        }
+
+        self.default_sink = sink;
+        self.active_sink_profile = None;
+        self.sink_profiles.clear();
+        self.sink_profile_names.clear();
+
         for (device_id, card) in &self.devices {
             for (&node_id, device) in &card.devices {
                 if let pipewire::MediaClass::Sink = device.class {
@@ -250,7 +267,16 @@ impl Page {
         }
     }
 
-    fn set_default_source(&mut self) {
+    fn set_default_source(&mut self, source: String) {
+        if self.default_source == source {
+            return;
+        }
+
+        self.default_source = source;
+        self.active_source_profile = None;
+        self.source_profiles.clear();
+        self.source_profile_names.clear();
+
         for (device_id, card) in &self.devices {
             for (&node_id, device) in &card.devices {
                 if let pipewire::MediaClass::Source = device.class {
@@ -329,13 +355,15 @@ impl Page {
             }
 
             Message::Pulse(pulse::Event::DefaultSink(sink)) => {
-                self.default_sink = sink;
-                self.set_default_sink();
+                if !self.changing_sink_profile {
+                    self.set_default_sink(sink);
+                }
             }
 
             Message::Pulse(pulse::Event::DefaultSource(source)) => {
-                self.default_source = source;
-                self.set_default_source();
+                if !self.changing_source_profile {
+                    self.set_default_source(source);
+                }
             }
 
             Message::Pulse(pulse::Event::SinkMute(mute)) => {
@@ -353,7 +381,6 @@ impl Page {
                 };
 
                 self.card_names.insert(device_id.clone(), card.name);
-                self.card_ports.insert(device_id.clone(), card.ports);
                 self.card_profiles.insert(device_id.clone(), card.profiles);
                 self.active_profiles
                     .insert(device_id, card.active_profile.map(|p| p.name));
@@ -369,8 +396,12 @@ impl Page {
                     pipewire::MediaClass::Sink => {
                         self.sinks.push(device.node_description.clone());
                         self.sink_ids.push(device.object_id);
+                        sort_pulse_devices(&mut self.sinks, &mut self.sink_ids);
                         if self.default_sink == device.node_name {
-                            self.active_sink = Some(self.sinks.len() - 1);
+                            self.active_sink = self
+                                .sinks
+                                .iter()
+                                .position(|s| *s == device.node_description);
                             self.active_sink_device = Some(device_id.clone());
                             self.set_sink_profiles(&device_id);
                         }
@@ -379,8 +410,12 @@ impl Page {
                     pipewire::MediaClass::Source => {
                         self.sources.push(device.node_description.clone());
                         self.source_ids.push(device.object_id);
+                        sort_pulse_devices(&mut self.sources, &mut self.source_ids);
                         if self.default_source == device.node_name {
-                            self.active_source = Some(self.sources.len() - 1);
+                            self.active_source = self
+                                .sources
+                                .iter()
+                                .position(|s| *s == device.node_description);
                             self.active_source_device = Some(device_id.clone());
                             self.set_source_profiles(&device_id);
                         }
@@ -388,16 +423,20 @@ impl Page {
                 }
 
                 let card = self.devices.entry(device_id).or_insert_with(|| Card {
-                    devices: BTreeMap::new(),
+                    devices: IndexMap::new(),
                 });
 
                 card.devices.insert(
                     device.object_id,
-                    Port {
+                    Device {
                         class: device.media_class,
                         identifier: device.node_name,
+                        description: device.node_description,
                     },
                 );
+
+                card.devices
+                    .sort_unstable_by(|_, av, _, bv| av.description.cmp(&bv.description));
             }
 
             Message::Pipewire(pipewire::DeviceEvent::Remove(node_id)) => {
@@ -412,7 +451,7 @@ impl Page {
                 }
 
                 if let Some(card_id) = remove {
-                    _ = self.devices.remove(&card_id);
+                    _ = self.devices.shift_remove(&card_id);
                 }
 
                 if let Some(pos) = self.sink_ids.iter().position(|&id| id == node_id) {
@@ -441,6 +480,8 @@ impl Page {
                             if node_id == nid {
                                 self.active_sink = Some(pos);
                                 pactl_set_default_sink(device.identifier.clone());
+                                self.set_default_sink(device.identifier.clone());
+                                return Command::none();
                             }
                         }
                     }
@@ -454,6 +495,8 @@ impl Page {
                             if node_id == nid {
                                 self.active_source = Some(pos);
                                 pactl_set_default_source(device.identifier.clone());
+                                self.set_default_source(device.identifier.clone());
+                                return Command::none();
                             }
                         }
                     }
@@ -486,26 +529,65 @@ impl Page {
 
             Message::SinkProfileChanged(profile) => {
                 self.active_sink_profile = Some(profile);
-                if let Some(profile) = self.sink_profile_names.get(profile) {
-                    if let Some(ref device_id) = self.active_sink_device {
-                        if let Some(name) = self.card_names.get(device_id) {
-                            pactl_set_card_profile(name.clone(), profile.clone());
+
+                if let Some(profile) = self.sink_profile_names.get(profile).cloned() {
+                    if let Some(device_id) = self.active_sink_device.clone() {
+                        if let Some(name) = self.card_names.get(&device_id).cloned() {
                             self.active_profiles
                                 .insert(device_id.clone(), Some(profile.clone()));
+
+                            self.changing_sink_profile = true;
+                            return cosmic::command::future(async move {
+                                pactl_set_card_profile(name, profile).await;
+                                Message::SinkProfileSelect(device_id)
+                            })
+                            .map(crate::pages::Message::Sound)
+                            .map(crate::app::Message::PageMessage);
                         }
+                    }
+                }
+            }
+
+            Message::SinkProfileSelect(device_id) => {
+                self.changing_sink_profile = false;
+                let sink_pos = self.active_sink.unwrap_or(0);
+
+                if let Some(card) = self.devices.get(&device_id) {
+                    if let Some((_, device)) = card.devices.get_index(sink_pos) {
+                        pactl_set_default_sink(device.identifier.clone());
+                        self.set_default_sink(device.identifier.clone());
                     }
                 }
             }
 
             Message::SourceProfileChanged(profile) => {
                 self.active_source_profile = Some(profile);
-                if let Some(profile) = self.source_profile_names.get(profile) {
-                    if let Some(ref device_id) = self.active_source_device {
-                        if let Some(name) = self.card_names.get(device_id) {
-                            pactl_set_card_profile(name.clone(), profile.clone());
+                if let Some(profile) = self.source_profile_names.get(profile).cloned() {
+                    if let Some(device_id) = self.active_source_device.clone() {
+                        if let Some(name) = self.card_names.get(&device_id).cloned() {
                             self.active_profiles
                                 .insert(device_id.clone(), Some(profile.clone()));
+
+                            self.changing_source_profile = true;
+                            return cosmic::command::future(async move {
+                                pactl_set_card_profile(name, profile).await;
+                                Message::SourceProfileSelect(device_id)
+                            })
+                            .map(crate::pages::Message::Sound)
+                            .map(crate::app::Message::PageMessage);
                         }
+                    }
+                }
+            }
+
+            Message::SourceProfileSelect(device_id) => {
+                self.changing_source_profile = false;
+                let source_pos = self.active_source.unwrap_or(0);
+
+                if let Some(card) = self.devices.get(&device_id) {
+                    if let Some((_, device)) = card.devices.get_index(source_pos) {
+                        pactl_set_default_source(device.identifier.clone());
+                        self.set_default_source(device.identifier.clone());
                     }
                 }
             }
@@ -530,11 +612,11 @@ fn input() -> Section<crate::pages::Message> {
                 .align_items(cosmic::iced::Alignment::Center)
                 .spacing(4)
                 .push(
-                    widget::button::icon(if page.source_mute {
-                        widget::icon::from_name("microphone-sensitivity-muted-symbolic")
+                    widget::button::icon(widget::icon::from_name(if page.source_mute {
+                        "microphone-sensitivity-muted-symbolic"
                     } else {
-                        widget::icon::from_name("audio-input-microphone-symbolic")
-                    })
+                        "audio-input-microphone-symbolic"
+                    }))
                     .on_press(Message::SourceMuteToggle),
                 )
                 .push(widget::text::body(&page.source_volume_text))
@@ -663,13 +745,22 @@ fn output() -> Section<crate::pages::Message> {
 //         })
 // }
 
-fn pactl_set_card_profile(id: String, profile: String) {
-    tokio::task::spawn(async move {
-        _ = tokio::process::Command::new("pactl")
-            .args(&["set-card-profile", id.as_str(), profile.as_str()])
-            .status()
-            .await
-    });
+fn sort_pulse_devices(descriptions: &mut Vec<String>, node_ids: &mut Vec<NodeId>) {
+    let mut tmp: Vec<(String, NodeId)> = std::mem::take(descriptions)
+        .into_iter()
+        .zip(std::mem::take(node_ids).into_iter())
+        .collect();
+
+    tmp.sort_unstable_by(|(ak, _), (bk, _)| ak.cmp(&bk));
+
+    (*descriptions, *node_ids) = tmp.into_iter().collect();
+}
+
+async fn pactl_set_card_profile(id: String, profile: String) {
+    _ = tokio::process::Command::new("pactl")
+        .args(&["set-card-profile", id.as_str(), profile.as_str()])
+        .status()
+        .await
 }
 
 fn pactl_set_default_sink(id: String) {

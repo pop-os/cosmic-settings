@@ -54,6 +54,7 @@ xkb-data = "0.1.0"
 zbus = { version = "4.4.0", features = ["tokio"] }
 tachyonix = "0.3.0"
 slab = "0.4.9"
+indexmap = "2.4.0"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
