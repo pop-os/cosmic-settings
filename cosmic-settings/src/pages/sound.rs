@@ -442,7 +442,7 @@ impl Page {
             }
 
             Message::SourceChanged(pos) => {
-                if let Some(&node_id) = self.sink_ids.get(pos) {
+                if let Some(&node_id) = self.source_ids.get(pos) {
                     self.active_source = Some(pos);
                     wpctl_set_default(node_id);
                 }
