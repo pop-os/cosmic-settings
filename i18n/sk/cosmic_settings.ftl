@@ -4,16 +4,54 @@ unknown = Neznáme
 
 number = { $number }
 
+## Networking: Wired
+
+wired = Drôtové
+    .desc = Drôtové pripojenie, profily pripojenia
+
+## Networking: Online Accounts
+
+online-accounts = Online účty
+    .desc = Pridať účty, IMAP a SMTP, firemné prihlásenie
 ## Desktop
 
 desktop = Plocha
+
+## Desktop: Wallpaper
+
+wallpaper = Pozadie
+    .change = Zmeniť pozadie každých
+    .desc = Obrázky pozadia, farby a nastavenia prezentácie.
+    .fit = Prispôsobenie pozadia
+    .folder-dialog = Vybrať priečinok s pozadiami
+    .image-dialog = Vybrať obrázok pozadia
+    .plural = Pozadia
+    .same = Použiť rovnaké pozadie na všetkých obrazovkách
+    .slide = Prezentácia
+
+add-color = Pridať farbu
+add-image = Pridať obrázok
+all-displays = Všetky obrazovky
+colors = Farby
+dialog-add = Pridať
+fill = Vyplniť
+fit-to-screen = Prispôsobiť obrazovke
+open-new-folder = Otvoriť nový priečinok
+recent-folders = Posledné priečinky
+
+x-minutes = { $number } minút
+x-hours = { $number ->
+    [1] 1 hodinu
+    [few] {$number} hodiny
+    *[other] { $number } hodín
+}
 
 ## Desktop: Appearance
 
 appearance = Vzhľad
     .desc = Farby a COSMIC témy.
 
-accent-color = Farba prvkov
+accent-color = Farba akcentu
 app-background = Pozadie aplikácie alebo okna
 auto = Auto
 close = Zatvoriť
@@ -66,11 +104,112 @@ style = Štýl
     .square = Hranatý
 
 # interface density left out for now
-window-management = Správa okien
+window-management-appearance = Správa okien
     .active-hint = Veľkosť orámovania aktívneho okna
     .gaps = Medzery okolo dlaždicových okien
 
-## Desktop: Display
+## Desktop: Notifications
+
+notifications = Oznámenia
+    .desc = Nerušiť, oznámenia na zamykacej obrazovke a nastavenia pre špecifické aplikácie.
+
+## Desktop: Panel
+
+panel = Panel
+    .desc = Horný panel pre ovládanie plochy a menu.
+
+add = Pridať
+add-applet = Pridať applet
+all = Všetko
+applets = Applety
+center-segment = Prostredný segment
+drop-here = Umiestnite applety sem
+end-segment = Koncový segment
+large = Veľký
+no-applets-found = Neboli nájdené žiadne applety...
+panel-bottom = Dole
+panel-left = Vľavo
+panel-right = Vpravo
+panel-top = Hore
+search-applets = Vyhľadať applety...
+small = Malý
+start-segment = Začiatočný segment
+
+panel-appearance = Vzhľad
+    .match = Podľa systému
+    .light = Svetlý
+    .dark = Tmavý
+
+
+panel-behavior-and-position = Správanie a poloha
+    .autohide = Automaticky schovať panel
+    .dock-autohide = Automaticky schovať dok
+    .position = Pozícia na obrazovke
+    .display = Zobraziť na obrazovke
+
+panel-style = Štýl
+    .anchor-gap = Miesto medzi panelom a okrajom obrazovky
+    .dock-anchor-gap = Miesto medzi dokom a okrajom obrazovky
+    .extend = Roztiahnuť panel až k okrajom obrazovky.
+    .dock-extend = Roztiahnuť panel až k okrajom obrazovky.
+    .appearance = Vzhľad
+    .size = Veľkosť
+    .background-opacity = Priehľadnosť pozadia
+
+panel-applets = Konfigurácia
+    .dock-desc = Konfigurovať applety doku.
+    .desc = Konfigurovať applety panelu.
+
+panel-missing = Nastavenia panelu chýbajú
+    .desc = Nastavenia panelu chýbajú kvôli použitiu vlastnej témy alebo poškodenému súboru.
+    .fix = Použiť predvolené nastavenia
+
+## Desktop: Dock
+
+dock = Dok
+    .desc = Panel s pripnutými aplikáciami.
+
+## Desktop: Window management
+
+window-management = Správa okien
+    .desc = Správanie klávesy Super, možnosti správcu okien a pokročilé možnosti dláždenia okien.
+
+super-key = Klávesa Super
+    .launcher = Otvoriť spúšťač
+    .workspaces = Otvoriť prehľad pracovných plôch
+    .applications = Otvoriť zoznam aplikácií
+
+window-controls = Ovládanie okien
+    .minimize = Zobraziť tlačidlo minimalizovania
+    .maximize = Zobraziť tlačidlo maximalizovania
+
+## Desktop: Workspaces
+
+workspaces = Pracovné plochy
+    .desc = Nastaviť počet pracovných plôch, správanie a ich pozíciu.
+
+workspaces-behavior = Správanie pracovných plôch
+    .dynamic = Dynamické pracovné plochy
+    .dynamic-desc = Automaticky odstráni prázdne pracovné plochy.
+    .fixed = Pevný počet pracovných plôch
+    .fixed-desc = Pridá alebo odstráni počet pracovných plôch.
+
+workspaces-multi-behavior = Správanie pri viacerých monitoroch
+    .span = Pracovné plochy obsadia viac monitorov
+    .separate = Každý monitor má svoju pracovnú plochu
+
+workspaces-overview-thumbnails = Ukážky pracovných plôch
+    .show-number = Zobraziť číslo pracovnej plochy
+    .show-name = Zobraziť nazov pracovnej plochy
+
+workspaces-orientation = Orientácia pracovných plôch
+    .vertical = Vertikálna
+    .horizontal = Horizontálna
+
+hot-corner = Rohy
+    .top-left-corner = Povoliť použitie ľavého horného rohu pre otvorenie pracovných plôch
+
+## Displays
 
 -requires-restart = Vyžaduje reštart
 
@@ -125,180 +264,6 @@ dialog = Dialog
     .change-prompt = Pôvodné nastavenia sa automaticky obnovia o { $time } sekúnd.
     .revert-settings = Obnoviť pôvodné nastavenia
 
-## Desktop: Notifications
-
-notifications = Oznámenia
-    .desc = Nerušiť, oznámenia na zamykacej obrazovke a nastavenia pre špecifické aplikácie.
-
-## Desktop: Options
-
-desktop-panel-options = Plocha a panel
-    .desc = Správanie klávesy Super, roh obrazovky, nastavenia ovládania okien.
-
-desktop-panels-and-applets = Panely na ploche a applety
-
-dock = Dok
-    .desc = Panel s pripnutými aplikáciami.
-
-hot-corner = Rohy
-    .top-left-corner = Povoliť použitie ľavého horného rohu pre otvorenie pracovných plôch
-
-super-key = Klávesa Super
-    .launcher = Otvoriť spúšťač
-    .workspaces = Otvoriť prehľad pracovných plôch
-    .applications = Otvoriť aplikácie
-
-top-panel = Horný panel
-    .workspaces = Tlačidlo pre zobrazenie pracovných plôch
-    .applications = Tlačidlo pre zobrazenie aplikácií
-
-window-controls = Ovládanie okien
-    .minimize = Zobraziť tlačidlo minimalizovania
-    .maximize = Zobraziť tlačidlo maximalizovania
-
-## Desktop: Panel
-
-panel = Panel
-    .desc = Horné pole pre ovládanie plochy a menu.
-
-panel-behavior-and-position = Správanie a pozícia
-    .autohide = Automaticky skryť panel
-    .dock-autohide = Automaticky skryť dok
-    .position = Pozícia na obrazovke
-    .display = Zobraziť na displeji
-
-add = Pridať
-add-applet = Pridať applet
-all = Všetko
-applets = Applety
-center-segment = Prostredný segment
-drop-here = Umiestnite applety sem
-end-segment = Koncový segment
-large = Veľký
-no-applets-found = Neboli nájdené žiadne...
-panel-bottom = Dole
-panel-left = Vľavo
-panel-right = Vpravo
-panel-top = Hore
-search-applets = Vyhľadať applety...
-small = Malý
-start-segment = Začiatočný segment
-
-panel-appearance = Vzhľad
-    .match = Rovnaký ako plocha
-    .light = Svetlý
-    .dark = Tmavý
-
-
-panel-behavior-and-position = Správanie a poloha
-    .autohide = Automaticky schovať panel
-    .dock-autohide = Automaticky schovať dok
-    .position = Pozícia na obrazovke
-    .display = Zobraziť na obrazovke
-
-panel-style = Štýl
-    .anchor-gap = Miesto medzi panelom a okrajom obrazovky
-    .dock-anchor-gap = Miesto medzi dokom a okrajom obrazovky
-    .extend = Roztiahnuť panel až k okrajom obrazovky.
-    .dock-extend = Roztiahnuť panel až k okrajom obrazovky.
-    .appearance = Vzhľad
-    .size = Veľkosť
-    .background-opacity = Priehľadnosť pozadia
-
-panel-applets = Konfigurácia
-    .dock-desc = Konfigurovať applety doku.
-    .desc = Konfigurovať applety panelu.
-
-panel-missing = Nastavenia panelu chýbajú
-    .desc = Nastavenia panelu chýbajú kvôli použitiu vlastnej témy alebo poškodenému súboru.
-    .fix = Použiť predvolené nastavenia
-
-## Desktop: Wallpaper
-
-wallpaper = Pozadie
-    .change = Zmeniť pozadie každých
-    .desc = Obrázky pozadia, farby a nastavenia prezentácie.
-    .fit = Prispôsobenie pozadia
-    .folder-dialog = Vybrať priečinok s pozadiami
-    .image-dialog = Vybrať obrázok pozadia
-    .plural = Pozadia
-    .same = Použiť rovnaké pozadie na všetkých obrazovkách
-    .slide = Prezentácia
-
-add-color = Pridať farbu
-add-image = Pridať obrázok
-all-displays = Všetky obrazovky
-colors = Farby
-dialog-add = Pridať
-fill = Vyplniť
-fit-to-screen = Prispôsobiť obrazovke
-open-new-folder = Otvoriť nový priečinok
-recent-folders = Posledné priečinky
-
-x-minutes = { $number } minút
-x-hours = { $number ->
-    [1] 1 hodinu
-    [few] {$number} hodiny
-    *[other] { $number } hodín
-}
-
-## Desktop: Workspaces
-
-workspaces = Pracovné plochy
-    .desc = Nastaviť počet pracovných plôch, správanie a ich pozíciu.
-
-workspaces-behavior = Správanie pracovných plôch
-    .dynamic = Dynamické pracovné plochy
-    .dynamic-desc = Automaticky odstráni prázdne pracovné plochy.
-    .fixed = Pevný počet pracovných plôch
-    .fixed-desc = Pridá alebo odstráni počet pracovných plôch.
-
-workspaces-multi-behavior = Správanie pri viacerých monitoroch
-    .span = Pracovné plochy obsadia viac monitorov
-    .separate = Každý monitor má svoju pracovnú plochu
-
-workspaces-overview-thumbnails = Ukážky pracovných plôch
-    .show-number = Zobraziť číslo pracovnej plochy
-    .show-name = Zobraziť nazov pracovnej plochy
-
-workspaces-orientation = Orientácia pracovných plôch
-    .vertical = Vertikálna
-    .horizontal = Horizontálna
-
-## Networking: Wired
-
-wired = Drôtové
-    .desc = Drôtové pripojenie, profily pripojenia
-
-## Networking: Online Accounts
-
-online-accounts = Online účty
-    .desc = Pridať účty, IMAP a SMTP, firemné prihlásenie
-
-## Time & Language
-
-time = Čas a jazyk
-    .desc = N/A
-
-time-date = Dátum a čas
-    .desc = Časová zóna, automatické nastavenie času, formátovanie času.
-    .auto = Nastaviť automaticky
-
-time-zone = Časová zóna
-    .auto = Automatická časová zóna
-    .auto-info = Vyžaduje službu polohy a internetu
-time-format = Formát dátumu a času
-    .twenty-four = 24 hodinový čas
-    .first = Prvý deň v týždni
-    .show-date = Zobraziť dátum v paneli
-    .friday = Piatok
-    .saturday = Sobota
-    .sunday = Nedeľa
-    .monday = Pondelok
-
-time-region = Oblasť a jazyk
-    .desc = Formát dátumu, času, a čísel podľa oblasti
-
 ## Sound
 
 sound = Zvuk
@@ -323,43 +288,19 @@ sound-alerts = Upozornenia
 sound-applications = Aplikácie
     .desc = Hlasitosti aplikácií a nastavení
 
-## System
+## Power 
 
-system = Systém a účty
+power = Napájanie
+    .desc = Spravujte nastavenie napájania
 
-## System: About
-
-about = O systéme
-    .desc = Názov zariadenia, hardwarové informácie, predvolené nastavenia operačného systému.
-
-about-device = Názov počítača
-    .desc = Toto meno sa zobrazí ostatným sieťovým a bluetooth zariadeniam.
-
-about-hardware = Hardware
-    .model = Model hardwaru
-    .memory = Pamäť
-    .processor = Procesor
-    .graphics = Grafika
-    .disk-capacity = Kapacita disku
-
-about-os = Operačný systém
-    .os = Operačný systém
-    .os-architecture = Architektúra OS
-    .desktop-environment = Pracovné prostredie
-    .windowing-system = Systém na správu okien
-
-about-related = Podobné nastavenia
-    .support = Získať podporu
-
-## System: Firmware
-
-firmware = Firmware
-    .desc = Podrobnosti o firmware.
-
-## System: Users
-
-users = Používatelia
-    .desc = Overenia a prihlásenie, zamknutá obrazovka.
+power-mode = Režim napájania
+    .performance = Vysoký výkon
+    .balanced = Vyvážený
+    .battery = Šetrenie energie
+    .performance-desc = Maximálny výkon a vysoká spotreba energie.
+    .balanced-desc = Tichá prevádzka a mierna spotreba energie.
+    .battery-desc = Znížená spotreba energie a tichá prevádzka.
+    .nobackend = Backend sa nenašiel. Nainštalujte démona system76-power alebo power-profiles-daemon.
 
 ## Input
 
@@ -378,7 +319,7 @@ scrolling = Rolovanie
     .two-finger = Rolovať dvoma prstami
     .edge = Rolovať pozdĺž hrany jedným prstom
     .speed = Rýchlosť rolovania
-    .natural = Prirodzené rolovania
+    .natural = Prirodzené rolovanie
     .natural-desc = Prevráti smer rolovania
 
 ## Input: Keyboard
@@ -400,14 +341,14 @@ keyboard-sources = Metódy zadávania
     .add = Pridať zdroj vstupu
 keyboard-special-char = Zadávanie špeciálnych znakov
     .alternate = Klávesa pre náhradné znaky
-    .compose = Compose klávesa
+    .compose = Klávesa Compose
 
 keyboard-typing-assist = Písanie
     .repeat-rate = Rýchlosť opakovania
-    .repeat-delay = Interval opozdenia
+    .repeat-delay = Oneskorenie opakovania
 
 added = Pridané
-type-to-search = Píšte pre vyhľadávanie...
+type-to-search = Vyhľadávanie...
 
 ## Input: Keyboard: Shortcuts
 
@@ -513,6 +454,9 @@ system-shortcut = Systém
     .lock-screen = Zamknúť obrazovku
     .mute = Ztlmiť zvukový výstup
     .mute-mic = Ztlmiť vstup mikrofónu
+    .play-pause = Prehrať/Pozastaviť
+    .play-next = Ďalšia skladba
+    .play-prev = Predchádzajúca skladba
     .screenshot = Urobiť snímku obrazovky
     .terminal = Otvoriť terminál
     .volume-lower = Znížiť hlasitosť zvukového výstupu
@@ -553,9 +497,9 @@ tap-to-click = Klepnutím kliknite
     .desc = Umožňuje klepnutie jedným prstom pre primárne kliknutie, klepnutie dvoma prstami pre sekundárne kliknutie a klepnutie tromi prstami pre kliknutie stredným tlačidlom.
 
 touchpad = Touchpad
+    .acceleration = Zapnúť akceleráciu touchpadu
     .desc = Citlivosť touchpadu, nastavenie klikania, gestá.
     .speed = Citlivosť touchpadu
-    .acceleration = Zapnúť akceleráciu touchpadu
 
 ## Input: Gestures
 
@@ -572,16 +516,64 @@ switch-to-prev-workspace = Prepnúť na predchádzajúci pracovný priestor
 open-application-library = Otvoriť knižnicu aplikácií
 open-workspaces-view = Otvoriť prehľad pracovných priestorov
 
-## Power 
+## Time & Language
 
-power = Napájanie
-    .desc = Spravujte nastavenia napájania
+time = Čas a jazyk
+    .desc = N/A
 
-power-mode = Režim napájania
-    .performance = Vysoký výkon
-    .balanced = Vyvážený
-    .battery = Šetrenie energie
-    .performance-desc = Maximálny výkon a vysoká spotreba energie.
-    .balanced-desc = Tichá prevádzka a mierna spotreba energie.
-    .battery-desc = Znížená spotreba energie a tichá prevádzka.
-    .nobackend = Backend sa nenašiel. Nainštalujte démona system76-power alebo power-profiles-daemon.
+time-date = Dátum a čas
+    .desc = Časová zóna, automatické nastavenie času, formátovanie času.
+    .auto = Nastaviť automaticky
+
+time-zone = Časová zóna
+    .auto = Automatická časová zóna
+    .auto-info = Vyžaduje službu polohy a internetu
+time-format = Formát dátumu a času
+    .twenty-four = 24 hodinový čas
+    .first = Prvý deň v týždni
+    .show-date = Zobraziť dátum v paneli
+    .friday = Piatok
+    .saturday = Sobota
+    .sunday = Nedeľa
+    .monday = Pondelok
+
+time-region = Oblasť a jazyk
+    .desc = Formát dátumu, času, a čísel podľa oblasti
+
+## System
+
+system = Systém a účty
+
+## System: About
+
+about = O systéme
+    .desc = Názov zariadenia, hardwarové informácie, predvolené nastavenia operačného systému.
+
+about-device = Názov počítača
+    .desc = Toto meno sa zobrazí ostatným sieťovým a Bluetooth zariadeniam.
+
+about-hardware = Hardware
+    .model = Model hardwaru
+    .memory = Pamäť
+    .processor = Procesor
+    .graphics = Grafika
+    .disk-capacity = Kapacita disku
+
+about-os = Operačný systém
+    .os = Operačný systém
+    .os-architecture = Architektúra OS
+    .desktop-environment = Pracovné prostredie
+    .windowing-system = Systém na správu okien
+
+about-related = Súvisiace nastavenia
+    .support = Získať podporu
+
+## System: Firmware
+
+firmware = Firmware
+    .desc = Podrobnosti o firmware.
+
+## System: Users
+
+users = Používatelia
+    .desc = Overenie používateľov a prihlásenie, zamknutá obrazovka.
