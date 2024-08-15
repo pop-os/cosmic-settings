@@ -286,6 +286,8 @@ sound-alerts = Alerts
 sound-applications = Applications
     .desc = Application volumes and settings
 
+profile = Profile
+
 ## Power
 
 power = Power & Battery

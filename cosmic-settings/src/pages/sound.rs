@@ -1,11 +1,11 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{collections::HashMap, time::Duration};
+use std::{collections::BTreeMap, time::Duration};
 
 use cosmic::{
     widget::{self, settings},
-    Apply, Command, Element,
+    Command, Element,
 };
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::{pipewire, pulse};
@@ -19,39 +19,43 @@ pub enum Message {
     Pulse(pulse::Event),
     /// Get ALSA cards and their profiles.
     Pipewire(pipewire::DeviceEvent),
-    /// Change the default microphone input.
+    /// Change the default output.
     SinkChanged(usize),
-    /// Request to change the default microphone volume.
+    /// Change the active profile for an output.
+    SinkProfileChanged(usize),
+    /// Request to change the default output volume.
     SinkVolumeChanged(u32),
-    /// Change the microphone volume.
+    /// Change the output volume.
     SinkVolumeApply(NodeId),
-    /// Toggle the mute status of the microphone.
+    /// Toggle the mute status of the output.
     SinkMuteToggle,
-    /// Change the default speaker output.
+    /// Change the default input output.
     SourceChanged(usize),
-    /// Request to change the speaker volume.
+    /// Change the active profile for an output.
+    SourceProfileChanged(usize),
+    /// Request to change the input volume.
     SourceVolumeChanged(u32),
-    /// Change the speaker volume.
+    /// Change the input volume.
     SourceVolumeApply(NodeId),
-    /// Toggle the mute status of the speaker output.
+    /// Toggle the mute status of the input output.
     SourceMuteToggle,
 }
 
 pub type NodeId = u32;
 pub type ProfileId = u32;
 
+#[derive(Debug)]
 struct Card {
-    class: pipewire::MediaClass,
-    // name: String,
-    profiles: HashMap<NodeId, Profile>,
+    devices: BTreeMap<NodeId, Port>,
 }
 
-struct Profile {
-    // device: ProfileId,
+#[derive(Debug)]
+struct Port {
+    class: pipewire::MediaClass,
     identifier: String,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
 enum DeviceId {
     Alsa(u32),
     Bluez5(String),
@@ -61,7 +65,12 @@ enum DeviceId {
 pub struct Page {
     pipewire_thread: Option<(tokio::sync::oneshot::Sender<()>, pipewire::Sender<()>)>,
     pulse_thread: Option<tokio::sync::oneshot::Sender<()>>,
-    devices: HashMap<DeviceId, Card>,
+    devices: BTreeMap<DeviceId, Card>,
+    card_names: BTreeMap<DeviceId, String>,
+    card_ports: BTreeMap<DeviceId, Vec<pulse::CardPort>>,
+    card_profiles: BTreeMap<DeviceId, Vec<pulse::CardProfile>>,
+    active_profiles: BTreeMap<DeviceId, Option<String>>,
+
     default_sink: String,
     default_source: String,
 
@@ -77,10 +86,19 @@ pub struct Page {
 
     sinks: Vec<String>,
     sink_ids: Vec<NodeId>,
+    sink_profiles: Vec<String>,
+    sink_profile_names: Vec<String>,
     sources: Vec<String>,
     source_ids: Vec<NodeId>,
+    source_profiles: Vec<String>,
+    source_profile_names: Vec<String>,
+
     active_sink: Option<usize>,
+    active_sink_device: Option<DeviceId>,
+    active_sink_profile: Option<usize>,
     active_source: Option<usize>,
+    active_source_device: Option<DeviceId>,
+    active_source_profile: Option<usize>,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -88,12 +106,7 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![
-            sections.insert(output()),
-            sections.insert(input()),
-            // sections.insert(alerts()),
-            // sections.insert(applications()),
-        ])
+        Some(vec![sections.insert(output()), sections.insert(input())])
     }
 
     fn info(&self) -> page::Info {
@@ -183,12 +196,53 @@ impl page::Page<crate::pages::Message> for Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl Page {
+    fn device_profiles(&self, device_id: &DeviceId) -> (Vec<String>, Vec<String>, Option<usize>) {
+        let (profiles, profile_descriptions): (Vec<String>, Vec<String>) = self
+            .card_profiles
+            .get(device_id)
+            .map_or((Vec::new(), Vec::new()), |profiles| {
+                profiles
+                    .iter()
+                    // TODO: Allow disabling
+                    .filter(|p| p.available && p.description != "Off")
+                    .map(|p| (p.name.clone(), p.description.clone()))
+                    .collect()
+            });
+
+        let active_profile = self.active_profiles.get(device_id).and_then(|profile| {
+            profile
+                .as_ref()
+                .and_then(|profile| profiles.iter().position(|p| p == profile))
+        });
+
+        (profiles, profile_descriptions, active_profile)
+    }
+
+    fn set_sink_profiles(&mut self, device_id: &DeviceId) {
+        (
+            self.sink_profile_names,
+            self.sink_profiles,
+            self.active_sink_profile,
+        ) = self.device_profiles(device_id);
+    }
+
+    fn set_source_profiles(&mut self, device_id: &DeviceId) {
+        (
+            self.source_profile_names,
+            self.source_profiles,
+            self.active_source_profile,
+        ) = self.device_profiles(device_id);
+    }
+
     fn set_default_sink(&mut self) {
-        for card in self.devices.values() {
-            if let pipewire::MediaClass::Sink = card.class {
-                for (&node_id, profile) in &card.profiles {
-                    if profile.identifier == self.default_sink {
+        for (device_id, card) in &self.devices {
+            for (&node_id, device) in &card.devices {
+                if let pipewire::MediaClass::Sink = device.class {
+                    if device.identifier == self.default_sink {
                         self.active_sink = self.sink_ids.iter().position(|&id| id == node_id);
+                        let device_id = device_id.clone();
+                        self.set_sink_profiles(&device_id);
+                        self.active_sink_device = Some(device_id);
                         return;
                     }
                 }
@@ -197,11 +251,14 @@ impl Page {
     }
 
     fn set_default_source(&mut self) {
-        for card in self.devices.values() {
-            if let pipewire::MediaClass::Source = card.class {
-                for (&node_id, profile) in &card.profiles {
-                    if profile.identifier == self.default_source {
+        for (device_id, card) in &self.devices {
+            for (&node_id, device) in &card.devices {
+                if let pipewire::MediaClass::Source = device.class {
+                    if device.identifier == self.default_source {
                         self.active_source = self.source_ids.iter().position(|&id| id == node_id);
+                        let device_id = device_id.clone();
+                        self.set_source_profiles(&device_id);
+                        self.active_source_device = Some(device_id);
                         return;
                     }
                 }
@@ -289,13 +346,33 @@ impl Page {
                 self.source_mute = mute;
             }
 
+            Message::Pulse(pulse::Event::CardInfo(card)) => {
+                let device_id = match card.variant {
+                    pulse::DeviceVariant::Alsa { alsa_card, .. } => DeviceId::Alsa(alsa_card),
+                    pulse::DeviceVariant::Bluez5 { address, .. } => DeviceId::Bluez5(address),
+                };
+
+                self.card_names.insert(device_id.clone(), card.name);
+                self.card_ports.insert(device_id.clone(), card.ports);
+                self.card_profiles.insert(device_id.clone(), card.profiles);
+                self.active_profiles
+                    .insert(device_id, card.active_profile.map(|p| p.name));
+            }
+
             Message::Pipewire(pipewire::DeviceEvent::Add(device)) => {
+                let device_id = match device.variant {
+                    pipewire::DeviceVariant::Alsa { alsa_card, .. } => DeviceId::Alsa(alsa_card),
+                    pipewire::DeviceVariant::Bluez5 { address, .. } => DeviceId::Bluez5(address),
+                };
+
                 match device.media_class {
                     pipewire::MediaClass::Sink => {
                         self.sinks.push(device.node_description.clone());
                         self.sink_ids.push(device.object_id);
                         if self.default_sink == device.node_name {
                             self.active_sink = Some(self.sinks.len() - 1);
+                            self.active_sink_device = Some(device_id.clone());
+                            self.set_sink_profiles(&device_id);
                         }
                     }
 
@@ -304,40 +381,30 @@ impl Page {
                         self.source_ids.push(device.object_id);
                         if self.default_source == device.node_name {
                             self.active_source = Some(self.sources.len() - 1);
+                            self.active_source_device = Some(device_id.clone());
+                            self.set_source_profiles(&device_id);
                         }
                     }
                 }
 
-                let card = self
-                    .devices
-                    .entry(match device.variant {
-                        pipewire::DeviceVariant::Alsa { alsa_card, .. } => {
-                            DeviceId::Alsa(alsa_card)
-                        }
-                        pipewire::DeviceVariant::Bluez5 { address, .. } => {
-                            DeviceId::Bluez5(address)
-                        }
-                    })
-                    .or_insert_with(|| Card {
-                        class: device.media_class,
-                        // name: device.alsa_card_name,
-                        profiles: HashMap::new(),
-                    });
+                let card = self.devices.entry(device_id).or_insert_with(|| Card {
+                    devices: BTreeMap::new(),
+                });
 
-                card.profiles.insert(
+                card.devices.insert(
                     device.object_id,
-                    Profile {
-                        // device: device.card_profile_device,
+                    Port {
+                        class: device.media_class,
                         identifier: device.node_name,
                     },
                 );
             }
 
-            Message::Pipewire(pipewire::DeviceEvent::Remove(device_id)) => {
+            Message::Pipewire(pipewire::DeviceEvent::Remove(node_id)) => {
                 let mut remove = None;
                 for (card_id, card) in &mut self.devices {
-                    if card.profiles.remove(&device_id).is_some() {
-                        if card.profiles.is_empty() {
+                    if card.devices.remove(&node_id).is_some() {
+                        if card.devices.is_empty() {
                             remove = Some(card_id.clone());
                         }
                         break;
@@ -348,17 +415,21 @@ impl Page {
                     _ = self.devices.remove(&card_id);
                 }
 
-                if let Some(pos) = self.sink_ids.iter().position(|&id| id == device_id) {
+                if let Some(pos) = self.sink_ids.iter().position(|&id| id == node_id) {
                     _ = self.sink_ids.remove(pos);
                     _ = self.sinks.remove(pos);
                     if self.active_sink == Some(pos) {
                         self.active_sink = None;
+                        self.active_sink_device = None;
+                        self.active_sink_profile = None;
                     }
-                } else if let Some(pos) = self.source_ids.iter().position(|&id| id == device_id) {
+                } else if let Some(pos) = self.source_ids.iter().position(|&id| id == node_id) {
                     _ = self.source_ids.remove(pos);
                     _ = self.sources.remove(pos);
                     if self.active_source == Some(pos) {
                         self.active_source = None;
+                        self.active_source_device = None;
+                        self.active_source_profile = None;
                     }
                 }
             }
@@ -400,6 +471,32 @@ impl Page {
                     wpctl_set_mute(node_id, self.source_mute);
                 }
             }
+
+            Message::SinkProfileChanged(profile) => {
+                self.active_sink_profile = Some(profile);
+                if let Some(profile) = self.sink_profile_names.get(profile) {
+                    if let Some(ref device_id) = self.active_sink_device {
+                        if let Some(name) = self.card_names.get(device_id) {
+                            pactl_set_card_profile(name.clone(), profile.clone());
+                            self.active_profiles
+                                .insert(device_id.clone(), Some(profile.clone()));
+                        }
+                    }
+                }
+            }
+
+            Message::SourceProfileChanged(profile) => {
+                self.active_source_profile = Some(profile);
+                if let Some(profile) = self.source_profile_names.get(profile) {
+                    if let Some(ref device_id) = self.active_source_device {
+                        if let Some(name) = self.card_names.get(device_id) {
+                            pactl_set_card_profile(name.clone(), profile.clone());
+                            self.active_profiles
+                                .insert(device_id.clone(), Some(profile.clone()));
+                        }
+                    }
+                }
+            }
         }
         Command::none()
     }
@@ -411,6 +508,7 @@ fn input() -> Section<crate::pages::Message> {
     let volume = descriptions.insert(fl!("sound-input", "volume"));
     let device = descriptions.insert(fl!("sound-input", "device"));
     let _level = descriptions.insert(fl!("sound-input", "level"));
+    let profile = descriptions.insert(fl!("profile"));
 
     Section::default()
         .title(fl!("sound-input"))
@@ -440,14 +538,24 @@ fn input() -> Section<crate::pages::Message> {
                 Message::SourceChanged,
             );
 
-            settings::view_section(&section.title)
+            let mut controls = settings::view_section(&section.title)
                 .add(settings::item(
                     &*section.descriptions[volume],
                     volume_control,
                 ))
-                .add(settings::item(&*section.descriptions[device], devices))
-                .apply(Element::from)
-                .map(crate::pages::Message::Sound)
+                .add(settings::item(&*section.descriptions[device], devices));
+
+            if !page.source_profiles.is_empty() {
+                let dropdown = widget::dropdown(
+                    &page.source_profiles,
+                    page.active_source_profile,
+                    Message::SourceProfileChanged,
+                );
+
+                controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
+            }
+
+            Element::from(controls).map(crate::pages::Message::Sound)
         })
 }
 
@@ -457,7 +565,7 @@ fn output() -> Section<crate::pages::Message> {
     let volume = descriptions.insert(fl!("sound-output", "volume"));
     let device = descriptions.insert(fl!("sound-output", "device"));
     let _level = descriptions.insert(fl!("sound-output", "level"));
-    // let config = descriptions.insert(fl!("sound-output", "config"));
+    let profile = descriptions.insert(fl!("profile"));
     // let balance = descriptions.insert(fl!("sound-output", "balance"));
 
     Section::default()
@@ -488,14 +596,24 @@ fn output() -> Section<crate::pages::Message> {
                 Message::SinkChanged,
             );
 
-            settings::view_section(&section.title)
+            let mut controls = settings::view_section(&section.title)
                 .add(settings::item(
                     &*section.descriptions[volume],
                     volume_control,
                 ))
-                .add(settings::item(&*section.descriptions[device], devices))
-                .apply(Element::from)
-                .map(crate::pages::Message::Sound)
+                .add(settings::item(&*section.descriptions[device], devices));
+
+            if !page.sink_profiles.is_empty() {
+                let dropdown = widget::dropdown(
+                    &page.sink_profiles,
+                    page.active_sink_profile,
+                    Message::SinkProfileChanged,
+                );
+
+                controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
+            }
+
+            Element::from(controls).map(crate::pages::Message::Sound)
         })
 }
 
@@ -533,11 +651,30 @@ fn output() -> Section<crate::pages::Message> {
 //         })
 // }
 
+fn pactl_set_card_profile(id: String, profile: String) {
+    tokio::task::spawn(async move {
+        _ = tokio::process::Command::new("pactl")
+            .args(&["set-card-profile", id.as_str(), profile.as_str()])
+            .status()
+            .await
+    });
+}
+
 fn wpctl_set_default(id: u32) {
     tokio::task::spawn(async move {
         let default = id.to_string();
         _ = tokio::process::Command::new("wpctl")
             .args(&["set-default", default.as_str()])
+            .status()
+            .await;
+    });
+}
+
+fn wpctl_set_mute(id: u32, mute: bool) {
+    tokio::task::spawn(async move {
+        let default = id.to_string();
+        _ = tokio::process::Command::new("wpctl")
+            .args(&["set-mute", default.as_str(), if mute { "1" } else { "0" }])
             .status()
             .await;
     });
@@ -549,16 +686,6 @@ fn wpctl_set_volume(id: u32, volume: u32) {
         let volume = format!("{}.{:02}", volume / 100, volume % 100);
         _ = tokio::process::Command::new("wpctl")
             .args(&["set-volume", id.as_str(), volume.as_str()])
-            .status()
-            .await;
-    });
-}
-
-fn wpctl_set_mute(id: u32, mute: bool) {
-    tokio::task::spawn(async move {
-        let default = id.to_string();
-        _ = tokio::process::Command::new("wpctl")
-            .args(&["set-mute", default.as_str(), if mute { "1" } else { "0" }])
             .status()
             .await;
     });

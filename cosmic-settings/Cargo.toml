@@ -57,6 +57,7 @@ slab = "0.4.9"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
+# path = "../../cosmic-settings-subscriptions"
 features = ["pipewire", "pulse"]
 
 [dependencies.icu]

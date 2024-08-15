@@ -56,7 +56,7 @@ impl Default for Page {
         let military_time = cosmic_applet_config
             .get("military_time")
             .unwrap_or_else(|err| {
-                if !matches!(cosmic_config::Error::NoConfigDirectory, err) {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
                     error!(?err, "Failed to read config 'military_time'");
                 }
 
@@ -66,7 +66,7 @@ impl Default for Page {
         let first_day_of_week = cosmic_applet_config
             .get("first_day_of_week")
             .unwrap_or_else(|err| {
-                if !matches!(cosmic_config::Error::NoConfigDirectory, err) {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
                     error!(?err, "Failed to read config 'first_day_of_week'");
                 }
 
@@ -76,7 +76,7 @@ impl Default for Page {
         let show_date_in_top_panel = cosmic_applet_config
             .get("show_date_in_top_panel")
             .unwrap_or_else(|err| {
-                if !matches!(cosmic_config::Error::NoConfigDirectory, err) {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
                     error!(?err, "Failed to read config 'show_date_in_top_panel'");
                 }
 

@@ -46,7 +46,7 @@ fn get_config<T: Default + serde::de::DeserializeOwned>(
     key: &str,
 ) -> T {
     config.get(key).unwrap_or_else(|why| {
-        if !matches!(cosmic_config::Error::NoConfigDirectory, why) {
+        if !matches!(why, cosmic_config::Error::NoConfigDirectory) {
             error!(?why, "Failed to read config '{}'", key);
         }
 
