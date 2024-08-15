@@ -438,7 +438,6 @@ system-controls = Елементи керування системою
 terminate = Завершити
 toggle-stacking = Перемкнути групування вікон
 type-key-combination = Введіть комбінацію клавіш
-unknown = Невідоме
 
 custom-shortcuts = Користувацькі скорочення
     .add = Додати скорочення

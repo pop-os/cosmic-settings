@@ -428,7 +428,6 @@ system-controls = Controles del sistema
 terminate = Terminar
 toggle-stacking = Cambiar a apilamiento de ventanas
 type-key-combination = Escribir combinación de teclas
-unknown = Desconocido
 
 custom-shortcuts = Atajos personalizados
     .add = Añadir atajo
@@ -565,10 +564,10 @@ switch-to-prev-workspace = Cambiar al espacio de trabajo anterior
 open-application-library = Abrir biblioteca de aplicaciones
 open-workspaces-view = Abrir vista de espacios de trabajo
 
-## Power 
+## Power
 
 power = Energía
-    .desc = Gestionar ajustes de energía 
+    .desc = Gestionar ajustes de energía
 
 power-mode = Modo de energía
     .performance = Alto rendimiento

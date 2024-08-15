@@ -428,7 +428,6 @@ system-controls = Системные элементы управления
 terminate = Завершить
 toggle-stacking = Переключить окна стопкой
 type-key-combination = Введите комбинацию клавиш
-unknown = Неизвестно
 
 custom-shortcuts = Пользовательские сочетания клавиш
     .add = Добавить сочетание клавиш
@@ -565,7 +564,7 @@ switch-to-prev-workspace = Переход к предыдущему рабоче
 open-application-library = Открыть библиотеку приложений
 open-workspaces-view = Открыть обзор рабочих мест
 
-## Power 
+## Power
 
 power = Питание
   .desc = Управление настройками электропитания

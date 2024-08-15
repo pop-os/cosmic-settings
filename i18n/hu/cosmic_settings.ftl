@@ -428,7 +428,6 @@ system-controls = System controls
 terminate = Befejezés
 toggle-stacking = Az ablakok egymásra helyezésének váltása
 type-key-combination = Billentyűkombináció
-unknown = Ismeretlen
 
 custom-shortcuts = Egyedi billentyűkombinációk
     .add = Billentyűkombináció hozzáadása
@@ -564,7 +563,7 @@ switch-to-prev-workspace = Váltás a előző munkaterületre
 open-application-library = Alkalmazáskönytár megnyitása
 open-workspaces-view = Munkaterületek áttekintésének megnyitása
 
-## Power 
+## Power
 
 power = Energia
     .desc = Az energiabeállítások kezelése

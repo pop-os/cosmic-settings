@@ -377,7 +377,6 @@ system-controls = System controls
 terminate = Terminate
 toggle-stacking = Toggle window stacking
 type-key-combination = Type key combination
-unknown = Unknown
 
 custom-shortcuts = Custom Shortcuts
     .add = Add shortcut

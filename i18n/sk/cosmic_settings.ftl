@@ -435,7 +435,6 @@ system-controls = Ovládanie systému
 terminate = Zrušiť
 toggle-stacking = Prepnúť kaskádovanie okien
 type-key-combination = Vložte kombináciu klávesovej skratky
-unknown = Neznáme
 
 custom-shortcuts = Vlastná skratka
     .add = Pridať skratku
@@ -572,7 +571,7 @@ switch-to-prev-workspace = Prepnúť na predchádzajúci pracovný priestor
 open-application-library = Otvoriť knižnicu aplikácií
 open-workspaces-view = Otvoriť prehľad pracovných priestorov
 
-## Power 
+## Power
 
 power = Napájanie
     .desc = Spravujte nastavenia napájania

@@ -50,13 +50,13 @@ frosted = Efekt zmrożonego szkła na interfejsie systemowym
     .desc = Nakłada efekt rozmycia na panel, dok, aplety, program startowy oraz bibliotekę aplikacji.
 
 experimental-settings = Ustawienia eksperymentalne
-    
+
 enable-export = Użyj tego motywu do apek GNOME.
     .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Apki inne niż COSMIC mogą wymagać restartu do zmiany motywu.
-    
+
 icon-theme = Motyw ikon
     .desc = Zastosuj inny zbiór ikon do aplikacji.
-    
+
 text-tint = Odcień tekstu interfejsu
     .desc = Kolor używany do uzyskania odcienia tekstu interfejsu, który ma wystarczający kontrast na różnych powierzchniach.
 
@@ -132,7 +132,7 @@ dialog = Dialog
         *[other] {$time} sekund.
     }
     .revert-settings = Powróć Do Poprzednich Ustawień
-    
+
 ## Desktop: Notifications
 
 notifications = Powiadomienia
@@ -374,11 +374,11 @@ disable-while-typing = Wyłącz podczas pisania
 
 input-devices = Urządzenia Wprowadzania Danych
     .desc = Urządzenia Wprowadzania Danych
-    
+
 primary-button = Główny przycisk
     .left = Lewy
     .right = Prawy
-    
+
 scrolling = Przewijanie
     .two-finger = Przewijaj dwoma palcami
     .edge = Przewijaj jednym palcem przy krawędzi
@@ -411,7 +411,7 @@ keyboard-special-char = Wpis Znaków Specjalnych
 keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
     .repeat-delay = Opóżnienie powtarzania
-    
+
 added = Dodany
 type-to-search = Naciśnij by wyszukać...
 
@@ -419,7 +419,7 @@ type-to-search = Naciśnij by wyszukać...
 
 keyboard-shortcuts = Skróty Klawiaturowe
     .desc = Obejrzyj i spersonalizuj skróty
-    
+
 add-keybinding = Dodaj skrót klawiszowy
 cancel = Anuluj
 command = Komenda
@@ -441,7 +441,6 @@ system-controls = Panel kontrolny systemu
 terminate = Zakończ sesję
 toggle-stacking = Przełącznik grupowania w kartach
 type-key-combination = Wpisz kombinację klawiszy
-unknown = Nieznane
 
 custom-shortcuts = Własne skróty klawiszowe
     .add = Dodaj skrót klawiszowy
@@ -463,7 +462,7 @@ nav-shortcuts = Nawigacja
         [out] z okna
         [right] na prawe okno
         [up] na górne okno
-    } 
+    }
     .output = Zmień na  { $direction ->
         *[down] dolny
         [left] lewy
@@ -551,10 +550,10 @@ mouse = Myszka
 click-behavior = Funkcjonowanie Kliknięć
     .click-finger = Drugi przycisk uzyskujemy kliknięciem dwoma palcami, a środkowy przycisk trzema
     .button-areas = Drugi przycisk uzyskujemy kliknięciem w prawy dolny róg, a środkowy przycisk kliknięciem w środek dołu
-    
+
 pinch-to-zoom = Uszczypnij by przybliżyć
     .desc = Zbliż dwa palce do siebie by przybliżyć zawartość, w aplikacjach używających przybliżenia.
-    
+
 tap-to-click = Tap to click
     .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
 
@@ -562,7 +561,7 @@ touchpad = Gładzik
     .acceleration = Włącz przyśpieszenie gładzika
     .desc = Prędkość, opcje klikania i gesty gładzikiem.
     .speed = Prędkość Gładzika
-    
+
 ## Input: Gestures
 
 gestures = Gesty
@@ -570,7 +569,7 @@ gestures = Gesty
     .four-finger-left = Przesunięcie czterema palcami w lewo
     .four-finger-right = Przesunięcie czterema palcami w prawo
     .four-finger-up = Przesunięcie czterema palcami w górę
-    .three-finger-any = Przesunięcie trzema palcami w dowolnym kierunku 
+    .three-finger-any = Przesunięcie trzema palcami w dowolnym kierunku
 
 switch-between-windows = Przełączenie pomiędzy oknami
 switch-to-next-workspace = Przełączenie do następnego obszaru roboczego
