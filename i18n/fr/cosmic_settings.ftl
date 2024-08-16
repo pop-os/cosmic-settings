@@ -4,9 +4,47 @@ unknown = Inconnu
 
 number = { $number }
 
+## Networking: Wired
+
+wired = Filaire
+    .desc = Connexion filaire, profils de connexion
+
+## Networking: Online Accounts
+
+online-accounts = Comptes en lignes
+    .desc = Ajouter des comptes, IMAP et SMTP, connexion d'entreprise
+
 ## Desktop
 
 desktop = Bureau
+
+## Desktop: Wallpaper
+
+wallpaper = Fond d’écran
+    .change = Changer l'image tous les
+    .desc = Images de fond d’écran, couleurs et options de diaporama.
+    .fit = Adapter le fond d’écran
+    .folder-dialog = Choisir le dossier de fond d’écran
+    .image-dialog = Choisir l'image de fond d’écran
+    .plural = Fonds d’écran
+    .same = Même fond d'écran sur tous les écrans
+    .slide = Diaporama
+
+add-color = Ajouter couleur
+add-image = Ajouter image
+all-displays = Tous les écrans
+colors = Couleurs
+dialog-add = Ajouter
+fill = Remplir
+fit-to-screen = Adapter à l'écran
+open-new-folder = Ouvrir nouveau dossier
+recent-folders = Dossiers récents
+
+x-minutes = { $number } minutes
+x-hours = { $number ->
+    [1] 1 heure
+    *[other] { $number } heures
+}
 
 ## Desktop: Appearance
 
@@ -70,79 +108,10 @@ window-management = Gestion des fenêtres
     .active-hint = Taille de l'indice de fenêtre active
     .gaps = Espaces entre les fenêtres en mosaïque
 
-## Desktop: Display
-
--requires-restart = Nécessite un redémarrage
-
-color = Couleur
-    .depth = Profondeur de couleur
-    .profile = Profil de couleur
-    .sidebar = Profils de couleurs
-    .temperature = Température de couleur
-
-display = Écrans
-    .desc = Gérer les écrans, les modes graphiques, et le mode nuit
-    .arrangement = Disposition des écrans
-    .arrangement-desc = Faire glisser les écrans pour les réorganiser.
-    .enable = Activer écran
-    .external = { $size } { $output } Écran externe
-    .laptop = { $size } Écran de l'ordinateur portable
-    .options = Options d'écran
-    .refresh-rate = Fréquence de rafraîchissement
-    .resolution = Résolution
-    .scale = Échelle
-
-mirroring = Duplication de l'écran
-    .id = Duplication de { $id }
-    .dont = Ne pas dupliquer
-    .mirror = Dupliquer { $display }
-    .project = Projeter vers { $display ->
-        [all] tous les écrans
-        *[other] { $display }
-    }
-    .project-count = Projection sur { $count} { $count ->
-        [1] autre écran
-        *[other] autres écrans
-    }
-
-night-light = Mode nuit
-    .auto = Automatique (du coucher au lever du soleil)
-    .desc = Réduire la lumière bleue avec des couleurs plus chaudes.
-
-orientation = Orientation
-    .standard = Standard
-    .rotate-90 = Rotation à 90 degrés
-    .rotate-180 = Rotation à 180 degrés
-    .rotate-270 = Rotation à 270 degrés
-
-scheduling = Programmation
-    .manual = Programmation manuelle
-
 ## Desktop: Notifications
 
 notifications = Notifications
     .desc = Ne pas déranger, notifications sur l'écran de vérouillage, et paramètres par application.
-
-## Desktop: Options
-
-desktop-panel-options = Bureau et Panneau
-    .desc = Action de la touche Super, coin actif, options du contrôle des fenêtres.
-
-desktop-panels-and-applets = Barres du bureau et Applets
-
-dock = Dock
-    .desc = Barre avec des applications épinglées.
-
-hot-corner = Coin Actif
-    .top-left-corner = Activer le coin actif supérieur gauche pour les Espaces de Travail
-
-top-panel = Panneau supérieur
-    .workspaces = Afficher le bouton Espace de Travail
-    .applications = Afficher le bouton Applications
-
-window-controls = Contrôles Fenêtre
-    .minimize = Afficher le bouton Minimiser
-    .maximize = Afficher le bouton Maximiser
 
 ## Desktop: Panel
 
@@ -194,38 +163,29 @@ panel-missing = La configuration du panneau est manquante
     .desc = Le fichier de configuration du panneau est manquant à cause d'une configuration personnalisée ou il est corrompu.
     .fix = Réinitialiser aux paramètres par défaut
 
-## Desktop: Wallpaper
+## Desktop: Dock
 
-wallpaper = Fond d’écran
-    .change = Changer l'image tous les
-    .desc = Images de fond d’écran, couleurs et options de diaporama.
-    .fit = Adapter le fond d’écran
-    .folder-dialog = Choisir le dossier de fond d’écran
-    .image-dialog = Choisir l'image de fond d’écran
-    .plural = Fonds d’écran
-    .same = Même fond d'écran sur tous les écrans
-    .slide = Diaporama
+dock = Dock
+	.desc = Panneau avec des applications épinglées dans le plateau d'applications et d'autres applets.
 
-add-color = Ajouter couleur
-add-image = Ajouter image
-all-displays = Tous les écrans
-colors = Couleurs
-dialog-add = Ajouter
-fill = Remplir
-fit-to-screen = Adapter à l'écran
-open-new-folder = Ouvrir nouveau dossier
-recent-folders = Dossiers récents
+## Desktop: Window management
 
-x-minutes = { $number } minutes
-x-hours = { $number ->
-    [1] 1 heure
-    *[other] { $number } heures
-}
+window-management = Gestion des fenêtres
+    .desc = Actions de la touche Super, options de contrôle des fenêtres et options supplémentaires de gestion des fenêtres.
+
+super-key = Touche Super
+    .launcher = Ouvrir le Lanceur
+    .workspaces = Ouvrir les Espaces de travail
+    .applications = Ouvrir les Applications
+
+window-controls = Contrôles des fenêtres
+    .minimize = Afficher le bouton de réduction
+    .maximize = Afficher le bouton de maximisation
 
 ## Desktop: Workspaces
 
 workspaces = Espaces de travail
-    .desc = Définir le nombre, le comportement et l'emplacement d'espaces de travail.
+    .desc = Orientation et comportement des espaces de travail.
 
 workspaces-behavior = Comportement des espaces de travail
     .dynamic = Espaces de travail dynamiques
@@ -234,51 +194,73 @@ workspaces-behavior = Comportement des espaces de travail
     .fixed-desc = Ajouter ou supprimer des espaces de travail dans l'aperçu.
 
 workspaces-multi-behavior = Comportement multi-écrans
-    .span = Les espaces de travail s'étendent sur tous les écrans
+    .span = Les espaces de travail s'étendent sur les écrans
     .separate = Les écrans ont des espaces de travail séparés
 
-workspaces-overview-thumbnails = Vignettes d'aperçu de l'espace de travail
+workspaces-overview-thumbnails = Vignettes de l'aperçu des espaces de travail
     .show-number = Afficher le numéro de l'espace de travail
     .show-name = Afficher le nom de l'espace de travail
 
 workspaces-orientation = Orientation des espaces de travail
-    .vertical = Vertical
-    .horizontal = Horizontal
+    .vertical = Verticale
+    .horizontal = Horizontale
 
-## Networking: Wired
+hot-corner = Coin actif
+    .top-left-corner = Activer le coin actif en haut à gauche pour les espaces de travail
 
-wired = Filaire
-    .desc = Connexion filaire, profils de connexion
+## Desktop: Display
 
-## Networking: Online Accounts
+-requires-restart = Nécessite un redémarrage
 
-online-accounts = Comptes en lignes
-    .desc = Ajouter des comptes, IMAP et SMTP, connexion d'entreprise
+color = Couleur
+    .depth = Profondeur de couleur
+    .profile = Profil de couleur
+    .sidebar = Profils de couleurs
+    .temperature = Température de couleur
 
-## Time & Language
+display = Écrans
+    .desc = Gérer les écrans, les modes graphiques, et le mode nuit
+    .arrangement = Disposition des écrans
+    .arrangement-desc = Faire glisser les écrans pour les réorganiser.
+    .enable = Activer écran
+    .external = { $size } { $output } Écran externe
+    .laptop = { $size } Écran de l'ordinateur portable
+    .options = Options d'écran
+    .refresh-rate = Fréquence de rafraîchissement
+    .resolution = Résolution
+    .scale = Échelle
 
-time = Heure et Langue
-    .desc = N/A
+mirroring = Duplication de l'écran
+    .id = Duplication de { $id }
+    .dont = Ne pas dupliquer
+    .mirror = Dupliquer { $display }
+    .project = Projeter vers { $display ->
+        [all] tous les écrans
+        *[other] { $display }
+    }
+    .project-count = Projection sur { $count} { $count ->
+        [1] autre écran
+        *[other] autres écrans
+    }
 
-time-date = Date et Heure
-    .desc = Fuseau horaire, réglage de l'heure automatique et format de l'heure.
-    .auto = Régler automatiquement
+night-light = Mode nuit
+    .auto = Automatique (du coucher au lever du soleil)
+    .desc = Réduire la lumière bleue avec des couleurs plus chaudes.
 
-time-zone = Fuseau Horaire
-    .auto = Fuseau horaire automatique
-    .auto-info = Nécessite les services de localisation et l'accès à internet
+orientation = Orientation
+    .standard = Standard
+    .rotate-90 = Rotation à 90 degrés
+    .rotate-180 = Rotation à 180 degrés
+    .rotate-270 = Rotation à 270 degrés
 
-time-format = Format date et heure
-    .twenty-four = Format 24 heures
-    .first = Premier jour de la semaine
-    .show-date = Afficher la date sur le panneau supérieur
-    .friday = Vendredi
-    .saturday = Samedi
-    .sunday = Dimanche
-    .monday = Lundi
+scheduling = Programmation
+    .manual = Programmation manuelle
 
-time-region = Région et Langue
-    .desc = Formater les dates, les heures et les nombres en fonction de votre région
+dialog = Dialogue
+    .title = Conserver ces paramètres d'affichage ?
+    .keep-changes = Conserver les modifications
+    .change-prompt = Les modifications des paramètres reviendront automatiquement dans { $time } secondes.
+    .revert-settings = Revenir aux paramètres
 
 ## Sound
 
@@ -304,43 +286,21 @@ sound-alerts = Alertes
 sound-applications = Applications
     .desc = Volumes et paramètres d'application
 
-## System
+profile = Profile
 
-system = Système et Comptes
+## Power 
 
-## System: About
+power = Énergie
+  .desc = Gérer les paramètres d'alimentation 
 
-about = À propos
-    .desc = Nom de l'appareil, information matériel, paramètres par défaut du système d'exploitation.
-
-about-device = Nom de l'appareil
-    .desc = Ce nom apparaît aux autres périphériques réseau ou bluetooth.
-
-about-hardware = Matériel
-    .model = Modèle du matériel
-    .memory = Mémoire vive
-    .processor = Processeur
-    .graphics = Carte graphique
-    .disk-capacity = Capacité du disque
-
-about-os = Système d'exploitation
-    .os = Système d'exploitation
-    .os-architecture = Architecture du système d'exploitation
-    .desktop-environment = Environnement de bureau
-    .windowing-system = Système de fenêtrage
-
-about-related = Paramètres associés
-    .support = Obtenir de l'aide
-
-## System: Firmware
-
-firmware = Micrologiciel
-    .desc = Détails micrologiciel.
-
-## System: Users
-
-users = Utilisateurs
-    .desc = Authentification et connexion, écran de verrouillage.
+power-profiles = Modes d'énergie
+    .battery = Économie d'énergie
+    .battery-desc = Performances réduites mais consommation d'énergie réduite.
+    .balanced = Équilibré
+    .balanced-desc = Performances et consommation d'énergie équilibré.
+    .performance = Performance
+    .performance-desc = Performances maximales mais force consommation d'énergie.
+    .nobackend = Backend non trouvé. Installez system76-power ou power-profiles-daemon.
 
 ## Input
 
@@ -369,7 +329,7 @@ fast = Rapide
 short = Court
 long = Long
 keyboard = Clavier
-    .desc = Saisie du clavier
+    .desc = Sources de saisie, commutation, saisie de caractères spéciaux, raccourcis.
 
 keyboard-sources = Sources de saisie
     .desc = Les sources d'entrée peuvent être changées en utilisant la combinaison de touches Super+Espace. Cette combinaison peut être modifiée dans les paramètres de raccourci clavier.
@@ -395,6 +355,128 @@ type-to-search = Tapez pour rechercher...
 
 keyboard-shortcuts = Raccourcis clavier
     .desc = Voir et personnaliser les raccourcis
+
+add-keybinding = Ajouter un raccourci
+cancel = Annuler
+command = Commande
+custom = Personnalisé
+debug = Déboguer
+disabled = Désactivé
+migrate-workspace-prev = Migrer l’espace de travail vers la sortie précédente
+migrate-workspace-next = Migrer l’espace de travail vers la sortie suivante
+migrate-workspace = Migrer l’espace de travail vers la sortie { $direction ->
+    *[down] bas
+    [left] gauche
+    [right] droite
+    [up] haut
+}
+navigate = Naviguer
+replace = Remplacer
+shortcut-name = Nom du raccourci
+system-controls = Contrôles système
+terminate = Terminer
+toggle-stacking = Basculer l'empilement des fenêtres
+type-key-combination = Taper la combinaison de touches
+unknown = Inconnu
+
+custom-shortcuts = Raccourcis personnalisés
+    .add = Ajouter un raccourci
+    .context = Ajouter un raccourci personnalisé
+    .none = Aucun raccourci personnalisé
+
+modified = { $count } modifiés
+
+nav-shortcuts = Navigation
+    .prev-output = Focus sur la sortie précédente
+    .next-output = Focus sur la sortie suivante
+    .last-workspace = Focus sur le dernier espace de travail
+    .prev-workspace = Focus sur l’espace de travail précédent
+    .next-workspace = Focus sur l’espace de travail suivant
+    .focus = Focus sur la fenêtre { $direction ->
+        *[down] bas
+        [in] dedans
+        [left] gauche
+        [out] dehors
+        [right] droite
+        [up] haut
+    }
+    .output = Basculer à la sortie { $direction ->
+        *[down] bas
+        [left] gauche
+        [right] droite
+        [up] haut
+    }
+    .workspace = Basculer à l’espace de travail { $num }
+
+manage-windows = Gérer les fenêtres
+    .close = Fermer la fenêtre
+    .maximize = Maximiser la fenêtre
+    .minimize = Minimiser la fenêtre
+    .resize-inwards = Redimensionner la fenêtre vers l’intérieur
+    .resize-outwards = Redimensionner la fenêtre vers l’extérieur
+    .toggle-sticky = Basculer la fenêtre collante
+
+move-windows = Déplacer les fenêtres
+    .direction = Déplacer la fenêtre { $direction ->
+        *[down] bas
+        [left] gauche
+        [right] droite
+        [up] haut
+    }
+    .display = Déplacer la fenêtre d'un écran { $direction ->
+        *[down] bas
+        [left] gauche
+        [right] droite
+        [up] haut
+    }
+    .workspace = Déplacer la fenêtre d’un espace de travail { $direction ->
+        *[below] en dessous
+        [left] gauche
+        [right] droite
+        [above] au-dessus
+    }
+    .workspace-num = Déplacer la fenêtre vers l’espace de travail { $num }
+    .prev-workspace = Déplacer la fenêtre vers l’espace de travail précédent
+    .next-workspace = Déplacer la fenêtre vers l’espace de travail suivant
+    .last-workspace = Déplacer la fenêtre vers le dernier espace de travail
+    .next-display = Déplacer la fenêtre vers l’écran suivant
+    .prev-display = Déplacer la fenêtre vers l’écran précédent
+    .send-to-prev-workspace = Déplacer la fenêtre vers l’espace de travail précédent
+    .send-to-next-workspace = Déplacer la fenêtre vers l’espace de travail suivant
+
+system-shortcut = Système
+    .app-library = Ouvrir la bibliothèque d’applications
+    .brightness-down = Réduire la luminosité de l'écran
+    .brightness-up = Augmenter la luminosité de l'écran
+    .home-folder = Ouvrir le dossier personnel
+    .keyboard-brightness-down = Réduire la luminosité du clavier
+    .keyboard-brightness-up = Augmenter la luminosité du clavier
+    .launcher = Ouvrir le lanceur
+    .lock-screen = Verrouiller l'écran
+    .mute = Couper le son de la sortie audio
+    .mute-mic = Couper le son du microphone
+    .play-pause = Lecture/Pause
+    .play-next = Piste suivante
+    .play-prev = Piste précédente
+    .screenshot = Prendre une capture d'écran
+    .terminal = Ouvrir un terminal
+    .volume-lower = Diminuer le volume de sortie audio
+    .volume-raise = Augmenter le volume de sortie audio
+    .web-browser = Ouvrir un navigateur web
+    .window-switcher = Passer d'une fenêtre ouverte à l'autre
+    .workspace-overview = Ouvrir l’aperçu des espaces de travail
+
+window-tiling = Tuilage des fenêtres
+    .horizontal = Définir l'orientation horizontale
+    .vertical = Définir l'orientation verticale
+    .swap-window = Échanger la fenêtre
+    .toggle-tiling = Basculer le tuilage des fenêtres
+    .toggle-stacking = Basculer l'empilement des fenêtres
+    .toggle-floating = Basculer la flottabilité des fenêtres
+    .toggle-orientation = Basculer l'orientation
+
+replace-shortcut-dialog = Remplacer le raccourci ?
+    .desc = { $shortcut } est utilisé par { $name }. Si vous le remplacez, { $name } sera désactivé.
 
 ## Input: Mouse
 
@@ -435,15 +517,66 @@ switch-to-prev-workspace = Basculer vers l'espace de travail précédent
 open-application-library = Ouvrir la bibliothèque d'applications
 open-workspaces-view = Ouvrir l'aperçu des espaces de travail
 
-## Power 
+## Time & Language
 
-power = Énergie
-  .desc = Gérer les paramètres d'alimentation 
+time = Heure et Langue
+    .desc = N/A
 
-power-profiles = Modes d'énergie
-  .performance = Performance
-  .balanced = Équilibré
-  .battery = Économie d'énergie
-  .performance-desc = Performances maximales mais force consommation d'énergie.
-  .balanced-desc = Performances et consommation d'énergie équilibré.
-  .battery-desc = Performances réduites mais consommation d'énergie réduite.
+time-date = Date et Heure
+    .desc = Fuseau horaire, réglage de l'heure automatique et format de l'heure.
+    .auto = Régler automatiquement
+    .auto-ntp = La date et l'heure seront mises à jour automatiquement lorsque le fuseau horaire sera défini.
+
+time-zone = Fuseau Horaire
+    .auto = Fuseau horaire automatique
+    .auto-info = Nécessite les services de localisation et l'accès à internet
+
+time-format = Format date et heure
+    .twenty-four = Format 24 heures
+    .first = Premier jour de la semaine
+    .show-date = Afficher la date sur le panneau supérieur
+    .friday = Vendredi
+    .saturday = Samedi
+    .sunday = Dimanche
+    .monday = Lundi
+
+time-region = Région et Langue
+    .desc = Formater les dates, les heures et les nombres en fonction de votre région
+
+## System
+
+system = Système et Comptes
+
+## System: About
+
+about = À propos
+    .desc = Nom de l'appareil, information matériel, paramètres par défaut du système d'exploitation.
+
+about-device = Nom de l'appareil
+    .desc = Ce nom apparaît aux autres périphériques réseau ou bluetooth.
+
+about-hardware = Matériel
+    .model = Modèle du matériel
+    .memory = Mémoire vive
+    .processor = Processeur
+    .graphics = Carte graphique
+    .disk-capacity = Capacité du disque
+
+about-os = Système d'exploitation
+    .os = Système d'exploitation
+    .os-architecture = Architecture du système d'exploitation
+    .desktop-environment = Environnement de bureau
+    .windowing-system = Système de fenêtrage
+
+about-related = Paramètres associés
+    .support = Obtenir de l'aide
+
+## System: Firmware
+
+firmware = Micrologiciel
+    .desc = Détails micrologiciel.
+
+## System: Users
+
+users = Utilisateurs
+    .desc = Authentification et connexion, écran de verrouillage.
