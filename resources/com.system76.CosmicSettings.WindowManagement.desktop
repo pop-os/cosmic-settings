@@ -8,5 +8,5 @@ Categories=COSMIC
 Keywords=COSMIC
 NoDisplay=true
 OnlyShowIn=COSMIC
-Icon=preferences-desktop-window-management
+Icon=preferences-window-management
 StartupNotify=true

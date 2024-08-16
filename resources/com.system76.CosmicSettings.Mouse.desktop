@@ -8,5 +8,5 @@ Categories=COSMIC
 Keywords=COSMIC
 NoDisplay=true
 OnlyShowIn=COSMIC
-Icon=preferences-input-devices-mouse
+Icon=preferences-mouse
 StartupNotify=true
