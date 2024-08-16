@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Time & Language
+Comment=
+Type=Settings
+Exec=cosmic-settings time
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-time-and-language
+StartupNotify=true

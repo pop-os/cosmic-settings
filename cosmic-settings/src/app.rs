@@ -61,9 +61,11 @@ impl SettingsApp {
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
             PageCommands::Bluetooth => None,
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
+            PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
             PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
+            PageCommands::Input => self.pages.page_id::<input::Page>(),
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             PageCommands::Network => None,
@@ -71,6 +73,7 @@ impl SettingsApp {
             PageCommands::Power => self.pages.page_id::<power::Page>(),
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
+            PageCommands::System => self.pages.page_id::<system::Page>(),
             PageCommands::Time => self.pages.page_id::<time::Page>(),
             PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
             PageCommands::Users => self.pages.page_id::<system::users::Page>(),
@@ -307,6 +310,12 @@ impl cosmic::Application for SettingsApp {
                     page::update!(self.pages, message, system::about::Page);
                 }
 
+                crate::pages::Message::Appearance(message) => {
+                    if let Some(page) = self.pages.page_mut::<appearance::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 crate::pages::Message::DateAndTime(message) => {
                     if let Some(page) = self.pages.page_mut::<time::date::Page>() {
                         return page.update(message).map(Into::into);
@@ -329,6 +338,22 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::Displays(message) => {
                     if let Some(page) = self.pages.page_mut::<display::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::Dock(message) => {
+                    page::update!(self.pages, message, dock::Page);
+                }
+
+                crate::pages::Message::DockApplet(message) => {
+                    if let Some(page) = self.pages.page_mut::<dock::applets::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::Input(message) => {
+                    if let Some(page) = self.pages.page_mut::<input::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
@@ -405,12 +430,6 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
-                crate::pages::Message::Input(message) => {
-                    if let Some(page) = self.pages.page_mut::<input::Page>() {
-                        return page.update(message).map(Into::into);
-                    }
-                }
-
                 crate::pages::Message::External { .. } => {
                     todo!("external plugins not supported yet");
                 }
@@ -425,22 +444,6 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::PanelApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
-                        return page.update(message).map(Into::into);
-                    }
-                }
-
-                crate::pages::Message::Dock(message) => {
-                    page::update!(self.pages, message, dock::Page);
-                }
-
-                crate::pages::Message::DockApplet(message) => {
-                    if let Some(page) = self.pages.page_mut::<dock::applets::Page>() {
-                        return page.update(message).map(Into::into);
-                    }
-                }
-
-                crate::pages::Message::Appearance(message) => {
-                    if let Some(page) = self.pages.page_mut::<appearance::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }

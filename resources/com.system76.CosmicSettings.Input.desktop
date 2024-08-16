@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Input Devices
+Comment=
+Type=Settings
+Exec=cosmic-settings input
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-input-devices
+StartupNotify=true

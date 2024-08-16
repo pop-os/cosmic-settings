@@ -28,9 +28,11 @@ entry-settings := appid + '.desktop'
 entry-about := appid + '.About.desktop'
 entry-appear := appid + '.Appearance.desktop'
 entry-date-time := appid + '.DateTime.desktop'
+entry-desktop := appid + '.Desktop.desktop'
 entry-displays := appid + '.Displays.desktop'
 entry-dock := appid + '.Dock.desktop'
 entry-firmware := appid + '.Firmware.desktop'
+entry-input := appid + '.Input.desktop'
 entry-keyboard := appid + '.Keyboard.desktop'
 entry-mouse := appid + '.Mouse.desktop'
 entry-notifications := appid + '.Notifications.desktop'
@@ -38,6 +40,8 @@ entry-panel := appid + '.Panel.desktop'
 entry-power := appid + '.Power.desktop'
 entry-region-language := appid + '.RegionLanguage.desktop'
 entry-sound := appid + '.Sound.desktop'
+entry-system := appid + '.System.desktop'
+entry-time := appid + '.Time.desktop'
 entry-touchpad := appid + '.Touchpad.desktop'
 entry-users := appid + '.Users.desktop'
 entry-wallpaper := appid + '.Wallpaper.desktop'
@@ -54,9 +58,11 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-about}}' '{{appdir}}/{{entry-about}}'
     install -Dm0644 'resources/{{entry-appear}}' '{{appdir}}/{{entry-appear}}'
     install -Dm0644 'resources/{{entry-date-time}}' '{{appdir}}/{{entry-date-time}}'
+    install -Dm0644 'resources/{{entry-desktop}}' '{{appdir}}/{{entry-desktop}}'
     install -Dm0644 'resources/{{entry-displays}}' '{{appdir}}/{{entry-displays}}'
     install -Dm0644 'resources/{{entry-dock}}' '{{appdir}}/{{entry-dock}}'
     install -Dm0644 'resources/{{entry-firmware}}' '{{appdir}}/{{entry-firmware}}'
+    install -Dm0644 'resources/{{entry-input}}' '{{appdir}}/{{entry-input}}'
     install -Dm0644 'resources/{{entry-keyboard}}' '{{appdir}}/{{entry-keyboard}}'
     install -Dm0644 'resources/{{entry-mouse}}' '{{appdir}}/{{entry-mouse}}'
     install -Dm0644 'resources/{{entry-notifications}}' '{{appdir}}/{{entry-notifications}}'
@@ -64,6 +70,8 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-power}}' '{{appdir}}/{{entry-power}}'
     install -Dm0644 'resources/{{entry-region-language}}' '{{appdir}}/{{entry-region-language}}'
     install -Dm0644 'resources/{{entry-sound}}' '{{appdir}}/{{entry-sound}}'
+    install -Dm0644 'resources/{{entry-system}}' '{{appdir}}/{{entry-system}}'
+    install -Dm0644 'resources/{{entry-time}}' '{{appdir}}/{{entry-time}}'
     install -Dm0644 'resources/{{entry-touchpad}}' '{{appdir}}/{{entry-touchpad}}'
     install -Dm0644 'resources/{{entry-users}}' '{{appdir}}/{{entry-users}}'
     install -Dm0644 'resources/{{entry-wallpaper}}' '{{appdir}}/{{entry-wallpaper}}'
@@ -92,9 +100,11 @@ uninstall:
         '{{appdir}}/{{entry-about}}' \
         '{{appdir}}/{{entry-appear}}' \
         '{{appdir}}/{{entry-date-time}}' \
+        '{{appdir}}/{{entry-desktop}}' \
         '{{appdir}}/{{entry-displays}}' \
         '{{appdir}}/{{entry-dock}}' \
         '{{appdir}}/{{entry-firmware}}' \
+        '{{appdir}}/{{entry-input}}' \
         '{{appdir}}/{{entry-keyboard}}' \
         '{{appdir}}/{{entry-mouse}}' \
         '{{appdir}}/{{entry-notifications}}' \
@@ -102,6 +112,8 @@ uninstall:
         '{{appdir}}/{{entry-power}}' \
         '{{appdir}}/{{entry-region-language}}' \
         '{{appdir}}/{{entry-sound}}' \
+        '{{appdir}}/{{entry-system}}' \
+        '{{appdir}}/{{entry-time}}' \
         '{{appdir}}/{{entry-touchpad}}' \
         '{{appdir}}/{{entry-users}}' \
         '{{appdir}}/{{entry-wallpaper}}' \

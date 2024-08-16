@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Desktop
+Comment=
+Type=Settings
+Exec=cosmic-settings desktop
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-desktop
+StartupNotify=true

@@ -44,14 +44,18 @@ pub enum PageCommands {
     Appearance,
     /// Bluetooth settings page
     Bluetooth,
-    /// DateTime settings page
+    /// Date & Time settings page
     DateTime,
+    /// Desktop settings page
+    Desktop,
     /// Displays settings page
     Displays,
     /// Dock settings page
     Dock,
     /// Firmware settings page
     Firmware,
+    /// Input Devices settings page
+    Input,
     /// Keyboard settings page
     Keyboard,
     /// Mouse settings page
@@ -66,7 +70,9 @@ pub enum PageCommands {
     RegionLanguage,
     /// Sound settings page
     Sound,
-    /// Time settings page
+    /// System & Accounts settings page
+    System,
+    /// Time & Language settings page
     Time,
     /// Touchpad settings page
     Touchpad,
@@ -74,7 +80,7 @@ pub enum PageCommands {
     Users,
     /// Wallpaper settings page
     Wallpaper,
-    /// Window management page
+    /// Window management settings page
     WindowManagement,
     /// Workspaces settings page
     Workspaces,
