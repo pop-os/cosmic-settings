@@ -3,9 +3,11 @@
 /usr/share/applications/com.system76.CosmicSettings.Appearance.desktop
 /usr/share/applications/com.system76.CosmicSettings.DateTime.desktop
 /usr/share/applications/com.system76.CosmicSettings.desktop
+/usr/share/applications/com.system76.CosmicSettings.Desktop.desktop
 /usr/share/applications/com.system76.CosmicSettings.Displays.desktop
 /usr/share/applications/com.system76.CosmicSettings.Dock.desktop
 /usr/share/applications/com.system76.CosmicSettings.Firmware.desktop
+/usr/share/applications/com.system76.CosmicSettings.Input.desktop
 /usr/share/applications/com.system76.CosmicSettings.Keyboard.desktop
 /usr/share/applications/com.system76.CosmicSettings.Mouse.desktop
 /usr/share/applications/com.system76.CosmicSettings.Notifications.desktop
@@ -13,6 +15,8 @@
 /usr/share/applications/com.system76.CosmicSettings.Power.desktop
 /usr/share/applications/com.system76.CosmicSettings.RegionLanguage.desktop
 /usr/share/applications/com.system76.CosmicSettings.Sound.desktop
+/usr/share/applications/com.system76.CosmicSettings.System.desktop
+/usr/share/applications/com.system76.CosmicSettings.Time.desktop
 /usr/share/applications/com.system76.CosmicSettings.Touchpad.desktop
 /usr/share/applications/com.system76.CosmicSettings.Users.desktop
 /usr/share/applications/com.system76.CosmicSettings.Wallpaper.desktop
