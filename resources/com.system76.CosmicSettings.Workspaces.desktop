@@ -8,5 +8,5 @@ Categories=COSMIC
 Keywords=COSMIC
 NoDisplay=true
 OnlyShowIn=COSMIC
-Icon=preferences-desktop-workspaces
+Icon=preferences-workspaces
 StartupNotify=true

@@ -8,5 +8,5 @@ Categories=COSMIC
 Keywords=COSMIC
 NoDisplay=true
 OnlyShowIn=COSMIC
-Icon=preferences-input-devices-keyboard
+Icon=preferences-desktop-keyboard
 StartupNotify=true

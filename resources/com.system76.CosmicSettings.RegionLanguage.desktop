@@ -8,5 +8,5 @@ Categories=COSMIC
 Keywords=COSMIC
 NoDisplay=true
 OnlyShowIn=COSMIC
-Icon=preferences-time-and-language-region-and-language
+Icon=preferences-region-and-language
 StartupNotify=true

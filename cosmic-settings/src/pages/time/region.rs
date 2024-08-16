@@ -17,7 +17,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("time-region", "preferences-desktop-locale-symbolic")
+        page::Info::new("time-region", "preferences-region-and-language-symbolic")
             .title(fl!("time-region"))
             .description(fl!("time-region", "desc"))
     }
