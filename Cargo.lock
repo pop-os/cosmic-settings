@@ -7948,9 +7948,7 @@ dependencies = [
 
 [[package]]
 name = "xkb-data"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "294a599fc9e6a43c9f44f5d6c560b89fd751be413717442b31c17fa367d3c764"
+version = "0.2.0"
 dependencies = [
  "serde",
  "serde-xml-rs",

@@ -7,7 +7,9 @@ use cosmic::{
     iced::{self, Length},
     iced_core::Border,
     iced_style, theme,
-    widget::{self, button, container, icon, radio, row, settings, ListColumn},
+    widget::{
+        self, button, container, icon, menu::ItemHeight, radio, row, settings, toggler, ListColumn,
+    },
     Apply, Command, Element,
 };
 use cosmic_comp_config::XkbConfig;
@@ -50,6 +52,7 @@ pub enum Message {
     ShowInputSourcesContext,
     SourceAdd(DefaultKey),
     SourceContext(SourceContext),
+    ExtendedInputSourcesToggle(bool),
     SpecialCharacterSelect(Option<&'static str>),
     SetRepeatKeysDelay(u32),
     SetRepeatKeysRate(u32),
@@ -79,6 +82,7 @@ pub struct Page {
     config: cosmic_config::Config,
     context: Option<Context>,
     input_source_search: String,
+    show_extended_input_sources: bool,
     xkb: XkbConfig,
     keyboard_layouts: SlotMap<DefaultKey, (Locale, Variant, Description)>,
     active_layouts: Vec<DefaultKey>,
@@ -96,10 +100,99 @@ impl Default for Page {
             active_layouts: Vec::new(),
             xkb: XkbConfig::default(),
             input_source_search: String::new(),
+            show_extended_input_sources: false,
             config,
-        }
     }
 }
+}
+
+fn update_keyboard_layouts(page: &mut Page) -> () {
+    page.xkb = super::get_config(&page.config, "xkb_config");
+    let layouts;
+    if page.show_extended_input_sources {
+        layouts = xkb_data::all_keyboard_layouts();
+    } else {
+        layouts = xkb_data::keyboard_layouts();
+    }
+    match layouts {
+        Ok(mut keyboard_layouts) => {
+            page.active_layouts.clear();
+            page.keyboard_layouts.clear();
+
+                let sorted_layouts = keyboard_layouts.layouts_mut();
+                sorted_layouts.sort_unstable_by(|a, b| {
+                    match (a.name(), b.name()) {
+                        // Place US at the top of the list as it's the default
+                        ("us", _) => cmp::Ordering::Less,
+                        (_, "us") => cmp::Ordering::Greater,
+                        // Place custom at the bottom
+                        ("custom", _) => cmp::Ordering::Greater,
+                        (_, "custom") => cmp::Ordering::Less,
+                        // Compare everything else by description because it looks nicer (e.g. all
+                        // English grouped together)
+                        _ => a
+                            .description()
+                            .partial_cmp(b.description())
+                            .expect(STR_ORDER),
+                    }
+                });
+
+                for layout in sorted_layouts {
+                    page.keyboard_layouts.insert((
+                        layout.name().to_owned(),
+                        String::new(),
+                        layout.description().to_owned(),
+                    ));
+
+                    if let Some(variants) = layout.variants().map(|variants| {
+                        variants.iter().map(|variant| {
+                            (
+                                layout.name().to_owned(),
+                                variant.name().to_owned(),
+                                variant.description().to_owned(),
+                            )
+                        })
+                    }) {
+                        let mut variants: Vec<_> = variants.collect();
+                        variants.sort_unstable_by(|(_, _, desc_a), (_, _, desc_b)| {
+                            desc_a.partial_cmp(desc_b).expect(STR_ORDER)
+                        });
+
+                        for (layout_name, name, description) in variants {
+                            page.keyboard_layouts
+                                .insert((layout_name, name, description));
+                        }
+                    }
+                }
+
+                // Xkb layouts currently enabled.
+                let layouts = if page.xkb.layout.is_empty() {
+                    "us"
+                } else {
+                    &page.xkb.layout
+                }
+                .split_terminator(',');
+
+                // Xkb variants for each layout. Repeat empty strings in case there's more layouts than variants.
+                let variants = page
+                    .xkb
+                    .variant
+                    .split_terminator(',')
+                    .chain(std::iter::repeat(""));
+
+                for (layout, variant) in layouts.zip(variants) {
+                    for (id, (xkb_layout, xkb_variant, _desc)) in &page.keyboard_layouts {
+                        if layout == xkb_layout && variant == xkb_variant {
+                            page.active_layouts.push(id);
+                        }
+                    }
+                }
+            }
+                    Err(why) => {
+                        tracing::error!(?why, "failed to get keyboard layouts");
+                    }
+                }
+            }
 
 enum Context {
     ShowInputSourcesContext,
@@ -270,89 +363,9 @@ impl page::Page<crate::pages::Message> for Page {
         _page: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Command<crate::pages::Message> {
-        self.xkb = super::get_config(&self.config, "xkb_config");
-        match xkb_data::keyboard_layouts() {
-            Ok(mut keyboard_layouts) => {
-                self.active_layouts.clear();
-                self.keyboard_layouts.clear();
-
-                let sorted_layouts = keyboard_layouts.layouts_mut();
-                sorted_layouts.sort_unstable_by(|a, b| {
-                    match (a.name(), b.name()) {
-                        // Place US at the top of the list as it's the default
-                        ("us", _) => cmp::Ordering::Less,
-                        (_, "us") => cmp::Ordering::Greater,
-                        // Place custom at the bottom
-                        ("custom", _) => cmp::Ordering::Greater,
-                        (_, "custom") => cmp::Ordering::Less,
-                        // Compare everything else by description because it looks nicer (e.g. all
-                        // English grouped together)
-                        _ => a
-                            .description()
-                            .partial_cmp(b.description())
-                            .expect(STR_ORDER),
-                    }
-                });
-
-                for layout in sorted_layouts {
-                    self.keyboard_layouts.insert((
-                        layout.name().to_owned(),
-                        String::new(),
-                        layout.description().to_owned(),
-                    ));
-
-                    if let Some(variants) = layout.variants().map(|variants| {
-                        variants.iter().map(|variant| {
-                            (
-                                layout.name().to_owned(),
-                                variant.name().to_owned(),
-                                variant.description().to_owned(),
-                            )
-                        })
-                    }) {
-                        let mut variants: Vec<_> = variants.collect();
-                        variants.sort_unstable_by(|(_, _, desc_a), (_, _, desc_b)| {
-                            desc_a.partial_cmp(desc_b).expect(STR_ORDER)
-                        });
-
-                        for (layout_name, name, description) in variants {
-                            self.keyboard_layouts
-                                .insert((layout_name, name, description));
-                        }
-                    }
-                }
-
-                // Xkb layouts currently enabled.
-                let layouts = if self.xkb.layout.is_empty() {
-                    "us"
-                } else {
-                    &self.xkb.layout
-                }
-                .split_terminator(',');
-
-                // Xkb variants for each layout. Repeat empty strings in case there's more layouts than variants.
-                let variants = self
-                    .xkb
-                    .variant
-                    .split_terminator(',')
-                    .chain(std::iter::repeat(""));
-
-                for (layout, variant) in layouts.zip(variants) {
-                    for (id, (xkb_layout, xkb_variant, _desc)) in &self.keyboard_layouts {
-                        if layout == xkb_layout && variant == xkb_variant {
-                            self.active_layouts.push(id);
-                        }
-                    }
-                }
-            }
-
-            Err(why) => {
-                tracing::error!(?why, "failed to get keyboard layouts");
-            }
-        }
-
+        update_keyboard_layouts(self);
         Command::none()
-    }
+}
 }
 
 impl Page {
@@ -360,6 +373,11 @@ impl Page {
         match message {
             Message::InputSourceSearch(search) => {
                 self.input_source_search = search;
+            }
+
+            Message::ExtendedInputSourcesToggle(enable) => {
+                self.show_extended_input_sources = enable;
+                update_keyboard_layouts(self);
             }
 
             Message::SourceAdd(id) => {
@@ -586,13 +604,27 @@ fn input_sources() -> Section<crate::pages::Message> {
             let add_input_source = widget::button::standard(fl!("keyboard-sources", "add"))
                 .on_press(Message::ShowInputSourcesContext);
 
+            let extended_inputs_toggler = toggler(
+                fl!("show-extended"),
+                page.show_extended_input_sources,
+                |enable| Message::ExtendedInputSourcesToggle(enable),
+            );
+
             widget::column::with_capacity(2)
                 .spacing(cosmic::theme::active().cosmic().space_xxs())
                 .push(section)
                 .push(
-                    widget::container(add_input_source)
-                        .width(Length::Fill)
-                        .align_x(iced::alignment::Horizontal::Right),
+                    widget::row()
+                        .push(
+                            widget::container(extended_inputs_toggler)
+                                .width(Length::FillPortion(1))
+                                .align_x(iced::alignment::Horizontal::Left),
+                        )
+                        .push(
+                            widget::container(add_input_source)
+                                .width(Length::FillPortion(3))
+                                .align_x(iced::alignment::Horizontal::Right),
+                        ),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Keyboard)

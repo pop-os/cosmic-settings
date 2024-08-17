@@ -340,6 +340,9 @@ keyboard-sources = Input Sources
     .remove = Remove
     .add = Add input source
 
+show-extended = Show extended input sources
+    .desc = Show Extended Input Sources
+
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
     .compose = Compose key
