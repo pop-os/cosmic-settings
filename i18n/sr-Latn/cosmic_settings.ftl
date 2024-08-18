@@ -4,14 +4,52 @@ unknown = Nepoznato
 
 number = { $number }
 
+## Networking: Wired
+
+wired = Žičana
+    .desc = Žičana konekcija, profili konekcije
+
+## Networking: Online Accounts
+
+online-accounts = Onlajn nalozi
+    .desc = Dodaj naloge, IMAP i SMTP, prijavljivanje za preduzeća
+
 ## Desktop
 
 desktop = Radna površina
 
+## Desktop: Wallpaper
+
+wallpaper = Pozadina
+    .change = Promeni sliku svakih
+    .desc = Pozadine radne površine, boje, i slajd-šou.
+    .fit = Skaliranje pozadine
+    .folder-dialog = Izaberite fasciklu za pozadine
+    .image-dialog = Izaberite sliku pozadine
+    .plural = Pozadine
+    .same = Ista pozadina na svim ekranima
+    .slide = Slajd-šou
+
+add-color = Dodaj boju
+add-image = Dodaj sliku
+all-displays = Svi ekrani
+colors = Boje
+dialog-add = Dodaj
+fill = Popuni
+fit-to-screen = Uklopi u ekran
+open-new-folder = Otvori novu fasciklu
+recent-folders = Nedavne fascikle
+
+x-minutes = { $number } min.
+x-hours = { $number ->
+    [1] 60 minuta
+    *[other] { $number } sat.
+}
+
 ## Desktop: Appearance
 
 appearance = Izgled
-    .desc = Boje detalja i promena COSMIC palete.
+    .desc = Boje detalja i promena palete.
 
 accent-color = Boja detalja
 app-background = Pozadina aplikacija ili prozora
@@ -32,8 +70,11 @@ rgb = RGB
 window-hint-accent = Boja nagoveštaja aktivnog prozora
 window-hint-accent-toggle = Koristi boju detalja iz teme kao nagoveštaj aktivnog prozora
 
-auto-switch = Automatsko menjanje režima
-    .desc = Svetli režim se uključuje pri izlasku, a tamni pri zalasku sunca
+auto-switch = Automatski prelaz između svetlog i tamnog režima
+    .sunrise = Prelazi na svetli režim pri izlasku sunca
+    .sunset = Prelazi na tamni režim pri zalasku sunca
+    .next-sunrise = Prelazi na svetli režim pri sledećem izlasku sunca
+    .next-sunset = Prelazi na tamni režim pri sledećem zalasku sunca
 
 container-background = Pozadina kontejnera
     .desc-detail = Boja pozadine kontejnera se koristi za bočnu traku za navigaciju, bočni meni, dijaloške okvire i druge slične vidžete. Podrazumevano, automatski se izvodi iz pozadine aplikacija ili prozora.
@@ -46,6 +87,14 @@ control-tint = Nijansa kontrolnih komponenti
 frosted = Efekat mat stakla na interfejsu sistema
     .desc = Primenjuje zamućenje pozadine na panel, dok, aplete, pokretač i biblioteku aplikacija.
 
+experimental-settings = Eksperimentalna podešavanja
+
+enable-export = Primeni ovu temu na GNOME aplikacije.
+    .desc = Automatsku promenu teme ne podržavaju sve aplikacije. Ne-COSMIC aplikacije će možda morati da se ponovo pokrenu nakon promene teme.
+
+icon-theme = Tema ikonica
+    .desc = Primenjuje drugačiji skup ikonica na aplikacije.
+
 text-tint = Nijansa teksta interfejsa
     .desc = Boja koja se koristi za dobijanje boja teksta interfejsa koje imaju dovoljan kontrast na različitim površinama.
 
@@ -56,78 +105,13 @@ style = Stil
 
 # interface density left out for now
 window-management = Upravljanje prozorima
-    .active-hint = Veličina nagoveštaja aktivnog prozora
+    .active-hint = Debljina nagoveštaja aktivnog prozora
     .gaps = Praznine oko složenih prozora
-
-## Desktop: Display
-
--requires-restart = Zahteva ponovno pokretanje
-
-color = Boja
-    .depth = Dubina boje
-    .profile = Profil boje
-    .sidebar = Profili boje
-    .temperature = Temperatura boje
-
-display = Ekrani
-    .desc = Upravljajte ekranima, prebacivanjem grafike i noćnim svetlom
-    .arrangement = Raspored ekrana
-    .arrangement-desc = Prevucite ekrane da biste ih preuredili.
-    .enable = Omogući ekran
-    .external = { $size } { $output } spoljašnji ekran
-    .laptop = { $size } ekran laptopa
-    .options = Opcije ekrana
-    .refresh-rate = Osvežavanje
-    .resolution = Rezolucija
-    .scale = Razmera
-
-mirroring = Preslikavanje
-    .id = Preslikavanje { $id }
-    .dont = Ne preslikavaj
-    .mirror = Preslikaj { $display }
-    .project = Projektuj na { $display ->
-        [all] sve ekrane
-        *[other] { $display }
-    }
-    .project-count = Projektovanje na još { $count} { $count ->
-        [1] ekran
-        *[other] ekrana
-    }
-
-night-light = Noćno svetlo
-    .auto = Automatsko (od zalaska do izlaska sunca)
-    .desc = Smanjite plavo svetlo toplijim bojama.
-
-orientation = Orijentacija
-
-scheduling = Planiranje
-    .manual = Ručni raspored
 
 ## Desktop: Notifications
 
 notifications = Obaveštenja
     .desc = Ne uznemiravaj, obaveštenja na zaključanom ekranu i podešavanja aplikacija.
-
-## Desktop: Options
-
-desktop-panel-options = Radna površina i panel
-    .desc = Uloga Super tastera, lepljivi uglovi, kontrola prozora.
-
-desktop-panels-and-applets = Paneli radne površine i apleti
-
-dock = Dok
-    .desc = Traka sa zakačenim aplikacijama.
-
-hot-corner = Lepljivi uglovi
-    .top-left-corner = Uključiti gornji levi lepljivi ugao za radne prostore
-
-top-panel = Gornji panel
-    .workspaces = Dugme za prikazivanje radnih prostora
-    .applications = Dugme za prikazivanje aplikacija
-
-window-controls = Kontrola prozora
-    .minimize = Prikaži dugme za minimizovanje
-    .maximize = Prikaži dugme za maksimizovanje
 
 ## Desktop: Panel
 
@@ -179,33 +163,24 @@ panel-missing = Nedostaje konfiguracija panela
     .desc = Konfiguraciona datoteka panela nedostaje zbog korišćenja prilagođene konfiguracije ili je oštećena.
     .fix = Vrati na podrazumevano
 
-## Desktop: Wallpaper
+## Desktop: Dock
 
-wallpaper = Pozadina
-    .change = Promeni sliku svakih
-    .desc = Pozadine radne površine, boje, i slajd-šou.
-    .fit = Skaliranje pozadine
-    .folder-dialog = Izaberite fasciklu za pozadine
-    .image-dialog = Izaberite sliku pozadine
-    .plural = Pozadine
-    .same = Ista pozadina na svim ekranima
-    .slide = Slajd-šou
+dock = Dok
+    .desc = Traka sa zakačenim aplikacijama i drugim apletima.
 
-add-color = Dodaj boju
-add-image = Dodaj sliku
-all-displays = Svi ekrani
-colors = Boje
-dialog-add = Dodaj
-fill = Popuni
-fit-to-screen = Uklopi u ekran
-open-new-folder = Otvori novu fasciklu
-recent-folders = Nedavne fascikle
+## Desktop: Window management
 
-x-minutes = { $number } min.
-x-hours = { $number ->
-    [1] 60 minuta
-    *[other] { $number } sat.
-}
+window-management = Upravljanje prozorima
+    .desc = Akcija Super tastera, opcije kontrole prozora, i dodatne opcije slaganja prozora.
+
+super-key = Super taster
+    .launcher = Otvori Pokretač
+    .workspaces = Otvori Radne prostore
+    .applications = Otvori Aplikacije
+
+window-controls = Kontrole prozora
+    .minimize = Prikaži dugme za minimizovanje
+    .maximize = Prikaži dugme za maksimizovanje
 
 ## Desktop: Workspaces
 
@@ -230,35 +205,62 @@ workspaces-orientation = Orijentacija radnih prostora
     .vertical = Vertikalni
     .horizontal = Horizontalni
 
-## Networking: Wired
+hot-corner = Lepljivi ugao
+    .top-left-corner = Omogući gornji levi lepljivi ugao za prikaz radnih prostora
 
-wired = Žičana
-    .desc = Žičana konekcija, profili konekcije
+## Displays
 
-## Networking: Online Accounts
+-requires-restart = Zahteva ponovno pokretanje
 
-online-accounts = Onlajn nalozi
-    .desc = Dodaj naloge, IMAP i SMTP, prijavljivanje za preduzeća
+color = Boja
+    .depth = Dubina boje
+    .profile = Profil boje
+    .sidebar = Profili boje
+    .temperature = Temperatura boje
 
-## Time & Language
+display = Ekrani
+    .desc = Upravljajte ekranima, prebacivanjem grafike i noćnim svetlom
+    .arrangement = Raspored ekrana
+    .arrangement-desc = Prevucite ekrane da biste ih preuredili.
+    .enable = Omogući ekran
+    .external = { $size } { $output } spoljašnji ekran
+    .laptop = { $size } ekran laptopa
+    .options = Opcije ekrana
+    .refresh-rate = Osvežavanje
+    .resolution = Rezolucija
+    .scale = Razmera
 
-time = Vreme i jezik
-    .desc = N/A
+mirroring = Preslikavanje
+    .id = Preslikavanje { $id }
+    .dont = Ne preslikavaj
+    .mirror = Preslikaj { $display }
+    .project = Projektuj na { $display ->
+        [all] sve ekrane
+        *[other] { $display }
+    }
+    .project-count = Projektovanje na još { $count} { $count ->
+        [1] ekran
+        *[other] ekrana
+    }
 
-time-date = Datum i vreme
-    .desc = Vremenska zona, automatsko podešavanje sata, format sata.
-    .auto = Podesi automatski
+night-light = Noćno svetlo
+    .auto = Automatsko (od zalaska do izlaska sunca)
+    .desc = Smanjite plavo svetlo toplijim bojama.
 
-time-zone = Vremenska zona
-    .auto = Automatska vremenska zona
-    .auto-info = Zahteva pristup lokaciji i internetu
+orientation = Orijentacija
+    .standard = Standardna
+    .rotate-90 = Rotirano 90
+    .rotate-180 = Rotirano 180
+    .rotate-270 = Rotirano 270
 
-time-format = Format datuma i vremena
-    .twenty-four = 24-časa
-    .first = Prvi dan nedelje
+scheduling = Raspored
+    .manual = Ručni raspored
 
-time-region = Region i jezik
-    .desc = Format datuma, vremena i brojeva dobijen na osnovu Vašeg regiona
+dialog = Dijalog
+    .title = Zadrži ova podešavanja ekrana?
+    .keep-changes = Zadrži promene
+    .change-prompt = Promene podešavanja će se automatski vratiti za { $time } s.
+    .revert-settings = Vrati podešavanja
 
 ## Sound
 
@@ -283,6 +285,262 @@ sound-alerts = Upozorenja
 
 sound-applications = Aplikacije
     .desc = Jačina zvuka aplikacija i podešavanja
+
+profile = Profil
+
+## Power
+
+power = Napajanje i baterija
+    .desc = Upravljajte postavkama napajanja.
+
+power-mode = Režim napajanja
+    .battery = Produženo trajanje baterije
+    .battery-desc = Smanjena potrošnja energije i tihe performanse.
+    .balanced = Balansirano
+    .balanced-desc = Tihe performanse i umerena potrošnja energije.
+    .performance = Visoke performanse
+    .performance-desc = Najveće performanse i potrošnja energije.
+    .nobackend = Podsistem nije pronađen. Instalirajte system76-power ili power-profiles-daemon.
+
+## Input
+
+acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
+
+disable-while-typing = Onemogući tokom kucanja
+
+input-devices = Unos
+    .desc = Unos
+
+primary-button = Primarno dugme
+    .left = Levo
+    .right = Desno
+
+scrolling = Pomeranje
+    .two-finger = Pomeranje sa dva prsta
+    .edge = Pomeranje uz ivicu sa jednim prstom
+    .speed = Brzina pomeranja
+    .natural = Prirodno pomeranje
+    .natural-desc = Okretanje točka pomera sadržaj umesto prikaza
+
+## Input: Keyboard
+
+slow = Sporo
+fast = Brzo
+short = Kratko
+long = Dugo
+keyboard = Tastatura
+    .desc = Jezik unosa, unos specijalnih karaktera, prečice.
+
+keyboard-sources = Jezik unosa
+    .desc = Jezik unosa se može menjati pomoću kombinacije tastera Super+Space. Ovo ponašanje se može promeniti u podešavanjima prečica na tastaturi.
+    .move-up = Pomeri gore
+    .move-down = Pomeri dole
+    .settings = Podešavanja
+    .view-layout = Pogledaj raspored tastature
+    .remove = Ukloni
+    .add = Dodaj jezik unosa
+
+keyboard-special-char = Unošenje specijalnih znakova
+    .alternate = Taster za alternativne znakove
+    .compose = Compose taster
+
+keyboard-typing-assist = Kucanje
+    .repeat-rate = Stopa ponavljanja
+    .repeat-delay = Kašnjenje ponavljanja
+
+added = Dodato
+type-to-search = Kucajte za pretragu...
+
+## Input: Keyboard: Shortcuts
+
+keyboard-shortcuts = Prečice na tastaturi
+    .desc = Pregledajte i prilagodite prečice
+
+add-keybinding = Dodaj
+cancel = Poništi
+command = Komanda
+custom = Prilagođene
+debug = Debaguj
+disabled = Onemogućeno
+migrate-workspace-prev = Premesti radni prostor na prethodni ekran
+migrate-workspace-next = Premesti radni prostor na sledeći ekran
+migrate-workspace = Premesti radni prostor na ekran { $direction ->
+    *[down] dole
+    [left] levo
+    [right] desno
+    [up] gore
+}
+navigate = Navigacija
+replace = Zameni
+shortcut-name = Ime prečice
+system-controls = Kontrole sistema
+terminate = Prekini
+toggle-stacking = Uključi grupisanje prozora
+type-key-combination = Ukucajte kombinaciju tastera
+
+custom-shortcuts = Prilagođene prečice
+    .add = Dodaj prečicu
+    .context = Dodaj prilagođenu prečicu
+    .none = Nema prilagođenih prečica
+
+modified = { $count } modifikovan.
+
+nav-shortcuts = Navigacija
+    .prev-output = Fokusiraj prethodni ekran
+    .next-output = Fokusiraj sledeći ekran
+    .last-workspace = Fokusiraj prošli radni prostor
+    .prev-workspace = Fokusiraj prethodni radni prostor
+    .next-workspace = Fokusiraj sledeći radni prostor
+    .focus = Fokusiraj prozor { $direction ->
+        *[down] dole
+        [in] unutra
+        [left] levo
+        [out] spolja
+        [right] desno
+        [up] gore
+    }
+    .output = Prebaci se na ekran { $direction ->
+        *[down] dole
+        [left] levo
+        [right] desno
+        [up] gore
+    }
+    .workspace = Prebaci se na radni prostor { $num }
+
+manage-windows = Upravljanje prozorima
+    .close = Zatvori prozor
+    .maximize = Maksimizuj prozor
+    .minimize = Minimizuj prozor
+    .resize-inwards = Smanji prozor
+    .resize-outwards = Povećaj prozor
+    .toggle-sticky = Uključi lepljivi prozor
+
+move-windows = Pomeranje prozora
+    .direction = Pomeri prozor { $direction ->
+        *[down] dole
+        [left] levo
+        [right] desno
+        [up] gore
+    }
+    .display = Pomeri prozor za jedan monitor { $direction ->
+        *[down] dole
+        [left] levo
+        [right] desno
+        [up] gore
+    }
+    .workspace = Pomeri prozor za jedan radni prostor { $direction ->
+        *[below] ispod
+        [left] levo
+        [right] desno
+        [above] iznad
+    }
+    .workspace-num = Pomeri prozor na radni prostor { $num }
+    .prev-workspace = Pomeri prozor na prethodni radni prostor
+    .next-workspace = Pomeri prozor na sledeći radni prostor
+    .last-workspace = Pomeri prozor na prošli radni prostor
+    .next-display = Pomeri prozor na sledeći ekran
+    .prev-display = Pomeri prozor na prethodni ekran
+    .send-to-prev-workspace = Pošalji prozor na prethodni radni prostor
+    .send-to-next-workspace = Pošalji prozor na sledeći radni prostor
+
+system-shortcut = Sistem
+    .app-library = Otvori biblioteku aplikacija
+    .brightness-down = Smanji osvetljenost ekrana
+    .brightness-up = Povećaj osvetljenost ekrana
+    .home-folder = Otvori početnu fasciklu
+    .keyboard-brightness-down = Smanji osvetljenost tastature
+    .keyboard-brightness-up = Povećaj osvetljenost tastature
+    .launcher = Otvori pokretač
+    .lock-screen = Zaključaj ekran
+    .mute = Isključi audio izlaz
+    .mute-mic = Isključi ulaz mikrofona
+    .play-pause = Pusti/Pauziraj
+    .play-next = Sledeća numera
+    .play-prev = Prethodna numera
+    .screenshot = Napravi snimak ekrana
+    .terminal = Otvori terminal
+    .volume-lower = Smanji jačinu audio izlaza
+    .volume-raise = Povećaj jačinu audio izlaza
+    .web-browser = Otvori veb pretraživač
+    .window-switcher = Prebacivanje između otvorenih prozora
+    .workspace-overview = Otvori pregled radnih prostora
+
+window-tiling = Slaganje prozora
+    .horizontal = Podesi horizontalnu orijentaciju
+    .vertical = Podesi vertikalnu orijentaciju
+    .swap-window = Zameni prozor
+    .toggle-tiling = Uključi slaganje prozora
+    .toggle-stacking = Uključi grupisanje prozora
+    .toggle-floating = Uključi plutajući prozor
+    .toggle-orientation = Promeni orijentaciju
+
+replace-shortcut-dialog = Zameni prečicu?
+    .desc = { $shortcut } se koristi od strane { $name }. Ako je zamenite, { $name } će biti onemogućeno.
+
+## Input: Mouse
+
+mouse = Miš
+    .desc = Brzina miša, ubrzanje, prirodno pomeranje.
+    .speed = Brzina miša
+    .acceleration = Omogući ubrzanje miša
+
+## Input: Touchpad
+
+click-behavior = Ponašanje klika
+    .click-finger = Sekundarni klik sa dva prsta i srednji klik sa tri prsta
+    .button-areas = Sekundarni klik u donjem desnom uglu i srednji klik u donjem centru
+
+pinch-to-zoom = Stisnite prste za zumiranje
+    .desc = Koristite dva prsta za zumiranje sadržaja, za aplikacije koje podržavaju zumiranje.
+
+tap-to-click = Dodir za klik
+    .desc = Omogućava dodir jednim prstom za primarni klik, dva prsta za sekundarni klik i tri prsta za srednji klik.
+
+touchpad = Dodirna tabla
+    .desc = Brzina dodirne table, opcije klika, pokreti.
+    .speed = Brzina dodirne table
+    .acceleration = Omogući ubrzanje dodirne table
+
+## Input: Gestures
+
+swiping = Pokreti
+    .four-finger-down = Prevucite prema dole sa četiri prsta
+    .four-finger-left = Prevucite prema levo sa četiri prsta
+    .four-finger-right = Prevucite prema desno sa četiri prsta
+    .four-finger-up = Prevucite prema gore sa četiri prsta
+    .three-finger-any = Prevucite sa tri prsta u bilo kom smeru
+
+switch-between-windows = Prebacivanje između prozora
+switch-to-next-workspace = Pređi na sledeći radni prostor
+switch-to-prev-workspace = Pređi na prethodni radni prostor
+open-application-library = Otvori biblioteku aplikacija
+open-workspaces-view = Otvori pregled radnih prostora
+
+## Time & Language
+
+time = Vreme i jezik
+    .desc = N/A
+
+time-date = Datum i vreme
+    .desc = Vremenska zona, automatsko podešavanje sata, format vremena.
+    .auto = Podesi automatski
+    .auto-ntp = Datum i vreme će se automatski ažurirati kada se podesi vremenska zona.
+
+time-zone = Vremenska zona
+    .auto = Automatska vremenska zona
+    .auto-info = Zahteva pristup lokaciji i internetu
+
+time-format = Format datuma i vremena
+    .twenty-four = 24-časa
+    .first = Prvi dan nedelje
+    .show-date = Prikaži datum na panelu
+    .friday = Petak
+    .saturday = Subota
+    .sunday = Nedelja
+    .monday = Ponedeljak
+
+time-region = Region i jezik
+    .desc = Format datuma, vremena i brojeva dobijen na osnovu regiona
 
 ## System
 
@@ -321,78 +579,3 @@ firmware = Firmver
 
 users = Korisnici
     .desc = Autentifikacija i prijavljivanje, zaključan ekran.
-
-## Input
-
-acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
-
-disable-while-typing = Onemogući tokom kucanja
-
-input-devices = Unos
-    .desc = Unos
-
-primary-button = Primarno dugme
-    .left = Levo
-    .right = Desno
-
-scrolling = Pomeranje
-    .speed = Brzina pomeranja
-    .natural = Prirodno pomeranje
-    .natural-desc = Okretanje točka pomera sadržaj umesto prikaza.
-
-## Input: Keyboard
-
-keyboard = Tastatura
-    .desc = Unos sa tastature
-
-keyboard-sources = Jezik unosa
-    .desc = Jezik unosa se može menjati pomoću kombinacije tastera Super+Space. Ovo ponašanje se može promeniti u podešavanjima prečica na tastaturi.
-    .move-up = Pomeri gore
-    .move-down = Pomeri dole
-    .settings = Podešavanja
-    .view-layout = Pogledaj raspored tastature
-    .remove = Ukloni
-
-keyboard-special-char = Unošenje specijalnih znakova
-    .alternate = Taster za alternativne znakove
-    .compose = Compose taster
-
-## Input: Keyboard: Shortcuts
-
-keyboard-shortcuts = Prečice na tastaturi
-    .desc = Pregledajte i prilagodite prečice
-
-## Input: Mouse
-
-mouse = Miš
-    .desc = Brzina miša, ubrzanje, prirodno pomeranje.
-    .speed = Brzina miša
-    .acceleration = Omogući ubrzanje miša
-
-## Input: Touchpad
-
-pinch-to-zoom = Stisnite prste za zumiranje
-    .desc = Koristite dva prsta za zumiranje sadržaja, za aplikacije koje podržavaju zumiranje.
-
-tap-to-click = Dodir za klik
-    .desc = Omogućava dodir jednim prstom za primarni klik, dva prsta za sekundarni klik i tri prsta za srednji klik.
-
-touchpad = Dodirna tabla
-    .desc = Brzina dodirne table, opcije klika, pokreti.
-    .speed = Brzina dodirne table
-    .acceleration = Omogući ubrzanje dodirne table
-
-## Input: Gestures
-
-swiping = Pokreti
-    .four-finger-down = Prevucite prema dole sa četiri prsta
-    .four-finger-left = Prevucite prema levo sa četiri prsta
-    .four-finger-right = Prevucite prema desno sa četiri prsta
-    .four-finger-up = Prevucite prema gore sa četiri prsta
-    .three-finger-any = Prevucite sa tri prsta u bilo kom smeru
-
-switch-between-windows = Prebacivanje između prozora
-switch-to-next-workspace = Pređi na sledeći radni prostor
-switch-to-prev-workspace = Pređi na prethodni radni prostor
-open-application-library = Otvori biblioteku aplikacija
-open-workspaces-view = Otvori pregled radnih prostora
