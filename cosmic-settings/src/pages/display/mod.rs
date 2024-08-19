@@ -15,9 +15,14 @@ use cosmic::widget::{
 use cosmic::{command, Apply, Command, Element};
 use cosmic_randr_shell::{List, Output, OutputKey, Transform};
 use cosmic_settings_page::{self as page, section, Section};
+use once_cell::sync::Lazy;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
 use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
+
+static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
+static DPI_SCALE_LABELS: Lazy<Vec<String>> =
+    Lazy::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
 
 /// Display color depth options
 #[derive(Clone, Copy, Debug)]
@@ -585,21 +590,12 @@ impl Page {
         self.cache.resolution_selected = None;
         self.cache.refresh_rate_selected = None;
 
-        self.cache.scale_selected = Some(if self.config.scale < 75 {
-            0
-        } else if self.config.scale < 100 {
-            1
-        } else if self.config.scale < 125 {
-            2
-        } else if self.config.scale < 150 {
-            3
-        } else if self.config.scale < 175 {
-            4
-        } else if self.config.scale < 200 {
-            5
-        } else {
-            6
-        });
+        self.cache.scale_selected = Some(
+            DPI_SCALES
+                .iter()
+                .position(|scale| self.config.scale <= *scale)
+                .unwrap_or(DPI_SCALES.len() - 1),
+        );
 
         if let Some(current_mode_id) = output.current {
             for (mode_id, mode) in output
@@ -1041,11 +1037,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     ))
                     .add(widget::settings::item(
                         &descriptions[scale],
-                        dropdown(
-                            &["50%", "75%", "100%", "125%", "150%", "175%", "200%"],
-                            page.cache.scale_selected,
-                            Message::Scale,
-                        ),
+                        dropdown(&DPI_SCALE_LABELS, page.cache.scale_selected, Message::Scale),
                     ))
                     .add(widget::settings::item(
                         &descriptions[orientation],
