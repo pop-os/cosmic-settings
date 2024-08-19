@@ -532,6 +532,7 @@ time-zone = Time Zone
 
 time-format = Date & Time Format
     .twenty-four = 24-hour time
+    .show-seconds = Show seconds
     .first = First day of week
     .show-date = Show Date on Top Panel
     .friday = Friday

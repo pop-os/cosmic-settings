@@ -38,6 +38,7 @@ pub struct Page {
     cosmic_applet_config: cosmic_config::Config,
     first_day_of_week: usize,
     military_time: bool,
+    show_seconds: bool,
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
     timezone_context: bool,
@@ -58,6 +59,16 @@ impl Default for Page {
             .unwrap_or_else(|err| {
                 if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
                     error!(?err, "Failed to read config 'military_time'");
+                }
+
+                false
+            });
+
+        let show_seconds = cosmic_applet_config
+            .get("show_seconds")
+            .unwrap_or_else(|err| {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                    error!(?err, "Failed to read config 'show_seconds'");
                 }
 
                 false
@@ -89,6 +100,7 @@ impl Default for Page {
             formatted_date: String::new(),
             local_time: None,
             military_time,
+            show_seconds,
             ntp_enabled: false,
             show_date_in_top_panel,
             timezone: None,
@@ -178,6 +190,15 @@ impl Page {
 
                 if let Err(err) = self.cosmic_applet_config.set("military_time", enable) {
                     error!(?err, "Failed to set config 'military_time'");
+                }
+            }
+
+            Message::ShowSeconds(enable) => {
+                self.show_seconds = enable;
+                self.update_local_time();
+
+                if let Err(err) = self.cosmic_applet_config.set("show_seconds", enable) {
+                    error!(?err, "Failed to set config 'show_seconds'");
                 }
             }
 
@@ -322,7 +343,7 @@ impl Page {
         self.local_time = Some(update_local_time());
 
         self.formatted_date = match self.local_time {
-            Some(ref time) => format_date(time, self.military_time),
+            Some(ref time) => format_date(time, self.military_time, self.show_seconds),
             None => fl!("unknown"),
         }
     }
@@ -332,6 +353,7 @@ impl Page {
 pub enum Message {
     Error(String),
     MilitaryTime(bool),
+    ShowSeconds(bool),
     None,
     FirstDayOfWeek(usize),
     Refresh(Info),
@@ -369,6 +391,7 @@ fn format() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
     let military = descriptions.insert(fl!("time-format", "twenty-four"));
+    let show_seconds = descriptions.insert(fl!("time-format", "show-seconds"));
     let first = descriptions.insert(fl!("time-format", "first"));
     let show_date = descriptions.insert(fl!("time-format", "show-date"));
 
@@ -381,6 +404,11 @@ fn format() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&section.descriptions[military])
                         .toggler(page.military_time, Message::MilitaryTime),
+                )
+                // Show seconds in time format
+                .add(
+                    settings::item::builder(&section.descriptions[show_seconds])
+                        .toggler(page.show_seconds, Message::ShowSeconds),
                 )
                 // First day of week
                 .add(
@@ -460,7 +488,7 @@ fn locale() -> Result<Locale, Box<dyn std::error::Error>> {
     Ok(locale)
 }
 
-fn format_date(date: &DateTime<Iso>, military: bool) -> String {
+fn format_date(date: &DateTime<Iso>, military: bool, show_seconds: bool) -> String {
     let Ok(locale) = locale() else {
         return String::new();
     };
@@ -472,6 +500,7 @@ fn format_date(date: &DateTime<Iso>, military: bool) -> String {
     bag.month = Some(icu::datetime::options::components::Month::Long);
     bag.hour = Some(icu::datetime::options::components::Numeric::Numeric);
     bag.minute = Some(icu::datetime::options::components::Numeric::Numeric);
+    bag.second = show_seconds.then_some(icu::datetime::options::components::Numeric::Numeric);
     bag.preferences = Some(icu::datetime::options::preferences::Bag::from_hour_cycle(
         if military {
             icu::datetime::options::preferences::HourCycle::H23
