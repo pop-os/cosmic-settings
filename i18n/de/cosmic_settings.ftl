@@ -339,6 +339,7 @@ keyboard-sources = Eingabequellen
     .view-layout = Tastaturbelegung anzeigen
     .remove = Entfernen
     .add = Eingabequelle hinzufügen
+    .show-extended = Erweiterte Eingabequellen anzeigen
 
 keyboard-special-char = Eingabe von Sonderzeichen
     .alternate = Taste für alternative Zeichen

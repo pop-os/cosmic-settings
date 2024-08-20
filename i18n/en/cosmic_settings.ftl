@@ -339,9 +339,7 @@ keyboard-sources = Input Sources
     .view-layout = View keyboard layout
     .remove = Remove
     .add = Add input source
-
-show-extended = Show extended input sources
-    .desc = Show Extended Input Sources
+    .show-extended = Show extended input sources
 
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key

@@ -605,7 +605,7 @@ fn input_sources() -> Section<crate::pages::Message> {
                 .on_press(Message::ShowInputSourcesContext);
 
             let extended_inputs_toggler = toggler(
-                fl!("show-extended"),
+                fl!("keyboard-sources", "show-extended"),
                 page.show_extended_input_sources,
                 |enable| Message::ExtendedInputSourcesToggle(enable),
             );
