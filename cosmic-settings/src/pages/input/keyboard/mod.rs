@@ -7,9 +7,7 @@ use cosmic::{
     iced::{self, Length},
     iced_core::Border,
     iced_style, theme,
-    widget::{
-        self, button, container, icon, menu::ItemHeight, radio, row, settings, toggler, ListColumn,
-    },
+    widget::{self, button, container, icon, radio, row, settings, toggler, ListColumn},
     Apply, Command, Element,
 };
 use cosmic_comp_config::XkbConfig;
@@ -102,13 +100,19 @@ impl Default for Page {
             input_source_search: String::new(),
             show_extended_input_sources: false,
             config,
+        }
     }
-}
 }
 
 fn update_keyboard_layouts(page: &mut Page) -> () {
     page.xkb = super::get_config(&page.config, "xkb_config");
-    let layouts;
+    page.active_layouts.clear();
+    page.keyboard_layouts.clear();
+    let layouts: Result<xkb_data::KeyboardLayouts, std::io::Error>;
+    tracing::info!(
+        "show_extended_input_sources: {}",
+        page.show_extended_input_sources
+    );
     if page.show_extended_input_sources {
         layouts = xkb_data::all_keyboard_layouts();
     } else {
@@ -116,83 +120,80 @@ fn update_keyboard_layouts(page: &mut Page) -> () {
     }
     match layouts {
         Ok(mut keyboard_layouts) => {
-            page.active_layouts.clear();
-            page.keyboard_layouts.clear();
-
-                let sorted_layouts = keyboard_layouts.layouts_mut();
-                sorted_layouts.sort_unstable_by(|a, b| {
-                    match (a.name(), b.name()) {
-                        // Place US at the top of the list as it's the default
-                        ("us", _) => cmp::Ordering::Less,
-                        (_, "us") => cmp::Ordering::Greater,
-                        // Place custom at the bottom
-                        ("custom", _) => cmp::Ordering::Greater,
-                        (_, "custom") => cmp::Ordering::Less,
-                        // Compare everything else by description because it looks nicer (e.g. all
-                        // English grouped together)
-                        _ => a
-                            .description()
-                            .partial_cmp(b.description())
-                            .expect(STR_ORDER),
-                    }
-                });
-
-                for layout in sorted_layouts {
-                    page.keyboard_layouts.insert((
-                        layout.name().to_owned(),
-                        String::new(),
-                        layout.description().to_owned(),
-                    ));
-
-                    if let Some(variants) = layout.variants().map(|variants| {
-                        variants.iter().map(|variant| {
-                            (
-                                layout.name().to_owned(),
-                                variant.name().to_owned(),
-                                variant.description().to_owned(),
-                            )
-                        })
-                    }) {
-                        let mut variants: Vec<_> = variants.collect();
-                        variants.sort_unstable_by(|(_, _, desc_a), (_, _, desc_b)| {
-                            desc_a.partial_cmp(desc_b).expect(STR_ORDER)
-                        });
-
-                        for (layout_name, name, description) in variants {
-                            page.keyboard_layouts
-                                .insert((layout_name, name, description));
-                        }
-                    }
+            let sorted_layouts = keyboard_layouts.layouts_mut();
+            sorted_layouts.sort_unstable_by(|a, b| {
+                match (a.name(), b.name()) {
+                    // Place US at the top of the list as it's the default
+                    ("us", _) => cmp::Ordering::Less,
+                    (_, "us") => cmp::Ordering::Greater,
+                    // Place custom at the bottom
+                    ("custom", _) => cmp::Ordering::Greater,
+                    (_, "custom") => cmp::Ordering::Less,
+                    // Compare everything else by description because it looks nicer (e.g. all
+                    // English grouped together)
+                    _ => a
+                        .description()
+                        .partial_cmp(b.description())
+                        .expect(STR_ORDER),
                 }
+            });
 
-                // Xkb layouts currently enabled.
-                let layouts = if page.xkb.layout.is_empty() {
-                    "us"
-                } else {
-                    &page.xkb.layout
-                }
-                .split_terminator(',');
+            for layout in sorted_layouts {
+                page.keyboard_layouts.insert((
+                    layout.name().to_owned(),
+                    String::new(),
+                    layout.description().to_owned(),
+                ));
 
-                // Xkb variants for each layout. Repeat empty strings in case there's more layouts than variants.
-                let variants = page
-                    .xkb
-                    .variant
-                    .split_terminator(',')
-                    .chain(std::iter::repeat(""));
+                if let Some(variants) = layout.variants().map(|variants| {
+                    variants.iter().map(|variant| {
+                        (
+                            layout.name().to_owned(),
+                            variant.name().to_owned(),
+                            variant.description().to_owned(),
+                        )
+                    })
+                }) {
+                    let mut variants: Vec<_> = variants.collect();
+                    variants.sort_unstable_by(|(_, _, desc_a), (_, _, desc_b)| {
+                        desc_a.partial_cmp(desc_b).expect(STR_ORDER)
+                    });
 
-                for (layout, variant) in layouts.zip(variants) {
-                    for (id, (xkb_layout, xkb_variant, _desc)) in &page.keyboard_layouts {
-                        if layout == xkb_layout && variant == xkb_variant {
-                            page.active_layouts.push(id);
-                        }
+                    for (layout_name, name, description) in variants {
+                        page.keyboard_layouts
+                            .insert((layout_name, name, description));
                     }
                 }
             }
-                    Err(why) => {
-                        tracing::error!(?why, "failed to get keyboard layouts");
+
+            // Xkb layouts currently enabled.
+            let layouts = if page.xkb.layout.is_empty() {
+                "us"
+            } else {
+                &page.xkb.layout
+            }
+            .split_terminator(',');
+
+            // Xkb variants for each layout. Repeat empty strings in case there's more layouts than variants.
+            let variants = page
+                .xkb
+                .variant
+                .split_terminator(',')
+                .chain(std::iter::repeat(""));
+
+            for (layout, variant) in layouts.zip(variants) {
+                for (id, (xkb_layout, xkb_variant, _desc)) in &page.keyboard_layouts {
+                    if layout == xkb_layout && variant == xkb_variant {
+                        page.active_layouts.push(id);
                     }
                 }
             }
+        }
+        Err(why) => {
+            tracing::error!(?why, "failed to get keyboard layouts");
+        }
+    }
+}
 
 enum Context {
     ShowInputSourcesContext,
@@ -365,7 +366,7 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Command<crate::pages::Message> {
         update_keyboard_layouts(self);
         Command::none()
-}
+    }
 }
 
 impl Page {
