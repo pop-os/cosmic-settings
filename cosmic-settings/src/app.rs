@@ -11,7 +11,7 @@ use crate::pages::desktop::{
     },
 };
 use crate::pages::input::{self};
-use crate::pages::{self, display, power, sound, system, time};
+use crate::pages::{self, display, networking, power, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
@@ -77,10 +77,13 @@ impl SettingsApp {
             PageCommands::Time => self.pages.page_id::<time::Page>(),
             PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
             PageCommands::Users => self.pages.page_id::<system::users::Page>(),
+            PageCommands::Vpn => self.pages.page_id::<networking::vpn::Page>(),
             PageCommands::Wallpaper => self.pages.page_id::<desktop::wallpaper::Page>(),
             PageCommands::WindowManagement => {
                 self.pages.page_id::<desktop::window_management::Page>()
             }
+            PageCommands::Wired => self.pages.page_id::<networking::wired::Page>(),
+            PageCommands::Wireless => self.pages.page_id::<networking::wifi::Page>(),
             PageCommands::Workspaces => self.pages.page_id::<desktop::workspaces::Page>(),
         }
     }
@@ -141,6 +144,7 @@ impl cosmic::Application for SettingsApp {
             search_selections: Vec::default(),
         };
 
+        app.insert_page::<networking::Page>();
         let desktop_id = app.insert_page::<desktop::Page>().id();
         app.insert_page::<display::Page>();
         app.insert_page::<sound::Page>();
@@ -452,8 +456,26 @@ impl cosmic::Application for SettingsApp {
                     page::update!(self.pages, message, power::Page);
                 }
 
+                crate::pages::Message::Vpn(message) => {
+                    if let Some(page) = self.pages.page_mut::<networking::vpn::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::WiFi(message) => {
+                    if let Some(page) = self.pages.page_mut::<networking::wifi::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 crate::pages::Message::WindowManagement(message) => {
                     page::update!(self.pages, message, desktop::window_management::Page);
+                }
+
+                crate::pages::Message::Wired(message) => {
+                    if let Some(page) = self.pages.page_mut::<networking::wired::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
                 }
             },
 
@@ -730,7 +752,7 @@ impl SettingsApp {
             custom_header.map(Message::from)
         } else if let Some(parent) = page_info.parent {
             let page_header = crate::widget::sub_page_header(
-                page_info.title.as_str(),
+                page.title().unwrap_or_else(|| page_info.title.as_str()),
                 self.pages.info[parent].title.as_str(),
                 Message::Page(parent),
             );

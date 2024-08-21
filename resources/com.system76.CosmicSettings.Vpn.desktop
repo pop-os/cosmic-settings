@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=VPN
+Comment=VPN connections and connection profiles.
+Type=Settings
+Exec=cosmic-settings vpn
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-vpn
+StartupNotify=true

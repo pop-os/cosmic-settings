@@ -14,6 +14,7 @@ color-eyre = "0.6.3"
 cosmic-bg-config.workspace = true
 cosmic-comp-config.workspace = true
 cosmic-config.workspace = true
+cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 cosmic-panel-config.workspace = true
 cosmic-randr-shell.workspace = true
 cosmic-randr.workspace = true
@@ -58,7 +59,9 @@ zbus = { version = "4.4.0", features = ["tokio"] }
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
-features = ["pipewire", "pulse"]
+branch = "network"
+# path = "../../cosmic-settings-subscriptions"
+features = ["network_manager", "pipewire", "pulse"]
 
 [dependencies.icu]
 version = "1.5.0"

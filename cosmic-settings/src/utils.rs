@@ -46,3 +46,15 @@ pub fn forward_event_loop<M: 'static + Send, T: Future<Output = ()> + Send + 'st
 
     cancel_tx
 }
+
+/// Creates a slab with predefined items
+#[macro_export]
+macro_rules! slab {
+    ( $descriptions:ident { $( $txt_id:ident = $txt_expr:expr; )+ } ) => {
+        let mut $descriptions = Slab::new();
+
+        $(
+            let $txt_id = $descriptions.insert($txt_expr);
+        )+
+    }
+}

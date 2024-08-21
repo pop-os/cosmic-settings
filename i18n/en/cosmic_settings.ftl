@@ -4,10 +4,41 @@ unknown = Unknown
 
 number = { $number }
 
-## Networking: Wired
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] Wired
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Unknown
+} connections and connection profiles.
+
+add-network = Add network
+add-vpn = Add VPN
+airplane-on = Airplane mode is on.
+cable-unplugged = Cable unplugged
+connect = Connect
+connected = Connected
+connecting = Connecting…
+disconnect = Disconnect
+known-networks = Known Networks
+network-and-wireless = Network & Wireless
+no-networks = No networks have been found.
+settings = Settings
+visible-networks = Visible Networks
+
+vpn = VPN
+    .connections = VPN Connections
+    .remove = Remove connection profile
+    .select-file = Select a VPN configuration file
 
 wired = Wired
-    .desc = Wired connections and connection profiles
+    .connections = Wired Connections
+    .devices = Wired Devices
+    .remove = Remove connection profile
+
+wifi = Wi-Fi
+    .forget = Forget this network
 
 ## Networking: Online Accounts
 

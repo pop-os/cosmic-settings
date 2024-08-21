@@ -24,18 +24,11 @@ use cosmic::{
     },
 };
 use cosmic::{
-    iced::{wayland::actions::window::SctkWindowSettings, window, Color, Length},
+    iced::{Color, Length},
     prelude::CollectionWidget,
 };
-use cosmic::{
-    iced_core::Alignment,
-    iced_sctk::commands::window::{close_window, get_window},
-    widget::icon,
-};
-use cosmic::{
-    iced_core::{alignment, layout},
-    iced_runtime::core::image::Handle as ImageHandle,
-};
+use cosmic::{iced_core::alignment, iced_runtime::core::image::Handle as ImageHandle};
+use cosmic::{iced_core::Alignment, widget::icon};
 use cosmic::{
     widget::{color_picker::ColorPickerUpdate, ColorPickerModel},
     Element,

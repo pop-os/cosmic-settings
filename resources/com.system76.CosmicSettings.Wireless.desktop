@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Wi-Fi
+Comment=Wi-Fi connections and connection profiles.
+Type=Settings
+Exec=cosmic-settings wireless
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-wireless
+StartupNotify=true

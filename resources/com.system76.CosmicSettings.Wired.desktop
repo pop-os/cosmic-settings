@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Wired
+Comment=Wired connections and connection profiles.
+Type=Settings
+Exec=cosmic-settings wired
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-wired
+StartupNotify=true

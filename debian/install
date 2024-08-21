@@ -19,8 +19,11 @@
 /usr/share/applications/com.system76.CosmicSettings.Time.desktop
 /usr/share/applications/com.system76.CosmicSettings.Touchpad.desktop
 /usr/share/applications/com.system76.CosmicSettings.Users.desktop
+/usr/share/applications/com.system76.CosmicSettings.Vpn.desktop
 /usr/share/applications/com.system76.CosmicSettings.Wallpaper.desktop
 /usr/share/applications/com.system76.CosmicSettings.WindowManagement.desktop
+/usr/share/applications/com.system76.CosmicSettings.Wired.desktop
+/usr/share/applications/com.system76.CosmicSettings.Wireless.desktop
 /usr/share/applications/com.system76.CosmicSettings.Workspaces.desktop
 /usr/share/metainfo/com.system76.CosmicSettings.metainfo.xml
 /usr/share/polkit-1/rules.d/cosmic-settings.rules

@@ -44,8 +44,11 @@ entry-system := appid + '.System.desktop'
 entry-time := appid + '.Time.desktop'
 entry-touchpad := appid + '.Touchpad.desktop'
 entry-users := appid + '.Users.desktop'
+entry-vpn := appid + '.Vpn.desktop'
 entry-wallpaper := appid + '.Wallpaper.desktop'
 entry-window-management := appid + '.WindowManagement.desktop'
+entry-wired := appid + '.Wired.desktop'
+entry-wireless := appid + '.Wireless.desktop'
 entry-workspaces := appid + '.Workspaces.desktop'
 
 # Build recipes
@@ -74,8 +77,11 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-time}}' '{{appdir}}/{{entry-time}}'
     install -Dm0644 'resources/{{entry-touchpad}}' '{{appdir}}/{{entry-touchpad}}'
     install -Dm0644 'resources/{{entry-users}}' '{{appdir}}/{{entry-users}}'
+    install -Dm0644 'resources/{{entry-vpn}}' '{{appdir}}/{{entry-vpn}}'
     install -Dm0644 'resources/{{entry-wallpaper}}' '{{appdir}}/{{entry-wallpaper}}'
     install -Dm0644 'resources/{{entry-window-management}}' '{{appdir}}/{{entry-window-management}}'
+    install -Dm0644 'resources/{{entry-wired}}' '{{appdir}}/{{entry-wired}}'
+    install -Dm0644 'resources/{{entry-wireless}}' '{{appdir}}/{{entry-wireless}}'
     install -Dm0644 'resources/{{entry-workspaces}}' '{{appdir}}/{{entry-workspaces}}'
 
 # Install everything
@@ -116,8 +122,11 @@ uninstall:
         '{{appdir}}/{{entry-time}}' \
         '{{appdir}}/{{entry-touchpad}}' \
         '{{appdir}}/{{entry-users}}' \
+        '{{appdir}}/{{entry-vpn}}' \
         '{{appdir}}/{{entry-wallpaper}}' \
         '{{appdir}}/{{entry-window-management}}' \
+        '{{appdir}}/{{entry-wired}}' \
+        '{{appdir}}/{{entry-wireless}}' \
         '{{appdir}}/{{entry-workspaces}}'
     find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm -rf {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm {{iconsdir}}/{}
