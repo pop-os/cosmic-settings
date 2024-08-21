@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::time::Duration;
+use std::{collections::BTreeMap, time::Duration};
 
 use cosmic::{
     widget::{self, settings},
@@ -71,7 +71,7 @@ pub enum DeviceId {
 pub struct Page {
     pipewire_thread: Option<(tokio::sync::oneshot::Sender<()>, pipewire::Sender<()>)>,
     pulse_thread: Option<tokio::sync::oneshot::Sender<()>>,
-    devices: IndexMap<DeviceId, Card>,
+    devices: BTreeMap<DeviceId, Card>,
     card_names: IndexMap<DeviceId, String>,
     card_profiles: IndexMap<DeviceId, Vec<pulse::CardProfile>>,
     active_profiles: IndexMap<DeviceId, Option<String>>,
@@ -451,7 +451,7 @@ impl Page {
                 }
 
                 if let Some(card_id) = remove {
-                    _ = self.devices.shift_remove(&card_id);
+                    _ = self.devices.remove(&card_id);
                 }
 
                 if let Some(pos) = self.sink_ids.iter().position(|&id| id == node_id) {

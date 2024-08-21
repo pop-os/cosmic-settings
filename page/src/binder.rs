@@ -204,16 +204,11 @@ impl<Message: 'static> Binder<Message> {
         &'a self,
         rule: &'a Regex,
     ) -> impl Iterator<Item = (crate::Entity, section::Entity)> + 'a {
-        generator::Gn::new_scoped_local(|mut s| {
-            for (page, sections) in self.content.iter() {
-                for id in sections {
-                    if self.sections[*id].search_matches(rule) {
-                        s.yield_((page, *id));
-                    }
-                }
-            }
-
-            generator::done!();
+        self.content.iter().flat_map(move |(page, sections)| {
+            sections
+                .into_iter()
+                .filter(|&id| self.sections[*id].search_matches(rule))
+                .map(move |&id| (page, id))
         })
     }
 
