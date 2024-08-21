@@ -109,15 +109,21 @@ fn update_keyboard_layouts(page: &mut Page) -> () {
     page.active_layouts.clear();
     page.keyboard_layouts.clear();
     let layouts: Result<xkb_data::KeyboardLayouts, std::io::Error>;
-    tracing::info!(
+    tracing::debug!(
         "show_extended_input_sources: {}",
         page.show_extended_input_sources
     );
     if page.show_extended_input_sources {
         layouts = xkb_data::all_keyboard_layouts();
+        tracing::debug!("showing all layouts");
     } else {
+        tracing::debug!("showing base layouts");
         layouts = xkb_data::keyboard_layouts();
     }
+    tracing::debug!(
+        "number of layouts: {:?}",
+        layouts.as_ref().map(|x| x.layouts().len())
+    );
     match layouts {
         Ok(mut keyboard_layouts) => {
             let sorted_layouts = keyboard_layouts.layouts_mut();
@@ -168,6 +174,7 @@ fn update_keyboard_layouts(page: &mut Page) -> () {
 
             // Xkb layouts currently enabled.
             let layouts = if page.xkb.layout.is_empty() {
+                tracing::debug!("No layouts found in xkb_config, defaulting to 'us'");
                 "us"
             } else {
                 &page.xkb.layout
@@ -184,7 +191,10 @@ fn update_keyboard_layouts(page: &mut Page) -> () {
             for (layout, variant) in layouts.zip(variants) {
                 for (id, (xkb_layout, xkb_variant, _desc)) in &page.keyboard_layouts {
                     if layout == xkb_layout && variant == xkb_variant {
-                        page.active_layouts.push(id);
+                        if !page.active_layouts.contains(&id) {
+                            page.active_layouts.push(id);
+                            tracing::debug!("Adding layout: {:?}", id);
+                        }
                     }
                 }
             }
@@ -378,7 +388,6 @@ impl Page {
 
             Message::ExtendedInputSourcesToggle(enable) => {
                 self.show_extended_input_sources = enable;
-                update_keyboard_layouts(self);
             }
 
             Message::SourceAdd(id) => {
@@ -436,6 +445,7 @@ impl Page {
             }
 
             Message::ShowInputSourcesContext => {
+                update_keyboard_layouts(self);
                 self.context = Some(Context::ShowInputSourcesContext);
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
                     fl!("keyboard-sources", "add").into(),
