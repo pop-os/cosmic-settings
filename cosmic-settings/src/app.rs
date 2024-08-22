@@ -603,12 +603,6 @@ impl cosmic::Application for SettingsApp {
             return page.dnd_icon();
         }
 
-        if let Some(page) = self.pages.page::<desktop::wallpaper::Page>() {
-            if id == page.color_dialog {
-                return page.show_color_dialog();
-            }
-        }
-
         panic!("unknown window ID: {id:?}");
     }
 

@@ -33,6 +33,7 @@ use slotmap::SlotMap;
 use tokio::io::AsyncBufReadExt;
 
 use crate::app;
+use crate::widget::color_picker_context_view;
 
 use super::wallpaper::widgets::color_image;
 
@@ -421,40 +422,6 @@ impl Page {
         }
 
         Ok(())
-    }
-
-    fn color_picker_context_view(
-        &self,
-        description: Option<Cow<'static, str>>,
-        reset: Cow<'static, str>,
-        on_update: fn(ColorPickerUpdate) -> Message,
-        model: impl Fn(&Self) -> &ColorPickerModel,
-    ) -> Element<'_, crate::pages::Message> {
-        cosmic::widget::column()
-            .push_maybe(description.map(|description| text::body(description).width(Length::Fill)))
-            .push(
-                model(self)
-                    .builder(on_update)
-                    .reset_label(reset)
-                    .height(Length::Fixed(158.0))
-                    .build(
-                        fl!("recent-colors"),
-                        fl!("copy-to-clipboard"),
-                        fl!("copied-to-clipboard"),
-                    )
-                    .apply(container)
-                    .width(Length::Fixed(248.0))
-                    .align_x(alignment::Horizontal::Center)
-                    .apply(container)
-                    .width(Length::Fill)
-                    .align_x(alignment::Horizontal::Center),
-            )
-            .padding(self.theme_builder.spacing.space_l)
-            .align_items(cosmic::iced_core::Alignment::Center)
-            .spacing(self.theme_builder.spacing.space_m)
-            .width(Length::Fill)
-            .apply(Element::from)
-            .map(crate::pages::Message::Appearance)
     }
 
     fn experimental_context_view(&self) -> Element<'_, crate::pages::Message> {
@@ -1084,49 +1051,55 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
         let view = match self.context_view? {
-            ContextView::AccentWindowHint => self.color_picker_context_view(
+            ContextView::AccentWindowHint => color_picker_context_view(
                 None,
                 RESET_TO_DEFAULT.as_str().into(),
                 Message::AccentWindowHint,
-                |this| &this.accent_window_hint,
-            ),
+                &self.accent_window_hint,
+            )
+            .map(crate::pages::Message::Appearance),
 
-            ContextView::ApplicationBackground => self.color_picker_context_view(
+            ContextView::ApplicationBackground => color_picker_context_view(
                 None,
                 RESET_TO_DEFAULT.as_str().into(),
                 Message::ApplicationBackground,
-                |this| &this.application_background,
-            ),
+                &self.application_background,
+            )
+            .map(crate::pages::Message::Appearance),
 
-            ContextView::ContainerBackground => self.color_picker_context_view(
+            ContextView::ContainerBackground => color_picker_context_view(
                 Some(fl!("container-background", "desc-detail").into()),
                 fl!("container-background", "reset").into(),
                 Message::ContainerBackground,
-                |this| &this.container_background,
-            ),
+                &self.container_background,
+            )
+            .map(crate::pages::Message::Appearance),
 
-            ContextView::ControlComponent => self.color_picker_context_view(
+            ContextView::ControlComponent => color_picker_context_view(
                 None,
                 RESET_TO_DEFAULT.as_str().into(),
                 Message::ControlComponent,
-                |this| &this.control_component,
-            ),
+                &self.control_component,
+            )
+            .map(crate::pages::Message::Appearance),
 
-            ContextView::CustomAccent => self.color_picker_context_view(
+            ContextView::CustomAccent => color_picker_context_view(
                 None,
                 RESET_TO_DEFAULT.as_str().into(),
                 Message::CustomAccent,
-                |this| &this.custom_accent,
-            ),
+                &self.custom_accent,
+            )
+            .map(crate::pages::Message::Appearance),
 
             ContextView::Experimental => self.experimental_context_view(),
 
-            ContextView::InterfaceText => self.color_picker_context_view(
+            ContextView::InterfaceText => color_picker_context_view(
                 None,
                 RESET_TO_DEFAULT.as_str().into(),
                 Message::InterfaceText,
-                |this| &this.interface_text,
-            ),
+                &self.interface_text,
+            )
+            .map(crate::pages::Message::Appearance),
         };
 
         Some(view)
