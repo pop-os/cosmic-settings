@@ -1,16 +1,36 @@
+use cosmic::cosmic_config::ConfigGet;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, row, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_comp_config::input::{AccelProfile, ClickMethod, ScrollMethod};
+use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slab::Slab;
 use slotmap::SlotMap;
+use tracing::error;
 
 use super::Message;
 
-#[derive(Default)]
-pub struct Page;
+pub struct Page {
+    comp_workspace_config: WorkspaceConfig,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        let comp_workspace_config = comp_config.get("workspaces").unwrap_or_else(|err| {
+            if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                error!(?err, "Failed to read config 'workspaces'");
+            }
+
+            WorkspaceConfig::default()
+        });
+        Self {
+            comp_workspace_config,
+        }
+    }
+}
 
 impl page::Page<crate::pages::Message> for Page {
     fn content(
@@ -21,7 +41,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(touchpad()),
             sections.insert(click_behavior()),
             sections.insert(scrolling()),
-            sections.insert(swiping()),
+            sections.insert(gestures()),
         ])
     }
 
@@ -38,6 +58,7 @@ fn touchpad() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
     let primary_button = descriptions.insert(fl!("primary-button"));
+    let primary_button_desc = descriptions.insert(fl!("primary-button", "desc"));
     let touchpad_speed = descriptions.insert(fl!("touchpad", "speed"));
     let acceleration = descriptions.insert(fl!("touchpad", "acceleration"));
     let acceleration_desc = descriptions.insert(fl!("acceleration-desc"));
@@ -51,12 +72,17 @@ fn touchpad() -> Section<crate::pages::Message> {
             let theme = cosmic::theme::active();
 
             settings::view_section(&section.title)
-                .add(settings::flex_item(
-                    &descriptions[primary_button],
-                    cosmic::widget::segmented_control::horizontal(&input.touchpad_primary_button)
-                        .minimum_button_width(0)
-                        .on_activate(|x| Message::PrimaryButtonSelected(x, true)),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[primary_button])
+                        .description(&descriptions[primary_button_desc])
+                        .flex_control(
+                            cosmic::widget::segmented_control::horizontal(
+                                &input.touchpad_primary_button,
+                            )
+                            .minimum_button_width(0)
+                            .on_activate(|x| Message::PrimaryButtonSelected(x, true)),
+                        ),
+                )
                 .add(
                     settings::item::builder(&descriptions[touchpad_speed]).flex_control({
                         let value = (input
@@ -238,25 +264,27 @@ fn scrolling() -> Section<crate::pages::Message> {
         })
 }
 
-fn swiping() -> Section<crate::pages::Message> {
+fn gestures() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let four_finger_down = descriptions.insert(fl!("gestures", "four-finger-down"));
+    // let four_finger_down = descriptions.insert(fl!("gestures", "four-finger-down"));
     // let four_finger_left = descriptions.insert(fl!("gestures", "four-finger-left"));
     // let four_finger_right = descriptions.insert(fl!("gestures", "four-finger-right"));
-    let four_finger_up = descriptions.insert(fl!("gestures", "four-finger-up"));
+    // let four_finger_up = descriptions.insert(fl!("gestures", "four-finger-up"));
     // let three_finger_any = descriptions.insert(fl!("gestures", "three-finger-any"));
+
+    let switch_workspaces = descriptions.insert(fl!("switch-workspaces"));
+    let switch_workspaces_horizontal = descriptions.insert(fl!("switch-workspaces", "horizontal"));
+    let switch_workspaces_vertical = descriptions.insert(fl!("switch-workspaces", "vertical"));
 
     // let open_application_library = descriptions.insert(fl!("open-application-library"));
     // let open_workspaces_view = descriptions.insert(fl!("open-workspaces-view"));
     // let switch_between_windows = descriptions.insert(fl!("switch-between-windows"));
-    let switch_to_next_workspace = descriptions.insert(fl!("switch-to-next-workspace"));
-    let switch_to_prev_workspace = descriptions.insert(fl!("switch-to-prev-workspace"));
 
     Section::default()
         .title(fl!("gestures"))
         .descriptions(descriptions)
-        .view::<Page>(move |_binder, _page, section| {
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&*section.title)
@@ -265,12 +293,13 @@ fn swiping() -> Section<crate::pages::Message> {
                 //         .flex_control(text(&descriptions[switch_between_windows])),
                 // )
                 .add(
-                    settings::item::builder(&descriptions[four_finger_up])
-                        .flex_control(text(&descriptions[switch_to_prev_workspace])),
-                )
-                .add(
-                    settings::item::builder(&descriptions[four_finger_down])
-                        .flex_control(text(&descriptions[switch_to_next_workspace])),
+                    settings::item::builder(
+                        &descriptions[match page.comp_workspace_config.workspace_layout {
+                            WorkspaceLayout::Horizontal => switch_workspaces_horizontal,
+                            WorkspaceLayout::Vertical => switch_workspaces_vertical,
+                        }],
+                    )
+                    .flex_control(text(&descriptions[switch_workspaces])),
                 )
                 // .add(
                 //     settings::item::builder(&descriptions[four_finger_left])

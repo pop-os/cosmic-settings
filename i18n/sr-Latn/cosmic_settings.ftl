@@ -104,7 +104,7 @@ style = Stil
     .square = Četvrtast
 
 # interface density left out for now
-window-management = Upravljanje prozorima
+window-management-appearance = Upravljanje prozorima
     .active-hint = Debljina nagoveštaja aktivnog prozora
     .gaps = Praznine oko složenih prozora
 
@@ -312,6 +312,7 @@ input-devices = Unos
     .desc = Unos
 
 primary-button = Primarno dugme
+    .desc = Određuje redosled fizičkih dugmadi.
     .left = Levo
     .right = Desno
 
@@ -504,15 +505,17 @@ touchpad = Dodirna tabla
 ## Input: Gestures
 
 swiping = Pokreti
-    .four-finger-down = Prevucite prema dole sa četiri prsta
-    .four-finger-left = Prevucite prema levo sa četiri prsta
-    .four-finger-right = Prevucite prema desno sa četiri prsta
-    .four-finger-up = Prevucite prema gore sa četiri prsta
-    .three-finger-any = Prevucite sa tri prsta u bilo kom smeru
+    .four-finger-down = Prevuci prema dole sa četiri prsta
+    .four-finger-left = Prevuci prema levo sa četiri prsta
+    .four-finger-right = Prevuci prema desno sa četiri prsta
+    .four-finger-up = Prevuci prema gore sa četiri prsta
+    .three-finger-any = Prevuci sa tri prsta u bilo kom smeru
+
+switch-workspaces = Promeni radni prostor
+    .horizontal = Prevuci prema levo/desno sa četiri prsta
+    .vertical = Prevuci prema gore/dole sa četiri prsta
 
 switch-between-windows = Prebacivanje između prozora
-switch-to-next-workspace = Pređi na sledeći radni prostor
-switch-to-prev-workspace = Pređi na prethodni radni prostor
 open-application-library = Otvori biblioteku aplikacija
 open-workspaces-view = Otvori pregled radnih prostora
 
