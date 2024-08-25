@@ -302,12 +302,22 @@ fn gestures() -> Section<crate::pages::Message> {
                     .flex_control(text(&descriptions[switch_workspaces])),
                 )
                 // .add(
-                //     settings::item::builder(&descriptions[four_finger_left])
-                //         .flex_control(text(&descriptions[open_workspaces_view])),
+                //     settings::item::builder(
+                //         &descriptions[match page.comp_workspace_config.workspace_layout {
+                //             WorkspaceLayout::Horizontal => four_finger_down,
+                //             WorkspaceLayout::Vertical => four_finger_right,
+                //         }],
+                //     )
+                //     .flex_control(text(&descriptions[open_workspaces_view])),
                 // )
                 // .add(
-                //     settings::item::builder(&descriptions[four_finger_right])
-                //         .flex_control(text(&descriptions[open_application_library])),
+                //     settings::item::builder(
+                //         &descriptions[match page.comp_workspace_config.workspace_layout {
+                //             WorkspaceLayout::Horizontal => four_finger_up,
+                //             WorkspaceLayout::Vertical => four_finger_left,
+                //         }],
+                //     )
+                //     .flex_control(text(&descriptions[open_application_library])),
                 // )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
