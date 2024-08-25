@@ -107,8 +107,8 @@ pub fn super_key_action() -> Section<crate::pages::Message> {
 pub fn window_controls() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let minimize = descriptions.insert(fl!("window-controls", "minimize"));
     let maximize = descriptions.insert(fl!("window-controls", "maximize"));
+    let minimize = descriptions.insert(fl!("window-controls", "minimize"));
 
     Section::default()
         .title(fl!("window-controls"))
@@ -121,19 +121,19 @@ pub fn window_controls() -> Section<crate::pages::Message> {
 
             settings::view_section(&section.title)
                 .add(settings::item(
-                    &descriptions[minimize],
-                    toggler(
-                        None,
-                        desktop.cosmic_tk.show_minimize,
-                        super::Message::ShowMinimizeButton,
-                    ),
-                ))
-                .add(settings::item(
                     &descriptions[maximize],
                     toggler(
                         None,
                         desktop.cosmic_tk.show_maximize,
                         super::Message::ShowMaximizeButton,
+                    ),
+                ))
+                .add(settings::item(
+                    &descriptions[minimize],
+                    toggler(
+                        None,
+                        desktop.cosmic_tk.show_minimize,
+                        super::Message::ShowMinimizeButton,
                     ),
                 ))
                 .apply(Element::from)

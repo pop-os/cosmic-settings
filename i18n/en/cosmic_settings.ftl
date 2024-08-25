@@ -312,6 +312,7 @@ input-devices = Input Devices
     .desc = Input Devices
 
 primary-button = Primary button
+    .desc = Sets the order of physical buttons.
     .left = Left
     .right = Right
 
@@ -510,9 +511,11 @@ gestures = Gestures
     .four-finger-up = Four-finger swipe up
     .three-finger-any = Three-finger swipe any direction
 
+switch-workspaces = Switch workspaces
+    .horizontal = Four-finger swipe left/right
+    .vertical = Four-finger swipe up/down
+
 switch-between-windows = Switch between windows
-switch-to-next-workspace = Switch to next workspace
-switch-to-prev-workspace = Switch to prev workspace
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
 

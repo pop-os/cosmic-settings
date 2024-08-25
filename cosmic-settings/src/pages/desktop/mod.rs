@@ -57,8 +57,8 @@ impl page::AutoBind<crate::pages::Message> for Page {
 
 #[derive(Copy, Clone, Debug)]
 pub enum Message {
-    ShowMinimizeButton(bool),
     ShowMaximizeButton(bool),
+    ShowMinimizeButton(bool),
 }
 
 impl Page {
