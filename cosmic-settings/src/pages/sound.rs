@@ -622,7 +622,6 @@ fn input() -> Section<crate::pages::Message> {
                 .push(widget::text::body(&page.source_volume_text))
                 .push(
                     widget::slider(0..=150, page.source_volume, Message::SourceVolumeChanged)
-                        .width(250)
                         .breakpoints(&[100]),
                 );
 
@@ -633,7 +632,7 @@ fn input() -> Section<crate::pages::Message> {
             );
 
             let mut controls = settings::view_section(&section.title)
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*section.descriptions[volume],
                     volume_control,
                 ))
@@ -680,7 +679,6 @@ fn output() -> Section<crate::pages::Message> {
                 .push(widget::text::body(&page.sink_volume_text))
                 .push(
                     widget::slider(0..=150, page.sink_volume, Message::SinkVolumeChanged)
-                        .width(250)
                         .breakpoints(&[100]),
                 );
 
@@ -691,7 +689,7 @@ fn output() -> Section<crate::pages::Message> {
             );
 
             let mut controls = settings::view_section(&section.title)
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*section.descriptions[volume],
                     volume_control,
                 ))
