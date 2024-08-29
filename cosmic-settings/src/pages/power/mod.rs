@@ -61,7 +61,7 @@ fn battery_info() -> Section<crate::pages::Message> {
         .descriptions(descritpions)
         .view::<Page>(move |_binder, _page, section| {
             let runtime = tokio::runtime::Runtime::new().unwrap();
-            let battery = runtime.block_on(Battery::update_battery(false));
+            let battery = runtime.block_on(Battery::update_battery());
 
             let battery_icon = widget::icon::from_name(battery.icon_name);
             let battery_percent = widget::text(format!("{}%", battery.percent));

@@ -253,7 +253,7 @@ async fn get_device_proxy<'a>() -> Result<battery::DeviceProxy<'a>, zbus::Error>
 }
 
 impl Battery {
-    pub async fn update_battery(charging_limit: bool) -> Self {
+    pub async fn update_battery() -> Self {
         let proxy = get_device_proxy().await;
 
         if let Ok(proxy) = proxy {
@@ -290,9 +290,9 @@ impl Battery {
                 }
             }
 
-            let battery_percent = if percent > 95.0 && !charging_limit {
+            let battery_percent = if percent > 95.0 {
                 100
-            } else if percent > 80.0 && !charging_limit {
+            } else if percent > 80.0 {
                 90
             } else if percent > 65.0 {
                 80
@@ -309,12 +309,10 @@ impl Battery {
             } else {
                 0
             };
-            let limited = if charging_limit { "limited-" } else { "" };
             let charging = if on_battery { "" } else { "charging-" };
 
-            let icon_name = format!(
-                "cosmic-applet-battery-level-{battery_percent}-{limited}{charging}symbolic",
-            );
+            let icon_name =
+                format!("cosmic-applet-battery-level-{battery_percent}-{charging}symbolic",);
 
             return Battery {
                 icon_name,
