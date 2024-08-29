@@ -3,16 +3,18 @@ mod backend;
 use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, PowerProfile};
 
-use chrono::{Duration, TimeDelta};
+use chrono::TimeDelta;
 use cosmic::iced_widget::row;
-use cosmic::widget;
+use cosmic::widget::{self, column, text};
 use cosmic::{widget::settings, Apply};
 use cosmic_settings_page::{self as page, section, Section};
 use slab::Slab;
 use slotmap::SlotMap;
 
 #[derive(Default)]
-pub struct Page;
+pub struct Page {
+    battery: Battery,
+}
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
@@ -30,11 +32,24 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(profiles()),
         ])
     }
+
+    fn on_enter(
+        &mut self,
+        _page: cosmic_settings_page::Entity,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> cosmic::Command<crate::pages::Message> {
+        cosmic::command::future(async move {
+            let battery = Battery::update_battery().await;
+            Message::UpdateBattery(battery)
+        })
+        .map(crate::pages::Message::Power)
+    }
 }
 
 #[derive(Clone, Debug)]
 pub enum Message {
     PowerProfileChange(PowerProfile),
+    UpdateBattery(Battery),
 }
 
 impl Page {
@@ -49,6 +64,7 @@ impl Page {
                     runtime.block_on(b.set_power_profile(p));
                 }
             }
+            Message::UpdateBattery(battery) => self.battery = battery,
         };
     }
 }
@@ -59,35 +75,21 @@ fn battery_info() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("battery"))
         .descriptions(descritpions)
-        .view::<Page>(move |_binder, _page, section| {
-            let runtime = tokio::runtime::Runtime::new().unwrap();
-            let battery = runtime.block_on(Battery::update_battery());
+        .view::<Page>(move |_binder, page, section| {
+            let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
+            let battery_percent = widget::text(format!("{}%", page.battery.percent));
 
-            let battery_icon = widget::icon::from_name(battery.icon_name);
-            let battery_percent = widget::text(format!("{}%", battery.percent));
+            let battery_time =
+                widget::text(if page.battery.remaining_duration > TimeDelta::zero() {
+                    &page.battery.remaining_time
+                } else {
+                    ""
+                });
 
-            let remaining_time = |duration: Duration| {
-                let total_seconds = duration.num_seconds();
-
-                let hours = total_seconds / 3600;
-                let minutes = (total_seconds % 3600) / 60;
-                let seconds = total_seconds % 60;
-
-                fl!(
-                    "battery",
-                    "remaining-time",
-                    time = format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
-                )
-            };
-
-            let battery_time = widget::text(if battery.remaining_time > TimeDelta::zero() {
-                remaining_time(battery.remaining_time)
-            } else {
-                String::new()
-            });
-
-            settings::view_section(&section.title)
-                .add(row!(battery_icon, battery_percent, battery_time).spacing(6))
+            column::with_capacity(2)
+                .spacing(8)
+                .push(text::heading(&section.title))
+                .push(row!(battery_icon, battery_percent, battery_time).spacing(8))
                 .into()
         })
 }

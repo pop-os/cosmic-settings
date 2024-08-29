@@ -233,7 +233,8 @@ pub struct Battery {
     pub icon_name: String,
     pub percent: f64,
     pub on_battery: bool,
-    pub remaining_time: Duration,
+    pub remaining_duration: Duration,
+    pub remaining_time: String,
 }
 
 async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Error> {
@@ -258,7 +259,7 @@ impl Battery {
         if let Ok(proxy) = proxy {
             let mut percent: f64 = 0.0;
             let mut on_battery: bool = false;
-            let mut remaining_time: Duration = Duration::default();
+            let mut remaining_duration: Duration = Duration::default();
 
             if let Ok(percentage) = proxy.percentage().await {
                 percent = percentage.clamp(0.0, 100.0);
@@ -280,12 +281,12 @@ impl Battery {
                 if let Ok(time) = proxy.time_to_empty().await {
                     if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
                     {
-                        remaining_time = dur;
+                        remaining_duration = dur;
                     }
                 }
             } else if let Ok(time) = proxy.time_to_full().await {
                 if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
-                    remaining_time = dur;
+                    remaining_duration = dur;
                 }
             }
 
@@ -313,11 +314,26 @@ impl Battery {
             let icon_name =
                 format!("cosmic-applet-battery-level-{battery_percent}-{charging}symbolic",);
 
+            let remaining_time = |duration: Duration| {
+                let total_seconds = duration.num_seconds();
+
+                let hours = total_seconds / 3600;
+                let minutes = (total_seconds % 3600) / 60;
+                let seconds = total_seconds % 60;
+
+                fl!(
+                    "battery",
+                    "remaining-time",
+                    time = format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+                )
+            };
+
             return Battery {
                 icon_name,
                 percent,
                 on_battery,
-                remaining_time,
+                remaining_duration,
+                remaining_time: remaining_time(remaining_duration),
             };
         }
 
