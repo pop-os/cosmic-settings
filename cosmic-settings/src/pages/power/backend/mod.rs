@@ -1,3 +1,5 @@
+use chrono::Duration;
+use futures::FutureExt;
 use zbus::Connection;
 
 mod ppdaemon;
@@ -224,5 +226,125 @@ async fn get_power_profiles_proxy<'a>() -> Result<ppdaemon::PowerProfilesProxy<'
             tracing::error!("Power daemon proxy can't be created. Is it installed? {e}");
             Err(())
         }
+    }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct Battery {
+    pub icon_name: String,
+    pub is_present: bool,
+    pub percent: f64,
+    pub on_battery: bool,
+    pub remaining_duration: Duration,
+    pub remaining_time: String,
+}
+
+async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Error> {
+    let connection = match Connection::system().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("zbus connection failed. {e}");
+            return Err(e);
+        }
+    };
+
+    match upower_dbus::UPowerProxy::new(&connection).await {
+        Ok(p) => p.get_display_device().await,
+        Err(e) => Err(e),
+    }
+}
+
+async fn get_on_battery_status() -> Result<bool, zbus::Error> {
+    let connection = match Connection::system().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("zbus connection failed. {e}");
+            return Err(e);
+        }
+    };
+
+    match upower_dbus::UPowerProxy::new(&connection).await {
+        Ok(p) => p.on_battery().await,
+        Err(e) => Err(e),
+    }
+}
+
+impl Battery {
+    pub async fn update_battery() -> Self {
+        let proxy = get_device_proxy().await;
+
+        if let Ok(proxy) = proxy {
+            let mut remaining_duration: Duration = Duration::default();
+
+            let (is_present, percentage, on_battery) = futures::join!(
+                proxy.is_present().map(Result::unwrap_or_default),
+                proxy.percentage().map(Result::unwrap_or_default),
+                get_on_battery_status().map(Result::unwrap_or_default)
+            );
+
+            let percent = percentage.clamp(0.0, 100.0);
+
+            if on_battery {
+                if let Ok(time) = proxy.time_to_empty().await {
+                    if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
+                    {
+                        remaining_duration = dur;
+                    }
+                }
+            } else if let Ok(time) = proxy.time_to_full().await {
+                if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
+                    remaining_duration = dur;
+                }
+            }
+
+            let battery_percent = if percent > 95.0 {
+                100
+            } else if percent > 80.0 {
+                90
+            } else if percent > 65.0 {
+                80
+            } else if percent > 35.0 {
+                50
+            } else if percent > 20.0 {
+                35
+            } else if percent > 14.0 {
+                20
+            } else if percent > 9.0 {
+                10
+            } else if percent > 5.0 {
+                5
+            } else {
+                0
+            };
+            let charging = if on_battery { "" } else { "charging-" };
+
+            let icon_name =
+                format!("cosmic-applet-battery-level-{battery_percent}-{charging}symbolic",);
+
+            let remaining_time = |duration: Duration| {
+                let total_seconds = duration.num_seconds();
+
+                let hours = total_seconds / 3600;
+                let minutes = (total_seconds % 3600) / 60;
+                let seconds = total_seconds % 60;
+
+                fl!(
+                    "battery",
+                    "remaining-time",
+                    time = format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+                )
+            };
+
+            return Battery {
+                icon_name,
+                is_present,
+                percent,
+                on_battery,
+                remaining_duration,
+                remaining_time: remaining_time(remaining_duration),
+            };
+        }
+
+        Battery::default()
     }
 }

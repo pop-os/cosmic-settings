@@ -51,6 +51,7 @@ tokio.workspace = true
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 udev = "0.9.0"
+upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 url = "2.5.2"
 xkb-data = "0.2.1"
 zbus = { version = "4.4.0", features = ["tokio"] }

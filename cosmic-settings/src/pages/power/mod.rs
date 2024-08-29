@@ -1,15 +1,20 @@
 mod backend;
-use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
-use backend::PowerProfile;
 
-use cosmic::widget;
+use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
+use backend::{Battery, PowerProfile};
+
+use chrono::TimeDelta;
+use cosmic::iced_widget::row;
+use cosmic::widget::{self, column, text};
 use cosmic::{widget::settings, Apply};
 use cosmic_settings_page::{self as page, section, Section};
 use slab::Slab;
 use slotmap::SlotMap;
 
 #[derive(Default)]
-pub struct Page;
+pub struct Page {
+    battery: Battery,
+}
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
@@ -22,13 +27,29 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(profiles())])
+        Some(vec![
+            sections.insert(battery_info()),
+            sections.insert(profiles()),
+        ])
+    }
+
+    fn on_enter(
+        &mut self,
+        _page: cosmic_settings_page::Entity,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> cosmic::Command<crate::pages::Message> {
+        cosmic::command::future(async move {
+            let battery = Battery::update_battery().await;
+            Message::UpdateBattery(battery)
+        })
+        .map(crate::pages::Message::Power)
     }
 }
 
 #[derive(Clone, Debug)]
 pub enum Message {
     PowerProfileChange(PowerProfile),
+    UpdateBattery(Battery),
 }
 
 impl Page {
@@ -43,8 +64,35 @@ impl Page {
                     runtime.block_on(b.set_power_profile(p));
                 }
             }
+            Message::UpdateBattery(battery) => self.battery = battery,
         };
     }
+}
+
+fn battery_info() -> Section<crate::pages::Message> {
+    let descriptions = Slab::new();
+
+    Section::default()
+        .title(fl!("battery"))
+        .descriptions(descriptions)
+        .show_while::<Page>(|page| page.battery.is_present)
+        .view::<Page>(move |_binder, page, section| {
+            let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
+            let battery_percent = widget::text(format!("{}%", page.battery.percent));
+
+            let battery_time =
+                widget::text(if page.battery.remaining_duration > TimeDelta::zero() {
+                    &page.battery.remaining_time
+                } else {
+                    ""
+                });
+
+            column::with_capacity(2)
+                .spacing(8)
+                .push(text::heading(&section.title))
+                .push(row!(battery_icon, battery_percent, battery_time).spacing(8))
+                .into()
+        })
 }
 
 fn profiles() -> Section<crate::pages::Message> {

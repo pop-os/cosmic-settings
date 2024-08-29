@@ -293,6 +293,9 @@ profile = Profile
 power = Power & Battery
     .desc = Manage power settings
 
+battery = Battery
+  .remaining-time = ({ $time } left)
+
 power-mode = Power Mode
     .battery = Extended battery life
     .battery-desc = Reduced power usage and silent performance.
