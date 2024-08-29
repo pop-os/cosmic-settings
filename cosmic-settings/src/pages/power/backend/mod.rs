@@ -252,6 +252,21 @@ async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Er
     }
 }
 
+async fn get_on_battery_status() -> Result<bool, zbus::Error> {
+    let connection = match Connection::system().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("zbus connection failed. {e}");
+            return Err(e);
+        }
+    };
+
+    match upower_dbus::UPowerProxy::new(&connection).await {
+        Ok(p) => p.on_battery().await,
+        Err(e) => Err(e),
+    }
+}
+
 impl Battery {
     pub async fn update_battery() -> Self {
         let proxy = get_device_proxy().await;
@@ -265,16 +280,8 @@ impl Battery {
                 percent = percentage.clamp(0.0, 100.0);
             }
 
-            if let Ok(state) = proxy.state().await {
-                match state {
-                    upower_dbus::BatteryState::Charging => on_battery = false,
-                    upower_dbus::BatteryState::Discharging => on_battery = true,
-                    upower_dbus::BatteryState::Unknown => todo!(),
-                    upower_dbus::BatteryState::Empty => on_battery = true,
-                    upower_dbus::BatteryState::FullyCharged => on_battery = false,
-                    upower_dbus::BatteryState::PendingCharge => on_battery = false,
-                    upower_dbus::BatteryState::PendingDischarge => on_battery = true,
-                }
+            if let Ok(state) = get_on_battery_status().await {
+                on_battery = state
             }
 
             if on_battery {
