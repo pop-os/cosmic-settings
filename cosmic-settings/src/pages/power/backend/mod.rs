@@ -1,5 +1,7 @@
+use chrono::Duration;
 use zbus::Connection;
 
+mod battery;
 mod ppdaemon;
 mod s76powerdaemon;
 
@@ -224,5 +226,104 @@ async fn get_power_profiles_proxy<'a>() -> Result<ppdaemon::PowerProfilesProxy<'
             tracing::error!("Power daemon proxy can't be created. Is it installed? {e}");
             Err(())
         }
+    }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct Battery {
+    pub icon_name: String,
+    pub percent: f64,
+    pub on_battery: bool,
+    pub remaining_time: Duration,
+}
+
+async fn get_device_proxy<'a>() -> Result<battery::DeviceProxy<'a>, zbus::Error> {
+    let connection = match Connection::system().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("zbus connection failed. {e}");
+            return Err(e);
+        }
+    };
+
+    match battery::UPowerProxy::new(&connection).await {
+        Ok(p) => p.get_display_device().await,
+        Err(e) => Err(e),
+    }
+}
+
+impl Battery {
+    pub async fn update_battery(charging_limit: bool) -> Self {
+        let proxy = get_device_proxy().await;
+
+        if let Ok(proxy) = proxy {
+            let mut percent: f64 = 0.0;
+            let mut on_battery: bool = false;
+            let mut remaining_time: Duration = Duration::default();
+
+            if let Ok(percentage) = proxy.percentage().await {
+                percent = percentage.clamp(0.0, 100.0);
+            }
+
+            if let Ok(state) = proxy.state().await {
+                match state {
+                    battery::BatteryState::Charging => on_battery = false,
+                    battery::BatteryState::Discharging => on_battery = true,
+                    battery::BatteryState::Unknown => todo!(),
+                    battery::BatteryState::Empty => on_battery = true,
+                    battery::BatteryState::FullyCharged => on_battery = false,
+                    battery::BatteryState::PendingCharge => on_battery = false,
+                    battery::BatteryState::PendingDischarge => on_battery = true,
+                }
+            }
+
+            if on_battery {
+                if let Ok(time) = proxy.time_to_empty().await {
+                    if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
+                    {
+                        remaining_time = dur;
+                    }
+                }
+            } else if let Ok(time) = proxy.time_to_full().await {
+                if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
+                    remaining_time = dur;
+                }
+            }
+
+            let battery_percent = if percent > 95.0 && !charging_limit {
+                100
+            } else if percent > 80.0 && !charging_limit {
+                90
+            } else if percent > 65.0 {
+                80
+            } else if percent > 35.0 {
+                50
+            } else if percent > 20.0 {
+                35
+            } else if percent > 14.0 {
+                20
+            } else if percent > 9.0 {
+                10
+            } else if percent > 5.0 {
+                5
+            } else {
+                0
+            };
+            let limited = if charging_limit { "limited-" } else { "" };
+            let charging = if on_battery { "" } else { "charging-" };
+
+            let icon_name = format!(
+                "cosmic-applet-battery-level-{battery_percent}-{limited}{charging}symbolic",
+            );
+
+            return Battery {
+                icon_name,
+                percent,
+                on_battery,
+                remaining_time,
+            };
+        }
+
+        Battery::default()
     }
 }

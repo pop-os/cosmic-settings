@@ -1,7 +1,10 @@
 mod backend;
-use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
-use backend::PowerProfile;
 
+use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
+use backend::{Battery, PowerProfile};
+
+use chrono::{Duration, TimeDelta};
+use cosmic::iced_widget::row;
 use cosmic::widget;
 use cosmic::{widget::settings, Apply};
 use cosmic_settings_page::{self as page, section, Section};
@@ -22,7 +25,10 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(profiles())])
+        Some(vec![
+            sections.insert(battery_info()),
+            sections.insert(profiles()),
+        ])
     }
 }
 
@@ -45,6 +51,45 @@ impl Page {
             }
         };
     }
+}
+
+fn battery_info() -> Section<crate::pages::Message> {
+    let descritpions = Slab::new();
+
+    Section::default()
+        .title(fl!("battery"))
+        .descriptions(descritpions)
+        .view::<Page>(move |_binder, _page, section| {
+            let runtime = tokio::runtime::Runtime::new().unwrap();
+            let battery = runtime.block_on(Battery::update_battery(false));
+
+            let battery_icon = widget::icon::from_name(battery.icon_name);
+            let battery_percent = widget::text(format!("{}%", battery.percent));
+
+            let remaining_time = |duration: Duration| {
+                let total_seconds = duration.num_seconds();
+
+                let hours = total_seconds / 3600;
+                let minutes = (total_seconds % 3600) / 60;
+                let seconds = total_seconds % 60;
+
+                fl!(
+                    "battery",
+                    "remaining-time",
+                    time = format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+                )
+            };
+
+            let battery_time = widget::text(if battery.remaining_time > TimeDelta::zero() {
+                remaining_time(battery.remaining_time)
+            } else {
+                String::new()
+            });
+
+            settings::view_section(&section.title)
+                .add(row!(battery_icon, battery_percent, battery_time).spacing(6))
+                .into()
+        })
 }
 
 fn profiles() -> Section<crate::pages::Message> {

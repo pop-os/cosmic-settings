@@ -307,6 +307,9 @@ profile = Profil
 power = Zasilanie
   .desc = Zarządzaj ustawieniami zasilania
 
+battery = Bateria
+  .remaining-time = ({ $time } pozostało)
+
 power-mode = Profile Zasilania
   .performance = Tryb Wysokowydajny
   .balanced = Tryb Zbalansowany
