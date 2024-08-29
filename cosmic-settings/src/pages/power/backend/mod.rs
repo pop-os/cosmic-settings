@@ -231,6 +231,7 @@ async fn get_power_profiles_proxy<'a>() -> Result<ppdaemon::PowerProfilesProxy<'
 #[derive(Default, Debug, Clone)]
 pub struct Battery {
     pub icon_name: String,
+    pub is_present: bool,
     pub percent: f64,
     pub on_battery: bool,
     pub remaining_duration: Duration,
@@ -272,9 +273,14 @@ impl Battery {
         let proxy = get_device_proxy().await;
 
         if let Ok(proxy) = proxy {
+            let mut is_present: bool = false;
             let mut percent: f64 = 0.0;
             let mut on_battery: bool = false;
             let mut remaining_duration: Duration = Duration::default();
+
+            if let Ok(check) = proxy.is_present().await {
+                is_present = check;
+            }
 
             if let Ok(percentage) = proxy.percentage().await {
                 percent = percentage.clamp(0.0, 100.0);
@@ -337,6 +343,7 @@ impl Battery {
 
             return Battery {
                 icon_name,
+                is_present,
                 percent,
                 on_battery,
                 remaining_duration,

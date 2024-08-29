@@ -86,11 +86,15 @@ fn battery_info() -> Section<crate::pages::Message> {
                     ""
                 });
 
-            column::with_capacity(2)
-                .spacing(8)
-                .push(text::heading(&section.title))
-                .push(row!(battery_icon, battery_percent, battery_time).spacing(8))
-                .into()
+            if page.battery.is_present {
+                column::with_capacity(2)
+                    .spacing(8)
+                    .push(text::heading(&section.title))
+                    .push(row!(battery_icon, battery_percent, battery_time).spacing(8))
+                    .into()
+            } else {
+                column().into()
+            }
         })
 }
 
