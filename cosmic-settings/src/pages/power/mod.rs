@@ -75,6 +75,7 @@ fn battery_info() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("battery"))
         .descriptions(descritpions)
+        .show_while::<Page>(|page| page.battery.is_present)
         .view::<Page>(move |_binder, page, section| {
             let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
             let battery_percent = widget::text(format!("{}%", page.battery.percent));
@@ -86,15 +87,11 @@ fn battery_info() -> Section<crate::pages::Message> {
                     ""
                 });
 
-            if page.battery.is_present {
-                column::with_capacity(2)
-                    .spacing(8)
-                    .push(text::heading(&section.title))
-                    .push(row!(battery_icon, battery_percent, battery_time).spacing(8))
-                    .into()
-            } else {
-                column().into()
-            }
+            column::with_capacity(2)
+                .spacing(8)
+                .push(text::heading(&section.title))
+                .push(row!(battery_icon, battery_percent, battery_time).spacing(8))
+                .into()
         })
 }
 
