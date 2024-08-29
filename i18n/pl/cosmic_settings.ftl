@@ -109,7 +109,7 @@ style = Styl
     .square = Kwadratowy
 
 # interface density left out for now
-window-management = Zarządzanie Oknami
+window-management-appearance = Zarządzanie Oknami
     .active-hint = Rozmiar wyróżnienia aktywnego okna
     .gaps = Przerwa między ramkami okien w trybie kafelków
 
