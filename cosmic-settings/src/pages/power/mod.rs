@@ -70,11 +70,11 @@ impl Page {
 }
 
 fn battery_info() -> Section<crate::pages::Message> {
-    let descritpions = Slab::new();
+    let descriptions = Slab::new();
 
     Section::default()
         .title(fl!("battery"))
-        .descriptions(descritpions)
+        .descriptions(descriptions)
         .show_while::<Page>(|page| page.battery.is_present)
         .view::<Page>(move |_binder, page, section| {
             let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
