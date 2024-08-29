@@ -555,7 +555,7 @@ gestures = Gesztusok
     .four-finger-down = Négy ujjas csúsztatás lefelé
     .four-finger-left = Négy ujjas csúsztatás balra
     .four-finger-right = Négy ujjas csúsztatás jobbra
-    .four-finger-up = Hérom ujjas csúsztatás minden irányba
+    .four-finger-up = Három ujjas csúsztatás minden irányba
 
 switch-between-windows = Váltás az ablakok között
 switch-to-next-workspace = Váltás a következő munkaterületre
