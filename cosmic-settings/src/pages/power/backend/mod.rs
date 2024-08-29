@@ -1,4 +1,5 @@
 use chrono::Duration;
+use futures::FutureExt;
 use zbus::Connection;
 
 mod ppdaemon;
@@ -273,22 +274,15 @@ impl Battery {
         let proxy = get_device_proxy().await;
 
         if let Ok(proxy) = proxy {
-            let mut is_present: bool = false;
-            let mut percent: f64 = 0.0;
-            let mut on_battery: bool = false;
             let mut remaining_duration: Duration = Duration::default();
 
-            if let Ok(check) = proxy.is_present().await {
-                is_present = check;
-            }
+            let (is_present, percentage, on_battery) = futures::join!(
+                proxy.is_present().map(Result::unwrap_or_default),
+                proxy.percentage().map(Result::unwrap_or_default),
+                get_on_battery_status().map(Result::unwrap_or_default)
+            );
 
-            if let Ok(percentage) = proxy.percentage().await {
-                percent = percentage.clamp(0.0, 100.0);
-            }
-
-            if let Ok(state) = get_on_battery_status().await {
-                on_battery = state
-            }
+            let percent = percentage.clamp(0.0, 100.0);
 
             if on_battery {
                 if let Ok(time) = proxy.time_to_empty().await {
