@@ -1,7 +1,6 @@
 use chrono::Duration;
 use zbus::Connection;
 
-mod battery;
 mod ppdaemon;
 mod s76powerdaemon;
 
@@ -237,7 +236,7 @@ pub struct Battery {
     pub remaining_time: Duration,
 }
 
-async fn get_device_proxy<'a>() -> Result<battery::DeviceProxy<'a>, zbus::Error> {
+async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Error> {
     let connection = match Connection::system().await {
         Ok(c) => c,
         Err(e) => {
@@ -246,7 +245,7 @@ async fn get_device_proxy<'a>() -> Result<battery::DeviceProxy<'a>, zbus::Error>
         }
     };
 
-    match battery::UPowerProxy::new(&connection).await {
+    match upower_dbus::UPowerProxy::new(&connection).await {
         Ok(p) => p.get_display_device().await,
         Err(e) => Err(e),
     }
@@ -267,13 +266,13 @@ impl Battery {
 
             if let Ok(state) = proxy.state().await {
                 match state {
-                    battery::BatteryState::Charging => on_battery = false,
-                    battery::BatteryState::Discharging => on_battery = true,
-                    battery::BatteryState::Unknown => todo!(),
-                    battery::BatteryState::Empty => on_battery = true,
-                    battery::BatteryState::FullyCharged => on_battery = false,
-                    battery::BatteryState::PendingCharge => on_battery = false,
-                    battery::BatteryState::PendingDischarge => on_battery = true,
+                    upower_dbus::BatteryState::Charging => on_battery = false,
+                    upower_dbus::BatteryState::Discharging => on_battery = true,
+                    upower_dbus::BatteryState::Unknown => todo!(),
+                    upower_dbus::BatteryState::Empty => on_battery = true,
+                    upower_dbus::BatteryState::FullyCharged => on_battery = false,
+                    upower_dbus::BatteryState::PendingCharge => on_battery = false,
+                    upower_dbus::BatteryState::PendingDischarge => on_battery = true,
                 }
             }
 
