@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use bumpalo::Bump;
-use std::{ffi::OsStr, io::Read};
+use std::{collections::HashSet, ffi::OsStr, io::Read};
 
 use concat_in_place::strcat;
 use const_format::concatcp;
@@ -53,7 +53,12 @@ impl Info {
         sys.refresh_memory();
 
         let mut total_capacity = 0;
+        let mut disk_set = HashSet::new();
         for disk in disks.list() {
+            if disk_set.contains(disk.name()) {
+                continue;
+            }
+            disk_set.insert(disk.name());
             total_capacity += disk.total_space();
         }
 
