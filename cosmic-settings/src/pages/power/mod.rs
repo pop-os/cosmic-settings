@@ -134,7 +134,7 @@ fn profiles() -> Section<crate::pages::Message> {
                     })
                     .fold(section, settings::Section::add);
             } else {
-                let item = widget::text::body(fl!("power-mode", "nobackend"));
+                let item = text::body(fl!("power-mode", "nobackend"));
                 section = section.add(item);
             }
 

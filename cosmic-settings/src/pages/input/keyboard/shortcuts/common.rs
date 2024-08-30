@@ -544,11 +544,11 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<Short
         .iter()
         .take(3)
         .filter(|(_, shortcut)| shortcut.binding.is_set())
-        .map(|(_, shortcut)| widget::text::body(shortcut.binding.to_string()).into())
+        .map(|(_, shortcut)| text::body(shortcut.binding.to_string()).into())
         .collect::<Vec<_>>();
 
     let shortcuts: Element<LocalMessage> = if bindings.is_empty() {
-        widget::text::body(fl!("disabled")).into()
+        text::body(fl!("disabled")).into()
     } else {
         widget::column::with_children(bindings)
             .align_items(Alignment::End)
@@ -558,7 +558,7 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<Short
     let modified = if data.modified == 0 {
         None
     } else {
-        Some(widget::text::body(fl!("modified", count = data.modified)))
+        Some(text::body(fl!("modified", count = data.modified)))
     };
 
     let control = widget::row::with_capacity(4)
