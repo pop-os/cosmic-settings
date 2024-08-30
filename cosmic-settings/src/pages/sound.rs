@@ -719,8 +719,8 @@ fn output() -> Section<crate::pages::Message> {
 //         .descriptions(descriptions)
 //         .view::<Page>(move |_binder, _page, section| {
 //             settings::view_section(&section.title)
-//                 .add(settings::item(&section.descriptions[volume], text("TODO")))
-//                 .add(settings::item(&section.descriptions[sound], text("TODO")))
+//                 .add(settings::item(&section.descriptions[volume], text::body("TODO")))
+//                 .add(settings::item(&section.descriptions[sound], text::body("TODO")))
 //                 .into()
 //         })
 // }
@@ -737,7 +737,7 @@ fn output() -> Section<crate::pages::Message> {
 //             settings::view_section(&section.title)
 //                 .add(settings::item(
 //                     &*section.descriptions[applications],
-//                     text("TODO"),
+//                     text::body("TODO"),
 //                 ))
 //                 .into()
 //         })

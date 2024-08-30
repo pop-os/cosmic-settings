@@ -107,7 +107,7 @@ pub(crate) fn behavior_and_position<
             let descriptions = &section.descriptions;
             let page = page.inner();
             let Some(panel_config) = page.panel_config.as_ref() else {
-                return Element::from(text(fl!("unknown")));
+                return Element::from(text::body(fl!("unknown")));
             };
             settings::view_section(&section.title)
                 .add(settings::item(
@@ -163,7 +163,7 @@ pub(crate) fn style<
             let descriptions = &section.descriptions;
             let inner = page.inner();
             let Some(panel_config) = inner.panel_config.as_ref() else {
-                return Element::from(text(fl!("unknown")));
+                return Element::from(text::body(fl!("unknown")));
             };
             settings::view_section(&section.title)
                 .add(settings::item(
@@ -195,7 +195,7 @@ pub(crate) fn style<
                     &descriptions[size],
                     // TODO custom discrete slider variant
                     row::with_children(vec![
-                        text(fl!("small")).into(),
+                        text::body(fl!("small")).into(),
                         slider(
                             0..=4,
                             match panel_config.size {
@@ -220,20 +220,20 @@ pub(crate) fn style<
                             },
                         )
                         .into(),
-                        text(fl!("large")).into(),
+                        text::body(fl!("large")).into(),
                     ])
                     .spacing(12),
                 ))
                 .add(settings::flex_item(
                     &descriptions[background_opacity],
                     row::with_children(vec![
-                        text(fl!("number", HashMap::from_iter(vec![("number", 0)]))).into(),
+                        text::body(fl!("number", HashMap::from_iter(vec![("number", 0)]))).into(),
                         slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
                             Message::Opacity(v as f32 / 100.0)
                         })
                         .breakpoints(&[50])
                         .into(),
-                        text(fl!("number", HashMap::from_iter(vec![("number", 100)]))).into(),
+                        text::body(fl!("number", HashMap::from_iter(vec![("number", 100)]))).into(),
                     ])
                     .spacing(12),
                 ))

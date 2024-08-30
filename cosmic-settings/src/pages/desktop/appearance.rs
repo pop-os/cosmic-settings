@@ -431,7 +431,7 @@ impl Page {
         model: impl Fn(&Self) -> &ColorPickerModel,
     ) -> Element<'_, crate::pages::Message> {
         cosmic::widget::column()
-            .push_maybe(description.map(|description| text(description).width(Length::Fill)))
+            .push_maybe(description.map(|description| text::body(description).width(Length::Fill)))
             .push(
                 model(self)
                     .builder(on_update)
@@ -1175,7 +1175,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .padding([8, 0])
                                 .selected(page.theme_mode.is_dark)
                                 .on_press(Message::DarkMode(true)),
-                                text(&descriptions[dark])
+                                text::body(&descriptions[dark])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1190,7 +1190,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .selected(!page.theme_mode.is_dark)
                                 .padding([8, 0])
                                 .on_press(Message::DarkMode(false)),
-                                text(&descriptions[light])
+                                text::body(&descriptions[light])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1221,7 +1221,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 )
                 .add(
                     cosmic::iced::widget::column![
-                        text(&descriptions[accent_color]),
+                        text::body(&descriptions[accent_color]),
                         scrollable(
                             cosmic::iced::widget::row![
                                 color_button(
@@ -1420,7 +1420,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::Round)),
-                                text(&descriptions[round])
+                                text::body(&descriptions[round])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1442,7 +1442,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::SlightlyRound)),
-                                text(&descriptions[slightly_round])
+                                text::body(&descriptions[slightly_round])
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -1465,7 +1465,7 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .style(button::Style::Image)
                                 .padding(8)
                                 .on_press(Message::Roundness(Roundness::Square)),
-                                text(&descriptions[square])
+                                text::body(&descriptions[square])
                             ]
                             .spacing(8)
                             .align_items(cosmic::iced_core::Alignment::Center)
@@ -1877,7 +1877,7 @@ fn icon_theme_button(
             }),
         )
         .push(
-            text(if name.len() > ICON_NAME_TRUNC {
+            text::body(if name.len() > ICON_NAME_TRUNC {
                 format!("{name:.ICON_NAME_TRUNC$}...")
             } else {
                 name.into()
