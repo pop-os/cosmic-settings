@@ -23,8 +23,7 @@ pub fn search_header<Message>(
         let parent_meta = &pages.info[parent];
 
         column_children.push(
-            text(parent_meta.title.as_str())
-                .size(14)
+            text::body(parent_meta.title.as_str())
                 .apply(container)
                 .padding([0, 0, 0, 6])
                 .into(),
@@ -58,7 +57,7 @@ pub fn page_title<Message: 'static>(page: &page::Info) -> Element<Message> {
 #[must_use]
 pub fn unimplemented_page<Message: 'static>() -> Element<'static, Message> {
     settings::view_section("")
-        .add(text("We haven't created that panel yet, and/or it is using a similar idea as current Pop! designs."))
+        .add(text::body("We haven't created that panel yet, and/or it is using a similar idea as current Pop! designs."))
         .into()
 }
 
@@ -126,7 +125,7 @@ pub fn sub_page_header<'a, Message: 'static + Clone>(
 
 pub fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::Element<'_, Msg> {
     settings::item_row(vec![
-        text(description).wrap(Wrap::Word).into(),
+        text::body(description).wrap(Wrap::Word).into(),
         horizontal_space(Length::Fill).into(),
         icon::from_name("go-next-symbolic").size(16).icon().into(),
     ])

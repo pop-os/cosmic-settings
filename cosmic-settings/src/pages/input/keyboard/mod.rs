@@ -133,7 +133,7 @@ fn popover_menu_row(
     label: String,
     message: impl Fn(DefaultKey) -> SourceContext + 'static,
 ) -> cosmic::Element<'static, Message> {
-    widget::text(label)
+    widget::text::body(label)
         .apply(widget::container)
         .style(cosmic::theme::Container::custom(|theme| {
             iced_style::container::Appearance {

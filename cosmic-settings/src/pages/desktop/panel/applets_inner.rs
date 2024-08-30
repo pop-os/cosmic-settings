@@ -264,12 +264,12 @@ impl Page {
                 row::with_children(vec![
                     icon::from_name(&*info.icon).size(32).icon().into(),
                     column::with_capacity(2)
-                        .push(text(info.name.clone()))
-                        .push(text(info.description.clone()).size(10))
+                        .push(text::body(info.name.clone()))
+                        .push(text::caption(info.description.clone()))
                         .spacing(spacing.space_xxxs)
                         .width(Length::Fill)
                         .into(),
-                    button(text(fl!("add")))
+                    button(text::body(fl!("add")))
                         .style(button::Style::Custom {
                             active: Box::new(|focused, theme| {
                                 let mut style = theme.active(focused, false, &button::Style::Text);
@@ -305,7 +305,7 @@ impl Page {
         }
         if !has_some {
             list_column = list_column.add(
-                text(fl!("no-applets-found"))
+                text::body(fl!("no-applets-found"))
                     .width(Length::Fill)
                     .horizontal_alignment(Horizontal::Center),
             );
@@ -472,12 +472,12 @@ pub fn lists<
         let spacing = cosmic::theme::active().cosmic().spacing;
         let page = page.inner();
         let Some(config) = page.current_config.as_ref() else {
-            return Element::from(text(fl!("unknown")));
+            return Element::from(text::body(fl!("unknown")));
         };
 
         column::with_children(vec![
             column::with_children(vec![
-                text(fl!("start-segment")).into(),
+                text::body(fl!("start-segment")).into(),
                 AppletReorderList::new(
                     config
                         .plugins_wings
@@ -509,7 +509,7 @@ pub fn lists<
             .spacing(spacing.space_xxs)
             .into(),
             column::with_children(vec![
-                text(fl!("center-segment")).into(),
+                text::body(fl!("center-segment")).into(),
                 AppletReorderList::new(
                     config
                         .plugins_center
@@ -540,7 +540,7 @@ pub fn lists<
             .spacing(spacing.space_xxs)
             .into(),
             column::with_children(vec![
-                text(fl!("end-segment")).into(),
+                text::body(fl!("end-segment")).into(),
                 AppletReorderList::new(
                     config
                         .plugins_wings
@@ -689,7 +689,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                         column::with_capacity(2)
                             .spacing(spacing.space_xxxs)
                             .width(Length::Fill)
-                            .push(text(info.name))
+                            .push(text::body(info.name))
                             .push_maybe(if info.description.is_empty() {
                                 None
                             } else {
@@ -730,7 +730,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             surface_ids,
             inner: if active_dnd.is_some() && applet_buttons.is_empty() {
                 container(
-                    text(fl!("drop-here"))
+                    text::body(fl!("drop-here"))
                         .width(Length::Fill)
                         .height(Length::Fill)
                         .vertical_alignment(Vertical::Center)
@@ -778,7 +778,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                         column::with_capacity(2)
                             .spacing(4.0)
                             .width(Length::Fill)
-                            .push(text(info.name))
+                            .push(text::body(info.name))
                             .push(text::caption(info.description))
                             .into(),
                         button::icon(icon::from_name("edit-delete-symbolic"))

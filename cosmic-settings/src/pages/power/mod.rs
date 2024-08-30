@@ -78,10 +78,10 @@ fn battery_info() -> Section<crate::pages::Message> {
         .show_while::<Page>(|page| page.battery.is_present)
         .view::<Page>(move |_binder, page, section| {
             let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
-            let battery_percent = widget::text(format!("{}%", page.battery.percent));
+            let battery_percent = widget::text::body(format!("{}%", page.battery.percent));
 
             let battery_time =
-                widget::text(if page.battery.remaining_duration > TimeDelta::zero() {
+                widget::text::body(if page.battery.remaining_duration > TimeDelta::zero() {
                     &page.battery.remaining_time
                 } else {
                     ""
@@ -134,7 +134,7 @@ fn profiles() -> Section<crate::pages::Message> {
                     })
                     .fold(section, settings::Section::add);
             } else {
-                let item = widget::text::body(fl!("power-mode", "nobackend"));
+                let item = text::body(fl!("power-mode", "nobackend"));
                 section = section.add(item);
             }
 

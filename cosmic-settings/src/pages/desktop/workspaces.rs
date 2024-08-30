@@ -3,10 +3,9 @@
 
 // TODO make settings work
 
-use cosmic::widget::settings;
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
-    widget::radio,
+    widget::{radio, settings, text},
     Apply, Element,
 };
 use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
@@ -136,14 +135,14 @@ fn multi_behavior() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .add(settings::item_row(vec![radio(
-                    &descriptions[span],
+                    text::body(&descriptions[span]),
                     WorkspaceMode::Global,
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
                 )
                 .into()]))
                 .add(settings::item_row(vec![radio(
-                    &descriptions[separate],
+                    text::body(&descriptions[separate]),
                     WorkspaceMode::OutputBound,
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
@@ -167,14 +166,14 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
             settings::view_section(&section.title)
                 .add(settings::item_row(vec![radio(
-                    &*descriptions[vertical],
+                    text::body(&descriptions[vertical]),
                     WorkspaceLayout::Vertical,
                     Some(page.comp_workspace_config.workspace_layout),
                     Message::SetWorkspaceLayout,
                 )
                 .into()]))
                 .add(settings::item_row(vec![radio(
-                    &*descriptions[horizontal],
+                    text::body(&descriptions[horizontal]),
                     WorkspaceLayout::Horizontal,
                     Some(page.comp_workspace_config.workspace_layout),
                     Message::SetWorkspaceLayout,

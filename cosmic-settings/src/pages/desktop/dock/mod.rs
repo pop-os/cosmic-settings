@@ -152,7 +152,7 @@ pub(crate) fn enable() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let Some(container_config) = page.inner.container_config.as_ref() else {
-                return Element::from(text(fl!("unknown")));
+                return Element::from(text::body(fl!("unknown")));
             };
             settings::view_section(&section.title)
                 .add(settings::item(

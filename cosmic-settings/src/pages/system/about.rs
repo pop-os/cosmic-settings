@@ -153,23 +153,29 @@ fn hardware() -> Section<crate::pages::Message> {
             let sections = settings::view_section(&section.title)
                 .add(settings::flex_item(
                     &*desc[model],
-                    text(&page.info.hardware_model),
+                    text::body(&page.info.hardware_model),
                 ))
-                .add(settings::flex_item(&*desc[memory], text(&page.info.memory)))
+                .add(settings::flex_item(
+                    &*desc[memory],
+                    text::body(&page.info.memory),
+                ))
                 .add(settings::flex_item(
                     &*desc[processor],
-                    text(&page.info.processor),
+                    text::body(&page.info.processor),
                 ));
 
             page.info
                 .graphics
                 .iter()
                 .fold(sections, |sections, card| {
-                    sections.add(settings::flex_item(&*desc[graphics], text(card.as_str())))
+                    sections.add(settings::flex_item(
+                        &*desc[graphics],
+                        text::body(card.as_str()),
+                    ))
                 })
                 .add(settings::flex_item(
                     &*desc[disk_capacity],
-                    text(&page.info.disk_capacity),
+                    text::body(&page.info.disk_capacity),
                 ))
                 .into()
         })
@@ -191,19 +197,19 @@ fn os() -> Section<crate::pages::Message> {
             settings::view_section(&section.title)
                 .add(settings::flex_item(
                     &*desc[os],
-                    text(&page.info.operating_system),
+                    text::body(&page.info.operating_system),
                 ))
                 .add(settings::flex_item(
                     &*desc[os_arch],
-                    text(&page.info.os_architecture),
+                    text::body(&page.info.os_architecture),
                 ))
                 .add(settings::flex_item(
                     &*desc[desktop],
-                    text(&page.info.desktop_environment),
+                    text::body(&page.info.desktop_environment),
                 ))
                 .add(settings::flex_item(
                     &*desc[windowing_system],
-                    text(&page.info.windowing_system),
+                    text::body(&page.info.windowing_system),
                 ))
                 .into()
         })
@@ -216,7 +222,7 @@ fn os() -> Section<crate::pages::Message> {
 //         .descriptions(vec![fl!("about-related", "support").into()])
 //         .view::<Page>(move |_binder, _page, section| {
 //             settings::view_section(&section.title)
-//                 .add(settings::item(&*section.descriptions[0], text("TODO")))
+//                 .add(settings::item(&*section.descriptions[0], text::body("TODO")))
 //                 .into()
 //         })
 // }

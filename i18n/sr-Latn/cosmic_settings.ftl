@@ -179,8 +179,8 @@ super-key = Super taster
     .applications = Otvori Aplikacije
 
 window-controls = Kontrole prozora
-    .minimize = Prikaži dugme za minimizovanje
     .maximize = Prikaži dugme za maksimizovanje
+    .minimize = Prikaži dugme za minimizovanje
 
 ## Desktop: Workspaces
 
