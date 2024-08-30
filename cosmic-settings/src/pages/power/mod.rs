@@ -118,7 +118,7 @@ fn profiles() -> Section<crate::pages::Message> {
                     .into_iter()
                     .map(|profile| {
                         settings::item_row(vec![radio(
-                            widget::column::with_capacity(2)
+                            column::with_capacity(2)
                                 .push(text::body(profile.title()))
                                 .push(text::caption(profile.description())),
                             profile.clone(),
