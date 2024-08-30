@@ -575,4 +575,4 @@ power-mode = Energiagazdálkodási mód
     .performance-desc = Csúcsteljesítmény és energiafelhasználás.
     .balanced-desc = Csendes teljesítmény és mérsékelt energiafogyasztás.
     .battery-desc = Csökkentett energiafogyasztás és csendes teljesítmény.
-    .nobackend = A háttérprogram nem található. Telepítse a system76-power vagy a power-profiles-daemont.
+    .no-backend = A háttérprogram nem található. Telepítse a system76-power vagy a power-profiles-daemont.

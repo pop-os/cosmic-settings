@@ -77,7 +77,7 @@ auto-switch = Alternar automaticamente do modo Claro para o modo Escuro
     .next-sunset = Altera para o modo Escuro no próximo pôr do sol
 
 container-background = Fundo do contêiner
-    .desc-detail = A cor de fundo do contêiner é usada para a barra lateral de navegação, gaveta lateral, nas caixas de diálogos e em widgets similares. Por padrão, ela é automaticamente derivada do fundo da aplicação ou da janela. 
+    .desc-detail = A cor de fundo do contêiner é usada para a barra lateral de navegação, gaveta lateral, nas caixas de diálogos e em widgets similares. Por padrão, ela é automaticamente derivada do fundo da aplicação ou da janela.
     .reset = Restaurar para automático
     .desc = A cor primária do contêiner é usada para a barra lateral de navegação, gaveta lateral, caixas de diálogos, e widgets similares.
 
@@ -194,9 +194,9 @@ workspaces-behavior = Comportamento das Áreas de Trabalho
     .fixed = Número fixo de Áreas de Trabalho
     .fixed-desc = Adicione ou remova áreas de trabalho na visão geral.
 
-workspaces-multi-behavior = Comportamento de vários monitores 
+workspaces-multi-behavior = Comportamento de vários monitores
     .span = Áreas de trabalho expandem monitores
-    .separate = Monitores têm áreas de trabalho separadas 
+    .separate = Monitores têm áreas de trabalho separadas
 
 workspaces-overview-thumbnails = Miniaturas da Visão Geral das Áreas de Trabalho
     .show-number = Mostrar Número da Área de Trabalho
@@ -287,10 +287,10 @@ sound-alerts = Alertas
 sound-applications = Aplicações
     .desc = Volumes e definições das aplicações
 
-## Power 
+## Power
 
 power = Energia
-  .desc = Gerencie as configurações de energia 
+  .desc = Gerencie as configurações de energia
 
 power-mode = Modo de Energia
   .performance = Alta performance
@@ -299,7 +299,7 @@ power-mode = Modo de Energia
   .performance-desc = Alta performance e consumo de energia.
   .balanced-desc = Performance ajustada e consumo de energia moderado.
   .battery-desc = Baixo consumo de energia and performance limitada.
-  .nobackend = Processo não encontrado. Instale system76-power ou power-profiles-daemon.
+  .no-backend = Processo não encontrado. Instale system76-power ou power-profiles-daemon.
 
 ## Input
 

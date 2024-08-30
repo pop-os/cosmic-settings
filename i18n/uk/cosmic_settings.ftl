@@ -308,7 +308,7 @@ power-mode = Режим живлення
     .balanced-desc = Тиха робота та помірне споживання енергії.
     .performance = Висока продуктивність
     .performance-desc = Пік продуктивності та споживання енергії.
-    .nobackend = Бекенд не знайдено. Встановіть system76-power або power-profiles-daemon.
+    .no-backend = Бекенд не знайдено. Встановіть system76-power або power-profiles-daemon.
 
 ## Input
 

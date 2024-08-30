@@ -5,8 +5,8 @@ use backend::{Battery, PowerProfile};
 
 use chrono::TimeDelta;
 use cosmic::iced_widget::row;
-use cosmic::widget::{self, column, text};
-use cosmic::{widget::settings, Apply};
+use cosmic::widget::{self, column, radio, settings, text};
+use cosmic::Apply;
 use cosmic_settings_page::{self as page, section, Section};
 use slab::Slab;
 use slotmap::SlotMap;
@@ -78,14 +78,13 @@ fn battery_info() -> Section<crate::pages::Message> {
         .show_while::<Page>(|page| page.battery.is_present)
         .view::<Page>(move |_binder, page, section| {
             let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
-            let battery_percent = widget::text::body(format!("{}%", page.battery.percent));
+            let battery_percent = text::body(format!("{}%", page.battery.percent));
 
-            let battery_time =
-                widget::text::body(if page.battery.remaining_duration > TimeDelta::zero() {
-                    &page.battery.remaining_time
-                } else {
-                    ""
-                });
+            let battery_time = text::body(if page.battery.remaining_duration > TimeDelta::zero() {
+                &page.battery.remaining_time
+            } else {
+                ""
+            });
 
             column::with_capacity(2)
                 .spacing(8)
@@ -118,23 +117,19 @@ fn profiles() -> Section<crate::pages::Message> {
                 section = profiles
                     .into_iter()
                     .map(|profile| {
-                        let selected = if current_profile == profile {
-                            Some(true)
-                        } else {
-                            None
-                        };
-
-                        let widget = widget::Radio::new("", true, selected, |_| {
-                            Message::PowerProfileChange(profile.clone())
-                        });
-
-                        settings::item::builder(profile.title())
-                            .description(profile.description())
-                            .control(widget)
+                        settings::item_row(vec![radio(
+                            widget::column::with_capacity(2)
+                                .push(text::body(profile.title()))
+                                .push(text::caption(profile.description())),
+                            profile.clone(),
+                            Some(current_profile),
+                            Message::PowerProfileChange,
+                        )
+                        .into()])
                     })
                     .fold(section, settings::Section::add);
             } else {
-                let item = text::body(fl!("power-mode", "nobackend"));
+                let item = text::body(fl!("power-mode", "no-backend"));
                 section = section.add(item);
             }
 

@@ -583,4 +583,4 @@ power-mode = Režim napájania
     .performance-desc = Maximálny výkon a vysoká spotreba energie.
     .balanced-desc = Tichá prevádzka a mierna spotreba energie.
     .battery-desc = Znížená spotreba energie a tichá prevádzka.
-    .nobackend = Backend sa nenašiel. Nainštalujte démona system76-power alebo power-profiles-daemon.
+    .no-backend = Backend sa nenašiel. Nainštalujte démona system76-power alebo power-profiles-daemon.

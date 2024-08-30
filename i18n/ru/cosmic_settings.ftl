@@ -576,4 +576,4 @@ power-mode = Режим питания
   .performance-desc = Повышенная производительность и энергопотребление.
   .balanced-desc = Невысокая производительность и умеренное энергопотребление.
   .battery-desc = Сниженное энергопотребление и тихая работа.
-  .nobackend = Службы электропитания не найдены. Установите system76-power или power-profiles-daemon.
+  .no-backend = Службы электропитания не найдены. Установите system76-power или power-profiles-daemon.
