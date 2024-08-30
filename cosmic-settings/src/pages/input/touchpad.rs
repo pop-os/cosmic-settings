@@ -151,7 +151,7 @@ fn click_behavior() -> Section<crate::pages::Message> {
             settings::view_section(&*section.title)
                 // Secondary click via two fingers, and middle-click via three fingers
                 .add(settings::item_row(vec![widget::radio(
-                    &descriptions[click_finger],
+                    text(&descriptions[click_finger]),
                     ClickMethod::Clickfinger,
                     page.input_touchpad.click_method,
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
@@ -159,7 +159,7 @@ fn click_behavior() -> Section<crate::pages::Message> {
                 .into()]))
                 // Secondary and middle-click via button areas.
                 .add(settings::item_row(vec![widget::radio(
-                    &descriptions[button_areas],
+                    text(&descriptions[button_areas]),
                     ClickMethod::ButtonAreas,
                     page.input_touchpad.click_method,
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
@@ -201,7 +201,7 @@ fn scrolling() -> Section<crate::pages::Message> {
             settings::view_section(&section.title)
                 // Two-finger scrolling toggle
                 .add(settings::item_row(vec![widget::radio(
-                    &descriptions[two_finger],
+                    text(&descriptions[two_finger]),
                     ScrollMethod::TwoFinger,
                     page.input_touchpad
                         .scroll_config
@@ -212,7 +212,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                 .into()]))
                 // Edge scrolling toggle
                 .add(settings::item_row(vec![widget::radio(
-                    &descriptions[edge],
+                    text(&descriptions[edge]),
                     ScrollMethod::Edge,
                     page.input_touchpad
                         .scroll_config
@@ -273,13 +273,13 @@ fn gestures() -> Section<crate::pages::Message> {
     // let four_finger_up = descriptions.insert(fl!("gestures", "four-finger-up"));
     // let three_finger_any = descriptions.insert(fl!("gestures", "three-finger-any"));
 
-    let switch_workspaces = descriptions.insert(fl!("switch-workspaces"));
-    let switch_workspaces_horizontal = descriptions.insert(fl!("switch-workspaces", "horizontal"));
-    let switch_workspaces_vertical = descriptions.insert(fl!("switch-workspaces", "vertical"));
-
     // let open_application_library = descriptions.insert(fl!("open-application-library"));
     // let open_workspaces_view = descriptions.insert(fl!("open-workspaces-view"));
     // let switch_between_windows = descriptions.insert(fl!("switch-between-windows"));
+
+    let switch_workspaces = descriptions.insert(fl!("switch-workspaces"));
+    let switch_workspaces_horizontal = descriptions.insert(fl!("switch-workspaces", "horizontal"));
+    let switch_workspaces_vertical = descriptions.insert(fl!("switch-workspaces", "vertical"));
 
     Section::default()
         .title(fl!("gestures"))

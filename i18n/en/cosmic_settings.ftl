@@ -179,8 +179,8 @@ super-key = Super key
     .applications = Open Applications
 
 window-controls = Window Controls
-    .minimize = Show minimize button
     .maximize = Show maximize button
+    .minimize = Show minimize button
 
 ## Desktop: Workspaces
 
