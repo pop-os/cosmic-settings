@@ -1,3 +1,3 @@
 {
-    // "rust-analyzer.check.overrideCommand": ["just", "check-json"]
+    "rust-analyzer.check.overrideCommand": ["just", "check-json"]
 }
