@@ -151,7 +151,7 @@ fn click_behavior() -> Section<crate::pages::Message> {
             settings::view_section(&*section.title)
                 // Secondary click via two fingers, and middle-click via three fingers
                 .add(settings::item_row(vec![widget::radio(
-                    text(&descriptions[click_finger]),
+                    &*descriptions[click_finger],
                     ClickMethod::Clickfinger,
                     page.input_touchpad.click_method,
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
@@ -159,7 +159,7 @@ fn click_behavior() -> Section<crate::pages::Message> {
                 .into()]))
                 // Secondary and middle-click via button areas.
                 .add(settings::item_row(vec![widget::radio(
-                    text(&descriptions[button_areas]),
+                    &*descriptions[button_areas],
                     ClickMethod::ButtonAreas,
                     page.input_touchpad.click_method,
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
@@ -201,7 +201,7 @@ fn scrolling() -> Section<crate::pages::Message> {
             settings::view_section(&section.title)
                 // Two-finger scrolling toggle
                 .add(settings::item_row(vec![widget::radio(
-                    text(&descriptions[two_finger]),
+                    &*descriptions[two_finger],
                     ScrollMethod::TwoFinger,
                     page.input_touchpad
                         .scroll_config
@@ -212,7 +212,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                 .into()]))
                 // Edge scrolling toggle
                 .add(settings::item_row(vec![widget::radio(
-                    text(&descriptions[edge]),
+                    &*descriptions[edge],
                     ScrollMethod::Edge,
                     page.input_touchpad
                         .scroll_config
@@ -290,7 +290,7 @@ fn gestures() -> Section<crate::pages::Message> {
             settings::view_section(&*section.title)
                 // .add(
                 //     settings::item::builder(&descriptions[three_finger_any])
-                //         .flex_control(text(&descriptions[switch_between_windows])),
+                //         .flex_control(&*descriptions[switch_between_windows]),
                 // )
                 .add(
                     settings::item::builder(
@@ -299,7 +299,7 @@ fn gestures() -> Section<crate::pages::Message> {
                             WorkspaceLayout::Vertical => switch_workspaces_vertical,
                         }],
                     )
-                    .flex_control(text(&descriptions[switch_workspaces])),
+                    .flex_control(&*descriptions[switch_workspaces]),
                 )
                 // .add(
                 //     settings::item::builder(
@@ -308,7 +308,7 @@ fn gestures() -> Section<crate::pages::Message> {
                 //             WorkspaceLayout::Vertical => four_finger_right,
                 //         }],
                 //     )
-                //     .flex_control(text(&descriptions[open_workspaces_view])),
+                //     .flex_control(&*descriptions[open_workspaces_view]),
                 // )
                 // .add(
                 //     settings::item::builder(
@@ -317,7 +317,7 @@ fn gestures() -> Section<crate::pages::Message> {
                 //             WorkspaceLayout::Vertical => four_finger_left,
                 //         }],
                 //     )
-                //     .flex_control(text(&descriptions[open_application_library])),
+                //     .flex_control(&*descriptions[open_application_library]),
                 // )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
