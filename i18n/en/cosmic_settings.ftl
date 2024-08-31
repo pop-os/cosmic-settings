@@ -541,10 +541,13 @@ time-format = Date & Time Format
     .show-seconds = Show seconds
     .first = First day of week
     .show-date = Show Date on Top Panel
-    .friday = Friday
-    .saturday = Saturday
     .sunday = Sunday
     .monday = Monday
+    .tuesday = Tuesday
+    .wednesday = Wednesday
+    .thursday = Thursday
+    .friday = Friday
+    .saturday = Saturday
 
 time-region = Region & Language
     .desc = Format dates, times, and numbers based on your region
