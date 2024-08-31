@@ -173,13 +173,13 @@ dock = Barra delle applicazioni
 
 ## Desktop: Window management
 
-window-management = Window management
-    .desc = Super key action, window control options, and additional window tiling options.
+window-management = Gestione finestre
+    .desc = Azione tasto Super, opzioni controllo delle finestre, allineamento e impostazioni aggiuntive.
 
-super-key = Super key
-    .launcher = Open Launcher
-    .workspaces = Open Workspaces
-    .applications = Open Applications
+super-key = Tasto Super
+    .launcher = Apri Launcher
+    .workspaces = Apri Spazi di Lavoro
+    .applications = Apri Applicazioni
 
 window-controls = Controlli finestra
     .minimize = Mostra pulsante "minimizza"
@@ -391,98 +391,6 @@ custom-shortcuts = Scorciatoie personalizzate
     .none = Nessuna scorciatoia personalizzata
 
 modified = { $count } modificata
-
-nav-shortcuts = Navigation
-    .prev-output = Focus previous output
-    .next-output = Focus next output
-    .last-workspace = Focus last workspace
-    .prev-workspace = Focus previous workspace
-    .next-workspace = Focus next workspace
-    .focus = Focus window { $direction ->
-        *[down] down
-        [in] in
-        [left] left
-        [out] out
-        [right] right
-        [up] up
-    }
-    .output = Switch to output { $direction ->
-        *[down] down
-        [left] left
-        [right] right
-        [up] up
-    }
-    .workspace = Switch to workspace { $num }
-
-manage-windows = Manage windows
-    .close = Close window
-    .maximize = Maximize window
-    .minimize = Minimize window
-    .resize-inwards = Resize window inwards
-    .resize-outwards = Resize window outwards
-    .toggle-sticky = Toggle sticky window
-
-move-windows = Move Windows
-    .direction = Move window { $direction ->
-        *[down] down
-        [left] left
-        [right] right
-        [up] up
-    }
-    .display = Move window one monitor { $direction ->
-        *[down] down
-        [left] left
-        [right] right
-        [up] up
-    }
-    .workspace = Move window one workspace { $direction ->
-        *[below] below
-        [left] left
-        [right] right
-        [above] above
-    }
-    .workspace-num = Move window to workspace { $num }
-    .prev-workspace = Move window to prev workspace
-    .next-workspace = Move window to next workspace
-    .last-workspace = Move window to last workspace
-    .next-display = Move window to next display
-    .prev-display = Move window to prev display
-    .send-to-prev-workspace = Move window to previous workspace
-    .send-to-next-workspace = Move window to next workspace
-
-system-shortcut = System
-    .app-library = Open the app library
-    .brightness-down = Decrease display brightness
-    .brightness-up = Increase display brightness
-    .home-folder = Open home folder
-    .keyboard-brightness-down = Decrease keyboard brightness
-    .keyboard-brightness-up = Increase keyboard brightness
-    .launcher = Open the launcher
-    .lock-screen = Lock the screen
-    .mute = Mute audio output
-    .mute-mic = Mutes microphone input
-    .play-pause = Play/Pause
-    .play-next = Next track
-    .play-prev = Previous track
-    .screenshot = Take a screenshot
-    .terminal = Open a terminal
-    .volume-lower = Decrease audio output volume
-    .volume-raise = Increase audio output volume
-    .web-browser = Opens a web browser
-    .window-switcher = Switch between open windows
-    .workspace-overview = Open the workspace overview
-
-window-tiling = Window tiling
-    .horizontal = Set horizontal orientation
-    .vertical = Set vertical orientation
-    .swap-window = Swap window
-    .toggle-tiling = Toggle window tiling
-    .toggle-stacking = Toggle window stacking
-    .toggle-floating = Toggle window floating
-    .toggle-orientation = Toggle orientation
-
-replace-shortcut-dialog = Replace Shortcut?
-    .desc = { $shortcut } is used by { $name }. If you replace it, { $name } will be disabled.
 
 ## Input: Mouse
 
