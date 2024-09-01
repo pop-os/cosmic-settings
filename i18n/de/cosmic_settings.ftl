@@ -236,7 +236,7 @@ mirroring = Spiegelung
     .mirror = { $display } spiegeln
     .project = Auf { $display ->
         [all] alle Bildschirme
-        *[other] { $display } 
+        *[other] { $display }
     } projizieren
     .project-count = Projektion auf { $count} { $count ->
         [1] anderen Bildschirm
@@ -300,7 +300,7 @@ power-mode = Energiemodus
     .balanced-desc = Geräuscharme Leistung und moderater Stromverbrauch.
     .performance = Hohe Leistung
     .performance-desc = Spitzenleistung und höchster Stromverbrauch.
-    .nobackend = Backend nicht gefunden. Installiere system76-power oder power-profiles-daemon.
+    .no-backend = Backend nicht gefunden. Installiere system76-power oder power-profiles-daemon.
 
 ## Eingabe
 
@@ -421,7 +421,7 @@ move-windows = Fenster verschieben
         *[down] unten
         [left] links
         [right] rechts
-        [up] oben 
+        [up] oben
     } verschieben
     .display = Fenster um einen Monitor nach { $direction ->
         *[down] unten
@@ -492,14 +492,14 @@ click-behavior = Klickverhalten
     .button-areas = Sekundärklick in der rechten unteren Ecke und Mittelklick in der unteren Mitte
 
 pinch-to-zoom = Zwei-Finger-Zoom
-    .desc = Mit zwei Fingern in den Inhalt zoomen, wenn die Anwendung den Zoom unterstützt. 
+    .desc = Mit zwei Fingern in den Inhalt zoomen, wenn die Anwendung den Zoom unterstützt.
 
 tap-to-click = Tippen zum Klicken
     .desc = Ermöglicht das Tippen mit einem Finger für den ersten Klick, mit zwei Fingern für den zweiten Klick und mit drei Fingern für den mittleren Klick.
 
 touchpad = Touchpad
-    .acceleration = Touchpad-Beschleunigung aktivieren 
-    .desc = Touchpad-Geschwindigkeit, Klickoptionen, Gesten. 
+    .acceleration = Touchpad-Beschleunigung aktivieren
+    .desc = Touchpad-Geschwindigkeit, Klickoptionen, Gesten.
     .speed = Touchpad-Geschwindigkeit
 
 ## Eingabe: Gesten

@@ -262,7 +262,7 @@ time-date = 日付と時刻
 time-zone = 時間帯
     .auto = 自動的に時間帯を設定
     .auto-info = 位置情報サービスとインターネット接続が必要です
-    
+
 time-format = 日付と時刻
     .twenty-four = 24時間制
     .first = 週の初めの日
@@ -430,10 +430,10 @@ switch-to-prev-workspace = 前のワークスペースに切り替える
 open-application-library = アプリケーションライブラリを開く
 open-workspaces-view = ワークスペースのか概要を開く
 
-## Power 
+## Power
 
 power = 電源
-  .desc = 電源設定を管理 
+  .desc = 電源設定を管理
 
 power-mode = 電源モード
   .performance = ハイパフォーマンス
@@ -442,4 +442,4 @@ power-mode = 電源モード
   .performance-desc = 一番高い性能と電力消費量。
   .balanced-desc = 静かな性能と程度な電力消費量。
   .battery-desc = 低い電力消費量と静粛な性能。
-  .nobackend = バックエンドは見つかれませんでした。 system76-powerまたはpower-profiles-daemonをインストールして下さい。
+  .no-backend = バックエンドは見つかれませんでした。 system76-powerまたはpower-profiles-daemonをインストールして下さい。

@@ -54,7 +54,7 @@ pub async fn get_backend() -> Option<PowerBackendEnum> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PowerProfile {
     Battery,
     Balanced,

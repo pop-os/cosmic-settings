@@ -300,7 +300,7 @@ power-mode = Режим напајања
     .balanced-desc = Тихе перформансе и умерена потрошња енергије.
     .performance = Високе перформансе
     .performance-desc = Највеће перформансе и потрошња енергије.
-    .nobackend = Подсистем није пронађен. Инсталирајте system76-power или power-profiles-daemon.
+    .no-backend = Подсистем није пронађен. Инсталирајте system76-power или power-profiles-daemon.
 
 ## Input
 

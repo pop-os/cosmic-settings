@@ -576,4 +576,4 @@ power-mode = Modo de energía
     .performance-desc = Rendimiento y uso de energía alto.
     .balanced-desc = Rendimiento y uso de energía estándar.
     .battery-desc = Rendimiento y uso de energía reducido.
-    .nobackend = «Backend» no encontrado. Instalar system76-power o power-profiles-daemon.
+    .no-backend = «Backend» no encontrado. Instalar system76-power o power-profiles-daemon.

@@ -303,7 +303,7 @@ power-mode = Power Mode
     .balanced-desc = Quiet performance and moderate power usage.
     .performance = High performance
     .performance-desc = Peak performance and power usage.
-    .nobackend = Backend not found. Install system76-power or power-profiles-daemon.
+    .no-backend = Backend not found. Install system76-power or power-profiles-daemon.
 
 ## Input
 

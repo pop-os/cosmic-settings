@@ -288,10 +288,10 @@ sound-applications = Applications
 
 profile = Profile
 
-## Power 
+## Power
 
 power = Énergie
-  .desc = Gérer les paramètres d'alimentation 
+  .desc = Gérer les paramètres d'alimentation
 
 power-profiles = Modes d'énergie
     .battery = Économie d'énergie
@@ -300,7 +300,7 @@ power-profiles = Modes d'énergie
     .balanced-desc = Performances et consommation d'énergie équilibré.
     .performance = Performance
     .performance-desc = Performances maximales mais force consommation d'énergie.
-    .nobackend = Backend non trouvé. Installez system76-power ou power-profiles-daemon.
+    .no-backend = Backend non trouvé. Installez system76-power ou power-profiles-daemon.
 
 ## Input
 

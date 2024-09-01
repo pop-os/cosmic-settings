@@ -317,7 +317,7 @@ power-mode = Profile Zasilania
   .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
   .balanced-desc = Standardowa wydajność i zużycie baterii.
   .battery-desc = Zmniejszone zużycie energii i zmniejszona wydajność.
-  .nobackend = Backend nie znaleziony. Zainstaluj system76-power lub power-profiles-daemon.
+  .no-backend = Backend nie znaleziony. Zainstaluj system76-power lub power-profiles-daemon.
 
 ## Input
 
