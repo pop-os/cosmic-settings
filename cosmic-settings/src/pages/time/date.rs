@@ -478,7 +478,7 @@ fn timezone() -> Section<crate::pages::Message> {
 }
 
 fn locale() -> Result<Locale, Box<dyn std::error::Error>> {
-    let locale = std::env::var("LANG")?;
+    let locale = std::env::var("LC_TIME").or_else(|_| std::env::var("LANG"))?;
     let locale = locale
         .split('.')
         .next()
