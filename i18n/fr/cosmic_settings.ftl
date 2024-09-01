@@ -293,7 +293,7 @@ profile = Profile
 power = Énergie
   .desc = Gérer les paramètres d'alimentation 
 
-battery = Battery
+battery = Batterie
   .remaining-time = ({ $time } restant)
 
 power-profiles = Modes d'énergie
