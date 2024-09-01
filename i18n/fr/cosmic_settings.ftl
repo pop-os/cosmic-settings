@@ -293,6 +293,9 @@ profile = Profile
 power = Énergie
   .desc = Gérer les paramètres d'alimentation
 
+battery = Batterie
+  .remaining-time = ({ $time } restant)
+
 power-profiles = Modes d'énergie
     .battery = Économie d'énergie
     .battery-desc = Performances réduites mais consommation d'énergie réduite.
@@ -312,6 +315,7 @@ input-devices = Périphériques d'entrée
     .desc = Périphériques d'entrée
 
 primary-button = Boutton principal
+    .desc = Définit l'ordre des boutons physiques.
     .left = Gauche
     .right = Droite
 
@@ -377,7 +381,6 @@ system-controls = Contrôles système
 terminate = Terminer
 toggle-stacking = Basculer l'empilement des fenêtres
 type-key-combination = Taper la combinaison de touches
-unknown = Inconnu
 
 custom-shortcuts = Raccourcis personnalisés
     .add = Ajouter un raccourci
@@ -511,9 +514,11 @@ swiping = Gestes
     .four-finger-up = Balayage à quatre doigts vers le haut
     .three-finger-any = Balayage à trois doigts dans n'importe quelle direction
 
+switch-workspaces = Basculer entre les espaces de travail
+    .horizontal = Balayage à quatre doigts vers la gauche/droite
+    .vertical = Balayage à quatre doigts vers le haut/bas
+
 switch-between-windows = Basculer entre les fenêtres
-switch-to-next-workspace = Basculer vers le prochain espace de travail
-switch-to-prev-workspace = Basculer vers l'espace de travail précédent
 open-application-library = Ouvrir la bibliothèque d'applications
 open-workspaces-view = Ouvrir l'aperçu des espaces de travail
 
@@ -533,6 +538,7 @@ time-zone = Fuseau Horaire
 
 time-format = Format date et heure
     .twenty-four = Format 24 heures
+	.show-seconds = Afficher les secondes
     .first = Premier jour de la semaine
     .show-date = Afficher la date sur le panneau supérieur
     .friday = Vendredi
