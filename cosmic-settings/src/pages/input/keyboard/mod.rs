@@ -32,7 +32,7 @@ static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
     ("Left Alt", "lv3:lalt_switch"),
     ("Right Alt", "lv3:alt_switch"),
     ("Left Super", "lv3:lwin_switch"),
-    ("Right Super", "lv3:win_switch"),
+    ("Right Super", "lv3:rwin_switch"),
     ("Menu key", "lv3:menu_switch"),
     // ("Right Ctrl", "lv3:"), XXX
     ("Caps Lock", "lv3:caps_switch"),
