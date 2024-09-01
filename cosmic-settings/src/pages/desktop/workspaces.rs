@@ -5,6 +5,7 @@
 
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
+    iced::Length,
     widget::{radio, settings, text},
     Apply, Element,
 };
@@ -140,6 +141,7 @@ fn multi_behavior() -> Section<crate::pages::Message> {
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
                 )
+                .width(Length::Fill)
                 .into()]))
                 .add(settings::item_row(vec![radio(
                     text::body(&descriptions[separate]),
@@ -147,6 +149,7 @@ fn multi_behavior() -> Section<crate::pages::Message> {
                     Some(page.comp_workspace_config.workspace_mode),
                     Message::SetWorkspaceMode,
                 )
+                .width(Length::Fill)
                 .into()]))
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
@@ -171,6 +174,7 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
                     Some(page.comp_workspace_config.workspace_layout),
                     Message::SetWorkspaceLayout,
                 )
+                .width(Length::Fill)
                 .into()]))
                 .add(settings::item_row(vec![radio(
                     text::body(&descriptions[horizontal]),
@@ -178,6 +182,7 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
                     Some(page.comp_workspace_config.workspace_layout),
                     Message::SetWorkspaceLayout,
                 )
+                .width(Length::Fill)
                 .into()]))
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)

@@ -4,6 +4,7 @@ use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, PowerProfile};
 
 use chrono::TimeDelta;
+use cosmic::iced::Length;
 use cosmic::iced_widget::row;
 use cosmic::widget::{self, column, radio, settings, text};
 use cosmic::Apply;
@@ -125,6 +126,7 @@ fn profiles() -> Section<crate::pages::Message> {
                             Some(current_profile),
                             Message::PowerProfileChange,
                         )
+                        .width(Length::Fill)
                         .into()])
                     })
                     .fold(section, settings::Section::add);
