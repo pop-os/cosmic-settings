@@ -1099,10 +1099,49 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
 }
 
 fn cache_rates(cached_rates: &mut Vec<String>, rates: &[u32]) {
-    *cached_rates = rates
-        .iter()
-        .map(|&rate| format!("{:>3}.{:02} Hz", rate / 1000, rate % 1000))
-        .collect();
+    cached_rates.clear();
+
+    #[inline]
+    fn round(rate: &u32) -> u32 {
+        (*rate as f32 / 1000.0).round() as u32
+    }
+
+    #[inline]
+    fn format_dec(rate: &u32) -> String {
+        format!("{:>3}.{:02} Hz", rate / 1000, rate % 1000)
+    }
+
+    for (i, rate) in rates.iter().enumerate() {
+        let prev = match i.checked_sub(1) {
+            Some(i) => rates.get(i),
+            None => None,
+        };
+
+        match (prev, rates.get(i + 1)) {
+            (None, None) => cached_rates.push(format!("{} Hz", round(rate))),
+            (None, Some(next)) => {
+                if round(rate) == round(next) {
+                    cached_rates.push(format_dec(rate))
+                } else {
+                    cached_rates.push(format!("{} Hz", round(rate)))
+                }
+            }
+            (Some(prev), None) => {
+                if round(rate) == round(prev) {
+                    cached_rates.push(format_dec(rate))
+                } else {
+                    cached_rates.push(format!("{} Hz", round(rate)))
+                }
+            }
+            (Some(prev), Some(next)) => {
+                if round(rate) == round(prev) || round(rate) == round(next) {
+                    cached_rates.push(format_dec(rate))
+                } else {
+                    cached_rates.push(format!("{} Hz", round(rate)))
+                }
+            }
+        }
+    }
 }
 
 pub async fn on_enter() -> crate::pages::Message {
@@ -1111,4 +1150,15 @@ pub async fn on_enter() -> crate::pages::Message {
     crate::pages::Message::Displays(Message::Update {
         randr: Arc::new(randr_fut.await),
     })
+}
+
+#[test]
+fn test_cache_rates() {
+    let rates: &[u32] = &[10000, 11006, 100004, 100005];
+
+    let mut cached = vec![];
+
+    cache_rates(&mut cached, rates);
+
+    assert_eq!(cached, vec!["10 Hz", "11 Hz", "100.04 Hz", "100.05 Hz"])
 }
