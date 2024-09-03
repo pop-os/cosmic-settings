@@ -230,6 +230,7 @@ fn special_char_radio_row<'a>(
     settings::item_row(vec![radio(desc, value, Some(current_value), |_| {
         Message::SpecialCharacterSelect(value)
     })
+    .width(Length::Fill)
     .into()])
     .into()
 }

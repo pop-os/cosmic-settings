@@ -156,6 +156,7 @@ fn click_behavior() -> Section<crate::pages::Message> {
                     page.input_touchpad.click_method,
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
                 )
+                .width(Length::Fill)
                 .into()]))
                 // Secondary and middle-click via button areas.
                 .add(settings::item_row(vec![widget::radio(
@@ -164,6 +165,7 @@ fn click_behavior() -> Section<crate::pages::Message> {
                     page.input_touchpad.click_method,
                     |option| Message::SetSecondaryClickBehavior(Some(option), true),
                 )
+                .width(Length::Fill)
                 .into()]))
                 .add(
                     settings::item::builder(&descriptions[tap_to_click]).toggler(
@@ -209,6 +211,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                         .and_then(|x| x.method),
                     |option| Message::SetScrollMethod(Some(option), true),
                 )
+                .width(Length::Fill)
                 .into()]))
                 // Edge scrolling toggle
                 .add(settings::item_row(vec![widget::radio(
@@ -220,6 +223,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                         .and_then(|x| x.method),
                     |option| Message::SetScrollMethod(Some(option), true),
                 )
+                .width(Length::Fill)
                 .into()]))
                 // Scroll speed slider
                 .add(settings::item(&descriptions[scroll_speed], {

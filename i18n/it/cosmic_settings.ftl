@@ -392,6 +392,98 @@ custom-shortcuts = Scorciatoie personalizzate
 
 modified = { $count } modificata
 
+nav-shortcuts = Navigazione
+    .prev-output = Focus su output precedente
+    .next-output = Focus su output successivo
+    .last-workspace = Focus sull'ultimo spazio di lavoro
+    .prev-workspace = Focus sullo spazio di lavoro precedente
+    .next-workspace = Focus sullo spazio di lavoro successivo
+    .focus = Focus sulla finestra { $direction ->
+        *[down] giù
+        [in] dentro
+        [left] sinistra
+        [out] fuori
+        [right] destra
+        [up] su
+    }
+    .output = Passa a output { $direction ->
+        *[down] giù
+        [left] sinistra
+        [right] destra
+        [up] su
+    }
+    .workspace = Passa allo spazio di lavoro { $num }
+
+manage-windows = Gestione finestre
+    .close = Chiudi finestra
+    .maximize = Massimizza finestra
+    .minimize = Minimizza finestra
+    .resize-inwards = Ridimensiona finestra verso l'interno
+    .resize-outwards = Ridimensiona finestra verso l'esterno
+    .toggle-sticky = Attiva/disattiva finestra fissa
+
+move-windows = Sposta finestre
+    .direction = Sposta finestra { $direction ->
+        *[down] giù
+        [left] sinistra
+        [right] destra
+        [up] su
+    }
+    .display = Sposta finestra su un monitor { $direction ->
+        *[down] giù
+        [left] sinistra
+        [right] destra
+        [up] su
+    }
+    .workspace = Sposta finestra su uno spazio di lavoro { $direction ->
+        *[below] sotto
+        [left] sinistra
+        [right] destra
+        [above] sopra
+    }
+    .workspace-num = Sposta finestra allo spazio di lavoro { $num }
+    .prev-workspace = Sposta finestra allo spazio di lavoro precedente
+    .next-workspace = Sposta finestra allo spazio di lavoro successivo
+    .last-workspace = Sposta finestra all'ultimo spazio di lavoro
+    .next-display = Sposta finestra al monitor successivo
+    .prev-display = Sposta finestra al monitor precedente
+    .send-to-prev-workspace = Sposta finestra allo spazio di lavoro precedente
+    .send-to-next-workspace = Sposta finestra allo spazio di lavoro successivo
+
+system-shortcut = Sistema
+    .app-library = Apri la libreria delle app
+    .brightness-down = Riduci luminosità del display
+    .brightness-up = Aumenta luminosità del display
+    .home-folder = Apri cartella home
+    .keyboard-brightness-down = Riduci luminosità della tastiera
+    .keyboard-brightness-up = Aumenta luminosità della tastiera
+    .launcher = Apri il launcher
+    .lock-screen = Blocca lo schermo
+    .mute = Disattiva audio
+    .mute-mic = Disattiva microfono
+    .play-pause = Riproduci/Pausa
+    .play-next = Traccia successiva
+    .play-prev = Traccia precedente
+    .screenshot = Cattura schermata
+    .terminal = Apri un terminale
+    .volume-lower = Riduci volume dell'audio
+    .volume-raise = Aumenta volume dell'audio
+    .web-browser = Apri un browser web
+    .window-switcher = Cambia finestra aperta
+    .workspace-overview = Apri panoramica degli spazi di lavoro
+
+window-tiling = Affiancamento finestre
+    .horizontal = Imposta orientamento orizzontale
+    .vertical = Imposta orientamento verticale
+    .swap-window = Scambia finestra
+    .toggle-tiling = Attiva/disattiva affiancamento finestre
+    .toggle-stacking = Attiva/disattiva impilamento finestre
+    .toggle-floating = Attiva/disattiva finestra flottante
+    .toggle-orientation = Cambia orientamento
+
+replace-shortcut-dialog = Sostituire scorciatoia?
+    .desc = { $shortcut } è utilizzata da { $name }. Se la sostituisci, { $name } sarà disabilitato.
+
 ## Input: Mouse
 
 mouse = Mouse

@@ -262,6 +262,12 @@ dialog = Dialog
     .change-prompt = Settings changes will automatically revert in { $time } seconds.
     .revert-settings = Revert Settings
 
+legacy-applications = X11 Window System Application Scaling
+    .scaled-by-system = Scale all X11 Applications
+    .system-description = X11 applications will appear blurry on HiDPI screens.
+    .scaled-natively = Render X11 Applications at native resolution
+    .native-description = X11 applications that don't support scaling will be small when HiDPI displays are in use. Enable for games to utilize the full monitor resolution.
+
 ## Sound
 
 sound = Sound

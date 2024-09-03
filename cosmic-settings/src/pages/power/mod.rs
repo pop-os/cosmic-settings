@@ -231,6 +231,7 @@ fn profiles() -> Section<crate::pages::Message> {
                             Some(current_profile),
                             Message::PowerProfileChange,
                         )
+                        .width(Length::Fill)
                         .into()])
                     })
                     .fold(section, settings::Section::add);
