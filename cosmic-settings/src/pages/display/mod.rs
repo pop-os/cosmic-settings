@@ -10,15 +10,17 @@ use cosmic::iced::{time, Alignment, Length};
 use cosmic::iced_widget::scrollable::{Direction, Properties, RelativeOffset};
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{
-    self, column, container, dropdown, list_column, segmented_button, tab_bar, toggler,
+    self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
 };
 use cosmic::{command, Apply, Command, Element};
+use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_randr_shell::{List, Output, OutputKey, Transform};
 use cosmic_settings_page::{self as page, section, Section};
 use once_cell::sync::Lazy;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
 use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
+use tracing::error;
 
 static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
 static DPI_SCALE_LABELS: Lazy<Vec<String>> =
@@ -98,6 +100,7 @@ pub enum Message {
         /// Available outputs from cosmic-randr.
         randr: Arc<Result<List, cosmic_randr_shell::Error>>,
     },
+    SetXwaylandDescaling(bool),
 }
 
 impl From<Message> for app::Message {
@@ -137,10 +140,22 @@ pub struct Page {
     /// the instant the setting was changed.
     dialog_countdown: usize,
     show_display_options: bool,
+    comp_config: cosmic_config::Config,
+    comp_config_descale_xwayland: bool,
 }
 
 impl Default for Page {
     fn default() -> Self {
+        let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        let comp_config_descale_xwayland =
+            comp_config.get("descale_xwayland").unwrap_or_else(|err| {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                    error!(?err, "Failed to read config 'descale_xwayland'");
+                }
+
+                false
+            });
+
         Self {
             list: List::default(),
             display_tabs: segmented_button::SingleSelectModel::default(),
@@ -156,6 +171,8 @@ impl Default for Page {
             dialog: None,
             dialog_countdown: 0,
             show_display_options: true,
+            comp_config,
+            comp_config_descale_xwayland,
         }
     }
 }
@@ -204,6 +221,8 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(display_arrangement()),
             // Display configuration
             sections.insert(display_configuration()),
+            // Xwayland scaling options
+            sections.insert(legacy_applications()),
         ])
     }
 
@@ -469,6 +488,16 @@ impl Page {
                     fl!("orientation", "rotate-180"),
                     fl!("orientation", "rotate-270"),
                 ];
+            }
+
+            Message::SetXwaylandDescaling(descale) => {
+                self.comp_config_descale_xwayland = descale;
+                if let Err(err) = self
+                    .comp_config
+                    .set("descale_xwayland", &self.comp_config_descale_xwayland)
+                {
+                    error!(?err, "Failed to set config 'descale_xwayland'");
+                }
             }
         }
 
@@ -1018,28 +1047,28 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
             let active_output = &page.list.outputs[active_id];
 
             let display_options = (page.show_display_options && active_output.enabled).then(|| {
-                list_column()
-                    .add(widget::settings::item(
+                vec![
+                    widget::settings::item(
                         &descriptions[resolution],
                         dropdown(
                             &page.cache.resolutions,
                             page.cache.resolution_selected,
                             Message::Resolution,
                         ),
-                    ))
-                    .add(widget::settings::item(
+                    ),
+                    widget::settings::item(
                         &descriptions[refresh_rate],
                         dropdown(
                             &page.cache.refresh_rates,
                             page.cache.refresh_rate_selected,
                             Message::RefreshRate,
                         ),
-                    ))
-                    .add(widget::settings::item(
+                    ),
+                    widget::settings::item(
                         &descriptions[scale],
                         dropdown(&DPI_SCALE_LABELS, page.cache.scale_selected, Message::Scale),
-                    ))
-                    .add(widget::settings::item(
+                    ),
+                    widget::settings::item(
                         &descriptions[orientation],
                         dropdown(
                             &page.cache.orientations,
@@ -1053,10 +1082,11 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                                 })
                             },
                         ),
-                    ))
+                    ),
+                ]
             });
 
-            let mut content = column().spacing(theme.cosmic().space_m());
+            let mut content = column().spacing(theme.cosmic().space_xs());
 
             if page.list.outputs.len() > 1 {
                 let display_switcher = tab_bar::horizontal(&page.display_tabs)
@@ -1073,7 +1103,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     > 1
                     || !active_output.enabled)
                     .then(|| {
-                        list_column()
+                        let mut column = list_column()
                             .add(widget::settings::item(
                                 &descriptions[enable_label],
                                 toggler(None, active_output.enabled, Message::DisplayToggle),
@@ -1084,17 +1114,68 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                                     &page.mirror_menu,
                                     Message::Mirroring,
                                 ),
-                            ))
+                            ));
+
+                        if let Some(items) = display_options {
+                            for item in items {
+                                column = column.add(item);
+                            }
+                        }
+
+                        column
                     });
 
                 content = content.push(display_switcher).push_maybe(display_enable);
+            } else {
+                content = content
+                    .push(widget::text::heading(&descriptions[options_label]))
+                    .push_maybe(display_options.map(|items| {
+                        let mut column = list_column();
+                        for item in items {
+                            column = column.add(item);
+                        }
+                        column
+                    }));
             }
 
-            content
-                .push(widget::text::heading(&descriptions[options_label]))
-                .push_maybe(display_options)
+            content.apply(Element::from).map(pages::Message::Displays)
+        })
+}
+
+pub fn legacy_applications() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let system = descriptions.insert(fl!("legacy-applications", "scaled-by-system"));
+    let system_desc = descriptions.insert(fl!("legacy-applications", "system-description"));
+    let native = descriptions.insert(fl!("legacy-applications", "scaled-natively"));
+    let native_desc = descriptions.insert(fl!("legacy-applications", "native-description"));
+
+    Section::default()
+        .title(fl!("legacy-applications"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+            widget::settings::view_section(&section.title)
+                .add(widget::settings::item_row(vec![widget::radio(
+                    widget::column()
+                        .push(text::body(&descriptions[system]))
+                        .push(text::caption(&descriptions[system_desc])),
+                    false,
+                    Some(page.comp_config_descale_xwayland),
+                    Message::SetXwaylandDescaling,
+                )
+                .into()]))
+                .add(widget::settings::item_row(vec![widget::radio(
+                    widget::column()
+                        .push(text::body(&descriptions[native]))
+                        .push(text::caption(&descriptions[native_desc])),
+                    true,
+                    Some(page.comp_config_descale_xwayland),
+                    Message::SetXwaylandDescaling,
+                )
+                .into()]))
                 .apply(Element::from)
-                .map(pages::Message::Displays)
+                .map(crate::pages::Message::Displays)
         })
 }
 
