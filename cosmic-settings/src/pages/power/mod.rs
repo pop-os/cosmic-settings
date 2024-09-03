@@ -4,12 +4,12 @@ use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, ConnectedDevice, PowerProfile};
 
 use chrono::TimeDelta;
-use cosmic::iced::Length;
+use cosmic::iced::{Alignment, Length};
 use cosmic::iced_widget::{column, row};
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{self, radio, settings, text};
-use cosmic::Command;
 use cosmic::Apply;
+use cosmic::Command;
 use cosmic_settings_page::{self as page, section, Section};
 use itertools::Itertools;
 use slab::Slab;
@@ -142,29 +142,34 @@ fn connected_devices() -> Section<crate::pages::Message> {
                 .map(|connected_device| {
                     let battery_icon =
                         widget::icon::from_name(connected_device.battery.icon_name.clone());
-                    let battery_percent =
-                        widget::text(format!("{}%", connected_device.battery.percent));
 
-                    // FIXME is that missing from the design?
-                    // let battery_time =
-                    //     widget::text(if connected_device.battery.remaining_duration > TimeDelta::zero() {
-                    //         &connected_device.battery.remaining_time
-                    //     } else {
-                    //         ""
-                    //     });
+                    let battery_percent_and_time = widget::text(
+                        if connected_device.battery.remaining_duration > TimeDelta::zero() {
+                            format!(
+                                "{}% - {}",
+                                connected_device.battery.percent,
+                                &connected_device.battery.remaining_time
+                            )
+                        } else {
+                            format!("{}%", connected_device.battery.percent)
+                        },
+                    );
                     widget::container(
                         row!(
                             widget::icon::from_name(connected_device.device_icon).size(48),
                             column!(
-                                row!(battery_percent, battery_icon /*, battery_time*/).spacing(8),
-                                widget::vertical_space(Length::Fill),
                                 text::heading(&connected_device.model),
+                                row!(battery_icon, battery_percent_and_time)
+                                    .spacing(4)
+                                    .align_items(Alignment::Center),
                             )
-                            .height(Length::Fill)
+                            .height(Length::Shrink)
                         )
+                        .align_items(Alignment::Center)
                         .spacing(16)
                         .padding([8, 16])
-                        .width(Length::Fill),
+                        .width(Length::Fill)
+                        .height(Length::Fill),
                     )
                     .height(64)
                     .style(cosmic::theme::Container::List)
