@@ -395,7 +395,7 @@ modified = { $count } modificata
 nav-shortcuts = Navigazione
     .prev-output = Focus su output precedente
     .next-output = Focus su output successivo
-    .last-workspace = Focus sull'ultimo workspace
+    .last-workspace = Focus sull'ultimo spazio di lavoro
     .prev-workspace = Focus sullo spazio di lavoro precedente
     .next-workspace = Focus sullo spazio di lavoro successivo
     .focus = Focus sulla finestra { $direction ->
@@ -470,7 +470,7 @@ system-shortcut = Sistema
     .volume-raise = Aumenta volume dell'audio
     .web-browser = Apri un browser web
     .window-switcher = Cambia finestra aperta
-    .workspace-overview = Apri panoramica dei workspace
+    .workspace-overview = Apri panoramica degli spazi di lavoro
 
 window-tiling = Affiancamento finestre
     .horizontal = Imposta orientamento orizzontale
