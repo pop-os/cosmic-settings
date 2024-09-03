@@ -296,6 +296,9 @@ power = Power & Battery
 battery = Battery
   .remaining-time = ({ $time } left)
 
+connected-devices = Connected Devices
+  .unknown = Unknown device
+
 power-mode = Power Mode
     .battery = Extended battery life
     .battery-desc = Reduced power usage and silent performance.

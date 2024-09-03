@@ -296,6 +296,9 @@ power = Énergie
 battery = Batterie
   .remaining-time = ({ $time } restant)
 
+connected-devices = Périphériques connectés
+  .unknown = Périphériques inconnu
+
 power-profiles = Modes d'énergie
     .battery = Économie d'énergie
     .battery-desc = Performances réduites mais consommation d'énergie réduite.

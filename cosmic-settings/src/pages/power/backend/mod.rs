@@ -1,5 +1,7 @@
 use chrono::Duration;
 use futures::FutureExt;
+use futures::future::join_all;
+use upower_dbus::{BatteryType, DeviceProxy};
 use zbus::Connection;
 
 mod ppdaemon;
@@ -239,6 +241,13 @@ pub struct Battery {
     pub remaining_time: String,
 }
 
+#[derive(Default, Debug, Clone)]
+pub struct ConnectedDevice {
+    pub model: String,
+    pub device_icon: &'static str,
+    pub battery: Battery,
+}
+
 async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Error> {
     let connection = match Connection::system().await {
         Ok(c) => c,
@@ -252,6 +261,42 @@ async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Er
         Ok(p) => p.get_display_device().await,
         Err(e) => Err(e),
     }
+}
+
+async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zbus::Error> {
+    let connection = match Connection::system().await {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::error!("zbus connection failed. {e}");
+            return Err(e);
+        }
+    };
+
+    let devices = upower_dbus::UPowerProxy::new(&connection)
+        .await?
+        .enumerate_devices()
+        .await?;
+
+    let devices = futures::future::join_all(
+        devices
+            .into_iter()
+            .map(|path| DeviceProxy::new(&connection, path)),
+    )
+    .await;
+
+    let errors = devices.iter().filter(|device|device.is_err());
+    if errors.count() > 0 {
+        let mut errors: Vec<zbus::Error> = devices.into_iter().filter_map(std::result::Result::err).collect();
+        if errors.len() > 1 {
+            eprintln!("Multiple errors occurs when fetching connected device: {errors:?}. Only the last one will be returned.");
+            
+        }
+        return Err(errors.pop().unwrap());
+    }
+    Ok(devices
+        .into_iter()
+        .filter_map(std::result::Result::ok)
+        .collect())
 }
 
 async fn get_on_battery_status() -> Result<bool, zbus::Error> {
@@ -270,81 +315,149 @@ async fn get_on_battery_status() -> Result<bool, zbus::Error> {
 }
 
 impl Battery {
+    pub async fn from_device(proxy: DeviceProxy<'_>) -> Self {
+        let mut remaining_duration: Duration = Duration::default();
+
+        let (is_present, percentage, on_battery) = futures::join!(
+            proxy.is_present().map(Result::unwrap_or_default),
+            proxy.percentage().map(Result::unwrap_or_default),
+            get_on_battery_status().map(Result::unwrap_or_default)
+        );
+
+        let percent = percentage.clamp(0.0, 100.0);
+
+        if on_battery {
+            if let Ok(time) = proxy.time_to_empty().await {
+                if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
+                {
+                    remaining_duration = dur;
+                }
+            }
+        } else if let Ok(time) = proxy.time_to_full().await {
+            if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
+                remaining_duration = dur;
+            }
+        }
+
+        let battery_percent = if percent > 95.0 {
+            100
+        } else if percent > 80.0 {
+            90
+        } else if percent > 65.0 {
+            80
+        } else if percent > 35.0 {
+            50
+        } else if percent > 20.0 {
+            35
+        } else if percent > 14.0 {
+            20
+        } else if percent > 9.0 {
+            10
+        } else if percent > 5.0 {
+            5
+        } else {
+            0
+        };
+        let charging = if on_battery { "" } else { "charging-" };
+
+        let icon_name =
+            format!("cosmic-applet-battery-level-{battery_percent}-{charging}symbolic",);
+
+        let remaining_time = |duration: Duration| {
+            let total_seconds = duration.num_seconds();
+
+            let hours = total_seconds / 3600;
+            let minutes = (total_seconds % 3600) / 60;
+            let seconds = total_seconds % 60;
+
+            fl!(
+                "battery",
+                "remaining-time",
+                time = format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+            )
+        };
+
+        Self {
+            icon_name,
+            is_present,
+            percent,
+            on_battery,
+            remaining_duration,
+            remaining_time: remaining_time(remaining_duration),
+        }
+    }
+
     pub async fn update_battery() -> Self {
         let proxy = get_device_proxy().await;
 
         if let Ok(proxy) = proxy {
-            let mut remaining_duration: Duration = Duration::default();
-
-            let (is_present, percentage, on_battery) = futures::join!(
-                proxy.is_present().map(Result::unwrap_or_default),
-                proxy.percentage().map(Result::unwrap_or_default),
-                get_on_battery_status().map(Result::unwrap_or_default)
-            );
-
-            let percent = percentage.clamp(0.0, 100.0);
-
-            if on_battery {
-                if let Ok(time) = proxy.time_to_empty().await {
-                    if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
-                    {
-                        remaining_duration = dur;
-                    }
-                }
-            } else if let Ok(time) = proxy.time_to_full().await {
-                if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
-                    remaining_duration = dur;
-                }
-            }
-
-            let battery_percent = if percent > 95.0 {
-                100
-            } else if percent > 80.0 {
-                90
-            } else if percent > 65.0 {
-                80
-            } else if percent > 35.0 {
-                50
-            } else if percent > 20.0 {
-                35
-            } else if percent > 14.0 {
-                20
-            } else if percent > 9.0 {
-                10
-            } else if percent > 5.0 {
-                5
-            } else {
-                0
-            };
-            let charging = if on_battery { "" } else { "charging-" };
-
-            let icon_name =
-                format!("cosmic-applet-battery-level-{battery_percent}-{charging}symbolic",);
-
-            let remaining_time = |duration: Duration| {
-                let total_seconds = duration.num_seconds();
-
-                let hours = total_seconds / 3600;
-                let minutes = (total_seconds % 3600) / 60;
-                let seconds = total_seconds % 60;
-
-                fl!(
-                    "battery",
-                    "remaining-time",
-                    time = format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
-                )
-            };
-
-            return Battery {
-                icon_name,
-                is_present,
-                percent,
-                on_battery,
-                remaining_duration,
-                remaining_time: remaining_time(remaining_duration),
-            };
+            return Self::from_device(proxy).await;
         }
 
         Battery::default()
+    }
+}
+
+impl ConnectedDevice {
+    async fn from_device_maybe(proxy: DeviceProxy<'_>) -> Option<Self> {
+        let device_type = proxy.type_().await.unwrap_or(BatteryType::Unknown);
+        if matches!(
+            device_type,
+            BatteryType::Unknown | BatteryType::LinePower | BatteryType::Battery
+        ) {
+            return None;
+        }
+        let model = proxy
+            .model()
+            .await
+            .unwrap_or(fl!("connected-devices", "unknown"));
+        let battery = Battery::from_device(proxy).await;
+        let device_icon = match device_type {
+            BatteryType::Ups => "uninterruptible-power-supply-symbolic",
+            BatteryType::Monitor => "display-symbolic",
+            BatteryType::Mouse => "input-mouse-symbolic",
+            BatteryType::Keyboard => "input-keyboard-symbolic",
+            BatteryType::Pda | BatteryType::Phone => "smartphone-symbolic",
+            BatteryType::MediaPlayer => "multimedia-player-symbolic",
+            BatteryType::Tablet => "tablet-symbolic",
+            BatteryType::Computer => "laptop-symbolic",
+            BatteryType::GamingInput => "input-gaming-symbolic",
+            BatteryType::Pen => "input-tablet-symbolic",
+            BatteryType::Touchpad => "input-touchpad-symbolic",
+            BatteryType::Network => "network-wired-symbolic",
+            BatteryType::Headset => "audio-headset-symbolic",
+            BatteryType::Speakers => "speaker-symbolic",
+            BatteryType::Headphones => "audio-headphones-symbolic",
+            BatteryType::Video => "video-display-symbolic",
+            BatteryType::OtherAudio => "audio-speakers-symbolic",
+            BatteryType::Printer => "printer-network-symbolic",
+            BatteryType::Scanner => "scanner-symbolic",
+            BatteryType::Camera => "camera-photo-symbolic",
+            _ => "bluetooth-symbolic",
+        };
+
+        Some(Self {
+            model,
+            device_icon,
+            battery,
+        })
+    }
+
+    pub async fn update_connected_devices() -> Vec<Self> {
+        let proxy = enumerate_devices().await;
+
+        if let Ok(devices) = proxy {
+            return join_all(
+                devices
+                    .into_iter()
+                    .map(|device| Self::from_device_maybe(device)),
+            )
+            .await
+            .into_iter()
+            .flatten()
+            .collect();
+        }
+
+        vec![]
     }
 }
