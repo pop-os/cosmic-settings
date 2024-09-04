@@ -1164,6 +1164,7 @@ pub fn legacy_applications() -> Section<crate::pages::Message> {
                     Some(page.comp_config_descale_xwayland),
                     Message::SetXwaylandDescaling,
                 )
+                .width(Length::Fill)
                 .into()]))
                 .add(widget::settings::item_row(vec![widget::radio(
                     widget::column()
@@ -1173,6 +1174,7 @@ pub fn legacy_applications() -> Section<crate::pages::Message> {
                     Some(page.comp_config_descale_xwayland),
                     Message::SetXwaylandDescaling,
                 )
+                .width(Length::Fill)
                 .into()]))
                 .apply(Element::from)
                 .map(crate::pages::Message::Displays)

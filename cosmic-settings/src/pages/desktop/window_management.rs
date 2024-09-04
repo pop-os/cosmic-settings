@@ -196,10 +196,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("focus-navigation"))
         .descriptions(descriptions)
-        .view::<Page>(move |binder, page, section| {
-            let desktop = binder
-                .page::<super::Page>()
-                .expect("desktop page not found");
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
             settings::view_section(&section.title)
