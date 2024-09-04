@@ -3,7 +3,7 @@ mod backend;
 use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, PowerProfile};
 
-use cosmic::iced::{Length, Alignment};
+use cosmic::iced::{Alignment, Length};
 use cosmic::iced_widget::row;
 use cosmic::widget::{self, column, radio, settings, text};
 use cosmic::Apply;
@@ -78,17 +78,18 @@ fn battery_info() -> Section<crate::pages::Message> {
         .show_while::<Page>(|page| page.battery.is_present)
         .view::<Page>(move |_binder, page, section| {
             let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
-            let battery_percent = text::body(format!("{}%", page.battery.percent));
-
-            let battery_time = text::body(page.battery.remaining_time());
+            let battery_label = text::body(format!(
+                "{}% {}",
+                page.battery.percent,
+                page.battery.remaining_time()
+            ));
 
             column::with_capacity(2)
-                .spacing(8)
                 .push(text::heading(&section.title))
                 .push(
-                    row!(battery_icon, battery_percent, battery_time)
+                    row!(battery_icon, battery_label)
                         .align_items(Alignment::Center)
-                        .spacing(8),
+                        .spacing(cosmic::theme::active().cosmic().space_xxxs()),
                 )
                 .into()
         })
