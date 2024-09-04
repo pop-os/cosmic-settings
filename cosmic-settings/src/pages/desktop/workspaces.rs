@@ -5,11 +5,13 @@
 
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::Length,
-    widget::{radio, settings, text},
+    iced::{widget, Alignment, Length},
+    widget::{icon, radio, settings, text},
     Apply, Element,
 };
-use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
+use cosmic_comp_config::workspace::{
+    WorkspaceConfig, WorkspaceLayout, WorkspaceMode, WorkspaceThumbnailPlacement,
+};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slab::Slab;
@@ -19,7 +21,9 @@ use tracing::error;
 #[derive(Clone, Debug)]
 pub enum Message {
     SetWorkspaceMode(WorkspaceMode),
-    SetWorkspaceLayout(WorkspaceLayout),
+    SetWorkspaceLayout(cosmic::widget::segmented_button::Entity),
+    SetWorkspaceThumbnailPlacement(usize),
+    ShowTrackpadGestureInfo(bool),
     SetShowName(bool),
     SetShowNumber(bool),
 }
@@ -30,6 +34,55 @@ pub struct Page {
     comp_workspace_config: WorkspaceConfig,
     show_workspace_name: bool,
     show_workspace_number: bool,
+    show_trackpad_gesture: bool,
+    workspace_thumbnail_placement_options: Vec<String>,
+    workspace_layout_model: cosmic::widget::segmented_button::SingleSelectModel,
+    selected_workspace_thumbnail_placement: usize,
+}
+
+#[derive(Copy, Clone, Debug)]
+enum Asset {
+    WorkspaceSpanDisplay,
+    WorkspaceSeparateDisplay,
+    WorkspaceOrientationVertical,
+    WorkspaceOrientationHorizontal,
+    TrackpadGestureSwipeVertical,
+    TrackpadGestureSwipeHorizontal,
+    TrackpadGestureSwipeLeft,
+    TrackpadGestureSwipeUp,
+    TrackpadGestureSwipeRight,
+    TrackpadGestureSwipeDown,
+}
+
+impl Asset {
+    /// Return the slug path to the asset
+    fn slug(self) -> &'static str {
+        match self {
+            Asset::WorkspaceSpanDisplay => "assets/workspace-span-display",
+            Asset::WorkspaceSeparateDisplay => "assets/workspace-separate-display",
+            Asset::WorkspaceOrientationVertical => "assets/workspace-orientation-vertical",
+            Asset::WorkspaceOrientationHorizontal => "assets/workspace-orientation-horizontal",
+            Asset::TrackpadGestureSwipeVertical => "assets/trackpad-gesture-swipe-vertical",
+            Asset::TrackpadGestureSwipeHorizontal => "assets/trackpad-gesture-swipe-horizontal",
+            Asset::TrackpadGestureSwipeLeft => "assets/trackpad-gesture-swipe-left",
+            Asset::TrackpadGestureSwipeUp => "assets/trackpad-gesture-swipe-up",
+            Asset::TrackpadGestureSwipeRight => "assets/trackpad-gesture-swipe-right",
+            Asset::TrackpadGestureSwipeDown => "assets/trackpad-gesture-swipe-down",
+        }
+    }
+}
+
+fn asset_handle(asset: Asset) -> widget::svg::Handle {
+    let slug = asset.slug();
+    let theme = if cosmic::theme::active().cosmic().is_dark {
+        "dark"
+    } else {
+        "light"
+    };
+    let path = std::path::absolute(format!("../resources/{slug}-{theme}.svg")).unwrap();
+
+    assert!(path.exists(), "Cannot find the asset at {path:?}");
+    cosmic::iced_core::svg::Handle::from_path(path)
 }
 
 impl Default for Page {
@@ -57,12 +110,44 @@ impl Default for Page {
 
             false
         });
+        let workspace_thumbnail_placement_options = match comp_workspace_config.workspace_layout {
+            WorkspaceLayout::Horizontal => vec![
+                fl!("workspaces-orientation", "top"),
+                fl!("workspaces-orientation", "bottom"),
+            ],
+            WorkspaceLayout::Vertical => vec![
+                fl!("workspaces-orientation", "left"),
+                fl!("workspaces-orientation", "right"),
+            ],
+        };
+        let mut workspace_layout_model =
+            cosmic::widget::segmented_button::SingleSelectModel::builder()
+                .insert(|b| {
+                    b.text(fl!("workspaces-orientation", "vertical"))
+                        .data(WorkspaceLayout::Vertical)
+                })
+                .insert(|b| {
+                    b.text(fl!("workspaces-orientation", "horizontal"))
+                        .data(WorkspaceLayout::Horizontal)
+                })
+                .build();
+        workspace_layout_model.activate_position(match comp_workspace_config.workspace_layout {
+            WorkspaceLayout::Vertical => 0,
+            WorkspaceLayout::Horizontal => 1,
+        });
+        let selected_workspace_thumbnail_placement =
+            comp_workspace_config.workspace_thumbnail_placement as usize % 2;
+        let show_trackpad_gesture = false;
         Self {
             config,
             comp_config,
             comp_workspace_config,
             show_workspace_name,
             show_workspace_number,
+            show_trackpad_gesture,
+            workspace_thumbnail_placement_options,
+            workspace_layout_model,
+            selected_workspace_thumbnail_placement,
         }
     }
 }
@@ -75,6 +160,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![
             sections.insert(multi_behavior()),
             sections.insert(workspace_orientation()),
+            sections.insert(workspace_overview()),
         ])
     }
 
@@ -104,8 +190,52 @@ impl Page {
                 self.save_comp_config();
             }
             Message::SetWorkspaceLayout(value) => {
-                self.comp_workspace_config.workspace_layout = value;
+                self.comp_workspace_config.workspace_layout = *self
+                    .workspace_layout_model
+                    .data::<WorkspaceLayout>(value)
+                    .unwrap_or(&WorkspaceLayout::Vertical);
+                self.workspace_layout_model.activate_position(
+                    match self.comp_workspace_config.workspace_layout {
+                        WorkspaceLayout::Vertical => 0,
+                        WorkspaceLayout::Horizontal => 1,
+                    },
+                );
+                self.workspace_thumbnail_placement_options =
+                    match self.comp_workspace_config.workspace_layout {
+                        WorkspaceLayout::Horizontal => vec![
+                            fl!("workspaces-orientation", "top"),
+                            fl!("workspaces-orientation", "bottom"),
+                        ],
+                        WorkspaceLayout::Vertical => vec![
+                            fl!("workspaces-orientation", "left"),
+                            fl!("workspaces-orientation", "right"),
+                        ],
+                    };
                 self.save_comp_config();
+            }
+            Message::SetWorkspaceThumbnailPlacement(value) => {
+                self.comp_workspace_config.workspace_thumbnail_placement =
+                    match self.comp_workspace_config.workspace_layout {
+                        WorkspaceLayout::Horizontal => {
+                            if value == 0 {
+                                WorkspaceThumbnailPlacement::Left
+                            } else {
+                                WorkspaceThumbnailPlacement::Right
+                            }
+                        }
+                        WorkspaceLayout::Vertical => {
+                            if value == 0 {
+                                WorkspaceThumbnailPlacement::Top
+                            } else {
+                                WorkspaceThumbnailPlacement::Bottom
+                            }
+                        }
+                    };
+                self.selected_workspace_thumbnail_placement = value;
+                // TODO apply the setting
+                // if let Err(err) = self.config.set("show_workspace_number", value) {
+                //     error!(?err, "Failed to set config 'show_workspace_number'");
+                // }
             }
             Message::SetShowName(value) => {
                 self.show_workspace_name = value;
@@ -118,6 +248,9 @@ impl Page {
                 if let Err(err) = self.config.set("show_workspace_number", value) {
                     error!(?err, "Failed to set config 'show_workspace_number'");
                 }
+            }
+            Message::ShowTrackpadGestureInfo(value) => {
+                self.show_trackpad_gesture = value;
             }
         }
     }
@@ -135,22 +268,39 @@ fn multi_behavior() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             settings::view_section(&section.title)
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[span]),
-                    WorkspaceMode::Global,
-                    Some(page.comp_workspace_config.workspace_mode),
-                    Message::SetWorkspaceMode,
+                .edit_list_column(|column| column.spacing(0))
+                .add(
+                    cosmic::iced::widget::column!(
+                        widget::vertical_space(1),
+                        settings::item_row(vec![radio(
+                            text::body(&descriptions[span]),
+                            WorkspaceMode::Global,
+                            Some(page.comp_workspace_config.workspace_mode),
+                            Message::SetWorkspaceMode,
+                        )
+                        .width(Length::Fill)
+                        .into()]),
+                        cosmic::iced::widget::svg(asset_handle(Asset::WorkspaceSpanDisplay))
+                    )
+                    .spacing(cosmic::theme::active().cosmic().space_s())
+                    .align_items(Alignment::Center),
                 )
-                .width(Length::Fill)
-                .into()]))
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[separate]),
-                    WorkspaceMode::OutputBound,
-                    Some(page.comp_workspace_config.workspace_mode),
-                    Message::SetWorkspaceMode,
+                .add(
+                    cosmic::iced::widget::column!(
+                        widget::vertical_space(1),
+                        settings::item_row(vec![radio(
+                            text::body(&descriptions[separate]),
+                            WorkspaceMode::OutputBound,
+                            Some(page.comp_workspace_config.workspace_mode),
+                            Message::SetWorkspaceMode,
+                        )
+                        .width(Length::Fill)
+                        .into()]),
+                        cosmic::iced::widget::svg(asset_handle(Asset::WorkspaceSeparateDisplay))
+                    )
+                    .spacing(cosmic::theme::active().cosmic().space_s())
+                    .align_items(Alignment::Center),
                 )
-                .width(Length::Fill)
-                .into()]))
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })
@@ -159,31 +309,177 @@ fn multi_behavior() -> Section<crate::pages::Message> {
 fn workspace_orientation() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let vertical = descriptions.insert(fl!("workspaces-orientation", "vertical"));
-    let horizontal = descriptions.insert(fl!("workspaces-orientation", "horizontal"));
+    let thumbnail_placement_label =
+        descriptions.insert(fl!("workspaces-orientation", "thumbnail-placement"));
+    let trackpad_gestures = descriptions.insert(fl!("workspaces-orientation", "trackpad-gestures"));
+
+    let switch_workspace = descriptions.insert(fl!("workspaces-orientation", "switch-workspace"));
+    let open_workspaces = descriptions.insert(fl!("workspaces-orientation", "open-workspaces"));
+    let open_applications = descriptions.insert(fl!("workspaces-orientation", "open-applications"));
+
+    let swipe_horizontal = descriptions.insert(fl!("workspaces-orientation", "swipe-horizontal"));
+    let swipe_vertical = descriptions.insert(fl!("workspaces-orientation", "swipe-vertical"));
+    let swipe_up = descriptions.insert(fl!("workspaces-orientation", "swipe-up"));
+    let swipe_down = descriptions.insert(fl!("workspaces-orientation", "swipe-down"));
+    let swipe_left = descriptions.insert(fl!("workspaces-orientation", "swipe-left"));
+    let swipe_right = descriptions.insert(fl!("workspaces-orientation", "swipe-right"));
 
     Section::default()
         .title(fl!("workspaces-orientation"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
+
+            let thumbnail_placement = cosmic::widget::dropdown(
+                &page.workspace_thumbnail_placement_options,
+                Some(page.selected_workspace_thumbnail_placement),
+                Message::SetWorkspaceThumbnailPlacement,
+            );
+            let mut section = settings::view_section(&section.title)
+                .add(
+                    cosmic::iced::widget::column!(
+                        cosmic::iced::widget::svg(
+                            match page.comp_workspace_config.workspace_layout {
+                                WorkspaceLayout::Vertical =>
+                                    asset_handle(Asset::WorkspaceOrientationVertical),
+                                WorkspaceLayout::Horizontal =>
+                                    asset_handle(Asset::WorkspaceOrientationHorizontal),
+                            }
+                        ),
+                        cosmic::iced::widget::container(
+                            cosmic::widget::segmented_control::horizontal(
+                                &page.workspace_layout_model
+                            )
+                            .minimum_button_width(0)
+                            .on_activate(Message::SetWorkspaceLayout)
+                        )
+                        .width(320.0)
+                        .height(32.0),
+                    )
+                    .spacing(cosmic::theme::active().cosmic().space_m())
+                    .align_items(Alignment::Center),
+                )
+                .add(settings::item(
+                    &descriptions[thumbnail_placement_label],
+                    thumbnail_placement,
+                ))
+                .add(
+                    cosmic::iced::widget::MouseArea::new(settings::item(
+                        &descriptions[trackpad_gestures],
+                        cosmic::iced::widget::container(
+                            icon::from_name(if page.show_trackpad_gesture {
+                                "go-up-symbolic"
+                            } else {
+                                "go-down-symbolic"
+                            })
+                            .size(16),
+                        )
+                        .width(Length::Shrink),
+                    ))
+                    .on_press(Message::ShowTrackpadGestureInfo(
+                        !page.show_trackpad_gesture,
+                    )),
+                );
+            if page.show_trackpad_gesture {
+                let (switch_ws, open_ws, open_app) =
+                    match page.comp_workspace_config.workspace_layout {
+                        WorkspaceLayout::Vertical => (
+                            asset_handle(Asset::TrackpadGestureSwipeVertical),
+                            asset_handle(Asset::TrackpadGestureSwipeLeft),
+                            asset_handle(Asset::TrackpadGestureSwipeRight),
+                        ),
+                        WorkspaceLayout::Horizontal => (
+                            asset_handle(Asset::TrackpadGestureSwipeHorizontal),
+                            asset_handle(Asset::TrackpadGestureSwipeUp),
+                            asset_handle(Asset::TrackpadGestureSwipeDown),
+                        ),
+                    };
+                let (switch_ws_label, open_ws_label, open_app_label) =
+                    match page.comp_workspace_config.workspace_layout {
+                        WorkspaceLayout::Vertical => (swipe_vertical, swipe_left, swipe_right),
+                        WorkspaceLayout::Horizontal => (swipe_horizontal, swipe_up, swipe_down),
+                    };
+                section = section.add(
+                    cosmic::widget::list_column()
+                        .padding([0, 32])
+                        .add(
+                            cosmic::iced::widget::row!(
+                                text(&descriptions[switch_workspace]),
+                                cosmic::iced::widget::horizontal_space(2),
+                                text(&descriptions[switch_ws_label]).font(cosmic::font::FONT_BOLD),
+                                cosmic::iced::widget::horizontal_space(Length::Fill),
+                                cosmic::iced::widget::container(cosmic::iced::widget::svg(
+                                    switch_ws
+                                ))
+                                .width(115)
+                                .height(92)
+                            )
+                            .width(Length::Fill)
+                            .align_items(Alignment::Center)
+                            .padding([0, 16]),
+                        )
+                        .add(
+                            cosmic::iced::widget::row!(
+                                text(&descriptions[open_workspaces]),
+                                cosmic::iced::widget::horizontal_space(2),
+                                text(&descriptions[open_ws_label]).font(cosmic::font::FONT_BOLD),
+                                cosmic::iced::widget::horizontal_space(Length::Fill),
+                                cosmic::iced::widget::container(cosmic::iced::widget::svg(open_ws))
+                                    .width(115)
+                                    .height(92)
+                            )
+                            .width(Length::Fill)
+                            .align_items(Alignment::Center)
+                            .padding([0, 16]),
+                        )
+                        .add(
+                            cosmic::widget::list_column().add(
+                                cosmic::iced::widget::row!(
+                                    text(&descriptions[open_applications]),
+                                    cosmic::iced::widget::horizontal_space(2),
+                                    text(&descriptions[open_app_label])
+                                        .font(cosmic::font::FONT_BOLD),
+                                    cosmic::iced::widget::horizontal_space(Length::Fill),
+                                    cosmic::iced::widget::container(cosmic::iced::widget::svg(
+                                        open_app
+                                    ))
+                                    .width(115)
+                                    .height(92)
+                                )
+                                .width(Length::Fill)
+                                .align_items(Alignment::Center)
+                                .padding([0, 16]),
+                            ),
+                        ),
+                );
+            }
+
+            section
+                .apply(Element::from)
+                .map(crate::pages::Message::DesktopWorkspaces)
+        })
+}
+
+fn workspace_overview() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let show_number = descriptions.insert(fl!("workspaces-overview-thumbnails", "show-number"));
+    let show_name = descriptions.insert(fl!("workspaces-overview-thumbnails", "show-name"));
+
+    Section::default()
+        .title(fl!("workspaces-overview-thumbnails"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
             settings::view_section(&section.title)
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[vertical]),
-                    WorkspaceLayout::Vertical,
-                    Some(page.comp_workspace_config.workspace_layout),
-                    Message::SetWorkspaceLayout,
+                .add(
+                    settings::item::builder(&descriptions[show_number])
+                        .toggler(page.show_workspace_name, Message::SetShowName),
                 )
-                .width(Length::Fill)
-                .into()]))
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[horizontal]),
-                    WorkspaceLayout::Horizontal,
-                    Some(page.comp_workspace_config.workspace_layout),
-                    Message::SetWorkspaceLayout,
+                .add(
+                    settings::item::builder(&descriptions[show_name])
+                        .toggler(page.show_workspace_number, Message::SetShowNumber),
                 )
-                .width(Length::Fill)
-                .into()]))
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })
