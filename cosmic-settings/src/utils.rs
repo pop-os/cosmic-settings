@@ -58,6 +58,25 @@ pub fn map_stderr_output(result: io::Result<process::Output>) -> Result<(), Stri
     })
 }
 
+/// Uses `udev` to check if a touchpad device exists on the system.
+pub fn system_has_touchpad() -> bool {
+    let Ok(mut enumerator) = udev::Enumerator::new() else {
+        return false;
+    };
+
+    let _res = enumerator.match_subsystem("input");
+
+    let Ok(mut devices) = enumerator.scan_devices() else {
+        return false;
+    };
+
+    devices.any(|device| {
+        device
+            .property_value("ID_INPUT_TOUCHPAD")
+            .map_or(false, |value| value == "1")
+    })
+}
+
 /// Creates a slab with predefined items
 #[macro_export]
 macro_rules! slab {
