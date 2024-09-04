@@ -12,19 +12,43 @@ use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slab::Slab;
 use slotmap::SlotMap;
+use tracing::error;
 
 #[derive(Copy, Clone, Debug)]
 pub enum Message {
     SuperKey(usize),
+    SetFocusFollowsCursor(bool),
+    SetCursorFollowsFocus(bool),
 }
 
 pub struct Page {
     pub super_key_selections: Vec<String>,
     pub super_key_active: Option<usize>,
+    comp_config: cosmic_config::Config,
+    focus_follows_cursor: bool,
+    cursor_follows_focus: bool,
 }
 
 impl Default for Page {
     fn default() -> Self {
+        let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        let focus_follows_cursor = comp_config
+            .get("focus_follows_cursor")
+            .unwrap_or_else(|err| {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                    error!(?err, "Failed to read config 'focus_follows_cursor'");
+                }
+                false
+            });
+        let cursor_follows_focus = comp_config
+            .get("cursor_follows_focus")
+            .unwrap_or_else(|err| {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                    error!(?err, "Failed to read config 'cursor_follows_focus'");
+                }
+                false
+            });
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -32,6 +56,9 @@ impl Default for Page {
                 fl!("super-key", "applications"),
             ],
             super_key_active: super_key_active_config(),
+            comp_config,
+            focus_follows_cursor,
+            cursor_follows_focus,
         }
     }
 }
@@ -50,6 +77,24 @@ impl Page {
                 self.super_key_active = Some(id);
                 super_key_set(action);
             }
+            Message::SetFocusFollowsCursor(value) => {
+                self.focus_follows_cursor = value;
+                if let Err(err) = self
+                    .comp_config
+                    .set("focus_follows_cursor", &self.focus_follows_cursor)
+                {
+                    error!(?err, "Failed to set config 'focus_follows_cursor'");
+                }
+            }
+            Message::SetCursorFollowsFocus(value) => {
+                self.cursor_follows_focus = value;
+                if let Err(err) = self
+                    .comp_config
+                    .set("cursor_follows_focus", &self.cursor_follows_focus)
+                {
+                    error!(?err, "Failed to set config 'cursor_follows_focus'");
+                }
+            }
         }
     }
 }
@@ -63,6 +108,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![
             sections.insert(super_key_action()),
             sections.insert(window_controls()),
+            sections.insert(focus_navigation()),
         ])
     }
 
@@ -138,6 +184,43 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Desktop)
+        })
+}
+
+pub fn focus_navigation() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let focus_follows_cursor = descriptions.insert(fl!("focus-navigation", "focus-follows-cursor"));
+    let cursor_follows_focus = descriptions.insert(fl!("focus-navigation", "cursor-follows-focus"));
+
+    Section::default()
+        .title(fl!("focus-navigation"))
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, page, section| {
+            let desktop = binder
+                .page::<super::Page>()
+                .expect("desktop page not found");
+            let descriptions = &section.descriptions;
+
+            settings::view_section(&section.title)
+                .add(settings::item(
+                    &descriptions[focus_follows_cursor],
+                    toggler(
+                        None,
+                        page.focus_follows_cursor,
+                        Message::SetFocusFollowsCursor,
+                    ),
+                ))
+                .add(settings::item(
+                    &descriptions[cursor_follows_focus],
+                    toggler(
+                        None,
+                        page.cursor_follows_focus,
+                        Message::SetCursorFollowsFocus,
+                    ),
+                ))
+                .apply(Element::from)
+                .map(crate::pages::Message::WindowManagement)
         })
 }
 
