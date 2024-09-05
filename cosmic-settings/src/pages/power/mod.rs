@@ -5,7 +5,7 @@ use backend::{Battery, ConnectedDevice, PowerProfile};
 
 use chrono::TimeDelta;
 use cosmic::iced::{Alignment, Length};
-use cosmic::iced_widget::{row, column};
+use cosmic::iced_widget::{column, row};
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{self, radio, settings, text};
 use cosmic::Apply;

@@ -1,6 +1,6 @@
 use chrono::{Duration, TimeDelta};
-use futures::FutureExt;
 use futures::future::join_all;
+use futures::FutureExt;
 use upower_dbus::{BatteryType, DeviceProxy};
 use zbus::Connection;
 
@@ -283,12 +283,14 @@ async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zb
     )
     .await;
 
-    let errors = devices.iter().filter(|device|device.is_err());
+    let errors = devices.iter().filter(|device| device.is_err());
     if errors.count() > 0 {
-        let mut errors: Vec<zbus::Error> = devices.into_iter().filter_map(std::result::Result::err).collect();
+        let mut errors: Vec<zbus::Error> = devices
+            .into_iter()
+            .filter_map(std::result::Result::err)
+            .collect();
         if errors.len() > 1 {
             eprintln!("Multiple errors occurs when fetching connected device: {errors:?}. Only the last one will be returned.");
-            
         }
         return Err(errors.pop().unwrap());
     }
@@ -327,8 +329,7 @@ impl Battery {
 
         if on_battery {
             if let Ok(time) = proxy.time_to_empty().await {
-                if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
-                {
+                if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
                     remaining_duration = dur;
                 }
             }
@@ -367,7 +368,7 @@ impl Battery {
             is_present,
             percent,
             on_battery,
-            remaining_duration
+            remaining_duration,
         }
     }
 
@@ -382,9 +383,9 @@ impl Battery {
     }
     pub fn remaining_time(&self) -> String {
         if self.remaining_duration <= TimeDelta::zero() {
-            return String::new()
+            return String::new();
         }
-        
+
         let total_seconds = self.remaining_duration.num_seconds();
 
         let days = total_seconds / 86400;
@@ -406,8 +407,11 @@ impl Battery {
             let last = time.pop().unwrap();
             time = vec![time.join(", "), last];
         }
-        let time = if time.is_empty() { fl!("battery", "less-than-minute")
-        } else {time.join(&format!(" {} ", fl!("battery", "and"))) };
+        let time = if time.is_empty() {
+            fl!("battery", "less-than-minute")
+        } else {
+            time.join(&format!(" {} ", fl!("battery", "and")))
+        };
 
         fl!(
             "battery",
