@@ -5,7 +5,7 @@ use backend::{Battery, ConnectedDevice, PowerProfile};
 
 use chrono::TimeDelta;
 use cosmic::iced::{Alignment, Length};
-use cosmic::iced_widget::{column, row};
+use cosmic::iced_widget::{row, column};
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{self, radio, settings, text};
 use cosmic::Apply;
@@ -51,23 +51,6 @@ impl page::Page<crate::pages::Message> for Page {
             }),
             cosmic::command::future(async move {
                 let devices = ConnectedDevice::update_connected_devices().await;
-                // let devices = vec![
-                //     ConnectedDevice {
-                //         model: "Test device 1".to_owned(),
-                //         device_icon: "display-symbolic",
-                //         battery: Battery::default(),
-                //     },
-                //     ConnectedDevice {
-                //         model: "Test device 2".to_owned(),
-                //         device_icon: "laptop-symbolic",
-                //         battery: Battery::default()
-                //     },
-                //     ConnectedDevice {
-                //         model: "Test device 3".to_owned(),
-                //         device_icon: "network-wired-symbolic",
-                //         battery: Battery::default()
-                //     },
-                // ];
                 Message::UpdateConnectedDevices(devices)
             }),
         ];
@@ -112,18 +95,19 @@ fn battery_info() -> Section<crate::pages::Message> {
         .show_while::<Page>(|page| page.battery.is_present)
         .view::<Page>(move |_binder, page, section| {
             let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
-            let battery_percent = text::body(format!("{}%", page.battery.percent));
-
-            let battery_time = text::body(if page.battery.remaining_duration > TimeDelta::zero() {
-                &page.battery.remaining_time
-            } else {
-                ""
-            });
+            let battery_label = text::body(format!(
+                "{}% {}",
+                page.battery.percent,
+                page.battery.remaining_time()
+            ));
 
             widget::column::with_capacity(2)
-                .spacing(8)
                 .push(text::heading(&section.title))
-                .push(row!(battery_icon, battery_percent, battery_time).spacing(8))
+                .push(
+                    row!(battery_icon, battery_label)
+                        .align_items(Alignment::Center)
+                        .spacing(cosmic::theme::active().cosmic().space_xxxs()),
+                )
                 .into()
         })
 }
@@ -148,7 +132,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                             format!(
                                 "{}% - {}",
                                 connected_device.battery.percent,
-                                &connected_device.battery.remaining_time
+                                &connected_device.battery.remaining_time()
                             )
                         } else {
                             format!("{}%", connected_device.battery.percent)

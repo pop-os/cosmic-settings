@@ -87,16 +87,14 @@ pub enum Message {
     ChangeCategory(Category),
     /// Changes the displayed images in the wallpaper view.
     ChangeFolder(Context),
-    /// Creates a color dialog
-    ColorAddDialog,
     /// Handles messages from the color dialog.
-    ColorDialogUpdate(ColorPickerUpdate),
+    ColorAdd(ColorPickerUpdate),
+    /// Creates a color context drawer
+    ColorAddContext,
     /// Removes a custom color from the color view.
     ColorRemove(wallpaper::Color),
     /// Selects a color in the color view.
     ColorSelect(wallpaper::Color),
-    /// Handles the drag message in the color dialog.
-    DragColorDialog,
     /// Sets the wallpaper fit parameter.
     Fit(usize),
     /// Adds a new custom image to the wallpaper view.
@@ -141,8 +139,16 @@ pub enum Category {
     Wallpapers,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ContextView {
+    AddColor,
+}
+
 /// The page struct for the wallpaper view.
 pub struct Page {
+    /// Whether to show a context drawer.
+    context_view: Option<ContextView>,
+
     /// Whether to show the tab_bar or not.
     show_tab_bar: bool,
 
@@ -159,9 +165,6 @@ pub struct Page {
 
     /// Model for the category dropdown, which has categories and recent folders.
     categories: dropdown::multi::Model<String, Category>,
-
-    /// The window ID of the color dialog.
-    pub color_dialog: window::Id,
 
     /// The color model updated by the color dialog.
     color_model: ColorPickerModel,
@@ -252,6 +255,18 @@ impl page::Page<crate::pages::Message> for Page {
             })))
         })
     }
+
+    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+        self.context_view.map(|view| match view {
+            ContextView::AddColor => crate::widget::color_picker_context_view(
+                None,
+                fl!("reset-to-default").into(),
+                Message::ColorAdd,
+                &self.color_model,
+            )
+            .map(crate::pages::Message::DesktopWallpaper),
+        })
+    }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -259,6 +274,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 impl Default for Page {
     fn default() -> Self {
         let mut page = Page {
+            context_view: None,
             show_tab_bar: false,
             active_output: None,
             cached_display_handle: None,
@@ -290,7 +306,6 @@ impl Default for Page {
                 categories
             },
             wallpaper_service_config: wallpaper::Config::default(),
-            color_dialog: window::Id::unique(),
             color_model: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, Some(Color::WHITE)),
             config: Config::new(),
             fit_options: vec![fl!("fill"), fl!("fit-to-screen")],
@@ -669,45 +684,7 @@ impl Page {
                 }
             }
 
-            Message::DragColorDialog => {
-                return cosmic::iced_sctk::commands::window::start_drag_window(self.color_dialog)
-            }
-
             Message::CacheDisplayImage => self.cache_display_image(),
-
-            Message::ColorDialogUpdate(update) => {
-                let cmd = match update {
-                    ColorPickerUpdate::AppliedColor
-                    | ColorPickerUpdate::Cancel
-                    | ColorPickerUpdate::Reset => {
-                        if let Some(color) = self.color_model.get_applied_color() {
-                            let color = wallpaper::Color::Single([color.r, color.g, color.b]);
-
-                            if let Err(why) = self.config.add_custom_color(color.clone()) {
-                                tracing::error!(?why, "could not set custom color");
-                            }
-
-                            self.selection.add_custom_color(color);
-                        }
-
-                        close_window(self.color_dialog)
-                    }
-
-                    ColorPickerUpdate::ActionFinished => {
-                        let _res = self
-                            .color_model
-                            .update::<crate::app::Message>(ColorPickerUpdate::AppliedColor);
-                        Command::none()
-                    }
-
-                    _ => Command::none(),
-                };
-
-                return Command::batch(vec![
-                    cmd,
-                    self.color_model.update::<crate::app::Message>(update),
-                ]);
-            }
 
             Message::ChangeFolder(mut context) => {
                 // Reassign custom colors and images to the new context.
@@ -730,8 +707,38 @@ impl Page {
                 self.select_first_wallpaper();
             }
 
-            Message::ColorAddDialog => {
-                return get_window(color_picker_window_settings(self.color_dialog));
+            Message::ColorAdd(message) => {
+                match message {
+                    ColorPickerUpdate::ActionFinished => {
+                        let _res = self
+                            .color_model
+                            .update::<crate::app::Message>(ColorPickerUpdate::AppliedColor);
+
+                        if let Some(color) = self.color_model.get_applied_color() {
+                            let color = wallpaper::Color::Single([color.r, color.g, color.b]);
+
+                            if let Err(why) = self.config.add_custom_color(color.clone()) {
+                                tracing::error!(?why, "could not set custom color");
+                            }
+
+                            self.selection.add_custom_color(color.clone());
+                            self.selection.active = Choice::Color(color);
+                            self.cached_display_handle = None;
+                            self.context_view = None;
+                        }
+                    }
+
+                    _ => (),
+                };
+
+                return self.color_model.update::<crate::app::Message>(message);
+            }
+
+            Message::ColorAddContext => {
+                self.context_view = Some(ContextView::AddColor);
+                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    fl!("color-picker").into(),
+                ));
             }
 
             Message::ColorRemove(color) => {
@@ -1053,15 +1060,6 @@ impl Page {
 
         self.cache_display_image();
     }
-
-    pub fn show_color_dialog(&self) -> Element<crate::app::Message> {
-        color_picker_view(
-            &self.color_model,
-            Message::DragColorDialog,
-            Message::ColorDialogUpdate,
-        )
-        .map(|m| crate::app::Message::PageMessage(crate::pages::Message::DesktopWallpaper(m)))
-    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -1264,7 +1262,7 @@ pub fn settings() -> Section<crate::pages::Message> {
             let add_button =
                 if let Some(Category::Colors | Category::Wallpapers) = page.categories.selected {
                     let (text, message) = if Some(Category::Colors) == page.categories.selected {
-                        (fl!("add-color"), Message::ColorAddDialog)
+                        (fl!("add-color"), Message::ColorAddContext)
                     } else {
                         (fl!("add-image"), Message::ImageAddDialog)
                     };
@@ -1329,62 +1327,42 @@ pub fn settings() -> Section<crate::pages::Message> {
         })
 }
 
-fn color_picker_window_settings(window_id: window::Id) -> SctkWindowSettings {
-    SctkWindowSettings {
-        window_id,
-        app_id: Some("com.system76.CosmicSettings".to_string()),
-        title: Some(fl!("color-picker")),
-        parent: Some(window::Id::MAIN),
-        autosize: false,
-        size_limits: layout::Limits::NONE
-            .min_width(300.0)
-            .max_width(800.0)
-            .min_height(520.0)
-            .max_height(520.0),
-        size: (300, 520),
-        resizable: Some(8.0),
-        client_decorations: true,
-        transparent: true,
-        ..Default::default()
-    }
-}
+// // TODO: Reuse with the appearance page
+// pub fn color_picker_view<Message: Clone + 'static>(
+//     model: &ColorPickerModel,
+//     on_drag: Message,
+//     on_message: fn(ColorPickerUpdate) -> Message,
+// ) -> Element<Message> {
+//     let header = cosmic::widget::header_bar()
+//         .title(fl!("color-picker"))
+//         .on_close(on_message(ColorPickerUpdate::AppliedColor))
+//         .on_drag(on_drag);
 
-// TODO: Reuse with the appearance page
-pub fn color_picker_view<Message: Clone + 'static>(
-    model: &ColorPickerModel,
-    on_drag: Message,
-    on_message: fn(ColorPickerUpdate) -> Message,
-) -> Element<Message> {
-    let header = cosmic::widget::header_bar()
-        .title(fl!("color-picker"))
-        .on_close(on_message(ColorPickerUpdate::AppliedColor))
-        .on_drag(on_drag);
+//     let content = cosmic::widget::container(
+//         model
+//             .builder(on_message)
+//             .width(Length::Fixed(254.0))
+//             .height(Length::Fixed(174.0))
+//             .reset_label(fl!("reset-to-default"))
+//             .build(
+//                 fl!("recent-colors"),
+//                 fl!("copy-to-clipboard"),
+//                 fl!("copied-to-clipboard"),
+//             ),
+//     )
+//     .width(Length::Fill)
+//     .height(Length::Fill)
+//     .center_x()
+//     .style(cosmic::theme::style::Container::Background);
 
-    let content = cosmic::widget::container(
-        model
-            .builder(on_message)
-            .width(Length::Fixed(254.0))
-            .height(Length::Fixed(174.0))
-            .reset_label(fl!("reset-to-default"))
-            .build(
-                fl!("recent-colors"),
-                fl!("copy-to-clipboard"),
-                fl!("copied-to-clipboard"),
-            ),
-    )
-    .width(Length::Fill)
-    .height(Length::Fill)
-    .center_x()
-    .style(cosmic::theme::style::Container::Background);
-
-    cosmic::widget::column::with_capacity(2)
-        .push(header)
-        .push(content)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .align_items(cosmic::iced_core::Alignment::Center)
-        .apply(Element::from)
-}
+//     cosmic::widget::column::with_capacity(2)
+//         .push(header)
+//         .push(content)
+//         .width(Length::Fill)
+//         .height(Length::Fill)
+//         .align_items(cosmic::iced_core::Alignment::Center)
+//         .apply(Element::from)
+// }
 
 enum DialogResponse {
     Error(String),

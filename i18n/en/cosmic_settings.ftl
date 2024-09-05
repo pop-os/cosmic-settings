@@ -156,8 +156,8 @@ panel-style = Style
     .background-opacity = Background opacity
 
 panel-applets = Configuration
-    .dock-desc = Configure dock applets.
-    .desc = Configure panel applets.
+    .dock-desc = Configure dock applets
+    .desc = Configure panel applets
 
 panel-missing = Panel Configuration is Missing
     .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
@@ -181,6 +181,10 @@ super-key = Super key
 window-controls = Window Controls
     .maximize = Show maximize button
     .minimize = Show minimize button
+
+focus-navigation = Focus Navigation
+    .focus-follows-cursor = Focus follows cursor
+    .cursor-follows-focus = Cursor follows focus
 
 ## Desktop: Workspaces
 
@@ -300,7 +304,24 @@ power = Power & Battery
     .desc = Manage power settings
 
 battery = Battery
-  .remaining-time = ({ $time } left)
+  .minute = { $value } { $value ->
+        [one] minute
+       *[other] minutes
+  }
+  .hour = { $value } { $value ->
+        [one] hour
+       *[other] hours
+  }
+  .day = { $value } { $value ->
+        [one] day
+       *[other] days
+  }
+  .less-than-minute = Less than a minute
+  .and = and
+  .remaining-time = ({ $time } until { $action ->
+        [full] full
+       *[other] empty
+   })
 
 connected-devices = Connected Devices
   .unknown = Unknown device

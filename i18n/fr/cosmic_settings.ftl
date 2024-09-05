@@ -156,8 +156,8 @@ panel-style = Style
     .background-opacity = Opacité de l'arrière-plan
 
 panel-applets = Configuration
-    .dock-desc = Configuration des applets du dock.
-    .desc = Configuration des applets du panneau.
+    .dock-desc = Configuration des applets du dock
+    .desc = Configuration des applets du panneau
 
 panel-missing = La configuration du panneau est manquante
     .desc = Le fichier de configuration du panneau est manquant à cause d'une configuration personnalisée ou il est corrompu.
@@ -294,7 +294,24 @@ power = Énergie
   .desc = Gérer les paramètres d'alimentation
 
 battery = Batterie
-  .remaining-time = ({ $time } restant)
+  .minute = { $value } { $value ->
+        [one] minute
+       *[other] minutes
+  }
+  .hour = { $value } { $value ->
+        [one] heure
+       *[other] heures
+  }
+  .day = { $value } { $value ->
+        [one] jour
+       *[other] jours
+  }
+  .less-than-minute = Moins d'une minute
+  .and = et
+  .remaining-time = ({ $time } jusqu'à la { $action ->
+        [full] charge
+       *[other] decharge
+   } complète)
 
 connected-devices = Périphériques connectés
   .unknown = Périphériques inconnu

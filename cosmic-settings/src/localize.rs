@@ -19,6 +19,10 @@ pub static LANGUAGE_LOADER: Lazy<FluentLanguageLoader> = Lazy::new(|| {
         .load_fallback_language(&Localizations)
         .expect("Error while loading fallback language");
 
+    // In test, disable the isolating markers to help with string assertion
+    #[cfg(test)]
+    loader.set_use_isolating(false);
+
     loader
 });
 

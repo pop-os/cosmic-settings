@@ -162,7 +162,7 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
             SourceContext::MoveDown,
         )
         .into(),
-        cosmic::widget::divider::horizontal::light().into(),
+        cosmic::widget::divider::horizontal::default().into(),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "settings"),
@@ -177,6 +177,7 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
         .into(),
         popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove).into(),
     ])
+    .padding(8)
     .width(Length::Shrink)
     .height(Length::Shrink)
     .apply(cosmic::widget::container)

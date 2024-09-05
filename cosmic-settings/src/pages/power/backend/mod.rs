@@ -1,4 +1,4 @@
-use chrono::Duration;
+use chrono::{Duration, TimeDelta};
 use futures::FutureExt;
 use futures::future::join_all;
 use upower_dbus::{BatteryType, DeviceProxy};
@@ -238,7 +238,6 @@ pub struct Battery {
     pub percent: f64,
     pub on_battery: bool,
     pub remaining_duration: Duration,
-    pub remaining_time: String,
 }
 
 #[derive(Default, Debug, Clone)]
@@ -363,27 +362,12 @@ impl Battery {
         let icon_name =
             format!("cosmic-applet-battery-level-{battery_percent}-{charging}symbolic",);
 
-        let remaining_time = |duration: Duration| {
-            let total_seconds = duration.num_seconds();
-
-            let hours = total_seconds / 3600;
-            let minutes = (total_seconds % 3600) / 60;
-            let seconds = total_seconds % 60;
-
-            fl!(
-                "battery",
-                "remaining-time",
-                time = format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
-            )
-        };
-
         Self {
             icon_name,
             is_present,
             percent,
             on_battery,
-            remaining_duration,
-            remaining_time: remaining_time(remaining_duration),
+            remaining_duration
         }
     }
 
@@ -395,6 +379,70 @@ impl Battery {
         }
 
         Battery::default()
+    }
+    pub fn remaining_time(&self) -> String {
+        if self.remaining_duration <= TimeDelta::zero() {
+            return String::new()
+        }
+        
+        let total_seconds = self.remaining_duration.num_seconds();
+
+        let days = total_seconds / 86400;
+        let hours = total_seconds % 86400 / 3600;
+        let minutes = (total_seconds % 3600) / 60;
+
+        let mut time: Vec<String> = Vec::new();
+        if days > 0 {
+            time.push(fl!("battery", "day", value = days));
+        }
+        if hours > 0 {
+            time.push(fl!("battery", "hour", value = hours));
+        }
+        if minutes > 0 {
+            time.push(fl!("battery", "minute", value = minutes));
+        }
+
+        if time.len() == 3 {
+            let last = time.pop().unwrap();
+            time = vec![time.join(", "), last];
+        }
+        let time = if time.is_empty() { fl!("battery", "less-than-minute")
+        } else {time.join(&format!(" {} ", fl!("battery", "and"))) };
+
+        fl!(
+            "battery",
+            "remaining-time",
+            time = time,
+            action = if self.on_battery { "empty" } else { "full" }
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_can_format_battery_remaining() {
+        let cases = [
+            (59, "Less than a minute until empty"),
+            (300, "5 minutes until empty"),
+            (305, "5 minutes until empty"),
+            (330, "5 minutes until empty"),
+            (360, "6 minutes until empty"),
+            (3660, "1 hour and 1 minute until empty"),
+            (10800, "3 hours until empty"),
+            (969400, "11 days, 5 hours and 16 minutes until empty"),
+        ];
+        for case in cases {
+            let (actual, expected) = case;
+            let battery = Battery {
+                remaining_duration: Duration::new(actual, 0).unwrap(),
+                on_battery: true,
+                ..Default::default()
+            };
+            assert_eq!(battery.remaining_time(), expected);
+        }
     }
 }
 

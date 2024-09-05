@@ -1,14 +1,53 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::iced::Length;
+use std::borrow::Cow;
+
+use cosmic::iced::{alignment, Length};
 use cosmic::iced_core::text::Wrap;
+use cosmic::prelude::CollectionWidget;
+use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::{
     self, button, column, container, divider, horizontal_space, icon, row, settings, text,
-    vertical_space,
+    vertical_space, ColorPickerModel,
 };
 use cosmic::{theme, Apply, Element};
 use cosmic_settings_page as page;
+
+pub fn color_picker_context_view<'a, Message: Clone + 'static>(
+    description: Option<Cow<'static, str>>,
+    reset: Cow<'static, str>,
+    on_update: fn(ColorPickerUpdate) -> Message,
+    model: &'a ColorPickerModel,
+) -> Element<'a, Message> {
+    let theme = cosmic::theme::active();
+    let spacing = &theme.cosmic().spacing;
+
+    cosmic::widget::column()
+        .push_maybe(description.map(|description| text(description).width(Length::Fill)))
+        .push(
+            model
+                .builder(on_update)
+                .reset_label(reset)
+                .height(Length::Fixed(158.0))
+                .build(
+                    fl!("recent-colors"),
+                    fl!("copy-to-clipboard"),
+                    fl!("copied-to-clipboard"),
+                )
+                .apply(container)
+                .width(Length::Fixed(248.0))
+                .align_x(alignment::Horizontal::Center)
+                .apply(container)
+                .width(Length::Fill)
+                .align_x(alignment::Horizontal::Center),
+        )
+        .padding(spacing.space_l)
+        .align_items(cosmic::iced_core::Alignment::Center)
+        .spacing(spacing.space_m)
+        .width(Length::Fill)
+        .apply(Element::from)
+}
 
 #[must_use]
 pub fn search_header<Message>(
