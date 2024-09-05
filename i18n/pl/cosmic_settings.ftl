@@ -184,9 +184,9 @@ super-key = Klawisz Super
     .applications = Otwórz Aplikacje
 
 window-controls = Sterowanie Oknem
-    .minimize = Pokaż Przycisk Minimalizacji
     .maximize = Pokaż Przycisk Maksymalizacji
-
+    .minimize = Pokaż Przycisk Minimalizacji
+    
 ## Desktop: Workspaces
 
 workspaces = Obszary Robocze
@@ -276,6 +276,12 @@ dialog = Dialog
     }
     .revert-settings = Powróć Do Poprzednich Ustawień
 
+legacy-applications = Skalowanie Aplikacji z Systemu Okien X11
+    .scaled-by-system = Skaluj wszystkie Aplikacje X11
+    .system-description = Aplikacje X11 będą rozmyte na wyświetlaczach z wysokim DPI.
+    .scaled-natively = Renderuj Aplikacje X11 w pierwotnej rozdzielczości.
+    .native-description = Aplikacje X11 które nie wspierają skalowania będą małe na wyświetlaczach z wysokim DPI. Włącz do gier by wykorzystywały pełną rozdzielczość monitora.
+
 ## Sound
 
 sound = Dźwięk
@@ -317,7 +323,7 @@ power-mode = Profile Zasilania
   .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
   .balanced-desc = Standardowa wydajność i zużycie baterii.
   .battery-desc = Zmniejszone zużycie energii i zmniejszona wydajność.
-  .no-backend = Backend nie znaleziony. Zainstaluj system76-power lub power-profiles-daemon.
+  .no-backend = Nie znaleziono backendu. Zainstaluj system76-power lub power-profiles-daemon.
 
 ## Input
 
@@ -329,6 +335,7 @@ input-devices = Urządzenia Wprowadzania Danych
     .desc = Urządzenia Wprowadzania Danych
 
 primary-button = Główny przycisk
+    .desc = Ustawia kolejność fizycznych przycisków
     .left = Lewy
     .right = Prawy
 
@@ -527,9 +534,10 @@ gestures = Gesty
     .four-finger-up = Przesunięcie czterema palcami w górę
     .three-finger-any = Przesunięcie trzema palcami w dowolnym kierunku
 
+switch-workspaces = Przełączenie pomiędzy obszarami roboczymi
+    .horizontal = Przesunięcie czterema palcami w lewo/prawo
+    .vertical = Przesunięcie czterema palcami w góra/dół
 switch-between-windows = Przełączenie pomiędzy oknami
-switch-to-next-workspace = Przełączenie do następnego obszaru roboczego
-switch-to-prev-workspace = Przełączenie do poprzedniego obszaru roboczego
 open-application-library = Otwarcie biblioteki aplikacji
 open-workspaces-view = Otwarcie podglądu obszarów roboczych
 
@@ -549,6 +557,7 @@ time-zone = Strefa Czasowa
 
 time-format = Format Daty i Czasu
     .twenty-four = Czas 24-godzinny
+    .show-seconds = Pokaż sekundy
     .first = Pierwszy dzień tygodnia
     .show-date = Pokaż Datę w Górnym Panelu
     .friday = Piątek
