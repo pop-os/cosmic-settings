@@ -24,8 +24,18 @@ disconnect = Disconnect
 known-networks = Known Networks
 network-and-wireless = Network & Wireless
 no-networks = No networks have been found.
+password = Password
+remove = Remove
 settings = Settings
+username = Username
 visible-networks = Visible Networks
+
+auth-dialog = Authentication Required
+    .vpn-description = Enter the username and password required by the VPN service.
+    .wifi-description = Enter the password or encryption key. You can also connect by pressing the “WPS” button on the router.
+
+remove-connection-dialog = Remove Connection Profile?
+    .description = You'll need to enter a password again to use this network in the future.
 
 vpn = VPN
     .connections = VPN Connections

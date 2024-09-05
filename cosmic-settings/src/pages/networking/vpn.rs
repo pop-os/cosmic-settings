@@ -17,6 +17,7 @@ use cosmic_settings_subscriptions::network_manager::{
 };
 use futures::{FutureExt, StreamExt};
 use indexmap::IndexMap;
+use secure_string::SecureString;
 use slab::Slab;
 use zbus::zvariant::ObjectPath;
 
@@ -29,6 +30,10 @@ pub enum Message {
     Activate(ConnectionId),
     /// Add a network connection
     AddNetwork,
+    /// Cancels an active dialog.
+    CancelDialog,
+    /// Connect to a VPN with the given username and password
+    ConnectWithPassword,
     /// Deactivate a connection.
     Deactivate(ConnectionId),
     /// An error occurred.
@@ -44,16 +49,22 @@ pub enum Message {
             tokio::sync::mpsc::Sender<crate::pages::Message>,
         ),
     ),
+    /// Updates the password text input
+    PasswordUpdate(String),
     /// Refresh devices and their connection profiles
     Refresh,
     /// Remove a connection profile
     RemoveProfile(ConnectionId),
     /// Opens settings page for the access point.
     Settings(ConnectionId),
+    /// Toggles visibility of password input.
+    TogglePasswordVisibility,
     /// Update NetworkManagerState
     UpdateState(NetworkManagerState),
     /// Update the devices lists
     UpdateDevices(Vec<network_manager::devices::DeviceInfo>),
+    /// Updates the username text input
+    UsernameUpdate(String),
     /// Display more options for an access point
     ViewMore(Option<ConnectionId>),
 }
@@ -74,7 +85,56 @@ impl From<Message> for crate::pages::Message {
 struct VpnConnectionSettings {
     path: ObjectPath<'static>,
     id: String,
-    connection_type: String,
+    username: Option<String>,
+    connection_type: Option<ConnectionType>,
+    password_flag: Option<PasswordFlag>,
+}
+
+impl VpnConnectionSettings {
+    fn password_required(&self) -> bool {
+        self.connection_type.as_ref().map_or(false, |ct| match ct {
+            ConnectionType::Password => true,
+            ConnectionType::Unknown => false,
+        }) && self
+            .password_flag
+            .as_ref()
+            .map_or(false, |flag| match flag {
+                PasswordFlag::NotRequired => false,
+                _ => true,
+            })
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum ConnectionType {
+    Password,
+    Unknown,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum PasswordFlag {
+    /// The system is responsible for providing and storing this secret.
+    None = 0,
+    /// A user-session secret agent is responsible for providing and storing
+    /// this secret; when it is required, agents will be asked to provide it.
+    AgentOwned = 1,
+    /// This secret should not be saved but should be requested from the user
+    /// each time it is required. This flag should be used for One-Time-Pad
+    /// secrets, PIN codes from hardware tokens, or if the user simply does not
+    /// want to save the secret.
+    NotSaved = 2,
+    /// in some situations it cannot be automatically determined that a secret is required or not. This flag hints that the secret is not required and should not be requested from the user.
+    NotRequired = 4,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum VpnDialog {
+    Password {
+        path: ObjectPath<'static>,
+        username: String,
+        password: SecureString,
+        password_hidden: bool,
+    },
 }
 
 #[derive(Debug)]
@@ -89,6 +149,7 @@ pub struct NmState {
 pub struct Page {
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     nm_state: Option<NmState>,
+    dialog: Option<VpnDialog>,
     view_more_popup: Option<ConnectionId>,
     known_connections: IndexMap<UUID, VpnConnectionSettings>,
     /// Withhold device update if the view more popup is shown.
@@ -113,7 +174,50 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(devices_view())])
     }
 
-    fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
+    fn dialog(&self) -> Option<Element<crate::pages::Message>> {
+        self.dialog.as_ref().map(|dialog| match dialog {
+            VpnDialog::Password {
+                path,
+                username,
+                password,
+                password_hidden,
+            } => {
+                let username = widget::text_input(fl!("username"), username.as_str())
+                    .on_input(Message::UsernameUpdate);
+
+                let password = widget::text_input::secure_input(
+                    fl!("password"),
+                    password.unsecure(),
+                    Some(Message::TogglePasswordVisibility),
+                    *password_hidden,
+                )
+                .on_input(Message::PasswordUpdate)
+                .on_submit(Message::ConnectWithPassword);
+
+                let controls = widget::column::with_capacity(2)
+                    .spacing(12)
+                    .push(username)
+                    .push(password)
+                    .apply(Element::from);
+
+                let primary_action = widget::button::suggested(fl!("connect"))
+                    .on_press(Message::ConnectWithPassword);
+
+                let secondary_action =
+                    widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
+
+                widget::dialog(fl!("auth-dialog"))
+                    .body(fl!("auth-dialog", "vpn-description"))
+                    .control(controls)
+                    .primary_action(primary_action)
+                    .secondary_action(secondary_action)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Vpn)
+            }
+        })
+    }
+
+    fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
         Some(
             widget::button::standard(fl!("add-network"))
                 .on_press(Message::AddNetwork)
@@ -150,6 +254,7 @@ impl page::Page<crate::pages::Message> for Page {
         self.nm_state = None;
         self.withheld_active_conns = None;
         self.withheld_devices = None;
+        self.dialog = None;
 
         if let Some(cancel) = self.nm_task.take() {
             _ = cancel.send(());
@@ -236,10 +341,19 @@ impl Page {
 
                 if let Some(NmState { ref sender, .. }) = self.nm_state {
                     if let Some(settings) = self.known_connections.get(&uuid) {
-                        _ = sender.unbounded_send(network_manager::Request::Activate(
-                            ObjectPath::from_static_str_unchecked("/"),
-                            settings.path.clone(),
-                        ));
+                        if settings.password_required() {
+                            self.dialog = Some(VpnDialog::Password {
+                                path: settings.path.clone(),
+                                username: settings.username.clone().unwrap_or_default(),
+                                password: SecureString::from(""),
+                                password_hidden: true,
+                            });
+                        } else {
+                            _ = sender.unbounded_send(network_manager::Request::Activate(
+                                ObjectPath::from_static_str_unchecked("/"),
+                                settings.path.clone(),
+                            ));
+                        }
                     }
                 }
             }
@@ -287,6 +401,64 @@ impl Page {
                         update_devices(conn.clone()),
                         connection_settings(conn.clone()),
                     ]);
+                }
+            }
+
+            Message::PasswordUpdate(pass) => {
+                if let Some(VpnDialog::Password {
+                    ref mut password, ..
+                }) = self.dialog
+                {
+                    *password = SecureString::from(pass);
+                }
+            }
+
+            Message::ConnectWithPassword => {
+                let Some(NmState { ref mut sender, .. }) = self.nm_state else {
+                    return Command::none();
+                };
+
+                let Some(dialog) = self.dialog.take() else {
+                    return Command::none();
+                };
+
+                match dialog {
+                    VpnDialog::Password {
+                        path,
+                        username,
+                        password,
+                        ..
+                    } => {
+                        _ = sender.unbounded_send(network_manager::Request::ActivateWithPassword(
+                            ObjectPath::from_static_str_unchecked("/"),
+                            path,
+                            username,
+                            password,
+                        ));
+                    }
+                }
+            }
+
+            Message::UsernameUpdate(user) => {
+                if let Some(VpnDialog::Password {
+                    ref mut username, ..
+                }) = self.dialog
+                {
+                    *username = user;
+                }
+            }
+
+            Message::CancelDialog => {
+                self.dialog = None;
+            }
+
+            Message::TogglePasswordVisibility => {
+                if let Some(VpnDialog::Password {
+                    ref mut password_hidden,
+                    ..
+                }) = self.dialog
+                {
+                    *password_hidden = !*password_hidden;
                 }
             }
 
@@ -561,14 +733,42 @@ fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
                 let id = connection.get("id")?.downcast_ref::<String>().ok()?;
                 let uuid = connection.get("uuid")?.downcast_ref::<String>().ok()?;
 
-                let connection_type = vpn
+                let (username, connection_type, password_flag) = vpn
                     .get("data")
                     .and_then(|data| data.downcast_ref::<zbus::zvariant::Dict>().ok())
-                    .and_then(|dict| {
-                        dict.get::<String, String>(&String::from("connection-type"))
+                    .map(|dict| {
+                        let (mut username, mut connection_type, mut password_flag) =
+                            (None, None, None);
+
+                        username = dict
+                            .get::<String, String>(&String::from("username"))
                             .ok()
+                            .flatten()
+                            .filter(|value| !value.is_empty());
+
+                        if let Some("password") = dict
+                            .get::<String, String>(&String::from("connection-type"))
+                            .ok()
+                            .flatten()
+                            .as_deref()
+                        {
+                            connection_type = Some(ConnectionType::Password);
+
+                            password_flag = dict
+                                .get::<String, String>(&String::from("password-flags"))
+                                .ok()
+                                .flatten()
+                                .and_then(|value| match value.as_str() {
+                                    "0" => Some(PasswordFlag::None),
+                                    "1" => Some(PasswordFlag::AgentOwned),
+                                    "2" => Some(PasswordFlag::NotSaved),
+                                    "4" => Some(PasswordFlag::NotRequired),
+                                    _ => None,
+                                });
+                        }
+
+                        (username, connection_type, password_flag)
                     })
-                    .flatten()
                     .unwrap_or_default();
 
                 let path = conn.inner().path().to_owned();
@@ -579,6 +779,8 @@ fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
                         path,
                         id,
                         connection_type,
+                        password_flag,
+                        username,
                     },
                 ))
             })

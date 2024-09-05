@@ -56,11 +56,12 @@ upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 url = "2.5.2"
 xkb-data = "0.2.1"
 zbus = { version = "4.4.0", features = ["tokio"] }
+secure-string = "0.3.0"
 
 [dependencies.cosmic-settings-subscriptions]
-git = "https://github.com/pop-os/cosmic-settings-subscriptions"
-branch = "network"
-# path = "../../cosmic-settings-subscriptions"
+# git = "https://github.com/pop-os/cosmic-settings-subscriptions"
+# branch = "network"
+path = "../../cosmic-settings-subscriptions"
 features = ["network_manager", "pipewire", "pulse"]
 
 [dependencies.icu]
