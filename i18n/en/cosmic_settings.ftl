@@ -182,6 +182,10 @@ window-controls = Window Controls
     .maximize = Show maximize button
     .minimize = Show minimize button
 
+focus-navigation = Focus Navigation
+    .focus-follows-cursor = Focus follows cursor
+    .cursor-follows-focus = Cursor follows focus
+
 ## Desktop: Workspaces
 
 workspaces = Workspaces
