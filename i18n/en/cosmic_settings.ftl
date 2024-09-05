@@ -318,10 +318,13 @@ battery = Battery
   }
   .less-than-minute = Less than a minute
   .and = and
-  .remaining-time = ({ $time } until { $action ->
+  .remaining-time = { $time } until { $action ->
         [full] full
        *[other] empty
-   })
+   }
+
+connected-devices = Connected Devices
+  .unknown = Unknown device
 
 power-mode = Power Mode
     .battery = Extended battery life

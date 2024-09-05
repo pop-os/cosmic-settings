@@ -1,19 +1,24 @@
 mod backend;
 
 use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
-use backend::{Battery, PowerProfile};
+use backend::{Battery, ConnectedDevice, PowerProfile};
 
+use chrono::TimeDelta;
 use cosmic::iced::{Alignment, Length};
-use cosmic::iced_widget::row;
-use cosmic::widget::{self, column, radio, settings, text};
+use cosmic::iced_widget::{column, row};
+use cosmic::prelude::CollectionWidget;
+use cosmic::widget::{self, radio, settings, text};
 use cosmic::Apply;
+use cosmic::Command;
 use cosmic_settings_page::{self as page, section, Section};
+use itertools::Itertools;
 use slab::Slab;
 use slotmap::SlotMap;
 
 #[derive(Default)]
 pub struct Page {
     battery: Battery,
+    connected_devices: Vec<ConnectedDevice>,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -29,6 +34,7 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(vec![
             sections.insert(battery_info()),
+            sections.insert(connected_devices()),
             sections.insert(profiles()),
         ])
     }
@@ -38,11 +44,18 @@ impl page::Page<crate::pages::Message> for Page {
         _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> cosmic::Command<crate::pages::Message> {
-        cosmic::command::future(async move {
-            let battery = Battery::update_battery().await;
-            Message::UpdateBattery(battery)
-        })
-        .map(crate::pages::Message::Power)
+        let futures: Vec<Command<Message>> = vec![
+            cosmic::command::future(async move {
+                let battery = Battery::update_battery().await;
+                Message::UpdateBattery(battery)
+            }),
+            cosmic::command::future(async move {
+                let devices = ConnectedDevice::update_connected_devices().await;
+                Message::UpdateConnectedDevices(devices)
+            }),
+        ];
+
+        cosmic::command::batch(futures).map(crate::pages::Message::Power)
     }
 }
 
@@ -50,6 +63,7 @@ impl page::Page<crate::pages::Message> for Page {
 pub enum Message {
     PowerProfileChange(PowerProfile),
     UpdateBattery(Battery),
+    UpdateConnectedDevices(Vec<ConnectedDevice>),
 }
 
 impl Page {
@@ -65,6 +79,9 @@ impl Page {
                 }
             }
             Message::UpdateBattery(battery) => self.battery = battery,
+            Message::UpdateConnectedDevices(connected_devices) => {
+                self.connected_devices = connected_devices;
+            }
         };
     }
 }
@@ -78,18 +95,96 @@ fn battery_info() -> Section<crate::pages::Message> {
         .show_while::<Page>(|page| page.battery.is_present)
         .view::<Page>(move |_binder, page, section| {
             let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
-            let battery_label = text::body(format!(
-                "{}% {}",
-                page.battery.percent,
-                page.battery.remaining_time()
-            ));
+            let remaining_time = page.battery.remaining_time();
+            let battery_label = text::body(if remaining_time.is_empty() {
+                format!("{}%", page.battery.percent)
+            } else {
+                format!("{}% ({})", page.battery.percent, remaining_time)
+            });
 
-            column::with_capacity(2)
+            widget::column::with_capacity(2)
                 .push(text::heading(&section.title))
                 .push(
                     row!(battery_icon, battery_label)
                         .align_items(Alignment::Center)
                         .spacing(cosmic::theme::active().cosmic().space_xxxs()),
+                )
+                .into()
+        })
+}
+
+fn connected_devices() -> Section<crate::pages::Message> {
+    let descriptions = Slab::new();
+
+    Section::default()
+        .title(fl!("connected-devices"))
+        .descriptions(descriptions)
+        .show_while::<Page>(|page| !page.connected_devices.is_empty())
+        .view::<Page>(move |_binder, page, section| {
+            let devices: Vec<cosmic::Element<'_, _>> = page
+                .connected_devices
+                .iter()
+                .map(|connected_device| {
+                    let battery_icon =
+                        widget::icon::from_name(connected_device.battery.icon_name.clone());
+
+                    let battery_percent_and_time = widget::text(
+                        if connected_device.battery.remaining_duration > TimeDelta::zero() {
+                            format!(
+                                "{}% - {}",
+                                connected_device.battery.percent,
+                                &connected_device.battery.remaining_time()
+                            )
+                        } else {
+                            format!("{}%", connected_device.battery.percent)
+                        },
+                    );
+                    widget::container(
+                        row!(
+                            widget::icon::from_name(connected_device.device_icon).size(48),
+                            column!(
+                                text::heading(&connected_device.model),
+                                row!(battery_icon, battery_percent_and_time)
+                                    .spacing(4)
+                                    .align_items(Alignment::Center),
+                            )
+                            .height(Length::Shrink)
+                        )
+                        .align_items(Alignment::Center)
+                        .spacing(16)
+                        .padding([8, 16])
+                        .width(Length::Fill)
+                        .height(Length::Fill),
+                    )
+                    .height(64)
+                    .style(cosmic::theme::Container::List)
+                    .into()
+                })
+                .collect();
+
+            widget::column::with_capacity(2)
+                .spacing(8)
+                .push(text::heading(&section.title))
+                .push(
+                    widget::column()
+                        .extend(
+                            devices
+                                .into_iter()
+                                .chunks(2)
+                                .into_iter()
+                                .map(|mut device_row| {
+                                    row!(
+                                        device_row.next().unwrap_or(
+                                            widget::horizontal_space(Length::Fill).into()
+                                        ),
+                                        device_row.next().unwrap_or(
+                                            widget::horizontal_space(Length::Fill).into()
+                                        ),
+                                    )
+                                    .spacing(8)
+                                }),
+                        )
+                        .spacing(8),
                 )
                 .into()
         })
@@ -119,7 +214,7 @@ fn profiles() -> Section<crate::pages::Message> {
                     .into_iter()
                     .map(|profile| {
                         settings::item_row(vec![radio(
-                            column::with_capacity(2)
+                            widget::column::with_capacity(2)
                                 .push(text::body(profile.title()))
                                 .push(text::caption(profile.description())),
                             profile.clone(),
