@@ -297,7 +297,7 @@ power = Alimentazione e batteria
     .desc = Gestione impostazioni energetiche
 
 battery = Batteria
-  .remaining-time = ({ $time } rimasti)
+  .remaining-time = { $time } rimasti
 
 power-mode = Power Mode
     .battery = Estendi la vita della batteria

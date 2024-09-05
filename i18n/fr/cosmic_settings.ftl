@@ -308,10 +308,10 @@ battery = Batterie
   }
   .less-than-minute = Moins d'une minute
   .and = et
-  .remaining-time = ({ $time } jusqu'à la { $action ->
+  .remaining-time = { $time } jusqu'à la { $action ->
         [full] charge
        *[other] decharge
-   } complète)
+   } complète
 
 connected-devices = Périphériques connectés
   .unknown = Périphériques inconnu
