@@ -156,8 +156,8 @@ panel-style = Style
     .background-opacity = Background opacity
 
 panel-applets = Configuration
-    .dock-desc = Configure dock applets.
-    .desc = Configure panel applets.
+    .dock-desc = Configure dock applets
+    .desc = Configure panel applets
 
 panel-missing = Panel Configuration is Missing
     .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
@@ -304,7 +304,24 @@ power = Power & Battery
     .desc = Manage power settings
 
 battery = Battery
-  .remaining-time = ({ $time } left)
+  .minute = { $value } { $value ->
+        [one] minute
+       *[other] minutes
+  }
+  .hour = { $value } { $value ->
+        [one] hour
+       *[other] hours
+  }
+  .day = { $value } { $value ->
+        [one] day
+       *[other] days
+  }
+  .less-than-minute = Less than a minute
+  .and = and
+  .remaining-time = ({ $time } until { $action ->
+        [full] full
+       *[other] empty
+   })
 
 power-mode = Power Mode
     .battery = Extended battery life

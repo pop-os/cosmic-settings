@@ -36,7 +36,7 @@ impl Default for PageInner {
         Self {
             config_helper: Option::default(),
             panel_config: Option::default(),
-            outputs: vec![fl!("all")],
+            outputs: vec![fl!("all-displays")],
             anchors: vec![
                 Anchor(PanelAnchor::Left).to_string(),
                 Anchor(PanelAnchor::Right).to_string(),
