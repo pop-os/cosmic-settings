@@ -717,7 +717,11 @@ fn add_network() -> Command<crate::app::Message> {
     cosmic::dialog::file_chooser::open::Dialog::new()
         .directory(dir)
         .title(fl!("vpn", "select-file"))
-        .filter(FileFilter::new("OpenVPN").mimetype("application/x-openvpn-profile"))
+        .filter(
+            FileFilter::new("OpenVPN")
+                .mimetype("application/x-openvpn-profile")
+                .glob("*.ovpn"),
+        )
         .open_file()
         .then(|result| async move {
             match result {
