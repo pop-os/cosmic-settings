@@ -35,8 +35,12 @@ auth-dialog = Authentication Required
     .vpn-description = Enter the username and password required by the VPN service.
     .wifi-description = Enter the password or encryption key. You can also connect by pressing the “WPS” button on the router.
 
+forget-dialog = Forget this Wi-Fi network?
+    .description = You'll need to enter a password again to use this Wi-Fi network in the future.
+
 remove-connection-dialog = Remove Connection Profile?
     .vpn-description = You'll need to enter a password again to use this network in the future.
+    .wired-description = You'll need to recreate this profile to use it in the future.
 
 vpn = VPN
     .connections = VPN Connections

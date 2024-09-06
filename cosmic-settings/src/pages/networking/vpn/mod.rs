@@ -208,7 +208,7 @@ impl page::Page<crate::pages::Message> for Page {
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
                 widget::dialog(fl!("auth-dialog"))
-                    .icon(icon::from_name("network-wireless-signal-good-symbolic").size(64))
+                    .icon(icon::from_name("network-vpn-symbolic").size(64))
                     .body(fl!("auth-dialog", "vpn-description"))
                     .control(controls)
                     .primary_action(primary_action)
@@ -474,6 +474,7 @@ impl Page {
 
             Message::CancelDialog => {
                 self.dialog = None;
+                self.view_more_popup = None;
             }
 
             Message::TogglePasswordVisibility => {

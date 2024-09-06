@@ -8,7 +8,8 @@ use cosmic::{
     iced::{alignment, Length},
     iced_core::text::Wrap,
     prelude::CollectionWidget,
-    widget, Apply, Command, Element,
+    widget::{self, icon},
+    Apply, Command, Element,
 };
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::network_manager::{
@@ -21,6 +22,8 @@ use slab::Slab;
 pub enum Message {
     /// Add a network connection with nm-connection-editor
     AddNetwork,
+    /// Cancels a dialog.
+    CancelDialog,
     /// Connect to a WiFi network access point.
     Connect(network_manager::SSID),
     /// Settings for known connections.
@@ -29,6 +32,8 @@ pub enum Message {
     Disconnect(network_manager::SSID),
     /// An error occurred.
     Error(String),
+    /// Create a dialog to ask for confirmation on forgetting a connection.
+    ForgetRequest(network_manager::SSID),
     /// Forget a known access point.
     Forget(network_manager::SSID),
     /// An update from the network manager daemon
@@ -64,10 +69,16 @@ impl From<Message> for crate::pages::Message {
     }
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum WiFiDialog {
+    Forget(network_manager::SSID),
+}
+
 #[derive(Debug, Default)]
 pub struct Page {
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     nm_state: Option<NmState>,
+    dialog: Option<WiFiDialog>,
     view_more_popup: Option<network_manager::SSID>,
     connecting: BTreeSet<network_manager::SSID>,
     ssid_to_uuid: BTreeMap<Box<str>, Box<str>>,
@@ -99,6 +110,26 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut slotmap::SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![sections.insert(devices_view())])
+    }
+
+    fn dialog(&self) -> Option<Element<crate::pages::Message>> {
+        self.dialog.as_ref().map(|dialog| match dialog {
+            WiFiDialog::Forget(ssid) => {
+                let primary_action = widget::button::destructive(fl!("remove"))
+                    .on_press(Message::Forget(ssid.clone()));
+
+                let secondary_action =
+                    widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
+
+                widget::dialog(fl!("forget-dialog"))
+                    .icon(icon::from_name("dialog-information").size(64))
+                    .body(fl!("forget-dialog", "description"))
+                    .primary_action(primary_action)
+                    .secondary_action(secondary_action)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::WiFi)
+            }
+        })
     }
 
     fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
@@ -251,7 +282,12 @@ impl Page {
                 }
             }
 
+            Message::ForgetRequest(ssid) => {
+                self.dialog = Some(WiFiDialog::Forget(ssid));
+            }
+
             Message::Forget(ssid) => {
+                self.dialog = None;
                 self.close_popup_and_apply_updates();
                 if let Some(nm) = self.nm_state.as_mut() {
                     _ = nm
@@ -277,6 +313,11 @@ impl Page {
                         .unbounded_send(network_manager::Request::SetWiFi(enable));
                     _ = nm.sender.unbounded_send(network_manager::Request::Reload);
                 }
+            }
+
+            Message::CancelDialog => {
+                self.dialog = None;
+                self.view_more_popup = None;
             }
 
             Message::Error(why) => {
@@ -472,7 +513,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                                         ))
                                         .push_maybe(is_known.then(|| {
                                             popup_button(
-                                                Message::Forget(network.ssid.clone()),
+                                                Message::ForgetRequest(network.ssid.clone()),
                                                 &section.descriptions[forget_txt],
                                             )
                                         }))
