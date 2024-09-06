@@ -651,6 +651,8 @@ fn devices_view() -> Section<crate::pages::Message> {
                                             &section.descriptions[remove_txt],
                                         ))
                                         .width(Length::Fixed(200.0))
+                                        .apply(widget::container)
+                                        .style(cosmic::style::Container::Dialog)
                                 })
                                 .apply(|e| Some(Element::from(e)))
                         } else {

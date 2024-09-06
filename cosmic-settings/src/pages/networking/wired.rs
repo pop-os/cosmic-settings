@@ -465,6 +465,8 @@ impl Page {
                                         )
                                     }))
                                     .width(Length::Fixed(200.0))
+                                    .apply(widget::container)
+                                    .style(cosmic::style::Container::Dialog)
                             })
                             .apply(|e| Some(Element::from(e)))
                     } else {

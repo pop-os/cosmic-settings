@@ -477,6 +477,8 @@ fn devices_view() -> Section<crate::pages::Message> {
                                             )
                                         }))
                                         .width(Length::Fixed(170.0))
+                                        .apply(widget::container)
+                                        .style(cosmic::style::Container::Dialog)
                                 })
                                 .apply(|e| Some(Element::from(e)))
                         } else if is_known {
