@@ -590,10 +590,16 @@ fn devices_view() -> Section<crate::pages::Message> {
 
             let mut view = widget::column::with_capacity(4);
 
+            let vpn_connections =
+                widget::settings::view_section(&section.descriptions[vpn_conns_txt]);
+
             if page.known_connections.is_empty() {
+                view = view.push(vpn_connections.add(widget::settings::item_row(vec![
+                    widget::text::body(fl!("no-vpn")).into(),
+                ])));
             } else {
                 let known_networks = page.known_connections.iter().fold(
-                    widget::settings::view_section(&section.descriptions[vpn_conns_txt]),
+                    vpn_connections,
                     |networks, (uuid, connection)| {
                         let is_connected = active_conns.iter().any(|conn| match conn {
                             ActiveConnectionInfo::Vpn { name, .. } => {

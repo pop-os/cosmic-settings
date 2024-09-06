@@ -24,6 +24,7 @@ disconnect = Disconnect
 known-networks = Known Networks
 network-and-wireless = Network & Wireless
 no-networks = No networks have been found.
+no-vpn = No VPN connections available.
 password = Password
 remove = Remove
 settings = Settings
