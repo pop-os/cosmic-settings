@@ -163,7 +163,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> cosmic_settings_page::Info {
-        page::Info::new("vpn", "preferences-network-and-wireless-symbolic")
+        page::Info::new("vpn", "preferences-vpn-symbolic")
             .title(fl!("vpn"))
             .description(fl!("connections-and-profiles", variant = "vpn"))
     }
