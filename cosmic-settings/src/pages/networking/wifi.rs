@@ -438,9 +438,10 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                         let identifier = widget::row::with_capacity(3)
                             .push(widget::icon::from_name("network-wireless-good-symbolic"))
-                            .push_maybe(is_encrypted.then(|| {
-                                widget::icon::from_name("network-wireless-encrypted-symbolic")
-                            }))
+                            .push_maybe(
+                                is_encrypted
+                                    .then(|| widget::icon::from_name("connection-secure-symbolic")),
+                            )
                             .push(widget::text::body(network.ssid.as_ref()).wrap(Wrap::Glyph))
                             .spacing(spacing.space_xxs);
 
