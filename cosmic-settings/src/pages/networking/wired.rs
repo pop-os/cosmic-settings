@@ -519,6 +519,7 @@ impl Page {
                                     }))
                                     .width(Length::Fixed(200.0))
                                     .apply(widget::container)
+                                    .padding(spacing.space_xxxs)
                                     .style(cosmic::style::Container::Dialog)
                             })
                             .apply(|e| Some(Element::from(e)))
@@ -601,10 +602,12 @@ fn devices_view() -> Section<crate::pages::Message> {
 }
 
 fn popup_button<'a>(message: Message, text: &'a str) -> Element<'a, Message> {
+    let theme = cosmic::theme::active();
+    let theme = theme.cosmic();
     widget::text::body(text)
         .vertical_alignment(alignment::Vertical::Center)
         .apply(widget::button::custom)
-        .padding([4, 16])
+        .padding([theme.space_xxxs(), theme.space_xs()])
         .width(Length::Fill)
         .style(cosmic::theme::Button::MenuItem)
         .on_press(message)

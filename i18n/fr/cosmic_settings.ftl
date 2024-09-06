@@ -681,3 +681,25 @@ firmware = Micrologiciel
 
 users = Utilisateurs
     .desc = Authentification et connexion, écran de verrouillage.
+
+# Bluetooth
+
+bluetooth = Bluetooth
+    .desc = Gestion du Bluetooth.
+    .status = Ce système est visible en tant que { $aliases } pandant que les paramètres Bluetooth sont ouvert.
+    .connected = Connecté
+    .connecting = Connexion
+    .disconnecting = Deconnexion
+    .connect = Connecter
+    .disconnect = Deconnecter
+    .forget = Oublier
+    .dbus-error = Une erreur est survenue lors de l'interaction avec DBus: { $why }
+    .show-device-without-name = Afficher les périphériques sans nom
+
+bluetooth-paired = Périphériques precedemment connectés
+    .connect = Connecter
+    .battery = { $percentage }% de batterie
+    
+bluetooth-available = Périphériques à proximité
+
+bluetooth-adapters = Adaptateur Bluetooth

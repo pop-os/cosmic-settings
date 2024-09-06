@@ -27,6 +27,7 @@ polkit-rules-dst := clean(rootdir / prefix) / 'share' / 'polkit-1' / 'rules.d' /
 entry-settings := appid + '.desktop'
 entry-about := appid + '.About.desktop'
 entry-appear := appid + '.Appearance.desktop'
+entry-bluetooth := appid + '.Bluetooth.desktop'
 entry-date-time := appid + '.DateTime.desktop'
 entry-desktop := appid + '.Desktop.desktop'
 entry-displays := appid + '.Displays.desktop'
@@ -60,6 +61,7 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-settings}}' '{{appdir}}/{{entry-settings}}'
     install -Dm0644 'resources/{{entry-about}}' '{{appdir}}/{{entry-about}}'
     install -Dm0644 'resources/{{entry-appear}}' '{{appdir}}/{{entry-appear}}'
+    install -Dm0644 'resources/{{entry-bluetooth}}' '{{appdir}}/{{entry-bluetooth}}'
     install -Dm0644 'resources/{{entry-date-time}}' '{{appdir}}/{{entry-date-time}}'
     install -Dm0644 'resources/{{entry-desktop}}' '{{appdir}}/{{entry-desktop}}'
     install -Dm0644 'resources/{{entry-displays}}' '{{appdir}}/{{entry-displays}}'
@@ -105,6 +107,7 @@ uninstall:
         '{{appdir}}/{{entry-settings}}' \
         '{{appdir}}/{{entry-about}}' \
         '{{appdir}}/{{entry-appear}}' \
+        '{{appdir}}/{{entry-bluetooth}}' \
         '{{appdir}}/{{entry-date-time}}' \
         '{{appdir}}/{{entry-desktop}}' \
         '{{appdir}}/{{entry-displays}}' \

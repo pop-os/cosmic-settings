@@ -11,7 +11,7 @@ use crate::pages::desktop::{
     },
 };
 use crate::pages::input::{self};
-use crate::pages::{self, display, networking, power, sound, system, time};
+use crate::pages::{self, bluetooth, display, networking, power, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
@@ -59,7 +59,7 @@ impl SettingsApp {
         match cmd {
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
-            PageCommands::Bluetooth => None,
+            PageCommands::Bluetooth => self.pages.page_id::<bluetooth::Page>(),
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
@@ -146,6 +146,7 @@ impl cosmic::Application for SettingsApp {
         };
 
         app.insert_page::<networking::Page>();
+        app.insert_page::<bluetooth::Page>();
         let desktop_id = app.insert_page::<desktop::Page>().id();
         app.insert_page::<display::Page>();
         app.insert_page::<sound::Page>();
@@ -320,6 +321,12 @@ impl cosmic::Application for SettingsApp {
 
                 crate::pages::Message::Appearance(message) => {
                     if let Some(page) = self.pages.page_mut::<appearance::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::Bluetooth(message) => {
+                    if let Some(page) = self.pages.page_mut::<bluetooth::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
