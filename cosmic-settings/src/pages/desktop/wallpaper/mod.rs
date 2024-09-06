@@ -1219,7 +1219,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                         toggler(
                             None,
                             page.wallpaper_service_config.same_on_all,
-                            Message::SameWallpaper,
+                            Some(Message::SameWallpaper),
                         ),
                     ))
                     .add(settings::item(&descriptions[fit_label], wallpaper_fit));
@@ -1227,7 +1227,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                 if show_slideshow_toggle {
                     column = column.add(settings::item(
                         &descriptions[slide_label],
-                        toggler(None, slideshow_enabled, Message::Slideshow),
+                        toggler(None, slideshow_enabled, Some(Message::Slideshow)),
                     ));
                 }
 

@@ -815,6 +815,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bluez-zbus"
+version = "0.1.0"
+source = "git+https://github.com/acolombier/dbus-settings-bindings?branch=feat/bluez#71be7d32bb7a939c05f1ca8ecfbdf660b71ea139"
+dependencies = [
+ "futures",
+ "zbus 4.4.0",
+]
+
+[[package]]
 name = "borsh"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1447,14 +1456,14 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "atomicwrites",
  "cosmic-config-derive",
  "cosmic-settings-daemon",
  "dirs",
  "futures-util",
- "iced_futures",
+ "iced_futures 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
  "known-folders",
  "notify",
  "once_cell",
@@ -1469,7 +1478,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -1553,6 +1562,7 @@ dependencies = [
  "as-result",
  "ashpd 0.9.1",
  "async-channel",
+ "bluez-zbus",
  "chrono",
  "clap",
  "color-eyre",
@@ -1651,7 +1661,7 @@ source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#90df5c4b22
 dependencies = [
  "cosmic-dbus-networkmanager",
  "futures",
- "iced_futures",
+ "iced_futures 0.12.0 (git+https://github.com/pop-os/libcosmic)",
  "itertools 0.13.0",
  "libpulse-binding",
  "log",
@@ -1721,7 +1731,7 @@ dependencies = [
 [[package]]
 name = "cosmic-theme"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "almost",
  "cosmic-config",
@@ -1837,7 +1847,7 @@ version = "0.19.0"
 source = "git+https://github.com/gfx-rs/wgpu?rev=20fda69#20fda698341efbdc870b8027d6d49f5bf3f36109"
 dependencies = [
  "bitflags 2.6.0",
- "libloading 0.8.5",
+ "libloading 0.7.4",
  "winapi",
 ]
 
@@ -2059,7 +2069,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
- "libloading 0.8.5",
+ "libloading 0.7.4",
 ]
 
 [[package]]
@@ -2914,7 +2924,7 @@ dependencies = [
  "bitflags 2.6.0",
  "com",
  "libc",
- "libloading 0.8.5",
+ "libloading 0.7.4",
  "thiserror",
  "widestring",
  "winapi",
@@ -3066,12 +3076,12 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "dnd",
  "iced_accessibility",
- "iced_core",
- "iced_futures",
+ "iced_core 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
+ "iced_futures 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
  "iced_renderer",
  "iced_sctk",
  "iced_widget",
@@ -3085,7 +3095,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "accesskit",
  "accesskit_unix",
@@ -3094,7 +3104,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "bitflags 2.6.0",
  "dnd",
@@ -3114,12 +3124,30 @@ dependencies = [
 ]
 
 [[package]]
-name = "iced_futures"
+name = "iced_core"
 version = "0.12.0"
 source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
 dependencies = [
+ "bitflags 2.6.0",
+ "dnd",
+ "log",
+ "mime",
+ "num-traits",
+ "raw-window-handle",
+ "smol_str",
+ "thiserror",
+ "web-time",
+ "window_clipboard",
+ "xxhash-rust",
+]
+
+[[package]]
+name = "iced_futures"
+version = "0.12.0"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
+dependencies = [
  "futures",
- "iced_core",
+ "iced_core 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
  "log",
  "tokio",
  "wasm-bindgen-futures",
@@ -3127,17 +3155,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "iced_graphics"
+name = "iced_futures"
 version = "0.12.0"
 source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+dependencies = [
+ "futures",
+ "iced_core 0.12.0 (git+https://github.com/pop-os/libcosmic)",
+ "log",
+ "wasm-bindgen-futures",
+ "wasm-timer",
+]
+
+[[package]]
+name = "iced_graphics"
+version = "0.12.0"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "bitflags 2.6.0",
  "bytemuck",
  "cosmic-text",
  "glam",
  "half",
- "iced_core",
- "iced_futures",
+ "iced_core 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
+ "iced_futures 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
  "image 0.24.9",
  "kamadak-exif",
  "log",
@@ -3153,7 +3193,7 @@ dependencies = [
 [[package]]
 name = "iced_renderer"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "iced_graphics",
  "iced_tiny_skia",
@@ -3165,12 +3205,12 @@ dependencies = [
 [[package]]
 name = "iced_runtime"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "dnd",
  "iced_accessibility",
- "iced_core",
- "iced_futures",
+ "iced_core 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
+ "iced_futures 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
  "smithay-client-toolkit 0.19.2",
  "thiserror",
  "window_clipboard",
@@ -3179,12 +3219,12 @@ dependencies = [
 [[package]]
 name = "iced_sctk"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "enum-repr",
  "float-cmp",
  "futures",
- "iced_futures",
+ "iced_futures 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
  "iced_graphics",
  "iced_runtime",
  "iced_style",
@@ -3205,9 +3245,9 @@ dependencies = [
 [[package]]
 name = "iced_style"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
- "iced_core",
+ "iced_core 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
  "once_cell",
  "palette",
 ]
@@ -3215,7 +3255,7 @@ dependencies = [
 [[package]]
 name = "iced_tiny_skia"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "bytemuck",
  "cosmic-text",
@@ -3232,7 +3272,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "as-raw-xcb-connection",
  "bitflags 2.6.0",
@@ -3261,7 +3301,7 @@ dependencies = [
 [[package]]
 name = "iced_widget"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "dnd",
  "iced_renderer",
@@ -3278,7 +3318,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.12.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "dnd",
  "iced_graphics",
@@ -4091,7 +4131,7 @@ checksum = "d8adc4bb1803a324070e64a98ae98f38934d91957a99cfb3a43dcbc01bc56439"
 [[package]]
 name = "libcosmic"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#71cd25c06d230a742ebf660297478b732cf1882b"
+source = "git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled#51b7a946572493afd0ab5cdfbea8e7745e92e588"
 dependencies = [
  "apply",
  "ashpd 0.9.1",
@@ -4105,8 +4145,8 @@ dependencies = [
  "fraction",
  "freedesktop-icons",
  "iced",
- "iced_core",
- "iced_futures",
+ "iced_core 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
+ "iced_futures 0.12.0 (git+https://github.com/acolombier/libcosmic?branch=feat/allow-toggler-to-be-disabled)",
  "iced_renderer",
  "iced_runtime",
  "iced_sctk",
@@ -7566,7 +7606,7 @@ dependencies = [
  "js-sys",
  "khronos-egl",
  "libc",
- "libloading 0.8.5",
+ "libloading 0.7.4",
  "log",
  "metal",
  "naga",
@@ -7624,7 +7664,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

@@ -1106,7 +1106,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                         let mut column = list_column()
                             .add(widget::settings::item(
                                 &descriptions[enable_label],
-                                toggler(None, active_output.enabled, Message::DisplayToggle),
+                                toggler(None, active_output.enabled, Some(Message::DisplayToggle)),
                             ))
                             .add(widget::settings::item(
                                 &descriptions[mirroring_label],

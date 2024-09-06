@@ -163,7 +163,7 @@ pub(crate) fn enable() -> Section<crate::pages::Message> {
                             .config_list
                             .iter()
                             .any(|e| e.name.as_str() == "Dock"),
-                        Message::EnableDock,
+                        Some(Message::EnableDock),
                     ),
                 ))
                 .apply(Element::from)

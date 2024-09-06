@@ -519,7 +519,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
             let wifi_enable =
                 widget::settings::item::builder(&section.descriptions[wifi_txt]).control(
-                    widget::toggler(None, state.wifi_enabled, Message::WiFiEnable),
+                    widget::toggler(None, state.wifi_enabled, Some(Message::WiFiEnable)),
                 );
 
             let mut view = widget::column::with_capacity(4)

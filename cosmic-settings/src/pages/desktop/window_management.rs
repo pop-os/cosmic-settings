@@ -209,7 +209,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     toggler(
                         None,
                         desktop.cosmic_tk.show_maximize,
-                        super::Message::ShowMaximizeButton,
+                        Some(super::Message::ShowMaximizeButton),
                     ),
                 ))
                 .add(settings::item(
@@ -217,7 +217,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     toggler(
                         None,
                         desktop.cosmic_tk.show_minimize,
-                        super::Message::ShowMinimizeButton,
+                        Some(super::Message::ShowMinimizeButton),
                     ),
                 ))
                 .apply(Element::from)
@@ -245,7 +245,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                     toggler(
                         None,
                         page.focus_follows_cursor,
-                        Message::SetFocusFollowsCursor,
+                        Some(Message::SetFocusFollowsCursor),
                     ),
                 ))
                 .add(settings::item(
@@ -263,7 +263,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                     toggler(
                         None,
                         page.cursor_follows_focus,
-                        Message::SetCursorFollowsFocus,
+                        Some(Message::SetCursorFollowsFocus),
                     ),
                 ))
                 .apply(Element::from)

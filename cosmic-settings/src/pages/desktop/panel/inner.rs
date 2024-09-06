@@ -112,9 +112,11 @@ pub(crate) fn behavior_and_position<
             settings::view_section(&section.title)
                 .add(settings::item(
                     &descriptions[autohide_label],
-                    toggler(None, panel_config.autohide.is_some(), |value| {
-                        Message::AutoHidePanel(value)
-                    }),
+                    toggler(
+                        None,
+                        panel_config.autohide.is_some(),
+                        Some(|value| Message::AutoHidePanel(value)),
+                    ),
                 ))
                 .add(settings::item(
                     &descriptions[position],
@@ -168,15 +170,19 @@ pub(crate) fn style<
             settings::view_section(&section.title)
                 .add(settings::item(
                     &descriptions[gap_label],
-                    toggler(None, panel_config.anchor_gap, |value| {
-                        Message::AnchorGap(value)
-                    }),
+                    toggler(
+                        None,
+                        panel_config.anchor_gap,
+                        Some(|value| Message::AnchorGap(value)),
+                    ),
                 ))
                 .add(settings::item(
                     &descriptions[extend_label],
-                    toggler(None, panel_config.expand_to_edges, |value| {
-                        Message::ExtendToEdge(value)
-                    }),
+                    toggler(
+                        None,
+                        panel_config.expand_to_edges,
+                        Some(|value| Message::ExtendToEdge(value)),
+                    ),
                 ))
                 .add(settings::item(
                     &descriptions[appearance],

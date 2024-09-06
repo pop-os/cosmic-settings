@@ -3,6 +3,7 @@
 
 use cosmic_settings_page::Entity;
 
+pub mod bluetooth;
 pub mod desktop;
 pub mod display;
 pub mod input;
@@ -16,6 +17,7 @@ pub mod time;
 pub enum Message {
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
+    Bluetooth(bluetooth::Message),
     CustomShortcuts(input::keyboard::shortcuts::custom::Message),
     DateAndTime(time::date::Message),
     Desktop(desktop::Message),

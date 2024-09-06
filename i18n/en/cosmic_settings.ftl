@@ -681,3 +681,25 @@ firmware = Firmware
 
 users = Users
     .desc = Authentication and user accounts.
+
+# Bluetooth
+
+bluetooth = Bluetooth
+    .desc = Manage Bluetooth.
+    .status = This system is visible as { $aliases } while the Bluetooth settings is open.
+    .connected = Connected
+    .connecting = Connecting
+    .disconnecting = Disconnecting
+    .connect = Connect
+    .disconnect = Disconnect
+    .forget = Forget
+    .dbus-error = An error has occurred while interacting with DBus: { $why }
+    .show-device-without-name = Show device without name
+
+bluetooth-paired = Previously Connected Devices
+    .connect = Connect
+    .battery = { $percentage }% battery
+
+bluetooth-available = Nearby Devices
+
+bluetooth-adapters = Bluetooth Adapters
