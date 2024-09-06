@@ -11,7 +11,8 @@ use cosmic::{
     iced::{alignment, Length},
     iced_core::text::Wrap,
     prelude::CollectionWidget,
-    widget, Apply, Command, Element,
+    widget::{self, icon},
+    Apply, Command, Element,
 };
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::network_manager::{
@@ -54,6 +55,8 @@ pub enum Message {
     PasswordUpdate(String),
     /// Refresh devices and their connection profiles
     Refresh,
+    /// Create a dialog to ask for confirmation of removal.
+    RemoveProfileRequest(ConnectionId),
     /// Remove a connection profile
     RemoveProfile(ConnectionId),
     /// Opens settings page for the access point.
@@ -132,6 +135,7 @@ enum VpnDialog {
         password: SecureString,
         password_hidden: bool,
     },
+    RemoveProfile(ConnectionId),
 }
 
 #[derive(Debug)]
@@ -204,8 +208,25 @@ impl page::Page<crate::pages::Message> for Page {
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
                 widget::dialog(fl!("auth-dialog"))
+                    .icon(icon::from_name("network-wireless-signal-good-symbolic").size(64))
                     .body(fl!("auth-dialog", "vpn-description"))
                     .control(controls)
+                    .primary_action(primary_action)
+                    .secondary_action(secondary_action)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Vpn)
+            }
+
+            VpnDialog::RemoveProfile(uuid) => {
+                let primary_action = widget::button::destructive(fl!("remove"))
+                    .on_press(Message::RemoveProfile(uuid.clone()));
+
+                let secondary_action =
+                    widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
+
+                widget::dialog(fl!("remove-connection-dialog"))
+                    .icon(icon::from_name("dialog-information").size(64))
+                    .body(fl!("remove-connection-dialog", "vpn-description"))
                     .primary_action(primary_action)
                     .secondary_action(secondary_action)
                     .apply(Element::from)
@@ -371,7 +392,12 @@ impl Page {
                 }
             }
 
+            Message::RemoveProfileRequest(uuid) => {
+                self.dialog = Some(VpnDialog::RemoveProfile(uuid));
+            }
+
             Message::RemoveProfile(uuid) => {
+                self.dialog = None;
                 self.close_popup_and_apply_updates();
                 if let Some(NmState { ref sender, .. }) = self.nm_state {
                     _ = sender.unbounded_send(network_manager::Request::Remove(uuid));
@@ -424,17 +450,16 @@ impl Page {
                     return Command::none();
                 };
 
-                match dialog {
-                    VpnDialog::Password {
-                        id,
-                        username,
-                        password,
-                        ..
-                    } => {
-                        return self
-                            .activate_with_password(id, username, password)
-                            .map(crate::app::Message::from)
-                    }
+                if let VpnDialog::Password {
+                    id,
+                    username,
+                    password,
+                    ..
+                } = dialog
+                {
+                    return self
+                        .activate_with_password(id, username, password)
+                        .map(crate::app::Message::from);
                 }
             }
 
@@ -647,7 +672,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                                             &section.descriptions[settings_txt],
                                         ))
                                         .push(popup_button(
-                                            Message::RemoveProfile(uuid.clone()),
+                                            Message::RemoveProfileRequest(uuid.clone()),
                                             &section.descriptions[remove_txt],
                                         ))
                                         .width(Length::Fixed(200.0))

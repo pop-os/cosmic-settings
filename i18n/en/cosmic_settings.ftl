@@ -36,7 +36,7 @@ auth-dialog = Authentication Required
     .wifi-description = Enter the password or encryption key. You can also connect by pressing the “WPS” button on the router.
 
 remove-connection-dialog = Remove Connection Profile?
-    .wifi-description = You'll need to enter a password again to use this network in the future.
+    .vpn-description = You'll need to enter a password again to use this network in the future.
 
 vpn = VPN
     .connections = VPN Connections
