@@ -284,6 +284,7 @@ impl Page {
 
             Message::ForgetRequest(ssid) => {
                 self.dialog = Some(WiFiDialog::Forget(ssid));
+                self.view_more_popup = None;
             }
 
             Message::Forget(ssid) => {
@@ -317,7 +318,6 @@ impl Page {
 
             Message::CancelDialog => {
                 self.dialog = None;
-                self.view_more_popup = None;
             }
 
             Message::Error(why) => {

@@ -25,6 +25,8 @@ pub enum Message {
     Activate(ConnectionId),
     /// Add a network connection with nm-connection-editor
     AddNetwork,
+    /// Cancels an active dialog.
+    CancelDialog,
     /// Deactivate a connection.
     Deactivate(ConnectionId),
     /// An error occurred.
@@ -40,6 +42,8 @@ pub enum Message {
     ),
     /// Refresh devices and their connection profiles
     Refresh,
+    /// Create a dialog to ask for confirmation of removal.
+    RemoveProfileRequest(ConnectionId),
     /// Remove a connection profile
     RemoveProfile(ConnectionId),
     /// Selects a device to display connections from
@@ -68,10 +72,16 @@ impl From<Message> for crate::pages::Message {
 
 pub type InterfaceId = String;
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum WiredDialog {
+    RemoveProfile(ConnectionId),
+}
+
 #[derive(Debug, Default)]
 pub struct Page {
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     nm_state: Option<NmState>,
+    dialog: Option<WiredDialog>,
     /// When defined, displays connections for the specific device.
     active_device: Option<Arc<network_manager::devices::DeviceInfo>>,
     /// Tracks which connections are in the act of connecting.
@@ -106,6 +116,26 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut slotmap::SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![sections.insert(devices_view())])
+    }
+
+    fn dialog(&self) -> Option<Element<crate::pages::Message>> {
+        self.dialog.as_ref().map(|dialog| match dialog {
+            WiredDialog::RemoveProfile(uuid) => {
+                let primary_action = widget::button::destructive(fl!("remove"))
+                    .on_press(Message::RemoveProfile(uuid.clone()));
+
+                let secondary_action =
+                    widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
+
+                widget::dialog(fl!("remove-connection-dialog"))
+                    .icon(icon::from_name("dialog-information").size(64))
+                    .body(fl!("remove-connection-dialog", "wired-description"))
+                    .primary_action(primary_action)
+                    .secondary_action(secondary_action)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Wired)
+            }
+        })
     }
 
     fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
@@ -271,7 +301,13 @@ impl Page {
                 }
             }
 
+            Message::RemoveProfileRequest(uuid) => {
+                self.view_more_popup = None;
+                self.dialog = Some(WiredDialog::RemoveProfile(uuid));
+            }
+
             Message::RemoveProfile(uuid) => {
+                self.dialog = None;
                 self.close_popup_and_apply_updates();
                 if let Some(NmState { ref sender, .. }) = self.nm_state {
                     _ = sender.unbounded_send(network_manager::Request::Remove(uuid));
@@ -302,6 +338,10 @@ impl Page {
                         update_devices(conn.clone()),
                     ]);
                 }
+            }
+
+            Message::CancelDialog => {
+                self.dialog = None;
             }
 
             Message::Error(why) => {
@@ -460,7 +500,7 @@ impl Page {
                                     ))
                                     .push_maybe(has_multiple_connection_profiles.then(|| {
                                         popup_button(
-                                            Message::RemoveProfile(connection.uuid.clone()),
+                                            Message::RemoveProfileRequest(connection.uuid.clone()),
                                             &remove_txt,
                                         )
                                     }))

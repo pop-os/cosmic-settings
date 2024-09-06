@@ -360,6 +360,7 @@ impl Page {
                 if let Some(settings) = self.known_connections.get(&uuid) {
                     match settings.password_flag() {
                         Some(PasswordFlag::NotSaved | PasswordFlag::AgentOwned) => {
+                            self.view_more_popup = None;
                             self.dialog = Some(VpnDialog::Password {
                                 id: settings.id.clone(),
                                 uuid: uuid.clone(),
@@ -393,6 +394,7 @@ impl Page {
             }
 
             Message::RemoveProfileRequest(uuid) => {
+                self.view_more_popup = None;
                 self.dialog = Some(VpnDialog::RemoveProfile(uuid));
             }
 
@@ -474,7 +476,6 @@ impl Page {
 
             Message::CancelDialog => {
                 self.dialog = None;
-                self.view_more_popup = None;
             }
 
             Message::TogglePasswordVisibility => {
