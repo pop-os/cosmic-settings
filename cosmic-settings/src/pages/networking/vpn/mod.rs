@@ -1,6 +1,8 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+mod nmcli;
+
 use std::sync::Arc;
 
 use anyhow::Context;
@@ -19,7 +21,6 @@ use futures::{FutureExt, StreamExt};
 use indexmap::IndexMap;
 use secure_string::SecureString;
 use slab::Slab;
-use zbus::zvariant::ObjectPath;
 
 pub type ConnectionId = Arc<str>;
 pub type InterfaceId = String;
@@ -82,8 +83,7 @@ impl From<Message> for crate::pages::Message {
 }
 
 #[derive(Clone, Debug, Default)]
-struct VpnConnectionSettings {
-    path: ObjectPath<'static>,
+pub struct VpnConnectionSettings {
     id: String,
     username: Option<String>,
     connection_type: Option<ConnectionType>,
@@ -91,27 +91,23 @@ struct VpnConnectionSettings {
 }
 
 impl VpnConnectionSettings {
-    fn password_required(&self) -> bool {
-        self.connection_type.as_ref().map_or(false, |ct| match ct {
-            ConnectionType::Password => true,
-            ConnectionType::Unknown => false,
-        }) && self
-            .password_flag
+    fn password_flag(&self) -> Option<PasswordFlag> {
+        self.connection_type
             .as_ref()
-            .map_or(false, |flag| match flag {
-                PasswordFlag::NotRequired => false,
-                _ => true,
+            .map_or(false, |ct| match ct {
+                ConnectionType::Password => true,
             })
+            .then(|| self.password_flag)
+            .flatten()
     }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum ConnectionType {
     Password,
-    Unknown,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum PasswordFlag {
     /// The system is responsible for providing and storing this secret.
     None = 0,
@@ -130,7 +126,8 @@ enum PasswordFlag {
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum VpnDialog {
     Password {
-        path: ObjectPath<'static>,
+        id: String,
+        uuid: Arc<str>,
         username: String,
         password: SecureString,
         password_hidden: bool,
@@ -177,10 +174,10 @@ impl page::Page<crate::pages::Message> for Page {
     fn dialog(&self) -> Option<Element<crate::pages::Message>> {
         self.dialog.as_ref().map(|dialog| match dialog {
             VpnDialog::Password {
-                path,
                 username,
                 password,
                 password_hidden,
+                ..
             } => {
                 let username = widget::text_input(fl!("username"), username.as_str())
                     .on_input(Message::UsernameUpdate);
@@ -339,20 +336,29 @@ impl Page {
             Message::Activate(uuid) => {
                 self.close_popup_and_apply_updates();
 
-                if let Some(NmState { ref sender, .. }) = self.nm_state {
-                    if let Some(settings) = self.known_connections.get(&uuid) {
-                        if settings.password_required() {
+                if let Some(settings) = self.known_connections.get(&uuid) {
+                    match settings.password_flag() {
+                        Some(PasswordFlag::NotSaved | PasswordFlag::AgentOwned) => {
                             self.dialog = Some(VpnDialog::Password {
-                                path: settings.path.clone(),
+                                id: settings.id.clone(),
+                                uuid: uuid.clone(),
                                 username: settings.username.clone().unwrap_or_default(),
                                 password: SecureString::from(""),
                                 password_hidden: true,
                             });
-                        } else {
-                            _ = sender.unbounded_send(network_manager::Request::Activate(
-                                ObjectPath::from_static_str_unchecked("/"),
-                                settings.path.clone(),
-                            ));
+                        }
+
+                        _ => {
+                            let connection_name = settings.id.clone();
+                            return cosmic::command::future(async move {
+                                if let Err(why) = nmcli::connect(&connection_name).await {
+                                    return Message::Error(format!(
+                                        "failed to connect to VPN: {why}"
+                                    ));
+                                }
+
+                                Message::Refresh
+                            });
                         }
                     }
                 }
@@ -414,27 +420,20 @@ impl Page {
             }
 
             Message::ConnectWithPassword => {
-                let Some(NmState { ref mut sender, .. }) = self.nm_state else {
-                    return Command::none();
-                };
-
                 let Some(dialog) = self.dialog.take() else {
                     return Command::none();
                 };
 
                 match dialog {
                     VpnDialog::Password {
-                        path,
+                        id,
                         username,
                         password,
                         ..
                     } => {
-                        _ = sender.unbounded_send(network_manager::Request::ActivateWithPassword(
-                            ObjectPath::from_static_str_unchecked("/"),
-                            path,
-                            username,
-                            password,
-                        ));
+                        return self
+                            .activate_with_password(id, username, password)
+                            .map(crate::app::Message::from)
                     }
                 }
             }
@@ -472,6 +471,35 @@ impl Page {
         }
 
         Command::none()
+    }
+
+    fn activate_with_password(
+        &mut self,
+        connection_name: String,
+        username: String,
+        password: SecureString,
+    ) -> Command<Message> {
+        cosmic::command::future(async move {
+            if let Err(why) = nmcli::set_username(&connection_name, &username).await {
+                return Message::Error(format!("failed to set VPN username: {why}"));
+            }
+
+            if let Err(why) = nmcli::set_password_flags_none(&connection_name).await {
+                return Message::Error(format!(
+                    "failed to call nmcli to set VPN password-flags parameter: {why}"
+                ));
+            }
+
+            if let Err(why) = nmcli::set_password(&connection_name, password.unsecure()).await {
+                return Message::Error(format!("failed to call nmcli to set VPN password: {why}"));
+            }
+
+            if let Err(why) = nmcli::connect(&connection_name).await {
+                return Message::Error(format!("failed to connect to VPN: {why}"));
+            }
+
+            Message::Refresh
+        })
     }
 
     fn connect(
@@ -737,10 +765,9 @@ fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
                     .get("data")
                     .and_then(|data| data.downcast_ref::<zbus::zvariant::Dict>().ok())
                     .map(|dict| {
-                        let (mut username, mut connection_type, mut password_flag) =
-                            (None, None, None);
+                        let (mut connection_type, mut password_flag) = (None, None);
 
-                        username = dict
+                        let username = dict
                             .get::<String, String>(&String::from("username"))
                             .ok()
                             .flatten()
@@ -771,12 +798,9 @@ fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
                     })
                     .unwrap_or_default();
 
-                let path = conn.inner().path().to_owned();
-
                 Some((
                     Arc::from(uuid),
                     VpnConnectionSettings {
-                        path,
                         id,
                         connection_type,
                         password_flag,

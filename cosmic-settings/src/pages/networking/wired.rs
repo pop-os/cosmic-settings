@@ -492,7 +492,7 @@ impl Page {
 
     fn device_list_view<'a>(
         &'a self,
-        spacing: &cosmic::cosmic_theme::Spacing,
+        _spacing: &cosmic::cosmic_theme::Spacing,
         nm_state: &'a NmState,
         devices_txt: &'a str,
     ) -> Element<'a, Message> {

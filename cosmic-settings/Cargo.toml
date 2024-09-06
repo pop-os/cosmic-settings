@@ -6,6 +6,7 @@ license = "GPL-3.0"
 
 [dependencies]
 anyhow = "1.0"
+as-result = "0.2.1"
 ashpd = { version = "0.9", default-features = false, features = ["tokio"] }
 async-channel = "2.3.1"
 chrono = "0.4.38"
@@ -26,6 +27,7 @@ derivative = "2.2.0"
 derive_setters = "0.1.6"
 dirs = "5.0.1"
 downcast-rs = "1.2.1"
+eyre = "0.6.12"
 freedesktop-desktop-entry = "0.7.3"
 futures = "0.3.30"
 hostname-validator = "1.1.1"
@@ -41,6 +43,7 @@ once_cell = "1.19.0"
 regex = "1.10.6"
 ron = "0.8"
 rust-embed = "8.5.0"
+secure-string = "0.3.0"
 serde = { version = "1.0.208", features = ["derive"] }
 slab = "0.4.9"
 slotmap = "1.0.7"
@@ -56,12 +59,10 @@ upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 url = "2.5.2"
 xkb-data = "0.2.1"
 zbus = { version = "4.4.0", features = ["tokio"] }
-secure-string = "0.3.0"
 
 [dependencies.cosmic-settings-subscriptions]
-# git = "https://github.com/pop-os/cosmic-settings-subscriptions"
-# branch = "network"
-path = "../../cosmic-settings-subscriptions"
+git = "https://github.com/pop-os/cosmic-settings-subscriptions"
+branch = "network"
 features = ["network_manager", "pipewire", "pulse"]
 
 [dependencies.icu]
