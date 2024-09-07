@@ -338,6 +338,10 @@ battery = Bateria
         [full] naładowania
        *[other] rozładowania
    }
+
+connected-devices = Podłączone Urządzenia
+  .unknown = Nierozpoznane urządzenie
+
 power-mode = Profile Zasilania
   .performance = Tryb Wysokowydajny
   .balanced = Tryb Zbalansowany
