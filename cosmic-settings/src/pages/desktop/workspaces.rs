@@ -6,7 +6,7 @@
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced::{widget, Alignment, Length},
-    widget::{icon, radio, settings, text},
+    widget::{icon, radio, settings, text, ListColumn},
     Apply, Element,
 };
 use cosmic_comp_config::workspace::{
@@ -268,7 +268,7 @@ fn multi_behavior() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             settings::view_section(&section.title)
-                .edit_list_column(|column| column.spacing(0))
+                .list_column(ListColumn::default().spacing(0))
                 .add(
                     cosmic::iced::widget::column!(
                         widget::vertical_space(1),
