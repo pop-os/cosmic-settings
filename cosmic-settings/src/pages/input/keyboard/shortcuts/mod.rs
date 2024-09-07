@@ -1,4 +1,5 @@
 mod common;
+
 pub use common::{Model, ShortcutBinding, ShortcutMessage, ShortcutModel};
 
 pub mod custom;
@@ -16,11 +17,14 @@ use cosmic_settings_config::shortcuts::action::{
     Direction, FocusDirection, Orientation, ResizeDirection,
 };
 use cosmic_settings_config::shortcuts::{self, Action, Shortcuts};
+use cosmic_settings_config::Binding;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use itertools::Itertools;
 use shortcuts::action::System as SystemAction;
 use slab::Slab;
 use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
+use std::io;
 
 pub struct Page {
     modified: Modified,
@@ -49,11 +53,11 @@ struct SubPages {
     window_tiling: page::Entity,
 }
 
-#[derive(Default)]
 struct Search {
     input: String,
     actions: SlotMap<DefaultKey, Action>,
     localized: SecondaryMap<DefaultKey, String>,
+    config: cosmic_config::Config,
     shortcuts: Shortcuts,
     defaults: Shortcuts,
 }
@@ -248,7 +252,6 @@ impl Page {
             self.search_model.on_clear();
             return;
         }
-
         if self.search.actions.is_empty() {
             self.search.cache_localized_actions();
         }
@@ -280,16 +283,52 @@ impl page::AutoBind<crate::pages::Message> for Page {
     }
 }
 
+impl Default for Search {
+    fn default() -> Self {
+        Self {
+            input: String::default(),
+            defaults: Shortcuts::default(),
+            config: shortcuts::context().unwrap(),
+            localized: SecondaryMap::default(),
+            actions: SlotMap::new(),
+            shortcuts: Shortcuts::default(),
+        }
+    }
+}
+
 impl Search {
     fn cache_localized_actions(&mut self) {
         self.actions.clear();
         self.localized.clear();
-
-        for action in all_actions() {
+        let custom_actions = self.retrieve_custom_actions();
+        for action in all_system_actions() {
             let localized = localize_action(action);
             let id = self.actions.insert(action.clone());
             self.localized.insert(id, localized);
         }
+        for (binding, action) in custom_actions {
+            let localized = localize_custom_action(&action, &binding);
+            let id = self.actions.insert(action.clone());
+            self.localized.insert(id, localized);
+        }
+    }
+
+    fn retrieve_custom_actions(&self) -> Vec<(Binding, Action)> {
+        let custom_shortcusts = match self.config.get::<Shortcuts>("custom") {
+            Ok(shortcuts) => shortcuts,
+            Err(cosmic_config::Error::GetKey(_, why)) if why.kind() == io::ErrorKind::NotFound => {
+                Shortcuts::default()
+            }
+            Err(why) => {
+                tracing::error!(?why, "unable to get the current shortcuts config");
+                Shortcuts::default()
+            }
+        };
+        custom_shortcusts
+            .0
+            .into_iter()
+            .unique_by(|(_, action)| localize_action(action))
+            .collect::<Vec<(Binding, Action)>>()
     }
 
     fn shortcut_models(&mut self) -> Slab<ShortcutModel> {
@@ -417,7 +456,7 @@ fn action_category(action: &Action) -> Option<Category> {
     })
 }
 
-fn all_actions() -> &'static [Action] {
+fn all_system_actions() -> &'static [Action] {
     &[
         Action::Close,
         Action::Debug,
@@ -622,5 +661,13 @@ fn localize_action(action: &Action) -> String {
         },
 
         Action::Spawn(command) => command.clone(),
+    }
+}
+
+fn localize_custom_action(action: &Action, binding: &Binding) -> String {
+    if let Some(description) = &binding.description {
+        description.to_string()
+    } else {
+        localize_action(&action)
     }
 }
