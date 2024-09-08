@@ -173,7 +173,7 @@ dock = Dock
 window-management = Window management
     .desc = Super key action, window control options, and additional window tiling options.
 
-super-key = Super key
+super-key = Super key action
     .launcher = Open Launcher
     .workspaces = Open Workspaces
     .applications = Open Applications
