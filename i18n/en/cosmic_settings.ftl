@@ -177,6 +177,7 @@ super-key = Super key
     .launcher = Open Launcher
     .workspaces = Open Workspaces
     .applications = Open Applications
+    .disable = Disable
 
 window-controls = Window Controls
     .maximize = Show maximize button
