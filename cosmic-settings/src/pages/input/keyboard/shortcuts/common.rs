@@ -61,8 +61,17 @@ impl ShortcutModel {
                     (slab, if is_default { modified } else { modified + 1 })
                 });
 
+        let mut localized_description = super::localize_action(&action);
+        if let Action::Spawn(_) = &action {
+            localized_description = bindings
+                .iter()
+                .map(|(_, shortcut)| super::localize_custom_action(&action, &shortcut.binding))
+                .take(1)
+                .collect();
+        }
+
         Self {
-            description: super::localize_action(&action),
+            description: localized_description,
             modified: defaults.0.iter().filter(|(_, a)| **a == action).fold(
                 modified,
                 |modified, (binding, _)| {
@@ -182,7 +191,6 @@ impl Model {
 
     pub(super) fn on_enter(&mut self) {
         let mut shortcuts = self.config.get::<Shortcuts>("defaults").unwrap_or_default();
-
         self.defaults = shortcuts.clone();
 
         if let Ok(custom) = self.config.get::<Shortcuts>("custom") {
@@ -405,9 +413,12 @@ impl Model {
                                         shortcut.input.clear();
                                         return Command::none();
                                     }
-
                                     if let Some(action) = self.config_contains(&new_binding) {
-                                        let action_str = super::localize_action(&action);
+                                        let action_str = if let Action::Spawn(_) = &action {
+                                            super::localize_custom_action(&action, &new_binding)
+                                        } else {
+                                            super::localize_action(&action)
+                                        };
                                         self.replace_dialog =
                                             Some((id, new_binding, action, action_str));
                                         return Command::none();
