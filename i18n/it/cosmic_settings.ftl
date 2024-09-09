@@ -185,6 +185,10 @@ window-controls = Controlli finestra
     .minimize = Mostra pulsante "minimizza"
     .maximize = Mostra pulsante "massimizza"
 
+focus-navigation = Focus Navigation
+    .focus-follows-cursor = Focus segue il cursore
+    .cursor-follows-focus = Cursore segue il focus
+
 ## Desktop: Workspaces
 
 workspaces = Spazi di lavoro
@@ -265,6 +269,12 @@ dialog = Dialog
     .change-prompt = Le impostazioni verranno automaticamente ripristinate tra { $time } secondi.
     .revert-settings = Ripristina impostazioni
 
+legacy-applications = Scala delle applicazioni del sistema X11
+    .scaled-by-system = Scala tutte le applicazioni X11
+    .system-description = Le applicazioni X11 appariranno sfocate su schermi HiDPI.
+    .scaled-natively = Renderizza le applicazioni X11 alla risoluzione nativa
+    .native-description = Le applicazioni X11 che non supportano la scalatura saranno piccole quando si utilizzano display HiDPI. Abilita questa opzione per i giochi per utilizzare la risoluzione completa del monitor.
+
 ## Sound
 
 sound = Suono
@@ -297,7 +307,27 @@ power = Alimentazione e batteria
     .desc = Gestione impostazioni energetiche
 
 battery = Batteria
-  .remaining-time = { $time } rimasti
+  .minute = { $value } { $value ->
+        [one] minuto
+       *[other] minuti
+  }
+  .hour = { $value } { $value ->
+        [one] ora
+       *[other] ore
+  }
+  .day = { $value } { $value ->
+        [one] giorno
+       *[other] giorni
+  }
+  .less-than-minute = Meno di un minuto
+  .and = e
+  .remaining-time = { $time } fino a { $action ->
+        [full] carica completa
+       *[other] scarica
+   }
+
+connected-devices = Connected Devices
+  .unknown = Unknown device
 
 power-mode = Power Mode
     .battery = Estendi la vita della batteria
