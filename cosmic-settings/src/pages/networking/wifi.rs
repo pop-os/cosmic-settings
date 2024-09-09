@@ -426,7 +426,13 @@ fn devices_view() -> Section<crate::pages::Message> {
             let mut view = widget::column::with_capacity(4)
                 .push(widget::list_column().add(wifi_enable))
                 .push_maybe(state.airplane_mode.then(|| {
-                    widget::container(widget::text::body(&section.descriptions[airplane_mode_txt]))
+                    widget::row::with_capacity(2)
+                        .push(icon::from_name("airplane-mode-symbolic"))
+                        .push(widget::text::body(&section.descriptions[airplane_mode_txt]))
+                        .spacing(8)
+                        .align_items(alignment::Alignment::Center)
+                        .apply(widget::container)
+                        .width(Length::Fill)
                         .align_x(alignment::Horizontal::Center)
                 }));
 
