@@ -54,6 +54,7 @@ impl Default for Page {
                 fl!("super-key", "launcher"),
                 fl!("super-key", "workspaces"),
                 fl!("super-key", "applications"),
+                fl!("super-key", "disable"),
             ],
             super_key_active: super_key_active_config(),
             comp_config,
@@ -68,9 +69,10 @@ impl Page {
         match message {
             Message::SuperKey(id) => {
                 let action = match id {
-                    0 => shortcuts::action::System::Launcher,
-                    1 => shortcuts::action::System::WorkspaceOverview,
-                    2 => shortcuts::action::System::AppLibrary,
+                    0 => Some(shortcuts::action::System::Launcher),
+                    1 => Some(shortcuts::action::System::WorkspaceOverview),
+                    2 => Some(shortcuts::action::System::AppLibrary),
+                    3 => None,
                     _ => return,
                 };
 
@@ -131,6 +133,7 @@ pub fn super_key_action() -> Section<crate::pages::Message> {
     let _launcher = descriptions.insert(fl!("super-key", "launcher"));
     let _workspaces = descriptions.insert(fl!("super-key", "workspaces"));
     let _applications = descriptions.insert(fl!("super-key", "applications"));
+    let _disable = descriptions.insert(fl!("super-key", "disable"));
 
     Section::default()
         .descriptions(descriptions)
@@ -240,16 +243,17 @@ fn super_key_active_config() -> Option<usize> {
     new_id
 }
 
-fn super_key_set(action: shortcuts::action::System) {
+fn super_key_set(action: Option<shortcuts::action::System>) {
     let Ok(config) = shortcuts::context() else {
         return;
     };
 
     let mut shortcuts = config.get::<Shortcuts>("custom").unwrap_or_default();
+    let action = action.map(Action::System).unwrap_or(Action::Disable);
 
     shortcuts.0.insert(
         Binding::new(shortcuts::Modifiers::new().logo(), None),
-        Action::System(action),
+        action,
     );
 
     _ = config.set("custom", &shortcuts);
