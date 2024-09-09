@@ -24,18 +24,11 @@ use cosmic::{
     },
 };
 use cosmic::{
-    iced::{wayland::actions::window::SctkWindowSettings, window, Color, Length},
+    iced::{Color, Length},
     prelude::CollectionWidget,
 };
-use cosmic::{
-    iced_core::Alignment,
-    iced_sctk::commands::window::{close_window, get_window},
-    widget::icon,
-};
-use cosmic::{
-    iced_core::{alignment, layout},
-    iced_runtime::core::image::Handle as ImageHandle,
-};
+use cosmic::{iced_core::alignment, iced_runtime::core::image::Handle as ImageHandle};
+use cosmic::{iced_core::Alignment, widget::icon};
 use cosmic::{
     widget::{color_picker::ColorPickerUpdate, ColorPickerModel},
     Element,
@@ -43,7 +36,7 @@ use cosmic::{
 use cosmic_bg_config::Source;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
-use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
+use cosmic_settings_wallpaper::{self as wallpaper, Entry, ImageSelection, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
 use slab::Slab;
@@ -98,7 +91,7 @@ pub enum Message {
     /// Sets the wallpaper fit parameter.
     Fit(usize),
     /// Adds a new custom image to the wallpaper view.
-    ImageAdd(Option<Arc<(PathBuf, Image, Image)>>),
+    ImageAdd(Option<Arc<ImageSelection>>),
     /// Creates an image dialog.
     ImageAddDialog,
     /// Removes a custom image from the wallpaper view.
@@ -144,12 +137,18 @@ enum ContextView {
     AddColor,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DisplayConfig {
+    pub remaining: usize,
+    pub displays: HashMap<String, (String, (u32, u32))>,
+}
+
 /// The page struct for the wallpaper view.
 pub struct Page {
     /// Whether to show a context drawer.
     context_view: Option<ContextView>,
 
-    /// Whether to show the tab_bar or not.
+    /// Whether to show the `tab_bar` or not.
     show_tab_bar: bool,
 
     /// The display that is currently being configured.
@@ -193,8 +192,8 @@ pub struct Page {
     /// Stores custom colors, custom images, and all image data for every wallpaper.
     selection: Context,
 
-    /// When set, applys a config update after images are loaded.
-    update_config: Option<(usize, HashMap<String, (String, (u32, u32))>)>,
+    /// When set, apply a config update after images are loaded.
+    update_config: Option<DisplayConfig>,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -708,27 +707,23 @@ impl Page {
             }
 
             Message::ColorAdd(message) => {
-                match message {
-                    ColorPickerUpdate::ActionFinished => {
-                        let _res = self
-                            .color_model
-                            .update::<crate::app::Message>(ColorPickerUpdate::AppliedColor);
+                if let ColorPickerUpdate::ActionFinished = message {
+                    let _res = self
+                        .color_model
+                        .update::<crate::app::Message>(ColorPickerUpdate::AppliedColor);
 
-                        if let Some(color) = self.color_model.get_applied_color() {
-                            let color = wallpaper::Color::Single([color.r, color.g, color.b]);
+                    if let Some(color) = self.color_model.get_applied_color() {
+                        let color = wallpaper::Color::Single([color.r, color.g, color.b]);
 
-                            if let Err(why) = self.config.add_custom_color(color.clone()) {
-                                tracing::error!(?why, "could not set custom color");
-                            }
-
-                            self.selection.add_custom_color(color.clone());
-                            self.selection.active = Choice::Color(color);
-                            self.cached_display_handle = None;
-                            self.context_view = None;
+                        if let Err(why) = self.config.add_custom_color(color.clone()) {
+                            tracing::error!(?why, "could not set custom color");
                         }
-                    }
 
-                    _ => (),
+                        self.selection.add_custom_color(color.clone());
+                        self.selection.active = Choice::Color(color);
+                        self.cached_display_handle = None;
+                        self.context_view = None;
+                    }
                 };
 
                 return self.color_model.update::<crate::app::Message>(message);
@@ -752,7 +747,12 @@ impl Page {
             Message::ImageAdd(result) => {
                 let result = result.and_then(Arc::into_inner);
 
-                let Some((path, display, selection)) = result else {
+                let Some(ImageSelection {
+                    path,
+                    display_thumbnail: display,
+                    selection_thumbnail: selection,
+                }) = result
+                else {
                     tracing::warn!("image not found for provided wallpaper");
                     return Command::none();
                 };
@@ -772,13 +772,13 @@ impl Page {
                 );
 
                 // If an update was queued, apply it after all custom images have been added.
-                if let Some((mut remaining, displays)) = self.update_config.take() {
-                    remaining -= 1;
-                    if remaining == 0 {
-                        self.wallpaper_service_config_update(displays);
+                if let Some(mut config) = self.update_config.take() {
+                    config.remaining -= 1;
+                    if config.remaining == 0 {
+                        self.wallpaper_service_config_update(config.displays);
                         self.config_apply();
                     } else {
-                        self.update_config = Some((remaining, displays));
+                        self.update_config = Some(config);
                     }
                 }
             }
@@ -844,20 +844,16 @@ impl Page {
                     self.cache_display_image();
                 } else {
                     if let Some(output) = self.config_output() {
-                        match self.config.current_image(output) {
-                            Some(Source::Path(path)) => {
-                                if let Some(entity) = self.wallpaper_id_from_path(&path) {
-                                    if let Some(entry) =
-                                        self.config_wallpaper_entry(output.to_owned(), path)
-                                    {
-                                        self.select_wallpaper(&entry, entity, false);
-                                        self.config_apply();
-                                        return Command::none();
-                                    }
+                        if let Some(Source::Path(path)) = self.config.current_image(output) {
+                            if let Some(entity) = self.wallpaper_id_from_path(&path) {
+                                if let Some(entry) =
+                                    self.config_wallpaper_entry(output.to_owned(), path)
+                                {
+                                    self.select_wallpaper(&entry, entity, false);
+                                    self.config_apply();
+                                    return Command::none();
                                 }
                             }
-
-                            _ => (),
                         }
                     }
 
@@ -953,7 +949,10 @@ impl Page {
                     self.config_apply();
                 } else {
                     // Make note of how many images are to be loaded, with the display update for the service config.
-                    self.update_config = Some((custom_images, update.displays));
+                    self.update_config = Some(DisplayConfig {
+                        remaining: custom_images,
+                        displays: update.displays,
+                    });
                 }
 
                 // Load preview images concurrently for each custom image stored in the on-disk config.
@@ -1127,7 +1126,12 @@ pub async fn change_folder(current_folder: PathBuf, recurse: bool) -> Context {
     let mut update = Context::default();
     let mut wallpapers = wallpaper::load_each_from_path(current_folder, recurse).await;
 
-    while let Some((path, display_image, selection_image)) = wallpapers.next().await {
+    while let Some(ImageSelection {
+        path,
+        display_thumbnail: display_image,
+        selection_thumbnail: selection_image,
+    }) = wallpapers.next().await
+    {
         let id = update.paths.insert(path);
 
         update.display_images.insert(id, display_image);

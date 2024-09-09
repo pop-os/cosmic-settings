@@ -16,7 +16,7 @@ pub fn display_container_frame() -> cosmic::theme::Container {
                 radius: cosmic.corner_radii.radius_xs.into(),
                 width: 3.0,
             },
-            shadow: Default::default(),
+            ..Default::default()
         }
     })
 }
@@ -34,7 +34,7 @@ pub fn display_container_screen() -> cosmic::theme::Container {
                 radius: cosmic.corner_radii.radius_0.into(),
                 width: 0.0,
             },
-            shadow: Default::default(),
+            ..Default::default()
         }
     })
 }

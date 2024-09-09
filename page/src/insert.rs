@@ -39,6 +39,11 @@ impl<'a, Message: 'static> Insert<'a, Message> {
         self
     }
 
+    /// Returns the sub page with id of this [`Insert<Message>`].
+    ///
+    /// # Panics
+    ///
+    /// Panics if the page is missing
     #[allow(clippy::return_self_not_must_use)]
     #[allow(clippy::must_use_candidate)]
     pub fn sub_page_with_id<P: AutoBind<Message>>(&mut self) -> Entity {

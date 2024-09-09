@@ -442,7 +442,7 @@ impl Page {
             Message::Pipewire(pipewire::DeviceEvent::Remove(node_id)) => {
                 let mut remove = None;
                 for (card_id, card) in &mut self.devices {
-                    if card.devices.remove(&node_id).is_some() {
+                    if card.devices.swap_remove(&node_id).is_some() {
                         if card.devices.is_empty() {
                             remove = Some(card_id.clone());
                         }
@@ -746,25 +746,25 @@ fn output() -> Section<crate::pages::Message> {
 fn sort_pulse_devices(descriptions: &mut Vec<String>, node_ids: &mut Vec<NodeId>) {
     let mut tmp: Vec<(String, NodeId)> = std::mem::take(descriptions)
         .into_iter()
-        .zip(std::mem::take(node_ids).into_iter())
+        .zip(std::mem::take(node_ids))
         .collect();
 
-    tmp.sort_unstable_by(|(ak, _), (bk, _)| ak.cmp(&bk));
+    tmp.sort_unstable_by(|(ak, _), (bk, _)| ak.cmp(bk));
 
     (*descriptions, *node_ids) = tmp.into_iter().collect();
 }
 
 async fn pactl_set_card_profile(id: String, profile: String) {
     _ = tokio::process::Command::new("pactl")
-        .args(&["set-card-profile", id.as_str(), profile.as_str()])
+        .args(["set-card-profile", id.as_str(), profile.as_str()])
         .status()
-        .await
+        .await;
 }
 
 fn pactl_set_default_sink(id: String) {
     tokio::task::spawn(async move {
         _ = tokio::process::Command::new("pactl")
-            .args(&["set-default-sink", id.as_str()])
+            .args(["set-default-sink", id.as_str()])
             .status()
             .await;
     });
@@ -773,7 +773,7 @@ fn pactl_set_default_sink(id: String) {
 fn pactl_set_default_source(id: String) {
     tokio::task::spawn(async move {
         _ = tokio::process::Command::new("pactl")
-            .args(&["set-default-source", id.as_str()])
+            .args(["set-default-source", id.as_str()])
             .status()
             .await;
     });
@@ -783,7 +783,7 @@ fn wpctl_set_mute(id: u32, mute: bool) {
     tokio::task::spawn(async move {
         let default = id.to_string();
         _ = tokio::process::Command::new("wpctl")
-            .args(&["set-mute", default.as_str(), if mute { "1" } else { "0" }])
+            .args(["set-mute", default.as_str(), if mute { "1" } else { "0" }])
             .status()
             .await;
     });
@@ -794,7 +794,7 @@ fn wpctl_set_volume(id: u32, volume: u32) {
         let id = id.to_string();
         let volume = format!("{}.{:02}", volume / 100, volume % 100);
         _ = tokio::process::Command::new("wpctl")
-            .args(&["set-volume", id.as_str(), volume.as_str()])
+            .args(["set-volume", id.as_str(), volume.as_str()])
             .status()
             .await;
     });

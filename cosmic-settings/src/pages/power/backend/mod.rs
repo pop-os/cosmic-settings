@@ -16,8 +16,8 @@ pub trait GetCurrentPowerProfile {
 }
 
 pub enum PowerBackendEnum {
-    S76(S76Backend),
-    PP(PPBackend),
+    S76(S76),
+    PP(PP),
 }
 
 impl SetPowerProfile for PowerBackendEnum {
@@ -38,15 +38,13 @@ impl GetCurrentPowerProfile for PowerBackendEnum {
     }
 }
 
-pub trait PowerBackend: SetPowerProfile + GetCurrentPowerProfile {}
-
-pub async fn get_backend() -> Option<PowerBackendEnum> {
+pub async fn get() -> Option<PowerBackendEnum> {
     match get_s76power_daemon_proxy().await {
         Ok(p) => match p.get_profile().await {
-            Ok(_) => Some(PowerBackendEnum::S76(S76Backend {})),
+            Ok(_) => Some(PowerBackendEnum::S76(S76 {})),
             Err(_) => match get_power_profiles_proxy().await {
                 Ok(pr) => match pr.active_profile().await {
-                    Ok(_) => Some(PowerBackendEnum::PP(PPBackend {})),
+                    Ok(_) => Some(PowerBackendEnum::PP(PP {})),
                     Err(_) => None,
                 },
                 Err(()) => None,
@@ -72,7 +70,7 @@ impl PowerProfile {
         }
     }
 
-    pub fn title(&self) -> String {
+    pub fn title(self) -> String {
         match self {
             Self::Battery => fl!("power-mode", "battery"),
             Self::Balanced => fl!("power-mode", "balanced"),
@@ -80,7 +78,7 @@ impl PowerProfile {
         }
     }
 
-    pub fn description(&self) -> String {
+    pub fn description(self) -> String {
         match self {
             Self::Battery => fl!("power-mode", "battery-desc"),
             Self::Balanced => fl!("power-mode", "balanced-desc"),
@@ -97,11 +95,9 @@ pub fn get_power_profiles() -> Vec<PowerProfile> {
     ]
 }
 
-pub struct S76Backend {}
+pub struct S76 {}
 
-impl PowerBackend for S76Backend {}
-
-impl SetPowerProfile for S76Backend {
+impl SetPowerProfile for S76 {
     async fn set_power_profile(&self, profile: PowerProfile) {
         let Ok(daemon) = get_s76power_daemon_proxy().await else {
             tracing::error!("Problem while setting power profile.");
@@ -125,7 +121,7 @@ impl SetPowerProfile for S76Backend {
     }
 }
 
-impl GetCurrentPowerProfile for S76Backend {
+impl GetCurrentPowerProfile for S76 {
     async fn get_current_power_profile(&self) -> PowerProfile {
         let Ok(daemon) = get_s76power_daemon_proxy().await else {
             tracing::error!("Problem while getting power profile.");
@@ -162,18 +158,15 @@ async fn get_s76power_daemon_proxy<'a>() -> Result<s76powerdaemon::PowerDaemonPr
     }
 }
 
-pub struct PPBackend {}
+pub struct PP {}
 
-impl PowerBackend for PPBackend {}
-
-impl SetPowerProfile for PPBackend {
+impl SetPowerProfile for PP {
     async fn set_power_profile(&self, profile: PowerProfile) {
-        let daemon = match get_power_profiles_proxy().await {
-            Ok(c) => c,
-            Err(()) => {
-                tracing::error!("Problem while setting power profile.");
-                return;
-            }
+        let daemon = if let Ok(c) = get_power_profiles_proxy().await {
+            c
+        } else {
+            tracing::error!("Problem while setting power profile.");
+            return;
         };
 
         match profile {
@@ -193,7 +186,7 @@ impl SetPowerProfile for PPBackend {
     }
 }
 
-impl GetCurrentPowerProfile for PPBackend {
+impl GetCurrentPowerProfile for PP {
     async fn get_current_power_profile(&self) -> PowerProfile {
         let Ok(daemon) = get_power_profiles_proxy().await else {
             tracing::error!("Problem while getting power profile.");
@@ -422,34 +415,6 @@ impl Battery {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_can_format_battery_remaining() {
-        let cases = [
-            (59, "Less than a minute until empty"),
-            (300, "5 minutes until empty"),
-            (305, "5 minutes until empty"),
-            (330, "5 minutes until empty"),
-            (360, "6 minutes until empty"),
-            (3660, "1 hour and 1 minute until empty"),
-            (10800, "3 hours until empty"),
-            (969400, "11 days, 5 hours and 16 minutes until empty"),
-        ];
-        for case in cases {
-            let (actual, expected) = case;
-            let battery = Battery {
-                remaining_duration: Duration::new(actual, 0).unwrap(),
-                on_battery: true,
-                ..Default::default()
-            };
-            assert_eq!(battery.remaining_time(), expected);
-        }
-    }
-}
-
 impl ConnectedDevice {
     async fn from_device_maybe(proxy: DeviceProxy<'_>) -> Option<Self> {
         let device_type = proxy.type_().await.unwrap_or(BatteryType::Unknown);
@@ -511,5 +476,33 @@ impl ConnectedDevice {
         }
 
         vec![]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_can_format_battery_remaining() {
+        let cases = [
+            (59, "Less than a minute until empty"),
+            (300, "5 minutes until empty"),
+            (305, "5 minutes until empty"),
+            (330, "5 minutes until empty"),
+            (360, "6 minutes until empty"),
+            (3660, "1 hour and 1 minute until empty"),
+            (10800, "3 hours until empty"),
+            (969400, "11 days, 5 hours and 16 minutes until empty"),
+        ];
+        for case in cases {
+            let (actual, expected) = case;
+            let battery = Battery {
+                remaining_duration: Duration::new(actual, 0).unwrap(),
+                on_battery: true,
+                ..Default::default()
+            };
+            assert_eq!(battery.remaining_time(), expected);
+        }
     }
 }

@@ -444,7 +444,7 @@ impl Page {
                         .zip(self.icon_handles.iter())
                         .enumerate()
                         .map(|(i, (theme, handles))| {
-                            let selected = active.map(|j| i == j).unwrap_or_default();
+                            let selected = active.is_some_and(|j| i == j);
                             icon_theme_button(&theme.name, handles, i, selected)
                         })
                         .collect(),
@@ -496,7 +496,7 @@ impl Page {
             Message::IconTheme(id) => {
                 if let Some(theme) = self.icon_themes.get(id).cloned() {
                     self.icon_theme_active = Some(id);
-                    self.tk.icon_theme = theme.id.clone();
+                    self.tk.icon_theme = theme.id;
 
                     if let Some(ref config) = self.tk_config {
                         let _ = self.tk.write_entry(config);
@@ -598,7 +598,7 @@ impl Page {
                 self.icon_theme_active = self
                     .icon_themes
                     .iter()
-                    .position(|theme| &theme.id == &self.tk.icon_theme);
+                    .position(|theme| theme.id == self.tk.icon_theme);
                 self.icon_handles = icon_handles;
                 Command::none()
             }
@@ -1689,7 +1689,7 @@ async fn set_gnome_icon_theme(theme: String) {
         .await;
 }
 
-/// Generate [icon::Handle]s to use for icon theme previews.
+/// Generate [`icon::Handle`]s to use for icon theme previews.
 fn preview_handles(theme: String, inherits: Vec<String>) -> [icon::Handle; ICON_PREV_N] {
     // Cache current default and set icon theme as a temporary default
     let default = cosmic::icon_theme::default();

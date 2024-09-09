@@ -95,7 +95,7 @@ pub fn cache_dir() -> Option<PathBuf> {
 pub async fn load_each_from_path(
     path: PathBuf,
     recurse: bool,
-) -> Pin<Box<dyn Send + Stream<Item = (PathBuf, RgbaImage, RgbaImage)>>> {
+) -> Pin<Box<dyn Send + Stream<Item = ImageSelection>>> {
     let wallpapers = tokio::task::spawn_blocking(move || {
         // Directories to search recursively.
         let mut paths = vec![path];
@@ -147,14 +147,15 @@ pub async fn load_each_from_path(
     }
 }
 
+#[derive(Debug)]
+pub struct ImageSelection {
+    pub path: PathBuf,
+    pub display_thumbnail: ImageBuffer<Rgba<u8>, Vec<u8>>,
+    pub selection_thumbnail: ImageBuffer<Rgba<u8>, Vec<u8>>,
+}
+
 #[must_use]
-pub fn load_image_with_thumbnail(
-    path: PathBuf,
-) -> Option<(
-    PathBuf,
-    ImageBuffer<Rgba<u8>, Vec<u8>>,
-    ImageBuffer<Rgba<u8>, Vec<u8>>,
-)> {
+pub fn load_image_with_thumbnail(path: PathBuf) -> Option<ImageSelection> {
     let cache_dir = cache_dir();
     let image_operation = load_thumbnail(&mut Vec::new(), cache_dir.as_deref(), &path);
 
@@ -194,7 +195,11 @@ pub fn load_image_with_thumbnail(
 
         round(&mut selection_thumbnail, [8, 8, 8, 8]);
 
-        Some((path, display_thumbnail, selection_thumbnail))
+        Some(ImageSelection {
+            path,
+            display_thumbnail,
+            selection_thumbnail,
+        })
     } else {
         None
     }
@@ -336,7 +341,7 @@ fn border_radius(
     let draw = |img: &mut RgbaImage, alpha, x, y| {
         debug_assert!((1..=256).contains(&alpha));
         let pixel_alpha = &mut img[coordinates(r0 - x, r0 - y)].0[3];
-        *pixel_alpha = ((alpha * *pixel_alpha as u16 + 128) / 256) as u8;
+        *pixel_alpha = ((alpha * u16::from(*pixel_alpha) + 128) / 256) as u8;
     };
 
     'l: loop {

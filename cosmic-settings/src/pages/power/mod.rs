@@ -70,7 +70,7 @@ impl Page {
     pub fn update(&mut self, message: Message) {
         let runtime = tokio::runtime::Runtime::new().unwrap();
 
-        let backend = runtime.block_on(backend::get_backend());
+        let backend = runtime.block_on(backend::get());
 
         match message {
             Message::PowerProfileChange(p) => {
@@ -203,7 +203,7 @@ fn profiles() -> Section<crate::pages::Message> {
 
             let runtime = tokio::runtime::Runtime::new().unwrap();
 
-            let backend = runtime.block_on(backend::get_backend());
+            let backend = runtime.block_on(backend::get());
 
             if let Some(b) = backend {
                 let profiles = backend::get_power_profiles();
@@ -217,7 +217,7 @@ fn profiles() -> Section<crate::pages::Message> {
                             widget::column::with_capacity(2)
                                 .push(text::body(profile.title()))
                                 .push(text::caption(profile.description())),
-                            profile.clone(),
+                            profile,
                             Some(current_profile),
                             Message::PowerProfileChange,
                         )

@@ -669,6 +669,6 @@ fn localize_custom_action(action: &Action, binding: &Binding) -> String {
     if let Some(description) = &binding.description {
         description.to_string()
     } else {
-        localize_action(&action)
+        localize_action(action)
     }
 }

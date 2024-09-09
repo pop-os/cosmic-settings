@@ -324,6 +324,9 @@ impl Page {
         .into()
     }
 
+    /// # Panics
+    ///
+    /// Panics if the wings of the added applet are None.
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Command<app::Message> {
         match message {
@@ -666,7 +669,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             ) -> Message
             + 'a,
         on_remove: impl Fn(String) -> Message + 'a,
-        on_details: impl Fn(String) -> Message + 'a,
+        _on_details: impl Fn(String) -> Message + 'a,
         on_reorder: impl Fn(Vec<Applet<'static>>) -> Message + 'a,
         on_apply_reorder: Message,
         on_cancel: Message,
@@ -972,7 +975,10 @@ where
             }
             DraggingState::Dragging(applet) => match &event {
                 event::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::DataSource(wayland::DataSourceEvent::DndFinished),
+                    wayland::Event::DataSource(
+                        wayland::DataSourceEvent::DndFinished
+                        | wayland::DataSourceEvent::DndDropPerformed,
+                    ),
                 )) => {
                     ret = event::Status::Captured;
                     DraggingState::None
@@ -984,13 +990,6 @@ where
                     if let Some(on_cancel) = self.on_cancel.clone() {
                         shell.publish(on_cancel);
                     }
-                    DraggingState::None
-                }
-                event::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::DataSource(wayland::DataSourceEvent::DndDropPerformed),
-                )) => {
-                    ret = event::Status::Captured;
-
                     DraggingState::None
                 }
                 _ => DraggingState::Dragging(applet),
