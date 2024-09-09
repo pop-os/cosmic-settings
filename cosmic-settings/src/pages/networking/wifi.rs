@@ -442,7 +442,8 @@ fn devices_view() -> Section<crate::pages::Message> {
             {
                 let no_networks_found =
                     widget::container(widget::text::body(&section.descriptions[no_networks_txt]))
-                        .align_x(alignment::Horizontal::Center);
+                        .align_x(alignment::Horizontal::Center)
+                        .width(Length::Fill);
 
                 view = view.push(no_networks_found);
             } else {
