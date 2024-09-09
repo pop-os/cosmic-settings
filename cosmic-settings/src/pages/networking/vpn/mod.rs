@@ -238,6 +238,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
         Some(
             widget::button::standard(fl!("add-network"))
+                .trailing_icon(icon::from_name("window-pop-out-symbolic"))
                 .on_press(Message::AddNetwork)
                 .apply(widget::container)
                 .width(Length::Fill)
