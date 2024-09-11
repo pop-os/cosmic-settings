@@ -99,6 +99,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "accounts-zbus"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
+dependencies = [
+ "futures-channel",
+ "futures-util",
+ "tracing",
+ "zbus 4.4.0",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -857,7 +868,7 @@ dependencies = [
 [[package]]
 name = "bluez-zbus"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#62100129240d164e39fff16bda34faad520936de"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -1502,7 +1513,7 @@ dependencies = [
 [[package]]
 name = "cosmic-dbus-networkmanager"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#62100129240d164e39fff16bda34faad520936de"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
 dependencies = [
  "bitflags 2.6.0",
  "derive_builder",
@@ -1593,6 +1604,7 @@ dependencies = [
 name = "cosmic-settings"
 version = "0.1.0"
 dependencies = [
+ "accounts-zbus",
  "anyhow",
  "as-result",
  "ashpd 0.9.2",
@@ -1641,6 +1653,7 @@ dependencies = [
  "regex",
  "ron",
  "rust-embed",
+ "rustix 0.38.41",
  "secure-string",
  "serde",
  "slab",
@@ -1659,6 +1672,7 @@ dependencies = [
  "ustr",
  "xkb-data",
  "zbus 4.4.0",
+ "zbus_polkit",
 ]
 
 [[package]]
@@ -1677,7 +1691,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-daemon"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#62100129240d164e39fff16bda34faad520936de"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
 dependencies = [
  "zbus 4.4.0",
 ]
@@ -3051,7 +3065,7 @@ checksum = "f558a64ac9af88b5ba400d99b579451af0d39c6d360980045b91aac966d705e2"
 [[package]]
 name = "hostname1-zbus"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#62100129240d164e39fff16bda34faad520936de"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
 dependencies = [
  "zbus 4.4.0",
 ]
@@ -4502,7 +4516,7 @@ checksum = "b4ce301924b7887e9d637144fdade93f9dfff9b60981d4ac161db09720d39aa5"
 [[package]]
 name = "locale1"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#62100129240d164e39fff16bda34faad520936de"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
 dependencies = [
  "zbus 4.4.0",
 ]
@@ -7025,7 +7039,7 @@ dependencies = [
 [[package]]
 name = "timedate-zbus"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#62100129240d164e39fff16bda34faad520936de"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
 dependencies = [
  "zbus 4.4.0",
 ]
@@ -7427,7 +7441,7 @@ checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 [[package]]
 name = "upower_dbus"
 version = "0.3.2"
-source = "git+https://github.com/pop-os/dbus-settings-bindings#62100129240d164e39fff16bda34faad520936de"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
 dependencies = [
  "serde",
  "serde_repr",
@@ -8684,6 +8698,19 @@ dependencies = [
  "serde",
  "static_assertions",
  "zvariant 4.2.0",
+]
+
+[[package]]
+name = "zbus_polkit"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00a29bfa927b29f91b7feb4e1990f2dd1b4604072f493dc2f074cf59e4e0ba90"
+dependencies = [
+ "enumflags2",
+ "serde",
+ "serde_repr",
+ "static_assertions",
+ "zbus 4.4.0",
 ]
 
 [[package]]
