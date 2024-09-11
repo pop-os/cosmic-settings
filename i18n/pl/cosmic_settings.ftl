@@ -182,6 +182,7 @@ super-key = Klawisz Super
     .launcher = Otwórz Program Startowy
     .workspaces = Otwórz Obszary Robocze
     .applications = Otwórz Aplikacje
+    .disable = Wyłącz
 
 window-controls = Sterowanie Oknem
     .maximize = Pokaż Przycisk Maksymalizacji
