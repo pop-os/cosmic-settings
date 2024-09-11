@@ -100,6 +100,10 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _sender: mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
+        if let Some(handle) = self.on_enter_handle.take() {
+            handle.abort();
+        }
+
         let (task, on_enter_handle) = Task::future(async move {
             let mut list = mime_apps::List::default();
             list.load_from_paths(&mime_apps::list_paths());

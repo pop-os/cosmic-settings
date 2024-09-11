@@ -69,6 +69,8 @@ pub enum Message {
     Region(time::region::Message),
     #[cfg(feature = "page-sound")]
     Sound(sound::Message),
+    #[cfg(feature = "page-users")]
+    User(system::users::Message),
     #[cfg(feature = "page-input")]
     SystemShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     #[cfg(feature = "page-input")]
