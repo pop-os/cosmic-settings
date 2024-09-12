@@ -185,6 +185,7 @@ window-controls = Window Controls
 
 focus-navigation = Focus Navigation
     .focus-follows-cursor = Focus follows cursor
+    .focus-follows-cursor-delay = Focus follows cursor delay in ms
     .cursor-follows-focus = Cursor follows focus
 
 ## Desktop: Workspaces
