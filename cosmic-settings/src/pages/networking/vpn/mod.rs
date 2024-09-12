@@ -52,7 +52,7 @@ pub enum Message {
         ),
     ),
     /// Updates the password text input
-    PasswordUpdate(String),
+    PasswordUpdate(SecureString),
     /// Refresh devices and their connection profiles
     Refresh,
     /// Create a dialog to ask for confirmation of removal.
@@ -192,7 +192,7 @@ impl page::Page<crate::pages::Message> for Page {
                     Some(Message::TogglePasswordVisibility),
                     *password_hidden,
                 )
-                .on_input(Message::PasswordUpdate)
+                .on_input(|input| Message::PasswordUpdate(SecureString::from(input)))
                 .on_submit(Message::ConnectWithPassword);
 
                 let controls = widget::column::with_capacity(2)
@@ -444,7 +444,7 @@ impl Page {
                     ref mut password, ..
                 }) = self.dialog
                 {
-                    *password = SecureString::from(pass);
+                    *password = pass;
                 }
             }
 

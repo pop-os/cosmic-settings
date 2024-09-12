@@ -16,6 +16,7 @@ use cosmic_settings_subscriptions::network_manager::{
     self, available_wifi::AccessPoint, current_networks::ActiveConnectionInfo, NetworkManagerState,
 };
 use futures::StreamExt;
+use secure_string::SecureString;
 use slab::Slab;
 
 #[derive(Clone, Debug)]
@@ -26,6 +27,8 @@ pub enum Message {
     CancelDialog,
     /// Connect to a WiFi network access point.
     Connect(network_manager::SSID),
+    /// Connect with a password
+    ConnectWithPassword,
     /// Settings for known connections.
     ConnectionSettings(BTreeMap<Box<str>, Box<str>>),
     /// Disconnect from an access point.
@@ -45,8 +48,14 @@ pub enum Message {
             tokio::sync::mpsc::Sender<crate::pages::Message>,
         ),
     ),
+    /// Request an auth dialog
+    PasswordRequest(network_manager::SSID),
+    /// Update the password from the dialog
+    PasswordUpdate(SecureString),
     /// Opens settings page for the access point.
     Settings(network_manager::SSID),
+    /// Toggles visibility of the password input
+    TogglePasswordVisibility,
     /// Update NetworkManagerState
     UpdateState(NetworkManagerState),
     /// Update the devices lists
@@ -72,6 +81,11 @@ impl From<Message> for crate::pages::Message {
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum WiFiDialog {
     Forget(network_manager::SSID),
+    Password {
+        ssid: network_manager::SSID,
+        password: SecureString,
+        password_hidden: bool,
+    },
 }
 
 #[derive(Debug, Default)]
@@ -114,6 +128,36 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn dialog(&self) -> Option<Element<crate::pages::Message>> {
         self.dialog.as_ref().map(|dialog| match dialog {
+            WiFiDialog::Password {
+                password,
+                password_hidden,
+                ..
+            } => {
+                let password = widget::text_input::secure_input(
+                    fl!("password"),
+                    password.unsecure(),
+                    Some(Message::TogglePasswordVisibility),
+                    *password_hidden,
+                )
+                .on_input(|input| Message::PasswordUpdate(SecureString::from(input)))
+                .on_submit(Message::ConnectWithPassword);
+
+                let primary_action = widget::button::suggested(fl!("connect"))
+                    .on_press(Message::ConnectWithPassword);
+
+                let secondary_action =
+                    widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
+
+                widget::dialog(fl!("auth-dialog"))
+                    .icon(icon::from_name("preferences-wireless-symbolic").size(64))
+                    .body(fl!("auth-dialog", "wifi-description"))
+                    .control(password)
+                    .primary_action(primary_action)
+                    .secondary_action(secondary_action)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::WiFi)
+            }
+
             WiFiDialog::Forget(ssid) => {
                 let primary_action = widget::button::destructive(fl!("remove"))
                     .on_press(Message::Forget(ssid.clone()));
@@ -195,6 +239,19 @@ impl Page {
                 }
 
                 match req {
+                    network_manager::Request::Password(ssid, _) => {
+                        if success {
+                            self.connecting.remove(&ssid);
+                        } else {
+                            // Request to retry
+                            self.dialog = Some(WiFiDialog::Password {
+                                ssid,
+                                password: SecureString::from(""),
+                                password_hidden: true,
+                            });
+                        }
+                    }
+
                     network_manager::Request::SelectAccessPoint(ssid) => {
                         self.connecting.remove(&ssid);
                     }
@@ -264,6 +321,48 @@ impl Page {
                     _ = nm
                         .sender
                         .unbounded_send(network_manager::Request::SelectAccessPoint(ssid));
+                }
+            }
+
+            Message::PasswordRequest(ssid) => {
+                self.dialog = Some(WiFiDialog::Password {
+                    ssid,
+                    password: SecureString::from(""),
+                    password_hidden: true,
+                });
+            }
+
+            Message::PasswordUpdate(pass) => {
+                if let Some(WiFiDialog::Password {
+                    ref mut password, ..
+                }) = self.dialog
+                {
+                    *password = pass;
+                }
+            }
+
+            Message::ConnectWithPassword => {
+                let Some(dialog) = self.dialog.take() else {
+                    return Command::none();
+                };
+
+                if let WiFiDialog::Password { ssid, password, .. } = dialog {
+                    if let Some(nm) = self.nm_state.as_mut() {
+                        self.connecting.insert(ssid.clone());
+                        _ = nm
+                            .sender
+                            .unbounded_send(network_manager::Request::Password(ssid, password));
+                    }
+                }
+            }
+
+            Message::TogglePasswordVisibility => {
+                if let Some(WiFiDialog::Password {
+                    ref mut password_hidden,
+                    ..
+                }) = self.dialog
+                {
+                    *password_hidden = !*password_hidden;
                 }
             }
 
@@ -458,16 +557,6 @@ fn devices_view() -> Section<crate::pages::Message> {
                     ),
                     |(mut known_networks, mut visible_networks), network| {
                         let is_connected = is_connected(state, network);
-                        let (connect_txt, connect_msg) = if is_connected {
-                            (&section.descriptions[connected_txt], None)
-                        } else if page.connecting.contains(&network.ssid) {
-                            (&section.descriptions[connecting_txt], None)
-                        } else {
-                            (
-                                &section.descriptions[connect_txt],
-                                Some(Message::Connect(network.ssid.clone())),
-                            )
-                        };
 
                         let is_known = state
                             .known_access_points
@@ -484,6 +573,21 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                         // TODO: detect if access point is secured or not.
                         let is_encrypted = true;
+
+                        let (connect_txt, connect_msg) = if is_connected {
+                            (&section.descriptions[connected_txt], None)
+                        } else if page.connecting.contains(&network.ssid) {
+                            (&section.descriptions[connecting_txt], None)
+                        } else {
+                            (
+                                &section.descriptions[connect_txt],
+                                Some(if is_known || !is_encrypted {
+                                    Message::Connect(network.ssid.clone())
+                                } else {
+                                    Message::PasswordRequest(network.ssid.clone())
+                                }),
+                            )
+                        };
 
                         let identifier = widget::row::with_capacity(3)
                             .push(widget::icon::from_name("network-wireless-good-symbolic"))
