@@ -177,10 +177,15 @@ super-key = Touche Super
     .launcher = Ouvrir le Lanceur
     .workspaces = Ouvrir les Espaces de travail
     .applications = Ouvrir les Applications
+    .disable = Désactiver
 
 window-controls = Contrôles des fenêtres
     .minimize = Afficher le bouton de réduction
     .maximize = Afficher le bouton de maximisation
+
+focus-navigation = Focus Navigation
+    .focus-follows-cursor = Le focus suit le curseur
+    .cursor-follows-focus = Le curseur suit le focus
 
 ## Desktop: Workspaces
 
@@ -261,6 +266,12 @@ dialog = Dialogue
     .keep-changes = Conserver les modifications
     .change-prompt = Les modifications des paramètres reviendront automatiquement dans { $time } secondes.
     .revert-settings = Revenir aux paramètres
+
+legacy-applications = Mise à l'échelle des applications X11
+    .scaled-by-system = Mettre à l'échelle toutes les applications X11
+    .system-description = Les applications X11 seront floues sur les écrans HiDPI.
+    .scaled-natively = Afficher toutes les applications X11 à la résolution native
+    .native-description = Les applications X11 qui ne supportent pas la mise à l'échelle seront petites sur les écrans HiDPI. Activer pour que les jeux utilisent toute la résolution de l'écran.
 
 ## Sound
 
