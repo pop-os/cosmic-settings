@@ -39,6 +39,22 @@ auth-dialog = Authentication Required
 forget-dialog = Forget this Wi-Fi network?
     .description = You'll need to enter a password again to use this Wi-Fi network in the future.
 
+network-device-state =
+    .activated = Connected to network
+    .config = Connecting to network
+    .deactivating = Disconnecting from network
+    .disconnected = Disconnected
+    .failed = Failed to connect
+    .ip-check = Checking connection
+    .ip-config = Requesting IP and routing information
+    .need-auth = Needs authentication
+    .prepare = Preparing to connect to network
+    .secondaries = Waiting for secondary connection
+    .unavailable = Unavailable
+    .unknown = Unknown state
+    .unmanaged = Unmanaged
+    .unplugged = Cable unplugged
+
 remove-connection-dialog = Remove Connection Profile?
     .vpn-description = You'll need to enter a password again to use this network in the future.
     .wired-description = You'll need to recreate this profile to use it in the future.

@@ -13,7 +13,7 @@ use cosmic::{
 };
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::network_manager::{
-    self, current_networks::ActiveConnectionInfo, NetworkManagerState,
+    self, current_networks::ActiveConnectionInfo, devices::DeviceState, NetworkManagerState,
 };
 use slab::Slab;
 
@@ -552,9 +552,33 @@ impl Page {
             .fold(
                 widget::settings::view_section(devices_txt),
                 |section, device| {
-                    section.add(
+                    let is_unplugged = matches!(device.state, DeviceState::Unavailable);
+
+                    let device_list =
                         cosmic::widget::settings::item::builder(device.interface.as_str())
-                            .description(format!("{:?}", device.state))
+                            .description(match device.state {
+                                DeviceState::Activated => fl!("network-device-state", "activated"),
+                                DeviceState::Config => fl!("network-device-state", "config"),
+                                DeviceState::Deactivating => {
+                                    fl!("network-device-state", "deactivating")
+                                }
+                                DeviceState::Disconnected => {
+                                    fl!("network-device-state", "disconnected")
+                                }
+                                DeviceState::Failed => fl!("network-device-state", "failed"),
+                                DeviceState::IpCheck => fl!("network-device-state", "ip-check"),
+                                DeviceState::IpConfig => fl!("network-device-state", "ip-config"),
+                                DeviceState::NeedAuth => fl!("network-device-state", "need-auth"),
+                                DeviceState::Prepare => fl!("network-device-state", "prepare"),
+                                DeviceState::Secondaries => {
+                                    fl!("network-device-state", "secondaries")
+                                }
+                                DeviceState::Unavailable => {
+                                    fl!("network-device-state", "unplugged")
+                                }
+                                DeviceState::Unknown => fl!("network-device-state", "unknown"),
+                                DeviceState::Unmanaged => fl!("network-device-state", "unmanaged"),
+                            })
                             .icon(icon::from_name("network-wired-symbolic").size(32))
                             .control(icon::from_name("go-next-symbolic").size(20))
                             .spacing(16)
@@ -564,8 +588,13 @@ impl Page {
                             .apply(widget::button)
                             .padding(0)
                             .style(cosmic::theme::Button::Transparent)
-                            .on_press(Message::SelectDevice(device.clone())),
-                    )
+                            .on_press_maybe(if is_unplugged {
+                                None
+                            } else {
+                                Some(Message::SelectDevice(device.clone()))
+                            });
+
+                    section.add(device_list)
                 },
             )
             .into()
@@ -599,7 +628,8 @@ fn devices_view() -> Section<crate::pages::Message> {
             let active_device = page
                 .active_device
                 .as_ref()
-                .or_else(|| (nm_state.devices.len() == 1).then(|| nm_state.devices.get(0))?);
+                .or_else(|| (nm_state.devices.len() == 1).then(|| nm_state.devices.get(0))?)
+                .filter(|device| !matches!(device.state, DeviceState::Unavailable));
 
             view = match active_device {
                 Some(device) => view.push(page.device_view(
