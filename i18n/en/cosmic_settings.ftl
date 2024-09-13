@@ -21,6 +21,7 @@ connect = Connect
 connected = Connected
 connecting = Connecting…
 disconnect = Disconnect
+forget = Forget
 known-networks = Known Networks
 network-and-wireless = Network & Wireless
 no-networks = No networks have been found.

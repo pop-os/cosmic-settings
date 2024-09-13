@@ -159,7 +159,7 @@ impl page::Page<crate::pages::Message> for Page {
             }
 
             WiFiDialog::Forget(ssid) => {
-                let primary_action = widget::button::destructive(fl!("remove"))
+                let primary_action = widget::button::destructive(fl!("forget"))
                     .on_press(Message::Forget(ssid.clone()));
 
                 let secondary_action =
@@ -598,7 +598,13 @@ fn devices_view() -> Section<crate::pages::Message> {
                             .push(widget::text::body(network.ssid.as_ref()).wrap(Wrap::Glyph))
                             .spacing(spacing.space_xxs);
 
-                        let connect = widget::button::text(connect_txt).on_press_maybe(connect_msg);
+                        let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
+                            widget::button::text(connect_txt).on_press(msg).into()
+                        } else {
+                            widget::text::body(connect_txt)
+                                .vertical_alignment(alignment::Vertical::Center)
+                                .into()
+                        };
 
                         let view_more_button =
                             widget::button::icon(widget::icon::from_name("view-more-symbolic"));
@@ -645,6 +651,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                         let controls = widget::row::with_capacity(2)
                             .push(connect)
                             .push_maybe(view_more)
+                            .align_items(alignment::Alignment::Center)
                             .spacing(spacing.space_xxs);
 
                         let widget = widget::settings::item_row(vec![
