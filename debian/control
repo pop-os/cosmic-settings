@@ -31,6 +31,9 @@ Depends:
     cosmic-randr,
     gettext,
     iso-codes,
+    network-manager-gnome,
+    network-manager-openvpn,
+    network-manager-openvpn-gnome,
     xkb-data,
 Recommends: adw-gtk3
 Description: Settings application for the COSMIC desktop environment

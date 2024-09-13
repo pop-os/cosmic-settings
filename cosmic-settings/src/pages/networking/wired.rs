@@ -1,10 +1,690 @@
-// Copyright 2023 System76 <info@system76.com>
+// Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic_settings_page as page;
+use std::{collections::BTreeSet, sync::Arc};
 
-pub fn info() -> page::Info {
-    page::Info::new("wired", "network-workgroup-symbolic")
-        .title(fl!("wired"))
-        .description(fl!("wired", "desc"))
+use anyhow::Context;
+use cosmic::{
+    iced::{alignment, Length},
+    iced_core::text::Wrap,
+    prelude::CollectionWidget,
+    widget::{self, icon},
+    Apply, Command, Element,
+};
+use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_subscriptions::network_manager::{
+    self, current_networks::ActiveConnectionInfo, devices::DeviceState, NetworkManagerState,
+};
+use slab::Slab;
+
+pub type ConnectionId = Arc<str>;
+
+#[derive(Clone, Debug)]
+pub enum Message {
+    /// Activate a connection
+    Activate(ConnectionId),
+    /// Add a network connection with nm-connection-editor
+    AddNetwork,
+    /// Cancels an active dialog.
+    CancelDialog,
+    /// Deactivate a connection.
+    Deactivate(ConnectionId),
+    /// An error occurred.
+    Error(String),
+    /// An update from the network manager daemon
+    NetworkManager(network_manager::Event),
+    /// Successfully connected to the system dbus.
+    NetworkManagerConnect(
+        (
+            zbus::Connection,
+            tokio::sync::mpsc::Sender<crate::pages::Message>,
+        ),
+    ),
+    /// Refresh devices and their connection profiles
+    Refresh,
+    /// Create a dialog to ask for confirmation of removal.
+    RemoveProfileRequest(ConnectionId),
+    /// Remove a connection profile
+    RemoveProfile(ConnectionId),
+    /// Selects a device to display connections from
+    SelectDevice(Arc<network_manager::devices::DeviceInfo>),
+    /// Opens settings page for the access point.
+    Settings(ConnectionId),
+    /// Update NetworkManagerState
+    UpdateState(NetworkManagerState),
+    /// Update the devices lists
+    UpdateDevices(Vec<network_manager::devices::DeviceInfo>),
+    /// Display more options for an access point
+    ViewMore(Option<ConnectionId>),
+}
+
+impl From<Message> for crate::app::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::Wired(message).into()
+    }
+}
+
+impl From<Message> for crate::pages::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::Wired(message)
+    }
+}
+
+pub type InterfaceId = String;
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum WiredDialog {
+    RemoveProfile(ConnectionId),
+}
+
+#[derive(Debug, Default)]
+pub struct Page {
+    nm_task: Option<tokio::sync::oneshot::Sender<()>>,
+    nm_state: Option<NmState>,
+    dialog: Option<WiredDialog>,
+    /// When defined, displays connections for the specific device.
+    active_device: Option<Arc<network_manager::devices::DeviceInfo>>,
+    /// Tracks which connections are in the act of connecting.
+    connecting: BTreeSet<ConnectionId>,
+    /// Displays a popup when set.
+    view_more_popup: Option<ConnectionId>,
+    /// Withhold device update if the view more popup is shown.
+    withheld_devices: Option<Vec<Arc<network_manager::devices::DeviceInfo>>>,
+    /// Withhold active connections update if the view more popup is shown.
+    withheld_active_conns: Option<Vec<ActiveConnectionInfo>>,
+}
+
+#[derive(Debug)]
+pub struct NmState {
+    conn: zbus::Connection,
+    sender: futures::channel::mpsc::UnboundedSender<network_manager::Request>,
+    active_conns: Vec<ActiveConnectionInfo>,
+    devices: Vec<Arc<network_manager::devices::DeviceInfo>>,
+}
+
+impl page::AutoBind<crate::pages::Message> for Page {}
+
+impl page::Page<crate::pages::Message> for Page {
+    fn info(&self) -> cosmic_settings_page::Info {
+        page::Info::new("wired", "preferences-wired-symbolic")
+            .title(fl!("wired"))
+            .description(fl!("connections-and-profiles", variant = "wired"))
+    }
+
+    fn content(
+        &self,
+        sections: &mut slotmap::SlotMap<section::Entity, Section<crate::pages::Message>>,
+    ) -> Option<page::Content> {
+        Some(vec![sections.insert(devices_view())])
+    }
+
+    fn dialog(&self) -> Option<Element<crate::pages::Message>> {
+        self.dialog.as_ref().map(|dialog| match dialog {
+            WiredDialog::RemoveProfile(uuid) => {
+                let primary_action = widget::button::destructive(fl!("remove"))
+                    .on_press(Message::RemoveProfile(uuid.clone()));
+
+                let secondary_action =
+                    widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
+
+                widget::dialog(fl!("remove-connection-dialog"))
+                    .icon(icon::from_name("dialog-information").size(64))
+                    .body(fl!("remove-connection-dialog", "wired-description"))
+                    .primary_action(primary_action)
+                    .secondary_action(secondary_action)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Wired)
+            }
+        })
+    }
+
+    fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
+        Some(
+            widget::button::standard(fl!("add-network"))
+                .trailing_icon(icon::from_name("window-pop-out-symbolic"))
+                .on_press(Message::AddNetwork)
+                .apply(widget::container)
+                .width(Length::Fill)
+                .align_x(alignment::Horizontal::Right)
+                .apply(Element::from)
+                .map(crate::pages::Message::Wired),
+        )
+    }
+
+    fn on_enter(
+        &mut self,
+        _page: cosmic_settings_page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> cosmic::Command<crate::pages::Message> {
+        if self.nm_task.is_none() {
+            return cosmic::command::future(async move {
+                zbus::Connection::system()
+                    .await
+                    .context("failed to create system dbus connection")
+                    .map_or_else(
+                        |why| Message::Error(why.to_string()),
+                        |conn| Message::NetworkManagerConnect((conn, sender.clone())),
+                    )
+                    .apply(crate::pages::Message::Wired)
+            });
+        }
+
+        Command::none()
+    }
+
+    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+        self.active_device = None;
+        self.view_more_popup = None;
+        self.nm_state = None;
+        self.withheld_active_conns = None;
+        self.withheld_devices = None;
+        self.connecting.clear();
+
+        if let Some(cancel) = self.nm_task.take() {
+            _ = cancel.send(());
+        }
+
+        Command::none()
+    }
+
+    fn title(&self) -> Option<&str> {
+        self.active_device
+            .as_ref()
+            .map(|device| device.interface.as_str())
+    }
+}
+
+impl Page {
+    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+        match message {
+            Message::NetworkManager(network_manager::Event::RequestResponse {
+                req,
+                state,
+                success,
+            }) => {
+                if !success {
+                    tracing::error!(request = ?req, "network-manager request failed");
+                }
+
+                if let Some(NmState { ref conn, .. }) = self.nm_state {
+                    let conn = conn.clone();
+                    self.update_active_conns(state);
+                    return update_devices(conn);
+                }
+            }
+
+            Message::UpdateDevices(devices) => {
+                self.update_devices(devices);
+            }
+
+            Message::UpdateState(state) => {
+                self.update_active_conns(state);
+            }
+
+            Message::SelectDevice(device) => {
+                self.active_device = Some(device);
+            }
+
+            Message::NetworkManager(
+                network_manager::Event::ActiveConns | network_manager::Event::Devices,
+            ) => {
+                if let Some(NmState { ref conn, .. }) = self.nm_state {
+                    return cosmic::command::batch(vec![
+                        update_state(conn.clone()),
+                        update_devices(conn.clone()),
+                    ]);
+                }
+            }
+
+            Message::NetworkManager(network_manager::Event::Init {
+                conn,
+                sender,
+                state,
+            }) => {
+                self.nm_state = Some(NmState {
+                    conn: conn.clone(),
+                    sender,
+                    devices: Vec::new(),
+                    active_conns: state
+                        .active_conns
+                        .into_iter()
+                        .filter(|info| matches!(info, ActiveConnectionInfo::Wired { .. }))
+                        .collect(),
+                });
+
+                return update_devices(conn);
+            }
+
+            Message::NetworkManager(_event) => (),
+
+            Message::AddNetwork => {
+                return cosmic::command::future(async move {
+                    _ = super::nm_add_wired().await;
+                    // TODO: Update when iced is rebased to use then method.
+                    Message::Refresh
+                });
+            }
+
+            Message::Activate(uuid) => {
+                self.close_popup_and_apply_updates();
+
+                if let Some(NmState {
+                    ref devices,
+                    ref sender,
+                    ..
+                }) = self.nm_state
+                {
+                    for device in devices {
+                        let device_conn = device
+                            .available_connections
+                            .iter()
+                            .find(|conn| conn.uuid.as_ref() == uuid.as_ref());
+
+                        if let Some(device_conn) = device_conn {
+                            let device_path = device.path.clone();
+                            let conn_path = device_conn.path.clone();
+
+                            _ = sender.unbounded_send(network_manager::Request::Activate(
+                                device_path,
+                                conn_path,
+                            ));
+
+                            break;
+                        }
+                    }
+                }
+            }
+
+            Message::Deactivate(uuid) => {
+                self.close_popup_and_apply_updates();
+                if let Some(NmState { ref sender, .. }) = self.nm_state {
+                    _ = sender.unbounded_send(network_manager::Request::Deactivate(uuid));
+                }
+            }
+
+            Message::RemoveProfileRequest(uuid) => {
+                self.view_more_popup = None;
+                self.dialog = Some(WiredDialog::RemoveProfile(uuid));
+            }
+
+            Message::RemoveProfile(uuid) => {
+                self.dialog = None;
+                self.close_popup_and_apply_updates();
+                if let Some(NmState { ref sender, .. }) = self.nm_state {
+                    _ = sender.unbounded_send(network_manager::Request::Remove(uuid));
+                }
+            }
+
+            Message::ViewMore(uuid) => {
+                self.view_more_popup = uuid;
+                if self.view_more_popup.is_none() {
+                    self.close_popup_and_apply_updates();
+                }
+            }
+
+            Message::Settings(uuid) => {
+                self.close_popup_and_apply_updates();
+
+                return cosmic::command::future(async move {
+                    _ = super::nm_edit_connection(uuid.as_ref()).await;
+                    // TODO: Update when iced is rebased to use then method.
+                    Message::Refresh
+                });
+            }
+
+            Message::Refresh => {
+                if let Some(NmState { ref conn, .. }) = self.nm_state {
+                    return cosmic::command::batch(vec![
+                        update_state(conn.clone()),
+                        update_devices(conn.clone()),
+                    ]);
+                }
+            }
+
+            Message::CancelDialog => {
+                self.dialog = None;
+            }
+
+            Message::Error(why) => {
+                tracing::error!(why, "error in wired settings page");
+            }
+
+            Message::NetworkManagerConnect((conn, output)) => {
+                self.connect(conn.clone(), output);
+            }
+        }
+
+        Command::none()
+    }
+
+    fn connect(
+        &mut self,
+        conn: zbus::Connection,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) {
+        if self.nm_task.is_none() {
+            self.nm_task = Some(crate::utils::forward_event_loop(
+                sender,
+                |event| crate::pages::Message::Wired(Message::NetworkManager(event)),
+                move |tx| async move {
+                    futures::join!(
+                        network_manager::watch(conn.clone(), tx.clone()),
+                        network_manager::active_conns::watch(conn.clone(), tx.clone()),
+                        network_manager::devices::watch(conn, true, tx)
+                    );
+                },
+            ));
+        }
+    }
+
+    /// Closes the view more popup and applies any withheld updates.
+    fn close_popup_and_apply_updates(&mut self) {
+        self.view_more_popup = None;
+        if let Some(ref mut nm_state) = self.nm_state {
+            if let Some(active_conns) = self.withheld_active_conns.take() {
+                nm_state.active_conns = active_conns;
+            }
+
+            if let Some(devices) = self.withheld_devices.take() {
+                nm_state.devices = devices;
+            }
+        }
+
+        self.update_active_device();
+    }
+
+    fn update_active_device(&mut self) {
+        if let Some((nm_state, active)) = self.nm_state.as_ref().zip(self.active_device.as_ref()) {
+            self.active_device = nm_state
+                .devices
+                .iter()
+                .find(|device| device.path == active.path)
+                .map(Arc::clone);
+        }
+    }
+
+    /// Withholds updates if the view more popup is displayed.
+    fn update_devices(&mut self, devices: Vec<network_manager::devices::DeviceInfo>) {
+        if let Some(ref mut nm_state) = self.nm_state {
+            let devices = devices.into_iter().map(Arc::new).collect();
+            if self.view_more_popup.is_some() {
+                self.withheld_devices = Some(devices);
+            } else {
+                nm_state.devices = devices;
+            }
+        }
+
+        self.update_active_device();
+    }
+
+    /// Withholds updates if the view more popup is displayed.
+    fn update_active_conns(&mut self, state: NetworkManagerState) {
+        if let Some(ref mut nm_state) = self.nm_state {
+            let conns = state
+                .active_conns
+                .into_iter()
+                .filter(|info| matches!(info, ActiveConnectionInfo::Wired { .. }))
+                .collect();
+
+            if self.view_more_popup.is_some() {
+                self.withheld_active_conns = Some(conns);
+            } else {
+                nm_state.active_conns = conns;
+            }
+        }
+    }
+
+    fn device_view<'a>(
+        &'a self,
+        spacing: &cosmic::cosmic_theme::Spacing,
+        nm_state: &'a NmState,
+        connect_txt: &'a str,
+        connected_txt: &'a str,
+        disconnect_txt: &'a str,
+        remove_txt: &'a str,
+        settings_txt: &'a str,
+        wired_conns_txt: &'a str,
+        device: &'a network_manager::devices::DeviceInfo,
+    ) -> Element<'a, Message> {
+        let has_multiple_connection_profiles = device.available_connections.len() > 1;
+        let header_txt = format!("{}", wired_conns_txt);
+
+        device
+            .available_connections
+            .iter()
+            .fold(
+                widget::settings::view_section(header_txt),
+                |networks, connection| {
+                    let is_connected = nm_state.active_conns.iter().any(|conn| match conn {
+                        ActiveConnectionInfo::Wired { name, .. } => {
+                            name.as_str() == connection.id.as_str()
+                        }
+
+                        _ => false,
+                    });
+
+                    let (connect_txt, connect_msg) = if is_connected {
+                        (connected_txt, None)
+                    } else {
+                        (
+                            connect_txt,
+                            Some(Message::Activate(connection.uuid.clone())),
+                        )
+                    };
+
+                    let identifier = widget::text::body(&connection.id).wrap(Wrap::Glyph);
+
+                    let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
+                        widget::button::text(connect_txt).on_press(msg).into()
+                    } else {
+                        widget::text::body(connect_txt)
+                            .vertical_alignment(alignment::Vertical::Center)
+                            .into()
+                    };
+
+                    let view_more_button =
+                        widget::button::icon(widget::icon::from_name("view-more-symbolic"));
+
+                    let view_more: Option<Element<_>> = if self
+                        .view_more_popup
+                        .as_deref()
+                        .map_or(false, |id| id == connection.uuid.as_ref())
+                    {
+                        widget::popover(view_more_button.on_press(Message::ViewMore(None)))
+                            .position(widget::popover::Position::Bottom)
+                            .on_close(Message::ViewMore(None))
+                            .popup({
+                                widget::column()
+                                    .push_maybe(is_connected.then(|| {
+                                        popup_button(
+                                            Message::Deactivate(connection.uuid.clone()),
+                                            &disconnect_txt,
+                                        )
+                                    }))
+                                    .push(popup_button(
+                                        Message::Settings(connection.uuid.clone()),
+                                        &settings_txt,
+                                    ))
+                                    .push_maybe(has_multiple_connection_profiles.then(|| {
+                                        popup_button(
+                                            Message::RemoveProfileRequest(connection.uuid.clone()),
+                                            &remove_txt,
+                                        )
+                                    }))
+                                    .width(Length::Fixed(200.0))
+                                    .apply(widget::container)
+                                    .style(cosmic::style::Container::Dialog)
+                            })
+                            .apply(|e| Some(Element::from(e)))
+                    } else {
+                        view_more_button
+                            .on_press(Message::ViewMore(Some(connection.uuid.clone())))
+                            .apply(|e| Some(Element::from(e)))
+                    };
+
+                    let controls = widget::row::with_capacity(2)
+                        .push(connect)
+                        .push_maybe(view_more)
+                        .align_items(alignment::Alignment::Center)
+                        .spacing(spacing.space_xxs);
+
+                    let widget = widget::settings::item_row(vec![
+                        identifier.into(),
+                        widget::horizontal_space(Length::Fill).into(),
+                        controls.into(),
+                    ]);
+
+                    networks.add(widget)
+                },
+            )
+            .into()
+    }
+
+    fn device_list_view<'a>(
+        &'a self,
+        _spacing: &cosmic::cosmic_theme::Spacing,
+        nm_state: &'a NmState,
+        devices_txt: &'a str,
+    ) -> Element<'a, Message> {
+        nm_state
+            .devices
+            .iter()
+            .fold(
+                widget::settings::view_section(devices_txt),
+                |section, device| {
+                    let is_unplugged = matches!(device.state, DeviceState::Unavailable);
+
+                    let device_list =
+                        cosmic::widget::settings::item::builder(device.interface.as_str())
+                            .description(match device.state {
+                                DeviceState::Activated => fl!("network-device-state", "activated"),
+                                DeviceState::Config => fl!("network-device-state", "config"),
+                                DeviceState::Deactivating => {
+                                    fl!("network-device-state", "deactivating")
+                                }
+                                DeviceState::Disconnected => {
+                                    fl!("network-device-state", "disconnected")
+                                }
+                                DeviceState::Failed => fl!("network-device-state", "failed"),
+                                DeviceState::IpCheck => fl!("network-device-state", "ip-check"),
+                                DeviceState::IpConfig => fl!("network-device-state", "ip-config"),
+                                DeviceState::NeedAuth => fl!("network-device-state", "need-auth"),
+                                DeviceState::Prepare => fl!("network-device-state", "prepare"),
+                                DeviceState::Secondaries => {
+                                    fl!("network-device-state", "secondaries")
+                                }
+                                DeviceState::Unavailable => {
+                                    fl!("network-device-state", "unplugged")
+                                }
+                                DeviceState::Unknown => fl!("network-device-state", "unknown"),
+                                DeviceState::Unmanaged => fl!("network-device-state", "unmanaged"),
+                            })
+                            .icon(icon::from_name("network-wired-symbolic").size(32))
+                            .control(icon::from_name("go-next-symbolic").size(20))
+                            .spacing(16)
+                            .apply(widget::container)
+                            .padding([16, 14])
+                            .style(cosmic::theme::Container::List)
+                            .apply(widget::button)
+                            .padding(0)
+                            .style(cosmic::theme::Button::Transparent)
+                            .on_press_maybe(if is_unplugged {
+                                None
+                            } else {
+                                Some(Message::SelectDevice(device.clone()))
+                            });
+
+                    section.add(device_list)
+                },
+            )
+            .into()
+    }
+}
+
+fn devices_view() -> Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        wired_conns_txt = fl!("wired", "connections");
+        wired_devices_txt = fl!("wired", "devices");
+        remove_txt = fl!("wired", "remove");
+        connect_txt = fl!("connect");
+        connected_txt = fl!("connected");
+        settings_txt = fl!("settings");
+        disconnect_txt = fl!("disconnect");
+    });
+
+    Section::default()
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let Some(ref nm_state) = page.nm_state else {
+                return cosmic::widget::column().into();
+            };
+
+            let theme = cosmic::theme::active();
+            let spacing = &theme.cosmic().spacing;
+
+            let mut view = widget::column::with_capacity(4);
+
+            // Displays device connections if a device is selected, or only device exists.
+            let active_device = page
+                .active_device
+                .as_ref()
+                .or_else(|| (nm_state.devices.len() == 1).then(|| nm_state.devices.get(0))?)
+                .filter(|device| !matches!(device.state, DeviceState::Unavailable));
+
+            view = match active_device {
+                Some(device) => view.push(page.device_view(
+                    spacing,
+                    nm_state,
+                    &section.descriptions[connect_txt],
+                    &section.descriptions[connected_txt],
+                    &section.descriptions[disconnect_txt],
+                    &section.descriptions[remove_txt],
+                    &section.descriptions[settings_txt],
+                    &section.descriptions[wired_conns_txt],
+                    device,
+                )),
+
+                None => view.push(page.device_list_view(
+                    spacing,
+                    nm_state,
+                    &section.descriptions[wired_devices_txt],
+                )),
+            };
+
+            view.spacing(spacing.space_l)
+                .apply(Element::from)
+                .map(crate::pages::Message::Wired)
+        })
+}
+
+fn popup_button<'a>(message: Message, text: &'a str) -> Element<'a, Message> {
+    widget::text::body(text)
+        .vertical_alignment(alignment::Vertical::Center)
+        .apply(widget::button)
+        .padding([4, 16])
+        .width(Length::Fill)
+        .style(cosmic::theme::Button::MenuItem)
+        .on_press(message)
+        .into()
+}
+
+fn update_state(conn: zbus::Connection) -> Command<crate::app::Message> {
+    cosmic::command::future(async move {
+        match NetworkManagerState::new(&conn).await {
+            Ok(state) => Message::UpdateState(state),
+            Err(why) => Message::Error(why.to_string()),
+        }
+    })
+}
+
+fn update_devices(conn: zbus::Connection) -> Command<crate::app::Message> {
+    cosmic::command::future(async move {
+        let filter =
+            |device_type| matches!(device_type, network_manager::devices::DeviceType::Ethernet);
+
+        match network_manager::devices::list(&conn, filter).await {
+            Ok(devices) => Message::UpdateDevices(devices),
+            Err(why) => Message::Error(why.to_string()),
+        }
+    })
 }

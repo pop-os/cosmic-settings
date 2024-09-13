@@ -77,6 +77,11 @@ pub trait Page<Message: 'static>: Downcast {
     fn on_leave(&mut self) -> Command<Message> {
         Command::none()
     }
+
+    /// The title to display in the page header.
+    fn title(&self) -> Option<&str> {
+        None
+    }
 }
 
 impl_downcast!(Page<Message>);

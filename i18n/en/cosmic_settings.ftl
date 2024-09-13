@@ -4,10 +4,73 @@ unknown = Unknown
 
 number = { $number }
 
-## Networking: Wired
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] Wired
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Unknown
+} connections and connection profiles.
+
+add-network = Add network
+add-vpn = Add VPN
+airplane-on = Airplane mode is on.
+cable-unplugged = Cable unplugged
+connect = Connect
+connected = Connected
+connecting = Connecting…
+disconnect = Disconnect
+forget = Forget
+known-networks = Known Networks
+network-and-wireless = Network & Wireless
+no-networks = No networks have been found.
+no-vpn = No VPN connections available.
+password = Password
+remove = Remove
+settings = Settings
+username = Username
+visible-networks = Visible Networks
+
+auth-dialog = Authentication Required
+    .vpn-description = Enter the username and password required by the VPN service.
+    .wifi-description = Enter the password or encryption key. You can also connect by pressing the “WPS” button on the router.
+
+forget-dialog = Forget this Wi-Fi network?
+    .description = You'll need to enter a password again to use this Wi-Fi network in the future.
+
+network-device-state =
+    .activated = Connected to network
+    .config = Connecting to network
+    .deactivating = Disconnecting from network
+    .disconnected = Disconnected
+    .failed = Failed to connect
+    .ip-check = Checking connection
+    .ip-config = Requesting IP and routing information
+    .need-auth = Needs authentication
+    .prepare = Preparing to connect to network
+    .secondaries = Waiting for secondary connection
+    .unavailable = Unavailable
+    .unknown = Unknown state
+    .unmanaged = Unmanaged
+    .unplugged = Cable unplugged
+
+remove-connection-dialog = Remove Connection Profile?
+    .vpn-description = You'll need to enter a password again to use this network in the future.
+    .wired-description = You'll need to recreate this profile to use it in the future.
+
+vpn = VPN
+    .connections = VPN Connections
+    .remove = Remove connection profile
+    .select-file = Select a VPN configuration file
 
 wired = Wired
-    .desc = Wired connections and connection profiles
+    .connections = Wired Connections
+    .devices = Wired Devices
+    .remove = Remove connection profile
+
+wifi = Wi-Fi
+    .forget = Forget this network
 
 ## Networking: Online Accounts
 

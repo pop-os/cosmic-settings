@@ -78,10 +78,16 @@ pub enum PageCommands {
     Touchpad,
     /// Users settings page
     Users,
+    /// VPN settings page
+    Vpn,
     /// Wallpaper settings page
     Wallpaper,
     /// Window management settings page
     WindowManagement,
+    /// Wired settings page
+    Wired,
+    /// WiFi settings page
+    Wireless,
     /// Workspaces settings page
     Workspaces,
 }
