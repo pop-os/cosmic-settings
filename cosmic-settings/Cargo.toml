@@ -62,7 +62,6 @@ zbus = { version = "4.4.0", features = ["tokio"] }
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
-branch = "network"
 features = ["network_manager", "pipewire", "pulse"]
 
 [dependencies.icu]
