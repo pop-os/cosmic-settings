@@ -21,7 +21,7 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
     on_update: fn(ColorPickerUpdate) -> Message,
     model: &'a ColorPickerModel,
 ) -> Element<'a, Message> {
-    let theme = cosmic::theme::active();
+    let theme = theme::active();
     let spacing = &theme.cosmic().spacing;
 
     cosmic::widget::column()
