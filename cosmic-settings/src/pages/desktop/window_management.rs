@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::{
+    iced::Length,
     widget::{self, settings, toggler},
     Apply, Element,
 };
@@ -14,10 +15,12 @@ use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum Message {
     SuperKey(usize),
     SetFocusFollowsCursor(bool),
+    SaveFocusFollowsCursorDelay(bool),
+    SetFocusFollowsCursorDelay(String),
     SetCursorFollowsFocus(bool),
 }
 
@@ -26,6 +29,8 @@ pub struct Page {
     pub super_key_active: Option<usize>,
     comp_config: cosmic_config::Config,
     focus_follows_cursor: bool,
+    focus_follows_cursor_delay: u64,
+    focus_delay_text: String,
     cursor_follows_focus: bool,
 }
 
@@ -49,6 +54,15 @@ impl Default for Page {
                 false
             });
 
+        let focus_follows_cursor_delay = comp_config
+            .get("focus_follows_cursor_delay")
+            .inspect_err(|err| {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                    error!(?err, "Failed to read config 'focus_follows_cursor_delay'")
+                }
+            })
+            .unwrap_or(250);
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -59,6 +73,8 @@ impl Default for Page {
             super_key_active: super_key_active_config(),
             comp_config,
             focus_follows_cursor,
+            focus_follows_cursor_delay,
+            focus_delay_text: format!("{focus_follows_cursor_delay}"),
             cursor_follows_focus,
         }
     }
@@ -87,6 +103,25 @@ impl Page {
                 {
                     error!(?err, "Failed to set config 'focus_follows_cursor'");
                 }
+            }
+            Message::SaveFocusFollowsCursorDelay(save) => {
+                // Debounce to avoid spam writing config on user input
+                if save {
+                    if let Err(err) = self.comp_config.set(
+                        "focus_follows_cursor_delay",
+                        self.focus_follows_cursor_delay,
+                    ) {
+                        error!(?err, "Failed to set config 'focus_follows_cursor_delay'");
+                    }
+
+                    self.focus_delay_text = format!("{}", self.focus_follows_cursor_delay);
+                }
+            }
+            Message::SetFocusFollowsCursorDelay(value) => {
+                if let Ok(delay) = value.parse() {
+                    self.focus_follows_cursor_delay = delay;
+                }
+                self.focus_delay_text = value;
             }
             Message::SetCursorFollowsFocus(value) => {
                 self.cursor_follows_focus = value;
@@ -194,6 +229,8 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
     let focus_follows_cursor = descriptions.insert(fl!("focus-navigation", "focus-follows-cursor"));
+    let focus_follows_cursor_delay =
+        descriptions.insert(fl!("focus-navigation", "focus-follows-cursor-delay"));
     let cursor_follows_focus = descriptions.insert(fl!("focus-navigation", "cursor-follows-focus"));
 
     Section::default()
@@ -210,6 +247,16 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                         page.focus_follows_cursor,
                         Message::SetFocusFollowsCursor,
                     ),
+                ))
+                .add(settings::item(
+                    &descriptions[focus_follows_cursor_delay],
+                    widget::editable_input("", &page.focus_delay_text, false, |editing| {
+                        Message::SaveFocusFollowsCursorDelay(!editing)
+                    })
+                    .select_on_focus(true)
+                    .on_input(Message::SetFocusFollowsCursorDelay)
+                    .on_submit(Message::SaveFocusFollowsCursorDelay(true))
+                    .width(Length::Fixed(80.0)),
                 ))
                 .add(settings::item(
                     &descriptions[cursor_follows_focus],
