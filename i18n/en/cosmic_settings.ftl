@@ -442,6 +442,7 @@ keyboard-sources = Input Sources
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
     .compose = Compose key
+    .caps = Caps Lock key
 
 keyboard-typing-assist = Typing
     .repeat-rate = Repeat rate
