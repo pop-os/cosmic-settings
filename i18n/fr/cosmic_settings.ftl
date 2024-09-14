@@ -4,10 +4,73 @@ unknown = Inconnu
 
 number = { $number }
 
-## Networking: Wired
+## Networking & Wireless
+
+connections-and-profiles = Connexions { $variant ->
+    [wired] Filaires
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] inconnues
+} et profils.
+
+add-network = Ajouter un réseau
+add-vpn = Ajouter un VPN
+airplane-on = Mode avion activé.
+cable-unplugged = Câble débranché
+connect = Se connecter
+connected = Connecté
+connecting = Connexion…
+disconnect = Se disconnecter
+forget = Oublier
+known-networks = Réseaux connus
+network-and-wireless = Réseau et sans fil
+no-networks = Aucun réseau n'a été trouvé.
+no-vpn = Pas de connexion VPN disponible.
+password = Mot de passe
+remove = Supprimer
+settings = Paramètres
+username = Identifiant
+visible-networks = Réseaux visibles
+
+auth-dialog = Authentification requise
+    .vpn-description = Entrez l'identifiant et le mot de passe demandé par le service de VPN.
+    .wifi-description = Entrez le mot de passe ou la clé de chiffrement. Vous pouvez aussi vous connecter en pressant le boutton “WPS” sur votre box.
+
+forget-dialog = Oublier ce réseau Wi-Fi ?
+    .description = Vous aurez besoin de réentrer le mot de passe pour réutiliser ce réseau Wi-Fi.
+
+network-device-state =
+    .activated = Connecté au réseau
+    .config = Connexion au réseau...
+    .deactivating = Déconnexion du réseau...
+    .disconnected = Déconnecté
+    .failed = Connexion échouée
+    .ip-check = Vérification de la connexion...
+    .ip-config = En attente d'une IP et des informations de routage
+    .need-auth = Requiert une authentification
+    .prepare = Préparation de la connexion au réseau...
+    .secondaries = En attente d'une connexion secondaire
+    .unavailable = Indisponible
+    .unknown = État inconnu
+    .unmanaged = Non pris en charge
+    .unplugged = Câble débranché
+
+remove-connection-dialog = Supprimer le profil de connexion?
+    .vpn-description = Vous aurez besoin de réentrer le mot de passe pour réutiliser ce réseau.
+    .wired-description = Vous aurez besoin de recréer ce profil pour le réutiliser.
+
+vpn = VPN
+    .connections = Connexions VPN
+    .remove = Supprimer le profil de connexion
+    .select-file = Sélectionnez un fichier de configuration VPN
 
 wired = Filaire
-    .desc = Connexion filaire, profils de connexion
+    connections = Connexions filaires
+    .devices = Périphériques câblés
+    .remove = Supprimer un profil de connexion
+
+wifi = Wi-Fi
+    .forget = Oublier ce réseau
 
 ## Networking: Online Accounts
 
@@ -185,6 +248,7 @@ window-controls = Contrôles des fenêtres
 
 focus-navigation = Focus Navigation
     .focus-follows-cursor = Le focus suit le curseur
+    .focus-follows-cursor-delay = Délai de suivi du focus en ms
     .cursor-follows-focus = Le curseur suit le focus
 
 ## Desktop: Workspaces
