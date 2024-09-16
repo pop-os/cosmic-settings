@@ -18,8 +18,8 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        page.sub_page::<users::Page>()
-            .sub_page::<about::Page>()
+        page.sub_page::<about::Page>()
+            .sub_page::<users::Page>()
             .sub_page::<firmware::Page>()
     }
 }

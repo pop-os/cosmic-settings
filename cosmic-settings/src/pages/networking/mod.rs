@@ -28,8 +28,8 @@ impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(
         page: cosmic_settings_page::Insert<crate::pages::Message>,
     ) -> cosmic_settings_page::Insert<crate::pages::Message> {
-        page.sub_page::<wired::Page>()
-            .sub_page::<wifi::Page>()
+        page.sub_page::<wifi::Page>()
+            .sub_page::<wired::Page>()
             .sub_page::<vpn::Page>()
     }
 }
