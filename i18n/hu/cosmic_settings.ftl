@@ -4,6 +4,81 @@ unknown = Ismeretlen
 
 number = { $number }
 
+
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] Vezetékes
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Ismeretlen
+} Kapcsolatok és kapcsolati profilok.
+
+add-network = Hálozat hozzáadása
+add-vpn = VPN hozzáadása
+airplane-on = Repülőgép üzemmód be van kapcsolva.
+cable-unplugged = Kábel kihúzva
+connect = Kapcsolódás
+connected = Kapcsolódva
+connecting = Kapcsolódás...
+disconnect = Szétkapcsolás
+forget = Elfelejtés
+known-networks = Ismert hálózatok
+network-and-wireless = Internet és Wi-fi
+no-networks = Nem található hálózat.
+no-vpn = Nincs elérhető VPN kapcsolat.
+password = Jelszó
+remove = Törlés
+settings = Beállítások
+username = Felhasználónév
+visible-networks = Látható hálózatok
+
+auth-dialog = Azonosítás szükséges
+    .vpn-description = Írja be a VPN szolgáltatás által követelt felhasználónevet és jelszót.
+    .wifi-description = Írja be a jelszót vagy a titkosítókulcsot. A rúter "WPS" gombjának megnyomásával is csatlakozhat.
+
+forget-dialog = El akarja felejteni ez a Wi-Fi hálózatot?
+    .description = A jelszót újra be kell írnia a jővőbeli használathoz.
+
+network-device-state =
+    .activated = Csatlakozva a hálózathoz
+    .config = Csatlakozás a hálózathoz
+    .deactivating = Hálózat szétkapcsolása
+    .disconnected = Szétkapcsolva
+    .failed = Csatlakozás sikertelen
+    .ip-check = Kapcsolat ellenőrzése
+    .ip-config = IP és rúter információk lekérése
+    .need-auth = Azonosítás szükséges
+    .prepare = Felkészülés a hálózatra csatlkozáshoz
+    .secondaries = Várakozás egy másodlagos kapcsolatra
+    .unavailable = Elérhetetlen
+    .unknown = Ismeretlen állapot
+    .unmanaged = Kezeletlen
+    .unplugged = Kábel kihúzva
+
+remove-connection-dialog = Törli a kapcsolódási profilt?
+    .vpn-description = A jelszót újra be kell írnia a jővőbeli használathoz.
+    .wired-description = A profil újból létre kell hoznia a jővőbeli használathoz.
+
+vpn = VPN
+    .connections = VPN kapcsolatok
+    .remove = Kapcsolódási profil törlése
+    .select-file = Válassz ki egy VPN konfigurációs fájlt
+
+wired = Vezetékes
+    .connections = Vezetékes kapcsolatok
+    .devices = Vezetékes eszközök
+    .remove = Kapcsolódási profil törlése
+
+wifi = Wi-Fi
+    .forget = Hálózat elfelejtése
+
+## Networking: Online Accounts
+
+online-accounts = Online fiókok
+    .desc = fiókok hozzáadása, IMAP és SMTP, vállalati bejelentkezések
+
+
 ## Desktop
 
 desktop = Asztal
