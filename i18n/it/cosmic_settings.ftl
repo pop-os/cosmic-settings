@@ -3,11 +3,74 @@ app = Impostazioni di COSMIC
 unknown = Sconosciuto
 
 number = { $number }
+## Network & Wireless
 
-## Networking: Wired
+connections-and-profiles = Connessione { $variant ->
+    [wired] Ethernet
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Sconosciuto
+} e profili di connessione.
 
-wired = Via cavo
-    .desc = Connessione via cavo, profili di connessione
+add-network = Aggiungi rete
+add-vpn = Aggiungi VPN
+airplane-on = Modalità aereo attivata.
+cable-unplugged = Cavo scollegato
+connect = Connetti
+connected = Connesso
+connecting = Connessione in corso…
+disconnect = Disconnetti
+forget = Dimentica
+known-networks = Reti conosciute
+network-and-wireless = Rete e wireless
+no-networks = Nessuna rete trovata.
+no-vpn = Nessuna connessione VPN disponibile.
+password = Password
+remove = Rimuovi
+settings = Impostazioni
+username = Nome utente
+visible-networks = Reti visibili
+
+auth-dialog = Autenticazione richiesta
+    .vpn-description = Inserisci il nome utente e la password richiesti dal servizio VPN.
+    .wifi-description = Inserisci la password o la chiave di crittografia. Puoi anche connetterti premendo il pulsante “WPS” sul router.
+
+forget-dialog = Dimenticare questa rete Wi-Fi?
+    .description = Sarà necessario reinserire la password per utilizzare questa rete Wi-Fi in futuro.
+
+network-device-state =
+    .activated = Connesso alla rete
+    .config = Connessione in corso
+    .deactivating = Disconnessione in corso
+    .disconnected = Disconnesso
+    .failed = Connessione fallita
+    .ip-check = Verifica della connessione in corso
+    .ip-config = Richiesta delle informazioni IP e di routing in corso
+    .need-auth = Autenticazione richiesta
+    .prepare = Preparazione alla connessione alla rete
+    .secondaries = In attesa della connessione secondaria
+    .unavailable = Non disponibile
+    .unknown = Stato sconosciuto
+    .unmanaged = Non gestito
+    .unplugged = Cavo scollegato
+
+remove-connection-dialog = Rimuovere il profilo di connessione?
+    .vpn-description = Sarà necessario reinserire la password per utilizzare questa rete in futuro.
+    .wired-description = Sarà necessario ricreare questo profilo per utilizzarlo in futuro.
+
+vpn = VPN
+    .connections = Connessioni VPN
+    .remove = Rimuovi profilo di connessione
+    .select-file = Seleziona un file di configurazione VPN
+
+wired = Ethernet
+    .connections = Connessioni cablate
+    .devices = Dispositivi cablati
+    .remove = Rimuovi profilo di connessione
+
+wifi = Wi-Fi
+    .forget = Dimentica questa rete
+
 
 ## Networking: Online Accounts
 
