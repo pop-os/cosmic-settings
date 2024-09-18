@@ -457,13 +457,10 @@ impl Page {
 
                     let color = self.accent_window_hint.get_applied_color().map(Srgb::from);
 
-                    if self
+                    needs_build = self
                         .theme_builder
                         .set_window_hint(config, color.clone())
-                        .unwrap_or_default()
-                    {
-                        self.theme_config_write("window_hint", color)
-                    }
+                        .unwrap_or_default();
                 }
             }
 
@@ -1017,6 +1014,7 @@ impl Page {
                         text_button;
                         warning;
                         warning_button;
+                        window_hint;
                     });
 
                     Message::NewTheme(new_theme).into()
