@@ -74,7 +74,7 @@ impl<Message: 'static> Binder<Message> {
         if self.contains_item(id) {
             self.storage
                 .entry(TypeId::of::<Data>())
-                .or_insert_with(SecondaryMap::new)
+                .or_default()
                 .insert(id, Box::new(data));
         }
     }
@@ -206,7 +206,7 @@ impl<Message: 'static> Binder<Message> {
     ) -> impl Iterator<Item = (crate::Entity, section::Entity)> + 'a {
         self.content.iter().flat_map(move |(page, sections)| {
             sections
-                .into_iter()
+                .iter()
                 .filter(|&id| self.sections[*id].search_matches(rule))
                 .map(move |&id| (page, id))
         })

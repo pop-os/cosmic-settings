@@ -28,6 +28,7 @@ static DPI_SCALE_LABELS: Lazy<Vec<String>> =
 
 /// Display color depth options
 #[derive(Clone, Copy, Debug)]
+#[allow(dead_code)] // ColorDepth is currently unimplemented, so the struct data is unused
 pub struct ColorDepth(usize);
 
 /// Identifies the content to display in the context drawer
@@ -494,7 +495,7 @@ impl Page {
                 self.comp_config_descale_xwayland = descale;
                 if let Err(err) = self
                     .comp_config
-                    .set("descale_xwayland", &self.comp_config_descale_xwayland)
+                    .set("descale_xwayland", self.comp_config_descale_xwayland)
                 {
                     error!(?err, "Failed to set config 'descale_xwayland'");
                 }
@@ -908,7 +909,7 @@ impl Page {
                     .arg("mode")
                     .arg("--refresh")
                     .arg(
-                        &[
+                        [
                             itoa::Buffer::new().format(rate / 1000),
                             ".",
                             itoa::Buffer::new().format(rate % 1000),
@@ -937,7 +938,7 @@ impl Page {
                     .arg("mode")
                     .arg("--scale")
                     .arg(
-                        &[
+                        [
                             itoa::Buffer::new().format(scale / 100),
                             ".",
                             itoa::Buffer::new().format(scale % 100),
@@ -1204,23 +1205,23 @@ fn cache_rates(cached_rates: &mut Vec<String>, rates: &[u32]) {
             (None, None) => cached_rates.push(format!("{} Hz", round(rate))),
             (None, Some(next)) => {
                 if round(rate) == round(next) {
-                    cached_rates.push(format_dec(rate))
+                    cached_rates.push(format_dec(rate));
                 } else {
-                    cached_rates.push(format!("{} Hz", round(rate)))
+                    cached_rates.push(format!("{} Hz", round(rate)));
                 }
             }
             (Some(prev), None) => {
                 if round(rate) == round(prev) {
-                    cached_rates.push(format_dec(rate))
+                    cached_rates.push(format_dec(rate));
                 } else {
-                    cached_rates.push(format!("{} Hz", round(rate)))
+                    cached_rates.push(format!("{} Hz", round(rate)));
                 }
             }
             (Some(prev), Some(next)) => {
                 if round(rate) == round(prev) || round(rate) == round(next) {
-                    cached_rates.push(format_dec(rate))
+                    cached_rates.push(format_dec(rate));
                 } else {
-                    cached_rates.push(format!("{} Hz", round(rate)))
+                    cached_rates.push(format!("{} Hz", round(rate)));
                 }
             }
         }

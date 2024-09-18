@@ -99,7 +99,7 @@ impl Page {
                 self.focus_follows_cursor = value;
                 if let Err(err) = self
                     .comp_config
-                    .set("focus_follows_cursor", &self.focus_follows_cursor)
+                    .set("focus_follows_cursor", self.focus_follows_cursor)
                 {
                     error!(?err, "Failed to set config 'focus_follows_cursor'");
                 }
@@ -127,7 +127,7 @@ impl Page {
                 self.cursor_follows_focus = value;
                 if let Err(err) = self
                     .comp_config
-                    .set("cursor_follows_focus", &self.cursor_follows_focus)
+                    .set("cursor_follows_focus", self.cursor_follows_focus)
                 {
                     error!(?err, "Failed to set config 'cursor_follows_focus'");
                 }

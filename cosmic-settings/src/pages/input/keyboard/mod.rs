@@ -162,28 +162,24 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
             id,
             fl!("keyboard-sources", "move-up"),
             SourceContext::MoveUp,
-        )
-        .into(),
+        ),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-down"),
             SourceContext::MoveDown,
-        )
-        .into(),
+        ),
         cosmic::widget::divider::horizontal::default().into(),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "settings"),
             SourceContext::Settings,
-        )
-        .into(),
+        ),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "view-layout"),
             SourceContext::ViewLayout,
-        )
-        .into(),
-        popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove).into(),
+        ),
+        popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
     .padding(8)
     .width(Length::Shrink)
@@ -652,11 +648,11 @@ fn special_character_entry() -> Section<crate::pages::Message> {
 
             settings::view_section(&section.title)
                 .add(crate::widget::go_next_item(
-                    &*descriptions[alternate],
+                    &descriptions[alternate],
                     Message::OpenSpecialCharacterContext(SpecialKey::AlternateCharacters),
                 ))
                 .add(crate::widget::go_next_item(
-                    &*descriptions[compose],
+                    &descriptions[compose],
                     Message::OpenSpecialCharacterContext(SpecialKey::Compose),
                 ))
                 .apply(cosmic::Element::from)

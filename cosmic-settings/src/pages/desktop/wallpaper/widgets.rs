@@ -75,11 +75,11 @@ pub fn color_image<'a, M: 'a>(
                 border: Border {
                     radius: border_radius.map_or_else(
                         || Radius::from(theme.cosmic().corner_radii.radius_s),
-                        |br| br.into(),
+                        std::convert::Into::into,
                     ),
                     ..Default::default()
                 },
-                shadow: Default::default(),
+                ..Default::default()
             }
         }))
         .padding(0)

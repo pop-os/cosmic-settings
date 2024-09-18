@@ -9,13 +9,11 @@ use crate::pages::desktop::panel::inner::{
     add_panel, behavior_and_position, configuration, reset_button, style,
 };
 
-use self::inner::{PageInner, PanelPage};
-
 pub mod applets_inner;
 pub mod inner;
 
 pub struct Page {
-    inner: PageInner,
+    inner: inner::Page,
 }
 
 #[derive(Clone, Debug)]
@@ -37,12 +35,12 @@ impl page::AutoBind<crate::pages::Message> for Page {
     }
 }
 
-impl PanelPage for Page {
-    fn inner(&self) -> &PageInner {
+impl inner::PanelPage for Page {
+    fn inner(&self) -> &inner::Page {
         &self.inner
     }
 
-    fn inner_mut(&mut self) -> &mut PageInner {
+    fn inner_mut(&mut self) -> &mut inner::Page {
         &mut self.inner
     }
 
@@ -91,7 +89,7 @@ impl Default for Page {
         .ok();
         let container_config = CosmicPanelContainerConfig::load().ok();
         Self {
-            inner: PageInner {
+            inner: inner::Page {
                 config_helper,
                 panel_config,
                 container_config,

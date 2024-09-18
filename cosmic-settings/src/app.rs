@@ -59,7 +59,6 @@ impl SettingsApp {
         match cmd {
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
-            PageCommands::Bluetooth => None,
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
@@ -68,7 +67,6 @@ impl SettingsApp {
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
-            PageCommands::Network => None,
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
             PageCommands::Power => self.pages.page_id::<power::Page>(),
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
@@ -85,6 +83,8 @@ impl SettingsApp {
             PageCommands::Wired => self.pages.page_id::<networking::wired::Page>(),
             PageCommands::Wireless => self.pages.page_id::<networking::wifi::Page>(),
             PageCommands::Workspaces => self.pages.page_id::<desktop::workspaces::Page>(),
+            // Unimplemented
+            PageCommands::Bluetooth | PageCommands::Network => None,
         }
     }
 

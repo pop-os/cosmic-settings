@@ -19,7 +19,7 @@ use cosmic_settings_page::{self as page, Section};
 use slab::Slab;
 use std::{collections::HashMap, time::Duration};
 
-pub struct PageInner {
+pub struct Page {
     pub(crate) config_helper: Option<cosmic_config::Config>,
     pub(crate) panel_config: Option<CosmicPanelConfig>,
     pub opacity: f32,
@@ -34,7 +34,7 @@ pub struct PageInner {
     pub(crate) system_container: Option<CosmicPanelContainerConfig>,
 }
 
-impl Default for PageInner {
+impl Default for Page {
     fn default() -> Self {
         Self {
             config_helper: Option::default(),
@@ -77,9 +77,9 @@ impl Default for PageInner {
 }
 
 pub trait PanelPage {
-    fn inner(&self) -> &PageInner;
+    fn inner(&self) -> &Page;
 
-    fn inner_mut(&mut self) -> &mut PageInner;
+    fn inner_mut(&mut self) -> &mut Page;
 
     fn autohide_label(&self) -> String;
 
@@ -347,14 +347,14 @@ pub fn reset_button<
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Anchor(PanelAnchor);
 
-impl ToString for Anchor {
-    fn to_string(&self) -> String {
-        match self.0 {
+impl std::fmt::Display for Anchor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&match self.0 {
             PanelAnchor::Top => fl!("panel-top"),
             PanelAnchor::Bottom => fl!("panel-bottom"),
             PanelAnchor::Left => fl!("panel-left"),
             PanelAnchor::Right => fl!("panel-right"),
-        }
+        })
     }
 }
 
@@ -365,13 +365,13 @@ pub enum Appearance {
     Dark,
 }
 
-impl ToString for Appearance {
-    fn to_string(&self) -> String {
-        match self {
+impl std::fmt::Display for Appearance {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&match self {
             Appearance::Match => fl!("panel-appearance", "match"),
             Appearance::Light => fl!("panel-appearance", "light"),
             Appearance::Dark => fl!("panel-appearance", "dark"),
-        }
+        })
     }
 }
 
@@ -416,7 +416,7 @@ pub enum Message {
     FullReset,
 }
 
-impl PageInner {
+impl Page {
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Command<Message> {
         let Some(helper) = self.config_helper.as_ref() else {
