@@ -7,11 +7,11 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
-use cosmic::config::{CosmicTk, Density};
+use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{
-    CornerRadii, Spacing, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
+    CornerRadii, Density, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
     LIGHT_THEME_BUILDER_ID,
 };
 use cosmic::iced_core::{alignment, Background, Color, Length};
@@ -684,14 +684,29 @@ impl Page {
             Message::Density(d) => {
                 needs_sync = true;
                 self.density = d;
+
                 if let Some(config) = self.tk_config.as_mut() {
                     let _density = self.tk.set_interface_density(config, d);
                     let _header = self.tk.set_header_size(config, d);
                 }
-                self.theme_builder.spacing = self.density.into();
-                self.theme_builder_needs_update = true;
-                Self::update_panel_spacing(d);
-                Command::none()
+
+                let Some(config) = self.theme_builder_config.as_ref() else {
+                    return Command::none();
+                };
+
+                let spacing = self.density.into();
+
+                if self
+                    .theme_builder
+                    .set_spacing(config, spacing)
+                    .unwrap_or_default()
+                {
+                    self.theme_config_write("spacing", spacing);
+                }
+
+                tokio::task::spawn(async move {
+                    Self::update_panel_spacing(d);
+                });
             }
 
             Message::Entered((icon_themes, icon_handles)) => {
@@ -1254,8 +1269,10 @@ impl Page {
 
         if let Some(panel_config_helper) = panel_config_helper.as_ref() {
             if let Some(panel_config) = panel_config.as_mut() {
-                let density: Spacing = density.into();
-                let spacing = density.space_xxxs as u32;
+                let spacing = match density {
+                    Density::Compact => 0,
+                    _ => 4,
+                };
                 let update = panel_config.set_spacing(panel_config_helper, spacing);
                 if let Err(err) = update {
                     tracing::error!(?err, "Error updating panel spacing");
@@ -1265,8 +1282,10 @@ impl Page {
 
         if let Some(dock_config_helper) = dock_config_helper.as_ref() {
             if let Some(dock_config) = dock_config.as_mut() {
-                let density: Spacing = density.into();
-                let spacing = density.space_xxxs as u32;
+                let spacing = match density {
+                    Density::Compact => 0,
+                    _ => 4,
+                };
                 let update = dock_config.set_spacing(dock_config_helper, spacing);
                 if let Err(err) = update {
                     tracing::error!(?err, "Error updating dock spacing");
@@ -1761,7 +1780,8 @@ pub fn interface_density() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::item_row(vec![radio(
                     text::body(&descriptions[comfortable]),
                     Density::Standard,
