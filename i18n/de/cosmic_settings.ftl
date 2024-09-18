@@ -350,6 +350,7 @@ keyboard-typing-assist = Tippen
 
 added = Hinzugefügt
 type-to-search = Zum Suchen tippen...
+show-extended-input-sources = Erweiterte Eingabequellen anzeigen
 
 ## Eingabe: Tastatur: Tastenkombinationen
 

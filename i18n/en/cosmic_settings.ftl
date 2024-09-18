@@ -449,6 +449,7 @@ keyboard-typing-assist = Typing
 
 added = Added
 type-to-search = Type to search...
+show-extended-input-sources = Show extended input sources
 
 ## Input: Keyboard: Shortcuts
 

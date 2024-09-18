@@ -53,6 +53,7 @@ pub enum Message {
     SpecialCharacterSelect(Option<&'static str>),
     SetRepeatKeysDelay(u32),
     SetRepeatKeysRate(u32),
+    SetShowExtendedInputSources(bool),
 }
 
 #[derive(Clone, Debug)]
@@ -67,6 +68,11 @@ pub enum SourceContext {
 pub type Locale = String;
 pub type Variant = String;
 pub type Description = String;
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum LayoutSource {
+    Base,
+    Extra,
+}
 
 const KB_REPEAT_DELAY_DEFAULT: u32 = 600;
 const KB_REPEAT_RATE_DEFAULT: u32 = 25;
@@ -80,9 +86,10 @@ pub struct Page {
     context: Option<Context>,
     input_source_search: String,
     xkb: XkbConfig,
-    keyboard_layouts: SlotMap<DefaultKey, (Locale, Variant, Description)>,
+    keyboard_layouts: SlotMap<DefaultKey, (Locale, Variant, Description, LayoutSource)>,
     active_layouts: Vec<DefaultKey>,
     expanded_source_popover: Option<DefaultKey>,
+    show_extended_input_sources: bool,
 }
 
 impl Default for Page {
@@ -96,6 +103,7 @@ impl Default for Page {
             active_layouts: Vec::new(),
             xkb: XkbConfig::default(),
             input_source_search: String::new(),
+            show_extended_input_sources: false,
             config,
         }
     }
@@ -273,13 +281,27 @@ impl page::Page<crate::pages::Message> for Page {
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Command<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
-        match xkb_data::keyboard_layouts() {
-            Ok(mut keyboard_layouts) => {
+        match (
+            xkb_data::keyboard_layouts(),
+            xkb_data::extra_keyboard_layouts(),
+        ) {
+            (Ok(base_layouts), Ok(extra_layouts)) => {
                 self.active_layouts.clear();
                 self.keyboard_layouts.clear();
 
-                let sorted_layouts = keyboard_layouts.layouts_mut();
-                sorted_layouts.sort_unstable_by(|a, b| {
+                let mut sorted_layouts = base_layouts
+                    .layouts()
+                    .iter()
+                    .map(|layout| (layout, LayoutSource::Base))
+                    .chain(
+                        extra_layouts
+                            .layouts()
+                            .iter()
+                            .map(|layout| (layout, LayoutSource::Extra)),
+                    )
+                    .collect::<Vec<_>>();
+
+                sorted_layouts.sort_unstable_by(|(a, _), (b, _)| {
                     match (a.name(), b.name()) {
                         // Place US at the top of the list as it's the default
                         ("us", _) => cmp::Ordering::Less,
@@ -296,11 +318,12 @@ impl page::Page<crate::pages::Message> for Page {
                     }
                 });
 
-                for layout in sorted_layouts {
+                for (layout, source) in sorted_layouts {
                     self.keyboard_layouts.insert((
                         layout.name().to_owned(),
                         String::new(),
                         layout.description().to_owned(),
+                        source.clone(),
                     ));
 
                     if let Some(variants) = layout.variants().map(|variants| {
@@ -309,17 +332,18 @@ impl page::Page<crate::pages::Message> for Page {
                                 layout.name().to_owned(),
                                 variant.name().to_owned(),
                                 variant.description().to_owned(),
+                                source.clone(),
                             )
                         })
                     }) {
                         let mut variants: Vec<_> = variants.collect();
-                        variants.sort_unstable_by(|(_, _, desc_a), (_, _, desc_b)| {
+                        variants.sort_unstable_by(|(_, _, desc_a, _), (_, _, desc_b, _)| {
                             desc_a.partial_cmp(desc_b).expect(STR_ORDER)
                         });
 
-                        for (layout_name, name, description) in variants {
+                        for (layout_name, name, description, source) in variants {
                             self.keyboard_layouts
-                                .insert((layout_name, name, description));
+                                .insert((layout_name, name, description, source));
                         }
                     }
                 }
@@ -340,15 +364,14 @@ impl page::Page<crate::pages::Message> for Page {
                     .chain(std::iter::repeat(""));
 
                 for (layout, variant) in layouts.zip(variants) {
-                    for (id, (xkb_layout, xkb_variant, _desc)) in &self.keyboard_layouts {
+                    for (id, (xkb_layout, xkb_variant, _desc, _source)) in &self.keyboard_layouts {
                         if layout == xkb_layout && variant == xkb_variant {
                             self.active_layouts.push(id);
                         }
                     }
                 }
             }
-
-            Err(why) => {
+            (Err(why), _) | (_, Err(why)) => {
                 tracing::error!(?why, "failed to get keyboard layouts");
             }
         }
@@ -461,6 +484,9 @@ impl Page {
                 self.xkb.repeat_rate = rate;
                 self.update_xkb_config();
             }
+            Message::SetShowExtendedInputSources(value) => {
+                self.show_extended_input_sources = value;
+            }
         }
 
         Command::none()
@@ -471,12 +497,20 @@ impl Page {
             .on_input(Message::InputSourceSearch)
             .on_clear(Message::InputSourceSearch(String::new()));
 
+        let toggler = widget::toggler(
+            fl!("show-extended-input-sources"),
+            self.show_extended_input_sources,
+            Message::SetShowExtendedInputSources,
+        );
+
         let mut list = widget::list_column();
 
         let search_input = &self.input_source_search.trim().to_lowercase();
 
-        for (id, (_locale, variant, description)) in &self.keyboard_layouts {
-            if search_input.is_empty() || description.to_lowercase().contains(search_input) {
+        for (id, (_locale, variant, description, source)) in &self.keyboard_layouts {
+            if (search_input.is_empty() || description.to_lowercase().contains(search_input))
+                && (source != &LayoutSource::Extra || self.show_extended_input_sources)
+            {
                 list = list.add(self.input_source_item(id, description, !variant.is_empty()));
             }
         }
@@ -485,6 +519,7 @@ impl Page {
             .padding([2, 0])
             .spacing(32)
             .push(search)
+            .push(toggler)
             .push(list)
             .apply(Element::from)
             .map(crate::pages::Message::Keyboard)
@@ -545,7 +580,7 @@ impl Page {
         let mut new_variant = String::new();
 
         for id in &self.active_layouts {
-            if let Some((locale, variant, _description)) = self.keyboard_layouts.get(*id) {
+            if let Some((locale, variant, _description, _source)) = self.keyboard_layouts.get(*id) {
                 new_layout.push_str(locale);
                 new_layout.push(',');
                 new_variant.push_str(variant);
@@ -579,7 +614,9 @@ fn input_sources() -> Section<crate::pages::Message> {
             let mut section = settings::view_section(&section.title);
 
             for id in &page.active_layouts {
-                if let Some((_locale, _variant, description)) = page.keyboard_layouts.get(*id) {
+                if let Some((_locale, _variant, description, _source)) =
+                    page.keyboard_layouts.get(*id)
+                {
                     section =
                         section.add(input_source(*id, description, page.expanded_source_popover));
                 }
