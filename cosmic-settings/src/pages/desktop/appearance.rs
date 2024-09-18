@@ -89,6 +89,7 @@ pub struct Page {
     icon_themes: IconThemes,
     icon_handles: IconHandles,
 
+    theme: Theme,
     theme_mode: ThemeMode,
     theme_mode_config: Option<Config>,
     theme_builder: ThemeBuilder,
@@ -204,10 +205,11 @@ impl
                 None,
                 theme_builder.window_hint.map(Color::from),
             ),
-            no_custom_window_hint: theme_builder.accent.is_some(),
+            no_custom_window_hint: theme_builder.window_hint.is_none(),
             icon_theme_active: None,
             icon_themes: Vec::new(),
             icon_handles: Vec::new(),
+            theme,
             theme_mode_config,
             theme_builder_config,
             theme_mode,
@@ -297,6 +299,7 @@ pub enum Message {
     ImportSuccess(Box<ThemeBuilder>),
     InterfaceText(ColorPickerUpdate),
     Left,
+    NewTheme(Theme),
     PaletteAccent(cosmic::iced::Color),
     Reset,
     Roundness(Roundness),
@@ -415,6 +418,9 @@ impl Page {
         let mut needs_sync = false;
 
         match message {
+            Message::NewTheme(theme) => {
+                self.theme = theme;
+            }
             Message::DarkMode(enabled) => {
                 if let Some(config) = self.theme_mode_config.as_ref() {
                     if let Err(err) = self.theme_mode.set_is_dark(config, enabled) {
@@ -449,13 +455,15 @@ impl Page {
                         return cosmic::command::batch(commands);
                     };
 
-                    needs_build = self
+                    let color = self.accent_window_hint.get_applied_color().map(Srgb::from);
+
+                    if self
                         .theme_builder
-                        .set_window_hint(
-                            config,
-                            self.accent_window_hint.get_applied_color().map(Srgb::from),
-                        )
-                        .unwrap_or_default();
+                        .set_window_hint(config, color.clone())
+                        .unwrap_or_default()
+                    {
+                        self.theme_config_write("window_hint", color)
+                    }
                 }
             }
 
@@ -657,10 +665,15 @@ impl Page {
                     return Command::none();
                 };
 
-                needs_build = self
+                let radii = self.roundness.into();
+
+                if self
                     .theme_builder
-                    .set_corner_radii(config, self.roundness.into())
-                    .unwrap_or_default();
+                    .set_corner_radii(config, radii)
+                    .unwrap_or_default()
+                {
+                    self.theme_config_write("corner_radii", radii);
+                }
 
                 tokio::task::spawn(async move {
                     Self::update_panel_radii(r);
@@ -961,7 +974,9 @@ impl Page {
         if needs_build {
             let theme_builder = self.theme_builder.clone();
             let is_dark = self.theme_mode.is_dark;
-            tokio::task::spawn(async move {
+            let current_theme = self.theme.clone();
+
+            commands.push(cosmic::command::future(async move {
                 let config = if is_dark {
                     Theme::dark_config()
                 } else {
@@ -970,11 +985,46 @@ impl Page {
 
                 if let Ok(config) = config {
                     let new_theme = theme_builder.build();
-                    _ = new_theme.write_entry(&config);
+
+                    macro_rules! theme_transaction {
+                        ($config:ident, $current_theme:ident, $new_theme:ident, { $($name:ident;)+ }) => {
+                            let tx = $config.transaction();
+
+                            $(
+                                if $current_theme.$name != $new_theme.$name {
+                                    _ = tx.set(stringify!($name), $new_theme.$name.clone());
+                                }
+                            )+
+
+                            _ = tx.commit();
+                        }
+                    }
+
+                    theme_transaction!(config, current_theme, new_theme, {
+                        accent;
+                        accent_button;
+                        background;
+                        button;
+                        destructive;
+                        destructive_button;
+                        link_button;
+                        icon_button;
+                        palette;
+                        primary;
+                        secondary;
+                        shade;
+                        success;
+                        text_button;
+                        warning;
+                        warning_button;
+                    });
+
+                    Message::NewTheme(new_theme).into()
                 } else {
                     tracing::error!("Failed to get the theme config.");
+                    crate::app::Message::None
                 }
-            });
+            }));
         }
 
         self.can_reset = if self.theme_mode.is_dark {
