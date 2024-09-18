@@ -100,6 +100,7 @@ pub enum Message {
     DelayedInit(page::Entity),
     DesktopInfo,
     Error(String),
+    None,
     OpenContextDrawer(Cow<'static, str>),
     OutputAdded(OutputInfo, WlOutput),
     OutputRemoved(WlOutput),
@@ -290,6 +291,8 @@ impl cosmic::Application for SettingsApp {
         match message {
             Message::Page(page) => return self.activate_page(page),
 
+            Message::None => (),
+
             Message::SetWindowTitle => return self.set_title(),
 
             Message::SearchChanged(phrase) => {
@@ -347,7 +350,9 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 crate::pages::Message::Dock(message) => {
-                    page::update!(self.pages, message, dock::Page);
+                    if let Some(page) = self.pages.page_mut::<dock::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
                 }
 
                 crate::pages::Message::DockApplet(message) => {
@@ -443,7 +448,9 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 crate::pages::Message::Panel(message) => {
-                    page::update!(self.pages, message, panel::Page);
+                    if let Some(page) = self.pages.page_mut::<panel::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
                 }
 
                 crate::pages::Message::PanelApplet(message) => {
@@ -481,57 +488,82 @@ impl cosmic::Application for SettingsApp {
 
             Message::OutputAdded(info, output) => {
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
-                    page.update(panel::Message(_panel::Message::OutputAdded(
-                        info.name.clone().unwrap_or_default(),
-                        output.clone(),
-                    )));
+                    return page
+                        .update(panel::Message(_panel::Message::OutputAdded(
+                            info.name.clone().unwrap_or_default(),
+                            output.clone(),
+                        )))
+                        .map(Into::into);
                 }
-                // dock
+
                 if let Some(page) = self.pages.page_mut::<dock::Page>() {
-                    page.update(dock::Message::Inner(_panel::Message::OutputAdded(
-                        info.name.unwrap_or_default(),
-                        output,
-                    )));
+                    return page
+                        .update(dock::Message::Inner(_panel::Message::OutputAdded(
+                            info.name.unwrap_or_default(),
+                            output,
+                        )))
+                        .map(Into::into);
                 }
             }
 
             Message::OutputRemoved(output) => {
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
-                    page.update(panel::Message(_panel::Message::OutputRemoved(
-                        output.clone(),
-                    )));
-                }
-                // dock
-                if let Some(page) = self.pages.page_mut::<dock::Page>() {
-                    page.update(dock::Message::Inner(_panel::Message::OutputRemoved(output)));
-                }
-            }
-
-            Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
-                page::update!(
-                    self.pages,
-                    panel::Message(_panel::Message::PanelConfig(config.clone())),
-                    panel::Page
-                );
-
-                if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                     return page
-                        .update(applets_inner::Message::PanelConfig(config))
+                        .update(panel::Message(_panel::Message::OutputRemoved(
+                            output.clone(),
+                        )))
+                        .map(Into::into);
+                }
+
+                if let Some(page) = self.pages.page_mut::<dock::Page>() {
+                    return page
+                        .update(dock::Message::Inner(_panel::Message::OutputRemoved(output)))
                         .map(Into::into);
                 }
             }
 
+            Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
+                let mut commands = Vec::new();
+
+                if let Some(page) = self.pages.page_mut::<panel::Page>() {
+                    commands.push(
+                        page.update(panel::Message(_panel::Message::PanelConfig(config.clone())))
+                            .map(Into::into),
+                    );
+                }
+
+                if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
+                    commands.push(
+                        page.update(applets_inner::Message::PanelConfig(config))
+                            .map(Into::into),
+                    );
+                }
+
+                return Command::batch(commands);
+            }
+
             Message::PanelConfig(config) if config.name.to_lowercase().contains("dock") => {
-                page::update!(
-                    self.pages,
-                    dock::Message::Inner(_panel::Message::PanelConfig(config.clone(),)),
-                    dock::Page
-                );
-                page::update!(
-                    self.pages,
-                    dock::applets::Message(applets_inner::Message::PanelConfig(config,)),
-                    dock::applets::Page
-                );
+                let mut commands = Vec::new();
+
+                if let Some(page) = self.pages.page_mut::<dock::Page>() {
+                    commands.push(
+                        page.update(dock::Message::Inner(_panel::Message::PanelConfig(
+                            config.clone(),
+                        )))
+                        .map(Into::into),
+                    );
+                }
+
+                if let Some(page) = self.pages.page_mut::<dock::applets::Page>() {
+                    commands.push(
+                        page.update(dock::applets::Message(applets_inner::Message::PanelConfig(
+                            config,
+                        )))
+                        .map(Into::into),
+                    );
+                }
+
+                return Command::batch(commands);
             }
 
             Message::PanelConfig(_) => {}

@@ -4,7 +4,7 @@ use cosmic::Apply;
 use cosmic::{
     cosmic_config::{ConfigSet, CosmicConfigEntry},
     widget::{settings, text, toggler},
-    Element,
+    Command, Element,
 };
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, section, Section};
@@ -31,17 +31,19 @@ pub enum Message {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
         match message {
             Message::EnableDock(enabled) => {
                 let Some(container_config) = self.inner.container_config.as_mut() else {
-                    return;
+                    return Command::none();
                 };
+
                 let Some(panel_config) = self.inner.panel_config.as_ref() else {
-                    return;
+                    return Command::none();
                 };
+
                 let Ok(helper) = CosmicPanelContainerConfig::cosmic_config() else {
-                    return;
+                    return Command::none();
                 };
 
                 if enabled {
@@ -61,11 +63,16 @@ impl Page {
                 if let Err(err) = helper.set("entries", entry_names) {
                     error!("{:?}", err);
                 }
+
+                Command::none()
             }
-            Message::Inner(inner) => {
-                self.inner.update(inner);
-            }
-        };
+            Message::Inner(inner) => self
+                .inner
+                .update(inner)
+                .map(Message::Inner)
+                .map(crate::pages::Message::Dock)
+                .map(crate::app::Message::PageMessage),
+        }
     }
 }
 
@@ -109,11 +116,13 @@ impl Default for Page {
     fn default() -> Self {
         // TODO CosmicPanelConfig should return its own version
         let config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
+
         let panel_config = config_helper.as_ref().and_then(|config_helper| {
             let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
             // If the config is not present, it will be created with the default values and the name will not match
             (panel_config.name == "Dock").then_some(panel_config)
         });
+
         let system_default = cosmic::cosmic_config::Config::system(
             &format!("{}.Dock", cosmic_panel_config::NAME),
             CosmicPanelConfig::VERSION,
@@ -128,6 +137,7 @@ impl Default for Page {
             }
         })
         .ok();
+
         let container_config = CosmicPanelContainerConfig::load().ok();
         Self {
             inner: PageInner {
