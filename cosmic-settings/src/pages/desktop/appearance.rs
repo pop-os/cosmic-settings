@@ -470,10 +470,10 @@ impl Page {
             Message::IconTheme(id) => {
                 if let Some(theme) = self.icon_themes.get(id).cloned() {
                     self.icon_theme_active = Some(id);
-                    self.tk.icon_theme = theme.id.clone();
 
                     if let Some(ref config) = self.tk_config {
                         let _ = self.tk.write_entry(config);
+                        _ = self.tk.set_icon_theme(config, theme.id.clone());
                     }
 
                     tokio::spawn(set_gnome_icon_theme(theme.name));
