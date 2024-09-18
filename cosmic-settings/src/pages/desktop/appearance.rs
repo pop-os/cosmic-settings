@@ -28,6 +28,7 @@ use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use cosmic_settings_wallpaper as wallpaper;
 use ron::ser::PrettyConfig;
+use serde::Serialize;
 use slab::Slab;
 use slotmap::SlotMap;
 use tokio::io::AsyncBufReadExt;
@@ -478,20 +479,22 @@ impl Page {
                     return Command::none();
                 };
 
-                needs_build = self
+                let active_hint = match msg {
+                    spin_button::Message::Increment => {
+                        self.theme_builder.active_hint.saturating_add(1)
+                    }
+                    spin_button::Message::Decrement => {
+                        self.theme_builder.active_hint.saturating_sub(1)
+                    }
+                };
+
+                if self
                     .theme_builder
-                    .set_active_hint(
-                        config,
-                        match msg {
-                            spin_button::Message::Increment => {
-                                self.theme_builder.active_hint.saturating_add(1)
-                            }
-                            spin_button::Message::Decrement => {
-                                self.theme_builder.active_hint.saturating_sub(1)
-                            }
-                        },
-                    )
-                    .unwrap_or_default();
+                    .set_active_hint(config, active_hint)
+                    .unwrap_or_default()
+                {
+                    self.theme_config_write("active_hint", active_hint);
+                }
             }
 
             Message::GapSize(msg) => {
@@ -508,10 +511,13 @@ impl Page {
                     spin_button::Message::Decrement => self.theme_builder.gaps.1.saturating_sub(1),
                 };
 
-                needs_build = self
+                if self
                     .theme_builder
                     .set_gaps(config, gaps)
-                    .unwrap_or_default();
+                    .unwrap_or_default()
+                {
+                    self.theme_config_write("gaps", gaps);
+                }
             }
 
             Message::ApplicationBackground(u) => {
@@ -1109,6 +1115,18 @@ impl Page {
         }
 
         Ok(())
+    }
+
+    fn theme_config_write<T: Serialize>(&self, name: &str, value: T) {
+        let config_res = if self.theme_mode.is_dark {
+            Theme::dark_config()
+        } else {
+            Theme::light_config()
+        };
+
+        if let Ok(config) = config_res {
+            _ = config.set(name, value);
+        }
     }
 
     // TODO: cache panel and dock configs so that they needn't be re-read
