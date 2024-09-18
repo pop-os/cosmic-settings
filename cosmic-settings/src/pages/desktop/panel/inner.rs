@@ -6,21 +6,24 @@ use cosmic::{
     widget::{
         button, container, dropdown, horizontal_space, icon, row, settings, slider, text, toggler,
     },
-    Element,
+    Command, Element,
 };
 
 use cosmic::Apply;
+use cosmic_config::ConfigSet;
 use cosmic_panel_config::{
     AutoHide, CosmicPanelBackground, CosmicPanelConfig, CosmicPanelContainerConfig,
     CosmicPanelOuput, PanelAnchor, PanelSize,
 };
 use cosmic_settings_page::{self as page, Section};
 use slab::Slab;
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
     pub(crate) panel_config: Option<CosmicPanelConfig>,
+    pub opacity: f32,
+    pub opacity_changing: bool,
     pub outputs: Vec<String>,
     pub anchors: Vec<String>,
     pub backgrounds: Vec<String>,
@@ -36,6 +39,8 @@ impl Default for PageInner {
         Self {
             config_helper: Option::default(),
             panel_config: Option::default(),
+            opacity: 0.0,
+            opacity_changing: false,
             outputs: vec![fl!("all-displays")],
             anchors: vec![
                 Anchor(PanelAnchor::Left).to_string(),
@@ -226,16 +231,22 @@ pub(crate) fn style<
                 ))
                 .add(settings::flex_item(
                     &descriptions[background_opacity],
-                    row::with_children(vec![
-                        text::body(fl!("number", HashMap::from_iter(vec![("number", 0)]))).into(),
-                        slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
-                            Message::Opacity(v as f32 / 100.0)
-                        })
-                        .breakpoints(&[50])
-                        .into(),
-                        text::body(fl!("number", HashMap::from_iter(vec![("number", 100)]))).into(),
-                    ])
-                    .spacing(12),
+                    row::with_capacity(3)
+                        .push(text::body(fl!(
+                            "number",
+                            HashMap::from_iter(vec![("number", 0)])
+                        )))
+                        .push(
+                            slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
+                                Message::OpacityRequest(v as f32 / 100.0)
+                            })
+                            .breakpoints(&[50]),
+                        )
+                        .push(text::body(fl!(
+                            "number",
+                            HashMap::from_iter(vec![("number", 100)])
+                        )))
+                        .spacing(12),
                 ))
                 .apply(Element::from)
                 .map(msg_map)
@@ -396,7 +407,8 @@ pub enum Message {
     PanelSize(PanelSize),
     Appearance(usize),
     ExtendToEdge(bool),
-    Opacity(f32),
+    OpacityRequest(f32),
+    OpacityApply,
     OutputAdded(String, WlOutput),
     OutputRemoved(WlOutput),
     PanelConfig(CosmicPanelConfig),
@@ -406,10 +418,11 @@ pub enum Message {
 
 impl PageInner {
     #[allow(clippy::too_many_lines)]
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) -> Command<Message> {
         let Some(helper) = self.config_helper.as_ref() else {
-            return;
+            return Command::none();
         };
+
         match &message {
             Message::ResetPanel => {
                 if let Some((default, config)) = self
@@ -445,7 +458,7 @@ impl PageInner {
         };
 
         let Some(panel_config) = self.panel_config.as_mut() else {
-            return;
+            return Command::none();
         };
 
         match message {
@@ -509,13 +522,29 @@ impl PageInner {
             Message::ExtendToEdge(enabled) => {
                 _ = panel_config.set_expand_to_edges(helper, enabled);
             }
-            Message::Opacity(opacity) => {
-                _ = panel_config.set_opacity(helper, opacity);
+            Message::OpacityRequest(opacity) => {
+                panel_config.opacity = opacity;
+
+                if self.opacity_changing {
+                    return Command::none();
+                }
+
+                self.opacity_changing = true;
+                return cosmic::command::future(async move {
+                    tokio::time::sleep(Duration::from_millis(125)).await;
+                    Message::OpacityApply
+                });
             }
+
+            Message::OpacityApply => {
+                self.opacity_changing = false;
+                _ = helper.set("opacity", panel_config.opacity);
+            }
+
             Message::OutputAdded(name, output) => {
                 self.outputs.push(name.clone());
                 self.outputs_map.insert(output.id(), (name, output));
-                return;
+                return Command::none();
             }
             Message::OutputRemoved(output) => {
                 if let Some((name, _)) = self.outputs_map.remove(&output.id()) {
@@ -526,7 +555,7 @@ impl PageInner {
             }
             Message::PanelConfig(c) => {
                 self.panel_config = Some(c);
-                return;
+                return Command::none();
             }
             Message::ResetPanel | Message::FullReset => {}
         }
@@ -540,5 +569,7 @@ impl PageInner {
         } else {
             _ = panel_config.set_border_radius(helper, 0);
         }
+
+        Command::none()
     }
 }

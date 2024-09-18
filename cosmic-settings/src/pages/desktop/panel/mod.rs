@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use cosmic::cosmic_config::CosmicConfigEntry;
+use cosmic::{cosmic_config::CosmicConfigEntry, Command};
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, section, Section};
 use slotmap::SlotMap;
@@ -22,8 +22,12 @@ pub struct Page {
 pub struct Message(pub inner::Message);
 
 impl Page {
-    pub fn update(&mut self, message: Message) {
-        self.inner.update(message.0);
+    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+        self.inner
+            .update(message.0)
+            .map(Message)
+            .map(crate::pages::Message::Panel)
+            .map(crate::app::Message::PageMessage)
     }
 }
 
