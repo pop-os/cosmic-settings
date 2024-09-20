@@ -139,7 +139,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
         Some(
-            widget::button::standard(fl!("add-network"))
+            widget::button::standard(fl!("add-network", "profile"))
                 .trailing_icon(icon::from_name("window-pop-out-symbolic"))
                 .on_press(Message::AddNetwork)
                 .apply(widget::container)

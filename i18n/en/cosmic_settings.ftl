@@ -14,6 +14,7 @@ connections-and-profiles = { $variant ->
 } connections and connection profiles.
 
 add-network = Add network
+    .profile = Add profile
 add-vpn = Add VPN
 airplane-on = Airplane mode is on.
 cable-unplugged = Cable unplugged
