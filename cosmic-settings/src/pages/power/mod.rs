@@ -199,7 +199,7 @@ fn profiles() -> Section<crate::pages::Message> {
         .title(fl!("power-mode"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, _page, section| {
-            let mut section = settings::view_section(&section.title);
+            let mut section = settings::section().title(&section.title);
 
             let runtime = tokio::runtime::Runtime::new().unwrap();
 

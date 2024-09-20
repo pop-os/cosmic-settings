@@ -330,7 +330,7 @@ impl Page {
     }
 
     fn timezone_context_item<'a>(&self, id: usize, timezone: &'a str) -> Element<'a, Message> {
-        widget::button(widget::settings::item_row(vec![
+        widget::button::custom(widget::settings::item_row(vec![
             widget::text::body(timezone).wrap(Wrap::Word).into(),
             widget::horizontal_space(Length::Fill).into(),
         ]))
@@ -376,7 +376,8 @@ fn date() -> Section<crate::pages::Message> {
         .title(fl!("time-date"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(
                     settings::item::builder(&*section.descriptions[title])
                         .description(fl!("time-date", "auto-ntp"))
@@ -399,7 +400,8 @@ fn format() -> Section<crate::pages::Message> {
         .title(fl!("time-format"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 // 24-hour toggle
                 .add(
                     settings::item::builder(&section.descriptions[military])
@@ -462,11 +464,12 @@ fn timezone() -> Section<crate::pages::Message> {
                 .push(widget::icon::from_name("go-next-symbolic").size(16).icon())
                 .apply(widget::container)
                 .style(cosmic::theme::Container::List)
-                .apply(widget::button)
+                .apply(widget::button::custom)
                 .style(cosmic::theme::Button::Transparent)
                 .on_press(Message::TimezoneContext);
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 // Time zone select
                 .add(
                     settings::item::builder(&*section.descriptions[time_zone])

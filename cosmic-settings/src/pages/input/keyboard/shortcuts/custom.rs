@@ -413,7 +413,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, _section| {
             let content = if page.model.shortcut_models.is_empty() {
-                widget::settings::view_section("")
+                widget::settings::section()
                     .add(widget::settings::item_row(vec![widget::text::body(fl!(
                         "custom-shortcuts",
                         "none"

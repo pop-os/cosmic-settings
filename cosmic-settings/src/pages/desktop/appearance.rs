@@ -379,7 +379,7 @@ impl Page {
         let theme = theme.cosmic();
         cosmic::iced::widget::column![
             // Export theme choice
-            settings::view_section("").add(
+            settings::section().add(
                 settings::item::builder(fl!("enable-export"))
                     .description(fl!("enable-export", "desc"))
                     .toggler(self.tk.apply_theme_global, Message::ApplyThemeGlobal)
@@ -1360,12 +1360,13 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 .theme_builder
                 .accent
                 .map_or(palette.accent_blue, Srgba::from);
-            let mut section = settings::view_section(&section.title)
+            let mut section = settings::section()
+                .title(&section.title)
                 .add(
                     container(
                         cosmic::iced::widget::row![
                             cosmic::iced::widget::column![
-                                button(
+                                button::custom(
                                     icon(dark_mode_illustration.clone())
                                         .width(Length::Fill)
                                         .height(Length::Fixed(100.0))
@@ -1380,7 +1381,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
                             cosmic::iced::widget::column![
-                                button(
+                                button::custom(
                                     icon(light_mode_illustration.clone(),)
                                         .width(Length::Fill)
                                         .height(Length::Fixed(100.0))
@@ -1609,12 +1610,13 @@ pub fn style() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(
                     container(
                         cosmic::iced::widget::row![
                             cosmic::iced::widget::column![
-                                button(
+                                button::custom(
                                     icon(
                                         if page.theme_mode.is_dark {
                                             &dark_round_style
@@ -1636,7 +1638,7 @@ pub fn style() -> Section<crate::pages::Message> {
                             .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
                             cosmic::iced::widget::column![
-                                button(
+                                button::custom(
                                     icon(
                                         if page.theme_mode.is_dark {
                                             &dark_slightly_round_style
@@ -1658,7 +1660,7 @@ pub fn style() -> Section<crate::pages::Message> {
                             .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
                             cosmic::iced::widget::column![
-                                button(
+                                button::custom(
                                     icon(
                                         if page.theme_mode.is_dark {
                                             &dark_square_style
@@ -1706,7 +1708,8 @@ pub fn window_management() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::item::builder(&descriptions[active_hint]).control(
                     cosmic::widget::spin_button(
                         page.theme_builder.active_hint.to_string(),
@@ -1739,13 +1742,13 @@ pub fn experimental() -> Section<crate::pages::Message> {
                 icon::from_name("go-next-symbolic").size(16).into(),
             ]);
 
-            settings::view_section("")
+            settings::section()
                 .add(
                     settings::item::builder(&descriptions[experimental_label])
                         .control(control)
                         .apply(container)
                         .style(cosmic::theme::Container::List)
-                        .apply(button)
+                        .apply(button::custom)
                         .style(cosmic::theme::Button::Transparent)
                         .on_press(Message::ExperimentalContextDrawer),
                 )
@@ -1784,7 +1787,7 @@ pub fn color_button<'a, Message: 'a + Clone>(
     width: u16,
     height: u16,
 ) -> Element<'a, Message> {
-    button(color_image(
+    button::custom(color_image(
         wallpaper::Color::Single([color.r, color.g, color.b]),
         width,
         height,

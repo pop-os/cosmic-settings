@@ -374,7 +374,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
 
             // If the search input is not empty, show the category view, else the search results.
             let content = if page.search.input.is_empty() {
-                settings::view_section("")
+                settings::section()
                     .add(category_item(
                         Category::ManageWindow,
                         &descriptions[manage_window_label],
@@ -437,7 +437,7 @@ fn category_item(category: Category, name: &str, modified: u16) -> Element<Messa
         .spacing(16)
         .apply(widget::container)
         .style(theme::Container::List)
-        .apply(widget::button)
+        .apply(widget::button::custom)
         .style(theme::Button::Transparent)
         .on_press(Message::Category(category))
         .into()

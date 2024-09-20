@@ -588,7 +588,7 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<Short
         .spacing(16)
         .apply(widget::container)
         .style(theme::Container::List)
-        .apply(widget::button)
+        .apply(widget::button::custom)
         .style(theme::Button::Transparent)
         .on_press(LocalMessage::Show)
         .apply(Element::from)

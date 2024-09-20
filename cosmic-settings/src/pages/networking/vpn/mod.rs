@@ -621,7 +621,7 @@ fn devices_view() -> Section<crate::pages::Message> {
             let mut view = widget::column::with_capacity(4);
 
             let vpn_connections =
-                widget::settings::view_section(&section.descriptions[vpn_conns_txt]);
+                widget::settings::section().title(&section.descriptions[vpn_conns_txt]);
 
             if page.known_connections.is_empty() {
                 view = view.push(vpn_connections.add(widget::settings::item_row(vec![
@@ -725,7 +725,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 fn popup_button<'a>(message: Message, text: &'a str) -> Element<'a, Message> {
     widget::text::body(text)
         .vertical_alignment(alignment::Vertical::Center)
-        .apply(widget::button)
+        .apply(widget::button::custom)
         .padding([4, 16])
         .width(Length::Fill)
         .style(cosmic::theme::Button::MenuItem)

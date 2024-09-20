@@ -269,7 +269,7 @@ impl Page {
                         .spacing(spacing.space_xxxs)
                         .width(Length::Fill)
                         .into(),
-                    button(text::body(fl!("add")))
+                    button::standard(fl!("add"))
                         .style(button::Style::Custom {
                             active: Box::new(|focused, theme| {
                                 let mut style = theme.active(focused, false, &button::Style::Text);
@@ -294,7 +294,6 @@ impl Page {
                                 style
                             }),
                         })
-                        .padding(8.0)
                         .on_press(msg_map(Message::AddApplet(info.clone())))
                         .into(),
                 ])

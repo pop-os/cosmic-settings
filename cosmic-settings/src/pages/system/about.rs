@@ -150,7 +150,8 @@ fn hardware() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
 
-            let sections = settings::view_section(&section.title)
+            let sections = settings::section()
+                .title(&section.title)
                 .add(settings::flex_item(
                     &*desc[model],
                     text::body(&page.info.hardware_model),
@@ -194,7 +195,8 @@ fn os() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::flex_item(
                     &*desc[os],
                     text::body(&page.info.operating_system),
@@ -221,7 +223,7 @@ fn os() -> Section<crate::pages::Message> {
 //         .title(fl!("about-related"))
 //         .descriptions(vec![fl!("about-related", "support").into()])
 //         .view::<Page>(move |_binder, _page, section| {
-//             settings::view_section(&section.title)
+//             settings::section().title(&section.title)
 //                 .add(settings::item(&*section.descriptions[0], text::body("TODO")))
 //                 .into()
 //         })

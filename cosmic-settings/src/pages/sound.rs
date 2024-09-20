@@ -631,7 +631,8 @@ fn input() -> Section<crate::pages::Message> {
                 Message::SourceChanged,
             );
 
-            let mut controls = settings::view_section(&section.title)
+            let mut controls = settings::section()
+                .title(&section.title)
                 .add(settings::flex_item(
                     &*section.descriptions[volume],
                     volume_control,
@@ -688,7 +689,8 @@ fn output() -> Section<crate::pages::Message> {
                 Message::SinkChanged,
             );
 
-            let mut controls = settings::view_section(&section.title)
+            let mut controls = settings::section()
+                .title(&section.title)
                 .add(settings::flex_item(
                     &*section.descriptions[volume],
                     volume_control,
@@ -718,7 +720,7 @@ fn output() -> Section<crate::pages::Message> {
 //         .title(fl!("sound-alerts"))
 //         .descriptions(descriptions)
 //         .view::<Page>(move |_binder, _page, section| {
-//             settings::view_section(&section.title)
+//             settings::section().title(&section.title)
 //                 .add(settings::item(&section.descriptions[volume], text::body("TODO")))
 //                 .add(settings::item(&section.descriptions[sound], text::body("TODO")))
 //                 .into()
@@ -734,7 +736,7 @@ fn output() -> Section<crate::pages::Message> {
 //         .title(fl!("sound-applications"))
 //         .descriptions(descriptions)
 //         .view::<Page>(move |_binder, _page, section| {
-//             settings::view_section(&section.title)
+//             settings::section().title(&section.title)
 //                 .add(settings::item(
 //                     &*section.descriptions[applications],
 //                     text::body("TODO"),

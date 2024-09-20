@@ -114,7 +114,8 @@ pub(crate) fn behavior_and_position<
             let Some(panel_config) = page.panel_config.as_ref() else {
                 return Element::from(text::body(fl!("unknown")));
             };
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::item(
                     &descriptions[autohide_label],
                     toggler(None, panel_config.autohide.is_some(), |value| {
@@ -170,7 +171,8 @@ pub(crate) fn style<
             let Some(panel_config) = inner.panel_config.as_ref() else {
                 return Element::from(text::body(fl!("unknown")));
             };
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::item(
                     &descriptions[gap_label],
                     toggler(None, panel_config.anchor_gap, |value| {
@@ -264,7 +266,7 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
         .title(fl!("panel-applets"))
         .descriptions(descriptions)
         .view::<P>(move |binder, page, section| {
-            let mut settings = settings::view_section(&section.title);
+            let mut settings = settings::section().title(&section.title);
             let descriptions = &section.descriptions;
             settings = if let Some((panel_applets_entity, _panel_applets_info)) = binder
                 .info
@@ -282,7 +284,7 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                         .spacing(16)
                         .apply(container)
                         .style(theme::Container::List)
-                        .apply(button)
+                        .apply(button::custom)
                         .style(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(panel_applets_entity)),
                 )

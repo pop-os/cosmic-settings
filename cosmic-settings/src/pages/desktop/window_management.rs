@@ -175,7 +175,8 @@ pub fn super_key_action() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(
                     settings::item::builder(&descriptions[super_key]).control(widget::dropdown(
                         &page.super_key_selections,
@@ -203,7 +204,8 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                 .expect("desktop page not found");
             let descriptions = &section.descriptions;
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::item(
                     &descriptions[maximize],
                     toggler(
@@ -239,7 +241,8 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::item(
                     &descriptions[focus_follows_cursor],
                     toggler(

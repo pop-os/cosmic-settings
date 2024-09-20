@@ -1155,7 +1155,8 @@ pub fn legacy_applications() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-            widget::settings::view_section(&section.title)
+            widget::settings::section()
+                .title(&section.title)
                 .add(widget::settings::item_row(vec![widget::radio(
                     widget::column()
                         .push(text::body(&descriptions[system]))

@@ -71,7 +71,8 @@ fn touchpad() -> Section<crate::pages::Message> {
             let input = binder.page::<super::Page>().expect("input page not found");
             let theme = cosmic::theme::active();
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(
                     settings::item::builder(&descriptions[primary_button])
                         .description(&descriptions[primary_button_desc])
@@ -148,7 +149,8 @@ fn click_behavior() -> Section<crate::pages::Message> {
                 .page::<super::Page>()
                 .expect("input devices page not found");
 
-            settings::view_section(&*section.title)
+            settings::section()
+                .title(&*section.title)
                 // Secondary click via two fingers, and middle-click via three fingers
                 .add(settings::item_row(vec![widget::radio(
                     text::body(&descriptions[click_finger]),
@@ -200,7 +202,8 @@ fn scrolling() -> Section<crate::pages::Message> {
                 .expect("input devices page not found");
             let theme = cosmic::theme::active();
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 // Two-finger scrolling toggle
                 .add(settings::item_row(vec![widget::radio(
                     text::body(&descriptions[two_finger]),
@@ -291,7 +294,8 @@ fn gestures() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 // .add(
                 //     settings::item::builder(&descriptions[three_finger_any])
                 //         .flex_control(text::body(&descriptions[switch_between_windows])),

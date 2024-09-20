@@ -149,7 +149,7 @@ fn popover_menu_row(
                 ..container::StyleSheet::appearance(theme, &cosmic::theme::Container::List)
             }
         }))
-        .apply(button)
+        .apply(button::custom)
         .on_press(())
         .style(theme::Button::Transparent)
         .apply(Element::from)
@@ -611,7 +611,7 @@ fn input_sources() -> Section<crate::pages::Message> {
         .title(fl!("keyboard-sources"))
         .view::<Page>(move |_binder, page, section| {
             // TODO Need something more custom, with drag and drop
-            let mut section = settings::view_section(&section.title);
+            let mut section = settings::section().title(&section.title);
 
             for id in &page.active_layouts {
                 if let Some((_locale, _variant, description, _source)) =
@@ -650,7 +650,8 @@ fn special_character_entry() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(crate::widget::go_next_item(
                     &*descriptions[alternate],
                     Message::OpenSpecialCharacterContext(SpecialKey::AlternateCharacters),
@@ -675,7 +676,7 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
         .view::<Page>(move |binder, _page, section| {
             let descriptions = &section.descriptions;
 
-            let mut section = settings::view_section(&section.title);
+            let mut section = settings::section().title(&section.title);
             if let Some((shortcuts_entity, _)) = binder
                 .info
                 .iter()
@@ -707,7 +708,8 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
             let theme = cosmic::theme::active();
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::flex_item(&descriptions[repeat_delay], {
                     // Delay
                     let delay_slider = cosmic::widget::slider(

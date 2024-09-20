@@ -96,7 +96,7 @@ pub fn page_title<Message: 'static>(page: &page::Info) -> Element<Message> {
 
 #[must_use]
 pub fn unimplemented_page<Message: 'static>() -> Element<'static, Message> {
-    settings::view_section("")
+    settings::section().title("")
         .add(text::body("We haven't created that panel yet, and/or it is using a similar idea as current Pop! designs."))
         .into()
 }
@@ -146,7 +146,7 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
         .padding([space_s, space_m])
         .align_x(alignment::Horizontal::Center)
         .style(theme::Container::List)
-        .apply(button)
+        .apply(button::custom)
         .padding(0)
         .style(theme::Button::Transparent)
         .on_press(message)
@@ -185,7 +185,7 @@ pub fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic
     ])
     .apply(widget::container)
     .style(cosmic::theme::Container::List)
-    .apply(button)
+    .apply(button::custom)
     .style(theme::Button::Transparent)
     .on_press(msg)
     .into()

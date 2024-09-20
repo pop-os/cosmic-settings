@@ -53,7 +53,8 @@ fn mouse() -> Section<crate::pages::Message> {
             let input = binder.page::<super::Page>().expect("input page not found");
             let theme = cosmic::theme::active();
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::flex_item(
                     &descriptions[primary_button],
                     cosmic::widget::segmented_control::horizontal(&input.primary_button)
@@ -117,7 +118,8 @@ fn scrolling() -> Section<crate::pages::Message> {
             let input = binder.page::<super::Page>().expect("input page not found");
             let theme = cosmic::theme::active();
 
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::flex_item(&descriptions[scroll_speed], {
                     let value = input
                         .input_default

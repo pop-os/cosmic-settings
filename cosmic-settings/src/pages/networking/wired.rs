@@ -455,7 +455,7 @@ impl Page {
             .available_connections
             .iter()
             .fold(
-                widget::settings::view_section(header_txt),
+                widget::settings::section().title(header_txt),
                 |networks, connection| {
                     let is_connected = nm_state.active_conns.iter().any(|conn| match conn {
                         ActiveConnectionInfo::Wired { name, .. } => {
@@ -598,7 +598,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 fn popup_button<'a>(message: Message, text: &'a str) -> Element<'a, Message> {
     widget::text::body(text)
         .vertical_alignment(alignment::Vertical::Center)
-        .apply(widget::button)
+        .apply(widget::button::custom)
         .padding([4, 16])
         .width(Length::Fill)
         .style(cosmic::theme::Button::MenuItem)

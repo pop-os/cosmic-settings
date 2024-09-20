@@ -121,6 +121,5 @@ pub fn unimplemented<'a, Message: 'static>(
     _page: &'a dyn Page<Message>,
     _section: &'a Section<Message>,
 ) -> cosmic::Element<'a, Message> {
-    cosmic::widget::settings::view_column(vec![cosmic::widget::settings::view_section("").into()])
-        .into()
+    cosmic::widget::settings::view_column(vec![cosmic::widget::settings::section().into()]).into()
 }

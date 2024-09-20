@@ -8,9 +8,9 @@ license = "GPL-3.0-only"
 
 [dependencies]
 byte-unit = "5.1.4"
-const_format = "0.2.32"
+const_format = "0.2.33"
 concat-in-place = "1.1.0"
-sysinfo = "0.31.2"
+sysinfo = "0.31.4"
 memchr = "2.7.4"
 
 [dependencies.bumpalo]

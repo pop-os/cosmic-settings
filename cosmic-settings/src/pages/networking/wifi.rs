@@ -567,8 +567,10 @@ fn devices_view() -> Section<crate::pages::Message> {
                 // Create separate sections for known and visible networks.
                 let (known_networks, visible_networks) = state.wireless_access_points.iter().fold(
                     (
-                        widget::settings::view_section(&section.descriptions[known_networks_txt]),
-                        widget::settings::view_section(&section.descriptions[visible_networks_txt]),
+                        widget::settings::section()
+                            .title(&section.descriptions[known_networks_txt]),
+                        widget::settings::section()
+                            .title(&section.descriptions[visible_networks_txt]),
                     ),
                     |(mut known_networks, mut visible_networks), network| {
                         let is_connected = is_connected(state, network);
@@ -715,7 +717,7 @@ fn is_connected(state: &NetworkManagerState, network: &AccessPoint) -> bool {
 fn popup_button<'a>(message: Message, text: &'a str) -> Element<'a, Message> {
     widget::text::body(text)
         .vertical_alignment(alignment::Vertical::Center)
-        .apply(widget::button)
+        .apply(widget::button::custom)
         .padding([4, 16])
         .width(Length::Fill)
         .style(cosmic::theme::Button::MenuItem)

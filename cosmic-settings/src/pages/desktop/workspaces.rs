@@ -134,7 +134,8 @@ fn multi_behavior() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::item_row(vec![radio(
                     text::body(&descriptions[span]),
                     WorkspaceMode::Global,
@@ -167,7 +168,8 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-            settings::view_section(&section.title)
+            settings::section()
+                .title(&section.title)
                 .add(settings::item_row(vec![radio(
                     text::body(&descriptions[vertical]),
                     WorkspaceLayout::Vertical,
