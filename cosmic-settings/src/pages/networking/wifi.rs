@@ -1,7 +1,10 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    sync::Arc,
+};
 
 use anyhow::Context;
 use cosmic::{
@@ -17,7 +20,6 @@ use cosmic_settings_subscriptions::network_manager::{
 };
 use futures::StreamExt;
 use secure_string::SecureString;
-use slab::Slab;
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -52,6 +54,8 @@ pub enum Message {
     PasswordRequest(network_manager::SSID),
     /// Update the password from the dialog
     PasswordUpdate(SecureString),
+    /// Selects a device to display connections from
+    SelectDevice(Arc<network_manager::devices::DeviceInfo>),
     /// Opens settings page for the access point.
     Settings(network_manager::SSID),
     /// Toggles visibility of the password input
@@ -92,6 +96,8 @@ enum WiFiDialog {
 pub struct Page {
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     nm_state: Option<NmState>,
+    /// When defined, displays connections for the specific device.
+    active_device: Option<Arc<network_manager::devices::DeviceInfo>>,
     dialog: Option<WiFiDialog>,
     view_more_popup: Option<network_manager::SSID>,
     connecting: BTreeSet<network_manager::SSID>,
@@ -211,6 +217,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Command<crate::pages::Message> {
+        self.active_device = None;
         self.view_more_popup = None;
         self.nm_state = None;
         self.ssid_to_uuid.clear();
@@ -228,6 +235,9 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+        let span = tracing::span!(tracing::Level::INFO, "vpn::update");
+        let _span = span.enter();
+
         match message {
             Message::NetworkManager(network_manager::Event::RequestResponse {
                 req,
@@ -421,7 +431,12 @@ impl Page {
             }
 
             Message::Error(why) => {
-                tracing::error!(why, "error in wifi settings page");
+                tracing::error!(why);
+            }
+
+            Message::SelectDevice(device) => {
+                // TODO: Per-device wifi connection handling.
+                self.active_device = Some(device);
             }
 
             Message::NetworkManagerConnect((conn, output)) => {

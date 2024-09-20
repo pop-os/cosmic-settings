@@ -40,15 +40,15 @@ forget-dialog = Forget this Wi-Fi network?
     .description = You'll need to enter a password again to use this Wi-Fi network in the future.
 
 network-device-state =
-    .activated = Connected to network
-    .config = Connecting to network
-    .deactivating = Disconnecting from network
+    .activated = Connected
+    .config = Connecting
+    .deactivating = Disconnecting
     .disconnected = Disconnected
     .failed = Failed to connect
     .ip-check = Checking connection
-    .ip-config = Requesting IP and routing information
+    .ip-config = Requesting IP and routing info
     .need-auth = Needs authentication
-    .prepare = Preparing to connect to network
+    .prepare = Preparing to connect
     .secondaries = Waiting for secondary connection
     .unavailable = Unavailable
     .unknown = Unknown state
@@ -65,11 +65,13 @@ vpn = VPN
     .select-file = Select a VPN configuration file
 
 wired = Wired
+    .adapter = Wired adapter { $id }
     .connections = Wired Connections
     .devices = Wired Devices
     .remove = Remove connection profile
 
 wifi = Wi-Fi
+    .adapter = Wi-Fi adapter { $id }
     .forget = Forget this network
 
 ## Networking: Online Accounts

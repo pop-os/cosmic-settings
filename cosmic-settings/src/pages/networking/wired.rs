@@ -15,7 +15,6 @@ use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::network_manager::{
     self, current_networks::ActiveConnectionInfo, devices::DeviceState, NetworkManagerState,
 };
-use slab::Slab;
 
 pub type ConnectionId = Arc<str>;
 
@@ -196,6 +195,9 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+        let span = tracing::span!(tracing::Level::INFO, "vpn::update");
+        let _span = span.enter();
+
         match message {
             Message::NetworkManager(network_manager::Event::RequestResponse {
                 req,
@@ -346,7 +348,7 @@ impl Page {
             }
 
             Message::Error(why) => {
-                tracing::error!(why, "error in wired settings page");
+                tracing::error!(why);
             }
 
             Message::NetworkManagerConnect((conn, output)) => {
@@ -539,66 +541,6 @@ impl Page {
             )
             .into()
     }
-
-    fn device_list_view<'a>(
-        &'a self,
-        _spacing: &cosmic::cosmic_theme::Spacing,
-        nm_state: &'a NmState,
-        devices_txt: &'a str,
-    ) -> Element<'a, Message> {
-        nm_state
-            .devices
-            .iter()
-            .fold(
-                widget::settings::view_section(devices_txt),
-                |section, device| {
-                    let is_unplugged = matches!(device.state, DeviceState::Unavailable);
-
-                    let device_list =
-                        cosmic::widget::settings::item::builder(device.interface.as_str())
-                            .description(match device.state {
-                                DeviceState::Activated => fl!("network-device-state", "activated"),
-                                DeviceState::Config => fl!("network-device-state", "config"),
-                                DeviceState::Deactivating => {
-                                    fl!("network-device-state", "deactivating")
-                                }
-                                DeviceState::Disconnected => {
-                                    fl!("network-device-state", "disconnected")
-                                }
-                                DeviceState::Failed => fl!("network-device-state", "failed"),
-                                DeviceState::IpCheck => fl!("network-device-state", "ip-check"),
-                                DeviceState::IpConfig => fl!("network-device-state", "ip-config"),
-                                DeviceState::NeedAuth => fl!("network-device-state", "need-auth"),
-                                DeviceState::Prepare => fl!("network-device-state", "prepare"),
-                                DeviceState::Secondaries => {
-                                    fl!("network-device-state", "secondaries")
-                                }
-                                DeviceState::Unavailable => {
-                                    fl!("network-device-state", "unplugged")
-                                }
-                                DeviceState::Unknown => fl!("network-device-state", "unknown"),
-                                DeviceState::Unmanaged => fl!("network-device-state", "unmanaged"),
-                            })
-                            .icon(icon::from_name("network-wired-symbolic").size(32))
-                            .control(icon::from_name("go-next-symbolic").size(20))
-                            .spacing(16)
-                            .apply(widget::container)
-                            .padding([16, 14])
-                            .style(cosmic::theme::Container::List)
-                            .apply(widget::button)
-                            .padding(0)
-                            .style(cosmic::theme::Button::Transparent)
-                            .on_press_maybe(if is_unplugged {
-                                None
-                            } else {
-                                Some(Message::SelectDevice(device.clone()))
-                            });
-
-                    section.add(device_list)
-                },
-            )
-            .into()
-    }
 }
 
 fn devices_view() -> Section<crate::pages::Message> {
@@ -644,11 +586,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                     device,
                 )),
 
-                None => view.push(page.device_list_view(
-                    spacing,
-                    nm_state,
-                    &section.descriptions[wired_devices_txt],
-                )),
+                None => view,
             };
 
             view.spacing(spacing.space_l)

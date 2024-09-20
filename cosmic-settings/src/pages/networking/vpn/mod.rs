@@ -21,7 +21,6 @@ use cosmic_settings_subscriptions::network_manager::{
 use futures::{FutureExt, StreamExt};
 use indexmap::IndexMap;
 use secure_string::SecureString;
-use slab::Slab;
 
 pub type ConnectionId = Arc<str>;
 pub type InterfaceId = String;
@@ -285,6 +284,9 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+        let span = tracing::span!(tracing::Level::INFO, "vpn::update");
+        let _span = span.enter();
+
         match message {
             Message::NetworkManager(network_manager::Event::RequestResponse {
                 req,
@@ -490,7 +492,7 @@ impl Page {
             }
 
             Message::Error(why) => {
-                tracing::error!(why, "error in VPN settings page");
+                tracing::error!(why);
             }
 
             Message::NetworkManagerConnect((conn, output)) => {

@@ -5,14 +5,67 @@ pub mod vpn;
 pub mod wifi;
 pub mod wired;
 
-use std::{ffi::OsStr, io, process::ExitStatus};
+use std::{ffi::OsStr, io, process::ExitStatus, sync::Arc};
 
-use cosmic_settings_page as page;
+use anyhow::Context;
+use cosmic::{widget, Apply, Command, Element};
+use cosmic_dbus_networkmanager::{
+    interface::enums::{DeviceState, DeviceType},
+    nm::NetworkManager,
+};
+use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_subscriptions::network_manager;
+use futures::{SinkExt, StreamExt};
+use slotmap::SlotMap;
 
 static NM_CONNECTION_EDITOR: &str = "nm-connection-editor";
 
 #[derive(Debug, Default)]
-pub struct Page;
+pub struct Page {
+    nm_task: Option<tokio::sync::oneshot::Sender<()>>,
+    devices: Vec<Arc<network_manager::devices::DeviceInfo>>,
+    vpn: page::Entity,
+    wifi: page::Entity,
+    wired: page::Entity,
+}
+
+#[derive(Debug, Clone)]
+pub enum Message {
+    /// An error occurred.
+    Error(String),
+    /// Successfully connected to the system dbus.
+    NetworkManagerConnect(
+        (
+            zbus::Connection,
+            tokio::sync::mpsc::Sender<crate::pages::Message>,
+        ),
+    ),
+    /// Open the wifi settings page with the selected device.
+    OpenPage {
+        page: page::Entity,
+        device: Option<DeviceVariant>,
+    },
+    /// Update the devices lists
+    UpdateDevices(Vec<Arc<network_manager::devices::DeviceInfo>>),
+}
+
+#[derive(Debug, Clone)]
+pub enum DeviceVariant {
+    Wired(Arc<network_manager::devices::DeviceInfo>),
+    WiFi(Arc<network_manager::devices::DeviceInfo>),
+}
+
+impl From<Message> for crate::app::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::Networking(message).into()
+    }
+}
+
+impl From<Message> for crate::pages::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::Networking(message)
+    }
+}
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> cosmic_settings_page::Info {
@@ -22,15 +75,248 @@ impl page::Page<crate::pages::Message> for Page {
         )
         .title(fl!("network-and-wireless"))
     }
+
+    fn content(
+        &self,
+        sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
+    ) -> Option<page::Content> {
+        crate::slab!(descriptions {
+            vpn_txt = fl!("connections-and-profiles", variant = "vpn");
+        });
+
+        let device_list = Section::default().descriptions(descriptions).view::<Self>(
+            move |_binder, page, section| {
+                let descs = &section.descriptions;
+
+                let wifi_devices = page
+                    .devices
+                    .iter()
+                    .filter(|device| device.device_type == DeviceType::Wifi)
+                    .map(|device| {
+                        crate::widget::page_list_item(
+                            fl!("wifi", "adapter", id = device.interface.as_str()),
+                            match device.state {
+                                DeviceState::Activated => fl!("network-device-state", "activated"),
+                                DeviceState::Config => fl!("network-device-state", "config"),
+                                DeviceState::Deactivating => {
+                                    fl!("network-device-state", "deactivating")
+                                }
+                                DeviceState::Disconnected => {
+                                    fl!("network-device-state", "disconnected")
+                                }
+                                DeviceState::Failed => fl!("network-device-state", "failed"),
+                                DeviceState::IpCheck => fl!("network-device-state", "ip-check"),
+                                DeviceState::IpConfig => fl!("network-device-state", "ip-config"),
+                                DeviceState::NeedAuth => fl!("network-device-state", "need-auth"),
+                                DeviceState::Prepare => fl!("network-device-state", "prepare"),
+                                DeviceState::Secondaries => {
+                                    fl!("network-device-state", "secondaries")
+                                }
+                                DeviceState::Unavailable => {
+                                    fl!("network-device-state", "unavailable")
+                                }
+                                DeviceState::Unknown => fl!("network-device-state", "unknown"),
+                                DeviceState::Unmanaged => fl!("network-device-state", "unmanaged"),
+                            },
+                            "preferences-wireless-symbolic",
+                            Message::OpenPage {
+                                page: page.wifi,
+                                device: Some(DeviceVariant::WiFi(device.clone())),
+                            },
+                        )
+                    });
+
+                let wired_devices = page
+                    .devices
+                    .iter()
+                    .filter(|device| device.device_type == DeviceType::Ethernet)
+                    .map(|device| {
+                        crate::widget::page_list_item(
+                            fl!("wired", "adapter", id = device.interface.as_str()),
+                            match device.state {
+                                DeviceState::Activated => fl!("network-device-state", "activated"),
+                                DeviceState::Config => fl!("network-device-state", "config"),
+                                DeviceState::Deactivating => {
+                                    fl!("network-device-state", "deactivating")
+                                }
+                                DeviceState::Disconnected => {
+                                    fl!("network-device-state", "disconnected")
+                                }
+                                DeviceState::Failed => fl!("network-device-state", "failed"),
+                                DeviceState::IpCheck => fl!("network-device-state", "ip-check"),
+                                DeviceState::IpConfig => fl!("network-device-state", "ip-config"),
+                                DeviceState::NeedAuth => fl!("network-device-state", "need-auth"),
+                                DeviceState::Prepare => fl!("network-device-state", "prepare"),
+                                DeviceState::Secondaries => {
+                                    fl!("network-device-state", "secondaries")
+                                }
+                                DeviceState::Unavailable => {
+                                    fl!("network-device-state", "unplugged")
+                                }
+                                DeviceState::Unknown => fl!("network-device-state", "unknown"),
+                                DeviceState::Unmanaged => fl!("network-device-state", "unmanaged"),
+                            },
+                            "preferences-wired-symbolic",
+                            Message::OpenPage {
+                                page: page.wired,
+                                device: Some(DeviceVariant::Wired(device.clone())),
+                            },
+                        )
+                    });
+
+                let device_list = wifi_devices
+                    .chain(wired_devices)
+                    .fold(widget::column(), |column, device| column.push(device))
+                    .push(crate::widget::page_list_item(
+                        fl!("vpn"),
+                        &descs[vpn_txt],
+                        "preferences-vpn-symbolic",
+                        Message::OpenPage {
+                            page: page.vpn,
+                            device: None,
+                        },
+                    ))
+                    .spacing(cosmic::theme::active().cosmic().spacing.space_s);
+
+                Element::from(device_list).map(crate::pages::Message::Networking)
+            },
+        );
+
+        Some(vec![sections.insert(device_list)])
+    }
+
+    fn on_enter(
+        &mut self,
+        _page: page::Entity,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> cosmic::Command<crate::pages::Message> {
+        if self.nm_task.is_none() {
+            return cosmic::command::future(async move {
+                zbus::Connection::system()
+                    .await
+                    .context("failed to create system dbus connection")
+                    .map_or_else(
+                        |why| Message::Error(why.to_string()),
+                        |conn| Message::NetworkManagerConnect((conn, sender.clone())),
+                    )
+                    .apply(crate::pages::Message::Networking)
+            });
+        }
+
+        Command::none()
+    }
+
+    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+        self.devices = Vec::new();
+
+        if let Some(cancel) = self.nm_task.take() {
+            _ = cancel.send(());
+        }
+
+        Command::none()
+    }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(
-        page: cosmic_settings_page::Insert<crate::pages::Message>,
+        mut page: cosmic_settings_page::Insert<crate::pages::Message>,
     ) -> cosmic_settings_page::Insert<crate::pages::Message> {
-        page.sub_page::<wired::Page>()
-            .sub_page::<wifi::Page>()
-            .sub_page::<vpn::Page>()
+        let vpn = page.sub_page_with_id::<vpn::Page>();
+        let wifi = page.sub_page_with_id::<wifi::Page>();
+        let wired = page.sub_page_with_id::<wired::Page>();
+
+        let model = page.model.page_mut::<Self>().unwrap();
+        model.vpn = vpn;
+        model.wifi = wifi;
+        model.wired = wired;
+
+        page
+    }
+}
+
+impl Page {
+    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+        let span = tracing::span!(tracing::Level::INFO, "networking::update");
+        let _span = span.enter();
+
+        match message {
+            Message::NetworkManagerConnect((conn, output)) => {
+                self.connect(conn.clone(), output);
+            }
+
+            Message::Error(why) => {
+                tracing::error!(why);
+            }
+
+            Message::OpenPage { page, device } => {
+                let mut commands = Vec::<Command<crate::app::Message>>::new();
+
+                commands.push(cosmic::command::message(crate::app::Message::Page(page)));
+
+                if let Some(device) = device {
+                    commands.push(cosmic::command::message(crate::app::Message::PageMessage(
+                        match device {
+                            DeviceVariant::WiFi(device) => {
+                                crate::pages::Message::WiFi(wifi::Message::SelectDevice(device))
+                            }
+                            DeviceVariant::Wired(device) => {
+                                crate::pages::Message::Wired(wired::Message::SelectDevice(device))
+                            }
+                        },
+                    )));
+                }
+
+                return cosmic::command::batch(commands);
+            }
+
+            Message::UpdateDevices(devices) => {
+                self.devices = devices;
+            }
+        }
+
+        Command::none()
+    }
+
+    fn connect(
+        &mut self,
+        conn: zbus::Connection,
+        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) {
+        if self.nm_task.is_none() {
+            self.nm_task = Some(crate::utils::forward_event_loop(
+                sender,
+                |event| crate::pages::Message::Networking(event),
+                move |mut tx| async move {
+                    let network_manager = match NetworkManager::new(&conn).await {
+                        Ok(n) => n,
+                        Err(why) => {
+                            tracing::error!(
+                                why = why.to_string(),
+                                "failed to connect to network_manager"
+                            );
+
+                            return futures::future::pending().await;
+                        }
+                    };
+
+                    let mut devices_changed = std::pin::pin!(network_manager
+                        .receive_devices_changed()
+                        .await
+                        .then(|_| async {
+                            match network_manager::devices::list(&conn, |_| true).await {
+                                Ok(devices) => Message::UpdateDevices(
+                                    devices.into_iter().map(Arc::new).collect(),
+                                ),
+                                Err(why) => Message::Error(why.to_string()),
+                            }
+                        }));
+
+                    while let Some(message) = devices_changed.next().await {
+                        _ = tx.send(message).await;
+                    }
+                },
+            ));
+        }
     }
 }
 

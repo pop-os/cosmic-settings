@@ -3,6 +3,7 @@
 
 use std::borrow::Cow;
 
+use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::{alignment, Length};
 use cosmic::iced_core::text::Wrap;
 use cosmic::prelude::CollectionWidget;
@@ -118,18 +119,32 @@ pub fn display_container<'a, Message: 'a>(widget: Element<'a, Message>) -> Eleme
 
 #[must_use]
 pub fn page_list_item<'a, Message: 'static + Clone>(
-    title: &'a str,
-    description: &'a str,
+    title: impl Into<Cow<'a, str>>,
+    description: impl Into<Cow<'a, str>>,
     icon: &'a str,
     message: Message,
 ) -> Element<'a, Message> {
-    cosmic::widget::settings::item::builder(title)
-        .description(description)
+    let Spacing {
+        space_s, space_m, ..
+    } = cosmic::theme::active().cosmic().spacing;
+
+    let mut builder = cosmic::widget::settings::item::builder(title);
+
+    let description = description.into();
+
+    if !description.is_empty() {
+        builder = builder.description(description);
+    }
+
+    builder
         .icon(icon::from_name(icon).size(20))
         .control(icon::from_name("go-next-symbolic").size(20))
-        .spacing(16)
+        .spacing(space_s)
+        .height(space_s + space_m)
+        .align_items(alignment::Alignment::Center)
         .apply(container)
-        .padding([16, 14])
+        .padding([space_s, space_m])
+        .align_x(alignment::Horizontal::Center)
         .style(theme::Container::List)
         .apply(button)
         .padding(0)

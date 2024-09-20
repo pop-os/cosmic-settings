@@ -31,6 +31,7 @@ pub enum Message {
     ManageWindowShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     MoveWindowShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     NavShortcuts(input::keyboard::shortcuts::ShortcutMessage),
+    Networking(networking::Message),
     Page(Entity),
     Panel(desktop::panel::Message),
     PanelApplet(desktop::panel::applets_inner::Message),

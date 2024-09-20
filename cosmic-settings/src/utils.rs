@@ -51,7 +51,7 @@ pub fn forward_event_loop<M: 'static + Send, T: Future<Output = ()> + Send + 'st
 #[macro_export]
 macro_rules! slab {
     ( $descriptions:ident { $( $txt_id:ident = $txt_expr:expr; )+ } ) => {
-        let mut $descriptions = Slab::new();
+        let mut $descriptions = slab::Slab::new();
 
         $(
             let $txt_id = $descriptions.insert($txt_expr);

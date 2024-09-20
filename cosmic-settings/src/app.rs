@@ -447,6 +447,12 @@ impl cosmic::Application for SettingsApp {
                     return self.activate_page(page);
                 }
 
+                crate::pages::Message::Networking(message) => {
+                    if let Some(page) = self.pages.page_mut::<networking::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 crate::pages::Message::Panel(message) => {
                     if let Some(page) = self.pages.page_mut::<panel::Page>() {
                         return page.update(message).map(Into::into);
