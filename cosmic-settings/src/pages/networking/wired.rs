@@ -11,9 +11,10 @@ use cosmic::{
     widget::{self, icon},
     Apply, Command, Element,
 };
+use cosmic_dbus_networkmanager::interface::enums::DeviceState;
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::network_manager::{
-    self, current_networks::ActiveConnectionInfo, devices::DeviceState, NetworkManagerState,
+    self, current_networks::ActiveConnectionInfo, NetworkManagerState,
 };
 
 pub type ConnectionId = Arc<str>;
@@ -446,13 +447,14 @@ impl Page {
         remove_txt: &'a str,
         settings_txt: &'a str,
         wired_conns_txt: &'a str,
+        unplugged_txt: &'a str,
         device: &'a network_manager::devices::DeviceInfo,
     ) -> Element<'a, Message> {
-        let has_multiple_connection_profiles = device.available_connections.len() > 1;
+        let has_multiple_connection_profiles = device.known_connections.len() > 1;
         let header_txt = format!("{}", wired_conns_txt);
 
         device
-            .available_connections
+            .known_connections
             .iter()
             .fold(
                 widget::settings::section().title(header_txt),
@@ -467,6 +469,8 @@ impl Page {
 
                     let (connect_txt, connect_msg) = if is_connected {
                         (connected_txt, None)
+                    } else if device.state == DeviceState::Unavailable {
+                        (unplugged_txt, None)
                     } else {
                         (
                             connect_txt,
@@ -552,6 +556,7 @@ fn devices_view() -> Section<crate::pages::Message> {
         connected_txt = fl!("connected");
         settings_txt = fl!("settings");
         disconnect_txt = fl!("disconnect");
+        unplugged_txt = fl!("network-device-state", "unplugged");
     });
 
     Section::default()
@@ -570,8 +575,7 @@ fn devices_view() -> Section<crate::pages::Message> {
             let active_device = page
                 .active_device
                 .as_ref()
-                .or_else(|| (nm_state.devices.len() == 1).then(|| nm_state.devices.get(0))?)
-                .filter(|device| !matches!(device.state, DeviceState::Unavailable));
+                .or_else(|| (nm_state.devices.len() == 1).then(|| nm_state.devices.get(0))?);
 
             view = match active_device {
                 Some(device) => view.push(page.device_view(
@@ -583,6 +587,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                     &section.descriptions[remove_txt],
                     &section.descriptions[settings_txt],
                     &section.descriptions[wired_conns_txt],
+                    &section.descriptions[unplugged_txt],
                     device,
                 )),
 
