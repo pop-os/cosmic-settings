@@ -125,7 +125,10 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
     message: Message,
 ) -> Element<'a, Message> {
     let Spacing {
-        space_s, space_m, ..
+        space_xxs,
+        space_s,
+        space_m,
+        ..
     } = cosmic::theme::active().cosmic().spacing;
 
     let mut builder = cosmic::widget::settings::item::builder(title);
@@ -139,9 +142,8 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
     builder
         .icon(icon::from_name(icon).size(20))
         .control(icon::from_name("go-next-symbolic").size(20))
+        .padding([0, space_xxs])
         .spacing(space_s)
-        .height(space_s + space_m)
-        .align_items(alignment::Alignment::Center)
         .apply(container)
         .padding([space_s, space_m])
         .align_x(alignment::Horizontal::Center)
