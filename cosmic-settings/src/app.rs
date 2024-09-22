@@ -68,7 +68,7 @@ impl SettingsApp {
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
-            PageCommands::Network => None,
+            PageCommands::Network => self.pages.page_id::<networking::Page>(),
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
             PageCommands::Power => self.pages.page_id::<power::Page>(),
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
