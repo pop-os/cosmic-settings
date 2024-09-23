@@ -187,6 +187,7 @@ impl cosmic::Application for SettingsApp {
         } else {
             icon::from_name("system-search-symbolic")
                 .apply(button::icon)
+                .padding(8)
                 .on_press(Message::SearchActivate)
                 .into()
         });
@@ -833,7 +834,9 @@ impl SettingsApp {
 
         widget::column::with_capacity(3)
             .push(self.page_container(header))
-            .push(widget::vertical_space(24))
+            .push(widget::vertical_space(Length::Fixed(
+                cosmic::theme::active().cosmic().space_m().into(),
+            )))
             .push(view)
             .height(Length::Fill)
             .into()

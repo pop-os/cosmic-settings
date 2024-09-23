@@ -169,7 +169,11 @@ style = Style
     .slightly-round = Slightly round
     .square = Square
 
-# interface density left out for now
+interface-density = Interface Density
+    .comfortable = Comfortable
+    .compact = Compact
+    .spacious = Spacious
+
 window-management-appearance = Window Management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
