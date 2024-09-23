@@ -4,15 +4,81 @@ unknown = Desconhecido
 
 number = { $number }
 
-## Networking: Wired
+## Network & Wireless
 
-wired = Cabo de rede
-    .desc = Conexões por cabo de rede, perfis de ligação
+connections-and-profiles = { $variant ->
+    [wired] Cabeada
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Desconhecido
+} conexões e perfis de conexão.
 
-## Networking: Contas Online
+add-network = Adicionar rede
+    .profile = Adicionar perfil
+add-vpn = Adicionar VPN
+airplane-on = Modo avião está ativo.
+cable-unplugged = Cabo desconectado
+connect = Conectar
+connected = Conectado
+connecting = Conectando…
+disconnect = Desconectar
+forget = Esquecer
+known-networks = Redes conhecidas
+network-and-wireless = Rede & Wireless
+no-networks = Nenhuma rede foi encontrada.
+no-vpn = Nenhuma conexão VPN está disponível.
+password = Senha
+remove = Remover
+settings = Configurações
+username = Usuário
+visible-networks = Redes visíveis
+
+auth-dialog = Autenticação
+    .vpn-description = Digite o usuário e a senha exigidos pelo serviço de VPN.
+    .wifi-description = Digite a senha ou chave de criptografia. Você também pode conectar pressionando o botão “WPS” no roteador.
+
+forget-dialog = Esquecer esta rede Wi-Fi?
+    .description = Você precisará informar uma senha novamente para usar esta rede no futuro.
+
+network-device-state =
+    .activated = Conectado
+    .config = Conectando
+    .deactivating = Desconectando
+    .disconnected = Desconectado
+    .failed = Falha ao conectar
+    .ip-check = Checando conexão
+    .ip-config = Solicitando IP e informações de roteamento
+    .need-auth = Necessita de autenticação
+    .prepare = Preparando para conectar
+    .secondaries = Aguardando conexão secundária
+    .unavailable = Indisponível
+    .unknown = Estado desconhecido
+    .unmanaged = Não gerenciado
+    .unplugged = Cabo desconectado
+
+remove-connection-dialog = Remover perfil de conexão?
+    .vpn-description = Você precisará informar uma senha novamente para usar esta rede no futuro.
+    .wired-description = Você precisará recriar este perfil para usá-lo no futuro.
+
+vpn = VPN
+    .connections = Conexões VPN
+    .remove = Remover perfil de conexão
+    .select-file = Selecione um arquivo de conexão VPN
+
+wired = Rede Cabeada
+    .adapter = Adaptador de rede cabeada { $id }
+    .connections = Conexões de rede cabeada
+    .devices = Dispositivos de rede cabeada
+    .remove = Remover perfil de conexão
+
+wifi = Wi-Fi
+    .adapter = Adaptador Wi-Fi { $id }
+    .forget = Esquecer esta rede
+
+## Networking: Online Accounts
 
 online-accounts = Contas online
-    .desc = Adicionar contas, IMAP e SMTP, logins empresariais
+    .desc = Adicione contas, IMAP e SMTP, logins empresariais
 
 ## Desktop
 
@@ -49,7 +115,7 @@ x-hours = { $number ->
 ## Desktop: Appearance
 
 appearance = Aparência
-    .desc = Cores de destaque e temas COSMIC.
+    .desc = Cores de destaque e temas.
 
 accent-color = Cor de destaque
 app-background = Fundo da aplicação ou da janela
@@ -63,7 +129,7 @@ export = Exportar
 hex = Hex
 import = Importar
 light = Claro
-mode-and-colors = Modo e cores
+mode-and-colors = Modo e Cores
 recent-colors = Cores recentes
 reset-to-default = Restaurar padrão
 rgb = RGB
@@ -159,10 +225,9 @@ panel-applets = Configuração
     .dock-desc = Configurar applets do dock.
     .desc = Configurar applets do painel.
 
-panel-missing = Configuração do Painel Ausente
+panel-missing = Configuração do painel está ausente
     .desc = O arquivo de configuração do painel está ausente devido ao uso de uma configuração personalizada ou encontra-se corrompido.
     .fix = Redefinir para padrão
-
 
 ## Desktop: Dock
 
@@ -174,14 +239,20 @@ dock = Dock
 window-management = Gerenciamento de Janelas
     .desc = Ação da tecla Super, opções de controle de janelas, e opções adicionais de alinhamento de janelas .
 
-super-key = Tecla Super
+super-key = Ação da tecla Super (Windows)
     .launcher = Abrir Lançador
     .workspaces = Abrir Áreas de Trabalho
     .applications = Abrir Aplicativos
+    .disable = Desabilitar
 
 window-controls = Controle de Janelas
     .minimize = Mostrar o botão de minimizar
     .maximize = Mostrar o botão de maximizar
+
+focus-navigation = Navegação em Foco
+    .focus-follows-cursor = O foco segue o cursor
+    .focus-follows-cursor-delay = O foco segue o atraso do cursor em ms
+    .cursor-follows-focus = O cursor segue o foco
 
 ## Desktop: Workspaces
 
@@ -206,8 +277,8 @@ workspaces-orientation = Orientação das Áreas de Trabalho
     .vertical = Vertical
     .horizontal = Horizontal
 
-hot-corner = Canto ativo
-    .top-left-corner = Habilitar o canto superior esquerdo como ativo para Espaços de Trabalho
+hot-corner = Hot Corner
+    .top-left-corner = Habilitar o canto superior esquerdo para exibir as áreas de trabalho
 
 ## Displays
 
@@ -240,7 +311,7 @@ mirroring = Espelhar
         *[other] { $display }
     }
     .project-count = Projetar para { $count} outros { $count ->
-        [1] monitores
+        [1] monitor
         *[other] monitores
     }
 
@@ -250,18 +321,24 @@ night-light = Luz noturna
 
 orientation = Orientação
     .standard = Padrão
-    .rotate-90 = Rotacionar 90
-    .rotate-180 = Rotacionar 180
-    .rotate-270 = Rotacionar 270
+    .rotate-90 = Rotacionar 90°
+    .rotate-180 = Rotacionar 180°
+    .rotate-270 = Rotacionar 270°
 
 scheduling = Agendamento
     .manual = Agendamento manual
 
 dialog = Dialog
-    .title = Manter estas Configurações de Telas?
+    .title = Manter estas configurações de telas?
     .keep-changes = Manter alterações
     .change-prompt = As mudanças nas configurações serão revertidas automaticamente em { $time } segundos.
     .revert-settings = Reverter configurações
+
+legacy-applications = Dimensionamento de aplicativos X11
+    .scaled-by-system = Dimensionar todos os aplicativos X11
+    .system-description = Aplicativos X11 aparecerão desfocados em telas HiDPI.
+    .scaled-natively = Renderizar aplicativos X11 em resolução nativa
+    .native-description = Aplicativos X11 que não suportam dimensionamento ficarão menores quando monitores HiDPI estiverem em uso. Habilitar para que os jogos utilizem a resolução total do monitor.
 
 ## Sound
 
@@ -285,21 +362,46 @@ sound-alerts = Alertas
     .sound = Som dos alertas
 
 sound-applications = Aplicações
-    .desc = Volumes e definições das aplicações
+    .desc = Volume e configurações das aplicações
+
+profile = Perfil
 
 ## Power
 
-power = Energia
+power = Energia e Bateria
   .desc = Gerencie as configurações de energia
 
+battery = Bateria
+  .minute = { $value } { $value ->
+        [one] minuto
+       *[other] minutos
+  }
+  .hour = { $value } { $value ->
+        [one] hora
+       *[other] horas
+  }
+  .day = { $value } { $value ->
+        [one] dia
+       *[other] dias
+  }
+  .less-than-minute = Menos de 1 minuto
+  .and = e
+  .remaining-time = { $time } até { $action ->
+        [full] cheia
+       *[other] vazia
+   }
+
+connected-devices = Dispositivos conectados
+  .unknown = Dispositivo desconhecido
+
 power-mode = Modo de Energia
-  .performance = Alta performance
-  .balanced = Balanceado
   .battery = Economia de bateria
-  .performance-desc = Alta performance e consumo de energia.
-  .balanced-desc = Performance ajustada e consumo de energia moderado.
-  .battery-desc = Baixo consumo de energia and performance limitada.
-  .no-backend = Processo não encontrado. Instale system76-power ou power-profiles-daemon.
+  .battery-desc = Baixo consumo de energia e desempenho limitado.
+  .balanced = Balanceado
+  .balanced-desc = Desempenho padrão e consumo de energia moderado.
+  .performance = Alto desempenho
+  .performance-desc = Desempenho e consumo de energia elevados.
+  .no-backend = Gestor de energia não encontrado. Instale o pacote "system76-power" ou "power-profiles-daemon".
 
 ## Input
 
@@ -311,6 +413,7 @@ input-devices = Dispositivos de entrada
     .desc = Dispositivos de entrada
 
 primary-button = Botão Primário
+    .desc = Define a ordem dos botões físicos.
     .left = Esquerda
     .right = Direita
 
@@ -319,7 +422,7 @@ scrolling = Rolagem
     .edge = Rolagem ao longo da borda com um dedo
     .speed = Velocidade de rolagem
     .natural = Rolagem natural
-    .natural-desc = Rolar o conteúdo, em vez da visualização
+    .natural-desc = Rolar o conteúdo, ao invés da visualização
 
 ## Input: Keyboard
 
@@ -328,7 +431,7 @@ fast = Rápido
 short = Curto
 long = Longo
 keyboard = Teclado
-    .desc = Entrada do teclado, entrada de caracteres especiais, atalhos.
+    .desc = Layout, entrada de caracteres especiais, atalhos.
 
 keyboard-sources = Fontes de Entrada
     .desc = As fontes de entrada podem ser alternadas usando a combinação de teclas Super+Espaço. Isso pode ser personalizado nas configurações de atalho de teclado.
@@ -349,13 +452,14 @@ keyboard-typing-assist = Digitação
 
 added = Adicionado
 type-to-search = Digite para pesquisar...
+show-extended-input-sources = Exibir fontes de entrada estendidas
 
 ## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = Atalhos do teclado
     .desc = Ver e personalizar atalhos
 
-add-keybinding = Adicionar vinculo de teclas (keybinds)
+add-keybinding = Adicionar atalho
 cancel = Cancelar
 command = Comando
 custom = Personalizado
@@ -376,11 +480,10 @@ system-controls = Controles de sistema
 terminate = Encerrar
 toggle-stacking = Ativar/Desativar empilhamento de janelas
 type-key-combination = Digite a combinação de teclas
-unknown = Desconhecido
 
 custom-shortcuts = Atalhos personalizados
     .add = Adicionar atalho
-    .context = Adciona um atalho personalizado
+    .context = Adiciona um atalho personalizado
     .none = Sem atalhos personalizados
 
 modified = { $count } modificados
@@ -393,19 +496,19 @@ nav-shortcuts = Navegação
     .next-workspace = Focar a próxima área de trabalho
     .focus = Focar a janela  { $direction ->
         *[down] abaixo
-        [in] in
+        [in] interna
         [left] à esquerda
-        [out] out
+        [out] externa
         [right] à direita
         [up] acima
     }
-    .output = Mudar para saída { $direction ->
+    .output = Alternar para a saída { $direction ->
         *[down] abaixo
         [left] à esquerda
         [right] à direita
         [up] acima
     }
-    .workspace = Trocar para a área de trabalho { $num }
+    .workspace = Alternar para a área de trabalho { $num }
 
 manage-windows = Gerenciamento de janelas
     .close = Fechar janela
@@ -413,7 +516,7 @@ manage-windows = Gerenciamento de janelas
     .minimize = Minimizar janela
     .resize-inwards = Redimensionar janela para dentro
     .resize-outwards = Redimensionar janela para fora
-    .toggle-sticky = Ativar/Desativas janelas sticky
+    .toggle-sticky = Ativar/Desativar janelas fixadas
 
 move-windows = Mover janelas
     .direction = Mover janela { $direction ->
@@ -423,18 +526,18 @@ move-windows = Mover janelas
         [up] para cima
     }
     .display = Mover a janela um monitor { $direction ->
-        *[down] para baixo
-        [left] para a esquerda
-        [right] para a direita
-        [up] para cima
+        *[down] abaixo
+        [left] à esquerda
+        [right] à direita
+        [up] acima
     }
     .workspace = Mover a janela uma área de trabalho { $direction ->
-        *[below] para baixo
-        [left] para esquerda
-        [right] para direita
-        [above] para cima
+        *[below] abaixo
+        [left] à esquerda
+        [right] à direita
+        [above] acima
     }
-    .workspace-num = Move janela para a área de trabalho { $num }
+    .workspace-num = Mover a janela para a área de trabalho { $num }
     .prev-workspace = Mover a janela para a área de trabalho anterior
     .next-workspace = Mover a janela para a próxima área de trabalho
     .last-workspace = Mover a janela para a última área de trabalho
@@ -444,20 +547,20 @@ move-windows = Mover janelas
     .send-to-next-workspace = Mover a janela para a próxima área de trabalho
 
 system-shortcut = Sistema
-    .app-library = Abrir Biblioteca de Aplicativos
+    .app-library = Abrir o menu de aplicativos
     .brightness-down = Reduzir o brilho do monitor
     .brightness-up = Aumentar o brilho do monitor
-    .home-folder = Abrir a pasta home
+    .home-folder = Abrir a pasta pessoal
     .keyboard-brightness-down = Reduzir o brilho do teclado
     .keyboard-brightness-up = Aumentar o brilho do teclado
     .launcher = Abrir o lançador
-    .lock-screen = Travar a tela
+    .lock-screen = Bloquear a tela
     .mute = Silenciar saída de áudio
     .mute-mic = Silencias entrada do microfone
     .play-pause = Iniciar/Pausar
     .play-next = Próxima faixa
     .play-prev = Faixa anterior
-    .screenshot = Fazer uma screenshot
+    .screenshot = Tirar um print da tela
     .terminal = Abrir o terminal
     .volume-lower = Reduzir o volume da saída de áudio
     .volume-raise = Aumentar o volume da saída de áudio
@@ -475,7 +578,7 @@ window-tiling = Janelas lado-a-lado (Window tiling)
     .toggle-orientation = Ativar/Desativar orientação
 
 replace-shortcut-dialog = Substituir atalho?
-    .desc = { $shortcut } esta sendo usado por { $name }. se você substituí-lo, { $name } será desativado.
+    .desc = { $shortcut } está sendo usado por { $name }. se você substituí-lo, { $name } será desativado.
 
 ## Input: Mouse
 
@@ -505,16 +608,18 @@ touchpad = Touchpad
 
 gestures = Gestos
     .four-finger-down = Deslizar quatros dedos para baixo
-    .four-finger-left = Deslizar quatro dedos para esquerda
-    .four-finger-right = Deslizar quatro dedos para direita
+    .four-finger-left = Deslizar quatro dedos para a esquerda
+    .four-finger-right = Deslizar quatro dedos para a direita
     .four-finger-up = Deslizar quatro dedos para cima
     .three-finger-any = Deslizar três dedos para qualquer direção
 
+switch-workspaces = Alternar entre áreas de trabalho
+    .horizontal = Deslizar quatro dedos para a direita ou esquerda
+    .vertical = Deslizar quatro dedos para cima ou para baixo
+
 switch-between-windows = Alternar entre janelas
-switch-to-next-workspace = Alternar para próxima área de trabalho
-switch-to-prev-workspace = Alternar para área de trabalho anterior
-open-application-library = Abrir Biblioteca de Aplicativos
-open-workspaces-view = Abrir Visão Geral das Áreas de Trabalho
+open-application-library = Abrir o menu de aplicativos
+open-workspaces-view = Abrir a visão geral das áreas de trabalho
 
 ## Time & Language
 
@@ -523,23 +628,25 @@ time = Hora & Idioma
 
 time-date = Data e Hora
     .desc = Fuso horário, definições automáticas de relógio e algumas formatação de hora.
-    .auto = Definir automáticamente
+    .auto = Definir automaticamente
+    .auto-ntp = A data e a hora serão atualizadas automaticamente quando o fuso horário for definido.
 
 time-zone = Fuso horário
     .auto = Fuso horário automático
-    .auto-info = Requer serviços de localização e acesso à Internet
+    .auto-info = Requer um serviço de localização e acesso à Internet
 
 time-format = Formato de Data e Hora
     .twenty-four = Formato de 24 horas
+    .show-seconds = Mostrar segundos
     .first = Primeiro dia da semana
-    .show-date = Mostrar Data no Painel Superior
+    .show-date = Mostrar data no painel superior
     .friday = Sexta-feira
     .saturday = Sábado
     .sunday = Domingo
     .monday = Segunda-feira
 
 time-region = Região e Idioma
-    .desc = Formatar datas, horas e números baseado na sua região
+    .desc = Formatar datas, horas e números com base na sua região
 
 ## System
 
@@ -577,4 +684,4 @@ firmware = Firmware
 ## System: Users
 
 users = Usuários
-    .desc = Autenticação e acesso, tela de bloqueio.
+    .desc = Autenticação e contas de usuário.
