@@ -182,10 +182,15 @@ super-key = Klawisz Super
     .launcher = Otwórz Program Startowy
     .workspaces = Otwórz Obszary Robocze
     .applications = Otwórz Aplikacje
+    .disable = Wyłącz
 
 window-controls = Sterowanie Oknem
     .maximize = Pokaż Przycisk Maksymalizacji
     .minimize = Pokaż Przycisk Minimalizacji
+
+focus-navigation = Nawigacja Aktywnym Oknem
+    .focus-follows-cursor = Aktywuje okno nad kursorem
+    .cursor-follows-focus = Przenosi kursor nad aktywne okno
     
 ## Desktop: Workspaces
 
@@ -314,7 +319,29 @@ power = Zasilanie
   .desc = Zarządzaj ustawieniami zasilania
 
 battery = Bateria
-  .remaining-time = { $time } pozostało
+    .minute = { $value } { $value ->
+        [one] minuta
+        [few] minuty
+       *[other] minut
+  }
+  .hour = { $value } { $value ->
+        [one] godzina
+        [few] godziny
+       *[other] godzin
+  }
+  .day = { $value } { $value ->
+        [one] dzień
+       *[other] dni
+  }
+  .less-than-minute = Mniej niż minuta
+  .and = i
+  .remaining-time = { $time } do { $action ->
+        [full] naładowania
+       *[other] rozładowania
+   }
+
+connected-devices = Podłączone Urządzenia
+  .unknown = Nierozpoznane urządzenie
 
 power-mode = Profile Zasilania
   .performance = Tryb Wysokowydajny
