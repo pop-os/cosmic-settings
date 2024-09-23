@@ -11,9 +11,10 @@ connections-and-profiles = Connexions { $variant ->
     [wifi] Wi-Fi
     [vpn] VPN
     *[other] inconnues
-} et profils.
+} et profils de connexion.
 
 add-network = Ajouter un réseau
+    .profile = Ajouter un profil
 add-vpn = Ajouter un VPN
 airplane-on = Mode avion activé.
 cable-unplugged = Câble débranché
@@ -65,11 +66,13 @@ vpn = VPN
     .select-file = Sélectionnez un fichier de configuration VPN
 
 wired = Filaire
-    connections = Connexions filaires
+    .adapter = Adaptateur filaire { $id }
+    .connections = Connexions filaires
     .devices = Périphériques câblés
     .remove = Supprimer un profil de connexion
 
 wifi = Wi-Fi
+    .adapter = Adaptateur Wi-Fi { $id }
     .forget = Oublier ce réseau
 
 ## Networking: Online Accounts
@@ -166,7 +169,11 @@ style = Style
     .slightly-round = Légèrement rond
     .square = Carré
 
-# interface density left out for now
+interface-density = Densité de l'interface
+    .comfortable = Confortable
+    .compact = Compact
+    .spacious = Spacieux
+
 window-management = Gestion des fenêtres
     .active-hint = Taille de l'indice de fenêtre active
     .gaps = Espaces entre les fenêtres en mosaïque
@@ -449,6 +456,7 @@ keyboard-typing-assist = Saisie
 
 added = Ajouté
 type-to-search = Tapez pour rechercher...
+show-extended-input-sources = Afficher les sources d'entrée étendues
 
 ## Input: Keyboard: Shortcuts
 
