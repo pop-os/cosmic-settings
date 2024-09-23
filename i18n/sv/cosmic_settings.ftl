@@ -232,6 +232,24 @@ workspaces-orientation = Arbetsytor Orientering
 wired = Trådbunden anslutning
     .desc = Trådbunden anslutning, anslutningsprofiler
 
+## Virtuellt privat nätverk (VPN)
+
+add-network = Lägg till nätverk
+add-vpn = Lägg till VPN
+
+auth-dialog = Autentisering krävs
+    .vpn-description = Skriv användarnamn och lösenod som krävs av VPN-tjänsten.
+    .wifi-description = Skriv lösenord eller krypterad nyckel. Du kan även ansluta genom att trycka på "WPS"-knappen på routern.
+
+remove-connection-dialog = Ta bort ansluten profil?
+    .vpn-description = Du behöver i framtiden skriva ditt lösenord igen för att använda den här funktoinen.
+    .wired-description = Du behöver i framtiden återskapa den här profilen för att kunna använda den.
+
+vpn = VPN
+    .connections = VPN-anslutningar
+    .remove = Ta bort ansluten profil
+    .select-file = Välj en VPN-konfigurationsfil
+
 ## Nätverk: Onlinekonton
 
 online-accounts = Onlinekonton
