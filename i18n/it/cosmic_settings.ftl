@@ -4,10 +4,73 @@ unknown = Sconosciuto
 
 number = { $number }
 
-## Networking: Wired
+## Network & Wireless
 
-wired = Via cavo
-    .desc = Connessione via cavo, profili di connessione
+connections-and-profiles = Connessione { $variant ->
+    [wired] Ethernet
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Sconosciuto
+} e profili di connessione.
+
+add-network = Aggiungi rete
+add-vpn = Aggiungi VPN
+airplane-on = Modalità aereo attivata.
+cable-unplugged = Cavo scollegato
+connect = Connetti
+connected = Connesso
+connecting = Connessione in corso…
+disconnect = Disconnetti
+forget = Dimentica
+known-networks = Reti conosciute
+network-and-wireless = Rete e wireless
+no-networks = Nessuna rete trovata.
+no-vpn = Nessuna connessione VPN disponibile.
+password = Password
+remove = Rimuovi
+settings = Impostazioni
+username = Nome utente
+visible-networks = Reti visibili
+
+auth-dialog = Autenticazione richiesta
+    .vpn-description = Inserisci il nome utente e la password richiesti dal servizio VPN.
+    .wifi-description = Inserisci la password o la chiave di crittografia. Puoi anche connetterti premendo il pulsante “WPS” sul router.
+
+forget-dialog = Dimenticare questa rete Wi-Fi?
+    .description = Sarà necessario reinserire la password per utilizzare questa rete Wi-Fi in futuro.
+
+network-device-state =
+    .activated = Connesso alla rete
+    .config = Connessione in corso
+    .deactivating = Disconnessione in corso
+    .disconnected = Disconnesso
+    .failed = Connessione fallita
+    .ip-check = Verifica della connessione in corso
+    .ip-config = Richiesta delle informazioni IP e di routing in corso
+    .need-auth = Autenticazione richiesta
+    .prepare = Preparazione alla connessione alla rete
+    .secondaries = In attesa della connessione secondaria
+    .unavailable = Non disponibile
+    .unknown = Stato sconosciuto
+    .unmanaged = Non gestito
+    .unplugged = Cavo scollegato
+
+remove-connection-dialog = Rimuovere il profilo di connessione?
+    .vpn-description = Sarà necessario reinserire la password per utilizzare questa rete in futuro.
+    .wired-description = Sarà necessario ricreare questo profilo per utilizzarlo in futuro.
+
+vpn = VPN
+    .connections = Connessioni VPN
+    .remove = Rimuovi profilo di connessione
+    .select-file = Seleziona un file di configurazione VPN
+
+wired = Ethernet
+    .connections = Connessioni cablate
+    .devices = Dispositivi cablati
+    .remove = Rimuovi profilo di connessione
+
+wifi = Wi-Fi
+    .forget = Dimentica questa rete
 
 ## Networking: Online Accounts
 
@@ -180,10 +243,16 @@ super-key = Tasto Super
     .launcher = Apri Launcher
     .workspaces = Apri Spazi di Lavoro
     .applications = Apri Applicazioni
+    .disable = Disabilita
 
 window-controls = Controlli finestra
     .minimize = Mostra pulsante "minimizza"
     .maximize = Mostra pulsante "massimizza"
+
+focus-navigation = Focus Navigation
+    .focus-follows-cursor = Focus segue il cursore
+    .focus-follows-cursor-delay = Focus segue il cursore con ritarto in ms
+    .cursor-follows-focus = Cursore segue il focus
 
 ## Desktop: Workspaces
 
@@ -265,6 +334,12 @@ dialog = Dialog
     .change-prompt = Le impostazioni verranno automaticamente ripristinate tra { $time } secondi.
     .revert-settings = Ripristina impostazioni
 
+legacy-applications = Scala delle applicazioni del sistema X11
+    .scaled-by-system = Scala tutte le applicazioni X11
+    .system-description = Le applicazioni X11 appariranno sfocate su schermi HiDPI.
+    .scaled-natively = Renderizza le applicazioni X11 alla risoluzione nativa
+    .native-description = Le applicazioni X11 che non supportano la scalatura saranno piccole quando si utilizzano display HiDPI. Abilita questa opzione per i giochi per utilizzare la risoluzione completa del monitor.
+
 ## Sound
 
 sound = Suono
@@ -297,7 +372,27 @@ power = Alimentazione e batteria
     .desc = Gestione impostazioni energetiche
 
 battery = Batteria
-  .remaining-time = { $time } rimasti
+  .minute = { $value } { $value ->
+        [one] minuto
+       *[other] minuti
+  }
+  .hour = { $value } { $value ->
+        [one] ora
+       *[other] ore
+  }
+  .day = { $value } { $value ->
+        [one] giorno
+       *[other] giorni
+  }
+  .less-than-minute = Meno di un minuto
+  .and = e
+  .remaining-time = { $time } fino a { $action ->
+        [full] carica completa
+       *[other] scarica
+   }
+
+connected-devices = Connected Devices
+  .unknown = Unknown device
 
 power-mode = Power Mode
     .battery = Estendi la vita della batteria
