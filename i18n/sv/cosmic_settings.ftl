@@ -319,6 +319,43 @@ firmware = Fast programvara
 users = Användare
     .desc = Autentisering och login, låsskärm.
 
+## Ström
+
+power = Ström & Batteri
+    .desc = Strömhanterare
+
+battery = Batteri
+  .minute = { $value } { $value ->
+        [one] minut
+       *[other] minuter
+  }
+  .hour = { $value } { $value ->
+        [one] timme
+       *[other] timmar
+  }
+  .day = { $value } { $value ->
+        [one] dag
+       *[other] dagar
+  }
+  .less-than-minute = Mindre än en minut
+  .and = och
+  .remaining-time = { $time } tills { $action ->
+        [full] fullt
+       *[other] urladdat
+   }
+
+connected-devices = Kopplade enheter
+  .unknown = Okänd enhet
+
+power-mode = Strömalternativ
+    .battery = Förläng batteriets livslängd
+    .battery-desc = Låg strömförbrukning och tyst prestanda. Reduced power usage and silent performance.
+    .balanced = Balanserad
+    .balanced-desc = Lågmäld prestanda och måttlig strömförbrukning. Quiet performance and moderate power usage.
+    .performance = Hög prestanda
+    .performance-desc = Hög prestanda och strömförbrukning. Peak performance and power usage.
+    .no-backend = Basbearbetning ej funnen. Installera system76-power eller power-profiles-daemon.
+
 ## Input
 
 acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
