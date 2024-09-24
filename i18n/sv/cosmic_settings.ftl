@@ -231,6 +231,39 @@ workspaces-orientation = Arbetsytor Orientering
 
 wired = Trådbunden anslutning
     .desc = Trådbunden anslutning, anslutningsprofiler
+    .connections = Trådbundna anslutningar
+    .devices = Trådbundna enheter
+    .remove = Ta bort anslutningsprofil
+
+## Nätverksanslutningar
+
+add-network = Lägg till nätverk
+add-vpn = Lägg till VPN
+airplane-on = Flygplansläge aktiverat.
+cable-unplugged = Kabel bortkopplad
+connect = Anslut
+connected = Ansluten
+connecting = Ansluter…
+disconnect = Koppla från
+forget = Glöm
+known-networks = Kända nätverk
+network-and-wireless = Nätverksanslutnignar
+no-networks = Inga nätverk har hittats.
+no-vpn = Inga VPN-anslutningar tillgängliga.
+password = Lösenord
+remove = Ta bort
+settings = Inställningar
+username = Användarnamn
+visible-networks = Tillgängliga nätverk
+
+## Nätverksanslutningar: Beskrivningar
+
+connections-and-profiles = { $variant ->
+    [wired] Trådbundna
+    [wifi] Trådlösa
+    [vpn] VPN
+    *[other] Okända
+} anslutningar och anslutningsprofiler.
 
 ## Virtuellt privat nätverk (VPN)
 
