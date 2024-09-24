@@ -232,6 +232,24 @@ workspaces-orientation = Arbetsytor Orientering
 wired = Trådbunden anslutning
     .desc = Trådbunden anslutning, anslutningsprofiler
 
+## Virtuellt privat nätverk (VPN)
+
+add-network = Lägg till nätverk
+add-vpn = Lägg till VPN
+
+auth-dialog = Autentisering krävs
+    .vpn-description = Skriv användarnamn och lösenod som krävs av VPN-tjänsten.
+    .wifi-description = Skriv lösenord eller krypterad nyckel. Du kan även ansluta genom att trycka på "WPS"-knappen på routern.
+
+remove-connection-dialog = Ta bort ansluten profil?
+    .vpn-description = Du behöver i framtiden skriva ditt lösenord igen för att använda den här funktoinen.
+    .wired-description = Du behöver i framtiden återskapa den här profilen för att kunna använda den.
+
+vpn = VPN
+    .connections = VPN-anslutningar
+    .remove = Ta bort ansluten profil
+    .select-file = Välj en VPN-konfigurationsfil
+
 ## Nätverk: Onlinekonton
 
 online-accounts = Onlinekonton
@@ -318,6 +336,43 @@ firmware = Fast programvara
 
 users = Användare
     .desc = Autentisering och login, låsskärm.
+
+## Ström
+
+power = Ström & Batteri
+    .desc = Strömhanterare
+
+battery = Batteri
+  .minute = { $value } { $value ->
+        [one] minut
+       *[other] minuter
+  }
+  .hour = { $value } { $value ->
+        [one] timme
+       *[other] timmar
+  }
+  .day = { $value } { $value ->
+        [one] dag
+       *[other] dagar
+  }
+  .less-than-minute = Mindre än en minut
+  .and = och
+  .remaining-time = { $time } tills { $action ->
+        [full] fullt
+       *[other] urladdat
+   }
+
+connected-devices = Kopplade enheter
+  .unknown = Okänd enhet
+
+power-mode = Strömalternativ
+    .battery = Förläng batteriets livslängd
+    .battery-desc = Låg strömförbrukning och tyst prestanda. Reduced power usage and silent performance.
+    .balanced = Balanserad
+    .balanced-desc = Lågmäld prestanda och måttlig strömförbrukning. Quiet performance and moderate power usage.
+    .performance = Hög prestanda
+    .performance-desc = Hög prestanda och strömförbrukning. Peak performance and power usage.
+    .no-backend = Basbearbetning ej funnen. Installera system76-power eller power-profiles-daemon.
 
 ## Input
 

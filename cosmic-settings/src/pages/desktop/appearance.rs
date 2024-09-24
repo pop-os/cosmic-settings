@@ -11,15 +11,16 @@ use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{
-    CornerRadii, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID,
+    CornerRadii, Density, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
+    LIGHT_THEME_BUILDER_ID,
 };
 use cosmic::iced_core::{alignment, Background, Color, Length};
 use cosmic::iced_widget::scrollable;
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::icon::{self, from_name, icon};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, row, settings,
-    spin_button, text, ColorPickerModel,
+    button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, radio, row,
+    settings, spin_button, text, ColorPickerModel,
 };
 use cosmic::Apply;
 use cosmic::{command, Command, Element};
@@ -84,6 +85,7 @@ pub struct Page {
     interface_text: ColorPickerModel,
     control_component: ColorPickerModel,
     roundness: Roundness,
+    density: Density,
 
     icon_theme_active: Option<usize>,
     icon_themes: IconThemes,
@@ -169,6 +171,7 @@ impl
             },
             context_view: None,
             roundness: theme_builder.corner_radii.into(),
+            density: tk.interface_density.into(),
             custom_accent: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
@@ -287,6 +290,7 @@ pub enum Message {
     ControlComponent(ColorPickerUpdate),
     CustomAccent(ColorPickerUpdate),
     DarkMode(bool),
+    Density(Density),
     Entered((IconThemes, IconHandles)),
     ExperimentalContextDrawer,
     ExportError,
@@ -674,6 +678,34 @@ impl Page {
 
                 tokio::task::spawn(async move {
                     Self::update_panel_radii(r);
+                });
+            }
+
+            Message::Density(d) => {
+                needs_sync = true;
+                self.density = d;
+
+                if let Some(config) = self.tk_config.as_mut() {
+                    let _density = self.tk.set_interface_density(config, d);
+                    let _header = self.tk.set_header_size(config, d);
+                }
+
+                let Some(config) = self.theme_builder_config.as_ref() else {
+                    return Command::none();
+                };
+
+                let spacing = self.density.into();
+
+                if self
+                    .theme_builder
+                    .set_spacing(config, spacing)
+                    .unwrap_or_default()
+                {
+                    self.theme_config_write("spacing", spacing);
+                }
+
+                tokio::task::spawn(async move {
+                    Self::update_panel_spacing(d);
                 });
             }
 
@@ -1222,6 +1254,45 @@ impl Page {
             }
         };
     }
+
+    fn update_panel_spacing(density: Density) {
+        let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
+        let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
+        let mut panel_config = panel_config_helper.as_ref().and_then(|config_helper| {
+            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
+            (panel_config.name == "Panel").then_some(panel_config)
+        });
+        let mut dock_config = dock_config_helper.as_ref().and_then(|config_helper| {
+            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
+            (panel_config.name == "Dock").then_some(panel_config)
+        });
+
+        if let Some(panel_config_helper) = panel_config_helper.as_ref() {
+            if let Some(panel_config) = panel_config.as_mut() {
+                let spacing = match density {
+                    Density::Compact => 0,
+                    _ => 4,
+                };
+                let update = panel_config.set_spacing(panel_config_helper, spacing);
+                if let Err(err) = update {
+                    tracing::error!(?err, "Error updating panel spacing");
+                }
+            }
+        };
+
+        if let Some(dock_config_helper) = dock_config_helper.as_ref() {
+            if let Some(dock_config) = dock_config.as_mut() {
+                let spacing = match density {
+                    Density::Compact => 0,
+                    _ => 4,
+                };
+                let update = dock_config.set_spacing(dock_config_helper, spacing);
+                if let Err(err) = update {
+                    tracing::error!(?err, "Error updating dock spacing");
+                }
+            }
+        };
+    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -1232,6 +1303,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![
             sections.insert(mode_and_colors()),
             sections.insert(style()),
+            sections.insert(interface_density()),
             sections.insert(window_management()),
             sections.insert(experimental()),
             sections.insert(reset_button()),
@@ -1690,6 +1762,50 @@ pub fn style() -> Section<crate::pages::Message> {
                     .width(Length::Fill)
                     .align_x(cosmic::iced_core::alignment::Horizontal::Center),
                 )
+                .apply(Element::from)
+                .map(crate::pages::Message::Appearance)
+        })
+}
+
+pub fn interface_density() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let comfortable = descriptions.insert(fl!("interface-density", "comfortable"));
+    let compact = descriptions.insert(fl!("interface-density", "compact"));
+    let spacious = descriptions.insert(fl!("interface-density", "spacious"));
+
+    Section::default()
+        .title(fl!("interface-density"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+
+            settings::section()
+                .title(&section.title)
+                .add(settings::item_row(vec![radio(
+                    text::body(&descriptions[comfortable]),
+                    Density::Standard,
+                    Some(page.density),
+                    Message::Density,
+                )
+                .width(Length::Fill)
+                .into()]))
+                .add(settings::item_row(vec![radio(
+                    text::body(&descriptions[compact]),
+                    Density::Compact,
+                    Some(page.density),
+                    Message::Density,
+                )
+                .width(Length::Fill)
+                .into()]))
+                .add(settings::item_row(vec![radio(
+                    text::body(&descriptions[spacious]),
+                    Density::Spacious,
+                    Some(page.density),
+                    Message::Density,
+                )
+                .width(Length::Fill)
+                .into()]))
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
