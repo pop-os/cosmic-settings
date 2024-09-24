@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=COSMIC Settings
 Name[pl]=Ustawienia COSMIC
+Name[pt-BR]=Configurações do COSMIC
 Type=Application
 Exec=cosmic-settings
 Terminal=false

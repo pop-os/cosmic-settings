@@ -7,11 +7,11 @@ number = { $number }
 ## Network & Wireless
 
 connections-and-profiles = { $variant ->
-    [wired] Cabeada
-    [wifi] Wi-Fi
-    [vpn] VPN
-    *[other] Desconhecido
-} conexões e perfis de conexão.
+    [wired] Conexões cabeadas
+    [wifi] Conexões Wi-Fi
+    [vpn] Conexões VPN
+    *[other] Conexões desconhecidas
+} e perfis de conexão.
 
 add-network = Adicionar rede
     .profile = Adicionar perfil
@@ -24,7 +24,7 @@ connecting = Conectando…
 disconnect = Desconectar
 forget = Esquecer
 known-networks = Redes conhecidas
-network-and-wireless = Rede & Wireless
+network-and-wireless = Rede e Wireless
 no-networks = Nenhuma rede foi encontrada.
 no-vpn = Nenhuma conexão VPN está disponível.
 password = Senha
@@ -169,7 +169,11 @@ style = Estilo
     .slightly-round = Levemente arredondado
     .square = Quadrado
 
-# interface density left out for now
+interface-density = Densidade da interface
+    .comfortable = Confortável
+    .compact = Compacta
+    .spacious = Espaçosa
+
 window-management = Gerenciamento de Janelas
     .active-hint = Tamanho da cor destaque da janela ativa
     .gaps = Espaçamentos ao redor de janelas organizadas em mosaico
@@ -237,7 +241,7 @@ dock = Dock
 ## Desktop: Window Management
 
 window-management = Gerenciamento de Janelas
-    .desc = Ação da tecla Super, opções de controle de janelas, e opções adicionais de alinhamento de janelas .
+    .desc = Ação da tecla Super, opções de controle e de alinhamento de janelas.
 
 super-key = Ação da tecla Super (Windows)
     .launcher = Abrir Lançador
@@ -623,7 +627,7 @@ open-workspaces-view = Abrir a visão geral das áreas de trabalho
 
 ## Time & Language
 
-time = Hora & Idioma
+time = Hora e Idioma
     .desc = N/D
 
 time-date = Data e Hora
@@ -685,3 +689,25 @@ firmware = Firmware
 
 users = Usuários
     .desc = Autenticação e contas de usuário.
+
+# Bluetooth
+
+bluetooth = Bluetooth
+    .desc = Gerenciamento de dispositivos Bluetooth
+    .status = Este sistema está visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
+    .connected = Conectado
+    .connecting = Conectando
+    .disconnecting = Desconectando
+    .connect = Conectar
+    .disconnect = Desconectar
+    .forget = Esquecer
+    .dbus-error = Ocorreu um erro ao interagir com o DBus: { $why }
+    .show-device-without-name = Mostrar dispositivo sem nome
+
+bluetooth-paired = Dispositivos conectados anteriormente
+    .connect = Conectar
+    .battery = { $percentage }% bateria
+
+bluetooth-available = Dispositivos próximos
+
+bluetooth-adapters = Adaptadores de Bluetooth
