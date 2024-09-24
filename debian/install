@@ -1,6 +1,7 @@
 /usr/bin/cosmic-settings
 /usr/share/applications/com.system76.CosmicSettings.About.desktop
 /usr/share/applications/com.system76.CosmicSettings.Appearance.desktop
+/usr/share/applications/com.system76.CosmicSettings.Bluetooth.desktop
 /usr/share/applications/com.system76.CosmicSettings.DateTime.desktop
 /usr/share/applications/com.system76.CosmicSettings.desktop
 /usr/share/applications/com.system76.CosmicSettings.Desktop.desktop
