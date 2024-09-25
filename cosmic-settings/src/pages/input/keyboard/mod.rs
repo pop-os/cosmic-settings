@@ -215,6 +215,7 @@ fn popover_button(id: DefaultKey, expanded: bool) -> cosmic::Element<'static, Me
     if expanded {
         cosmic::widget::popover(button)
             .popup(popover_menu(id))
+            .on_close(Message::ExpandInputSourcePopover(None))
             .into()
     } else {
         button.into()
