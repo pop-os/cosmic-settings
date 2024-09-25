@@ -36,6 +36,7 @@ entry-firmware := appid + '.Firmware.desktop'
 entry-input := appid + '.Input.desktop'
 entry-keyboard := appid + '.Keyboard.desktop'
 entry-mouse := appid + '.Mouse.desktop'
+entry-network := appid + '.Network.desktop'
 entry-notifications := appid + '.Notifications.desktop'
 entry-panel := appid + '.Panel.desktop'
 entry-power := appid + '.Power.desktop'
@@ -70,6 +71,7 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-input}}' '{{appdir}}/{{entry-input}}'
     install -Dm0644 'resources/{{entry-keyboard}}' '{{appdir}}/{{entry-keyboard}}'
     install -Dm0644 'resources/{{entry-mouse}}' '{{appdir}}/{{entry-mouse}}'
+    install -Dm0644 'resources/{{entry-network}}' '{{appdir}}/{{entry-network}}'
     install -Dm0644 'resources/{{entry-notifications}}' '{{appdir}}/{{entry-notifications}}'
     install -Dm0644 'resources/{{entry-panel}}' '{{appdir}}/{{entry-panel}}'
     install -Dm0644 'resources/{{entry-power}}' '{{appdir}}/{{entry-power}}'
@@ -116,6 +118,7 @@ uninstall:
         '{{appdir}}/{{entry-input}}' \
         '{{appdir}}/{{entry-keyboard}}' \
         '{{appdir}}/{{entry-mouse}}' \
+        '{{appdir}}/{{entry-network}}' \
         '{{appdir}}/{{entry-notifications}}' \
         '{{appdir}}/{{entry-panel}}' \
         '{{appdir}}/{{entry-power}}' \

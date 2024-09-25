@@ -121,6 +121,7 @@ pub fn display_container<'a, Message: 'a>(widget: Element<'a, Message>) -> Eleme
 pub fn page_list_item<'a, Message: 'static + Clone>(
     title: impl Into<Cow<'a, str>>,
     description: impl Into<Cow<'a, str>>,
+    info: impl Into<Cow<'a, str>>,
     icon: &'a str,
     message: Message,
 ) -> Element<'a, Message> {
@@ -135,13 +136,21 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
 
     let description = description.into();
 
+    let info = info.into();
+
     if !description.is_empty() {
         builder = builder.description(description);
     }
 
     builder
         .icon(icon::from_name(icon).size(20))
-        .control(icon::from_name("go-next-symbolic").size(20))
+        .control(
+            row::with_capacity(2)
+                .padding([8, 0]) // fixed value to set minimum height to 36
+                .spacing(space_xxs)
+                .push(text::body(info))
+                .push(icon::from_name("go-next-symbolic").size(20)),
+        )
         .padding([0, space_xxs])
         .spacing(space_s)
         .apply(container)
