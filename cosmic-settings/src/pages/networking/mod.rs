@@ -81,12 +81,27 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         crate::slab!(descriptions {
-            vpn_txt = fl!("connections-and-profiles", variant = "vpn");
+            wifi_desc = fl!("connections-and-profiles", variant = "wifi");
+            wired_desc = fl!("connections-and-profiles", variant = "wired");
+            vpn_desc = fl!("connections-and-profiles", variant = "vpn");
         });
 
         let device_list = Section::default().descriptions(descriptions).view::<Self>(
             move |_binder, page, section| {
                 let descs = &section.descriptions;
+
+                let multiple_wifi_adapters = page
+                    .devices
+                    .iter()
+                    .filter(|device| device.device_type == DeviceType::Wifi)
+                    .count()
+                    > 1;
+                let multiple_wired_adapters = page
+                    .devices
+                    .iter()
+                    .filter(|device| device.device_type == DeviceType::Ethernet)
+                    .count()
+                    > 1;
 
                 let wifi_devices = page
                     .devices
@@ -94,7 +109,16 @@ impl page::Page<crate::pages::Message> for Page {
                     .filter(|device| device.device_type == DeviceType::Wifi)
                     .map(|device| {
                         crate::widget::page_list_item(
-                            fl!("wifi", "adapter", id = device.interface.as_str()),
+                            if multiple_wifi_adapters {
+                                fl!("wifi", "adapter", id = device.interface.as_str())
+                            } else {
+                                fl!("wifi")
+                            },
+                            if multiple_wifi_adapters {
+                                ""
+                            } else {
+                                &descs[wifi_desc]
+                            },
                             match device.state {
                                 DeviceState::Activated => fl!("network-device-state", "activated"),
                                 DeviceState::Config => fl!("network-device-state", "config"),
@@ -132,7 +156,16 @@ impl page::Page<crate::pages::Message> for Page {
                     .filter(|device| device.device_type == DeviceType::Ethernet)
                     .map(|device| {
                         crate::widget::page_list_item(
-                            fl!("wired", "adapter", id = device.interface.as_str()),
+                            if multiple_wired_adapters {
+                                fl!("wired", "adapter", id = device.interface.as_str())
+                            } else {
+                                fl!("wired")
+                            },
+                            if multiple_wired_adapters {
+                                ""
+                            } else {
+                                &descs[wired_desc]
+                            },
                             match device.state {
                                 DeviceState::Activated => fl!("network-device-state", "activated"),
                                 DeviceState::Config => fl!("network-device-state", "config"),
@@ -169,7 +202,8 @@ impl page::Page<crate::pages::Message> for Page {
                     .fold(widget::column(), |column, device| column.push(device))
                     .push(crate::widget::page_list_item(
                         fl!("vpn"),
-                        &descs[vpn_txt],
+                        &descs[vpn_desc],
+                        "",
                         "preferences-vpn-symbolic",
                         Message::OpenPage {
                             page: page.vpn,

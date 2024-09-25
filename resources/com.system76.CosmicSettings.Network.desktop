@@ -1,12 +1,12 @@
 [Desktop Entry]
-Name=Bluetooth
-Comment=Manage Bluetooth devices
+Name=Network & Wireless
+Comment=Manage network connections
 Type=Settings
-Exec=cosmic-settings bluetooth
+Exec=cosmic-settings network
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC
 NoDisplay=true
 OnlyShowIn=COSMIC
-Icon=preferences-bluetooth
+Icon=preferences-network-and-wireless
 StartupNotify=true
