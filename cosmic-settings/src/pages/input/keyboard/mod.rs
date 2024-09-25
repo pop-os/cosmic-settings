@@ -367,6 +367,7 @@ impl page::Page<crate::pages::Message> for Page {
                     for (id, (xkb_layout, xkb_variant, _desc, _source)) in &self.keyboard_layouts {
                         if layout == xkb_layout && variant == xkb_variant {
                             self.active_layouts.push(id);
+                            break;
                         }
                     }
                 }
