@@ -1783,16 +1783,16 @@ pub fn interface_density() -> Section<crate::pages::Message> {
             settings::section()
                 .title(&section.title)
                 .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[comfortable]),
-                    Density::Standard,
+                    text::body(&descriptions[compact]),
+                    Density::Compact,
                     Some(page.density),
                     Message::Density,
                 )
                 .width(Length::Fill)
                 .into()]))
                 .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[compact]),
-                    Density::Compact,
+                    text::body(&descriptions[comfortable]),
+                    Density::Standard,
                     Some(page.density),
                     Message::Density,
                 )
