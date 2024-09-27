@@ -4,6 +4,77 @@ unknown = 未知
 
 number = { $number }
 
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] 有線網路
+    [wifi] 無線網路
+    [vpn] VPN
+    *[other] 未知
+} 連線及連線設定檔。
+
+add-network = 新增網路
+    .profile = 新增設定檔
+add-vpn = 新增 VPN
+airplane-on = 飛航模式已開啟
+cable-unplugged = 網路線已拔除
+connect = 連線
+connected = 已連線
+connecting = 連線中…
+disconnect = 中斷連線
+forget = 忘記此網路
+known-networks = 已知網路
+network-and-wireless = 網路與無線
+no-networks = 找不到網路
+no-vpn = 無可用的 VPN 連線
+password = 密碼
+remove = 移除
+settings = 設定
+username = 使用者名稱
+visible-networks = 可見的網路
+
+auth-dialog = 需要驗證
+    .vpn-description = 請輸入 VPN 服務所需的使用者名稱及密碼。
+    .wifi-description = 請輸入密碼或加密金鑰。你也可以按下路由器上的「WPS」按鈕來連接。
+
+forget-dialog = 忘記這個 Wi-Fi 網路？
+    .description = 日後如要使用此 Wi-Fi 網路，將需重新輸入密碼。
+
+network-device-state =
+    .activated = 已連線
+    .config = 連線中
+    .deactivating = 中斷連線中
+    .disconnected = 已中斷連線
+    .failed = 連線失敗
+    .ip-check = 檢查連線
+    .ip-config = 請求 IP 和路由資訊
+    .need-auth = 需要驗證
+    .prepare = 準備連線
+    .secondaries = 等待次要連線
+    .unavailable = 無法使用
+    .unknown = 狀態未知
+    .unmanaged = 未管理
+    .unplugged = 網路線已拔除
+
+remove-connection-dialog = 移除連線設定檔？
+    .vpn-description = 日後如要使用此 VPN，將需重新輸入密碼。
+    .wired-description = 若要再次使用此設定檔，需重新建立。
+
+vpn = VPN
+    .connections = VPN 連線
+    .remove = 移除連線設定檔
+    .select-file = 選擇 VPN 設定檔案
+
+wired = 有線網路
+    .adapter = 有線網路卡 { $id }
+    .connections = 有線網路連線
+    .devices = 有線網路設備
+    .remove = 移除連線設定檔
+
+wifi = 無線網路
+    .adapter = 無線網路卡 { $id }
+    .forget = 忘記此網路
+
 ## Desktop
 
 desktop = 桌面
@@ -32,11 +103,11 @@ rgb = RGB
 window-hint-accent = 使用中視窗的提示色
 window-hint-accent-toggle = 使用主題強調色作為使用中視窗的提示色
 
-auto-switch = 自動切換至夜色模式
+auto-switch = 自動在明亮和夜色模式之間切換
     .sunrise = 清晨時切換為亮色調
     .sunset = 黃昏時切換為夜色調
     .next-sunrise = 下次清晨切換為亮色調
-    .next-sunset = 下次黃昏切換為亮色調
+    .next-sunset = 下次黃昏切換為夜色調
 
 container-background = 容器背景
     .desc-detail = 容器背景與導航列、側邊欄、對話方塊等元件相關，預設從應用程式或視窗背景進行衍生
@@ -65,7 +136,11 @@ style = 風格
     .slightly-round = 半圓角
     .square = 正角
 
-# interface density left out for now
+interface-density = 介面密度
+    .comfortable = 舒適
+    .compact = 緊湊
+    .spacious = 寬敞
+
 window-management = 視窗管理
     .active-hint = 使用中視窗提示尺寸
     .gaps = 平鋪視窗模式下的間隔距離
@@ -125,9 +200,6 @@ notifications = 通知
 
 ## Desktop: Options
 
-desktop-panel-options = 桌面與面板
-    .desc = Super 按鍵行為, 螢幕角落熱點, 視窗控制選項
-
 desktop-panels-and-applets = 桌面面板與工具程式
 
 dock = Dock
@@ -135,10 +207,6 @@ dock = Dock
 
 hot-corner = 螢幕角落熱點
     .top-left-corner = 為工作區啟用位於左上方的螢幕角落熱點
-
-top-panel = 頂部面板
-    .workspaces = 顯示工作區按鈕
-    .applications = 顯示應用程式按鈕
 
 window-controls = 視窗控制
     .minimize = 顯示最小話按鈕
@@ -270,12 +338,14 @@ time-zone = 時區
 
 time-format = 日期和時間格式
     .twenty-four = 24 小時制
+    .show-seconds = 顯示秒數
     .first = 每週的第一天
     .show-date = 在條狀面板顯示日期
     .friday = 星期五
     .saturday = 星期六
     .sunday = 星期日
     .monday = 星期一
+
 
 time-region = 地區和語言
     .desc = 基於地區來格式化日期、時間及數字
