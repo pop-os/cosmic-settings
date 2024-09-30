@@ -4,6 +4,78 @@ unknown = 不明
 
 number = { $number }
 
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] 有線の
+    [wifi] Wi-Fiの
+    [vpn] VPNの
+    *[other] 不明な
+}接続と接続プロファイル
+
+add-network = ネットワークを追加
+    .profile = プロファイルを追加
+add-vpn = VPNを追加
+airplane-on = 機内モードは有効です。
+cable-unplugged = ケーブルは抜けています。
+connect = 接続する
+connected = 接続済み
+connecting = 接続中…
+disconnect = 切断する
+forget = 忘れる
+known-networks = 既知のネットワーク
+network-and-wireless = ネットワークとワイヤレス
+no-networks = ネットワークは見つけられませんでした。
+no-vpn = VPN接続はありません。
+password = パスワード
+remove = 削除
+settings = 設定
+username = ユーザー名
+visible-networks = ネットワークの一覧
+
+auth-dialog = 認証は必要です。
+    .vpn-description = VPNサービスにより必要とさせるユーザー名とパスワードを入力して下さい。
+    .wifi-description = パスワードまたは暗号化キーを入力して下さい。 ルーターののWPSボタンを押すことでも接続できます。
+
+forget-dialog = このWi-Fiネットワークを忘れてもよろしいですか？
+    .description = 将来で使用するために、もう一度パスワードを入力は必要です。
+
+network-device-state =
+    .activated = 接続済み
+    .config = 接続中
+    .deactivating = 切断中
+    .disconnected = 接続されていません
+    .failed = 接続失敗
+    .ip-check = 接続を確認中
+    .ip-config = Requesting IP and routing info
+    .need-auth = 認証が必要
+    .prepare = 接続の準備中
+    .secondaries = Waiting for secondary connection
+    .unavailable = Unavailable
+    .unknown = Unknown state
+    .unmanaged = Unmanaged
+    .unplugged = Cable unplugged
+
+remove-connection-dialog = Remove Connection Profile?
+    .vpn-description = You'll need to enter a password again to use this network in the future.
+    .wired-description = You'll need to recreate this profile to use it in the future.
+
+vpn = VPN
+    .connections = VPN接続
+    .remove = 接続プロファイルを削除する
+    .select-file = VPNの構成ファイルを選択
+
+wired = 有線
+    .adapter = Wired adapter { $id }
+    .connections = Wired Connections
+    .devices = Wired Devices
+    .remove = Remove connection profile
+
+wifi = Wi-Fi
+    .adapter = Wi-Fi adapter { $id }
+    .forget = このネットワークを忘れる
+
+
 ## Desktop
 
 desktop = デスクトップ
@@ -65,7 +137,11 @@ style = スタイル
     .slightly-round = 少し丸い
     .square = 四角い
 
-# interface density left out for now
+interface-density = インタフェース密度
+    .comfortable = 普通
+    .compact = 狭い
+    .spacious = 広い
+
 window-management = ウィンドウマネジメント
     .active-hint = アクティブウィンドウヒントの大きさ
     .gaps = タイル型ウィンドウ
@@ -197,7 +273,7 @@ panel-missing = パネル構成は見つけられません
 wallpaper = 背景
     .change = この期間ごとに画像を変える：
     .desc = 背景の画像、色、スライドショー設定。
-    .fit = Wallpaper fit
+    .fit = 背景フィット
     .folder-dialog = 背景のフォルダを選択
     .image-dialog = 背景の画像を選択
     .plural = 背景
@@ -239,11 +315,6 @@ workspaces-overview-thumbnails = ワークスペースオーバービューサ�
 workspaces-orientation = ワークスペース方向
     .vertical = 垂直
     .horizontal = 水平
-
-## Networking: Wired
-
-wired = 有線
-    .desc = 有線接続、接続プロファイル
 
 ## Networking: Online Accounts
 
@@ -347,6 +418,7 @@ input-devices = 入力デバイス
     .desc = 入力デバイス
 
 primary-button = 一次内ボタン
+    .desc = 物理ボタンの順を設定します。
     .left = 左
     .right = 右
 
@@ -364,7 +436,7 @@ fast = 速い
 short = 短い
 long = 長い
 keyboard = キーボード
-    .desc = キーボードの入力
+    .desc = 入力のソース、切り替え、特殊文字の入り、ショートカット。
 
 keyboard-sources = 入力ソース
     .desc = 入力ソースはスーパー+スペースキーコンボで切り替えられます。これをキーボードショットカットの設定で構成できます。
@@ -375,7 +447,7 @@ keyboard-sources = 入力ソース
     .remove = 削除
     .add = 入力ソースを追加
 
-keyboard-special-char = 特殊文字の入力
+keyboard-special-char = 特殊文字の入り
     .alternate = 代替文字キー
     .compose = コムポーズキー
 
@@ -385,6 +457,7 @@ keyboard-typing-assist = タイピング
 
 added = 追加された
 type-to-search = 入力して検索...
+show-extended-input-sources = 拡張の入力ソースを表示
 
 ## Input: Keyboard: Shortcuts
 
@@ -432,8 +505,27 @@ open-workspaces-view = ワークスペースのか概要を開く
 
 ## Power
 
-power = 電源
+power = 電源とバッテリー
   .desc = 電源設定を管理
+
+battery = Battery
+  .minute = { $value }分
+
+  .hour = { $value }時間
+
+  .day = { $value }日
+
+  .less-than-minute = 一分以下
+  
+  .and =
+
+  .remaining-time = { $action ->
+        [full] 充電完了
+       *[other] 電池切れ
+   }まで{ $time }
+
+connected-devices = 接続されたデバイス
+  .unknown = 不明なデバイス
 
 power-mode = 電源モード
   .performance = ハイパフォーマンス
