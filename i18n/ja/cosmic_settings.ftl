@@ -38,7 +38,7 @@ auth-dialog = 認証は必要です。
     .wifi-description = パスワードまたは暗号化キーを入力して下さい。 ルーターののWPSボタンを押すことでも接続できます。
 
 forget-dialog = このWi-Fiネットワークを忘れてもよろしいですか？
-    .description = 将来で使用するために、もう一度パスワードを入力は必要です。
+    .description = 将来でこのWi-Fiネットワーク使用するために、もう一度パスワードを入力は必要です。
 
 network-device-state =
     .activated = 接続済み
@@ -47,18 +47,18 @@ network-device-state =
     .disconnected = 接続されていません
     .failed = 接続失敗
     .ip-check = 接続を確認中
-    .ip-config = Requesting IP and routing info
+    .ip-config = IPとルーティング情報を要求中
     .need-auth = 認証が必要
     .prepare = 接続の準備中
-    .secondaries = Waiting for secondary connection
-    .unavailable = Unavailable
-    .unknown = Unknown state
-    .unmanaged = Unmanaged
-    .unplugged = Cable unplugged
+    .secondaries = 二次の接続を待っています
+    .unavailable = 無効
+    .unknown = 不明状態
+    .unmanaged = 管理外
+    .unplugged = 抜けています
 
-remove-connection-dialog = Remove Connection Profile?
-    .vpn-description = You'll need to enter a password again to use this network in the future.
-    .wired-description = You'll need to recreate this profile to use it in the future.
+remove-connection-dialog = 接続プロファイルを削除してもよろしいですか？
+    .vpn-description = 将来でこのネットワーク使用するために、もう一度パスワードを入力は必要です。
+    .wired-description = 将来でこのプロファイルを使用するために、再作成することは必要です。
 
 vpn = VPN
     .connections = VPN接続
@@ -66,13 +66,13 @@ vpn = VPN
     .select-file = VPNの構成ファイルを選択
 
 wired = 有線
-    .adapter = Wired adapter { $id }
-    .connections = Wired Connections
-    .devices = Wired Devices
-    .remove = Remove connection profile
+    .adapter = { $id }という有線のアダプター
+    .connections = 有線の接続
+    .devices = 有線のデバイス
+    .remove = 接続プロファイルを削除する
 
 wifi = Wi-Fi
-    .adapter = Wi-Fi adapter { $id }
+    .adapter = { $id }というWi-Fiアダプター
     .forget = このネットワークを忘れる
 
 
