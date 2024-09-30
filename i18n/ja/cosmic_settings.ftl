@@ -75,6 +75,33 @@ wifi = Wi-Fi
     .adapter = { $id }というWi-Fiアダプター
     .forget = このネットワークを忘れる
 
+## Networking: Online Accounts
+
+online-accounts = オンラインアカウント
+    .desc = アカウント、IMAPとSMTP、エンタプライズログインを追加
+
+# Bluetooth
+
+bluetooth = Bluetooth
+    .desc = Manage Bluetooth devices
+    .status = このデバイスはBluetooth設定が表示されながら{ $aliases }として見えます。
+    .connected = 接続済み
+    .connecting = 接続中
+    .disconnecting = 切断中
+    .connect = 接続する
+    .disconnect = 切断する
+    .forget = 忘れる
+    .dbus-error = DBusと相互作用しながらエラーが発生しました： { $why }
+    .show-device-without-name = 名前無しのデバイスを表示
+
+bluetooth-paired = 前に接続したデバイス
+    .connect = 接続
+    .battery = バッテリーの{ $percentage }%
+
+bluetooth-available = Nearby Devices
+
+bluetooth-adapters = Bluetooth Adapters
+
 
 ## Desktop
 
@@ -315,11 +342,6 @@ workspaces-overview-thumbnails = ワークスペースオーバービューサ�
 workspaces-orientation = ワークスペース方向
     .vertical = 垂直
     .horizontal = 水平
-
-## Networking: Online Accounts
-
-online-accounts = オンラインアカウント
-    .desc = アカウント、IMAPとSMTP、エンタプライズログインを追加
 
 ## Time & Language
 
