@@ -288,7 +288,7 @@ vpn = VPN
 online-accounts = Onlinekonton
     .desc = Lägg till konton, IMAP och SMTP, företagsinloggningar
 
-## Tid & språk
+## Datum, tid & språk
 
 time = Tid & språk
     .desc = N/A
@@ -296,6 +296,7 @@ time = Tid & språk
 time-date = Datum & tid
     .desc = Tidszon, automatiska klockinställningar och viss tidsformatering.
     .auto = Ställ in automatiskt
+    .auto-ntp = Datum och tid uppdateras automatisk när tidszon är satt.
 
 time-zone = Tidszon
     .auto = Automatisk tidszon
@@ -303,7 +304,13 @@ time-zone = Tidszon
 
 time-format = Datum & tidsformat
     .twenty-four = 24-timmars tid
+    .show-seconds = Visa sekunder
     .first = Första dagen på veckan
+    .show-date = Visa datum på övre panel.
+    .friday = Fredag
+    .saturday = Lördag
+    .sunday = Söndag
+    .monday = Måndag
 
 time-region = Region & språk
     .desc = Formatera datum, tider och siffror baserat på din region
@@ -400,11 +407,11 @@ connected-devices = Kopplade enheter
 
 power-mode = Strömalternativ
     .battery = Förläng batteriets livslängd
-    .battery-desc = Låg strömförbrukning och tyst prestanda. Reduced power usage and silent performance.
+    .battery-desc = Låg strömförbrukning och tyst prestanda.
     .balanced = Balanserad
-    .balanced-desc = Lågmäld prestanda och måttlig strömförbrukning. Quiet performance and moderate power usage.
+    .balanced-desc = Lågmäld prestanda och måttlig strömförbrukning.
     .performance = Hög prestanda
-    .performance-desc = Hög prestanda och strömförbrukning. Peak performance and power usage.
+    .performance-desc = Hög prestanda och strömförbrukning.
     .no-backend = Basbearbetning ej funnen. Installera system76-power eller power-profiles-daemon.
 
 ## Input
