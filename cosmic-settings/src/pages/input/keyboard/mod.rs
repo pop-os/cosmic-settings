@@ -576,8 +576,13 @@ impl Page {
 
         // TODO description, layout default
 
-        let mut list =
-            cosmic::widget::list_column().add(special_char_radio_row("None", None, current));
+        let mut list = cosmic::widget::list_column();
+
+        if matches!(special_key, SpecialKey::CapsLock) {
+            list = list.add(special_char_radio_row("Caps Lock", None, current));
+        } else {
+            list = list.add(special_char_radio_row("None", None, current));
+        }
 
         list = options
             .iter()
