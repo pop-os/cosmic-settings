@@ -82,6 +82,8 @@ online-accounts = Online Accounts
 
 # Bluetooth
 
+confirm = Confirm
+
 bluetooth = Bluetooth
     .desc = Manage Bluetooth devices
     .status = This system is visible as { $aliases } while Bluetooth settings are open.
@@ -97,6 +99,9 @@ bluetooth = Bluetooth
 bluetooth-paired = Previously Connected Devices
     .connect = Connect
     .battery = { $percentage }% battery
+
+bluetooth-confirm-pin = Confirm Bluetooth PIN
+    .description = Please confirm that the following PIN matches the one displayed on { $device }
 
 bluetooth-available = Nearby Devices
 

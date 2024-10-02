@@ -60,7 +60,10 @@ impl DeviceUpdate {
                         ))))
                     }
                     // Battery
-                    _ => None,
+                    (message, value) => {
+                        tracing::debug!(message, ?value, "device update");
+                        None
+                    }
                 }
             })
             .collect()
@@ -108,7 +111,10 @@ impl AdapterUpdate {
                         Some(Self::Address(value.into()))
                     }
                     // Battery
-                    _ => None,
+                    (message, value) => {
+                        tracing::error!(message, ?value, "adapter update");
+                        None
+                    }
                 }
             })
             .collect()
@@ -269,18 +275,26 @@ impl Adapter {
     pub async fn from_device(
         proxy: &bluez_zbus::adapter1::Adapter1Proxy<'_>,
     ) -> zbus::Result<Self> {
-        let address = proxy.address().await?;
-        let alias = proxy.alias().await?;
-        let scanning = if proxy.discoverable().await? && proxy.discovering().await? {
-            Active::Enabled
-        } else {
-            Active::Disabled
-        };
-        let enabled = if proxy.powered().await? {
-            Active::Enabled
-        } else {
-            Active::Disabled
-        };
+        let (address, alias, scanning, enabled) = futures::try_join!(
+            proxy.address(),
+            proxy.alias(),
+            async {
+                Ok(
+                    if proxy.discoverable().await? && proxy.discovering().await? {
+                        Active::Enabled
+                    } else {
+                        Active::Disabled
+                    },
+                )
+            },
+            async {
+                Ok(if proxy.powered().await? {
+                    Active::Enabled
+                } else {
+                    Active::Disabled
+                })
+            }
+        )?;
 
         Ok(Self {
             alias,
@@ -320,38 +334,42 @@ pub async fn start_discovery(
     adapter_path: OwnedObjectPath,
 ) -> Message {
     let result: zbus::Result<()> = Ok(());
-    match bluez_zbus::get_adapter(&connection, adapter_path).await {
+
+    let adapter = match bluez_zbus::get_adapter(&connection, adapter_path).await {
         Err(why) => {
             tracing::error!("Unable to get the adapter: {why}");
             return Message::DBusError(why.to_string());
         }
-        Ok(adapter) => {
-            for attempt in 1..5 {
-                let result = async {
-                    tracing::debug!("Starting discovery");
-                    // We don't seem to be able to use join here as it seem to lead to some kind of race condition and not start scanning occasionally
-                    adapter.set_pairable(true).await?;
-                    adapter.set_discoverable(true).await?;
-                    if adapter.discovering().await? {
-                        return Ok(());
-                    }
-                    adapter.start_discovery().await
-                }
-                .await;
-                if let Err(why) = result {
-                    tracing::warn!("Unable to start bluetooth scanning: {why}");
-                    tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-                } else {
-                    tracing::debug!("Discovery started");
-                    return Message::Nop;
-                }
+        Ok(adapter) => adapter,
+    };
+
+    for attempt in 1..5 {
+        let result = async {
+            tracing::debug!("Starting discovery");
+            // We don't seem to be able to use join here as it seem to lead to some kind of race condition and not start scanning occasionally
+            adapter.set_pairable(true).await?;
+            adapter.set_discoverable(true).await?;
+            if adapter.discovering().await? {
+                return Ok(());
             }
+            adapter.start_discovery().await
+        }
+        .await;
+
+        if let Err(why) = result {
+            tracing::warn!("Unable to start bluetooth scanning: {why}");
+            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+        } else {
+            tracing::debug!("Discovery started");
+            return Message::Nop;
         }
     }
-    if let Err(why) = result {
-        return Message::DBusError(why.to_string());
-    }
-    Message::Nop
+
+    return if let Err(why) = result {
+        Message::DBusError(why.to_string())
+    } else {
+        Message::Nop
+    };
 }
 
 pub async fn stop_discovery(
@@ -359,36 +377,36 @@ pub async fn stop_discovery(
     adapter_path: OwnedObjectPath,
 ) -> Message {
     let result: zbus::Result<()> = Ok(());
-    match bluez_zbus::get_adapter(&connection, adapter_path).await {
-        Err(why) => {
-            tracing::error!("Unable to get the adapter: {why}");
-            return Message::DBusError(why.to_string());
-        }
-        Ok(adapter) => {
-            for attempt in 1..5 {
-                let result = async {
-                    tracing::debug!("Stopping discovery");
 
-                    // We don't seem to be able to use join here as it seem to lead to some kind of race condition and not stop scanning occasionally
-                    adapter.set_pairable(false).await?;
-                    adapter.set_discoverable(false).await?;
-                    if adapter.discovering().await? {
-                        adapter.stop_discovery().await
-                    } else {
-                        Ok(())
-                    }
-                }
-                .await;
-                if let Err(why) = result {
-                    tracing::warn!("Unable to stop bluetooth scanning: {why}");
-                    tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-                } else {
-                    tracing::debug!("Discovery stopped");
-                    return Message::Nop;
-                }
+    let adapter = match bluez_zbus::get_adapter(&connection, adapter_path).await {
+        Err(why) => return Message::DBusError(format!("Unable to get the adapter: {why}")),
+        Ok(adapter) => adapter,
+    };
+
+    for attempt in 1..5 {
+        let result = async {
+            tracing::debug!("Stopping discovery");
+
+            // We don't seem to be able to use join here as it seem to lead to some kind of race condition and not stop scanning occasionally
+            adapter.set_pairable(false).await?;
+            adapter.set_discoverable(false).await?;
+            if adapter.discovering().await? {
+                adapter.stop_discovery().await
+            } else {
+                Ok(())
             }
         }
+        .await;
+
+        if let Err(why) = result {
+            tracing::warn!("Unable to stop bluetooth scanning: {why}");
+            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+        } else {
+            tracing::debug!("Discovery stopped");
+            return Message::Nop;
+        }
     }
+
     if let Err(why) = result {
         return Message::DBusError(why.to_string());
     }
@@ -399,103 +417,115 @@ pub async fn disconnect_device(
     connection: zbus::Connection,
     device_path: OwnedObjectPath,
 ) -> Message {
-    match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Message::DeviceFailed(device_path);
         }
-        Ok(proxy) => {
-            for attempt in 1..5 {
-                let result = async {
-                    if !proxy.device.connected().await? {
-                        return Ok(());
-                    }
+        Ok(proxy) => proxy,
+    };
 
-                    proxy.device.disconnect().await
-                }
-                .await;
-                if let Err(why) = result {
-                    tracing::warn!("Unable to disconnect to device: {why}");
-                    tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-                } else {
-                    return Message::Nop;
-                }
+    for attempt in 1..5 {
+        let result = async {
+            if !proxy.device.connected().await? {
+                return Ok(());
             }
+
+            proxy.device.disconnect().await
+        }
+        .await;
+
+        if let Err(why) = result {
+            tracing::warn!("Unable to disconnect to device: {why}");
+            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+        } else {
+            return Message::Nop;
         }
     }
+
     Message::DeviceFailed(device_path)
 }
 
 pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObjectPath) -> Message {
-    match bluez_zbus::get_device(&connection, device_path.clone()).await {
+    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Message::DeviceFailed(device_path);
         }
-        Ok(proxy) => {
-            for attempt in 1..5 {
-                let result = async {
-                    if proxy.device.connected().await? {
-                        Ok(())
-                    } else {
-                        proxy.device.connect().await
-                    }
-                }
-                .await;
-                if let Err(why) = result {
-                    tracing::warn!("Unable to connect to device: {why}");
-                    tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-                } else {
-                    return Message::Nop;
-                }
+        Ok(proxy) => proxy,
+    };
+
+    for attempt in 1..5 {
+        let result = async {
+            if proxy.device.connected().await? {
+                Ok(())
+            } else {
+                proxy.device.connect().await
             }
         }
+        .await;
+
+        if let Err(why) = result {
+            tracing::warn!("Unable to connect to device: {why}");
+            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+        } else {
+            return Message::Nop;
+        }
     }
+
     Message::DeviceFailed(device_path)
 }
 
 pub async fn forget_device(connection: zbus::Connection, device_path: OwnedObjectPath) -> Message {
     let mut result: zbus::Result<()> = Ok(());
-    match bluez_zbus::get_device(&connection, device_path.clone()).await {
+
+    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
         Err(why) => {
             tracing::error!("Unable to get the device: {why}");
             return Message::DeviceFailed(device_path);
         }
-        Ok(proxy) => match proxy.device.adapter().await {
-            Err(why) => {
-                tracing::error!("Unable to get the adapter: {why}");
-                return Message::DeviceFailed(device_path);
-            }
-            Ok(adapter) => match bluez_zbus::get_adapter(&connection, adapter).await {
-                Err(why) => {
-                    tracing::error!("Unable to get the adapter: {why}");
-                    return Message::DeviceFailed(device_path);
-                }
-                Ok(adapter) => {
-                    for attempt in 1..5 {
-                        result = async {
-                            if proxy.device.connected().await? {
-                                proxy.device.disconnect().await?;
-                            }
+        Ok(proxy) => proxy,
+    };
 
-                            adapter.remove_device(&proxy.path()).await
-                        }
-                        .await;
-                        if let Err(why) = &result {
-                            tracing::warn!("Unable to connect to device: {why}");
-                            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
-                        } else {
-                            return Message::Nop;
-                        }
-                    }
-                }
-            },
-        },
+    let adapter_path = match proxy.device.adapter().await {
+        Err(why) => {
+            tracing::error!("Unable to get the adapter: {why}");
+            return Message::DeviceFailed(device_path);
+        }
+        Ok(adapter_path) => adapter_path,
+    };
+
+    let adapter = match bluez_zbus::get_adapter(&connection, adapter_path).await {
+        Err(why) => {
+            tracing::error!("Unable to get the adapter: {why}");
+            return Message::DeviceFailed(device_path);
+        }
+        Ok(adapter) => adapter,
+    };
+
+    for attempt in 1..5 {
+        result = async {
+            if proxy.device.connected().await? {
+                proxy.device.disconnect().await?;
+            }
+
+            adapter.remove_device(&proxy.path()).await
+        }
+        .await;
+
+        if let Err(why) = &result {
+            tracing::warn!("Unable to connect to device: {why}");
+            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+        } else {
+            return Message::Nop;
+        }
     }
-    if result.is_err() {
-        return Message::DeviceFailed(device_path);
-    }
-    Message::Nop
+
+    return if result.is_err() {
+        Message::DeviceFailed(device_path)
+    } else {
+        Message::Nop
+    };
 }
 
 pub async fn change_adapter_status(
