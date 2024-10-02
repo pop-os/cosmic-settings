@@ -14,6 +14,7 @@ connections-and-profiles = Connessione { $variant ->
 } e profili di connessione.
 
 add-network = Aggiungi rete
+    .profile = Aggiungi profilo
 add-vpn = Aggiungi VPN
 airplane-on = Modalità aereo attivata.
 cable-unplugged = Cavo scollegato
@@ -65,17 +66,46 @@ vpn = VPN
     .select-file = Seleziona un file di configurazione VPN
 
 wired = Ethernet
+    .adapter = Adattatore ethernet { $id }
     .connections = Connessioni cablate
     .devices = Dispositivi cablati
     .remove = Rimuovi profilo di connessione
 
 wifi = Wi-Fi
+    .adapter = Adattatore Wi-Fi { $id }
     .forget = Dimentica questa rete
 
 ## Networking: Online Accounts
 
 online-accounts = Account online
     .desc = Aggiungi account IMAP, SMTP e enterprise
+
+# Bluetooth
+
+confirm = Conferma
+
+bluetooth = Bluetooth
+    .desc = Gestisci dispositivi Bluetooth
+    .status = Il sistema è visibile come { $aliases } quando le impostazioni Bluetooth sono aperte.
+    .connected = Connesso
+    .connecting = Connessione ...
+    .disconnecting = Disconnessione ...
+    .connect = Connetti
+    .disconnect = Disconnetti
+    .forget = Dimentica
+    .dbus-error = Errore durante l'interazione con DBus: { $why }
+    .show-device-without-name = Mostra dispositivi senza nome
+
+bluetooth-paired = Dispositivi accoppiati
+    .connect = Connetti
+    .battery = { $percentage }% batteria rimanente
+
+bluetooth-confirm-pin = Confirma PIN Bluetooth
+    .description = Conferma che il PIN coincida con quello mostrato su { $device }
+
+bluetooth-available = Dispositivi nelle vicinanze
+
+bluetooth-adapters = Adattatori Bluetooth
 
 ## Desktop
 
@@ -169,7 +199,11 @@ style = Stile
     .slightly-round = Leggermente arrotondato
     .square = Spigoloso
 
-# interface density left out for now
+interface-density = Interface Density
+    .comfortable = Comfort
+    .compact = Compatta
+    .spacious = Spaziosa
+
 window-management = Gestione finestre
     .active-hint = Dimensione bordo finestra attiva
     .gaps = Spaziatura finestre in modalità tiling
@@ -445,6 +479,7 @@ keyboard-sources = Sorgenti di immissione
 keyboard-special-char = Immissione caratteri speciali
     .alternate = Tasto per i caratteri speciali
     .compose = Tasto di composizione
+    .caps = Caps Lock
 
 keyboard-typing-assist = Digitazione
     .repeat-rate = Ripeti ritmo
@@ -452,6 +487,7 @@ keyboard-typing-assist = Digitazione
 
 added = Aggiunto
 type-to-search = Digita per cercare...
+show-extended-input-sources = Mostra
 
 ## Input: Keyboard: Scorciatoie
 
