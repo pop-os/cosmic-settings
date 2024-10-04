@@ -23,6 +23,7 @@ pub enum Message {
     SetShowName(bool),
     SetShowNumber(bool),
     MinOpenWorkspaces(spin_button::Message),
+    RemoveEmptyWorkspaces(bool),
 }
 
 pub struct Page {
@@ -32,6 +33,7 @@ pub struct Page {
     show_workspace_name: bool,
     show_workspace_number: bool,
     min_open_workspaces: u8,
+    remove_empty_workspaces: bool,
 }
 
 impl Default for Page {
@@ -66,6 +68,7 @@ impl Default for Page {
             show_workspace_name,
             show_workspace_number,
             min_open_workspaces: Self::MIN_OPEN_WORKSPACES,
+            remove_empty_workspaces: true,
         }
     }
 }
@@ -134,6 +137,9 @@ impl Page {
                     }
                 }
             },
+            Message::RemoveEmptyWorkspaces(value) => {
+                self.remove_empty_workspaces = value;
+            }
         }
     }
 }
@@ -210,6 +216,7 @@ fn misc() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
     let opened_workspaces = descriptions.insert(fl!("workspaces-misc", "min-open"));
+    let shift_workspaces = descriptions.insert(fl!("workspaces-misc", "empty-workspaces"));
 
     Section::default()
         .title(fl!("workspaces-misc"))
@@ -226,6 +233,10 @@ fn misc() -> Section<crate::pages::Message> {
                             Message::MinOpenWorkspaces,
                         ),
                     ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[shift_workspaces])
+                        .toggler(page.remove_empty_workspaces, Message::RemoveEmptyWorkspaces),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)

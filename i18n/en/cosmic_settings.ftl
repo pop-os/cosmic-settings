@@ -310,6 +310,7 @@ workspaces-orientation = Workspaces Orientation
 
 workspaces-misc = Miscellaneous
     .min-open = Minimum open workspaces
+    .empty-workspaces = Shift workspaces to lower workspaces if there's an empty workspace inbetween
 
 hot-corner = Hot Corner
     .top-left-corner = Enable top-left hot corner for Workspaces
