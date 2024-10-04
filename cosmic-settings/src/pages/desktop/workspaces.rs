@@ -6,7 +6,7 @@
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced::Length,
-    widget::{radio, settings, text},
+    widget::{radio, settings, spin_button, text},
     Apply, Element,
 };
 use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
@@ -22,6 +22,7 @@ pub enum Message {
     SetWorkspaceLayout(WorkspaceLayout),
     SetShowName(bool),
     SetShowNumber(bool),
+    MinOpenWorkspaces(spin_button::Message),
 }
 
 pub struct Page {
@@ -30,6 +31,7 @@ pub struct Page {
     comp_workspace_config: WorkspaceConfig,
     show_workspace_name: bool,
     show_workspace_number: bool,
+    min_open_workspaces: u8,
 }
 
 impl Default for Page {
@@ -63,6 +65,7 @@ impl Default for Page {
             comp_workspace_config,
             show_workspace_name,
             show_workspace_number,
+            min_open_workspaces: Self::MIN_OPEN_WORKSPACES,
         }
     }
 }
@@ -75,6 +78,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![
             sections.insert(multi_behavior()),
             sections.insert(workspace_orientation()),
+            sections.insert(misc()),
         ])
     }
 
@@ -88,6 +92,9 @@ impl page::Page<crate::pages::Message> for Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl Page {
+    // The minimal amount of open workspaces which have to be open
+    const MIN_OPEN_WORKSPACES: u8 = 2;
+
     fn save_comp_config(&self) {
         if let Err(err) = self
             .comp_config
@@ -119,6 +126,14 @@ impl Page {
                     error!(?err, "Failed to set config 'show_workspace_number'");
                 }
             }
+            Message::MinOpenWorkspaces(msg) => match msg {
+                spin_button::Message::Increment => self.min_open_workspaces += 1,
+                spin_button::Message::Decrement => {
+                    if self.min_open_workspaces > Self::MIN_OPEN_WORKSPACES {
+                        self.min_open_workspaces -= 1
+                    }
+                }
+            },
         }
     }
 }
@@ -186,6 +201,32 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
                 )
                 .width(Length::Fill)
                 .into()]))
+                .apply(Element::from)
+                .map(crate::pages::Message::DesktopWorkspaces)
+        })
+}
+
+fn misc() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let opened_workspaces = descriptions.insert(fl!("workspaces-misc", "min-open"));
+
+    Section::default()
+        .title(fl!("workspaces-misc"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+
+            settings::section()
+                .title(&section.title)
+                .add(
+                    settings::item::builder(&descriptions[opened_workspaces]).control(
+                        cosmic::widget::spin_button(
+                            page.min_open_workspaces.to_string(),
+                            Message::MinOpenWorkspaces,
+                        ),
+                    ),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })

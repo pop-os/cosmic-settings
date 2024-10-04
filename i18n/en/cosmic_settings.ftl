@@ -308,6 +308,9 @@ workspaces-orientation = Workspaces Orientation
     .vertical = Vertical
     .horizontal = Horizontal
 
+workspaces-misc = Miscellaneous
+    .min-open = Minimum open workspaces
+
 hot-corner = Hot Corner
     .top-left-corner = Enable top-left hot corner for Workspaces
 
