@@ -931,6 +931,7 @@ impl SettingsApp {
                     page_list.push(crate::widget::page_list_item(
                         sub_page.title.as_str(),
                         sub_page.description.as_str(),
+                        "",
                         &sub_page.icon_name,
                         entity,
                     ))

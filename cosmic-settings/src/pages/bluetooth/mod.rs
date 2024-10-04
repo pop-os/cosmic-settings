@@ -8,19 +8,43 @@ use cosmic::widget::{self, settings, text};
 use cosmic::Command;
 use cosmic::{Apply, Element};
 use cosmic_settings_page::{self as page, section, Section};
+use futures::channel::oneshot;
 use slab::Slab;
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 use zbus::zvariant::OwnedObjectPath;
 
+mod agent;
 mod backend;
 pub use backend::*;
 mod subscription;
+
+enum Dialog {
+    // RequestAuthorization {
+    //     device: OwnedObjectPath,
+    //     response: oneshot::Sender<bool>,
+    // },
+    RequestConfirmation {
+        device: String,
+        passkey: u32,
+        response: oneshot::Sender<bool>,
+    },
+    // RequestPasskey {
+    //     device: OwnedObjectPath,
+    //     response: oneshot::Sender<Option<u32>>,
+    // },
+    // RequestPinCode {
+    //     device: OwnedObjectPath,
+    //     response: oneshot::Sender<Option<String>>,
+    // },
+}
 
 #[derive(Default)]
 pub struct Page {
     active: Active,
     connection: Option<zbus::Connection>,
+    dialog: Option<Dialog>,
     adapters: HashMap<OwnedObjectPath, Adapter>,
     selected_adapter: Option<OwnedObjectPath>,
     heading: String,
@@ -69,7 +93,12 @@ impl page::Page<crate::pages::Message> for Page {
             _ = cancel.send(());
         }
 
-        self.connection = None;
+        if let Some(connection) = self.connection.take() {
+            tokio::spawn(async move {
+                _ = agent::unregister(connection).await;
+            });
+        }
+
         self.adapters.clear();
         self.selected_adapter = None;
         self.devices.clear();
@@ -79,12 +108,55 @@ impl page::Page<crate::pages::Message> for Page {
 
         Command::none()
     }
+
+    fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
+        match self.dialog.as_ref()? {
+            Dialog::RequestConfirmation {
+                device, passkey, ..
+            } => {
+                let description = widget::text::body(fl!(
+                    "bluetooth-confirm-pin",
+                    "description",
+                    device = device
+                ))
+                .wrap(Wrap::Word);
+
+                let pin = widget::text::title1(itoa::Buffer::new().format(*passkey).to_owned())
+                    .width(Length::Fill)
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .wrap(Wrap::None);
+
+                let control = widget::column::with_capacity(2)
+                    .push(description)
+                    .push(pin)
+                    .spacing(cosmic::theme::active().cosmic().spacing.space_xxs);
+
+                let confirm_button =
+                    widget::button::suggested(fl!("confirm")).on_press(Message::PinConfirm);
+
+                let cancel_button =
+                    widget::button::standard(fl!("cancel")).on_press(Message::PinCancel);
+
+                let dialog = widget::dialog(fl!("bluetooth-confirm-pin"))
+                    .control(control)
+                    .primary_action(confirm_button)
+                    .secondary_action(cancel_button)
+                    .apply(Element::from)
+                    .map(Into::into);
+
+                Some(dialog)
+            }
+
+            _ => None,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
 pub enum Message {
     AddedAdapter(OwnedObjectPath, Adapter),
     AddedDevice(OwnedObjectPath, Device),
+    Agent(Arc<bluez_zbus::agent1::Message>),
     ConnectDevice(OwnedObjectPath),
     DBusConnect(
         zbus::Connection,
@@ -94,6 +166,8 @@ pub enum Message {
     DeviceFailed(OwnedObjectPath),
     DisconnectDevice(OwnedObjectPath),
     ForgetDevice(OwnedObjectPath),
+    PinCancel,
+    PinConfirm,
     PopupDevice(Option<OwnedObjectPath>),
     PopupSetting(bool),
     Nop,
@@ -126,6 +200,61 @@ impl Page {
         let _span = span.enter();
 
         match message {
+            Message::Agent(message) => {
+                let Some(message) = Arc::into_inner(message) else {
+                    return Command::none();
+                };
+
+                match message {
+                    bluez_zbus::agent1::Message::RequestAuthorization { response, .. } => {
+                        _ = response.send(true);
+                    }
+
+                    bluez_zbus::agent1::Message::RequestConfirmation {
+                        device,
+                        passkey,
+                        response,
+                    } => {
+                        let device = self.devices.get(&device).map_or_else(
+                            || device.to_string(),
+                            |device| device.alias_or_addr().to_owned(),
+                        );
+
+                        self.dialog = Some(Dialog::RequestConfirmation {
+                            device,
+                            passkey,
+                            response,
+                        });
+                    }
+
+                    bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
+                        _ = response.send(None);
+                    }
+
+                    bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
+                        _ = response.send(None);
+                    }
+
+                    bluez_zbus::agent1::Message::Cancel => {
+                        self.dialog = None;
+                    }
+
+                    _ => (),
+                }
+            }
+
+            Message::PinCancel => {
+                if let Some(Dialog::RequestConfirmation { response, .. }) = self.dialog.take() {
+                    _ = response.send(false);
+                }
+            }
+
+            Message::PinConfirm => {
+                if let Some(Dialog::RequestConfirmation { response, .. }) = self.dialog.take() {
+                    _ = response.send(true);
+                }
+            }
+
             Message::SetActive(active) => {
                 if let Some(connection) = self.connection.clone() {
                     if let Some((path, adapter)) = self.get_selected_adapter_mut() {
@@ -162,6 +291,7 @@ impl Page {
                 }
                 tracing::warn!("No DBus connection ready");
             }
+
             Message::DBusConnect(connection, sender) => {
                 self.connection = Some(connection.clone());
 
@@ -170,7 +300,12 @@ impl Page {
                     self.subscription = Some(crate::utils::forward_event_loop(
                         sender,
                         crate::pages::Message::Bluetooth,
-                        move |tx| async move { subscription::watch(connection, tx).await },
+                        move |tx| async move {
+                            _ = futures::join!(
+                                subscription::watch(connection.clone(), tx.clone()),
+                                agent::watch(connection, tx),
+                            );
+                        },
                     ));
                 }
 

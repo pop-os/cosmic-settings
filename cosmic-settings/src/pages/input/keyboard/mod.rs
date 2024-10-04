@@ -40,6 +40,13 @@ static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
     // ("Print Screen", "lv3"), XXX
 ];
 
+static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
+    ("Escape", "caps:escape"),
+    ("Swap with Escape", "caps:swapescape"),
+    ("Backspace", "caps:backspace"),
+    ("Super", "caps:super"),
+];
+
 const STR_ORDER: &str = "`str` is always comparable";
 
 #[derive(Clone, Debug)]
@@ -118,6 +125,7 @@ enum Context {
 pub enum SpecialKey {
     AlternateCharacters,
     Compose,
+    CapsLock,
 }
 
 impl SpecialKey {
@@ -125,6 +133,7 @@ impl SpecialKey {
         match self {
             Self::Compose => "Compose".to_string(),
             Self::AlternateCharacters => "Alternate Characters".to_string(),
+            Self::CapsLock => "Caps Lock".to_string(),
         }
     }
 
@@ -132,6 +141,7 @@ impl SpecialKey {
         match self {
             Self::Compose => "compose:",
             Self::AlternateCharacters => "lv3:",
+            Self::CapsLock => "caps:",
         }
     }
 }
@@ -215,6 +225,7 @@ fn popover_button(id: DefaultKey, expanded: bool) -> cosmic::Element<'static, Me
     if expanded {
         cosmic::widget::popover(button)
             .popup(popover_menu(id))
+            .on_close(Message::ExpandInputSourcePopover(None))
             .into()
     } else {
         button.into()
@@ -367,6 +378,7 @@ impl page::Page<crate::pages::Message> for Page {
                     for (id, (xkb_layout, xkb_variant, _desc, _source)) in &self.keyboard_layouts {
                         if layout == xkb_layout && variant == xkb_variant {
                             self.active_layouts.push(id);
+                            break;
                         }
                     }
                 }
@@ -553,6 +565,7 @@ impl Page {
         let options = match special_key {
             SpecialKey::Compose => COMPOSE_OPTIONS,
             SpecialKey::AlternateCharacters => ALTERNATE_CHARACTER_OPTIONS,
+            SpecialKey::CapsLock => CAPS_LOCK_OPTIONS,
         };
         let prefix = special_key.prefix();
         let current = self
@@ -643,6 +656,7 @@ fn special_character_entry() -> Section<crate::pages::Message> {
 
     let alternate = descriptions.insert(fl!("keyboard-special-char", "alternate"));
     let compose = descriptions.insert(fl!("keyboard-special-char", "compose"));
+    let caps = descriptions.insert(fl!("keyboard-special-char", "caps"));
 
     Section::default()
         .title(fl!("keyboard-special-char"))
@@ -659,6 +673,10 @@ fn special_character_entry() -> Section<crate::pages::Message> {
                 .add(crate::widget::go_next_item(
                     &*descriptions[compose],
                     Message::OpenSpecialCharacterContext(SpecialKey::Compose),
+                ))
+                .add(crate::widget::go_next_item(
+                    &*descriptions[caps],
+                    Message::OpenSpecialCharacterContext(SpecialKey::CapsLock),
                 ))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Keyboard)

@@ -4,15 +4,103 @@ unknown = Unbekannt
 
 number = { $number }
 
-## Vernetzung: Kabelgebunden
+## Netzwerk & Kabellos
+
+connections-and-profiles = { $variant ->
+[wired] Kabelgebundene Verbindungen
+[wifi] Wi-Fi-Verbindungen
+[vpn] VPN-Verbindungen
+*[other] Unbekannte Verbindungen
+} und Verbindungsprofile.
+
+add-network = Netzwerk hinzufügen
+    .profile = Profil hinzufügen
+add-vpn = VPN hinzufügen
+airplane-on = Flugzeugmodus ist eingeschaltet.
+cable-unplugged = Kabel ausgesteckt
+connect = Verbinden
+connected = Verbunden
+connecting = Wird verbunden…
+disconnect = Trennen
+forget = Vergessen
+known-networks = Bekannte Netzwerke
+network-and-wireless = Netzwerk & Kabellos
+no-networks = Es wurden keine Netzwerke gefunden.
+no-vpn = Keine VPN-Verbindungen verfügbar.
+password = Passwort
+remove = Entfernen
+settings = Einstellungen
+username = Benutzername
+visible-networks = Sichtbare Netzwerke
+
+auth-dialog = Authentifizierung erforderlich
+    .vpn-description = Gib den vom VPN-Dienst geforderten Benutzernamen und das Passwort ein.
+    .wifi-description = Gib das Passwort oder den Verschlüsselungscode ein. Du kannst die Verbindung auch durch Drücken der „WPS“-Taste am Router herstellen.
+
+forget-dialog = Dieses Wi-Fi-Netzwerk vergessen?
+    .description = Du musst erneut ein Passwort eingeben, um dieses Wi-Fi-Netzwerk in der Zukunft zu verwenden.
+
+network-device-state =
+    .activated = Verbunden
+    .config = Wird verbunden
+    .deactivating = Wird getrennt
+    .disconnected = Getrennt
+    .failed = Verbindung fehlgeschlagen
+    .ip-check = Verbindung wird überprüft
+    .ip-config = IP- und Routing-Informationen werden angefordert
+    .need-auth = Erfordert Authentifizierung
+    .prepare = Verbinden wird vorbereitet
+    .secondaries = Warten auf sekundäre Verbindung
+    .unavailable = Nicht verfügbar
+    .unknown = Unbekannter Status
+    .unmanaged = Unverwaltet
+    .unplugged = Kabel ausgesteckt
+
+remove-connection-dialog = Verbindungsprofil entfernen?
+    .vpn-description = Um dieses Netzwerk in der Zukunft nutzen zu können, musst du erneut ein Passwort eingeben.
+    .wired-description = Du musst dieses Profil neu erstellen, um es in Zukunft verwenden zu können.
+
+vpn = VPN
+    .connections = VPN-Verbindungen
+    .remove = Verbindungsprofil entfernen
+    .select-file = VPN-Konfigurationsdatei auswählen
 
 wired = Kabelgebunden
-    .desc = Kabelgebundene Verbindungen und Verbindungsprofile
+    .adapter = Kabelgebundener Adapter { $id }
+    .connections = Kabelgebundene Verbindungen
+    .devices = Kabelgebundene Geräte
+    .remove = Verbindungsprofil entfernen
+
+wifi = Wi-Fi
+    .adapter = Wi-Fi-Adapter { $id }
+    .forget = Dieses Netzwerk vergessen
 
 ## Vernetzung: Online-Konten
 
 online-accounts = Online-Konten
     .desc = Hinzufügen von Konten, IMAP und SMTP, Unternehmensanmeldungen
+
+# Bluetooth
+
+bluetooth = Bluetooth
+    .desc = Bluetooth-Geräte verwalten
+    .status = Dieses System ist als { $aliases } sichtbar, während die Bluetooth-Einstellungen geöffnet sind.
+    .connected = Verbunden
+    .connecting = Wird verbunden
+    .disconnecting = Wird getrennt
+    .connect = Verbinden
+    .disconnect = Trennen
+    .forget = Vergessen
+    .dbus-error = Bei der Interaktion mit DBus ist ein Fehler aufgetreten: { $why }
+    .show-device-without-name = Geräte ohne Namen anzeigen
+
+bluetooth-paired = Zuvor verbundene Geräte
+    .connect = Verbinden
+    .battery = { $percentage } % Akku
+
+bluetooth-available = Geräte in der Nähe
+
+bluetooth-adapters = Bluetooth-Adapter
 
 ## Desktop
 
@@ -103,7 +191,11 @@ style = Stil
     .slightly-round = Leicht rund
     .square = Quadratisch
 
-# interface density left out for now
+interface-density = Dichte der Benutzeroberfläche
+    .comfortable = Komfortabel
+    .compact = Kompakt
+    .spacious = Geräumig
+
 window-management-appearance = Fensterverwaltung
     .active-hint = Größe des Hinweises für aktives Fenster
     .gaps = Lücken um gekachelte Fenster
@@ -177,10 +269,16 @@ super-key = Super-Taste
     .launcher = Starter öffnen
     .workspaces = Arbeitsflächen öffnen
     .applications = Anwendungen öffnen
+    .disable = Deaktivieren
 
 window-controls = Fenstersteuerung
     .minimize = Minimieren-Schaltfläche anzeigen
     .maximize = Maximieren-Schaltfläche anzeigen
+
+focus-navigation = Fokus-Navigation
+    .focus-follows-cursor = Fokus folgt dem Cursor
+    .focus-follows-cursor-delay = Verzögerung für Fokus folgt dem Cursor in ms
+    .cursor-follows-focus = Cursor folgt dem Fokus
 
 ## Desktop: Arbeitsflächen
 
@@ -262,6 +360,12 @@ dialog = Dialog
     .change-prompt = Änderungen an den Einstellungen werden in { $time } Sekunden automatisch rückgängig gemacht.
     .revert-settings = Einstellungen rückgängig machen
 
+legacy-applications = Anwendungsskalierung des X11-Fenstersystems
+    .scaled-by-system = Alle X11-Anwendungen skalieren
+    .system-description = X11-Anwendungen werden auf HiDPI-Bildschirmen unscharf dargestellt.
+    .scaled-natively = X11-Anwendungen in nativer Auflösung rendern
+    .native-description = X11-Anwendungen, die keine Skalierung unterstützen, werden klein dargestellt, wenn HiDPI-Bildschirme verwendet werden. Für Spiele aktivieren, um die volle Monitorauflösung auszunutzen.
+
 ## Klang
 
 sound = Klang
@@ -293,6 +397,29 @@ profile = Profil
 power = Energie & Akku
     .desc = Energieeinstellungen verwalten
 
+battery = Akku
+    .minute = { $value } { $value ->
+    [one] Minute
+    *[other] Minuten
+      }
+    .hour = { $value } { $value ->
+    [one] Stunde
+    *[other] Stunden
+      }
+    .day = { $value } { $value ->
+    [one] Tag
+    *[other] Tage
+      }
+    .less-than-minute = Weniger als eine Minute
+    .and = und
+    .remaining-time = { $time } bis { $action ->
+    [full] voll
+    *[other] leer
+       }
+
+connected-devices = Verbundene Geräte
+    .unknown = Unbekannte Geräte
+
 power-mode = Energiemodus
     .battery = Verlängerte Akkulaufzeit
     .battery-desc = Geringerer Stromverbrauch und leise Leistung.
@@ -312,6 +439,7 @@ input-devices = Eingabegeräte
     .desc = Eingabegeräte
 
 primary-button = Primäre Taste
+    .desc = Legt die Reihenfolge der physischen Tasten fest.
     .left = Links
     .right = Rechts
 
@@ -343,6 +471,7 @@ keyboard-sources = Eingabequellen
 keyboard-special-char = Eingabe von Sonderzeichen
     .alternate = Taste für alternative Zeichen
     .compose = Compose-Taste
+    .caps = Feststelltaste
 
 keyboard-typing-assist = Tippen
     .repeat-rate = Wiederholungsrate
@@ -378,7 +507,6 @@ system-controls = Systemsteuerung
 terminate = Beenden
 toggle-stacking = Fensterstapelung umschalten
 type-key-combination = Tastenkombination eintippen
-unknown = Unbekannt
 
 custom-shortcuts = Benutzerdefinierte Tastenkombinationen
     .add = Tastenkombination hinzufügen
@@ -512,9 +640,11 @@ gestures = Gesten
     .four-finger-up = Mit vier Fingern nach oben wischen
     .three-finger-any = Mit drei Fingern in eine beliebige Richtung wischen
 
+switch-workspaces = Arbeitsflächen wechseln
+    .horizontal = Mit vier Fingern nach links/rechts wischen
+    .vertical = Mit vier Fingern nach oben/unten wischen
+
 switch-between-windows = Zwischen Fenstern wechseln
-switch-to-next-workspace = Zur nächsten Arbeitsfläche wechseln
-switch-to-prev-workspace = Zur vorherigen Arbeitsfläche wechseln
 open-application-library = Anwendungsbibliothek öffnen
 open-workspaces-view = Arbeitsflächenübersicht öffnen
 
@@ -526,6 +656,7 @@ time = Uhrzeit & Sprache
 time-date = Datum & Uhrzeit
     .desc = Zeitzone, automatische Uhreinstellungen und einige Zeitformatierungen.
     .auto = Automatisch festlegen
+    .auto-ntp = Datum & Uhrzeit werden automatisch aktualisiert, wenn die Zeitzone eingestellt ist.
 
 time-zone = Zeitzone
     .auto = Automatische Zeitzone
@@ -533,6 +664,7 @@ time-zone = Zeitzone
 
 time-format = Datum- & Zeitformat
     .twenty-four = 24-Stunden-Uhrzeit
+    .show-seconds = Sekunden anzeigen
     .first = Erster Tag der Woche
     .show-date = Datum im oberen Panel anzeigen
     .friday = Freitag

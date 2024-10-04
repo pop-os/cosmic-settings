@@ -80,6 +80,33 @@ wifi = Wi-Fi
 online-accounts = Online Accounts
     .desc = Add accounts, IMAP and SMTP, enterprise logins
 
+# Bluetooth
+
+confirm = Confirm
+
+bluetooth = Bluetooth
+    .desc = Manage Bluetooth devices
+    .status = This system is visible as { $aliases } while Bluetooth settings are open.
+    .connected = Connected
+    .connecting = Connecting
+    .disconnecting = Disconnecting
+    .connect = Connect
+    .disconnect = Disconnect
+    .forget = Forget
+    .dbus-error = An error has occurred while interacting with DBus: { $why }
+    .show-device-without-name = Show devices without name
+
+bluetooth-paired = Previously Connected Devices
+    .connect = Connect
+    .battery = { $percentage }% battery
+
+bluetooth-confirm-pin = Confirm Bluetooth PIN
+    .description = Please confirm that the following PIN matches the one displayed on { $device }
+
+bluetooth-available = Nearby Devices
+
+bluetooth-adapters = Bluetooth Adapters
+
 ## Desktop
 
 desktop = Desktop
@@ -449,6 +476,7 @@ keyboard-sources = Input Sources
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
     .compose = Compose key
+    .caps = Caps Lock key
 
 keyboard-typing-assist = Typing
     .repeat-rate = Repeat rate
@@ -689,25 +717,3 @@ firmware = Firmware
 
 users = Users
     .desc = Authentication and user accounts.
-
-# Bluetooth
-
-bluetooth = Bluetooth
-    .desc = Manage Bluetooth devices
-    .status = This system is visible as { $aliases } while the Bluetooth settings is open.
-    .connected = Connected
-    .connecting = Connecting
-    .disconnecting = Disconnecting
-    .connect = Connect
-    .disconnect = Disconnect
-    .forget = Forget
-    .dbus-error = An error has occurred while interacting with DBus: { $why }
-    .show-device-without-name = Show device without name
-
-bluetooth-paired = Previously Connected Devices
-    .connect = Connect
-    .battery = { $percentage }% battery
-
-bluetooth-available = Nearby Devices
-
-bluetooth-adapters = Bluetooth Adapters

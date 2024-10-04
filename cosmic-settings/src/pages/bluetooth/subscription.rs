@@ -76,7 +76,7 @@ pub async fn watch(
     connection: zbus::Connection,
     mut tx: futures::channel::mpsc::Sender<bluetooth::Message>,
 ) {
-    let span = tracing::span!(tracing::Level::INFO, "bluetooth::watch");
+    let span = tracing::span!(tracing::Level::INFO, "bluetooth::subscription::watch");
     let _span = span.enter();
 
     loop {
