@@ -1191,7 +1191,7 @@ pub fn settings() -> Section<crate::pages::Message> {
 
             if page.wallpaper_service_config.same_on_all {
                 let element = text(fl!("all-displays"))
-                    .font(cosmic::font::FONT_SEMIBOLD)
+                    .font(cosmic::font::semibold())
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .vertical_alignment(alignment::Vertical::Center)
                     .width(Length::Fill)

@@ -60,6 +60,8 @@ bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 url = "2.5.2"
 xkb-data = "0.2.1"
 zbus = { version = "4.4.0", features = ["tokio"] }
+ustr = "1.0.0"
+fontdb = "0.16.2"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"

@@ -353,7 +353,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                     content: itoa::Buffer::new().format(id),
                     size: core::Pixels(24.0),
                     line_height: core::text::LineHeight::Relative(1.2),
-                    font: cosmic::font::FONT_BOLD,
+                    font: cosmic::font::bold(),
                     bounds: id_bounds.size(),
                     horizontal_alignment: alignment::Horizontal::Center,
                     vertical_alignment: alignment::Vertical::Center,

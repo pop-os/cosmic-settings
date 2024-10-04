@@ -205,6 +205,34 @@ window-management-appearance = Window Management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
 
+### Appearance: Font
+
+font-config = Font Configuration
+interface-font = Interface Font
+monospace-font = Monospace Font
+font-family = Family
+
+font-weight = Weight
+    .thin = Thin
+    .extra-light = Extra Light
+    .light = Light
+    .normal = Normal
+    .medium = Medium
+    .semibold = Semi Bold
+    .bold = Bold
+    .extra-bold = Extra Bold
+    .black = Black
+
+font-style = Style
+    .normal = Normal
+    .italic = Italic
+    .oblique = Oblique
+
+font-stretch = Stretch
+    .condensed = Condensed
+    .normal = Normal
+    .expanded = Expanded
+
 ## Desktop: Notifications
 
 notifications = Notifications

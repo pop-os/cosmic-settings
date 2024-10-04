@@ -1,6 +1,8 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+pub mod font_config;
+
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -85,11 +87,12 @@ pub struct Page {
     interface_text: ColorPickerModel,
     control_component: ColorPickerModel,
     roundness: Roundness,
-    density: Density,
 
     icon_theme_active: Option<usize>,
     icon_themes: IconThemes,
     icon_handles: IconHandles,
+
+    font_config: font_config::Model,
 
     theme: Theme,
     theme_mode: ThemeMode,
@@ -99,7 +102,6 @@ pub struct Page {
 
     auto_switch_descs: [Cow<'static, str>; 4],
 
-    tk: CosmicTk,
     tk_config: Option<Config>,
 
     day_time: bool,
@@ -132,17 +134,15 @@ impl
         Option<Config>,
         ThemeBuilder,
         Option<Config>,
-        CosmicTk,
     )> for Page
 {
     fn from(
-        (theme_mode_config, theme_mode, theme_builder_config, theme_builder, tk_config, tk): (
+        (theme_mode_config, theme_mode, theme_builder_config, theme_builder, tk_config): (
             Option<Config>,
             ThemeMode,
             Option<Config>,
             ThemeBuilder,
             Option<Config>,
-            CosmicTk,
         ),
     ) -> Self {
         let theme = if theme_mode.is_dark {
@@ -150,6 +150,7 @@ impl
         } else {
             Theme::light_default()
         };
+
         let custom_accent = theme_builder.accent.filter(|c| {
             let c = Srgba::new(c.red, c.green, c.blue, 1.0);
             c != theme.palette.accent_blue
@@ -171,7 +172,6 @@ impl
             },
             context_view: None,
             roundness: theme_builder.corner_radii.into(),
-            density: tk.interface_density.into(),
             custom_accent: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
@@ -209,6 +209,7 @@ impl
                 theme_builder.window_hint.map(Color::from),
             ),
             no_custom_window_hint: theme_builder.window_hint.is_none(),
+            font_config: font_config::Model::new(),
             icon_theme_active: None,
             icon_themes: Vec::new(),
             icon_handles: Vec::new(),
@@ -218,7 +219,6 @@ impl
             theme_mode,
             theme_builder,
             tk_config,
-            tk,
             day_time: true,
             auto_switch_descs: [
                 fl!("auto-switch", "sunrise").into(),
@@ -258,25 +258,14 @@ impl From<(Option<Config>, ThemeMode)> for Page {
         );
 
         let tk_config = CosmicTk::config().ok();
-        let tk = match tk_config.as_ref().map(CosmicTk::get_entry) {
-            Some(Ok(c)) => c,
-            Some(Err((errs, c))) => {
-                for err in errs {
-                    tracing::error!(?err, "Error loading CosmicTk");
-                }
-                c
-            }
-            None => CosmicTk::default(),
-        };
-        (
+
+        Self::from((
             theme_mode_config,
             theme_mode,
             theme_builder_config,
             theme_builder,
             tk_config,
-            tk,
-        )
-            .into()
+        ))
     }
 }
 
@@ -296,6 +285,7 @@ pub enum Message {
     ExportError,
     ExportFile(Arc<SelectedFiles>),
     ExportSuccess,
+    FontConfig(font_config::Message),
     GapSize(spin_button::Message),
     IconTheme(usize),
     ImportError,
@@ -386,7 +376,10 @@ impl Page {
             settings::section().add(
                 settings::item::builder(fl!("enable-export"))
                     .description(fl!("enable-export", "desc"))
-                    .toggler(self.tk.apply_theme_global, Message::ApplyThemeGlobal)
+                    .toggler(
+                        cosmic::config::apply_theme_global(),
+                        Message::ApplyThemeGlobal
+                    )
             ),
             // Icon theme previews
             cosmic::widget::column::with_children(vec![
@@ -473,8 +466,7 @@ impl Page {
                     self.icon_theme_active = Some(id);
 
                     if let Some(ref config) = self.tk_config {
-                        let _ = self.tk.write_entry(config);
-                        _ = self.tk.set_icon_theme(config, theme.id.clone());
+                        _ = config.set::<String>("icon-theme", theme.id);
                     }
 
                     tokio::spawn(set_gnome_icon_theme(theme.name));
@@ -681,20 +673,19 @@ impl Page {
                 });
             }
 
-            Message::Density(d) => {
+            Message::Density(density) => {
                 needs_sync = true;
-                self.density = d;
 
                 if let Some(config) = self.tk_config.as_mut() {
-                    let _density = self.tk.set_interface_density(config, d);
-                    let _header = self.tk.set_header_size(config, d);
+                    _ = config.set("interface_density", density);
+                    _ = config.set("header_size", density);
                 }
 
                 let Some(config) = self.theme_builder_config.as_ref() else {
                     return Command::none();
                 };
 
-                let spacing = self.density.into();
+                let spacing = density.into();
 
                 if self
                     .theme_builder
@@ -705,19 +696,19 @@ impl Page {
                 }
 
                 tokio::task::spawn(async move {
-                    Self::update_panel_spacing(d);
+                    Self::update_panel_spacing(density);
                 });
             }
 
             Message::Entered((icon_themes, icon_handles)) => {
-                *self = Self::default();
+                let active_icon_theme = cosmic::config::icon_theme();
 
                 // Set the icon themes, and define the active icon theme.
                 self.icon_themes = icon_themes;
                 self.icon_theme_active = self
                     .icon_themes
                     .iter()
-                    .position(|theme| &theme.id == &self.tk.icon_theme);
+                    .position(|theme| &theme.id == &active_icon_theme);
                 self.icon_handles = icon_handles;
             }
 
@@ -979,8 +970,8 @@ impl Page {
             }
 
             Message::ApplyThemeGlobal(enabled) => {
-                if let Some(tk_config) = self.tk_config.as_ref() {
-                    _ = self.tk.set_apply_theme_global(tk_config, enabled);
+                if let Some(config) = self.tk_config.as_ref() {
+                    _ = config.set("apply_theme_global", enabled);
                 } else {
                     tracing::error!("Failed to apply theme to GNOME config because the CosmicTK config does not exist.");
                 }
@@ -996,6 +987,10 @@ impl Page {
             Message::Daytime(day_time) => {
                 self.day_time = day_time;
                 return Command::none();
+            }
+
+            Message::FontConfig(message) => {
+                return self.font_config.update(message);
             }
         }
 
@@ -1078,6 +1073,7 @@ impl Page {
     }
 
     fn reload_theme_mode(&mut self) {
+        let font_config = std::mem::take(&mut self.font_config);
         let icon_themes = std::mem::take(&mut self.icon_themes);
         let icon_handles = std::mem::take(&mut self.icon_handles);
         let icon_theme_active = self.icon_theme_active.take();
@@ -1088,6 +1084,7 @@ impl Page {
         self.icon_themes = icon_themes;
         self.icon_handles = icon_handles;
         self.icon_theme_active = icon_theme_active;
+        self.font_config = font_config;
     }
 
     fn update_color_picker(
@@ -1304,6 +1301,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(mode_and_colors()),
             sections.insert(style()),
             sections.insert(interface_density()),
+            sections.insert(font_config::section()),
             sections.insert(window_management()),
             sections.insert(experimental()),
             sections.insert(reset_button()),
@@ -1335,7 +1333,16 @@ impl page::Page<crate::pages::Message> for Page {
         _: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Command<crate::pages::Message> {
-        command::future(fetch_icon_themes()).map(crate::pages::Message::Appearance)
+        command::batch(vec![
+            // Load icon themes
+            command::future(fetch_icon_themes()).map(crate::pages::Message::Appearance),
+            // Load font families
+            command::future(async move {
+                let (mono, interface) = font_config::load_font_families();
+                Message::FontConfig(font_config::Message::LoadedFonts(mono, interface))
+            })
+            .map(crate::pages::Message::Appearance),
+        ])
     }
 
     fn on_leave(&mut self) -> Command<crate::pages::Message> {
@@ -1768,11 +1775,11 @@ pub fn style() -> Section<crate::pages::Message> {
 }
 
 pub fn interface_density() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let comfortable = descriptions.insert(fl!("interface-density", "comfortable"));
-    let compact = descriptions.insert(fl!("interface-density", "compact"));
-    let spacious = descriptions.insert(fl!("interface-density", "spacious"));
+    crate::slab!(descriptions {
+        comfortable = fl!("interface-density", "comfortable");
+        compact = fl!("interface-density", "compact");
+        spacious = fl!("interface-density", "spacious");
+    });
 
     Section::default()
         .title(fl!("interface-density"))
@@ -1780,12 +1787,14 @@ pub fn interface_density() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
+            let density = cosmic::config::interface_density();
+
             settings::section()
                 .title(&section.title)
                 .add(settings::item_row(vec![radio(
                     text::body(&descriptions[compact]),
                     Density::Compact,
-                    Some(page.density),
+                    Some(density),
                     Message::Density,
                 )
                 .width(Length::Fill)
@@ -1793,7 +1802,7 @@ pub fn interface_density() -> Section<crate::pages::Message> {
                 .add(settings::item_row(vec![radio(
                     text::body(&descriptions[comfortable]),
                     Density::Standard,
-                    Some(page.density),
+                    Some(density),
                     Message::Density,
                 )
                 .width(Length::Fill)
@@ -1801,7 +1810,7 @@ pub fn interface_density() -> Section<crate::pages::Message> {
                 .add(settings::item_row(vec![radio(
                     text::body(&descriptions[spacious]),
                     Density::Spacious,
-                    Some(page.density),
+                    Some(density),
                     Message::Density,
                 )
                 .width(Length::Fill)
