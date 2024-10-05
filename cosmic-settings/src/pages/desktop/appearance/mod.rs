@@ -13,7 +13,7 @@ use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{
-    CornerRadii, Density, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
+    CornerRadii, Density, Spacing, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
     LIGHT_THEME_BUILDER_ID,
 };
 use cosmic::iced_core::{alignment, Background, Color, Length};
@@ -681,18 +681,17 @@ impl Page {
                     _ = config.set("header_size", density);
                 }
 
-                let Some(config) = self.theme_builder_config.as_ref() else {
-                    return Command::none();
-                };
+                let spacing: Spacing = density.into();
 
-                let spacing = density.into();
+                let light_config = Theme::light_config().ok();
+                let dark_config = Theme::dark_config().ok();
 
-                if self
-                    .theme_builder
-                    .set_spacing(config, spacing)
-                    .unwrap_or_default()
-                {
-                    self.theme_config_write("spacing", spacing);
+                // Update both light and dark theme configs
+                if let Some(config) = light_config {
+                    _ = config.set("spacing", spacing);
+                }
+                if let Some(config) = dark_config {
+                    _ = config.set("spacing", spacing);
                 }
 
                 tokio::task::spawn(async move {
