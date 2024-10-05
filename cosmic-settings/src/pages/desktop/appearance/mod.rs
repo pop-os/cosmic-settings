@@ -768,6 +768,10 @@ impl Page {
                 if let Some(config) = self.theme_builder_config.as_ref() {
                     _ = self.theme_builder.write_entry(config);
                 };
+                if let Some(config) = self.tk_config.as_mut() {
+                    _ = config.set("interface_density", Density::Standard);
+                    _ = config.set("header_size", Density::Standard);
+                }
 
                 let config = if self.theme_mode.is_dark {
                     Theme::dark_config()
@@ -784,6 +788,7 @@ impl Page {
                 let r = self.roundness;
                 tokio::task::spawn(async move {
                     Self::update_panel_radii(r);
+                    Self::update_panel_spacing(Density::Standard);
                 });
 
                 self.reload_theme_mode();
