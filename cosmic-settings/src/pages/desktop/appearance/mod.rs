@@ -466,7 +466,7 @@ impl Page {
                     self.icon_theme_active = Some(id);
 
                     if let Some(ref config) = self.tk_config {
-                        _ = config.set::<String>("icon-theme", theme.id);
+                        _ = config.set::<String>("icon_theme", theme.id);
                     }
 
                     tokio::spawn(set_gnome_icon_theme(theme.name));
