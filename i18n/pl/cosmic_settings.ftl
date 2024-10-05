@@ -190,7 +190,7 @@ experimental-settings = Ustawienia eksperymentalne
 enable-export = Użyj tego motywu do apek GNOME.
     .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Apki inne niż COSMIC mogą wymagać restartu do zmiany motywu.
 
-icon-theme = Motyw ikon
+icon-theme = Motyw Ikon
     .desc = Zastosuj inny zbiór ikon do aplikacji.
 
 text-tint = Odcień tekstu interfejsu
