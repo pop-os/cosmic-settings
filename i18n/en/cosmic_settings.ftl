@@ -185,7 +185,7 @@ experimental-settings = Experimental settings
 enable-export = Apply this theme to GNOME apps.
     .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
 
-icon-theme = Icon theme
+icon-theme = Icon Theme
     .desc = Applies a different set of icons to applications.
 
 text-tint = Interface text tint
@@ -208,7 +208,7 @@ window-management-appearance = Window Management
 ### Appearance: Font
 
 font-config = Font Configuration
-interface-font = Interface Font
+interface-font = System Font
 monospace-font = Monospace Font
 font-family = Family
 
