@@ -769,11 +769,18 @@ fn add_network() -> Command<crate::app::Message> {
                 .mimetype("application/x-openvpn-profile")
                 .glob("*.ovpn"),
         )
+        .filter(FileFilter::new("WireGuard").glob("*.conf*"))
         .open_file()
         .then(|result| async move {
             match result {
                 Ok(response) => {
-                    _ = super::nm_add_vpn_file("openvpn", response.url().path()).await;
+                    let vpn_type = if response.url().as_str().ends_with(".conf") {
+                        "wireguard"
+                    } else {
+                        "openvpn"
+                    };
+
+                    _ = super::nm_add_vpn_file(vpn_type, response.url().path()).await;
                     Message::Refresh
                 }
                 Err(why) => {
