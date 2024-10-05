@@ -82,6 +82,8 @@ online-accounts = ऑनलाइन खातें
 
 # Bluetooth
 
+confirm = पुष्टि करें
+
 bluetooth = ब्लूटूथ
     .desc = ब्लूटूथ उपकरण प्रबंधित करें
     .status = जब ब्लूटूथ सेटिंग्स खुलती हैं, तो यह सिस्टम { $aliases } के रूप में दिखाई देता है।
@@ -97,6 +99,9 @@ bluetooth = ब्लूटूथ
 bluetooth-paired = पहले कनेक्ट किए गए उपकरण
     .connect = कनेक्ट करें
     .battery = { $percentage }% बैटरी
+
+bluetooth-confirm-pin = ब्लूटूथ पिन की पुष्टि करें
+    .description = कृपया पुष्टि करें कि निम्नलिखित पिन { $device } पर प्रदर्शित पिन से मेल खाता है
 
 bluetooth-available = पास के उपकरण
 
@@ -199,6 +204,34 @@ interface-density = इंटरफेस घनत्व
 window-management-appearance = विंडो प्रबंधन
     .active-hint = सक्रिय विंडो संकेतक का आकार
     .gaps = टाइल की गई विंडो के चारों ओर खाली स्थान
+
+### Appearance: Font
+
+font-config = फ़ॉन्ट विन्यास
+interface-font = सिस्टम फ़ॉन्ट
+monospace-font = मोनोस्पेस फ़ॉन्ट
+font-family = फ़ॉन्ट परिवार
+
+font-weight = वजन
+    .thin = पतला
+    .extra-light = अतिरिक्त हल्का
+    .light = हल्का
+    .normal = सामान्य
+    .medium = मध्यम
+    .semibold = सेमी बोल्ड
+    .bold = बोल्ड
+    .extra-bold = अतिरिक्त बोल्ड
+    .black = काला
+
+font-style = शैली
+    .normal = सामान्य
+    .italic = इटालिक
+    .oblique = तिरछा
+
+font-stretch = खिंचाव
+    .condensed = संकुचित
+    .normal = सामान्य
+    .expanded = विस्तारित
 
 ## Desktop: Notifications
 
