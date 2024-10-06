@@ -307,6 +307,7 @@ super-key = Super key action
 window-controls = Window Controls
     .maximize = Show maximize button
     .minimize = Show minimize button
+    .active-window-hint = Show active window hint
 
 focus-navigation = Focus Navigation
     .focus-follows-cursor = Focus follows cursor
