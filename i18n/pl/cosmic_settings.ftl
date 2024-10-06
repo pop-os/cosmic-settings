@@ -210,6 +210,34 @@ window-management-appearance = Zarządzanie Oknami
     .active-hint = Rozmiar wyróżnienia aktywnego okna
     .gaps = Przerwa między ramkami okien w trybie kafelków
 
+### Appearance: Font
+
+font-config = Konfiguracja Czcionek
+interface-font = Czcionka Systemowa
+monospace-font = Czcionka o Stałej Szerokości
+font-family = Rodzina
+
+font-weight = Grubość
+    .thin = Cienka
+    .extra-light = Bardzo delikatna
+    .light = Delikatna
+    .normal = Normalna
+    .medium = Średnia
+    .semibold = Połowicznie Pogrubiona
+    .bold = Pogrubiona
+    .extra-bold = Bardzo Pogrubiona
+    .black = Gruba
+
+font-style = Style
+    .normal = Normalny
+    .italic = Kursywa
+    .oblique = Ukośna
+
+font-stretch = Rozpiętość
+    .condensed = Zwarta
+    .normal = Normalna
+    .expanded = Luźny
+
 ## Desktop: Notifications
 
 notifications = Powiadomienia
