@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::iced::{alignment, color, Length};
-use cosmic::iced_core::text::Wrap;
-use cosmic::prelude::CollectionWidget;
+use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, settings, text};
-use cosmic::Command;
+use cosmic::Task;
 use cosmic::{Apply, Element};
 use cosmic_settings_page::{self as page, section, Section};
 use futures::channel::oneshot;
@@ -78,7 +77,7 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _page: cosmic_settings_page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Command<crate::pages::Message> {
+    ) -> cosmic::Task<crate::pages::Message> {
         // TODO start stream for new device
         cosmic::command::future(async move {
             match zbus::Connection::system().await {
@@ -88,7 +87,7 @@ impl page::Page<crate::pages::Message> for Page {
         })
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         if let Some(cancel) = self.subscription.take() {
             _ = cancel.send(());
         }
@@ -106,7 +105,7 @@ impl page::Page<crate::pages::Message> for Page {
         self.popup_setting = false;
         self.show_device_without_alias = false;
 
-        Command::none()
+        Task::none()
     }
 
     fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
@@ -119,12 +118,12 @@ impl page::Page<crate::pages::Message> for Page {
                     "description",
                     device = device
                 ))
-                .wrap(Wrap::Word);
+                .wrapping(Wrapping::Word);
 
                 let pin = widget::text::title1(itoa::Buffer::new().format(*passkey).to_owned())
                     .width(Length::Fill)
-                    .horizontal_alignment(alignment::Horizontal::Center)
-                    .wrap(Wrap::None);
+                    .align_x(alignment::Horizontal::Center)
+                    .wrapping(Wrapping::None);
 
                 let control = widget::column::with_capacity(2)
                     .push(description)
@@ -193,14 +192,14 @@ impl From<Message> for crate::pages::Message {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> cosmic::Command<crate::Message> {
+    pub fn update(&mut self, message: Message) -> cosmic::Task<crate::Message> {
         let span = tracing::span!(tracing::Level::INFO, "bluetooth::update");
         let _span = span.enter();
 
         match message {
             Message::Agent(message) => {
                 let Some(message) = Arc::into_inner(message) else {
-                    return Command::none();
+                    return Task::none();
                 };
 
                 match message {
@@ -268,7 +267,7 @@ impl Page {
                             active,
                         ));
                     }
-                    let commands: Vec<Command<Message>> = self
+                    let tasks: Vec<Task<Message>> = self
                         .adapters
                         .iter_mut()
                         .map(|(path, adapter)| {
@@ -285,7 +284,7 @@ impl Page {
                         })
                         .collect();
                     self.update_status();
-                    return cosmic::command::batch(commands);
+                    return cosmic::command::batch(tasks);
                 }
                 tracing::warn!("No DBus connection ready");
             }
@@ -413,7 +412,7 @@ impl Page {
                 if let Some(connection) = self.connection.as_ref() {
                     let connection = connection.clone();
                     if let Some((path, adapter)) = self.get_selected_adapter_mut() {
-                        let mut fut: Vec<Command<Message>> = vec![cosmic::command::future(
+                        let mut fut: Vec<Task<Message>> = vec![cosmic::command::future(
                             get_devices(connection.clone(), path.clone()),
                         )];
                         if adapter.enabled == Active::Enabled
@@ -435,7 +434,7 @@ impl Page {
                 tracing::debug!("Forgetting to device {path}");
                 self.popup_device = None;
                 if self.connection.is_none() {
-                    return cosmic::Command::none();
+                    return cosmic::Task::none();
                 }
                 if let Some(connection) = self.connection.as_ref() {
                     let connection = connection.clone();
@@ -450,13 +449,13 @@ impl Page {
             Message::ConnectDevice(path) => {
                 tracing::debug!("Connecting device {path}");
                 if self.connection.is_none() {
-                    return cosmic::Command::none();
+                    return cosmic::Task::none();
                 }
                 if let Some(connection) = self.connection.as_ref() {
                     let connection = connection.clone();
                     if let Some(device) = self.devices.get_mut(&path) {
                         if matches!(device.enabled, Active::Enabled | Active::Enabling) {
-                            return cosmic::Command::none();
+                            return cosmic::Task::none();
                         }
                         device.enabled = Active::Enabling;
                         return cosmic::command::future(connect_device(connection, path));
@@ -472,7 +471,7 @@ impl Page {
                     let connection = connection.clone();
                     if let Some(device) = self.devices.get_mut(&path) {
                         if matches!(device.enabled, Active::Disabled | Active::Disabling) {
-                            return cosmic::Command::none();
+                            return cosmic::Task::none();
                         }
                         device.enabled = Active::Disabling;
                         return cosmic::command::future(disconnect_device(connection, path));
@@ -485,7 +484,7 @@ impl Page {
                 tracing::warn!("Failed operation on device {path}");
                 if let Some(device) = self.devices.get_mut(&path) {
                     if matches!(device.enabled, Active::Disabled | Active::Disabling) {
-                        return cosmic::Command::none();
+                        return cosmic::Task::none();
                     }
                     device.enabled = match device.enabled {
                         Active::Disabling => Active::Enabled,
@@ -499,7 +498,7 @@ impl Page {
                 tracing::error!("dbus connection failed. {why}");
             }
         };
-        cosmic::Command::none()
+        cosmic::Task::none()
     }
 
     fn update_status(&mut self) {
@@ -597,7 +596,7 @@ fn status() -> Section<crate::pages::Message> {
                     } else {
                         text::body(&descriptions[bluetooth_heading]).into()
                     },
-                    widget::horizontal_space(Length::Fill).into(),
+                    widget::horizontal_space().width(Length::Fill).into(),
                     if page.popup_setting {
                         widget::popover(
                             widget::button::icon(widget::icon::from_name(
@@ -622,7 +621,7 @@ fn status() -> Section<crate::pages::Message> {
                             .width(Length::Fixed(300.0))
                             .height(Length::Shrink)
                             .padding([theme.space_xs(), theme.space_xxxs()])
-                            .style(cosmic::theme::Container::Dialog)
+                            .class(cosmic::theme::Container::Dialog)
                         })
                         .into()
                     } else {
@@ -630,7 +629,9 @@ fn status() -> Section<crate::pages::Message> {
                             .on_press(Message::PopupSetting(true))
                             .into()
                     },
-                    widget::toggler(None, status == Active::Enabled, Message::SetActive).into(),
+                    widget::toggler(status == Active::Enabled)
+                        .on_toggle(Message::SetActive)
+                        .into(),
                 ]))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Bluetooth)
@@ -641,11 +642,11 @@ fn popup_button(message: Option<Message>, text: &str) -> Element<'_, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
     widget::text::body(text)
-        .vertical_alignment(alignment::Vertical::Center)
+        .align_y(alignment::Vertical::Center)
         .apply(widget::button::custom)
         .padding([theme.space_xxxs(), theme.space_xs()])
         .width(Length::Fill)
-        .style(cosmic::theme::Button::MenuItem)
+        .class(cosmic::theme::Button::MenuItem)
         .on_press_maybe(message)
         .into()
 }
@@ -712,7 +713,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                             )
                             .width(Length::Fixed(200.0))
                             .padding(theme.space_xxxs())
-                            .style(cosmic::theme::Container::Dialog)
+                            .class(cosmic::theme::Container::Dialog)
                         })
                         .into()
                     } else {
@@ -729,20 +730,22 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                 .push(text::caption(battery))
                                 .into()
                         } else {
-                            widget::text(device.alias_or_addr()).wrap(Wrap::Word).into()
+                            widget::text(device.alias_or_addr())
+                                .wrapping(Wrapping::Word)
+                                .into()
                         },
-                        widget::horizontal_space(Length::Fill).into(),
+                        widget::horizontal_space().width(Length::Fill).into(),
                         match device.enabled {
                             Active::Enabled => widget::text(&descriptions[device_connected]).into(),
                             Active::Enabling => widget::text(&descriptions[device_connecting])
-                                .style(cosmic::theme::Text::Color(color!(128, 128, 128)))
+                                .class(cosmic::theme::Text::Color(color!(128, 128, 128)))
                                 .into(),
                             Active::Disabling => widget::text(&descriptions[device_disconnecting])
-                                .style(cosmic::theme::Text::Color(color!(128, 128, 128)))
+                                .class(cosmic::theme::Text::Color(color!(128, 128, 128)))
                                 .into(),
                             Active::Disabled => widget::button::text(&descriptions[device_connect])
                                 .on_press(Message::ConnectDevice(path.clone()))
-                                .style(widget::button::Style::Text)
+                                .class(widget::button::ButtonClass::Text)
                                 .into(),
                         },
                         device_menu,
@@ -785,14 +788,14 @@ fn available_devices() -> Section<crate::pages::Message> {
 
                     let mut items = vec![
                         widget::icon::from_name(device.icon).size(16).into(),
-                        text(device.alias_or_addr()).wrap(Wrap::Word).into(),
-                        widget::horizontal_space(Length::Fill).into(),
+                        text(device.alias_or_addr()).wrapping(Wrapping::Word).into(),
+                        widget::horizontal_space().width(Length::Fill).into(),
                     ];
 
                     if device.enabled == Active::Enabling {
                         items.push(
                             text(&descriptions[device_connecting])
-                                .style(cosmic::theme::Text::Color(color!(128, 128, 128)))
+                                .class(cosmic::theme::Text::Color(color!(128, 128, 128)))
                                 .into(),
                         );
                     }
@@ -834,16 +837,16 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
                         widget::icon::from_name("bluetooth-symbolic")
                             .size(20)
                             .into(),
-                        widget::horizontal_space(theme.space_xxs()).into(),
-                        text(&adapter.alias).wrap(Wrap::Word).into(),
-                        widget::horizontal_space(Length::Fill).into(),
+                        widget::horizontal_space().width(theme.space_xxs()).into(),
+                        text(&adapter.alias).wrapping(Wrapping::Word).into(),
+                        widget::horizontal_space().width(Length::Fill).into(),
                         widget::icon::from_name("go-next-symbolic").into(),
                     ];
                     if page.adapter_connected(path) {
                         items.insert(
                             4,
                             text(&descriptions[device_connected])
-                                .wrap(Wrap::Word)
+                                .wrapping(Wrapping::Word)
                                 .into(),
                         );
                     }

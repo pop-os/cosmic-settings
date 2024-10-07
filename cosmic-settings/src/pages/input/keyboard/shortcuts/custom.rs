@@ -4,7 +4,7 @@ use super::{ShortcutBinding, ShortcutMessage, ShortcutModel};
 use cosmic::iced::alignment::Horizontal;
 use cosmic::iced::Length;
 use cosmic::widget::{self, button, icon};
-use cosmic::{Apply, Command, Element};
+use cosmic::{Apply, Element, Task};
 use cosmic_settings_config::shortcuts::{Action, Shortcuts};
 use cosmic_settings_config::Binding;
 use cosmic_settings_page::{self as page, section, Section};
@@ -15,7 +15,7 @@ pub struct Page {
     model: super::Model,
     add_shortcut: AddShortcut,
     replace_dialog: Vec<(Binding, Action, String)>,
-    command_id: widget::Id,
+    task_id: widget::Id,
     name_id: widget::Id,
 }
 
@@ -25,7 +25,7 @@ impl Default for Page {
             model: super::Model::default().custom().actions(bindings),
             add_shortcut: AddShortcut::default(),
             replace_dialog: Vec::new(),
-            command_id: widget::Id::unique(),
+            task_id: widget::Id::unique(),
             name_id: widget::Id::unique(),
         }
     }
@@ -37,8 +37,8 @@ pub enum Message {
     AddKeybinding,
     /// Add a new custom shortcut to the config
     AddShortcut,
-    /// Update the command text input
-    CommandInput(String),
+    /// Update the Task text input
+    TaskInput(String),
     /// Toggle editing of the key text input
     EditCombination,
     /// Toggle editability of the key text input
@@ -63,7 +63,7 @@ pub enum Message {
 struct AddShortcut {
     pub active: bool,
     pub name: String,
-    pub command: String,
+    pub task: String,
     pub keys: Slab<(String, widget::Id, bool)>,
 }
 
@@ -71,7 +71,7 @@ impl AddShortcut {
     pub fn enable(&mut self) {
         self.active = true;
         self.name.clear();
-        self.command.clear();
+        self.task.clear();
 
         if self.keys.is_empty() {
             self.keys
@@ -87,10 +87,10 @@ impl AddShortcut {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
-            Message::CommandInput(text) => {
-                self.add_shortcut.command = text;
+            Message::TaskInput(text) => {
+                self.add_shortcut.task = text;
             }
 
             Message::KeyInput(id, text) => {
@@ -121,7 +121,7 @@ impl Page {
                 self.add_shortcut
                     .keys
                     .insert((String::new(), new_id.clone(), true));
-                return Command::batch(vec![
+                return Task::batch(vec![
                     widget::text_input::focus(new_id.clone()),
                     widget::text_input::select_all(new_id),
                 ]);
@@ -129,10 +129,10 @@ impl Page {
 
             Message::AddShortcut => {
                 let name = self.add_shortcut.name.trim();
-                let command = self.add_shortcut.command.trim();
+                let task = self.add_shortcut.task.trim();
 
-                if name.is_empty() || command.is_empty() {
-                    return Command::none();
+                if name.is_empty() || task.is_empty() {
+                    return Task::none();
                 }
 
                 let mut addable_bindings = Vec::new();
@@ -143,11 +143,11 @@ impl Page {
                     }
 
                     let Ok(binding) = Binding::from_str(keys) else {
-                        return Command::none();
+                        return Task::none();
                     };
 
                     if !binding.is_set() {
-                        return Command::none();
+                        return Task::none();
                     }
 
                     if let Some(action) = self.model.config_contains(&binding) {
@@ -169,7 +169,7 @@ impl Page {
             Message::EditCombination => {
                 let (_, id, editing) = &mut self.add_shortcut.keys[0];
                 *editing = true;
-                return Command::batch(vec![
+                return Task::batch(vec![
                     widget::text_input::focus(id.clone()),
                     widget::text_input::select_all(id.clone()),
                 ]);
@@ -177,7 +177,7 @@ impl Page {
 
             Message::NameSubmit => {
                 if !self.add_shortcut.name.trim().is_empty() {
-                    return widget::text_input::focus(self.command_id.clone());
+                    return widget::text_input::focus(self.task_id.clone());
                 }
             }
 
@@ -209,7 +209,7 @@ impl Page {
 
             Message::ShortcutContext => {
                 self.add_shortcut.enable();
-                return Command::batch(vec![
+                return Task::batch(vec![
                     cosmic::command::message(crate::app::Message::OpenContextDrawer(
                         fl!("custom-shortcuts", "context").into(),
                     )),
@@ -218,7 +218,7 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     fn add_keybinding_context(&self) -> Element<'_, Message> {
@@ -228,11 +228,11 @@ impl Page {
             .on_submit(Message::NameSubmit)
             .id(self.name_id.clone());
 
-        let command_input = widget::text_input("", &self.add_shortcut.command)
+        let task_input = widget::text_input("", &self.add_shortcut.task)
             .padding([6, 12])
-            .on_input(Message::CommandInput)
+            .on_input(Message::TaskInput)
             .on_submit(Message::EditCombination)
-            .id(self.command_id.clone());
+            .id(self.task_id.clone());
 
         let name_control = widget::column()
             .spacing(4)
@@ -242,7 +242,7 @@ impl Page {
         let command_control = widget::column()
             .spacing(4)
             .push(widget::text::body(fl!("command")))
-            .push(command_input);
+            .push(task_input);
 
         let input_fields = widget::column()
             .spacing(12)
@@ -288,7 +288,7 @@ impl Page {
     fn add_shortcut(&mut self, mut binding: Binding) {
         self.add_shortcut.active = !self.replace_dialog.is_empty();
         binding.description = Some(self.add_shortcut.name.clone());
-        let new_action = Action::Spawn(self.add_shortcut.command.clone());
+        let new_action = Action::Spawn(self.add_shortcut.task.clone());
         self.model.config_add(new_action, binding);
     }
 }
@@ -350,14 +350,14 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
+    ) -> Task<crate::pages::Message> {
         self.model.on_enter();
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.model.on_clear();
-        Command::none()
+        Task::none()
     }
 }
 
@@ -367,11 +367,11 @@ fn bindings(_defaults: &Shortcuts, keybindings: &Shortcuts) -> Slab<ShortcutMode
     keybindings
         .iter()
         .fold(Slab::new(), |mut slab, (binding, action)| {
-            if let Action::Spawn(command) = action {
+            if let Action::Spawn(task) = action {
                 let description = binding
                     .description
                     .clone()
-                    .unwrap_or_else(|| command.to_owned());
+                    .unwrap_or_else(|| task.to_owned());
 
                 let new_binding = ShortcutBinding {
                     id: widget::Id::unique(),

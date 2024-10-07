@@ -14,7 +14,7 @@ use std::{
     sync::Arc,
 };
 
-use cosmic::{command, Apply, Command};
+use cosmic::iced::{Color, Length};
 use cosmic::{
     dialog::file_chooser,
     widget::{
@@ -23,16 +23,13 @@ use cosmic::{
         settings, tab_bar, text, toggler,
     },
 };
-use cosmic::{
-    iced::{Color, Length},
-    prelude::CollectionWidget,
-};
 use cosmic::{iced_core::alignment, iced_runtime::core::image::Handle as ImageHandle};
 use cosmic::{iced_core::Alignment, widget::icon};
 use cosmic::{
     widget::{color_picker::ColorPickerUpdate, ColorPickerModel},
     Element,
 };
+use cosmic::{Apply, Task};
 use cosmic_bg_config::Source;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -208,12 +205,12 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _page: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
+    ) -> Task<crate::pages::Message> {
         let current_folder = self.config.current_folder().to_owned();
 
         let recurse = self.categories.selected == Some(Category::Wallpapers);
 
-        command::future(async move {
+        Task::future(async move {
             let (service_config, displays) = wallpaper::config().await;
 
             let mut selection = change_folder(current_folder, recurse).await;
@@ -418,7 +415,7 @@ impl Page {
             _ => return,
         };
 
-        self.cached_display_handle = Some(ImageHandle::from_pixels(
+        self.cached_display_handle = Some(ImageHandle::from_rgba(
             image.width(),
             image.height(),
             image.to_vec(),
@@ -545,14 +542,14 @@ impl Page {
     }
 
     /// Changes the selection category, such as wallpaper select or color select.
-    fn change_category(&mut self, category: Category) -> Command<crate::app::Message> {
-        let mut command = Command::none();
+    fn change_category(&mut self, category: Category) -> Task<crate::app::Message> {
+        let mut task = Task::none();
 
         match category {
             Category::Wallpapers => {
                 if self.config.current_folder.is_some() {
                     let _ = self.config.set_current_folder(None);
-                    command = cosmic::command::future(async move {
+                    task = cosmic::command::future(async move {
                         let folder = change_folder(Config::default_folder().to_owned(), true).await;
                         Message::ChangeFolder(folder)
                     });
@@ -572,7 +569,7 @@ impl Page {
                         tracing::error!(?path, ?why, "failed to set current folder");
                     }
 
-                    command = cosmic::command::future(async move {
+                    task = cosmic::command::future(async move {
                         Message::ChangeFolder(change_folder(path, false).await)
                     });
                 }
@@ -596,7 +593,7 @@ impl Page {
         }
 
         self.categories.selected = Some(category);
-        command
+        task
     }
 
     /// Changes the output being configured
@@ -669,7 +666,7 @@ impl Page {
     }
 
     #[allow(clippy::too_many_lines)]
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
             Message::UpdateState(_state) => {
                 if let Choice::Slideshow = self.selection.active {
@@ -701,27 +698,23 @@ impl Page {
             }
 
             Message::ColorAdd(message) => {
-                match message {
-                    ColorPickerUpdate::ActionFinished => {
-                        let _res = self
-                            .color_model
-                            .update::<crate::app::Message>(ColorPickerUpdate::AppliedColor);
+                if let ColorPickerUpdate::ActionFinished = message {
+                    let _res = self
+                        .color_model
+                        .update::<crate::app::Message>(ColorPickerUpdate::AppliedColor);
 
-                        if let Some(color) = self.color_model.get_applied_color() {
-                            let color = wallpaper::Color::Single([color.r, color.g, color.b]);
+                    if let Some(color) = self.color_model.get_applied_color() {
+                        let color = wallpaper::Color::Single([color.r, color.g, color.b]);
 
-                            if let Err(why) = self.config.add_custom_color(color.clone()) {
-                                tracing::error!(?why, "could not set custom color");
-                            }
-
-                            self.selection.add_custom_color(color.clone());
-                            self.selection.active = Choice::Color(color);
-                            self.cached_display_handle = None;
-                            self.context_view = None;
+                        if let Err(why) = self.config.add_custom_color(color.clone()) {
+                            tracing::error!(?why, "could not set custom color");
                         }
-                    }
 
-                    _ => (),
+                        self.selection.add_custom_color(color.clone());
+                        self.selection.active = Choice::Color(color);
+                        self.cached_display_handle = None;
+                        self.context_view = None;
+                    }
                 };
 
                 return self.color_model.update::<crate::app::Message>(message);
@@ -747,7 +740,7 @@ impl Page {
 
                 let Some((path, display, selection)) = result else {
                     tracing::warn!("image not found for provided wallpaper");
-                    return Command::none();
+                    return Task::none();
                 };
 
                 if let Err(why) = self.config.add_custom_image(path.clone()) {
@@ -757,7 +750,7 @@ impl Page {
                 self.selection.add_custom_image(
                     path,
                     display,
-                    ImageHandle::from_pixels(
+                    ImageHandle::from_rgba(
                         selection.width(),
                         selection.height(),
                         selection.into_vec(),
@@ -777,7 +770,7 @@ impl Page {
             }
 
             Message::ImageAddDialog => {
-                return cosmic::command::future(async {
+                return cosmic::Task::future(async {
                     let dialog_result = file_chooser::open::Dialog::new()
                         .title(fl!("wallpaper", "image-dialog"))
                         .accept_label(fl!("dialog-add"))
@@ -816,7 +809,7 @@ impl Page {
 
             Message::Output(id) => {
                 self.change_output(id);
-                return Command::none();
+                return Task::none();
             }
 
             Message::RotationFrequency(pos) => self.change_rotation_frequency(pos),
@@ -837,20 +830,16 @@ impl Page {
                     self.cache_display_image();
                 } else {
                     if let Some(output) = self.config_output() {
-                        match self.config.current_image(output) {
-                            Some(Source::Path(path)) => {
-                                if let Some(entity) = self.wallpaper_id_from_path(&path) {
-                                    if let Some(entry) =
-                                        self.config_wallpaper_entry(output.to_owned(), path)
-                                    {
-                                        self.select_wallpaper(&entry, entity, false);
-                                        self.config_apply();
-                                        return Command::none();
-                                    }
+                        if let Some(Source::Path(path)) = self.config.current_image(output) {
+                            if let Some(entity) = self.wallpaper_id_from_path(&path) {
+                                if let Some(entry) =
+                                    self.config_wallpaper_entry(output.to_owned(), path)
+                                {
+                                    self.select_wallpaper(&entry, entity, false);
+                                    self.config_apply();
+                                    return Task::none();
                                 }
                             }
-
-                            _ => (),
                         }
                     }
 
@@ -863,7 +852,7 @@ impl Page {
                     DialogResponse::Path(path) => path,
                     DialogResponse::Error(why) => {
                         tracing::error!(why, "dialog response error");
-                        return Command::none();
+                        return Task::none();
                     }
                 };
 
@@ -886,7 +875,7 @@ impl Page {
                     let recurse = self.categories.selected == Some(Category::Wallpapers);
 
                     // Load the wallpapers from the selected folder into the view.
-                    return cosmic::command::future(async move {
+                    return cosmic::Task::future(async move {
                         let message = Message::ChangeFolder(change_folder(path, recurse).await);
                         let page_message = crate::pages::Message::DesktopWallpaper(message);
                         crate::Message::PageMessage(page_message)
@@ -899,7 +888,7 @@ impl Page {
                     DialogResponse::Path(path) => path,
                     DialogResponse::Error(why) => {
                         tracing::error!(why, "dialog response error");
-                        return Command::none();
+                        return Task::none();
                     }
                 };
 
@@ -907,7 +896,7 @@ impl Page {
                     tracing::info!(?path, "opening custom image");
 
                     // Loads a single custom image and its thumbnail for display in the backgrounds view.
-                    return cosmic::command::future(async move {
+                    return cosmic::Task::future(async move {
                         let result = wallpaper::load_image_with_thumbnail(path);
 
                         let message = Message::ImageAdd(result.map(Arc::new));
@@ -974,7 +963,7 @@ impl Page {
         }
 
         self.config_apply();
-        Command::none()
+        Task::none()
     }
 
     /// Selects the given wallpaper entry.
@@ -1125,7 +1114,7 @@ pub async fn change_folder(current_folder: PathBuf, recurse: bool) -> Context {
 
         update.display_images.insert(id, display_image);
 
-        let selection_handle = ImageHandle::from_pixels(
+        let selection_handle = ImageHandle::from_rgba(
             selection_image.width(),
             selection_image.height(),
             selection_image.into_vec(),
@@ -1192,8 +1181,8 @@ pub fn settings() -> Section<crate::pages::Message> {
             if page.wallpaper_service_config.same_on_all {
                 let element = text(fl!("all-displays"))
                     .font(cosmic::font::semibold())
-                    .horizontal_alignment(alignment::Horizontal::Center)
-                    .vertical_alignment(alignment::Vertical::Center)
+                    .align_x(alignment::Horizontal::Center)
+                    .align_y(alignment::Vertical::Center)
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .apply(cosmic::widget::container)
@@ -1216,18 +1205,15 @@ pub fn settings() -> Section<crate::pages::Message> {
                 let mut column = list_column()
                     .add(settings::item(
                         &descriptions[same_label],
-                        toggler(
-                            None,
-                            page.wallpaper_service_config.same_on_all,
-                            Message::SameWallpaper,
-                        ),
+                        toggler(page.wallpaper_service_config.same_on_all)
+                            .on_toggle(Message::SameWallpaper),
                     ))
                     .add(settings::item(&descriptions[fit_label], wallpaper_fit));
 
                 if show_slideshow_toggle {
                     column = column.add(settings::item(
                         &descriptions[slide_label],
-                        toggler(None, slideshow_enabled, Message::Slideshow),
+                        toggler(slideshow_enabled).on_toggle(Message::Slideshow),
                     ));
                 }
 
@@ -1269,7 +1255,7 @@ pub fn settings() -> Section<crate::pages::Message> {
 
             children.push(
                 row::with_capacity(2)
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     // Show a folder icon if the active category is a custom folder.
                     .push_maybe(
                         if let Some(Category::RecentFolder(_)) = page.categories.selected {
@@ -1279,7 +1265,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                         },
                     )
                     .push(category_selection)
-                    .push(cosmic::widget::horizontal_space(Length::Fill))
+                    .push(cosmic::widget::horizontal_space().width(Length::Fill))
                     .push_maybe(add_button)
                     .into(),
             );
@@ -1346,7 +1332,7 @@ pub fn settings() -> Section<crate::pages::Message> {
 //     .width(Length::Fill)
 //     .height(Length::Fill)
 //     .center_x()
-//     .style(cosmic::theme::style::Container::Background);
+//     .class(cosmic::theme::style::Container::Background);
 
 //     cosmic::widget::column::with_capacity(2)
 //         .push(header)

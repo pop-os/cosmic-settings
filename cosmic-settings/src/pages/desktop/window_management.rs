@@ -113,7 +113,7 @@ impl Page {
                 self.focus_follows_cursor = value;
                 if let Err(err) = self
                     .comp_config
-                    .set("focus_follows_cursor", &self.focus_follows_cursor)
+                    .set("focus_follows_cursor", self.focus_follows_cursor)
                 {
                     error!(?err, "Failed to set config 'focus_follows_cursor'");
                 }
@@ -141,7 +141,7 @@ impl Page {
                 self.cursor_follows_focus = value;
                 if let Err(err) = self
                     .comp_config
-                    .set("cursor_follows_focus", &self.cursor_follows_focus)
+                    .set("cursor_follows_focus", self.cursor_follows_focus)
                 {
                     error!(?err, "Failed to set config 'cursor_follows_focus'");
                 }
@@ -283,11 +283,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                 .title(&section.title)
                 .add(settings::item(
                     &descriptions[focus_follows_cursor],
-                    toggler(
-                        None,
-                        page.focus_follows_cursor,
-                        Message::SetFocusFollowsCursor,
-                    ),
+                    toggler(page.focus_follows_cursor).on_toggle(Message::SetFocusFollowsCursor),
                 ))
                 .add(settings::item(
                     &descriptions[focus_follows_cursor_delay],
@@ -301,11 +297,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                 ))
                 .add(settings::item(
                     &descriptions[cursor_follows_focus],
-                    toggler(
-                        None,
-                        page.cursor_follows_focus,
-                        Message::SetCursorFollowsFocus,
-                    ),
+                    toggler(page.cursor_follows_focus).on_toggle(Message::SetCursorFollowsFocus),
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)

@@ -15,7 +15,7 @@ pub async fn set_username(connection_name: &str, username: &str) -> Result<(), S
 
 pub async fn set_password_flags_none(connection_name: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
-        .args(&[
+        .args([
             "con",
             "mod",
             connection_name,
@@ -30,10 +30,10 @@ pub async fn set_password_flags_none(connection_name: &str) -> Result<(), String
 
 pub async fn set_password(connection_name: &str, password: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
-        .args(&[
+        .args([
             "con",
             "mod",
-            &connection_name,
+            connection_name,
             "vpn.secrets",
             &format!("password={password}"),
         ])

@@ -9,10 +9,9 @@ use anyhow::Context;
 use ashpd::desktop::file_chooser::FileFilter;
 use cosmic::{
     iced::{alignment, Length},
-    iced_core::text::Wrap,
-    prelude::CollectionWidget,
+    iced_core::text::Wrapping,
     widget::{self, icon},
-    Apply, Command, Element,
+    Apply, Element, Task,
 };
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::network_manager::{
@@ -140,7 +139,7 @@ impl VpnConnectionSettings {
             .map_or(false, |ct| match ct {
                 ConnectionType::Password => true,
             })
-            .then(|| self.password_flag)
+            .then_some(self.password_flag)
             .flatten()
     }
 }
@@ -331,7 +330,7 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _page: cosmic_settings_page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Command<crate::pages::Message> {
+    ) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
             return cosmic::command::future(async move {
                 zbus::Connection::system()
@@ -344,10 +343,10 @@ impl page::Page<crate::pages::Message> for Page {
             });
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.view_more_popup = None;
         self.nm_state = None;
         self.withheld_active_conns = None;
@@ -358,12 +357,12 @@ impl page::Page<crate::pages::Message> for Page {
             _ = cancel.send(());
         }
 
-        Command::none()
+        Task::none()
     }
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         let span = tracing::span!(tracing::Level::INFO, "vpn::update");
         let _span = span.enter();
 
@@ -380,7 +379,7 @@ impl Page {
                 if let Some(NmState { ref conn, .. }) = self.nm_state {
                     let conn = conn.clone();
                     self.update_active_conns(state);
-                    return cosmic::command::batch(vec![
+                    return cosmic::Task::batch(vec![
                         connection_settings(conn.clone()),
                         update_devices(conn),
                     ]);
@@ -403,7 +402,7 @@ impl Page {
                 network_manager::Event::ActiveConns | network_manager::Event::Devices,
             ) => {
                 if let Some(NmState { ref conn, .. }) = self.nm_state {
-                    return cosmic::command::batch(vec![
+                    return cosmic::Task::batch(vec![
                         update_state(conn.clone()),
                         update_devices(conn.clone()),
                         connection_settings(conn.clone()),
@@ -427,7 +426,7 @@ impl Page {
                         .collect(),
                 });
 
-                return cosmic::command::batch(vec![
+                return cosmic::Task::batch(vec![
                     connection_settings(conn.clone()),
                     update_devices(conn),
                 ]);
@@ -556,7 +555,7 @@ impl Page {
 
             Message::Refresh => {
                 if let Some(NmState { ref conn, .. }) = self.nm_state {
-                    return cosmic::command::batch(vec![
+                    return cosmic::Task::batch(vec![
                         update_state(conn.clone()),
                         update_devices(conn.clone()),
                         connection_settings(conn.clone()),
@@ -575,7 +574,7 @@ impl Page {
 
             Message::ConnectWithPassword => {
                 let Some(dialog) = self.dialog.take() else {
-                    return Command::none();
+                    return Task::none();
                 };
 
                 if let VpnDialog::Password {
@@ -624,7 +623,7 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     fn activate_with_password(
@@ -632,7 +631,7 @@ impl Page {
         connection_name: String,
         username: String,
         password: SecureString,
-    ) -> Command<Message> {
+    ) -> Task<Message> {
         cosmic::command::future(async move {
             if let Err(why) = nmcli::set_username(&connection_name, &username).await {
                 return Message::Error(ErrorKind::WithPassword("username"), why.to_string());
@@ -773,13 +772,13 @@ fn devices_view() -> Section<crate::pages::Message> {
                             )
                         };
 
-                        let identifier = widget::text::body(id).wrap(Wrap::Glyph);
+                        let identifier = widget::text::body(id).wrapping(Wrapping::Glyph);
 
                         let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
                             widget::button::text(connect_txt).on_press(msg).into()
                         } else {
                             widget::text::body(connect_txt)
-                                .vertical_alignment(alignment::Vertical::Center)
+                                .align_y(alignment::Vertical::Center)
                                 .into()
                         };
 
@@ -812,7 +811,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                                         ))
                                         .width(Length::Fixed(200.0))
                                         .apply(widget::container)
-                                        .style(cosmic::style::Container::Dialog)
+                                        .class(cosmic::style::Container::Dialog)
                                 })
                                 .apply(|e| Some(Element::from(e)))
                         } else {
@@ -824,12 +823,12 @@ fn devices_view() -> Section<crate::pages::Message> {
                         let controls = widget::row::with_capacity(2)
                             .push(connect)
                             .push_maybe(view_more)
-                            .align_items(alignment::Alignment::Center)
+                            .align_y(alignment::Alignment::Center)
                             .spacing(spacing.space_xxs);
 
                         let widget = widget::settings::item_row(vec![
                             identifier.into(),
-                            widget::horizontal_space(Length::Fill).into(),
+                            widget::horizontal_space().width(Length::Fill).into(),
                             controls.into(),
                         ]);
 
@@ -846,20 +845,20 @@ fn devices_view() -> Section<crate::pages::Message> {
         })
 }
 
-fn popup_button<'a>(message: Message, text: &'a str) -> Element<'a, Message> {
+fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
     widget::text::body(text)
-        .vertical_alignment(alignment::Vertical::Center)
+        .align_y(alignment::Vertical::Center)
         .apply(widget::button::custom)
         .padding([theme.space_xxxs(), theme.space_xs()])
         .width(Length::Fill)
-        .style(cosmic::theme::Button::MenuItem)
+        .class(cosmic::theme::Button::MenuItem)
         .on_press(message)
         .into()
 }
 
-fn update_state(conn: zbus::Connection) -> Command<crate::app::Message> {
+fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
     cosmic::command::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
@@ -868,7 +867,7 @@ fn update_state(conn: zbus::Connection) -> Command<crate::app::Message> {
     })
 }
 
-fn update_devices(conn: zbus::Connection) -> Command<crate::app::Message> {
+fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
     cosmic::command::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::WireGuard);
@@ -880,9 +879,9 @@ fn update_devices(conn: zbus::Connection) -> Command<crate::app::Message> {
     })
 }
 
-fn add_network() -> Command<crate::app::Message> {
+fn add_network() -> Task<crate::app::Message> {
     let Some(dir) = dirs::download_dir().or_else(dirs::home_dir) else {
-        return Command::none();
+        return Task::none();
     };
 
     cosmic::dialog::file_chooser::open::Dialog::new()
@@ -935,7 +934,7 @@ fn add_network() -> Command<crate::app::Message> {
         .apply(cosmic::command::future)
 }
 
-fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
+fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
     let settings = async move {
         let settings = network_manager::dbus::settings::NetworkManagerSettings::new(&conn).await?;
 

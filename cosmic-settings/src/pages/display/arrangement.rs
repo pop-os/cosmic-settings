@@ -359,7 +359,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
             core::text::Renderer::fill_text(
                 renderer,
                 core::Text {
-                    content: itoa::Buffer::new().format(id),
+                    content: itoa::Buffer::new().format(id).to_string(),
                     size: core::Pixels(24.0),
                     line_height: core::text::LineHeight::Relative(1.2),
                     font: cosmic::font::bold(),
@@ -367,7 +367,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                     horizontal_alignment: alignment::Horizontal::Center,
                     vertical_alignment: alignment::Vertical::Center,
                     shaping: text::Shaping::Basic,
-                    wrap: text::Wrap::Word,
+                    wrapping: text::Wrapping::Word,
                 },
                 core::Point {
                     x: id_bounds.center_x(),

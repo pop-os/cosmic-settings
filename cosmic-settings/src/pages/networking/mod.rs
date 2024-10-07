@@ -8,7 +8,7 @@ pub mod wired;
 use std::{ffi::OsStr, process::Stdio, sync::Arc};
 
 use anyhow::Context;
-use cosmic::{widget, Apply, Command, Element};
+use cosmic::{widget, Apply, Element, Task};
 use cosmic_dbus_networkmanager::{
     interface::enums::{DeviceState, DeviceType},
     nm::NetworkManager,
@@ -223,9 +223,9 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _page: page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Command<crate::pages::Message> {
+    ) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
-            return cosmic::command::future(async move {
+            return cosmic::Task::future(async move {
                 zbus::Connection::system()
                     .await
                     .context("failed to create system dbus connection")
@@ -237,17 +237,17 @@ impl page::Page<crate::pages::Message> for Page {
             });
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.devices = Vec::new();
 
         if let Some(cancel) = self.nm_task.take() {
             _ = cancel.send(());
         }
 
-        Command::none()
+        Task::none()
     }
 }
 
@@ -269,7 +269,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         let span = tracing::span!(tracing::Level::INFO, "networking::update");
         let _span = span.enter();
 
@@ -283,12 +283,12 @@ impl Page {
             }
 
             Message::OpenPage { page, device } => {
-                let mut commands = Vec::<Command<crate::app::Message>>::new();
+                let mut tasks = Vec::<Task<crate::app::Message>>::new();
 
-                commands.push(cosmic::command::message(crate::app::Message::Page(page)));
+                tasks.push(cosmic::command::message(crate::app::Message::Page(page)));
 
                 if let Some(device) = device {
-                    commands.push(cosmic::command::message(crate::app::Message::PageMessage(
+                    tasks.push(cosmic::command::message(crate::app::Message::PageMessage(
                         match device {
                             DeviceVariant::WiFi(device) => {
                                 crate::pages::Message::WiFi(wifi::Message::SelectDevice(device))
@@ -300,7 +300,7 @@ impl Page {
                     )));
                 }
 
-                return cosmic::command::batch(commands);
+                return cosmic::Task::batch(tasks);
             }
 
             Message::UpdateDevices(devices) => {
@@ -308,7 +308,7 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     fn connect(
@@ -319,7 +319,7 @@ impl Page {
         if self.nm_task.is_none() {
             self.nm_task = Some(crate::utils::forward_event_loop(
                 sender,
-                |event| crate::pages::Message::Networking(event),
+                crate::pages::Message::Networking,
                 move |mut tx| async move {
                     let network_manager = match NetworkManager::new(&conn).await {
                         Ok(n) => n,
