@@ -22,6 +22,9 @@ pub enum Message {
     SaveFocusFollowsCursorDelay(bool),
     SetFocusFollowsCursorDelay(String),
     SetCursorFollowsFocus(bool),
+    ShowActiveWindowHint(bool),
+    ShowMaximizeButton(bool),
+    ShowMinimizeButton(bool),
 }
 
 pub struct Page {
@@ -32,6 +35,7 @@ pub struct Page {
     focus_follows_cursor_delay: u64,
     focus_delay_text: String,
     cursor_follows_focus: bool,
+    show_active_hint: bool,
 }
 
 impl Default for Page {
@@ -63,6 +67,15 @@ impl Default for Page {
             })
             .unwrap_or(250);
 
+        let show_active_hint = comp_config
+            .get("active_hint")
+            .inspect_err(|err| {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                    error!(?err, "Failed to read config 'active_hint'")
+                }
+            })
+            .unwrap_or(true);
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -76,6 +89,7 @@ impl Default for Page {
             focus_follows_cursor_delay,
             focus_delay_text: format!("{focus_follows_cursor_delay}"),
             cursor_follows_focus,
+            show_active_hint,
         }
     }
 }
@@ -130,6 +144,18 @@ impl Page {
                     .set("cursor_follows_focus", &self.cursor_follows_focus)
                 {
                     error!(?err, "Failed to set config 'cursor_follows_focus'");
+                }
+            }
+            Message::ShowMaximizeButton(value) => {
+                cosmic::config::COSMIC_TK.write().unwrap().show_maximize = value;
+            }
+            Message::ShowMinimizeButton(value) => {
+                cosmic::config::COSMIC_TK.write().unwrap().show_minimize = value;
+            }
+            Message::ShowActiveWindowHint(value) => {
+                self.show_active_hint = value;
+                if let Err(err) = self.comp_config.set("active_hint", value) {
+                    error!(?err, "Failed to set config 'active_hint'");
                 }
             }
         }
@@ -199,28 +225,21 @@ pub fn window_controls() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("window-controls"))
         .descriptions(descriptions)
-        .view::<Page>(move |binder, _page, section| {
-            let desktop_page = binder
-                .page::<super::Page>()
-                .expect("desktop page not found");
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
             settings::section()
                 .title(&section.title)
                 .add(settings::item(
                     &descriptions[active_window_hint],
-                    toggler(
-                        None,
-                        desktop_page.show_active_hint,
-                        super::Message::ShowActiveWindowHint,
-                    ),
+                    toggler(None, page.show_active_hint, Message::ShowActiveWindowHint),
                 ))
                 .add(settings::item(
                     &descriptions[maximize],
                     toggler(
                         None,
                         cosmic::config::show_maximize(),
-                        super::Message::ShowMaximizeButton,
+                        Message::ShowMaximizeButton,
                     ),
                 ))
                 .add(settings::item(
@@ -228,11 +247,11 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     toggler(
                         None,
                         cosmic::config::show_minimize(),
-                        super::Message::ShowMinimizeButton,
+                        Message::ShowMinimizeButton,
                     ),
                 ))
                 .apply(Element::from)
-                .map(crate::pages::Message::Desktop)
+                .map(crate::pages::Message::WindowManagement)
         })
 }
 
