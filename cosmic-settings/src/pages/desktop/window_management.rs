@@ -219,7 +219,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     &descriptions[maximize],
                     toggler(
                         None,
-                        desktop_page.cosmic_tk.show_maximize,
+                        cosmic::config::show_maximize(),
                         super::Message::ShowMaximizeButton,
                     ),
                 ))
@@ -227,7 +227,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                     &descriptions[minimize],
                     toggler(
                         None,
-                        desktop_page.cosmic_tk.show_minimize,
+                        cosmic::config::show_minimize(),
                         super::Message::ShowMinimizeButton,
                     ),
                 ))
