@@ -147,10 +147,20 @@ impl Page {
                 }
             }
             Message::ShowMaximizeButton(value) => {
-                cosmic::config::COSMIC_TK.write().unwrap().show_maximize = value;
+                if let Ok(config) = cosmic::config::CosmicTk::config() {
+                    let _res = cosmic::config::COSMIC_TK
+                        .write()
+                        .unwrap()
+                        .set_show_maximize(&config, value);
+                }
             }
             Message::ShowMinimizeButton(value) => {
-                cosmic::config::COSMIC_TK.write().unwrap().show_minimize = value;
+                if let Ok(config) = cosmic::config::CosmicTk::config() {
+                    let _res = cosmic::config::COSMIC_TK
+                        .write()
+                        .unwrap()
+                        .set_show_minimize(&config, value);
+                }
             }
             Message::ShowActiveWindowHint(value) => {
                 self.show_active_hint = value;
