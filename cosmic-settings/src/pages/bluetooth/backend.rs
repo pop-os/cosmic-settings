@@ -365,11 +365,11 @@ pub async fn start_discovery(
         }
     }
 
-    return if let Err(why) = result {
+    if let Err(why) = result {
         Message::DBusError(why.to_string())
     } else {
         Message::Nop
-    };
+    }
 }
 
 pub async fn stop_discovery(
@@ -521,11 +521,11 @@ pub async fn forget_device(connection: zbus::Connection, device_path: OwnedObjec
         }
     }
 
-    return if result.is_err() {
+    if result.is_err() {
         Message::DeviceFailed(device_path)
     } else {
         Message::Nop
-    };
+    }
 }
 
 pub async fn change_adapter_status(
@@ -558,7 +558,7 @@ pub async fn change_adapter_status(
 
     if let Err(why) = result {
         tracing::error!("Failed to change the adapter state!");
-        return Message::DBusError(why.to_string()).into();
+        return Message::DBusError(why.to_string());
     }
 
     Message::Nop

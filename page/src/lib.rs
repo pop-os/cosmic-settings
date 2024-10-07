@@ -5,7 +5,7 @@ mod binder;
 pub use binder::{AutoBind, Binder};
 
 mod insert;
-use cosmic::{Command, Element};
+use cosmic::{Element, Task};
 use downcast_rs::{impl_downcast, Downcast};
 pub use insert::Insert;
 
@@ -54,8 +54,8 @@ pub trait Page<Message: 'static>: Downcast {
     }
 
     /// Response from a file chooser dialog request.
-    fn file_chooser(&mut self, _selected: Vec<url::Url>) -> Command<Message> {
-        Command::none()
+    fn file_chooser(&mut self, _selected: Vec<url::Url>) -> Task<Message> {
+        Task::none()
     }
 
     /// Alter the contents of the page's header view.
@@ -63,19 +63,19 @@ pub trait Page<Message: 'static>: Downcast {
         None
     }
 
-    /// Reload page metadata via a Command.
+    /// Reload page metadata via a Task.
     #[allow(unused)]
     fn on_enter(
         &mut self,
         page: crate::Entity,
         sender: tokio::sync::mpsc::Sender<Message>,
-    ) -> Command<Message> {
-        Command::none()
+    ) -> Task<Message> {
+        Task::none()
     }
 
     /// Emit a command when the page is left
-    fn on_leave(&mut self) -> Command<Message> {
-        Command::none()
+    fn on_leave(&mut self) -> Task<Message> {
+        Task::none()
     }
 
     /// The title to display in the page header.

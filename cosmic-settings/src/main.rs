@@ -33,7 +33,7 @@ use tracing_subscriber::prelude::*;
 #[command(propagate_version = true)]
 pub struct Args {
     #[command(subcommand)]
-    subcommand: Option<PageCommands>,
+    sub_command: Option<PageCommands>,
 }
 
 #[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
@@ -111,7 +111,7 @@ impl CosmicFlags for Args {
     type Args = Vec<String>;
 
     fn action(&self) -> Option<&PageCommands> {
-        self.subcommand.as_ref()
+        self.sub_command.as_ref()
     }
 }
 
@@ -131,8 +131,7 @@ pub fn main() -> color_eyre::Result<()> {
     let args = Args::parse();
 
     let settings = cosmic::app::Settings::default()
-        .size_limits(Limits::NONE.min_width(360.0).min_height(300.0))
-        .exit_on_close(false);
+        .size_limits(Limits::NONE.min_width(360.0).min_height(300.0));
 
     cosmic::app::run_single_instance::<app::SettingsApp>(settings, args)?;
 

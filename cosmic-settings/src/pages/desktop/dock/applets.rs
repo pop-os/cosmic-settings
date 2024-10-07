@@ -1,9 +1,8 @@
 use cosmic::{
     cosmic_config::CosmicConfigEntry,
     iced::{alignment, Length},
-    iced_runtime::Command,
     widget::{button, container, row},
-    Apply, Element,
+    Apply, Element, Task,
 };
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section, Section};
@@ -15,7 +14,7 @@ use crate::{
     pages::{
         self,
         desktop::panel::applets_inner::{
-            self, lists, AppletsPage, ContextDrawer, ReorderWidgetState,
+            self, lists, AppletsPage, ContextDrawer,
         },
     },
 };
@@ -63,7 +62,7 @@ impl AppletsPage for Page {
 pub struct Message(pub applets_inner::Message);
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<app::Message> {
         self.inner.update(message.0)
     }
 }

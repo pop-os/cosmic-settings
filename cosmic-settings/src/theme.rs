@@ -4,10 +4,10 @@
 use cosmic::{iced_core::Border, theme};
 
 #[must_use]
-pub fn display_container_frame() -> cosmic::theme::Container {
+pub fn display_container_frame() -> cosmic::theme::Container<'static> {
     theme::Container::custom(|theme| {
         let cosmic = theme.cosmic();
-        cosmic::widget::container::Appearance {
+        cosmic::widget::container::Style {
             icon_color: None,
             text_color: None,
             background: Some(cosmic::iced::Background::Color(cosmic::iced::Color::WHITE)),
@@ -22,10 +22,10 @@ pub fn display_container_frame() -> cosmic::theme::Container {
 }
 
 #[must_use]
-pub fn display_container_screen() -> cosmic::theme::Container {
+pub fn display_container_screen() -> cosmic::theme::Container<'static> {
     theme::Container::custom(|theme| {
         let cosmic = theme.cosmic();
-        cosmic::widget::container::Appearance {
+        cosmic::widget::container::Style {
             icon_color: None,
             text_color: None,
             background: Some(cosmic::iced::Background::Color(cosmic::iced::Color::BLACK)),

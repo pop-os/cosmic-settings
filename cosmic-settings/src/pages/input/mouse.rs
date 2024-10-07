@@ -80,7 +80,7 @@ fn mouse() -> Section<crate::pages::Message> {
                         .max_width(250);
 
                         row::with_capacity(2)
-                            .align_items(Alignment::Center)
+                            .align_y(Alignment::Center)
                             .spacing(theme.cosmic().space_s())
                             .push(text::body(format!("{:.0}", value.round())))
                             .push(slider)
@@ -140,7 +140,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                     .max_width(250);
 
                     row::with_capacity(2)
-                        .align_items(Alignment::Center)
+                        .align_y(Alignment::Center)
                         .spacing(theme.cosmic().space_s())
                         .push(text::body(format!("{:.0}", value.round())))
                         .push(slider)
