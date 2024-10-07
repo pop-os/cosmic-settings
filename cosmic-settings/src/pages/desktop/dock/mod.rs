@@ -4,7 +4,7 @@ use cosmic::Apply;
 use cosmic::{
     cosmic_config::{ConfigSet, CosmicConfigEntry},
     widget::{settings, text, toggler},
-    Command, Element,
+    Element, Task,
 };
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, section, Section};
@@ -31,19 +31,19 @@ pub enum Message {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
             Message::EnableDock(enabled) => {
                 let Some(container_config) = self.inner.container_config.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
 
                 let Some(panel_config) = self.inner.panel_config.as_ref() else {
-                    return Command::none();
+                    return Task::none();
                 };
 
                 let Ok(helper) = CosmicPanelContainerConfig::cosmic_config() else {
-                    return Command::none();
+                    return Task::none();
                 };
 
                 if enabled {
@@ -64,7 +64,7 @@ impl Page {
                     error!("{:?}", err);
                 }
 
-                Command::none()
+                Task::none()
             }
             Message::Inner(inner) => self
                 .inner
@@ -169,13 +169,12 @@ pub(crate) fn enable() -> Section<crate::pages::Message> {
                 .add(settings::item(
                     &descriptions[dock],
                     toggler(
-                        None,
                         container_config
                             .config_list
                             .iter()
                             .any(|e| e.name.as_str() == "Dock"),
-                        Message::EnableDock,
-                    ),
+                    )
+                    .on_toggle(Message::EnableDock),
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Dock)

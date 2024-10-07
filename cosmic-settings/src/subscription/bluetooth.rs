@@ -9,14 +9,14 @@ use cosmic::iced::{
 use futures::{channel::mpsc, stream::FusedStream};
 use zbus::zvariant::OwnedObjectPath;
 
-enum DevicePropertyWatcherCommand {
+enum DevicePropertyWatcherTask {
     Add(OwnedObjectPath),
     Removed(OwnedObjectPath),
 }
 
 struct DevicePropertyWatcher<'a> {
     stream: futures::stream::SelectAll<SignalWatcher<'a>>,
-    rx: mpsc::Receiver<DevicePropertyWatcherCommand>,
+    rx: mpsc::Receiver<DevicePropertyWatcherTask>,
 }
 
 struct SignalWatcher<'a> {
@@ -39,7 +39,7 @@ impl<'a> futures::Stream for SignalWatcher<'a> {
 }
 
 impl<'a> DevicePropertyWatcher<'a> {
-    fn new() -> (Self, mpsc::Sender<DevicePropertyWatcherCommand>) {
+    fn new() -> (Self, mpsc::Sender<DevicePropertyWatcherTask>) {
         let stream = futures::stream::select_all(vec![]);
         let (tx, rx) = mpsc::channel(10);
 
@@ -87,7 +87,7 @@ pub async fn watch(mut tx: futures::channel::mpsc::Sender<bluetooth::Message>) {
                 .receive_interfaces_removed()
                 .await?;
 
-            let (mut property_watcher, mut property_watcher_command) = DevicePropertyWatcher::new();
+            let (mut property_watcher, mut property_watcher_task) = DevicePropertyWatcher::new();
 
             for (path, interfaces) in managed_object_proxy.get_managed_objects().await? {
                 if interfaces.contains_key("org.bluez.Device1")
@@ -100,11 +100,11 @@ pub async fn watch(mut tx: futures::channel::mpsc::Sender<bluetooth::Message>) {
 
             while !property_watcher.rx.is_terminated() {
                 futures::select! {
-                    command = property_watcher.rx.next() => match command {
-                        Some(DevicePropertyWatcherCommand::Add(path)) => {
+                    Task = property_watcher.rx.next() => match Task {
+                        Some(DevicePropertyWatcherTask::Add(path)) => {
                             property_watcher.insert(&connection, path).await?;
                         }
-                        Some(DevicePropertyWatcherCommand::Removed(path)) => {
+                        Some(DevicePropertyWatcherTask::Removed(path)) => {
                             property_watcher = property_watcher.remove(&path);
                         }
                         None => {
@@ -139,8 +139,8 @@ pub async fn watch(mut tx: futures::channel::mpsc::Sender<bluetooth::Message>) {
                                 Ok(device) => {
                                     match bluetooth::Device::from_device(&device).await {
                                         Ok(device) => {
-                                            property_watcher_command
-                                                .send(DevicePropertyWatcherCommand::Add(args.object_path.to_owned().into())).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
+                                            property_watcher_task
+                                                .send(DevicePropertyWatcherTask::Add(args.object_path.to_owned().into())).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
 
                                             tx
                                                 .send(bluetooth::Message::AddedDevice(args.object_path.to_owned().into(), device))
@@ -165,7 +165,7 @@ pub async fn watch(mut tx: futures::channel::mpsc::Sender<bluetooth::Message>) {
                         Some(signal) => {
                             let args = signal.args()?;
                             if args.interfaces.contains(&"org.bluez.Device1") {
-                                property_watcher_command.send(DevicePropertyWatcherCommand::Removed(
+                                property_watcher_task.send(DevicePropertyWatcherTask::Removed(
                                     args.object_path.to_owned().into(),
                                 )).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
                                 tx

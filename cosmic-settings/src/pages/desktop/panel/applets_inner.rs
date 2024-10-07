@@ -1,8 +1,6 @@
-use button::StyleSheet as ButtonStyleSheet;
-use cosmic::iced::alignment;
-use cosmic::iced_style::container::StyleSheet;
+use button::Catalog as ButtonStyleSheet;
+use cosmic::iced::{alignment, Vector};
 
-use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{
     button, column, container, horizontal_space, icon, list_column, row, text, text_input, Column,
 };
@@ -12,21 +10,19 @@ use cosmic::{
     cosmic_config::{Config, CosmicConfigEntry},
     iced::{
         alignment::{Horizontal, Vertical},
+        core::window,
         event::{
             self,
             wayland::{self},
             PlatformSpecific,
         },
-        mouse, overlay, touch,
-        wayland::actions::data_device::{ActionInner, DataFromMimeType, DndIcon},
-        wayland::data_device::action as data_device_action,
-        window, Alignment, Color, Length, Point, Rectangle, Size,
+        mouse, overlay, touch, Alignment, Color, Length, Point, Rectangle, Size,
     },
-    iced_runtime::{command::platform_specific, core::id::Id, Command},
+    iced_runtime::{core::id::Id, Task},
     iced_widget::{
         core::{
             layout, renderer,
-            widget::{tree, Operation, OperationOutputWrapper, Tree},
+            widget::{tree, Operation, Tree},
             Clipboard, Shell, Widget,
         },
         graphics::image::image_rs::EncodableLayout,
@@ -39,9 +35,8 @@ use std::{
     borrow::{Borrow, Cow},
     fmt::Debug,
     mem,
-    path::{Path, PathBuf},
+    path::Path,
     str::FromStr,
-    sync::Arc,
 };
 
 use crate::{app, pages};
@@ -53,12 +48,12 @@ use tracing::error;
 
 const MIME_TYPE: &str = "text/uri-list";
 
-pub type OnDndCommand<'a, Message> = Box<
-    dyn Fn(
-            Box<dyn Send + Sync + Fn() -> platform_specific::wayland::data_device::ActionInner>,
-        ) -> Message
-        + 'a,
->;
+// pub type OnDndTask<'a, Message> = Box<
+//     dyn Fn(
+//             Box<dyn Send + Sync + Fn() -> platform_specific::wayland::data_device::ActionInner>,
+//         ) -> Message
+//         + 'a,
+// >;
 
 // radius is 8.0
 const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
@@ -170,7 +165,7 @@ pub enum Message {
     Applets(Vec<Applet<'static>>),
     PanelConfig(CosmicPanelConfig),
     StartDnd(ReorderWidgetState),
-    DnDCommand(Arc<Box<dyn Send + Sync + Fn() -> ActionInner>>),
+    // DnDTask(Arc<Box<dyn Send + Sync + Fn() -> ActionInner>>),
     Search(String),
     AddApplet(Applet<'static>),
     AddAppletDrawer,
@@ -187,7 +182,7 @@ impl Debug for Message {
             Message::Applets(_) => write!(f, "Applets"),
             Message::PanelConfig(_) => write!(f, "PanelConfig"),
             Message::StartDnd(_) => write!(f, "StartDnd"),
-            Message::DnDCommand(_) => write!(f, "DnDCommand"),
+            // Message::DnDTask(_) => write!(f, "DnDTask"),
             Message::Save => write!(f, "ApplyReorder"),
             Message::RemoveStart(_) => write!(f, "RemoveStart"),
             Message::RemoveCenter(_) => write!(f, "RemoveCenter"),
@@ -270,14 +265,15 @@ impl Page {
                         .width(Length::Fill)
                         .into(),
                     button::standard(fl!("add"))
-                        .style(button::Style::Custom {
+                        .class(button::ButtonClass::Custom {
                             active: Box::new(|focused, theme| {
-                                let mut style = theme.active(focused, false, &button::Style::Text);
+                                let mut style =
+                                    theme.active(focused, false, &button::ButtonClass::Text);
                                 style.text_color = Some(theme.cosmic().accent_color().into());
                                 style
                             }),
                             disabled: Box::new(|theme| {
-                                let mut style = theme.disabled(&button::Style::Text);
+                                let mut style = theme.disabled(&button::ButtonClass::Text);
                                 let mut text_color: Color = theme.cosmic().accent_color().into();
                                 text_color.a *= 0.5;
                                 style.text_color = Some(text_color);
@@ -299,14 +295,14 @@ impl Page {
                 ])
                 .padding([0, spacing.space_l])
                 .spacing(spacing.space_xs)
-                .align_items(Alignment::Center),
+                .align_y(Alignment::Center),
             );
         }
         if !has_some {
             list_column = list_column.add(
                 text::body(fl!("no-applets-found"))
                     .width(Length::Fill)
-                    .horizontal_alignment(Horizontal::Center),
+                    .align_x(Horizontal::Center),
             );
         }
 
@@ -318,13 +314,13 @@ impl Page {
                 .into(),
             list_column.into(),
         ])
-        .align_items(Alignment::Center)
+        .align_x(Alignment::Center)
         .spacing(spacing.space_xxs)
         .into()
     }
 
     #[allow(clippy::too_many_lines)]
-    pub fn update(&mut self, message: Message) -> Command<app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<app::Message> {
         match message {
             Message::PanelConfig(c) => {
                 self.current_config = Some(c);
@@ -332,7 +328,7 @@ impl Page {
 
             Message::ReorderStart(start_list) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 let Some((list, _)) = config.plugins_wings.as_mut() else {
                     config.plugins_wings = Some((
@@ -342,13 +338,13 @@ impl Page {
                             .collect(),
                         Vec::new(),
                     ));
-                    return Command::none();
+                    return Task::none();
                 };
                 *list = start_list.into_iter().map(|a| a.id.into()).collect();
             }
             Message::ReorderCenter(center_list) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 let Some(list) = config.plugins_center.as_mut() else {
                     config.plugins_center = Some(
@@ -357,20 +353,20 @@ impl Page {
                             .map(|a: Applet| a.id.into())
                             .collect(),
                     );
-                    return Command::none();
+                    return Task::none();
                 };
                 *list = center_list.into_iter().map(|a| a.id.into()).collect();
             }
             Message::ReorderEnd(end_list) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 let Some((_, list)) = config.plugins_wings.as_mut() else {
                     config.plugins_wings = Some((
                         Vec::new(),
                         end_list.into_iter().map(|a: Applet| a.id.into()).collect(),
                     ));
-                    return Command::none();
+                    return Task::none();
                 };
                 *list = end_list.into_iter().map(|a| a.id.into()).collect();
             }
@@ -379,41 +375,41 @@ impl Page {
             }
             Message::StartDnd(state) => {
                 self.reorder_widget_state = state;
-                return Command::none();
+                return Task::none();
             }
-            Message::DnDCommand(action) => {
-                return data_device_action(action());
-            }
+            // Message::DnDTask(action) => {
+            // return data_device_action(action());
+            // }
             Message::Save => {
                 self.reorder_widget_state = ReorderWidgetState::default();
                 self.save();
             }
             Message::RemoveStart(to_remove) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 let Some((list, _)) = config.plugins_wings.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 list.retain(|id| id != &to_remove);
                 self.save();
             }
             Message::RemoveCenter(to_remove) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 let Some(list) = config.plugins_center.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 list.retain(|id| id != &to_remove);
                 self.save();
             }
             Message::RemoveEnd(to_remove) => {
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 let Some((_, list)) = config.plugins_wings.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 list.retain(|id| id != &to_remove);
                 self.save();
@@ -437,7 +433,7 @@ impl Page {
             Message::AddApplet(applet) => {
                 // TODO ask design team
                 let Some(config) = self.current_config.as_mut() else {
-                    return Command::none();
+                    return Task::none();
                 };
                 let list = if let Some((list, _)) = config.plugins_wings.as_mut() {
                     list
@@ -456,7 +452,7 @@ impl Page {
                 ))));
             }
         };
-        Command::none()
+        Task::none()
     }
 }
 
@@ -493,9 +489,9 @@ pub fn lists<
                                 .collect()
                         })
                         .unwrap_or_default(),
-                    Some((window::Id::MAIN, *APPLET_DND_ICON_ID)),
+                    Some((window::Id::NONE, *APPLET_DND_ICON_ID)),
                     Message::StartDnd,
-                    |a| Message::DnDCommand(Arc::new(a)),
+                    // |a| Message::DnDTask(Arc::new(a)),
                     Message::RemoveStart,
                     Message::DetailStart,
                     Message::ReorderStart,
@@ -524,9 +520,9 @@ pub fn lists<
                                 .collect()
                         })
                         .unwrap_or_default(),
-                    Some((window::Id::MAIN, *APPLET_DND_ICON_ID)),
+                    Some((window::Id::NONE, *APPLET_DND_ICON_ID)),
                     Message::StartDnd,
-                    |a| Message::DnDCommand(Arc::new(a)),
+                    // |a| Message::DnDTask(Arc::new(a)),
                     Message::RemoveCenter,
                     Message::DetailCenter,
                     Message::ReorderCenter,
@@ -556,9 +552,9 @@ pub fn lists<
                                 .collect()
                         })
                         .unwrap_or_default(),
-                    Some((window::Id::MAIN, *APPLET_DND_ICON_ID)),
+                    Some((window::Id::NONE, *APPLET_DND_ICON_ID)),
                     Message::StartDnd,
-                    |a| Message::DnDCommand(Arc::new(a)),
+                    // |a| Message::DnDTask(Arc::new(a)),
                     Message::RemoveEnd,
                     Message::DetailEnd,
                     Message::ReorderEnd,
@@ -644,7 +640,7 @@ pub struct AppletReorderList<'a, Message> {
     id: Id,
     info: Vec<Applet<'a>>,
     on_create_dnd_source: Box<dyn Fn(ReorderWidgetState) -> Message + 'a>,
-    on_dnd_command_produced: OnDndCommand<'a, Message>,
+    // on_dnd_task_produced: OnDndTask<'a, Message>,
     on_reorder: Box<dyn Fn(Vec<Applet<'static>>) -> Message + 'a>,
     on_finish: Option<Message>,
     on_cancel: Option<Message>,
@@ -660,10 +656,10 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
         info: Vec<Applet<'a>>,
         surface_ids: Option<(window::Id, window::Id)>,
         on_create_dnd_source: impl Fn(ReorderWidgetState) -> Message + 'a,
-        on_dnd_command_produced: impl Fn(
-                Box<dyn Send + Sync + Fn() -> platform_specific::wayland::data_device::ActionInner>,
-            ) -> Message
-            + 'a,
+        // on_dnd_task_produced: impl Fn(
+        //         Box<dyn Send + Sync + Fn() -> platform_specific::wayland::data_device::ActionInner>,
+        //     ) -> Message
+        //     + 'a,
         on_remove: impl Fn(String) -> Message + 'a,
         on_details: impl Fn(String) -> Message + 'a,
         on_reorder: impl Fn(Vec<Applet<'static>>) -> Message + 'a,
@@ -701,12 +697,12 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                             .into(),
                     ])
                     .spacing(spacing.space_xs)
-                    .align_items(Alignment::Center),
+                    .align_y(Alignment::Center),
                 )
                 .width(Length::Fill)
                 .padding(8)
-                .style(theme::Container::Custom(Box::new(move |theme| {
-                    let mut style = theme.appearance(&theme::Container::Primary);
+                .class(theme::Container::Custom(Box::new(move |theme| {
+                    let mut style = container::Catalog::style(theme, &theme::Container::Primary);
                     style.border.radius = 8.0.into();
                     if is_dragged {
                         style.border.color = theme.cosmic().accent_color().into();
@@ -722,7 +718,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             id: Id::unique(),
             info,
             on_create_dnd_source: Box::new(on_create_dnd_source),
-            on_dnd_command_produced: Box::new(on_dnd_command_produced),
+            // on_dnd_task_produced: Box::new(on_dnd_task_produced),
             on_reorder: Box::new(on_reorder),
             on_finish: Some(on_apply_reorder),
             on_cancel: Some(on_cancel),
@@ -732,14 +728,14 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                     text::body(fl!("drop-here"))
                         .width(Length::Fill)
                         .height(Length::Fill)
-                        .vertical_alignment(Vertical::Center)
-                        .horizontal_alignment(Horizontal::Center),
+                        .align_y(Vertical::Center)
+                        .align_x(Horizontal::Center),
                 )
                 .width(Length::Fill)
                 .height(Length::Fixed(48.0))
                 .padding(8)
-                .style(theme::Container::Custom(Box::new(move |theme| {
-                    let mut style = theme.appearance(&theme::Container::Primary);
+                .class(theme::Container::Custom(Box::new(move |theme| {
+                    let mut style = container::Catalog::style(theme, &theme::Container::Primary);
                     style.border.radius = 8.0.into();
                     style.border.color = theme.cosmic().bg_divider().into();
                     style.border.width = 2.0;
@@ -762,7 +758,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             id: Id::unique(),
             info: Vec::new(),
             on_create_dnd_source: Box::new(|_| unimplemented!()),
-            on_dnd_command_produced: Box::new(|_| unimplemented!()),
+            // on_dnd_task_produced: Box::new(|_| unimplemented!()),
             on_reorder: Box::new(|_| unimplemented!()),
             on_finish: None,
             surface_ids: None,
@@ -785,18 +781,18 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                             .into(),
                     ])
                     .spacing(12)
-                    .align_items(Alignment::Center),
+                    .align_y(Alignment::Center),
                 )
                 .width(Length::Fixed(state.layout.map_or(400.0, |l| l.width)))
                 .padding(8)
-                .style(theme::Container::Custom(Box::new(move |theme| {
-                    let mut style = theme.appearance(&theme::Container::Primary);
+                .class(theme::Container::Custom(Box::new(move |theme| {
+                    let mut style = container::Catalog::style(theme, &theme::Container::Primary);
                     style.border.radius = 8.0.into();
                     style
                 })))
                 .into()
             } else {
-                horizontal_space(1).into()
+                horizontal_space().width(1).into()
             },
             on_cancel: None,
         }
@@ -912,7 +908,7 @@ where
         tree: &mut Tree,
         layout: layout::Layout<'_>,
         renderer: &cosmic::Renderer,
-        operation: &mut dyn Operation<OperationOutputWrapper<Message>>,
+        operation: &mut dyn Operation<()>,
     ) {
         self.inner.as_widget().operate(
             &mut tree.children[0],
@@ -1016,7 +1012,7 @@ where
                                 state.dragging_state =
                                     DraggingState::Dragging(applet.clone().into_owned());
 
-                                // TODO emit a dnd command
+                                // TODO emit a dnd Task
                                 state.layout = Some(layout.bounds().size());
                                 let state_clone = state.clone();
                                 shell.publish((self.on_create_dnd_source.as_ref())(
@@ -1024,21 +1020,21 @@ where
                                 ));
 
                                 let p = applet.path.to_path_buf();
-                                shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(move || {
-                                    platform_specific::wayland::data_device::ActionInner::StartDnd {
-                                        mime_types: vec![MIME_TYPE.to_string()],
-                                        actions: DndAction::Move,
-                                        origin_id: window_id,
-                                        icon_id: Some((
-                                            DndIcon::Widget(
-                                                icon_id,
-                                                Box::new(state_clone.clone()),
-                                            ),
-                                            cosmic::iced::Vector::ZERO
-                                        )),
-                                        data: Box::new(AppletString(p.clone())),
-                                    }
-                                })));
+                                // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                                //     platform_specific::wayland::data_device::ActionInner::StartDnd {
+                                //         mime_types: vec![MIME_TYPE.to_string()],
+                                //         actions: DndAction::Move,
+                                //         origin_id: window_id,
+                                //         icon_id: Some((
+                                //             DndIcon::Widget(
+                                //                 icon_id,
+                                //                 Box::new(state_clone.clone()),
+                                //             ),
+                                //             cosmic::iced::Vector::ZERO
+                                //         )),
+                                //         data: Box::new(AppletString(p.clone())),
+                                //     }
+                                // })));
                                 ret = event::Status::Captured;
                                 DraggingState::Dragging(applet.clone().into_owned())
                             } else {
@@ -1071,31 +1067,31 @@ where
                         let point = Point::new(*x as f32, *y as f32);
 
                         if layout.bounds().contains(point) {
-                            shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                                move || {
-                                    platform_specific::wayland::data_device::ActionInner::SetActions {
-                                        preferred: DndAction::Move,
-                                        accepted: DndAction::Move,
-                                    }
-                                },
-                            )));
-                            shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                                move || {
-                                    platform_specific::wayland::data_device::ActionInner::Accept(
-                                        Some(MIME_TYPE.to_string()),
-                                    )
-                                },
-                            )));
+                            // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(
+                            //     move || {
+                            //         platform_specific::wayland::data_device::ActionInner::SetActions {
+                            //             preferred: DndAction::Move,
+                            //             accepted: DndAction::Move,
+                            //         }
+                            //     },
+                            // )));
+                            // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(
+                            //     move || {
+                            //         platform_specific::wayland::data_device::ActionInner::Accept(
+                            //             Some(MIME_TYPE.to_string()),
+                            //         )
+                            //     },
+                            // )));
                             let data = if let DraggingState::Dragging(a) = &state.dragging_state {
                                 Some(a.clone())
                             } else {
-                                shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                                    move || {
-                                        platform_specific::wayland::data_device::ActionInner::RequestDndData(
-                                            MIME_TYPE.to_string(),
-                                        )
-                                    },
-                                )));
+                                // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(
+                                //     move || {
+                                //         platform_specific::wayland::data_device::ActionInner::RequestDndData(
+                                //             MIME_TYPE.to_string(),
+                                //         )
+                                //     },
+                                // )));
                                 None
                             };
                             DndOfferState::HandlingOffer(
@@ -1146,41 +1142,35 @@ where
                     let point = Point::new(*x as f32, *y as f32);
 
                     if layout.bounds().contains(point) {
-                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                            move || {
-                                platform_specific::wayland::data_device::ActionInner::SetActions {
-                                    preferred: DndAction::Move,
-                                    accepted: DndAction::Move,
-                                }
-                            },
-                        )));
-                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                            move || {
-                                platform_specific::wayland::data_device::ActionInner::Accept(Some(
-                                    MIME_TYPE.to_string(),
-                                ))
-                            },
-                        )));
-                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                            move || {
-                                platform_specific::wayland::data_device::ActionInner::SetActions {
-                                    preferred: action.intersection(DndAction::Move),
-                                    accepted: action
-                                        .intersection(DndAction::Move.union(DndAction::Copy)),
-                                }
-                            },
-                        )));
+                        // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                        //     platform_specific::wayland::data_device::ActionInner::SetActions {
+                        //         preferred: DndAction::Move,
+                        //         accepted: DndAction::Move,
+                        //     }
+                        // })));
+                        // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                        //     platform_specific::wayland::data_device::ActionInner::Accept(Some(
+                        //         MIME_TYPE.to_string(),
+                        //     ))
+                        // })));
+                        // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                        //     platform_specific::wayland::data_device::ActionInner::SetActions {
+                        //         preferred: action.intersection(DndAction::Move),
+                        //         accepted: action
+                        //             .intersection(DndAction::Move.union(DndAction::Copy)),
+                        //     }
+                        // })));
                         // TODO maybe keep track of data and request here if we don't have it
                         // also maybe just refactor DND Targets to allow easier handling...
 
                         if data.is_none() {
-                            shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                                move || {
-                                    platform_specific::wayland::data_device::ActionInner::RequestDndData(
-                                        MIME_TYPE.to_string(),
-                                    )
-                                },
-                            )));
+                            // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(
+                            //     move || {
+                            //         platform_specific::wayland::data_device::ActionInner::RequestDndData(
+                            //             MIME_TYPE.to_string(),
+                            //         )
+                            //     },
+                            // )));
                         }
                         if let Some(applet) = data.clone() {
                             let reordered_list: Vec<_> = self.get_reordered(
@@ -1192,9 +1182,9 @@ where
                                 applet,
                             );
                             if reordered_list != self.info {
-                                shell.publish((self.on_reorder.as_ref())(
-                                    reordered_list.into_iter().map(Applet::into_owned).collect(),
-                                ));
+                                // shell.publish((self.on_reorder.as_ref())(
+                                //     reordered_list.into_iter().map(Applet::into_owned).collect(),
+                                // ));
                             }
                         }
 
@@ -1233,14 +1223,12 @@ where
                 )) => {
                     let point = Point::new(*x as f32, *y as f32);
                     if layout.bounds().contains(point) {
-                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                            move || {
-                                platform_specific::wayland::data_device::ActionInner::SetActions {
-                                    preferred: DndAction::Move,
-                                    accepted: DndAction::Move,
-                                }
-                            },
-                        )));
+                        // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                        //     platform_specific::wayland::data_device::ActionInner::SetActions {
+                        //         preferred: DndAction::Move,
+                        //         accepted: DndAction::Move,
+                        //     }
+                        // })));
                         if let Some(data) = data.clone() {
                             let reordered_list = self.get_reordered(
                                 &layout,
@@ -1276,11 +1264,9 @@ where
                                 ));
                             }
                         }
-                        shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                            move || {
-                                platform_specific::wayland::data_device::ActionInner::Accept(None)
-                            },
-                        )));
+                        // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                        //     platform_specific::wayland::data_device::ActionInner::Accept(None)
+                        // })));
                         DndOfferState::OutsideWidget(mime_types, DndAction::empty(), data)
                     }
                 }
@@ -1290,12 +1276,12 @@ where
                 event::Event::PlatformSpecific(PlatformSpecific::Wayland(
                     wayland::Event::DndOffer(wayland::DndOfferEvent::SourceActions(actions)),
                 )) => {
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || platform_specific::wayland::data_device::ActionInner::SetActions {
-                            preferred: DndAction::Move,
-                            accepted: DndAction::Move,
-                        },
-                    )));
+                    // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                    //     platform_specific::wayland::data_device::ActionInner::SetActions {
+                    //         preferred: DndAction::Move,
+                    //         accepted: DndAction::Move,
+                    //     }
+                    // })));
                     DndOfferState::HandlingOffer(mime_types, *actions, data)
                 }
                 event::Event::PlatformSpecific(PlatformSpecific::Wayland(
@@ -1335,26 +1321,22 @@ where
                 event::Event::PlatformSpecific(PlatformSpecific::Wayland(
                     wayland::Event::DndOffer(wayland::DndOfferEvent::DropPerformed),
                 )) => {
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || platform_specific::wayland::data_device::ActionInner::SetActions {
-                            preferred: DndAction::Move,
-                            accepted: DndAction::Move,
-                        },
-                    )));
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || {
-                            platform_specific::wayland::data_device::ActionInner::Accept(Some(
-                                MIME_TYPE.to_string(),
-                            ))
-                        },
-                    )));
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || {
-                            platform_specific::wayland::data_device::ActionInner::RequestDndData(
-                                MIME_TYPE.to_string(),
-                            )
-                        },
-                    )));
+                    // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                    //     platform_specific::wayland::data_device::ActionInner::SetActions {
+                    //         preferred: DndAction::Move,
+                    //         accepted: DndAction::Move,
+                    //     }
+                    // })));
+                    // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                    //     platform_specific::wayland::data_device::ActionInner::Accept(Some(
+                    //         MIME_TYPE.to_string(),
+                    //     ))
+                    // })));
+                    // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                    //     platform_specific::wayland::data_device::ActionInner::RequestDndData(
+                    //         MIME_TYPE.to_string(),
+                    //     )
+                    // })));
                     DndOfferState::Dropped
                 }
                 _ => DndOfferState::HandlingOffer(mime_types, action, data),
@@ -1366,9 +1348,9 @@ where
                     if let Some(on_finish) = self.on_finish.clone() {
                         shell.publish(on_finish);
                     }
-                    shell.publish((self.on_dnd_command_produced.as_ref())(Box::new(
-                        move || platform_specific::wayland::data_device::ActionInner::DndFinished,
-                    )));
+                    // shell.publish((self.on_dnd_task_produced.as_ref())(Box::new(move || {
+                    //     platform_specific::wayland::data_device::ActionInner::DndFinished
+                    // })));
 
                     DndOfferState::None
                 }
@@ -1415,11 +1397,13 @@ where
         tree: &'b mut Tree,
         layout: layout::Layout<'_>,
         renderer: &cosmic::Renderer,
+        translation: Vector,
     ) -> Option<overlay::Element<'b, Message, cosmic::Theme, cosmic::Renderer>> {
         self.inner.as_widget_mut().overlay(
             &mut tree.children[0],
             layout.children().next().unwrap(),
             renderer,
+            translation,
         )
     }
 
@@ -1454,25 +1438,25 @@ where
 }
 
 /// A string which can be sent to the clipboard or drag-and-dropped.
-#[derive(Debug, Clone)]
-pub struct AppletString(PathBuf);
+// #[derive(Debug, Clone)]
+// pub struct AppletString(PathBuf);
 
-impl DataFromMimeType for AppletString {
-    fn from_mime_type(&self, mime_type: &str) -> Option<Vec<u8>> {
-        if mime_type == MIME_TYPE {
-            let data = Some(
-                url::Url::from_file_path(self.0.clone())
-                    .ok()?
-                    .to_string()
-                    .as_bytes()
-                    .to_vec(),
-            );
-            data
-        } else {
-            None
-        }
-    }
-}
+// impl DataFromMimeType for AppletString {
+//     fn from_mime_type(&self, mime_type: &str) -> Option<Vec<u8>> {
+//         if mime_type == MIME_TYPE {
+//             let data = Some(
+//                 url::Url::from_file_path(self.0.clone())
+//                     .ok()?
+//                     .to_string()
+//                     .as_bytes()
+//                     .to_vec(),
+//             );
+//             data
+//         } else {
+//             None
+//         }
+//     }
+// }
 
 #[derive(Debug, Default, Clone)]
 pub enum DraggingState {
