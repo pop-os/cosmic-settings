@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::{
-    config::CosmicTk,
     iced::Length,
     widget::{self, settings, toggler},
     Apply, Element,
 };
 
-use cosmic_config::{ConfigGet, ConfigSet, CosmicConfigEntry};
+use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{shortcuts, Action, Binding, Shortcuts};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -23,38 +22,21 @@ pub enum Message {
     SaveFocusFollowsCursorDelay(bool),
     SetFocusFollowsCursorDelay(String),
     SetCursorFollowsFocus(bool),
-    ShowActiveWindowHint(bool),
-    ShowMaximizeButton(bool),
-    ShowMinimizeButton(bool),
 }
 
 pub struct Page {
     pub super_key_selections: Vec<String>,
     pub super_key_active: Option<usize>,
     comp_config: cosmic_config::Config,
-    cosmic_tk: CosmicTk,
     focus_follows_cursor: bool,
     focus_follows_cursor_delay: u64,
     focus_delay_text: String,
     cursor_follows_focus: bool,
-    show_active_hint: bool,
 }
 
 impl Default for Page {
     fn default() -> Self {
-        let (cosmic_tk, comp_config) = CosmicTk::config().map_or_else(
-            |why| {
-                tracing::error!(?why, "failed to read CosmicTk config");
-                let default_comp_config =
-                    cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
-
-                (CosmicTk::default(), default_comp_config)
-            },
-            |config| match CosmicTk::get_entry(&config) {
-                Ok(tk) => (tk, config),
-                Err((_errors, tk)) => (tk, config),
-            },
-        );
+        let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
         let focus_follows_cursor = comp_config
             .get("focus_follows_cursor")
             .unwrap_or_else(|err| {
@@ -81,15 +63,6 @@ impl Default for Page {
             })
             .unwrap_or(250);
 
-        let show_active_hint = comp_config
-            .get("active_hint")
-            .inspect_err(|err| {
-                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
-                    error!(?err, "Failed to read config 'active_hint'")
-                }
-            })
-            .unwrap_or(true);
-
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -99,12 +72,10 @@ impl Default for Page {
             ],
             super_key_active: super_key_active_config(),
             comp_config,
-            cosmic_tk,
             focus_follows_cursor,
             focus_follows_cursor_delay,
             focus_delay_text: format!("{focus_follows_cursor_delay}"),
             cursor_follows_focus,
-            show_active_hint,
         }
     }
 }
@@ -160,19 +131,6 @@ impl Page {
                 {
                     error!(?err, "Failed to set config 'cursor_follows_focus'");
                 }
-            }
-            Message::ShowActiveWindowHint(value) => {
-                self.show_active_hint = value;
-                if let Err(err) = self.comp_config.set("active_hint", value) {
-                    error!(?err, "Failed to set config 'active_hint'");
-                }
-            }
-            Message::ShowMaximizeButton(value) => {
-                let _res = self.cosmic_tk.set_show_maximize(&self.comp_config, value);
-            }
-
-            Message::ShowMinimizeButton(value) => {
-                let _res = self.cosmic_tk.set_show_minimize(&self.comp_config, value);
             }
         }
     }
@@ -241,33 +199,40 @@ pub fn window_controls() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("window-controls"))
         .descriptions(descriptions)
-        .view::<Page>(move |_binder, page, section| {
+        .view::<Page>(move |binder, _page, section| {
+            let desktop_page = binder
+                .page::<super::Page>()
+                .expect("desktop page not found");
             let descriptions = &section.descriptions;
 
             settings::section()
                 .title(&section.title)
                 .add(settings::item(
                     &descriptions[active_window_hint],
-                    toggler(None, page.show_active_hint, Message::ShowActiveWindowHint),
+                    toggler(
+                        None,
+                        desktop_page.show_active_hint,
+                        super::Message::ShowActiveWindowHint,
+                    ),
                 ))
                 .add(settings::item(
                     &descriptions[maximize],
                     toggler(
                         None,
-                        page.cosmic_tk.show_maximize,
-                        Message::ShowMaximizeButton,
+                        desktop_page.cosmic_tk.show_maximize,
+                        super::Message::ShowMaximizeButton,
                     ),
                 ))
                 .add(settings::item(
                     &descriptions[minimize],
                     toggler(
                         None,
-                        page.cosmic_tk.show_minimize,
-                        Message::ShowMinimizeButton,
+                        desktop_page.cosmic_tk.show_minimize,
+                        super::Message::ShowMinimizeButton,
                     ),
                 ))
                 .apply(Element::from)
-                .map(crate::pages::Message::WindowManagement)
+                .map(crate::pages::Message::Desktop)
         })
 }
 
