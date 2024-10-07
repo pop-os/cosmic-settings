@@ -52,10 +52,43 @@ style = Stil
     .slightly-round = Lite rund
     .square = Fyrkant
 
+interface-density = Gränssnittstäthet
+    .comfortable = Bekväm
+    .compact = Kompakt
+    .spacious = Rymlig
+
 # gränssnittstäthet utelämnad för tillfället
 window-management = Fönsterhantering
     .active-hint = Storlek på aktivt fönsterhinting
     .gaps = Springor runt kaklade fönster
+
+### Appearance: Font
+
+font-config = Teckensnittskonfiguration
+interface-font = System teckensnitt
+monospace-font = Monospace teckensnitt
+font-family = Familj
+
+font-weight = Vikt
+    .thin = Tunn
+    .extra-light = Extra lätt
+    .light = Lätt
+    .normal = Normal
+    .medium = Medium
+    .semibold = Halvfet
+    .bold = Fet
+    .extra-bold = Extra fet
+    .black = Svart
+
+font-style = Stil
+    .normal = Normal
+    .italic = Kursiv
+    .oblique = Sned
+
+font-stretch = Sträcka
+    .condensed = Förtätad
+    .normal = Normal
+    .expanded = Expanderad
 
 ## Skrivbord: Skärm
 
@@ -247,7 +280,7 @@ connecting = Ansluter…
 disconnect = Koppla från
 forget = Glöm
 known-networks = Kända nätverk
-network-and-wireless = Nätverksanslutnignar
+network-and-wireless = Nätverksanslutningar
 no-networks = Inga nätverk har hittats.
 no-vpn = Inga VPN-anslutningar tillgängliga.
 password = Lösenord
@@ -315,6 +348,12 @@ time-format = Datum & tidsformat
 time-region = Region & språk
     .desc = Formatera datum, tider och siffror baserat på din region
 
+legacy-applications = X11 fönstersystem programskalning
+    .scaled-by-system = Skala alla X11 program
+    .system-description = X11 program kommer att se suddiga ut på HiDPI-skärmar.
+    .scaled-natively = Rendera X11 program med inbyggd upplösning
+    .native-description = X11 program som inte stöder skalning kommer att vara små när HiDPI-skärmar används. Aktivera för spel att använda hela skärmens upplösning.
+
 ## Ljud
 
 sound = Ljud
@@ -338,6 +377,8 @@ sound-alerts = Larm
 
 sound-applications = Applikationer
     .desc = Applikationvolym och inställningar
+
+profile = Profil
 
 ## System
 
@@ -429,6 +470,12 @@ scrolling = Rullning
 
 ## Input: Keyboard
 
+
+slow = Långsam
+fast = Snabb
+short = Kort
+long = Lång
+
 keyboard = Tangentbord
     .desc = Tangentbordsinmatning
 
@@ -439,15 +486,27 @@ keyboard-sources = Inmatningskällor
     .settings = Inställningar
     .view-layout = Visa tangentbordslayout
     .remove = Ta bort
+    .add = Lägg till inmatningskälla
 
 keyboard-special-char = Specialteckenssinmatning
     .alternate = Alternativa tecken-knapp
     .compose = Compose knapp
+    .caps = Caps Lock knapp
+
+keyboard-typing-assist = Skriver
+    .repeat-rate = Upprepningsfrekvens
+    .repeat-delay = Upprepa fördröjning
+
+added = Tillagd
+type-to-search = Skriv för att söka...
+show-extended-input-sources = Visa utökade inmatningskällor
 
 ## Input: Keyboard shortcuts
 
 keyboard-shortcuts = Tangentbordsgenvägar
     .desc = Visa och anpassa genvägar
+
+
 
 ## Input: Mouse
 
