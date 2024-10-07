@@ -1784,7 +1784,7 @@ pub fn interface_density() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("interface-density"))
         .descriptions(descriptions)
-        .view::<Page>(move |_binder, page, section| {
+        .view::<Page>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
 
             let density = cosmic::config::interface_density();
