@@ -1,18 +1,19 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use as_result::IntoResult;
-use std::io;
+use cosmic::Apply;
+use std::process::Stdio;
 
-pub async fn set_username(connection_name: &str, username: &str) -> io::Result<()> {
+pub async fn set_username(connection_name: &str, username: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
         .args(&["con", "mod", connection_name, "vpn.user-name", username])
-        .status()
+        .stderr(Stdio::piped())
+        .output()
         .await
-        .and_then(IntoResult::into_result)
+        .apply(crate::utils::map_stderr_output)
 }
 
-pub async fn set_password_flags_none(connection_name: &str) -> io::Result<()> {
+pub async fn set_password_flags_none(connection_name: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
         .args(&[
             "con",
@@ -21,12 +22,13 @@ pub async fn set_password_flags_none(connection_name: &str) -> io::Result<()> {
             "+vpn.data",
             "password-flags=0",
         ])
-        .status()
+        .stderr(Stdio::piped())
+        .output()
         .await
-        .and_then(IntoResult::into_result)
+        .apply(crate::utils::map_stderr_output)
 }
 
-pub async fn set_password(connection_name: &str, password: &str) -> io::Result<()> {
+pub async fn set_password(connection_name: &str, password: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
         .args(&[
             "con",
@@ -35,15 +37,17 @@ pub async fn set_password(connection_name: &str, password: &str) -> io::Result<(
             "vpn.secrets",
             &format!("password={password}"),
         ])
-        .status()
+        .stderr(Stdio::piped())
+        .output()
         .await
-        .and_then(IntoResult::into_result)
+        .apply(crate::utils::map_stderr_output)
 }
 
-pub async fn connect(connection_name: &str) -> io::Result<()> {
+pub async fn connect(connection_name: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
         .args(&["con", "up", &connection_name])
-        .status()
+        .stderr(Stdio::piped())
+        .output()
         .await
-        .and_then(IntoResult::into_result)
+        .apply(crate::utils::map_stderr_output)
 }
