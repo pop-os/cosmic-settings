@@ -501,39 +501,47 @@ impl cosmic::Application for SettingsApp {
             },
 
             Message::OutputAdded(info, output) => {
+                let mut commands = vec![];
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
-                    return page
-                        .update(panel::Message(_panel::Message::OutputAdded(
+                    commands.push(
+                        page.update(panel::Message(_panel::Message::OutputAdded(
                             info.name.clone().unwrap_or_default(),
                             output.clone(),
                         )))
-                        .map(Into::into);
+                        .map(Into::into),
+                    );
                 }
 
                 if let Some(page) = self.pages.page_mut::<dock::Page>() {
-                    return page
-                        .update(dock::Message::Inner(_panel::Message::OutputAdded(
+                    commands.push(
+                        page.update(dock::Message::Inner(_panel::Message::OutputAdded(
                             info.name.unwrap_or_default(),
                             output,
                         )))
-                        .map(Into::into);
+                        .map(Into::into),
+                    );
                 }
+                return Command::batch(commands);
             }
 
             Message::OutputRemoved(output) => {
+                let mut commands = vec![];
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
-                    return page
-                        .update(panel::Message(_panel::Message::OutputRemoved(
+                    commands.push(
+                        page.update(panel::Message(_panel::Message::OutputRemoved(
                             output.clone(),
                         )))
-                        .map(Into::into);
+                        .map(Into::into),
+                    );
                 }
 
                 if let Some(page) = self.pages.page_mut::<dock::Page>() {
-                    return page
-                        .update(dock::Message::Inner(_panel::Message::OutputRemoved(output)))
-                        .map(Into::into);
+                    commands.push(
+                        page.update(dock::Message::Inner(_panel::Message::OutputRemoved(output)))
+                            .map(Into::into),
+                    );
                 }
+                return Command::batch(commands);
             }
 
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
