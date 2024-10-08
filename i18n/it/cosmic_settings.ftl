@@ -208,6 +208,34 @@ window-management = Gestione finestre
     .active-hint = Dimensione bordo finestra attiva
     .gaps = Spaziatura finestre in modalità tiling
 
+### Appearance: Font
+
+font-config = Configurazione dei caratteri
+interface-font = Carattere di sistema
+monospace-font = Carattere monospaziato
+font-family = Famiglia
+
+font-weight = Spessore
+    .thin = Sottile
+    .extra-light = Molto leggero
+    .light = Leggero
+    .normal = Normale
+    .medium = Medio
+    .semibold = Semi grassetto
+    .bold = Grassetto
+    .extra-bold = Extra grassetto
+    .black = Nero
+
+font-style = Stile
+    .normal = Normale
+    .italic = Corsivo
+    .oblique = Obliquo
+
+font-stretch = Estensione
+    .condensed = Compresso
+    .normal = Normale
+    .expanded = Espanso
+
 ## Desktop: Notifications
 
 notifications = Notifiche
@@ -282,6 +310,7 @@ super-key = Tasto Super
 window-controls = Controlli finestra
     .minimize = Mostra pulsante "minimizza"
     .maximize = Mostra pulsante "massimizza"
+.active-window-hint = Mostra indicatore finestra attiva
 
 focus-navigation = Focus Navigation
     .focus-follows-cursor = Focus segue il cursore
