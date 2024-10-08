@@ -77,6 +77,7 @@ pub const fn actions() -> &'static [Action] {
         Action::System(SystemAction::Launcher),
         Action::System(SystemAction::WorkspaceOverview),
         Action::System(SystemAction::WindowSwitcher),
+        Action::System(SystemAction::WindowSwitcherReverse),
         Action::System(SystemAction::LockScreen),
         Action::System(SystemAction::VolumeLower),
         Action::System(SystemAction::VolumeRaise),
