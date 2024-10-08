@@ -418,6 +418,9 @@ power-mode = Strömalternativ
 
 acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
 
+input-devices = Inmatningsenheter
+    .desc = Inmatningsenheter
+
 primary-button = Primär knapp
     .left = Vänster
     .right = Höger
@@ -429,6 +432,10 @@ scrolling = Rullning
 
 ## Input: Keyboard
 
+slow = Långsam
+fast = Snabb
+short = Kort
+long = Lång
 keyboard = Tangentbord
     .desc = Tangentbordsinmatning
 
@@ -439,6 +446,11 @@ keyboard-sources = Inmatningskällor
     .settings = Inställningar
     .view-layout = Visa tangentbordslayout
     .remove = Ta bort
+    .add = Lägg till källa
+
+keyboard-typing-assist = Tangenttrycksrespons
+    .repeat-rate = Upprepningshastighet
+    .repeat-delay = Upprepningsfördröjning
 
 keyboard-special-char = Specialteckenssinmatning
     .alternate = Alternativa tecken-knapp
