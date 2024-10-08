@@ -97,9 +97,9 @@ fn battery_info() -> Section<crate::pages::Message> {
             let battery_icon = widget::icon::from_name(page.battery.icon_name.clone());
             let remaining_time = page.battery.remaining_time();
             let battery_label = text::body(if remaining_time.is_empty() {
-                format!("{}%", page.battery.percent)
+                format!("{:.0}%", page.battery.percent)
             } else {
-                format!("{}% ({})", page.battery.percent, remaining_time)
+                format!("{:.0}% ({})", page.battery.percent, remaining_time)
             });
 
             widget::column::with_capacity(2)
