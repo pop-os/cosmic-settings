@@ -1,5 +1,7 @@
 app = COSMIC Settings
 
+dbus-connection-error = Failed to connect to DBus
+ok = OK
 unknown = Unknown
 
 number = { $number }
@@ -62,8 +64,24 @@ remove-connection-dialog = Remove Connection Profile?
 
 vpn = VPN
     .connections = VPN Connections
+    .error = Failed to add VPN config
     .remove = Remove connection profile
     .select-file = Select a VPN configuration file
+
+vpn-error = VPN Error
+    .config = Failed to add VPN config
+    .connect = Failed to connect to VPN
+    .connection-editor = Connection editor failed
+    .connection-settings = Failed to get settings for active connections
+    .updating-state = Failed to update network manager state
+    .wireguard-config-path = Invalid file path for WireGuard config
+    .wireguard-config-path-desc = Chosen file must be on a local file system.
+    .wireguard-device = Failed to create WireGuard device
+    .with-password = Failed to set VPN { $field ->
+        *[username] username
+        [password] password
+        [password-flags] password-flags
+    } with nmcli
 
 wired = Wired
     .adapter = Wired adapter { $id }
@@ -74,6 +92,9 @@ wired = Wired
 wifi = Wi-Fi
     .adapter = Wi-Fi adapter { $id }
     .forget = Forget this network
+
+wireguard-dialog = Add WireGuard device
+    .description = Choose a device name for the WireGuard config.
 
 ## Networking: Online Accounts
 
