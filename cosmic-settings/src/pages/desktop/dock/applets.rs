@@ -40,7 +40,7 @@ impl Default for Page {
                 .collect(),
                 config_helper,
                 current_config,
-                reorder_widget_state: ReorderWidgetState::default(),
+                reorder_widget_state: None,
                 search: String::new(),
                 context: None,
             },
