@@ -627,6 +627,7 @@ system-shortcut = System
     .volume-raise = Increase audio output volume
     .web-browser = Opens a web browser
     .window-switcher = Switch between open windows
+    .window-switcher-reverse = Switch backwards between open windows
     .workspace-overview = Open the workspace overview
 
 window-tiling = Window tiling
