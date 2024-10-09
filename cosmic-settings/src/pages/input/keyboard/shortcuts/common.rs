@@ -321,6 +321,10 @@ impl Model {
                         if shortcut.is_default {
                             self.config_add(Action::Disable, shortcut.binding.clone());
                         } else {
+                            // if last keybind deleted, clear shortcut context
+                            if model.bindings.is_empty() {
+                                self.shortcut_context = None;
+                            }
                             self.config_remove(&shortcut.binding);
                         }
 
