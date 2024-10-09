@@ -669,12 +669,6 @@ impl cosmic::Application for SettingsApp {
 
     #[allow(clippy::too_many_lines)]
     fn view_window(&self, id: window::Id) -> Element<Message> {
-        if let Some(Some(page)) =
-            (id == *APPLET_DND_ICON_ID).then(|| self.pages.page::<applets_inner::Page>())
-        {
-            return page.dnd_icon();
-        }
-
         panic!("unknown window ID: {id:?}");
     }
 
