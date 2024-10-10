@@ -102,6 +102,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
         // Determine the max display dimensions, and the total display area utilized.
         let mut max_dimensions = (0, 0);
         let mut display_area = (0, 0);
+        let mut area = (0, 0);
 
         for output in self.list.outputs.values() {
             if !output.enabled {
@@ -134,9 +135,13 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
         }
 
         let width = ((max_dimensions.0 as f32 * 2.0) as i32 + display_area.0) as f32 / UNIT_PIXELS;
-        let height = ((max_dimensions.1 as f32 * 2.0) as i32 + display_area.1) as f32 / UNIT_PIXELS;
+        let height = ((max_dimensions.1 as f32 * 2.0) as i32) as f32 / UNIT_PIXELS;
 
         let state = tree.state.downcast_mut::<State>();
+        state.display_area = (
+            display_area.0 as f32 / UNIT_PIXELS,
+            display_area.1 as f32 / UNIT_PIXELS,
+        );
         state.max_dimensions = (
             max_dimensions.0 as f32 / UNIT_PIXELS,
             max_dimensions.1 as f32 / UNIT_PIXELS,
@@ -186,6 +191,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                             *output_key,
                             region,
                             state.max_dimensions,
+                            state.display_area,
                             (
                                 inner_position.x - state.offset.0,
                                 inner_position.y - state.offset.1,
@@ -206,6 +212,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                         self.list,
                         &bounds,
                         state.max_dimensions,
+                        state.display_area,
                         position,
                     ) {
                         state.drag_from = position;
@@ -240,7 +247,8 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                         shell.publish(on_placement(
                             output_key,
                             ((region.x - state.max_dimensions.0 - bounds.x) * UNIT_PIXELS) as i32,
-                            ((region.y - state.max_dimensions.1 - bounds.y) * UNIT_PIXELS) as i32,
+                            ((region.y - (state.display_area.1 / 2.0) - bounds.y) * UNIT_PIXELS)
+                                as i32,
                         ));
                     }
 
@@ -265,9 +273,13 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
         let state = tree.state.downcast_ref::<State>();
         let bounds = layout.bounds();
 
-        for (_output_key, region) in
-            display_regions(self.tab_model, self.list, &bounds, state.max_dimensions)
-        {
+        for (_output_key, region) in display_regions(
+            self.tab_model,
+            self.list,
+            &bounds,
+            state.max_dimensions,
+            state.display_area,
+        ) {
             if cursor.is_over(region) {
                 return mouse::Interaction::Grab;
             }
@@ -296,8 +308,14 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
 
         let active_key = self.tab_model.active_data::<OutputKey>();
 
-        for (id, (output_key, mut region)) in
-            display_regions(self.tab_model, self.list, &bounds, state.max_dimensions).enumerate()
+        for (id, (output_key, mut region)) in display_regions(
+            self.tab_model,
+            self.list,
+            &bounds,
+            state.max_dimensions,
+            state.display_area,
+        )
+        .enumerate()
         {
             // If the output is being dragged, show its dragged position instead.
             if let Some((dragged_key, dragged_region)) = state.dragging {
@@ -382,6 +400,7 @@ struct State {
     drag_from: Point,
     dragging: Option<(OutputKey, Rectangle)>,
     offset: (f32, f32),
+    display_area: (f32, f32),
     max_dimensions: (f32, f32),
 }
 
@@ -391,6 +410,7 @@ fn display_regions<'a>(
     list: &'a randr::List,
     bounds: &'a Rectangle,
     max_dimensions: (f32, f32),
+    display_area: (f32, f32),
 ) -> impl Iterator<Item = (OutputKey, Rectangle)> + 'a {
     model
         .iter()
@@ -429,7 +449,7 @@ fn display_regions<'a>(
                     width,
                     height,
                     x: max_dimensions.0 + bounds.x + (output.position.0 as f32) / UNIT_PIXELS,
-                    y: max_dimensions.1 + bounds.y + (output.position.1 as f32) / UNIT_PIXELS,
+                    y: bounds.y + (display_area.1 / 2.0) + (output.position.1 as f32) / UNIT_PIXELS,
                 },
             ))
         })
@@ -440,9 +460,10 @@ fn display_region_hovers(
     list: &randr::List,
     bounds: &Rectangle,
     max_dimensions: (f32, f32),
+    display_area: (f32, f32),
     point: Point,
 ) -> Option<(OutputKey, Rectangle)> {
-    for (output_key, region) in display_regions(model, list, bounds, max_dimensions) {
+    for (output_key, region) in display_regions(model, list, bounds, max_dimensions, display_area) {
         if region.contains(point) {
             return Some((output_key, region));
         }
@@ -459,6 +480,7 @@ fn update_dragged_region(
     output: OutputKey,
     region: &mut Rectangle,
     max_dimensions: (f32, f32),
+    display_area: (f32, f32),
     (x, y): (f32, f32),
 ) {
     let mut dragged_region = Rectangle { x, y, ..*region };
@@ -468,7 +490,9 @@ fn update_dragged_region(
     let mut nearest_side = NearestSide::East;
 
     // Find the nearest adjacent display to the dragged display.
-    for (other_output, other_region) in display_regions(model, list, bounds, max_dimensions) {
+    for (other_output, other_region) in
+        display_regions(model, list, bounds, max_dimensions, display_area)
+    {
         if other_output == output {
             continue;
         }
@@ -564,7 +588,9 @@ fn update_dragged_region(
     }
 
     // Prevent display from overlapping with other displays.
-    for (other_output, other_region) in display_regions(model, list, bounds, max_dimensions) {
+    for (other_output, other_region) in
+        display_regions(model, list, bounds, max_dimensions, display_area)
+    {
         if other_output == output {
             continue;
         }
