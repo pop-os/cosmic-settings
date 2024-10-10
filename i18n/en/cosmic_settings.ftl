@@ -180,8 +180,6 @@ control-tint = Control component tint
 frosted = Frosted glass effect on system interface
     .desc = Applies background blur to panel, dock, applets, launcher, and application library.
 
-experimental-settings = Experimental settings
-
 enable-export = Apply this theme to GNOME apps.
     .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
 
@@ -205,33 +203,12 @@ window-management-appearance = Window Management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
 
-### Appearance: Font
+### Experimental
 
-font-config = Font Configuration
-interface-font = System Font
-monospace-font = Monospace Font
-font-family = Family
-
-font-weight = Weight
-    .thin = Thin
-    .extra-light = Extra Light
-    .light = Light
-    .normal = Normal
-    .medium = Medium
-    .semibold = Semi Bold
-    .bold = Bold
-    .extra-bold = Extra Bold
-    .black = Black
-
-font-style = Style
-    .normal = Normal
-    .italic = Italic
-    .oblique = Oblique
-
-font-stretch = Stretch
-    .condensed = Condensed
-    .normal = Normal
-    .expanded = Expanded
+experimental-settings = Experimental Settings
+icons-and-toolkit = Icons and toolkit theming
+interface-font = System font
+monospace-font = Monospace font
 
 ## Desktop: Notifications
 
