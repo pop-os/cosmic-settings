@@ -369,7 +369,6 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 fn date() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let auto = descriptions.insert(fl!("time-date", "auto"));
     let title = descriptions.insert(fl!("time-date"));
 
     Section::default()

@@ -551,7 +551,6 @@ impl Page {
 fn devices_view() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         wired_conns_txt = fl!("wired", "connections");
-        wired_devices_txt = fl!("wired", "devices");
         remove_txt = fl!("wired", "remove");
         connect_txt = fl!("connect");
         connected_txt = fl!("connected");

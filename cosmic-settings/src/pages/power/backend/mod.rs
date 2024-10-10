@@ -38,8 +38,6 @@ impl GetCurrentPowerProfile for PowerBackendEnum {
     }
 }
 
-pub trait PowerBackend: SetPowerProfile + GetCurrentPowerProfile {}
-
 pub async fn get_backend() -> Option<PowerBackendEnum> {
     match get_s76power_daemon_proxy().await {
         Ok(p) => match p.get_profile().await {
@@ -98,8 +96,6 @@ pub fn get_power_profiles() -> Vec<PowerProfile> {
 }
 
 pub struct S76Backend {}
-
-impl PowerBackend for S76Backend {}
 
 impl SetPowerProfile for S76Backend {
     async fn set_power_profile(&self, profile: PowerProfile) {
@@ -163,8 +159,6 @@ async fn get_s76power_daemon_proxy<'a>() -> Result<s76powerdaemon::PowerDaemonPr
 }
 
 pub struct PPBackend {}
-
-impl PowerBackend for PPBackend {}
 
 impl SetPowerProfile for PPBackend {
     async fn set_power_profile(&self, profile: PowerProfile) {
