@@ -201,3 +201,26 @@ pub fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic
     .on_press(msg)
     .into()
 }
+
+pub fn go_next_with_item<'a, Msg: Clone + 'static>(
+    description: &'a str,
+    item: impl Into<cosmic::Element<'a, Msg>>,
+    msg: Msg,
+) -> cosmic::Element<'_, Msg> {
+    settings::item_row(vec![
+        text::body(description).wrap(Wrap::Word).into(),
+        horizontal_space(Length::Fill).into(),
+        widget::row::with_capacity(2)
+            .push(item)
+            .push(icon::from_name("go-next-symbolic").size(16).icon())
+            .align_items(alignment::Alignment::Center)
+            .spacing(cosmic::theme::active().cosmic().spacing.space_s)
+            .into(),
+    ])
+    .apply(widget::container)
+    .style(cosmic::theme::Container::List)
+    .apply(button::custom)
+    .style(theme::Button::Transparent)
+    .on_press(msg)
+    .into()
+}
