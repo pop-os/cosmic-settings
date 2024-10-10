@@ -442,7 +442,7 @@ impl Page {
             Message::Pipewire(pipewire::DeviceEvent::Remove(node_id)) => {
                 let mut remove = None;
                 for (card_id, card) in &mut self.devices {
-                    if card.devices.remove(&node_id).is_some() {
+                    if card.devices.shift_remove(&node_id).is_some() {
                         if card.devices.is_empty() {
                             remove = Some(card_id.clone());
                         }

@@ -146,8 +146,6 @@ impl page::Page<crate::pages::Message> for Page {
 
                 Some(dialog)
             }
-
-            _ => None,
         }
     }
 }

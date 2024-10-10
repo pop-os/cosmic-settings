@@ -1,3 +1,6 @@
+// Copyright 2024 System76 <info@system76.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 
 use futures::{SinkExt, StreamExt};
@@ -60,5 +63,3 @@ pub async fn watch(
 
     Ok(())
 }
-
-pub enum Message {}
