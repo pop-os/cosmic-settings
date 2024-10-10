@@ -505,6 +505,8 @@ impl Page {
     }
 
     pub fn add_input_source_view(&self) -> Element<'_, crate::pages::Message> {
+        let space_l = theme::active().cosmic().spacing.space_l;
+
         let search = widget::search_input(fl!("type-to-search"), &self.input_source_search)
             .on_input(Message::InputSourceSearch)
             .on_clear(Message::InputSourceSearch(String::new()));
@@ -528,7 +530,7 @@ impl Page {
 
         widget::column()
             .padding([2, 0])
-            .spacing(32)
+            .spacing(space_l)
             .push(search)
             .push(toggler)
             .push(list)

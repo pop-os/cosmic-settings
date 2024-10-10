@@ -476,6 +476,13 @@ fn context_drawer(
     id: usize,
     show_action: bool,
 ) -> Element<ShortcutMessage> {
+    let cosmic::cosmic_theme::Spacing {
+        space_xxs,
+        space_xs,
+        space_l,
+        ..
+    } = theme::active().cosmic().spacing;
+
     let model = &shortcuts[id];
 
     let action = show_action.then(|| {
@@ -489,7 +496,7 @@ fn context_drawer(
     });
 
     let bindings = model.bindings.iter().enumerate().fold(
-        widget::list_column().spacing(8),
+        widget::list_column().spacing(space_xxs),
         |section, (_, (bind_id, shortcut))| {
             let text: Cow<'_, str> = if !shortcut.editing && shortcut.binding.is_set() {
                 Cow::Owned(shortcut.binding.to_string())
@@ -503,7 +510,7 @@ fn context_drawer(
             .select_on_focus(true)
             .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
             .on_submit(ShortcutMessage::SubmitBinding(bind_id))
-            .padding([0, 12])
+            .padding([0, space_xs])
             .id(shortcut.id.clone())
             .into();
 
@@ -533,13 +540,13 @@ fn context_drawer(
     let button_container = widget::row::with_capacity(2)
         .push_maybe(reset_keybinding_button)
         .push(add_keybinding_button)
-        .spacing(12)
+        .spacing(space_xs)
         .apply(widget::container)
         .width(Length::Fill)
         .align_x(Horizontal::Right);
 
     widget::column::with_capacity(if show_action { 3 } else { 2 })
-        .spacing(32)
+        .spacing(space_l)
         .push_maybe(action)
         .push(bindings)
         .push(button_container)

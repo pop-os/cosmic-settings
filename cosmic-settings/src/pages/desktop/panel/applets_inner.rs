@@ -297,7 +297,7 @@ impl Page {
                         .on_press(msg_map(Message::AddApplet(info.clone())))
                         .into(),
                 ])
-                .padding([0, 32, 0, 32])
+                .padding([0, spacing.space_l])
                 .spacing(spacing.space_xs)
                 .align_items(Alignment::Center),
             );
@@ -571,8 +571,8 @@ pub fn lists<
             .spacing(spacing.space_xxs)
             .into(),
         ])
-        .padding([0, 16, 0, 16])
-        .spacing(12.0)
+        .padding([0, spacing.space_s])
+        .spacing(spacing.space_xs)
         .apply(Element::from)
         .map(msg_map)
     })

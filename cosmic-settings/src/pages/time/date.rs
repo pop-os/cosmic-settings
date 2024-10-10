@@ -306,6 +306,8 @@ impl Page {
     }
 
     fn timezone_context_view(&self) -> Element<'_, crate::pages::Message> {
+        let space_l = cosmic::theme::active().cosmic().spacing.space_l;
+
         let search = widget::search_input(fl!("type-to-search"), &self.timezone_search)
             .on_input(Message::TimezoneSearch)
             .on_clear(Message::TimezoneSearch(String::new()));
@@ -322,7 +324,7 @@ impl Page {
 
         widget::column()
             .padding([2, 0])
-            .spacing(32)
+            .spacing(space_l)
             .push(search)
             .push(list)
             .apply(Element::from)
