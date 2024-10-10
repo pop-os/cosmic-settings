@@ -24,8 +24,7 @@ use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, radio, row,
     settings, spin_button, text, ColorPickerModel,
 };
-use cosmic::Apply;
-use cosmic::{command, Command, Element};
+use cosmic::{command, Apply, Command, Element};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -64,8 +63,10 @@ enum ContextView {
     ContainerBackground,
     ControlComponent,
     CustomAccent,
-    Experimental,
+    IconToolkit,
     InterfaceText,
+    MonoFonts,
+    SystemFonts,
 }
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -281,24 +282,26 @@ pub enum Message {
     DarkMode(bool),
     Density(Density),
     Entered((IconThemes, IconHandles)),
-    ExperimentalContextDrawer,
     ExportError,
     ExportFile(Arc<SelectedFiles>),
     ExportSuccess,
     FontConfig(font_config::Message),
     GapSize(spin_button::Message),
     IconTheme(usize),
+    IconToolkitContextDrawer,
     ImportError,
     ImportFile(Arc<SelectedFiles>),
     ImportSuccess(Box<ThemeBuilder>),
     InterfaceText(ColorPickerUpdate),
     Left,
+    MonoFontContextDrawer,
     NewTheme(Theme),
     PaletteAccent(cosmic::iced::Color),
     Reset,
     Roundness(Roundness),
     StartExport,
     StartImport,
+    SystemFontContextDrawer,
     UseDefaultWindowHint(bool),
     WindowHintSize(spin_button::Message),
     Daytime(bool),
@@ -367,7 +370,7 @@ impl From<CornerRadii> for Roundness {
 }
 
 impl Page {
-    fn experimental_context_view(&self) -> Element<'_, crate::pages::Message> {
+    fn icon_toolkit_context_view(&self) -> Element<'_, crate::pages::Message> {
         let active = self.icon_theme_active;
         let theme = cosmic::theme::active();
         let theme = theme.cosmic();
@@ -405,6 +408,14 @@ impl Page {
         .width(Length::Fill)
         .apply(Element::from)
         .map(crate::pages::Message::Appearance)
+    }
+
+    fn system_font_context_view(&self) -> Element<'_, crate::pages::Message> {
+        font_config::interface_font_view(self)
+    }
+
+    fn mono_font_context_view(&self) -> Element<'_, crate::pages::Message> {
+        font_config::monospace_font_view(self)
     }
 
     #[allow(clippy::too_many_lines)]
@@ -973,6 +984,20 @@ impl Page {
                     .unwrap_or_default();
             }
 
+            Message::SystemFontContextDrawer => {
+                self.context_view = Some(ContextView::SystemFonts);
+                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    fl!("interface-font").into(),
+                ));
+            }
+
+            Message::MonoFontContextDrawer => {
+                self.context_view = Some(ContextView::MonoFonts);
+                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    fl!("monospace-font").into(),
+                ));
+            }
+
             Message::ApplyThemeGlobal(enabled) => {
                 if let Some(config) = self.tk_config.as_ref() {
                     _ = config.set("apply_theme_global", enabled);
@@ -983,9 +1008,11 @@ impl Page {
                 return Command::none();
             }
 
-            Message::ExperimentalContextDrawer => {
-                self.context_view = Some(ContextView::Experimental);
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer("".into()));
+            Message::IconToolkitContextDrawer => {
+                self.context_view = Some(ContextView::IconToolkit);
+                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    fl!("icons-and-toolkit").into(),
+                ));
             }
 
             Message::Daytime(day_time) => {
@@ -1305,7 +1332,6 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(mode_and_colors()),
             sections.insert(style()),
             sections.insert(interface_density()),
-            sections.insert(font_config::section()),
             sections.insert(window_management()),
             sections.insert(experimental()),
             sections.insert(reset_button()),
@@ -1342,8 +1368,8 @@ impl page::Page<crate::pages::Message> for Page {
             command::future(fetch_icon_themes()).map(crate::pages::Message::Appearance),
             // Load font families
             command::future(async move {
-                let (mono, interface) = font_config::load_font_families();
-                Message::FontConfig(font_config::Message::LoadedFonts(mono, interface))
+                let (interface, mono) = font_config::load_font_families();
+                Message::FontConfig(font_config::Message::LoadedFonts(interface, mono))
             })
             .map(crate::pages::Message::Appearance),
         ])
@@ -1395,7 +1421,11 @@ impl page::Page<crate::pages::Message> for Page {
             )
             .map(crate::pages::Message::Appearance),
 
-            ContextView::Experimental => self.experimental_context_view(),
+            ContextView::SystemFonts => self.system_font_context_view(),
+
+            ContextView::MonoFonts => self.mono_font_context_view(),
+
+            ContextView::IconToolkit => self.icon_toolkit_context_view(),
 
             ContextView::InterfaceText => color_picker_context_view(
                 None,
@@ -1859,28 +1889,30 @@ pub fn window_management() -> Section<crate::pages::Message> {
 pub fn experimental() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let experimental_label = descriptions.insert(fl!("experimental-settings"));
+    let interface_font = descriptions.insert(fl!("interface-font"));
+    let monospace_font = descriptions.insert(fl!("monospace-font"));
+    let icons_and_toolkit = descriptions.insert(fl!("icons-and-toolkit"));
 
     Section::default()
+        .title(fl!("experimental-settings"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
 
-            let control = row::with_children(vec![
-                horizontal_space(Length::Fill).into(),
-                icon::from_name("go-next-symbolic").size(16).into(),
-            ]);
-
             settings::section()
-                .add(
-                    settings::item::builder(&descriptions[experimental_label])
-                        .control(control)
-                        .apply(container)
-                        .style(cosmic::theme::Container::List)
-                        .apply(button::custom)
-                        .style(cosmic::theme::Button::Transparent)
-                        .on_press(Message::ExperimentalContextDrawer),
-                )
+                .title(&section.title)
+                .add(crate::widget::go_next_item(
+                    &descriptions[interface_font],
+                    Message::SystemFontContextDrawer,
+                ))
+                .add(crate::widget::go_next_item(
+                    &descriptions[monospace_font],
+                    Message::MonoFontContextDrawer,
+                ))
+                .add(crate::widget::go_next_item(
+                    &descriptions[icons_and_toolkit],
+                    Message::IconToolkitContextDrawer,
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })

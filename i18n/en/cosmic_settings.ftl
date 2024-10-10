@@ -180,14 +180,6 @@ control-tint = Control component tint
 frosted = Frosted glass effect on system interface
     .desc = Applies background blur to panel, dock, applets, launcher, and application library.
 
-experimental-settings = Experimental settings
-
-enable-export = Apply this theme to GNOME apps.
-    .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
-
-icon-theme = Icon Theme
-    .desc = Applies a different set of icons to applications.
-
 text-tint = Interface text tint
     .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
 
@@ -205,11 +197,21 @@ window-management-appearance = Window Management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
 
+experimental-settings = Experimental Settings
+
+icons-and-toolkit = Icons and toolkit theming
+
+enable-export = Apply this theme to GNOME apps.
+    .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
+
+icon-theme = Icon Theme
+    .desc = Applies a different set of icons to applications.
+
 ### Appearance: Font
 
 font-config = Font Configuration
-interface-font = System Font
-monospace-font = Monospace Font
+interface-font = System font
+monospace-font = Monospace font
 font-family = Family
 
 font-weight = Weight

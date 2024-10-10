@@ -1,92 +1,101 @@
 use cosmic::{
     config::{CosmicTk, FontConfig},
-    widget::{self, settings},
-    Apply, Command, Element,
+    iced::Length,
+    widget::{self, radio, settings, text},
+    Command, Element,
 };
 use cosmic_config::ConfigSet;
-use cosmic_settings_page::Section;
 use ustr::Ustr;
 
 const INTERFACE_FONT: &str = "interface_font";
 const MONOSPACE_FONT: &str = "monospace_font";
 
-pub fn section() -> Section<crate::pages::Message> {
-    crate::slab!(descriptions {
-        font_family_txt = fl!("font-family");
-        font_weight_txt = fl!("font-weight");
-        font_stretch_txt = fl!("font-stretch");
-        font_style_txt = fl!("font-style");
-        interface_font_txt = fl!("interface-font");
-        monospace_font_txt = fl!("monospace-font");
-    });
+pub fn interface_font_view(page: &super::Page) -> Element<crate::pages::Message> {
+    let search = widget::search_input(
+        fl!("type-to-search"),
+        &page.font_config.interface_font_search,
+    )
+    .on_input(|s| {
+        crate::pages::Message::Appearance(super::Message::FontConfig(Message::InterfaceFontSearch(
+            s,
+        )))
+    })
+    .on_clear(crate::pages::Message::Appearance(
+        super::Message::FontConfig(Message::InterfaceFontSearch(String::new())),
+    ));
 
-    Section::default()
-        .title(fl!("font-config"))
-        .descriptions(descriptions)
-        .view::<super::Page>(move |_binder, page, section| {
-            let descriptions = &section.descriptions;
+    let mut list = widget::list_column();
 
-            let interface_font_family = settings::item::builder(&descriptions[font_family_txt])
-                .control(widget::dropdown(
-                    &page.font_config.interface_font_families,
-                    page.font_config.interface_font_family,
-                    |id| super::Message::FontConfig(Message::InterfaceFontFamily(id)),
-                ));
+    let search_input = page.font_config.interface_font_search.trim().to_lowercase();
 
-            let interface_font_weight = settings::item::builder(&descriptions[font_weight_txt])
-                .control(widget::dropdown(
-                    &page.font_config.font_weights,
-                    page.font_config.interface_font_weight,
-                    |id| super::Message::FontConfig(Message::InterfaceFontWeight(id)),
-                ));
+    for (index, name) in page.font_config.interface_font_families.iter().enumerate() {
+        if search_input.is_empty() || name.to_lowercase().contains(&search_input) {
+            let radio = radio(
+                text::body(name),
+                index,
+                page.font_config.interface_font_family,
+                |id| {
+                    crate::pages::Message::Appearance(super::Message::FontConfig(
+                        Message::InterfaceFontFamily(id),
+                    ))
+                },
+            )
+            .width(Length::Fill);
 
-            let interface_font_stretch = settings::item::builder(&descriptions[font_stretch_txt])
-                .control(widget::dropdown(
-                    &page.font_config.font_stretches,
-                    page.font_config.interface_font_stretch,
-                    |id| super::Message::FontConfig(Message::InterfaceFontStretch(id)),
-                ));
+            list = list.add(settings::item_row(vec![radio.into()]));
+        }
+    }
 
-            let interface_font_style = settings::item::builder(&descriptions[font_style_txt])
-                .control(widget::dropdown(
-                    &page.font_config.font_styles,
-                    page.font_config.interface_font_style,
-                    |id| super::Message::FontConfig(Message::InterfaceFontStyle(id)),
-                ));
+    widget::column()
+        .padding([2, 0])
+        .spacing(32)
+        .push(search)
+        .push(list)
+        .into()
+}
 
-            let monospace_font_family = settings::item::builder(&descriptions[font_family_txt])
-                .control(widget::dropdown(
-                    &page.font_config.monospace_font_families,
-                    page.font_config.monospace_font_family,
-                    |id| super::Message::FontConfig(Message::MonospaceFontFamily(id)),
-                ));
+pub fn monospace_font_view(page: &super::Page) -> Element<crate::pages::Message> {
+    let search = widget::search_input(
+        fl!("type-to-search"),
+        &page.font_config.monospace_font_search,
+    )
+    .on_input(|s| {
+        crate::pages::Message::Appearance(super::Message::FontConfig(Message::MonospaceFontSearch(
+            s,
+        )))
+    })
+    .on_clear(crate::pages::Message::Appearance(
+        super::Message::FontConfig(Message::MonospaceFontSearch(String::new())),
+    ));
 
-            let monospace_font_weight = settings::item::builder(&descriptions[font_weight_txt])
-                .control(widget::dropdown(
-                    &page.font_config.font_weights,
-                    page.font_config.monospace_font_weight,
-                    |id| super::Message::FontConfig(Message::MonospaceFontWeight(id)),
-                ));
+    let mut list = widget::list_column();
 
-            let interface_font = settings::section()
-                .title(&descriptions[interface_font_txt])
-                .add(interface_font_family)
-                .add(interface_font_weight)
-                .add(interface_font_stretch)
-                .add(interface_font_style);
+    let search_input = page.font_config.monospace_font_search.trim().to_lowercase();
 
-            let monospace_font = settings::section()
-                .title(&descriptions[monospace_font_txt])
-                .add(monospace_font_family)
-                .add(monospace_font_weight);
+    for (index, name) in page.font_config.monospace_font_families.iter().enumerate() {
+        if search_input.is_empty() || name.to_lowercase().contains(&search_input) {
+            let radio = radio(
+                text::body(name),
+                index,
+                page.font_config.monospace_font_family,
+                |id| {
+                    crate::pages::Message::Appearance(super::Message::FontConfig(
+                        Message::MonospaceFontFamily(id),
+                    ))
+                },
+            )
+            .width(Length::Fill);
 
-            widget::column::with_capacity(2)
-                .push(interface_font)
-                .push(monospace_font)
-                .spacing(8)
-                .apply(Element::from)
-                .map(crate::pages::Message::Appearance)
-        })
+            list = list.add(settings::item_row(vec![radio.into()]));
+        }
+    }
+
+    widget::column()
+        .padding([2, 0])
+        .spacing(32)
+        .push(search)
+        .push(list)
+        .into()
 }
 
 #[derive(Debug, Clone)]
@@ -95,9 +104,11 @@ pub enum Message {
     InterfaceFontStretch(usize),
     InterfaceFontStyle(usize),
     InterfaceFontWeight(usize),
+    InterfaceFontSearch(String),
     LoadedFonts(Vec<String>, Vec<String>),
     MonospaceFontFamily(usize),
     MonospaceFontWeight(usize),
+    MonospaceFontSearch(String),
 }
 
 #[derive(Debug, Default)]
@@ -110,9 +121,11 @@ pub struct Model {
     pub interface_font_weight: Option<usize>,
     pub interface_font_stretch: Option<usize>,
     pub interface_font_style: Option<usize>,
+    pub interface_font_search: String,
     pub monospace_font_families: Vec<String>,
     pub monospace_font_family: Option<usize>,
     pub monospace_font_weight: Option<usize>,
+    pub monospace_font_search: String,
 }
 
 impl Model {
@@ -147,9 +160,11 @@ impl Model {
             interface_font_stretch: None,
             interface_font_style: None,
             interface_font_weight: None,
+            interface_font_search: String::new(),
             monospace_font_families: Vec::new(),
             monospace_font_family: None,
             monospace_font_weight: None,
+            monospace_font_search: String::new(),
         }
     }
 
@@ -205,6 +220,10 @@ impl Model {
                 self.interface_font_weight = Some(id);
             }
 
+            Message::InterfaceFontSearch(search) => {
+                self.interface_font_search = search;
+            }
+
             Message::LoadedFonts(interface, mono) => {
                 self.interface_font_families = interface;
                 self.monospace_font_families = mono;
@@ -247,6 +266,10 @@ impl Model {
                 );
 
                 self.monospace_font_weight = Some(id);
+            }
+
+            Message::MonospaceFontSearch(search) => {
+                self.monospace_font_search = search;
             }
         }
 
