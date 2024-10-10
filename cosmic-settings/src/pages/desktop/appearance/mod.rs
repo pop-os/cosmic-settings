@@ -22,8 +22,7 @@ use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, radio, row,
     settings, spin_button, text, ColorPickerModel,
 };
-use cosmic::Apply;
-use cosmic::{command, Command, Element};
+use cosmic::{command, Apply, Command, Element};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -1466,8 +1465,9 @@ impl page::Page<crate::pages::Message> for Page {
                 } else {
                     &self.font_filter
                 };
+                let current_font = cosmic::config::interface_font().family.as_str();
 
-                font_config::selection_context(filter, &self.font_search, true)
+                font_config::selection_context(filter, &self.font_search, current_font, true)
                     .map(crate::pages::Message::Appearance)
             }
 
@@ -1477,8 +1477,9 @@ impl page::Page<crate::pages::Message> for Page {
                 } else {
                     &self.font_filter
                 };
+                let current_font = cosmic::config::monospace_font().family.as_str();
 
-                font_config::selection_context(filter, &self.font_search, false)
+                font_config::selection_context(filter, &self.font_search, current_font, false)
                     .map(crate::pages::Message::Appearance)
             }
 
@@ -1516,6 +1517,10 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
         .title(fl!("mode-and-colors"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
+            let Spacing {
+                space_xxs, space_s, ..
+            } = cosmic::theme::active().cosmic().spacing;
+
             let descriptions = &section.descriptions;
             let palette = &page.theme_builder.palette.as_ref();
             let cur_accent = page
@@ -1539,7 +1544,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .on_press(Message::DarkMode(true)),
                                 text::body(&descriptions[dark])
                             ]
-                            .spacing(8)
+                            .spacing(space_xxs)
                             .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center),
                             cosmic::iced::widget::column![
@@ -1554,11 +1559,11 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .on_press(Message::DarkMode(false)),
                                 text::body(&descriptions[light])
                             ]
-                            .spacing(8)
+                            .spacing(space_xxs)
                             .width(Length::FillPortion(1))
                             .align_items(cosmic::iced_core::Alignment::Center)
                         ]
-                        .spacing(48)
+                        .spacing(48) // TODO: dynamic spacing based on window width
                         .align_items(cosmic::iced_core::Alignment::Center)
                         .width(Length::Fixed(424.0)),
                     )
@@ -1675,8 +1680,8 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             scrollable::Properties::new()
                         ))
                     ]
-                    .padding([16, 24, 0, 24])
-                    .spacing(8),
+                    .padding([16, space_s, 0, space_s])
+                    .spacing(space_xxs),
                 )
                 .add(
                     settings::item::builder(&descriptions[app_bg]).control(

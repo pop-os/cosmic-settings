@@ -143,16 +143,15 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
     }
 
     builder
-        .icon(icon::from_name(icon).size(20))
+        .icon(container(icon::from_name(icon).size(20)).padding(8))
         .control(
             row::with_capacity(2)
-                .padding([8, 0]) // fixed value to set minimum height to 36
-                .spacing(space_xxs)
                 .push(text::body(info))
-                .push(icon::from_name("go-next-symbolic").size(20)),
+                .push(container(icon::from_name("go-next-symbolic").size(20)).padding(8))
+                .align_items(alignment::Alignment::Center),
         )
-        .padding([0, space_xxs])
-        .spacing(space_s)
+        .padding(0)
+        .spacing(space_xxs)
         .apply(container)
         .padding([space_s, space_m])
         .align_x(alignment::Horizontal::Center)

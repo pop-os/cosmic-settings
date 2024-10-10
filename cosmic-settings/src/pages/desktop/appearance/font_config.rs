@@ -1,12 +1,15 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use std::rc::Rc;
 use std::sync::Arc;
 
 use cosmic::{
     config::{CosmicTk, FontConfig},
     iced::Length,
     iced_core::text::Wrap,
+    iced_style::svg::Appearance,
+    theme,
     widget::{self, settings},
     Apply, Command, Element,
 };
@@ -66,17 +69,35 @@ pub fn load_font_families() -> (Vec<Arc<str>>, Vec<Arc<str>>) {
 pub fn selection_context<'a>(
     families: &'a [Arc<str>],
     search: &'a str,
+    current_font: &'a str,
     system: bool,
 ) -> Element<'a, super::Message> {
+    let space_l = theme::active().cosmic().spacing.space_l;
+
+    let svg_accent = Rc::new(|theme: &cosmic::Theme| {
+        let color = theme.cosmic().accent_color().into();
+        Appearance { color: Some(color) }
+    });
+
     let search_input = widget::search_input(fl!("type-to-search"), search)
         .on_input(super::Message::FontSearch)
         .on_clear(super::Message::FontSearch(String::new()));
 
     let list = families.iter().fold(widget::list_column(), |list, family| {
+        let selected = &**family == current_font;
         list.add(
             settings::item_row(vec![
                 widget::text::body(&**family).wrap(Wrap::Word).into(),
                 widget::horizontal_space(Length::Fill).into(),
+                if selected {
+                    widget::icon::from_name("object-select-symbolic")
+                        .size(16)
+                        .icon()
+                        .style(cosmic::theme::Svg::Custom(svg_accent.clone()))
+                        .into()
+                } else {
+                    widget::horizontal_space(16).into()
+                },
             ])
             .apply(widget::container)
             .style(cosmic::theme::Container::List)
@@ -88,7 +109,7 @@ pub fn selection_context<'a>(
 
     widget::column()
         .padding([2, 0])
-        .spacing(32)
+        .spacing(space_l)
         .push(search_input)
         .push(list)
         .into()
