@@ -6,13 +6,106 @@ number = { $number }
 
 ## Networking: Wired
 
-wired = Przewodowe
-    .desc = Połączenie przewodowe, profil połączenia
+connections-and-profiles = { $variant ->
+    [wired] Przewodowe
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Nieznane
+} połączenia i profile połączeń.
+
+add-network = Dodaj sieć
+    .profile = Dodaj profil
+add-vpn = Dodaj VPN
+airplane-on = Tryb samolotowy jest włączony.
+cable-unplugged = Rozłączono połączenie przewodowe
+connect = Połącz
+connected = Połączono
+connecting = Łączę…
+disconnect = Rozłącz
+forget = Zapomnij
+known-networks = Znane Sieci
+network-and-wireless = Sieci i Połączenia Bezprzewodowe
+no-networks = Nie znaleziono żadnej sieci.
+no-vpn = Brak dostępnych połączeń VPN.
+password = Hasło
+remove = Usuń
+settings = Ustawienia
+username = Użytkownik
+visible-networks = Widoczne Sieci
+
+auth-dialog = Wymagane Uwierzytelnienie
+    .vpn-description = Wprowadź nazwę i hasło wymagane przez usługę VPN.
+    .wifi-description = Wprowadź hasło lub klucz odszyfrowania lub połącz się wciskając przycisk "WPS" na routerze.
+
+forget-dialog = Chcesz zapomnieć hasło tej sieci Wi-Fi?
+    .description = Będziesz musiał ponownie wprowadzać hasło do tej sieci Wi-Fi, by jej użyć.
+
+network-device-state =
+    .activated = Połączono
+    .config = Konfiguracja
+    .deactivating = Rozłączanie
+    .disconnected = Rozłączono
+    .failed = Nieudane połączenie
+    .ip-check = Sprawdzam połączenie
+    .ip-config = Wymagane IP i informacje o routingu
+    .need-auth = Wymagane uwierzytelnienie
+    .prepare = Przygotowuję do połączenia
+    .secondaries = Oczekuję na dodatkowe połączenie
+    .unavailable = Niedostępne
+    .unknown = Nieznany stan
+    .unmanaged = Niezarządzane
+    .unplugged = Wypięty kabel
+
+remove-connection-dialog = Usunąć Profil Połączenia?
+    .vpn-description = Będziesz musiał ponownie wprowadzać hasło do tej sieci, by jej użyć.
+    .wired-description = Będziesz musiał odtworzyć ten profil, by jej użyć.
+
+vpn = VPN
+    .connections = Połączenia VPN
+    .remove = Usuń profil połączenia
+    .select-file = Wybierz plik konfiguracyjny VPN
+
+wired = Przewodowa
+    .adapter = Adapter przewodowy { $id }
+    .connections = Połączenia Przewodowe
+    .devices = Urządzenia Przewodowe
+    .remove = Usuń profil połączenia
+
+wifi = Wi-Fi
+    .adapter = Adapter Wi-Fi { $id }
+    .forget = Zapomnij tą sieć
 
 ## Networking: Online Accounts
 
 online-accounts = Konta Online
     .desc = Dodaj konta, IMAP, SMTP i logowanie firmowe
+
+# Bluetooth
+
+confirm = Potwierdź
+
+bluetooth = Bluetooth
+    .desc = Zarządzaj urządzeniami Bluetooth
+    .status = Ten system jest widoczny jako { $aliases }, dla urządzeń Bluetooth.
+    .connected = Połączono
+    .connecting = Łączenie
+    .disconnecting = Rozłączanie
+    .connect = Połącz
+    .disconnect = Rozłącz
+    .forget = Zapomnij
+    .dbus-error = Wystąpił błąd podczas interakcji z DBus: { $why }
+    .show-device-without-name = Pokaż urządzenia bez nazw
+
+bluetooth-paired = Poprzednio Połączone Urządzenia
+    .connect = Połącz
+    .battery = { $percentage }% baterii
+
+bluetooth-confirm-pin = Potwierdź PINem Bluetooth
+    .description = Upewnij się, że PIN jest taki sam jak na urządzeniu { $device }
+
+bluetooth-available = Pobliskie Urządzenia
+
+bluetooth-adapters = Adaptery Bluetooth
 
 ## Desktop
 
@@ -97,7 +190,7 @@ experimental-settings = Ustawienia eksperymentalne
 enable-export = Użyj tego motywu do apek GNOME.
     .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Apki inne niż COSMIC mogą wymagać restartu do zmiany motywu.
 
-icon-theme = Motyw ikon
+icon-theme = Motyw Ikon
     .desc = Zastosuj inny zbiór ikon do aplikacji.
 
 text-tint = Odcień tekstu interfejsu
@@ -108,10 +201,42 @@ style = Styl
     .slightly-round = Lekko zaokrąglony
     .square = Kwadratowy
 
-# interface density left out for now
+interface-density = Zagęszczenie Interfejsu
+    .comfortable = Wygodne
+    .compact = Zwarte
+    .spacious = Swobodne
+
 window-management-appearance = Zarządzanie Oknami
     .active-hint = Rozmiar wyróżnienia aktywnego okna
     .gaps = Przerwa między ramkami okien w trybie kafelków
+
+### Appearance: Font
+
+font-config = Konfiguracja Czcionek
+interface-font = Czcionka Systemowa
+monospace-font = Czcionka o Stałej Szerokości
+font-family = Rodzina
+
+font-weight = Grubość
+    .thin = Cienka
+    .extra-light = Bardzo delikatna
+    .light = Delikatna
+    .normal = Normalna
+    .medium = Średnia
+    .semibold = Połowicznie Pogrubiona
+    .bold = Pogrubiona
+    .extra-bold = Bardzo Pogrubiona
+    .black = Gruba
+
+font-style = Style
+    .normal = Normalny
+    .italic = Kursywa
+    .oblique = Ukośna
+
+font-stretch = Rozpiętość
+    .condensed = Zwarta
+    .normal = Normalna
+    .expanded = Luźny
 
 ## Desktop: Notifications
 
@@ -191,7 +316,7 @@ window-controls = Sterowanie Oknem
 focus-navigation = Nawigacja Aktywnym Oknem
     .focus-follows-cursor = Aktywuje okno nad kursorem
     .cursor-follows-focus = Przenosi kursor nad aktywne okno
-    
+
 ## Desktop: Workspaces
 
 workspaces = Obszary Robocze
