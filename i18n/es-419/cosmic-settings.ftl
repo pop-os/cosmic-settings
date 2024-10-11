@@ -4,11 +4,142 @@ unknown = Desconocido
 
 number = { $number }
 
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] Cableada
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Desconocida
+} conexiones y perfiles de conexión.
+
+add-network = Añadir red
+    .profile = Añadir perfil
+add-vpn = Añadir VPN
+airplane-on = El modo avión está activado.
+cable-unplugged = Cable desconectado
+connect = Conectar
+connected = Conectado
+connecting = Conectando…
+disconnect = Desconectar
+forget = Olvidar
+known-networks = Redes conocidas
+network-and-wireless = Red e inalámbrico
+no-networks = No se han encontrado redes.
+no-vpn = No hay conexiones VPN disponibles.
+password = Contraseña
+remove = Eliminar
+settings = Configuración
+username = Nombre de usuario
+visible-networks = Redes visibles
+
+auth-dialog = Autenticación requerida
+    .vpn-description = Ingresa el nombre de usuario y la contraseña requeridos por el servicio de VPN.
+    .wifi-description = Ingresa la contraseña o clave de encriptación. También puedes conectarte presionando el botón "WPS" en el router.
+
+forget-dialog = ¿Olvidar esta red Wi-Fi?
+    .description = Necesitarás ingresar una contraseña nuevamente para usar esta red Wi-Fi en el futuro.
+
+network-device-state =
+    .activated = Conectado
+    .config = Conectando
+    .deactivating = Desconectando
+    .disconnected = Desconectado
+    .failed = Falló la conexión
+    .ip-check = Verificando conexión
+    .ip-config = Solicitando información de IP y enrutamiento
+    .need-auth = Necesita autenticación
+    .prepare = Preparándose para conectar
+    .secondaries = Esperando conexión secundaria
+    .unavailable = No disponible
+    .unknown = Estado desconocido
+    .unmanaged = No administrado
+    .unplugged = Cable desconectado
+
+remove-connection-dialog = ¿Eliminar el perfil de conexión?
+    .vpn-description = Necesitarás ingresar una contraseña nuevamente para usar esta red en el futuro.
+    .wired-description = Necesitarás recrear este perfil para usarlo en el futuro.
+
+vpn = VPN
+    .connections = Conexiones VPN
+    .remove = Eliminar perfil de conexión
+    .select-file = Seleccionar un archivo de configuración de VPN
+
+wired = Conectado
+    .adapter = Adaptador por cable { $id }
+    .connections = Conexiones por cable
+    .devices = Dispositivos por cable
+    .remove = Eliminar perfil de conexión
+
+wifi = Wi-Fi
+    .adapter = Adaptador Wi-Fi { $id }
+    .forget = Olvidar esta red
+
+## Networking: Online Accounts
+
+online-accounts = Cuentas en línea
+    .desc = Agregar cuentas, IMAP y SMTP, inicios de sesión empresariales
+
+# Bluetooth
+
+confirm = Confirmar
+
+bluetooth = Bluetooth
+    .desc = Administrar dispositivos Bluetooth
+    .status = Este sistema es visible como { $aliases } mientras las configuraciones de Bluetooth están abiertas.
+    .connected = Conectado
+    .connecting = Conectando
+    .disconnecting = Desconectando
+    .connect = Conectar
+    .disconnect = Desconectar
+    .forget = Olvidar
+    .dbus-error = Ocurrió un error al interactuar con DBus: { $why }
+    .show-device-without-name = Mostrar dispositivos sin nombre
+
+bluetooth-paired = Dispositivos conectados previamente
+    .connect = Conectar
+    .battery = { $percentage }% de batería
+
+bluetooth-confirm-pin = Confirmar PIN de Bluetooth
+    .description = Por favor confirma que el siguiente PIN coincide con el que se muestra en { $device }
+
+bluetooth-available = Dispositivos cercanos
+
+bluetooth-adapters = Adaptadores Bluetooth
+
 ## Desktop
 
 desktop = Escritorio
 
-## Desktop: Apariencia
+## Desktop: Wallpaper
+
+wallpaper = Fondo de Pantalla
+    .change = Cambiar imagen cada
+    .desc = Imágenes de fondo, colores y opciones de carrusel de imágenes.
+    .fit = Ajuste del fondo de pantalla
+    .folder-dialog = Elegir carpeta de fondos de pantalla
+    .image-dialog = Elegir imagen de fondo de pantalla
+    .plural = Fondos de Pantalla
+    .same = Mismo fondo de pantalla en todas las pantallas
+    .slide = Carrusel de imágenes.
+
+add-color = Añadir color
+add-image = Añadir imagen
+all-displays = Todas las pantallas
+colors = Colores
+dialog-add = Añadir
+fill = Llenar
+fit-to-screen = Ajustar a la pantalla
+open-new-folder = Abrir nueva carpeta
+recent-folders = Carpetas recientes
+
+x-minutes = { $number } minutos
+x-hours = { $number ->
+    [1] 1 hora
+    *[other] { $number } horas
+}
+
+## Desktop: Appearance
 
 appearance = Apariencia
     .desc = Colores de acento y tema COSMIC.
@@ -65,12 +196,151 @@ style = Estilo
     .slightly-round = Ligeramente redondeado
     .square = Cuadrado
 
-# interface density left out for now
-window-management = Gestión de ventanas
-    .active-hint = Tamaño del contorno destacado de la ventana en uso
-    .gaps = Margenes de las ventanas organizadas
+interface-density = Densidad de la Interfaz
+    .comfortable = Cómoda
+    .compact = Compacta
+    .spacious = Espaciosa
 
-## Desktop: Display
+window-management-appearance = Gestión de Ventanas
+    .active-hint = Tamaño del indicador de ventana activa
+    .gaps = Espacios alrededor de las ventanas ajustadas
+
+### Appearance: Font
+
+font-config = Configuración de Fuente
+interface-font = Fuente del sistema
+monospace-font = Fuente Monoespaciada
+font-family = Familia
+
+font-weight = Grosor
+    .thin = Delgado
+    .extra-light = Extra Ligero
+    .light = Ligero
+    .normal = Normal
+    .medium = Medio
+    .semibold = Semi Negrita
+    .bold = Negrita
+    .extra-bold = Extra Negrita
+    .black = Negro
+
+font-style = Estilo
+    .normal = Normal
+    .italic = Itálica
+    .oblique = Oblicua
+
+font-stretch = Ancho
+    .condensed = Condensado
+    .normal = Normal
+    .expanded = Expandido
+
+## Desktop: Notifications
+
+notifications = Notifications
+    .desc = No molestar, notificaciones en la pantalla de bloqueo y configuraciones por aplicación.
+
+## Desktop: Panel
+
+panel = Panel
+    .desc = Barra superior con controles y menús del escritorio.
+
+add = Añadir
+add-applet = Añadir «applet»
+all = Todos
+applets = «Applets»
+center-segment = Segmento central
+drop-here = Soltar «applets» aquí
+end-segment = Segmento final
+large = Grande
+no-applets-found = No se encontraron «applets»...
+panel-bottom = Abajo
+panel-left = Izquierda
+panel-right = Derecha
+panel-top = Arriba
+search-applets = Buscar «applets»...
+small = Pequeño
+start-segment = Segmento inicial
+
+panel-appearance = Apariencia
+    .match = Igual que el escritorio
+    .light = Claro
+    .dark = Oscuro
+
+panel-behavior-and-position = Comportamiento y posiciones
+    .autohide = Ocultar panel automáticamente
+    .dock-autohide = Ocultar «dock» automáticamente
+    .position = Posición en la pantalla
+    .display = Mostrar en pantalla
+
+panel-style = Estilo
+    .anchor-gap = Espacio entre el panel y los bordes de la pantalla
+    .dock-anchor-gap = Espacio entre el «dock» y los bordes de la pantalla
+    .extend = Extender panel hasta los bordes de la pantalla
+    .dock-extend = Extender «dock» hasta los bordes de la pantalla
+    .appearance = Apariencia
+    .size = Tamaño
+    .background-opacity = Opacidad del fondo
+
+panel-applets = Configuración
+    .dock-desc = Configurar «applets» del «dock».
+    .desc = Configurar «applets» del panel.
+
+panel-missing = Falta la configuración del panel
+    .desc = El archivo de configuración del panel falta debido al uso de una configuración personalizada o está dañado.
+    .fix = Restablecer a predeterminado
+
+## Desktop: Dock
+
+dock = «Dock»
+    .desc = Panel con aplicaciones fijadas.
+
+## Desktop: Window management
+
+window-management = Gestión de ventanas
+    .desc = Acción de la tecla Super, opciones de control de ventanas y opciones adicionales de mosaico de ventanas.
+
+super-key = Tecla Súper
+    .launcher = Abrir lanzador
+    .workspaces = Abrir espacios de trabajo
+    .applications = Abrir aplicaciones
+    .disable = Deshabilitar
+
+window-controls = Controles de ventana
+    .minimize = Mostrar botón de minimizar
+    .maximize = Mostrar botón de maximizar
+    .active-window-hint = Mostrar indicación de ventana activa
+
+focus-navigation = Navegación de enfoque
+    .focus-follows-cursor = El enfoque sigue al cursor
+    .focus-follows-cursor-delay = Retraso del enfoque que sigue al cursor en ms
+    .cursor-follows-focus = El cursor sigue al enfoque
+
+## Desktop: Workspaces
+
+workspaces = Espacios de trabajo
+    .desc = Configura el número de espacios de trabajo, comportamiento y ubicación.
+
+workspaces-behavior = Comportamiento de los espacios de trabajo
+    .dynamic = Espacios de trabajo dinámicos
+    .dynamic-desc = Elimina automáticamente los espacios de trabajo vacíos.
+    .fixed = Número fijo de espacios de trabajo
+    .fixed-desc = Añadir o eliminar espacios de trabajo en la vista general.
+
+workspaces-multi-behavior = Comportamiento con múltiples pantallas
+    .span = Los espacios de trabajo se extienden a todas las pantallas
+    .separate = Las pantallas tienen espacios de trabajo separados
+
+workspaces-overview-thumbnails = Miniaturas de vista general de espacios de trabajo
+    .show-number = Mostrar número de espacio de trabajo
+    .show-name = Mostrar nombre de espacio de trabajo
+
+workspaces-orientation = Orientación de los espacios de trabajo
+    .vertical = Vertical
+    .horizontal = Horizontal
+
+hot-corner = Esquina activa
+    .top-left-corner = Habilitar esquina activa superior izquierda para espacios de trabajo
+
+## Displays
 
 -requires-restart = Requiere reinicio
 
@@ -124,172 +394,11 @@ dialog = Diálogo
     .change-prompt = Los cambios en la configuración se revertirán automáticamente en { $time } segundos.
     .revert-settings = Revertir configuraciones
 
-## Desktop: Notifications
-
-notifications = Notifications
-    .desc = No molestar, notificaciones en la pantalla de bloqueo y configuraciones por aplicación.
-
-## Desktop: Options
-
-desktop-panel-options = Escritorio y panel
-    .desc = Acción de la tecla Súper, esquinas activas, opciones de control de ventanas.
-
-desktop-panels-and-applets = Paneles de escritorio y «applets»
-
-dock = «Dock»
-    .desc = Panel con aplicaciones fijadas.
-
-hot-corner = Esquina activa
-    .top-left-corner = Habilitar esquina activa superior izquierda para espacios de trabajo
-
-super-key = Tecla Súper
-    .launcher = Abrir lanzador
-    .workspaces = Abrir espacios de trabajo
-    .applications = Abrir aplicaciones
-
-top-panel = Panel superior
-    .workspaces = Mostrar botón de espacios de trabajo
-    .applications = Mostrar botón de aplicaciones
-
-window-controls = Controles de ventana
-    .minimize = Mostrar botón de minimizar
-    .maximize = Mostrar botón de maximizar
-
-## Desktop: Panel
-
-panel = Panel
-    .desc = Barra superior con controles y menús del escritorio.
-
-add = Añadir
-add-applet = Añadir «applet»
-all = Todos
-applets = «Applets»
-center-segment = Segmento central
-drop-here = Soltar «applets» aquí
-end-segment = Segmento final
-large = Grande
-no-applets-found = No se encontraron «applets»...
-panel-bottom = Abajo
-panel-left = Izquierda
-panel-right = Derecha
-panel-top = Arriba
-search-applets = Buscar «applets»...
-small = Pequeño
-start-segment = Segmento inicial
-
-panel-appearance = Apariencia
-    .match = Igual que el escritorio
-    .light = Claro
-    .dark = Oscuro
-
-panel-behavior-and-position = Comportamiento y posiciones
-    .autohide = Ocultar panel automáticamente
-    .dock-autohide = Ocultar «dock» automáticamente
-    .position = Posición en la pantalla
-    .display = Mostrar en pantalla
-
-panel-style = Estilo
-    .anchor-gap = Espacio entre el panel y los bordes de la pantalla
-    .dock-anchor-gap = Espacio entre el «dock» y los bordes de la pantalla
-    .extend = Extender panel hasta los bordes de la pantalla
-    .dock-extend = Extender «dock» hasta los bordes de la pantalla
-    .appearance = Apariencia
-    .size = Tamaño
-    .background-opacity = Opacidad del fondo
-
-panel-applets = Configuración
-    .dock-desc = Configurar «applets» del «dock».
-    .desc = Configurar «applets» del panel.
-
-panel-missing = Falta la configuración del panel
-    .desc = El archivo de configuración del panel falta debido al uso de una configuración personalizada o está dañado.
-    .fix = Restablecer a predeterminado
-
-## Desktop: Wallpaper
-
-wallpaper = Fondo de pantalla
-    .change = Cambiar imagen cada
-    .desc = Imágenes de fondo de pantalla, colores y opciones de carrusel de imágenes.
-    .fit = Ajuste del fondo de pantalla
-    .folder-dialog = Elegir carpeta de fondos de pantalla
-    .image-dialog = Elegir imagen de fondo de pantalla
-    .plural = Fondos de pantalla
-    .same = Mismo fondo de pantalla en todas las pantallas
-    .slide = Carrusel de imágenes
-
-add-color = Añadir color
-add-image = Añadir imagen
-all-displays = Todas las pantallas
-colors = Colores
-dialog-add = Añadir
-fill = Rellenar
-fit-to-screen = Ajustar a la pantalla
-open-new-folder = Abrir nueva carpeta
-recent-folders = Carpetas recientes
-
-x-minutes = { $number } minutos
-x-hours = { $number ->
-    [1] 1 hora
-    *[other] { $number } horas
-}
-
-## Desktop: Workspaces
-
-workspaces = Espacios de trabajo
-    .desc = Configura el número de espacios de trabajo, comportamiento y ubicación.
-
-workspaces-behavior = Comportamiento de los espacios de trabajo
-    .dynamic = Espacios de trabajo dinámicos
-    .dynamic-desc = Elimina automáticamente los espacios de trabajo vacíos.
-    .fixed = Número fijo de espacios de trabajo
-    .fixed-desc = Añadir o eliminar espacios de trabajo en la vista general.
-
-workspaces-multi-behavior = Comportamiento con múltiples pantallas
-    .span = Los espacios de trabajo se extienden a todas las pantallas
-    .separate = Las pantallas tienen espacios de trabajo separados
-
-workspaces-overview-thumbnails = Miniaturas de vista general de espacios de trabajo
-    .show-number = Mostrar número de espacio de trabajo
-    .show-name = Mostrar nombre de espacio de trabajo
-
-workspaces-orientation = Orientación de los espacios de trabajo
-    .vertical = Vertical
-    .horizontal = Horizontal
-
-## Networking: Wired
-
-wired = Conexión cableada
-    .desc = Conexión cableada, perfiles de conexión
-
-## Networking: Online Accounts
-
-online-accounts = Cuentas en línea
-    .desc = Añade cuentas, IMAP y SMTP, inicio de sesión empresarial
-
-## Time & Language
-
-time = Hora y idioma
-    .desc = N/A
-
-time-date = Fecha y hora
-    .desc = Zona horaria, configuraciones automáticas del reloj y algunas configuraciones de hora.
-    .auto = Establecer automáticamente
-
-time-zone = Zona horaria
-    .auto = Zona horaria automática
-    .auto-info = Requiere servicios de ubicación y acceso a internet
-
-time-format = Formato de fecha y hora
-    .twenty-four = Formato de 24 horas
-    .first = Primer día de la semana
-    .show-date = Mostrar fecha en el panel superior
-    .friday = Viernes
-    .saturday = Sábado
-    .sunday = Domingo
-    .monday = Lunes
-
-time-region = Región e idioma
-    .desc = Formato de fechas, horas y números según tu región
+legacy-applications = Escalado de aplicaciones del sistema de ventanas X11
+    .scaled-by-system = Escalar todas las aplicaciones X11
+    .system-description = Las aplicaciones X11 aparecerán borrosas en pantallas HiDPI.
+    .scaled-natively = Renderizar aplicaciones X11 a resolución nativa
+    .native-description = Las aplicaciones X11 que no soportan escalado serán pequeñas cuando se utilicen pantallas HiDPI. Habilitar para que los juegos utilicen la resolución completa del monitor.
 
 ## Sound
 
@@ -315,43 +424,44 @@ sound-alerts = Alertas
 sound-applications = Aplicaciones
     .desc = Volúmen y configuración de audio de aplicaciones
 
-## System
+profile = Perfil
 
-system = Sistema y cuentas
+## Power
 
-## System: About
+power = Energía y Batería
+    .desc = Administrar configuraciones de energía
 
-about = Acerca de
-    .desc = Nombre del dispositivo, información de hardware, configuraciones predeterminadas del sistema operativo.
+battery = Batería
+  .minute = { $value } { $value ->
+        [one] minuto
+       *[other] minutos
+  }
+  .hour = { $value } { $value ->
+        [one] hora
+       *[other] horas
+  }
+  .day = { $value } { $value ->
+        [one] día
+       *[other] días
+  }
+  .less-than-minute = Menos de un minuto
+  .and = y
+  .remaining-time = { $time } hasta { $action ->
+        [full] completo
+       *[other] vacío
+   }
 
-about-device = Nombre del dispositivo
-    .desc = Este nombre aparece para otros dispositivos de red o Bluetooth.
+connected-devices = Dispositivos Conectados
+  .unknown = Dispositivo desconocido
 
-about-hardware = Hardware
-    .model = Modelo de hardware
-    .memory = Memoria
-    .processor = Procesador
-    .graphics = Gráficos
-    .disk-capacity = Capacidad del disco
-
-about-os = Sistema operativo
-    .os = Sistema operativo
-    .os-architecture = Arquitectura del sistema operativo
-    .desktop-environment = Entorno de escritorio
-    .windowing-system = Sistema de ventanas
-
-about-related = Configuraciones relacionadas
-    .support = Obtener soporte
-
-## System: Firmware
-
-firmware = Firmware
-    .desc = Detalles del firmware.
-
-## System: Users
-
-users = Usuarios
-    .desc = Autenticación e inicio de sesión, pantalla de bloqueo.
+power-mode = Modo de Energía
+    .battery = Vida de batería extendida
+    .battery-desc = Uso reducido de energía y rendimiento silencioso.
+    .balanced = Equilibrado
+    .balanced-desc = Rendimiento silencioso y uso moderado de energía.
+    .performance = Alto rendimiento
+    .performance-desc = Rendimiento y uso de energía máximos.
+    .no-backend = Backend no encontrado. Instala system76-power o power-profiles-daemon.
 
 ## Input
 
@@ -362,9 +472,10 @@ disable-while-typing = Desactivar mientras se escribe
 input-devices = Dispositivos de entrada
     .desc = Dispositivos de entrada
 
-primary-button = Botón primario
-    .left = Izquierdo
-    .right = Derecho
+primary-button = Botón Primario
+    .desc = Establece el orden de los botones físicos.
+    .left = Izquierda
+    .right = Derecha
 
 scrolling = Desplazamiento
     .two-finger = Desplazamiento con dos dedos
@@ -394,6 +505,7 @@ keyboard-sources = Fuentes de entrada
 keyboard-special-char = Entrada de caracteres especiales
     .alternate = Tecla de caracteres alternativos
     .compose = Tecla de composición
+    .caps = Tecla de Bloq Mayús
 
 keyboard-typing-assist = Escritura
     .repeat-rate = Tasa de repetición
@@ -401,6 +513,7 @@ keyboard-typing-assist = Escritura
 
 added = Añadido
 type-to-search = Escriba para buscar...
+show-extended-input-sources = Mostrar fuentes de entrada extendidas
 
 ## Input: Keyboard: Shortcuts
 
@@ -505,6 +618,9 @@ system-shortcut = Sistema
     .lock-screen = Bloquear la pantalla
     .mute = Silenciar salida de audio
     .mute-mic = Silenciar entrada de micrófono
+    .play-pause = Reproducir/Pausar
+    .play-next = Siguiente pista
+    .play-prev = Pista anterior
     .screenshot = Tomar una captura de pantalla
     .terminal = Abrir una terminal
     .volume-lower = Disminuir el volumen de la salida de audio
@@ -558,22 +674,75 @@ gestures = Gestos
     .four-finger-up = Deslizar cuatro dedos hacia arriba
     .three-finger-any = Deslizar tres dedos en cualquier dirección
 
+switch-workspaces = Cambiar espacios de trabajo
+    .horizontal = Deslizar cuatro dedos a la izquierda/derecha
+    .vertical = Deslizar cuatro dedos hacia arriba/abajo
+
 switch-between-windows = Cambiar entre ventanas
-switch-to-next-workspace = Cambiar al espacio de trabajo siguiente
-switch-to-prev-workspace = Cambiar al espacio de trabajo anterior
-open-application-library = Abrir biblioteca de aplicaciones
-open-workspaces-view = Abrir vista de espacios de trabajo
+open-application-library = Abrir Biblioteca de Aplicaciones
+open-workspaces-view = Abrir Vista de Espacios de Trabajo
 
-## Power
+## Time & Language
 
-power = Energía
-    .desc = Gestionar ajustes de energía
+time = Hora y idioma
+    .desc = N/A
 
-power-mode = Modo de energía
-    .performance = Alto rendimiento
-    .balanced = Balanceado
-    .battery = Vida extendida de la batería
-    .performance-desc = Rendimiento y uso de energía alto.
-    .balanced-desc = Rendimiento y uso de energía estándar.
-    .battery-desc = Rendimiento y uso de energía reducido.
-    .no-backend = «Backend» no encontrado. Instalar system76-power o power-profiles-daemon.
+time-date = Fecha y Hora
+    .desc = Zona horaria, configuración automática del reloj y algunos formatos de hora.
+    .auto = Configurar automáticamente
+    .auto-ntp = La fecha y la hora se actualizarán automáticamente cuando se establezca la zona horaria.
+
+time-zone = Zona horaria
+    .auto = Zona horaria automática
+    .auto-info = Requiere servicios de ubicación y acceso a internet
+
+time-format = Formato de Fecha y Hora
+    .twenty-four = Formato de 24 horas
+    .show-seconds = Mostrar segundos
+    .first = Primer día de la semana
+    .show-date = Mostrar Fecha en el Panel Superior
+    .friday = Viernes
+    .saturday = Sábado
+    .sunday = Domingo
+    .monday = Lunes
+
+time-region = Región e idioma
+    .desc = Formato de fechas, horas y números según tu región
+
+## System
+
+system = Sistema y cuentas
+
+## System: About
+
+about = Acerca de
+    .desc = Nombre del dispositivo, información de hardware, configuraciones predeterminadas del sistema operativo.
+
+about-device = Nombre del dispositivo
+    .desc = Este nombre aparece para otros dispositivos de red o Bluetooth.
+
+about-hardware = Hardware
+    .model = Modelo de hardware
+    .memory = Memoria
+    .processor = Procesador
+    .graphics = Gráficos
+    .disk-capacity = Capacidad del disco
+
+about-os = Sistema operativo
+    .os = Sistema operativo
+    .os-architecture = Arquitectura del sistema operativo
+    .desktop-environment = Entorno de escritorio
+    .windowing-system = Sistema de ventanas
+
+about-related = Configuraciones relacionadas
+    .support = Obtener soporte
+
+## System: Firmware
+
+firmware = Firmware
+    .desc = Detalles del firmware.
+
+## System: Users
+
+users = Usuarios
+    .desc = Autenticación e inicio de sesión, pantalla de bloqueo.
