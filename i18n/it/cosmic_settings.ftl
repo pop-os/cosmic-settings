@@ -183,8 +183,6 @@ control-tint = Tinta per componenti di controllo
 frosted = Effetto "vetro smerigliato" per l'interfaccia
     .desc = Applica un effetto di sfocatura al pannello, la barra delle applicazioni, gli applet, il launcher e la libreria della applicazioni.
 
-experimental-settings = Impostazioni sperimentali
-
 enable-export = Applica questo tema alle app GNOME.
     .desc = Non tutte le applicazioni supportano l'auto-switch. Le app Non-COSMIC potrebbero dover essere riavviate dopo aver cambiato tema.
 
@@ -207,6 +205,13 @@ interface-density = Interface Density
 window-management = Gestione finestre
     .active-hint = Dimensione bordo finestra attiva
     .gaps = Spaziatura finestre in modalità tiling
+
+### Experimental
+
+experimental-settings = Impostazioni sperimentali
+icons-and-toolkit = Temi delle icone e del toolkit
+interface-font = Carattere di sistema
+monospace-font = Carattere monospaziato
 
 ## Desktop: Notifications
 
