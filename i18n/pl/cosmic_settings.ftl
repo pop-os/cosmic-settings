@@ -210,6 +210,13 @@ window-management-appearance = Zarządzanie Oknami
     .active-hint = Rozmiar wyróżnienia aktywnego okna
     .gaps = Przerwa między ramkami okien w trybie kafelków
 
+### Experimental
+
+experimental-settings = Ustawienia Eksperymentalne
+icons-and-toolkit = Motywy biblioteki i ikon
+interface-font = Czcionka systemowa
+monospace-font = Czcionka o stałej szerokości
+
 ### Appearance: Font
 
 font-config = Konfiguracja Czcionek
