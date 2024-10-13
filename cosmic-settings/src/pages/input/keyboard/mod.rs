@@ -45,6 +45,7 @@ static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
     ("Swap with Escape", "caps:swapescape"),
     ("Backspace", "caps:backspace"),
     ("Super", "caps:super"),
+    ("Control", "caps:ctrl_modifier"),
 ];
 
 const STR_ORDER: &str = "`str` is always comparable";
