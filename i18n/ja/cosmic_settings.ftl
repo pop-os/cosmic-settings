@@ -83,7 +83,7 @@ online-accounts = オンラインアカウント
 # Bluetooth
 
 bluetooth = Bluetooth
-    .desc = Manage Bluetooth devices
+    .desc = Bluetoothデバイスの操作
     .status = このデバイスはBluetooth設定が表示されながら{ $aliases }として見えます。
     .connected = 接続済み
     .connecting = 接続中
@@ -98,9 +98,9 @@ bluetooth-paired = 前に接続したデバイス
     .connect = 接続
     .battery = バッテリーの{ $percentage }%
 
-bluetooth-available = Nearby Devices
+bluetooth-available = 隣のデバイス
 
-bluetooth-adapters = Bluetooth Adapters
+bluetooth-adapters = Bluetoothアダプター
 
 
 ## Desktop
@@ -204,7 +204,7 @@ mirroring = ミラーリング
         *[other] { $display }
     }に投影する
 
-    .project-count = 他の{ $count}つのディスプレイに投影している
+    .project-count = 他の{ $count}つのディスプレイに投影しています
 
 night-light = ナイトライト
     .auto = 自動的（日の入りから日の出まで）
@@ -218,6 +218,18 @@ orientation = 画面の向き
 
 scheduling = 計画
     .manual = 手動計画
+
+dialog = ダイヤログ
+    .title = このディスプレイの設定を保存しますか？
+    .keep-changes = 保存
+    .change-prompt = { $time }秒後に設定は自動的に元に戻ります。
+    .revert-settings = 元に戻す
+
+legacy-applications = X11アプリケーションのスケーリング
+    .scaled-by-system = X11アプリを全てスケーリングする
+    .system-description = HiDPI画面はX11アプリケーションがボケに見えます。
+    .scaled-natively = X11アプリをネーティブの解像度で表現する
+    .native-description = スケーリングをサポートしていないX11アプリケーションはHiDPI画面に小さく見えます。ゲームが完全に解像度を使用できるように有効にして下さい。
 
 ## Desktop: Notifications
 
@@ -312,7 +324,7 @@ add-image = 画像を追加
 all-displays = 全てのディスプレイ
 colors = 色
 dialog-add = 追加
-fill = Fill
+fill = フィル
 fit-to-screen = 画面に合わせる
 open-new-folder = 新しいフォルダを開く
 recent-folders = 最近のフォルダ
