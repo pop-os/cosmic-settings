@@ -5,7 +5,7 @@ pub mod vpn;
 pub mod wifi;
 pub mod wired;
 
-use std::{ffi::OsStr, io, process::ExitStatus, sync::Arc};
+use std::{ffi::OsStr, process::Stdio, sync::Arc};
 
 use anyhow::Context;
 use cosmic::{widget, Apply, Command, Element};
@@ -354,29 +354,33 @@ impl Page {
     }
 }
 
-async fn nm_add_vpn_file<P: AsRef<OsStr>>(type_: &str, path: P) -> io::Result<ExitStatus> {
+async fn nm_add_vpn_file<P: AsRef<OsStr>>(type_: &str, path: P) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
         .args(["connection", "import", "type", type_, "file"])
         .arg(path)
-        .status()
+        .stderr(Stdio::piped())
+        .output()
         .await
+        .apply(crate::utils::map_stderr_output)
 }
 
-async fn nm_add_wired() -> io::Result<ExitStatus> {
+async fn nm_add_wired() -> Result<(), String> {
     nm_connection_editor(&["--type=802-3-ethernet", "-c"]).await
 }
 
-async fn nm_add_wifi() -> io::Result<ExitStatus> {
+async fn nm_add_wifi() -> Result<(), String> {
     nm_connection_editor(&["--type=802-11-wireless", "-c"]).await
 }
 
-async fn nm_edit_connection(uuid: &str) -> io::Result<ExitStatus> {
+async fn nm_edit_connection(uuid: &str) -> Result<(), String> {
     nm_connection_editor(&[&["--edit=", uuid].concat()]).await
 }
 
-async fn nm_connection_editor(args: &[&str]) -> io::Result<ExitStatus> {
+async fn nm_connection_editor(args: &[&str]) -> Result<(), String> {
     tokio::process::Command::new(NM_CONNECTION_EDITOR)
         .args(args)
-        .status()
+        .stderr(Stdio::piped())
+        .output()
         .await
+        .apply(crate::utils::map_stderr_output)
 }
