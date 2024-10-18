@@ -12,13 +12,8 @@ use cosmic_settings_page as page;
 
 #[derive(Debug)]
 #[allow(clippy::struct_excessive_bools)]
+#[derive(Default)]
 pub struct Page {}
-
-impl Default for Page {
-    fn default() -> Self {
-        Self {}
-    }
-}
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {

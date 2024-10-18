@@ -113,7 +113,7 @@ impl Page {
                 self.focus_follows_cursor = value;
                 if let Err(err) = self
                     .comp_config
-                    .set("focus_follows_cursor", &self.focus_follows_cursor)
+                    .set("focus_follows_cursor", self.focus_follows_cursor)
                 {
                     error!(?err, "Failed to set config 'focus_follows_cursor'");
                 }
@@ -141,7 +141,7 @@ impl Page {
                 self.cursor_follows_focus = value;
                 if let Err(err) = self
                     .comp_config
-                    .set("cursor_follows_focus", &self.cursor_follows_focus)
+                    .set("cursor_follows_focus", self.cursor_follows_focus)
                 {
                     error!(?err, "Failed to set config 'cursor_follows_focus'");
                 }
@@ -242,23 +242,15 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                 .title(&section.title)
                 .add(settings::item(
                     &descriptions[active_window_hint],
-                    toggler(None, page.show_active_hint, Message::ShowActiveWindowHint),
+                    toggler(page.show_active_hint).on_toggle(Message::ShowActiveWindowHint),
                 ))
                 .add(settings::item(
                     &descriptions[maximize],
-                    toggler(
-                        None,
-                        cosmic::config::show_maximize(),
-                        Message::ShowMaximizeButton,
-                    ),
+                    toggler(cosmic::config::show_maximize()).on_toggle(Message::ShowMaximizeButton),
                 ))
                 .add(settings::item(
                     &descriptions[minimize],
-                    toggler(
-                        None,
-                        cosmic::config::show_minimize(),
-                        Message::ShowMinimizeButton,
-                    ),
+                    toggler(cosmic::config::show_minimize()).on_toggle(Message::ShowMinimizeButton),
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
@@ -283,11 +275,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                 .title(&section.title)
                 .add(settings::item(
                     &descriptions[focus_follows_cursor],
-                    toggler(
-                        None,
-                        page.focus_follows_cursor,
-                        Message::SetFocusFollowsCursor,
-                    ),
+                    toggler(page.focus_follows_cursor).on_toggle(Message::SetFocusFollowsCursor),
                 ))
                 .add(settings::item(
                     &descriptions[focus_follows_cursor_delay],
@@ -301,11 +289,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                 ))
                 .add(settings::item(
                     &descriptions[cursor_follows_focus],
-                    toggler(
-                        None,
-                        page.cursor_follows_focus,
-                        Message::SetCursorFollowsFocus,
-                    ),
+                    toggler(page.cursor_follows_focus).on_toggle(Message::SetCursorFollowsFocus),
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)

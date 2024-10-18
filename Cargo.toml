@@ -11,16 +11,18 @@ cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
 tokio = { version = "1.40.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
-git = "https://github.com/pop-os/libcosmic"
 features = [
+    "a11y",
     "dbus-config",
     "single-instance",
     "multi-window",
+    "winit",
     "tokio",
     "wayland",
     "wgpu",
     "xdg-portal",
 ]
+git = "https://github.com/pop-os/libcosmic"
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
@@ -44,8 +46,8 @@ package = "smithay-client-toolkit"
 # rev = "c583de8"
 
 [profile.release]
-opt-level = 3
-lto = "thin"
+opt-level = 1
+# lto = "thin"
 
 # [patch.'https://github.com/smithay/client-toolkit/']
 # smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }

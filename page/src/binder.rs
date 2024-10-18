@@ -3,8 +3,8 @@
 
 use crate::section::{self, Section};
 use crate::{Content, Info, Page};
-use cosmic::iced_runtime::command::Command;
 use cosmic::Element;
+use cosmic::Task;
 use regex::Regex;
 use slotmap::{SecondaryMap, SlotMap, SparseSecondaryMap};
 use std::{
@@ -157,8 +157,8 @@ impl<Message: 'static> Binder<Message> {
         page.downcast_mut::<P>()
     }
 
-    /// Returns a command when a page is left
-    pub fn on_leave(&mut self, id: crate::Entity) -> Option<Command<Message>> {
+    /// Returns a Task when a page is left
+    pub fn on_leave(&mut self, id: crate::Entity) -> Option<Task<Message>> {
         if let Some(page) = self.page.get_mut(id) {
             return Some(page.on_leave());
         }
@@ -170,12 +170,12 @@ impl<Message: 'static> Binder<Message> {
         &mut self,
         id: crate::Entity,
         sender: tokio::sync::mpsc::Sender<Message>,
-    ) -> Command<Message> {
+    ) -> Task<Message> {
         if let Some(page) = self.page.get_mut(id) {
             return page.on_enter(id, sender);
         }
 
-        Command::none()
+        Task::none()
     }
 
     #[must_use]

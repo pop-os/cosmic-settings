@@ -7,7 +7,7 @@ use cosmic::iced_core::Border;
 use cosmic::iced_core::{self, gradient::Linear, Background, Color, Degrees, Length};
 use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::prelude::*;
-use cosmic::widget::{button, container, space};
+use cosmic::widget::{button, container, Space};
 use cosmic::{iced, Element};
 use cosmic_settings_wallpaper as wallpaper;
 use slotmap::DefaultKey;
@@ -34,7 +34,7 @@ pub fn color_button(
     button::custom_image_button(content, on_remove)
         .padding(0)
         .selected(selected)
-        .style(button::Style::Image)
+        .class(button::ButtonClass::Image)
         .on_press(Message::ColorSelect(color))
         .into()
 }
@@ -47,9 +47,9 @@ pub fn color_image<'a, M: 'a>(
     height: u16,
     border_radius: Option<f32>,
 ) -> Element<'a, M> {
-    container(space::Space::new(width, height))
-        .style(cosmic::theme::Container::custom(move |theme| {
-            container::Appearance {
+    container(Space::new(width, height))
+        .class(cosmic::theme::Container::custom(move |theme| {
+            container::Style {
                 icon_color: None,
                 text_color: None,
                 background: Some(match &color {
@@ -173,8 +173,7 @@ fn flex_select_row(elements: Vec<Element<Message>>) -> Element<Message> {
         .column_spacing(COLUMN_SPACING)
         .row_spacing(ROW_SPACING)
         .apply(container)
-        .width(Length::Fill)
-        .center_x()
+        .center_x(Length::Fill)
         .into()
 }
 

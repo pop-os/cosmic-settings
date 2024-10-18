@@ -6,10 +6,9 @@ use std::{collections::BTreeSet, sync::Arc};
 use anyhow::Context;
 use cosmic::{
     iced::{alignment, Length},
-    iced_core::text::Wrap,
-    prelude::CollectionWidget,
+    iced_core::text::Wrapping,
     widget::{self, icon},
-    Apply, Command, Element,
+    Apply, Element, Task,
 };
 use cosmic_dbus_networkmanager::interface::enums::DeviceState;
 use cosmic_settings_page::{self as page, section, Section};
@@ -155,7 +154,7 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _page: cosmic_settings_page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Command<crate::pages::Message> {
+    ) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
             return cosmic::command::future(async move {
                 zbus::Connection::system()
@@ -169,10 +168,10 @@ impl page::Page<crate::pages::Message> for Page {
             });
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.active_device = None;
         self.view_more_popup = None;
         self.nm_state = None;
@@ -184,7 +183,7 @@ impl page::Page<crate::pages::Message> for Page {
             _ = cancel.send(());
         }
 
-        Command::none()
+        Task::none()
     }
 
     fn title(&self) -> Option<&str> {
@@ -195,7 +194,7 @@ impl page::Page<crate::pages::Message> for Page {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         let span = tracing::span!(tracing::Level::INFO, "vpn::update");
         let _span = span.enter();
 
@@ -232,7 +231,7 @@ impl Page {
                 network_manager::Event::ActiveConns | network_manager::Event::Devices,
             ) => {
                 if let Some(NmState { ref conn, .. }) = self.nm_state {
-                    return cosmic::command::batch(vec![
+                    return cosmic::Task::batch(vec![
                         update_state(conn.clone()),
                         update_devices(conn.clone()),
                     ]);
@@ -337,7 +336,7 @@ impl Page {
 
             Message::Refresh => {
                 if let Some(NmState { ref conn, .. }) = self.nm_state {
-                    return cosmic::command::batch(vec![
+                    return cosmic::Task::batch(vec![
                         update_state(conn.clone()),
                         update_devices(conn.clone()),
                     ]);
@@ -357,7 +356,7 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     fn connect(
@@ -451,7 +450,7 @@ impl Page {
         device: &'a network_manager::devices::DeviceInfo,
     ) -> Element<'a, Message> {
         let has_multiple_connection_profiles = device.known_connections.len() > 1;
-        let header_txt = format!("{}", wired_conns_txt);
+        let header_txt = wired_conns_txt.to_string();
 
         device
             .known_connections
@@ -478,13 +477,13 @@ impl Page {
                         )
                     };
 
-                    let identifier = widget::text::body(&connection.id).wrap(Wrap::Glyph);
+                    let identifier = widget::text::body(&connection.id).wrapping(Wrapping::Glyph);
 
                     let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
                         widget::button::text(connect_txt).on_press(msg).into()
                     } else {
                         widget::text::body(connect_txt)
-                            .vertical_alignment(alignment::Vertical::Center)
+                            .align_y(alignment::Vertical::Center)
                             .into()
                     };
 
@@ -504,23 +503,23 @@ impl Page {
                                     .push_maybe(is_connected.then(|| {
                                         popup_button(
                                             Message::Deactivate(connection.uuid.clone()),
-                                            &disconnect_txt,
+                                            disconnect_txt,
                                         )
                                     }))
                                     .push(popup_button(
                                         Message::Settings(connection.uuid.clone()),
-                                        &settings_txt,
+                                        settings_txt,
                                     ))
                                     .push_maybe(has_multiple_connection_profiles.then(|| {
                                         popup_button(
                                             Message::RemoveProfileRequest(connection.uuid.clone()),
-                                            &remove_txt,
+                                            remove_txt,
                                         )
                                     }))
                                     .width(Length::Fixed(200.0))
                                     .apply(widget::container)
                                     .padding(spacing.space_xxxs)
-                                    .style(cosmic::style::Container::Dialog)
+                                    .class(cosmic::style::Container::Dialog)
                             })
                             .apply(|e| Some(Element::from(e)))
                     } else {
@@ -532,12 +531,12 @@ impl Page {
                     let controls = widget::row::with_capacity(2)
                         .push(connect)
                         .push_maybe(view_more)
-                        .align_items(alignment::Alignment::Center)
+                        .align_y(alignment::Alignment::Center)
                         .spacing(spacing.space_xxs);
 
                     let widget = widget::settings::item_row(vec![
                         identifier.into(),
-                        widget::horizontal_space(Length::Fill).into(),
+                        widget::horizontal_space().width(Length::Fill).into(),
                         controls.into(),
                     ]);
 
@@ -575,7 +574,7 @@ fn devices_view() -> Section<crate::pages::Message> {
             let active_device = page
                 .active_device
                 .as_ref()
-                .or_else(|| (nm_state.devices.len() == 1).then(|| nm_state.devices.get(0))?);
+                .or_else(|| (nm_state.devices.len() == 1).then(|| nm_state.devices.first())?);
 
             view = match active_device {
                 Some(device) => view.push(page.device_view(
@@ -600,20 +599,20 @@ fn devices_view() -> Section<crate::pages::Message> {
         })
 }
 
-fn popup_button<'a>(message: Message, text: &'a str) -> Element<'a, Message> {
+fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
     widget::text::body(text)
-        .vertical_alignment(alignment::Vertical::Center)
+        .align_y(alignment::Vertical::Center)
         .apply(widget::button::custom)
         .padding([theme.space_xxxs(), theme.space_xs()])
         .width(Length::Fill)
-        .style(cosmic::theme::Button::MenuItem)
+        .class(cosmic::theme::Button::MenuItem)
         .on_press(message)
         .into()
 }
 
-fn update_state(conn: zbus::Connection) -> Command<crate::app::Message> {
+fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
     cosmic::command::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
@@ -622,7 +621,7 @@ fn update_state(conn: zbus::Connection) -> Command<crate::app::Message> {
     })
 }
 
-fn update_devices(conn: zbus::Connection) -> Command<crate::app::Message> {
+fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
     cosmic::command::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::Ethernet);

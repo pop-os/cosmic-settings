@@ -6,7 +6,7 @@ use std::io;
 
 pub async fn set_username(connection_name: &str, username: &str) -> io::Result<()> {
     tokio::process::Command::new("nmcli")
-        .args(&["con", "mod", connection_name, "vpn.user-name", username])
+        .args(["con", "mod", connection_name, "vpn.user-name", username])
         .status()
         .await
         .and_then(IntoResult::into_result)
@@ -14,7 +14,7 @@ pub async fn set_username(connection_name: &str, username: &str) -> io::Result<(
 
 pub async fn set_password_flags_none(connection_name: &str) -> io::Result<()> {
     tokio::process::Command::new("nmcli")
-        .args(&[
+        .args([
             "con",
             "mod",
             connection_name,
@@ -28,10 +28,10 @@ pub async fn set_password_flags_none(connection_name: &str) -> io::Result<()> {
 
 pub async fn set_password(connection_name: &str, password: &str) -> io::Result<()> {
     tokio::process::Command::new("nmcli")
-        .args(&[
+        .args([
             "con",
             "mod",
-            &connection_name,
+            connection_name,
             "vpn.secrets",
             &format!("password={password}"),
         ])
@@ -42,7 +42,7 @@ pub async fn set_password(connection_name: &str, password: &str) -> io::Result<(
 
 pub async fn connect(connection_name: &str) -> io::Result<()> {
     tokio::process::Command::new("nmcli")
-        .args(&["con", "up", &connection_name])
+        .args(["con", "up", connection_name])
         .status()
         .await
         .and_then(IntoResult::into_result)
