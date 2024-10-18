@@ -1500,6 +1500,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmic-idle-config"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/cosmic-idle#f2c83714c0a26b6152204a6ea3dd482ad0e08ded"
+dependencies = [
+ "cosmic-config",
+ "serde",
+]
+
+[[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
 source = "git+https://github.com/pop-os/cosmic-panel#0ce85da198f02f94ad75441e64c0e165c41eb4ae"
@@ -1571,6 +1580,7 @@ dependencies = [
  "cosmic-comp-config",
  "cosmic-config",
  "cosmic-dbus-networkmanager",
+ "cosmic-idle-config",
  "cosmic-panel-config",
  "cosmic-randr",
  "cosmic-randr-shell",
