@@ -508,12 +508,10 @@ impl Page {
             .on_input(Message::InputSourceSearch)
             .on_clear(Message::InputSourceSearch(String::new()));
 
-        let toggler = settings::item::builder(fl!("show-extended-input-sources"))
-            .toggler(
-                self.show_extended_input_sources,
-                Message::SetShowExtendedInputSources,
-            )
-            .label(fl!("show-extended-input-sources"));
+        let toggler = settings::item::builder(fl!("show-extended-input-sources")).toggler(
+            self.show_extended_input_sources,
+            Message::SetShowExtendedInputSources,
+        );
 
         let mut list = widget::list_column();
 

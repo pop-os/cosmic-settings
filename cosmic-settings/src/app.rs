@@ -517,7 +517,7 @@ impl cosmic::Application for SettingsApp {
                         .map(Into::into),
                     );
                 }
-                return Command::batch(commands);
+                return Task::batch(commands);
             }
 
             Message::OutputRemoved(output) => {
@@ -537,7 +537,7 @@ impl cosmic::Application for SettingsApp {
                             .map(Into::into),
                     );
                 }
-                return Command::batch(commands);
+                return Task::batch(commands);
             }
 
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {

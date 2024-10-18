@@ -147,7 +147,7 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
             row::with_capacity(2)
                 .push(text::body(info))
                 .push(container(icon::from_name("go-next-symbolic").size(20)).padding(8))
-                .align_items(alignment::Alignment::Center),
+                .align_y(alignment::Alignment::Center),
         )
         .padding(0)
         .spacing(space_xxs)
@@ -206,19 +206,19 @@ pub fn go_next_with_item<'a, Msg: Clone + 'static>(
     msg: Msg,
 ) -> cosmic::Element<'_, Msg> {
     settings::item_row(vec![
-        text::body(description).wrap(Wrap::Word).into(),
-        horizontal_space(Length::Fill).into(),
+        text::body(description).wrapping(Wrapping::Word).into(),
+        horizontal_space().width(Length::Fill).into(),
         widget::row::with_capacity(2)
             .push(item)
             .push(icon::from_name("go-next-symbolic").size(16).icon())
-            .align_items(alignment::Alignment::Center)
+            .align_y(alignment::Alignment::Center)
             .spacing(cosmic::theme::active().cosmic().spacing.space_s)
             .into(),
     ])
     .apply(widget::container)
-    .style(cosmic::theme::Container::List)
+    .class(cosmic::theme::Container::List)
     .apply(button::custom)
-    .style(theme::Button::Transparent)
+    .class(theme::Button::Transparent)
     .on_press(msg)
     .into()
 }
