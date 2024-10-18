@@ -16,6 +16,7 @@ cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
 cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+cosmic-idle-config.workspace = true
 cosmic-panel-config = { workspace = true, optional = true }
 cosmic-randr-shell.workspace = true
 cosmic-randr = { workspace = true, optional = true }

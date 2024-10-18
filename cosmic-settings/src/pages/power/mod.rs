@@ -9,17 +9,82 @@ use cosmic::iced_widget::{column, row};
 use cosmic::widget::{self, radio, settings, text};
 use cosmic::Apply;
 use cosmic::Task;
+use cosmic_config::{Config, CosmicConfigEntry};
+use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, section, Section};
 use itertools::Itertools;
 use slab::Slab;
 use slotmap::SlotMap;
+use std::iter;
+use std::time::Duration;
 
-#[derive(Default)]
+static SCREEN_OFF_TIMES: &[Duration] = &[
+    Duration::from_secs(2 * 60),
+    Duration::from_secs(5 * 60),
+    Duration::from_secs(10 * 60),
+    Duration::from_secs(15 * 60),
+    Duration::from_secs(30 * 60),
+];
+
+static SUSPEND_TIMES: &[Duration] = &[
+    Duration::from_secs(15 * 60),
+    Duration::from_secs(20 * 60),
+    Duration::from_secs(25 * 60),
+    Duration::from_secs(30 * 60),
+    Duration::from_secs(45 * 60),
+    Duration::from_secs(1 * 60 * 60),
+    Duration::from_secs(80 * 60),
+    Duration::from_secs(90 * 60),
+    Duration::from_secs(100 * 60),
+    Duration::from_secs(2 * 60 * 60),
+];
+
+fn format_time(duration: Duration) -> String {
+    let m = duration.as_secs() / 60;
+    if m % 60 == 0 {
+        fl!("x-hours", number = (m / 60))
+    } else {
+        fl!("x-minutes", number = m)
+    }
+}
+
 pub struct Page {
     entity: page::Entity,
     battery: Battery,
     connected_devices: Vec<ConnectedDevice>,
     on_enter_handle: Option<cosmic::iced::task::Handle>,
+    screen_off_labels: Vec<String>,
+    suspend_labels: Vec<String>,
+    idle_config: Config,
+    idle_conf: CosmicIdleConfig,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        let idle_config = Config::new("com.system76.CosmicIdle", 1).unwrap();
+        let idle_conf = CosmicIdleConfig::get_entry(&idle_config).unwrap_or_else(|(_, conf)| conf);
+
+        Self {
+            entity: Default::default(),
+            battery: Default::default(),
+            connected_devices: Vec::new(),
+            on_enter_handle: None,
+            screen_off_labels: SCREEN_OFF_TIMES
+                .iter()
+                .copied()
+                .map(format_time)
+                .chain(iter::once(fl!("never")))
+                .collect(),
+            suspend_labels: SUSPEND_TIMES
+                .iter()
+                .copied()
+                .map(format_time)
+                .chain(iter::once(fl!("never")))
+                .collect(),
+            idle_config,
+            idle_conf,
+        }
+    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -41,6 +106,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(battery_info()),
             sections.insert(connected_devices()),
             sections.insert(profiles()),
+            sections.insert(power_saving()),
         ])
     }
 
@@ -81,6 +147,9 @@ pub enum Message {
     PowerProfileChange(PowerProfile),
     UpdateBattery(Battery),
     UpdateConnectedDevices(Vec<ConnectedDevice>),
+    ScreenOffTimeChange(Option<Duration>),
+    SuspendOnAcTimeChange(Option<Duration>),
+    SuspendOnBatteryTimeChange(Option<Duration>),
 }
 
 impl Page {
@@ -98,6 +167,30 @@ impl Page {
             Message::UpdateBattery(battery) => self.battery = battery,
             Message::UpdateConnectedDevices(connected_devices) => {
                 self.connected_devices = connected_devices;
+            }
+            Message::ScreenOffTimeChange(time) => {
+                let time = time.map(|x| x.as_millis() as u32);
+                if let Err(err) = self.idle_conf.set_screen_off_time(&self.idle_config, time) {
+                    tracing::error!("failed to set screen off time: {}", err)
+                }
+            }
+            Message::SuspendOnAcTimeChange(time) => {
+                let time = time.map(|x| x.as_millis() as u32);
+                if let Err(err) = self
+                    .idle_conf
+                    .set_suspend_on_ac_time(&self.idle_config, time)
+                {
+                    tracing::error!("failed to set suspend on ac time: {}", err)
+                }
+            }
+            Message::SuspendOnBatteryTimeChange(time) => {
+                let time = time.map(|x| x.as_millis() as u32);
+                if let Err(err) = self
+                    .idle_conf
+                    .set_suspend_on_battery_time(&self.idle_config, time)
+                {
+                    tracing::error!("failed to set suspend on battery time: {}", err)
+                }
             }
         };
     }
@@ -254,6 +347,79 @@ fn profiles() -> Section<crate::pages::Message> {
             }
 
             section
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::Power)
+        })
+}
+
+fn power_saving_row<'a>(
+    label: &'a str,
+    labels: &'a [String],
+    selected_time: Option<Duration>,
+    times: &'static [Duration],
+    on_select: fn(Option<Duration>) -> Message,
+) -> cosmic::Element<'a, Message> {
+    let selected = if let Some(time) = selected_time {
+        times.iter().position(|x| *x == time)
+    } else {
+        // "Never"
+        Some(times.len())
+    };
+
+    settings::item(
+        label,
+        widget::dropdown(labels, selected, move |i| on_select(times.get(i).copied())),
+    )
+    .into()
+}
+
+fn power_saving() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let turn_off_screen_desc = descriptions.insert(fl!("power-saving", "turn-off-screen-after"));
+    let auto_suspend_ac_desc = descriptions.insert(fl!("power-saving", "auto-suspend-ac"));
+    let auto_suspend_battery_desc =
+        descriptions.insert(fl!("power-saving", "auto-suspend-battery"));
+
+    Section::default()
+        .title(fl!("power-saving"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let screen_off_time = page
+                .idle_conf
+                .screen_off_time
+                .map(|t| Duration::from_millis(t.into()));
+            let suspend_on_ac_time = page
+                .idle_conf
+                .suspend_on_ac_time
+                .map(|t| Duration::from_millis(t.into()));
+            let suspend_on_battery_time = page
+                .idle_conf
+                .suspend_on_battery_time
+                .map(|t| Duration::from_millis(t.into()));
+            settings::section()
+                .title(&section.title)
+                .add(power_saving_row(
+                    &section.descriptions[turn_off_screen_desc],
+                    &page.screen_off_labels,
+                    screen_off_time,
+                    SCREEN_OFF_TIMES,
+                    Message::ScreenOffTimeChange,
+                ))
+                .add(power_saving_row(
+                    &section.descriptions[auto_suspend_ac_desc],
+                    &page.suspend_labels,
+                    suspend_on_ac_time,
+                    SUSPEND_TIMES,
+                    Message::SuspendOnAcTimeChange,
+                ))
+                .add(power_saving_row(
+                    &section.descriptions[auto_suspend_battery_desc],
+                    &page.suspend_labels,
+                    suspend_on_battery_time,
+                    SUSPEND_TIMES,
+                    Message::SuspendOnBatteryTimeChange,
+                ))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Power)
         })

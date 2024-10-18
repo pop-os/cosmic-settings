@@ -159,6 +159,7 @@ x-hours = { $number ->
     [1] 1 hour
     *[other] { $number } hours
 }
+never = Never
 
 ## Desktop: Appearance
 
@@ -460,6 +461,11 @@ power-mode = Power Mode
     .performance = High performance
     .performance-desc = Peak performance and power usage.
     .no-backend = Backend not found. Install system76-power or power-profiles-daemon.
+
+power-saving = Power Savings Options
+    .turn-off-screen-after = Turn off the screen after
+    .auto-suspend-ac = Automatic suspend when plugged in
+    .auto-suspend-battery = Automatic on battery power
 
 ## Input
 
