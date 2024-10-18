@@ -10,16 +10,83 @@ use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{self, radio, settings, text};
 use cosmic::Apply;
 use cosmic::Command;
+use cosmic_config::{Config, CosmicConfigEntry};
+use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, section, Section};
 use itertools::Itertools;
 use slab::Slab;
 use slotmap::SlotMap;
+use std::iter;
+use std::time::Duration;
 
-#[derive(Default)]
+static SCREEN_OFF_TIMES: &[Duration] = &[
+    Duration::from_secs(2 * 60),
+    Duration::from_secs(5 * 60),
+    Duration::from_secs(10 * 60),
+    Duration::from_secs(15 * 60),
+    Duration::from_secs(30 * 60),
+];
+
+static SUSPEND_TIMES: &[Duration] = &[
+    Duration::from_secs(15 * 60),
+    Duration::from_secs(20 * 60),
+    Duration::from_secs(25 * 60),
+    Duration::from_secs(30 * 60),
+    Duration::from_secs(45 * 60),
+    Duration::from_secs(1 * 60 * 60),
+    Duration::from_secs(80 * 60),
+    Duration::from_secs(90 * 60),
+    Duration::from_secs(100 * 60),
+    Duration::from_secs(2 * 60 * 60),
+];
+
+fn format_time(duration: Duration) -> String {
+    let m = duration.as_secs() / 60;
+    if m % 60 == 0 {
+        fl!("x-hours", number = (m / 60))
+    } else {
+        fl!("x-minutes", number = m)
+    }
+}
+
 pub struct Page {
     battery: Battery,
     connected_devices: Vec<ConnectedDevice>,
+    screen_off_labels: Vec<String>,
+    suspend_labels: Vec<String>,
+    screen_off_time: Option<Duration>,
+    idle_config: Config,
+    idle_conf: CosmicIdleConfig,
 }
+
+impl Default for Page {
+    fn default() -> Self {
+        let idle_config = Config::new("com.system76.CosmicIdle", 1).unwrap();
+        let idle_conf = CosmicIdleConfig::get_entry(&idle_config).unwrap_or_else(|(_, conf)| conf);
+
+        Self {
+            battery: Default::default(),
+            connected_devices: Vec::new(),
+            screen_off_labels: SCREEN_OFF_TIMES
+                .iter()
+                .copied()
+                .map(format_time)
+                .chain(iter::once(fl!("never")))
+                .collect(),
+            suspend_labels: SUSPEND_TIMES
+                .iter()
+                .copied()
+                .map(format_time)
+                .chain(iter::once(fl!("never")))
+                .collect(),
+            screen_off_time: None,
+            idle_config,
+            idle_conf,
+        }
+    }
+}
+
+// TODO default: options
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
@@ -36,6 +103,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(battery_info()),
             sections.insert(connected_devices()),
             sections.insert(profiles()),
+            sections.insert(power_saving()),
         ])
     }
 
@@ -64,6 +132,7 @@ pub enum Message {
     PowerProfileChange(PowerProfile),
     UpdateBattery(Battery),
     UpdateConnectedDevices(Vec<ConnectedDevice>),
+    ScreenOffTimeChange(Option<Duration>),
 }
 
 impl Page {
@@ -81,6 +150,12 @@ impl Page {
             Message::UpdateBattery(battery) => self.battery = battery,
             Message::UpdateConnectedDevices(connected_devices) => {
                 self.connected_devices = connected_devices;
+            }
+            Message::ScreenOffTimeChange(time) => {
+                self.screen_off_time = time;
+                // XXX
+                let time = time.map(|x| x.as_millis() as u32);
+                self.idle_conf.set_screen_off_time(&self.idle_config, time);
             }
         };
     }
@@ -231,6 +306,52 @@ fn profiles() -> Section<crate::pages::Message> {
             }
 
             section
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::Power)
+        })
+}
+
+fn power_saving_row<'a>(
+    label: &'a str,
+    labels: &'a [String],
+    selected: Option<usize>,
+) -> cosmic::Element<'a, Message> {
+    settings::item_row(vec![
+        widget::text(label).into(),
+        widget::dropdown(labels, selected, |i| {
+            Message::ScreenOffTimeChange(SCREEN_OFF_TIMES.get(i).copied())
+        })
+        .into(),
+    ])
+    .into()
+}
+
+fn power_saving() -> Section<crate::pages::Message> {
+    Section::default()
+        .title("Power Savings Options")
+        .view::<Page>(move |_binder, page, section| {
+            settings::section()
+                .title(&section.title)
+                .add(power_saving_row(
+                    "Turn off the screen after",
+                    &page.screen_off_labels,
+                    Some(
+                        SCREEN_OFF_TIMES
+                            .iter()
+                            .position(|x| Some(*x) == page.screen_off_time)
+                            .unwrap_or(SCREEN_OFF_TIMES.len()),
+                    ),
+                ))
+                .add(power_saving_row(
+                    "Automatic suspend when plugged in",
+                    &page.suspend_labels,
+                    None,
+                ))
+                .add(power_saving_row(
+                    "Automatic on battery power",
+                    &page.suspend_labels,
+                    None,
+                ))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Power)
         })
