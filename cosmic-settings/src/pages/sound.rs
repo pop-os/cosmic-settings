@@ -316,7 +316,7 @@ impl Page {
             }
 
             Message::Pulse(pulse::Event::SourceVolume(volume)) => {
-                if self.sink_volume_debounce {
+                if self.source_volume_debounce {
                     return Command::none();
                 }
 
@@ -340,7 +340,7 @@ impl Page {
                 }
 
                 if let Some(command) = command {
-                    self.source_volume_debounce = true;
+                    self.sink_volume_debounce = true;
                     return command;
                 }
             }
