@@ -742,17 +742,18 @@ impl Page {
                     _ = config.set("header_size", density);
                 }
 
-                let spacing: Spacing = density.into();
+                let Some(config) = self.theme_builder_config.as_ref() else {
+                    return Command::none();
+                };
 
-                let light_config = Theme::light_config().ok();
-                let dark_config = Theme::dark_config().ok();
+                let spacing = density.into();
 
-                // Update both light and dark theme configs
-                if let Some(config) = light_config {
-                    _ = config.set("spacing", spacing);
-                }
-                if let Some(config) = dark_config {
-                    _ = config.set("spacing", spacing);
+                if self
+                    .theme_builder
+                    .set_spacing(config, spacing)
+                    .unwrap_or_default()
+                {
+                    self.theme_config_write("spacing", spacing);
                 }
 
                 tokio::task::spawn(async move {
@@ -1249,6 +1250,19 @@ impl Page {
                 theme.set_corner_radii(&other_theme_config, current_theme_builder.corner_radii)
             {
                 tracing::error!(?err, "Error setting corner radii");
+            }
+        }
+
+        if theme_builder.spacing != current_theme_builder.spacing {
+            if let Err(err) =
+                theme_builder.set_spacing(&other_builder_config, current_theme_builder.spacing)
+            {
+                tracing::error!(?err, "Error setting spacing");
+            }
+
+            if let Err(err) = theme.set_spacing(&other_theme_config, current_theme_builder.spacing)
+            {
+                tracing::error!(?err, "Error setting spacing");
             }
         }
 
