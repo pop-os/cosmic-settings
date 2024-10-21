@@ -304,7 +304,7 @@ impl Page {
                 let mut command = None;
                 if let Some(&node_id) = self.source_ids.get(self.active_source.unwrap_or(0)) {
                     command = Some(cosmic::command::future(async move {
-                        tokio::time::sleep(Duration::from_millis(500)).await;
+                        tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SourceVolumeApply(node_id))
                     }));
                 }
@@ -334,7 +334,7 @@ impl Page {
                 let mut command = None;
                 if let Some(&node_id) = self.sink_ids.get(self.active_sink.unwrap_or(0)) {
                     command = Some(cosmic::command::future(async move {
-                        tokio::time::sleep(Duration::from_millis(500)).await;
+                        tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SinkVolumeApply(node_id))
                     }));
                 }
