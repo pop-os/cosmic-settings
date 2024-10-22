@@ -78,7 +78,34 @@ wifi = Wi-Fi
 ## Networking: Online Accounts
 
 online-accounts = Contas online
-    .desc = Adicione contas, IMAP e SMTP, logins empresariais
+    .desc = Adicionar contas, IMAP e SMTP, logins empresariais
+
+# Bluetooth
+
+confirm = Confirmar
+
+bluetooth = Bluetooth
+    .desc = Gerenciamento de dispositivos Bluetooth
+    .status = Este sistema está visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
+    .connected = Conectado
+    .connecting = Conectando
+    .disconnecting = Desconectando
+    .connect = Conectar
+    .disconnect = Desconectar
+    .forget = Esquecer
+    .dbus-error = Ocorreu um erro ao interagir com o DBus: { $why }
+    .show-device-without-name = Mostrar dispositivo sem nome
+
+bluetooth-paired = Dispositivos conectados anteriormente
+    .connect = Conectar
+    .battery = { $percentage }% bateria
+
+bluetooth-confirm-pin = Confirmar o PIN do Bluetooth
+    .description = Por favor, confirme se o seguinte PIN corresponde ao exibido em { $device }
+
+bluetooth-available = Dispositivos próximos
+
+bluetooth-adapters = Adaptadores de Bluetooth
 
 ## Desktop
 
@@ -201,7 +228,7 @@ panel-bottom = Inferior
 panel-left = Esquerda
 panel-right = Direita
 panel-top = Superior
-search-applets = Procurando applets...
+search-applets = Procurar por applets...
 small = Pequeno
 start-segment = Segmento inicial
 
@@ -449,6 +476,7 @@ keyboard-sources = Fontes de Entrada
 keyboard-special-char = Entrada de Caracteres Especiais
     .alternate = Tecla de caracteres alternativos
     .compose = Tecla de composição
+    .caps = Tecla Caps Lock
 
 keyboard-typing-assist = Digitação
     .repeat-rate = Taxa de repetição
@@ -689,25 +717,3 @@ firmware = Firmware
 
 users = Usuários
     .desc = Autenticação e contas de usuário.
-
-# Bluetooth
-
-bluetooth = Bluetooth
-    .desc = Gerenciamento de dispositivos Bluetooth
-    .status = Este sistema está visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
-    .connected = Conectado
-    .connecting = Conectando
-    .disconnecting = Desconectando
-    .connect = Conectar
-    .disconnect = Desconectar
-    .forget = Esquecer
-    .dbus-error = Ocorreu um erro ao interagir com o DBus: { $why }
-    .show-device-without-name = Mostrar dispositivo sem nome
-
-bluetooth-paired = Dispositivos conectados anteriormente
-    .connect = Conectar
-    .battery = { $percentage }% bateria
-
-bluetooth-available = Dispositivos próximos
-
-bluetooth-adapters = Adaptadores de Bluetooth
