@@ -304,7 +304,7 @@ impl Page {
                 let mut command = None;
                 if let Some(&node_id) = self.source_ids.get(self.active_source.unwrap_or(0)) {
                     command = Some(cosmic::command::future(async move {
-                        tokio::time::sleep(Duration::from_millis(500)).await;
+                        tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SourceVolumeApply(node_id))
                     }));
                 }
@@ -316,7 +316,7 @@ impl Page {
             }
 
             Message::Pulse(pulse::Event::SourceVolume(volume)) => {
-                if self.sink_volume_debounce {
+                if self.source_volume_debounce {
                     return Command::none();
                 }
 
@@ -334,13 +334,13 @@ impl Page {
                 let mut command = None;
                 if let Some(&node_id) = self.sink_ids.get(self.active_sink.unwrap_or(0)) {
                     command = Some(cosmic::command::future(async move {
-                        tokio::time::sleep(Duration::from_millis(500)).await;
+                        tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SinkVolumeApply(node_id))
                     }));
                 }
 
                 if let Some(command) = command {
-                    self.source_volume_debounce = true;
+                    self.sink_volume_debounce = true;
                     return command;
                 }
             }
