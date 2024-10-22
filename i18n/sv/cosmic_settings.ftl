@@ -54,18 +54,16 @@ style = Stil
     .round = Rund
     .slightly-round = Lite rund
     .square = Fyrkant
+## Gränssnittstäthet
+# gränssnittstäthet utelämnad för tillfället
 
 interface-density = Gränssnittstäthet
     .comfortable = Bekväm
-
-# gränssnittstäthet utelämnad för tillfället
-
     .compact = Kompakt
     .spacious = Rymligt
 
-## Gränssnittstäthet
 
->>>>>>> master
+
 window-management = Fönsterhantering
 window-management-appearance = Fönsterhantering
     .active-hint = Storlek på aktivt fönsterhinting
@@ -106,7 +104,6 @@ experimental-settings = Testinställningar
 icons-and-toolkit = Utformning av ikoner och verktyg
 interface-font = Systemets teckensnitt
 monospace-font = Teckensnitt med jämna mellanrum
->>>>>>> master
 
 ## Skrivbord: Skärm
 
