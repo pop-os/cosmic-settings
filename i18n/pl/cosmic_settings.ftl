@@ -217,34 +217,6 @@ icons-and-toolkit = Motywy biblioteki i ikon
 interface-font = Czcionka systemowa
 monospace-font = Czcionka o stałej szerokości
 
-### Appearance: Font
-
-font-config = Konfiguracja Czcionek
-interface-font = Czcionka Systemowa
-monospace-font = Czcionka o Stałej Szerokości
-font-family = Rodzina
-
-font-weight = Grubość
-    .thin = Cienka
-    .extra-light = Bardzo delikatna
-    .light = Delikatna
-    .normal = Normalna
-    .medium = Średnia
-    .semibold = Połowicznie Pogrubiona
-    .bold = Pogrubiona
-    .extra-bold = Bardzo Pogrubiona
-    .black = Gruba
-
-font-style = Style
-    .normal = Normalny
-    .italic = Kursywa
-    .oblique = Ukośna
-
-font-stretch = Rozpiętość
-    .condensed = Zwarta
-    .normal = Normalna
-    .expanded = Luźny
-
 ## Desktop: Notifications
 
 notifications = Powiadomienia
@@ -319,9 +291,11 @@ super-key = Klawisz Super
 window-controls = Sterowanie Oknem
     .maximize = Pokaż Przycisk Maksymalizacji
     .minimize = Pokaż Przycisk Minimalizacji
+    .active-window-hint = Pokaż kolor wyróżnienia aktywnego okna
 
 focus-navigation = Nawigacja Aktywnym Oknem
     .focus-follows-cursor = Aktywuje okno nad kursorem
+    .focus-follows-cursor-delay = Opóźnienie kursora aktywującego okno w milisekundach
     .cursor-follows-focus = Przenosi kursor nad aktywne okno
 
 ## Desktop: Workspaces
@@ -529,7 +503,7 @@ keyboard-special-char = Wpis Znaków Specjalnych
 
 keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
-    .repeat-delay = Opóżnienie powtarzania
+    .repeat-delay = Opóźnienie powtarzania
 
 added = Dodany
 type-to-search = Naciśnij by wyszukać...
