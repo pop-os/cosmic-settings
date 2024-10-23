@@ -159,6 +159,7 @@ x-hours = { $number ->
     [1] 1 hour
     *[other] { $number } hours
 }
+never = Never
 
 ## Desktop: Appearance
 
