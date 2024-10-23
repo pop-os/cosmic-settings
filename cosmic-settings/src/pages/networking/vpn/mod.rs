@@ -220,7 +220,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn dialog(&self) -> Option<Element<crate::pages::Message>> {
         self.dialog.as_ref().map(|dialog| match dialog {
             VpnDialog::Error(error_kind, message) => {
-                let reason = widget::text::body(message.as_str()).wrap(Wrap::Word);
+                let reason = widget::text::body(message.as_str()).wrapping(Wrapping::Word);
 
                 let primary_action =
                     widget::button::standard(fl!("ok")).on_press(Message::CancelDialog);

@@ -2,19 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::config::Config;
-use crate::pages::desktop::{
-    self, appearance, dock,
-    panel::{self, applets_inner, inner as _panel},
-};
+use crate::pages::desktop::{self, appearance};
 use crate::pages::input::{self};
 use crate::pages::{self, bluetooth, display, networking, power, sound, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
 use cosmic::app::command::set_theme;
+#[cfg(feature = "single-instance")]
 use cosmic::app::DbusActivationMessage;
-use cosmic::cctk::sctk::output::OutputInfo;
-use cosmic::cctk::wayland_client::protocol::wl_output::WlOutput;
+#[cfg(feature = "wayland")]
+use cosmic::cctk::{sctk::output::OutputInfo, wayland_client::protocol::wl_output::WlOutput};
 use cosmic::iced::futures::SinkExt;
 use cosmic::iced::{stream, Subscription};
 use cosmic::widget::{self, button, row, text_input};
@@ -22,7 +20,7 @@ use cosmic::{
     app::{Core, Task},
     iced::{
         self,
-        event::{self, wayland, PlatformSpecific},
+        event::{self, PlatformSpecific},
         window, Length,
     },
     prelude::*,
@@ -33,6 +31,13 @@ use cosmic::{
 };
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
+#[cfg(feature = "wayland")]
+use desktop::{
+    dock,
+    panel::{self, applets_inner, inner as _panel},
+};
+#[cfg(feature = "wayland")]
+use event::wayland;
 use page::Entity;
 use std::{borrow::Cow, str::FromStr};
 
@@ -60,12 +65,14 @@ impl SettingsApp {
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
+            #[cfg(feature = "wayland")]
             PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
             PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             PageCommands::Network => self.pages.page_id::<networking::Page>(),
+            #[cfg(feature = "wayland")]
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
             PageCommands::Power => self.pages.page_id::<power::Page>(),
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
@@ -95,14 +102,18 @@ impl SettingsApp {
 pub enum Message {
     CloseContextDrawer,
     DelayedInit(page::Entity),
+    #[cfg(feature = "wayland")]
     DesktopInfo,
     Error(String),
     None,
     OpenContextDrawer(Cow<'static, str>),
+    #[cfg(feature = "wayland")]
     OutputAdded(OutputInfo, WlOutput),
+    #[cfg(feature = "wayland")]
     OutputRemoved(WlOutput),
     Page(page::Entity),
     PageMessage(crate::pages::Message),
+    #[cfg(feature = "wayland")]
     PanelConfig(CosmicPanelConfig),
     RegisterSubscriptionSender(tokio::sync::mpsc::Sender<pages::Message>),
     SearchActivate,
@@ -216,18 +227,6 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        // Handling of Wayland-specific events received.
-        let wayland_events =
-            event::listen_with(|event, _, _id| match event {
-                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::Output(wayland::OutputEvent::Created(Some(info)), o),
-                )) if info.name.is_some() => Some(Message::OutputAdded(info, o)),
-                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::Output(wayland::OutputEvent::Removed, o),
-                )) => Some(Message::OutputRemoved(o)),
-                _ => None,
-            });
-
         Subscription::batch(vec![
             // Creates a channel that listens to messages from pages.
             // The sender is given back to the application so that it may pass it on.
@@ -242,7 +241,7 @@ impl cosmic::Application for SettingsApp {
                         let _res = output.send(Message::PageMessage(event)).await;
                     }
 
-                    futures::future::pending().await
+                    futures::future::pending::<()>().await;
                 }),
             ),
             crate::subscription::daytime().map(|daytime| {
@@ -250,10 +249,23 @@ impl cosmic::Application for SettingsApp {
                     daytime,
                 )))
             }),
-            wayland_events,
+            #[cfg(feature = "wayland")]
+            event::listen_with(|event, _, _id| match event {
+                #[cfg(feature = "wayland")]
+                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::Output(wayland::OutputEvent::Created(Some(info)), o),
+                )) if info.name.is_some() => Some(Message::OutputAdded(info, o)),
+                #[cfg(feature = "wayland")]
+                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::Output(wayland::OutputEvent::Removed, o),
+                )) => Some(Message::OutputRemoved(o)),
+                _ => None,
+            }),
+            #[cfg(feature = "wayland")]
             // Watch for changes to installed desktop entries
             desktop_files(0).map(|_| Message::DesktopInfo),
             // Watch for configuration changes to the panel.
+            #[cfg(feature = "wayland")]
             self.core()
                 .watch_config::<CosmicPanelConfig>("com.system76.CosmicPanel.Panel")
                 .map(|update| {
@@ -263,7 +275,7 @@ impl cosmic::Application for SettingsApp {
 
                     Message::PanelConfig(update.config)
                 }),
-            // Watch for configuration changes to the dock
+            #[cfg(feature = "wayland")]
             self.core()
                 .watch_config::<CosmicPanelConfig>("com.system76.CosmicPanel.Dock")
                 .map(|update| {
@@ -353,12 +365,14 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "wayland")]
                 crate::pages::Message::Dock(message) => {
                     if let Some(page) = self.pages.page_mut::<dock::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "wayland")]
                 crate::pages::Message::DockApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<dock::applets::Page>() {
                         return page.update(message).map(Into::into);
@@ -457,12 +471,14 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "wayland")]
                 crate::pages::Message::Panel(message) => {
                     if let Some(page) = self.pages.page_mut::<panel::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "wayland")]
                 crate::pages::Message::PanelApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                         return page.update(message).map(Into::into);
@@ -496,6 +512,7 @@ impl cosmic::Application for SettingsApp {
                 }
             },
 
+            #[cfg(feature = "wayland")]
             Message::OutputAdded(info, output) => {
                 let mut commands = vec![];
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
@@ -520,6 +537,7 @@ impl cosmic::Application for SettingsApp {
                 return Task::batch(commands);
             }
 
+            #[cfg(feature = "wayland")]
             Message::OutputRemoved(output) => {
                 let mut commands = vec![];
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
@@ -540,6 +558,7 @@ impl cosmic::Application for SettingsApp {
                 return Task::batch(commands);
             }
 
+            #[cfg(feature = "wayland")]
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
                 let mut tasks = Vec::new();
 
@@ -560,6 +579,7 @@ impl cosmic::Application for SettingsApp {
                 return Task::batch(tasks);
             }
 
+            #[cfg(feature = "wayland")]
             Message::PanelConfig(config) if config.name.to_lowercase().contains("dock") => {
                 let mut tasks = Vec::new();
 
@@ -584,8 +604,9 @@ impl cosmic::Application for SettingsApp {
                 return Task::batch(tasks);
             }
 
+            #[cfg(feature = "wayland")]
             Message::PanelConfig(_) => {}
-
+            #[cfg(feature = "wayland")]
             Message::DesktopInfo => {
                 let info_list: Vec<_> = freedesktop_desktop_entry::Iter::new(
                     freedesktop_desktop_entry::default_paths(),
@@ -637,6 +658,7 @@ impl cosmic::Application for SettingsApp {
         Task::none()
     }
 
+    #[cfg(feature = "single-instance")]
     fn dbus_activation(&mut self, msg: DbusActivationMessage) -> Task<Self::Message> {
         match msg.msg {
             cosmic::app::DbusActivationDetails::Activate

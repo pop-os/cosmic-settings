@@ -1,6 +1,6 @@
 use chrono::{Duration, TimeDelta};
-use futures::FutureExt;
 use futures::future::join_all;
+use futures::FutureExt;
 use upower_dbus::{BatteryState, BatteryType, DeviceProxy};
 use zbus::Connection;
 

@@ -24,9 +24,14 @@ pub enum Message {
     DesktopWallpaper(desktop::wallpaper::Message),
     DesktopWorkspaces(desktop::workspaces::Message),
     Displays(display::Message),
+    #[cfg(feature = "wayland")]
     Dock(desktop::dock::Message),
+    #[cfg(feature = "wayland")]
     DockApplet(desktop::dock::applets::Message),
-    External { id: String, message: Vec<u8> },
+    External {
+        id: String,
+        message: Vec<u8>,
+    },
     Input(input::Message),
     Keyboard(input::keyboard::Message),
     KeyboardShortcuts(input::keyboard::shortcuts::Message),
@@ -35,7 +40,9 @@ pub enum Message {
     NavShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     Networking(networking::Message),
     Page(Entity),
+    #[cfg(feature = "wayland")]
     Panel(desktop::panel::Message),
+    #[cfg(feature = "wayland")]
     PanelApplet(desktop::panel::applets_inner::Message),
     Power(power::Message),
     Sound(sound::Message),
