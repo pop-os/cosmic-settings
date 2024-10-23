@@ -218,7 +218,7 @@ impl cosmic::Application for SettingsApp {
     fn subscription(&self) -> Subscription<Message> {
         // Handling of Wayland-specific events received.
         let wayland_events =
-            event::listen_with(|event, _, id| match event {
+            event::listen_with(|event, _, _id| match event {
                 iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
                     wayland::Event::Output(wayland::OutputEvent::Created(Some(info)), o),
                 )) if info.name.is_some() => Some(Message::OutputAdded(info, o)),

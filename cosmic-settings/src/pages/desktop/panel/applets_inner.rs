@@ -631,7 +631,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
         info: Vec<Applet<'a>>,
         on_create_dnd_source: impl Fn(Applet<'static>) -> Message + 'a,
         on_remove: impl Fn(String) -> Message + 'a,
-        on_details: impl Fn(String) -> Message + 'a,
+        _on_details: impl Fn(String) -> Message + 'a,
         on_reorder: impl Fn(Vec<Applet<'static>>) -> Message + 'a,
         on_apply_reorder: Message,
         on_cancel: Message,
@@ -1288,13 +1288,6 @@ pub struct ReorderWidgetState {
 impl ReorderWidgetState {
     pub(crate) fn new() -> ReorderWidgetState {
         ReorderWidgetState::default()
-    }
-
-    pub(crate) fn dragged_applet(&self) -> Option<Applet<'_>> {
-        match &self.dragging_state {
-            DraggingState::Dragging(applet) => Some(applet.borrowed()),
-            _ => None,
-        }
     }
 }
 

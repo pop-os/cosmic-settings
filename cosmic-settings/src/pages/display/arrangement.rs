@@ -405,21 +405,15 @@ fn display_regions<'a>(
         .iter()
         .filter_map(move |id| model.data::<OutputKey>(id))
         .filter_map(move |&key| {
-            let Some(output) = list.outputs.get(key) else {
-                return None;
-            };
+            let output = list.outputs.get(key)?;
 
             if !output.enabled {
                 return None;
             }
 
-            let Some(mode_key) = output.current else {
-                return None;
-            };
+            let mode_key = output.current?;
 
-            let Some(mode) = list.modes.get(mode_key) else {
-                return None;
-            };
+            let mode = list.modes.get(mode_key)?;
 
             let (mut width, mut height) = (
                 (mode.size.0 as f32 / output.scale as f32) / UNIT_PIXELS,

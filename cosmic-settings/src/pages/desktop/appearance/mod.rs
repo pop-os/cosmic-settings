@@ -283,7 +283,7 @@ pub enum Message {
     ImportSuccess(Box<ThemeBuilder>),
     InterfaceText(ColorPickerUpdate),
     Left,
-    NewTheme(Theme),
+    NewTheme(Box<Theme>),
     PaletteAccent(cosmic::iced::Color),
     Reset,
     Roundness(Roundness),
@@ -477,7 +477,7 @@ impl Page {
             }
 
             Message::NewTheme(theme) => {
-                self.theme = theme;
+                self.theme = *theme;
             }
             Message::DarkMode(enabled) => {
                 if let Some(config) = self.theme_mode_config.as_ref() {
@@ -743,7 +743,7 @@ impl Page {
                 }
 
                 let Some(config) = self.theme_builder_config.as_ref() else {
-                    return Command::none();
+                    return Task::none();
                 };
 
                 let spacing = density.into();
@@ -769,7 +769,7 @@ impl Page {
                 self.icon_theme_active = self
                     .icon_themes
                     .iter()
-                    .position(|theme| &theme.id == &active_icon_theme);
+                    .position(|theme| theme.id == active_icon_theme);
                 self.icon_handles = icon_handles;
             }
 
@@ -1106,7 +1106,7 @@ impl Page {
                         window_hint;
                     });
 
-                    Message::NewTheme(new_theme).into()
+                    Message::NewTheme(Box::new(new_theme)).into()
                 } else {
                     tracing::error!("Failed to get the theme config.");
                     crate::app::Message::None
