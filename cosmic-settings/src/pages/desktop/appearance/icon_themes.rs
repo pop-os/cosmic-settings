@@ -6,7 +6,6 @@ use std::{collections::BTreeMap, path::PathBuf};
 use super::Message;
 use cosmic::{
     iced::{Background, Length},
-    prelude::CollectionWidget,
     widget::{button, icon, text},
     Element,
 };
@@ -43,7 +42,7 @@ pub fn button(
                                 .take(ICON_PREV_ROW)
                                 .cloned()
                                 // TODO: Maybe allow choosable sizes/zooming
-                                .map(|handle| handle.icon().size(ICON_THUMB_SIZE)),
+                                .map(|handle| handle.icon().size(ICON_THUMB_SIZE).into()),
                         )
                         .spacing(theme.space_xxxs())
                         .into(),
@@ -54,7 +53,7 @@ pub fn button(
                                 .skip(ICON_PREV_ROW)
                                 .cloned()
                                 // TODO: Maybe allow choosable sizes/zooming
-                                .map(|handle| handle.icon().size(ICON_THUMB_SIZE)),
+                                .map(|handle| handle.icon().size(ICON_THUMB_SIZE).into()),
                         )
                         .spacing(theme.space_xxxs())
                         .into(),
@@ -66,9 +65,9 @@ pub fn button(
             .selected(selected)
             .padding([theme.space_xs(), theme.space_xs() + 1])
             // Image button's style mostly works, but it needs a background to fit the design
-            .style(button::Style::Custom {
+            .class(button::ButtonClass::Custom {
                 active: Box::new(move |focused, theme| {
-                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::active(
+                    let mut appearance = <cosmic::theme::Theme as button::Catalog>::active(
                         theme,
                         focused,
                         selected,
@@ -78,7 +77,7 @@ pub fn button(
                     appearance
                 }),
                 disabled: Box::new(move |theme| {
-                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::disabled(
+                    let mut appearance = <cosmic::theme::Theme as button::Catalog>::disabled(
                         theme,
                         &cosmic::theme::Button::Image,
                     );
@@ -86,7 +85,7 @@ pub fn button(
                     appearance
                 }),
                 hovered: Box::new(move |focused, theme| {
-                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::hovered(
+                    let mut appearance = <cosmic::theme::Theme as button::Catalog>::hovered(
                         theme,
                         focused,
                         selected,
@@ -96,7 +95,7 @@ pub fn button(
                     appearance
                 }),
                 pressed: Box::new(move |focused, theme| {
-                    let mut appearance = <cosmic::theme::Theme as button::StyleSheet>::pressed(
+                    let mut appearance = <cosmic::theme::Theme as button::Catalog>::pressed(
                         theme,
                         focused,
                         selected,

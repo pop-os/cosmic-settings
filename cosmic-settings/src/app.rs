@@ -52,7 +52,7 @@ pub struct SettingsApp {
 }
 
 impl SettingsApp {
-    fn subTask_to_page(&self, cmd: &PageCommands) -> Option<Entity> {
+    fn subtask_to_page(&self, cmd: &PageCommands) -> Option<Entity> {
         match cmd {
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
@@ -153,7 +153,7 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<system::Page>();
 
         let active_id = match flags.sub_command {
-            Some(p) => app.subTask_to_page(&p),
+            Some(p) => app.subtask_to_page(&p),
             None => app
                 .pages
                 .find_page_by_id(&app.config.active_page)
@@ -517,7 +517,7 @@ impl cosmic::Application for SettingsApp {
                         .map(Into::into),
                     );
                 }
-                return Command::batch(commands);
+                return Task::batch(commands);
             }
 
             Message::OutputRemoved(output) => {
@@ -537,7 +537,7 @@ impl cosmic::Application for SettingsApp {
                             .map(Into::into),
                     );
                 }
-                return Command::batch(commands);
+                return Task::batch(commands);
             }
 
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
@@ -644,7 +644,7 @@ impl cosmic::Application for SettingsApp {
             cosmic::app::DbusActivationDetails::ActivateAction { action, .. } => {
                 PageCommands::from_str(&action)
                     .ok()
-                    .and_then(|action| self.subTask_to_page(&action))
+                    .and_then(|action| self.subtask_to_page(&action))
                     .map(|e| self.activate_page(e))
             }
         }

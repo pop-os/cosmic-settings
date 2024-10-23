@@ -13,9 +13,7 @@ use crate::{
     app,
     pages::{
         self,
-        desktop::panel::applets_inner::{
-            self, lists, AppletsPage, ContextDrawer,
-        },
+        desktop::panel::applets_inner::{self, lists, AppletsPage, ContextDrawer},
     },
 };
 
