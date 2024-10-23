@@ -46,8 +46,7 @@ package = "smithay-client-toolkit"
 # rev = "c583de8"
 
 [profile.release]
-opt-level = 1
-# lto = "thin"
+lto = "thin"
 
 # [patch.'https://github.com/smithay/client-toolkit/']
 # smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }

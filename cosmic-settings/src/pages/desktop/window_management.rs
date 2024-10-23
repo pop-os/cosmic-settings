@@ -242,23 +242,15 @@ pub fn window_controls() -> Section<crate::pages::Message> {
                 .title(&section.title)
                 .add(settings::item(
                     &descriptions[active_window_hint],
-                    toggler(None, page.show_active_hint, Message::ShowActiveWindowHint),
+                    toggler(page.show_active_hint).on_toggle(Message::ShowActiveWindowHint),
                 ))
                 .add(settings::item(
                     &descriptions[maximize],
-                    toggler(
-                        None,
-                        cosmic::config::show_maximize(),
-                        Message::ShowMaximizeButton,
-                    ),
+                    toggler(cosmic::config::show_maximize()).on_toggle(Message::ShowMaximizeButton),
                 ))
                 .add(settings::item(
                     &descriptions[minimize],
-                    toggler(
-                        None,
-                        cosmic::config::show_minimize(),
-                        Message::ShowMinimizeButton,
-                    ),
+                    toggler(cosmic::config::show_minimize()).on_toggle(Message::ShowMinimizeButton),
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)

@@ -92,7 +92,7 @@ pub async fn watch(
                 .receive_interfaces_removed()
                 .await?;
 
-            let (mut property_watcher, mut property_watcher_Task) = DevicePropertyWatcher::new();
+            let (mut property_watcher, mut property_watcher_task) = DevicePropertyWatcher::new();
 
             for (path, interfaces) in managed_object_proxy.get_managed_objects().await? {
                 if interfaces.contains_key("org.bluez.Device1")
@@ -105,7 +105,7 @@ pub async fn watch(
 
             while !property_watcher.rx.is_terminated() {
                 futures::select! {
-                    Task = property_watcher.rx.next() => match Task {
+                    task = property_watcher.rx.next() => match task {
                         Some(DevicePropertyWatcherTask::Add(path)) => {
                             property_watcher.insert(&connection, path).await?;
                         }
@@ -144,7 +144,7 @@ pub async fn watch(
                                 Ok(device) => {
                                     match bluetooth::Device::from_device(&device).await {
                                         Ok(device) => {
-                                            property_watcher_Task
+                                            property_watcher_task
                                                 .send(DevicePropertyWatcherTask::Add(args.object_path.to_owned().into())).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
 
                                             tx
@@ -170,7 +170,7 @@ pub async fn watch(
                         Some(signal) => {
                             let args = signal.args()?;
                             if args.interfaces.contains(&"org.bluez.Device1") {
-                                property_watcher_Task.send(DevicePropertyWatcherTask::Removed(
+                                property_watcher_task.send(DevicePropertyWatcherTask::Removed(
                                     args.object_path.to_owned().into(),
                                 )).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
                                 tx

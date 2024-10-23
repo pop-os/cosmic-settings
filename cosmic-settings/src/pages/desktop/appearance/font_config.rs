@@ -7,11 +7,10 @@ use std::sync::Arc;
 use cosmic::{
     config::{CosmicTk, FontConfig},
     iced::Length,
-    iced_core::text::Wrap,
-    iced_style::svg::Appearance,
+    iced_core::text::Wrapping,
     theme,
-    widget::{self, settings},
-    Apply, Command, Element,
+    widget::{self, settings, svg},
+    Apply, Element, Task,
 };
 use cosmic_config::ConfigSet;
 use ustr::Ustr;
@@ -76,7 +75,7 @@ pub fn selection_context<'a>(
 
     let svg_accent = Rc::new(|theme: &cosmic::Theme| {
         let color = theme.cosmic().accent_color().into();
-        Appearance { color: Some(color) }
+        svg::Style { color: Some(color) }
     });
 
     let search_input = widget::search_input(fl!("type-to-search"), search)
@@ -87,22 +86,24 @@ pub fn selection_context<'a>(
         let selected = &**family == current_font;
         list.add(
             settings::item_row(vec![
-                widget::text::body(&**family).wrap(Wrap::Word).into(),
-                widget::horizontal_space(Length::Fill).into(),
+                widget::text::body(&**family)
+                    .wrapping(Wrapping::Word)
+                    .into(),
+                widget::horizontal_space().width(Length::Fill).into(),
                 if selected {
                     widget::icon::from_name("object-select-symbolic")
                         .size(16)
                         .icon()
-                        .style(cosmic::theme::Svg::Custom(svg_accent.clone()))
+                        .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
                         .into()
                 } else {
-                    widget::horizontal_space(16).into()
+                    widget::horizontal_space().width(16).into()
                 },
             ])
             .apply(widget::container)
-            .style(cosmic::theme::Container::List)
+            .class(cosmic::theme::Container::List)
             .apply(widget::button::custom)
-            .style(cosmic::theme::Button::Transparent)
+            .class(cosmic::theme::Button::Transparent)
             .on_press(super::Message::FontSelect(system, family.clone())),
         )
     });
@@ -148,7 +149,7 @@ impl Model {
         }
     }
 
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
             Message::InterfaceFontFamily(id) => {
                 if let Some(family) = self.interface_font_families.get(id) {
@@ -203,7 +204,7 @@ impl Model {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 }
 

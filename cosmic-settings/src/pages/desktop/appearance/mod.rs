@@ -16,7 +16,7 @@ use cosmic::cosmic_theme::{
     LIGHT_THEME_BUILDER_ID,
 };
 use cosmic::iced_core::{alignment, Color, Length};
-use cosmic::iced_widget::scrollable;
+use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, radio, row,
@@ -1407,11 +1407,11 @@ impl page::Page<crate::pages::Message> for Page {
         _: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
-        task::batch(vec![
+        cosmic::command::batch(vec![
             // Load icon themes
-            task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
+            cosmic::command::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
             // Load font families
-            task::future(async move {
+            cosmic::command::future(async move {
                 let (mono, interface) = font_config::load_font_families();
                 Message::FontConfig(font_config::Message::LoadedFonts(mono, interface))
             })
@@ -1690,7 +1690,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             .padding([0, 0, 16, 0])
                             .spacing(16)
                         )
-                        .direction(scrollable::Direction::Horizontal(Scrollbar::new()))
+                        .direction(Direction::Horizontal(Scrollbar::new()))
                     ]
                     .padding([16, space_s, 0, space_s])
                     .spacing(space_xxs),
