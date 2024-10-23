@@ -65,3 +65,6 @@ cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev =
 # [patch.'https://github.com/pop-os/dbus-settings-bindings']
 # cosmic-dbus-networkmanager = { path = "../dbus-settings-bindings/networkmanager" }
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
+
+[patch.'https://github.com/pop-os/cosmic-comp']
+cosmic-comp-config = { path = "../cosmic-comp/cosmic-comp-config" }
