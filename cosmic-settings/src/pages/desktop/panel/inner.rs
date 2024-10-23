@@ -343,14 +343,18 @@ pub fn reset_button<
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Anchor(PanelAnchor);
 
-impl ToString for Anchor {
-    fn to_string(&self) -> String {
-        match self.0 {
-            PanelAnchor::Top => fl!("panel-top"),
-            PanelAnchor::Bottom => fl!("panel-bottom"),
-            PanelAnchor::Left => fl!("panel-left"),
-            PanelAnchor::Right => fl!("panel-right"),
-        }
+impl std::fmt::Display for Anchor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self.0 {
+                PanelAnchor::Top => fl!("panel-top"),
+                PanelAnchor::Bottom => fl!("panel-bottom"),
+                PanelAnchor::Left => fl!("panel-left"),
+                PanelAnchor::Right => fl!("panel-right"),
+            }
+        )
     }
 }
 
@@ -361,13 +365,17 @@ pub enum Appearance {
     Dark,
 }
 
-impl ToString for Appearance {
-    fn to_string(&self) -> String {
-        match self {
-            Appearance::Match => fl!("panel-appearance", "match"),
-            Appearance::Light => fl!("panel-appearance", "light"),
-            Appearance::Dark => fl!("panel-appearance", "dark"),
-        }
+impl std::fmt::Display for Appearance {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Appearance::Match => fl!("panel-appearance", "match"),
+                Appearance::Light => fl!("panel-appearance", "light"),
+                Appearance::Dark => fl!("panel-appearance", "dark"),
+            }
+        )
     }
 }
 
