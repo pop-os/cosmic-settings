@@ -50,6 +50,7 @@ pub enum PageCommands {
     Desktop,
     /// Displays settings page
     Displays,
+    #[cfg(feature = "wayland")]
     /// Dock settings page
     Dock,
     /// Firmware settings page
@@ -62,6 +63,7 @@ pub enum PageCommands {
     Mouse,
     /// Network settings page
     Network,
+    #[cfg(feature = "wayland")]
     /// Panel settings page
     Panel,
     /// Power settings page
@@ -133,8 +135,14 @@ pub fn main() -> color_eyre::Result<()> {
     let settings = cosmic::app::Settings::default()
         .size_limits(Limits::NONE.min_width(360.0).min_height(300.0));
 
-    cosmic::app::run_single_instance::<app::SettingsApp>(settings, args)?;
-
+    #[cfg(feature = "single-instance")]
+    {
+        cosmic::app::run_single_instance::<app::SettingsApp>(settings, args)?;
+    }
+    #[cfg(not(feature = "single-instance"))]
+    {
+        cosmic::app::run::<app::SettingsApp>(settings, args)?;
+    }
     Ok(())
 }
 

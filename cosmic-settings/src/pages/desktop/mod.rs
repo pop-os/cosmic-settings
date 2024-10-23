@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 pub mod appearance;
+#[cfg(feature = "wayland")]
 pub mod dock;
+#[cfg(feature = "wayland")]
 pub mod panel;
 pub mod wallpaper;
 pub mod window_management;
@@ -23,11 +25,17 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        page.sub_page::<wallpaper::Page>()
-            .sub_page::<appearance::Page>()
-            .sub_page::<panel::Page>()
-            .sub_page::<dock::Page>()
-            .sub_page::<window_management::Page>()
+        let mut page = page
+            .sub_page::<wallpaper::Page>()
+            .sub_page::<appearance::Page>();
+
+        #[cfg(feature = "wayland")]
+        {
+            page = page.sub_page::<panel::Page>();
+            page = page.sub_page::<dock::Page>();
+        }
+
+        page.sub_page::<window_management::Page>()
             .sub_page::<workspaces::Page>()
     }
 }

@@ -76,6 +76,10 @@ version = "0.15.0"
 features = ["fluent-system", "desktop-requester"]
 
 [features]
-default = []
+default = ["wayland", "dbus-config", "single-instance", "a11y", "wgpu"]
+wayland = ["libcosmic/wayland"]
+dbus-config = ["libcosmic/dbus-config"]
+single-instance = ["libcosmic/single-instance"]
+a11y = ["libcosmic/a11y"]
 wgpu = ["libcosmic/wgpu"]
 test = []
