@@ -3,6 +3,7 @@
 
 use cosmic_settings_page as page;
 
+#[cfg(feature = "page-date")]
 pub mod date;
 pub mod region;
 
@@ -18,7 +19,14 @@ impl page::Page<crate::pages::Message> for Page {
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {
-    fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        page.sub_page::<date::Page>().sub_page::<region::Page>()
+    fn sub_pages(
+        mut page: page::Insert<crate::pages::Message>,
+    ) -> page::Insert<crate::pages::Message> {
+        #[cfg(feature = "page-date")]
+        {
+            page = page.sub_page::<date::Page>();
+        }
+        page = page.sub_page::<region::Page>();
+        page
     }
 }

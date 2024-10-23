@@ -14,14 +14,13 @@ use std::{
     sync::Arc,
 };
 
+#[cfg(feature = "xdg-portal")]
+use cosmic::dialog::file_chooser;
 use cosmic::iced::{Color, Length};
-use cosmic::{
-    dialog::file_chooser,
-    widget::{
-        button, dropdown, list_column, row,
-        segmented_button::{self, SingleSelectModel},
-        settings, tab_bar, text, toggler,
-    },
+use cosmic::widget::{
+    button, dropdown, list_column, row,
+    segmented_button::{self, SingleSelectModel},
+    settings, tab_bar, text, toggler,
 };
 use cosmic::{iced_core::alignment, iced_runtime::core::image::Handle as ImageHandle};
 use cosmic::{iced_core::Alignment, widget::icon};
@@ -68,8 +67,10 @@ pub struct InitUpdate {
 #[derive(Clone, Debug)]
 pub enum Message {
     /// Adds a new wallpaper folder.
+    #[cfg(feature = "xdg-portal")]
     AddFolder(Arc<Result<Url, file_chooser::Error>>),
     /// Adds a new image file the system wallpaper folder.
+    #[cfg(feature = "xdg-portal")]
     AddFile(Arc<Result<Url, file_chooser::Error>>),
     /// Cache currently displayed image.
     CacheDisplayImage,
@@ -576,6 +577,7 @@ impl Page {
             }
 
             Category::AddFolder => {
+                #[cfg(feature = "xdg-portal")]
                 return cosmic::command::future(async {
                     let dialog_result = file_chooser::open::Dialog::new()
                         .title(fl!("wallpaper", "folder-dialog"))
@@ -770,6 +772,7 @@ impl Page {
             }
 
             Message::ImageAddDialog => {
+                #[cfg(feature = "xdg-portal")]
                 return cosmic::Task::future(async {
                     let dialog_result = file_chooser::open::Dialog::new()
                         .title(fl!("wallpaper", "image-dialog"))
@@ -847,6 +850,7 @@ impl Page {
                 }
             }
 
+            #[cfg(feature = "xdg-portal")]
             Message::AddFolder(result) => {
                 let path = match dialog_response(result) {
                     DialogResponse::Path(path) => path,
@@ -883,6 +887,7 @@ impl Page {
                 }
             }
 
+            #[cfg(feature = "xdg-portal")]
             Message::AddFile(result) => {
                 let path = match dialog_response(result) {
                     DialogResponse::Path(path) => path,
@@ -1348,6 +1353,7 @@ enum DialogResponse {
     Path(PathBuf),
 }
 
+#[cfg(feature = "xdg-portal")]
 fn dialog_response(result: Arc<Result<Url, file_chooser::Error>>) -> DialogResponse {
     let Some(result) = Arc::into_inner(result) else {
         return DialogResponse::Error(String::from("Arc::into_inner returned None"));

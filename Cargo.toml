@@ -11,12 +11,11 @@ cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
 tokio = { version = "1.40.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
-features = ["multi-window", "winit", "tokio", "xdg-portal"]
+features = ["multi-window", "winit", "tokio"]
 git = "https://github.com/pop-os/libcosmic"
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
-features = ["dbus"]
 
 [workspace.dependencies.cosmic-bg-config]
 git = "https://github.com/pop-os/cosmic-bg"

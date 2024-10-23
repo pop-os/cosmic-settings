@@ -7,6 +7,8 @@ pub mod icon_themes;
 use std::borrow::Cow;
 use std::sync::Arc;
 
+//TODO: use embedded cosmic-files for portability
+#[cfg(feature = "ashpd")]
 use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
@@ -23,6 +25,7 @@ use cosmic::widget::{
     scrollable, settings, spin_button, text, ColorPickerModel,
 };
 use cosmic::{Apply, Element, Task};
+#[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -270,16 +273,22 @@ pub enum Message {
     DisplaySystemFont,
     Entered((IconThemes, IconHandles)),
     IconsAndToolkit,
+    #[cfg(feature = "ashpd")]
     ExportError,
+    #[cfg(feature = "ashpd")]
     ExportFile(Arc<SelectedFiles>),
+    #[cfg(feature = "ashpd")]
     ExportSuccess,
     FontConfig(font_config::Message),
     FontSearch(String),
     FontSelect(bool, Arc<str>),
     GapSize(spin_button::Message),
     IconTheme(usize),
+    #[cfg(feature = "ashpd")]
     ImportError,
+    #[cfg(feature = "ashpd")]
     ImportFile(Arc<SelectedFiles>),
+    #[cfg(feature = "ashpd")]
     ImportSuccess(Box<ThemeBuilder>),
     InterfaceText(ColorPickerUpdate),
     Left,
@@ -287,7 +296,9 @@ pub enum Message {
     PaletteAccent(cosmic::iced::Color),
     Reset,
     Roundness(Roundness),
+    #[cfg(feature = "ashpd")]
     StartExport,
+    #[cfg(feature = "ashpd")]
     StartImport,
     UseDefaultWindowHint(bool),
     WindowHintSize(spin_button::Message),
@@ -729,6 +740,7 @@ impl Page {
                     self.theme_config_write("corner_radii", radii);
                 }
 
+                #[cfg(feature = "wayland")]
                 tokio::task::spawn(async move {
                     Self::update_panel_radii(r);
                 });
@@ -756,6 +768,7 @@ impl Page {
                     self.theme_config_write("spacing", spacing);
                 }
 
+                #[cfg(feature = "wayland")]
                 tokio::task::spawn(async move {
                     Self::update_panel_spacing(density);
                 });
@@ -847,6 +860,7 @@ impl Page {
                 }
 
                 let r = self.roundness;
+                #[cfg(feature = "wayland")]
                 tokio::task::spawn(async move {
                     Self::update_panel_radii(r);
                     Self::update_panel_spacing(Density::Standard);
@@ -855,6 +869,7 @@ impl Page {
                 self.reload_theme_mode();
             }
 
+            #[cfg(feature = "ashpd")]
             Message::StartImport => {
                 tasks.push(cosmic::command::future(async move {
                     let res = SelectedFiles::open_file()
@@ -874,6 +889,7 @@ impl Page {
                 }));
             }
 
+            #[cfg(feature = "ashpd")]
             Message::StartExport => {
                 let is_dark = self.theme_mode.is_dark;
                 let name = format!("{}.ron", if is_dark { fl!("dark") } else { fl!("light") });
@@ -896,6 +912,7 @@ impl Page {
                 }));
             }
 
+            #[cfg(feature = "ashpd")]
             Message::ImportFile(f) => {
                 let path_res = f
                     .uris()
@@ -919,6 +936,7 @@ impl Page {
                 }));
             }
 
+            #[cfg(feature = "ashpd")]
             Message::ExportFile(f) => {
                 let path_res = f
                     .uris()
@@ -954,12 +972,15 @@ impl Page {
             }
 
             // TODO: error message toast?
+            #[cfg(feature = "ashpd")]
             Message::ExportError | Message::ImportError => return Task::none(),
 
+            #[cfg(feature = "ashpd")]
             Message::ExportSuccess => {
                 tracing::trace!("Export successful");
             }
 
+            #[cfg(feature = "ashpd")]
             Message::ImportSuccess(builder) => {
                 tracing::trace!("Import successful");
                 self.theme_builder = *builder;
@@ -1282,6 +1303,7 @@ impl Page {
     }
 
     // TODO: cache panel and dock configs so that they needn't be re-read
+    #[cfg(feature = "wayland")]
     fn update_panel_radii(roundness: Roundness) {
         let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
         let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
@@ -1327,6 +1349,7 @@ impl Page {
         };
     }
 
+    #[cfg(feature = "wayland")]
     fn update_panel_spacing(density: Density) {
         let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
         let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
@@ -1382,6 +1405,7 @@ impl page::Page<crate::pages::Message> for Page {
         ])
     }
 
+    #[cfg(feature = "ashpd")]
     fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
         let content = row::with_capacity(2)
             .spacing(self.theme_builder.spacing.space_xxs)

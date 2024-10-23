@@ -7,7 +7,9 @@ pub mod dock;
 #[cfg(feature = "wayland")]
 pub mod panel;
 pub mod wallpaper;
+#[cfg(feature = "page-window-management")]
 pub mod window_management;
+#[cfg(feature = "page-workspaces")]
 pub mod workspaces;
 
 use cosmic_settings_page as page;
@@ -24,10 +26,11 @@ impl page::Page<crate::pages::Message> for Page {
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {
-    fn sub_pages(page: page::Insert<crate::pages::Message>) -> page::Insert<crate::pages::Message> {
-        let mut page = page
-            .sub_page::<wallpaper::Page>()
-            .sub_page::<appearance::Page>();
+    fn sub_pages(
+        mut page: page::Insert<crate::pages::Message>,
+    ) -> page::Insert<crate::pages::Message> {
+        page = page.sub_page::<wallpaper::Page>();
+        page = page.sub_page::<appearance::Page>();
 
         #[cfg(feature = "wayland")]
         {
@@ -35,8 +38,17 @@ impl page::AutoBind<crate::pages::Message> for Page {
             page = page.sub_page::<dock::Page>();
         }
 
-        page.sub_page::<window_management::Page>()
-            .sub_page::<workspaces::Page>()
+        #[cfg(feature = "page-window-management")]
+        {
+            page = page.sub_page::<window_management::Page>();
+        }
+
+        #[cfg(feature = "page-workspaces")]
+        {
+            page = page.sub_page::<workspaces::Page>();
+        }
+
+        page
     }
 }
 

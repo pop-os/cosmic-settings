@@ -2,9 +2,18 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::config::Config;
+#[cfg(feature = "page-bluetooth")]
+use crate::pages::bluetooth;
 use crate::pages::desktop::{self, appearance};
-use crate::pages::input::{self};
-use crate::pages::{self, bluetooth, display, networking, power, sound, system, time};
+#[cfg(feature = "page-input")]
+use crate::pages::input;
+#[cfg(feature = "page-networking")]
+use crate::pages::networking;
+#[cfg(feature = "page-power")]
+use crate::pages::power;
+#[cfg(feature = "page-sound")]
+use crate::pages::sound;
+use crate::pages::{self, display, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
@@ -29,6 +38,7 @@ use cosmic::{
     },
     Element,
 };
+#[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
 #[cfg(feature = "wayland")]
@@ -59,35 +69,50 @@ pub struct SettingsApp {
 impl SettingsApp {
     fn subtask_to_page(&self, cmd: &PageCommands) -> Option<Entity> {
         match cmd {
+            #[cfg(feature = "page-about")]
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
+            #[cfg(feature = "page-bluetooth")]
             PageCommands::Bluetooth => self.pages.page_id::<bluetooth::Page>(),
+            #[cfg(feature = "page-date")]
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             #[cfg(feature = "wayland")]
             PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
             PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
+            #[cfg(feature = "page-input")]
             PageCommands::Input => self.pages.page_id::<input::Page>(),
+            #[cfg(feature = "page-input")]
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
+            #[cfg(feature = "page-input")]
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
+            #[cfg(feature = "page-networking")]
             PageCommands::Network => self.pages.page_id::<networking::Page>(),
             #[cfg(feature = "wayland")]
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
+            #[cfg(feature = "page-power")]
             PageCommands::Power => self.pages.page_id::<power::Page>(),
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
+            #[cfg(feature = "page-sound")]
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
             PageCommands::System => self.pages.page_id::<system::Page>(),
             PageCommands::Time => self.pages.page_id::<time::Page>(),
+            #[cfg(feature = "page-input")]
             PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
             PageCommands::Users => self.pages.page_id::<system::users::Page>(),
+            #[cfg(feature = "page-networking")]
             PageCommands::Vpn => self.pages.page_id::<networking::vpn::Page>(),
             PageCommands::Wallpaper => self.pages.page_id::<desktop::wallpaper::Page>(),
+            #[cfg(feature = "page-window-management")]
             PageCommands::WindowManagement => {
                 self.pages.page_id::<desktop::window_management::Page>()
             }
+            #[cfg(feature = "page-networking")]
             PageCommands::Wired => self.pages.page_id::<networking::wired::Page>(),
+            #[cfg(feature = "page-networking")]
             PageCommands::Wireless => self.pages.page_id::<networking::wifi::Page>(),
+            #[cfg(feature = "page-workspaces")]
             PageCommands::Workspaces => self.pages.page_id::<desktop::workspaces::Page>(),
         }
     }
@@ -153,12 +178,17 @@ impl cosmic::Application for SettingsApp {
             search_selections: Vec::default(),
         };
 
+        #[cfg(feature = "page-networking")]
         app.insert_page::<networking::Page>();
+        #[cfg(feature = "page-bluetooth")]
         app.insert_page::<bluetooth::Page>();
         let desktop_id = app.insert_page::<desktop::Page>().id();
         app.insert_page::<display::Page>();
+        #[cfg(feature = "page-sound")]
         app.insert_page::<sound::Page>();
+        #[cfg(feature = "page-power")]
         app.insert_page::<power::Page>();
+        #[cfg(feature = "page-input")]
         app.insert_page::<input::Page>();
         app.insert_page::<time::Page>();
         app.insert_page::<system::Page>();
@@ -244,6 +274,7 @@ impl cosmic::Application for SettingsApp {
                     futures::future::pending::<()>().await;
                 }),
             ),
+            #[cfg(feature = "ashpd")]
             crate::subscription::daytime().map(|daytime| {
                 Message::PageMessage(pages::Message::Appearance(appearance::Message::Daytime(
                     daytime,
@@ -323,6 +354,7 @@ impl cosmic::Application for SettingsApp {
             }
 
             Message::PageMessage(message) => match message {
+                #[cfg(feature = "page-about")]
                 crate::pages::Message::About(message) => {
                     page::update!(self.pages, message, system::about::Page);
                 }
@@ -333,12 +365,14 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-bluetooth")]
                 crate::pages::Message::Bluetooth(message) => {
                     if let Some(page) = self.pages.page_mut::<bluetooth::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-date")]
                 crate::pages::Message::DateAndTime(message) => {
                     if let Some(page) = self.pages.page_mut::<time::date::Page>() {
                         return page.update(message).map(Into::into);
@@ -355,6 +389,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-workspaces")]
                 crate::pages::Message::DesktopWorkspaces(message) => {
                     page::update!(self.pages, message, desktop::workspaces::Page);
                 }
@@ -379,24 +414,28 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::Input(message) => {
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::Keyboard(message) => {
                     if let Some(page) = self.pages.page_mut::<input::keyboard::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::KeyboardShortcuts(message) => {
                     if let Some(page) = self.pages.page_mut::<input::keyboard::shortcuts::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::CustomShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -406,6 +445,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::ManageWindowShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -415,6 +455,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::MoveWindowShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -424,6 +465,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::NavShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -433,12 +475,14 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-sound")]
                 crate::pages::Message::Sound(message) => {
                     if let Some(page) = self.pages.page_mut::<sound::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::SystemShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -448,6 +492,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::TilingShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -465,6 +510,7 @@ impl cosmic::Application for SettingsApp {
                     return self.activate_page(page);
                 }
 
+                #[cfg(feature = "page-networking")]
                 crate::pages::Message::Networking(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::Page>() {
                         return page.update(message).map(Into::into);
@@ -485,26 +531,31 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-power")]
                 crate::pages::Message::Power(message) => {
                     page::update!(self.pages, message, power::Page);
                 }
 
+                #[cfg(feature = "page-networking")]
                 crate::pages::Message::Vpn(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::vpn::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-networking")]
                 crate::pages::Message::WiFi(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::wifi::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-window-management")]
                 crate::pages::Message::WindowManagement(message) => {
                     page::update!(self.pages, message, desktop::window_management::Page);
                 }
 
+                #[cfg(feature = "page-networking")]
                 crate::pages::Message::Wired(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::wired::Page>() {
                         return page.update(message).map(Into::into);
