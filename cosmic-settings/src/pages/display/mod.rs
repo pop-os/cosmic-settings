@@ -241,27 +241,30 @@ impl page::Page<crate::pages::Message> for Page {
             task.abort();
         }
 
-        // Spawns a background service to monitor for display state changes.
-        // This must be spawned onto its own thread because `*mut wayland_sys::client::wl_display` is not Send-able.
-        let runtime = tokio::runtime::Handle::current();
-        self.background_service = Some(tokio::task::spawn_blocking(move || {
-            runtime.block_on(async move {
-                let (tx, mut rx) = tachyonix::channel(5);
-                let Ok((mut context, mut event_queue)) = cosmic_randr::connect(tx) else {
-                    return;
-                };
+        #[cfg(feature = "wayland")]
+        {
+            // Spawns a background service to monitor for display state changes.
+            // This must be spawned onto its own thread because `*mut wayland_sys::client::wl_display` is not Send-able.
+            let runtime = tokio::runtime::Handle::current();
+            self.background_service = Some(tokio::task::spawn_blocking(move || {
+                runtime.block_on(async move {
+                    let (tx, mut rx) = tachyonix::channel(5);
+                    let Ok((mut context, mut event_queue)) = cosmic_randr::connect(tx) else {
+                        return;
+                    };
 
-                while context.dispatch(&mut event_queue).await.is_ok() {
-                    while let Ok(message) = rx.try_recv() {
-                        if let cosmic_randr::Message::ManagerDone = message {
-                            let _ = sender
-                                .send(pages::Message::Displays(Message::Refresh))
-                                .await;
+                    while context.dispatch(&mut event_queue).await.is_ok() {
+                        while let Ok(message) = rx.try_recv() {
+                            if let cosmic_randr::Message::ManagerDone = message {
+                                let _ = sender
+                                    .send(pages::Message::Displays(Message::Refresh))
+                                    .await;
+                            }
                         }
                     }
-                }
-            });
-        }));
+                });
+            }));
+        }
 
         cosmic::command::future(on_enter())
     }

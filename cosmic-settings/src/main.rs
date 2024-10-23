@@ -39,58 +39,73 @@ pub struct Args {
 #[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
 pub enum PageCommands {
     /// About settings page
+    #[cfg(feature = "page-about")]
     About,
     /// Appearance settings page
     Appearance,
     /// Bluetooth settings page
+    #[cfg(feature = "page-bluetooth")]
     Bluetooth,
     /// Date & Time settings page
+    #[cfg(feature = "page-date")]
     DateTime,
     /// Desktop settings page
     Desktop,
     /// Displays settings page
     Displays,
-    #[cfg(feature = "wayland")]
     /// Dock settings page
+    #[cfg(feature = "wayland")]
     Dock,
     /// Firmware settings page
     Firmware,
     /// Input Devices settings page
+    #[cfg(feature = "page-input")]
     Input,
     /// Keyboard settings page
+    #[cfg(feature = "page-input")]
     Keyboard,
     /// Mouse settings page
+    #[cfg(feature = "page-input")]
     Mouse,
     /// Network settings page
+    #[cfg(feature = "page-networking")]
     Network,
-    #[cfg(feature = "wayland")]
     /// Panel settings page
+    #[cfg(feature = "wayland")]
     Panel,
     /// Power settings page
+    #[cfg(feature = "page-power")]
     Power,
     /// Region & Language settings page
     RegionLanguage,
     /// Sound settings page
+    #[cfg(feature = "page-sound")]
     Sound,
     /// System & Accounts settings page
     System,
     /// Time & Language settings page
     Time,
     /// Touchpad settings page
+    #[cfg(feature = "page-input")]
     Touchpad,
     /// Users settings page
     Users,
     /// VPN settings page
+    #[cfg(feature = "page-networking")]
     Vpn,
     /// Wallpaper settings page
     Wallpaper,
     /// Window management settings page
+    #[cfg(feature = "page-window-management")]
     WindowManagement,
     /// Wired settings page
+    #[cfg(feature = "page-networking")]
     Wired,
     /// WiFi settings page
+    #[cfg(feature = "page-networking")]
     Wireless,
     /// Workspaces settings page
+    #[cfg(feature = "page-workspaces")]
     Workspaces,
 }
 
