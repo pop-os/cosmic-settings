@@ -137,6 +137,9 @@ enum ContextView {
 
 /// The page struct for the wallpaper view.
 pub struct Page {
+    /// Abort handle to the on_enter task.
+    on_enter_handle: Option<cosmic::iced::task::Handle>,
+
     /// Whether to show a context drawer.
     context_view: Option<ContextView>,
 
@@ -207,11 +210,16 @@ impl page::Page<crate::pages::Message> for Page {
         _page: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
+        // Check if the page is already being loaded.
+        if self.on_enter_handle.is_some() {
+            return Task::none();
+        }
+
         let current_folder = self.config.current_folder().to_owned();
 
         let recurse = self.categories.selected == Some(Category::Wallpapers);
 
-        Task::future(async move {
+        let (task, on_enter_handle) = Task::future(async move {
             let (service_config, displays) = wallpaper::config().await;
 
             let mut selection = change_folder(current_folder, recurse).await;
@@ -245,6 +253,19 @@ impl page::Page<crate::pages::Message> for Page {
                 selection,
             })))
         })
+        .abortable();
+
+        self.on_enter_handle = Some(on_enter_handle);
+        task
+    }
+
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        // Cancel the on_enter task if it was running.
+        if let Some(handle) = self.on_enter_handle.take() {
+            handle.abort();
+        }
+
+        Task::none()
     }
 
     fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
@@ -265,6 +286,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 impl Default for Page {
     fn default() -> Self {
         let mut page = Page {
+            on_enter_handle: None,
             context_view: None,
             show_tab_bar: false,
             active_output: None,

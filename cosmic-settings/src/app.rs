@@ -49,12 +49,14 @@ use desktop::{
 #[cfg(feature = "wayland")]
 use event::wayland;
 use page::Entity;
+use std::collections::BTreeSet;
 use std::{borrow::Cow, str::FromStr};
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
 pub struct SettingsApp {
     active_page: page::Entity,
+    loaded_pages: BTreeSet<page::Entity>,
     config: Config,
     core: Core,
     nav_model: nav_bar::Model,
@@ -167,6 +169,7 @@ impl cosmic::Application for SettingsApp {
     fn init(core: Core, flags: Self::Flags) -> (Self, Task<Self::Message>) {
         let mut app = SettingsApp {
             active_page: page::Entity::default(),
+            loaded_pages: BTreeSet::new(),
             config: Config::new(),
             core,
             nav_model: nav_bar::Model::default(),
@@ -337,7 +340,7 @@ impl cosmic::Application for SettingsApp {
             Message::SetWindowTitle => return self.set_title(),
 
             Message::SearchChanged(phrase) => {
-                self.search_changed(phrase);
+                return self.search_changed(phrase);
             }
 
             Message::SearchActivate => {
@@ -781,6 +784,7 @@ impl SettingsApp {
         let mut leave_task = iced::Task::none();
 
         if current_page != page {
+            self.loaded_pages.remove(&current_page);
             leave_task = self
                 .pages
                 .on_leave(current_page)
@@ -800,6 +804,8 @@ impl SettingsApp {
             .page_sender
             .clone()
             .expect("sender should be available");
+
+        self.loaded_pages.insert(page);
 
         let page_task = self
             .pages
@@ -920,12 +926,14 @@ impl SettingsApp {
             .into()
     }
 
-    fn search_changed(&mut self, phrase: String) {
+    fn search_changed(&mut self, phrase: String) -> Task<crate::Message> {
         // If the text was cleared, clear the search results too.
         if phrase.is_empty() {
             self.search_clear();
-            return;
+            return Task::none();
         }
+
+        let mut tasks = Vec::new();
 
         // Create a case-insensitive regular expression for the search function.
         let search_expression = regex::RegexBuilder::new(&phrase)
@@ -942,10 +950,51 @@ impl SettingsApp {
             // Use the results if results were found.
             if !results.is_empty() {
                 self.search_selections = results;
+
+                let mut unload = BTreeSet::new();
+                let mut load = BTreeSet::new();
+
+                'outer: for loaded_page in &self.loaded_pages {
+                    for (page, _) in &self.search_selections {
+                        if loaded_page == page {
+                            continue 'outer;
+                        }
+                    }
+
+                    unload.insert(*loaded_page);
+                }
+
+                for (page, _) in &self.search_selections {
+                    if !self.loaded_pages.contains(page) {
+                        load.insert(*page);
+                    }
+                }
+
+                if let Some(ref sender) = self.page_sender {
+                    for page in load {
+                        eprintln!("loading {page:?}");
+                        self.loaded_pages.insert(page);
+                        tasks.push(self.pages.on_enter(page, sender.clone()));
+                    }
+                }
+
+                for page in unload {
+                    eprintln!("unloading {page:?}");
+                    self.loaded_pages.remove(&page);
+                    self.pages.on_leave(page);
+                }
             }
         }
 
         self.search_input = phrase;
+
+        if tasks.is_empty() {
+            Task::none()
+        } else {
+            cosmic::command::batch(tasks)
+                .map(Message::PageMessage)
+                .map(Into::into)
+        }
     }
 
     /// Clears the search results so that the search page will not be shown.

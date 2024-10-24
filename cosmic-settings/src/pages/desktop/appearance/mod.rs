@@ -62,6 +62,7 @@ enum ContextView {
 }
 
 pub struct Page {
+    on_enter_handle: Option<cosmic::iced::task::Handle>,
     can_reset: bool,
     no_custom_window_hint: bool,
     context_view: Option<ContextView>,
@@ -152,6 +153,7 @@ impl
         });
 
         Self {
+            on_enter_handle: None,
             can_reset: if theme_mode.is_dark {
                 theme_builder == ThemeBuilder::dark()
             } else {
@@ -1431,7 +1433,7 @@ impl page::Page<crate::pages::Message> for Page {
         _: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
-        cosmic::command::batch(vec![
+        let (task, handle) = cosmic::command::batch(vec![
             // Load icon themes
             cosmic::command::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
             // Load font families
@@ -1441,9 +1443,17 @@ impl page::Page<crate::pages::Message> for Page {
             })
             .map(crate::pages::Message::Appearance),
         ])
+        .abortable();
+
+        self.on_enter_handle = Some(handle);
+        task
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        if let Some(handle) = self.on_enter_handle.take() {
+            handle.abort();
+        }
+
         cosmic::command::message(crate::pages::Message::Appearance(Message::Left))
     }
 

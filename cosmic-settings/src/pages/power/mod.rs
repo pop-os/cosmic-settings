@@ -18,6 +18,7 @@ use slotmap::SlotMap;
 pub struct Page {
     battery: Battery,
     connected_devices: Vec<ConnectedDevice>,
+    on_enter_handle: Option<cosmic::iced::task::Handle>,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -54,7 +55,20 @@ impl page::Page<crate::pages::Message> for Page {
             }),
         ];
 
-        cosmic::Task::batch(futures).map(crate::pages::Message::Power)
+        let (task, handle) = cosmic::Task::batch(futures)
+            .map(crate::pages::Message::Power)
+            .abortable();
+
+        self.on_enter_handle = Some(handle);
+        task
+    }
+
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        if let Some(handle) = self.on_enter_handle.take() {
+            handle.abort();
+        }
+
+        Task::none()
     }
 }
 
