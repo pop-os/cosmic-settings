@@ -82,6 +82,8 @@ online-accounts = ಆನ್‌ಲೈನ್ ಖಾತೆಗಳು
 
 # Bluetooth
 
+confirm = ದೃಢೀಕರಿಸಿ
+
 bluetooth = ಬ್ಲೂಟೂತ್
     .desc = ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ನಿರ್ವಹಿಸಿ
     .status = ಬ್ಲೂಟೂತ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ತೆರೆಯಾದಾಗ ಈ ವ್ಯವಸ್ಥೆ { $aliases } ಎಂದು ಕಂಡುಬರುತ್ತದೆ.
@@ -97,6 +99,9 @@ bluetooth = ಬ್ಲೂಟೂತ್
 bluetooth-paired = ಹಿಂದೆ ಸಂಪರ್ಕಗೊಂಡಿರುವ ಸಾಧನಗಳು
     .connect = ಸಂಪರ್ಕಿಸಿ
     .battery = { $percentage }% ಬ್ಯಾಟರಿ
+
+bluetooth-confirm-pin = ಬ್ಲೂಟೂತ್ ಪಿನ್ ದೃಢೀಕರಿಸಿ
+    .description = ದಯವಿಟ್ಟು ಕೆಳಗಿನ ಪಿನ್ { $device } ಮೇಲೆ ಪ್ರದರ್ಶಿತವಾಗಿರುವುದಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುತ್ತದೆ ಎಂದು ದೃಢೀಕರಿಸಿ
 
 bluetooth-available = ಸಮೀಪದ ಸಾಧನಗಳು
 
@@ -199,6 +204,34 @@ interface-density = ಇಂಟರ್ಫೇಸ್ ಸಾಂದ್ರತೆ
 window-management-appearance = ವಿಂಡೋ ನಿರ್ವಹಣೆ
     .active-hint = ಸಕ್ರಿಯ ವಿಂಡೋ ಸೂಚನೆಯ ಗಾತ್ರ
     .gaps = ಟೈಲ್ಡ್ ವಿಂಡೋ ಸುತ್ತಲಿನ ಖಾಲಿ ಸ್ಥಳಗಳು
+
+### Appearance: Font
+
+font-config = ಫಾಂಟ್ ಸಂರಚನೆ
+interface-font = ಸಿಸ್ಟಮ್ ಫಾಂಟ್
+monospace-font = ಮೋನೋಸ್ಪೇಸ್ ಫಾಂಟ್
+font-family = ಫಾಂಟ್ ಕುಟುಂಬ
+
+font-weight = ತೂಕ
+    .thin = ತೆಳು
+    .extra-light = ಹೆಚ್ಚುವರಿ ಲೈಟ್
+    .light = ಲೈಟ್
+    .normal = ಸಾಮಾನ್ಯ
+    .medium = ಮಧ್ಯಮ
+    .semibold = ಅರ್ಧ ಬೋಲ್ಡ್
+    .bold = ಬೋಲ್ಡ್
+    .extra-bold = ಹೆಚ್ಚುವರಿ ಬೋಲ್ಡ್
+    .black = ಕಪ್ಪು
+
+font-style = ಶೈಲಿ
+    .normal = ಸಾಮಾನ್ಯ
+    .italic = ಇಟಾಲಿಕ್
+    .oblique = ಅಸಮಾನ
+
+font-stretch = ಹಿಗ್ಗಿಸು
+    .condensed = ಸಂಕುಚಿತ
+    .normal = ಸಾಮಾನ್ಯ
+    .expanded = ವಿಸ್ತಾರಿತ
 
 ## Desktop: Notifications
 
