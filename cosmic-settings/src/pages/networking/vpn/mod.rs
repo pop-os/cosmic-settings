@@ -194,7 +194,6 @@ pub struct Page {
     dialog: Option<VpnDialog>,
     view_more_popup: Option<ConnectionId>,
     known_connections: IndexMap<UUID, ConnectionSettings>,
-    wireguard_connections: IndexMap<UUID, String>,
     /// Withhold device update if the view more popup is shown.
     withheld_devices: Option<Vec<network_manager::devices::DeviceInfo>>,
     /// Withhold active connections update if the view more popup is shown.
