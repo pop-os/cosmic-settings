@@ -1,5 +1,7 @@
 app = Configuración de COSMIC
 
+unknown = Desconocidodbus-connection-error = Error al conectar con DBus
+ok = Aceptar
 unknown = Desconocido
 
 number = { $number }
@@ -62,8 +64,24 @@ remove-connection-dialog = ¿Eliminar el perfil de conexión?
 
 vpn = VPN
     .connections = Conexiones VPN
+    .error = Error al agregar la configuración de VPN
     .remove = Eliminar perfil de conexión
     .select-file = Seleccionar un archivo de configuración de VPN
+
+vpn-error = Error de VPN
+    .config = Error al agregar la configuración de VPN
+    .connect = Error al conectar a la VPN
+    .connection-editor = Error del editor de conexiones
+    .connection-settings = Error al obtener la configuración de las conexiones activas
+    .updating-state = Error al actualizar el estado del administrador de red
+    .wireguard-config-path = Ruta de archivo no válida para la configuración de WireGuard
+    .wireguard-config-path-desc = El archivo elegido debe estar en un sistema de archivos local.
+    .wireguard-device = Error al crear el dispositivo WireGuard
+    .with-password = Error al configurar la { $field ->
+        *[username] nombre de usuario
+        [password] contraseña
+        [password-flags] banderas de la contraseña
+    } con nmcli
 
 wired = Conectado
     .adapter = Adaptador por cable { $id }
@@ -74,6 +92,9 @@ wired = Conectado
 wifi = Wi-Fi
     .adapter = Adaptador Wi-Fi { $id }
     .forget = Olvidar esta red
+
+wireguard-dialog = Agregar dispositivo WireGuard
+    .description = Elige un nombre de dispositivo para la configuración de WireGuard.
 
 ## Networking: Online Accounts
 
@@ -180,8 +201,6 @@ control-tint = Tono del componente de control
 frosted = Efecto de cristal translúcido en la interfaz del sistema
     .desc = Aplica desenfoque de fondo a paneles, «docks», «applets», lanzador y biblioteca de aplicaciones.
 
-experimental-settings = Configuraciones experimentales
-
 enable-export = Aplicar este tema a aplicaciones GNOME.
     .desc = No todas las herramientas admiten el cambio automático. Es posible que las aplicaciones que no son de COSMIC necesiten reiniciarse después de un cambio de tema.
 
@@ -205,33 +224,12 @@ window-management-appearance = Gestión de Ventanas
     .active-hint = Tamaño del indicador de ventana activa
     .gaps = Espacios alrededor de las ventanas ajustadas
 
-### Appearance: Font
+### Experimental
 
-font-config = Configuración de Fuente
+experimental-settings = Configuraciones experimentales
+icons-and-toolkit = Iconos y tematización del toolkit
 interface-font = Fuente del sistema
-monospace-font = Fuente Monoespaciada
-font-family = Familia
-
-font-weight = Grosor
-    .thin = Delgado
-    .extra-light = Extra Ligero
-    .light = Ligero
-    .normal = Normal
-    .medium = Medio
-    .semibold = Semi Negrita
-    .bold = Negrita
-    .extra-bold = Extra Negrita
-    .black = Negro
-
-font-style = Estilo
-    .normal = Normal
-    .italic = Itálica
-    .oblique = Oblicua
-
-font-stretch = Ancho
-    .condensed = Condensado
-    .normal = Normal
-    .expanded = Expandido
+monospace-font = Fuente monoespaciada
 
 ## Desktop: Notifications
 
@@ -684,7 +682,7 @@ open-workspaces-view = Abrir Vista de Espacios de Trabajo
 
 ## Time & Language
 
-time = Hora y idioma
+time = Hora e idioma
     .desc = N/A
 
 time-date = Fecha y Hora
