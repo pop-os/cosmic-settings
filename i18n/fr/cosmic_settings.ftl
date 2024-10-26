@@ -84,7 +84,7 @@ online-accounts = Comptes en lignes
 
 bluetooth = Bluetooth
     .desc = Gestion du Bluetooth.
-    .status = Ce système est visible en tant que { $aliases } pandant que les paramètres Bluetooth sont ouvert.
+    .status = Ce système est visible en tant que { $aliases } pendant que les paramètres Bluetooth sont ouvert.
     .connected = Connecté
     .connecting = Connexion
     .disconnecting = Deconnexion
@@ -94,7 +94,7 @@ bluetooth = Bluetooth
     .dbus-error = Une erreur est survenue lors de l'interaction avec DBus: { $why }
     .show-device-without-name = Afficher les périphériques sans nom
 
-bluetooth-paired = Périphériques precedemment connectés
+bluetooth-paired = Périphériques précédemment connectés
     .connect = Connecter
     .battery = { $percentage }% de batterie
     
