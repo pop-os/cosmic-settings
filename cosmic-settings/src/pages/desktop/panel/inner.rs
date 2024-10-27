@@ -1,7 +1,7 @@
 use cosmic::{
     cctk::sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
     cosmic_config::{self, CosmicConfigEntry},
-    iced::Length,
+    iced::{Alignment, Length},
     theme,
     widget::{
         button, container, dropdown, horizontal_space, icon, row, settings, slider, text, toggler,
@@ -223,26 +223,31 @@ pub(crate) fn style<
                         .into(),
                         text::body(fl!("large")).into(),
                     ])
-                    .spacing(12),
+                    .align_y(Alignment::Center)
+                    .spacing(8),
                 ))
                 .add(settings::flex_item(
                     &descriptions[background_opacity],
-                    row::with_capacity(3)
-                        .push(text::body(fl!(
-                            "number",
-                            HashMap::from_iter(vec![("number", 0)])
-                        )))
+                    row::with_capacity(2)
+                        .align_y(Alignment::Center)
+                        .spacing(8)
+                        .push(
+                            text::body(fl!(
+                                "number",
+                                HashMap::from_iter(vec![(
+                                    "number",
+                                    (panel_config.opacity * 100.0) as i32
+                                )])
+                            ))
+                            .width(Length::Fixed(22.0))
+                            .align_x(Alignment::Center),
+                        )
                         .push(
                             slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
                                 Message::OpacityRequest(v as f32 / 100.0)
                             })
                             .breakpoints(&[50]),
-                        )
-                        .push(text::body(fl!(
-                            "number",
-                            HashMap::from_iter(vec![("number", 100)])
-                        )))
-                        .spacing(12),
+                        ),
                 ))
                 .apply(Element::from)
                 .map(msg_map)

@@ -51,7 +51,6 @@ fn mouse() -> Section<crate::pages::Message> {
         .view::<Page>(move |binder, _page, section| {
             let descriptions = &section.descriptions;
             let input = binder.page::<super::Page>().expect("input page not found");
-            let theme = cosmic::theme::active();
 
             settings::section()
                 .title(&section.title)
@@ -81,8 +80,12 @@ fn mouse() -> Section<crate::pages::Message> {
 
                         row::with_capacity(2)
                             .align_y(Alignment::Center)
-                            .spacing(theme.cosmic().space_s())
-                            .push(text::body(format!("{:.0}", value.round())))
+                            .spacing(8)
+                            .push(
+                                text::body(format!("{:.0}", value.round()))
+                                    .width(Length::Fixed(22.0))
+                                    .align_x(Alignment::Center),
+                            )
                             .push(slider)
                     }),
                 )
@@ -116,7 +119,6 @@ fn scrolling() -> Section<crate::pages::Message> {
         .view::<Page>(move |binder, _page, section| {
             let descriptions = &section.descriptions;
             let input = binder.page::<super::Page>().expect("input page not found");
-            let theme = cosmic::theme::active();
 
             settings::section()
                 .title(&section.title)
@@ -141,8 +143,12 @@ fn scrolling() -> Section<crate::pages::Message> {
 
                     row::with_capacity(2)
                         .align_y(Alignment::Center)
-                        .spacing(theme.cosmic().space_s())
-                        .push(text::body(format!("{:.0}", value.round())))
+                        .spacing(8)
+                        .push(
+                            text::body(format!("{:.0}", value.round()))
+                                .width(Length::Fixed(22.0))
+                                .align_x(Alignment::Center),
+                        )
                         .push(slider)
                 }))
                 .add(
