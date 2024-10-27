@@ -4,6 +4,7 @@
 use std::{collections::BTreeMap, time::Duration};
 
 use cosmic::{
+    iced::{Alignment, Length},
     widget::{self, settings},
     Element, Task,
 };
@@ -608,9 +609,8 @@ fn input() -> Section<crate::pages::Message> {
         .title(fl!("sound-input"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            let volume_control = widget::row::with_capacity(3)
-                .align_y(cosmic::iced::Alignment::Center)
-                .spacing(4)
+            let volume_control = widget::row::with_capacity(4)
+                .align_y(Alignment::Center)
                 .push(
                     widget::button::icon(widget::icon::from_name(if page.source_mute {
                         "microphone-sensitivity-muted-symbolic"
@@ -619,7 +619,12 @@ fn input() -> Section<crate::pages::Message> {
                     }))
                     .on_press(Message::SourceMuteToggle),
                 )
-                .push(widget::text::body(&page.source_volume_text))
+                .push(
+                    widget::text::body(&page.source_volume_text)
+                        .width(Length::Fixed(22.0))
+                        .align_x(Alignment::Center),
+                )
+                .push(widget::horizontal_space().width(8))
                 .push(
                     widget::slider(0..=150, page.source_volume, Message::SourceVolumeChanged)
                         .breakpoints(&[100]),
@@ -666,9 +671,8 @@ fn output() -> Section<crate::pages::Message> {
         .title(fl!("sound-output"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            let volume_control = widget::row::with_capacity(3)
-                .align_y(cosmic::iced::Alignment::Center)
-                .spacing(4)
+            let volume_control = widget::row::with_capacity(4)
+                .align_y(Alignment::Center)
                 .push(
                     widget::button::icon(if page.sink_mute {
                         widget::icon::from_name("audio-volume-muted-symbolic")
@@ -677,7 +681,12 @@ fn output() -> Section<crate::pages::Message> {
                     })
                     .on_press(Message::SinkMuteToggle),
                 )
-                .push(widget::text::body(&page.sink_volume_text))
+                .push(
+                    widget::text::body(&page.sink_volume_text)
+                        .width(Length::Fixed(22.0))
+                        .align_x(Alignment::Center),
+                )
+                .push(widget::horizontal_space().width(8))
                 .push(
                     widget::slider(0..=150, page.sink_volume, Message::SinkVolumeChanged)
                         .breakpoints(&[100]),
