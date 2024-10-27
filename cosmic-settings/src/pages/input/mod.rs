@@ -1,7 +1,7 @@
 use crate::app;
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
-    Command,
+    Task,
 };
 use cosmic_comp_config::input::{
     AccelConfig, AccelProfile, ClickMethod, InputConfig, ScrollConfig, ScrollMethod, TapButtonMap,
@@ -96,7 +96,7 @@ impl Page {
     }
 
     #[allow(clippy::too_many_lines)]
-    pub fn update(&mut self, message: Message) -> Command<app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<app::Message> {
         match message {
             Message::SetAcceleration(value, touchpad) => {
                 let profile = if value {
@@ -155,7 +155,7 @@ impl Page {
                 select_model.activate(entity);
 
                 let Some(left_entity) = select_model.entity_at(1) else {
-                    return Command::none();
+                    return Task::none();
                 };
 
                 let left_handed = select_model.active() == left_entity;
@@ -176,7 +176,7 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 }
 

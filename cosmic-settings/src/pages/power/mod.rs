@@ -6,10 +6,9 @@ use backend::{Battery, ConnectedDevice, PowerProfile};
 use chrono::TimeDelta;
 use cosmic::iced::{Alignment, Length};
 use cosmic::iced_widget::{column, row};
-use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{self, radio, settings, text};
 use cosmic::Apply;
-use cosmic::Command;
+use cosmic::Task;
 use cosmic_settings_page::{self as page, section, Section};
 use itertools::Itertools;
 use slab::Slab;
@@ -19,6 +18,7 @@ use slotmap::SlotMap;
 pub struct Page {
     battery: Battery,
     connected_devices: Vec<ConnectedDevice>,
+    on_enter_handle: Option<cosmic::iced::task::Handle>,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -43,19 +43,32 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Command<crate::pages::Message> {
-        let futures: Vec<Command<Message>> = vec![
-            cosmic::command::future(async move {
+    ) -> cosmic::Task<crate::pages::Message> {
+        let futures: Vec<Task<Message>> = vec![
+            cosmic::Task::future(async move {
                 let battery = Battery::update_battery().await;
                 Message::UpdateBattery(battery)
             }),
-            cosmic::command::future(async move {
+            cosmic::Task::future(async move {
                 let devices = ConnectedDevice::update_connected_devices().await;
                 Message::UpdateConnectedDevices(devices)
             }),
         ];
 
-        cosmic::command::batch(futures).map(crate::pages::Message::Power)
+        let (task, handle) = cosmic::Task::batch(futures)
+            .map(crate::pages::Message::Power)
+            .abortable();
+
+        self.on_enter_handle = Some(handle);
+        task
+    }
+
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        if let Some(handle) = self.on_enter_handle.take() {
+            handle.abort();
+        }
+
+        Task::none()
     }
 }
 
@@ -106,7 +119,7 @@ fn battery_info() -> Section<crate::pages::Message> {
                 .push(text::heading(&section.title))
                 .push(
                     row!(battery_icon, battery_label)
-                        .align_items(Alignment::Center)
+                        .align_y(Alignment::Center)
                         .spacing(cosmic::theme::active().cosmic().space_xxxs()),
                 )
                 .into()
@@ -146,18 +159,18 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                 text::heading(&connected_device.model),
                                 row!(battery_icon, battery_percent_and_time)
                                     .spacing(4)
-                                    .align_items(Alignment::Center),
+                                    .align_y(Alignment::Center),
                             )
                             .height(Length::Shrink)
                         )
-                        .align_items(Alignment::Center)
+                        .align_y(Alignment::Center)
                         .spacing(16)
                         .padding([8, 16])
                         .width(Length::Fill)
                         .height(Length::Fill),
                     )
                     .height(64)
-                    .style(cosmic::theme::Container::List)
+                    .class(cosmic::theme::Container::List)
                     .into()
                 })
                 .collect();
@@ -173,15 +186,21 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                 .chunks(2)
                                 .into_iter()
                                 .map(|mut device_row| {
-                                    row!(
-                                        device_row.next().unwrap_or(
-                                            widget::horizontal_space(Length::Fill).into()
-                                        ),
-                                        device_row.next().unwrap_or(
-                                            widget::horizontal_space(Length::Fill).into()
-                                        ),
+                                    cosmic::Element::from(
+                                        row!(
+                                            device_row.next().unwrap_or(
+                                                widget::horizontal_space()
+                                                    .width(Length::Fill)
+                                                    .into()
+                                            ),
+                                            device_row.next().unwrap_or(
+                                                widget::horizontal_space()
+                                                    .width(Length::Fill)
+                                                    .into()
+                                            ),
+                                        )
+                                        .spacing(8),
                                     )
-                                    .spacing(8)
                                 }),
                         )
                         .spacing(8),
@@ -217,7 +236,7 @@ fn profiles() -> Section<crate::pages::Message> {
                             widget::column::with_capacity(2)
                                 .push(text::body(profile.title()))
                                 .push(text::caption(profile.description())),
-                            profile.clone(),
+                            profile,
                             Some(current_profile),
                             Message::PowerProfileChange,
                         )

@@ -7,12 +7,11 @@ pub mod arrangement;
 use crate::{app, pages};
 use arrangement::Arrangement;
 use cosmic::iced::{time, Alignment, Length};
-use cosmic::iced_widget::scrollable::{Direction, Properties, RelativeOffset};
-use cosmic::prelude::CollectionWidget;
+use cosmic::iced_widget::scrollable::{Direction, RelativeOffset, Scrollbar};
 use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
 };
-use cosmic::{command, Apply, Command, Element};
+use cosmic::{Apply, Element, Task};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_randr_shell::{List, Output, OutputKey, Transform};
 use cosmic_settings_page::{self as page, section, Section};
@@ -237,42 +236,45 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _page: page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
+    ) -> Task<crate::pages::Message> {
         if let Some(task) = self.background_service.take() {
             task.abort();
         }
 
-        // Spawns a background service to monitor for display state changes.
-        // This must be spawned onto its own thread because `*mut wayland_sys::client::wl_display` is not Send-able.
-        let runtime = tokio::runtime::Handle::current();
-        self.background_service = Some(tokio::task::spawn_blocking(move || {
-            runtime.block_on(async move {
-                let (tx, mut rx) = tachyonix::channel(5);
-                let Ok((mut context, mut event_queue)) = cosmic_randr::connect(tx) else {
-                    return;
-                };
+        #[cfg(feature = "wayland")]
+        {
+            // Spawns a background service to monitor for display state changes.
+            // This must be spawned onto its own thread because `*mut wayland_sys::client::wl_display` is not Send-able.
+            let runtime = tokio::runtime::Handle::current();
+            self.background_service = Some(tokio::task::spawn_blocking(move || {
+                runtime.block_on(async move {
+                    let (tx, mut rx) = tachyonix::channel(5);
+                    let Ok((mut context, mut event_queue)) = cosmic_randr::connect(tx) else {
+                        return;
+                    };
 
-                while context.dispatch(&mut event_queue).await.is_ok() {
-                    while let Ok(message) = rx.try_recv() {
-                        if let cosmic_randr::Message::ManagerDone = message {
-                            let _ = sender
-                                .send(pages::Message::Displays(Message::Refresh))
-                                .await;
+                    while context.dispatch(&mut event_queue).await.is_ok() {
+                        while let Ok(message) = rx.try_recv() {
+                            if let cosmic_randr::Message::ManagerDone = message {
+                                let _ = sender
+                                    .send(pages::Message::Displays(Message::Refresh))
+                                    .await;
+                            }
                         }
                     }
-                }
-            });
-        }));
+                });
+            }));
+        }
 
-        command::future(on_enter())
+        cosmic::command::future(on_enter())
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         if let Some(task) = self.background_service.take() {
             task.abort();
         }
 
-        Command::none()
+        Task::none()
     }
 
     #[cfg(feature = "test")]
@@ -280,8 +282,8 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _page: page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
-        command::future(async move {
+    ) -> Task<crate::pages::Message> {
+        cosmic::command::future(async move {
             let mut randr = List::default();
 
             let test_mode = randr.modes.insert(cosmic_randr_shell::Mode {
@@ -341,7 +343,7 @@ impl page::Page<crate::pages::Message> for Page {
     /// To make a setting activate this dialog. Call the `set_dialog` method with
     /// the Randr enum value which undos the current change. Makde sure the
     /// return value is returned with the `exec_value` return value within a batch
-    /// command.
+    /// Task.
     fn dialog(&self) -> Option<Element<pages::Message>> {
         self.dialog?;
         let element = widget::dialog(fl!("dialog", "title"))
@@ -360,7 +362,7 @@ impl page::Page<crate::pages::Message> for Page {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<app::Message> {
         match message {
             Message::RandrResult(result) => {
                 if let Some(Err(why)) = Arc::into_inner(result) {
@@ -375,10 +377,10 @@ impl Page {
 
             Message::DialogCancel => {
                 let Some(request) = self.dialog else {
-                    return Command::none();
+                    return Task::none();
                 };
                 let Some(output) = self.list.outputs.get(self.active_display) else {
-                    return Command::none();
+                    return Task::none();
                 };
                 self.dialog = None;
                 self.dialog_countdown = 0;
@@ -393,11 +395,11 @@ impl Page {
             Message::DialogCountdown => {
                 if self.dialog_countdown == 0 {
                     if self.dialog.is_some() {
-                        return command::message(app::Message::from(Message::DialogCancel));
+                        return cosmic::command::message(app::Message::from(Message::DialogCancel));
                     }
                 } else {
                     self.dialog_countdown -= 1;
-                    return command::future(async move {
+                    return cosmic::command::future(async move {
                         tokio::time::sleep(time::Duration::from_secs(1)).await;
                         Message::DialogCountdown
                     });
@@ -417,7 +419,7 @@ impl Page {
 
                 Mirroring::Mirror(from_display) => {
                     let Some(output) = self.list.outputs.get(self.active_display) else {
-                        return Command::none();
+                        return Task::none();
                     };
 
                     return self.exec_randr(output, Randr::Mirror(from_display));
@@ -425,7 +427,7 @@ impl Page {
 
                 Mirroring::Project(to_display) => {
                     let Some(output) = self.list.outputs.get(to_display) else {
-                        return Command::none();
+                        return Task::none();
                     };
 
                     return self.exec_randr(output, Randr::Mirror(self.active_display));
@@ -494,7 +496,7 @@ impl Page {
                 self.comp_config_descale_xwayland = descale;
                 if let Err(err) = self
                     .comp_config
-                    .set("descale_xwayland", &self.comp_config_descale_xwayland)
+                    .set("descale_xwayland", self.comp_config_descale_xwayland)
                 {
                     error!(?err, "Failed to set config 'descale_xwayland'");
                 }
@@ -564,29 +566,25 @@ impl Page {
 
     /// Sets the dialog to be shown to the user. Will not show a dialog if the
     /// current request does not change anything.
-    fn set_dialog(
-        &mut self,
-        revert_request: Randr,
-        current_request: &Randr,
-    ) -> Command<app::Message> {
+    fn set_dialog(&mut self, revert_request: Randr, current_request: &Randr) -> Task<app::Message> {
         if revert_request == *current_request {
-            return Command::none();
+            return Task::none();
         }
         self.dialog = Some(revert_request);
         self.dialog_countdown = 10;
-        command::future(async {
+        cosmic::command::future(async {
             tokio::time::sleep(time::Duration::from_secs(1)).await;
             app::Message::from(Message::DialogCountdown)
         })
     }
 
     /// Changes the color depth of the active display.
-    pub fn set_color_depth(&mut self, _depth: ColorDepth) -> Command<app::Message> {
+    pub fn set_color_depth(&mut self, _depth: ColorDepth) -> Task<app::Message> {
         unimplemented!()
     }
 
     /// Changes the color profile of the active display.
-    pub fn set_color_profile(&mut self, _profile: usize) -> Command<app::Message> {
+    pub fn set_color_profile(&mut self, _profile: usize) -> Task<app::Message> {
         unimplemented!()
     }
 
@@ -713,11 +711,11 @@ impl Page {
     }
 
     /// Change display orientation.
-    pub fn set_orientation(&mut self, transform: Transform) -> Command<app::Message> {
+    pub fn set_orientation(&mut self, transform: Transform) -> Task<app::Message> {
         let request = Randr::Transform(transform);
 
-        let mut commands = Vec::with_capacity(2);
-        commands.push(match self.cache.orientation_selected {
+        let mut tasks = Vec::with_capacity(2);
+        tasks.push(match self.cache.orientation_selected {
             Some(orientation) => self.set_dialog(
                 Randr::Transform(match orientation {
                     1 => Transform::Rotate90,
@@ -727,11 +725,11 @@ impl Page {
                 }),
                 &request,
             ),
-            None => Command::none(),
+            None => Task::none(),
         });
 
         let Some(output) = self.list.outputs.get(self.active_display) else {
-            return Command::none();
+            return Task::none();
         };
 
         self.cache.orientation_selected = match transform {
@@ -741,22 +739,22 @@ impl Page {
             _ => Some(3),
         };
 
-        commands.push(self.exec_randr(output, Randr::Transform(transform)));
+        tasks.push(self.exec_randr(output, Randr::Transform(transform)));
 
-        Command::batch(commands)
+        Task::batch(tasks)
     }
 
     /// Changes the position of the display.
-    pub fn set_position(&mut self, display: OutputKey, x: i32, y: i32) -> Command<app::Message> {
+    pub fn set_position(&mut self, display: OutputKey, x: i32, y: i32) -> Task<app::Message> {
         let Some(output) = self.list.outputs.get_mut(display) else {
-            return Command::none();
+            return Task::none();
         };
 
         output.position = (x, y);
 
         if cfg!(feature = "test") {
             tracing::debug!("set position {x},{y}");
-            return Command::none();
+            return Task::none();
         }
 
         let output = &self.list.outputs[display];
@@ -764,9 +762,9 @@ impl Page {
     }
 
     /// Changes the refresh rate of the active display.
-    pub fn set_refresh_rate(&mut self, option: usize) -> Command<app::Message> {
+    pub fn set_refresh_rate(&mut self, option: usize) -> Task<app::Message> {
         let Some(output) = self.list.outputs.get(self.active_display) else {
-            return Command::none();
+            return Task::none();
         };
 
         if let Some(ref resolution) = self.config.resolution {
@@ -779,26 +777,26 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     /// Change the resolution of the active display.
-    pub fn set_resolution(&mut self, option: usize) -> Command<app::Message> {
-        let mut commands = Vec::with_capacity(2);
+    pub fn set_resolution(&mut self, option: usize) -> Task<app::Message> {
+        let mut tasks = Vec::with_capacity(2);
 
         let Some(output) = self.list.outputs.get(self.active_display) else {
-            return Command::none();
+            return Task::none();
         };
 
         let Some((&resolution, rates)) = self.cache.modes.iter().rev().nth(option) else {
-            return Command::none();
+            return Task::none();
         };
 
         self.cache.refresh_rates.clear();
         cache_rates(&mut self.cache.refresh_rates, rates);
 
         let Some(&rate) = rates.first() else {
-            return Command::none();
+            return Task::none();
         };
 
         let request = Randr::Resolution(resolution.0, resolution.1);
@@ -811,18 +809,18 @@ impl Page {
         self.config.resolution = Some(resolution);
         self.cache.refresh_rate_selected = Some(0);
         self.cache.resolution_selected = Some(option);
-        commands.push(self.exec_randr(output, Randr::Resolution(resolution.0, resolution.1)));
-        commands.push(self.set_dialog(revert_request, &request));
+        tasks.push(self.exec_randr(output, Randr::Resolution(resolution.0, resolution.1)));
+        tasks.push(self.set_dialog(revert_request, &request));
 
-        Command::batch(commands)
+        Task::batch(tasks)
     }
 
     /// Set the scale of the active display.
-    pub fn set_scale(&mut self, option: usize) -> Command<app::Message> {
-        let mut commands = Vec::with_capacity(2);
+    pub fn set_scale(&mut self, option: usize) -> Task<app::Message> {
+        let mut tasks = Vec::with_capacity(2);
 
         let Some(output) = self.list.outputs.get(self.active_display) else {
-            return Command::none();
+            return Task::none();
         };
 
         let scale = (option * 25 + 50) as u32;
@@ -832,18 +830,18 @@ impl Page {
 
         self.cache.scale_selected = Some(option);
         self.config.scale = scale;
-        commands.push(self.exec_randr(output, Randr::Scale(scale)));
-        commands.push(self.set_dialog(revert_request, &request));
-        Command::batch(commands)
+        tasks.push(self.exec_randr(output, Randr::Scale(scale)));
+        tasks.push(self.set_dialog(revert_request, &request));
+        Task::batch(tasks)
     }
 
     /// Enables or disables the active display.
-    pub fn toggle_display(&mut self, enable: bool) -> Command<app::Message> {
-        let mut commands = Vec::with_capacity(2);
+    pub fn toggle_display(&mut self, enable: bool) -> Task<app::Message> {
+        let mut tasks = Vec::with_capacity(2);
         let request = Randr::Toggle(enable);
 
         let Some(output) = self.list.outputs.get_mut(self.active_display) else {
-            return Command::none();
+            return Task::none();
         };
 
         let revert_request = Randr::Toggle(output.enabled);
@@ -852,44 +850,40 @@ impl Page {
         output.enabled = enable;
 
         let output = &self.list.outputs[self.active_display];
-        commands.push(self.exec_randr(output, request));
-        commands.push(self.set_dialog(revert_request, &current_request));
-        Command::batch(commands)
+        tasks.push(self.exec_randr(output, request));
+        tasks.push(self.set_dialog(revert_request, &current_request));
+        Task::batch(tasks)
     }
 
     /// Applies a display configuration via `cosmic-randr`.
-    fn exec_randr(&self, output: &Output, request: Randr) -> Command<app::Message> {
-        let mut commands = Vec::with_capacity(2);
+    fn exec_randr(&self, output: &Output, request: Randr) -> Task<app::Message> {
+        let mut tasks = Vec::with_capacity(2);
 
         // Removes the dialog if no change is being made
         if Some(request) == self.dialog {
-            commands.push(command::message(app::Message::from(
+            tasks.push(cosmic::command::message(app::Message::from(
                 Message::DialogComplete,
             )));
         }
 
         let name = &*output.name;
-        let mut command = tokio::process::Command::new("cosmic-randr");
+        let mut task = tokio::process::Command::new("cosmic-randr");
 
         match request {
             Randr::Mirror(from_id) => {
                 let Some(from_output) = self.list.outputs.get(from_id) else {
-                    return Command::none();
+                    return Task::none();
                 };
 
-                command
-                    .arg("mirror")
-                    .arg(&output.name)
-                    .arg(&from_output.name);
+                task.arg("mirror").arg(&output.name).arg(&from_output.name);
             }
 
             Randr::Position(x, y) => {
                 let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
-                    return Command::none();
+                    return Task::none();
                 };
 
-                command
-                    .arg("mode")
+                task.arg("mode")
                     .arg("--pos-x")
                     .arg(itoa::Buffer::new().format(x))
                     .arg("--pos-y")
@@ -901,14 +895,13 @@ impl Page {
 
             Randr::RefreshRate(rate) => {
                 let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
-                    return Command::none();
+                    return Task::none();
                 };
 
-                command
-                    .arg("mode")
+                task.arg("mode")
                     .arg("--refresh")
                     .arg(
-                        &[
+                        [
                             itoa::Buffer::new().format(rate / 1000),
                             ".",
                             itoa::Buffer::new().format(rate % 1000),
@@ -921,8 +914,7 @@ impl Page {
             }
 
             Randr::Resolution(width, height) => {
-                command
-                    .arg("mode")
+                task.arg("mode")
                     .arg(name)
                     .arg(itoa::Buffer::new().format(width))
                     .arg(itoa::Buffer::new().format(height));
@@ -930,14 +922,13 @@ impl Page {
 
             Randr::Scale(scale) => {
                 let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
-                    return Command::none();
+                    return Task::none();
                 };
 
-                command
-                    .arg("mode")
+                task.arg("mode")
                     .arg("--scale")
                     .arg(
-                        &[
+                        [
                             itoa::Buffer::new().format(scale / 100),
                             ".",
                             itoa::Buffer::new().format(scale % 100),
@@ -950,18 +941,16 @@ impl Page {
             }
 
             Randr::Toggle(enable) => {
-                command
-                    .arg(if enable { "enable" } else { "disable" })
+                task.arg(if enable { "enable" } else { "disable" })
                     .arg(name);
             }
 
             Randr::Transform(transform) => {
                 let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
-                    return Command::none();
+                    return Task::none();
                 };
 
-                command
-                    .arg("mode")
+                task.arg("mode")
                     .arg("--transform")
                     .arg(&*format!("{transform}"))
                     .arg(name)
@@ -970,11 +959,11 @@ impl Page {
             }
         }
 
-        commands.push(cosmic::command::future(async move {
-            tracing::debug!(?command, "executing");
-            app::Message::from(Message::RandrResult(Arc::new(command.status().await)))
+        tasks.push(cosmic::command::future(async move {
+            tracing::debug!(?task, "executing");
+            app::Message::from(Message::RandrResult(Arc::new(task.status().await)))
         }));
-        Command::batch(commands)
+        Task::batch(tasks)
     }
 }
 
@@ -1011,10 +1000,9 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                         .apply(widget::scrollable)
                         .id(page.display_arrangement_scrollable.clone())
                         .width(Length::Shrink)
-                        .direction(Direction::Horizontal(Properties::new()))
+                        .direction(Direction::Horizontal(Scrollbar::new()))
                         .apply(container)
-                        .center_x()
-                        .width(Length::Fill)
+                        .center_x(Length::Fill)
                 })
                 .apply(widget::list::container)
                 .into()
@@ -1106,7 +1094,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                         let mut column = list_column()
                             .add(widget::settings::item(
                                 &descriptions[enable_label],
-                                toggler(None, active_output.enabled, Message::DisplayToggle),
+                                toggler(active_output.enabled).on_toggle(Message::DisplayToggle),
                             ))
                             .add(widget::settings::item(
                                 &descriptions[mirroring_label],

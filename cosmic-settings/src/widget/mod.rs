@@ -5,8 +5,7 @@ use std::borrow::Cow;
 
 use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::{alignment, Length};
-use cosmic::iced_core::text::Wrap;
-use cosmic::prelude::CollectionWidget;
+use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::{
     self, button, column, container, divider, horizontal_space, icon, row, settings, text,
@@ -44,7 +43,7 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
                 .align_x(alignment::Horizontal::Center),
         )
         .padding(spacing.space_l)
-        .align_items(cosmic::iced_core::Alignment::Center)
+        .align_x(cosmic::iced_core::Alignment::Center)
         .spacing(spacing.space_m)
         .width(Length::Fill)
         .apply(Element::from)
@@ -76,21 +75,21 @@ pub fn search_header<Message>(
             .into(),
     );
 
-    column_children.push(vertical_space(Length::Fixed(8.)).into());
+    column_children.push(vertical_space().height(Length::Fixed(8.)).into());
     column_children.push(divider::horizontal::heavy().into());
 
     column::with_children(column_children).into()
 }
 
 pub fn search_page_link<Message: 'static>(title: &str) -> button::TextButton<Message> {
-    button::text(title).style(button::Style::Link)
+    button::text(title).class(button::ButtonClass::Link)
 }
 
 #[must_use]
 pub fn page_title<Message: 'static>(page: &page::Info) -> Element<Message> {
     row::with_capacity(2)
         .push(text::title3(page.title.as_str()))
-        .push(horizontal_space(Length::Fill))
+        .push(horizontal_space().width(Length::Fill))
         .into()
 }
 
@@ -104,15 +103,15 @@ pub fn unimplemented_page<Message: 'static>() -> Element<'static, Message> {
 #[must_use]
 pub fn display_container<'a, Message: 'a>(widget: Element<'a, Message>) -> Element<'a, Message> {
     let display = container(widget)
-        .style(crate::theme::display_container_screen())
+        .class(crate::theme::display_container_screen())
         .apply(container)
         .padding(4)
-        .style(crate::theme::display_container_frame());
+        .class(crate::theme::display_container_frame());
 
     row::with_capacity(3)
-        .push(horizontal_space(Length::Fill))
+        .push(horizontal_space().width(Length::Fill))
         .push(display)
-        .push(horizontal_space(Length::Fill))
+        .push(horizontal_space().width(Length::Fill))
         .padding([0, 0, 8, 0])
         .into()
 }
@@ -148,17 +147,17 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
             row::with_capacity(2)
                 .push(text::body(info))
                 .push(container(icon::from_name("go-next-symbolic").size(20)).padding(8))
-                .align_items(alignment::Alignment::Center),
+                .align_y(alignment::Alignment::Center),
         )
         .padding(0)
         .spacing(space_xxs)
         .apply(container)
         .padding([space_s, space_m])
         .align_x(alignment::Horizontal::Center)
-        .style(theme::Container::List)
+        .class(theme::Container::List)
         .apply(button::custom)
         .padding(0)
-        .style(theme::Button::Transparent)
+        .class(theme::Button::Transparent)
         .on_press(message)
         .into()
 }
@@ -174,7 +173,7 @@ pub fn sub_page_header<'a, Message: 'static + Clone>(
         .padding(0)
         .label(parent_page)
         .spacing(4)
-        .style(button::Style::Link)
+        .class(button::ButtonClass::Link)
         .on_press(on_press);
 
     let sub_page_header = row::with_capacity(2).push(text::title3(sub_page));
@@ -189,14 +188,14 @@ pub fn sub_page_header<'a, Message: 'static + Clone>(
 
 pub fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::Element<'_, Msg> {
     settings::item_row(vec![
-        text::body(description).wrap(Wrap::Word).into(),
-        horizontal_space(Length::Fill).into(),
+        text::body(description).wrapping(Wrapping::Word).into(),
+        horizontal_space().width(Length::Fill).into(),
         icon::from_name("go-next-symbolic").size(16).icon().into(),
     ])
     .apply(widget::container)
-    .style(cosmic::theme::Container::List)
+    .class(cosmic::theme::Container::List)
     .apply(button::custom)
-    .style(theme::Button::Transparent)
+    .class(theme::Button::Transparent)
     .on_press(msg)
     .into()
 }
@@ -207,19 +206,19 @@ pub fn go_next_with_item<'a, Msg: Clone + 'static>(
     msg: Msg,
 ) -> cosmic::Element<'_, Msg> {
     settings::item_row(vec![
-        text::body(description).wrap(Wrap::Word).into(),
-        horizontal_space(Length::Fill).into(),
+        text::body(description).wrapping(Wrapping::Word).into(),
+        horizontal_space().width(Length::Fill).into(),
         widget::row::with_capacity(2)
             .push(item)
             .push(icon::from_name("go-next-symbolic").size(16).icon())
-            .align_items(alignment::Alignment::Center)
+            .align_y(alignment::Alignment::Center)
             .spacing(cosmic::theme::active().cosmic().spacing.space_s)
             .into(),
     ])
     .apply(widget::container)
-    .style(cosmic::theme::Container::List)
+    .class(cosmic::theme::Container::List)
     .apply(button::custom)
-    .style(theme::Button::Transparent)
+    .class(theme::Button::Transparent)
     .on_press(msg)
     .into()
 }

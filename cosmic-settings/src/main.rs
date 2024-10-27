@@ -33,62 +33,79 @@ use tracing_subscriber::prelude::*;
 #[command(propagate_version = true)]
 pub struct Args {
     #[command(subcommand)]
-    subcommand: Option<PageCommands>,
+    sub_command: Option<PageCommands>,
 }
 
 #[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
 pub enum PageCommands {
     /// About settings page
+    #[cfg(feature = "page-about")]
     About,
     /// Appearance settings page
     Appearance,
     /// Bluetooth settings page
+    #[cfg(feature = "page-bluetooth")]
     Bluetooth,
     /// Date & Time settings page
+    #[cfg(feature = "page-date")]
     DateTime,
     /// Desktop settings page
     Desktop,
     /// Displays settings page
     Displays,
     /// Dock settings page
+    #[cfg(feature = "wayland")]
     Dock,
     /// Firmware settings page
     Firmware,
     /// Input Devices settings page
+    #[cfg(feature = "page-input")]
     Input,
     /// Keyboard settings page
+    #[cfg(feature = "page-input")]
     Keyboard,
     /// Mouse settings page
+    #[cfg(feature = "page-input")]
     Mouse,
     /// Network settings page
+    #[cfg(feature = "page-networking")]
     Network,
     /// Panel settings page
+    #[cfg(feature = "wayland")]
     Panel,
     /// Power settings page
+    #[cfg(feature = "page-power")]
     Power,
     /// Region & Language settings page
     RegionLanguage,
     /// Sound settings page
+    #[cfg(feature = "page-sound")]
     Sound,
     /// System & Accounts settings page
     System,
     /// Time & Language settings page
     Time,
     /// Touchpad settings page
+    #[cfg(feature = "page-input")]
     Touchpad,
     /// Users settings page
     Users,
     /// VPN settings page
+    #[cfg(feature = "page-networking")]
     Vpn,
     /// Wallpaper settings page
     Wallpaper,
     /// Window management settings page
+    #[cfg(feature = "page-window-management")]
     WindowManagement,
     /// Wired settings page
+    #[cfg(feature = "page-networking")]
     Wired,
     /// WiFi settings page
+    #[cfg(feature = "page-networking")]
     Wireless,
     /// Workspaces settings page
+    #[cfg(feature = "page-workspaces")]
     Workspaces,
 }
 
@@ -100,9 +117,9 @@ impl FromStr for PageCommands {
     }
 }
 
-impl ToString for PageCommands {
-    fn to_string(&self) -> String {
-        ron::ser::to_string(self).unwrap()
+impl std::fmt::Display for PageCommands {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", ron::ser::to_string(self).unwrap())
     }
 }
 
@@ -111,7 +128,7 @@ impl CosmicFlags for Args {
     type Args = Vec<String>;
 
     fn action(&self) -> Option<&PageCommands> {
-        self.subcommand.as_ref()
+        self.sub_command.as_ref()
     }
 }
 
@@ -131,11 +148,16 @@ pub fn main() -> color_eyre::Result<()> {
     let args = Args::parse();
 
     let settings = cosmic::app::Settings::default()
-        .size_limits(Limits::NONE.min_width(360.0).min_height(300.0))
-        .exit_on_close(false);
+        .size_limits(Limits::NONE.min_width(360.0).min_height(300.0));
 
-    cosmic::app::run_single_instance::<app::SettingsApp>(settings, args)?;
-
+    #[cfg(feature = "single-instance")]
+    {
+        cosmic::app::run_single_instance::<app::SettingsApp>(settings, args)?;
+    }
+    #[cfg(not(feature = "single-instance"))]
+    {
+        cosmic::app::run::<app::SettingsApp>(settings, args)?;
+    }
     Ok(())
 }
 

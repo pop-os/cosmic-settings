@@ -2,30 +2,34 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::config::Config;
-use crate::pages::desktop::{
-    self, appearance, dock,
-    panel::{
-        self,
-        applets_inner::{self, APPLET_DND_ICON_ID},
-        inner as _panel,
-    },
-};
-use crate::pages::input::{self};
-use crate::pages::{self, bluetooth, display, networking, power, sound, system, time};
+#[cfg(feature = "page-bluetooth")]
+use crate::pages::bluetooth;
+use crate::pages::desktop::{self, appearance};
+#[cfg(feature = "page-input")]
+use crate::pages::input;
+#[cfg(feature = "page-networking")]
+use crate::pages::networking;
+#[cfg(feature = "page-power")]
+use crate::pages::power;
+#[cfg(feature = "page-sound")]
+use crate::pages::sound;
+use crate::pages::{self, display, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
+use cosmic::app::command::set_theme;
+#[cfg(feature = "single-instance")]
 use cosmic::app::DbusActivationMessage;
-use cosmic::cctk::sctk::output::OutputInfo;
-use cosmic::cctk::wayland_client::protocol::wl_output::WlOutput;
+#[cfg(feature = "wayland")]
+use cosmic::cctk::{sctk::output::OutputInfo, wayland_client::protocol::wl_output::WlOutput};
 use cosmic::iced::futures::SinkExt;
-use cosmic::iced::Subscription;
+use cosmic::iced::{stream, Subscription};
 use cosmic::widget::{self, button, row, text_input};
 use cosmic::{
-    app::{Command, Core},
+    app::{Core, Task},
     iced::{
         self,
-        event::{self, wayland, PlatformSpecific},
+        event::{self, PlatformSpecific},
         window, Length,
     },
     prelude::*,
@@ -34,15 +38,25 @@ use cosmic::{
     },
     Element,
 };
+#[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
+#[cfg(feature = "wayland")]
+use desktop::{
+    dock,
+    panel::{self, applets_inner, inner as _panel},
+};
+#[cfg(feature = "wayland")]
+use event::wayland;
 use page::Entity;
+use std::collections::BTreeSet;
 use std::{borrow::Cow, str::FromStr};
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
 pub struct SettingsApp {
     active_page: page::Entity,
+    loaded_pages: BTreeSet<page::Entity>,
     config: Config,
     core: Core,
     nav_model: nav_bar::Model,
@@ -55,35 +69,52 @@ pub struct SettingsApp {
 }
 
 impl SettingsApp {
-    fn subcommand_to_page(&self, cmd: &PageCommands) -> Option<Entity> {
+    fn subtask_to_page(&self, cmd: &PageCommands) -> Option<Entity> {
         match cmd {
+            #[cfg(feature = "page-about")]
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
+            #[cfg(feature = "page-bluetooth")]
             PageCommands::Bluetooth => self.pages.page_id::<bluetooth::Page>(),
+            #[cfg(feature = "page-date")]
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
+            #[cfg(feature = "wayland")]
             PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
             PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
+            #[cfg(feature = "page-input")]
             PageCommands::Input => self.pages.page_id::<input::Page>(),
+            #[cfg(feature = "page-input")]
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
+            #[cfg(feature = "page-input")]
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
+            #[cfg(feature = "page-networking")]
             PageCommands::Network => self.pages.page_id::<networking::Page>(),
+            #[cfg(feature = "wayland")]
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
+            #[cfg(feature = "page-power")]
             PageCommands::Power => self.pages.page_id::<power::Page>(),
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
+            #[cfg(feature = "page-sound")]
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
             PageCommands::System => self.pages.page_id::<system::Page>(),
             PageCommands::Time => self.pages.page_id::<time::Page>(),
+            #[cfg(feature = "page-input")]
             PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
             PageCommands::Users => self.pages.page_id::<system::users::Page>(),
+            #[cfg(feature = "page-networking")]
             PageCommands::Vpn => self.pages.page_id::<networking::vpn::Page>(),
             PageCommands::Wallpaper => self.pages.page_id::<desktop::wallpaper::Page>(),
+            #[cfg(feature = "page-window-management")]
             PageCommands::WindowManagement => {
                 self.pages.page_id::<desktop::window_management::Page>()
             }
+            #[cfg(feature = "page-networking")]
             PageCommands::Wired => self.pages.page_id::<networking::wired::Page>(),
+            #[cfg(feature = "page-networking")]
             PageCommands::Wireless => self.pages.page_id::<networking::wifi::Page>(),
+            #[cfg(feature = "page-workspaces")]
             PageCommands::Workspaces => self.pages.page_id::<desktop::workspaces::Page>(),
         }
     }
@@ -98,14 +129,18 @@ impl SettingsApp {
 pub enum Message {
     CloseContextDrawer,
     DelayedInit(page::Entity),
+    #[cfg(feature = "wayland")]
     DesktopInfo,
     Error(String),
     None,
     OpenContextDrawer(Cow<'static, str>),
+    #[cfg(feature = "wayland")]
     OutputAdded(OutputInfo, WlOutput),
+    #[cfg(feature = "wayland")]
     OutputRemoved(WlOutput),
     Page(page::Entity),
     PageMessage(crate::pages::Message),
+    #[cfg(feature = "wayland")]
     PanelConfig(CosmicPanelConfig),
     RegisterSubscriptionSender(tokio::sync::mpsc::Sender<pages::Message>),
     SearchActivate,
@@ -131,9 +166,10 @@ impl cosmic::Application for SettingsApp {
         &mut self.core
     }
 
-    fn init(core: Core, flags: Self::Flags) -> (Self, Command<Self::Message>) {
+    fn init(core: Core, flags: Self::Flags) -> (Self, Task<Self::Message>) {
         let mut app = SettingsApp {
             active_page: page::Entity::default(),
+            loaded_pages: BTreeSet::new(),
             config: Config::new(),
             core,
             nav_model: nav_bar::Model::default(),
@@ -145,18 +181,23 @@ impl cosmic::Application for SettingsApp {
             search_selections: Vec::default(),
         };
 
+        #[cfg(feature = "page-networking")]
         app.insert_page::<networking::Page>();
+        #[cfg(feature = "page-bluetooth")]
         app.insert_page::<bluetooth::Page>();
         let desktop_id = app.insert_page::<desktop::Page>().id();
         app.insert_page::<display::Page>();
+        #[cfg(feature = "page-sound")]
         app.insert_page::<sound::Page>();
+        #[cfg(feature = "page-power")]
         app.insert_page::<power::Page>();
+        #[cfg(feature = "page-input")]
         app.insert_page::<input::Page>();
         app.insert_page::<time::Page>();
         app.insert_page::<system::Page>();
 
-        let active_id = match flags.subcommand {
-            Some(p) => app.subcommand_to_page(&p),
+        let active_id = match flags.sub_command {
+            Some(p) => app.subtask_to_page(&p),
             None => app
                 .pages
                 .find_page_by_id(&app.config.active_page)
@@ -196,48 +237,35 @@ impl cosmic::Application for SettingsApp {
         widgets
     }
 
-    fn on_escape(&mut self) -> Command<Self::Message> {
+    fn on_escape(&mut self) -> Task<Self::Message> {
         if self.search_active {
             self.search_active = false;
             self.search_clear();
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_nav_select(&mut self, id: nav_bar::Id) -> Command<Self::Message> {
+    fn on_nav_select(&mut self, id: nav_bar::Id) -> Task<Self::Message> {
         if let Some(page) = self.nav_model.data::<page::Entity>(id).copied() {
             return self.activate_page(page);
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_search(&mut self) -> Command<Self::Message> {
+    fn on_search(&mut self) -> Task<Self::Message> {
         self.search_active = true;
         cosmic::widget::text_input::focus(self.search_id.clone())
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        // Handling of Wayland-specific events received.
-        let wayland_events =
-            event::listen_with(|event, _| match event {
-                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::Output(wayland::OutputEvent::Created(Some(info)), o),
-                )) if info.name.is_some() => Some(Message::OutputAdded(info, o)),
-                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
-                    wayland::Event::Output(wayland::OutputEvent::Removed, o),
-                )) => Some(Message::OutputRemoved(o)),
-                _ => None,
-            });
-
         Subscription::batch(vec![
             // Creates a channel that listens to messages from pages.
             // The sender is given back to the application so that it may pass it on.
-            cosmic::iced::subscription::channel(
+            Subscription::run_with_id(
                 std::any::TypeId::of::<Self>(),
-                4,
-                move |mut output| async move {
+                stream::channel(4, move |mut output| async move {
                     let (tx, mut rx) = tokio::sync::mpsc::channel::<pages::Message>(4);
 
                     let _res = output.send(Message::RegisterSubscriptionSender(tx)).await;
@@ -246,18 +274,32 @@ impl cosmic::Application for SettingsApp {
                         let _res = output.send(Message::PageMessage(event)).await;
                     }
 
-                    futures::future::pending().await
-                },
+                    futures::future::pending::<()>().await;
+                }),
             ),
+            #[cfg(feature = "ashpd")]
             crate::subscription::daytime().map(|daytime| {
                 Message::PageMessage(pages::Message::Appearance(appearance::Message::Daytime(
                     daytime,
                 )))
             }),
-            wayland_events,
+            #[cfg(feature = "wayland")]
+            event::listen_with(|event, _, _id| match event {
+                #[cfg(feature = "wayland")]
+                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::Output(wayland::OutputEvent::Created(Some(info)), o),
+                )) if info.name.is_some() => Some(Message::OutputAdded(info, o)),
+                #[cfg(feature = "wayland")]
+                iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
+                    wayland::Event::Output(wayland::OutputEvent::Removed, o),
+                )) => Some(Message::OutputRemoved(o)),
+                _ => None,
+            }),
+            #[cfg(feature = "wayland")]
             // Watch for changes to installed desktop entries
             desktop_files(0).map(|_| Message::DesktopInfo),
             // Watch for configuration changes to the panel.
+            #[cfg(feature = "wayland")]
             self.core()
                 .watch_config::<CosmicPanelConfig>("com.system76.CosmicPanel.Panel")
                 .map(|update| {
@@ -267,7 +309,7 @@ impl cosmic::Application for SettingsApp {
 
                     Message::PanelConfig(update.config)
                 }),
-            // Watch for configuration changes to the dock
+            #[cfg(feature = "wayland")]
             self.core()
                 .watch_config::<CosmicPanelConfig>("com.system76.CosmicPanel.Dock")
                 .map(|update| {
@@ -289,7 +331,7 @@ impl cosmic::Application for SettingsApp {
     }
 
     #[allow(clippy::too_many_lines)]
-    fn update(&mut self, message: Message) -> Command<Self::Message> {
+    fn update(&mut self, message: Message) -> Task<Self::Message> {
         match message {
             Message::Page(page) => return self.activate_page(page),
 
@@ -298,7 +340,7 @@ impl cosmic::Application for SettingsApp {
             Message::SetWindowTitle => return self.set_title(),
 
             Message::SearchChanged(phrase) => {
-                self.search_changed(phrase);
+                return self.search_changed(phrase);
             }
 
             Message::SearchActivate => {
@@ -315,6 +357,7 @@ impl cosmic::Application for SettingsApp {
             }
 
             Message::PageMessage(message) => match message {
+                #[cfg(feature = "page-about")]
                 crate::pages::Message::About(message) => {
                     page::update!(self.pages, message, system::about::Page);
                 }
@@ -325,12 +368,14 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-bluetooth")]
                 crate::pages::Message::Bluetooth(message) => {
                     if let Some(page) = self.pages.page_mut::<bluetooth::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-date")]
                 crate::pages::Message::DateAndTime(message) => {
                     if let Some(page) = self.pages.page_mut::<time::date::Page>() {
                         return page.update(message).map(Into::into);
@@ -347,6 +392,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-workspaces")]
                 crate::pages::Message::DesktopWorkspaces(message) => {
                     page::update!(self.pages, message, desktop::workspaces::Page);
                 }
@@ -357,36 +403,42 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "wayland")]
                 crate::pages::Message::Dock(message) => {
                     if let Some(page) = self.pages.page_mut::<dock::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "wayland")]
                 crate::pages::Message::DockApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<dock::applets::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::Input(message) => {
                     if let Some(page) = self.pages.page_mut::<input::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::Keyboard(message) => {
                     if let Some(page) = self.pages.page_mut::<input::keyboard::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::KeyboardShortcuts(message) => {
                     if let Some(page) = self.pages.page_mut::<input::keyboard::shortcuts::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::CustomShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -396,6 +448,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::ManageWindowShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -405,6 +458,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::MoveWindowShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -414,6 +468,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::NavShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -423,12 +478,14 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-sound")]
                 crate::pages::Message::Sound(message) => {
                     if let Some(page) = self.pages.page_mut::<sound::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::SystemShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -438,6 +495,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::TilingShortcuts(message) => {
                     if let Some(page) = self
                         .pages
@@ -455,44 +513,52 @@ impl cosmic::Application for SettingsApp {
                     return self.activate_page(page);
                 }
 
+                #[cfg(feature = "page-networking")]
                 crate::pages::Message::Networking(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "wayland")]
                 crate::pages::Message::Panel(message) => {
                     if let Some(page) = self.pages.page_mut::<panel::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "wayland")]
                 crate::pages::Message::PanelApplet(message) => {
                     if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-power")]
                 crate::pages::Message::Power(message) => {
                     page::update!(self.pages, message, power::Page);
                 }
 
+                #[cfg(feature = "page-networking")]
                 crate::pages::Message::Vpn(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::vpn::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-networking")]
                 crate::pages::Message::WiFi(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::wifi::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
 
+                #[cfg(feature = "page-window-management")]
                 crate::pages::Message::WindowManagement(message) => {
                     page::update!(self.pages, message, desktop::window_management::Page);
                 }
 
+                #[cfg(feature = "page-networking")]
                 crate::pages::Message::Wired(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::wired::Page>() {
                         return page.update(message).map(Into::into);
@@ -500,6 +566,7 @@ impl cosmic::Application for SettingsApp {
                 }
             },
 
+            #[cfg(feature = "wayland")]
             Message::OutputAdded(info, output) => {
                 let mut commands = vec![];
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
@@ -521,9 +588,10 @@ impl cosmic::Application for SettingsApp {
                         .map(Into::into),
                     );
                 }
-                return Command::batch(commands);
+                return Task::batch(commands);
             }
 
+            #[cfg(feature = "wayland")]
             Message::OutputRemoved(output) => {
                 let mut commands = vec![];
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
@@ -541,34 +609,36 @@ impl cosmic::Application for SettingsApp {
                             .map(Into::into),
                     );
                 }
-                return Command::batch(commands);
+                return Task::batch(commands);
             }
 
+            #[cfg(feature = "wayland")]
             Message::PanelConfig(config) if config.name.to_lowercase().contains("panel") => {
-                let mut commands = Vec::new();
+                let mut tasks = Vec::new();
 
                 if let Some(page) = self.pages.page_mut::<panel::Page>() {
-                    commands.push(
+                    tasks.push(
                         page.update(panel::Message(_panel::Message::PanelConfig(config.clone())))
                             .map(Into::into),
                     );
                 }
 
                 if let Some(page) = self.pages.page_mut::<applets_inner::Page>() {
-                    commands.push(
+                    tasks.push(
                         page.update(applets_inner::Message::PanelConfig(config))
                             .map(Into::into),
                     );
                 }
 
-                return Command::batch(commands);
+                return Task::batch(tasks);
             }
 
+            #[cfg(feature = "wayland")]
             Message::PanelConfig(config) if config.name.to_lowercase().contains("dock") => {
-                let mut commands = Vec::new();
+                let mut tasks = Vec::new();
 
                 if let Some(page) = self.pages.page_mut::<dock::Page>() {
-                    commands.push(
+                    tasks.push(
                         page.update(dock::Message::Inner(_panel::Message::PanelConfig(
                             config.clone(),
                         )))
@@ -577,7 +647,7 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 if let Some(page) = self.pages.page_mut::<dock::applets::Page>() {
-                    commands.push(
+                    tasks.push(
                         page.update(dock::applets::Message(applets_inner::Message::PanelConfig(
                             config,
                         )))
@@ -585,11 +655,12 @@ impl cosmic::Application for SettingsApp {
                     );
                 }
 
-                return Command::batch(commands);
+                return Task::batch(tasks);
             }
 
+            #[cfg(feature = "wayland")]
             Message::PanelConfig(_) => {}
-
+            #[cfg(feature = "wayland")]
             Message::DesktopInfo => {
                 let info_list: Vec<_> = freedesktop_desktop_entry::Iter::new(
                     freedesktop_desktop_entry::default_paths(),
@@ -609,7 +680,7 @@ impl cosmic::Application for SettingsApp {
                 }
             }
 
-            Message::SetTheme(t) => return cosmic::app::command::set_theme(t),
+            Message::SetTheme(t) => return set_theme(t),
 
             Message::OpenContextDrawer(title) => {
                 self.core.window.show_context = true;
@@ -638,21 +709,22 @@ impl cosmic::Application for SettingsApp {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn dbus_activation(&mut self, msg: DbusActivationMessage) -> Command<Self::Message> {
+    #[cfg(feature = "single-instance")]
+    fn dbus_activation(&mut self, msg: DbusActivationMessage) -> Task<Self::Message> {
         match msg.msg {
             cosmic::app::DbusActivationDetails::Activate
             | cosmic::app::DbusActivationDetails::Open { .. } => None,
             cosmic::app::DbusActivationDetails::ActivateAction { action, .. } => {
                 PageCommands::from_str(&action)
                     .ok()
-                    .and_then(|action| self.subcommand_to_page(&action))
+                    .and_then(|action| self.subtask_to_page(&action))
                     .map(|e| self.activate_page(e))
             }
         }
-        .unwrap_or_else(Command::none)
+        .unwrap_or_else(Task::none)
     }
 
     fn view(&self) -> Element<Message> {
@@ -673,12 +745,6 @@ impl cosmic::Application for SettingsApp {
 
     #[allow(clippy::too_many_lines)]
     fn view_window(&self, id: window::Id) -> Element<Message> {
-        if let Some(Some(page)) =
-            (id == *APPLET_DND_ICON_ID).then(|| self.pages.page::<applets_inner::Page>())
-        {
-            return page.dnd_icon();
-        }
-
         panic!("unknown window ID: {id:?}");
     }
 
@@ -699,7 +765,7 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
-        if id == window::Id::MAIN {
+        if id == self.core.main_window_id().unwrap() {
             std::thread::spawn(|| {
                 std::thread::sleep(tokio::time::Duration::from_millis(100));
                 std::process::exit(0);
@@ -711,17 +777,18 @@ impl cosmic::Application for SettingsApp {
 
 impl SettingsApp {
     /// Activates a page.
-    fn activate_page(&mut self, page: page::Entity) -> Command<crate::Message> {
+    fn activate_page(&mut self, page: page::Entity) -> Task<crate::Message> {
         let current_page = self.active_page;
         self.active_page = page;
 
-        let mut leave_command = iced::Command::none();
+        let mut leave_task = iced::Task::none();
 
         if current_page != page {
-            leave_command = self
+            self.loaded_pages.remove(&current_page);
+            leave_task = self
                 .pages
                 .on_leave(current_page)
-                .unwrap_or(iced::Command::none())
+                .unwrap_or(iced::Task::none())
                 .map(Message::PageMessage)
                 .map(Into::into);
             self.config.active_page = Box::from(&*self.pages.info[page].id);
@@ -738,26 +805,28 @@ impl SettingsApp {
             .clone()
             .expect("sender should be available");
 
-        let page_command = self
+        self.loaded_pages.insert(page);
+
+        let page_task = self
             .pages
             .on_enter(page, sender)
             .map(Message::PageMessage)
             .map(Into::into);
 
-        Command::batch(vec![
-            leave_command,
-            page_command,
+        Task::batch(vec![
+            leave_task,
+            page_task,
             cosmic::command::future(async { Message::SetWindowTitle }),
         ])
     }
 
-    fn set_title(&mut self) -> Command<crate::Message> {
+    fn set_title(&mut self) -> Task<crate::Message> {
         self.set_window_title(
             format!(
                 "{} - COSMIC Settings",
                 self.pages.info[self.active_page].title
             ),
-            window::Id::MAIN,
+            self.core.main_window_id().unwrap(),
         )
     }
 
@@ -806,14 +875,14 @@ impl SettingsApp {
             custom_header.map(Message::from)
         } else if let Some(parent) = page_info.parent {
             let page_header = crate::widget::sub_page_header(
-                page.title().unwrap_or_else(|| page_info.title.as_str()),
+                page.title().unwrap_or(page_info.title.as_str()),
                 self.pages.info[parent].title.as_str(),
                 Message::Page(parent),
             );
 
             let mut page_header_content: cosmic::iced_widget::Row<'_, Message, Theme> =
                 row::with_capacity(2)
-                    .align_items(iced::Alignment::End)
+                    .align_y(iced::Alignment::End)
                     .push(page_header);
 
             if let Some(element) = page.header_view() {
@@ -849,7 +918,7 @@ impl SettingsApp {
 
         widget::column::with_capacity(3)
             .push(self.page_container(header))
-            .push(widget::vertical_space(Length::Fixed(
+            .push(widget::vertical_space().height(Length::Fixed(
                 cosmic::theme::active().cosmic().space_m().into(),
             )))
             .push(view)
@@ -857,12 +926,14 @@ impl SettingsApp {
             .into()
     }
 
-    fn search_changed(&mut self, phrase: String) {
+    fn search_changed(&mut self, phrase: String) -> Task<crate::Message> {
         // If the text was cleared, clear the search results too.
         if phrase.is_empty() {
             self.search_clear();
-            return;
+            return Task::none();
         }
+
+        let mut tasks = Vec::new();
 
         // Create a case-insensitive regular expression for the search function.
         let search_expression = regex::RegexBuilder::new(&phrase)
@@ -879,10 +950,51 @@ impl SettingsApp {
             // Use the results if results were found.
             if !results.is_empty() {
                 self.search_selections = results;
+
+                let mut unload = BTreeSet::new();
+                let mut load = BTreeSet::new();
+
+                'outer: for loaded_page in &self.loaded_pages {
+                    for (page, _) in &self.search_selections {
+                        if loaded_page == page {
+                            continue 'outer;
+                        }
+                    }
+
+                    unload.insert(*loaded_page);
+                }
+
+                for (page, _) in &self.search_selections {
+                    if !self.loaded_pages.contains(page) {
+                        load.insert(*page);
+                    }
+                }
+
+                if let Some(ref sender) = self.page_sender {
+                    for page in load {
+                        eprintln!("loading {page:?}");
+                        self.loaded_pages.insert(page);
+                        tasks.push(self.pages.on_enter(page, sender.clone()));
+                    }
+                }
+
+                for page in unload {
+                    eprintln!("unloading {page:?}");
+                    self.loaded_pages.remove(&page);
+                    self.pages.on_leave(page);
+                }
             }
         }
 
         self.search_input = phrase;
+
+        if tasks.is_empty() {
+            Task::none()
+        } else {
+            cosmic::command::batch(tasks)
+                .map(Message::PageMessage)
+                .map(Into::into)
+        }
     }
 
     /// Clears the search results so that the search page will not be shown.
@@ -953,7 +1065,7 @@ impl SettingsApp {
 
         widget::column::with_capacity(3)
             .push(self.page_container(page_title(&self.pages.info[self.active_page])))
-            .push(widget::vertical_space(theme.cosmic().space_m()))
+            .push(widget::vertical_space().height(theme.cosmic().space_m()))
             .push(page_list)
             .height(Length::Fill)
             .into()
@@ -975,9 +1087,8 @@ impl SettingsApp {
             .max_width(800)
             .width(Length::Fill)
             .apply(container)
-            .center_x()
+            .center_x(Length::Fill)
             .padding([0, padding])
-            .width(Length::Fill)
             .into()
     }
 }

@@ -11,7 +11,8 @@ cosmic-config = { workspace = true }
 cosmic-randr-shell = { workspace = true }
 dirs = "5.0.1"
 eyre = "0.6.12"
-fast_image_resize = { version = "5.0.0", features = ["image"] }
+# Upstream version 5.0.0 has compilation error on Redox's toolchain
+fast_image_resize = { git = "https://github.com/jackpot51/fast_image_resize.git", features = ["image"] }
 freedesktop-icons = "0.2.6"
 futures-lite = "2.3.0"
 futures-util = "0.3.30"

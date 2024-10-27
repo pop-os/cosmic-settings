@@ -1,5 +1,5 @@
 use cosmic::{
-    iced::subscription,
+    iced::{stream, Subscription},
     iced_futures::futures::{self, SinkExt},
 };
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
@@ -25,13 +25,16 @@ pub enum DesktopFileEvent {
 pub fn desktop_files<I: 'static + Hash + Copy + Send + Sync + Debug>(
     id: I,
 ) -> cosmic::iced::Subscription<DesktopFileEvent> {
-    subscription::channel(id, 50, move |mut output| async move {
-        let mut state = State::Ready;
+    Subscription::run_with_id(
+        id,
+        stream::channel(50, move |mut output| async move {
+            let mut state = State::Ready;
 
-        loop {
-            state = start_watching(state, &mut output).await;
-        }
-    })
+            loop {
+                state = start_watching(state, &mut output).await;
+            }
+        }),
+    )
 }
 
 async fn start_watching(
