@@ -22,6 +22,7 @@ static NM_CONNECTION_EDITOR: &str = "nm-connection-editor";
 
 #[derive(Debug, Default)]
 pub struct Page {
+    entity: page::Entity,
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     devices: Vec<Arc<network_manager::devices::DeviceInfo>>,
     vpn: page::Entity,
@@ -68,6 +69,10 @@ impl From<Message> for crate::pages::Message {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new(
             "network-and-wireless",
@@ -221,7 +226,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {

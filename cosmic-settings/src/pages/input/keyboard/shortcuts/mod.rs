@@ -27,6 +27,7 @@ use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
 use std::io;
 
 pub struct Page {
+    entity: page::Entity,
     modified: Modified,
     search: Search,
     search_model: Model,
@@ -82,6 +83,7 @@ pub enum Category {
 impl Default for Page {
     fn default() -> Self {
         Self {
+            entity: page::Entity::default(),
             modified: Modified::default(),
             search: Search::default(),
             search_model: Model::default(),
@@ -99,6 +101,11 @@ impl Default for Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+        self.search_model.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -134,7 +141,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         if self.shortcuts_context.is_none() {

@@ -29,6 +29,10 @@ impl Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.model.entity = entity;
+    }
+
     fn info(&self) -> page::Info {
         page::Info::new("window-tiling", "input-keyboard-symbolic").title(fl!("window-tiling"))
     }
@@ -54,7 +58,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         self.model.on_enter();

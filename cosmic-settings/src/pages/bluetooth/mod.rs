@@ -75,7 +75,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> cosmic::Task<crate::pages::Message> {
         // TODO start stream for new device

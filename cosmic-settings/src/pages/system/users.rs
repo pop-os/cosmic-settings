@@ -6,9 +6,15 @@ use cosmic_settings_page::{self as page, section};
 use slotmap::SlotMap;
 
 #[derive(Default)]
-pub struct Page;
+pub struct Page {
+    entity: page::Entity,
+}
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,

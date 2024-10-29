@@ -19,6 +19,7 @@ pub enum Message {
 
 #[derive(Clone, Debug, Default)]
 pub struct Page {
+    entity: page::Entity,
     editing_device_name: bool,
     info: Info,
     on_enter_handle: Option<cosmic::iced::task::Handle>,
@@ -27,6 +28,10 @@ pub struct Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -46,7 +51,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         let (task, handle) = Task::future(async move {

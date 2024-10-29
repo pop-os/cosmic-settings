@@ -6,7 +6,7 @@ use cosmic::{
 };
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section, Section};
-use slotmap::SlotMap;
+use slotmap::{Key, SlotMap};
 use std::borrow::Cow;
 
 use crate::{
@@ -31,6 +31,7 @@ impl Default for Page {
         });
         Self {
             inner: applets_inner::Page {
+                entity: page::Entity::null(),
                 available_entries: freedesktop_desktop_entry::Iter::new(
                     freedesktop_desktop_entry::default_paths(),
                 )

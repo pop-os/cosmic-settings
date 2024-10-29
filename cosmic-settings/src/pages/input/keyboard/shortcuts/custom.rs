@@ -9,9 +9,10 @@ use cosmic_settings_config::shortcuts::{Action, Shortcuts};
 use cosmic_settings_config::Binding;
 use cosmic_settings_page::{self as page, section, Section};
 use slab::Slab;
-use slotmap::SlotMap;
+use slotmap::{Key, SlotMap};
 
 pub struct Page {
+    entity: page::Entity,
     model: super::Model,
     add_shortcut: AddShortcut,
     replace_dialog: Vec<(Binding, Action, String)>,
@@ -22,6 +23,7 @@ pub struct Page {
 impl Default for Page {
     fn default() -> Self {
         Self {
+            entity: page::Entity::null(),
             model: super::Model::default().custom().actions(bindings),
             add_shortcut: AddShortcut::default(),
             replace_dialog: Vec::new(),
@@ -211,6 +213,7 @@ impl Page {
                 self.add_shortcut.enable();
                 return Task::batch(vec![
                     cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                        self.entity,
                         fl!("custom-shortcuts", "context").into(),
                     )),
                     widget::text_input::focus(self.name_id.clone()),
@@ -294,6 +297,11 @@ impl Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+        self.model.entity = entity;
+    }
+
     fn info(&self) -> page::Info {
         page::Info::new("custom-shortcuts", "input-keyboard-symbolic")
             .title(fl!("custom-shortcuts"))
@@ -348,7 +356,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         self.model.on_enter();

@@ -8,9 +8,15 @@ pub mod date;
 pub mod region;
 
 #[derive(Default)]
-pub struct Page;
+pub struct Page {
+    entity: page::Entity,
+}
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn info(&self) -> page::Info {
         page::Info::new("time", "preferences-time-and-language-symbolic")
             .title(fl!("time"))

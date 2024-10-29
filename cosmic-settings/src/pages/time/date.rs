@@ -11,15 +11,14 @@ use cosmic::{
     widget::{self, dropdown, settings},
     Apply, Element, Task,
 };
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, section, Section};
 use icu::{
     calendar::{DateTime, Iso},
     datetime::DateTimeFormatter,
     locid::Locale,
 };
 use slab::Slab;
-use slotmap::SlotMap;
+use slotmap::{Key, SlotMap};
 pub use timedate_zbus::TimeDateProxy;
 use tracing::error;
 
@@ -35,6 +34,7 @@ pub struct Info {
 }
 
 pub struct Page {
+    entity: page::Entity,
     cosmic_applet_config: cosmic_config::Config,
     first_day_of_week: usize,
     military_time: bool,
@@ -95,6 +95,7 @@ impl Default for Page {
             });
 
         Self {
+            entity: page::Entity::null(),
             cosmic_applet_config,
             first_day_of_week,
             formatted_date: String::new(),
@@ -112,6 +113,10 @@ impl Default for Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -131,7 +136,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         cosmic::Task::future(async move {
@@ -180,6 +184,7 @@ impl Page {
                 self.timezone_search.clear();
                 self.timezone_context = true;
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
                     fl!("time-zone").into(),
                 ));
             }

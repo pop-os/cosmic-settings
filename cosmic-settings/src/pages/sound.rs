@@ -70,6 +70,7 @@ pub enum DeviceId {
 
 #[derive(Default)]
 pub struct Page {
+    entity: page::Entity,
     pipewire_thread: Option<(tokio::sync::oneshot::Sender<()>, pipewire::Sender<()>)>,
     pulse_thread: Option<tokio::sync::oneshot::Sender<()>>,
     devices: BTreeMap<DeviceId, Card>,
@@ -111,6 +112,10 @@ pub struct Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -126,7 +131,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         if self.pulse_thread.is_none() {

@@ -78,6 +78,7 @@ enum WiredDialog {
 
 #[derive(Debug, Default)]
 pub struct Page {
+    entity: page::Entity,
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     nm_state: Option<NmState>,
     dialog: Option<WiredDialog>,
@@ -104,6 +105,10 @@ pub struct NmState {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new("wired", "preferences-wired-symbolic")
             .title(fl!("wired"))
@@ -152,7 +157,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {

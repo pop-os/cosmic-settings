@@ -33,7 +33,7 @@ use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section, Section};
 use freedesktop_desktop_entry::DesktopEntry;
-use slotmap::SlotMap;
+use slotmap::{Key, SlotMap};
 use tracing::error;
 
 const MIME_TYPE: &str = "text/uri-list";
@@ -51,6 +51,7 @@ const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
 pub static APPLET_DND_ICON_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
 
 pub struct Page {
+    pub(crate) entity: page::Entity,
     pub(crate) available_entries: Vec<Applet<'static>>,
     pub(crate) config_helper: Option<Config>,
     pub(crate) current_config: Option<CosmicPanelConfig>,
@@ -68,6 +69,7 @@ impl Default for Page {
             (panel_config.name == "Panel").then_some(panel_config)
         });
         Self {
+            entity: page::Entity::null(),
             available_entries: freedesktop_desktop_entry::Iter::new(
                 freedesktop_desktop_entry::default_paths(),
             )
@@ -99,6 +101,10 @@ impl AppletsPage for Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     #[allow(clippy::too_many_lines)]
     fn content(
         &self,
@@ -136,6 +142,13 @@ impl page::Page<crate::pages::Message> for Page {
 
             None => return None,
         })
+    }
+
+    fn on_enter(
+        &mut self,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+    ) -> Task<crate::pages::Message> {
+        Task::none()
     }
 }
 
@@ -425,9 +438,10 @@ impl Page {
             }
             Message::AddAppletDrawer => {
                 self.context = Some(ContextDrawer::AddApplet);
-                return cosmic::command::message(app::Message::OpenContextDrawer(Cow::Owned(fl!(
-                    "add-applet"
-                ))));
+                return cosmic::command::message(app::Message::OpenContextDrawer(
+                    self.entity,
+                    Cow::Owned(fl!("add-applet")),
+                ));
             }
         };
         Task::none()

@@ -102,12 +102,14 @@ impl<Message: 'static> Binder<Message> {
         P::sub_pages(crate::Insert { id, model: self })
     }
 
-    pub fn register_page<P: Page<Message>>(&mut self, page: P) -> crate::Entity {
+    pub fn register_page<P: Page<Message>>(&mut self, mut page: P) -> crate::Entity {
         let id = self.info.insert(page.info());
 
         if let Some(content) = page.content(&mut self.sections) {
             self.content.insert(id, content);
         }
+
+        page.set_id(id);
 
         self.page.insert(id, Box::new(page));
 
@@ -172,7 +174,7 @@ impl<Message: 'static> Binder<Message> {
         sender: tokio::sync::mpsc::Sender<Message>,
     ) -> Task<Message> {
         if let Some(page) = self.page.get_mut(id) {
-            return page.on_enter(id, sender);
+            return page.on_enter(sender);
         }
 
         Task::none()

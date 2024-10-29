@@ -36,7 +36,7 @@ use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
 use slab::Slab;
-use slotmap::{DefaultKey, SecondaryMap, SlotMap};
+use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
 
 const ZOOM: usize = 0;
 const FIT: usize = 1;
@@ -137,6 +137,9 @@ enum ContextView {
 
 /// The page struct for the wallpaper view.
 pub struct Page {
+    /// Internal ID of this page in the application.
+    entity: page::Entity,
+
     /// Abort handle to the on_enter task.
     on_enter_handle: Option<cosmic::iced::task::Handle>,
 
@@ -192,6 +195,10 @@ pub struct Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -207,7 +214,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         // Check if the page is already being loaded.
@@ -286,6 +292,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 impl Default for Page {
     fn default() -> Self {
         let mut page = Page {
+            entity: page::Entity::null(),
             on_enter_handle: None,
             context_view: None,
             show_tab_bar: false,
@@ -747,6 +754,7 @@ impl Page {
             Message::ColorAddContext => {
                 self.context_view = Some(ContextView::AddColor);
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
                     fl!("color-picker").into(),
                 ));
             }

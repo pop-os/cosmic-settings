@@ -34,7 +34,7 @@ use icon_themes::{IconHandles, IconThemes};
 use ron::ser::PrettyConfig;
 use serde::Serialize;
 use slab::Slab;
-use slotmap::SlotMap;
+use slotmap::{Key, SlotMap};
 
 use crate::app;
 use crate::widget::color_picker_context_view;
@@ -62,6 +62,7 @@ enum ContextView {
 }
 
 pub struct Page {
+    entity: page::Entity,
     on_enter_handle: Option<cosmic::iced::task::Handle>,
     can_reset: bool,
     no_custom_window_hint: bool,
@@ -153,6 +154,7 @@ impl
         });
 
         Self {
+            entity: page::Entity::null(),
             on_enter_handle: None,
             can_reset: if theme_mode.is_dark {
                 theme_builder == ThemeBuilder::dark()
@@ -423,6 +425,7 @@ impl Page {
                 self.font_search.clear();
 
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
                     fl!("monospace-font").into(),
                 ));
             }
@@ -432,6 +435,7 @@ impl Page {
                 self.font_search.clear();
 
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
                     fl!("interface-font").into(),
                 ));
             }
@@ -1070,7 +1074,10 @@ impl Page {
 
             Message::IconsAndToolkit => {
                 self.context_view = Some(ContextView::IconsAndToolkit);
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer("".into()));
+                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    "".into(),
+                ));
             }
 
             Message::Daytime(day_time) => {
@@ -1197,7 +1204,10 @@ impl Page {
 
             ColorPickerUpdate::ToggleColorPicker => {
                 self.context_view = Some(context_view);
-                cosmic::command::message(crate::app::Message::OpenContextDrawer(context_title))
+                cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    context_title,
+                ))
             }
 
             _ => Task::none(),
@@ -1393,6 +1403,10 @@ impl Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -1430,7 +1444,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         let (task, handle) = cosmic::command::batch(vec![

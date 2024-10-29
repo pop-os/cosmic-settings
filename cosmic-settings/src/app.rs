@@ -56,6 +56,7 @@ use std::{borrow::Cow, str::FromStr};
 #[allow(clippy::module_name_repetitions)]
 pub struct SettingsApp {
     active_page: page::Entity,
+    active_context_page: Option<page::Entity>,
     loaded_pages: BTreeSet<page::Entity>,
     config: Config,
     core: Core,
@@ -133,7 +134,7 @@ pub enum Message {
     DesktopInfo,
     Error(String),
     None,
-    OpenContextDrawer(Cow<'static, str>),
+    OpenContextDrawer(Entity, Cow<'static, str>),
     #[cfg(feature = "wayland")]
     OutputAdded(OutputInfo, WlOutput),
     #[cfg(feature = "wayland")]
@@ -169,6 +170,7 @@ impl cosmic::Application for SettingsApp {
     fn init(core: Core, flags: Self::Flags) -> (Self, Task<Self::Message>) {
         let mut app = SettingsApp {
             active_page: page::Entity::default(),
+            active_context_page: None,
             loaded_pages: BTreeSet::new(),
             config: Config::new(),
             core,
@@ -682,13 +684,15 @@ impl cosmic::Application for SettingsApp {
 
             Message::SetTheme(t) => return set_theme(t),
 
-            Message::OpenContextDrawer(title) => {
+            Message::OpenContextDrawer(page, title) => {
                 self.core.window.show_context = true;
+                self.active_context_page = Some(page);
                 self.set_context_title(title.to_string());
             }
 
             Message::CloseContextDrawer => {
                 self.core.window.show_context = false;
+                self.active_context_page = None;
             }
 
             Message::Error(error) => {
@@ -750,9 +754,11 @@ impl cosmic::Application for SettingsApp {
 
     fn context_drawer(&self) -> Option<Element<Message>> {
         if self.core.window.show_context {
-            self.pages
-                .context_drawer(self.active_page)
-                .map(|e| e.map(Message::PageMessage))
+            self.active_context_page.and_then(|context_page| {
+                self.pages
+                    .context_drawer(context_page)
+                    .map(|e| e.map(Message::PageMessage))
+            })
         } else {
             None
         }
@@ -972,14 +978,12 @@ impl SettingsApp {
 
                 if let Some(ref sender) = self.page_sender {
                     for page in load {
-                        eprintln!("loading {page:?}");
                         self.loaded_pages.insert(page);
                         tasks.push(self.pages.on_enter(page, sender.clone()));
                     }
                 }
 
                 for page in unload {
-                    eprintln!("unloading {page:?}");
                     self.loaded_pages.remove(&page);
                     self.pages.on_leave(page);
                 }

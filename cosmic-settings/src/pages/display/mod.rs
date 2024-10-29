@@ -234,7 +234,6 @@ impl page::Page<crate::pages::Message> for Page {
     #[cfg(not(feature = "test"))]
     fn on_enter(
         &mut self,
-        _page: page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         if let Some(task) = self.background_service.take() {
@@ -280,7 +279,6 @@ impl page::Page<crate::pages::Message> for Page {
     #[cfg(feature = "test")]
     fn on_enter(
         &mut self,
-        _page: page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         cosmic::command::future(async move {

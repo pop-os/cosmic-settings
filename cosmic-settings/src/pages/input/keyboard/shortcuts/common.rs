@@ -4,7 +4,9 @@ use cosmic::widget::{self, button, icon, settings, text};
 use cosmic::{theme, Apply, Element, Task};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::shortcuts::{self, Action, Binding, Shortcuts};
+use cosmic_settings_page as page;
 use slab::Slab;
+use slotmap::Key;
 use std::borrow::Cow;
 use std::io;
 use std::str::FromStr;
@@ -89,6 +91,7 @@ impl ShortcutModel {
 
 #[must_use]
 pub struct Model {
+    pub entity: page::Entity,
     pub defaults: Shortcuts,
     pub replace_dialog: Option<(usize, Binding, Action, String)>,
     pub shortcut_models: Slab<ShortcutModel>,
@@ -101,6 +104,7 @@ pub struct Model {
 impl Default for Model {
     fn default() -> Self {
         Self {
+            entity: page::Entity::null(),
             defaults: Shortcuts::default(),
             replace_dialog: None,
             shortcut_models: Slab::new(),
@@ -390,7 +394,7 @@ impl Model {
                 self.replace_dialog = None;
 
                 let mut tasks = vec![cosmic::command::message(
-                    crate::app::Message::OpenContextDrawer(description.into()),
+                    crate::app::Message::OpenContextDrawer(self.entity, description.into()),
                 )];
 
                 if let Some(model) = self.shortcut_models.get(0) {

@@ -65,11 +65,7 @@ pub trait Page<Message: 'static>: Downcast {
 
     /// Reload page metadata via a Task.
     #[allow(unused)]
-    fn on_enter(
-        &mut self,
-        page: crate::Entity,
-        sender: tokio::sync::mpsc::Sender<Message>,
-    ) -> Task<Message> {
+    fn on_enter(&mut self, sender: tokio::sync::mpsc::Sender<Message>) -> Task<Message> {
         Task::none()
     }
 
@@ -77,6 +73,9 @@ pub trait Page<Message: 'static>: Downcast {
     fn on_leave(&mut self) -> Task<Message> {
         Task::none()
     }
+
+    /// Assigns the entity ID of the page to the page.
+    fn set_id(&mut self, entity: Entity) {}
 
     /// The title to display in the page header.
     fn title(&self) -> Option<&str> {

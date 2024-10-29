@@ -14,7 +14,7 @@ use cosmic_comp_config::XkbConfig;
 use cosmic_settings_page::{self as page, section, Section};
 use itertools::Itertools;
 use slab::Slab;
-use slotmap::{DefaultKey, SlotMap};
+use slotmap::{DefaultKey, Key, SlotMap};
 
 static COMPOSE_OPTIONS: &[(&str, &str)] = &[
     // ("Left Alt", "compose:lalt"), XXX?
@@ -90,6 +90,7 @@ const KB_REPEAT_RATE_MAX: u32 = 45;
 const KB_REPEAT_RATE_MIN: u32 = 5;
 
 pub struct Page {
+    entity: page::Entity,
     config: cosmic_config::Config,
     context: Option<Context>,
     input_source_search: String,
@@ -105,6 +106,7 @@ impl Default for Page {
         let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
 
         Self {
+            entity: page::Entity::null(),
             context: None,
             expanded_source_popover: None,
             keyboard_layouts: SlotMap::new(),
@@ -253,6 +255,10 @@ fn special_char_radio_row<'a>(
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -285,7 +291,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
@@ -453,6 +458,7 @@ impl Page {
             Message::ShowInputSourcesContext => {
                 self.context = Some(Context::ShowInputSourcesContext);
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
                     fl!("keyboard-sources", "add").into(),
                 ));
             }
@@ -464,6 +470,7 @@ impl Page {
             Message::OpenSpecialCharacterContext(key) => {
                 self.context = Some(Context::SpecialCharacter(key));
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
                     key.title().into(),
                 ));
             }

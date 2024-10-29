@@ -16,12 +16,17 @@ use slotmap::SlotMap;
 
 #[derive(Default)]
 pub struct Page {
+    entity: page::Entity,
     battery: Battery,
     connected_devices: Vec<ConnectedDevice>,
     on_enter_handle: Option<cosmic::iced::task::Handle>,
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn info(&self) -> page::Info {
         page::Info::new("power", "preferences-power-and-battery-symbolic")
             .title(fl!("power"))
@@ -41,7 +46,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> cosmic::Task<crate::pages::Message> {
         let futures: Vec<Task<Message>> = vec![
