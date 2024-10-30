@@ -462,10 +462,11 @@ power-mode = Power Mode
     .performance-desc = Peak performance and power usage.
     .no-backend = Backend not found. Install system76-power or power-profiles-daemon.
 
-power-saving = Power Savings Options
+power-saving = Power Saving Options
     .turn-off-screen-after = Turn off the screen after
+    .auto-suspend = Automatic suspend
     .auto-suspend-ac = Automatic suspend when plugged in
-    .auto-suspend-battery = Automatic on battery power
+    .auto-suspend-battery = Automatic suspend on battery power
 
 ## Input
 
