@@ -1165,6 +1165,7 @@ impl Page {
     }
 
     fn reload_theme_mode(&mut self) {
+        let entity = self.entity;
         let font_config = std::mem::take(&mut self.font_config);
         let icon_themes = std::mem::take(&mut self.icon_themes);
         let icon_handles = std::mem::take(&mut self.icon_handles);
@@ -1172,6 +1173,7 @@ impl Page {
         let day_time = self.day_time;
 
         *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
+        self.entity = entity;
         self.day_time = day_time;
         self.icon_themes = icon_themes;
         self.icon_handles = icon_handles;
