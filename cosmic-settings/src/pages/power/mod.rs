@@ -377,6 +377,7 @@ fn power_saving() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
     let turn_off_screen_desc = descriptions.insert(fl!("power-saving", "turn-off-screen-after"));
+    let auto_suspend_desc = descriptions.insert(fl!("power-saving", "auto-suspend"));
     let auto_suspend_ac_desc = descriptions.insert(fl!("power-saving", "auto-suspend-ac"));
     let auto_suspend_battery_desc =
         descriptions.insert(fl!("power-saving", "auto-suspend-battery"));
@@ -397,7 +398,7 @@ fn power_saving() -> Section<crate::pages::Message> {
                 .idle_conf
                 .suspend_on_battery_time
                 .map(|t| Duration::from_millis(t.into()));
-            settings::section()
+            let mut section_view = settings::section()
                 .title(&section.title)
                 .add(power_saving_row(
                     &section.descriptions[turn_off_screen_desc],
@@ -407,19 +408,26 @@ fn power_saving() -> Section<crate::pages::Message> {
                     Message::ScreenOffTimeChange,
                 ))
                 .add(power_saving_row(
-                    &section.descriptions[auto_suspend_ac_desc],
+                    &section.descriptions[if page.battery.is_present {
+                        auto_suspend_ac_desc
+                    } else {
+                        auto_suspend_desc
+                    }],
                     &page.suspend_labels,
                     suspend_on_ac_time,
                     SUSPEND_TIMES,
                     Message::SuspendOnAcTimeChange,
-                ))
-                .add(power_saving_row(
+                ));
+            if page.battery.is_present {
+                section_view = section_view.add(power_saving_row(
                     &section.descriptions[auto_suspend_battery_desc],
                     &page.suspend_labels,
                     suspend_on_battery_time,
                     SUSPEND_TIMES,
                     Message::SuspendOnBatteryTimeChange,
-                ))
+                ));
+            }
+            section_view
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Power)
         })
