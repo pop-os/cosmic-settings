@@ -71,8 +71,8 @@ window-management-appearance = Fönsterhantering
 
 experimental-settings = Testinställningar
 icons-and-toolkit = Utformning av ikoner och verktyg
-interface-font = Systemets teckensnitt
-monospace-font = Teckensnitt med jämna mellanrum
+interface-font = Standardteckensnitt
+monospace-font = Teckensnitt med fast bredd
 
 ## Skrivbord: Skärm
 
