@@ -1,5 +1,7 @@
 app = Paramètres COSMIC
 
+dbus-connection-error = Échec de la connexion à DBus
+ok = OK
 unknown = Inconnu
 
 number = { $number }
@@ -62,8 +64,24 @@ remove-connection-dialog = Supprimer le profil de connexion?
 
 vpn = VPN
     .connections = Connexions VPN
+	.error = Échec de l'ajout de la configuration VPN
     .remove = Supprimer le profil de connexion
     .select-file = Sélectionnez un fichier de configuration VPN
+
+vpn-error = Erreur VPN
+	.config = Échec de l'ajout de la configuration VPN
+	.connect = Échec de la connexion au VPN
+	.connection-editor = Échec de l'éditeur de connexion
+	.connection-settings = Échec de l'obtention des paramètres des connexions actives
+	.updating-state = Échec de la mise à jour de l'état du gestionnaire de réseau
+	.wireguard-config-path = Chemin de fichier non valide pour la configuration WireGuard
+	.wireguard-config-path-desc = Le fichier choisi doit se trouver sur un système de fichiers local.
+	.wireguard-device = Échec de la création du périphérique WireGuard
+	.with-password = Échec de la configuration du VPN { $field ->
+	*[username] nom d'utilisateur
+	[password] mot de passe
+	[password-flags] indicateurs de mot de passe
+	} avec nmcli
 
 wired = Filaire
     .adapter = Adaptateur filaire { $id }
@@ -75,12 +93,17 @@ wifi = Wi-Fi
     .adapter = Adaptateur Wi-Fi { $id }
     .forget = Oublier ce réseau
 
+wireguard-dialog = Ajouter un périphérique WireGuard
+	.description = Choisir un nom de périphérique pour la configuration WireGuard.
+
 ## Networking: Online Accounts
 
 online-accounts = Comptes en lignes
     .desc = Ajouter des comptes, IMAP et SMTP, connexion d'entreprise
 
 # Bluetooth
+
+confirm = Confirmer
 
 bluetooth = Bluetooth
     .desc = Gestion du Bluetooth.
@@ -97,7 +120,10 @@ bluetooth = Bluetooth
 bluetooth-paired = Périphériques précédemment connectés
     .connect = Connecter
     .battery = { $percentage }% de batterie
-    
+
+bluetooth-confirm-pin = Confirmer le code PIN Bluetooth
+	.description = Veuillez confirmer que le code PIN suivant correspond à celui affiché sur { $device }
+
 bluetooth-available = Périphériques à proximité
 
 bluetooth-adapters = Adaptateur Bluetooth
@@ -133,6 +159,7 @@ x-hours = { $number ->
     [1] 1 heure
     *[other] { $number } heures
 }
+never = Jamais
 
 ## Desktop: Appearance
 
@@ -175,8 +202,6 @@ control-tint = Teinte des composants de contrôle
 frosted = Effet de verre sur l'interface système
     .desc = Applique un effet de flou d'arrière-plan au panneau, au dock, aux applets, au lanceur et à la bibliothèque d'applications.
 
-experimental-settings = Paramètres expérimentaux
-
 enable-export = Appliquer ce thème aux applications GNOME.
     .desc = Pas tous les toolkits ne supportent le changement automatique de thème. Les applications non-COSMIC peuvent nécessiter un redémarrage après un changement de thème.
 
@@ -199,6 +224,13 @@ interface-density = Densité d'interface
 window-management = Gestion des fenêtres
     .active-hint = Taille de l'indice de fenêtre active
     .gaps = Espaces entre les fenêtres en mosaïque
+
+### Experimental
+
+experimental-settings = Paramètres expérimentaux
+icons-and-toolkit = Thèmes des icônes et de la boîte à outils
+interface-font = Police système
+monospace-font = Police monospace
 
 ## Desktop: Notifications
 
@@ -274,6 +306,7 @@ super-key = Touche Super
 window-controls = Contrôles des fenêtres
     .minimize = Afficher le bouton de réduction
     .maximize = Afficher le bouton de maximisation
+    .active-window-hint = Afficher l'indice de la fenêtre active
 
 focus-navigation = Focus Navigation
     .focus-follows-cursor = Le focus suit le curseur
@@ -429,6 +462,12 @@ power-profiles = Modes d'énergie
     .performance-desc = Performances maximales mais force consommation d'énergie.
     .no-backend = Backend non trouvé. Installez system76-power ou power-profiles-daemon.
 
+power-saving = Options d'économie d'énergie
+	.turn-off-screen-after = Éteindre l'écran après
+	.auto-suspend = Suspension automatique
+	.auto-suspend-ac = Suspension automatique lors du branchement
+	.auto-suspend-battery = Suspension automatique sur batterie
+
 ## Input
 
 acceleration-desc = Ajuste automatiquement la sensibilité du suivi en fonction de la vitesse.
@@ -471,6 +510,7 @@ keyboard-sources = Sources de saisie
 keyboard-special-char = Saisie de caractères spéciaux
     .alternate = Touche de caractères alternatifs
     .compose = Touche de composition
+    .caps = Touche de verrouillage des majuscules
 
 keyboard-typing-assist = Saisie
     .repeat-rate = Taux de répétition
