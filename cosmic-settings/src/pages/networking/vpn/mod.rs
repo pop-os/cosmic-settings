@@ -8,7 +8,7 @@ use std::sync::Arc;
 use anyhow::Context;
 use ashpd::desktop::file_chooser::FileFilter;
 use cosmic::{
-    iced::{alignment, Length},
+    iced::{Alignment, Length},
     iced_core::text::Wrapping,
     widget::{self, icon},
     Apply, Element, Task,
@@ -324,7 +324,7 @@ impl page::Page<crate::pages::Message> for Page {
                 .on_press(Message::AddNetwork)
                 .apply(widget::container)
                 .width(Length::Fill)
-                .align_x(alignment::Horizontal::Right)
+                .align_x(Alignment::End)
                 .apply(Element::from)
                 .map(crate::pages::Message::Vpn),
         )
@@ -781,7 +781,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                             widget::button::text(connect_txt).on_press(msg).into()
                         } else {
                             widget::text::body(connect_txt)
-                                .align_y(alignment::Vertical::Center)
+                                .align_y(Alignment::Center)
                                 .into()
                         };
 
@@ -826,7 +826,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                         let controls = widget::row::with_capacity(2)
                             .push(connect)
                             .push_maybe(view_more)
-                            .align_y(alignment::Alignment::Center)
+                            .align_y(Alignment::Center)
                             .spacing(spacing.space_xxs);
 
                         let widget = widget::settings::item_row(vec![
@@ -852,7 +852,7 @@ fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
     widget::text::body(text)
-        .align_y(alignment::Vertical::Center)
+        .align_y(Alignment::Center)
         .apply(widget::button::custom)
         .padding([theme.space_xxxs(), theme.space_xs()])
         .width(Length::Fill)

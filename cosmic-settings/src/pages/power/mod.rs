@@ -386,6 +386,7 @@ fn power_saving() -> Section<crate::pages::Message> {
         .title(fl!("power-saving"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
             let screen_off_time = page
                 .idle_conf
                 .screen_off_time
@@ -398,17 +399,17 @@ fn power_saving() -> Section<crate::pages::Message> {
                 .idle_conf
                 .suspend_on_battery_time
                 .map(|t| Duration::from_millis(t.into()));
-            let mut section_view = settings::section()
+            let mut section = settings::section()
                 .title(&section.title)
                 .add(power_saving_row(
-                    &section.descriptions[turn_off_screen_desc],
+                    &descriptions[turn_off_screen_desc],
                     &page.screen_off_labels,
                     screen_off_time,
                     SCREEN_OFF_TIMES,
                     Message::ScreenOffTimeChange,
                 ))
                 .add(power_saving_row(
-                    &section.descriptions[if page.battery.is_present {
+                    &descriptions[if page.battery.is_present {
                         auto_suspend_ac_desc
                     } else {
                         auto_suspend_desc
@@ -419,15 +420,15 @@ fn power_saving() -> Section<crate::pages::Message> {
                     Message::SuspendOnAcTimeChange,
                 ));
             if page.battery.is_present {
-                section_view = section_view.add(power_saving_row(
-                    &section.descriptions[auto_suspend_battery_desc],
+                section = section.add(power_saving_row(
+                    &descriptions[auto_suspend_battery_desc],
                     &page.suspend_labels,
                     suspend_on_battery_time,
                     SUSPEND_TIMES,
                     Message::SuspendOnBatteryTimeChange,
                 ));
             }
-            section_view
+            section
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Power)
         })

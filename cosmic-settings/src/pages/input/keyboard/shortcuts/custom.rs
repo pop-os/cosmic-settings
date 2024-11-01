@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
 use super::{ShortcutBinding, ShortcutMessage, ShortcutModel};
-use cosmic::iced::alignment::Horizontal;
-use cosmic::iced::Length;
+
+use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, button, icon};
 use cosmic::{Apply, Element, Task};
 use cosmic_settings_config::shortcuts::{Action, Shortcuts};
@@ -279,7 +279,7 @@ impl Page {
             .on_press(Message::AddShortcut)
             .apply(widget::container)
             .width(Length::Fill)
-            .align_x(Horizontal::Right);
+            .align_x(Alignment::End);
 
         widget::column()
             .spacing(32)
@@ -435,7 +435,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
                 .on_press(Message::ShortcutContext)
                 .apply(widget::container)
                 .width(Length::Fill)
-                .align_x(Horizontal::Right);
+                .align_x(Alignment::End);
 
             widget::column()
                 .push(content)

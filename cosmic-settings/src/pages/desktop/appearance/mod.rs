@@ -17,7 +17,7 @@ use cosmic::cosmic_theme::{
     CornerRadii, Density, Spacing, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
     LIGHT_THEME_BUILDER_ID,
 };
-use cosmic::iced_core::{alignment, Color, Length};
+use cosmic::iced_core::{Alignment, Color, Length};
 use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
@@ -1431,7 +1431,7 @@ impl page::Page<crate::pages::Message> for Page {
             .push(button::standard(fl!("export")).on_press(Message::StartExport))
             .apply(container)
             .width(Length::Fill)
-            .align_x(alignment::Horizontal::Right)
+            .align_x(Alignment::End)
             .apply(Element::from)
             .map(crate::pages::Message::Appearance);
 
@@ -1609,7 +1609,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             ]
                             .spacing(space_xxs)
                             .width(Length::FillPortion(1))
-                            .align_x(cosmic::iced_core::Alignment::Center),
+                            .align_x(Alignment::Center),
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(light_mode_illustration.clone(),)
@@ -1624,14 +1624,13 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             ]
                             .spacing(space_xxs)
                             .width(Length::FillPortion(1))
-                            .align_x(cosmic::iced_core::Alignment::Center)
+                            .align_x(Alignment::Center)
                         ]
                         .spacing(48)
-                        .align_y(cosmic::iced_core::Alignment::Center)
+                        .align_y(Alignment::Center)
                         .width(Length::Fixed(424.0)),
                     )
-                    .width(Length::Fill)
-                    .align_x(cosmic::iced_core::alignment::Horizontal::Center),
+                    .center_x(Length::Fill),
                 )
                 .add(
                     settings::item::builder(&descriptions[auto_switch])
@@ -1864,7 +1863,7 @@ pub fn style() -> Section<crate::pages::Message> {
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
-                            .align_x(cosmic::iced_core::Alignment::Center),
+                            .align_x(Alignment::Center),
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(
@@ -1886,7 +1885,7 @@ pub fn style() -> Section<crate::pages::Message> {
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
-                            .align_x(cosmic::iced_core::Alignment::Center),
+                            .align_x(Alignment::Center),
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(
@@ -1908,15 +1907,14 @@ pub fn style() -> Section<crate::pages::Message> {
                                 text::body(&descriptions[square])
                             ]
                             .spacing(8)
-                            .align_x(cosmic::iced_core::Alignment::Center)
+                            .align_x(Alignment::Center)
                             .width(Length::FillPortion(1))
                         ]
                         .spacing(12)
                         .width(Length::Fixed(628.0))
-                        .align_y(cosmic::iced_core::Alignment::Center),
+                        .align_y(Alignment::Center),
                     )
-                    .width(Length::Fill)
-                    .align_x(cosmic::iced_core::alignment::Horizontal::Center),
+                    .center_x(Length::Fill),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)

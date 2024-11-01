@@ -16,19 +16,17 @@ use std::{
 
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser;
-use cosmic::iced::{Color, Length};
+use cosmic::iced::{Alignment, Color, Length};
+use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::widget::{
     button, dropdown, list_column, row,
     segmented_button::{self, SingleSelectModel},
     settings, tab_bar, text, toggler,
 };
-use cosmic::{iced_core::alignment, iced_runtime::core::image::Handle as ImageHandle};
-use cosmic::{iced_core::Alignment, widget::icon};
 use cosmic::{
-    widget::{color_picker::ColorPickerUpdate, ColorPickerModel},
-    Element,
+    widget::{color_picker::ColorPickerUpdate, icon, ColorPickerModel},
+    Apply, Element, Task,
 };
-use cosmic::{Apply, Task};
 use cosmic_bg_config::Source;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -1214,10 +1212,9 @@ pub fn settings() -> Section<crate::pages::Message> {
             ));
 
             if page.wallpaper_service_config.same_on_all {
-                let element = text(fl!("all-displays"))
-                    .font(cosmic::font::semibold())
-                    .align_x(alignment::Horizontal::Center)
-                    .align_y(alignment::Vertical::Center)
+                let element = text::heading(fl!("all-displays"))
+                    .align_x(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .width(Length::Fill)
                     .height(Length::Fill)
                     .apply(cosmic::widget::container)
@@ -1374,7 +1371,7 @@ pub fn settings() -> Section<crate::pages::Message> {
 //         .push(content)
 //         .width(Length::Fill)
 //         .height(Length::Fill)
-//         .align_items(cosmic::iced_core::Alignment::Center)
+//         .align_y(Alignment::Center)
 //         .apply(Element::from)
 // }
 

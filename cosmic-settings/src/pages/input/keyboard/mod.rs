@@ -4,7 +4,7 @@ use std::cmp;
 
 use cosmic::{
     cosmic_config::{self, ConfigSet},
-    iced::{self, Length},
+    iced::{Alignment, Color, Length},
     iced_core::Border,
     theme,
     widget::{self, button, container, icon, radio, row, settings, ListColumn},
@@ -203,7 +203,7 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
         container::Style {
             icon_color: Some(theme.cosmic().background.on.into()),
             text_color: Some(theme.cosmic().background.on.into()),
-            background: Some(iced::Color::from(theme.cosmic().background.base).into()),
+            background: Some(Color::from(theme.cosmic().background.base).into()),
             border: Border {
                 radius: cosmic.corner_radii.radius_m.into(),
                 ..Default::default()
@@ -654,7 +654,7 @@ fn input_sources() -> Section<crate::pages::Message> {
                 .push(
                     widget::container(add_input_source)
                         .width(Length::Fill)
-                        .align_x(iced::alignment::Horizontal::Right),
+                        .align_x(Alignment::End),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Keyboard)
@@ -752,7 +752,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                     .max_width(250);
 
                     row::with_capacity(3)
-                        .align_y(iced::Alignment::Center)
+                        .align_y(Alignment::Center)
                         .spacing(theme.cosmic().space_s())
                         .push(widget::text::body(&descriptions[short]))
                         .push(delay_slider)
@@ -772,7 +772,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                     .max_width(250);
 
                     row::with_capacity(3)
-                        .align_y(iced::Alignment::Center)
+                        .align_y(Alignment::Center)
                         .spacing(theme.cosmic().space_s())
                         .push(widget::text::body(&descriptions[slow]))
                         .push(rate_slider)

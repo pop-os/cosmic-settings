@@ -1,4 +1,3 @@
-use cosmic::iced::alignment::Horizontal;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, button, icon, settings, text};
 use cosmic::{theme, Apply, Element, Task};
@@ -546,7 +545,7 @@ fn context_drawer(
         .spacing(space_xs)
         .apply(widget::container)
         .width(Length::Fill)
-        .align_x(Horizontal::Right);
+        .align_x(Alignment::End);
 
     widget::column::with_capacity(if show_action { 3 } else { 2 })
         .spacing(space_l)
