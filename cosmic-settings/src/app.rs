@@ -1082,7 +1082,7 @@ impl SettingsApp {
         let theme = cosmic::theme::active();
 
         let padding = if self.core.is_condensed() {
-            theme.cosmic().space_xxs()
+            theme.cosmic().space_s()
         } else {
             theme.cosmic().space_l()
         };

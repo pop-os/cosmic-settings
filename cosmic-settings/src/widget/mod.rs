@@ -4,7 +4,7 @@
 use std::borrow::Cow;
 
 use cosmic::cosmic_theme::Spacing;
-use cosmic::iced::{alignment, Length};
+use cosmic::iced::{Alignment, Length};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::{
@@ -37,13 +37,12 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
                 )
                 .apply(container)
                 .width(Length::Fixed(248.0))
-                .align_x(alignment::Horizontal::Center)
+                .align_x(Alignment::Center)
                 .apply(container)
-                .width(Length::Fill)
-                .align_x(alignment::Horizontal::Center),
+                .center_x(Length::Fill),
         )
         .padding(spacing.space_l)
-        .align_x(cosmic::iced_core::Alignment::Center)
+        .align_x(Alignment::Center)
         .spacing(spacing.space_m)
         .width(Length::Fill)
         .apply(Element::from)
@@ -147,13 +146,13 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
             row::with_capacity(2)
                 .push(text::body(info))
                 .push(container(icon::from_name("go-next-symbolic").size(20)).padding(8))
-                .align_y(alignment::Alignment::Center),
+                .align_y(Alignment::Center),
         )
         .padding(0)
         .spacing(space_xxs)
         .apply(container)
         .padding([space_s, space_m])
-        .align_x(alignment::Horizontal::Center)
+        .align_x(Alignment::Center)
         .class(theme::Container::List)
         .apply(button::custom)
         .padding(0)
@@ -211,7 +210,7 @@ pub fn go_next_with_item<'a, Msg: Clone + 'static>(
         widget::row::with_capacity(2)
             .push(item)
             .push(icon::from_name("go-next-symbolic").size(16).icon())
-            .align_y(alignment::Alignment::Center)
+            .align_y(Alignment::Center)
             .spacing(cosmic::theme::active().cosmic().spacing.space_s)
             .into(),
     ])

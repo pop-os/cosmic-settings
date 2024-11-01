@@ -1,6 +1,6 @@
 use cosmic::{
     cosmic_config::CosmicConfigEntry,
-    iced::{alignment, Length},
+    iced::{Alignment, Length},
     widget::{button, container, row},
     Apply, Element, Task,
 };
@@ -82,17 +82,16 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
-        let theme = cosmic::theme::active();
-        let spacing = theme.cosmic().spacing;
+        let space_xxs = cosmic::theme::active().cosmic().spacing.space_xxs;
         let content = row::with_capacity(2)
-            .spacing(spacing.space_xxs)
+            .spacing(space_xxs)
             .push(
                 button::standard(fl!("add-applet"))
                     .on_press(Message(applets_inner::Message::AddAppletDrawer)),
             )
             .apply(container)
             .width(Length::Fill)
-            .align_x(alignment::Horizontal::Right)
+            .align_x(Alignment::End)
             .apply(Element::from)
             .map(crate::pages::Message::DockApplet);
 

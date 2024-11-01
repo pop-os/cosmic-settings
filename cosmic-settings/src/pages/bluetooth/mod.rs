@@ -1,7 +1,7 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::iced::{alignment, color, Length};
+use cosmic::iced::{color, Alignment, Length};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, settings, text};
 use cosmic::Task;
@@ -121,7 +121,7 @@ impl page::Page<crate::pages::Message> for Page {
 
                 let pin = widget::text::title1(itoa::Buffer::new().format(*passkey).to_owned())
                     .width(Length::Fill)
-                    .align_x(alignment::Horizontal::Center)
+                    .align_x(Alignment::Center)
                     .wrapping(Wrapping::None);
 
                 let control = widget::column::with_capacity(2)
@@ -641,7 +641,7 @@ fn popup_button(message: Option<Message>, text: &str) -> Element<'_, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
     widget::text::body(text)
-        .align_y(alignment::Vertical::Center)
+        .align_y(Alignment::Center)
         .apply(widget::button::custom)
         .padding([theme.space_xxxs(), theme.space_xs()])
         .width(Length::Fill)
