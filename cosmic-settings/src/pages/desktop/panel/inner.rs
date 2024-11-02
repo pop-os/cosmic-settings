@@ -519,6 +519,9 @@ impl PageInner {
             }
             Message::PanelSize(size) => {
                 _ = panel_config.set_size(helper, size);
+                // Reset any size overrides the user might have set
+                _ = panel_config.set_size_center(helper, None);
+                _ = panel_config.set_size_wings(helper, None);
             }
             Message::Appearance(a) => {
                 if let Some(b) = [Appearance::Match, Appearance::Light, Appearance::Dark]
