@@ -1526,7 +1526,7 @@ dependencies = [
 [[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel#d114bd9c84ca6dec44fee6297d822ecde41ea403"
+source = "git+https://github.com/pop-os/cosmic-panel#43c3ac30eb8e6e8032cb049e352ce07a525b321c"
 dependencies = [
  "anyhow",
  "cosmic-config",
@@ -7901,7 +7901,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -8414,7 +8414,7 @@ dependencies = [
 [[package]]
 name = "xdg-shell-wrapper-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel#d114bd9c84ca6dec44fee6297d822ecde41ea403"
+source = "git+https://github.com/pop-os/cosmic-panel#43c3ac30eb8e6e8032cb049e352ce07a525b321c"
 dependencies = [
  "serde",
  "wayland-protocols-wlr",
