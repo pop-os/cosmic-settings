@@ -1,5 +1,7 @@
 app = COSMIC Einstellungen
 
+dbus-connection-error = Verbindung zum DBus ist fehlgeschlagen
+ok = OK
 unknown = Unbekannt
 
 number = { $number }
@@ -62,8 +64,24 @@ remove-connection-dialog = Verbindungsprofil entfernen?
 
 vpn = VPN
     .connections = VPN-Verbindungen
+    .error = Hinzufügen der VPN-Konfiguration ist fehlgeschlagen
     .remove = Verbindungsprofil entfernen
     .select-file = VPN-Konfigurationsdatei auswählen
+
+vpn-error = VPN-Fehler
+    .config = Hinzufügen der VPN-Konfiguration ist fehlgeschlagen
+    .connect = Verbinden mit dem VPN ist fehlgeschlagen
+    .connection-editor = Verbindungseditor ist fehlgeschlagen
+    .connection-settings = Abrufen der Einstellungen für aktive Verbindungen ist fehlgeschlagen
+    .updating-state = Aktualisieren des Netzwerkmanager-Status ist fehlgeschlagen
+    .wireguard-config-path = Ungültiger Dateipfad für WireGuard-Konfiguration
+    .wireguard-config-path-desc = Die ausgewählte Datei muss sich im lokalen Dateisystem befinden.
+    .wireguard-device = Erstellen des WireGuard-Geräts ist fehlgeschlagen
+    .with-password = Festlegen { $field ->
+    *[username] des VPN-Benutzernamens
+    [password] des VPN-Passworts
+    [password-flags] der VPN-Passwort-Flags
+        } mit nmcli ist fehlgeschlagen
 
 wired = Kabelgebunden
     .adapter = Kabelgebundener Adapter { $id }
@@ -75,12 +93,17 @@ wifi = Wi-Fi
     .adapter = Wi-Fi-Adapter { $id }
     .forget = Dieses Netzwerk vergessen
 
+wireguard-dialog = WireGuard-Gerät hinzufügen
+    .description = Wähle einen Gerätenamen für die WireGuard-Konfiguration aus.
+
 ## Vernetzung: Online-Konten
 
 online-accounts = Online-Konten
     .desc = Hinzufügen von Konten, IMAP und SMTP, Unternehmensanmeldungen
 
 # Bluetooth
+
+confirm = Bestätigen
 
 bluetooth = Bluetooth
     .desc = Bluetooth-Geräte verwalten
@@ -97,6 +120,9 @@ bluetooth = Bluetooth
 bluetooth-paired = Zuvor verbundene Geräte
     .connect = Verbinden
     .battery = { $percentage } % Akku
+
+bluetooth-confirm-pin = Bluetooth-PIN bestätigen
+    .description = Bitte bestätige, dass die folgende PIN mit derjenigen übereinstimmt, die auf { $device } angezeigt wird
 
 bluetooth-available = Geräte in der Nähe
 
@@ -133,6 +159,7 @@ x-hours = { $number ->
     [1] 1 Stunde
     *[other] { $number } Stunden
 }
+never = Nie
 
 ## Desktop: Aussehen
 
@@ -175,8 +202,6 @@ control-tint = Komponententönung steuern
 frosted = Milchglaseffekt bei der Systemoberfläche
     .desc = Wendet eine Hintergrundunschärfe auf Panel, Dock, Applets, Starter und Anwendungsbibliothek an.
 
-experimental-settings = Experimentelle Einstellungen
-
 enable-export = Dieses Thema auf GNOME-Apps anwenden.
     .desc = Nicht alle Toolkits unterstützen den automatischen Wechsel. Nicht-COSMIC-Apps müssen nach einem Themenwechsel möglicherweise neu gestartet werden.
 
@@ -199,6 +224,13 @@ interface-density = Dichte der Benutzeroberfläche
 window-management-appearance = Fensterverwaltung
     .active-hint = Größe des Hinweises für aktives Fenster
     .gaps = Lücken um gekachelte Fenster
+
+### Experimentell
+
+experimental-settings = Experimentelle Einstellungen
+icons-and-toolkit = Symbole und Toolkit-Theming
+interface-font = Systemschriftart
+monospace-font = Nichtproportionale Schriftart
 
 ## Desktop: Benachrichtigungen
 
@@ -265,7 +297,7 @@ dock = Dock
 window-management = Fensterverwaltung
     .desc = Super-Tasten-Aktion, Optionen für die Fenstersteuerung und zusätzliche Optionen für die Fensterkachelung.
 
-super-key = Super-Taste
+super-key = Super-Tasten-Aktion
     .launcher = Starter öffnen
     .workspaces = Arbeitsflächen öffnen
     .applications = Anwendungen öffnen
@@ -274,6 +306,7 @@ super-key = Super-Taste
 window-controls = Fenstersteuerung
     .minimize = Minimieren-Schaltfläche anzeigen
     .maximize = Maximieren-Schaltfläche anzeigen
+    .active-window-hint = Hinweis auf aktives Fenster anzeigen
 
 focus-navigation = Fokus-Navigation
     .focus-follows-cursor = Fokus folgt dem Cursor
@@ -418,7 +451,7 @@ battery = Akku
        }
 
 connected-devices = Verbundene Geräte
-    .unknown = Unbekannte Geräte
+    .unknown = Unbekanntes Gerät
 
 power-mode = Energiemodus
     .battery = Verlängerte Akkulaufzeit
@@ -428,6 +461,12 @@ power-mode = Energiemodus
     .performance = Hohe Leistung
     .performance-desc = Spitzenleistung und höchster Stromverbrauch.
     .no-backend = Backend nicht gefunden. Installiere system76-power oder power-profiles-daemon.
+
+power-saving = Energiesparoptionen
+    .turn-off-screen-after = Bildschirm ausschalten nach
+    .auto-suspend = Automatischer Standby-Modus
+    .auto-suspend-ac = Automatischer Standby-Modus, wenn am Stromnetz angeschlossen
+    .auto-suspend-battery = Automatischer Standby-Modus bei Akkubetrieb
 
 ## Eingabe
 
