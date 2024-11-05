@@ -1,5 +1,7 @@
 app = Impostazioni di COSMIC
 
+dbus-connection-error = Connessione a DBus fallita
+ok = OK
 unknown = Sconosciuto
 
 number = { $number }
@@ -62,8 +64,24 @@ remove-connection-dialog = Rimuovere il profilo di connessione?
 
 vpn = VPN
     .connections = Connessioni VPN
+    .error = Aggiunta del file di configurazione VPN fallita
     .remove = Rimuovi profilo di connessione
     .select-file = Seleziona un file di configurazione VPN
+
+vpn-error = Errore VPN
+    .config = Impossibile aggiungere la configurazione VPN
+    .connect = Impossibile connettersi alla VPN
+    .connection-editor = Editor di connessione non riuscito
+    .connection-settings = Impossibile ottenere le impostazioni per le connessioni attive
+    .updating-state = Impossibile aggiornare lo stato del gestore di rete
+    .wireguard-config-path = Percorso file non valido per la configurazione di WireGuard
+    .wireguard-config-path-desc = Il file scelto deve trovarsi su un file system locale.
+    .wireguard-device = Impossibile creare il dispositivo WireGuard
+    .with-password = Impossibile impostare { $field ->
+        *[username] nome utente
+        [password] password
+        [password-flags] flag della password
+    } con nmcli
 
 wired = Ethernet
     .adapter = Adattatore ethernet { $id }
@@ -74,6 +92,9 @@ wired = Ethernet
 wifi = Wi-Fi
     .adapter = Adattatore Wi-Fi { $id }
     .forget = Dimentica questa rete
+
+wireguard-dialog = Aggiungi  dispositivo WireGuard
+    .description = Scegli un nome dipositivo per la configurazione WireGuard.
 
 ## Networking: Online Accounts
 
@@ -141,6 +162,7 @@ x-hours = { $number ->
     [1] 1 ora
     *[other] { $number } ore
 }
+never = Mai
 
 ## Desktop: Appearance
 
@@ -285,8 +307,9 @@ super-key = Tasto Super
     .disable = Disabilita
 
 window-controls = Controlli finestra
-    .minimize = Mostra pulsante "minimizza"
-    .maximize = Mostra pulsante "massimizza"
+    .minimize = Mostra pulsante minimizza
+    .maximize = Mostra pulsante massimizza
+    .active-window-hint = Mostra suggerimento su finestra attiva
 
 focus-navigation = Focus Navigation
     .focus-follows-cursor = Focus segue il cursore
@@ -441,6 +464,12 @@ power-mode = Power Mode
     .performance = Alte prestazioni
     .performance-desc = Prestazioni e consumi energetici elevati.
     .nobackend = Requisito non trovato. Installa i pacchetti system76-power o power-profiles-daemon.
+
+power-saving = Opzioni risparmio energia
+    .turn-off-screen-after = Spegni lo schermo dopo
+    .auto-suspend = Sospendi automaticamente
+    .auto-suspend-ac = Sospendi automaticamente quando collegato alla corrente
+    .auto-suspend-battery = Sospendi automaticamente se alimentato a batteria
 
 ## Input
 
