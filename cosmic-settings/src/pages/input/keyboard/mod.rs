@@ -194,18 +194,21 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
         ),
         popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
-    .padding(8)
+    .padding([2, 8])
     .width(Length::Shrink)
     .height(Length::Shrink)
     .apply(cosmic::widget::container)
     .class(cosmic::theme::Container::custom(|theme| {
         let cosmic = theme.cosmic();
+        let background = &cosmic.background;
         container::Style {
-            icon_color: Some(theme.cosmic().background.on.into()),
-            text_color: Some(theme.cosmic().background.on.into()),
-            background: Some(Color::from(theme.cosmic().background.base).into()),
+            icon_color: Some(background.on.into()),
+            text_color: Some(background.on.into()),
+            background: Some(Color::from(background.base).into()),
             border: Border {
-                radius: cosmic.corner_radii.radius_m.into(),
+                color: background.component.divider.into(),
+                width: 1.0,
+                radius: cosmic.corner_radii.radius_s.into(),
                 ..Default::default()
             },
             shadow: Default::default(),
