@@ -78,9 +78,9 @@ vpn-error = Errore VPN
     .wireguard-config-path-desc = Il file scelto deve trovarsi su un file system locale.
     .wireguard-device = Impossibile creare il dispositivo WireGuard
     .with-password = Impossibile impostare { $field ->
-        *[username] nome utente
-        [password] password
-        [password-flags] flag della password
+        *[username] il nome utente
+        [password] la password
+        [password-flags] il flag della password
     } con nmcli
 
 wired = Ethernet
@@ -93,7 +93,7 @@ wifi = Wi-Fi
     .adapter = Adattatore Wi-Fi { $id }
     .forget = Dimentica questa rete
 
-wireguard-dialog = Aggiungi  dispositivo WireGuard
+wireguard-dialog = Aggiungi dispositivo WireGuard
     .description = Scegli un nome dipositivo per la configurazione WireGuard.
 
 ## Networking: Online Accounts
