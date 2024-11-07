@@ -493,7 +493,7 @@ impl Page {
                 let is_selected = self
                     .region
                     .as_ref()
-                    .map_or(false, |locale| locale.lang_code == locale.lang_code);
+                    .map_or(false, |l| l.lang_code == locale.lang_code);
 
                 let button =
                     widget::settings::item_row(vec![widget::text::body(&locale.region_name)
@@ -603,8 +603,8 @@ mod formatting {
             time_txt = fl!("formatting", "time");
             date_and_time_txt = fl!("formatting", "date-and-time");
             numbers_txt = fl!("formatting", "numbers");
-            measurement_txt = fl!("formatting", "measurement");
-            paper_txt = fl!("formatting", "paper");
+            // measurement_txt = fl!("formatting", "measurement");
+            // paper_txt = fl!("formatting", "paper");
             region_txt = fl!("region");
         });
 
@@ -612,8 +612,8 @@ mod formatting {
         let time_label = [&descriptions[time_txt], ":"].concat();
         let date_and_time_label = [&descriptions[date_and_time_txt], ":"].concat();
         let numbers_label = [&descriptions[numbers_txt], ":"].concat();
-        let measurement_label = [&descriptions[measurement_txt], ":"].concat();
-        let paper_label = [&descriptions[paper_txt], ":"].concat();
+        // let measurement_label = [&descriptions[measurement_txt], ":"].concat();
+        // let paper_label = [&descriptions[paper_txt], ":"].concat();
 
         Section::default()
             .title(fl!("formatting"))
