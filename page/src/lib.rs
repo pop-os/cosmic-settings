@@ -75,6 +75,7 @@ pub trait Page<Message: 'static>: Downcast {
     }
 
     /// Assigns the entity ID of the page to the page.
+    #[allow(unused)]
     fn set_id(&mut self, entity: Entity) {}
 
     /// The title to display in the page header.

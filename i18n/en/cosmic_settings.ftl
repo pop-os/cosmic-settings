@@ -714,6 +714,22 @@ time-format = Date & Time Format
 time-region = Region & Language
     .desc = Format dates, times, and numbers based on your region
 
+formatting = Formatting
+    .dates = Dates
+    .time = Time
+    .date-and-time = Date & Time
+    .numbers = Numbers
+    .measurement = Measurement
+    .paper = Paper
+
+preferred-languages = Preferred Languages
+    .desc = The order of languages determines which language is used for the translation of the desktop. Changes take effect on next login.
+
+add-language = Add language
+    .context = Add Language
+install-additional-languages = Install additional languages
+region = Region
+
 ## System
 
 system = System & Accounts

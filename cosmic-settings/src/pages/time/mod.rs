@@ -32,7 +32,12 @@ impl page::AutoBind<crate::pages::Message> for Page {
         {
             page = page.sub_page::<date::Page>();
         }
-        page = page.sub_page::<region::Page>();
+
+        #[cfg(feature = "page-region")]
+        {
+            page = page.sub_page::<region::Page>();
+        }
+
         page
     }
 }
