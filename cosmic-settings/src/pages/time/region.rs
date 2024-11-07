@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::rc::Rc;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -64,10 +64,30 @@ pub enum SourceContext {
 }
 
 #[derive(Clone, Debug)]
-struct SystemLocale {
+pub struct SystemLocale {
     lang_code: String,
     display_name: String,
     region_name: String,
+}
+
+impl Eq for SystemLocale {}
+
+impl Ord for SystemLocale {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.display_name.cmp(&other.display_name)
+    }
+}
+
+impl PartialOrd for SystemLocale {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.display_name.partial_cmp(&other.display_name)
+    }
+}
+
+impl PartialEq for SystemLocale {
+    fn eq(&self, other: &Self) -> bool {
+        self.display_name == other.display_name
+    }
 }
 
 #[derive(Debug)]
@@ -762,7 +782,7 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
         .or_else(|| system_locales.get("LANG"))
         .cloned();
 
-    let mut available_languages = SlotMap::new();
+    let mut available_languages_set = BTreeSet::new();
 
     let output = tokio::process::Command::new("localectl")
         .arg("list-locales")
@@ -777,7 +797,7 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
         }
 
         if let Some(locale) = registry.locale(line) {
-            available_languages.insert(SystemLocale {
+            available_languages_set.insert(SystemLocale {
                 lang_code: line.to_owned(),
                 display_name: locale.display_name.clone(),
                 region_name: format!(
@@ -786,6 +806,11 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
                 ),
             });
         }
+    }
+
+    let mut available_languages = SlotMap::new();
+    for language in available_languages_set {
+        available_languages.insert(language);
     }
 
     Ok(PageRefresh {
