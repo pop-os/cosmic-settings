@@ -1,12 +1,165 @@
 app = COSMIC 设置
 
+dbus-connection-error = 无法连接到 DBus
+ok = 确定
 unknown = 未知
 
 number = { $number }
 
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] 有线网络
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] 未知
+} 连接和连接配置文件。
+
+add-network = 添加网络
+    .profile = 添加配置文件
+add-vpn = 添加 VPN
+airplane-on = 飞行模式已开启。
+cable-unplugged = 网线已拔出
+connect = 连接
+connected = 已连接
+connecting = 正在连接…
+disconnect = 断开连接
+forget = 忘记
+known-networks = 已知网络
+network-and-wireless = 网络和无线
+no-networks = 未找到任何网络。
+no-vpn = 没有可用的 VPN 连接。
+password = 密码
+remove = 移除
+settings = 设置
+username = 用户名
+visible-networks = 可见网络
+
+auth-dialog = 需要认证
+    .vpn-description = 请输入 VPN 服务所需的用户名和密码。
+    .wifi-description = 请输入密码或加密密钥。您也可以通过按路由器上的"WPS"按钮来连接。
+
+forget-dialog = 忘记此 Wi-Fi 网络？
+    .description = 将来要使用此 Wi-Fi 网络时，您需要重新输入密码。
+
+network-device-state =
+    .activated = 已连接
+    .config = 正在连接
+    .deactivating = 正在断开连接
+    .disconnected = 已断开连接
+    .failed = 连接失败
+    .ip-check = 正在检查连接
+    .ip-config = 正在请求 IP 和路由信息
+    .need-auth = 需要认证
+    .prepare = 正在准备连接
+    .secondaries = 正在等待次要连接
+    .unavailable = 不可用
+    .unknown = 未知状态
+    .unmanaged = 未管理
+    .unplugged = 网线已拔出
+
+remove-connection-dialog = 移除连接配置文件？
+    .vpn-description = 将来要使用此网络时，您需要重新输入密码。
+    .wired-description = 将来要使用此配置文件时，您需要重新创建。
+
+vpn = VPN
+    .connections = VPN 连接
+    .error = 添加 VPN 配置失败
+    .remove = 移除连接配置文件
+    .select-file = 选择 VPN 配置文件
+
+vpn-error = VPN 错误
+    .config = 添加 VPN 配置失败
+    .connect = VPN 连接失败
+    .connection-editor = 连接编辑器失败
+    .connection-settings = 获取活动连接设置失败
+    .updating-state = 更新网络管理器状态失败
+    .wireguard-config-path = WireGuard 配置文件路径无效
+    .wireguard-config-path-desc = 所选文件必须位于本地文件系统上。
+    .wireguard-device = 创建 WireGuard 设备失败
+    .with-password = 使用 nmcli 设置 VPN { $field ->
+        *[username] 用户名
+        [password] 密码
+        [password-flags] 密码标志
+    } 失败
+
+wired = 有线网络
+    .adapter = 有线网络适配器 { $id }
+    .connections = 有线网络连接
+    .devices = 有线网络设备
+    .remove = 移除连接配置文件
+
+wifi = Wi-Fi
+    .adapter = Wi-Fi 适配器 { $id }
+    .forget = 忘记此网络
+
+wireguard-dialog = 添加 WireGuard 设备
+    .description = 为 WireGuard 配置选择设备名称。
+
+## Networking: Online Accounts
+
+online-accounts = 在线账户
+    .desc = 添加账户、IMAP 和 SMTP、企业登录
+
+# Bluetooth
+
+confirm = 确认
+
+bluetooth = 蓝牙
+    .desc = 管理蓝牙设备
+    .status = 当蓝牙设置打开时，此系统显示为 { $aliases }。
+    .connected = 已连接
+    .connecting = 正在连接
+    .disconnecting = 正在断开连接
+    .connect = 连接
+    .disconnect = 断开连接
+    .forget = 忘记
+    .dbus-error = 与 DBus 交互时发生错误：{ $why }
+    .show-device-without-name = 显示无名称设备
+
+bluetooth-paired = 之前连接的设备
+    .connect = 连接
+    .battery = 电池电量 { $percentage }%
+
+bluetooth-confirm-pin = 确认蓝牙 PIN 码
+    .description = 请确认以下 PIN 码与 { $device } 上显示的是否匹配
+
+bluetooth-available = 附近的设备
+
+bluetooth-adapters = 蓝牙适配器
+
 ## Desktop
 
 desktop = 桌面
+
+## Desktop: Wallpaper
+
+wallpaper = 壁纸
+  .change = 每隔
+  .desc = 壁纸图片、颜色和幻灯片选项。
+  .fit = 适合屏幕
+  .folder-dialog = 选择壁纸文件夹
+  .image-dialog = 选择壁纸图片
+  .plural = 壁纸
+  .same = 在所有显示器上使用相同的壁纸
+  .slide = 幻灯片
+
+add-color = 添加颜色
+add-image = 添加图片
+all-displays = 所有显示器
+colors = 颜色
+dialog-add = 添加
+fill = 填充
+fit-to-screen = 适合屏幕
+open-new-folder = 打开新文件夹
+recent-folders = 最近的文件夹
+
+x-minutes = { $number } 分钟
+x-hours = { $number ->
+    [1] 1 小时
+    *[other] { $number } 小时
+}
+never = 从不
 
 ## Desktop: Appearance
 
@@ -49,8 +202,6 @@ control-tint = 控制组件颜色
 frosted = 系统界面上的磨砂玻璃效果
     .desc = 将模糊效果应用于面板、程序坞、面板小部件、启动器和应用程序库。
 
-experimental-settings = 实验性设置
-
 enable-export = 将此主题应用于 GNOME 应用程序
     .desc = 并非所有toolkit都支持自动切换。非 COSMIC 应用程序可能需要在主题更改后重新启动以应用主题。
 
@@ -65,84 +216,26 @@ style = 样式
     .slightly-round = 中等圆角
     .square = 小圆角
 
-# interface density left out for now
-window-management = 窗口管理
+interface-density = 界面密度
+    .comfortable = 舒适
+    .compact = 紧凑
+    .spacious = 宽敞
+
+window-management-appearance = 窗口管理
     .active-hint = 聚焦窗口边框大小
     .gaps = 平铺窗口的间距
 
-## Desktop: Display
+### Experimental
 
--requires-restart = 需要重启
-
-color = 颜色
-    .depth = 色深
-    .profile = 颜色配置文件
-    .sidebar = 颜色配置文件
-    .temperature = 色温
-
-display = 显示器
-    .desc = 管理显示器、显示切换和夜灯
-    .arrangement = 显示器排列
-    .arrangement-desc = 拖动显示器以重新排列它们。
-    .enable = 启用显示器
-    .external = { $size } { $output } 外部显示器
-    .laptop = { $size } 笔记本电脑显示器
-    .options = 显示器选项
-    .refresh-rate = 刷新率
-    .resolution = 分辨率
-    .scale = 缩放
-
-mirroring = 镜像显示
-    .id = 镜像 { $id }
-    .dont = 不镜像显示
-    .mirror = 镜像 { $display }
-    .project = 投射到 { $display ->
-        [all] 所有显示器
-        *[other] { $display }
-    }
-    .project-count = 投射到 { $count} 个其他 { $count ->
-        [1] 显示器
-        *[other] 显示器
-    }
-
-night-light = 夜灯
-    .auto = 自动（日落到日出）
-    .desc = 使用较暖的颜色以减少蓝光。
-
-orientation = 显示方向
-    .standard = 标准
-    .rotate-90 = 旋转 90 度
-    .rotate-180 = 旋转 180 度
-    .rotate-270 = 旋转 270 度
-
-scheduling = 计划
-    .manual = 手动计划
+experimental-settings = 实验性设置
+icons-and-toolkit = 图标和工具包主题
+interface-font = 系统字体
+monospace-font = 等宽字体
 
 ## Desktop: Notifications
 
 notifications = 通知
     .desc = 免打扰、锁屏通知和每个应用程序的通知设置。
-
-## Desktop: Options
-
-desktop-panel-options = 桌面和面板选项
-    .desc = Super 键行为、热区、窗口控件。
-
-desktop-panels-and-applets = 桌面面板和小部件
-
-dock = 程序坞
-    .desc = 带有固定应用程序的面板。
-
-hot-corner = 热区
-    .top-left-corner = 启用左上角热区来查看工作区概览
-
-top-panel = 顶部面板
-    .workspaces = 显示工作区概览按钮
-    .applications = 显示应用程序库按钮
-
-window-controls = 窗口控件
-    .minimize = 显示最小化按钮
-    .maximize = 显示最大化按钮
 
 ## Desktop: Panel
 
@@ -194,33 +287,31 @@ panel-missing = 缺少面板配置
     .desc = 由于使用了自定义配置或配置已损坏，缺少面板配置文件。
     .fix = 恢复默认设置
 
-## Desktop: Wallpaper
+## Desktop: Dock
 
-wallpaper = 壁纸
-  .change = 每隔
-  .desc = 壁纸图片、颜色和幻灯片选项。
-  .fit = 适合屏幕
-  .folder-dialog = 选择壁纸文件夹
-  .image-dialog = 选择壁纸图片
-  .plural = 壁纸
-  .same = 在所有显示器上使用相同的壁纸
-  .slide = 幻灯片
+dock = 程序坞
+    .desc = 带有固定应用程序托盘和其他小部件的面板。
 
-add-color = 添加颜色
-add-image = 添加图片
-all-displays = 所有显示器
-colors = 颜色
-dialog-add = 添加
-fill = 填充
-fit-to-screen = 适合屏幕
-open-new-folder = 打开新文件夹
-recent-folders = 最近的文件夹
+## Desktop: Window management
 
-x-minutes = { $number } 分钟
-x-hours = { $number ->
-    [1] 1 小时
-    *[other] { $number } 小时
-}
+window-management = 窗口管理
+    .desc = Super 键动作、窗口控制选项和其他窗口平铺选项。
+
+super-key = Super 键动作
+    .launcher = 打开启动器
+    .workspaces = 打开工作区
+    .applications = 打开应用程序
+    .disable = 禁用
+
+window-controls = 窗口控制
+    .maximize = 显示最大化按钮
+    .minimize = 显示最小化按钮
+    .active-window-hint = 显示活动窗口提示
+
+focus-navigation = 焦点导航
+    .focus-follows-cursor = 焦点跟随光标
+    .focus-follows-cursor-delay = 焦点跟随光标延迟（毫秒）
+    .cursor-follows-focus = 光标跟随焦点
 
 ## Desktop: Workspaces
 
@@ -245,40 +336,68 @@ workspaces-orientation = 工作区排放方向
     .vertical = 垂直排放
     .horizontal = 水平排放
 
-## Networking: Wired
+hot-corner = 热角
+    .top-left-corner = 启用左上角热角以打开工作区
+    
+## Desktop: Display
 
-wired = 有线
-    .desc = 有线连接、连接配置文件
+-requires-restart = 需要重启
 
-## Networking: Online Accounts
+color = 颜色
+    .depth = 色深
+    .profile = 颜色配置文件
+    .sidebar = 颜色配置文件
+    .temperature = 色温
 
-online-accounts = 在线帐户
-    .desc = 添加帐户、IMAP 和 SMTP、企业登录
+display = 显示器
+    .desc = 管理显示器、显示切换和夜灯
+    .arrangement = 显示器排列
+    .arrangement-desc = 拖动显示器以重新排列它们。
+    .enable = 启用显示器
+    .external = { $size } { $output } 外部显示器
+    .laptop = { $size } 笔记本电脑显示器
+    .options = 显示器选项
+    .refresh-rate = 刷新率
+    .resolution = 分辨率
+    .scale = 缩放
 
-## Time & Language
+mirroring = 镜像显示
+    .id = 镜像 { $id }
+    .dont = 不镜像显示
+    .mirror = 镜像 { $display }
+    .project = 投射到 { $display ->
+        [all] 所有显示器
+        *[other] { $display }
+    }
+    .project-count = 投射到 { $count} 个其他 { $count ->
+        [1] 显示器
+        *[other] 显示器
+    }
 
-time = 时间和语言
-    .desc = N/A
+night-light = 夜灯
+    .auto = 自动（日落到日出）
+    .desc = 使用较暖的颜色以减少蓝光。
 
-time-date = 日期和时间
-    .desc = 时区、自动设置时间和时间格式。
-    .auto = 自动设置时间
+orientation = 显示方向
+    .standard = 标准
+    .rotate-90 = 旋转 90 度
+    .rotate-180 = 旋转 180 度
+    .rotate-270 = 旋转 270 度
 
-time-zone = 时区
-    .auto = 自动确定时区
-    .auto-info = 需要定位服务和互联网访问
+scheduling = 计划
+    .manual = 手动计划
 
-time-format = 日期和时间格式
-    .twenty-four = 24 小时制
-    .first = 一周的第一天
-    .show-date = 在顶部面板上显示日期
-    .friday = 星期五
-    .saturday = 星期六
-    .sunday = 星期日
-    .monday = 星期一
+dialog = 对话框
+    .title = 保留这些显示设置？
+    .keep-changes = 保留更改
+    .change-prompt = 设置更改将在 { $time } 秒后自动恢复。
+    .revert-settings = 恢复设置
 
-time-region = 区域和语言
-    .desc = 根据您的区域确定日期、时间和数字格式
+legacy-applications = X11 窗口系统应用程序缩放
+    .scaled-by-system = 缩放所有 X11 应用程序
+    .system-description = X11 应用程序在 HiDPI 屏幕上会显示模糊。
+    .scaled-natively = 以原生分辨率渲染 X11 应用程序
+    .native-description = 不支持缩放的 X11 应用程序在使用 HiDPI 显示器时会显示很小。启用此选项可让游戏使用完整的显示器分辨率。
 
 ## Sound
 
@@ -303,6 +422,297 @@ sound-alerts = 提醒
 
 sound-applications = 应用程序
     .desc = 应用程序音量和设置
+
+profile = 配置文件
+
+## Power
+
+power = 电源和电池
+    .desc = 管理电源设置
+
+battery = 电池
+  .minute = { $value } { $value ->
+        [one] 分钟
+       *[other] 分钟
+  }
+  .hour = { $value } { $value ->
+        [one] 小时
+       *[other] 小时
+  }
+  .day = { $value } { $value ->
+        [one] 天
+       *[other] 天
+  }
+  .less-than-minute = 不到一分钟
+  .and = 和
+  .remaining-time = 距离{ $action ->
+        [full] 充满
+       *[other] 耗尽
+   }还有 { $time }
+
+connected-devices = 已连接的设备
+  .unknown = 未知设备
+
+power-mode = 电源模式
+    .battery = 延长电池寿命
+    .battery-desc = 降低功耗并保持静音运行。
+    .balanced = 平衡
+    .balanced-desc = 安静运行并适度使用电源。
+    .performance = 高性能
+    .performance-desc = 最高性能和功耗。
+    .no-backend = 未找到后端。请安装 system76-power 或 power-profiles-daemon。
+
+power-saving = 省电选项
+    .turn-off-screen-after = 在此时间后关闭屏幕
+    .auto-suspend = 自动挂起
+    .auto-suspend-ac = 接通电源时自动挂起
+    .auto-suspend-battery = 使用电池时自动挂起
+
+## Input
+
+acceleration-desc = 根据速度自动调整跟踪灵敏度。
+
+disable-while-typing = 键盘输入时禁用
+
+input-devices = 输入设备
+    .desc = 输入设备
+
+primary-button = 主要按键
+    .desc = 设置物理按键的顺序。
+    .left = 左键
+    .right = 右键
+
+scrolling = 滚动
+    .two-finger = 用两根手指滚动
+    .edge = 用一根手指沿边缘滚动
+    .speed = 滚动速度
+    .natural = 自然滚动
+    .natural-desc = 滚动内容，而不是视图
+
+## Input: Keyboard
+
+slow = 慢
+fast = 快
+short = 短
+long = 长
+keyboard = 键盘
+    .desc = 键盘输入
+
+keyboard-sources = 输入法
+    .desc = 可以使用 Super+空格键切换输入法。这可以在键盘快捷键设置中自定义。
+    .move-up = 向上移动
+    .move-down = 向下移动
+    .settings = 设置
+    .view-layout = 查看键盘布局
+    .remove = 移除
+    .add = 添加输入法
+
+keyboard-special-char = 特殊字符输入
+    .alternate = 备用字符键
+    .compose = 组合键
+    .caps = Caps Lock 键
+
+keyboard-typing-assist = 打字
+    .repeat-rate = 重复速率
+    .repeat-delay = 重复延迟
+
+added = 已添加
+type-to-search = 输入以搜索...
+show-extended-input-sources = 显示扩展输入法
+
+## Input: Keyboard: Shortcuts
+
+keyboard-shortcuts = 键盘快捷键
+    .desc = 查看和自定义快捷键
+
+add-keybinding = 添加快捷键
+cancel = 取消
+command = 命令
+custom = 自定义
+debug = 调试
+disabled = 已禁用
+migrate-workspace-prev = 将工作区移至上一个输出
+migrate-workspace-next = 将工作区移至下一个输出
+migrate-workspace = 将工作区移至{ $direction ->
+    *[down] 下方
+    [left] 左侧
+    [right] 右侧
+    [up] 上方
+}输出
+navigate = 导航
+replace = 替换
+shortcut-name = 快捷键名称
+system-controls = 系统控制
+terminate = 终止
+toggle-stacking = 切换窗口堆叠
+type-key-combination = 输入按键组合
+
+custom-shortcuts = 自定义快捷键
+    .add = 添加快捷键
+    .context = 添加自定义快捷键
+    .none = 无自定义快捷键
+
+modified = 已修改 { $count } 项
+
+nav-shortcuts = 导航
+    .prev-output = 聚焦上一个输出
+    .next-output = 聚焦下一个输出
+    .last-workspace = 聚焦最后一个工作区
+    .prev-workspace = 聚焦上一个工作区
+    .next-workspace = 聚焦下一个工作区
+    .focus = 聚焦{ $direction ->
+        *[down] 下方
+        [in] 内部
+        [left] 左侧
+        [out] 外部
+        [right] 右侧
+        [up] 上方
+    }窗口
+    .output = 切换到{ $direction ->
+        *[down] 下方
+        [left] 左侧
+        [right] 右侧
+        [up] 上方
+    }输出
+    .workspace = 切换到工作区 { $num }
+
+manage-windows = 管理窗口
+    .close = 关闭窗口
+    .maximize = 最大化窗口
+    .minimize = 最小化窗口
+    .resize-inwards = 向内调整窗口大小
+    .resize-outwards = 向外调整窗口大小
+    .toggle-sticky = 切换窗口置顶
+
+move-windows = 移动窗口
+    .direction = 将窗口移至{ $direction ->
+        *[down] 下方
+        [left] 左侧
+        [right] 右侧
+        [up] 上方
+    }
+    .display = 将窗口移至{ $direction ->
+        *[down] 下方
+        [left] 左侧
+        [right] 右侧
+        [up] 上方
+    }显示器
+    .workspace = 将窗口移至{ $direction ->
+        *[below] 下方
+        [left] 左侧
+        [right] 右侧
+        [above] 上方
+    }工作区
+    .workspace-num = 将窗口移至工作区 { $num }
+    .prev-workspace = 将窗口移至上一个工作区
+    .next-workspace = 将窗口移至下一个工作区
+    .last-workspace = 将窗口移至最后一个工作区
+    .next-display = 将窗口移至下一个显示器
+    .prev-display = 将窗口移至上一个显示器
+    .send-to-prev-workspace = 将窗口移至上一个工作区
+    .send-to-next-workspace = 将窗口移至下一个工作区
+
+system-shortcut = 系统
+    .app-library = 打开应用程序库
+    .brightness-down = 降低显示器亮度
+    .brightness-up = 提高显示器亮度
+    .home-folder = 打开主文件夹
+    .keyboard-brightness-down = 降低键盘亮度
+    .keyboard-brightness-up = 提高键盘亮度
+    .launcher = 打开启动器
+    .lock-screen = 锁定屏幕
+    .mute = 静音
+    .mute-mic = 麦克风静音
+    .play-pause = 播放/暂停
+    .play-next = 下一曲
+    .play-prev = 上一曲
+    .screenshot = 截图
+    .terminal = 打开终端
+    .volume-lower = 降低音量
+    .volume-raise = 提高音量
+    .web-browser = 打开网络浏览器
+    .window-switcher = 在打开的窗口间切换
+    .workspace-overview = 打开工作区概览
+
+window-tiling = 窗口平铺
+    .horizontal = 设置水平方向
+    .vertical = 设置垂直方向
+    .swap-window = 交换窗口
+    .toggle-tiling = 切换窗口平铺
+    .toggle-stacking = 切换窗口堆叠
+    .toggle-floating = 切换窗口浮动
+    .toggle-orientation = 切换方向
+
+replace-shortcut-dialog = 替换快捷键？
+    .desc = { $shortcut } 已被 { $name } 使用。如果替换它，{ $name } 将被禁用。
+
+## Input: Mouse
+
+mouse = 鼠标
+    .desc = 鼠标速度、加速、自然滚动。
+    .speed = 鼠标速度
+    .acceleration = 启用鼠标加速
+
+## Input: Touchpad
+
+click-behavior = 点击行为
+    .click-finger = 用两根手指进行右键点击，用三根手指进行中键点击
+    .button-areas = 在右下角进行右键点击，在底部中心进行中键点击
+
+pinch-to-zoom = 捏合缩放
+    .desc = 用两根手指缩放内容，仅适用于支持缩放的应用程序。
+
+tap-to-click = 轻触点击
+    .desc = 启用单指轻触进行点击，双指轻触进行右键点击，三指轻触进行中键点击。
+
+touchpad = 触摸板
+    .acceleration = 启用触摸板加速
+    .desc = 触摸板速度、点击选项、手势。
+    .speed = 触摸板速度
+
+## Input: Gestures
+
+swiping = 滑动
+    .four-finger-down = 四指向下滑动
+    .four-finger-left = 四指向左滑动
+    .four-finger-right = 四指向右滑动
+    .four-finger-up = 四指向上滑动
+    .three-finger-any = 三指向任意方向滑动
+
+switch-workspaces = 切换工作区
+    .horizontal = 四指左右滑动
+    .vertical = 四指上下滑动
+
+switch-between-windows = 在窗口之间切换
+open-application-library = 打开应用程序库
+open-workspaces-view = 打开工作区概览
+
+## Time & Language
+
+time = 时间和语言
+    .desc = N/A
+
+time-date = 日期和时间
+    .desc = 时区、自动设置时间和时间格式。
+    .auto = 自动设置时间
+    .auto-ntp = 当设置时区时，日期和时间将自动更新。
+
+time-zone = 时区
+    .auto = 自动确定时区
+    .auto-info = 需要定位服务和互联网访问
+
+time-format = 日期和时间格式
+    .twenty-four = 24 小时制
+    .show-seconds = 显示秒
+    .first = 一周的第一天
+    .show-date = 在顶部面板上显示日期
+    .friday = 星期五
+    .saturday = 星期六
+    .sunday = 星期日
+    .monday = 星期一
+
+time-region = 区域和语言
+    .desc = 根据您的区域确定日期、时间和数字格式
 
 ## System
 
@@ -341,88 +751,3 @@ firmware = 固件
 
 users = 用户
     .desc = 身份验证和登录、锁屏。
-
-## Input
-
-acceleration-desc = 根据速度自动调整跟踪灵敏度。
-
-disable-while-typing = 键盘输入时禁用
-
-input-devices = 输入设备
-    .desc = 输入设备
-
-primary-button = 主要按键
-    .left = 左键
-    .right = 右键
-
-scrolling = 滚动
-    .two-finger = 用两根手指滚动
-    .edge = 用一根手指沿边缘滚动
-    .speed = 滚动速度
-    .natural = 自然滚动
-    .natural-desc = 滚动内容，而不是视图
-
-## Input: Keyboard
-
-keyboard = 键盘
-    .desc = 键盘输入
-
-keyboard-sources = 输入法
-    .desc = 可以使用 Super+空格键切换输入法。这可以在键盘快捷键设置中自定义。
-    .move-up = 向上移动
-    .move-down = 向下移动
-    .settings = 设置
-    .view-layout = 查看键盘布局
-    .remove = 移除
-    .add = 添加输入法
-
-keyboard-special-char = 特殊字符输入
-    .alternate = 备用字符键
-    .compose = 组合键
-
-added = 已添加
-type-to-search = 输入以搜索...
-
-## Input: Keyboard: Shortcuts
-
-keyboard-shortcuts = 键盘快捷键
-    .desc = 查看和自定义快捷键
-
-## Input: Mouse
-
-mouse = 鼠标
-    .desc = 鼠标速度、加速、自然滚动。
-    .speed = 鼠标速度
-    .acceleration = 启用鼠标加速
-
-## Input: Touchpad
-
-click-behavior = 点击行为
-    .click-finger = 用两根手指进行右键点击，用三根手指进行中键点击
-    .button-areas = 在右下角进行右键点击，在底部中心进行中键点击
-
-pinch-to-zoom = 捏合缩放
-    .desc = 用两根手指缩放内容，仅适用于支持缩放的应用程序。
-
-tap-to-click = 轻触点击
-    .desc = 启用单指轻触进行点击，双指轻触进行右键点击，三指轻触进行中键点击。
-
-touchpad = 触摸板
-    .acceleration = 启用触摸板加速
-    .desc = 触摸板速度、点击选项、手势。
-    .speed = 触摸板速度
-
-## Input: Gestures
-
-swiping = 滑动
-    .four-finger-down = 四指向下滑动
-    .four-finger-left = 四指向左滑动
-    .four-finger-right = 四指向右滑动
-    .four-finger-up = 四指向上滑动
-    .three-finger-any = 三指向任意方向滑动
-
-switch-between-windows = 在窗口之间切换
-switch-to-next-workspace = 切换到下一个工作区
-switch-to-prev-workspace = 切换到上一个工作区
-open-application-library = 打开应用程序库
-open-workspaces-view = 打开工作区概览
