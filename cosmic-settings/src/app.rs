@@ -96,6 +96,7 @@ impl SettingsApp {
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
             #[cfg(feature = "page-power")]
             PageCommands::Power => self.pages.page_id::<power::Page>(),
+            #[cfg(feature = "page-region")]
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             #[cfg(feature = "page-sound")]
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
@@ -476,6 +477,13 @@ impl cosmic::Application for SettingsApp {
                         .pages
                         .page_mut::<input::keyboard::shortcuts::nav::Page>()
                     {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-region")]
+                crate::pages::Message::Region(message) => {
+                    if let Some(page) = self.pages.page_mut::<time::region::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }

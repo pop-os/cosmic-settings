@@ -135,7 +135,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let cancel_button =
                     widget::button::standard(fl!("cancel")).on_press(Message::PinCancel);
 
-                let dialog = widget::dialog(fl!("bluetooth-confirm-pin"))
+                let dialog = widget::dialog()
+                    .title(fl!("bluetooth-confirm-pin"))
                     .control(control)
                     .primary_action(confirm_button)
                     .secondary_action(cancel_button)

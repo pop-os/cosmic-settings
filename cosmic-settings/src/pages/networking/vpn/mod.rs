@@ -229,7 +229,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let primary_action =
                     widget::button::standard(fl!("ok")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("vpn-error"))
+                widget::dialog()
+                    .title(fl!("vpn-error"))
                     .icon(icon::from_name("dialog-error-symbolic").size(64))
                     .body(error_kind.localized())
                     .control(reason)
@@ -268,7 +269,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("auth-dialog"))
+                widget::dialog()
+                    .title(fl!("auth-dialog"))
                     .icon(icon::from_name("network-vpn-symbolic").size(64))
                     .body(fl!("auth-dialog", "vpn-description"))
                     .control(controls)
@@ -289,7 +291,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("wireguard-dialog"))
+                widget::dialog()
+                    .title(fl!("wireguard-dialog"))
                     .icon(icon::from_name("network-vpn-symbolic").size(64))
                     .body(fl!("wireguard-dialog", "description"))
                     .control(input)
@@ -306,7 +309,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("remove-connection-dialog"))
+                widget::dialog()
+                    .title(fl!("remove-connection-dialog"))
                     .icon(icon::from_name("dialog-information").size(64))
                     .body(fl!("remove-connection-dialog", "vpn-description"))
                     .primary_action(primary_action)

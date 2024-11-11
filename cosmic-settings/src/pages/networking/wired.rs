@@ -131,7 +131,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("remove-connection-dialog"))
+                widget::dialog()
+                    .title(fl!("remove-connection-dialog"))
                     .icon(icon::from_name("dialog-information").size(64))
                     .body(fl!("remove-connection-dialog", "wired-description"))
                     .primary_action(primary_action)

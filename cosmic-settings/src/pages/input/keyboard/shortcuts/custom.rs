@@ -321,7 +321,8 @@ impl page::Page<crate::pages::Message> for Page {
 
             let secondary_action = button::standard(fl!("cancel")).on_press(Message::ReplaceCancel);
 
-            let dialog = widget::dialog(fl!("replace-shortcut-dialog"))
+            let dialog = widget::dialog()
+                .title(fl!("replace-shortcut-dialog"))
                 .icon(icon::from_name("dialog-warning").size(64))
                 .body(fl!(
                     "replace-shortcut-dialog",

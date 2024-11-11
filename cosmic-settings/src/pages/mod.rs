@@ -63,6 +63,8 @@ pub enum Message {
     PanelApplet(desktop::panel::applets_inner::Message),
     #[cfg(feature = "page-power")]
     Power(power::Message),
+    #[cfg(feature = "page-region")]
+    Region(time::region::Message),
     #[cfg(feature = "page-sound")]
     Sound(sound::Message),
     #[cfg(feature = "page-input")]
