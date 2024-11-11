@@ -24,7 +24,7 @@ use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, radio, row,
     scrollable, settings, spin_button, text, ColorPickerModel,
 };
-use cosmic::{Apply, Element, Task};
+use cosmic::{widget, Apply, Element, Task};
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::Section;
@@ -408,6 +408,8 @@ impl Page {
         ]
         .spacing(theme.space_m())
         .width(Length::Fill)
+        .apply(widget::scrollable)
+        .height(Length::Fill)
         .apply(Element::from)
         .map(crate::pages::Message::Appearance)
     }

@@ -6,7 +6,7 @@ use std::rc::Rc;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use cosmic::iced::{Border, Color, Length};
+use cosmic::iced::{Alignment, Border, Color, Length};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, button, container};
 use cosmic::{theme, Apply, Element};
@@ -137,7 +137,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        sender: mpsc::Sender<crate::pages::Message>,
+        _sender: mpsc::Sender<crate::pages::Message>,
     ) -> cosmic::Task<crate::pages::Message> {
         cosmic::command::future(async move { Message::Refresh(Arc::new(page_reload().await)) })
     }
@@ -162,8 +162,6 @@ impl Page {
                         }
                     }
                 }
-
-                return cosmic::command::message(crate::app::Message::CloseContextDrawer);
             }
 
             Message::SelectRegion(id) => {
@@ -291,7 +289,7 @@ impl Page {
     }
 
     fn add_language_view(&self) -> cosmic::Element<'_, crate::pages::Message> {
-        let space_l = theme::active().cosmic().spacing.space_l;
+        let cosmic::cosmic_theme::Spacing { space_l, .. } = theme::active().cosmic().spacing;
 
         let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
             .on_input(Message::AddLanguageSearch)
@@ -353,7 +351,10 @@ impl Page {
 
         let install_additional_button =
             widget::button::standard(fl!("install-additional-languages"))
-                .on_press(Message::InstallAdditionalLanguages);
+                .on_press(Message::InstallAdditionalLanguages)
+                .apply(widget::container)
+                .width(Length::Fill)
+                .align_x(Alignment::End);
 
         widget::column()
             .padding([2, 0])
@@ -499,6 +500,11 @@ impl Page {
     fn region_view(&self) -> cosmic::Element<'_, crate::pages::Message> {
         let space_l = theme::active().cosmic().spacing.space_l;
 
+        let svg_accent = Rc::new(|theme: &cosmic::Theme| {
+            let color = theme.cosmic().accent_color().into();
+            cosmic::widget::svg::Style { color: Some(color) }
+        });
+
         let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
             .on_input(Message::AddLanguageSearch)
             .on_clear(Message::AddLanguageSearch(String::new()));
@@ -515,24 +521,34 @@ impl Page {
                     .as_ref()
                     .map_or(false, |l| l.lang_code == locale.lang_code);
 
-                let button =
-                    widget::settings::item_row(vec![widget::text::body(&locale.region_name)
+                let button = widget::settings::item_row(vec![
+                    widget::text::body(&locale.region_name)
                         .class(if is_selected {
                             cosmic::theme::Text::Accent
                         } else {
                             cosmic::theme::Text::Default
                         })
                         .wrapping(Wrapping::Word)
-                        .into()])
-                    .apply(widget::container)
-                    .class(cosmic::theme::Container::List)
-                    .apply(widget::button::custom)
-                    .class(cosmic::theme::Button::Transparent)
-                    .on_press_maybe(if is_selected {
-                        None
+                        .into(),
+                    if is_selected {
+                        widget::icon::from_name("object-select-symbolic")
+                            .size(16)
+                            .icon()
+                            .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
+                            .into()
                     } else {
-                        Some(Message::SelectRegion(id))
-                    });
+                        widget::horizontal_space().width(16).into()
+                    },
+                ])
+                .apply(widget::container)
+                .class(cosmic::theme::Container::List)
+                .apply(widget::button::custom)
+                .class(cosmic::theme::Button::Transparent)
+                .on_press_maybe(if is_selected {
+                    None
+                } else {
+                    Some(Message::SelectRegion(id))
+                });
 
                 list = list.add(button)
             }
@@ -599,10 +615,6 @@ mod preferred_languages {
                     .push(title)
                     .push(description)
                     .push(content)
-                    .push(
-                        widget::vertical_space()
-                            .height(cosmic::theme::active().cosmic().spacing.space_xxs),
-                    )
                     .push(add_language_button)
                     .spacing(cosmic::theme::active().cosmic().spacing.space_xxs)
                     .apply(cosmic::Element::from)
@@ -830,7 +842,7 @@ fn language_element(
 ) -> cosmic::Element<'static, Message> {
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
-    widget::settings::flex_item(description, popover_button(id, expanded)).into()
+    widget::settings::item(description, popover_button(id, expanded)).into()
 }
 
 fn popover_button(id: usize, expanded: bool) -> Element<'static, Message> {

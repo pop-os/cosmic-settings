@@ -23,24 +23,26 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
     let theme = theme::active();
     let spacing = &theme.cosmic().spacing;
 
-    cosmic::widget::column()
-        .push_maybe(description.map(|description| text(description).width(Length::Fill)))
-        .push(
-            model
-                .builder(on_update)
-                .reset_label(reset)
-                .height(Length::Fixed(158.0))
-                .build(
-                    fl!("recent-colors"),
-                    fl!("copy-to-clipboard"),
-                    fl!("copied-to-clipboard"),
-                )
-                .apply(container)
-                .width(Length::Fixed(248.0))
-                .align_x(Alignment::Center)
-                .apply(container)
-                .center_x(Length::Fill),
+    let description = description.map(|description| text(description).width(Length::Fill));
+
+    let color_picker = model
+        .builder(on_update)
+        .reset_label(reset)
+        .height(Length::Fixed(158.0))
+        .build(
+            fl!("recent-colors"),
+            fl!("copy-to-clipboard"),
+            fl!("copied-to-clipboard"),
         )
+        .apply(container)
+        .width(Length::Fixed(248.0))
+        .align_x(Alignment::Center)
+        .apply(container)
+        .center_x(Length::Fill);
+
+    cosmic::widget::column()
+        .push_maybe(description)
+        .push(color_picker)
         .padding(spacing.space_l)
         .align_x(Alignment::Center)
         .spacing(spacing.space_m)

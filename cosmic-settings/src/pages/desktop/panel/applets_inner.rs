@@ -308,17 +308,17 @@ impl Page {
             );
         }
 
-        column::with_children(vec![
-            text_input::search_input(fl!("search-applets"), &self.search)
-                .on_input(move |s| msg_map(Message::Search(s)))
-                .on_paste(move |s| msg_map(Message::Search(s)))
-                .width(Length::Fixed(312.0))
-                .into(),
-            list_column.into(),
-        ])
-        .align_x(Alignment::Center)
-        .spacing(space_xxs)
-        .into()
+        let search = text_input::search_input(fl!("search-applets"), &self.search)
+            .on_input(move |s| msg_map(Message::Search(s)))
+            .on_paste(move |s| msg_map(Message::Search(s)))
+            .width(Length::Fixed(312.0));
+
+        column::with_capacity(2)
+            .push(search)
+            .push(list_column)
+            .align_x(Alignment::Center)
+            .spacing(space_xxs)
+            .into()
     }
 
     #[allow(clippy::too_many_lines)]

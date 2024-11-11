@@ -344,7 +344,8 @@ impl page::Page<crate::pages::Message> for Page {
     /// Task.
     fn dialog(&self) -> Option<Element<pages::Message>> {
         self.dialog?;
-        let element = widget::dialog(fl!("dialog", "title"))
+        let element = widget::dialog()
+            .title(fl!("dialog", "title"))
             .body(fl!("dialog", "change-prompt", time = self.dialog_countdown))
             .primary_action(
                 widget::button::suggested(fl!("dialog", "keep-changes"))
