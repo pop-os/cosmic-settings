@@ -408,8 +408,6 @@ impl Page {
         ]
         .spacing(theme.space_m())
         .width(Length::Fill)
-        .apply(widget::scrollable)
-        .height(Length::Fill)
         .apply(Element::from)
         .map(crate::pages::Message::Appearance)
     }
