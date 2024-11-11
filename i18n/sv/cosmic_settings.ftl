@@ -1,6 +1,10 @@
 app = COSMIC Inställningar
 
+dbus-connection-error = Misslyckades med att ansluta till DBus
+ok = OK
 unknown = Okänd
+
+number = { $number }
 
 ## Skrivbord
 
@@ -47,6 +51,12 @@ control-tint = Kontrollkomponentens nyans
 frosted = Frostat glaseffekt på systemgränssnittet
     .desc = Tillämpar bakgrundsoskärpa på panel, docka, appletar, startprogram och programbibliotek.
 
+enable-export = Använd detta tema för GNOME program.
+    .desc = Alla verktygssatser har inte stöd för automatisk växling. Icke COSMIC program kan behöva startas om efter en temaändring.
+
+icon-theme = Ikontema
+    .desc = Tillämpar en annan uppsättning ikoner till program.
+
 text-tint = Gränssnittstextton
     .desc = Färg som används för att härleda gränssnittstextfärger som har tillräcklig kontrast på olika ytor.
 
@@ -66,6 +76,15 @@ window-management = Fönsterhantering
 window-management-appearance = Fönsterhantering
     .active-hint = Storlek på aktivt fönsterhinting
     .gaps = Springor runt kaklade fönster
+
+super-key = Super key åtgärd
+    .launcher = Öppna programstartare
+    .workspaces = Öppna arbetsytor
+    .applications = Öppna applikationer
+    .disable = Inaktivera
+
+
+
 
 ## Testinställningar
 
@@ -113,9 +132,25 @@ night-light = Nattljus
     .desc = Reducera blått ljus med varmare färger.
 
 orientation = Orientering
+    .standard = Standard
+    .rotate-90 = Rotera 90
+    .rotate-180 = Rotera 180
+    .rotate-270 = Rotera 270
 
 scheduling = Schemaläggning
     .manual = Manuellt schema
+    
+dialog = Dialogruta
+    .title = Behåll dessa skärminställningar?
+    .keep-changes = Behåll ändringar
+    .change-prompt = Inställningsändringar återställs automatiskt om { $time } sekunder.
+    .revert-settings = Återställ inställningar
+    
+legacy-applications = X11 fönstersystem applikationsskalning
+    .scaled-by-system = Skala alla X11 applikationer
+    .system-description = X11-applikationer kommer att se suddiga ut på HiDPI-skärmar.
+    .scaled-natively = Rendera X11-applikationer med inbyggd upplösning
+    .native-description = X11-applikationer som inte stöder skalning kommer att vara små när HiDPI-skärmar används. Aktivera för att spel ska kunna använda hela skärmen
 
 ## Skrivbord: Aviseringar
 
@@ -142,6 +177,12 @@ top-panel = Övre Panel
 window-controls = Fönsterkontroller
     .minimize = Visa minimera knapp
     .maximize = Visa maximera knapp
+    
+focus-navigation = Fokusnavigering
+    .focus-follows-cursor = Fokus följer markören
+    .focus-follows-cursor-delay = Fokus följer markörens fördröjning i ms
+    .cursor-follows-focus = Markören följer fokus
+
 
 ## Skrivbord: Panel
 
@@ -243,14 +284,31 @@ workspaces-overview-thumbnails = Arbetsyta Översikt Miniatyrer
 workspaces-orientation = Arbetsytor Orientering
     .vertical = Vertikal
     .horizontal = Horisontell
+    
+hot-corner = Heta hörn
+    .top-left-corner = Aktivera det övre vänstra heta hörnet för arbetsytor
 
 ## Nätverk: Trådbunden anslutning
 
 wired = Trådbunden anslutning
+    .adapter = Trådbunden adapter { $id }
     .desc = Trådbunden anslutning, anslutningsprofiler
     .connections = Trådbundna anslutningar
     .devices = Trådbundna enheter
     .remove = Ta bort anslutningsprofil
+    
+## Nätverk: WiFi
+
+wifi = Wi-Fi
+    .adapter = WiFi adapter { $id }
+    .forget = Glöm detta nätverket
+    
+## Nätverk: Wireguard
+
+wireguard-dialog = Lägg till WireGuard enhet
+    .description = Välj ett enhetsnamn för WireGuard-konfigurationen.
+    
+    
 
 ## Nätverksanslutningar
 
@@ -263,6 +321,8 @@ connected = Ansluten
 connecting = Ansluter…
 disconnect = Koppla från
 forget = Glöm
+forget-dialog = Glöm detta Wi-Fi nätverk?
+    .description = Du måste ange ett lösenord igen för att använda detta Wi-Fi-nätverk i framtiden.
 known-networks = Kända nätverk
 network-and-wireless = Nätverksanslutningar
 no-networks = Inga nätverk har hittats.
@@ -297,13 +357,56 @@ remove-connection-dialog = Ta bort ansluten profil?
 
 vpn = VPN
     .connections = VPN-anslutningar
+    .error = Misslyckades med att lägga till en VPN-konfiguration
     .remove = Ta bort ansluten profil
     .select-file = Välj en VPN-konfigurationsfil
+    
+    vpn-error = VPN fel
+    .config = Misslyckades med att lägga till en VPN-konfiguration
+    .connect = Misslyckades att ansluta till VPN
+    .connection-editor = Anslutningsredigerare misslyckades
+    .connection-settings = Misslyckades att hämta inställningar för aktiva anslutningar
+    .updating-state = Misslyckades att uppdatera nätverkshanterarens status
+    .wireguard-config-path = Ogiltig filsökväg för Wireguard konfiguration
+    .wireguard-config-path-desc = Den valda filen måste vara på ett lokalt filsystem.
+    .wireguard-device = Misslyckades med att skapa WireGuard enhet
+    .with-password = Misslyckades att ställa in VPN { $field ->
+        *[username] användarnamn
+        [password] lösenord
+        [password-flags] lösenordsflaggor
+    } med nmcli
 
 ## Nätverk: Onlinekonton
 
 online-accounts = Onlinekonton
     .desc = Lägg till konton, IMAP och SMTP, företagsinloggningar
+
+# Bluetooth
+
+confirm = Bekräfta
+
+bluetooth = Bluetooth
+    .desc = Hantera Bluetooth enheter
+    .status = Detta system är synligt som { $aliases } medan Bluetooth-inställningarna är öppna.
+    .connected = Ansluten
+    .connecting = Ansluter
+    .disconnecting = Kopplar från
+    .connect = Anslut
+    .disconnect = Koppla från
+    .forget = Glöm bort
+    .dbus-error = Ett fel har uppstått under interaktion med DBus: { $why }
+    .show-device-without-name = Visa enheter utan namn
+    
+bluetooth-paired = Tidigare anslutna enheter
+    .connect = Anslut
+    .battery = { $percentage }% batteri
+    
+bluetooth-confirm-pin = Bekräfta Bluetooth PIN
+    .description = Kontrollera att följande PIN-kod stämmer överens med den som visas på { $device }
+    
+bluetooth-available = Enheter i närheten
+
+bluetooth-adapters = Bluetooth Adapters
 
 ## Datum, tid & språk
 
@@ -331,6 +434,22 @@ time-format = Datum & tidsformat
 
 time-region = Region & språk
     .desc = Formatera datum, tider och siffror baserat på din region
+    
+    formatting = Formatering
+    .dates = Datum
+    .time = Tid
+    .date-and-time = Datum & tid
+    .numbers = Nummer
+    .measurement = Mått
+    .paper = Papper
+
+preferred-languages = Föredragna språk
+    .desc = Ordningen på språken avgör vilket språk som används för översättningen av skrivbordsmiljön. Ändringar träder i kraft vid nästa inloggning.
+    
+add-language = Lägg till språk
+    .context = Lägg till språk
+install-additional-languages = Installera ytterligare språk
+region = Region
 
 ## Ljud
 
@@ -355,6 +474,8 @@ sound-alerts = Larm
 
 sound-applications = Applikationer
     .desc = Applikationvolym och inställningar
+
+profile = Profil
 
 ## System
 
@@ -397,7 +518,7 @@ users = Användare
 ## Ström
 
 power = Ström & Batteri
-    .desc = Strömhanterare
+    .desc = Hantera ströminställningar
 
 battery = Batteri
   .minute = { $value } { $value ->
@@ -435,26 +556,31 @@ power-mode = Strömalternativ
 
 acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
 
+disable-while-typing = Inaktivera medans du skriver
+
 input-devices = Inmatningsenheter
     .desc = Inmatningsenheter
 
 primary-button = Primär knapp
+.desc = Ställer in ordningen på fysiska knappar.
     .left = Vänster
     .right = Höger
 
 scrolling = Rullning
+.two-finger = Rulla med två fingrar
+    .edge = Rulla längs kanten med ett finger
     .speed = Rullningshastighet
     .natural = Naturlig rullning
     .natural-desc = Rulla igenom innehållet istället för vyn
 
-## Input: Keyboard
+## Input: Tangentbord
 
 slow = Långsam
 fast = Snabb
 short = Kort
 long = Lång
 keyboard = Tangentbord
-    .desc = Tangentbordsinmatning
+    .desc = Ingångskällor, växling, inmatning av specialtecken, genvägar.
 
 keyboard-sources = Inmatningskällor
     .desc = Ingångskällor kan växlas med tangentkombinationen Super+Mellanslag. Detta kan anpassas i inställningarna för kortkommandon.
@@ -464,21 +590,147 @@ keyboard-sources = Inmatningskällor
     .view-layout = Visa tangentbordslayout
     .remove = Ta bort
     .add = Lägg till källa
+    
+keyboard-special-char = Specialkaraktärsinmatning
+    .alternate = Knapp för alternativa tecken
+    .compose = Compose knapp
+    .caps = Caps Lock knapp
 
 keyboard-typing-assist = Tangenttrycksrespons
     .repeat-rate = Upprepningshastighet
     .repeat-delay = Upprepningsfördröjning
 
-keyboard-special-char = Specialteckenssinmatning
-    .alternate = Alternativa tecken-knapp
-    .compose = Compose knapp
+added = Tillagd
+type-to-search = Skriv för att söka...
+show-extended-input-sources = Visa utökade ingångskällor
 
 ## Input: Keyboard shortcuts
 
 keyboard-shortcuts = Tangentbordsgenvägar
     .desc = Visa och anpassa genvägar
+   
+add-keybinding = Lägg till tangentbindning
+cancel = Avbryt
+command = Kommando
+custom = Anpassat
+debug = Avlusa
+disabled = Inaktiverat
+migrate-workspace-prev = Migrera arbetsytan till tidigare utdata
+migrate-workspace-next = Migrera arbetsytan till nästa utdata
+migrate-workspace = Migrera arbetsytan till utdata { $direction ->
+    *[down] ned
+    [left] vänster
+    [right] höger
+    [up] upp
+    
+navigate = Navigera
+replace = Byt ut
+shortcut-name = Genvägsnamn
+system-controls = Systemkontroller
+terminate = Terminera
+toggle-stacking = Växla fönsterstapling
+type-key-combination = Skriv knappkombination
 
-## Input: Mouse
+custom-shortcuts = Anpassade genvägar
+    .add = Lägg till genväg
+    .context = Lägg till anpassad genväg
+    .none = Inga anpassade genvägar
+    
+modified = { $count } modiferad
+
+nav-shortcuts = Navigation
+    .prev-output = Fokusera föregående utdata
+    .next-output = Fokusera nästa utdata
+    .last-workspace = Fokusera sista arbetsyta
+    .prev-workspace = Fokusera föregående arbetsyta
+    .next-workspace = Fokusera nästa arbetsyta
+    .focus = Fokusera fönster { $direction ->
+        *[down] ned
+        [in] i
+        [left] vänster
+        [out] ot
+        [right] höger
+        [up] upp
+    }
+    .output = Ändra till utdata { $direction ->
+        *[down] ned
+        [left] vänster
+        [right] höger
+        [up] upp
+    }
+    .workspace = Ändra till arbetsyta { $num }
+    
+manage-windows = Hantera fönster
+    .close = Stäng fönster
+    .maximize = Maximera fönster
+    .minimize = Minimera fönster
+    .resize-inwards = Ändra storlek på fönstret inåt
+    .resize-outwards = Ändra storlek på fönstret utåt
+    .toggle-sticky = Växla klibbigt fönster
+    
+move-windows = Flytta fönster
+    .direction = Flytta fönster { $direction ->
+        *[down] ned
+        [left] vänster
+        [right] höger
+        [up] upp
+    }
+    .display = Flytta fönster en skärm { $direction ->
+        *[down] ned
+        [left] vänster
+        [right] höger
+        [up] upp
+    }
+    .workspace = Flytta fönster en arbetsyta { $direction ->
+        *[below] nedan
+        [left] vänster
+        [right] höger
+        [above] över
+    }
+    .workspace-num = Flytta fönster till arbetsyta { $num }
+    .prev-workspace = Flytta fönster till föregående arbetsyta
+    .next-workspace = Flytta fönster till nästa arbetsyta
+    .last-workspace = Flytta fönster till sista arbetsyta
+    .next-display = Flytta fönster till nästa skärm
+    .prev-display = Flytta fönster till föregående skärm
+    .send-to-prev-workspace = Flytta fönster till föregående arbetsyta
+    .send-to-next-workspace = Flytta fönster till nästa arbetsyta
+    
+system-shortcut = System
+    .app-library = Öppna app bibliotek
+    .brightness-down = Minska skärmens ljusstyrka
+    .brightness-up = Öka skärmens ljusstyrka
+    .home-folder = Öppna hemkatalog
+    .keyboard-brightness-down = Minska tangentbordets ljusstyrka
+    .keyboard-brightness-up = Öka tangentbordets ljusstyrka
+    .launcher = Öppna programstartaren
+    .lock-screen = Lås skärmen
+    .mute = Dämpa ljudutgången
+    .mute-mic = Dämpa mikrofoningång
+    .play-pause = Spela/Pausa
+    .play-next = Nästa spår
+    .play-prev = Föregående spår
+    .screenshot = Ta en skärmdump
+    .terminal = Öppna en terminal
+    .volume-lower = Sänk ljudvolymen
+    .volume-raise = Öka ljudvolymen
+    .web-browser = Öppna en webbläsare
+    .window-switcher = Växla mellan öppna fönster
+    .workspace-overview = Öppna översikten över arbetsytor
+    
+window-tiling = Kakelsättning av fönster
+    .horizontal = Ställ in horisontell orientering
+    .vertical = Ställ in vertikal orientering
+    .swap-window = Växla fönster
+    .toggle-tiling = Växla kakelsättning av fönster
+    .toggle-stacking = Växla fönsterstapling
+    .toggle-floating = Växla flytande fönster
+    .toggle-orientation = Växla orientering
+    
+replace-shortcut-dialog = Byt ut genväg?
+    .desc = { $shortcut } används av { $name }. Om du byter ut den så kommer, { $name } att inaktiveras.
+
+## Input: Mus
 
 mouse = Mus
     .desc = Mushastighet, acceleration, naturlig rullning.
@@ -487,7 +739,34 @@ mouse = Mus
 
 ## Input: Touchpad
 
+click-behavior = Klickbeteende
+    .click-finger = Sekundärklicka med två fingrar och mellanklicka med tre fingrar
+    .button-areas = Sekundärklicka i det nedre högra hörnet och mittenklicka längst ner i mitten
+    
+ pinch-to-zoom = Nyp för att zooma
+    .desc = Använd två fingrar för att zooma in på innehåll, för applikationer som stöder zoom.
+    
+tap-to-click = Tryck för att klicka
+    .desc = Aktiverar tryck med ett finger för primärt klick, tryck med två fingrar för sekundärt klick och tryck med tre fingrar för mittenklick.
+
 touchpad = Pekplatta
     .desc = Pekplattans hastighet, klickalternativ, gester.
     .speed = Pekplattans hastighet
     .acceleration = Aktivera pekplattans acceleration
+
+## Input: Gester
+
+gestures = Gester
+    .four-finger-down = Fyra fingrar svep ned
+    .four-finger-left = Fyra fingrar svep vänster
+    .four-finger-right = Fyra fingrar svep höger
+    .four-finger-up = Fyra fingrar svep upp
+    .three-finger-any = Svep med tre fingrar i valfri riktning
+
+switch-workspaces = Ändra arbetsyta
+    .horizontal = Fyra fingrar svep vänster/höger
+    .vertical = Fyra fingrar svep upp/ned
+    
+switch-between-windows = Ändra mellan fönster
+open-application-library = Öppna Applikationsbibliotek
+open-workspaces-view = Öppna Översikt över arbetsytor
