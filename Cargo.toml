@@ -37,6 +37,10 @@ git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
 # rev = "c583de8"
 
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+
 [profile.release]
 lto = "thin"
 
