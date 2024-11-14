@@ -50,6 +50,7 @@ use desktop::{
 use event::wayland;
 use page::Entity;
 use std::collections::BTreeSet;
+use std::time::Duration;
 use std::{borrow::Cow, str::FromStr};
 
 #[allow(clippy::struct_excessive_bools)]
@@ -781,7 +782,7 @@ impl cosmic::Application for SettingsApp {
     fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
         if id == self.core.main_window_id().unwrap() {
             std::thread::spawn(|| {
-                std::thread::sleep(tokio::time::Duration::from_millis(100));
+                std::thread::sleep(Duration::from_millis(100));
                 std::process::exit(0);
             });
         }
