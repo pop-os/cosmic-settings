@@ -236,6 +236,8 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
+        use std::time::Duration;
+
         if let Some(task) = self.background_service.take() {
             task.abort();
         }
@@ -253,11 +255,21 @@ impl page::Page<crate::pages::Message> for Page {
                     };
 
                     while context.dispatch(&mut event_queue).await.is_ok() {
-                        while let Ok(message) = rx.try_recv() {
+                        if sender.is_closed() {
+                            break;
+                        }
+                        'outer: while let Ok(message) = rx.try_recv() {
                             if let cosmic_randr::Message::ManagerDone = message {
-                                let _ = sender
-                                    .send(pages::Message::Displays(Message::Refresh))
-                                    .await;
+                                if matches!(
+                                    tokio::time::timeout(
+                                        Duration::from_secs(1),
+                                        sender.send(pages::Message::Displays(Message::Refresh))
+                                    )
+                                    .await,
+                                    Err(_) | Ok(Err(_))
+                                ) {
+                                    break 'outer;
+                                }
                             }
                         }
                     }
