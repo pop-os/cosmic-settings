@@ -17,14 +17,14 @@ use cosmic::cosmic_theme::{
     CornerRadii, Density, Spacing, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
     LIGHT_THEME_BUILDER_ID,
 };
-use cosmic::iced_core::{Alignment, Color, Length};
+use cosmic::iced_core::{alignment, Color, Length};
 use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, radio, row,
     scrollable, settings, spin_button, text, ColorPickerModel,
 };
-use cosmic::{widget, Apply, Element, Task};
+use cosmic::{Apply, Element, Task};
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::Section;
@@ -286,7 +286,7 @@ pub enum Message {
     FontConfig(font_config::Message),
     FontSearch(String),
     FontSelect(bool, Arc<str>),
-    GapSize(spin_button::Message),
+    GapSize(i32),
     IconTheme(usize),
     #[cfg(feature = "ashpd")]
     ImportError,
@@ -305,7 +305,7 @@ pub enum Message {
     #[cfg(feature = "ashpd")]
     StartImport,
     UseDefaultWindowHint(bool),
-    WindowHintSize(spin_button::Message),
+    WindowHintSize(i32),
     Daytime(bool),
 }
 
@@ -551,32 +551,23 @@ impl Page {
                 }
             }
 
-            Message::WindowHintSize(msg) => {
+            Message::WindowHintSize(active_hint) => {
                 needs_sync = true;
 
                 let Some(config) = self.theme_builder_config.as_ref() else {
                     return Task::none();
                 };
 
-                let active_hint = match msg {
-                    spin_button::Message::Increment => {
-                        self.theme_builder.active_hint.saturating_add(1)
-                    }
-                    spin_button::Message::Decrement => {
-                        self.theme_builder.active_hint.saturating_sub(1)
-                    }
-                };
-
                 if self
                     .theme_builder
-                    .set_active_hint(config, active_hint)
+                    .set_active_hint(config, active_hint as u32)
                     .unwrap_or_default()
                 {
                     self.theme_config_write("active_hint", active_hint);
                 }
             }
 
-            Message::GapSize(msg) => {
+            Message::GapSize(new_gap_size) => {
                 needs_sync = true;
 
                 let Some(config) = self.theme_builder_config.as_ref() else {
@@ -585,10 +576,7 @@ impl Page {
 
                 let mut gaps = self.theme_builder.gaps;
 
-                gaps.1 = match msg {
-                    spin_button::Message::Increment => self.theme_builder.gaps.1.saturating_add(1),
-                    spin_button::Message::Decrement => self.theme_builder.gaps.1.saturating_sub(1),
-                };
+                gaps.1 = new_gap_size as u32;
 
                 if self
                     .theme_builder
@@ -1319,6 +1307,8 @@ impl Page {
     // TODO: cache panel and dock configs so that they needn't be re-read
     #[cfg(feature = "wayland")]
     fn update_panel_radii(roundness: Roundness) {
+        use cosmic_config::CosmicConfigEntry;
+
         let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
         let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
 
@@ -1365,6 +1355,8 @@ impl Page {
 
     #[cfg(feature = "wayland")]
     fn update_panel_spacing(density: Density) {
+        use cosmic_config::CosmicConfigEntry;
+
         let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
         let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
         let mut panel_config = panel_config_helper.as_ref().and_then(|config_helper| {
@@ -1431,7 +1423,7 @@ impl page::Page<crate::pages::Message> for Page {
             .push(button::standard(fl!("export")).on_press(Message::StartExport))
             .apply(container)
             .width(Length::Fill)
-            .align_x(Alignment::End)
+            .align_x(alignment::Horizontal::Right)
             .apply(Element::from)
             .map(crate::pages::Message::Appearance);
 
@@ -1609,7 +1601,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             ]
                             .spacing(space_xxs)
                             .width(Length::FillPortion(1))
-                            .align_x(Alignment::Center),
+                            .align_x(cosmic::iced_core::Alignment::Center),
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(light_mode_illustration.clone(),)
@@ -1624,13 +1616,14 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             ]
                             .spacing(space_xxs)
                             .width(Length::FillPortion(1))
-                            .align_x(Alignment::Center)
+                            .align_x(cosmic::iced_core::Alignment::Center)
                         ]
                         .spacing(48)
-                        .align_y(Alignment::Center)
+                        .align_y(cosmic::iced_core::Alignment::Center)
                         .width(Length::Fixed(424.0)),
                     )
-                    .center_x(Length::Fill),
+                    .width(Length::Fill)
+                    .align_x(cosmic::iced_core::alignment::Horizontal::Center),
                 )
                 .add(
                     settings::item::builder(&descriptions[auto_switch])
@@ -1863,7 +1856,7 @@ pub fn style() -> Section<crate::pages::Message> {
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
-                            .align_x(Alignment::Center),
+                            .align_x(cosmic::iced_core::Alignment::Center),
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(
@@ -1885,7 +1878,7 @@ pub fn style() -> Section<crate::pages::Message> {
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
-                            .align_x(Alignment::Center),
+                            .align_x(cosmic::iced_core::Alignment::Center),
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(
@@ -1907,14 +1900,15 @@ pub fn style() -> Section<crate::pages::Message> {
                                 text::body(&descriptions[square])
                             ]
                             .spacing(8)
-                            .align_x(Alignment::Center)
+                            .align_x(cosmic::iced_core::Alignment::Center)
                             .width(Length::FillPortion(1))
                         ]
                         .spacing(12)
                         .width(Length::Fixed(628.0))
-                        .align_y(Alignment::Center),
+                        .align_y(cosmic::iced_core::Alignment::Center),
                     )
-                    .center_x(Length::Fill),
+                    .width(Length::Fill)
+                    .align_x(cosmic::iced_core::alignment::Horizontal::Center),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
@@ -1982,18 +1976,26 @@ pub fn window_management() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::item::builder(&descriptions[active_hint]).control(
-                    cosmic::widget::spin_button(
-                        page.theme_builder.active_hint.to_string(),
+                .add(
+                    settings::item::builder(&descriptions[active_hint]).control(spin_button(
+                        page.theme.active_hint.to_string(),
+                        1,
+                        page.theme.active_hint as i32,
+                        0,
+                        500,
                         Message::WindowHintSize,
-                    ),
-                ))
-                .add(settings::item::builder(&descriptions[gaps]).control(
-                    cosmic::widget::spin_button(
-                        page.theme_builder.gaps.1.to_string(),
+                    )),
+                )
+                .add(
+                    settings::item::builder(&descriptions[gaps]).control(spin_button(
+                        page.theme.gaps.1.to_string(),
+                        1,
+                        page.theme.gaps.1 as i32,
+                        0,
+                        500,
                         Message::GapSize,
-                    ),
-                ))
+                    )),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
