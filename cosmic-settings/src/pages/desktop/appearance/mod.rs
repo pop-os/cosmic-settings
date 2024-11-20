@@ -1973,8 +1973,8 @@ pub fn window_management() -> Section<crate::pages::Message> {
                 .add(settings::item::builder(&descriptions[active_hint]).control(
                     cosmic::widget::spin_button(
                         page.theme_builder.active_hint.to_string(),
+                        page.theme_builder.active_hint,
                         1,
-                        page.theme.active_hint,
                         0,
                         500,
                         Message::WindowHintSize,
