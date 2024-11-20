@@ -286,7 +286,7 @@ pub enum Message {
     FontConfig(font_config::Message),
     FontSearch(String),
     FontSelect(bool, Arc<str>),
-    GapSize(u32),
+    GapSize(spin_button::Message),
     IconTheme(usize),
     #[cfg(feature = "ashpd")]
     ImportError,
@@ -305,7 +305,7 @@ pub enum Message {
     #[cfg(feature = "ashpd")]
     StartImport,
     UseDefaultWindowHint(bool),
-    WindowHintSize(u32),
+    WindowHintSize(spin_button::Message),
     Daytime(bool),
 }
 
@@ -551,11 +551,20 @@ impl Page {
                 }
             }
 
-            Message::WindowHintSize(active_hint) => {
+            Message::WindowHintSize(msg) => {
                 needs_sync = true;
 
                 let Some(config) = self.theme_builder_config.as_ref() else {
                     return Task::none();
+                };
+
+                let active_hint = match msg {
+                    spin_button::Message::Increment => {
+                        self.theme_builder.active_hint.saturating_add(1)
+                    }
+                    spin_button::Message::Decrement => {
+                        self.theme_builder.active_hint.saturating_sub(1)
+                    }
                 };
 
                 if self
@@ -567,7 +576,7 @@ impl Page {
                 }
             }
 
-            Message::GapSize(gap) => {
+            Message::GapSize(msg) => {
                 needs_sync = true;
 
                 let Some(config) = self.theme_builder_config.as_ref() else {
@@ -576,7 +585,10 @@ impl Page {
 
                 let mut gaps = self.theme_builder.gaps;
 
-                gaps.1 = gap;
+                gaps.1 = match msg {
+                    spin_button::Message::Increment => self.theme_builder.gaps.1.saturating_add(1),
+                    spin_button::Message::Decrement => self.theme_builder.gaps.1.saturating_sub(1),
+                };
 
                 if self
                     .theme_builder
@@ -1970,26 +1982,18 @@ pub fn window_management() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(
-                    settings::item::builder(&descriptions[active_hint]).control(spin_button(
+                .add(settings::item::builder(&descriptions[active_hint]).control(
+                    cosmic::widget::spin_button(
                         page.theme_builder.active_hint.to_string(),
-                        page.theme.active_hint,
-                        1,
-                        0,
-                        500,
                         Message::WindowHintSize,
-                    )),
-                )
-                .add(
-                    settings::item::builder(&descriptions[gaps]).control(spin_button(
+                    ),
+                ))
+                .add(settings::item::builder(&descriptions[gaps]).control(
+                    cosmic::widget::spin_button(
                         page.theme_builder.gaps.1.to_string(),
-                        page.theme_builder.gaps.1,
-                        1,
-                        page.theme.gaps.1,
-                        500,
                         Message::GapSize,
-                    )),
-                )
+                    ),
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
