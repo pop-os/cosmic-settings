@@ -249,7 +249,7 @@ impl page::Page<crate::pages::Message> for Page {
             let runtime = tokio::runtime::Handle::current();
             self.background_service = Some(tokio::task::spawn_blocking(move || {
                 runtime.block_on(async move {
-                    let (tx, mut rx) = tachyonix::channel(5);
+                    let (tx, mut rx) = tachyonix::channel(200);
                     let Ok((mut context, mut event_queue)) = cosmic_randr::connect(tx) else {
                         return;
                     };
