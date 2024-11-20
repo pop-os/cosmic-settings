@@ -789,16 +789,6 @@ impl cosmic::Application for SettingsApp {
             .dialog(self.active_page)
             .map(|e| e.map(Message::PageMessage))
     }
-
-    fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
-        if id == self.core.main_window_id().unwrap() {
-            std::thread::spawn(|| {
-                std::thread::sleep(Duration::from_millis(100));
-                std::process::exit(0);
-            });
-        }
-        None
-    }
 }
 
 impl SettingsApp {
