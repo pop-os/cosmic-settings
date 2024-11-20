@@ -351,6 +351,12 @@ orientation = Ausrichtung
     .rotate-180 = Um 180 Grad drehen
     .rotate-270 = Um 270 Grad drehen
 
+vrr = Variable refresh rate
+    .enabled = Aktiv
+    .force = Immer aktiv
+    .auto = Automatisch
+    .disabled = Deaktiviert
+
 scheduling = Zeitplanung
     .manual = Manueller Zeitplan
 

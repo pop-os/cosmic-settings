@@ -384,6 +384,12 @@ orientation = Orientation
     .rotate-180 = Rotate 180
     .rotate-270 = Rotate 270
 
+vrr = Variable refresh rate
+    .enabled = Enabled
+    .force = Always
+    .auto = Automatic
+    .disabled = Disabled
+
 scheduling = Scheduling
     .manual = Manual schedule
 
