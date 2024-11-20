@@ -1983,7 +1983,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
                 .add(settings::item::builder(&descriptions[gaps]).control(
                     cosmic::widget::spin_button(
                         page.theme_builder.gaps.1.to_string(),
-                        page.theme_builder.gaps.1.to_string(),
+                        page.theme_builder.gaps.1,
                         1,
                         page.theme.active_hint,
                         500,
