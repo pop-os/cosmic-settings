@@ -18,6 +18,7 @@ use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
 use cosmic::app::command::set_theme;
+use cosmic::app::context_drawer::ContextDrawer;
 #[cfg(feature = "single-instance")]
 use cosmic::app::DbusActivationMessage;
 #[cfg(feature = "wayland")]
@@ -68,6 +69,7 @@ pub struct SettingsApp {
     search_id: cosmic::widget::Id,
     search_input: String,
     search_selections: Vec<(page::Entity, section::Entity)>,
+    context_title: Option<String>,
 }
 
 impl SettingsApp {
@@ -183,6 +185,7 @@ impl cosmic::Application for SettingsApp {
             search_id: cosmic::widget::Id::unique(),
             search_input: String::new(),
             search_selections: Vec::default(),
+            context_title: None,
         };
 
         #[cfg(feature = "page-networking")]
@@ -696,7 +699,7 @@ impl cosmic::Application for SettingsApp {
             Message::OpenContextDrawer(page, title) => {
                 self.core.window.show_context = true;
                 self.active_context_page = Some(page);
-                self.set_context_title(title.to_string());
+                self.context_title = Some(title.to_string());
             }
 
             Message::CloseContextDrawer => {
@@ -761,12 +764,20 @@ impl cosmic::Application for SettingsApp {
         panic!("unknown window ID: {id:?}");
     }
 
-    fn context_drawer(&self) -> Option<Element<Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<Message>> {
         if self.core.window.show_context {
             self.active_context_page.and_then(|context_page| {
-                self.pages
-                    .context_drawer(context_page)
-                    .map(|e| e.map(Message::PageMessage))
+                self.pages.context_drawer(context_page).map(|cd| {
+                    let cd = cosmic::app::context_drawer::context_drawer(
+                        cd.map(Message::PageMessage),
+                        Message::CloseContextDrawer,
+                    );
+                    if let Some(title) = self.context_title.as_ref() {
+                        cd.title(title)
+                    } else {
+                        cd
+                    }
+                })
             })
         } else {
             None
