@@ -13,7 +13,9 @@ use cosmic::widget::{
 };
 use cosmic::{Apply, Element, Task};
 use cosmic_config::{ConfigGet, ConfigSet};
-use cosmic_randr_shell::{List, Output, OutputKey, Transform};
+use cosmic_randr_shell::{
+    AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
+};
 use cosmic_settings_page::{self as page, section, Section};
 use once_cell::sync::Lazy;
 use slab::Slab;
@@ -90,6 +92,8 @@ pub enum Message {
     Refresh,
     /// Set the refresh rate of a display.
     RefreshRate(usize),
+    /// Set the VRR mode of a display.
+    VariableRefreshRate(usize),
     /// Set the resolution of a display.
     Resolution(usize),
     /// Set the preferred scale for a display.
@@ -114,6 +118,7 @@ enum Randr {
     Mirror(OutputKey),
     Position(i32, i32),
     RefreshRate(u32),
+    VariableRefreshRate(AdaptiveSyncState),
     Resolution(u32, u32),
     Scale(u32),
     Transform(Transform),
@@ -181,6 +186,7 @@ struct Config {
     /// Whether night light is enabled.
     // night_light_enabled: bool,
     refresh_rate: Option<u32>,
+    vrr: Option<AdaptiveSyncState>,
     resolution: Option<(u32, u32)>,
     scale: u32,
 }
@@ -190,10 +196,12 @@ struct Config {
 struct ViewCache {
     modes: BTreeMap<(u32, u32), Vec<u32>>,
     orientations: [String; 4],
+    vrr_modes: Vec<String>,
     refresh_rates: Vec<String>,
     resolutions: Vec<String>,
     orientation_selected: Option<usize>,
     refresh_rate_selected: Option<usize>,
+    vrr_selected: Option<usize>,
     resolution_selected: Option<usize>,
     scale_selected: Option<usize>,
 }
@@ -291,7 +299,7 @@ impl page::Page<crate::pages::Message> for Page {
     #[cfg(feature = "test")]
     fn on_enter(
         &mut self,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
+        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
         cosmic::task::future(async move {
             let mut randr = List::default();
@@ -314,6 +322,8 @@ impl page::Page<crate::pages::Message> for Page {
                 transform: Some(Transform::Normal),
                 modes: vec![test_mode],
                 current: Some(test_mode),
+                adaptive_sync: None,
+                adaptive_sync_availability: None,
             });
 
             randr.outputs.insert(cosmic_randr_shell::Output {
@@ -328,6 +338,8 @@ impl page::Page<crate::pages::Message> for Page {
                 transform: Some(Transform::Normal),
                 modes: vec![test_mode],
                 current: Some(test_mode),
+                adaptive_sync: Some(AdaptiveSyncState::Disabled),
+                adaptive_sync_availability: Some(AdaptiveSyncAvailability::Supported),
             });
 
             crate::pages::Message::Displays(Message::Update {
@@ -480,6 +492,8 @@ impl Page {
 
             Message::RefreshRate(rate) => return self.set_refresh_rate(rate),
 
+            Message::VariableRefreshRate(mode) => return self.set_vrr(mode),
+
             Message::Resolution(option) => return self.set_resolution(option),
 
             Message::Scale(scale) => return self.set_scale(scale),
@@ -613,10 +627,12 @@ impl Page {
         self.active_display = output_id;
         self.config.refresh_rate = None;
         self.config.resolution = None;
+        self.config.vrr = output.adaptive_sync;
         self.config.scale = (output.scale * 100.0) as u32;
 
         self.cache.modes.clear();
         self.cache.refresh_rates.clear();
+        self.cache.vrr_modes.clear();
         self.cache.resolutions.clear();
         self.cache.orientation_selected = match output.transform {
             Some(Transform::Normal) => Some(0),
@@ -627,6 +643,7 @@ impl Page {
         };
         self.cache.resolution_selected = None;
         self.cache.refresh_rate_selected = None;
+        self.cache.vrr_selected = None;
 
         self.cache.scale_selected = Some(
             DPI_SCALES
@@ -660,6 +677,31 @@ impl Page {
                 .push(format!("{}x{}", resolution.0, resolution.1));
             if Some(resolution) == self.config.resolution {
                 cache_rates(&mut self.cache.refresh_rates, rates);
+            }
+        }
+
+        if let Some(state) = output.adaptive_sync {
+            match output.adaptive_sync_availability {
+                Some(AdaptiveSyncAvailability::Supported) => {
+                    self.cache.vrr_modes = vec![
+                        fl!("vrr", "force"),
+                        fl!("vrr", "auto"),
+                        fl!("vrr", "disabled"),
+                    ];
+                    self.cache.vrr_selected = match state {
+                        AdaptiveSyncState::Always => Some(0),
+                        AdaptiveSyncState::Auto => Some(1),
+                        AdaptiveSyncState::Disabled => Some(2),
+                    };
+                }
+                Some(AdaptiveSyncAvailability::RequiresModeset) => {
+                    self.cache.vrr_modes = vec![fl!("vrr", "enabled"), fl!("vrr", "disabled")];
+                    self.cache.vrr_selected = match state {
+                        AdaptiveSyncState::Always | AdaptiveSyncState::Auto => Some(0),
+                        AdaptiveSyncState::Disabled => Some(1),
+                    };
+                }
+                _ => {}
             }
         }
 
@@ -789,6 +831,32 @@ impl Page {
         }
 
         Task::none()
+    }
+
+    /// Changes the variable refresh rate mode of the active display.
+    pub fn set_vrr(&mut self, option: usize) -> Task<app::Message> {
+        let Some(output) = self.list.outputs.get(self.active_display) else {
+            return Task::none();
+        };
+
+        let mode = match output.adaptive_sync_availability {
+            Some(AdaptiveSyncAvailability::Supported) => match option {
+                0 => AdaptiveSyncState::Always,
+                1 => AdaptiveSyncState::Auto,
+                2 => AdaptiveSyncState::Disabled,
+                _ => return Task::none(),
+            },
+            Some(AdaptiveSyncAvailability::RequiresModeset) => match option {
+                0 => AdaptiveSyncState::Always,
+                1 => AdaptiveSyncState::Disabled,
+                _ => return Task::none(),
+            },
+            _ => return Task::none(),
+        };
+
+        self.cache.vrr_selected = Some(option);
+        self.config.vrr = Some(mode);
+        self.exec_randr(output, Randr::VariableRefreshRate(mode))
     }
 
     /// Change the resolution of the active display.
@@ -924,6 +992,19 @@ impl Page {
                     .arg(itoa::Buffer::new().format(current.size.1));
             }
 
+            Randr::VariableRefreshRate(mode) => {
+                let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
+                    return Task::none();
+                };
+
+                task.arg("mode")
+                    .arg("--adaptive-sync")
+                    .arg(format!("{}", mode))
+                    .arg(name)
+                    .arg(itoa::Buffer::new().format(current.size.0))
+                    .arg(itoa::Buffer::new().format(current.size.1));
+            }
+
             Randr::Resolution(width, height) => {
                 task.arg("mode")
                     .arg(name)
@@ -1026,6 +1107,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
 
     let _display = descriptions.insert(fl!("display"));
     let refresh_rate = descriptions.insert(fl!("display", "refresh-rate"));
+    let vrr = descriptions.insert(fl!("vrr"));
     let resolution = descriptions.insert(fl!("display", "resolution"));
     let scale = descriptions.insert(fl!("display", "scale"));
     let orientation = descriptions.insert(fl!("orientation"));
@@ -1046,7 +1128,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
             let active_output = &page.list.outputs[active_id];
 
             let display_options = (page.show_display_options && active_output.enabled).then(|| {
-                vec![
+                let mut items = vec![
                     widget::settings::item(
                         &descriptions[resolution],
                         dropdown(
@@ -1063,6 +1145,20 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                             Message::RefreshRate,
                         ),
                     ),
+                ];
+
+                if let Some(vrr_selected) = page.cache.vrr_selected {
+                    items.push(widget::settings::item(
+                        &descriptions[vrr],
+                        dropdown(
+                            &page.cache.vrr_modes,
+                            Some(vrr_selected),
+                            Message::VariableRefreshRate,
+                        ),
+                    ));
+                }
+
+                items.extend(vec![
                     widget::settings::item(
                         &descriptions[scale],
                         dropdown(&DPI_SCALE_LABELS, page.cache.scale_selected, Message::Scale),
@@ -1082,7 +1178,9 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                             },
                         ),
                     ),
-                ]
+                ]);
+
+                items
             });
 
             let mut content = column().spacing(theme.cosmic().space_xs());
@@ -1092,7 +1190,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     .button_alignment(Alignment::Center)
                     .on_activate(Message::Display);
 
-                let display_enable = (page
+                let mut display_enable = (page
                     // Don't allow disabling display if it's the only active
                     .list
                     .outputs
@@ -1102,7 +1200,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     > 1
                     || !active_output.enabled)
                     .then(|| {
-                        let mut column = list_column()
+                        list_column()
                             .add(widget::settings::item(
                                 &descriptions[enable_label],
                                 toggler(active_output.enabled).on_toggle(Message::DisplayToggle),
@@ -1113,18 +1211,17 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                                     &page.mirror_menu,
                                     Message::Mirroring,
                                 ),
-                            ));
+                            ))
+                    })
+                    .unwrap_or_else(list_column);
 
-                        if let Some(items) = display_options {
-                            for item in items {
-                                column = column.add(item);
-                            }
-                        }
+                if let Some(items) = display_options {
+                    for item in items {
+                        display_enable = display_enable.add(item);
+                    }
+                }
 
-                        column
-                    });
-
-                content = content.push(display_switcher).push_maybe(display_enable);
+                content = content.push(display_switcher).push(display_enable);
             } else {
                 content = content
                     .push(widget::text::heading(&descriptions[options_label]))
