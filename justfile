@@ -137,14 +137,6 @@ uninstall:
     find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm -rf {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm {{iconsdir}}/{}
 
-heaptrack *args:
-    #!/usr/bin/env bash
-    set -ex
-    rm -fv heaptrack.cosmic-settings.*
-    cargo heaptrack --profile release-with-debug --bin cosmic-settings -- {{args}}
-    zstd -dc < heaptrack.cosmic-settings.*.raw.zst + /usr/lib/heaptrack/libexec/heaptrack_env | zstd -c > heaptrack_env.cosmic-settings.zst
-    heaptrack_gui heaptrack.cosmic-settings.zst
-
 # Dependencies
 cmd-depends := "
 cargo
