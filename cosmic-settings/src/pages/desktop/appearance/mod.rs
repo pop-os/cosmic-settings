@@ -1971,21 +1971,21 @@ pub fn window_management() -> Section<crate::pages::Message> {
             settings::section()
                 .title(&section.title)
                 .add(settings::item::builder(&descriptions[active_hint]).control(
-                    cosmic::widget::spin_button(
+                    spin_button(
                         page.theme_builder.active_hint.to_string(),
-                        1,
                         page.theme.active_hint,
+                        1,
                         0,
                         500,
                         Message::WindowHintSize,
                     ),
                 ))
                 .add(settings::item::builder(&descriptions[gaps]).control(
-                    cosmic::widget::spin_button(
+                    spin_button(
                         page.theme_builder.gaps.1.to_string(),
-                        page.theme_builder.gaps.1.to_string(),
+                        page.theme_builder.gaps.1,
                         1,
-                        page.theme.active_hint,
+                        page.theme.gaps.1,
                         500,
                         Message::GapSize,
                     ),
