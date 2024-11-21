@@ -1,5 +1,7 @@
 app = Ustawienia COSMIC
 
+dbus-connection-error = Nieudane połączenie do DBus
+ok = OK
 unknown = Nieznane
 
 number = { $number }
@@ -62,8 +64,24 @@ remove-connection-dialog = Usunąć Profil Połączenia?
 
 vpn = VPN
     .connections = Połączenia VPN
+    .error = Nieudane dodania konfiguracji VPN
     .remove = Usuń profil połączenia
     .select-file = Wybierz plik konfiguracyjny VPN
+
+vpn-error = Błąd VPN
+    .config = Nieudane dodania konfiguracji VPN
+    .connect = Nieudane połączenie z VPN
+    .connection-editor = Nieudana edycja połączenia
+    .connection-settings = Nie udało się odczytać ustawień aktywnego połączenia
+    .updating-state = Nieudane uaktualnienie stanu zarządzania połączeniami
+    .wireguard-config-path = Nieprawidłowa ścieżka pliku dla konfiguracyjnego WireGuard
+    .wireguard-config-path-desc = Wybrany plik musi być w lokalnym systemie plików.
+    .wireguard-device = Nie udało się stworzyć urządzenia WireGuard
+    .with-password = Nie udało się ustawić { $field ->
+        *[username] użytkownika
+        [password] hasła
+        [password-flags] flag hasła
+    } VPS za pomocą nmcli
 
 wired = Przewodowa
     .adapter = Adapter przewodowy { $id }
@@ -74,6 +92,9 @@ wired = Przewodowa
 wifi = Wi-Fi
     .adapter = Adapter Wi-Fi { $id }
     .forget = Zapomnij tą sieć
+
+wireguard-dialog = Dodaj urządzenie WireGuard
+    .description = Wybierz nazwę urządzenia dla konfiguracji WireGuard.
 
 ## Networking: Online Accounts
 
@@ -185,8 +206,6 @@ control-tint = Sterowanie odcieniami komponentów
 frosted = Efekt zmrożonego szkła na interfejsie systemowym
     .desc = Nakłada efekt rozmycia na panel, dok, aplety, program startowy oraz bibliotekę aplikacji.
 
-experimental-settings = Ustawienia eksperymentalne
-
 enable-export = Użyj tego motywu do apek GNOME.
     .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Apki inne niż COSMIC mogą wymagać restartu do zmiany motywu.
 
@@ -282,7 +301,7 @@ dock = Dok
 window-management = Zarządzanie oknami
     .desc = Akcje klawisza super, ustawienia kontroli okien i dodatkowe ustawienia kafelkowania okien.
 
-super-key = Klawisz Super
+super-key = Akcje klawisza Super
     .launcher = Otwórz Program Startowy
     .workspaces = Otwórz Obszary Robocze
     .applications = Otwórz Aplikacje
@@ -450,13 +469,19 @@ connected-devices = Podłączone Urządzenia
   .unknown = Nierozpoznane urządzenie
 
 power-mode = Profile Zasilania
-  .performance = Tryb Wysokowydajny
-  .balanced = Tryb Zbalansowany
   .battery = Tryb Oszczędzania Energii
-  .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
-  .balanced-desc = Standardowa wydajność i zużycie baterii.
   .battery-desc = Zmniejszone zużycie energii i zmniejszona wydajność.
+  .balanced = Tryb Zbalansowany
+  .balanced-desc = Standardowa wydajność i zużycie baterii.
+  .performance = Tryb Wysokowydajny
+  .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
   .no-backend = Nie znaleziono backendu. Zainstaluj system76-power lub power-profiles-daemon.
+
+power-saving = Opcje Oszczędzania Energii
+    .turn-off-screen-after = Wyłącz ekran po
+    .auto-suspend = Automatycznie wstrzymaj
+    .auto-suspend-ac = Automatycznie wstrzymuj na zasilaniu
+    .auto-suspend-battery = Automatycznie wstrzymuj na baterii
 
 ## Input
 
@@ -500,6 +525,7 @@ keyboard-sources = Żródła Wprowadzania Danych
 keyboard-special-char = Wpis Znaków Specjalnych
     .alternate = Alternatywne klawisze znaków
     .compose = Ustaw klawisz
+    .caps = Klawisz Caps Lock
 
 keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
@@ -507,6 +533,7 @@ keyboard-typing-assist = Pisanie
 
 added = Dodany
 type-to-search = Naciśnij by wyszukać...
+show-extended-input-sources = Pokaż rozszerzone źródła wprowadzania danych
 
 ## Input: Keyboard: Shortcuts
 
@@ -700,6 +727,22 @@ time-format = Format Daty i Czasu
 
 time-region = Region i Język
     .desc = Format dat, czasu i numerów na podstawie wybranego regionu
+
+formatting = Formatowanie
+    .dates = Daty
+    .time = Czas
+    .date-and-time = Czas i Data
+    .numbers = Numery
+    .measurement = Miary
+    .paper = Papieru
+
+preferred-languages = Preferowane Języki
+    .desc = Kolejność języków określa który język jest używany podczas tłumaczenia. Zmiany wejdą w życie podczas kolejnego logowania.
+
+add-language = Dodaj język
+    .context = Dodaj język
+install-additional-languages = Zainstaluj dodatkowy język
+region = Region
 
 ## System
 
