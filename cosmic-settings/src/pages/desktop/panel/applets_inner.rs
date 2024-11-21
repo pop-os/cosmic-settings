@@ -442,7 +442,7 @@ impl Page {
             }
             Message::AddAppletDrawer => {
                 self.context = Some(ContextDrawer::AddApplet);
-                return cosmic::command::message(app::Message::OpenContextDrawer(
+                return cosmic::task::message(app::Message::OpenContextDrawer(
                     self.entity,
                     Cow::Owned(fl!("add-applet")),
                 ));

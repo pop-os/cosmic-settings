@@ -393,7 +393,7 @@ impl Model {
                 self.shortcut_context = Some(id);
                 self.replace_dialog = None;
 
-                let mut tasks = vec![cosmic::command::message(
+                let mut tasks = vec![cosmic::task::message(
                     crate::app::Message::OpenContextDrawer(self.entity, description.into()),
                 )];
 

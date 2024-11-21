@@ -460,7 +460,7 @@ impl Page {
 
             Message::ShowInputSourcesContext => {
                 self.context = Some(Context::ShowInputSourcesContext);
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     fl!("keyboard-sources", "add").into(),
                 ));
@@ -472,7 +472,7 @@ impl Page {
 
             Message::OpenSpecialCharacterContext(key) => {
                 self.context = Some(Context::SpecialCharacter(key));
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     key.title().into(),
                 ));

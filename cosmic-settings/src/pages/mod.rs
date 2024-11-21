@@ -29,6 +29,8 @@ pub enum Message {
     CustomShortcuts(input::keyboard::shortcuts::custom::Message),
     #[cfg(feature = "page-date")]
     DateAndTime(time::date::Message),
+    #[cfg(feature = "page-default-apps")]
+    DefaultApps(system::default_apps::Message),
     Desktop(desktop::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
     #[cfg(feature = "page-workspaces")]

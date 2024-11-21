@@ -767,3 +767,17 @@ firmware = Firmware
 
 users = Users
     .desc = Authentication and user accounts.
+
+## System: Default Applications
+
+default-apps = Default Applications
+    .desc = Default applications and file associations.
+    .web-browser = Web browser
+    .file-manager = File manager
+    .mail-client = Mail client
+    .music = Music
+    .video = Video
+    .photos = Photos
+    .calendar = Calendar
+    .terminal = Terminal
+    .other-associations = Other Associations

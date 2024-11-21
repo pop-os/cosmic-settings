@@ -42,6 +42,7 @@ itertools = "0.13.0"
 itoa = "1.0.11"
 libcosmic.workspace = true
 locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", optional = true }
 notify = "6.1.1"
 once_cell = "1.19.0"
 regex = "1.10.6"
@@ -67,6 +68,7 @@ zbus = { version = "4.4.0", features = ["tokio"], optional = true }
 ustr = "1.0.0"
 fontdb = "0.16.2"
 fixed_decimal = "0.5.6"
+mime = "0.3.17"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
@@ -96,6 +98,7 @@ linux = [
     "page-about",
     "page-bluetooth",
     "page-date",
+    "page-default-apps",
     "page-input",
     "page-networking",
     "page-power",
@@ -111,6 +114,7 @@ linux = [
 page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
 page-bluetooth = ["dep:bluez-zbus", "dep:zbus"]
 page-date = ["dep:timedate-zbus", "dep:zbus"]
+page-default-apps = ["dep:mime-apps"]
 page-input = [
     "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",

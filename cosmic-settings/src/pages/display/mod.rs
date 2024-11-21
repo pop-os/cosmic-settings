@@ -277,7 +277,7 @@ impl page::Page<crate::pages::Message> for Page {
             }));
         }
 
-        cosmic::command::future(on_enter())
+        cosmic::task::future(on_enter())
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
@@ -293,7 +293,7 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
-        cosmic::command::future(async move {
+        cosmic::task::future(async move {
             let mut randr = List::default();
 
             let test_mode = randr.modes.insert(cosmic_randr_shell::Mode {
@@ -380,7 +380,7 @@ impl Page {
                     tracing::error!(?why, "cosmic-randr error");
                 } else {
                     // Reload display info
-                    return cosmic::command::future(async move {
+                    return cosmic::task::future(async move {
                         crate::Message::PageMessage(on_enter().await)
                     });
                 }
@@ -406,11 +406,11 @@ impl Page {
             Message::DialogCountdown => {
                 if self.dialog_countdown == 0 {
                     if self.dialog.is_some() {
-                        return cosmic::command::message(app::Message::from(Message::DialogCancel));
+                        return cosmic::task::message(app::Message::from(Message::DialogCancel));
                     }
                 } else {
                     self.dialog_countdown -= 1;
-                    return cosmic::command::future(async move {
+                    return cosmic::task::future(async move {
                         tokio::time::sleep(time::Duration::from_secs(1)).await;
                         Message::DialogCountdown
                     });
@@ -449,7 +449,7 @@ impl Page {
             //
             // Message::NightLightContext => {
             //     self.context = Some(ContextDrawer::NightLight);
-            //     return cosmic::command::message(app::Message::OpenContextDrawer(
+            //     return cosmic::task::message(app::Message::OpenContextDrawer(
             //         text::NIGHT_LIGHT.clone().into(),
             //     ));
             // }
@@ -473,7 +473,7 @@ impl Page {
             Message::Position(display, x, y) => return self.set_position(display, x, y),
 
             Message::Refresh => {
-                return cosmic::command::future(async move {
+                return cosmic::task::future(async move {
                     crate::Message::PageMessage(on_enter().await)
                 });
             }
@@ -583,7 +583,7 @@ impl Page {
         }
         self.dialog = Some(revert_request);
         self.dialog_countdown = 10;
-        cosmic::command::future(async {
+        cosmic::task::future(async {
             tokio::time::sleep(time::Duration::from_secs(1)).await;
             app::Message::from(Message::DialogCountdown)
         })
@@ -872,7 +872,7 @@ impl Page {
 
         // Removes the dialog if no change is being made
         if Some(request) == self.dialog {
-            tasks.push(cosmic::command::message(app::Message::from(
+            tasks.push(cosmic::task::message(app::Message::from(
                 Message::DialogComplete,
             )));
         }
@@ -970,7 +970,7 @@ impl Page {
             }
         }
 
-        tasks.push(cosmic::command::future(async move {
+        tasks.push(cosmic::task::future(async move {
             tracing::debug!(?task, "executing");
             app::Message::from(Message::RandrResult(Arc::new(task.status().await)))
         }));

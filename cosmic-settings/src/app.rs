@@ -51,7 +51,6 @@ use desktop::{
 use event::wayland;
 use page::Entity;
 use std::collections::BTreeSet;
-use std::time::Duration;
 use std::{borrow::Cow, str::FromStr};
 
 #[allow(clippy::struct_excessive_bools)]
@@ -82,6 +81,8 @@ impl SettingsApp {
             PageCommands::Bluetooth => self.pages.page_id::<bluetooth::Page>(),
             #[cfg(feature = "page-date")]
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
+            #[cfg(feature = "page-default-apps")]
+            PageCommands::DefaultApps => self.pages.page_id::<system::default_apps::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             #[cfg(feature = "wayland")]
@@ -212,10 +213,7 @@ impl cosmic::Application for SettingsApp {
         }
         .unwrap_or(desktop_id);
 
-        (
-            app,
-            cosmic::command::message(Message::DelayedInit(active_id)),
-        )
+        (app, cosmic::task::message(Message::DelayedInit(active_id)))
     }
 
     fn nav_model(&self) -> Option<&nav_bar::Model> {
@@ -385,6 +383,13 @@ impl cosmic::Application for SettingsApp {
                 #[cfg(feature = "page-date")]
                 crate::pages::Message::DateAndTime(message) => {
                     if let Some(page) = self.pages.page_mut::<time::date::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-default-apps")]
+                crate::pages::Message::DefaultApps(message) => {
+                    if let Some(page) = self.pages.page_mut::<system::default_apps::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
@@ -718,7 +723,7 @@ impl cosmic::Application for SettingsApp {
             // It is necessary to delay init to allow time for the page sender to be initialized
             Message::DelayedInit(active_id) => {
                 if self.page_sender.is_none() {
-                    return cosmic::command::message(Message::DelayedInit(active_id));
+                    return cosmic::task::message(Message::DelayedInit(active_id));
                 }
 
                 return self.activate_page(active_id);
@@ -832,7 +837,7 @@ impl SettingsApp {
         Task::batch(vec![
             leave_task,
             page_task,
-            cosmic::command::future(async { Message::SetWindowTitle }),
+            cosmic::task::future(async { Message::SetWindowTitle }),
         ])
     }
 
@@ -1005,7 +1010,7 @@ impl SettingsApp {
         if tasks.is_empty() {
             Task::none()
         } else {
-            cosmic::command::batch(tasks)
+            cosmic::task::batch(tasks)
                 .map(Message::PageMessage)
                 .map(Into::into)
         }

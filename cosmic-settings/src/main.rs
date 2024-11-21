@@ -49,6 +49,9 @@ pub enum PageCommands {
     /// Date & Time settings page
     #[cfg(feature = "page-date")]
     DateTime,
+    /// Default application associations
+    #[cfg(feature = "page-default-apps")]
+    DefaultApps,
     /// Desktop settings page
     Desktop,
     /// Displays settings page

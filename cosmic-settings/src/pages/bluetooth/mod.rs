@@ -78,7 +78,7 @@ impl page::Page<crate::pages::Message> for Page {
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> cosmic::Task<crate::pages::Message> {
         // TODO start stream for new device
-        cosmic::command::future(async move {
+        cosmic::task::future(async move {
             match zbus::Connection::system().await {
                 Ok(connection) => Message::DBusConnect(connection, sender),
                 Err(why) => Message::DBusError(why.to_string()),
@@ -261,7 +261,7 @@ impl Page {
                             Active::Disabling
                         };
                         self.update_status();
-                        return cosmic::command::future(change_adapter_status(
+                        return cosmic::task::future(change_adapter_status(
                             connection.clone(),
                             path,
                             active,
@@ -276,7 +276,7 @@ impl Page {
                             } else {
                                 Active::Disabling
                             };
-                            cosmic::command::future(change_adapter_status(
+                            cosmic::task::future(change_adapter_status(
                                 connection.clone(),
                                 path.clone(),
                                 active,
@@ -284,7 +284,7 @@ impl Page {
                         })
                         .collect();
                     self.update_status();
-                    return cosmic::command::batch(tasks);
+                    return cosmic::task::batch(tasks);
                 }
                 tracing::warn!("No DBus connection ready");
             }
@@ -306,7 +306,7 @@ impl Page {
                     ));
                 }
 
-                return cosmic::command::future(async move {
+                return cosmic::task::future(async move {
                     let result: zbus::Result<HashMap<OwnedObjectPath, Adapter>> = async {
                         futures::future::join_all(
                             bluez_zbus::get_adapters(&connection)
@@ -342,7 +342,7 @@ impl Page {
                 self.update_status();
 
                 if self.selected_adapter.is_none() && self.adapters.len() == 1 {
-                    return cosmic::command::message(Message::SelectAdapter(
+                    return cosmic::task::message(Message::SelectAdapter(
                         self.adapters.keys().next().cloned(),
                     ));
                 }
@@ -365,7 +365,7 @@ impl Page {
                 tracing::debug!("Adapter {} added", adapter.address);
                 self.adapters.insert(path.clone(), adapter);
                 if self.selected_adapter.is_none() {
-                    return cosmic::command::message(Message::SelectAdapter(Some(path)));
+                    return cosmic::task::message(Message::SelectAdapter(Some(path)));
                 }
             }
             Message::UpdatedAdapter(path, update) => {
@@ -381,7 +381,7 @@ impl Page {
                                 && existing.scanning == Active::Disabled =>
                         {
                             existing.scanning = Active::Enabling;
-                            return cosmic::command::future(start_discovery(connection, path));
+                            return cosmic::task::future(start_discovery(connection, path));
                         }
                         _ => {}
                     }
@@ -412,19 +412,20 @@ impl Page {
                 if let Some(connection) = self.connection.as_ref() {
                     let connection = connection.clone();
                     if let Some((path, adapter)) = self.get_selected_adapter_mut() {
-                        let mut fut: Vec<Task<Message>> = vec![cosmic::command::future(
-                            get_devices(connection.clone(), path.clone()),
-                        )];
+                        let mut fut: Vec<Task<Message>> = vec![cosmic::task::future(get_devices(
+                            connection.clone(),
+                            path.clone(),
+                        ))];
                         if adapter.enabled == Active::Enabled
                             && adapter.scanning == Active::Disabled
                         {
-                            fut.push(cosmic::command::future(start_discovery(
+                            fut.push(cosmic::task::future(start_discovery(
                                 connection,
                                 path.clone(),
                             )));
                         }
 
-                        return cosmic::command::batch(fut);
+                        return cosmic::task::batch(fut);
                     }
                 } else {
                     tracing::warn!("No DBus connection ready");
@@ -440,7 +441,7 @@ impl Page {
                     let connection = connection.clone();
                     if let Some(device) = self.devices.get_mut(&path) {
                         device.enabled = Active::Disabling;
-                        return cosmic::command::future(forget_device(connection, path.clone()));
+                        return cosmic::task::future(forget_device(connection, path.clone()));
                     }
                 } else {
                     tracing::warn!("No DBus connection ready");
@@ -458,7 +459,7 @@ impl Page {
                             return cosmic::Task::none();
                         }
                         device.enabled = Active::Enabling;
-                        return cosmic::command::future(connect_device(connection, path));
+                        return cosmic::task::future(connect_device(connection, path));
                     }
                 } else {
                     tracing::warn!("No DBus connection ready");
@@ -474,7 +475,7 @@ impl Page {
                             return cosmic::Task::none();
                         }
                         device.enabled = Active::Disabling;
-                        return cosmic::command::future(disconnect_device(connection, path));
+                        return cosmic::task::future(disconnect_device(connection, path));
                     }
                 } else {
                     tracing::warn!("No DBus connection ready");

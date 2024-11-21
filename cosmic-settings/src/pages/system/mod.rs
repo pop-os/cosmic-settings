@@ -3,6 +3,8 @@
 
 #[cfg(feature = "page-about")]
 pub mod about;
+#[cfg(feature = "page-default-apps")]
+pub mod default_apps;
 pub mod firmware;
 pub mod users;
 
@@ -33,6 +35,10 @@ impl page::AutoBind<crate::pages::Message> for Page {
             page = page.sub_page::<about::Page>();
         }
         page = page.sub_page::<firmware::Page>();
+        #[cfg(feature = "page-default-apps")]
+        {
+            page = page.sub_page::<default_apps::Page>();
+        }
         page
     }
 }

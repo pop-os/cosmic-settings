@@ -776,7 +776,7 @@ fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
         Ok::<_, zbus::Error>(settings)
     };
 
-    cosmic::command::future(async move {
+    cosmic::task::future(async move {
         settings
             .await
             .context("failed to get connection settings")
@@ -789,7 +789,7 @@ fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
 }
 
 pub fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
-    cosmic::command::future(async move {
+    cosmic::task::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
             Err(why) => Message::Error(why.to_string()),
@@ -798,7 +798,7 @@ pub fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
 }
 
 pub fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
-    cosmic::command::future(async move {
+    cosmic::task::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::Wifi);
         match network_manager::devices::list(&conn, filter).await {

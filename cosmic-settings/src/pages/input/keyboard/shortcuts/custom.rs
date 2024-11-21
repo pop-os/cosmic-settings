@@ -212,7 +212,7 @@ impl Page {
             Message::ShortcutContext => {
                 self.add_shortcut.enable();
                 return Task::batch(vec![
-                    cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    cosmic::task::message(crate::app::Message::OpenContextDrawer(
                         self.entity,
                         fl!("custom-shortcuts", "context").into(),
                     )),

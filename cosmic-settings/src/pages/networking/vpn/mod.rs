@@ -339,7 +339,7 @@ impl page::Page<crate::pages::Message> for Page {
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
-            return cosmic::command::future(async move {
+            return cosmic::task::future(async move {
                 zbus::Connection::system()
                     .await
                     .context("failed to create system dbus connection")
@@ -455,7 +455,7 @@ impl Page {
 
             Message::WireGuardConfig => {
                 if let Some(VpnDialog::WireGuardName(device, filename, path)) = self.dialog.take() {
-                    return cosmic::command::future(async move {
+                    return cosmic::task::future(async move {
                         let new_path = path.replace(&filename, &device);
                         _ = std::fs::rename(&path, &new_path);
                         match super::nm_add_vpn_file("wireguard", new_path).await {
@@ -474,7 +474,7 @@ impl Page {
                         ConnectionSettings::Vpn(ref settings) => settings,
                         ConnectionSettings::Wireguard { id } => {
                             let connection_name = id.clone();
-                            return cosmic::command::future(async move {
+                            return cosmic::task::future(async move {
                                 if let Err(why) = nmcli::connect(&connection_name).await {
                                     return Message::Error(
                                         ErrorKind::Connect,
@@ -501,7 +501,7 @@ impl Page {
 
                         _ => {
                             let connection_name = settings.id.clone();
-                            return cosmic::command::future(async move {
+                            return cosmic::task::future(async move {
                                 if let Err(why) = nmcli::connect(&connection_name).await {
                                     return Message::Error(
                                         ErrorKind::Connect,
@@ -546,7 +546,7 @@ impl Page {
             Message::Settings(uuid) => {
                 self.close_popup_and_apply_updates();
 
-                return cosmic::command::future(async move {
+                return cosmic::task::future(async move {
                     super::nm_edit_connection(uuid.as_ref())
                         .then(|res| async move {
                             match res {
@@ -639,7 +639,7 @@ impl Page {
         username: String,
         password: SecureString,
     ) -> Task<Message> {
-        cosmic::command::future(async move {
+        cosmic::task::future(async move {
             if let Err(why) = nmcli::set_username(&connection_name, &username).await {
                 return Message::Error(ErrorKind::WithPassword("username"), why.to_string());
             }
@@ -866,7 +866,7 @@ fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
 }
 
 fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
-    cosmic::command::future(async move {
+    cosmic::task::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
             Err(why) => Message::Error(ErrorKind::UpdatingState, why.to_string()),
@@ -875,7 +875,7 @@ fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
 }
 
 fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
-    cosmic::command::future(async move {
+    cosmic::task::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::WireGuard);
 
@@ -938,7 +938,7 @@ fn add_network() -> Task<crate::app::Message> {
                 }
             }
         })
-        .apply(cosmic::command::future)
+        .apply(cosmic::task::future)
 }
 
 fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
@@ -1040,7 +1040,7 @@ fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
         Ok::<_, zbus::Error>(settings)
     };
 
-    cosmic::command::future(async move {
+    cosmic::task::future(async move {
         settings.await.map_or_else(
             |why| Message::Error(ErrorKind::ConnectionSettings, why.to_string()),
             Message::KnownConnections,

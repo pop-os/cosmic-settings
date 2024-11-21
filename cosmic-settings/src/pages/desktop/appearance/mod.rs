@@ -22,7 +22,7 @@ use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, radio, row,
-    scrollable, settings, spin_button, text, ColorPickerModel,
+    scrollable, settings, text, ColorPickerModel,
 };
 use cosmic::{widget, Apply, Element, Task};
 #[cfg(feature = "wayland")]
@@ -387,7 +387,7 @@ impl Page {
                     )
             ),
             // Icon theme previews
-            cosmic::widget::column::with_children(vec![
+            widget::column::with_children(vec![
                 text::heading(&*ICON_THEME).into(),
                 flex_row(
                     self.icon_themes
@@ -424,7 +424,7 @@ impl Page {
                 self.context_view = Some(ContextView::MonospaceFont);
                 self.font_search.clear();
 
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     fl!("monospace-font").into(),
                 ));
@@ -434,7 +434,7 @@ impl Page {
                 self.context_view = Some(ContextView::SystemFont);
                 self.font_search.clear();
 
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     fl!("interface-font").into(),
                 ));
@@ -781,7 +781,7 @@ impl Page {
             }
 
             Message::Left => {
-                tasks.push(cosmic::command::message(app::Message::SetTheme(
+                tasks.push(cosmic::task::message(app::Message::SetTheme(
                     cosmic::theme::system_preference(),
                 )));
             }
@@ -865,7 +865,7 @@ impl Page {
 
             #[cfg(feature = "ashpd")]
             Message::StartImport => {
-                tasks.push(cosmic::command::future(async move {
+                tasks.push(cosmic::task::future(async move {
                     let res = SelectedFiles::open_file()
                         .modal(true)
                         .filter(FileFilter::glob(FileFilter::new("ron"), "*.ron"))
@@ -888,7 +888,7 @@ impl Page {
                 let is_dark = self.theme_mode.is_dark;
                 let name = format!("{}.ron", if is_dark { fl!("dark") } else { fl!("light") });
 
-                tasks.push(cosmic::command::future(async move {
+                tasks.push(cosmic::task::future(async move {
                     let res = SelectedFiles::save_file()
                         .modal(true)
                         .current_name(Some(name.as_str()))
@@ -918,7 +918,7 @@ impl Page {
                     return Task::none();
                 };
 
-                tasks.push(cosmic::command::future(async move {
+                tasks.push(cosmic::task::future(async move {
                     let res = tokio::fs::read_to_string(path).await;
                     if let Some(b) = res.ok().and_then(|s| ron::de::from_str(&s).ok()) {
                         Message::ImportSuccess(Box::new(b))
@@ -944,7 +944,7 @@ impl Page {
 
                 let theme_builder = self.theme_builder.clone();
 
-                tasks.push(cosmic::command::future(async move {
+                tasks.push(cosmic::task::future(async move {
                     let Ok(builder) =
                         ron::ser::to_string_pretty(&theme_builder, PrettyConfig::default())
                     else {
@@ -1062,7 +1062,7 @@ impl Page {
 
             Message::IconsAndToolkit => {
                 self.context_view = Some(ContextView::IconsAndToolkit);
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     "".into(),
                 ));
@@ -1080,7 +1080,7 @@ impl Page {
             let is_dark = self.theme_mode.is_dark;
             let current_theme = self.theme.clone();
 
-            tasks.push(cosmic::command::future(async move {
+            tasks.push(cosmic::task::future(async move {
                 let config = if is_dark {
                     Theme::dark_config()
                 } else {
@@ -1180,7 +1180,7 @@ impl Page {
         let task = match message {
             ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
                 needs_update = true;
-                cosmic::command::message(crate::app::Message::CloseContextDrawer)
+                cosmic::task::message(crate::app::Message::CloseContextDrawer)
             }
 
             ColorPickerUpdate::ActionFinished => {
@@ -1189,12 +1189,12 @@ impl Page {
             }
 
             ColorPickerUpdate::Cancel => {
-                cosmic::command::message(crate::app::Message::CloseContextDrawer)
+                cosmic::task::message(crate::app::Message::CloseContextDrawer)
             }
 
             ColorPickerUpdate::ToggleColorPicker => {
                 self.context_view = Some(context_view);
-                cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     context_title,
                 ))
@@ -1436,11 +1436,11 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
-        let (task, handle) = cosmic::command::batch(vec![
+        let (task, handle) = cosmic::task::batch(vec![
             // Load icon themes
-            cosmic::command::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
+            cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
             // Load font families
-            cosmic::command::future(async move {
+            cosmic::task::future(async move {
                 let (mono, interface) = font_config::load_font_families();
                 Message::FontConfig(font_config::Message::LoadedFonts(mono, interface))
             })
@@ -1457,7 +1457,7 @@ impl page::Page<crate::pages::Message> for Page {
             handle.abort();
         }
 
-        cosmic::command::message(crate::pages::Message::Appearance(Message::Left))
+        cosmic::task::message(crate::pages::Message::Appearance(Message::Left))
     }
 
     fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
@@ -1971,7 +1971,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
             settings::section()
                 .title(&section.title)
                 .add(settings::item::builder(&descriptions[active_hint]).control(
-                    cosmic::widget::spin_button(
+                    widget::spin_button(
                         page.theme_builder.active_hint.to_string(),
                         page.theme_builder.active_hint,
                         1,
@@ -1980,16 +1980,16 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         Message::WindowHintSize,
                     ),
                 ))
-                .add(settings::item::builder(&descriptions[gaps]).control(
-                    cosmic::widget::spin_button(
+                .add(
+                    settings::item::builder(&descriptions[gaps]).control(widget::spin_button(
                         page.theme_builder.gaps.1.to_string(),
                         page.theme_builder.gaps.1,
                         1,
                         page.theme.active_hint,
                         500,
                         Message::GapSize,
-                    ),
-                ))
+                    )),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })

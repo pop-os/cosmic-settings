@@ -139,7 +139,7 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         _sender: mpsc::Sender<crate::pages::Message>,
     ) -> cosmic::Task<crate::pages::Message> {
-        cosmic::command::future(async move { Message::Refresh(Arc::new(page_reload().await)) })
+        cosmic::task::future(async move { Message::Refresh(Arc::new(page_reload().await)) })
     }
 
     fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
@@ -175,7 +175,7 @@ impl Page {
                     let lang = language.lang_code.clone();
                     let region = region.lang_code.clone();
 
-                    commands.push(cosmic::command::future(async move {
+                    commands.push(cosmic::task::future(async move {
                         _ = set_locale(lang, region).await;
                         Message::Refresh(Arc::new(page_reload().await))
                     }));
@@ -206,7 +206,7 @@ impl Page {
             }
 
             Message::InstallAdditionalLanguages => {
-                return cosmic::command::future(async move {
+                return cosmic::task::future(async move {
                     _ = tokio::process::Command::new("gnome-language-selector")
                         .status()
                         .await;
