@@ -8,11 +8,10 @@ use std::sync::Arc;
 use anyhow::Context;
 use ashpd::desktop::file_chooser::FileFilter;
 use cosmic::{
-    iced::{alignment, Length},
-    iced_core::text::Wrap,
-    prelude::CollectionWidget,
+    iced::{Alignment, Length},
+    iced_core::text::Wrapping,
     widget::{self, icon},
-    Apply, Command, Element,
+    Apply, Element, Task,
 };
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::network_manager::{
@@ -31,6 +30,8 @@ pub enum Message {
     Activate(ConnectionId),
     /// Add a network connection
     AddNetwork,
+    /// Show a dialog requesting a name for the WireGuard device
+    AddWireGuardDevice(String, String, String),
     /// Cancels an active dialog.
     CancelDialog,
     /// Connect to a VPN with the given username and password
@@ -38,9 +39,9 @@ pub enum Message {
     /// Deactivate a connection.
     Deactivate(ConnectionId),
     /// An error occurred.
-    Error(String),
+    Error(ErrorKind, String),
     /// Update the list of known connections.
-    KnownConnections(IndexMap<UUID, VpnConnectionSettings>),
+    KnownConnections(IndexMap<UUID, ConnectionSettings>),
     /// An update from the network manager daemon
     NetworkManager(network_manager::Event),
     /// Successfully connected to the system dbus.
@@ -70,6 +71,39 @@ pub enum Message {
     UsernameUpdate(String),
     /// Display more options for an access point
     ViewMore(Option<ConnectionId>),
+    /// Create a new wireguard connection
+    WireGuardConfig,
+    /// Update the text input for the wireguard device name
+    WireGuardDeviceInput(String),
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ErrorKind {
+    Config,
+    Connect,
+    ConnectionEditor,
+    ConnectionSettings,
+    DbusConnection,
+    UpdatingState,
+    WireGuardConfigPath,
+    WireGuardDevice,
+    WithPassword(&'static str),
+}
+
+impl ErrorKind {
+    pub fn localized(self) -> String {
+        match self {
+            ErrorKind::Config => fl!("vpn-error", "config"),
+            ErrorKind::Connect => fl!("vpn-error", "connect"),
+            ErrorKind::ConnectionEditor => fl!("vpn-error", "connection-editor"),
+            ErrorKind::ConnectionSettings => fl!("vpn-error", "connection-settings"),
+            ErrorKind::DbusConnection => fl!("dbus-connection-error"),
+            ErrorKind::UpdatingState => fl!("vpn-error", "updating-state"),
+            ErrorKind::WireGuardConfigPath => fl!("vpn-error", "wireguard-config-path"),
+            ErrorKind::WireGuardDevice => fl!("vpn-error", "wireguard-device"),
+            ErrorKind::WithPassword(field) => fl!("vpn-error", "with-password", field = field),
+        }
+    }
 }
 
 impl From<Message> for crate::app::Message {
@@ -82,6 +116,12 @@ impl From<Message> for crate::pages::Message {
     fn from(message: Message) -> Self {
         crate::pages::Message::Vpn(message)
     }
+}
+
+#[derive(Clone, Debug)]
+pub enum ConnectionSettings {
+    Vpn(VpnConnectionSettings),
+    Wireguard { id: String },
 }
 
 #[derive(Clone, Debug, Default)]
@@ -99,7 +139,7 @@ impl VpnConnectionSettings {
             .map_or(false, |ct| match ct {
                 ConnectionType::Password => true,
             })
-            .then(|| self.password_flag)
+            .then_some(self.password_flag)
             .flatten()
     }
 }
@@ -127,6 +167,7 @@ enum PasswordFlag {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum VpnDialog {
+    Error(ErrorKind, String),
     Password {
         id: String,
         uuid: Arc<str>,
@@ -135,6 +176,7 @@ enum VpnDialog {
         password_hidden: bool,
     },
     RemoveProfile(ConnectionId),
+    WireGuardName(String, String, String),
 }
 
 #[derive(Debug)]
@@ -147,11 +189,12 @@ pub struct NmState {
 
 #[derive(Debug, Default)]
 pub struct Page {
+    entity: page::Entity,
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     nm_state: Option<NmState>,
     dialog: Option<VpnDialog>,
     view_more_popup: Option<ConnectionId>,
-    known_connections: IndexMap<UUID, VpnConnectionSettings>,
+    known_connections: IndexMap<UUID, ConnectionSettings>,
     /// Withhold device update if the view more popup is shown.
     withheld_devices: Option<Vec<network_manager::devices::DeviceInfo>>,
     /// Withhold active connections update if the view more popup is shown.
@@ -161,6 +204,10 @@ pub struct Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new("vpn", "preferences-vpn-symbolic")
             .title(fl!("vpn"))
@@ -176,6 +223,22 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn dialog(&self) -> Option<Element<crate::pages::Message>> {
         self.dialog.as_ref().map(|dialog| match dialog {
+            VpnDialog::Error(error_kind, message) => {
+                let reason = widget::text::body(message.as_str()).wrapping(Wrapping::Word);
+
+                let primary_action =
+                    widget::button::standard(fl!("ok")).on_press(Message::CancelDialog);
+
+                widget::dialog()
+                    .title(fl!("vpn-error"))
+                    .icon(icon::from_name("dialog-error-symbolic").size(64))
+                    .body(error_kind.localized())
+                    .control(reason)
+                    .primary_action(primary_action)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Vpn)
+            }
+
             VpnDialog::Password {
                 username,
                 password,
@@ -206,10 +269,33 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("auth-dialog"))
+                widget::dialog()
+                    .title(fl!("auth-dialog"))
                     .icon(icon::from_name("network-vpn-symbolic").size(64))
                     .body(fl!("auth-dialog", "vpn-description"))
                     .control(controls)
+                    .primary_action(primary_action)
+                    .secondary_action(secondary_action)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Vpn)
+            }
+
+            VpnDialog::WireGuardName(device, ..) => {
+                let input = widget::text_input("", device.as_str()).on_input(|input| {
+                    Message::WireGuardDeviceInput(input.replace(|c: char| !c.is_alphanumeric(), ""))
+                });
+
+                let primary_action =
+                    widget::button::suggested(fl!("connect")).on_press(Message::WireGuardConfig);
+
+                let secondary_action =
+                    widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
+
+                widget::dialog()
+                    .title(fl!("wireguard-dialog"))
+                    .icon(icon::from_name("network-vpn-symbolic").size(64))
+                    .body(fl!("wireguard-dialog", "description"))
+                    .control(input)
                     .primary_action(primary_action)
                     .secondary_action(secondary_action)
                     .apply(Element::from)
@@ -223,7 +309,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("remove-connection-dialog"))
+                widget::dialog()
+                    .title(fl!("remove-connection-dialog"))
                     .icon(icon::from_name("dialog-information").size(64))
                     .body(fl!("remove-connection-dialog", "vpn-description"))
                     .primary_action(primary_action)
@@ -241,7 +328,7 @@ impl page::Page<crate::pages::Message> for Page {
                 .on_press(Message::AddNetwork)
                 .apply(widget::container)
                 .width(Length::Fill)
-                .align_x(alignment::Horizontal::Right)
+                .align_x(Alignment::End)
                 .apply(Element::from)
                 .map(crate::pages::Message::Vpn),
         )
@@ -249,25 +336,24 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Command<crate::pages::Message> {
+    ) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
             return cosmic::command::future(async move {
                 zbus::Connection::system()
                     .await
                     .context("failed to create system dbus connection")
                     .map_or_else(
-                        |why| Message::Error(why.to_string()),
+                        |why| Message::Error(ErrorKind::DbusConnection, why.to_string()),
                         |conn| Message::NetworkManagerConnect((conn, sender.clone())),
                     )
             });
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.view_more_popup = None;
         self.nm_state = None;
         self.withheld_active_conns = None;
@@ -278,12 +364,12 @@ impl page::Page<crate::pages::Message> for Page {
             _ = cancel.send(());
         }
 
-        Command::none()
+        Task::none()
     }
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         let span = tracing::span!(tracing::Level::INFO, "vpn::update");
         let _span = span.enter();
 
@@ -300,7 +386,7 @@ impl Page {
                 if let Some(NmState { ref conn, .. }) = self.nm_state {
                     let conn = conn.clone();
                     self.update_active_conns(state);
-                    return cosmic::command::batch(vec![
+                    return cosmic::Task::batch(vec![
                         connection_settings(conn.clone()),
                         update_devices(conn),
                     ]);
@@ -323,7 +409,7 @@ impl Page {
                 network_manager::Event::ActiveConns | network_manager::Event::Devices,
             ) => {
                 if let Some(NmState { ref conn, .. }) = self.nm_state {
-                    return cosmic::command::batch(vec![
+                    return cosmic::Task::batch(vec![
                         update_state(conn.clone()),
                         update_devices(conn.clone()),
                         connection_settings(conn.clone()),
@@ -347,7 +433,7 @@ impl Page {
                         .collect(),
                 });
 
-                return cosmic::command::batch(vec![
+                return cosmic::Task::batch(vec![
                     connection_settings(conn.clone()),
                     update_devices(conn),
                 ]);
@@ -357,10 +443,50 @@ impl Page {
 
             Message::AddNetwork => return add_network(),
 
+            Message::AddWireGuardDevice(device, filename, path) => {
+                self.dialog = Some(VpnDialog::WireGuardName(device, filename, path));
+            }
+
+            Message::WireGuardDeviceInput(input) => {
+                if let Some(VpnDialog::WireGuardName(ref mut device, ..)) = self.dialog {
+                    *device = input
+                }
+            }
+
+            Message::WireGuardConfig => {
+                if let Some(VpnDialog::WireGuardName(device, filename, path)) = self.dialog.take() {
+                    return cosmic::command::future(async move {
+                        let new_path = path.replace(&filename, &device);
+                        _ = std::fs::rename(&path, &new_path);
+                        match super::nm_add_vpn_file("wireguard", new_path).await {
+                            Ok(_) => Message::Refresh,
+                            Err(why) => Message::Error(ErrorKind::Config, why.to_string()),
+                        }
+                    });
+                }
+            }
+
             Message::Activate(uuid) => {
                 self.close_popup_and_apply_updates();
 
                 if let Some(settings) = self.known_connections.get(&uuid) {
+                    let settings = match settings {
+                        ConnectionSettings::Vpn(ref settings) => settings,
+                        ConnectionSettings::Wireguard { id } => {
+                            let connection_name = id.clone();
+                            return cosmic::command::future(async move {
+                                if let Err(why) = nmcli::connect(&connection_name).await {
+                                    return Message::Error(
+                                        ErrorKind::Connect,
+                                        format!("failed to connect to WireGuard VPN: {why}"),
+                                    );
+                                }
+
+                                Message::Refresh
+                            });
+                        }
+                    };
+
                     match settings.password_flag() {
                         Some(PasswordFlag::NotSaved | PasswordFlag::AgentOwned) => {
                             self.view_more_popup = None;
@@ -377,9 +503,10 @@ impl Page {
                             let connection_name = settings.id.clone();
                             return cosmic::command::future(async move {
                                 if let Err(why) = nmcli::connect(&connection_name).await {
-                                    return Message::Error(format!(
-                                        "failed to connect to VPN: {why}"
-                                    ));
+                                    return Message::Error(
+                                        ErrorKind::Connect,
+                                        format!("failed to connect to VPN: {why}"),
+                                    );
                                 }
 
                                 Message::Refresh
@@ -422,9 +549,11 @@ impl Page {
                 return cosmic::command::future(async move {
                     super::nm_edit_connection(uuid.as_ref())
                         .then(|res| async move {
-                            match res.context("failed to open connection editor") {
+                            match res {
                                 Ok(_) => Message::Refresh,
-                                Err(why) => Message::Error(why.to_string()),
+                                Err(why) => {
+                                    Message::Error(ErrorKind::ConnectionEditor, why.to_string())
+                                }
                             }
                         })
                         .await
@@ -433,7 +562,7 @@ impl Page {
 
             Message::Refresh => {
                 if let Some(NmState { ref conn, .. }) = self.nm_state {
-                    return cosmic::command::batch(vec![
+                    return cosmic::Task::batch(vec![
                         update_state(conn.clone()),
                         update_devices(conn.clone()),
                         connection_settings(conn.clone()),
@@ -452,7 +581,7 @@ impl Page {
 
             Message::ConnectWithPassword => {
                 let Some(dialog) = self.dialog.take() else {
-                    return Command::none();
+                    return Task::none();
                 };
 
                 if let VpnDialog::Password {
@@ -491,8 +620,9 @@ impl Page {
                 }
             }
 
-            Message::Error(why) => {
-                tracing::error!(why);
+            Message::Error(error_kind, why) => {
+                tracing::error!(?error_kind, why);
+                self.dialog = Some(VpnDialog::Error(error_kind, why))
             }
 
             Message::NetworkManagerConnect((conn, output)) => {
@@ -500,7 +630,7 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     fn activate_with_password(
@@ -508,24 +638,22 @@ impl Page {
         connection_name: String,
         username: String,
         password: SecureString,
-    ) -> Command<Message> {
+    ) -> Task<Message> {
         cosmic::command::future(async move {
             if let Err(why) = nmcli::set_username(&connection_name, &username).await {
-                return Message::Error(format!("failed to set VPN username: {why}"));
+                return Message::Error(ErrorKind::WithPassword("username"), why.to_string());
             }
 
             if let Err(why) = nmcli::set_password_flags_none(&connection_name).await {
-                return Message::Error(format!(
-                    "failed to call nmcli to set VPN password-flags parameter: {why}"
-                ));
+                return Message::Error(ErrorKind::WithPassword("password-flags"), why.to_string());
             }
 
             if let Err(why) = nmcli::set_password(&connection_name, password.unsecure()).await {
-                return Message::Error(format!("failed to call nmcli to set VPN password: {why}"));
+                return Message::Error(ErrorKind::WithPassword("password"), why.to_string());
             }
 
             if let Err(why) = nmcli::connect(&connection_name).await {
-                return Message::Error(format!("failed to connect to VPN: {why}"));
+                return Message::Error(ErrorKind::Connect, why.to_string());
             }
 
             Message::Refresh
@@ -631,10 +759,13 @@ fn devices_view() -> Section<crate::pages::Message> {
                 let known_networks = page.known_connections.iter().fold(
                     vpn_connections,
                     |networks, (uuid, connection)| {
+                        let id = match connection {
+                            ConnectionSettings::Vpn(connection) => connection.id.as_str(),
+                            ConnectionSettings::Wireguard { id } => id.as_str(),
+                        };
+
                         let is_connected = active_conns.iter().any(|conn| match conn {
-                            ActiveConnectionInfo::Vpn { name, .. } => {
-                                name.as_str() == connection.id.as_str()
-                            }
+                            ActiveConnectionInfo::Vpn { name, .. } => name.as_str() == id,
 
                             _ => false,
                         });
@@ -648,14 +779,13 @@ fn devices_view() -> Section<crate::pages::Message> {
                             )
                         };
 
-                        let identifier =
-                            widget::text::body(connection.id.as_str()).wrap(Wrap::Glyph);
+                        let identifier = widget::text::body(id).wrapping(Wrapping::Glyph);
 
                         let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
                             widget::button::text(connect_txt).on_press(msg).into()
                         } else {
                             widget::text::body(connect_txt)
-                                .vertical_alignment(alignment::Vertical::Center)
+                                .align_y(Alignment::Center)
                                 .into()
                         };
 
@@ -688,7 +818,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                                         ))
                                         .width(Length::Fixed(200.0))
                                         .apply(widget::container)
-                                        .style(cosmic::style::Container::Dialog)
+                                        .class(cosmic::style::Container::Dialog)
                                 })
                                 .apply(|e| Some(Element::from(e)))
                         } else {
@@ -700,12 +830,12 @@ fn devices_view() -> Section<crate::pages::Message> {
                         let controls = widget::row::with_capacity(2)
                             .push(connect)
                             .push_maybe(view_more)
-                            .align_items(alignment::Alignment::Center)
+                            .align_y(Alignment::Center)
                             .spacing(spacing.space_xxs);
 
                         let widget = widget::settings::item_row(vec![
                             identifier.into(),
-                            widget::horizontal_space(Length::Fill).into(),
+                            widget::horizontal_space().width(Length::Fill).into(),
                             controls.into(),
                         ]);
 
@@ -722,43 +852,43 @@ fn devices_view() -> Section<crate::pages::Message> {
         })
 }
 
-fn popup_button<'a>(message: Message, text: &'a str) -> Element<'a, Message> {
+fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
     widget::text::body(text)
-        .vertical_alignment(alignment::Vertical::Center)
+        .align_y(Alignment::Center)
         .apply(widget::button::custom)
         .padding([theme.space_xxxs(), theme.space_xs()])
         .width(Length::Fill)
-        .style(cosmic::theme::Button::MenuItem)
+        .class(cosmic::theme::Button::MenuItem)
         .on_press(message)
         .into()
 }
 
-fn update_state(conn: zbus::Connection) -> Command<crate::app::Message> {
+fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
     cosmic::command::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
-            Err(why) => Message::Error(why.to_string()),
+            Err(why) => Message::Error(ErrorKind::UpdatingState, why.to_string()),
         }
     })
 }
 
-fn update_devices(conn: zbus::Connection) -> Command<crate::app::Message> {
+fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
     cosmic::command::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::WireGuard);
 
         match network_manager::devices::list(&conn, filter).await {
             Ok(devices) => Message::UpdateDevices(devices),
-            Err(why) => Message::Error(why.to_string()),
+            Err(why) => Message::Error(ErrorKind::UpdatingState, why.to_string()),
         }
     })
 }
 
-fn add_network() -> Command<crate::app::Message> {
+fn add_network() -> Task<crate::app::Message> {
     let Some(dir) = dirs::download_dir().or_else(dirs::home_dir) else {
-        return Command::none();
+        return Task::none();
     };
 
     cosmic::dialog::file_chooser::open::Dialog::new()
@@ -769,22 +899,49 @@ fn add_network() -> Command<crate::app::Message> {
                 .mimetype("application/x-openvpn-profile")
                 .glob("*.ovpn"),
         )
+        .filter(FileFilter::new("WireGuard").glob("*.conf*"))
         .open_file()
         .then(|result| async move {
             match result {
                 Ok(response) => {
-                    _ = super::nm_add_vpn_file("openvpn", response.url().path()).await;
-                    Message::Refresh
+                    let response_str = response.url().as_str();
+                    let result = if let Some(device) = response_str.strip_suffix(".conf") {
+                        let Ok(path) = response.url().to_file_path() else {
+                            return Message::Error(
+                                ErrorKind::WireGuardConfigPath,
+                                fl!("vpn-error", "wireguard-config-path-desc"),
+                            );
+                        };
+
+                        let path = path.to_string_lossy().to_string();
+
+                        let filename = device.rsplit_once("/").unwrap_or_default().1;
+
+                        let mut device = filename
+                            .replace(|c: char| !c.is_alphanumeric(), "")
+                            .to_ascii_lowercase();
+
+                        device.truncate(15);
+
+                        return Message::AddWireGuardDevice(device, filename.to_owned(), path);
+                    } else {
+                        super::nm_add_vpn_file("openvpn", response.url().path()).await
+                    };
+
+                    match result {
+                        Ok(_) => Message::Refresh,
+                        Err(why) => Message::Error(ErrorKind::Config, why.to_string()),
+                    }
                 }
                 Err(why) => {
-                    return Message::Error(why.to_string());
+                    return Message::Error(ErrorKind::Config, why.to_string());
                 }
             }
         })
         .apply(cosmic::command::future)
 }
 
-fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
+fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
     let settings = async move {
         let settings = network_manager::dbus::settings::NetworkManagerSettings::new(&conn).await?;
 
@@ -803,12 +960,26 @@ fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
             .filter_map(|conn| async move {
                 let settings = conn.get_settings().await.ok()?;
 
-                let (connection, vpn) = settings.get("connection").zip(settings.get("vpn"))?;
+                let connection = settings.get("connection")?;
 
-                if connection.get("type")?.downcast_ref::<String>().ok()? != "vpn" {
-                    return None;
+                match connection
+                    .get("type")?
+                    .downcast_ref::<String>()
+                    .ok()?
+                    .as_str()
+                {
+                    "vpn" => (),
+
+                    "wireguard" => {
+                        let id = connection.get("id")?.downcast_ref::<String>().ok()?;
+                        let uuid = connection.get("uuid")?.downcast_ref::<String>().ok()?;
+                        return Some((Arc::from(uuid), ConnectionSettings::Wireguard { id }));
+                    }
+
+                    _ => return None,
                 }
 
+                let vpn = settings.get("vpn")?;
                 let id = connection.get("id")?.downcast_ref::<String>().ok()?;
                 let uuid = connection.get("uuid")?.downcast_ref::<String>().ok()?;
 
@@ -851,12 +1022,12 @@ fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
 
                 Some((
                     Arc::from(uuid),
-                    VpnConnectionSettings {
+                    ConnectionSettings::Vpn(VpnConnectionSettings {
                         id,
                         connection_type,
                         password_flag,
                         username,
-                    },
+                    }),
                 ))
             })
             // Reduce the settings list into
@@ -870,12 +1041,9 @@ fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
     };
 
     cosmic::command::future(async move {
-        settings
-            .await
-            .context("failed to get connection settings")
-            .map_or_else(
-                |why| Message::Error(why.to_string()),
-                Message::KnownConnections,
-            )
+        settings.await.map_or_else(
+            |why| Message::Error(ErrorKind::ConnectionSettings, why.to_string()),
+            Message::KnownConnections,
+        )
     })
 }

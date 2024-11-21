@@ -4,6 +4,105 @@ unknown = 不明
 
 number = { $number }
 
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] 有線の
+    [wifi] Wi-Fiの
+    [vpn] VPNの
+    *[other] 不明な
+}接続と接続プロファイル
+
+add-network = ネットワークを追加
+    .profile = プロファイルを追加
+add-vpn = VPNを追加
+airplane-on = 機内モードは有効です。
+cable-unplugged = ケーブルは抜けています。
+connect = 接続する
+connected = 接続済み
+connecting = 接続中…
+disconnect = 切断する
+forget = 忘れる
+known-networks = 既知のネットワーク
+network-and-wireless = ネットワークとワイヤレス
+no-networks = ネットワークは見つけられませんでした。
+no-vpn = VPN接続はありません。
+password = パスワード
+remove = 削除
+settings = 設定
+username = ユーザー名
+visible-networks = ネットワークの一覧
+
+auth-dialog = 認証は必要です。
+    .vpn-description = VPNサービスにより必要とさせるユーザー名とパスワードを入力して下さい。
+    .wifi-description = パスワードまたは暗号化キーを入力して下さい。 ルーターののWPSボタンを押すことでも接続できます。
+
+forget-dialog = このWi-Fiネットワークを忘れてもよろしいですか？
+    .description = 将来でこのWi-Fiネットワーク使用するために、もう一度パスワードを入力は必要です。
+
+network-device-state =
+    .activated = 接続済み
+    .config = 接続中
+    .deactivating = 切断中
+    .disconnected = 接続されていません
+    .failed = 接続失敗
+    .ip-check = 接続を確認中
+    .ip-config = IPとルーティング情報を要求中
+    .need-auth = 認証が必要
+    .prepare = 接続の準備中
+    .secondaries = 二次の接続を待っています
+    .unavailable = 無効
+    .unknown = 不明状態
+    .unmanaged = 管理外
+    .unplugged = 抜けています
+
+remove-connection-dialog = 接続プロファイルを削除してもよろしいですか？
+    .vpn-description = 将来でこのネットワーク使用するために、もう一度パスワードを入力は必要です。
+    .wired-description = 将来でこのプロファイルを使用するために、再作成することは必要です。
+
+vpn = VPN
+    .connections = VPN接続
+    .remove = 接続プロファイルを削除する
+    .select-file = VPNの構成ファイルを選択
+
+wired = 有線
+    .adapter = { $id }という有線のアダプター
+    .connections = 有線の接続
+    .devices = 有線のデバイス
+    .remove = 接続プロファイルを削除する
+
+wifi = Wi-Fi
+    .adapter = { $id }というWi-Fiアダプター
+    .forget = このネットワークを忘れる
+
+## Networking: Online Accounts
+
+online-accounts = オンラインアカウント
+    .desc = アカウント、IMAPとSMTP、エンタプライズログインを追加
+
+# Bluetooth
+
+bluetooth = Bluetooth
+    .desc = Bluetoothデバイスの操作
+    .status = このデバイスはBluetooth設定が表示されながら{ $aliases }として見えます。
+    .connected = 接続済み
+    .connecting = 接続中
+    .disconnecting = 切断中
+    .connect = 接続する
+    .disconnect = 切断する
+    .forget = 忘れる
+    .dbus-error = DBusと相互作用しながらエラーが発生しました： { $why }
+    .show-device-without-name = 名前無しのデバイスを表示
+
+bluetooth-paired = 前に接続したデバイス
+    .connect = 接続
+    .battery = バッテリーの{ $percentage }%
+
+bluetooth-available = 隣のデバイス
+
+bluetooth-adapters = Bluetoothアダプター
+
+
 ## Desktop
 
 desktop = デスクトップ
@@ -65,7 +164,11 @@ style = スタイル
     .slightly-round = 少し丸い
     .square = 四角い
 
-# interface density left out for now
+interface-density = インタフェース密度
+    .comfortable = 普通
+    .compact = 狭い
+    .spacious = 広い
+
 window-management = ウィンドウマネジメント
     .active-hint = アクティブウィンドウヒントの大きさ
     .gaps = タイル型ウィンドウ
@@ -101,7 +204,7 @@ mirroring = ミラーリング
         *[other] { $display }
     }に投影する
 
-    .project-count = 他の{ $count}つのディスプレイに投影している
+    .project-count = 他の{ $count}つのディスプレイに投影しています
 
 night-light = ナイトライト
     .auto = 自動的（日の入りから日の出まで）
@@ -115,6 +218,18 @@ orientation = 画面の向き
 
 scheduling = 計画
     .manual = 手動計画
+
+dialog = ダイヤログ
+    .title = このディスプレイの設定を保存しますか？
+    .keep-changes = 保存
+    .change-prompt = { $time }秒後に設定は自動的に元に戻ります。
+    .revert-settings = 元に戻す
+
+legacy-applications = X11アプリケーションのスケーリング
+    .scaled-by-system = X11アプリを全てスケーリングする
+    .system-description = HiDPI画面はX11アプリケーションがボケに見えます。
+    .scaled-natively = X11アプリをネーティブの解像度で表現する
+    .native-description = スケーリングをサポートしていないX11アプリケーションはHiDPI画面に小さく見えます。ゲームが完全に解像度を使用できるように有効にして下さい。
 
 ## Desktop: Notifications
 
@@ -197,7 +312,7 @@ panel-missing = パネル構成は見つけられません
 wallpaper = 背景
     .change = この期間ごとに画像を変える：
     .desc = 背景の画像、色、スライドショー設定。
-    .fit = Wallpaper fit
+    .fit = 背景フィット
     .folder-dialog = 背景のフォルダを選択
     .image-dialog = 背景の画像を選択
     .plural = 背景
@@ -209,7 +324,7 @@ add-image = 画像を追加
 all-displays = 全てのディスプレイ
 colors = 色
 dialog-add = 追加
-fill = Fill
+fill = フィル
 fit-to-screen = 画面に合わせる
 open-new-folder = 新しいフォルダを開く
 recent-folders = 最近のフォルダ
@@ -239,16 +354,6 @@ workspaces-overview-thumbnails = ワークスペースオーバービューサ�
 workspaces-orientation = ワークスペース方向
     .vertical = 垂直
     .horizontal = 水平
-
-## Networking: Wired
-
-wired = 有線
-    .desc = 有線接続、接続プロファイル
-
-## Networking: Online Accounts
-
-online-accounts = オンラインアカウント
-    .desc = アカウント、IMAPとSMTP、エンタプライズログインを追加
 
 ## Time & Language
 
@@ -347,6 +452,7 @@ input-devices = 入力デバイス
     .desc = 入力デバイス
 
 primary-button = 一次内ボタン
+    .desc = 物理ボタンの順を設定します。
     .left = 左
     .right = 右
 
@@ -364,7 +470,7 @@ fast = 速い
 short = 短い
 long = 長い
 keyboard = キーボード
-    .desc = キーボードの入力
+    .desc = 入力のソース、切り替え、特殊文字の入り、ショートカット。
 
 keyboard-sources = 入力ソース
     .desc = 入力ソースはスーパー+スペースキーコンボで切り替えられます。これをキーボードショットカットの設定で構成できます。
@@ -375,7 +481,7 @@ keyboard-sources = 入力ソース
     .remove = 削除
     .add = 入力ソースを追加
 
-keyboard-special-char = 特殊文字の入力
+keyboard-special-char = 特殊文字の入り
     .alternate = 代替文字キー
     .compose = コムポーズキー
 
@@ -385,6 +491,7 @@ keyboard-typing-assist = タイピング
 
 added = 追加された
 type-to-search = 入力して検索...
+show-extended-input-sources = 拡張の入力ソースを表示
 
 ## Input: Keyboard: Shortcuts
 
@@ -432,8 +539,27 @@ open-workspaces-view = ワークスペースのか概要を開く
 
 ## Power
 
-power = 電源
+power = 電源とバッテリー
   .desc = 電源設定を管理
+
+battery = Battery
+  .minute = { $value }分
+
+  .hour = { $value }時間
+
+  .day = { $value }日
+
+  .less-than-minute = 一分以下
+  
+  .and =
+
+  .remaining-time = { $action ->
+        [full] 充電完了
+       *[other] 電池切れ
+   }まで{ $time }
+
+connected-devices = 接続されたデバイス
+  .unknown = 不明なデバイス
 
 power-mode = 電源モード
   .performance = ハイパフォーマンス

@@ -1,7 +1,10 @@
 pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
-
+use eyre::{eyre, OptionExt};
+use fast_image_resize::SrcCropping;
 use futures_lite::Stream;
+use image::imageops::FilterType;
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
+use jxl_oxide::{EnumColourEncoding, JxlImage, PixelFormat};
 use std::{
     borrow::Cow,
     collections::{hash_map::DefaultHasher, BTreeSet, HashMap},
@@ -115,16 +118,22 @@ pub async fn load_each_from_path(
                     if recurse && file_type.is_dir() {
                         paths.push(path);
                     } else if file_type.is_file() {
-                        let Ok(Some(kind)) = infer::get_from_path(&path) else {
+                        let path = if path.extension().map_or(false, |ext| ext == "jxl") {
+                            path
+                        } else if let Ok(Some(kind)) = infer::get_from_path(&path) {
+                            if infer::MatcherType::Image == kind.matcher_type() {
+                                path
+                            } else {
+                                continue;
+                            }
+                        } else {
                             continue;
                         };
 
-                        if infer::MatcherType::Image == kind.matcher_type() {
-                            wallpapers.insert(path);
+                        wallpapers.insert(path);
 
-                            if wallpapers.len() > 99 {
-                                break;
-                            }
+                        if wallpapers.len() > 99 {
+                            break;
                         }
                     }
                 }
@@ -165,7 +174,7 @@ pub fn load_image_with_thumbnail(
             ImageOperation::Cached(thumbnail) => thumbnail.to_rgba8(),
 
             ImageOperation::GenerateThumbnail { path, image } => {
-                let image = image.thumbnail(300, 169).to_rgba8();
+                let image = resize_thumbnail(&image, 300, 169).to_rgba8();
 
                 if let Some(path) = path {
                     // Save thumbnail to disk without blocking.
@@ -251,6 +260,16 @@ fn load_thumbnail(
 }
 
 fn open_image(input_buffer: &mut Vec<u8>, path: &Path) -> Option<DynamicImage> {
+    if path.extension().map_or(false, |ext| ext == "jxl") {
+        return match decode_jpegxl(path) {
+            Ok(image) => Some(image),
+            Err(why) => {
+                tracing::error!(?path, ?why, "image decode failed");
+                None
+            }
+        };
+    }
+
     let capacity = match path.metadata() {
         Ok(metadata) => metadata.len() as usize,
         Err(why) => {
@@ -408,4 +427,95 @@ fn border_radius(
             img[coordinates(r0 - i, r0 - j)].0[3] = 0;
         }
     }
+}
+
+/// Decodes JPEG XL image files into `image::DynamicImage` via `jxl-oxide`.
+pub fn decode_jpegxl(path: &std::path::Path) -> eyre::Result<DynamicImage> {
+    let mut image = JxlImage::builder()
+        .open(path)
+        .map_err(|why| eyre!("failed to read image header: {why}"))?;
+    image.request_color_encoding(EnumColourEncoding::srgb(
+        jxl_oxide::RenderingIntent::Relative,
+    ));
+    let render = image
+        .render_frame(0)
+        .map_err(|why| eyre!("failed to render image frame: {why}"))?;
+
+    let framebuffer = render.image_all_channels();
+    match image.pixel_format() {
+        PixelFormat::Graya => image::GrayAlphaImage::from_raw(
+            framebuffer.width() as u32,
+            framebuffer.height() as u32,
+            framebuffer
+                .buf()
+                .iter()
+                .map(|x| x * 255. + 0.5)
+                .map(|x| x as u8)
+                .collect::<Vec<_>>(),
+        )
+        .map(DynamicImage::ImageLumaA8)
+        .ok_or_eyre("Can't decode gray alpha buffer"),
+        PixelFormat::Gray => image::GrayImage::from_raw(
+            framebuffer.width() as u32,
+            framebuffer.height() as u32,
+            framebuffer
+                .buf()
+                .iter()
+                .map(|x| x * 255. + 0.5)
+                .map(|x| x as u8)
+                .collect::<Vec<_>>(),
+        )
+        .map(DynamicImage::ImageLuma8)
+        .ok_or_eyre("Can't decode gray buffer"),
+        PixelFormat::Rgba => image::RgbaImage::from_raw(
+            framebuffer.width() as u32,
+            framebuffer.height() as u32,
+            framebuffer
+                .buf()
+                .iter()
+                .map(|x| x * 255. + 0.5)
+                .map(|x| x as u8)
+                .collect::<Vec<_>>(),
+        )
+        .map(DynamicImage::ImageRgba8)
+        .ok_or_eyre("Can't decode rgba buffer"),
+        PixelFormat::Rgb => image::RgbImage::from_raw(
+            framebuffer.width() as u32,
+            framebuffer.height() as u32,
+            framebuffer
+                .buf()
+                .iter()
+                .map(|x| x * 255. + 0.5)
+                .map(|x| x as u8)
+                .collect::<Vec<_>>(),
+        )
+        .map(DynamicImage::ImageRgb8)
+        .ok_or_eyre("Can't decode rgb buffer"),
+        //TODO: handle this
+        PixelFormat::Cmyk => Err(eyre!("unsupported pixel format: CMYK")),
+        PixelFormat::Cmyka => Err(eyre!("unsupported pixel format: CMYKA")),
+    }
+}
+
+/// Use `fast-image-resize` crate for faster thumbnail generation.
+fn resize_thumbnail(
+    img: &image::DynamicImage,
+    new_width: u32,
+    new_height: u32,
+) -> image::DynamicImage {
+    let mut resizer = fast_image_resize::Resizer::new();
+    let options = fast_image_resize::ResizeOptions {
+        algorithm: fast_image_resize::ResizeAlg::Convolution(
+            fast_image_resize::FilterType::Lanczos3,
+        ),
+        cropping: SrcCropping::FitIntoDestination((new_width as f64, new_height as f64)),
+        ..Default::default()
+    };
+    let mut new_image = image::DynamicImage::new(new_width, new_height, img.color());
+    if let Err(err) = resizer.resize(img, &mut new_image, &options) {
+        tracing::warn!(?err, "Failed to use `fast_image_resize`. Falling back.");
+        new_image =
+            image::imageops::resize(img, new_width, new_height, FilterType::Lanczos3).into();
+    }
+    new_image
 }

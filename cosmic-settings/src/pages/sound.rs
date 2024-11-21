@@ -4,8 +4,9 @@
 use std::{collections::BTreeMap, time::Duration};
 
 use cosmic::{
+    iced::{Alignment, Length},
     widget::{self, settings},
-    Command, Element,
+    Element, Task,
 };
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::{pipewire, pulse};
@@ -69,6 +70,7 @@ pub enum DeviceId {
 
 #[derive(Default)]
 pub struct Page {
+    entity: page::Entity,
     pipewire_thread: Option<(tokio::sync::oneshot::Sender<()>, pipewire::Sender<()>)>,
     pulse_thread: Option<tokio::sync::oneshot::Sender<()>>,
     devices: BTreeMap<DeviceId, Card>,
@@ -110,6 +112,10 @@ pub struct Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -125,9 +131,8 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
+    ) -> Task<crate::pages::Message> {
         if self.pulse_thread.is_none() {
             let sender = sender.clone();
 
@@ -182,10 +187,10 @@ impl page::Page<crate::pages::Message> for Page {
             self.pipewire_thread = Some((cancel_tx, terminate));
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         if let Some(cancellation) = self.pulse_thread.take() {
             _ = cancellation.send(());
         }
@@ -197,7 +202,7 @@ impl page::Page<crate::pages::Message> for Page {
 
         *self = Page::default();
 
-        Command::none()
+        Task::none()
     }
 }
 
@@ -292,19 +297,19 @@ impl Page {
         }
     }
 
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
             Message::SourceVolumeChanged(volume) => {
                 self.source_volume = volume;
                 self.source_volume_text = volume.to_string();
                 if self.source_volume_debounce {
-                    return Command::none();
+                    return Task::none();
                 }
 
                 let mut command = None;
                 if let Some(&node_id) = self.source_ids.get(self.active_source.unwrap_or(0)) {
                     command = Some(cosmic::command::future(async move {
-                        tokio::time::sleep(Duration::from_millis(500)).await;
+                        tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SourceVolumeApply(node_id))
                     }));
                 }
@@ -317,7 +322,7 @@ impl Page {
 
             Message::Pulse(pulse::Event::SourceVolume(volume)) => {
                 if self.sink_volume_debounce {
-                    return Command::none();
+                    return Task::none();
                 }
 
                 self.source_volume = volume;
@@ -328,26 +333,26 @@ impl Page {
                 self.sink_volume = volume;
                 self.sink_volume_text = volume.to_string();
                 if self.sink_volume_debounce {
-                    return Command::none();
+                    return Task::none();
                 }
 
                 let mut command = None;
                 if let Some(&node_id) = self.sink_ids.get(self.active_sink.unwrap_or(0)) {
                     command = Some(cosmic::command::future(async move {
-                        tokio::time::sleep(Duration::from_millis(500)).await;
+                        tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SinkVolumeApply(node_id))
                     }));
                 }
 
                 if let Some(command) = command {
-                    self.source_volume_debounce = true;
+                    self.sink_volume_debounce = true;
                     return command;
                 }
             }
 
             Message::Pulse(pulse::Event::SinkVolume(volume)) => {
                 if self.sink_volume_debounce {
-                    return Command::none();
+                    return Task::none();
                 }
 
                 self.sink_volume = volume;
@@ -442,7 +447,7 @@ impl Page {
             Message::Pipewire(pipewire::DeviceEvent::Remove(node_id)) => {
                 let mut remove = None;
                 for (card_id, card) in &mut self.devices {
-                    if card.devices.remove(&node_id).is_some() {
+                    if card.devices.shift_remove(&node_id).is_some() {
                         if card.devices.is_empty() {
                             remove = Some(card_id.clone());
                         }
@@ -481,7 +486,7 @@ impl Page {
                                 self.active_sink = Some(pos);
                                 pactl_set_default_sink(device.identifier.clone());
                                 self.set_default_sink(device.identifier.clone());
-                                return Command::none();
+                                return Task::none();
                             }
                         }
                     }
@@ -496,7 +501,7 @@ impl Page {
                                 self.active_source = Some(pos);
                                 pactl_set_default_source(device.identifier.clone());
                                 self.set_default_source(device.identifier.clone());
-                                return Command::none();
+                                return Task::none();
                             }
                         }
                     }
@@ -592,7 +597,7 @@ impl Page {
                 }
             }
         }
-        Command::none()
+        Task::none()
     }
 }
 
@@ -608,9 +613,8 @@ fn input() -> Section<crate::pages::Message> {
         .title(fl!("sound-input"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            let volume_control = widget::row::with_capacity(3)
-                .align_items(cosmic::iced::Alignment::Center)
-                .spacing(4)
+            let volume_control = widget::row::with_capacity(4)
+                .align_y(Alignment::Center)
                 .push(
                     widget::button::icon(widget::icon::from_name(if page.source_mute {
                         "microphone-sensitivity-muted-symbolic"
@@ -619,7 +623,12 @@ fn input() -> Section<crate::pages::Message> {
                     }))
                     .on_press(Message::SourceMuteToggle),
                 )
-                .push(widget::text::body(&page.source_volume_text))
+                .push(
+                    widget::text::body(&page.source_volume_text)
+                        .width(Length::Fixed(22.0))
+                        .align_x(Alignment::Center),
+                )
+                .push(widget::horizontal_space().width(8))
                 .push(
                     widget::slider(0..=150, page.source_volume, Message::SourceVolumeChanged)
                         .breakpoints(&[100]),
@@ -666,9 +675,8 @@ fn output() -> Section<crate::pages::Message> {
         .title(fl!("sound-output"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            let volume_control = widget::row::with_capacity(3)
-                .align_items(cosmic::iced::Alignment::Center)
-                .spacing(4)
+            let volume_control = widget::row::with_capacity(4)
+                .align_y(Alignment::Center)
                 .push(
                     widget::button::icon(if page.sink_mute {
                         widget::icon::from_name("audio-volume-muted-symbolic")
@@ -677,7 +685,12 @@ fn output() -> Section<crate::pages::Message> {
                     })
                     .on_press(Message::SinkMuteToggle),
                 )
-                .push(widget::text::body(&page.sink_volume_text))
+                .push(
+                    widget::text::body(&page.sink_volume_text)
+                        .width(Length::Fixed(22.0))
+                        .align_x(Alignment::Center),
+                )
+                .push(widget::horizontal_space().width(8))
                 .push(
                     widget::slider(0..=150, page.sink_volume, Message::SinkVolumeChanged)
                         .breakpoints(&[100]),
@@ -748,17 +761,17 @@ fn output() -> Section<crate::pages::Message> {
 fn sort_pulse_devices(descriptions: &mut Vec<String>, node_ids: &mut Vec<NodeId>) {
     let mut tmp: Vec<(String, NodeId)> = std::mem::take(descriptions)
         .into_iter()
-        .zip(std::mem::take(node_ids).into_iter())
+        .zip(std::mem::take(node_ids))
         .collect();
 
-    tmp.sort_unstable_by(|(ak, _), (bk, _)| ak.cmp(&bk));
+    tmp.sort_unstable_by(|(ak, _), (bk, _)| ak.cmp(bk));
 
     (*descriptions, *node_ids) = tmp.into_iter().collect();
 }
 
 async fn pactl_set_card_profile(id: String, profile: String) {
     _ = tokio::process::Command::new("pactl")
-        .args(&["set-card-profile", id.as_str(), profile.as_str()])
+        .args(["set-card-profile", id.as_str(), profile.as_str()])
         .status()
         .await
 }
@@ -766,7 +779,7 @@ async fn pactl_set_card_profile(id: String, profile: String) {
 fn pactl_set_default_sink(id: String) {
     tokio::task::spawn(async move {
         _ = tokio::process::Command::new("pactl")
-            .args(&["set-default-sink", id.as_str()])
+            .args(["set-default-sink", id.as_str()])
             .status()
             .await;
     });
@@ -775,7 +788,7 @@ fn pactl_set_default_sink(id: String) {
 fn pactl_set_default_source(id: String) {
     tokio::task::spawn(async move {
         _ = tokio::process::Command::new("pactl")
-            .args(&["set-default-source", id.as_str()])
+            .args(["set-default-source", id.as_str()])
             .status()
             .await;
     });
@@ -785,7 +798,7 @@ fn wpctl_set_mute(id: u32, mute: bool) {
     tokio::task::spawn(async move {
         let default = id.to_string();
         _ = tokio::process::Command::new("wpctl")
-            .args(&["set-mute", default.as_str(), if mute { "1" } else { "0" }])
+            .args(["set-mute", default.as_str(), if mute { "1" } else { "0" }])
             .status()
             .await;
     });
@@ -796,7 +809,7 @@ fn wpctl_set_volume(id: u32, volume: u32) {
         let id = id.to_string();
         let volume = format!("{}.{:02}", volume / 100, volume % 100);
         _ = tokio::process::Command::new("wpctl")
-            .args(&["set-volume", id.as_str(), volume.as_str()])
+            .args(["set-volume", id.as_str(), volume.as_str()])
             .status()
             .await;
     });

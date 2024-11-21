@@ -15,6 +15,8 @@ use cosmic_randr_shell::{self as randr, OutputKey};
 use randr::Transform;
 
 const UNIT_PIXELS: f32 = 12.0;
+const VERTICAL_OVERHEAD: f32 = 1.5;
+const VERTICAL_DISPLAY_OVERHEAD: f32 = 4.0;
 
 pub type OnPlacementFunc<Message> = Box<dyn Fn(OutputKey, i32, i32) -> Message>;
 pub type OnSelectFunc<Message> = Box<dyn Fn(segmented_button::Entity) -> Message>;
@@ -100,6 +102,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
         limits: &layout::Limits,
     ) -> layout::Node {
         // Determine the max display dimensions, and the total display area utilized.
+        let mut total_height = 0;
         let mut max_dimensions = (0, 0);
         let mut display_area = (0, 0);
 
@@ -131,16 +134,19 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
 
             display_area.0 = display_area.0.max(width as i32 + output.position.0);
             display_area.1 = display_area.1.max(height as i32 + output.position.1);
+
+            total_height = total_height.max(height as i32 + output.position.1);
         }
 
-        let width = ((max_dimensions.0 as f32 * 2.0) as i32 + display_area.0) as f32 / UNIT_PIXELS;
-        let height = ((max_dimensions.1 as f32 * 2.0) as i32 + display_area.1) as f32 / UNIT_PIXELS;
-
         let state = tree.state.downcast_mut::<State>();
+
         state.max_dimensions = (
             max_dimensions.0 as f32 / UNIT_PIXELS,
-            max_dimensions.1 as f32 / UNIT_PIXELS,
+            total_height as f32 / UNIT_PIXELS,
         );
+
+        let width = ((max_dimensions.0 as f32 * 2.0) as i32 + display_area.0) as f32 / UNIT_PIXELS;
+        let height = total_height as f32 * VERTICAL_OVERHEAD / UNIT_PIXELS;
 
         let limits = limits
             .width(Length::Fixed(width))
@@ -240,7 +246,10 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                         shell.publish(on_placement(
                             output_key,
                             ((region.x - state.max_dimensions.0 - bounds.x) * UNIT_PIXELS) as i32,
-                            ((region.y - state.max_dimensions.1 - bounds.y) * UNIT_PIXELS) as i32,
+                            ((region.y
+                                - (state.max_dimensions.1 / VERTICAL_DISPLAY_OVERHEAD)
+                                - bounds.y)
+                                * UNIT_PIXELS) as i32,
                         ));
                     }
 
@@ -350,15 +359,15 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
             core::text::Renderer::fill_text(
                 renderer,
                 core::Text {
-                    content: itoa::Buffer::new().format(id),
+                    content: itoa::Buffer::new().format(id).to_string(),
                     size: core::Pixels(24.0),
                     line_height: core::text::LineHeight::Relative(1.2),
-                    font: cosmic::font::FONT_BOLD,
+                    font: cosmic::font::bold(),
                     bounds: id_bounds.size(),
                     horizontal_alignment: alignment::Horizontal::Center,
                     vertical_alignment: alignment::Vertical::Center,
                     shaping: text::Shaping::Basic,
-                    wrap: text::Wrap::Word,
+                    wrapping: text::Wrapping::Word,
                 },
                 core::Point {
                     x: id_bounds.center_x(),
@@ -396,21 +405,15 @@ fn display_regions<'a>(
         .iter()
         .filter_map(move |id| model.data::<OutputKey>(id))
         .filter_map(move |&key| {
-            let Some(output) = list.outputs.get(key) else {
-                return None;
-            };
+            let output = list.outputs.get(key)?;
 
             if !output.enabled {
                 return None;
             }
 
-            let Some(mode_key) = output.current else {
-                return None;
-            };
+            let mode_key = output.current?;
 
-            let Some(mode) = list.modes.get(mode_key) else {
-                return None;
-            };
+            let mode = list.modes.get(mode_key)?;
 
             let (mut width, mut height) = (
                 (mode.size.0 as f32 / output.scale as f32) / UNIT_PIXELS,
@@ -429,7 +432,9 @@ fn display_regions<'a>(
                     width,
                     height,
                     x: max_dimensions.0 + bounds.x + (output.position.0 as f32) / UNIT_PIXELS,
-                    y: max_dimensions.1 + bounds.y + (output.position.1 as f32) / UNIT_PIXELS,
+                    y: (max_dimensions.1 / VERTICAL_DISPLAY_OVERHEAD)
+                        + bounds.y
+                        + (output.position.1 as f32) / UNIT_PIXELS,
                 },
             ))
         })

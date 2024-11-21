@@ -11,26 +11,20 @@ cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
 tokio = { version = "1.40.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
+features = ["multi-window", "winit", "tokio"]
 git = "https://github.com/pop-os/libcosmic"
-features = [
-    "dbus-config",
-    "single-instance",
-    "multi-window",
-    "tokio",
-    "wayland",
-    "wgpu",
-    "xdg-portal",
-]
 
 [workspace.dependencies.cosmic-config]
 git = "https://github.com/pop-os/libcosmic"
-features = ["dbus"]
 
 [workspace.dependencies.cosmic-bg-config]
 git = "https://github.com/pop-os/cosmic-bg"
 
 [workspace.dependencies.cosmic-comp-config]
 git = "https://github.com/pop-os/cosmic-comp"
+
+[workspace.dependencies.cosmic-idle-config]
+git = "https://github.com/pop-os/cosmic-idle"
 
 [workspace.dependencies.cosmic-panel-config]
 git = "https://github.com/pop-os/cosmic-panel"
@@ -43,8 +37,11 @@ git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
 # rev = "c583de8"
 
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+
 [profile.release]
-opt-level = 3
 lto = "thin"
 
 # [patch.'https://github.com/smithay/client-toolkit/']
@@ -55,6 +52,9 @@ cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev =
 
 # For development and testing purposes
 # [patch.'https://github.com/pop-os/libcosmic']
+# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "fontconfig" }
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "fontconfig" }
+# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "fontconfig" }
 # libcosmic = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
@@ -62,3 +62,5 @@ cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev =
 # [patch.'https://github.com/pop-os/dbus-settings-bindings']
 # cosmic-dbus-networkmanager = { path = "../dbus-settings-bindings/networkmanager" }
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
+[patch."https://github.com/smithay/client-toolkit.git"]
+sctk = { package = "smithay-client-toolkit", version = "=0.19.2" }

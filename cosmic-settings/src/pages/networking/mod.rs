@@ -5,10 +5,10 @@ pub mod vpn;
 pub mod wifi;
 pub mod wired;
 
-use std::{ffi::OsStr, io, process::ExitStatus, sync::Arc};
+use std::{ffi::OsStr, process::Stdio, sync::Arc};
 
 use anyhow::Context;
-use cosmic::{widget, Apply, Command, Element};
+use cosmic::{widget, Apply, Element, Task};
 use cosmic_dbus_networkmanager::{
     interface::enums::{DeviceState, DeviceType},
     nm::NetworkManager,
@@ -22,6 +22,7 @@ static NM_CONNECTION_EDITOR: &str = "nm-connection-editor";
 
 #[derive(Debug, Default)]
 pub struct Page {
+    entity: page::Entity,
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     devices: Vec<Arc<network_manager::devices::DeviceInfo>>,
     vpn: page::Entity,
@@ -68,6 +69,10 @@ impl From<Message> for crate::pages::Message {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new(
             "network-and-wireless",
@@ -221,11 +226,10 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Command<crate::pages::Message> {
+    ) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
-            return cosmic::command::future(async move {
+            return cosmic::Task::future(async move {
                 zbus::Connection::system()
                     .await
                     .context("failed to create system dbus connection")
@@ -237,17 +241,17 @@ impl page::Page<crate::pages::Message> for Page {
             });
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.devices = Vec::new();
 
         if let Some(cancel) = self.nm_task.take() {
             _ = cancel.send(());
         }
 
-        Command::none()
+        Task::none()
     }
 }
 
@@ -269,7 +273,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         let span = tracing::span!(tracing::Level::INFO, "networking::update");
         let _span = span.enter();
 
@@ -283,12 +287,12 @@ impl Page {
             }
 
             Message::OpenPage { page, device } => {
-                let mut commands = Vec::<Command<crate::app::Message>>::new();
+                let mut tasks = Vec::<Task<crate::app::Message>>::new();
 
-                commands.push(cosmic::command::message(crate::app::Message::Page(page)));
+                tasks.push(cosmic::command::message(crate::app::Message::Page(page)));
 
                 if let Some(device) = device {
-                    commands.push(cosmic::command::message(crate::app::Message::PageMessage(
+                    tasks.push(cosmic::command::message(crate::app::Message::PageMessage(
                         match device {
                             DeviceVariant::WiFi(device) => {
                                 crate::pages::Message::WiFi(wifi::Message::SelectDevice(device))
@@ -300,7 +304,7 @@ impl Page {
                     )));
                 }
 
-                return cosmic::command::batch(commands);
+                return cosmic::Task::batch(tasks);
             }
 
             Message::UpdateDevices(devices) => {
@@ -308,7 +312,7 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     fn connect(
@@ -319,7 +323,7 @@ impl Page {
         if self.nm_task.is_none() {
             self.nm_task = Some(crate::utils::forward_event_loop(
                 sender,
-                |event| crate::pages::Message::Networking(event),
+                crate::pages::Message::Networking,
                 move |mut tx| async move {
                     let network_manager = match NetworkManager::new(&conn).await {
                         Ok(n) => n,
@@ -354,29 +358,33 @@ impl Page {
     }
 }
 
-async fn nm_add_vpn_file<P: AsRef<OsStr>>(type_: &str, path: P) -> io::Result<ExitStatus> {
+async fn nm_add_vpn_file<P: AsRef<OsStr>>(type_: &str, path: P) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
         .args(["connection", "import", "type", type_, "file"])
         .arg(path)
-        .status()
+        .stderr(Stdio::piped())
+        .output()
         .await
+        .apply(crate::utils::map_stderr_output)
 }
 
-async fn nm_add_wired() -> io::Result<ExitStatus> {
+async fn nm_add_wired() -> Result<(), String> {
     nm_connection_editor(&["--type=802-3-ethernet", "-c"]).await
 }
 
-async fn nm_add_wifi() -> io::Result<ExitStatus> {
+async fn nm_add_wifi() -> Result<(), String> {
     nm_connection_editor(&["--type=802-11-wireless", "-c"]).await
 }
 
-async fn nm_edit_connection(uuid: &str) -> io::Result<ExitStatus> {
+async fn nm_edit_connection(uuid: &str) -> Result<(), String> {
     nm_connection_editor(&[&["--edit=", uuid].concat()]).await
 }
 
-async fn nm_connection_editor(args: &[&str]) -> io::Result<ExitStatus> {
+async fn nm_connection_editor(args: &[&str]) -> Result<(), String> {
     tokio::process::Command::new(NM_CONNECTION_EDITOR)
         .args(args)
-        .status()
+        .stderr(Stdio::piped())
+        .output()
         .await
+        .apply(crate::utils::map_stderr_output)
 }

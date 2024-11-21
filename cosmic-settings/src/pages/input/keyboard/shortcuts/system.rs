@@ -1,5 +1,5 @@
 use super::{ShortcutMessage, ShortcutModel};
-use cosmic::{Command, Element};
+use cosmic::{Element, Task};
 use cosmic_settings_config::shortcuts::action::System as SystemAction;
 use cosmic_settings_config::shortcuts::Action;
 use cosmic_settings_page::{self as page, section, Section};
@@ -23,12 +23,16 @@ impl Default for Page {
 }
 
 impl Page {
-    pub fn update(&mut self, message: ShortcutMessage) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: ShortcutMessage) -> Task<crate::app::Message> {
         self.model.update(message)
     }
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.model.entity = entity;
+    }
+
     fn info(&self) -> page::Info {
         page::Info::new("system-shortcut", "input-keyboard-symbolic").title(fl!("system-shortcut"))
     }
@@ -54,17 +58,16 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
+    ) -> Task<crate::pages::Message> {
         self.model.on_enter();
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.model.on_clear();
-        Command::none()
+        Task::none()
     }
 }
 

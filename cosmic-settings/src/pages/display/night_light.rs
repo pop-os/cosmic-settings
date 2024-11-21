@@ -6,7 +6,7 @@ use crate::pages;
 use cosmic::iced_core::{Alignment, Length, Padding};
 use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{button, column, icon, list_column, row, toggler};
-use cosmic::{Apply, Command, Element};
+use cosmic::{Apply, Element, Task};
 use std::sync::Arc;
 
 pub fn view(
@@ -25,7 +25,7 @@ pub fn view(
         .push(cosmic::widget::Space::new(Length::Fill, 12))
         .push_maybe(button.map(|(text, message)| {
             button::text(text)
-                .style(cosmic::theme::Button::Link)
+                .class(cosmic::theme::Button::Link)
                 .trailing_icon(icon::from_name("go-next-symbolic").size(16))
                 .padding(0)
                 .on_press(message)
@@ -55,7 +55,7 @@ impl super::Page {
                 .control(
                     row()
                         .align_items(Alignment::Center)
-                        .push(toggler(None, self.config.night_light_enabled, |enable| {
+                        .push(toggler(self.config.night_light_enabled, |enable| {
                             Message::NightLight(NightLight::Toggle(enable))
                         }))
                         .push(

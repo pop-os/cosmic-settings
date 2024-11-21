@@ -1,12 +1,12 @@
 use cosmic::{
     cctk::sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
     cosmic_config::{self, CosmicConfigEntry},
-    iced::Length,
+    iced::{Alignment, Length},
     theme,
     widget::{
         button, container, dropdown, horizontal_space, icon, row, settings, slider, text, toggler,
     },
-    Command, Element,
+    Element, Task,
 };
 
 use cosmic::Apply;
@@ -118,11 +118,7 @@ pub(crate) fn behavior_and_position<
                 .title(&section.title)
                 .add(settings::item(
                     &descriptions[autohide_label],
-                    toggler(
-                        None,
-                        panel_config.autohide.is_some(),
-                        Message::AutoHidePanel,
-                    ),
+                    toggler(panel_config.autohide.is_some()).on_toggle(Message::AutoHidePanel),
                 ))
                 .add(settings::item(
                     &descriptions[position],
@@ -177,11 +173,11 @@ pub(crate) fn style<
                 .title(&section.title)
                 .add(settings::item(
                     &descriptions[gap_label],
-                    toggler(None, panel_config.anchor_gap, Message::AnchorGap),
+                    toggler(panel_config.anchor_gap).on_toggle(Message::AnchorGap),
                 ))
                 .add(settings::item(
                     &descriptions[extend_label],
-                    toggler(None, panel_config.expand_to_edges, Message::ExtendToEdge),
+                    toggler(panel_config.expand_to_edges).on_toggle(Message::ExtendToEdge),
                 ))
                 .add(settings::item(
                     &descriptions[appearance],
@@ -227,26 +223,31 @@ pub(crate) fn style<
                         .into(),
                         text::body(fl!("large")).into(),
                     ])
-                    .spacing(12),
+                    .align_y(Alignment::Center)
+                    .spacing(8),
                 ))
                 .add(settings::flex_item(
                     &descriptions[background_opacity],
-                    row::with_capacity(3)
-                        .push(text::body(fl!(
-                            "number",
-                            HashMap::from_iter(vec![("number", 0)])
-                        )))
+                    row::with_capacity(2)
+                        .align_y(Alignment::Center)
+                        .spacing(8)
+                        .push(
+                            text::body(fl!(
+                                "number",
+                                HashMap::from_iter(vec![(
+                                    "number",
+                                    (panel_config.opacity * 100.0) as i32
+                                )])
+                            ))
+                            .width(Length::Fixed(22.0))
+                            .align_x(Alignment::Center),
+                        )
                         .push(
                             slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
                                 Message::OpacityRequest(v as f32 / 100.0)
                             })
                             .breakpoints(&[50]),
-                        )
-                        .push(text::body(fl!(
-                            "number",
-                            HashMap::from_iter(vec![("number", 100)])
-                        )))
-                        .spacing(12),
+                        ),
                 ))
                 .apply(Element::from)
                 .map(msg_map)
@@ -272,7 +273,7 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                 .find(|(_, v)| v.id == page.applets_page_id())
             {
                 let control = row::with_children(vec![
-                    horizontal_space(Length::Fill).into(),
+                    horizontal_space().width(Length::Fill).into(),
                     icon::from_name("go-next-symbolic").size(16).into(),
                 ]);
 
@@ -281,9 +282,9 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                         .control(control)
                         .spacing(16)
                         .apply(container)
-                        .style(theme::Container::List)
+                        .class(theme::Container::List)
                         .apply(button::custom)
-                        .style(theme::Button::Transparent)
+                        .class(theme::Button::Transparent)
                         .on_press(crate::pages::Message::Page(panel_applets_entity)),
                 )
             } else {
@@ -334,7 +335,7 @@ pub fn reset_button<
             let descriptions = &section.descriptions;
             let inner = page.inner();
             if inner.system_default == inner.panel_config {
-                Element::from(horizontal_space(1))
+                Element::from(horizontal_space().width(1))
             } else {
                 button::standard(&descriptions[reset_to_default])
                     .on_press(Message::ResetPanel)
@@ -347,14 +348,18 @@ pub fn reset_button<
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Anchor(PanelAnchor);
 
-impl ToString for Anchor {
-    fn to_string(&self) -> String {
-        match self.0 {
-            PanelAnchor::Top => fl!("panel-top"),
-            PanelAnchor::Bottom => fl!("panel-bottom"),
-            PanelAnchor::Left => fl!("panel-left"),
-            PanelAnchor::Right => fl!("panel-right"),
-        }
+impl std::fmt::Display for Anchor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self.0 {
+                PanelAnchor::Top => fl!("panel-top"),
+                PanelAnchor::Bottom => fl!("panel-bottom"),
+                PanelAnchor::Left => fl!("panel-left"),
+                PanelAnchor::Right => fl!("panel-right"),
+            }
+        )
     }
 }
 
@@ -365,13 +370,17 @@ pub enum Appearance {
     Dark,
 }
 
-impl ToString for Appearance {
-    fn to_string(&self) -> String {
-        match self {
-            Appearance::Match => fl!("panel-appearance", "match"),
-            Appearance::Light => fl!("panel-appearance", "light"),
-            Appearance::Dark => fl!("panel-appearance", "dark"),
-        }
+impl std::fmt::Display for Appearance {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Appearance::Match => fl!("panel-appearance", "match"),
+                Appearance::Light => fl!("panel-appearance", "light"),
+                Appearance::Dark => fl!("panel-appearance", "dark"),
+            }
+        )
     }
 }
 
@@ -418,9 +427,9 @@ pub enum Message {
 
 impl PageInner {
     #[allow(clippy::too_many_lines)]
-    pub fn update(&mut self, message: Message) -> Command<Message> {
+    pub fn update(&mut self, message: Message) -> Task<Message> {
         let Some(helper) = self.config_helper.as_ref() else {
-            return Command::none();
+            return Task::none();
         };
 
         match &message {
@@ -458,7 +467,7 @@ impl PageInner {
         };
 
         let Some(panel_config) = self.panel_config.as_mut() else {
-            return Command::none();
+            return Task::none();
         };
 
         match message {
@@ -510,6 +519,9 @@ impl PageInner {
             }
             Message::PanelSize(size) => {
                 _ = panel_config.set_size(helper, size);
+                // Reset any size overrides the user might have set
+                _ = panel_config.set_size_center(helper, None);
+                _ = panel_config.set_size_wings(helper, None);
             }
             Message::Appearance(a) => {
                 if let Some(b) = [Appearance::Match, Appearance::Light, Appearance::Dark]
@@ -526,11 +538,11 @@ impl PageInner {
                 panel_config.opacity = opacity;
 
                 if self.opacity_changing {
-                    return Command::none();
+                    return Task::none();
                 }
 
                 self.opacity_changing = true;
-                return cosmic::command::future(async move {
+                return cosmic::Task::future(async move {
                     tokio::time::sleep(Duration::from_millis(125)).await;
                     Message::OpacityApply
                 });
@@ -544,7 +556,7 @@ impl PageInner {
             Message::OutputAdded(name, output) => {
                 self.outputs.push(name.clone());
                 self.outputs_map.insert(output.id(), (name, output));
-                return Command::none();
+                return Task::none();
             }
             Message::OutputRemoved(output) => {
                 if let Some((name, _)) = self.outputs_map.remove(&output.id()) {
@@ -555,7 +567,7 @@ impl PageInner {
             }
             Message::PanelConfig(c) => {
                 self.panel_config = Some(c);
-                return Command::none();
+                return Task::none();
             }
             Message::ResetPanel | Message::FullReset => {}
         }
@@ -570,6 +582,6 @@ impl PageInner {
             _ = panel_config.set_border_radius(helper, 0);
         }
 
-        Command::none()
+        Task::none()
     }
 }

@@ -31,7 +31,10 @@ window-hint-accent = Aktivt fönsterhinting färg
 window-hint-accent-toggle =Använd temaaccentfärg som aktiv fönsterhinting
 
 auto-switch = Växla automatiskt från ljust till mörkt läge
-    .desc = Växlar till ljustläge vid soluppgång
+    .sunrise = Växlar till ljust läge vid soluppgång
+    .sunset = Växlar till mörkt läge vid solnedgång
+    .next-sunrise = Växlar till ljust läge vid nästa soluppgång
+    .next-sunset = Växlar till mörkt läge vid nästa solnedgång
 
 container-background = Behållarbakgrund
     .desc-detail = Behållarens bakgrundsfärg används för navigeringssidofält, sidolåda, dialogrutor och liknande widgets. Som standard härleds den automatiskt från applikationens eller fönstrets bakgrund.
@@ -52,10 +55,24 @@ style = Stil
     .slightly-round = Lite rund
     .square = Fyrkant
 
-# gränssnittstäthet utelämnad för tillfället
+interface-density = Gränssnittstäthet
+    .comfortable = Bekväm
+    .compact = Tät
+    .spacious = Vidsträckt
+
+## Gränssnittstäthet
+
 window-management = Fönsterhantering
+window-management-appearance = Fönsterhantering
     .active-hint = Storlek på aktivt fönsterhinting
     .gaps = Springor runt kaklade fönster
+
+## Testinställningar
+
+experimental-settings = Testinställningar
+icons-and-toolkit = Utformning av ikoner och verktyg
+interface-font = Systemets teckensnitt
+monospace-font = Teckensnitt med jämna mellanrum
 
 ## Skrivbord: Skärm
 
@@ -247,7 +264,7 @@ connecting = Ansluter…
 disconnect = Koppla från
 forget = Glöm
 known-networks = Kända nätverk
-network-and-wireless = Nätverksanslutnignar
+network-and-wireless = Nätverksanslutningar
 no-networks = Inga nätverk har hittats.
 no-vpn = Inga VPN-anslutningar tillgängliga.
 password = Lösenord
@@ -418,6 +435,9 @@ power-mode = Strömalternativ
 
 acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
 
+input-devices = Inmatningsenheter
+    .desc = Inmatningsenheter
+
 primary-button = Primär knapp
     .left = Vänster
     .right = Höger
@@ -429,6 +449,10 @@ scrolling = Rullning
 
 ## Input: Keyboard
 
+slow = Långsam
+fast = Snabb
+short = Kort
+long = Lång
 keyboard = Tangentbord
     .desc = Tangentbordsinmatning
 
@@ -439,6 +463,11 @@ keyboard-sources = Inmatningskällor
     .settings = Inställningar
     .view-layout = Visa tangentbordslayout
     .remove = Ta bort
+    .add = Lägg till källa
+
+keyboard-typing-assist = Tangenttrycksrespons
+    .repeat-rate = Upprepningshastighet
+    .repeat-delay = Upprepningsfördröjning
 
 keyboard-special-char = Specialteckenssinmatning
     .alternate = Alternativa tecken-knapp

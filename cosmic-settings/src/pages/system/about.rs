@@ -4,7 +4,7 @@
 use cosmic_settings_page::{self as page, section, Section};
 
 use cosmic::widget::{editable_input, list_column, settings, text};
-use cosmic::{command, Apply, Command};
+use cosmic::{Apply, Task};
 use cosmic_settings_system::about::Info;
 use slab::Slab;
 use slotmap::SlotMap;
@@ -19,13 +19,19 @@ pub enum Message {
 
 #[derive(Clone, Debug, Default)]
 pub struct Page {
+    entity: page::Entity,
     editing_device_name: bool,
     info: Info,
+    on_enter_handle: Option<cosmic::iced::task::Handle>,
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -45,12 +51,23 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
-        command::future(async move {
+    ) -> Task<crate::pages::Message> {
+        let (task, handle) = Task::future(async move {
             crate::pages::Message::About(Message::Info(Box::new(Info::load())))
         })
+        .abortable();
+
+        self.on_enter_handle = Some(handle);
+        task
+    }
+
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        if let Some(handle) = self.on_enter_handle.take() {
+            handle.abort();
+        }
+
+        Task::none()
     }
 }
 

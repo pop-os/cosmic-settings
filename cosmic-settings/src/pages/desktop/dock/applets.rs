@@ -1,22 +1,19 @@
 use cosmic::{
     cosmic_config::CosmicConfigEntry,
-    iced::{alignment, Length},
-    iced_runtime::Command,
+    iced::{Alignment, Length},
     widget::{button, container, row},
-    Apply, Element,
+    Apply, Element, Task,
 };
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section, Section};
-use slotmap::SlotMap;
+use slotmap::{Key, SlotMap};
 use std::borrow::Cow;
 
 use crate::{
     app,
     pages::{
         self,
-        desktop::panel::applets_inner::{
-            self, lists, AppletsPage, ContextDrawer, ReorderWidgetState,
-        },
+        desktop::panel::applets_inner::{self, lists, AppletsPage, ContextDrawer},
     },
 };
 
@@ -34,6 +31,7 @@ impl Default for Page {
         });
         Self {
             inner: applets_inner::Page {
+                entity: page::Entity::null(),
                 available_entries: freedesktop_desktop_entry::Iter::new(
                     freedesktop_desktop_entry::default_paths(),
                 )
@@ -41,7 +39,7 @@ impl Default for Page {
                 .collect(),
                 config_helper,
                 current_config,
-                reorder_widget_state: ReorderWidgetState::default(),
+                reorder_widget_state: None,
                 search: String::new(),
                 context: None,
             },
@@ -63,7 +61,7 @@ impl AppletsPage for Page {
 pub struct Message(pub applets_inner::Message);
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<app::Message> {
         self.inner.update(message.0)
     }
 }
@@ -84,17 +82,16 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
-        let theme = cosmic::theme::active();
-        let spacing = theme.cosmic().spacing;
+        let space_xxs = cosmic::theme::active().cosmic().spacing.space_xxs;
         let content = row::with_capacity(2)
-            .spacing(spacing.space_xxs)
+            .spacing(space_xxs)
             .push(
                 button::standard(fl!("add-applet"))
                     .on_press(Message(applets_inner::Message::AddAppletDrawer)),
             )
             .apply(container)
             .width(Length::Fill)
-            .align_x(alignment::Horizontal::Right)
+            .align_x(Alignment::End)
             .apply(Element::from)
             .map(crate::pages::Message::DockApplet);
 

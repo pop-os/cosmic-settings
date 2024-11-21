@@ -11,7 +11,7 @@ pub mod tiling;
 
 use cosmic::iced::Length;
 use cosmic::widget::{self, icon, settings, text};
-use cosmic::{command, theme, Apply, Command, Element};
+use cosmic::{theme, Apply, Element, Task};
 use cosmic_config::ConfigGet;
 use cosmic_settings_config::shortcuts::action::{
     Direction, FocusDirection, Orientation, ResizeDirection,
@@ -27,6 +27,7 @@ use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
 use std::io;
 
 pub struct Page {
+    entity: page::Entity,
     modified: Modified,
     search: Search,
     search_model: Model,
@@ -82,6 +83,7 @@ pub enum Category {
 impl Default for Page {
     fn default() -> Self {
         Self {
+            entity: page::Entity::default(),
             modified: Modified::default(),
             search: Search::default(),
             search_model: Model::default(),
@@ -99,6 +101,11 @@ impl Default for Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+        self.search_model.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -134,9 +141,8 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
+    ) -> Task<crate::pages::Message> {
         if self.shortcuts_context.is_none() {
             self.shortcuts_context = cosmic_settings_config::shortcuts::context().ok();
         }
@@ -193,10 +199,10 @@ impl page::Page<crate::pages::Message> for Page {
             self.search.shortcuts = defaults;
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.search.actions.clear();
         self.search.localized.clear();
         self.search.input.clear();
@@ -206,40 +212,42 @@ impl page::Page<crate::pages::Message> for Page {
         self.modified.move_windows = 0;
         self.modified.nav = 0;
         self.modified.system = 0;
-        Command::none()
+        Task::none()
     }
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
             Message::Category(category) => match category {
                 Category::Custom => {
-                    command::message(crate::app::Message::Page(self.sub_pages.custom))
+                    cosmic::command::message(crate::app::Message::Page(self.sub_pages.custom))
                 }
 
-                Category::ManageWindow => {
-                    command::message(crate::app::Message::Page(self.sub_pages.manage_window))
-                }
+                Category::ManageWindow => cosmic::command::message(crate::app::Message::Page(
+                    self.sub_pages.manage_window,
+                )),
 
                 Category::MoveWindow => {
-                    command::message(crate::app::Message::Page(self.sub_pages.move_window))
+                    cosmic::command::message(crate::app::Message::Page(self.sub_pages.move_window))
                 }
 
-                Category::Nav => command::message(crate::app::Message::Page(self.sub_pages.nav)),
+                Category::Nav => {
+                    cosmic::command::message(crate::app::Message::Page(self.sub_pages.nav))
+                }
 
                 Category::System => {
-                    command::message(crate::app::Message::Page(self.sub_pages.system))
+                    cosmic::command::message(crate::app::Message::Page(self.sub_pages.system))
                 }
 
-                Category::WindowTiling => {
-                    command::message(crate::app::Message::Page(self.sub_pages.window_tiling))
-                }
+                Category::WindowTiling => cosmic::command::message(crate::app::Message::Page(
+                    self.sub_pages.window_tiling,
+                )),
             },
 
             Message::Search(input) => {
                 self.search(input);
-                Command::none()
+                Task::none()
             }
 
             Message::SearchShortcut(message) => self.search_model.update(message),
@@ -369,8 +377,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
                 .on_input(Message::Search)
                 .apply(widget::container)
                 .padding([2, 0, 0, 0])
-                .center_x()
-                .width(Length::Fill);
+                .center_x(Length::Fill);
 
             // If the search input is not empty, show the category view, else the search results.
             let content = if page.search.input.is_empty() {
@@ -436,9 +443,9 @@ fn category_item(category: Category, name: &str, modified: u16) -> Element<Messa
         .control(control)
         .spacing(16)
         .apply(widget::container)
-        .style(theme::Container::List)
+        .class(theme::Container::List)
         .apply(widget::button::custom)
-        .style(theme::Button::Transparent)
+        .class(theme::Button::Transparent)
         .on_press(Message::Category(category))
         .into()
 }
@@ -661,7 +668,7 @@ fn localize_action(action: &Action) -> String {
             SystemAction::WorkspaceOverview => fl!("system-shortcut", "workspace-overview"),
         },
 
-        Action::Spawn(command) => command.clone(),
+        Action::Spawn(task) => task.clone(),
     }
 }
 
@@ -669,6 +676,6 @@ fn localize_custom_action(action: &Action, binding: &Binding) -> String {
     if let Some(description) = &binding.description {
         description.to_string()
     } else {
-        localize_action(&action)
+        localize_action(action)
     }
 }

@@ -4,17 +4,17 @@ use std::cmp;
 
 use cosmic::{
     cosmic_config::{self, ConfigSet},
-    iced::{self, Length},
+    iced::{Alignment, Color, Length},
     iced_core::Border,
-    iced_style, theme,
+    theme,
     widget::{self, button, container, icon, radio, row, settings, ListColumn},
-    Apply, Command, Element,
+    Apply, Element, Task,
 };
 use cosmic_comp_config::XkbConfig;
 use cosmic_settings_page::{self as page, section, Section};
 use itertools::Itertools;
 use slab::Slab;
-use slotmap::{DefaultKey, SlotMap};
+use slotmap::{DefaultKey, Key, SlotMap};
 
 static COMPOSE_OPTIONS: &[(&str, &str)] = &[
     // ("Left Alt", "compose:lalt"), XXX?
@@ -45,6 +45,7 @@ static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
     ("Swap with Escape", "caps:swapescape"),
     ("Backspace", "caps:backspace"),
     ("Super", "caps:super"),
+    ("Control", "caps:ctrl_modifier"),
 ];
 
 const STR_ORDER: &str = "`str` is always comparable";
@@ -89,6 +90,7 @@ const KB_REPEAT_RATE_MAX: u32 = 45;
 const KB_REPEAT_RATE_MIN: u32 = 5;
 
 pub struct Page {
+    entity: page::Entity,
     config: cosmic_config::Config,
     context: Option<Context>,
     input_source_search: String,
@@ -104,6 +106,7 @@ impl Default for Page {
         let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
 
         Self {
+            entity: page::Entity::null(),
             context: None,
             expanded_source_popover: None,
             keyboard_layouts: SlotMap::new(),
@@ -153,15 +156,15 @@ fn popover_menu_row(
 ) -> cosmic::Element<'static, Message> {
     widget::text::body(label)
         .apply(widget::container)
-        .style(cosmic::theme::Container::custom(|theme| {
-            iced_style::container::Appearance {
+        .class(cosmic::theme::Container::custom(|theme| {
+            widget::container::Style {
                 background: None,
-                ..container::StyleSheet::appearance(theme, &cosmic::theme::Container::List)
+                ..container::Catalog::style(theme, &cosmic::theme::Container::List)
             }
         }))
         .apply(button::custom)
         .on_press(())
-        .style(theme::Button::Transparent)
+        .class(theme::Button::Transparent)
         .apply(Element::from)
         .map(move |()| Message::SourceContext(message(id)))
 }
@@ -172,41 +175,40 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
             id,
             fl!("keyboard-sources", "move-up"),
             SourceContext::MoveUp,
-        )
-        .into(),
+        ),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-down"),
             SourceContext::MoveDown,
-        )
-        .into(),
+        ),
         cosmic::widget::divider::horizontal::default().into(),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "settings"),
             SourceContext::Settings,
-        )
-        .into(),
+        ),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "view-layout"),
             SourceContext::ViewLayout,
-        )
-        .into(),
-        popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove).into(),
+        ),
+        popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
-    .padding(8)
+    .padding([2, 8])
     .width(Length::Shrink)
     .height(Length::Shrink)
     .apply(cosmic::widget::container)
-    .style(cosmic::theme::Container::custom(|theme| {
+    .class(cosmic::theme::Container::custom(|theme| {
         let cosmic = theme.cosmic();
-        container::Appearance {
-            icon_color: Some(theme.cosmic().background.on.into()),
-            text_color: Some(theme.cosmic().background.on.into()),
-            background: Some(iced::Color::from(theme.cosmic().background.base).into()),
+        let background = &cosmic.background;
+        container::Style {
+            icon_color: Some(background.on.into()),
+            text_color: Some(background.on.into()),
+            background: Some(Color::from(background.base).into()),
             border: Border {
-                radius: cosmic.corner_radii.radius_m.into(),
+                color: background.component.divider.into(),
+                width: 1.0,
+                radius: cosmic.corner_radii.radius_s.into(),
                 ..Default::default()
             },
             shadow: Default::default(),
@@ -239,7 +241,7 @@ fn input_source(
 ) -> cosmic::Element<Message> {
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
-    settings::flex_item(description, popover_button(id, expanded)).into()
+    settings::item(description, popover_button(id, expanded)).into()
 }
 
 fn special_char_radio_row<'a>(
@@ -256,6 +258,10 @@ fn special_char_radio_row<'a>(
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -288,9 +294,8 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
+    ) -> Task<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
         match (
             xkb_data::keyboard_layouts(),
@@ -388,12 +393,12 @@ impl page::Page<crate::pages::Message> for Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
             Message::InputSourceSearch(search) => {
                 self.input_source_search = search;
@@ -456,6 +461,7 @@ impl Page {
             Message::ShowInputSourcesContext => {
                 self.context = Some(Context::ShowInputSourcesContext);
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
                     fl!("keyboard-sources", "add").into(),
                 ));
             }
@@ -467,6 +473,7 @@ impl Page {
             Message::OpenSpecialCharacterContext(key) => {
                 self.context = Some(Context::SpecialCharacter(key));
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
                     key.title().into(),
                 ));
             }
@@ -501,16 +508,17 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     pub fn add_input_source_view(&self) -> Element<'_, crate::pages::Message> {
+        let space_l = theme::active().cosmic().spacing.space_l;
+
         let search = widget::search_input(fl!("type-to-search"), &self.input_source_search)
             .on_input(Message::InputSourceSearch)
             .on_clear(Message::InputSourceSearch(String::new()));
 
-        let toggler = widget::toggler(
-            fl!("show-extended-input-sources"),
+        let toggler = settings::item::builder(fl!("show-extended-input-sources")).toggler(
             self.show_extended_input_sources,
             Message::SetShowExtendedInputSources,
         );
@@ -529,7 +537,7 @@ impl Page {
 
         widget::column()
             .padding([2, 0])
-            .spacing(32)
+            .spacing(space_l)
             .push(search)
             .push(toggler)
             .push(list)
@@ -577,8 +585,13 @@ impl Page {
 
         // TODO description, layout default
 
-        let mut list =
-            cosmic::widget::list_column().add(special_char_radio_row("None", None, current));
+        let mut list = cosmic::widget::list_column();
+
+        if matches!(special_key, SpecialKey::CapsLock) {
+            list = list.add(special_char_radio_row("Caps Lock", None, current));
+        } else {
+            list = list.add(special_char_radio_row("None", None, current));
+        }
 
         list = options
             .iter()
@@ -644,7 +657,7 @@ fn input_sources() -> Section<crate::pages::Message> {
                 .push(
                     widget::container(add_input_source)
                         .width(Length::Fill)
-                        .align_x(iced::alignment::Horizontal::Right),
+                        .align_x(Alignment::End),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Keyboard)
@@ -667,15 +680,15 @@ fn special_character_entry() -> Section<crate::pages::Message> {
             settings::section()
                 .title(&section.title)
                 .add(crate::widget::go_next_item(
-                    &*descriptions[alternate],
+                    &descriptions[alternate],
                     Message::OpenSpecialCharacterContext(SpecialKey::AlternateCharacters),
                 ))
                 .add(crate::widget::go_next_item(
-                    &*descriptions[compose],
+                    &descriptions[compose],
                     Message::OpenSpecialCharacterContext(SpecialKey::Compose),
                 ))
                 .add(crate::widget::go_next_item(
-                    &*descriptions[caps],
+                    &descriptions[caps],
                     Message::OpenSpecialCharacterContext(SpecialKey::CapsLock),
                 ))
                 .apply(cosmic::Element::from)
@@ -742,7 +755,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                     .max_width(250);
 
                     row::with_capacity(3)
-                        .align_items(iced::Alignment::Center)
+                        .align_y(Alignment::Center)
                         .spacing(theme.cosmic().space_s())
                         .push(widget::text::body(&descriptions[short]))
                         .push(delay_slider)
@@ -762,7 +775,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                     .max_width(250);
 
                     row::with_capacity(3)
-                        .align_items(iced::Alignment::Center)
+                        .align_y(Alignment::Center)
                         .spacing(theme.cosmic().space_s())
                         .push(widget::text::body(&descriptions[slow]))
                         .push(rate_slider)

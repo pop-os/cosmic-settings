@@ -22,6 +22,9 @@ pub enum Message {
     SaveFocusFollowsCursorDelay(bool),
     SetFocusFollowsCursorDelay(String),
     SetCursorFollowsFocus(bool),
+    ShowActiveWindowHint(bool),
+    ShowMaximizeButton(bool),
+    ShowMinimizeButton(bool),
 }
 
 pub struct Page {
@@ -32,6 +35,7 @@ pub struct Page {
     focus_follows_cursor_delay: u64,
     focus_delay_text: String,
     cursor_follows_focus: bool,
+    show_active_hint: bool,
 }
 
 impl Default for Page {
@@ -63,6 +67,15 @@ impl Default for Page {
             })
             .unwrap_or(250);
 
+        let show_active_hint = comp_config
+            .get("active_hint")
+            .inspect_err(|err| {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                    error!(?err, "Failed to read config 'active_hint'")
+                }
+            })
+            .unwrap_or(true);
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -76,6 +89,7 @@ impl Default for Page {
             focus_follows_cursor_delay,
             focus_delay_text: format!("{focus_follows_cursor_delay}"),
             cursor_follows_focus,
+            show_active_hint,
         }
     }
 }
@@ -99,7 +113,7 @@ impl Page {
                 self.focus_follows_cursor = value;
                 if let Err(err) = self
                     .comp_config
-                    .set("focus_follows_cursor", &self.focus_follows_cursor)
+                    .set("focus_follows_cursor", self.focus_follows_cursor)
                 {
                     error!(?err, "Failed to set config 'focus_follows_cursor'");
                 }
@@ -127,9 +141,31 @@ impl Page {
                 self.cursor_follows_focus = value;
                 if let Err(err) = self
                     .comp_config
-                    .set("cursor_follows_focus", &self.cursor_follows_focus)
+                    .set("cursor_follows_focus", self.cursor_follows_focus)
                 {
                     error!(?err, "Failed to set config 'cursor_follows_focus'");
+                }
+            }
+            Message::ShowMaximizeButton(value) => {
+                if let Ok(config) = cosmic::config::CosmicTk::config() {
+                    let _res = cosmic::config::COSMIC_TK
+                        .write()
+                        .unwrap()
+                        .set_show_maximize(&config, value);
+                }
+            }
+            Message::ShowMinimizeButton(value) => {
+                if let Ok(config) = cosmic::config::CosmicTk::config() {
+                    let _res = cosmic::config::COSMIC_TK
+                        .write()
+                        .unwrap()
+                        .set_show_minimize(&config, value);
+                }
+            }
+            Message::ShowActiveWindowHint(value) => {
+                self.show_active_hint = value;
+                if let Err(err) = self.comp_config.set("active_hint", value) {
+                    error!(?err, "Failed to set config 'active_hint'");
                 }
             }
         }
@@ -194,36 +230,30 @@ pub fn window_controls() -> Section<crate::pages::Message> {
 
     let maximize = descriptions.insert(fl!("window-controls", "maximize"));
     let minimize = descriptions.insert(fl!("window-controls", "minimize"));
+    let active_window_hint = descriptions.insert(fl!("window-controls", "active-window-hint"));
 
     Section::default()
         .title(fl!("window-controls"))
         .descriptions(descriptions)
-        .view::<Page>(move |binder, _page, section| {
-            let desktop = binder
-                .page::<super::Page>()
-                .expect("desktop page not found");
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
             settings::section()
                 .title(&section.title)
                 .add(settings::item(
+                    &descriptions[active_window_hint],
+                    toggler(page.show_active_hint).on_toggle(Message::ShowActiveWindowHint),
+                ))
+                .add(settings::item(
                     &descriptions[maximize],
-                    toggler(
-                        None,
-                        desktop.cosmic_tk.show_maximize,
-                        super::Message::ShowMaximizeButton,
-                    ),
+                    toggler(cosmic::config::show_maximize()).on_toggle(Message::ShowMaximizeButton),
                 ))
                 .add(settings::item(
                     &descriptions[minimize],
-                    toggler(
-                        None,
-                        desktop.cosmic_tk.show_minimize,
-                        super::Message::ShowMinimizeButton,
-                    ),
+                    toggler(cosmic::config::show_minimize()).on_toggle(Message::ShowMinimizeButton),
                 ))
                 .apply(Element::from)
-                .map(crate::pages::Message::Desktop)
+                .map(crate::pages::Message::WindowManagement)
         })
 }
 
@@ -245,11 +275,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                 .title(&section.title)
                 .add(settings::item(
                     &descriptions[focus_follows_cursor],
-                    toggler(
-                        None,
-                        page.focus_follows_cursor,
-                        Message::SetFocusFollowsCursor,
-                    ),
+                    toggler(page.focus_follows_cursor).on_toggle(Message::SetFocusFollowsCursor),
                 ))
                 .add(settings::item(
                     &descriptions[focus_follows_cursor_delay],
@@ -263,11 +289,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                 ))
                 .add(settings::item(
                     &descriptions[cursor_follows_focus],
-                    toggler(
-                        None,
-                        page.cursor_follows_focus,
-                        Message::SetCursorFollowsFocus,
-                    ),
+                    toggler(page.cursor_follows_focus).on_toggle(Message::SetCursorFollowsFocus),
                 ))
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)

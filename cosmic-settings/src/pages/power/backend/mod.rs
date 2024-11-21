@@ -1,7 +1,7 @@
 use chrono::{Duration, TimeDelta};
 use futures::future::join_all;
 use futures::FutureExt;
-use upower_dbus::{BatteryType, DeviceProxy};
+use upower_dbus::{BatteryState, BatteryType, DeviceProxy};
 use zbus::Connection;
 
 mod ppdaemon;
@@ -37,8 +37,6 @@ impl GetCurrentPowerProfile for PowerBackendEnum {
         }
     }
 }
-
-pub trait PowerBackend: SetPowerProfile + GetCurrentPowerProfile {}
 
 pub async fn get_backend() -> Option<PowerBackendEnum> {
     match get_s76power_daemon_proxy().await {
@@ -98,8 +96,6 @@ pub fn get_power_profiles() -> Vec<PowerProfile> {
 }
 
 pub struct S76Backend {}
-
-impl PowerBackend for S76Backend {}
 
 impl SetPowerProfile for S76Backend {
     async fn set_power_profile(&self, profile: PowerProfile) {
@@ -163,8 +159,6 @@ async fn get_s76power_daemon_proxy<'a>() -> Result<s76powerdaemon::PowerDaemonPr
 }
 
 pub struct PPBackend {}
-
-impl PowerBackend for PPBackend {}
 
 impl SetPowerProfile for PPBackend {
     async fn set_power_profile(&self, profile: PowerProfile) {
@@ -236,7 +230,7 @@ pub struct Battery {
     pub icon_name: String,
     pub is_present: bool,
     pub percent: f64,
-    pub on_battery: bool,
+    pub is_charging: bool,
     pub remaining_duration: Duration,
 }
 
@@ -300,34 +294,21 @@ async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zb
         .collect())
 }
 
-async fn get_on_battery_status() -> Result<bool, zbus::Error> {
-    let connection = match Connection::system().await {
-        Ok(c) => c,
-        Err(e) => {
-            tracing::error!("zbus connection failed. {e}");
-            return Err(e);
-        }
-    };
-
-    match upower_dbus::UPowerProxy::new(&connection).await {
-        Ok(p) => p.on_battery().await,
-        Err(e) => Err(e),
-    }
-}
-
 impl Battery {
     pub async fn from_device(proxy: DeviceProxy<'_>) -> Self {
         let mut remaining_duration: Duration = Duration::default();
 
-        let (is_present, percentage, on_battery) = futures::join!(
+        let (is_present, percentage, battery_state) = futures::join!(
             proxy.is_present().map(Result::unwrap_or_default),
             proxy.percentage().map(Result::unwrap_or_default),
-            get_on_battery_status().map(Result::unwrap_or_default)
+            proxy.state().map(|r| r.unwrap_or(BatteryState::Unknown)),
         );
 
         let percent = percentage.clamp(0.0, 100.0);
 
-        if on_battery {
+        let is_charging = matches!(battery_state, BatteryState::Charging);
+
+        if !is_charging {
             if let Ok(time) = proxy.time_to_empty().await {
                 if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
                     remaining_duration = dur;
@@ -358,7 +339,7 @@ impl Battery {
         } else {
             0
         };
-        let charging = if on_battery { "" } else { "charging-" };
+        let charging = if is_charging { "charging-" } else { "" };
 
         let icon_name =
             format!("cosmic-applet-battery-level-{battery_percent}-{charging}symbolic",);
@@ -367,7 +348,7 @@ impl Battery {
             icon_name,
             is_present,
             percent,
-            on_battery,
+            is_charging,
             remaining_duration,
         }
     }
@@ -417,36 +398,8 @@ impl Battery {
             "battery",
             "remaining-time",
             time = time,
-            action = if self.on_battery { "empty" } else { "full" }
+            action = if !self.is_charging { "empty" } else { "full" }
         )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_can_format_battery_remaining() {
-        let cases = [
-            (59, "Less than a minute until empty"),
-            (300, "5 minutes until empty"),
-            (305, "5 minutes until empty"),
-            (330, "5 minutes until empty"),
-            (360, "6 minutes until empty"),
-            (3660, "1 hour and 1 minute until empty"),
-            (10800, "3 hours until empty"),
-            (969400, "11 days, 5 hours and 16 minutes until empty"),
-        ];
-        for case in cases {
-            let (actual, expected) = case;
-            let battery = Battery {
-                remaining_duration: Duration::new(actual, 0).unwrap(),
-                on_battery: true,
-                ..Default::default()
-            };
-            assert_eq!(battery.remaining_time(), expected);
-        }
     }
 }
 
@@ -511,5 +464,33 @@ impl ConnectedDevice {
         }
 
         vec![]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_can_format_battery_remaining() {
+        let cases = [
+            (59, "Less than a minute until empty"),
+            (300, "5 minutes until empty"),
+            (305, "5 minutes until empty"),
+            (330, "5 minutes until empty"),
+            (360, "6 minutes until empty"),
+            (3660, "1 hour and 1 minute until empty"),
+            (10800, "3 hours until empty"),
+            (969400, "11 days, 5 hours and 16 minutes until empty"),
+        ];
+        for case in cases {
+            let (actual, expected) = case;
+            let battery = Battery {
+                remaining_duration: Duration::new(actual, 0).unwrap(),
+                is_charging: false,
+                ..Default::default()
+            };
+            assert_eq!(battery.remaining_time(), expected);
+        }
     }
 }

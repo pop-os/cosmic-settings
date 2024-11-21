@@ -1,11 +1,11 @@
-use cosmic::iced::alignment::Horizontal;
 use cosmic::iced::{Alignment, Length};
-use cosmic::prelude::CollectionWidget;
 use cosmic::widget::{self, button, icon, settings, text};
-use cosmic::{command, theme, Apply, Command, Element};
+use cosmic::{theme, Apply, Element, Task};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::shortcuts::{self, Action, Binding, Shortcuts};
+use cosmic_settings_page as page;
 use slab::Slab;
+use slotmap::Key;
 use std::borrow::Cow;
 use std::io;
 use std::str::FromStr;
@@ -90,6 +90,7 @@ impl ShortcutModel {
 
 #[must_use]
 pub struct Model {
+    pub entity: page::Entity,
     pub defaults: Shortcuts,
     pub replace_dialog: Option<(usize, Binding, Action, String)>,
     pub shortcut_models: Slab<ShortcutModel>,
@@ -102,6 +103,7 @@ pub struct Model {
 impl Default for Model {
     fn default() -> Self {
         Self {
+            entity: page::Entity::null(),
             defaults: Shortcuts::default(),
             replace_dialog: None,
             shortcut_models: Slab::new(),
@@ -164,7 +166,8 @@ impl Model {
                         let secondary_action = button::standard(fl!("cancel"))
                             .on_press(ShortcutMessage::CancelReplace);
 
-                        let dialog = widget::dialog(fl!("replace-shortcut-dialog"))
+                        let dialog = widget::dialog()
+                            .title(fl!("replace-shortcut-dialog"))
                             .icon(icon::from_name("dialog-warning").size(64))
                             .body(fl!(
                                 "replace-shortcut-dialog",
@@ -240,7 +243,7 @@ impl Model {
     }
 
     #[allow(clippy::too_many_lines)]
-    pub(super) fn update(&mut self, message: ShortcutMessage) -> Command<crate::app::Message> {
+    pub(super) fn update(&mut self, message: ShortcutMessage) -> Task<crate::app::Message> {
         match message {
             ShortcutMessage::AddKeybinding => {
                 if let Some(short_id) = self.shortcut_context {
@@ -321,6 +324,10 @@ impl Model {
                         if shortcut.is_default {
                             self.config_add(Action::Disable, shortcut.binding.clone());
                         } else {
+                            // if last keybind deleted, clear shortcut context
+                            if model.bindings.is_empty() {
+                                self.shortcut_context = None;
+                            }
                             self.config_remove(&shortcut.binding);
                         }
 
@@ -386,18 +393,18 @@ impl Model {
                 self.shortcut_context = Some(id);
                 self.replace_dialog = None;
 
-                let mut commands = vec![command::message(crate::app::Message::OpenContextDrawer(
-                    description.into(),
-                ))];
+                let mut tasks = vec![cosmic::command::message(
+                    crate::app::Message::OpenContextDrawer(self.entity, description.into()),
+                )];
 
                 if let Some(model) = self.shortcut_models.get(0) {
                     if let Some(shortcut) = model.bindings.get(0) {
-                        commands.push(widget::text_input::focus(shortcut.id.clone()));
-                        commands.push(widget::text_input::select_all(shortcut.id.clone()));
+                        tasks.push(widget::text_input::focus(shortcut.id.clone()));
+                        tasks.push(widget::text_input::select_all(shortcut.id.clone()));
                     }
                 }
 
-                return Command::batch(commands);
+                return Task::batch(tasks);
             }
 
             ShortcutMessage::SubmitBinding(id) => {
@@ -411,7 +418,7 @@ impl Model {
                                 Ok(new_binding) => {
                                     if !new_binding.is_set() {
                                         shortcut.input.clear();
-                                        return Command::none();
+                                        return Task::none();
                                     }
                                     if let Some(action) = self.config_contains(&new_binding) {
                                         let action_str = if let Action::Spawn(_) = &action {
@@ -421,7 +428,7 @@ impl Model {
                                         };
                                         self.replace_dialog =
                                             Some((id, new_binding, action, action_str));
-                                        return Command::none();
+                                        return Task::none();
                                     }
 
                                     apply_binding = Some(new_binding);
@@ -455,7 +462,7 @@ impl Model {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     pub(super) fn view(&self) -> Element<ShortcutMessage> {
@@ -472,11 +479,18 @@ fn context_drawer(
     id: usize,
     show_action: bool,
 ) -> Element<ShortcutMessage> {
+    let cosmic::cosmic_theme::Spacing {
+        space_xxs,
+        space_xs,
+        space_l,
+        ..
+    } = theme::active().cosmic().spacing;
+
     let model = &shortcuts[id];
 
     let action = show_action.then(|| {
-        let description = if let Action::Spawn(command) = &model.action {
-            Cow::Borrowed(command.as_str())
+        let description = if let Action::Spawn(task) = &model.action {
+            Cow::Borrowed(task.as_str())
         } else {
             Cow::Owned(super::localize_action(&model.action))
         };
@@ -485,7 +499,7 @@ fn context_drawer(
     });
 
     let bindings = model.bindings.iter().enumerate().fold(
-        widget::list_column().spacing(8),
+        widget::list_column().spacing(space_xxs),
         |section, (_, (bind_id, shortcut))| {
             let text: Cow<'_, str> = if !shortcut.editing && shortcut.binding.is_set() {
                 Cow::Owned(shortcut.binding.to_string())
@@ -499,7 +513,7 @@ fn context_drawer(
             .select_on_focus(true)
             .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
             .on_submit(ShortcutMessage::SubmitBinding(bind_id))
-            .padding([0, 12])
+            .padding([0, space_xs])
             .id(shortcut.id.clone())
             .into();
 
@@ -508,7 +522,7 @@ fn context_drawer(
                 .into();
 
             let flex_control =
-                settings::flex_item_row(vec![input, delete_button]).align_items(Alignment::Center);
+                settings::item_row(vec![input, delete_button]).align_y(Alignment::Center);
 
             section.add(flex_control)
         },
@@ -529,13 +543,13 @@ fn context_drawer(
     let button_container = widget::row::with_capacity(2)
         .push_maybe(reset_keybinding_button)
         .push(add_keybinding_button)
-        .spacing(12)
+        .spacing(space_xs)
         .apply(widget::container)
         .width(Length::Fill)
-        .align_x(Horizontal::Right);
+        .align_x(Alignment::End);
 
     widget::column::with_capacity(if show_action { 3 } else { 2 })
-        .spacing(32)
+        .spacing(space_l)
         .push_maybe(action)
         .push(bindings)
         .push(button_container)
@@ -562,7 +576,7 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<Short
         text::body(fl!("disabled")).into()
     } else {
         widget::column::with_children(bindings)
-            .align_items(Alignment::End)
+            .align_x(Alignment::End)
             .into()
     };
 
@@ -580,16 +594,16 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<Short
             widget::button::icon(icon::from_name("edit-delete-symbolic"))
                 .on_press(LocalMessage::Remove)
         }))
-        .align_items(Alignment::Center)
+        .align_y(Alignment::Center)
         .spacing(8);
 
     settings::item::builder(&data.description)
         .flex_control(control)
         .spacing(16)
         .apply(widget::container)
-        .style(theme::Container::List)
+        .class(theme::Container::List)
         .apply(widget::button::custom)
-        .style(theme::Button::Transparent)
+        .class(theme::Button::Transparent)
         .on_press(LocalMessage::Show)
         .apply(Element::from)
         .map(move |message| match message {

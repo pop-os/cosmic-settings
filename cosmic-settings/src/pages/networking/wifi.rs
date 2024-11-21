@@ -8,11 +8,10 @@ use std::{
 
 use anyhow::Context;
 use cosmic::{
-    iced::{alignment, Length},
-    iced_core::text::Wrap,
-    prelude::CollectionWidget,
+    iced::{Alignment, Length},
+    iced_core::text::Wrapping,
     widget::{self, icon},
-    Apply, Command, Element,
+    Apply, Element, Task,
 };
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::network_manager::{
@@ -94,6 +93,7 @@ enum WiFiDialog {
 
 #[derive(Debug, Default)]
 pub struct Page {
+    entity: page::Entity,
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     nm_state: Option<NmState>,
     /// When defined, displays connections for the specific device.
@@ -119,6 +119,10 @@ pub struct NmState {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new("wifi", "preferences-wireless-symbolic")
             .title(fl!("wifi"))
@@ -154,7 +158,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("auth-dialog"))
+                widget::dialog()
+                    .title(fl!("auth-dialog"))
                     .icon(icon::from_name("preferences-wireless-symbolic").size(64))
                     .body(fl!("auth-dialog", "wifi-description"))
                     .control(password)
@@ -171,7 +176,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("forget-dialog"))
+                widget::dialog()
+                    .title(fl!("forget-dialog"))
                     .icon(icon::from_name("dialog-information").size(64))
                     .body(fl!("forget-dialog", "description"))
                     .primary_action(primary_action)
@@ -189,7 +195,7 @@ impl page::Page<crate::pages::Message> for Page {
                 .on_press(Message::AddNetwork)
                 .apply(widget::container)
                 .width(Length::Fill)
-                .align_x(alignment::Horizontal::Right)
+                .align_x(Alignment::End)
                 .apply(Element::from)
                 .map(crate::pages::Message::WiFi),
         )
@@ -197,11 +203,10 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Command<crate::pages::Message> {
+    ) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
-            return cosmic::command::future(async move {
+            return cosmic::Task::future(async move {
                 zbus::Connection::system()
                     .await
                     .context("failed to create system dbus connection")
@@ -213,10 +218,10 @@ impl page::Page<crate::pages::Message> for Page {
             });
         }
 
-        Command::none()
+        Task::none()
     }
 
-    fn on_leave(&mut self) -> Command<crate::pages::Message> {
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.active_device = None;
         self.view_more_popup = None;
         self.nm_state = None;
@@ -229,12 +234,12 @@ impl page::Page<crate::pages::Message> for Page {
             _ = cancel.send(());
         }
 
-        Command::none()
+        Task::none()
     }
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         let span = tracing::span!(tracing::Level::INFO, "vpn::update");
         let _span = span.enter();
 
@@ -295,7 +300,7 @@ impl Page {
                 | network_manager::Event::WirelessAccessPoints,
             ) => {
                 if let Some(NmState { ref conn, .. }) = self.nm_state {
-                    return cosmic::command::batch(vec![
+                    return cosmic::Task::batch(vec![
                         update_state(conn.clone()),
                         update_devices(conn.clone()),
                     ]);
@@ -353,7 +358,7 @@ impl Page {
 
             Message::ConnectWithPassword => {
                 let Some(dialog) = self.dialog.take() else {
-                    return Command::none();
+                    return Task::none();
                 };
 
                 if let WiFiDialog::Password { ssid, password, .. } = dialog {
@@ -446,7 +451,7 @@ impl Page {
             }
         }
 
-        Command::none()
+        Task::none()
     }
 
     fn connect(
@@ -532,10 +537,8 @@ fn devices_view() -> Section<crate::pages::Message> {
             let theme = cosmic::theme::active();
             let spacing = &theme.cosmic().spacing;
 
-            let wifi_enable =
-                widget::settings::item::builder(&section.descriptions[wifi_txt]).control(
-                    widget::toggler(None, state.wifi_enabled, Message::WiFiEnable),
-                );
+            let wifi_enable = widget::settings::item::builder(&section.descriptions[wifi_txt])
+                .control(widget::toggler(state.wifi_enabled).on_toggle(Message::WiFiEnable));
 
             let mut view = widget::column::with_capacity(4)
                 .push(widget::list_column().add(wifi_enable))
@@ -544,10 +547,9 @@ fn devices_view() -> Section<crate::pages::Message> {
                         .push(icon::from_name("airplane-mode-symbolic"))
                         .push(widget::text::body(&section.descriptions[airplane_mode_txt]))
                         .spacing(8)
-                        .align_items(alignment::Alignment::Center)
+                        .align_y(Alignment::Center)
                         .apply(widget::container)
-                        .width(Length::Fill)
-                        .align_x(alignment::Horizontal::Center)
+                        .center_x(Length::Fill)
                 }));
 
             if !state.airplane_mode
@@ -556,8 +558,7 @@ fn devices_view() -> Section<crate::pages::Message> {
             {
                 let no_networks_found =
                     widget::container(widget::text::body(&section.descriptions[no_networks_txt]))
-                        .align_x(alignment::Horizontal::Center)
-                        .width(Length::Fill);
+                        .center_x(Length::Fill);
 
                 view = view.push(no_networks_found);
             } else {
@@ -612,14 +613,16 @@ fn devices_view() -> Section<crate::pages::Message> {
                                 is_encrypted
                                     .then(|| widget::icon::from_name("connection-secure-symbolic")),
                             )
-                            .push(widget::text::body(network.ssid.as_ref()).wrap(Wrap::Glyph))
+                            .push(
+                                widget::text::body(network.ssid.as_ref()).wrapping(Wrapping::Glyph),
+                            )
                             .spacing(spacing.space_xxs);
 
                         let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
                             widget::button::text(connect_txt).on_press(msg).into()
                         } else {
                             widget::text::body(connect_txt)
-                                .vertical_alignment(alignment::Vertical::Center)
+                                .align_y(Alignment::Center)
                                 .into()
                         };
 
@@ -654,7 +657,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                                         }))
                                         .width(Length::Fixed(170.0))
                                         .apply(widget::container)
-                                        .style(cosmic::style::Container::Dialog)
+                                        .class(cosmic::style::Container::Dialog)
                                 })
                                 .apply(|e| Some(Element::from(e)))
                         } else if is_known {
@@ -668,12 +671,12 @@ fn devices_view() -> Section<crate::pages::Message> {
                         let controls = widget::row::with_capacity(2)
                             .push(connect)
                             .push_maybe(view_more)
-                            .align_items(alignment::Alignment::Center)
+                            .align_y(Alignment::Center)
                             .spacing(spacing.space_xxs);
 
                         let widget = widget::settings::item_row(vec![
                             identifier.into(),
-                            widget::horizontal_space(Length::Fill).into(),
+                            widget::horizontal_space().width(Length::Fill).into(),
                             controls.into(),
                         ]);
 
@@ -714,20 +717,20 @@ fn is_connected(state: &NetworkManagerState, network: &AccessPoint) -> bool {
     })
 }
 
-fn popup_button<'a>(message: Message, text: &'a str) -> Element<'a, Message> {
+fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
     widget::text::body(text)
-        .vertical_alignment(alignment::Vertical::Center)
+        .align_y(Alignment::Center)
         .apply(widget::button::custom)
         .padding([theme.space_xxxs(), theme.space_xs()])
         .width(Length::Fill)
-        .style(cosmic::theme::Button::MenuItem)
+        .class(cosmic::theme::Button::MenuItem)
         .on_press(message)
         .into()
 }
 
-fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
+fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
     let settings = async move {
         let settings = network_manager::dbus::settings::NetworkManagerSettings::new(&conn).await?;
 
@@ -785,7 +788,7 @@ fn connection_settings(conn: zbus::Connection) -> Command<crate::app::Message> {
     })
 }
 
-pub fn update_state(conn: zbus::Connection) -> Command<crate::app::Message> {
+pub fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
     cosmic::command::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
@@ -794,7 +797,7 @@ pub fn update_state(conn: zbus::Connection) -> Command<crate::app::Message> {
     })
 }
 
-pub fn update_devices(conn: zbus::Connection) -> Command<crate::app::Message> {
+pub fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
     cosmic::command::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::Wifi);

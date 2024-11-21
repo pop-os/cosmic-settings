@@ -1,5 +1,7 @@
 app = COSMIC Settings
 
+dbus-connection-error = Failed to connect to DBus
+ok = OK
 unknown = Unknown
 
 number = { $number }
@@ -62,8 +64,24 @@ remove-connection-dialog = Remove Connection Profile?
 
 vpn = VPN
     .connections = VPN Connections
+    .error = Failed to add VPN config
     .remove = Remove connection profile
     .select-file = Select a VPN configuration file
+
+vpn-error = VPN Error
+    .config = Failed to add VPN config
+    .connect = Failed to connect to VPN
+    .connection-editor = Connection editor failed
+    .connection-settings = Failed to get settings for active connections
+    .updating-state = Failed to update network manager state
+    .wireguard-config-path = Invalid file path for WireGuard config
+    .wireguard-config-path-desc = Chosen file must be on a local file system.
+    .wireguard-device = Failed to create WireGuard device
+    .with-password = Failed to set VPN { $field ->
+        *[username] username
+        [password] password
+        [password-flags] password-flags
+    } with nmcli
 
 wired = Wired
     .adapter = Wired adapter { $id }
@@ -74,6 +92,9 @@ wired = Wired
 wifi = Wi-Fi
     .adapter = Wi-Fi adapter { $id }
     .forget = Forget this network
+
+wireguard-dialog = Add WireGuard device
+    .description = Choose a device name for the WireGuard config.
 
 ## Networking: Online Accounts
 
@@ -138,6 +159,7 @@ x-hours = { $number ->
     [1] 1 hour
     *[other] { $number } hours
 }
+never = Never
 
 ## Desktop: Appearance
 
@@ -180,12 +202,10 @@ control-tint = Control component tint
 frosted = Frosted glass effect on system interface
     .desc = Applies background blur to panel, dock, applets, launcher, and application library.
 
-experimental-settings = Experimental settings
-
 enable-export = Apply this theme to GNOME apps.
     .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
 
-icon-theme = Icon theme
+icon-theme = Icon Theme
     .desc = Applies a different set of icons to applications.
 
 text-tint = Interface text tint
@@ -204,6 +224,13 @@ interface-density = Interface Density
 window-management-appearance = Window Management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
+
+### Experimental
+
+experimental-settings = Experimental Settings
+icons-and-toolkit = Icons and toolkit theming
+interface-font = System font
+monospace-font = Monospace font
 
 ## Desktop: Notifications
 
@@ -279,6 +306,7 @@ super-key = Super key action
 window-controls = Window Controls
     .maximize = Show maximize button
     .minimize = Show minimize button
+    .active-window-hint = Show active window hint
 
 focus-navigation = Focus Navigation
     .focus-follows-cursor = Focus follows cursor
@@ -433,6 +461,12 @@ power-mode = Power Mode
     .performance = High performance
     .performance-desc = Peak performance and power usage.
     .no-backend = Backend not found. Install system76-power or power-profiles-daemon.
+
+power-saving = Power Saving Options
+    .turn-off-screen-after = Turn off the screen after
+    .auto-suspend = Automatic suspend
+    .auto-suspend-ac = Automatic suspend when plugged in
+    .auto-suspend-battery = Automatic suspend on battery power
 
 ## Input
 
@@ -679,6 +713,22 @@ time-format = Date & Time Format
 
 time-region = Region & Language
     .desc = Format dates, times, and numbers based on your region
+
+formatting = Formatting
+    .dates = Dates
+    .time = Time
+    .date-and-time = Date & Time
+    .numbers = Numbers
+    .measurement = Measurement
+    .paper = Paper
+
+preferred-languages = Preferred Languages
+    .desc = The order of languages determines which language is used for the translation of the desktop. Changes take effect on next login.
+
+add-language = Add language
+    .context = Add Language
+install-additional-languages = Install additional languages
+region = Region
 
 ## System
 

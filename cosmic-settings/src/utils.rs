@@ -1,4 +1,4 @@
-use std::future::Future;
+use std::{future::Future, io, process};
 
 use futures::{future::select, StreamExt};
 
@@ -45,6 +45,17 @@ pub fn forward_event_loop<M: 'static + Send, T: Future<Output = ()> + Send + 'st
     });
 
     cancel_tx
+}
+
+/// On process failure, return stderr as `String`.
+pub fn map_stderr_output(result: io::Result<process::Output>) -> Result<(), String> {
+    result.map_err(|why| why.to_string()).and_then(|output| {
+        if !output.status.success() {
+            Err(String::from_utf8(output.stderr).unwrap_or_default())
+        } else {
+            Ok(())
+        }
+    })
 }
 
 /// Creates a slab with predefined items

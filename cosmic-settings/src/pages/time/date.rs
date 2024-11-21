@@ -7,19 +7,18 @@ use chrono::{Datelike, Timelike};
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced::Length,
-    iced_core::text::Wrap,
+    iced_core::text::Wrapping,
     widget::{self, dropdown, settings},
-    Apply, Command, Element,
+    Apply, Element, Task,
 };
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, section, Section};
 use icu::{
     calendar::{DateTime, Iso},
     datetime::DateTimeFormatter,
     locid::Locale,
 };
 use slab::Slab;
-use slotmap::SlotMap;
+use slotmap::{Key, SlotMap};
 pub use timedate_zbus::TimeDateProxy;
 use tracing::error;
 
@@ -35,6 +34,7 @@ pub struct Info {
 }
 
 pub struct Page {
+    entity: page::Entity,
     cosmic_applet_config: cosmic_config::Config,
     first_day_of_week: usize,
     military_time: bool,
@@ -95,6 +95,7 @@ impl Default for Page {
             });
 
         Self {
+            entity: page::Entity::null(),
             cosmic_applet_config,
             first_day_of_week,
             formatted_date: String::new(),
@@ -112,6 +113,10 @@ impl Default for Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -131,10 +136,9 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(
         &mut self,
-        _page: cosmic_settings_page::Entity,
         _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Command<crate::pages::Message> {
-        cosmic::command::future(async move {
+    ) -> Task<crate::pages::Message> {
+        cosmic::Task::future(async move {
             let client = match zbus::Connection::system().await {
                 Ok(client) => client,
                 Err(why) => {
@@ -174,12 +178,13 @@ impl page::Page<crate::pages::Message> for Page {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) -> Command<crate::Message> {
+    pub fn update(&mut self, message: Message) -> Task<crate::Message> {
         match message {
             Message::TimezoneContext => {
                 self.timezone_search.clear();
                 self.timezone_context = true;
                 return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
                     fl!("time-zone").into(),
                 ));
             }
@@ -229,7 +234,7 @@ impl Page {
                 self.timezone = Some(timezone_id);
 
                 if let Some(timezone) = self.timezone_list.get(timezone_id).cloned() {
-                    return cosmic::command::future(async move {
+                    return cosmic::Task::future(async move {
                         let client = match zbus::Connection::system().await {
                             Ok(client) => client,
                             Err(why) => {
@@ -278,7 +283,7 @@ impl Page {
             Message::None => (),
         }
 
-        Command::none()
+        Task::none()
     }
 
     fn set_ntp(&mut self, enable: bool) {
@@ -306,6 +311,8 @@ impl Page {
     }
 
     fn timezone_context_view(&self) -> Element<'_, crate::pages::Message> {
+        let space_l = cosmic::theme::active().cosmic().spacing.space_l;
+
         let search = widget::search_input(fl!("type-to-search"), &self.timezone_search)
             .on_input(Message::TimezoneSearch)
             .on_clear(Message::TimezoneSearch(String::new()));
@@ -322,7 +329,7 @@ impl Page {
 
         widget::column()
             .padding([2, 0])
-            .spacing(32)
+            .spacing(space_l)
             .push(search)
             .push(list)
             .apply(Element::from)
@@ -331,11 +338,11 @@ impl Page {
 
     fn timezone_context_item<'a>(&self, id: usize, timezone: &'a str) -> Element<'a, Message> {
         widget::button::custom(widget::settings::item_row(vec![
-            widget::text::body(timezone).wrap(Wrap::Word).into(),
-            widget::horizontal_space(Length::Fill).into(),
+            widget::text::body(timezone).wrapping(Wrapping::Word).into(),
+            widget::horizontal_space().width(Length::Fill).into(),
         ]))
         .on_press(Message::Timezone(id))
-        .style(cosmic::theme::Button::Icon)
+        .class(cosmic::theme::Button::Icon)
         .into()
     }
 
@@ -369,7 +376,6 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 fn date() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let auto = descriptions.insert(fl!("time-date", "auto"));
     let title = descriptions.insert(fl!("time-date"));
 
     Section::default()
@@ -459,13 +465,13 @@ fn timezone() -> Section<crate::pages::Message> {
                             .map(|id| &*page.timezone_list[id])
                             .unwrap_or_default(),
                     )
-                    .wrap(Wrap::Word),
+                    .wrapping(Wrapping::Word),
                 )
                 .push(widget::icon::from_name("go-next-symbolic").size(16).icon())
                 .apply(widget::container)
-                .style(cosmic::theme::Container::List)
+                .class(cosmic::theme::Container::List)
                 .apply(widget::button::custom)
-                .style(cosmic::theme::Button::Transparent)
+                .class(cosmic::theme::Button::Transparent)
                 .on_press(Message::TimezoneContext);
 
             settings::section()

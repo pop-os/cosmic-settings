@@ -7,21 +7,24 @@ license = "GPL-3.0-only"
 [dependencies]
 anyhow = "1.0"
 as-result = "0.2.1"
-ashpd = { version = "0.9", default-features = false, features = ["tokio"] }
+ashpd = { version = "0.9", default-features = false, features = [
+    "tokio",
+], optional = true }
 async-channel = "2.3.1"
 chrono = "0.4.38"
 clap = { version = "4.5.17", features = ["derive"] }
 color-eyre = "0.6.3"
 cosmic-bg-config.workspace = true
-cosmic-comp-config.workspace = true
+cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
-cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings" }
-cosmic-panel-config.workspace = true
+cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+cosmic-idle-config.workspace = true
+cosmic-panel-config = { workspace = true, optional = true }
 cosmic-randr-shell.workspace = true
-cosmic-randr.workspace = true
-cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon" }
+cosmic-randr = { workspace = true, optional = true }
+cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 cosmic-settings-page = { path = "../page" }
-cosmic-settings-system = { path = "../pages/system" }
+cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 derivative = "2.2.0"
 derive_setters = "0.1.6"
@@ -31,13 +34,14 @@ eyre = "0.6.12"
 freedesktop-desktop-entry = "0.7.5"
 futures = "0.3.30"
 hostname-validator = "1.1.1"
-hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
+hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 i18n-embed-fl = "0.9.1"
 image = "0.25"
 indexmap = "2.5.0"
 itertools = "0.13.0"
 itoa = "1.0.11"
 libcosmic.workspace = true
+locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 notify = "6.1.1"
 once_cell = "1.19.0"
 regex = "1.10.6"
@@ -50,20 +54,25 @@ slotmap = "1.0.7"
 static_init = "1.0.3"
 sunrise = "1.0.1"
 tachyonix = "0.3.1"
-timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
-tokio.workspace = true
+timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+tokio = { workspace = true, features = ["fs", "io-util", "sync"] }
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
-udev = "0.9.0"
-upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
-bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
+udev = { version = "0.9.0", optional = true }
+upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 url = "2.5.2"
 xkb-data = "0.2.1"
-zbus = { version = "4.4.0", features = ["tokio"] }
+zbus = { version = "4.4.0", features = ["tokio"], optional = true }
+ustr = "1.0.0"
+fontdb = "0.16.2"
+fixed_decimal = "0.5.6"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
+#TODO: only select features as needed
 features = ["network_manager", "pipewire", "pulse"]
+optional = true
 
 [dependencies.icu]
 version = "1.5.0"
@@ -73,7 +82,58 @@ features = ["experimental", "compiled_data", "icu_datetime_experimental"]
 version = "0.15.0"
 features = ["fluent-system", "desktop-requester"]
 
+# Contains region-handling logic for Linux
+[dependencies.lichen-system]
+git = "https://github.com/serpent-os/lichen"
+package = "system"
+optional = true
+
 [features]
-default = []
-wgpu = ["libcosmic/wgpu"]
+default = ["a11y", "dbus-config", "linux", "single-instance", "wgpu"]
+
+# Default features for Linux
+linux = [
+    "page-about",
+    "page-bluetooth",
+    "page-date",
+    "page-input",
+    "page-networking",
+    "page-power",
+    "page-region",
+    "page-sound",
+    "page-window-management",
+    "page-workspaces",
+    "xdg-portal",
+    "wayland",
+]
+
+# Pages
+page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
+page-bluetooth = ["dep:bluez-zbus", "dep:zbus"]
+page-date = ["dep:timedate-zbus", "dep:zbus"]
+page-input = [
+    "dep:cosmic-comp-config",
+    "dep:cosmic-settings-config",
+    "dep:udev",
+]
+page-networking = [
+    "ashpd",
+    "dep:cosmic-dbus-networkmanager",
+    "dep:cosmic-settings-subscriptions",
+    "dep:zbus",
+]
+page-power = ["dep:upower_dbus", "dep:zbus"]
+page-region = ["dep:lichen-system", "dep:locale1"]
+page-sound = ["dep:cosmic-settings-subscriptions"]
+page-window-management = ["dep:cosmic-settings-config"]
+page-workspaces = ["dep:cosmic-comp-config"]
+
+# Other features
+a11y = ["libcosmic/a11y"]
+ashpd = ["dep:ashpd"]
+dbus-config = ["libcosmic/dbus-config", "cosmic-config/dbus"]
+single-instance = ["libcosmic/single-instance"]
 test = []
+wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr"]
+wgpu = ["libcosmic/wgpu"]
+xdg-portal = ["libcosmic/xdg-portal"]

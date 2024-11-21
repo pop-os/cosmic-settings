@@ -19,9 +19,15 @@ pub fn default_primary_button() -> cosmic::widget::segmented_button::SingleSelec
 }
 
 #[derive(Default)]
-pub struct Page;
+pub struct Page {
+    entity: page::Entity,
+}
 
 impl page::Page<crate::pages::Message> for Page {
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -51,7 +57,6 @@ fn mouse() -> Section<crate::pages::Message> {
         .view::<Page>(move |binder, _page, section| {
             let descriptions = &section.descriptions;
             let input = binder.page::<super::Page>().expect("input page not found");
-            let theme = cosmic::theme::active();
 
             settings::section()
                 .title(&section.title)
@@ -80,9 +85,13 @@ fn mouse() -> Section<crate::pages::Message> {
                         .max_width(250);
 
                         row::with_capacity(2)
-                            .align_items(Alignment::Center)
-                            .spacing(theme.cosmic().space_s())
-                            .push(text::body(format!("{:.0}", value.round())))
+                            .align_y(Alignment::Center)
+                            .spacing(8)
+                            .push(
+                                text::body(format!("{:.0}", value.round()))
+                                    .width(Length::Fixed(22.0))
+                                    .align_x(Alignment::Center),
+                            )
                             .push(slider)
                     }),
                 )
@@ -116,7 +125,6 @@ fn scrolling() -> Section<crate::pages::Message> {
         .view::<Page>(move |binder, _page, section| {
             let descriptions = &section.descriptions;
             let input = binder.page::<super::Page>().expect("input page not found");
-            let theme = cosmic::theme::active();
 
             settings::section()
                 .title(&section.title)
@@ -140,9 +148,13 @@ fn scrolling() -> Section<crate::pages::Message> {
                     .max_width(250);
 
                     row::with_capacity(2)
-                        .align_items(Alignment::Center)
-                        .spacing(theme.cosmic().space_s())
-                        .push(text::body(format!("{:.0}", value.round())))
+                        .align_y(Alignment::Center)
+                        .spacing(8)
+                        .push(
+                            text::body(format!("{:.0}", value.round()))
+                                .width(Length::Fixed(22.0))
+                                .align_x(Alignment::Center),
+                        )
                         .push(slider)
                 }))
                 .add(

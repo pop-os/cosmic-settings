@@ -1,5 +1,7 @@
 app = Configurações do COSMIC
 
+dbus-connection-error = Falha de conexão no DBus
+ok = OK
 unknown = Desconhecido
 
 number = { $number }
@@ -62,8 +64,24 @@ remove-connection-dialog = Remover perfil de conexão?
 
 vpn = VPN
     .connections = Conexões VPN
+    .error = Falha ao adicionar a configuração da VPN
     .remove = Remover perfil de conexão
     .select-file = Selecione um arquivo de conexão VPN
+
+vpn-error = Erro de VPN
+    .config = Falha ao adicionar a configuração da VPN
+    .connect = Falha ao conectar na VPN
+    .connection-editor = Falha de edição da conexão
+    .connection-settings = Falha ao obter as configurações das conexões ativas
+    .updating-state = Falha ao atualizar o status do gerenciador de rede
+    .wireguard-config-path = Caminho do arquivo inválido para a configuração do WireGuard
+    .wireguard-config-path-desc = O arquivo selecionado deve estar em um sistema de arquivos local.
+    .wireguard-device = Falha ao criar um dispositivo WireGuard
+    .with-password = Falha ao definir VPN { $field ->
+        *[username] usuário
+        [password] senha
+        [password-flags] sinalizadores de senha
+    } com nmcli
 
 wired = Rede Cabeada
     .adapter = Adaptador de rede cabeada { $id }
@@ -75,10 +93,40 @@ wifi = Wi-Fi
     .adapter = Adaptador Wi-Fi { $id }
     .forget = Esquecer esta rede
 
+wireguard-dialog = Adicionar dispositivo WireGuard
+    .description = Escolha um nome de dispositivo para a configuração do WireGuard.
+
 ## Networking: Online Accounts
 
 online-accounts = Contas online
-    .desc = Adicione contas, IMAP e SMTP, logins empresariais
+    .desc = Adicionar contas, IMAP e SMTP, logins empresariais
+
+# Bluetooth
+
+confirm = Confirmar
+
+bluetooth = Bluetooth
+    .desc = Gerenciamento de dispositivos Bluetooth
+    .status = Este sistema está visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
+    .connected = Conectado
+    .connecting = Conectando
+    .disconnecting = Desconectando
+    .connect = Conectar
+    .disconnect = Desconectar
+    .forget = Esquecer
+    .dbus-error = Ocorreu um erro ao interagir com o DBus: { $why }
+    .show-device-without-name = Mostrar dispositivo sem nome
+
+bluetooth-paired = Dispositivos conectados anteriormente
+    .connect = Conectar
+    .battery = { $percentage }% bateria
+
+bluetooth-confirm-pin = Confirmar o PIN do Bluetooth
+    .description = Por favor, confirme se o seguinte PIN corresponde ao exibido em { $device }
+
+bluetooth-available = Dispositivos próximos
+
+bluetooth-adapters = Adaptadores de Bluetooth
 
 ## Desktop
 
@@ -111,6 +159,7 @@ x-hours = { $number ->
     [1] 1 hora
     *[other] { $number } horas
 }
+never = Nunca
 
 ## Desktop: Appearance
 
@@ -153,10 +202,8 @@ control-tint = Tonalidade dos componentes de controle
 frosted = Efeito de vidro fosco na interface do sistema
     .desc = Ativa desfoque de fundo ao painel, dock, applets, lançador e biblioteca de aplicativos.
 
-experimental-settings = Configurações experimentais
-
-enable-export = Aplicar este tema aos aplicativos GNOME.
-    .desc = Nem todos os conjuntos de ferramenta suportam troca automática. Aplicativos não-COSMIC podem precisar ser reiniciados após uma mudança de tema.
+enable-export = Aplicar este tema para aplicativos GNOME.
+    .desc = Nem todos os toolkits suportam troca automática. Aplicativos não COSMIC podem precisar ser reiniciados após uma mudança de tema.
 
 icon-theme = Tema de ícones
     .desc = Aplica um conjunto diferente de ícones para aplicativos.
@@ -171,17 +218,24 @@ style = Estilo
 
 interface-density = Densidade da interface
     .comfortable = Confortável
-    .compact = Compacta
-    .spacious = Espaçosa
+    .compact = Compacto
+    .spacious = Espaçoso
 
 window-management = Gerenciamento de Janelas
     .active-hint = Tamanho da cor destaque da janela ativa
     .gaps = Espaçamentos ao redor de janelas organizadas em mosaico
 
+### Experimental
+
+experimental-settings = Configuraçães experimentais
+icons-and-toolkit = Tema de ícones e toolkit
+interface-font = Fonte do sistema
+monospace-font = Fonte monoespaçada
+
 ## Desktop: Notifications
 
 notifications = Notificações
-    .desc = Não perturbe, notificações da tela de bloqueio, e configurações por aplicação.
+    .desc = Não perturbe, notificações da tela de bloqueio e configurações por aplicação.
 
 ## Desktop: Panel
 
@@ -201,7 +255,7 @@ panel-bottom = Inferior
 panel-left = Esquerda
 panel-right = Direita
 panel-top = Superior
-search-applets = Procurando applets...
+search-applets = Procurar por applets...
 small = Pequeno
 start-segment = Segmento inicial
 
@@ -252,6 +306,7 @@ super-key = Ação da tecla Super (Windows)
 window-controls = Controle de Janelas
     .minimize = Mostrar o botão de minimizar
     .maximize = Mostrar o botão de maximizar
+    .active-window-hint = Mostrar dica de janela ativa
 
 focus-navigation = Navegação em Foco
     .focus-follows-cursor = O foco segue o cursor
@@ -373,7 +428,7 @@ profile = Perfil
 ## Power
 
 power = Energia e Bateria
-  .desc = Gerencie as configurações de energia
+    .desc = Gerencie as configurações de energia
 
 battery = Bateria
   .minute = { $value } { $value ->
@@ -406,6 +461,12 @@ power-mode = Modo de Energia
   .performance = Alto desempenho
   .performance-desc = Desempenho e consumo de energia elevados.
   .no-backend = Gestor de energia não encontrado. Instale o pacote "system76-power" ou "power-profiles-daemon".
+
+power-saving = Opções de Economia de Energia
+    .turn-off-screen-after = Desligar a tela após
+    .auto-suspend = Suspensão automática
+    .auto-suspend-ac = Suspender automaticamente quando plugado na tomada
+    .auto-suspend-battery = Suspender automaticamente no modo bateria
 
 ## Input
 
@@ -449,6 +510,7 @@ keyboard-sources = Fontes de Entrada
 keyboard-special-char = Entrada de Caracteres Especiais
     .alternate = Tecla de caracteres alternativos
     .compose = Tecla de composição
+    .caps = Tecla Caps Lock
 
 keyboard-typing-assist = Digitação
     .repeat-rate = Taxa de repetição
@@ -689,25 +751,3 @@ firmware = Firmware
 
 users = Usuários
     .desc = Autenticação e contas de usuário.
-
-# Bluetooth
-
-bluetooth = Bluetooth
-    .desc = Gerenciamento de dispositivos Bluetooth
-    .status = Este sistema está visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
-    .connected = Conectado
-    .connecting = Conectando
-    .disconnecting = Desconectando
-    .connect = Conectar
-    .disconnect = Desconectar
-    .forget = Esquecer
-    .dbus-error = Ocorreu um erro ao interagir com o DBus: { $why }
-    .show-device-without-name = Mostrar dispositivo sem nome
-
-bluetooth-paired = Dispositivos conectados anteriormente
-    .connect = Conectar
-    .battery = { $percentage }% bateria
-
-bluetooth-available = Dispositivos próximos
-
-bluetooth-adapters = Adaptadores de Bluetooth
