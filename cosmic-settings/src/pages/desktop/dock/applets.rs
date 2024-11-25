@@ -107,6 +107,10 @@ impl page::Page<crate::pages::Message> for Page {
             None => return None,
         })
     }
+
+    fn set_id(&mut self, entity: cosmic_settings_page::Entity) {
+        self.inner.set_id(entity);
+    }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
