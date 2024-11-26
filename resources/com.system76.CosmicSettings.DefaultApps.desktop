@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Default applications
+Comment=Default web browser, mail client, file browser, and other applications.
+Type=Settings
+Exec=cosmic-settings default-apps
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-default-applications
+StartupNotify=true

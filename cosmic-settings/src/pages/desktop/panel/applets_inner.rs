@@ -228,7 +228,7 @@ impl Page {
             space_xxxs,
             space_xxs,
             space_xs,
-            space_l,
+            space_s,
             ..
         } = theme::active().cosmic().spacing;
         let mut list_column = list_column();
@@ -295,7 +295,7 @@ impl Page {
                         .on_press(msg_map(Message::AddApplet(info.clone())))
                         .into(),
                 ])
-                .padding([0, space_l])
+                .padding([0, space_s])
                 .spacing(space_xs)
                 .align_y(Alignment::Center),
             );
