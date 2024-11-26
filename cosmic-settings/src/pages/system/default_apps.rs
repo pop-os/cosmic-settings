@@ -91,7 +91,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn info(&self) -> page::Info {
-        page::Info::new("default-apps", "application-default-symbolic")
+        page::Info::new("default-apps", "preferences-default-applications-symbolic")
             .title(fl!("default-apps"))
             .description(fl!("default-apps", "desc"))
     }

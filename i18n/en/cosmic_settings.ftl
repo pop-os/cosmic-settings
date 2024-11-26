@@ -771,7 +771,7 @@ users = Users
 ## System: Default Applications
 
 default-apps = Default Applications
-    .desc = Default applications and file associations.
+    .desc = Default web browser, mail client, file browser, and other applications.
     .web-browser = Web browser
     .file-manager = File manager
     .mail-client = Mail client

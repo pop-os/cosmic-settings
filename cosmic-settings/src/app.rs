@@ -203,13 +203,7 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<input::Page>();
         app.insert_page::<time::Page>();
         app.insert_page::<system::Page>();
-        #[cfg(feature = "wayland")]
-        {
-            app.insert_page::<desktop::panel::Page>();
-            app.insert_page::<desktop::dock::Page>();
-            app.insert_page::<desktop::panel::applets_inner::Page>();
-            app.insert_page::<desktop::dock::applets::Page>();
-        }
+
         let active_id = match flags.sub_command {
             Some(p) => app.subtask_to_page(&p),
             None => app

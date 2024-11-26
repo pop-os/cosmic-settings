@@ -29,6 +29,7 @@ entry-about := appid + '.About.desktop'
 entry-appear := appid + '.Appearance.desktop'
 entry-bluetooth := appid + '.Bluetooth.desktop'
 entry-date-time := appid + '.DateTime.desktop'
+entry-default-apps := appid + '.DefaultApps.desktop'
 entry-desktop := appid + '.Desktop.desktop'
 entry-displays := appid + '.Displays.desktop'
 entry-dock := appid + '.Dock.desktop'
@@ -64,6 +65,7 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-appear}}' '{{appdir}}/{{entry-appear}}'
     install -Dm0644 'resources/{{entry-bluetooth}}' '{{appdir}}/{{entry-bluetooth}}'
     install -Dm0644 'resources/{{entry-date-time}}' '{{appdir}}/{{entry-date-time}}'
+    install -Dm0644 'resources/{{entry-default-apps}}' '{{appdir}}/{{entry-default-apps}}'
     install -Dm0644 'resources/{{entry-desktop}}' '{{appdir}}/{{entry-desktop}}'
     install -Dm0644 'resources/{{entry-displays}}' '{{appdir}}/{{entry-displays}}'
     install -Dm0644 'resources/{{entry-dock}}' '{{appdir}}/{{entry-dock}}'
@@ -111,6 +113,7 @@ uninstall:
         '{{appdir}}/{{entry-appear}}' \
         '{{appdir}}/{{entry-bluetooth}}' \
         '{{appdir}}/{{entry-date-time}}' \
+        '{{appdir}}/{{entry-default-apps}}' \
         '{{appdir}}/{{entry-desktop}}' \
         '{{appdir}}/{{entry-displays}}' \
         '{{appdir}}/{{entry-dock}}' \
