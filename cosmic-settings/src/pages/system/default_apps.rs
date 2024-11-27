@@ -115,13 +115,13 @@ impl page::Page<crate::pages::Message> for Page {
             let assocs = mime_apps::associations::by_app();
 
             let apps = vec![
-                load_defaults(&assocs, "x-scheme-handler/http").await,
-                load_defaults(&assocs, "inode/directory").await,
-                load_defaults(&assocs, "x-scheme-handler/mailto").await,
-                load_defaults(&assocs, "audio/mp3").await,
-                load_defaults(&assocs, "video/mp4").await,
-                load_defaults(&assocs, "image/png").await,
-                load_defaults(&assocs, "text/calendar").await,
+                load_defaults(&assocs, &["x-scheme-handler/http"]).await,
+                load_defaults(&assocs, &["inode/directory"]).await,
+                load_defaults(&assocs, &["x-scheme-handler/mailto"]).await,
+                load_defaults(&assocs, &["audio/mp3", "video/mp4"]).await,
+                load_defaults(&assocs, &["video/mp4"]).await,
+                load_defaults(&assocs, &["image/png"]).await,
+                load_defaults(&assocs, &["text/calendar"]).await,
                 AppMeta {
                     selected: None,
                     app_ids: Vec::new(),
@@ -348,25 +348,37 @@ fn apps() -> Section<crate::pages::Message> {
     })
 }
 
-async fn load_defaults(assocs: &BTreeMap<Arc<str>, Arc<App>>, for_mime: &str) -> AppMeta {
-    let Ok(mime) = for_mime.parse() else {
-        return AppMeta {
-            selected: None,
-            app_ids: Vec::new(),
-            apps: Vec::new(),
-            icons: Vec::new(),
+async fn load_defaults(assocs: &BTreeMap<Arc<str>, Arc<App>>, for_mimes: &[&str]) -> AppMeta {
+    let mut unsorted = Vec::new();
+    let mut current_app = None;
+
+    for for_mime in for_mimes {
+        let Ok(mime) = for_mime.parse() else {
+            return AppMeta {
+                selected: None,
+                app_ids: Vec::new(),
+                apps: Vec::new(),
+                icons: Vec::new(),
+            };
         };
-    };
 
-    let current_app_entry = xdg_mime_query_default(for_mime).await;
-    let current_appid = current_app_entry
-        .as_ref()
-        .and_then(|entry| entry.strip_suffix(".desktop"));
+        let current_app_entry = xdg_mime_query_default(for_mime).await;
+        let current_appid = current_app_entry
+            .as_ref()
+            .and_then(|entry| entry.strip_suffix(".desktop"));
 
-    let current_app = current_appid.and_then(|appid| assocs.get(appid));
+        if unsorted.is_empty() {
+            current_app = current_appid.and_then(|appid| assocs.get(appid));
+        }
 
-    let mut unsorted = mime_apps::apps_for_mime(&mime, assocs).collect::<Vec<_>>();
-    unsorted.sort_unstable_by_key(|(_, app)| &app.name);
+        unsorted.extend(
+            mime_apps::apps_for_mime(&mime, assocs)
+                .map(|(app_id, app)| (app_id.clone(), app.clone())),
+        );
+    }
+
+    unsorted.sort_unstable_by_key(|(_, app)| app.name.clone());
+    unsorted.dedup_by_key(|(app_id, _)| app_id.clone());
 
     let mut selected = None;
     let mut app_ids = Vec::new();
