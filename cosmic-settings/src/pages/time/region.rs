@@ -37,6 +37,7 @@ pub enum Message {
     SourceContext(SourceContext),
     Refresh(Arc<eyre::Result<PageRefresh>>),
     RegionContext,
+    RemoveLanguage(DefaultKey),
 }
 
 impl From<Message> for crate::app::Message {
@@ -164,9 +165,18 @@ impl Page {
                 }
             }
 
-            Message::SelectRegion(id) => {
-                let mut commands = Vec::with_capacity(2);
+            Message::RemoveLanguage(id) => {
+                if let Some(language) = self.available_languages.remove(id) {
+                    if let Some((config, locales)) = self.config.as_mut() {
+                        if let Some(pos) = locales.iter().position(|l| l == &language.lang_code) {
+                            locales.remove(pos);
+                            _ = config.set("system_locales", &locales);
+                        }
+                    }
+                }
+            }
 
+            Message::SelectRegion(id) => {
                 if let Some((region, language)) =
                     self.available_languages.get(id).zip(self.language.as_ref())
                 {
@@ -175,14 +185,11 @@ impl Page {
                     let lang = language.lang_code.clone();
                     let region = region.lang_code.clone();
 
-                    commands.push(cosmic::task::future(async move {
+                    return cosmic::task::future(async move {
                         _ = set_locale(lang, region).await;
                         Message::Refresh(Arc::new(page_reload().await))
-                    }));
+                    });
                 }
-
-                commands.push(cosmic::Task::done(crate::app::Message::CloseContextDrawer));
-                return cosmic::Task::batch(commands);
             }
 
             Message::AddLanguageContext => {
@@ -339,10 +346,10 @@ impl Page {
                 .class(cosmic::theme::Container::List)
                 .apply(widget::button::custom)
                 .class(cosmic::theme::Button::Transparent)
-                .on_press_maybe(if is_installed {
-                    None
+                .on_press(if is_installed {
+                    Message::RemoveLanguage(id)
                 } else {
-                    Some(Message::AddLanguage(id))
+                    Message::AddLanguage(id)
                 });
 
                 list = list.add(button)
