@@ -1297,7 +1297,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                         },
                     )
                     .push(category_selection)
-                    .push(cosmic::widget::horizontal_space().width(Length::Fill))
+                    .push(cosmic::widget::horizontal_space())
                     .push_maybe(add_button)
                     .into(),
             );

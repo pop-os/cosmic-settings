@@ -90,7 +90,7 @@ pub fn search_page_link<Message: 'static>(title: &str) -> button::TextButton<Mes
 pub fn page_title<Message: 'static>(page: &page::Info) -> Element<Message> {
     row::with_capacity(2)
         .push(text::title3(page.title.as_str()))
-        .push(horizontal_space().width(Length::Fill))
+        .push(horizontal_space())
         .into()
 }
 
@@ -110,9 +110,9 @@ pub fn display_container<'a, Message: 'a>(widget: Element<'a, Message>) -> Eleme
         .class(crate::theme::display_container_frame());
 
     row::with_capacity(3)
-        .push(horizontal_space().width(Length::Fill))
+        .push(horizontal_space())
         .push(display)
-        .push(horizontal_space().width(Length::Fill))
+        .push(horizontal_space())
         .padding([0, 0, 8, 0])
         .into()
 }
@@ -190,7 +190,7 @@ pub fn sub_page_header<'a, Message: 'static + Clone>(
 pub fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::Element<'_, Msg> {
     settings::item_row(vec![
         text::body(description).wrapping(Wrapping::Word).into(),
-        horizontal_space().width(Length::Fill).into(),
+        horizontal_space().into(),
         icon::from_name("go-next-symbolic").size(16).icon().into(),
     ])
     .apply(widget::container)
@@ -208,7 +208,7 @@ pub fn go_next_with_item<'a, Msg: Clone + 'static>(
 ) -> cosmic::Element<'_, Msg> {
     settings::item_row(vec![
         text::body(description).wrapping(Wrapping::Word).into(),
-        horizontal_space().width(Length::Fill).into(),
+        horizontal_space().into(),
         widget::row::with_capacity(2)
             .push(item)
             .push(icon::from_name("go-next-symbolic").size(16).icon())

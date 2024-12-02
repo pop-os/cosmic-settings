@@ -1568,9 +1568,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
         .title(fl!("mode-and-colors"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            let Spacing {
-                space_xxs, space_s, ..
-            } = cosmic::theme::active().cosmic().spacing;
+            let Spacing { space_xxs, .. } = cosmic::theme::active().cosmic().spacing;
 
             let descriptions = &section.descriptions;
             let palette = &page.theme_builder.palette.as_ref();
@@ -1728,7 +1726,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         )
                         .direction(Direction::Horizontal(Scrollbar::new()))
                     ]
-                    .padding([16, space_s, 0, space_s])
+                    .padding([16, 0, 0, 0])
                     .spacing(space_xxs),
                 )
                 .add(

@@ -1073,15 +1073,16 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
         .show_while::<Page>(|page| page.list.outputs.len() > 1)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-            let theme = cosmic::theme::active();
+            let cosmic::cosmic_theme::Spacing {
+                space_xxs, space_m, ..
+            } = cosmic::theme::active().cosmic().spacing;
 
             column()
-                .padding(cosmic::iced::Padding::from([
-                    theme.cosmic().space_s(),
-                    theme.cosmic().space_m(),
-                ]))
-                .spacing(theme.cosmic().space_xs())
-                .push(widget::text::body(&descriptions[display_arrangement_desc]))
+                .push(
+                    text::body(&descriptions[display_arrangement_desc])
+                        .apply(container)
+                        .padding([space_xxs, space_m]),
+                )
                 .push({
                     Arrangement::new(&page.list, &page.display_tabs)
                         .on_select(|id| pages::Message::Displays(Message::Display(id)))
@@ -1094,9 +1095,12 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                         .width(Length::Shrink)
                         .direction(Direction::Horizontal(Scrollbar::new()))
                         .apply(container)
+                        .padding([48, 32, 32, 32])
                         .center_x(Length::Fill)
                 })
-                .apply(widget::list::container)
+                .apply(container)
+                .class(cosmic::theme::Container::List)
+                .width(Length::Fill)
                 .into()
         })
 }
@@ -1224,7 +1228,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                 content = content.push(display_switcher).push(display_enable);
             } else {
                 content = content
-                    .push(widget::text::heading(&descriptions[options_label]))
+                    .push(text::heading(&descriptions[options_label]))
                     .push_maybe(display_options.map(|items| {
                         let mut column = list_column();
                         for item in items {

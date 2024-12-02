@@ -6,7 +6,6 @@ use std::sync::Arc;
 
 use cosmic::{
     config::{CosmicTk, FontConfig},
-    iced::Length,
     iced_core::text::Wrapping,
     theme,
     widget::{self, settings, svg},
@@ -89,7 +88,7 @@ pub fn selection_context<'a>(
                 widget::text::body(&**family)
                     .wrapping(Wrapping::Word)
                     .into(),
-                widget::horizontal_space().width(Length::Fill).into(),
+                widget::horizontal_space().into(),
                 if selected {
                     widget::icon::from_name("object-select-symbolic")
                         .size(16)

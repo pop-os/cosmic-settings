@@ -331,7 +331,7 @@ impl Page {
                         })
                         .wrapping(Wrapping::Word)
                         .into(),
-                    widget::horizontal_space().width(Length::Fill).into(),
+                    widget::horizontal_space().into(),
                     if is_installed {
                         widget::icon::from_name("object-select-symbolic")
                             .size(16)

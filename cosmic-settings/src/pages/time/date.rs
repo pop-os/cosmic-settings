@@ -6,7 +6,6 @@ use std::str::FromStr;
 use chrono::{Datelike, Timelike};
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::Length,
     iced_core::text::Wrapping,
     widget::{self, dropdown, settings},
     Apply, Element, Task,
@@ -339,7 +338,7 @@ impl Page {
     fn timezone_context_item<'a>(&self, id: usize, timezone: &'a str) -> Element<'a, Message> {
         widget::button::custom(widget::settings::item_row(vec![
             widget::text::body(timezone).wrapping(Wrapping::Word).into(),
-            widget::horizontal_space().width(Length::Fill).into(),
+            widget::horizontal_space().into(),
         ]))
         .on_press(Message::Timezone(id))
         .class(cosmic::theme::Button::Icon)
