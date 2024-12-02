@@ -932,7 +932,7 @@ impl SettingsApp {
         }
 
         let view = self
-            .page_container(settings::view_column(sections_column).padding(0))
+            .page_container(settings::view_column(sections_column))
             .apply(scrollable)
             .height(Length::Fill)
             .apply(|w| id_container(w, self.id()));
@@ -1050,7 +1050,7 @@ impl SettingsApp {
             }
         }
 
-        self.page_container(settings::view_column(sections).padding(0))
+        self.page_container(settings::view_column(sections))
             .apply(scrollable)
             .into()
     }

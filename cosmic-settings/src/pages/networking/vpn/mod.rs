@@ -835,7 +835,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                         let widget = widget::settings::item_row(vec![
                             identifier.into(),
-                            widget::horizontal_space().width(Length::Fill).into(),
+                            widget::horizontal_space().into(),
                             controls.into(),
                         ]);
 

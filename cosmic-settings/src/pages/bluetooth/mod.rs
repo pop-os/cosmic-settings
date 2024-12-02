@@ -597,7 +597,7 @@ fn status() -> Section<crate::pages::Message> {
                     } else {
                         text::body(&descriptions[bluetooth_heading]).into()
                     },
-                    widget::horizontal_space().width(Length::Fill).into(),
+                    widget::horizontal_space().into(),
                     if page.popup_setting {
                         widget::popover(
                             widget::button::icon(widget::icon::from_name(
@@ -735,7 +735,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                 .wrapping(Wrapping::Word)
                                 .into()
                         },
-                        widget::horizontal_space().width(Length::Fill).into(),
+                        widget::horizontal_space().into(),
                         match device.enabled {
                             Active::Enabled => widget::text(&descriptions[device_connected]).into(),
                             Active::Enabling => widget::text(&descriptions[device_connecting])
@@ -790,7 +790,7 @@ fn available_devices() -> Section<crate::pages::Message> {
                     let mut items = vec![
                         widget::icon::from_name(device.icon).size(16).into(),
                         text(device.alias_or_addr()).wrapping(Wrapping::Word).into(),
-                        widget::horizontal_space().width(Length::Fill).into(),
+                        widget::horizontal_space().into(),
                     ];
 
                     if device.enabled == Active::Enabling {
@@ -840,7 +840,7 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
                             .into(),
                         widget::horizontal_space().width(theme.space_xxs()).into(),
                         text(&adapter.alias).wrapping(Wrapping::Word).into(),
-                        widget::horizontal_space().width(Length::Fill).into(),
+                        widget::horizontal_space().into(),
                         widget::icon::from_name("go-next-symbolic").into(),
                     ];
                     if page.adapter_connected(path) {

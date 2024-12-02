@@ -226,9 +226,8 @@ impl Page {
     ) -> Element<crate::pages::Message> {
         let cosmic::cosmic_theme::Spacing {
             space_xxxs,
-            space_xxs,
             space_xs,
-            space_s,
+            space_l,
             ..
         } = theme::active().cosmic().spacing;
         let mut list_column = list_column();
@@ -262,7 +261,11 @@ impl Page {
                     icon::from_name(&*info.icon).size(32).icon().into(),
                     column::with_capacity(2)
                         .push(text::body(info.name.clone()))
-                        .push(text::caption(info.description.clone()))
+                        .push_maybe(if info.description.is_empty() {
+                            None
+                        } else {
+                            Some(text::caption(info.description.clone()))
+                        })
                         .spacing(space_xxxs)
                         .width(Length::Fill)
                         .into(),
@@ -295,7 +298,7 @@ impl Page {
                         .on_press(msg_map(Message::AddApplet(info.clone())))
                         .into(),
                 ])
-                .padding([0, space_s])
+                .padding([space_xxxs, 0])
                 .spacing(space_xs)
                 .align_y(Alignment::Center),
             );
@@ -317,7 +320,7 @@ impl Page {
             .push(search)
             .push(list_column)
             .align_x(Alignment::Center)
-            .spacing(space_xxs)
+            .spacing(space_l)
             .into()
     }
 
