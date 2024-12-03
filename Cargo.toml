@@ -49,6 +49,7 @@ lto = "thin"
 
 [patch.'https://github.com/pop-os/cosmic-protocols']
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d218c76" }
+cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d218c76" }
 
 # For development and testing purposes
 # [patch.'https://github.com/pop-os/libcosmic']
