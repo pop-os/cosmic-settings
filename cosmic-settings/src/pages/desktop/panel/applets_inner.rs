@@ -466,7 +466,6 @@ pub fn lists<
         let cosmic::cosmic_theme::Spacing {
             space_xxs,
             space_xs,
-            space_s,
             ..
         } = theme::active().cosmic().spacing;
         let page = page.inner();
@@ -568,7 +567,6 @@ pub fn lists<
             .spacing(space_xxs)
             .into(),
         ])
-        .padding([0, space_s])
         .spacing(space_xs)
         .apply(Element::from)
         .map(msg_map)
