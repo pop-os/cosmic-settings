@@ -393,6 +393,12 @@ orientation = Kierunek
     .rotate-180 = Obróć o 180
     .rotate-270 = Obróć o 270
 
+vrr = Zmienne odświeżanie
+    .enabled = Wyłączone
+    .force = Zawsze
+    .auto = Automatyczne
+    .disabled = Wyłączone
+
 scheduling = Harmonogram
     .manual = Ręcznie ustawiony harmonogram
 
@@ -781,3 +787,17 @@ firmware = Mikrooprogramowanie
 
 users = Użytkownicy
     .desc = Uwierzytelnianie, logowanie i ekran blokady.
+
+## System: Default Applications
+
+default-apps = Domyślne Aplikacje
+    .desc = Domyślna przeglądarka, klient email, przeglądarka plików i inne aplikacje.
+    .web-browser = Przeglądarka
+    .file-manager = Przeglądarka plików
+    .mail-client = Klient email
+    .music = Musyka
+    .video = Wideo
+    .photos = Obrazy
+    .calendar = Kalendarz
+    .terminal = Konsola
+    .other-associations = Inne powiązania
