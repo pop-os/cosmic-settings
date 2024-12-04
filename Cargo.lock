@@ -3993,9 +3993,9 @@ dependencies = [
 
 [[package]]
 name = "io-lifetimes"
-version = "2.0.3"
+version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a611371471e98973dbcab4e0ec66c31a10bc356eeb4d54a0e05eac8158fe38c"
+checksum = "06432fb54d3be7964ecd3649233cddf80db2832f47fec34c01f65b3d9d774983"
 
 [[package]]
 name = "is_terminal_polyfill"
@@ -7775,7 +7775,7 @@ checksum = "c89532cc712a2adb119eb4d09694b402576052254d0bb284f82ac1c47fb786ad"
 dependencies = [
  "bitflags 2.6.0",
  "downcast-rs",
- "io-lifetimes 2.0.3",
+ "io-lifetimes 2.0.4",
  "rustix 0.38.41",
  "wayland-backend",
  "wayland-scanner",
