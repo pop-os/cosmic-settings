@@ -115,7 +115,6 @@ bluetooth = Bluetooth
     .disconnect = Disconnect
     .forget = Forget
     .dbus-error = An error has occurred while interacting with DBus: { $why }
-    .show-device-without-name = Show devices without name
 
 bluetooth-paired = Previously Connected Devices
     .connect = Connect
