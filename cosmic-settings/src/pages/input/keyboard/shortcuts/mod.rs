@@ -665,6 +665,7 @@ fn localize_action(action: &Action) -> String {
             SystemAction::VolumeRaise => fl!("system-shortcut", "volume-raise"),
             SystemAction::WebBrowser => fl!("system-shortcut", "web-browser"),
             SystemAction::WindowSwitcher => fl!("system-shortcut", "window-switcher"),
+            SystemAction::WindowSwitcherReverse => fl!("system-shortcut", "window-switcher-reverse"),
             SystemAction::WorkspaceOverview => fl!("system-shortcut", "workspace-overview"),
         },
 
