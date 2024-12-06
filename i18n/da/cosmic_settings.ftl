@@ -1,6 +1,6 @@
 app = COSMIC Indstillinger
 
-dbus-connection-error = Failed to connect to DBus
+dbus-connection-error = Kunne ikke oprette forbindelse til DBus
 ok = OK
 unknown = Ukendt
 
@@ -12,8 +12,8 @@ connections-and-profiles = { $variant ->
     [wired] Kablet
     [wifi] Wi-Fi
     [vpn] VPN
-    *[other] Unknown
-} connections and connection profiles.
+    *[other] Ukendt
+} forbindelser og forbindelsesprofiler.
 
 add-network = Tilføj Netværk
     .profile = Tilføj profil
@@ -77,17 +77,17 @@ vpn-error = VPN Fejl
     .wireguard-config-path = Ugyldig filsti for WireGuard-konfigurationen
     .wireguard-config-path-desc = Valgt fil skal være på et lokalt filsystem.
     .wireguard-device = Kunne ikke oprette WireGuard-enhed
-    .with-password = Failed to set VPN { $field ->
-        *[username] username
-        [password] password
+    .with-password = Det lykkedes ikke at indstille VPN { $field ->
+        *[username] brugernavn
+        [password] adgangskode
         [password-flags] password-flags
     } with nmcli
 
 wired = Kablet
-    .adapter = Wired adapter { $id }
-    .connections = Wired Connections
-    .devices = Wired Devices
-    .remove = Remove connection profile
+    .adapter = Kablet adapter { $id }
+    .connections = Kablede forbindelser
+    .devices = Kablede enheder
+    .remove = Fjern forbindelsesprofil
 
 wifi = Wi-Fi
     .adapter = Wi-Fi adapter { $id }
@@ -114,19 +114,19 @@ bluetooth = Bluetooth
     .connect = Tilslut
     .disconnect = Afbryd forbindelsen
     .forget = Glem
-    .dbus-error = An error has occurred while interacting with DBus: { $why }
+    .dbus-error = Der opstod en fejl under interaktion med DBus: { $why }
     .show-device-without-name = Vis enheder uden navn
 
 bluetooth-paired = Tidligere forbundne enheder
     .connect = Tilslut
-    .battery = { $percentage }% battery
+    .battery = { $percentage }% batteri
 
 bluetooth-confirm-pin = Bekræft Bluetooth PIN-kode
     .description = Bekræft venligst, at følgende PIN-kode svarer til den, der vises på { $device }
 
 bluetooth-available = Enheder i nærheden
 
-bluetooth-adapters = Bluetooth Adapters
+bluetooth-adapters = Bluetooth Enheder
 
 ## Desktop
 
@@ -216,13 +216,13 @@ style = Stil
     .slightly-round = Let afrundet
     .square = Firkant
 
-interface-density = Interface Density
-    .comfortable = Comfortable
-    .compact = Compact
-    .spacious = Spacious
+interface-density = Grænsefladerdensitet
+    .comfortable = Komfortabel
+    .compact = Kompakt
+    .spacious = Rummelig
 
 window-management-appearance = Window Management
-    .active-hint = Active window hint size
+    .active-hint = Aktiv vinduestip størrelse
     .gaps = Gaps around tiled windows
 
 ### Experimental
@@ -246,9 +246,9 @@ add = Tilføj
 add-applet = Tilføj Applet
 all = Alle
 applets = Applets
-center-segment = Center Segment
+center-segment = Centersegment
 drop-here = Slip applets her
-end-segment = End Segment
+end-segment = Slut segment
 large = Stor
 no-applets-found = Der blev ikke fundet nogen applets...
 panel-bottom = Bund
@@ -313,10 +313,10 @@ focus-navigation = Fokus navigation
     .cursor-follows-focus = Markøren følger fokus
     .cursor-follows-focus = Markøren følger fokus
 
-## Desktop: Workspaces
+## Desktop: Arbejdsområder
 
-workspaces = Workspaces
-    .desc = Workspace orientation and behavior.
+workspaces = Arbejdsområder
+    .desc = Arbejdsområde orientering og adfærd.
 
 workspaces-behavior = Workspace Behavior
     .dynamic = Dynamic workspaces
