@@ -1983,7 +1983,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         page.theme_builder.gaps.1.to_string(),
                         page.theme_builder.gaps.1,
                         1,
-                        page.theme.active_hint,
+                        page.theme_builder.active_hint,
                         500,
                         Message::GapSize,
                     )),
