@@ -563,6 +563,20 @@ impl Page {
                     .set_active_hint(config, active_hint)
                     .unwrap_or_default()
                 {
+                    // Update the gap if it's less than the active hint
+                    if active_hint > self.theme_builder.gaps.1 {
+                        let mut gaps = self.theme_builder.gaps;
+                        gaps.1 = active_hint;
+                        if self
+                            .theme_builder
+                            .set_gaps(config, gaps)
+                            .unwrap_or_default()
+                        {
+                            self.theme_config_write("gaps", gaps);
+                        }
+                    }
+
+                    // Update the active_hint in the config
                     self.theme_config_write("active_hint", active_hint);
                 }
             }
@@ -576,7 +590,12 @@ impl Page {
 
                 let mut gaps = self.theme_builder.gaps;
 
-                gaps.1 = gap;
+                // Ensure that the gap is never less than what the active hint size is.
+                gaps.1 = if gap < self.theme_builder.active_hint {
+                    self.theme_builder.active_hint
+                } else {
+                    gap
+                };
 
                 if self
                     .theme_builder
