@@ -152,14 +152,14 @@ dialog-add = Tilføj
 fill =Fyld
 fit-to-screen = Tilpas til Skærm
 open-new-folder = Åben ny mappe
-recent-folders = Recent Folders Seneste Mapper
+recent-folders = Seneste Mapper
 
 x-minutes = { $number } minutter
 x-hours = { $number ->
     [1] 1 time
     *[other] { $number } timer
 }
-never = Never
+never = Aldrig
 
 ## Desktop: Udseende
 
@@ -191,12 +191,12 @@ auto-switch = Skift automatisk mellem Lys og Mørk tilstande
     .next-sunrise = Skifter til Lystilstand ved næste solopgang
     .next-sunset = Skifter til Mørk tilstand ved næste solnedgang
 
-container-background = Container background
-    .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
+container-background = Baggrund for beholder
+    .desc-detail = Beholderbaggrundsfarve bruges til navigationssidebjælke, sideskuffe, dialogbokse og lignende widgets. Som standard er det automatisk afledt fra programmet eller vinduets baggrund.
     .reset = Nulstil til auto
-    .desc = Primary container color is used for navigation sidebar, side drawer, dialogs and similar widgets.
+    .desc = Primær beholderfarve bruges til navigationssidebjælken, sideskuffe, dialogbokse og lignende widgets.
 
-control-tint = Control component tint
+control-tint = Kontrolkomponent toning
     .desc = Anvendes til baggrunde af standardknapper, søgeinput, tekstinput og lignende komponenter.
 
 frosted = Frosted glass effect on system interface
@@ -245,9 +245,9 @@ panel = Panel
 add = Tilføj
 add-applet = Tilføj Applet
 all = Alle
-applets = Applets
-center-segment = Centersegment
-drop-here = Slip applets her
+applets = Appletter
+center-segment = Center segment
+drop-here = Slip appletter her
 end-segment = Slut segment
 large = Stor
 no-applets-found = Der blev ikke fundet nogen applets...
@@ -255,7 +255,7 @@ panel-bottom = Bund
 panel-left = Venstre
 panel-right = Højre
 panel-top = Top
-search-applets = Søg efter applets...
+search-applets = Søg efter appletter...
 small = Lille
 start-segment = Start Segment
 
@@ -277,11 +277,11 @@ panel-style = Stil
     .dock-extend = Forlæng docken til skærmens kanter
     .appearance = Udseende
     .size = Størelse
-    .background-opacity = Background opacity
+    .background-opacity = Baggrundens uigennemsigtighed
 
 panel-applets = Konfiguration
-    .dock-desc = Konfigurer dock applets
-    .desc = Konfigurer panel applets
+    .dock-desc = Konfigurer dock appletter
+    .desc = Konfigurer panel appletter
 
 panel-missing = Panelkonfiguration mangler
     .desc = Panelkonfigurationsfilen mangler på grund af brug af en brugerdefineret konfiguration, eller den er beskadiget.
@@ -295,12 +295,12 @@ dock = Dock
 ## Desktop: Vinduesstyring
 
 window-management = Vinduesstyring
-    .desc = Super key action, window control options, and additional window tiling options.
+    .desc = Super tast handling, vindue kontrolmuligheder og yderligere muligheder for fliser.
 
 super-key = Super tast handling
-    .launcher = Åben Launcher
-    .workspaces = Åben Workspaces
-    .applications = Åben Applications
+    .launcher = Åben Starter
+    .workspaces = Åben Arbejdsområder
+    .applications = Åben Applikationer
     .disable = Deaktiver
 
 window-controls = Vinduesstyring
@@ -318,28 +318,28 @@ focus-navigation = Fokus navigation
 workspaces = Arbejdsområder
     .desc = Arbejdsområde orientering og adfærd.
 
-workspaces-behavior = Workspace Behavior
-    .dynamic = Dynamic workspaces
-    .dynamic-desc = Automatically removes empty workspaces.
-    .fixed = Fixed Number of Workspaces
-    .fixed-desc = Add or remove workspaces in the overview.
+workspaces-behavior =  Opførsel for Arbejdsområder
+    .dynamic = Dynamiske Arbejdsområder
+    .dynamic-desc = Fjerner automatisk tomme Arbejdsområder.
+    .fixed = Fast antal Arbejdsområder
+    .fixed-desc = Tilføj eller fjern Arbejdsområder i oversigten.
 
-workspaces-multi-behavior = Multi-monitor Behavior
-    .span = Workspaces Span Displays
-    .separate = Displays Have Separate Workspaces
+workspaces-multi-behavior = Adfær for flere skærme
+    .span = Arbejdsområder spræder sig over flere skærme
+    .separate = Skærme har separate Arbejdsområder
 
-workspaces-overview-thumbnails = Workspace Overview Thumbnails
-    .show-number = Show Workspace Number
-    .show-name = Show Workspace Name
+workspaces-overview-thumbnails = Oversigt over Arbejdsområde Miniaturer
+    .show-number = Vis Arbejdsområdenummer
+    .show-name = Vis navnet på Arbejdsområdet
 
-workspaces-orientation = Workspaces Orientation
-    .vertical = Vertical
-    .horizontal = Horizontal
+workspaces-orientation = Arbejdsområde Orientering
+    .vertical = Lodret
+    .horizontal = Vandret
 
-hot-corner = Hot Corner
-    .top-left-corner = Enable top-left hot corner for Workspaces
+hot-corner = Varmt Hjørne
+    .top-left-corner = Aktiver det øverste venstre varme hjørne for Arbejdsområder
 
-## Displays
+## Skærme
 
 -requires-restart = Kræver genstart
 
@@ -369,9 +369,9 @@ mirroring = Spejling
         [all] alle skærme
         *[other] { $display }
     }
-    .project-count = Projecting to { $count} other { $count ->
-        [1] display
-        *[other] displays
+    .project-count = Projektere til { $count} andre { $count ->
+        [1] skærm
+        *[other] skærme
     }
 
 night-light = Natlys
@@ -401,7 +401,7 @@ legacy-applications = X11 Vinduessystem Applikationsskalering
 
 ## Sound
 
-sound = Sound
+sound = Lyd
     .desc = N/A
 
 sound-output = Udgang
@@ -446,36 +446,36 @@ battery = Batteri
   .less-than-minute = Mindre end et minut
   .and = and
   .remaining-time = { $time } until { $action ->
-        [full] full
-       *[other] empty
+        [full] fuld
+       *[other] tom
    }
 
 connected-devices = Tilsluttede enheder
   .unknown = Ukendt enhed
 
-power-mode = Power Mode
+power-mode = Strømtilstand
     .battery = Forlænget batterilevetid
     .battery-desc = Reduceret strømforbrug og lydløs ydeevne.
     .balanced = Balanceret
     .balanced-desc = Støjsvag ydeevne og moderat strømforbrug.
     .performance = Høj ydeevne
     .performance-desc = Maksimal ydeevne og strømforbrug.
-    .no-backend = Backend not found. Install system76-power or power-profiles-daemon.
+    .no-backend = Backend blev ikke fundet. Installer system76-power or power-profiles-daemon.
 
-power-saving = Power Saving Options
-    .turn-off-screen-after = Turn off the screen after
-    .auto-suspend = Automatic suspend
-    .auto-suspend-ac = Automatic suspend when plugged in
-    .auto-suspend-battery = Automatic suspend on battery power
+power-saving = Strømstyrings Indstillinger
+    .turn-off-screen-after = Sluk skærmen efter
+    .auto-suspend = Automatisk slumre
+    .auto-suspend-ac = Automatisk slumre når den er tilsluttet
+    .auto-suspend-battery = Automatisk slumre på batteri
 
 ## Input
 
 acceleration-desc = Justerer automatisk sporingsfølsomhed baseret på hastighed.
 
-disable-while-typing = Disable while typing
+disable-while-typing = Deaktiver under indtastning
 
-input-devices = Input Devices
-    .desc = Input Devices
+input-devices = Indgangsenheder
+    .desc = Indgangsenheder
 
 primary-button = Primær knap
     .desc = Indstiller rækkefølgen af ​​fysiske knapper.
@@ -496,7 +496,7 @@ fast = Hurtig
 short = kort
 long = Lang
 keyboard = Tastatur
-    .desc = Input sources, switching, special character entry, shortcuts.
+    .desc = Indtastningskilder, skift, indtastning af specialtegn, genveje.
 
 keyboard-sources = Inputkilder
     .desc = Inputkilder kan skiftes ved hjælp af Super+Mellemrumstastekombinationen. Dette kan tilpasses i indstillingerne for tastaturgenveje.
@@ -507,20 +507,20 @@ keyboard-sources = Inputkilder
     .remove = Fjern
     .add = Tilføj inputkilde
 
-keyboard-special-char = Special Character Entry
-    .alternate = Alternate characters key
-    .compose = Compose key
-    .caps = Caps Lock key
+keyboard-special-char = Indtastning af specialtegn
+    .alternate = Tast for alternative tegn
+    .compose = Skriv tast
+    .caps = Caps Lock tast
 
-keyboard-typing-assist = Typing
-    .repeat-rate = Repeat rate
-    .repeat-delay = Repeat delay
+keyboard-typing-assist = Indtastning
+    .repeat-rate = Gentagelseshastighed
+    .repeat-delay = Gentagelsesforsinkelse
     
-added = Added
-type-to-search = Type to search...
-show-extended-input-sources = Show extended input sources
+added = Tilføjet
+type-to-search = Skriv for at søge...
+show-extended-input-sources = Vis udvidede inputkilder
 
-## Input: Keyboard: Shortcuts
+## Input: Keyboard: Genveje
 
 keyboard-shortcuts = Tastaturgenveje
     .desc = Se og tilpas genveje
@@ -555,62 +555,62 @@ custom-shortcuts = Brugerdefinerede genveje
 modified = { $count } modificeret
 
 nav-shortcuts = Navigation
-    .prev-output = Focus previous output
-    .next-output = Focus next output
-    .last-workspace = Focus last workspace
-    .prev-workspace = Focus previous workspace
-    .next-workspace = Focus next workspace
-    .focus = Focus window { $direction ->
-        *[down] down
-        [in] in
-        [left] left
-        [out] out
-        [right] right
-        [up] up
+    .prev-output = Fokusér forrige output
+    .next-output = Fokusér næste output
+    .last-workspace = Fokusér sidste arbejdsområde
+    .prev-workspace = Fokusér forrige arbejdsområde
+    .next-workspace = Fokusér næste arbejdsområde
+    .focus = Fokus vindue { $direction ->
+        *[down] ned
+        [in] ind
+        [left] venstre
+        [out] ud
+        [right] højre
+        [up] op
     }
-    .output = Switch to output { $direction ->
-        *[down] down
-        [left] left
-        [right] right
-        [up] up
+    .output = Skift til output { $direction ->
+        *[down] ned
+        [left] venstre
+        [right] højre
+        [up] op
     }
-    .workspace = Switch to workspace { $num }
+    .workspace = Skift til arbejdsområde { $num }
 
-manage-windows = Manage windows
-    .close = Close window
-    .maximize = Maximize window
-    .minimize = Minimize window
-    .resize-inwards = Resize window inwards
-    .resize-outwards = Resize window outwards
-    .toggle-sticky = Toggle sticky window
+manage-windows = Administrer vinduer
+    .close = Luk vindue
+    .maximize = Maksimér vindue
+    .minimize = Minimér vindue
+    .resize-inwards = Ændr størrelsen på vinduet indad
+    .resize-outwards = Ændr størrelsen på vinduet udad
+    .toggle-sticky = Slå klæbrigt vindue til/fra
 
-move-windows = Move Windows
-    .direction = Move window { $direction ->
-        *[down] down
-        [left] left
-        [right] right
-        [up] up
+move-windows = Flyt vinduer
+    .direction = Flyt vindue { $direction ->
+        *[down] ned
+        [left] venstre
+        [right] højre
+        [up] op
     }
-    .display = Move window one monitor { $direction ->
-        *[down] down
-        [left] left
-        [right] right
-        [up] up
+    .display = Flyt vindue én skærm { $direction ->
+        *[down] ned
+        [left] venstre
+        [right] højre
+        [up] op
     }
-    .workspace = Move window one workspace { $direction ->
-        *[below] below
-        [left] left
-        [right] right
-        [above] above
+    .workspace = Flyt vindue ét arbejdsområde { $direction ->
+        *[below] under
+        [left] venstre
+        [right] højre
+        [above] over
     }
-    .workspace-num = Move window to workspace { $num }
-    .prev-workspace = Move window to prev workspace
-    .next-workspace = Move window to next workspace
-    .last-workspace = Move window to last workspace
-    .next-display = Move window to next display
-    .prev-display = Move window to prev display
-    .send-to-prev-workspace = Move window to previous workspace
-    .send-to-next-workspace = Move window to next workspace
+    .workspace-num = Flyt vindue til arbejdsområde { $num }
+    .prev-workspace = Flyt vindue til det forrige arbejdsområde
+    .next-workspace = Flyt vindue til næste arbejdsområde
+    .last-workspace = Flyt vindue til sidste arbejdsområde
+    .next-display = Flyt vindue til næste skærm
+    .prev-display = Flyt vindue til forrige skærm
+    .send-to-prev-workspace = Flyt vindue til forrige arbejdsområde
+    .send-to-next-workspace = Flyt vindue til næste arbejdsområde
 
 system-shortcut = System
     .app-library = Åbn appbiblioteket
@@ -634,14 +634,14 @@ system-shortcut = System
     .window-switcher = Skift mellem åbne vinduer
     .workspace-overview = Åbn oversigten over arbejdsområdet
 
-window-tiling = Window tiling
+window-tiling = Vinduesfliser
     .horizontal = Indstil vandret orientering
     .vertical = Indstil lodret orientering
-    .swap-window = Swap window
-    .toggle-tiling = Toggle window tiling
-    .toggle-stacking = Toggle window stacking
-    .toggle-floating = Toggle window floating
-    .toggle-orientation = Toggle orientation
+    .swap-window = Byt vindue
+    .toggle-tiling = Slå vinduesfliser til/fra
+    .toggle-stacking = Slå vinduestabling til/fra
+    .toggle-floating = Slå svævende vindue til/fra
+    .toggle-orientation = Slå orientering til/fra
 
 replace-shortcut-dialog = Erstat Genvej?
     .desc = { $shortcut } bruges af { $name }. Hvis du erstatter det, { $name } vil blive deaktiveret.
@@ -689,7 +689,7 @@ open-workspaces-view = Åbn oversigt over arbejdsområder
 
 ## Time & Language
 
-time = Time & Language
+time = Tid & Sprog
     .desc = N/A
 
 time-date = Dato & Tid
@@ -732,12 +732,12 @@ region = Region
 
 ## System
 
-system = System & Accounts
+system = System & Konti
 
-## System: About
+## System: Om
 
-about = About
-    .desc = Device name, hardware information, operating system defaults.
+about = Om
+    .desc = Enhedsnavn, hardwareoplysninger, standardindstillinger for operativsystem.
 
 about-device = Enhed navn
     .desc = Dette navn vises til andre netværks eller bluetooth enheder.
@@ -753,7 +753,7 @@ about-os = Operativsystem
     .os = Operativsystem
     .os-architecture = Operativsystems arkitektur
     .desktop-environment = Skrivebordsmiljø
-    .windowing-system = Windowing system
+    .windowing-system = Vinduessystem
 
 about-related = Relaterede indstillinger
     .support = Få support
