@@ -20,6 +20,12 @@ metainfo := appid + '.metainfo.xml'
 metainfo-src := 'resources' / metainfo
 metainfo-dst := clean(rootdir / prefix) / 'share' / 'metainfo' / metainfo
 
+polkit-actions-src := 'resources' / 'polkit-1' / 'actions'
+polkit-actions-dst := clean(rootdir / prefix) / 'share' / 'polkit-1' / 'actions'
+
+policy-users-src := polkit-actions-src / appid + '.Users.policy'
+policy-users-dst := polkit-actions-dst / appid + '.Users.policy'
+
 polkit-rules-src := 'resources' / 'polkit-1' / 'rules.d' / 'cosmic-settings.rules'
 polkit-rules-dst := clean(rootdir / prefix) / 'share' / 'polkit-1' / 'rules.d' / 'cosmic-settings.rules'
 
@@ -91,9 +97,11 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-workspaces}}' '{{appdir}}/{{entry-workspaces}}'
 
 # Install everything
-install: install-desktop-entries (install-bin bin-src bin-dest) (install-file metainfo-src metainfo-dst) (install-file polkit-rules-src polkit-rules-dst)
+install: install-desktop-entries (install-bin bin-src bin-dest) (install-file metainfo-src metainfo-dst) install-polkit-files
     find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'default_schema'/{} {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
+
+install-polkit-files: (install-file polkit-rules-src polkit-rules-dst) (install-file policy-users-src policy-users-dst)
 
 [private]
 install-cmd options src dest:
