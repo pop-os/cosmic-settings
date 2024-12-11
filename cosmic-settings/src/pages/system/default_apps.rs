@@ -185,6 +185,7 @@ impl Page {
                                     "application/ogg",
                                     "application/x-cue",
                                     "application/x-ogg",
+                                    "audio/mp3",
                                     "x-content/audio-cdda",
                                 ]
                                 .into_iter(),
@@ -392,6 +393,7 @@ async fn load_defaults(assocs: &BTreeMap<Arc<str>, Arc<App>>, for_mimes: &[&str]
     for (id, (appid, app)) in unsorted.iter().enumerate() {
         if let Some(current_app) = current_app {
             if app.name.as_ref() == current_app.name.as_ref() {
+                eprintln!("selected = {}; current = {}", app.name, current_app.name);
                 selected = Some(id);
             }
         }
