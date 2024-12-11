@@ -387,6 +387,12 @@ orientation = Orientamento
     .rotate-180 = 180 gradi
     .rotate-270 = 90 gradi in senso antiorario
 
+vrr = Frequenza di aggiornamento variabile
+    .enabled = Abilitata
+    .force = Sempre
+    .auto = Automatica
+    .disabled = Disabilitato
+
 scheduling = Pianificazione
     .manual = Pianificazione manuale
 
@@ -717,6 +723,22 @@ time-format = Formato data e ora
 time-region = Area geografica & lingua
     .desc = Impostazioni regionali di data, ora e numeri
 
+formatting = Formato
+    .dates = Date
+    .time = Ora
+    .date-and-time = Data & Ora
+    .numbers = Numeri
+    .measurement = Unità di misura
+    .paper = Fogli
+
+preferred-languages = Preferred Languages
+    .desc = The order of languages determines which language is used for the translation of the desktop. Changes take effect on next login.
+
+add-language = Add language
+    .context = Add Language
+install-additional-languages = Install additional languages
+region = Region
+
 ## System
 
 system = Sistema e account
@@ -753,4 +775,30 @@ firmware = Firmware
 ## System: Users
 
 users = Utenti
-    .desc = Autenticazione, login e blocco schermo
+    .desc = Autenticazione e account utente.
+    .admin = Amministratore
+    .standard = Standard
+    .profile-add = Scegli immagine del profilo
+
+administrator = Amministratore
+    .desc = Gli amministratori possono modificare le impostazioni per tutti gli utenti, aggiungere e rimuovere altri utenti.
+
+add-user = Aggiungi utente
+remove-user = Rimuovi utente
+full-name = Nome completo
+username = Nome utente
+password = Password
+
+## System: Default Applications
+
+default-apps = Applicazioni predefinite
+    .desc = Browser web predefinito, client di posta, gestore file e altre applicazioni.
+    .web-browser = Browser web
+    .file-manager = Gestore file
+    .mail-client = Client di posta
+    .music = Musica
+    .video = Video
+    .photos = Foto
+    .calendar = Calendario
+    .terminal = Terminale
+    .other-associations = Altre associazioni
