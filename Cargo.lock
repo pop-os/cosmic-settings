@@ -1550,7 +1550,6 @@ dependencies = [
 [[package]]
 name = "cosmic-mime-apps"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-mime-apps#3ac0e3d926f26c6f777111f530e613d3dfc75ac4"
 dependencies = [
  "freedesktop-desktop-entry",
  "mime 0.3.17",
