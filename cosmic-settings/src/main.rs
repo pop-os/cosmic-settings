@@ -92,6 +92,7 @@ pub enum PageCommands {
     #[cfg(feature = "page-input")]
     Touchpad,
     /// Users settings page
+    #[cfg(feature = "page-users")]
     Users,
     /// VPN settings page
     #[cfg(feature = "page-networking")]

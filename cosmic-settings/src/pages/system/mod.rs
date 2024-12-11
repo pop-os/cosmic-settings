@@ -6,6 +6,7 @@ pub mod about;
 #[cfg(feature = "page-default-apps")]
 pub mod default_apps;
 pub mod firmware;
+#[cfg(feature = "page-users")]
 pub mod users;
 
 use cosmic_settings_page as page;
@@ -29,16 +30,23 @@ impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(
         mut page: page::Insert<crate::pages::Message>,
     ) -> page::Insert<crate::pages::Message> {
-        page = page.sub_page::<users::Page>();
+        #[cfg(feature = "page-users")]
+        {
+            page = page.sub_page::<users::Page>();
+        }
+
         #[cfg(feature = "page-about")]
         {
             page = page.sub_page::<about::Page>();
         }
+
         page = page.sub_page::<firmware::Page>();
+
         #[cfg(feature = "page-default-apps")]
         {
             page = page.sub_page::<default_apps::Page>();
         }
+
         page
     }
 }

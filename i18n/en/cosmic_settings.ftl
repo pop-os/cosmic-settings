@@ -772,6 +772,18 @@ firmware = Firmware
 
 users = Users
     .desc = Authentication and user accounts.
+    .admin = Admin
+    .standard = Standard
+    .profile-add = Choose profile image
+
+administrator = Administrator
+    .desc = Administrators can change settings for all users, add and remove other users.
+
+add-user = Add user
+remove-user = Remove user
+full-name = Full name
+username = Username
+password = Password
 
 ## System: Default Applications
 
