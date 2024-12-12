@@ -1550,6 +1550,7 @@ dependencies = [
 [[package]]
 name = "cosmic-mime-apps"
 version = "0.1.0"
+source = "git+https://github.com/pop-os/cosmic-mime-apps#a5aefbd2e914682c151f3b8054dd711e7f57941d"
 dependencies = [
  "freedesktop-desktop-entry",
  "mime 0.3.17",
@@ -1691,7 +1692,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-daemon#e87f5859a2e932ef14746affd01cc67ed4f93cf1"
+source = "git+https://github.com/pop-os/cosmic-settings-daemon#747e482ca197497ee3bc5f6e9dcd23c73e592e47"
 dependencies = [
  "cosmic-config",
  "serde",

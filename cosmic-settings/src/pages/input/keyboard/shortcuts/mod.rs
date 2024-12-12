@@ -537,6 +537,7 @@ fn all_system_actions() -> &'static [Action] {
         Action::System(SystemAction::VolumeRaise),
         Action::System(SystemAction::WebBrowser),
         Action::System(SystemAction::WindowSwitcher),
+        Action::System(SystemAction::WindowSwitcherPrevious),
         Action::System(SystemAction::WorkspaceOverview),
         Action::Terminate,
         Action::ToggleOrientation,
@@ -665,6 +666,9 @@ fn localize_action(action: &Action) -> String {
             SystemAction::VolumeRaise => fl!("system-shortcut", "volume-raise"),
             SystemAction::WebBrowser => fl!("system-shortcut", "web-browser"),
             SystemAction::WindowSwitcher => fl!("system-shortcut", "window-switcher"),
+            SystemAction::WindowSwitcherPrevious => {
+                fl!("system-shortcut", "window-switcher-previous")
+            }
             SystemAction::WorkspaceOverview => fl!("system-shortcut", "workspace-overview"),
         },
 
