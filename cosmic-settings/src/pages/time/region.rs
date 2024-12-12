@@ -396,7 +396,7 @@ impl Page {
 
         let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), options).unwrap();
 
-        let datetime = DateTime::try_new_gregorian_datetime(2024, 1, 1, 12, 0, 0)
+        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 12, 0, 0)
             .unwrap()
             .to_iso()
             .to_any();
@@ -436,7 +436,7 @@ impl Page {
 
         let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), options).unwrap();
 
-        let datetime = DateTime::try_new_gregorian_datetime(2024, 1, 1, 12, 0, 0)
+        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 12, 0, 0)
             .unwrap()
             .to_iso()
             .to_any();
@@ -472,7 +472,7 @@ impl Page {
 
         let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), options).unwrap();
 
-        let datetime = DateTime::try_new_gregorian_datetime(2024, 1, 1, 12, 0, 0)
+        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 12, 0, 0)
             .unwrap()
             .to_iso()
             .to_any();
