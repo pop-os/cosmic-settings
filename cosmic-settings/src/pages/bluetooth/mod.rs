@@ -47,6 +47,8 @@ pub struct Page {
     selected_adapter: Option<OwnedObjectPath>,
     heading: String,
     devices: HashMap<OwnedObjectPath, Device>,
+    // Set to true when the org.bluez dbus service is unknown.
+    bluez_service_unknown: bool,
     popup_setting: bool,
     popup_device: Option<OwnedObjectPath>,
     subscription: Option<tokio::sync::oneshot::Sender<()>>,
@@ -157,6 +159,7 @@ pub enum Message {
         tokio::sync::mpsc::Sender<crate::pages::Message>,
     ),
     DBusError(String),
+    DBusServiceUnknown,
     DeviceFailed(OwnedObjectPath),
     DisconnectDevice(OwnedObjectPath),
     ForgetDevice(OwnedObjectPath),
@@ -491,6 +494,9 @@ impl Page {
             Message::DBusError(why) => {
                 tracing::error!("dbus connection failed. {why}");
             }
+            Message::DBusServiceUnknown => {
+                self.bluez_service_unknown = true;
+            }
         };
         cosmic::Task::none()
     }
@@ -575,6 +581,14 @@ fn status() -> Section<crate::pages::Message> {
         .show_while::<Page>(|page| !page.adapters.is_empty())
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
+
+            if page.bluez_service_unknown {
+                return widget::text::body(
+                    "The org.bluez DBus service could not be activated. Is bluez installed?",
+                )
+                .apply(Element::from);
+            }
+
             let status = page
                 .get_selected_adapter()
                 .map_or(page.active, |(_, adapter)| adapter.enabled);

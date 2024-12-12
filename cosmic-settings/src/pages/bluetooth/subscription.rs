@@ -7,7 +7,7 @@ use std::pin::Pin;
 use bluez_zbus::BluetoothDevice;
 use cosmic::iced::futures::{SinkExt, StreamExt};
 use futures::{channel::mpsc, stream::FusedStream};
-use zbus::zvariant::OwnedObjectPath;
+use zbus::{fdo, zvariant::OwnedObjectPath};
 
 enum DevicePropertyWatcherTask {
     Add(OwnedObjectPath),
@@ -201,14 +201,26 @@ pub async fn watch(
         }.await;
 
         if let Err(why) = result {
-            tracing::error!("failed to watch bluetooth event: {why}");
-            if let Err(why) = tx
+            _ = tx
                 .send(bluetooth::Message::DBusError(why.to_string()))
-                .await
-            {
-                tracing::error!("failed to communicate error to app: {why}");
+                .await;
+
+            tracing::error!("failed to watch bluetooth event: {why}.");
+
+            // Exit if the dbus service is not found.
+            if let zbus::Error::FDO(fdo_error) = why {
+                match *fdo_error {
+                    fdo::Error::ServiceUnknown(_) => {
+                        tracing::error!(
+                            "The org.bluez dbus service is unknown. Is the bluez service installed and activatable?"
+                        );
+                        _ = tx.send(bluetooth::Message::DBusServiceUnknown).await;
+                        return;
+                    }
+
+                    _ => (),
+                }
             }
-            tracing::error!("failed to watch bluetooth event: {why}. Restarting...");
         }
     }
 }
