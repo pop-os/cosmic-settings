@@ -273,7 +273,7 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                 .find(|(_, v)| v.id == page.applets_page_id())
             {
                 let control = row::with_children(vec![
-                    horizontal_space().width(Length::Fill).into(),
+                    horizontal_space().into(),
                     icon::from_name("go-next-symbolic").size(16).into(),
                 ]);
 

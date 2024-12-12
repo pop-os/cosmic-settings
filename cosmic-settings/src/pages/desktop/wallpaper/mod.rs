@@ -577,7 +577,7 @@ impl Page {
             Category::Wallpapers => {
                 if self.config.current_folder.is_some() {
                     let _ = self.config.set_current_folder(None);
-                    task = cosmic::command::future(async move {
+                    task = cosmic::task::future(async move {
                         let folder = change_folder(Config::default_folder().to_owned(), true).await;
                         Message::ChangeFolder(folder)
                     });
@@ -597,7 +597,7 @@ impl Page {
                         tracing::error!(?path, ?why, "failed to set current folder");
                     }
 
-                    task = cosmic::command::future(async move {
+                    task = cosmic::task::future(async move {
                         Message::ChangeFolder(change_folder(path, false).await)
                     });
                 }
@@ -605,7 +605,7 @@ impl Page {
 
             Category::AddFolder => {
                 #[cfg(feature = "xdg-portal")]
-                return cosmic::command::future(async {
+                return cosmic::task::future(async {
                     let dialog_result = file_chooser::open::Dialog::new()
                         .title(fl!("wallpaper", "folder-dialog"))
                         .accept_label(fl!("dialog-add"))
@@ -751,7 +751,7 @@ impl Page {
 
             Message::ColorAddContext => {
                 self.context_view = Some(ContextView::AddColor);
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     fl!("color-picker").into(),
                 ));
@@ -972,20 +972,20 @@ impl Page {
                 }
 
                 // Load preview images concurrently for each custom image stored in the on-disk config.
-                return cosmic::command::batch(
+                return cosmic::task::batch(
                     self.config
                         .custom_images()
                         .iter()
                         .cloned()
                         .map(|path| {
-                            cosmic::command::future(async move {
+                            cosmic::task::future(async move {
                                 let result = wallpaper::load_image_with_thumbnail(path);
 
                                 Message::ImageAdd(result.map(Arc::new))
                             })
                         })
                         // Cache wallpaper preview early to prevent blank previews on reload
-                        .chain(std::iter::once(cosmic::command::message::<
+                        .chain(std::iter::once(cosmic::task::message::<
                             _,
                             crate::app::Message,
                         >(
@@ -1297,7 +1297,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                         },
                     )
                     .push(category_selection)
-                    .push(cosmic::widget::horizontal_space().width(Length::Fill))
+                    .push(cosmic::widget::horizontal_space())
                     .push_maybe(add_button)
                     .into(),
             );

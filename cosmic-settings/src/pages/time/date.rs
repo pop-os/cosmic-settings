@@ -6,7 +6,6 @@ use std::str::FromStr;
 use chrono::{Datelike, Timelike};
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::Length,
     iced_core::text::Wrapping,
     widget::{self, dropdown, settings},
     Apply, Element, Task,
@@ -183,7 +182,7 @@ impl Page {
             Message::TimezoneContext => {
                 self.timezone_search.clear();
                 self.timezone_context = true;
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     fl!("time-zone").into(),
                 ));
@@ -262,14 +261,14 @@ impl Page {
             Message::Error(why) => {
                 tracing::error!(why, "failed to set timezone");
                 self.timezone_context = false;
-                return cosmic::command::message(crate::Message::CloseContextDrawer);
+                return cosmic::task::message(crate::Message::CloseContextDrawer);
             }
 
             Message::UpdateTime => {
                 self.set_ntp(true);
                 self.update_local_time();
                 self.timezone_context = false;
-                return cosmic::command::message(crate::Message::CloseContextDrawer);
+                return cosmic::task::message(crate::Message::CloseContextDrawer);
             }
 
             Message::Refresh(info) => {
@@ -339,7 +338,7 @@ impl Page {
     fn timezone_context_item<'a>(&self, id: usize, timezone: &'a str) -> Element<'a, Message> {
         widget::button::custom(widget::settings::item_row(vec![
             widget::text::body(timezone).wrapping(Wrapping::Word).into(),
-            widget::horizontal_space().width(Length::Fill).into(),
+            widget::horizontal_space().into(),
         ]))
         .on_press(Message::Timezone(id))
         .class(cosmic::theme::Button::Icon)

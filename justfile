@@ -20,6 +20,12 @@ metainfo := appid + '.metainfo.xml'
 metainfo-src := 'resources' / metainfo
 metainfo-dst := clean(rootdir / prefix) / 'share' / 'metainfo' / metainfo
 
+polkit-actions-src := 'resources' / 'polkit-1' / 'actions'
+polkit-actions-dst := clean(rootdir / prefix) / 'share' / 'polkit-1' / 'actions'
+
+policy-users-src := polkit-actions-src / appid + '.Users.policy'
+policy-users-dst := polkit-actions-dst / appid + '.Users.policy'
+
 polkit-rules-src := 'resources' / 'polkit-1' / 'rules.d' / 'cosmic-settings.rules'
 polkit-rules-dst := clean(rootdir / prefix) / 'share' / 'polkit-1' / 'rules.d' / 'cosmic-settings.rules'
 
@@ -29,6 +35,7 @@ entry-about := appid + '.About.desktop'
 entry-appear := appid + '.Appearance.desktop'
 entry-bluetooth := appid + '.Bluetooth.desktop'
 entry-date-time := appid + '.DateTime.desktop'
+entry-default-apps := appid + '.DefaultApps.desktop'
 entry-desktop := appid + '.Desktop.desktop'
 entry-displays := appid + '.Displays.desktop'
 entry-dock := appid + '.Dock.desktop'
@@ -64,6 +71,7 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-appear}}' '{{appdir}}/{{entry-appear}}'
     install -Dm0644 'resources/{{entry-bluetooth}}' '{{appdir}}/{{entry-bluetooth}}'
     install -Dm0644 'resources/{{entry-date-time}}' '{{appdir}}/{{entry-date-time}}'
+    install -Dm0644 'resources/{{entry-default-apps}}' '{{appdir}}/{{entry-default-apps}}'
     install -Dm0644 'resources/{{entry-desktop}}' '{{appdir}}/{{entry-desktop}}'
     install -Dm0644 'resources/{{entry-displays}}' '{{appdir}}/{{entry-displays}}'
     install -Dm0644 'resources/{{entry-dock}}' '{{appdir}}/{{entry-dock}}'
@@ -89,9 +97,11 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-workspaces}}' '{{appdir}}/{{entry-workspaces}}'
 
 # Install everything
-install: install-desktop-entries (install-bin bin-src bin-dest) (install-file metainfo-src metainfo-dst) (install-file polkit-rules-src polkit-rules-dst)
+install: install-desktop-entries (install-bin bin-src bin-dest) (install-file metainfo-src metainfo-dst) install-polkit-files
     find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'default_schema'/{} {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
+
+install-polkit-files: (install-file polkit-rules-src polkit-rules-dst) (install-file policy-users-src policy-users-dst)
 
 [private]
 install-cmd options src dest:
@@ -111,6 +121,7 @@ uninstall:
         '{{appdir}}/{{entry-appear}}' \
         '{{appdir}}/{{entry-bluetooth}}' \
         '{{appdir}}/{{entry-date-time}}' \
+        '{{appdir}}/{{entry-default-apps}}' \
         '{{appdir}}/{{entry-desktop}}' \
         '{{appdir}}/{{entry-displays}}' \
         '{{appdir}}/{{entry-dock}}' \
@@ -136,6 +147,14 @@ uninstall:
         '{{appdir}}/{{entry-workspaces}}'
     find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm -rf {{default-schema-target}}/{}
     find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm {{iconsdir}}/{}
+
+heaptrack *args:
+    #!/usr/bin/env bash
+    set -ex
+    rm -fv heaptrack.cosmic-settings.*
+    cargo heaptrack --profile release-with-debug --bin cosmic-settings -- {{args}}
+    zstd -dc < heaptrack.cosmic-settings.*.raw.zst + /usr/lib/heaptrack/libexec/heaptrack_env | zstd -c > heaptrack_env.cosmic-settings.zst
+    heaptrack_gui heaptrack.cosmic-settings.zst
 
 # Dependencies
 cmd-depends := "

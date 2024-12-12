@@ -289,10 +289,10 @@ impl Page {
             Message::OpenPage { page, device } => {
                 let mut tasks = Vec::<Task<crate::app::Message>>::new();
 
-                tasks.push(cosmic::command::message(crate::app::Message::Page(page)));
+                tasks.push(cosmic::task::message(crate::app::Message::Page(page)));
 
                 if let Some(device) = device {
-                    tasks.push(cosmic::command::message(crate::app::Message::PageMessage(
+                    tasks.push(cosmic::task::message(crate::app::Message::PageMessage(
                         match device {
                             DeviceVariant::WiFi(device) => {
                                 crate::pages::Message::WiFi(wifi::Message::SelectDevice(device))

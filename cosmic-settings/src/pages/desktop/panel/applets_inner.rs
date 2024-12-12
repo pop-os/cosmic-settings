@@ -226,7 +226,6 @@ impl Page {
     ) -> Element<crate::pages::Message> {
         let cosmic::cosmic_theme::Spacing {
             space_xxxs,
-            space_xxs,
             space_xs,
             space_l,
             ..
@@ -262,7 +261,11 @@ impl Page {
                     icon::from_name(&*info.icon).size(32).icon().into(),
                     column::with_capacity(2)
                         .push(text::body(info.name.clone()))
-                        .push(text::caption(info.description.clone()))
+                        .push_maybe(if info.description.is_empty() {
+                            None
+                        } else {
+                            Some(text::caption(info.description.clone()))
+                        })
                         .spacing(space_xxxs)
                         .width(Length::Fill)
                         .into(),
@@ -295,7 +298,7 @@ impl Page {
                         .on_press(msg_map(Message::AddApplet(info.clone())))
                         .into(),
                 ])
-                .padding([0, space_l])
+                .padding([space_xxxs, 0])
                 .spacing(space_xs)
                 .align_y(Alignment::Center),
             );
@@ -308,17 +311,17 @@ impl Page {
             );
         }
 
-        column::with_children(vec![
-            text_input::search_input(fl!("search-applets"), &self.search)
-                .on_input(move |s| msg_map(Message::Search(s)))
-                .on_paste(move |s| msg_map(Message::Search(s)))
-                .width(Length::Fixed(312.0))
-                .into(),
-            list_column.into(),
-        ])
-        .align_x(Alignment::Center)
-        .spacing(space_xxs)
-        .into()
+        let search = text_input::search_input(fl!("search-applets"), &self.search)
+            .on_input(move |s| msg_map(Message::Search(s)))
+            .on_paste(move |s| msg_map(Message::Search(s)))
+            .width(Length::Fixed(312.0));
+
+        column::with_capacity(2)
+            .push(search)
+            .push(list_column)
+            .align_x(Alignment::Center)
+            .spacing(space_l)
+            .into()
     }
 
     #[allow(clippy::too_many_lines)]
@@ -442,7 +445,7 @@ impl Page {
             }
             Message::AddAppletDrawer => {
                 self.context = Some(ContextDrawer::AddApplet);
-                return cosmic::command::message(app::Message::OpenContextDrawer(
+                return cosmic::task::message(app::Message::OpenContextDrawer(
                     self.entity,
                     Cow::Owned(fl!("add-applet")),
                 ));
@@ -463,7 +466,6 @@ pub fn lists<
         let cosmic::cosmic_theme::Spacing {
             space_xxs,
             space_xs,
-            space_s,
             ..
         } = theme::active().cosmic().spacing;
         let page = page.inner();
@@ -565,7 +567,6 @@ pub fn lists<
             .spacing(space_xxs)
             .into(),
         ])
-        .padding([0, space_s])
         .spacing(space_xs)
         .apply(Element::from)
         .map(msg_map)

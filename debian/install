@@ -1,9 +1,10 @@
 /usr/bin/cosmic-settings
+/usr/share/applications/com.system76.CosmicSettings.desktop
 /usr/share/applications/com.system76.CosmicSettings.About.desktop
 /usr/share/applications/com.system76.CosmicSettings.Appearance.desktop
 /usr/share/applications/com.system76.CosmicSettings.Bluetooth.desktop
 /usr/share/applications/com.system76.CosmicSettings.DateTime.desktop
-/usr/share/applications/com.system76.CosmicSettings.desktop
+/usr/share/applications/com.system76.CosmicSettings.DefaultApps.desktop
 /usr/share/applications/com.system76.CosmicSettings.Desktop.desktop
 /usr/share/applications/com.system76.CosmicSettings.Displays.desktop
 /usr/share/applications/com.system76.CosmicSettings.Dock.desktop
@@ -28,6 +29,7 @@
 /usr/share/applications/com.system76.CosmicSettings.Wireless.desktop
 /usr/share/applications/com.system76.CosmicSettings.Workspaces.desktop
 /usr/share/metainfo/com.system76.CosmicSettings.metainfo.xml
+/usr/share/polkit-1/actions/com.system76.CosmicSettings.Users.policy
 /usr/share/polkit-1/rules.d/cosmic-settings.rules
 /usr/share/cosmic/com.system76.CosmicTheme.Dark
 /usr/share/cosmic/com.system76.CosmicTheme.Dark.Builder

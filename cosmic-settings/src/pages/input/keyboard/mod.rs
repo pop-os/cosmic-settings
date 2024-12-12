@@ -194,18 +194,21 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
         ),
         popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
-    .padding(8)
+    .padding([2, 8])
     .width(Length::Shrink)
     .height(Length::Shrink)
     .apply(cosmic::widget::container)
     .class(cosmic::theme::Container::custom(|theme| {
         let cosmic = theme.cosmic();
+        let background = &cosmic.background;
         container::Style {
-            icon_color: Some(theme.cosmic().background.on.into()),
-            text_color: Some(theme.cosmic().background.on.into()),
-            background: Some(Color::from(theme.cosmic().background.base).into()),
+            icon_color: Some(background.on.into()),
+            text_color: Some(background.on.into()),
+            background: Some(Color::from(background.base).into()),
             border: Border {
-                radius: cosmic.corner_radii.radius_m.into(),
+                color: background.component.divider.into(),
+                width: 1.0,
+                radius: cosmic.corner_radii.radius_s.into(),
                 ..Default::default()
             },
             shadow: Default::default(),
@@ -238,7 +241,7 @@ fn input_source(
 ) -> cosmic::Element<Message> {
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
-    settings::flex_item(description, popover_button(id, expanded)).into()
+    settings::item(description, popover_button(id, expanded)).into()
 }
 
 fn special_char_radio_row<'a>(
@@ -457,7 +460,7 @@ impl Page {
 
             Message::ShowInputSourcesContext => {
                 self.context = Some(Context::ShowInputSourcesContext);
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     fl!("keyboard-sources", "add").into(),
                 ));
@@ -469,7 +472,7 @@ impl Page {
 
             Message::OpenSpecialCharacterContext(key) => {
                 self.context = Some(Context::SpecialCharacter(key));
-                return cosmic::command::message(crate::app::Message::OpenContextDrawer(
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     key.title().into(),
                 ));

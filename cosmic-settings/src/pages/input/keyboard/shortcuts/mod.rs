@@ -221,28 +221,28 @@ impl Page {
         match message {
             Message::Category(category) => match category {
                 Category::Custom => {
-                    cosmic::command::message(crate::app::Message::Page(self.sub_pages.custom))
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.custom))
                 }
 
-                Category::ManageWindow => cosmic::command::message(crate::app::Message::Page(
-                    self.sub_pages.manage_window,
-                )),
+                Category::ManageWindow => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.manage_window))
+                }
 
                 Category::MoveWindow => {
-                    cosmic::command::message(crate::app::Message::Page(self.sub_pages.move_window))
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.move_window))
                 }
 
                 Category::Nav => {
-                    cosmic::command::message(crate::app::Message::Page(self.sub_pages.nav))
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.nav))
                 }
 
                 Category::System => {
-                    cosmic::command::message(crate::app::Message::Page(self.sub_pages.system))
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.system))
                 }
 
-                Category::WindowTiling => cosmic::command::message(crate::app::Message::Page(
-                    self.sub_pages.window_tiling,
-                )),
+                Category::WindowTiling => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.window_tiling))
+                }
             },
 
             Message::Search(input) => {
@@ -537,6 +537,7 @@ fn all_system_actions() -> &'static [Action] {
         Action::System(SystemAction::VolumeRaise),
         Action::System(SystemAction::WebBrowser),
         Action::System(SystemAction::WindowSwitcher),
+        Action::System(SystemAction::WindowSwitcherPrevious),
         Action::System(SystemAction::WorkspaceOverview),
         Action::Terminate,
         Action::ToggleOrientation,
@@ -665,6 +666,9 @@ fn localize_action(action: &Action) -> String {
             SystemAction::VolumeRaise => fl!("system-shortcut", "volume-raise"),
             SystemAction::WebBrowser => fl!("system-shortcut", "web-browser"),
             SystemAction::WindowSwitcher => fl!("system-shortcut", "window-switcher"),
+            SystemAction::WindowSwitcherPrevious => {
+                fl!("system-shortcut", "window-switcher-previous")
+            }
             SystemAction::WorkspaceOverview => fl!("system-shortcut", "workspace-overview"),
         },
 

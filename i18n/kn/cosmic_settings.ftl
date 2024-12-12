@@ -1,5 +1,7 @@
 app = ಕಾಸ್ಮಿಕ್ ಸೆಟ್ಟಿಂಗ್ಸ್
 
+dbus-connection-error = DBus ಗೆ ಸಂಪರ್ಕಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ
+ok = ಸರಿ
 unknown = ಅಜ್ಞಾತ
 
 number = { $number }
@@ -60,10 +62,26 @@ remove-connection-dialog = ಸಂಪರ್ಕ ಪ್ರೊಫೈಲ್ ಅನ್
     .vpn-description = ನೀವು ಭವಿಷ್ಯದಲ್ಲಿ ಈ ನೆಟ್ವರ್ಕ್ ಅನ್ನು ಬಳಸಲು ಮತ್ತೆ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಬೇಕಾಗುತ್ತದೆ.
     .wired-description = ನೀವು ಭವಿಷ್ಯದಲ್ಲಿ ಇದನ್ನು ಬಳಸಲು ಪ್ರೊಫೈಲ್ ಅನ್ನು ಪುನಃ ಸೃಷ್ಟಿಸಬೇಕಾಗುತ್ತದೆ.
 
-vpn = ವಿ.ಪಿ.ಎನ್
-    .connections = ವಿ.ಪಿ.ಎನ್ ಸಂಪರ್ಕಗಳು
-    .remove = ಸಂಪರ್ಕ ಪ್ರೊಫೈಲ್ ಅನ್ನು ತೆಗೆದು ಹಾಕಿ
-    .select-file = ವಿ.ಪಿ.ಎನ್ ಸಂರಚನೆ ಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಿ
+vpn = VPN
+    .connections = VPN ಸಂಪರ್ಕಗಳು
+    .error = VPN ಸಂರಚನೆಯನ್ನು ಸೇರಿಸಲು ವಿಫಲವಾಗಿದೆ
+    .remove = ಸಂಪರ್ಕ ಪ್ರೊಫೈಲ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ
+    .select-file = VPN ಸಂರಚನಾ ಫೈಲ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ
+
+vpn-error = VPN ದೋಷ
+    .config = VPN ಸಂರಚನೆಯನ್ನು ಸೇರಿಸಲು ವಿಫಲವಾಗಿದೆ
+    .connect = VPN ಗೆ ಸಂಪರ್ಕಿಸಲು ವಿಫಲವಾಗಿದೆ
+    .connection-editor = ಸಂಪರ್ಕ ಸಂಪಾದಕ ವಿಫಲವಾಗಿದೆ
+    .connection-settings = ಸಕ್ರಿಯ ಸಂಪರ್ಕಗಳ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪಡೆಯುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ
+    .updating-state = ನೆಟ್‌ವರ್ಕ್ ಮ್ಯಾನೇಜರ್ ಸ್ಥಿತಿಯನ್ನು ನವೀಕರಿಸಲು ವಿಫಲವಾಗಿದೆ
+    .wireguard-config-path = ವೈರ್‌ಗಾರ್ಡ್ ಸಂರಚನೆಗೆ ಅವೈಧ ಫೈಲ್ ಪಥ
+    .wireguard-config-path-desc = ಆಯ್ಕೆ ಮಾಡಿದ ಫೈಲ್ ಸ್ಥಳೀಯ ಫೈಲ್ ಸಿಸ್ಟಮ್‌ನಲ್ಲಿ ಇರಬೇಕು.
+    .wireguard-device = ವೈರ್‌ಗಾರ್ಡ್ ಸಾಧನವನ್ನು ರಚಿಸಲು ವಿಫಲವಾಗಿದೆ
+    .with-password = nmcli ಸಹಿತ VPN { $field ->
+        *[username] ಬಳಕೆದಾರ ಹೆಸರು
+        [password] ಪಾಸ್‌ವರ್ಡ್
+        [password-flags] ಪಾಸ್‌ವರ್ಡ್-ಫ್ಲ್ಯಾಗ್ಸ್
+    } ಅನ್ನು ಸೆಟ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ
 
 wired = ತಂತಿ
     .adapter = ತಂತಿ ಅಡಾಪ್ಟರ್ { $id }
@@ -75,12 +93,17 @@ wifi = ವೈ-ಫೈ
     .adapter = ವೈ-ಫೈ ಅಡಾಪ್ಟರ್ { $id }
     .forget = ಈ ನೆಟ್ವರ್ಕ್ ಅನ್ನು ಮರೆತುಬಿಡಿ
 
+wireguard-dialog = ವೈರ್‌ಗಾರ್ಡ್ ಸಾಧನವನ್ನು ಸೇರಿಸಿ
+    .description = ವೈರ್‌ಗಾರ್ಡ್ ಸಂರಚನೆಯಿಗಾಗಿ ಸಾಧನದ ಹೆಸರನ್ನು ಆಯ್ಕೆಮಾಡಿ.
+
 ## Networking: Online Accounts
 
 online-accounts = ಆನ್‌ಲೈನ್ ಖಾತೆಗಳು
     .desc = ಖಾತೆಗಳನ್ನು ಸೇರಿಸಿ, IMAP ಮತ್ತು SMTP, ಉದ್ಯೋಗ ಲಾಗಿನ್‌ಗಳು
 
 # Bluetooth
+
+confirm = ದೃಢೀಕರಿಸಿ
 
 bluetooth = ಬ್ಲೂಟೂತ್
     .desc = ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ನಿರ್ವಹಿಸಿ
@@ -97,6 +120,9 @@ bluetooth = ಬ್ಲೂಟೂತ್
 bluetooth-paired = ಹಿಂದೆ ಸಂಪರ್ಕಗೊಂಡಿರುವ ಸಾಧನಗಳು
     .connect = ಸಂಪರ್ಕಿಸಿ
     .battery = { $percentage }% ಬ್ಯಾಟರಿ
+
+bluetooth-confirm-pin = ಬ್ಲೂಟೂತ್ ಪಿನ್ ದೃಢೀಕರಿಸಿ
+    .description = ದಯವಿಟ್ಟು ಕೆಳಗಿನ ಪಿನ್ { $device } ಮೇಲೆ ಪ್ರದರ್ಶಿತವಾಗಿರುವುದಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುತ್ತದೆ ಎಂದು ದೃಢೀಕರಿಸಿ
 
 bluetooth-available = ಸಮೀಪದ ಸಾಧನಗಳು
 
@@ -175,8 +201,6 @@ control-tint = ನಿಯಂತ್ರಣ ಘಟಕದ ಬಣ್ಣ
 frosted = ವ್ಯವಸ್ಥಾಪನಾ ಇಂಟರ್ಫೇಸ್‌ನಲ್ಲಿ ಉಕ್ಕು ಗಾಜು ಪರಿಣಾಮ
     .desc = ಪ್ಯಾನಲ್, ಡಾಕ್, ಆಪ್ಲೆಟ್‌ಗಳು, ಲಾಂಚರ್ ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್ ಗ್ರಂಥಾಲಯದ ಹಿನ್ನೆಲೆ ಮಸುಕು ಅನ್ವಯಿಸುತ್ತದೆ.
 
-experimental-settings = ಪ್ರಯೋಗಾತ್ಮಕ ಸೆಟಿಂಗ್ಸ್
-
 enable-export = ಈ ಥೀಮ್‌ನ್ನು GNOME ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ ಅನ್ವಯಿಸಿ.
     .desc = ಎಲ್ಲಾ ಸಾಧನಗಳು ಸ್ವಯಂಚಾಲಿತ ಬದಲಾವಣೆಗಳನ್ನು ಬೆಂಬಲಿಸುತ್ತವೆ ಎಂದು ಹೇಳಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಾನ್-COSMIC ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಥೀಮ್ ಬದಲಾವಣೆಯ ನಂತರ ಪುನರಾರಂಭಗೊಳ್ಳಬೇಕಾಗುತ್ತದೆ.
 
@@ -199,6 +223,13 @@ interface-density = ಇಂಟರ್ಫೇಸ್ ಸಾಂದ್ರತೆ
 window-management-appearance = ವಿಂಡೋ ನಿರ್ವಹಣೆ
     .active-hint = ಸಕ್ರಿಯ ವಿಂಡೋ ಸೂಚನೆಯ ಗಾತ್ರ
     .gaps = ಟೈಲ್ಡ್ ವಿಂಡೋ ಸುತ್ತಲಿನ ಖಾಲಿ ಸ್ಥಳಗಳು
+
+### Experimental
+
+experimental-settings = ಪ್ರಯೋಗಾತ್ಮಕ ಸೆಟಿಂಗ್‌ಗಳು
+icons-and-toolkit = ಐಕಾನ್‌ಗಳು ಮತ್ತು ಟೂಲ್‌ಕಿಟ್ ಥೀಮಿಂಗ್
+interface-font = ಸಿಸ್ಟಮ್ ಫಾಂಟ್
+monospace-font = ಮೊನೊಸ್ಪೇಸ್  ಫಾಂಟ್
 
 ## Desktop: Notifications
 
@@ -274,6 +305,7 @@ super-key = ಸೂಪರ್ ಕೀ ಕ್ರಿಯೆ
 window-controls = ವಿಂಡೋ ನಿಯಂತ್ರಣಗಳು
     .maximize = ಮ್ಯಾಕ್ಸಿಮೈಜ್ ಬಟನ್ ತೋರಿಸಿ
     .minimize = ಮಿನಿಮೈಜ್ ಬಟನ್ ತೋರಿಸಿ
+    .active-window-hint = ಸಕ್ರಿಯ ವಿಂಡೋ ಸೂಚನೆಯನ್ನು ತೋರಿಸಿ
 
 focus-navigation = ಫೋಕಸ್ ನ್ಯಾವಿಗೇಶನ್
     .focus-follows-cursor = ಫೋಕಸ್ ಕರ್ಸರ್ ಅನ್ನು ಅನುಸರಿಸುತ್ತದೆ

@@ -23,24 +23,26 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
     let theme = theme::active();
     let spacing = &theme.cosmic().spacing;
 
-    cosmic::widget::column()
-        .push_maybe(description.map(|description| text(description).width(Length::Fill)))
-        .push(
-            model
-                .builder(on_update)
-                .reset_label(reset)
-                .height(Length::Fixed(158.0))
-                .build(
-                    fl!("recent-colors"),
-                    fl!("copy-to-clipboard"),
-                    fl!("copied-to-clipboard"),
-                )
-                .apply(container)
-                .width(Length::Fixed(248.0))
-                .align_x(Alignment::Center)
-                .apply(container)
-                .center_x(Length::Fill),
+    let description = description.map(|description| text(description).width(Length::Fill));
+
+    let color_picker = model
+        .builder(on_update)
+        .reset_label(reset)
+        .height(Length::Fixed(158.0))
+        .build(
+            fl!("recent-colors"),
+            fl!("copy-to-clipboard"),
+            fl!("copied-to-clipboard"),
         )
+        .apply(container)
+        .width(Length::Fixed(248.0))
+        .align_x(Alignment::Center)
+        .apply(container)
+        .center_x(Length::Fill);
+
+    cosmic::widget::column()
+        .push_maybe(description)
+        .push(color_picker)
         .padding(spacing.space_l)
         .align_x(Alignment::Center)
         .spacing(spacing.space_m)
@@ -88,7 +90,7 @@ pub fn search_page_link<Message: 'static>(title: &str) -> button::TextButton<Mes
 pub fn page_title<Message: 'static>(page: &page::Info) -> Element<Message> {
     row::with_capacity(2)
         .push(text::title3(page.title.as_str()))
-        .push(horizontal_space().width(Length::Fill))
+        .push(horizontal_space())
         .into()
 }
 
@@ -108,9 +110,9 @@ pub fn display_container<'a, Message: 'a>(widget: Element<'a, Message>) -> Eleme
         .class(crate::theme::display_container_frame());
 
     row::with_capacity(3)
-        .push(horizontal_space().width(Length::Fill))
+        .push(horizontal_space())
         .push(display)
-        .push(horizontal_space().width(Length::Fill))
+        .push(horizontal_space())
         .padding([0, 0, 8, 0])
         .into()
 }
@@ -188,7 +190,7 @@ pub fn sub_page_header<'a, Message: 'static + Clone>(
 pub fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::Element<'_, Msg> {
     settings::item_row(vec![
         text::body(description).wrapping(Wrapping::Word).into(),
-        horizontal_space().width(Length::Fill).into(),
+        horizontal_space().into(),
         icon::from_name("go-next-symbolic").size(16).icon().into(),
     ])
     .apply(widget::container)
@@ -206,7 +208,7 @@ pub fn go_next_with_item<'a, Msg: Clone + 'static>(
 ) -> cosmic::Element<'_, Msg> {
     settings::item_row(vec![
         text::body(description).wrapping(Wrapping::Word).into(),
-        horizontal_space().width(Length::Fill).into(),
+        horizontal_space().into(),
         widget::row::with_capacity(2)
             .push(item)
             .push(icon::from_name("go-next-symbolic").size(16).icon())

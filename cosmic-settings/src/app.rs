@@ -18,6 +18,7 @@ use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
 use cosmic::app::command::set_theme;
+use cosmic::app::context_drawer::ContextDrawer;
 #[cfg(feature = "single-instance")]
 use cosmic::app::DbusActivationMessage;
 #[cfg(feature = "wayland")]
@@ -67,6 +68,7 @@ pub struct SettingsApp {
     search_id: cosmic::widget::Id,
     search_input: String,
     search_selections: Vec<(page::Entity, section::Entity)>,
+    context_title: Option<String>,
 }
 
 impl SettingsApp {
@@ -79,6 +81,8 @@ impl SettingsApp {
             PageCommands::Bluetooth => self.pages.page_id::<bluetooth::Page>(),
             #[cfg(feature = "page-date")]
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
+            #[cfg(feature = "page-default-apps")]
+            PageCommands::DefaultApps => self.pages.page_id::<system::default_apps::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             #[cfg(feature = "wayland")]
@@ -96,6 +100,7 @@ impl SettingsApp {
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
             #[cfg(feature = "page-power")]
             PageCommands::Power => self.pages.page_id::<power::Page>(),
+            #[cfg(feature = "page-region")]
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             #[cfg(feature = "page-sound")]
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
@@ -103,6 +108,7 @@ impl SettingsApp {
             PageCommands::Time => self.pages.page_id::<time::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
+            #[cfg(feature = "page-users")]
             PageCommands::Users => self.pages.page_id::<system::users::Page>(),
             #[cfg(feature = "page-networking")]
             PageCommands::Vpn => self.pages.page_id::<networking::vpn::Page>(),
@@ -181,6 +187,7 @@ impl cosmic::Application for SettingsApp {
             search_id: cosmic::widget::Id::unique(),
             search_input: String::new(),
             search_selections: Vec::default(),
+            context_title: None,
         };
 
         #[cfg(feature = "page-networking")]
@@ -207,10 +214,7 @@ impl cosmic::Application for SettingsApp {
         }
         .unwrap_or(desktop_id);
 
-        (
-            app,
-            cosmic::command::message(Message::DelayedInit(active_id)),
-        )
+        (app, cosmic::task::message(Message::DelayedInit(active_id)))
     }
 
     fn nav_model(&self) -> Option<&nav_bar::Model> {
@@ -384,6 +388,13 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-default-apps")]
+                crate::pages::Message::DefaultApps(message) => {
+                    if let Some(page) = self.pages.page_mut::<system::default_apps::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 crate::pages::Message::Desktop(message) => {
                     page::update!(self.pages, message, desktop::Page);
                 }
@@ -480,9 +491,23 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-region")]
+                crate::pages::Message::Region(message) => {
+                    if let Some(page) = self.pages.page_mut::<time::region::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 #[cfg(feature = "page-sound")]
                 crate::pages::Message::Sound(message) => {
                     if let Some(page) = self.pages.page_mut::<sound::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-users")]
+                crate::pages::Message::User(message) => {
+                    if let Some(page) = self.pages.page_mut::<system::users::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
@@ -687,7 +712,7 @@ impl cosmic::Application for SettingsApp {
             Message::OpenContextDrawer(page, title) => {
                 self.core.window.show_context = true;
                 self.active_context_page = Some(page);
-                self.set_context_title(title.to_string());
+                self.context_title = Some(title.to_string());
             }
 
             Message::CloseContextDrawer => {
@@ -706,7 +731,7 @@ impl cosmic::Application for SettingsApp {
             // It is necessary to delay init to allow time for the page sender to be initialized
             Message::DelayedInit(active_id) => {
                 if self.page_sender.is_none() {
-                    return cosmic::command::message(Message::DelayedInit(active_id));
+                    return cosmic::task::message(Message::DelayedInit(active_id));
                 }
 
                 return self.activate_page(active_id);
@@ -752,12 +777,20 @@ impl cosmic::Application for SettingsApp {
         panic!("unknown window ID: {id:?}");
     }
 
-    fn context_drawer(&self) -> Option<Element<Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<Message>> {
         if self.core.window.show_context {
             self.active_context_page.and_then(|context_page| {
-                self.pages
-                    .context_drawer(context_page)
-                    .map(|e| e.map(Message::PageMessage))
+                self.pages.context_drawer(context_page).map(|cd| {
+                    let cd = cosmic::app::context_drawer::context_drawer(
+                        cd.map(Message::PageMessage),
+                        Message::CloseContextDrawer,
+                    );
+                    if let Some(title) = self.context_title.as_ref() {
+                        cd.title(title)
+                    } else {
+                        cd
+                    }
+                })
             })
         } else {
             None
@@ -768,16 +801,6 @@ impl cosmic::Application for SettingsApp {
         self.pages
             .dialog(self.active_page)
             .map(|e| e.map(Message::PageMessage))
-    }
-
-    fn on_close_requested(&self, id: window::Id) -> Option<Self::Message> {
-        if id == self.core.main_window_id().unwrap() {
-            std::thread::spawn(|| {
-                std::thread::sleep(tokio::time::Duration::from_millis(100));
-                std::process::exit(0);
-            });
-        }
-        None
     }
 }
 
@@ -822,7 +845,7 @@ impl SettingsApp {
         Task::batch(vec![
             leave_task,
             page_task,
-            cosmic::command::future(async { Message::SetWindowTitle }),
+            cosmic::task::future(async { Message::SetWindowTitle }),
         ])
     }
 
@@ -917,7 +940,7 @@ impl SettingsApp {
         }
 
         let view = self
-            .page_container(settings::view_column(sections_column).padding(0))
+            .page_container(settings::view_column(sections_column))
             .apply(scrollable)
             .height(Length::Fill)
             .apply(|w| id_container(w, self.id()));
@@ -995,7 +1018,7 @@ impl SettingsApp {
         if tasks.is_empty() {
             Task::none()
         } else {
-            cosmic::command::batch(tasks)
+            cosmic::task::batch(tasks)
                 .map(Message::PageMessage)
                 .map(Into::into)
         }
@@ -1035,7 +1058,7 @@ impl SettingsApp {
             }
         }
 
-        self.page_container(settings::view_column(sections).padding(0))
+        self.page_container(settings::view_column(sections))
             .apply(scrollable)
             .into()
     }

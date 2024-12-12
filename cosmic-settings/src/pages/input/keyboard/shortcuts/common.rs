@@ -166,7 +166,8 @@ impl Model {
                         let secondary_action = button::standard(fl!("cancel"))
                             .on_press(ShortcutMessage::CancelReplace);
 
-                        let dialog = widget::dialog(fl!("replace-shortcut-dialog"))
+                        let dialog = widget::dialog()
+                            .title(fl!("replace-shortcut-dialog"))
                             .icon(icon::from_name("dialog-warning").size(64))
                             .body(fl!(
                                 "replace-shortcut-dialog",
@@ -392,7 +393,7 @@ impl Model {
                 self.shortcut_context = Some(id);
                 self.replace_dialog = None;
 
-                let mut tasks = vec![cosmic::command::message(
+                let mut tasks = vec![cosmic::task::message(
                     crate::app::Message::OpenContextDrawer(self.entity, description.into()),
                 )];
 
@@ -521,7 +522,7 @@ fn context_drawer(
                 .into();
 
             let flex_control =
-                settings::flex_item_row(vec![input, delete_button]).align_items(Alignment::Center);
+                settings::item_row(vec![input, delete_button]).align_y(Alignment::Center);
 
             section.add(flex_control)
         },

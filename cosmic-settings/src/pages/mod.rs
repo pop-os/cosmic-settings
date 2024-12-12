@@ -29,6 +29,8 @@ pub enum Message {
     CustomShortcuts(input::keyboard::shortcuts::custom::Message),
     #[cfg(feature = "page-date")]
     DateAndTime(time::date::Message),
+    #[cfg(feature = "page-default-apps")]
+    DefaultApps(system::default_apps::Message),
     Desktop(desktop::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
     #[cfg(feature = "page-workspaces")]
@@ -63,8 +65,12 @@ pub enum Message {
     PanelApplet(desktop::panel::applets_inner::Message),
     #[cfg(feature = "page-power")]
     Power(power::Message),
+    #[cfg(feature = "page-region")]
+    Region(time::region::Message),
     #[cfg(feature = "page-sound")]
     Sound(sound::Message),
+    #[cfg(feature = "page-users")]
+    User(system::users::Message),
     #[cfg(feature = "page-input")]
     SystemShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     #[cfg(feature = "page-input")]

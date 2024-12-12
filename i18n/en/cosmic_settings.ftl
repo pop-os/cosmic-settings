@@ -115,7 +115,6 @@ bluetooth = Bluetooth
     .disconnect = Disconnect
     .forget = Forget
     .dbus-error = An error has occurred while interacting with DBus: { $why }
-    .show-device-without-name = Show devices without name
 
 bluetooth-paired = Previously Connected Devices
     .connect = Connect
@@ -384,6 +383,12 @@ orientation = Orientation
     .rotate-180 = Rotate 180
     .rotate-270 = Rotate 270
 
+vrr = Variable refresh rate
+    .enabled = Enabled
+    .force = Always
+    .auto = Automatic
+    .disabled = Disabled
+
 scheduling = Scheduling
     .manual = Manual schedule
 
@@ -632,6 +637,7 @@ system-shortcut = System
     .volume-raise = Increase audio output volume
     .web-browser = Opens a web browser
     .window-switcher = Switch between open windows
+    .window-switcher-previous = Switch between open windows reversed
     .workspace-overview = Open the workspace overview
 
 window-tiling = Window tiling
@@ -714,6 +720,22 @@ time-format = Date & Time Format
 time-region = Region & Language
     .desc = Format dates, times, and numbers based on your region
 
+formatting = Formatting
+    .dates = Dates
+    .time = Time
+    .date-and-time = Date & Time
+    .numbers = Numbers
+    .measurement = Measurement
+    .paper = Paper
+
+preferred-languages = Preferred Languages
+    .desc = The order of languages determines which language is used for the translation of the desktop. Changes take effect on next login.
+
+add-language = Add language
+    .context = Add Language
+install-additional-languages = Install additional languages
+region = Region
+
 ## System
 
 system = System & Accounts
@@ -751,3 +773,29 @@ firmware = Firmware
 
 users = Users
     .desc = Authentication and user accounts.
+    .admin = Admin
+    .standard = Standard
+    .profile-add = Choose profile image
+
+administrator = Administrator
+    .desc = Administrators can change settings for all users, add and remove other users.
+
+add-user = Add user
+remove-user = Remove user
+full-name = Full name
+username = Username
+password = Password
+
+## System: Default Applications
+
+default-apps = Default Applications
+    .desc = Default web browser, mail client, file browser, and other applications.
+    .web-browser = Web browser
+    .file-manager = File manager
+    .mail-client = Mail client
+    .music = Music
+    .video = Video
+    .photos = Photos
+    .calendar = Calendar
+    .terminal = Terminal
+    .other-associations = Other Associations

@@ -308,7 +308,7 @@ impl Page {
 
                 let mut command = None;
                 if let Some(&node_id) = self.source_ids.get(self.active_source.unwrap_or(0)) {
-                    command = Some(cosmic::command::future(async move {
+                    command = Some(cosmic::task::future(async move {
                         tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SourceVolumeApply(node_id))
                     }));
@@ -338,7 +338,7 @@ impl Page {
 
                 let mut command = None;
                 if let Some(&node_id) = self.sink_ids.get(self.active_sink.unwrap_or(0)) {
-                    command = Some(cosmic::command::future(async move {
+                    command = Some(cosmic::task::future(async move {
                         tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SinkVolumeApply(node_id))
                     }));
@@ -542,7 +542,7 @@ impl Page {
                                 .insert(device_id.clone(), Some(profile.clone()));
 
                             self.changing_sink_profile = true;
-                            return cosmic::command::future(async move {
+                            return cosmic::task::future(async move {
                                 pactl_set_card_profile(name, profile).await;
                                 Message::SinkProfileSelect(device_id)
                             })
@@ -574,7 +574,7 @@ impl Page {
                                 .insert(device_id.clone(), Some(profile.clone()));
 
                             self.changing_source_profile = true;
-                            return cosmic::command::future(async move {
+                            return cosmic::task::future(async move {
                                 pactl_set_card_profile(name, profile).await;
                                 Message::SourceProfileSelect(device_id)
                             })

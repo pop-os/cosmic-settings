@@ -158,7 +158,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("auth-dialog"))
+                widget::dialog()
+                    .title(fl!("auth-dialog"))
                     .icon(icon::from_name("preferences-wireless-symbolic").size(64))
                     .body(fl!("auth-dialog", "wifi-description"))
                     .control(password)
@@ -175,7 +176,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
-                widget::dialog(fl!("forget-dialog"))
+                widget::dialog()
+                    .title(fl!("forget-dialog"))
                     .icon(icon::from_name("dialog-information").size(64))
                     .body(fl!("forget-dialog", "description"))
                     .primary_action(primary_action)
@@ -674,7 +676,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                         let widget = widget::settings::item_row(vec![
                             identifier.into(),
-                            widget::horizontal_space().width(Length::Fill).into(),
+                            widget::horizontal_space().into(),
                             controls.into(),
                         ]);
 
@@ -774,7 +776,7 @@ fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
         Ok::<_, zbus::Error>(settings)
     };
 
-    cosmic::command::future(async move {
+    cosmic::task::future(async move {
         settings
             .await
             .context("failed to get connection settings")
@@ -787,7 +789,7 @@ fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
 }
 
 pub fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
-    cosmic::command::future(async move {
+    cosmic::task::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
             Err(why) => Message::Error(why.to_string()),
@@ -796,7 +798,7 @@ pub fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
 }
 
 pub fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
-    cosmic::command::future(async move {
+    cosmic::task::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::Wifi);
         match network_manager::devices::list(&conn, filter).await {

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+
+<policyconfig>
+  <vendor>System76</vendor>
+  <vendor_url>https://system76.com/</vendor_url>
+
+  <action id="com.system76.CosmicSettings.Users.Admin">
+    <description>Manage user accounts</description>
+    <message>Authentication is required to change user data</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.imply">org.freedesktop.accounts.user-administration org.freedesktop.accounts.change-own-user-data org.freedesktop.accounts.change-own-password org.freedesktop.realmd.configure-realm org.freedesktop.realmd.login-policy org.freedesktop.MalcontentControl.administration com.endlessm.ParentalControls.AppFilter.ReadAny com.endlessm.ParentalControls.AppFilter.ChangeAny com.endlessm.ParentalControls.AppFilter.ReadOwn com.endlessm.ParentalControls.AppFilter.ChangeOwn</annotate>
+  </action>
+
+</policyconfig>
