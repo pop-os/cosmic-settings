@@ -115,7 +115,6 @@ bluetooth = Bluetooth
     .disconnect = Desconectar
     .forget = Esquecer
     .dbus-error = Ocorreu um erro ao interagir com o DBus: { $why }
-    .show-device-without-name = Mostrar dispositivo sem nome
 
 bluetooth-paired = Dispositivos conectados anteriormente
     .connect = Conectar
@@ -383,6 +382,12 @@ orientation = Orientação
     .rotate-90 = Rotacionar 90°
     .rotate-180 = Rotacionar 180°
     .rotate-270 = Rotacionar 270°
+
+vrr = Taxa de atualização variável
+    .enabled = Habilitado
+    .force = Sempre
+    .auto = Automático
+    .disabled = Desabilitado
 
 scheduling = Agendamento
     .manual = Agendamento manual
@@ -693,7 +698,7 @@ time = Hora e Idioma
     .desc = N/D
 
 time-date = Data e Hora
-    .desc = Fuso horário, definições automáticas de relógio e algumas formatação de hora.
+    .desc = Fuso horário, definições automáticas de relógio e algumas formatações de hora.
     .auto = Definir automaticamente
     .auto-ntp = A data e a hora serão atualizadas automaticamente quando o fuso horário for definido.
 
@@ -713,6 +718,22 @@ time-format = Formato de Data e Hora
 
 time-region = Região e Idioma
     .desc = Formatar datas, horas e números com base na sua região
+
+formatting = Formatação
+    .dates = Datas
+    .time = Horas
+    .date-and-time = Data e Hora
+    .numbers = Números
+    .measurement = Medidas
+    .paper = Papel
+
+preferred-languages = Idiomas preferidos
+    .desc = A ordem dos idiomas determina qual idioma será usado para a tradução do desktop. As alterações entram em vigor no próximo login.
+
+add-language = Adicionar idioma
+    .context = Adicionar idioma
+install-additional-languages = Instalar idiomas adicionais
+region = Região
 
 ## System
 
@@ -751,3 +772,29 @@ firmware = Firmware
 
 users = Usuários
     .desc = Autenticação e contas de usuário.
+    .admin = Administrador
+    .standard = Padrão
+    .profile-add = Escolher uma imagem de perfil
+
+administrator = Administrador
+    .desc = Administradores podem alterar configurações para todos os usuários, além de adicionar e remover outros usuários.
+
+add-user = Adicionar usuário
+remove-user = Remover usuário
+full-name = Nome completo
+username = Usuário
+password = Senha
+
+## System: Default Applications
+
+default-apps = Aplicativos Padrão
+    .desc = Navegador web, cliente de email, gestor de arquivos e outros aplicativos padrão.
+    .web-browser = Navegador web
+    .file-manager = Gestor de arquivos
+    .mail-client = Cliente de email
+    .music = Música
+    .video = Vídeo
+    .photos = Fotos
+    .calendar = Calendário
+    .terminal = Terminal
+    .other-associations = Outras associações
