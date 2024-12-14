@@ -653,6 +653,7 @@ system-shortcut = System
     .volume-raise = Zwiększ głośność wyjścia dźwięku
     .web-browser = Otwórz przeglądarkę
     .window-switcher = Przełącz między otwartymi oknami
+    .window-switcher-previous = Przełącz na poprzednie otwarte okno
     .workspace-overview = Otwórz podgląd obszaru roboczego
 
 window-tiling = Kafelkowanie okien
@@ -787,6 +788,18 @@ firmware = Mikrooprogramowanie
 
 users = Użytkownicy
     .desc = Uwierzytelnianie, logowanie i ekran blokady.
+    .admin = Administratora
+    .standard = Standardowe
+    .profile-add = Wybierz obraz profilowy
+
+administrator = Administrator
+    .desc = Administratorzy mogą zmieniać ustawienia wszystkich użytkowników, albo ich usuwać.
+
+add-user = Dodaj użytkownika
+remove-user = Usuń użytkownika
+full-name = Pełna nazwa
+username = Użytkownik
+password = Hasło
 
 ## System: Default Applications
 
