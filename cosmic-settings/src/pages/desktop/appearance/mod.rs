@@ -1603,7 +1603,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(dark_mode_illustration.clone())
-                                        .width(Length::Fill)
+                                        .width(Length::Fixed(191.0))
                                         .height(Length::Fixed(100.0))
                                 )
                                 .class(button::ButtonClass::Image)
@@ -1612,13 +1612,13 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .on_press(Message::DarkMode(true)),
                                 text::body(&descriptions[dark])
                             ]
-                            .spacing(space_xxs)
+                            .spacing(8)
                             .width(Length::FillPortion(1))
                             .align_x(Alignment::Center),
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(light_mode_illustration.clone(),)
-                                        .width(Length::Fill)
+                                        .width(Length::Fixed(191.0))
                                         .height(Length::Fixed(100.0))
                                 )
                                 .class(button::ButtonClass::Image)
@@ -1627,13 +1627,13 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .on_press(Message::DarkMode(false)),
                                 text::body(&descriptions[light])
                             ]
-                            .spacing(space_xxs)
+                            .spacing(8)
                             .width(Length::FillPortion(1))
                             .align_x(Alignment::Center)
                         ]
-                        .spacing(48)
-                        .align_y(Alignment::Center)
-                        .width(Length::Fixed(424.0)),
+                        .spacing(8)
+                        .width(Length::Fixed(478.0))
+                        .align_y(Alignment::Center),
                     )
                     .center_x(Length::Fill),
                 )
@@ -1836,6 +1836,21 @@ pub fn style() -> Section<crate::pages::Message> {
     let dark_square_style = from_name("illustration-appearance-dark-style-square").handle();
     let light_square_style = from_name("illustration-appearance-light-style-square").handle();
 
+    fn style_container() -> cosmic::theme::Container<'static> {
+        cosmic::theme::Container::custom(|theme| {
+            let mut background = theme.cosmic().palette.neutral_9;
+            background.alpha = 0.1;
+            container::Style {
+                background: Some(cosmic::iced::Background::Color(background.into())),
+                border: cosmic::iced::Border {
+                    radius: theme.cosmic().radius_s().into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }
+        })
+    }
+
     Section::default()
         .title(fl!("style"))
         .descriptions(descriptions)
@@ -1862,8 +1877,11 @@ pub fn style() -> Section<crate::pages::Message> {
                                 )
                                 .selected(matches!(page.roundness, Roundness::Round))
                                 .class(button::ButtonClass::Image)
-                                .padding(8)
-                                .on_press(Message::Roundness(Roundness::Round)),
+                                .padding(0)
+                                .on_press(Message::Roundness(Roundness::Round))
+                                .apply(container)
+                                .width(Length::Fixed(191.0))
+                                .class(style_container()),
                                 text::body(&descriptions[round])
                             ]
                             .spacing(8)
@@ -1884,8 +1902,11 @@ pub fn style() -> Section<crate::pages::Message> {
                                 )
                                 .selected(matches!(page.roundness, Roundness::SlightlyRound))
                                 .class(button::ButtonClass::Image)
-                                .padding(8)
-                                .on_press(Message::Roundness(Roundness::SlightlyRound)),
+                                .padding(0)
+                                .on_press(Message::Roundness(Roundness::SlightlyRound))
+                                .apply(container)
+                                .width(Length::Fixed(191.0))
+                                .class(style_container()),
                                 text::body(&descriptions[slightly_round])
                             ]
                             .spacing(8)
@@ -1907,16 +1928,18 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .width(Length::FillPortion(1))
                                 .selected(matches!(page.roundness, Roundness::Square))
                                 .class(button::ButtonClass::Image)
-                                .padding(8)
-                                .on_press(Message::Roundness(Roundness::Square)),
+                                .padding(0)
+                                .on_press(Message::Roundness(Roundness::Square))
+                                .apply(container)
+                                .width(Length::Fixed(191.0))
+                                .class(style_container()),
                                 text::body(&descriptions[square])
                             ]
                             .spacing(8)
                             .align_x(Alignment::Center)
                             .width(Length::FillPortion(1))
                         ]
-                        .spacing(12)
-                        .width(Length::Fixed(628.0))
+                        .spacing(8)
                         .align_y(Alignment::Center),
                     )
                     .center_x(Length::Fill),
