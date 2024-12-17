@@ -600,7 +600,7 @@ move-windows = Bog Fuinneoga
         *[down] síos
         [left] ar chlé
         [right] ar dheis
-        [up] up
+        [up] suas
     }
     .workspace = Bog fuinneog amháin spás oibre { $direction ->
         *[below] thíos
