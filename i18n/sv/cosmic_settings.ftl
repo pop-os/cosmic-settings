@@ -552,6 +552,12 @@ power-mode = Strömalternativ
     .performance-desc = Hög prestanda och strömförbrukning.
     .no-backend = Basbearbetning ej funnen. Installera system76-power eller power-profiles-daemon.
 
+power-saving = Energisparalternativ
+    .turn-off-screen-after = Stäng av skärmen efter
+    .auto-suspend = Automatisk suspendering
+    .auto-suspend-ac = Automatisk suspendering vid inkoppling
+    .auto-suspend-battery = Automatisk suspendering på batteridrift
+
 ## Input
 
 acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
