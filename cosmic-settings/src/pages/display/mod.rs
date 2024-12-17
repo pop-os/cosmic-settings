@@ -1095,7 +1095,6 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                         .width(Length::Shrink)
                         .direction(Direction::Horizontal(Scrollbar::new()))
                         .apply(container)
-                        .padding([48, 32, 32, 32])
                         .center_x(Length::Fill)
                 })
                 .apply(container)
