@@ -1,4 +1,4 @@
-app = COSMIC Instellingen
+app = COSMIC-instellingen
 
 dbus-connection-error = Kon geen verbinding maken met DBus
 ok = Oké
