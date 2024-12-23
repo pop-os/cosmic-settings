@@ -27,8 +27,8 @@ connecting = Verbinden…
 disconnect = Verbinden verbreken
 forget = Vergeten
 known-networks = Bekende netwerken
-network-and-wireless = Netwerk en wifi
-        <#-- may also be "Netwerken en Draadloze Verbindingen" -->
+network-and-wireless = Netwerk en draadloze verbindingen
+        <#-- may also be "Netwerk en Wifi" -->
 no-networks = Er zijn geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
