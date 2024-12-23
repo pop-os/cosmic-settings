@@ -22,7 +22,7 @@ airplane-on = Vliegtuigmodus is ingeschakeld.
 cable-unplugged = Kabel losgekoppeld
 connect = Verbinden
 connected = Verbonden
-connecting = Verbinden…
+connecting = Verbinding maken…
 disconnect = Verbinden verbreken
 forget = Vergeten
 known-networks = Bekende netwerken
@@ -45,7 +45,7 @@ forget-dialog = Wifi-netwerk vergeten?
 
 network-device-state =
     .activated = Verbonden
-    .config = Verbinden…
+    .config = Verbinding maken…
     .deactivating = Verbinding verbreken…
     .disconnected = Verbinding is verbroken
     .failed = Verbinding mislukt
@@ -74,60 +74,61 @@ vpn-error = VPN-fout
     .connect = VPN-verbinding mislukt
     .connection-editor =  Verbindingseditor mislukt
     .connection-settings = Het ophalen van instellingen voor actieve verbindingen is mistlukt
-    .updating-state = Failed to update network manager state
-    .wireguard-config-path = Invalid file path for WireGuard config
-    .wireguard-config-path-desc = Chosen file must be on a local file system.
-    .wireguard-device = Failed to create WireGuard device
-    .with-password = Failed to set VPN { $field ->
-        *[username] username
-        [password] password
-        [password-flags] password-flags
-    } with nmcli
+    .updating-state = Kan status van netwerkbeheerder niet bijwerken
+    .wireguard-config-path = Ongeldig bestandspad voor de WireGuard-configuratie
+    .wireguard-config-path-desc = Het gekozen bestand moet op een lokaal bestandssysteem staan.
+    .wireguard-device = Kon WireGuard-apparaat niet aanmaken
+    .with-password = Kon { $field ->
+        *[username] de VPN-gebruikersnaam
+        [password] het VPN-wachtwoord
+        [password-flags] de VPN-wachtwoordvlaggen
+    } niet met nmcli toevoegen
 
-wired = Wired
-    .adapter = Wired adapter { $id }
-    .connections = Wired Connections
-    .devices = Wired Devices
-    .remove = Remove connection profile
+wired = Bedraad
+    .adapter = Bedrade adapter { $id }
+    .connections = Bedrade verbindingen
+    .devices = Bedrade apparaten
+    .remove = Verbindingsprofielen verwijderen
 
-wifi = Wi-Fi
-    .adapter = Wi-Fi adapter { $id }
-    .forget = Forget this network
+wifi = Wifi
+    .adapter = Wifi-adapter { $id }
+    .forget = Dit netwerk vergeten
 
-wireguard-dialog = Add WireGuard device
-    .description = Choose a device name for the WireGuard config.
+wireguard-dialog = WireGuard-apparaat toevoegen
+    .description = Kies een apparaatnaam voor de WireGuard-configuratie.
 
 ## Networking: Online Accounts
 
-online-accounts = Online Accounts
-    .desc = Add accounts, IMAP and SMTP, enterprise logins
+online-accounts = Online accounts
+    .desc = Accounts toevoegen, IMAP en SMTP, bedrijfslogins
 
 # Bluetooth
 
-confirm = Confirm
+confirm = Bevestigen
 
 bluetooth = Bluetooth
-    .desc = Manage Bluetooth devices
-    .status = This system is visible as { $aliases } while Bluetooth settings are open.
-    .connected = Connected
-    .connecting = Connecting
-    .disconnecting = Disconnecting
-    .connect = Connect
-    .disconnect = Disconnect
-    .forget = Forget
-    .dbus-error = An error has occurred while interacting with DBus: { $why }
+    .desc = Bluetooth-apparaten bewerken
+    .status = Dit systeem is zichtbaar als { $aliases } zolang de Bluetooth-instellingen open staan.
+    .connected = Verbonden
+    .connecting = Verbinding maken…
+    .disconnecting = Verbinding verbreken…
+    .connect = Verbinden
+    .disconnect = Verbinding verbreken
+    .forget = Vergeten
+    .dbus-error = Er is een fout opgetreden tijdens de interactie met DBus: { $why }
 
-bluetooth-paired = Previously Connected Devices
-    .connect = Connect
-    .battery = { $percentage }% battery
+bluetooth-paired = Eerder verbonden apparaten
+    .connect = Verbinden
+    .battery = { $percentage }% batterij
 
-bluetooth-confirm-pin = Confirm Bluetooth PIN
-    .description = Please confirm that the following PIN matches the one displayed on { $device }
+bluetooth-confirm-pin = Bluetooth-pincode bevestigen
+    .description = Controleer of de volgende pincode overeenkomt met de pincode die op { $device } wordt weergegeven
 
-bluetooth-available = Nearby Devices
+bluetooth-available = Nabije bluetooth-apparaten
 
-bluetooth-adapters = Bluetooth Adapters
+bluetooth-adapters = Bluetooth-adapters
 
+<#-- I translated to here, shall continue later -->
 ## Desktop
 
 desktop = Desktop
