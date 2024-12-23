@@ -61,19 +61,19 @@ network-device-state =
 
 remove-connection-dialog = Verbindingsprofiel verwijderen?
     .vpn-description =  Om dit netwerk in de toekomst te kunnen gebruiken, moet u opnieuw een wachtwoord invoeren.
-    .wired-description = You'll need to recreate this profile to use it in the future.
+    .wired-description = U moet dit profiel opnieuw aanmaken om het in de toekomst te kunnen gebruiken.
 
 vpn = VPN
-    .connections = VPN Connections
-    .error = Failed to add VPN config
-    .remove = Remove connection profile
-    .select-file = Select a VPN configuration file
+    .connections = VPN-verbindingen
+    .error = Kon geen VPN-configuratie aanmaken
+    .remove = Verbindingsprofiel verwijderen
+    .select-file = Selecteer VPN-configuratiebestand
 
-vpn-error = VPN Error
-    .config = Failed to add VPN config
-    .connect = Failed to connect to VPN
-    .connection-editor = Connection editor failed
-    .connection-settings = Failed to get settings for active connections
+vpn-error = VPN-fout
+    .config = Kon geen VPN-configuratie aanmaken
+    .connect = VPN-verbinding mislukt
+    .connection-editor =  Verbindingseditor mislukt
+    .connection-settings = Het ophalen van instellingen voor actieve verbindingen is mistlukt
     .updating-state = Failed to update network manager state
     .wireguard-config-path = Invalid file path for WireGuard config
     .wireguard-config-path-desc = Chosen file must be on a local file system.
