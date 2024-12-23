@@ -1,8 +1,7 @@
 app = COSMIC Instellingen
 
 dbus-connection-error = Kon geen verbinding maken met DBus
-ok = OK 
-        <#-- Might also be "Oké" -->
+ok = Oké
 unknown = Onbekend
 
 number = { $number }
@@ -11,7 +10,7 @@ number = { $number }
 
 connections-and-profiles = { $variant ->
     [wired] Bekabelde verbindingen
-    [wifi] wifi
+    [wifi] Wifi
     [vpn] VPN
     *[other] Onbekende verbindingen
 } en verbindingsprofielen.
@@ -28,11 +27,11 @@ disconnect = Verbinden verbreken
 forget = Vergeten
 known-networks = Bekende netwerken
 network-and-wireless = Netwerk en draadloze verbindingen
-        <#-- may also be "Netwerk en Wifi" -->
+        <#-- May also be "Netwerk en Wifi" -->
 no-networks = Er zijn geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
-remove = Verwijder
+remove = Verwijderen
 settings = Instellingen
 username = Gebruikersnaam
 visible-networks = Zichtbare netwerken
@@ -41,27 +40,27 @@ auth-dialog = Authenticatie Vereist
     .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
     .wifi-description = Voer het wachtwoord of de coderingssleutel in. U kunt ook verbinding maken door op de “WPS”-knop op de router te drukken.
 
-forget-dialog = Forget this Wi-Fi network?
-    .description = You'll need to enter a password again to use this Wi-Fi network in the future.
+forget-dialog = Wifi-netwerk vergeten?
+    .description = U moet opnieuw een wachtwoord invoeren om dit wifi-netwerk in de toekomst te gebruiken.
 
 network-device-state =
-    .activated = Connected
-    .config = Connecting
-    .deactivating = Disconnecting
-    .disconnected = Disconnected
-    .failed = Failed to connect
-    .ip-check = Checking connection
-    .ip-config = Requesting IP and routing info
-    .need-auth = Needs authentication
-    .prepare = Preparing to connect
-    .secondaries = Waiting for secondary connection
-    .unavailable = Unavailable
-    .unknown = Unknown state
-    .unmanaged = Unmanaged
-    .unplugged = Cable unplugged
+    .activated = Verbonden
+    .config = Verbinden…
+    .deactivating = Verbinding verbreken…
+    .disconnected = Verbinding is verbroken
+    .failed = Verbinding mislukt
+    .ip-check = Verbinding wordt gecontroleerd…
+    .ip-config =  IP- en routeringsinformatie wordt opgevraagd…
+    .need-auth = Vereist authenticatie
+    .prepare = Verbinding voorbereiden…
+    .secondaries = Wachten op secundaire verbinding…
+    .unavailable = Niet beschikbaar
+    .unknown = Status onbekend
+    .unmanaged = Onbeheerd
+    .unplugged = Kabel losgekoppeld
 
-remove-connection-dialog = Remove Connection Profile?
-    .vpn-description = You'll need to enter a password again to use this network in the future.
+remove-connection-dialog = Verbindingsprofiel verwijderen?
+    .vpn-description =  Om dit netwerk in de toekomst te kunnen gebruiken, moet u opnieuw een wachtwoord invoeren.
     .wired-description = You'll need to recreate this profile to use it in the future.
 
 vpn = VPN
