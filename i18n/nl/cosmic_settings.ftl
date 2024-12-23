@@ -37,9 +37,9 @@ settings = Instellingen
 username = Gebruikersnaam
 visible-networks = Zichtbare netwerken
 
-auth-dialog = Authentication Required
-    .vpn-description = Enter the username and password required by the VPN service.
-    .wifi-description = Enter the password or encryption key. You can also connect by pressing the “WPS” button on the router.
+auth-dialog = Authenticatie Vereist
+    .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
+    .wifi-description = Voer het wachtwoord of de coderingssleutel in. U kunt ook verbinding maken door op de “WPS”-knop op de router te drukken.
 
 forget-dialog = Forget this Wi-Fi network?
     .description = You'll need to enter a password again to use this Wi-Fi network in the future.
