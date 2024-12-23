@@ -1,7 +1,8 @@
 app = COSMIC Instellingen
 
 dbus-connection-error = Kon geen verbinding maken met DBus
-ok = OK // in windows you see "oké" being used as well
+ok = OK 
+        <#-- Might also be "Oké" -->
 unknown = Onbekend
 
 number = { $number }
@@ -26,7 +27,8 @@ connecting = Verbinden…
 disconnect = Verbinden verbreken
 forget = Vergeten
 known-networks = Bekende netwerken
-network-and-wireless = Netwerk en wifi    // may also be "Netwerken en Draadloze Verbindingen"
+network-and-wireless = Netwerk en wifi
+        <#-- may also be "Netwerken en Draadloze Verbindingen" -->
 no-networks = Er zijn geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
