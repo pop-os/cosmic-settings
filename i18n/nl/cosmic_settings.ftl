@@ -1,7 +1,7 @@
 app = COSMIC Instellingen
 
 dbus-connection-error = Kon geen verbinding maken met DBus
-ok = OK
+ok = OK // in windows you see "oké" being used as well
 unknown = Onbekend
 
 number = { $number }
@@ -26,14 +26,14 @@ connecting = Verbinden…
 disconnect = Verbinden verbreken
 forget = Vergeten
 known-networks = Bekende netwerken
-network-and-wireless = Network & Wireless
-no-networks = No networks have been found.
-no-vpn = No VPN connections available.
-password = Password
-remove = Remove
-settings = Settings
-username = Username
-visible-networks = Visible Networks
+network-and-wireless = Netwerk en wifi    // may also be "Netwerken en Draadloze Verbindingen"
+no-networks = Er zijn geen netwerken gevonden.
+no-vpn = Geen VPN-verbindingen beschikbaar.
+password = Wachtwoord
+remove = Verwijder
+settings = Instellingen
+username = Gebruikersnaam
+visible-networks = Zichtbare netwerken
 
 auth-dialog = Authentication Required
     .vpn-description = Enter the username and password required by the VPN service.
