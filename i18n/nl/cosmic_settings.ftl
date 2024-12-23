@@ -1,31 +1,31 @@
-app = COSMIC Settings
+app = COSMIC Instellingen
 
-dbus-connection-error = Failed to connect to DBus
+dbus-connection-error = Kon geen verbinding maken met DBus
 ok = OK
-unknown = Unknown
+unknown = Onbekend
 
 number = { $number }
 
 ## Network & Wireless
 
 connections-and-profiles = { $variant ->
-    [wired] Wired
-    [wifi] Wi-Fi
+    [wired] Bekabelde verbindingen
+    [wifi] wifi
     [vpn] VPN
-    *[other] Unknown
-} connections and connection profiles.
+    *[other] Onbekende verbindingen
+} en verbindingsprofielen.
 
-add-network = Add network
-    .profile = Add profile
-add-vpn = Add VPN
-airplane-on = Airplane mode is on.
-cable-unplugged = Cable unplugged
-connect = Connect
-connected = Connected
-connecting = Connecting…
-disconnect = Disconnect
-forget = Forget
-known-networks = Known Networks
+add-network = Netwerk toevoegen
+    .profile = Profiel toevoegen
+add-vpn = VPN toevoegen
+airplane-on = Vliegtuigmodus is ingeschakeld.
+cable-unplugged = Kabel losgekoppeld
+connect = Verbinden
+connected = Verbonden
+connecting = Verbinden…
+disconnect = Verbinden verbreken
+forget = Vergeten
+known-networks = Bekende netwerken
 network-and-wireless = Network & Wireless
 no-networks = No networks have been found.
 no-vpn = No VPN connections available.
