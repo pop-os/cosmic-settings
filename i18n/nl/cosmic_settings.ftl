@@ -134,63 +134,61 @@ desktop = Bureaublad
 
 ## Desktop: Wallpaper
 
-wallpaper = Achtergrondafbeelding
+wallpaper = Schermachtergrond
     .change = Wijzig alle afbeeldingen
         <#-- Wijzig alle afbeeldingen: Change every image -->
-    .desc = Achtergrondafbeeldingen, kleuren en diavoorstellingsopties.
+    .desc = Opties voor schermachtergrond, kleuren en diavoorstellingen
     .fit = Schermachtergrond aanpassen
-    .folder-dialog = Choose wallpaper folder
-    .image-dialog = Choose wallpaper image
-    .plural = Wallpapers
-    .same = Same wallpaper on all displays
-    .slide = Slideshow
+    .folder-dialog = Selecteer map met achtergronden
+    .image-dialog = Selecteer schermachtergrond
+    .plural = Achtergronden
+    .same = Dezelfde achtergrond op alle schermen
+    .slide = Diavoorstelling
 
-add-color = Add color
-add-image = Add image
-all-displays = All Displays
-colors = Colors
-dialog-add = Add
-fill = Fill
-fit-to-screen = Fit to Screen
-open-new-folder = Open new folder
-recent-folders = Recent Folders
+add-color = Kleur toevoegen
+add-image = Afbeelding toevoegen
+all-displays = Alle beeldschermen
+colors = Kleuren
+dialog-add = Toevoegen
+fill = Vullen
+fit-to-screen = Aan het scherm passend maken
+open-new-folder = Nieuwe map openen
+recent-folders = Recente mappen
 
-x-minutes = { $number } minutes
-x-hours = { $number ->
-    [1] 1 hour
-    *[other] { $number } hours
-}
-never = Never
+x-minutes = { $number } minuten
+x-hours = { $number } uur
+
+never = Nooit
 
 ## Desktop: Appearance
 
-appearance = Appearance
-    .desc = Accent colors and theming.
+appearance = Uiterlijk
+    .desc = Kleuren en thema's.
 
-accent-color = Accent color
-app-background = Application or window background
-auto = Auto
-close = Close
-color-picker = Color Picker
-copied-to-clipboard = Copied to clipboard
-copy-to-clipboard = Copy to clipboard
-dark = Dark
-export = Export
+accent-color = Accentkleur
+app-background = Achtergronden van applicaties of vensters
+auto = Automatisch
+close = Sluiten
+color-picker = Kleurkiezer
+copied-to-clipboard = Naar klembord gekopieerd
+copy-to-clipboard = Naar klembord kopiëren
+dark = Donker
+export = Exporteren
 hex = Hex
-import = Import
-light = Light
-mode-and-colors = Mode and Colors
-recent-colors = Recent colors
-reset-to-default = Reset to default
+import = Importeren
+light = Licht
+mode-and-colors = Modus en Kleuren
+recent-colors = Recente Kleuren
+reset-to-default = Naar standaardinstellingen terugzetten
 rgb = RGB
-window-hint-accent = Active window hint color
-window-hint-accent-toggle = Use theme accent color as active window hint
+window-hint-accent = Actief venster accentkleur
+window-hint-accent-toggle = Gebruik de accentkleur van het thema als actief venster accentkleur
 
-auto-switch = Automatically switch between Light and Dark modes
-    .sunrise = Switches to Light mode at sunrise
-    .sunset = Switches to Dark mode at sunset
-    .next-sunrise = Switches to Light mode at next sunrise
-    .next-sunset = Switches to Dark mode at next sunset
+auto-switch = Automatisch wisselen tussen lichte en donkere modus
+    .sunrise = Wissel naar lichte modus bij zonsopgang
+    .sunset = Wissel naar donkere modus bij zonsondergang
+    .next-sunrise = Wissel naar lichte modus bij de volgende zonsopgang
+    .next-sunset = Wissel naar donkere modus bij de volgende zonsondergang
 
 container-background = Container background
     .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
