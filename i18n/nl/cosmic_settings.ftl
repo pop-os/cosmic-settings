@@ -128,17 +128,17 @@ bluetooth-available = Nabije bluetooth-apparaten
 
 bluetooth-adapters = Bluetooth-adapters
 
-<#-- I translated to here, shall continue later -->
 ## Desktop
 
-desktop = Desktop
+desktop = Bureaublad
 
 ## Desktop: Wallpaper
 
-wallpaper = Wallpaper
-    .change = Change image every
-    .desc = Wallpaper images, colors, and slideshow options.
-    .fit = Wallpaper fit
+wallpaper = Achtergrondafbeelding
+    .change = Wijzig alle afbeeldingen
+        <#-- Wijzig alle afbeeldingen: Change every image -->
+    .desc = Achtergrondafbeeldingen, kleuren en diavoorstellingsopties.
+    .fit = Schermachtergrond aanpassen
     .folder-dialog = Choose wallpaper folder
     .image-dialog = Choose wallpaper image
     .plural = Wallpapers
