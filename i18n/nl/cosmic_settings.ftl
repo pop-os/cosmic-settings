@@ -190,12 +190,11 @@ auto-switch = Automatisch wisselen tussen lichte en donkere modus
     .next-sunrise = Wissel naar lichte modus bij de volgende zonsopgang
     .next-sunset = Wissel naar donkere modus bij de volgende zonsondergang
 
-<#-- CAME TO HERE, CONTINEU TRANSLATION HERE! -->
-
-container-background = Container background
-    .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
-    .reset = Reset to auto
-    .desc = Primary container color is used for navigation sidebar, side drawer, dialogs and similar widgets.
+<#-- not sure about these translations, don't know what is ment with Container color -->
+container-background = Containerachergrondskleur 
+    .desc-detail = De containerachtergrondskleur wordt gebruikt voor de navigatiebalk, het zijpaneel, dialoogvensters en soortgelijke widgets. Standaard wordt deze automatisch afgeleid van de achtergrond van de toepassing of het venster.
+    .reset = Naar automatisch terugzetten
+    .desc = De primaire containerkleur wordt gebruikt voor de navigatiezijbalk, zijlade, dialoogvensters en soortgelijke widgets.
 
 control-tint = Control component tint
     .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components.
