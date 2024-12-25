@@ -26,8 +26,7 @@ connecting = Verbinding maken…
 disconnect = Verbinden verbreken
 forget = Vergeten
 known-networks = Bekende netwerken
-network-and-wireless = Netwerk en draadloze verbindingen
-        <#-- May also be "Netwerk en Wifi" -->
+network-and-wireless = Netwerk en wifi
 no-networks = Er zijn geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
@@ -178,10 +177,11 @@ hex = Hex
 import = Importeren
 light = Licht
 mode-and-colors = Modus en Kleuren
-recent-colors = Recente Kleuren
+<#-- Mode and color: 'Modus' doesn't refer to anything in Dutch: people might not assosiate it with dark/light theme -->
+recent-colors = Recente kleuren
 reset-to-default = Naar standaardinstellingen terugzetten
 rgb = RGB
-window-hint-accent = Actief venster accentkleur
+window-hint-accent = Accentkleur voor de actief venster-verklikker
 window-hint-accent-toggle = Gebruik de accentkleur van het thema als actief venster accentkleur
 
 auto-switch = Automatisch wisselen tussen lichte en donkere modus
@@ -199,7 +199,7 @@ container-background = Containerachergrondskleur
 control-tint = Tinting van controlecomponenten
     .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoekingangen, tekstingangen en soortgelijke onderdelen.
 frosted =  Matglaseffect op de systeeminterface
-    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, laucher en het applicatie-overzicht
+    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, het zoekmenu en het startmenu
 
 enable-export = Pas dit thema toe op GNOME-apps.
     .desc = Niet alle toolkit-omgevingen ondersteunen automatische wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
@@ -240,72 +240,72 @@ notifications = Meldingen
 ## Desktop: Panel
 
 panel = Paneel
-    .desc = Top bar with desktop controls and menus.
+    .desc = Bovenbalk met bureaubladbedieningen en menu's.
 
-add = Add
-add-applet = Add Applet
-all = All
+add = Toevoegen
+add-applet = Applet toevoegen
+all = Alle
 applets = Applets
-center-segment = Center Segment
-drop-here = Drop applets here
-end-segment = End Segment
-large = Large
-no-applets-found = No applets found...
-panel-bottom = Bottom
-panel-left = Left
-panel-right = Right
-panel-top = Top
-search-applets = Search applets...
-small = Small
-start-segment = Start Segment
+center-segment = Middenstuk
+drop-here = Applets hier plaatsen
+end-segment = Eindstuk
+large = Groot
+no-applets-found = Geen applets gevonden…
+panel-bottom = Onder
+panel-left = Links
+panel-right = Rechts
+panel-top = Boven
+search-applets = Applets zoeken…
+small = Klein
+start-segment = Beginstuk
 
-panel-appearance = Appearance
-    .match = Match desktop
-    .light = Light
-    .dark = Dark
+panel-appearance = Uiterlijk
+    .match = Aanpassen aan bureaublad
+    .light = Licht
+    .dark = Donker
 
-panel-behavior-and-position = Behavior and Positions
-    .autohide = Automatically hide panel
-    .dock-autohide = Automatically hide dock
-    .position = Position on screen
-    .display = Show on display
+panel-behavior-and-position = Gedrag en Posities
+    .autohide = Paneel automatisch verbergen
+    .dock-autohide = Dock automatisch verbergen
+    .position = Positie op het scherm
+    .display = Weergeven op het scherm
 
-panel-style = Style
-    .anchor-gap = Gap between panel and screen edges
-    .dock-anchor-gap = Gap between dock and screen edges
-    .extend = Extend panel to screen edges
-    .dock-extend = Extend dock to screen edges
-    .appearance = Appearance
-    .size = Size
-    .background-opacity = Background opacity
+panel-style = Stijl
+    .anchor-gap = Ruimte tussen het paneel en de schermranden
+    .dock-anchor-gap = Ruimte tussen de dock en de schermranden
+    .extend = Paneel tot de schermranden uitbreiden
+    .dock-extend = Dock tot de schermranden uitbreiden
+    .appearance = Uiterlijk
+    .size = Grootte
+    .background-opacity = Doorzichtigheid van de achtergrond
 
-panel-applets = Configuration
-    .dock-desc = Configure dock applets
-    .desc = Configure panel applets
+panel-applets = Configuratie
+    .dock-desc = Dock-applets configureren
+    .desc = Paneel-applets configureren
 
-panel-missing = Panel Configuration is Missing
-    .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
-    .fix = Reset to default
+panel-missing = Paneelconfiguratie ontbreekt
+    .desc = Het paneelconfiguratiebestand ontbreekt door het gebruik van een aangepaste configuratie of door corruptie.
+    .fix = Naar standaardinstellingen terugzetten
 
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Panel with pinned applications in the app tray and other applets.
+    .desc = Paneel met vastgezetten applicaties vanuit het startmenu en andere applets.
 
 ## Desktop: Window management
 
-window-management = Window management
-    .desc = Super key action, window control options, and additional window tiling options.
+window-management = Vensterbeheer
+    .desc = Actie van de supertoets, vensterbeheeropties en aanvullende opties voor het tegelen van vensters.
 
-super-key = Super key action
-    .launcher = Open Launcher
-    .workspaces = Open Workspaces
-    .applications = Open Applications
-    .disable = Disable
+super-key = Actie van de supertoets
+    .launcher = Snelstarter openen
+    .workspaces = Overzicht virtuele bureaubladen openen
+    .applications = Startmenu openen
+    .disable = Supertoets uitschakelen
 
-window-controls = Window Controls
-    .maximize = Show maximize button
-    .minimize = Show minimize button
+window-controls = Vensterbeheer
+    .maximize = Knop 'maximaliseren' tonen
+    .minimize = Knop 'minimaliseren' tonen
     .active-window-hint = Show active window hint
 
 focus-navigation = Focus Navigation
