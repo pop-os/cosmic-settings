@@ -35,7 +35,7 @@ settings = Instellingen
 username = Gebruikersnaam
 visible-networks = Zichtbare netwerken
 
-auth-dialog = Authenticatie Vereist
+auth-dialog = Authenticatie vereist
     .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
     .wifi-description = Voer het wachtwoord of de coderingssleutel in. U kunt ook verbinding maken door op de “WPS”-knop op de router te drukken.
 
@@ -177,12 +177,12 @@ hex = Hex
 import = Importeren
 light = Licht
 mode-and-colors = Modus en Kleuren
-<#-- Mode and color: 'Modus' doesn't refer to anything in Dutch: people might not assosiate it with dark/light theme -->
+<#-- Mode and color: "Modus" doesn't refer to anything specific in Dutch: people might not assosiate it with dark/light theme -->
 recent-colors = Recente kleuren
 reset-to-default = Naar standaardinstellingen terugzetten
 rgb = RGB
-window-hint-accent = Accentkleur voor de actief venster-verklikker
-window-hint-accent-toggle = Gebruik de accentkleur van het thema als actief venster accentkleur
+window-hint-accent = Accentkleur als visuele hint voor het actieve venster
+window-hint-accent-toggle = Gebruik de accentkleur van het thema als visuele hint voor het actieve venster
 
 auto-switch = Automatisch wisselen tussen lichte en donkere modus
     .sunrise = Wissel naar lichte modus bij zonsopgang
@@ -190,7 +190,7 @@ auto-switch = Automatisch wisselen tussen lichte en donkere modus
     .next-sunrise = Wissel naar lichte modus bij de volgende zonsopgang
     .next-sunset = Wissel naar donkere modus bij de volgende zonsondergang
 
-<#-- not sure about these translations, don't know what is ment with Container color -->
+<#-- not sure about these translations, don't know what is meant with Container color -->
 container-background = Containerachergrondskleur 
     .desc-detail = De containerachtergrondskleur wordt gebruikt voor de navigatiebalk, het zijpaneel, dialoogvensters en soortgelijke widgets. Standaard wordt deze automatisch afgeleid van de achtergrond van de toepassing of het venster.
     .reset = Naar automatisch terugzetten
@@ -221,13 +221,13 @@ interface-density = Interface-dichtheid
     .spacious = Ruim
 
 window-management-appearance = Vensterbeheer
-    .active-hint = Grootte visuele hint voor actieve vensters
+    .active-hint = Grootte visuele hint voor het actieve venster
     .gaps = Ruimte rondom getegelde vensters
 
 ### Experimental
 
 experimental-settings = Experimentele instellingen
-icons-and-toolkit = Pictogram- en toolkit-thema's
+icons-and-toolkit = Thema's voor pictogrammen en de toolkit
 interface-font = Standaardlettertype
 monospace-font = Lettertype met gelijke letterbreedte
 
@@ -240,7 +240,7 @@ notifications = Meldingen
 ## Desktop: Panel
 
 panel = Paneel
-    .desc = Bovenbalk met bureaubladbedieningen en menu's.
+    .desc = Bovenste balk met bureaubladbesturingselementen en menu's
 
 add = Toevoegen
 add-applet = Applet toevoegen
@@ -264,7 +264,7 @@ panel-appearance = Uiterlijk
     .light = Licht
     .dark = Donker
 
-panel-behavior-and-position = Gedrag en Posities
+panel-behavior-and-position = Paneel: werking en positie
     .autohide = Paneel automatisch verbergen
     .dock-autohide = Dock automatisch verbergen
     .position = Positie op het scherm
@@ -299,111 +299,112 @@ window-management = Vensterbeheer
 
 super-key = Actie van de supertoets
     .launcher = Snelstarter openen
-    .workspaces = Overzicht virtuele bureaubladen openen
+    .workspaces = Werkbladoverzicht openen
     .applications = Startmenu openen
     .disable = Supertoets uitschakelen
 
 window-controls = Vensterbeheer
     .maximize = Knop 'maximaliseren' tonen
     .minimize = Knop 'minimaliseren' tonen
-    .active-window-hint = Show active window hint
+    .active-window-hint = Gebruik visuele hint voor het actieve venster
 
-focus-navigation = Focus Navigation
-    .focus-follows-cursor = Focus follows cursor
-    .focus-follows-cursor-delay = Focus follows cursor delay in ms
-    .cursor-follows-focus = Cursor follows focus
+focus-navigation = Focusbesturing
+    .focus-follows-cursor = Focus volgt de cursor
+    .focus-follows-cursor-delay = Vertraging voor focus volgt de cursor in ms
+    .cursor-follows-focus = De cursor volgt de focus
 
 ## Desktop: Workspaces
 
-workspaces = Workspaces
-    .desc = Workspace orientation and behavior.
+workspaces = Virtuele werkbladen
+    .desc = Aantal, werking en positie van virtuele werkbladen instellen
 
-workspaces-behavior = Workspace Behavior
-    .dynamic = Dynamic workspaces
-    .dynamic-desc = Automatically removes empty workspaces.
-    .fixed = Fixed Number of Workspaces
-    .fixed-desc = Add or remove workspaces in the overview.
+workspaces-behavior = Werking virtuele werkbladen
+    .dynamic = Dynamische virtuele werkbladen
+    .dynamic-desc = Lege werkbladen automatisch verwijderen.
+    .fixed = Vast aantal virtuele werkbladen
+    .fixed-desc = Werkbladen aan het overzicht toevoegen of verwijderen.
 
-workspaces-multi-behavior = Multi-monitor Behavior
-    .span = Workspaces Span Displays
-    .separate = Displays Have Separate Workspaces
+workspaces-multi-behavior = Werking over meerdere beeldschermen
+    .span = Virtuele werkbladen strekken zich uit over meerder beeldschermen
+    .separate = Beeldschermen hebben afzonderlijke werkbladen
 
-workspaces-overview-thumbnails = Workspace Overview Thumbnails
-    .show-number = Show Workspace Number
-    .show-name = Show Workspace Name
+workspaces-overview-thumbnails = Miniatuurweergaven van het werkbladoverzicht
+    .show-number = Toon het nummer van de werkbladen
+    .show-name = Toon de naam van de werkbladen
 
-workspaces-orientation = Workspaces Orientation
-    .vertical = Vertical
-    .horizontal = Horizontal
+workspaces-orientation = Oriëntatie van de virtuele werkbladen
+    .vertical = Verticaal
+    .horizontal = Horizontaal
 
-hot-corner = Hot Corner
-    .top-left-corner = Enable top-left hot corner for Workspaces
+hot-corner = Slimme hoek
+    .top-left-corner = Activeer slimme hoek linksboven voor het werkbladenoverzicht
 
 ## Displays
 
--requires-restart = Requires restart
+-requires-restart = Vereist een herstart
 
-color = Color
-    .depth = Color depth
-    .profile = Color profile
-    .sidebar = Color Profiles
-    .temperature = Color temperature
+color = Kleur
+    .depth = Kleurdiepte
+    .profile = Kleurprofiel
+    .sidebar = Kleurprofielen
+    .temperature = Kleurtemperatuur
 
-display = Displays
-    .desc = Manage displays, graphics switching, and night light
-    .arrangement = Display Arrangement
-    .arrangement-desc = Drag displays to rearrange them.
-    .enable = Enable display
-    .external = { $size } { $output } External Display
-    .laptop = { $size } Laptop Display
-    .options = Display Options
+display = Beeldschermen
+    .desc = Beeldschermbeheer, omschakeling tussen grafisch kaarten en nachtlichtbeheer
+    .arrangement = Schermindeling
+    .arrangement-desc = Sleep de schermen om ze te herschikken.
+    .enable = Beeldscherm activeren
+    .external = { $size } { $output } Extern beeldscherm
+    .laptop = { $size } Laptop-beeldscherm
+    .options = Beeldschermopties
     .refresh-rate = Refresh rate
-    .resolution = Resolution
-    .scale = Scale
+    .resolution = Schermresolutie
+    .scale = Schaal
 
-mirroring = Mirroring
-    .id = Mirroring { $id }
+mirroring = Scherm dubliceren
+    .id = Dubliceren { $id }
     .dont = Don't mirror
-    .mirror = Mirror { $display }
-    .project = Project to { $display ->
-        [all] all displays
+    .mirror = { $display } dubliceren
+    .project = Naar { $display ->
+        [all] alle schermen
         *[other] { $display }
-    }
-    .project-count = Projecting to { $count} other { $count ->
-        [1] display
-        *[other] displays
-    }
+    } projecteren
+    .project-count = Naar { $count} { $count ->
+        [1] ander scherm
+        *[other] andere schermen
+    } projecteren
 
-night-light = Night Light
-    .auto = Automatic (sunset to sunrise)
-    .desc = Reduce blue light with warmer colors.
+night-light = Nachtlichtbeheer
+    .auto = Automatisch (van zonsondergang tot zonsopgang)
+    .desc = Blauw licht verminderen met warmere lichtkleuren.
 
-orientation = Orientation
-    .standard = Standard
-    .rotate-90 = Rotate 90
-    .rotate-180 = Rotate 180
-    .rotate-270 = Rotate 270
+orientation = Oriëntatie
+    .standard = Standaard
+    .rotate-90 = 90° draaien
+    .rotate-180 = 180° draaien
+    .rotate-270 = 270° draaien
 
 vrr = Variable refresh rate
-    .enabled = Enabled
-    .force = Always
-    .auto = Automatic
-    .disabled = Disabled
+    .enabled = Ingeschakeld
+    .force = Geforceerd ingeschakeld houden
+    .auto = Automatisch
+    .disabled = Uitgeschakeld
 
-scheduling = Scheduling
-    .manual = Manual schedule
+scheduling = Tijdsplanning
+    .manual = Handmatig plannen
 
-dialog = Dialog
-    .title = Keep These Display Settings?
-    .keep-changes = Keep Changes
-    .change-prompt = Settings changes will automatically revert in { $time } seconds.
-    .revert-settings = Revert Settings
+dialog = Dialoog
+    .title = Deze beeldscherminstellingen behouden?
+    .keep-changes = Wijzigingen behouden
+    .change-prompt = Instellingen worden automatisch hersteld in { $time } seconden.
+    .revert-settings = Instellingen herstellen
 
-legacy-applications = X11 Window System Application Scaling
-    .scaled-by-system = Scale all X11 Applications
-    .system-description = X11 applications will appear blurry on HiDPI screens.
-    .scaled-natively = Render X11 Applications at native resolution
-    .native-description = X11 applications that don't support scaling will be small when HiDPI displays are in use. Enable for games to utilize the full monitor resolution.
+legacy-applications = Schaling van applicaties die het X11-venstersysteem gebruiken
+    .scaled-by-system = Schaal alle X11-applicaties
+    .system-description = X11-applicaties worden onscherp weergegeven op HiDPI-schermen.
+    .scaled-natively = X11-applicaties in native resolutie weergeven
+    .native-description = X11-applicaties die geen schaling ondersteunen worden verkleint op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
+
 
 ## Sound
 
