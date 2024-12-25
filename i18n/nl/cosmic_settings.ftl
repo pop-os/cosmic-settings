@@ -408,104 +408,101 @@ legacy-applications = Schaling van applicaties die het X11-venstersysteem gebrui
 
 ## Sound
 
-sound = Sound
+sound = Geluid
     .desc = N/A
 
-sound-output = Output
-    .volume = Output volume
-    .device = Output device
-    .level = Output level
-    .config = Configuration
-    .balance = Balance
+sound-output = Uitvoer
+    .volume = Uitvoervolume
+    .device = Uitvoerapparaat
+    .level = Uitvoerniveau
+    .config = Configuratie
+    .balance = Geluidsbalans
 
-sound-input = Input
-    .volume = Input volume
-    .device = Input device
-    .level = Input level
+sound-input = Invoer
+    .volume = Invoervolume
+    .device = Invoerapparaat
+    .level = Invoerniveau
 
-sound-alerts = Alerts
-    .volume = Alerts volume
-    .sound = Alerts sound
+sound-alerts = Waarschuwingsgeluid
+    .volume = Waarschuwingsvolume
+    .sound = Type waarschuwingsgeluid
 
-sound-applications = Applications
-    .desc = Application volumes and settings
+sound-applications = Applicaties
+    .desc = Applicatievolume en -instellingen
 
-profile = Profile
+profile = Profiel
 
 ## Power
 
-power = Power & Battery
-    .desc = Manage power settings
+power = Energie- en batterijbeheer
+    .desc = N/A
 
-battery = Battery
+battery = Batterij
   .minute = { $value } { $value ->
-        [one] minute
-       *[other] minutes
+        [one] minuut
+       *[other] minuten
   }
-  .hour = { $value } { $value ->
-        [one] hour
-       *[other] hours
+  .hour = { $value } uur
   }
   .day = { $value } { $value ->
-        [one] day
-       *[other] days
+        [one] dag
+       *[other] dagen
   }
-  .less-than-minute = Less than a minute
-  .and = and
-  .remaining-time = { $time } until { $action ->
-        [full] full
-       *[other] empty
+  .less-than-minute = In minder dan één minuut
+  .and = en
+  .remaining-time = { $time } { $action ->
+        [full] opgeladen
+       *[other] leeg
    }
 
-connected-devices = Connected Devices
-  .unknown = Unknown device
+connected-devices = Verbonden apparaten
+  .unknown = Onbekend apparaat
 
-power-mode = Power Mode
-    .battery = Extended battery life
-    .battery-desc = Reduced power usage and silent performance.
-    .balanced = Balanced
-    .balanced-desc = Quiet performance and moderate power usage.
-    .performance = High performance
-    .performance-desc = Peak performance and power usage.
-    .no-backend = Backend not found. Install system76-power or power-profiles-daemon.
+power-mode = Energieverbruik
+    .battery = Energiebesparing
+    .battery-desc = Verminderd stroomverbruik en geruisloze prestaties.
+    .balanced = Gebalanceerd
+    .balanced-desc = Gemiddeld stroomverbruik en stille prestaties.
+    .performance = Hoge Prestatie
+    .performance-desc = Hoge prestatie en verhoogd stroomgebruik.
+    .no-backend = Backend niet gevonden. Installeer system76-power of power-profiles-daemon.
 
-power-saving = Power Saving Options
-    .turn-off-screen-after = Turn off the screen after
-    .auto-suspend = Automatic suspend
-    .auto-suspend-ac = Automatic suspend when plugged in
-    .auto-suspend-battery = Automatic suspend on battery power
+power-saving = Enegriebesparingsopties
+    .turn-off-screen-after = Beeldscherm uitschakelen na
+    .auto-suspend = Automatische slaapstand
+    .auto-suspend-ac = Automatische slaapstand wanneer op het lichtnet aangesloten
+    .auto-suspend-battery = Automatische slaapstand wanneer op batterijstroom
 
 ## Input
 
-acceleration-desc = Automatically adjusts tracking sensitivity based on speed.
+acceleration-desc = De trackinggevoeligheid wordt automatisch aangepast op basis van de snelheid.
 
-disable-while-typing = Disable while typing
+disable-while-typing = Tijdens het typen uitschakelen.
 
-input-devices = Input Devices
-    .desc = Input Devices
+input-devices = Invoerapparaten
+    .desc = Invoerapparaten
 
-primary-button = Primary button
-    .desc = Sets the order of physical buttons.
-    .left = Left
-    .right = Right
+primary-button = Primaire knop
+    .desc = Bepaalt de rangschikking van de fysieke toetsen.
+    .left = Links
+    .right = Rechts
 
-scrolling = Scrolling
-    .two-finger = Scroll with two fingers
-    .edge = Scroll along the edge with one finger
-    .speed = Scrolling speed
-    .natural = Natural scrolling
-    .natural-desc = Scroll the content, instead of the view
+scrolling = Scrollen
+    .two-finger = Met twee vingers scrollen
+    .edge = Scroll met een vinger langs de rand
+    .speed = Scrollsnelheid
+    .natural = Natuurlijk scrollen
+    .natural-desc = Scroll de inhoud, niet het weergavevenster.
 
 ## Input: Keyboard
 
-slow = Slow
-fast = Fast
-short = Short
-long = Long
-keyboard = Keyboard
-    .desc = Input sources, switching, special character entry, shortcuts.
-
-keyboard-sources = Input Sources
+slow = Langzaam
+fast = Snel
+short = Kort
+long = Lang
+keyboard = Toetsenbord
+    .desc = Invoermethodes, omschakelen, invoer van speciale tekens en sneltoetsen.
+keyboard-sources = Invoermethodes
     .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
     .move-up = Move up
     .move-down = Move down
