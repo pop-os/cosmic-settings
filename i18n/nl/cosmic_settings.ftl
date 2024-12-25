@@ -196,50 +196,50 @@ container-background = Containerachergrondskleur
     .reset = Naar automatisch terugzetten
     .desc = De primaire containerkleur wordt gebruikt voor de navigatiezijbalk, zijlade, dialoogvensters en soortgelijke widgets.
 
-control-tint = Control component tint
-    .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components.
+control-tint = Tinting van controlecomponenten
+    .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoekingangen, tekstingangen en soortgelijke onderdelen.
+frosted =  Matglaseffect op de systeeminterface
+    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, laucher en het applicatie-overzicht
 
-frosted = Frosted glass effect on system interface
-    .desc = Applies background blur to panel, dock, applets, launcher, and application library.
+enable-export = Pas dit thema toe op GNOME-apps.
+    .desc = Niet alle toolkit-omgevingen ondersteunen automatische wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
 
-enable-export = Apply this theme to GNOME apps.
-    .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
+icon-theme = Icoonthema
+    .desc = Past een andere set pictogrammen toe op applicaties.
 
-icon-theme = Icon Theme
-    .desc = Applies a different set of icons to applications.
+text-tint = Interface tekstkleur
+    .desc = Kleur die wordt gebruikt om interfacetekstkleuren te bepalen, zodat er voldoende contrast is op verschillende oppervlakken.
 
-text-tint = Interface text tint
-    .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
+style = Stijl
+    .round = Rond
+    .slightly-round = Licht afgerond
+    .square = Rechthoekig
 
-style = Style
-    .round = Round
-    .slightly-round = Slightly round
-    .square = Square
-
-interface-density = Interface Density
-    .comfortable = Comfortable
+interface-density = Interface-dichtheid
+    .comfortable = Comfortabel
     .compact = Compact
-    .spacious = Spacious
+    .spacious = Ruim
 
-window-management-appearance = Window Management
-    .active-hint = Active window hint size
-    .gaps = Gaps around tiled windows
+window-management-appearance = Vensterbeheer
+    .active-hint = Grootte visuele hint voor actieve vensters
+    .gaps = Ruimte rondom getegelde vensters
 
 ### Experimental
 
-experimental-settings = Experimental Settings
-icons-and-toolkit = Icons and toolkit theming
-interface-font = System font
-monospace-font = Monospace font
+experimental-settings = Experimentele instellingen
+icons-and-toolkit = Pictogram- en toolkit-thema's
+interface-font = Standaardlettertype
+monospace-font = Lettertype met gelijke letterbreedte
 
 ## Desktop: Notifications
 
-notifications = Notifications
-    .desc = Do Not Disturb, lockscreen notifications, and per-application settings.
+notifications = Meldingen
+    .desc = Niet storen, meldingen op het vergrendelscherm en instellingen per applicatie.
+
 
 ## Desktop: Panel
 
-panel = Panel
+panel = Paneel
     .desc = Top bar with desktop controls and menus.
 
 add = Add
