@@ -503,7 +503,8 @@ long = Lang
 keyboard = Toetsenbord
     .desc = Invoermethodes, omschakelen, invoer van speciale tekens en sneltoetsen.
 keyboard-sources = Invoermethodes
-    .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
+    .desc = 
+Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
     .move-up = Move up
     .move-down = Move down
     .settings = Settings
