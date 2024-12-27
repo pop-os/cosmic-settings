@@ -240,7 +240,7 @@ notifications = Meldingen
 ## Desktop: Panel
 
 panel = Paneel
-    .desc = Bovenste balk met bureaubladbesturingselementen en menu's
+    .desc = Balk bovenin met bureaublad-applets en menu's.
 
 add = Toevoegen
 add-applet = Applet toevoegen
