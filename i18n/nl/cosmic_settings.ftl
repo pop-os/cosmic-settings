@@ -156,6 +156,7 @@ recent-folders = Recente mappen
 
 x-minutes = { $number } minuten
 x-hours = { $number } uur
+<#-- the plural of hour in Dutch, doesn't get used when a number is in front of it. We say: '4 uur lang', not '4 uren lang' -->
 
 never = Nooit
 
@@ -176,8 +177,7 @@ export = Exporteren
 hex = Hex
 import = Importeren
 light = Licht
-mode-and-colors = Modus en Kleuren
-<#-- Mode and color: "Modus" doesn't refer to anything specific in Dutch: people might not assosiate it with dark/light theme -->
+mode-and-colors = Kleuren en lichte/donkere modus
 recent-colors = Recente kleuren
 reset-to-default = Naar standaardinstellingen terugzetten
 rgb = RGB
@@ -199,7 +199,7 @@ container-background = Containerachergrondskleur
 control-tint = Tinting van controlecomponenten
     .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoekingangen, tekstingangen en soortgelijke onderdelen.
 frosted =  Matglaseffect op de systeeminterface
-    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, het zoekmenu en het startmenu
+    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, de snelstarter en het startmenu
 
 enable-export = Pas dit thema toe op GNOME-apps.
     .desc = Niet alle toolkit-omgevingen ondersteunen automatische wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
@@ -299,6 +299,7 @@ window-management = Vensterbeheer
 
 super-key = Actie van de supertoets
     .launcher = Snelstarter openen
+<#-- launcher : Quick launcher -->
     .workspaces = Werkbladoverzicht openen
     .applications = Startmenu openen
     .disable = Supertoets uitschakelen
@@ -319,9 +320,9 @@ workspaces = Virtuele werkbladen
     .desc = Aantal, werking en positie van virtuele werkbladen instellen
 
 workspaces-behavior = Werking virtuele werkbladen
-    .dynamic = Dynamische virtuele werkbladen
+    .dynamic = Dynamische werkbladen
     .dynamic-desc = Lege werkbladen automatisch verwijderen.
-    .fixed = Vast aantal virtuele werkbladen
+    .fixed = Vast aantal werkbladen
     .fixed-desc = Werkbladen aan het overzicht toevoegen of verwijderen.
 
 workspaces-multi-behavior = Werking over meerdere beeldschermen
@@ -549,7 +550,7 @@ replace = Vervangen
 shortcut-name = Sneltoetsnaam
 system-controls = Systeemaansturing
 terminate = Beëindigen
-toggle-stacking = Vensterstapeling (stacking) in-/uitschakelen
+toggle-stacking = Zet vensterstapelen (stacking) aan/uit
 type-key-combination = Voer toetsencombinatie in
 
 custom-shortcuts = Aangepaste sneltoetsen
@@ -582,7 +583,7 @@ nav-shortcuts = Navigatie
         [right] rechts
         [up] hierboven
     }
-    .workspace = Naar virtueel werkblad { $num } omschakelen
+    .workspace = Naar werkblad { $num } omschakelen
 
 manage-windows = Manage windows
     .close = Venster sluiten
@@ -600,206 +601,207 @@ move-windows = Venster verplaatsen
         [up] boven
     } verplaatsen
 
-    .display = Move window one monitor { $direction ->
-        *[down] down
-        [left] left
-        [right] right
-        [up] up
-    }
-    .workspace = Move window one workspace { $direction ->
-        *[below] below
-        [left] left
-        [right] right
-        [above] above
-    }
-    .workspace-num = Move window to workspace { $num }
-    .prev-workspace = Move window to prev workspace
-    .next-workspace = Move window to next workspace
-    .last-workspace = Move window to last workspace
-    .next-display = Move window to next display
-    .prev-display = Move window to prev display
-    .send-to-prev-workspace = Move window to previous workspace
-    .send-to-next-workspace = Move window to next workspace
+    .display = Venster één beeldscherm naar { $direction ->
+        *[down] beneden
+        [left] links
+        [right] rechts
+        [up] boven
+    } verplaatsen
+    .workspace = Venster één werkblad naar { $direction ->
+        *[below] beneden
+        [left] links
+        [right] rechts
+        [above] boven
+    } verplaatsen
+    .workspace-num = Venster naar werkblad { $num } verplaatsen
+    .prev-workspace = Venster naar vorig werkblad verplaatsen
+    .next-workspace = Venster naar volgend werkblad verplaatsen
+<#-- last workspace: last used workspace or the last in a row? -->
+    .last-workspace = Venster naar laatst gebruikte werkblad verplaatsen
+    .next-display = Venster naar volgend beeldscherm verplaatsen
+    .prev-display = Venster naar vorig beeldscherm verplaatsen
+    .send-to-prev-workspace = Venster naar vorig werkblad verplaatsen
+    .send-to-next-workspace = Venster naar volgend werkblad verplaatsen
 
-system-shortcut = System
-    .app-library = Open the app library
-    .brightness-down = Decrease display brightness
-    .brightness-up = Increase display brightness
-    .home-folder = Open home folder
-    .keyboard-brightness-down = Decrease keyboard brightness
-    .keyboard-brightness-up = Increase keyboard brightness
-    .launcher = Open the launcher
-    .lock-screen = Lock the screen
-    .mute = Mute audio output
-    .mute-mic = Mutes microphone input
-    .play-pause = Play/Pause
-    .play-next = Next track
-    .play-prev = Previous track
-    .screenshot = Take a screenshot
-    .terminal = Open a terminal
-    .volume-lower = Decrease audio output volume
-    .volume-raise = Increase audio output volume
-    .web-browser = Opens a web browser
-    .window-switcher = Switch between open windows
-    .window-switcher-previous = Switch between open windows reversed
-    .workspace-overview = Open the workspace overview
+system-shortcut = Systeem
+    .app-library = Het startmenu openen
+    .brightness-down = Schermhelderheid dimmen
+    .brightness-up = Schermhelderheid veller
+    .home-folder = De gebruikersmap (/home) openen
+    .keyboard-brightness-down = Toetsenbordverlichting dimmen
+    .keyboard-brightness-up = Toetsenbordverlichting veller
+    .launcher = Snelstarter openen
+    .lock-screen = Scherm vergrendelen
+    .mute = Geluid uit
+    .mute-mic = Microfoon uitschakelen
+    .play-pause = Afspelen/Pauzeren
+    .play-next = Volgend nummer
+    .play-prev = Vorig nummer
+    .screenshot = Schermafbeelding maken
+    .terminal = Open een terminal
+    .volume-lower = Uitvoervolume lager
+    .volume-raise = Uitvoervolume hoger
+    .web-browser = Opent een webbrowser
+    .window-switcher = Tussen openstaande vensters wisselen
+    .window-switcher-previous = Omgekeerd tussen openstaande vensters wisselen
+    .workspace-overview = Het werkbladoverzicht openen
 
-window-tiling = Window tiling
-    .horizontal = Set horizontal orientation
-    .vertical = Set vertical orientation
-    .swap-window = Swap window
-    .toggle-tiling = Toggle window tiling
-    .toggle-stacking = Toggle window stacking
-    .toggle-floating = Toggle window floating
-    .toggle-orientation = Toggle orientation
+window-tiling = Venstertegelen
+    .horizontal = Kies de horizontale oriëntatie
+    .vertical = Kies de verticale oriëntatie
+    .swap-window = Vensters omwisselen
+    .toggle-tiling = Zet venstertegelen aan/uit
+    .toggle-stacking = Zet vensterstapelen (stacking) aan/uit
+    .toggle-floating = Zet zwevende vensters aan/uit
+    .toggle-orientation = Verander de oriëntatie
 
-replace-shortcut-dialog = Replace Shortcut?
-    .desc = { $shortcut } is used by { $name }. If you replace it, { $name } will be disabled.
+replace-shortcut-dialog = Sneltoets overschrijven?
+    .desc = { $shortcut } wordt al gebruikt door { $name }. Als u het overschrijft, wordt { $name } uitgeschakeld.
 
 ## Input: Mouse
 
-mouse = Mouse
-    .desc = Mouse speed, acceleration, natural scrolling.
-    .speed = Mouse speed
-    .acceleration = Enable mouse acceleration
+mouse = Muis
+    .desc = Muissnelheid, muisversnelling en natuurlijk scrollen
+    .speed = Muissnelheid
+    .acceleration = Muisversnelling inschakelen
 
 ## Input: Touchpad
 
-click-behavior = Click Behavior
-    .click-finger = Secondary click with two fingers and middle-click with three fingers
-    .button-areas = Secondary click in bottom right corner and middle-click in bottom center
+click-behavior = Klik-eigenschappen
+    .click-finger = Secundaire klik met twee vingers en middelklik met drie vingers
+    .button-areas = Secundaire klik in de rechterbenedenhoek en middelklik in het midden onderaan
 
-pinch-to-zoom = Pinch to zoom
-    .desc = Use two fingers to zoom into content, for applications that support zoom.
+pinch-to-zoom = Twee-vinger-zoom
+    .desc = Gebruik twee vingers om in te zoomen, voor apps die zoom ondersteunen.
 
-tap-to-click = Tap to click
-    .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
+tap-to-click = Tikken om te klikken
+    .desc = Met één vinger tikken voor de primaire klik, met twee vingers voor de secundaire klik en met drie vingers voor de middelklik.
 
 touchpad = Touchpad
-    .acceleration = Enable touchpad acceleration
-    .desc = Touchpad speed, click options, gestures.
-    .speed = Touchpad speed
+    .acceleration = Schakelt touchpad-versnelling in
+    .desc = Touchpad-snelheid, klik-opties, touchpad-gebaren.
+    .speed = Touchpad-snelheid
 
 ## Input: Gestures
 
-gestures = Gestures
-    .four-finger-down = Four-finger swipe down
-    .four-finger-left = Four-finger swipe left
-    .four-finger-right = Four-finger swipe right
-    .four-finger-up = Four-finger swipe up
-    .three-finger-any = Three-finger swipe any direction
+gestures = Touchpad-gebaren
+    .four-finger-down = Vier vingers naar beneden vegen
+    .four-finger-left = Vier vingers naar links vegen
+    .four-finger-right = Vier vingers naar rechts vegen
+    .four-finger-up = Vier vingers naar boven vegen
+    .three-finger-any = Veeg met drie vingers in een willekeurige richting
 
-switch-workspaces = Switch workspaces
-    .horizontal = Four-finger swipe left/right
-    .vertical = Four-finger swipe up/down
+switch-workspaces = Werkbladen wisselen
+    .horizontal = Met vier vingers naar links/recht vegen
+    .vertical = Met vier vingers naar boven/beneden vegen 
 
-switch-between-windows = Switch between windows
-open-application-library = Open Application Library
-open-workspaces-view = Open Workspaces Overview
+switch-between-windows = Tussen vensters wisselen
+open-application-library = Startmenu openen
+open-workspaces-view = Werkbladoverzicht openen
 
 ## Time & Language
 
-time = Time & Language
+time = Tijd- en taalinstellingen
     .desc = N/A
 
-time-date = Date & Time
-    .desc = Time zone, automatic clock settings, and some time formatting.
-    .auto = Set automatically
-    .auto-ntp = Date & time will update automatically when the time zone is set.
+time-date = Tijd en datum
+    .desc = Tijdzones, automatisch klokinstellingen en weergave tijdsnotatie.
+    .auto = Automatisch bijstellen
+    .auto-ntp = Tijd en datum wordt automatisch bijgewerkt zodra de tijdzone is ingesteld.
 
-time-zone = Time Zone
-    .auto = Automatic time zone
-    .auto-info = Requires location services and internet access
+time-zone = Tijdzone
+    .auto = Tijdzone automatisch bepalen
+    .auto-info = Vereist locatiebepaling en internettoegang
 
-time-format = Date & Time Format
-    .twenty-four = 24-hour time
-    .show-seconds = Show seconds
-    .first = First day of week
-    .show-date = Show Date on Top Panel
-    .friday = Friday
-    .saturday = Saturday
-    .sunday = Sunday
-    .monday = Monday
+time-format = Tijd- en datumweergave
+    .twenty-four = 24-uurs tijd
+    .show-seconds = Laat secondes zien
+    .first = De week begint op
+    .show-date = Datum weergeven op het paneel boven
+    .friday = Vrijdag
+    .saturday = Zaterdag
+    .sunday = Zondag
+    .monday = Maandag
 
-time-region = Region & Language
-    .desc = Format dates, times, and numbers based on your region
+time-region = Taal en regio
+    .desc = Regionale tijd-, datum- en getalweergave.
 
-formatting = Formatting
-    .dates = Dates
-    .time = Time
-    .date-and-time = Date & Time
-    .numbers = Numbers
-    .measurement = Measurement
-    .paper = Paper
+formatting = Opmaak
+    .dates = Datum
+    .time = Tijd
+    .date-and-time = Tijd en datum
+    .numbers = Getallen
+    .measurement = Maateenheden
+    .paper = Papiervoormaat
 
-preferred-languages = Preferred Languages
+preferred-languages = Taalvoorkeur
     .desc = The order of languages determines which language is used for the translation of the desktop. Changes take effect on next login.
 
-add-language = Add language
-    .context = Add Language
-install-additional-languages = Install additional languages
-region = Region
+add-language = Taal toevoegen
+    .context = Voeg een taal toe
+install-additional-languages = Meer talen installeren
+region = Regio
 
 ## System
 
-system = System & Accounts
+system = Systeem en accounts
 
 ## System: About
 
-about = About
-    .desc = Device name, hardware information, operating system defaults.
+about = Over dit apparaat
+    .desc = Apparaatnaam, informatie over de hardware, standaardinstellingen van het besturingssysteem.
 
-about-device = Device name
-    .desc = This name appears to other network or bluetooth devices.
+about-device = Apparaatnaam
+    .desc = Deze naam is zichtbaar voor andere bluetooth- en netwerkapparaten.
 
 about-hardware = Hardware
-    .model = Hardware model
-    .memory = Memory
+    .model = Hardwaremodel
+    .memory = Geheugen
     .processor = Processor
-    .graphics = Graphics
-    .disk-capacity = Disk Capacity
+    .graphics = Grafische prestaties
+    .disk-capacity = Opslagcapaciteit
 
-about-os = Operating System
-    .os = Operating system
-    .os-architecture = Operating system architecture
-    .desktop-environment = Desktop environment
-    .windowing-system = Windowing system
+about-os = Besturingssysteem
+    .os = Besturingssysteem
+    .os-architecture = Architectuur van het besturingssysteem
+    .desktop-environment = Bureaubladomgeving
+    .windowing-system = Vensterbeheerder
 
-about-related = Related settings
-    .support = Get support
+about-related = Gerelateerde instellingen
+    .support = Hulp aanvragen
 
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmware details.
+    .desc = Firmwaredetails.
 
 ## System: Users
 
-users = Users
-    .desc = Authentication and user accounts.
-    .admin = Admin
-    .standard = Standard
-    .profile-add = Choose profile image
+users = Gebruikers
+    .desc = Authenticatie en gebruikersinstellingen
+    .admin = Systeembeheerder
+    .standard = Standaard
+    .profile-add = Kies een profielafbeelding
 
-administrator = Administrator
-    .desc = Administrators can change settings for all users, add and remove other users.
+administrator = Systeembeheerder (root)
+    .desc = Beheerders kunnen instellingen voor alle gebruikers wijzigen, en andere gebruikers toevoegen of verwijderen.
 
-add-user = Add user
-remove-user = Remove user
-full-name = Full name
-username = Username
-password = Password
+add-user = Gebruiker toevoegen
+remove-user = Gebruiker verwijderen
+full-name = Volledige naam
+username = Gebruikersnaam
+password = Wachtwoord
 
 ## System: Default Applications
 
-default-apps = Default Applications
-    .desc = Default web browser, mail client, file browser, and other applications.
-    .web-browser = Web browser
-    .file-manager = File manager
-    .mail-client = Mail client
-    .music = Music
+default-apps = Standaardapplicaties
+    .desc = Standaard webbrowser, e-mailprogramma, bestandsbeheerder, en andere applicaties.
+    .web-browser = Webbrowser
+    .file-manager = Bestandsbeheerder
+    .mail-client = e-mailprogramma
+    .music = Muziek
     .video = Video
-    .photos = Photos
-    .calendar = Calendar
+    .photos = Foto's
+    .calendar = Agenda
     .terminal = Terminal
-    .other-associations = Other Associations
+    .other-associations = Andere koppelingen
