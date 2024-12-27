@@ -502,100 +502,104 @@ short = Kort
 long = Lang
 keyboard = Toetsenbord
     .desc = Invoermethodes, omschakelen, invoer van speciale tekens en sneltoetsen.
+
 keyboard-sources = Invoermethodes
-    .desc = 
-Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
-    .move-up = Move up
-    .move-down = Move down
-    .settings = Settings
-    .view-layout = View keyboard layout
-    .remove = Remove
-    .add = Add input source
+    .desc = Invoermethodes kunnen worden gewisseld met de sneltoetscombinatie Super+Spatie. Dit kan aangepast worden in de instellingen voor sneltoetsen.
+    .move-up = Omhoog
+    .move-down = Naar beneden
+    .settings = Instellingen
+    .view-layout = Toetsenbordindeling weergeven
+    .remove = Verwijderen
+    .add = Invoermethode toevoegen
 
-keyboard-special-char = Special Character Entry
-    .alternate = Alternate characters key
-    .compose = Compose key
-    .caps = Caps Lock key
+keyboard-special-char = Invoer speciale tekens
+    .alternate = Toets voor speciale tekens
+    .compose = Compose-toets (voor speciale tekens)
+    .caps = Caps Lock-toets
 
-keyboard-typing-assist = Typing
-    .repeat-rate = Repeat rate
-    .repeat-delay = Repeat delay
+keyboard-typing-assist = Typen
+    .repeat-rate = Snelheid van herhalen
+    .repeat-delay = Herhalingsvertraging
 
-added = Added
-type-to-search = Type to search...
-show-extended-input-sources = Show extended input sources
+added = Toegevoegd
+type-to-search = Typ om te zoeken…
+show-extended-input-sources = Toon uitgebreide invoermethodes
 
 ## Input: Keyboard: Shortcuts
 
-keyboard-shortcuts = Keyboard Shortcuts
-    .desc = View and customize shortcuts
+keyboard-shortcuts = Sneltoetsen
+    .desc = Sneltoetsen bekijken en aanpassen
 
-add-keybinding = Add keybinding
-cancel = Cancel
-command = Command
-custom = Custom
-debug = Debug
-disabled = Disabled
-migrate-workspace-prev = Migrate workspace to previous output
-migrate-workspace-next = Migrate workspace to next output
-migrate-workspace = Migrate workspace to output { $direction ->
-    *[down] down
-    [left] left
-    [right] right
-    [up] up
+add-keybinding = Sneltoets toevoegen
+cancel = Annuleren
+command = Commando
+custom = Aangepast
+debug = Fouten opsporen
+disabled = Uitgeschakeld
+migrate-workspace-prev = Werkblad naar vorige uitvoer verplaatsen
+migrate-workspace-next = Werkblad naar volgende uitvoer verplaatsen
+migrate-workspace = Werkblad verplaatsen naar uitvoer { $direction ->
+    *[down] hieronder
+    [left] links
+    [right] rechts
+    [up] hierboven
 }
-navigate = Navigate
-replace = Replace
-shortcut-name = Shortcut name
-system-controls = System controls
-terminate = Terminate
-toggle-stacking = Toggle window stacking
-type-key-combination = Type key combination
+navigate = Navigeren
+replace = Vervangen
+shortcut-name = Sneltoetsnaam
+system-controls = Systeemaansturing
+terminate = Beëindigen
+toggle-stacking = Vensterstapeling (stacking) in-/uitschakelen
+type-key-combination = Voer toetsencombinatie in
 
-custom-shortcuts = Custom Shortcuts
-    .add = Add shortcut
-    .context = Add Custom Shortcut
-    .none = No custom shortcuts
+custom-shortcuts = Aangepaste sneltoetsen
+    .add = Sneltoets toevoegen
+    .context = Aangepaste sneltoets toevoegen
+    .none = Gebruik geen aangepaste sneltoetsen
 
-modified = { $count } modified
+modified = { $count } aangepast
 
-nav-shortcuts = Navigation
-    .prev-output = Focus previous output
-    .next-output = Focus next output
-    .last-workspace = Focus last workspace
-    .prev-workspace = Focus previous workspace
-    .next-workspace = Focus next workspace
-    .focus = Focus window { $direction ->
-        *[down] down
-        [in] in
-        [left] left
-        [out] out
-        [right] right
-        [up] up
+nav-shortcuts = Navigatie
+    .prev-output = Focus op vorige uitvoer
+    .next-output = Focus op volgende uitvoer
+    .last-workspace = Focus op laatste werkblad
+    .prev-workspace = Focus op vorige werkblad
+    .next-workspace = Focus op volgende werkblad
+
+<#-- Realy confusing English sentence to translate: Focus window down / in / left ... What does it mean!? -->
+    .focus = Focus op { $direction ->
+        *[down] onderste
+        [in] binnenste
+        [left] linker
+        [out] buitenste
+        [right] rechter
+        [up] bovenste
+    } venster
+
+    .output = Omschakelen naar uitvoer { $direction ->
+        *[down] hieronder
+        [left] links
+        [right] rechts
+        [up] hierboven
     }
-    .output = Switch to output { $direction ->
-        *[down] down
-        [left] left
-        [right] right
-        [up] up
-    }
-    .workspace = Switch to workspace { $num }
+    .workspace = Naar virtueel werkblad { $num } omschakelen
 
 manage-windows = Manage windows
-    .close = Close window
-    .maximize = Maximize window
-    .minimize = Minimize window
-    .resize-inwards = Resize window inwards
-    .resize-outwards = Resize window outwards
-    .toggle-sticky = Toggle sticky window
+    .close = Venster sluiten
+    .maximize = Venster maximaliseren
+    .minimize = Venster minimaliseren
+    .resize-inwards = Venster verkleinen
+    .resize-outwards = Venster vergroten
+    .toggle-sticky = Venster vastzetten/losmaken
 
-move-windows = Move Windows
-    .direction = Move window { $direction ->
-        *[down] down
-        [left] left
-        [right] right
-        [up] up
-    }
+move-windows = Venster verplaatsen
+    .direction = Venster naar { $direction ->
+        *[down] beneden
+        [left] links
+        [right] rechts
+        [up] boven
+    } verplaatsen
+
     .display = Move window one monitor { $direction ->
         *[down] down
         [left] left
