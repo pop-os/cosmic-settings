@@ -37,7 +37,7 @@ visible-networks = Zichtbare netwerken
 
 auth-dialog = Authenticatie vereist
     .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
-    .wifi-description = Voer het wachtwoord of de coderingssleutel in. U kunt ook verbinding maken door op de "WPS"-knop op de router te drukken.
+    .wifi-description = Voer het wachtwoord of de encryptiesleutel in. U kunt ook verbinden door op de "WPS"-knop op de router te drukken.
 
 forget-dialog = Wifi-netwerk vergeten?
     .description = U moet opnieuw een wachtwoord invoeren om dit wifi-netwerk in de toekomst te gebruiken.
