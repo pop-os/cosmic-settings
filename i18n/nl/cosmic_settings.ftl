@@ -135,7 +135,6 @@ desktop = Bureaublad
 
 wallpaper = Schermachtergrond
     .change = Wijzig alle afbeeldingen
-        <#-- Wijzig alle afbeeldingen: Change every image -->
     .desc = Opties voor schermachtergrond, kleuren en diavoorstellingen
     .fit = Schermachtergrond aanpassen
     .folder-dialog = Selecteer map met achtergronden
@@ -156,7 +155,6 @@ recent-folders = Recente mappen
 
 x-minutes = { $number } minuten
 x-hours = { $number } uur
-<#-- the plural of hour in Dutch, doesn't get used when a number is in front of it. We say: '4 uur lang', not '4 uren lang' -->
 
 never = Nooit
 
@@ -477,7 +475,7 @@ power-saving = Enegriebesparingsopties
 
 acceleration-desc = De trackinggevoeligheid wordt automatisch aangepast op basis van de snelheid.
 
-disable-while-typing = Tijdens het typen uitschakelen.
+disable-while-typing = Uitschakelen tijdens het typen
 
 input-devices = Invoerapparaten
     .desc = Invoerapparaten
