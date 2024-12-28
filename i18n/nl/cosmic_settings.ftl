@@ -299,7 +299,6 @@ window-management = Vensterbeheer
 
 super-key = Actie van de supertoets
     .launcher = Snelstarter openen
-<#-- launcher : Quick launcher -->
     .workspaces = Werkbladoverzicht openen
     .applications = Startmenu openen
     .disable = Supertoets uitschakelen
