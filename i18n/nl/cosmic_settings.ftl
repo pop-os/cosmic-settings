@@ -37,7 +37,7 @@ visible-networks = Zichtbare netwerken
 
 auth-dialog = Authenticatie vereist
     .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
-    .wifi-description = Voer het wachtwoord of de coderingssleutel in. U kunt ook verbinding maken door op de “WPS”-knop op de router te drukken.
+    .wifi-description = Voer het wachtwoord of de coderingssleutel in. U kunt ook verbinding maken door op de "WPS"-knop op de router te drukken.
 
 forget-dialog = Wifi-netwerk vergeten?
     .description = U moet opnieuw een wachtwoord invoeren om dit wifi-netwerk in de toekomst te gebruiken.
@@ -465,7 +465,7 @@ power-mode = Energieverbruik
     .balanced = Gebalanceerd
     .balanced-desc = Gemiddeld stroomverbruik en stille prestaties.
     .performance = Hoge Prestatie
-    .performance-desc = Hoge prestatie en verhoogd stroomgebruik.
+    .performance-desc = Hoge prestatie en batterijverbruik.
     .no-backend = Backend niet gevonden. Installeer system76-power of power-profiles-daemon.
 
 power-saving = Enegriebesparingsopties
