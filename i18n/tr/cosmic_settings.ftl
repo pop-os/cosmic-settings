@@ -166,7 +166,7 @@ appearance = Görünüm
     .desc = Vurgu renkleri ve temalar.
 
 accent-color = Vurgu rengi
-app-background = Uygulama veya pencere arkaplanı
+app-background = Uygulama veya pencere arka planı
 auto = Otomatik
 close = Kapat
 color-picker = Renk Seçici
@@ -190,16 +190,16 @@ auto-switch = Otomatik olarak Açık ve Koyu modlar arasında geçiş yap
     .next-sunrise = Bir dahaki gün doğumunda Açık moda geçer 
     .next-sunset = Bir dahaki gün doğumunda Koyu moda geçer
 
-container-background = Konteyner arkaplanı
-    .desc-detail = Konteyner arkaplanı gezinti yan çubuğu, yan çekmece, diyaloglar ve benzeri araçlar için kullanılır. Varsayılanda otomatik olarak Uygulama veya pencere arkaplanından belirlenir.
+container-background = Konteyner arka planı
+    .desc-detail = Konteyner arka planı gezinti yan çubuğu, yan çekmece, diyaloglar ve benzeri araçlar için kullanılır. Varsayılanda otomatik olarak Uygulama veya pencere arka planından belirlenir.
     .reset = Otomatiğe dön
     .desc = Birincil konteyner rengi gezinti yan çubuğu, yan çekmece, diyaloglar ve benzeri araçlar için kullanılır.
 
 control-tint = Bileşen tonlamasını ayarla
-    .desc = Standart düğmelerin, arama ve metin girdilerinin ve benzeri bileşenlerin arkaplanları için kullanılır.
+    .desc = Standart düğmelerin, arama ve metin girdilerinin ve benzeri bileşenlerin arka planları için kullanılır.
 
 frosted = Sistem arayüzünde buzlu cam efekti.
-    .desc = Panel, dock, kabuk bileşenleri, başlatıcı ve uygulama kütüphanesi arkaplanına flu ekler
+    .desc = Panel, dock, kabuk bileşenleri, başlatıcı ve uygulama kütüphanesi arka planına flu ekler
 
 enable-export = Bu temayı GNOME uygulamalarına uygula.
     .desc = Bütün toolkitler otomatik tema değişimi desteklemez. COSMIC dışı uygulamaların tema değişimi için uygulamanın yeniden başlatılması gerekebilir.
@@ -276,7 +276,7 @@ panel-style = Stil
     .dock-extend = Docku ekran kenarlarına genişlet
     .appearance = Görünüm
     .size = Boyut
-    .background-opacity = Arkaplan opaklığı
+    .background-opacity = Arka plan opaklığı
 
 panel-applets = Yapılandırma
     .dock-desc = Dock kabul bileşenlerini yapılandır.
