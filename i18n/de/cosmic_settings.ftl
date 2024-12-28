@@ -115,7 +115,6 @@ bluetooth = Bluetooth
     .disconnect = Trennen
     .forget = Vergessen
     .dbus-error = Bei der Interaktion mit DBus ist ein Fehler aufgetreten: { $why }
-    .show-device-without-name = Geräte ohne Namen anzeigen
 
 bluetooth-paired = Zuvor verbundene Geräte
     .connect = Verbinden
@@ -638,6 +637,7 @@ system-shortcut = System
     .volume-raise = Lautstärke der Audioausgabe erhöhen
     .web-browser = Öffnet einen Webbrowser
     .window-switcher = Zwischen geöffneten Fenstern wechseln
+    .window-switcher-previous = Zwischen geöffneten Fenstern umgekehrt wechseln
     .workspace-overview = Arbeitsflächenübersicht öffnen
 
 window-tiling = Fensterkachelung
@@ -720,6 +720,22 @@ time-format = Datum- & Zeitformat
 time-region = Region & Sprache
     .desc = Datum, Uhrzeiten und Zahlen gemäß deiner Region formatieren
 
+formatting = Formatierung
+    .dates = Daten
+    .time = Uhrzeit
+    .date-and-time = Datum & Uhrzeit
+    .numbers = Zahlen
+    .measurement = Maß
+    .paper = Papier
+
+preferred-languages = Bevorzugte Sprachen
+    .desc = Die Reihenfolge der Sprachen bestimmt, welche Sprache für die Übersetzung des Desktops verwendet wird. Die Änderungen werden bei der nächsten Anmeldung wirksam.
+
+add-language = Sprache hinzufügen
+    .context = Sprache hinzufügen
+install-additional-languages = Zusätzliche Sprachen installieren
+region = Region
+
 ## System
 
 system = System & Konten
@@ -757,3 +773,29 @@ firmware = Firmware
 
 users = Benutzer
     .desc = Authentifizierung und Benutzerkonten.
+    .admin = Administrator
+    .standard = Standard
+    .profile-add = Profilbild auswählen
+
+administrator = Administrator
+    .desc = Administratoren können die Einstellungen für alle Benutzer ändern, andere Benutzer hinzufügen und entfernen.
+
+add-user = Benutzer hinzufügen
+remove-user = Benutzer entfernen
+full-name = Vollständiger Name
+username = Benutzername
+password = Passwort
+
+## System: Standardanwendungen
+
+default-apps = Standardanwendungen
+    .desc = Voreingestellter Webbrowser, E-Mail-Client, Dateimanager und andere Anwendungen.
+    .web-browser = Webbrowser
+    .file-manager = Dateimanager
+    .mail-client = E-Mail-Client
+    .music = Musik
+    .video = Video
+    .photos = Fotos
+    .calendar = Kalender
+    .terminal = Terminal
+    .other-associations = Andere Zuordnungen
