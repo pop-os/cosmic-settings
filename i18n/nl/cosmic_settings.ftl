@@ -153,9 +153,12 @@ fit-to-screen = Aan het scherm passend maken
 open-new-folder = Nieuwe map openen
 recent-folders = Recente mappen
 
-x-minutes = { $number } minuten
+x-minutes = { 
+    $number -> 
+        [1] 1 minuut
+        *[other] { $number } minuten
+    }
 x-hours = { $number } uur
-
 never = Nooit
 
 ## Desktop: Appearance
