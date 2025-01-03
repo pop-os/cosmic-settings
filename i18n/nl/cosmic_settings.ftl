@@ -701,18 +701,18 @@ open-workspaces-view = Werkbladoverzicht openen
 time = Tijd- en taalinstellingen
     .desc = N/A
 
-time-date = Tijd en datum
+time-date = Datum en tijd
     .desc = Tijdzones, automatisch klokinstellingen en weergave tijdsnotatie.
     .auto = Automatisch bijstellen
-    .auto-ntp = Tijd en datum wordt automatisch bijgewerkt zodra de tijdzone is ingesteld.
+    .auto-ntp = Datum en tijd wordt automatisch bijgewerkt zodra de tijdzone is ingesteld.
 
 time-zone = Tijdzone
     .auto = Tijdzone automatisch bepalen
     .auto-info = Vereist locatiebepaling en internettoegang
 
-time-format = Tijd- en datumweergave
+time-format = Datum- en tijdweergave
     .twenty-four = 24-uurs tijd
-    .show-seconds = Laat secondes zien
+    .show-seconds = Laat seconden zien
     .first = De week begint op
     .show-date = Datum weergeven op het paneel boven
     .friday = Vrijdag
@@ -721,18 +721,18 @@ time-format = Tijd- en datumweergave
     .monday = Maandag
 
 time-region = Taal en regio
-    .desc = Regionale tijd-, datum- en getalweergave.
+    .desc = Regionale datum- en tijd- en getalweergave.
 
 formatting = Opmaak
     .dates = Datum
     .time = Tijd
-    .date-and-time = Tijd en datum
+    .date-and-time = Datum en tijd
     .numbers = Getallen
     .measurement = Maateenheden
     .paper = Papiervoormaat
 
 preferred-languages = Taalvoorkeur
-    .desc = The order of languages determines which language is used for the translation of the desktop. Changes take effect on next login.
+    .desc = De volgorde van de talen bepaalt welke door Cosmic wordt gebruikt. Wijzigingen worden doorgevoerd nadat u zich opnieuw heeft aangemeld.
 
 add-language = Taal toevoegen
     .context = Voeg een taal toe
