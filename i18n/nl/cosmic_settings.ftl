@@ -99,7 +99,7 @@ wireguard-dialog = WireGuard-apparaat toevoegen
 ## Networking: Online Accounts
 
 online-accounts = Online accounts
-    .desc = Accounts toevoegen, IMAP en SMTP,  bedrijfslogins
+    .desc = Accounts toevoegen, IMAP en SMTP, bedrijfslogins
 
 # Bluetooth
 
