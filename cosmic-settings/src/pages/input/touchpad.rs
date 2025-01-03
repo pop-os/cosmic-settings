@@ -4,6 +4,7 @@ use cosmic::widget::{self, row, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_comp_config::input::{AccelProfile, ClickMethod, ScrollMethod};
 use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout};
+use cosmic_comp_config::CosmicCompConfig;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slab::Slab;
@@ -126,7 +127,11 @@ fn touchpad() -> Section<crate::pages::Message> {
                 )
                 .add(
                     settings::item::builder(&descriptions[disable_while_typing]).toggler(
-                        input.input_touchpad.disable_while_typing.unwrap_or(true),
+                        input.input_touchpad.disable_while_typing.unwrap_or(
+                            CosmicCompConfig::default()
+                                .input_touchpad
+                                .disable_while_typing,
+                        ),
                         |enabled| Message::DisableWhileTyping(enabled, true),
                     ),
                 )
