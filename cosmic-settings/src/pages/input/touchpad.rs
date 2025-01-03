@@ -126,7 +126,7 @@ fn touchpad() -> Section<crate::pages::Message> {
                 )
                 .add(
                     settings::item::builder(&descriptions[disable_while_typing]).toggler(
-                        input.input_touchpad.disable_while_typing.unwrap_or(false),
+                        input.input_touchpad.disable_while_typing.unwrap_or(true),
                         |enabled| Message::DisableWhileTyping(enabled, true),
                     ),
                 )
