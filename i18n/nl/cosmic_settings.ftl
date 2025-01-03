@@ -72,7 +72,7 @@ vpn-error = VPN-fout
     .config = Kon geen VPN-configuratie aanmaken
     .connect = VPN-verbinding mislukt
     .connection-editor =  Verbindingseditor mislukt
-    .connection-settings = Het ophalen van instellingen voor actieve verbindingen is mistlukt
+    .connection-settings = Het ophalen van instellingen voor actieve verbindingen is mislukt
     .updating-state = Kan status van netwerkbeheerder niet bijwerken
     .wireguard-config-path = Ongeldig bestandspad voor de WireGuard-configuratie
     .wireguard-config-path-desc = Het gekozen bestand moet op een lokaal bestandssysteem staan.
@@ -90,7 +90,7 @@ wired = Bedraad
     .remove = Verbindingsprofielen verwijderen
 
 wifi = Wifi
-    .adapter = Wifi-adapter { $id }
+    .adapter = Wifi adapter { $id }
     .forget = Dit netwerk vergeten
 
 wireguard-dialog = WireGuard-apparaat toevoegen
@@ -99,7 +99,7 @@ wireguard-dialog = WireGuard-apparaat toevoegen
 ## Networking: Online Accounts
 
 online-accounts = Online accounts
-    .desc = Accounts toevoegen, IMAP en SMTP, bedrijfslogins
+    .desc = Accounts toevoegen, IMAP en SMTP,  bedrijfslogins
 
 # Bluetooth
 
@@ -197,7 +197,7 @@ container-background = Containerachergrondskleur
     .reset = Naar automatisch terugzetten
     .desc = De primaire containerkleur wordt gebruikt voor de navigatiezijbalk, zijlade, dialoogvensters en soortgelijke widgets.
 
-control-tint = Tinting van controlecomponenten
+control-tint = Tinten van controlecomponenten
     .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoekingangen, tekstingangen en soortgelijke onderdelen.
 frosted =  Matglaseffect op de systeeminterface
     .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, de snelstarter en het startmenu
@@ -235,7 +235,7 @@ monospace-font = Lettertype met gelijke letterbreedte
 ## Desktop: Notifications
 
 notifications = Meldingen
-    .desc = Niet storen, meldingen op het vergrendelscherm en instellingen per applicatie.
+    .desc = Niet storen, meldingen op het vergrendelingsscherm en instellingen per applicatie.
 
 
 ## Desktop: Panel
@@ -281,8 +281,8 @@ panel-style = Stijl
     .background-opacity = Doorzichtigheid van de achtergrond
 
 panel-applets = Configuratie
-    .dock-desc = Dock-applets configureren
-    .desc = Paneel-applets configureren
+    .dock-desc = Applets voor de Dock configureren
+    .desc = Applets voor het paneel configureren
 
 panel-missing = Paneelconfiguratie ontbreekt
     .desc = Het paneelconfiguratiebestand ontbreekt door het gebruik van een aangepaste configuratie of door corruptie.
@@ -356,16 +356,16 @@ display = Beeldschermen
     .arrangement-desc = Sleep de schermen om ze te herschikken.
     .enable = Beeldscherm activeren
     .external = { $size } { $output } Extern beeldscherm
-    .laptop = { $size } Laptop-beeldscherm
+    .laptop = { $size } Laptop beeldscherm
     .options = Beeldschermopties
     .refresh-rate = Refresh rate
     .resolution = Schermresolutie
     .scale = Schaal
 
-mirroring = Scherm dubliceren
-    .id = Dubliceren { $id }
+mirroring = Scherm dupliceren
+    .id = Publiceren { $id }
     .dont = Don't mirror
-    .mirror = { $display } dubliceren
+    .mirror = { $display } dupliceren
     .project = Naar { $display ->
         [all] alle schermen
         *[other] { $display }
@@ -468,7 +468,7 @@ power-mode = Energieverbruik
     .performance-desc = Hoge prestatie en batterijverbruik.
     .no-backend = Backend niet gevonden. Installeer system76-power of power-profiles-daemon.
 
-power-saving = Enegriebesparingsopties
+power-saving = Energiebesparingsopties
     .turn-off-screen-after = Beeldscherm uitschakelen na
     .auto-suspend = Automatische slaapstand
     .auto-suspend-ac = Automatische slaapstand wanneer op het lichtnet aangesloten
@@ -585,7 +585,7 @@ nav-shortcuts = Navigatie
     }
     .workspace = Naar werkblad { $num } omschakelen
 
-manage-windows = Manage windows
+manage-windows = Vensterbeheer
     .close = Venster sluiten
     .maximize = Venster maximaliseren
     .minimize = Venster minimaliseren
@@ -625,11 +625,11 @@ move-windows = Venster verplaatsen
 
 system-shortcut = Systeem
     .app-library = Het startmenu openen
-    .brightness-down = Schermhelderheid dimmen
-    .brightness-up = Schermhelderheid veller
+    .brightness-down = Schermhelderheid verlagen
+    .brightness-up = Schermhelderheid verhogen
     .home-folder = De gebruikersmap (/home) openen
-    .keyboard-brightness-down = Toetsenbordverlichting dimmen
-    .keyboard-brightness-up = Toetsenbordverlichting veller
+    .keyboard-brightness-down = Toetsenbordverlichting verlagen
+    .keyboard-brightness-up = Toetsenbordverlichting verhogen
     .launcher = Snelstarter openen
     .lock-screen = Scherm vergrendelen
     .mute = Geluid uit
@@ -671,7 +671,7 @@ click-behavior = Klik-eigenschappen
     .click-finger = Secundaire klik met twee vingers en middelklik met drie vingers
     .button-areas = Secundaire klik in de rechterbenedenhoek en middelklik in het midden onderaan
 
-pinch-to-zoom = Twee-vinger-zoom
+pinch-to-zoom = Zoomen met twee vingers
     .desc = Gebruik twee vingers om in te zoomen, voor apps die zoom ondersteunen.
 
 tap-to-click = Tikken om te klikken
