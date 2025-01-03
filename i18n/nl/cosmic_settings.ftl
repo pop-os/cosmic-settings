@@ -90,7 +90,7 @@ wired = Bedraad
     .remove = Verbindingsprofielen verwijderen
 
 wifi = Wifi
-    .adapter = Wifi adapter { $id }
+    .adapter = Wifi-adapter { $id }
     .forget = Dit netwerk vergeten
 
 wireguard-dialog = WireGuard-apparaat toevoegen
