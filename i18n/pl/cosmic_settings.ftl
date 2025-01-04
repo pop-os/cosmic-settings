@@ -1,17 +1,104 @@
 app = Ustawienia COSMIC
 
+dbus-connection-error = Połączenie z DBus nie pwiodło się
+ok = OK
 unknown = Nieznane
 
 number = { $number }
 
-## Networking: Wired
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] Połączenia przewodowe
+    [wifi] Połączenia Wi-Fi
+    [vpn] Połączenia VPN
+    *[other] Nieznane połączenia
+} i profile połączeń.
+
+add-network = Dodaj sieć
+    .profile = Dodaj profil
+add-vpn = Dodaj VPN
+airplane-on = Tryb samolotowy jest włączony.
+cable-unplugged = Odłączono kabel
+connect = Połącz
+connected = Połączono
+connecting = Łączenie…
+disconnect = Rozłącz
+forget = Zapomnij
+known-networks = Znane sieci
+network-and-wireless = Połączenia sieciowe
+no-networks = Nie odnaleziono sieci.
+no-vpn = Brak dostępnych połączeń VPN.
+password = Hasło
+remove = Usuń
+settings = Ustawienia
+username = Nazwa użytkownika
+visible-networks = Widoczne sieci
+
+auth-dialog = Wymagane jest uwierzytelnianie
+    .vpn-description = Wprowadź nazwę użytkownika i hasło wymagane przez usługę VPN.
+    .wifi-description = Wprowadź hasło lub klucz szyfrowania. Możesz też połączyć się, używajac przycisku „WPS” na routerze.
+
+forget-dialog = Chcesz zapomnieć o tej sieci Wi-Fi?
+    .description = Będziesz musiał(a) wprowadzić hasło jeszcze raz, aby ponownie użyć tej sieci Wi-Fi.
+
+network-device-state =
+    .activated = Połączono
+    .config = Łączenie
+    .deactivating = Rozłączanie
+    .disconnected = Rozłączono
+    .failed = Nie udało się połąćzyć
+    .ip-check = Sprawdzanie połączenia
+    .ip-config = Uzyskiwanie informacji o IP i routowaniu
+    .need-auth = Wymagane jest uwierzytelnienie
+    .prepare = Przygotowywanie połączenia
+    .secondaries = Oczekiwanie na dodatkowe połączenie
+    .unavailable = Niedostępne
+    .unknown = Nieznany stan
+    .unmanaged = Niezarządzane
+    .unplugged = Odłączono kabel
+
+remove-connection-dialog = Usunąć profil połączenia?
+    .vpn-description = Będziesz musiał(a) wprowadzić hasło jeszcze raz, aby ponownie użyć tej siecii.
+    .wired-description = Będziesz musiał(a) utworzyć profil jeszcze raz, aby ponownie użyć tej sieci Wi-Fi.
+
+vpn = VPN
+    .connections = Połączenia VPN
+    .error = Nie udało się dodać konfiguracji VPN
+    .remove = Usuń profil połączenia
+    .select-file = Wybierz plik konfiguracji VPN
+
+vpn-error = Błąd VPN
+    .config = Nie udało się dodać konfiguracji VPN
+    .connect = Nie udało się połączyć z VPN
+    .connection-editor = Błąd edytora połączenia
+    .connection-settings = Nie udało się uzyskać ustawień dla aktywnych połączeń
+    .updating-state = Nie udało się zaktualizować stanu menedżera sieci
+    .wireguard-config-path = Nieprawidłowa ścieżka pliku konfiguracji WireGuard
+    .wireguard-config-path-desc = Wybrany plik musi znajdować się w lokalnym systemie plików system.
+    .wireguard-device = Nie udało się utworzyć urządzenia WireGuard
+    .with-password = Nie udało się ustawić { $field ->
+        *[username] nazwy użytkownika
+        [password] hasła
+        [password-flags] flag hasła
+    } VPN przez nmcli
 
 wired = Przewodowe
-    .desc = Połączenie przewodowe, profil połączenia
+    .adapter = Adapter przewodowy { $id }
+    .connections = Połączenia przewodowe
+    .devices = Urządzenia przeowodowe
+    .remove = Remove connection profile
+
+wifi = Wi-Fi
+    .adapter = Adapter Wi-Fi { $id }
+    .forget = Zapomnij o tym urządzeniu
+
+wireguard-dialog = Dodaj urządzenie WireGuard
+    .description = Wybierz nazwę urządzenia dla tej konfiguracji WireGuard.
 
 ## Networking: Online Accounts
 
-online-accounts = Konta Online
+online-accounts = Konta online
     .desc = Dodaj konta, IMAP, SMTP i logowanie firmowe
 
 ## Desktop
