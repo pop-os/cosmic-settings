@@ -101,6 +101,32 @@ wireguard-dialog = Dodaj urządzenie WireGuard
 online-accounts = Konta online
     .desc = Dodaj konta, IMAP, SMTP i logowanie firmowe
 
+# Bluetooth
+
+confirm = Potwierdź
+
+bluetooth = Bluetooth
+    .desc = Zarządzaj urządzeniami Bluetooth
+    .status = Ten system jest widoczny jako { $aliases }, gdy ustawienia Bluetooth są otwarte.
+    .connected = Połączono
+    .connecting = Łączenie
+    .disconnecting = Rozłączanie
+    .connect = Połącz
+    .disconnect = Rozłącz
+    .forget = Zapomnij
+    .dbus-error = Błąd interakcji z DBus: { $why }
+
+bluetooth-paired = Wcześniej połączone urządzenia
+    .connect = Połącz
+    .battery = { $percentage }% baterii
+
+bluetooth-confirm-pin = Potwierdź PIN Bluetooth
+    .description = Potwierdź, że następujący PIN zgadza się z wyświetlanym na { $device }
+
+bluetooth-available = Urządzenia w pobliżu
+
+bluetooth-adapters = Adaptery Bluetooth
+
 ## Desktop
 
 desktop = Pulpit
@@ -119,13 +145,13 @@ wallpaper = Tapeta
 
 add-color = Dodaj kolor
 add-image = Dodaj obraz
-all-displays = Wszystkie Wyświetlacze
+all-displays = Wszystkie wyświetlacze
 colors = Kolory
 dialog-add = Dodaj
 fill = Wypełnij
 fit-to-screen = Dopasuj do rozmiaru ekranu
 open-new-folder = Otwórz nowy katalog
-recent-folders = Ostatnie Katalogi
+recent-folders = Ostatnie katalogi
 
 x-minutes = { $number ->
     [1] 1 minuta
@@ -137,6 +163,7 @@ x-hours = { $number ->
     [few] { $number } godziny
     *[other] { $number } godzin
 }
+never = Nigdy
 
 ## Desktop: Appearance
 
@@ -148,25 +175,25 @@ app-background = Tło aplikacji oraz okien
 auto = Automatyczne
 close = Zamknij
 color-picker = Wybór koloru
-copied-to-clipboard = Skopiowane do schowka
+copied-to-clipboard = Skopiowano do schowka
 copy-to-clipboard = Skopiuj do schowka
 dark = Ciemny
-export = Eksport
+export = Eksportuj
 hex = Hex
-import = Import
+import = Importuj
 light = Jasny
-mode-and-colors = Tryb i Kolor
+mode-and-colors = Tryb i kolory
 recent-colors = Ostatnie kolory
-reset-to-default = Resetuj do ustawień domyślnych
+reset-to-default = Przywróć do ustawień domyślnych
 rgb = RGB
 window-hint-accent = Kolor wyróżnienia aktywnego okna
 window-hint-accent-toggle = Użycie koloru z motywu jako wyróżnienia aktywnego okna
 
-auto-switch = Automatycznie zmieniaj z trybu Jasnego na Ciemny
-    .sunrise = Zmienia na Jasny tryb o świcie
-    .sunset = Zmienia na Ciemny tryb o zmierzchu
-    .next-sunrise = Zmienia na Jasny tryb podczas następnego świtu
-    .next-sunset = Zmienia na Ciemny tryb podczas następnego zmierzchu
+auto-switch = Automatycznie zmieniaj między trybem jasnym a ciemnym
+    .sunrise = Zmienia na jasny tryb o świcie
+    .sunset = Zmienia na ciemny tryb o zmierzchu
+    .next-sunrise = Zmienia na jasny tryb podczas następnego świtu
+    .next-sunset = Zmienia na ciemny tryb podczas następnego zmierzchu
 
 container-background = Tło kontenera
     .desc-detail = Kolor tła kontenera jest używany do nawigacji panelem bocznym, bocznym szkicownikiem, dialogami i podobnymi widżetami. Domyślnie wywodzi się on z Aplikacji lub tła okna.
@@ -181,8 +208,8 @@ frosted = Efekt zmrożonego szkła na interfejsie systemowym
 
 experimental-settings = Ustawienia eksperymentalne
 
-enable-export = Użyj tego motywu do apek GNOME.
-    .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Apki inne niż COSMIC mogą wymagać restartu do zmiany motywu.
+enable-export = Używaj tego motywu w aplikacjach GNOME.
+    .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Aplikacje spoza COSMIC mogą wymagać restartu po zmianie motywu.
 
 icon-theme = Motyw ikon
     .desc = Zastosuj inny zbiór ikon do aplikacji.
@@ -195,10 +222,21 @@ style = Styl
     .slightly-round = Lekko zaokrąglony
     .square = Kwadratowy
 
-# interface density left out for now
-window-management-appearance = Zarządzanie Oknami
+interface-density = Zagęszczenie interfejsu
+    .comfortable = Wygodne
+    .compact = Zwarte
+    .spacious = Przestronne
+
+window-management-appearance = Zarządzanie oknami
     .active-hint = Rozmiar wyróżnienia aktywnego okna
     .gaps = Przerwa między ramkami okien w trybie kafelków
+
+### Experimental
+
+experimental-settings = Ustawienia eksperymentalne
+icons-and-toolkit = Motyw ikon i toolkita
+interface-font = Font systemu
+monospace-font = Font o stałej szerokości
 
 ## Desktop: Notifications
 
@@ -211,31 +249,31 @@ panel = Panel
     .desc = Górna belka ze sterowaniem pulpitem i menu.
 
 add = Dodaj
-add-applet = Dodaj Aplet
+add-applet = Dodaj aplet
 all = Wszystkie
 applets = Aplety
-center-segment = Człon Środkowy
+center-segment = Człon środkowy
 drop-here = Tutaj upuść aplety
-end-segment = Człon Końcowy
+end-segment = Człon końcowy
 large = Duży
-no-applets-found = Nie znaleziono apletów...
+no-applets-found = Nie znaleziono apletów…
 panel-bottom = Dolny
 panel-left = Lewy
 panel-right = Prawy
 panel-top = Górny
-search-applets = Wyszukaj aplety...
+search-applets = Wyszukaj aplety…
 small = Mały
-start-segment = Człon Początkowy
+start-segment = Człon początkowy
 
 panel-appearance = Wygląd
-    .match = Dopasuj do Pulpitu
+    .match = Dopasuj do pulpitu
     .light = Jasny
     .dark = Ciemny
 
-panel-behavior-and-position = Funkcjonowanie i Pozycja
+panel-behavior-and-position = Funkcjonowanie i położenie
     .autohide = Automatycznie chowaj panel
     .dock-autohide = Automatycznie chowaj panel
-    .position = Pozycja na ekranie
+    .position = Położenie na ekranie
     .display = Pokaż na wyświetlaczu
 
 panel-style = Styl
@@ -245,7 +283,7 @@ panel-style = Styl
     .dock-extend = Rozszerz dok do krawędzi ekranu
     .appearance = Wygląd
     .size = Rozmiar
-    .background-opacity = Przejrzystość Tła
+    .background-opacity = Przejrzystość tła
 
 panel-applets = Konfiguracja
     .dock-desc = Konfiguracja apletów doku.
@@ -266,25 +304,26 @@ window-management = Zarządzanie oknami
     .desc = Akcje klawisza super, ustawienia kontroli okien i dodatkowe ustawienia kafelkowania okien.
 
 super-key = Klawisz Super
-    .launcher = Otwórz Program Startowy
-    .workspaces = Otwórz Obszary Robocze
-    .applications = Otwórz Aplikacje
+    .launcher = Otwórz program startowy
+    .workspaces = Otwórz obszary robocze
+    .applications = Otwórz aplikacje
     .disable = Wyłącz
 
-window-controls = Sterowanie Oknem
-    .maximize = Pokaż Przycisk Maksymalizacji
-    .minimize = Pokaż Przycisk Minimalizacji
+window-controls = Sterowanie oknami
+    .maximize = Pokaż przycisk maksymalizacji
+    .minimize = Pokaż przycisk minimalizacji
 
-focus-navigation = Nawigacja Aktywnym Oknem
+focus-navigation = Nawigacja aktywnym oknem
     .focus-follows-cursor = Aktywuje okno nad kursorem
+    .focus-follows-cursor-delay = Aktywuje okno nad kursorem w odstępie w milisekundach
     .cursor-follows-focus = Przenosi kursor nad aktywne okno
     
 ## Desktop: Workspaces
 
-workspaces = Obszary Robocze
+workspaces = Obszary robocze
     .desc = Zachowanie i kierunek obszaru roboczego.
 
-workspaces-behavior = Funkcjonowanie Obszaru Roboczego
+workspaces-behavior = Funkcjonowanie obszaru roboczego
     .dynamic = Dynamiczne obszary robocze
     .dynamic-desc = Puste obszary robocze są automatycznie usuwane.
     .fixed = Stała liczba obszarów roboczych
