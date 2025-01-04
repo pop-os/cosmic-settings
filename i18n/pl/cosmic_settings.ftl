@@ -329,20 +329,20 @@ workspaces-behavior = Funkcjonowanie obszaru roboczego
     .fixed = Stała liczba obszarów roboczych
     .fixed-desc = Dodaj lub usuń obszar roboczy w podglądzie.
 
-workspaces-multi-behavior = Funkcjonowanie Przy Wielu Monitorach
-    .span = Obszary Robocze Wspólne Dla Wyświetlaczy
-    .separate = Wyświetlacze Mają Osobne Obszary Robocze
+workspaces-multi-behavior = Funkcjonowanie przy wielu monitorach
+    .span = Obszary robocze wspólne dla wyświetlaczy
+    .separate = Wyświetlacze mają osobne obszary robocze
 
-workspaces-overview-thumbnails = Miniatury Podglądu Obszaru Roboczego
-    .show-number = Pokaż Numer Obszaru Roboczego
-    .show-name = Pokaż Nazwę Obszaru Roboczego
+workspaces-overview-thumbnails = Miniatury podglądu obszaru roboczego
+    .show-number = Pokaż numer obszaru roboczego
+    .show-name = Pokaż nazwę obszaru roboczego
 
-workspaces-orientation = Kierunek Obszarów Roboczych
+workspaces-orientation = Kierunek obszarów roboczych
     .vertical = Pionowy
     .horizontal = Poziomy
 
 hot-corner = Hot Corner
-    .top-left-corner = Włącz lewy górny narożnik funkcyjny w Obszarach Roboczych
+    .top-left-corner = Włącz lewy górny narożnik funkcyjny w obszarach roboczych
 
 ## Displays
 
@@ -394,29 +394,35 @@ orientation = Kierunek
     .rotate-180 = Obróć o 180
     .rotate-270 = Obróć o 270
 
+vrr = Zmienna częstotliwość odświeżania
+    .enabled = Włączona
+    .force = Zawsze
+    .auto = Automatycznie
+    .disabled = Wyłączona
+
 scheduling = Harmonogram
     .manual = Ręcznie ustawiony harmonogram
 
 dialog = Dialog
-    .title = Czy Zachować Te Ustawienia Wyświetlacza?
-    .keep-changes = Zachowaj Zmiany
+    .title = Czy zachować te ustawienia wyświetlacza?
+    .keep-changes = Zachowaj zmiany
     .change-prompt = Ustawienia automatycznie powrócą do poprzednich za { $time ->
         [1] sekundę.
         [few] {$time} sekundy.
         *[other] {$time} sekund.
     }
-    .revert-settings = Powróć Do Poprzednich Ustawień
+    .revert-settings = Powróć do poprzednich ustawień
 
-legacy-applications = Skalowanie Aplikacji z Systemu Okien X11
-    .scaled-by-system = Skaluj wszystkie Aplikacje X11
+legacy-applications = Skalowanie aplikacji systemu okien X11
+    .scaled-by-system = Skaluj wszystkie aplikacje X11
     .system-description = Aplikacje X11 będą rozmyte na wyświetlaczach z wysokim DPI.
-    .scaled-natively = Renderuj Aplikacje X11 w pierwotnej rozdzielczości.
+    .scaled-natively = Renderuj aplikacje X11 w pierwotnej rozdzielczości.
     .native-description = Aplikacje X11 które nie wspierają skalowania będą małe na wyświetlaczach z wysokim DPI. Włącz do gier by wykorzystywały pełną rozdzielczość monitora.
 
 ## Sound
 
 sound = Dźwięk
-    .desc = N/A
+    .desc = nd.
 
 sound-output = Wyjście
     .volume = Głośność wyjścia
@@ -466,17 +472,23 @@ battery = Bateria
        *[other] rozładowania
    }
 
-connected-devices = Podłączone Urządzenia
+connected-devices = Podłączone urządzenia
   .unknown = Nierozpoznane urządzenie
 
-power-mode = Profile Zasilania
-  .performance = Tryb Wysokowydajny
-  .balanced = Tryb Zbalansowany
-  .battery = Tryb Oszczędzania Energii
-  .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
+power-mode = Profile zasilania
+  .battery = Tryb oszczędzania energii
+  .battery-desc = Zmniejszone zużycie energii i ciche działanie.
+  .balanced = Tryb zbalansowany
   .balanced-desc = Standardowa wydajność i zużycie baterii.
-  .battery-desc = Zmniejszone zużycie energii i zmniejszona wydajność.
+  .performance = Tryb wysokiej wydajności
+  .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
   .no-backend = Nie znaleziono backendu. Zainstaluj system76-power lub power-profiles-daemon.
+
+power-saving = Opcje oszczędzania energii
+    .turn-off-screen-after = Wygaszaj ekran po
+    .auto-suspend = Automatycznie wstrzymuj
+    .auto-suspend-ac = Automatycznie wstrzymuj gdy podłączono
+    .auto-suspend-battery = Automatycznie wstrzymuj na baterii
 
 ## Input
 
@@ -484,8 +496,8 @@ acceleration-desc = Automatycznie dostosuj dokładność śledzenia do prędkoś
 
 disable-while-typing = Wyłącz podczas pisania
 
-input-devices = Urządzenia Wprowadzania Danych
-    .desc = Urządzenia Wprowadzania Danych
+input-devices = Urządzenia wprowadzania danych
+    .desc = Urządzenia wprowadzania danych
 
 primary-button = Główny przycisk
     .desc = Ustawia kolejność fizycznych przycisków
@@ -508,8 +520,8 @@ long = Długo
 keyboard = Klawiatura
     .desc = Wprowadzanie danych, zmienianie, wprowadzanie znaków specjalnych i skróty na klawiaturze.
 
-keyboard-sources = Żródła Wprowadzania Danych
-    .desc = Żródła Wprowadzania Danych można zmienić naciskając kombinację klawiszy Super i Spację. Może być to spersonalizowane w ustawieniach skrótów klawiaturowych.
+keyboard-sources = Żródła wprowadzania danych
+    .desc = Żródła wprowadzania danych można zmienić naciskając kombinację klawiszy Super i Spacja. Może być to spersonalizowane w ustawieniach skrótów klawiaturowych.
     .move-up = Przesuń w górę
     .move-down = Przesuń w dół
     .settings = Ustawienia
@@ -517,20 +529,22 @@ keyboard-sources = Żródła Wprowadzania Danych
     .remove = Usuń
     .add = Dodaj źródło wprowadzania danych
 
-keyboard-special-char = Wpis Znaków Specjalnych
+keyboard-special-char = Wpis znaków specjalnych
     .alternate = Alternatywne klawisze znaków
-    .compose = Ustaw klawisz
+    .compose = Klawisz komponujący
+    .caps = Klawisz Caps Lock
 
 keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
     .repeat-delay = Opóżnienie powtarzania
 
 added = Dodany
-type-to-search = Naciśnij by wyszukać...
+type-to-search = Naciśnij by wyszukać…
+show-extended-input-sources = Pokaż rozszerzone źródła wprowadzania
 
 ## Input: Keyboard: Shortcuts
 
-keyboard-shortcuts = Skróty Klawiaturowe
+keyboard-shortcuts = Skróty klawiaturowe
     .desc = Obejrzyj i spersonalizuj skróty
 
 add-keybinding = Dodaj skrót klawiszowy
@@ -557,7 +571,7 @@ type-key-combination = Wpisz kombinację klawiszy
 
 custom-shortcuts = Własne skróty klawiszowe
     .add = Dodaj skrót klawiszowy
-    .context = Dodaj Własny skrót klawiszowy
+    .context = Dodaj własny skrót klawiszowy
     .none = Nie masz własych skrótów klawiszowych
 
 modified = { $count } zmodyfikowano
@@ -640,6 +654,7 @@ system-shortcut = System
     .volume-raise = Zwiększ głośność wyjścia dźwięku
     .web-browser = Otwórz przeglądarkę
     .window-switcher = Przełącz między otwartymi oknami
+    .window-switcher-previous = Przełącz między otwartymi oknami w odwróconej kolejności
     .workspace-overview = Otwórz podgląd obszaru roboczego
 
 window-tiling = Kafelkowanie okien
@@ -663,7 +678,7 @@ mouse = Myszka
 
 ## Input: Touchpad
 
-click-behavior = Funkcjonowanie Kliknięć
+click-behavior = Funkcjonowanie kliknięć
     .click-finger = Drugi przycisk uzyskujemy kliknięciem dwoma palcami, a środkowy przycisk trzema
     .button-areas = Drugi przycisk uzyskujemy kliknięciem w prawy dolny róg, a środkowy przycisk kliknięciem w środek dołu
 
@@ -690,36 +705,53 @@ gestures = Gesty
 switch-workspaces = Przełączenie pomiędzy obszarami roboczymi
     .horizontal = Przesunięcie czterema palcami w lewo/prawo
     .vertical = Przesunięcie czterema palcami w góra/dół
+
 switch-between-windows = Przełączenie pomiędzy oknami
 open-application-library = Otwarcie biblioteki aplikacji
 open-workspaces-view = Otwarcie podglądu obszarów roboczych
 
 ## Time & Language
 
-time = Czas i Język
+time = Czas i język
     .desc = Niedostępne
 
-time-date = Czas i Data
+time-date = Data i godzina
     .desc = Strefa czasowa, automatyczne ustawienia zegara oraz formatowanie czasu.
     .auto = Ustaw automatycznie
     .auto-ntp = Czas i data ustawią się automatycznie po wybraniu strefy czasowej.
 
-time-zone = Strefa Czasowa
+time-zone = Strefa czasowa
     .auto = Automatyczna strefa czasowa
     .auto-info = Wymaga usług lokalizacji oraz połączenia internetowego
 
-time-format = Format Daty i Czasu
+time-format = Format daty i godziny
     .twenty-four = Czas 24-godzinny
     .show-seconds = Pokaż sekundy
     .first = Pierwszy dzień tygodnia
-    .show-date = Pokaż Datę w Górnym Panelu
+    .show-date = Pokaż datę w górnym panelu
     .friday = Piątek
     .saturday = Sobota
     .sunday = Niedziela
     .monday = Poniedziałek
 
-time-region = Region i Język
+time-region = Region i język
     .desc = Format dat, czasu i numerów na podstawie wybranego regionu
+
+formatting = Formatowanie
+    .dates = Daty
+    .time = Godzina
+    .date-and-time = Data i godzina
+    .numbers = Liczby
+    .measurement = Miara
+    .paper = Papier
+
+preferred-languages = Preferowane języki
+    .desc = Koleność języków określa, w którym języku wyświetlane jest tłumaczenie pulpitu. Zmiana przyniesie efekt po następnym logowaniu.
+
+add-language = Dodaj język
+    .context = Dodaj język
+install-additional-languages = Zainstaluj dodatkowe języki
+region = Region
 
 ## System
 
@@ -727,34 +759,60 @@ system = System i Konta
 
 ## System: About
 
-about = O Systemie
+about = O systemie
     .desc = Nazwa urządzenia, informacje o sprzęcie, domyślne ustawienia systemu.
 
 about-device = Nazwa urządzenia
     .desc = Ta nazwa wyświetla się innym w sieci i na urządzeniach bluetooth.
 
 about-hardware = Sprzęt
-    .model = Model Sprzętu
+    .model = Model sprzętu
     .memory = Pamięć
     .processor = Procesor
     .graphics = Grafika
-    .disk-capacity = Pojemność Dysku
+    .disk-capacity = Pojemność dysku
 
-about-os = System Operacyjny
-    .os = System Operacyjny
-    .os-architecture = Architektura Systemu Operacyjnego
-    .desktop-environment = Środowisko Graficzne
-    .windowing-system = System Okien
+about-os = System operacyjny
+    .os = System operacyjny
+    .os-architecture = Architektura systemu operacyjnego
+    .desktop-environment = Środowisko graficzne
+    .windowing-system = System okien
 
-about-related = Pokrewne Ustawienia
-    .support = Uzyskaj Wsparcie
+about-related = Pokrewne ustawienia
+    .support = Uzyskaj wsparcie
 
 ## System: Firmware
 
 firmware = Mikrooprogramowanie
-    .desc = Szczegóły Mikrooprogramowania
+    .desc = Szczegóły mikrooprogramowania
 
 ## System: Users
 
 users = Użytkownicy
     .desc = Uwierzytelnianie, logowanie i ekran blokady.
+    .admin = Administrator
+    .standard = Standardowy
+    .profile-add = Wybierz obraz profilu
+
+administrator = Administrator
+    .desc = Administratorzy mogą zmieniać ustawienia wszystkich użytkowników, dodawać i usuwać innych użytkowników.
+
+add-user = Dodaj użytkownika
+remove-user = Usuń użytkownika
+full-name = Pełna nazwa
+username = Nazwa użytkownika
+password = Hasło
+
+## System: Domyślne aplikacje
+
+default-apps = Domyślne aplikacje
+    .desc = Domyślna przeglądarka, klient e-mail, przeglądarka plików i inne aplikacje.
+    .web-browser = Przeglądarka internetowa
+    .file-manager = Menedżer plików
+    .mail-client = Klient poczty e-mail
+    .music = Muzyka
+    .video = Filmy
+    .photos = Zdjęcia
+    .calendar = Kalendarz
+    .terminal = Terminal
+    .other-associations = Inne powiązania
