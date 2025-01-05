@@ -261,7 +261,7 @@ small = Klein
 start-segment = Beginstuk
 
 panel-appearance = Uiterlijk
-    .match = Aanpassen aan bureaublad
+    .match = Systeemstandaard
     .light = Licht
     .dark = Donker
 
