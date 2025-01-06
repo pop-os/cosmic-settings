@@ -301,12 +301,12 @@ window-management = Vensterbeheer
 super-key = Actie van de supertoets
     .launcher = Snelstarter openen
     .workspaces = Werkbladoverzicht openen
-    .applications = appmenu openen
+    .applications = Appmenu openen
     .disable = Supertoets uitschakelen
 
 window-controls = Vensterbeheer
-    .maximize = Knop maximaliseren tonen
-    .minimize = Knop minimaliseren tonen
+    .maximize = Maximaliseerknop tonen
+    .minimize = Minimaliseerknop tonen
     .active-window-hint = Gebruik visuele hint voor het actieve venster
 
 focus-navigation = Focusbesturing
