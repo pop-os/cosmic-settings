@@ -770,3 +770,17 @@ switch-workspaces = Ändra arbetsyta
 switch-between-windows = Ändra mellan fönster
 open-application-library = Öppna Applikationsbibliotek
 open-workspaces-view = Öppna Översikt över arbetsytor
+
+## System: Standardprogram
+
+default-apps = Standardprogram
+    .desc = Standard webbläsare, e-postklient, filhanteringsprogram och andra program.
+    .web-browser = Webbläsare
+    .file-manager = Filhanteringsprogram
+    .mail-client = E-postklient
+    .music = Musik
+    .video = Video
+    .photos = Foton
+    .calendar = Kalender
+    .terminal = Terminal
+    .other-associations = Andra associeringar
