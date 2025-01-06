@@ -107,7 +107,7 @@ confirm = Bevestigen
 
 bluetooth = Bluetooth
     .desc = Bluetooth-apparaten bewerken
-    .status = Dit systeem is zichtbaar als { $aliases } zolang de Bluetooth-instellingen open staan.
+    .status = Dit systeem is zichtbaar als { $aliases } zolang de bluetooth-instellingen open staan.
     .connected = Verbonden
     .connecting = Verbinding maken...
     .disconnecting = Verbinding verbreken...
@@ -461,11 +461,11 @@ connected-devices = Verbonden apparaten
 
 power-mode = Energieverbruik
     .battery = Energiebesparing
-    .battery-desc = Verminderd stroomverbruik en geruisloze prestaties.
+    .battery-desc = Verminderd energieverbruik en stille prestaties.
     .balanced = Gebalanceerd
-    .balanced-desc = Gemiddeld stroomverbruik en stille prestaties.
+    .balanced-desc = Normale prestaties en batterieverbruik.
     .performance = Hoge Prestatie
-    .performance-desc = Hoge prestatie en batterijverbruik.
+    .performance-desc = Hoge prestatie en energieverbruik.
     .no-backend = Backend niet gevonden. Installeer system76-power of power-profiles-daemon.
 
 power-saving = Energiebesparingsopties
@@ -505,7 +505,7 @@ keyboard = Toetsenbord
     .desc = Invoermethodes, omschakelen, invoer van speciale tekens en sneltoetsen.
 
 keyboard-sources = Invoermethodes
-    .desc = Invoermethodes kunnen worden gewisseld met de sneltoetscombinatie Super+Spatie. Dit kan aangepast worden in de instellingen voor sneltoetsen.
+    .desc = Invoermethodes kunnen worden gewisseld met de sneltoetscombinatie Super + Spatie. Dit kan aangepast worden in de instellingen voor sneltoetsen.
     .move-up = Omhoog
     .move-down = Naar beneden
     .settings = Instellingen
