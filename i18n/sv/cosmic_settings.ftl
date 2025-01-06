@@ -90,8 +90,8 @@ super-key = Super key åtgärd
 
 experimental-settings = Testinställningar
 icons-and-toolkit = Utformning av ikoner och verktyg
-interface-font = Systemets teckensnitt
-monospace-font = Teckensnitt med jämna mellanrum
+interface-font = Standardteckensnitt
+monospace-font = Teckensnitt med fast bredd
 
 ## Skrivbord: Skärm
 
@@ -552,6 +552,12 @@ power-mode = Strömalternativ
     .performance-desc = Hög prestanda och strömförbrukning.
     .no-backend = Basbearbetning ej funnen. Installera system76-power eller power-profiles-daemon.
 
+power-saving = Energisparalternativ
+    .turn-off-screen-after = Stäng av skärmen efter
+    .auto-suspend = Automatisk suspendering
+    .auto-suspend-ac = Automatisk suspendering vid inkoppling
+    .auto-suspend-battery = Automatisk suspendering på batteridrift
+
 ## Input
 
 acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
@@ -770,3 +776,17 @@ switch-workspaces = Ändra arbetsyta
 switch-between-windows = Ändra mellan fönster
 open-application-library = Öppna Applikationsbibliotek
 open-workspaces-view = Öppna Översikt över arbetsytor
+
+## System: Standardprogram
+
+default-apps = Standardprogram
+    .desc = Standard webbläsare, e-postklient, filhanteringsprogram och andra program.
+    .web-browser = Webbläsare
+    .file-manager = Filhanteringsprogram
+    .mail-client = E-postklient
+    .music = Musik
+    .video = Video
+    .photos = Foton
+    .calendar = Kalender
+    .terminal = Terminal
+    .other-associations = Andra associeringar

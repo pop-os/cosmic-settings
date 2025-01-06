@@ -1,6 +1,6 @@
 app = Ustawienia COSMIC
 
-dbus-connection-error = Połączenie z DBus nie pwiodło się
+dbus-connection-error = Nieudane połączenie do DBus
 ok = OK
 unknown = Nieznane
 
@@ -211,7 +211,7 @@ experimental-settings = Ustawienia eksperymentalne
 enable-export = Używaj tego motywu w aplikacjach GNOME.
     .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Aplikacje spoza COSMIC mogą wymagać restartu po zmianie motywu.
 
-icon-theme = Motyw ikon
+icon-theme = Motyw Ikon
     .desc = Zastosuj inny zbiór ikon do aplikacji.
 
 text-tint = Odcień tekstu interfejsu
@@ -235,7 +235,7 @@ window-management-appearance = Zarządzanie oknami
 
 experimental-settings = Ustawienia eksperymentalne
 icons-and-toolkit = Motyw ikon i toolkita
-interface-font = Font systemu
+interface-font = Font systemowy
 monospace-font = Font o stałej szerokości
 
 ## Desktop: Notifications
@@ -315,9 +315,9 @@ window-controls = Sterowanie oknami
 
 focus-navigation = Nawigacja aktywnym oknem
     .focus-follows-cursor = Aktywuje okno nad kursorem
-    .focus-follows-cursor-delay = Aktywuje okno nad kursorem w odstępie w milisekundach
+    .focus-follows-cursor-delay = Opóźnienie kursora aktywującego okno w milisekundach
     .cursor-follows-focus = Przenosi kursor nad aktywne okno
-    
+
 ## Desktop: Workspaces
 
 workspaces = Obszary robocze
@@ -536,7 +536,7 @@ keyboard-special-char = Wpis znaków specjalnych
 
 keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
-    .repeat-delay = Opóżnienie powtarzania
+    .repeat-delay = Opóźnienie powtarzania
 
 added = Dodany
 type-to-search = Naciśnij by wyszukać…
@@ -746,7 +746,7 @@ formatting = Formatowanie
     .paper = Papier
 
 preferred-languages = Preferowane języki
-    .desc = Koleność języków określa, w którym języku wyświetlane jest tłumaczenie pulpitu. Zmiana przyniesie efekt po następnym logowaniu.
+    .desc = Kolejność języków określa który język jest używany podczas tłumaczenia. Zmiany wejdą w życie podczas kolejnego logowania.
 
 add-language = Dodaj język
     .context = Dodaj język
@@ -814,5 +814,5 @@ default-apps = Domyślne aplikacje
     .video = Filmy
     .photos = Zdjęcia
     .calendar = Kalendarz
-    .terminal = Terminal
+    .terminal = Konsola
     .other-associations = Inne powiązania

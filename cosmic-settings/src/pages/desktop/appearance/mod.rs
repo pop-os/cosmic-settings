@@ -60,7 +60,7 @@ enum ContextView {
     MonospaceFont,
     SystemFont,
 }
-
+#[allow(clippy::struct_excessive_bools)]
 pub struct Page {
     entity: page::Entity,
     on_enter_handle: Option<cosmic::iced::task::Handle>,
@@ -78,6 +78,10 @@ pub struct Page {
     font_config: font_config::Model,
     font_filter: Vec<Arc<str>>,
     font_search: String,
+
+    /**  Only fetch icons once. Allows for better cleanup. Also icon fetching can take for ages. */
+    icons_fetched: bool,
+    icon_fetch_handle: Option<cosmic::iced::task::Handle>,
 
     icon_theme_active: Option<usize>,
     icon_themes: IconThemes,
@@ -203,6 +207,8 @@ impl
             font_config: font_config::Model::new(),
             font_filter: Vec::new(),
             font_search: String::new(),
+            icons_fetched: false,
+            icon_fetch_handle: None,
             icon_theme_active: None,
             icon_themes: Vec::new(),
             icon_handles: Vec::new(),
@@ -1081,10 +1087,17 @@ impl Page {
 
             Message::IconsAndToolkit => {
                 self.context_view = Some(ContextView::IconsAndToolkit);
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    "".into(),
+                let mut tasks = Vec::new();
+                tasks.push(cosmic::task::message(
+                    crate::app::Message::OpenContextDrawer(self.entity, "".into()),
                 ));
+                if !self.icons_fetched {
+                    self.icons_fetched = true;
+                    let (task, handle) = cosmic::task::future(icon_themes::fetch()).abortable();
+                    self.icon_fetch_handle = Some(handle);
+                    tasks.push(task);
+                }
+                return Task::batch(tasks);
             }
 
             Message::Daytime(day_time) => {
@@ -1457,7 +1470,7 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Task<crate::pages::Message> {
         let (task, handle) = cosmic::task::batch(vec![
             // Load icon themes
-            cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
+            // cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
             // Load font families
             cosmic::task::future(async move {
                 let (mono, interface) = font_config::load_font_families();
@@ -1475,7 +1488,9 @@ impl page::Page<crate::pages::Message> for Page {
         if let Some(handle) = self.on_enter_handle.take() {
             handle.abort();
         }
-
+        if let Some(handle) = self.icon_fetch_handle.take() {
+            handle.abort();
+        }
         cosmic::task::message(crate::pages::Message::Appearance(Message::Left))
     }
 
