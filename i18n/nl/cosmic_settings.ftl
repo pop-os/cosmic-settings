@@ -39,8 +39,8 @@ auth-dialog = Authenticatie vereist
     .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
     .wifi-description = Voer het wachtwoord of de encryptiesleutel in. U kunt ook verbinden door op de "WPS"-knop op de router te drukken.
 
-forget-dialog = Wifi-netwerk vergeten?
-    .description = U moet opnieuw een wachtwoord invoeren om dit wifi-netwerk in de toekomst te gebruiken.
+forget-dialog = Wifinetwerk vergeten?
+    .description = U moet opnieuw een wachtwoord invoeren om dit wifinetwerk in de toekomst te gebruiken.
 
 network-device-state =
     .activated = Verbonden
@@ -191,7 +191,7 @@ auto-switch = Automatisch wisselen tussen lichte en donkere modus
     .next-sunrise = Wissel naar lichte modus bij de volgende zonsopgang
     .next-sunset = Wissel naar donkere modus bij de volgende zonsondergang
 
-<#-- not sure about these translations, don't know what is meant with Container color -->
+### not sure about these translations, don't know what is meant with Container color
 container-background = Containerachergrondskleur 
     .desc-detail = De containerachtergrondskleur wordt gebruikt voor de navigatiebalk, het zijpaneel, dialoogvensters en soortgelijke widgets. Standaard wordt deze automatisch afgeleid van de achtergrond van de toepassing of het venster.
     .reset = Naar automatisch terugzetten
@@ -200,7 +200,7 @@ container-background = Containerachergrondskleur
 control-tint = Tinten van controlecomponenten
     .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoekingangen, tekstingangen en soortgelijke onderdelen.
 frosted =  Matglaseffect op de systeeminterface
-    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, de snelstarter en het startmenu
+    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, de snelstarter en het appmenu
 
 enable-export = Pas dit thema toe op GNOME-apps.
     .desc = Niet alle toolkit-omgevingen ondersteunen automatische wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
@@ -216,7 +216,7 @@ style = Stijl
     .slightly-round = Licht afgerond
     .square = Rechthoekig
 
-interface-density = Interface-dichtheid
+interface-density = Interfacedichtheid
     .comfortable = Comfortabel
     .compact = Compact
     .spacious = Ruim
@@ -241,7 +241,7 @@ notifications = Meldingen
 ## Desktop: Panel
 
 panel = Paneel
-    .desc = Balk bovenin met bureaublad-applets en menu's.
+    .desc = Balk bovenin met bureaubladapplets en menu's.
 
 add = Toevoegen
 add-applet = Applet toevoegen
@@ -291,7 +291,7 @@ panel-missing = Paneelconfiguratie ontbreekt
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Paneel met vastgezetten applicaties vanuit het startmenu en andere applets.
+    .desc = Paneel met vastgezetten applicaties vanuit het appmenu en andere applets.
 
 ## Desktop: Window management
 
@@ -301,12 +301,12 @@ window-management = Vensterbeheer
 super-key = Actie van de supertoets
     .launcher = Snelstarter openen
     .workspaces = Werkbladoverzicht openen
-    .applications = Startmenu openen
+    .applications = appmenu openen
     .disable = Supertoets uitschakelen
 
 window-controls = Vensterbeheer
-    .maximize = Knop 'maximaliseren' tonen
-    .minimize = Knop 'minimaliseren' tonen
+    .maximize = Knop maximaliseren tonen
+    .minimize = Knop minimaliseren tonen
     .active-window-hint = Gebruik visuele hint voor het actieve venster
 
 focus-navigation = Focusbesturing
@@ -429,7 +429,7 @@ sound-alerts = Waarschuwingsgeluid
     .sound = Type waarschuwingsgeluid
 
 sound-applications = Applicaties
-    .desc = Applicatievolume en -instellingen
+    .desc = Volume-instellingen per applicatie
 
 profile = Profiel
 
@@ -476,7 +476,7 @@ power-saving = Energiebesparingsopties
 
 ## Input
 
-acceleration-desc = De trackinggevoeligheid wordt automatisch aangepast op basis van de snelheid.
+acceleration-desc =  De gevoeligheid wordt automatisch aangepast op basis van de snelheid.
 
 disable-while-typing = Uitschakelen tijdens het typen
 
@@ -616,7 +616,7 @@ move-windows = Venster verplaatsen
     .workspace-num = Venster naar werkblad { $num } verplaatsen
     .prev-workspace = Venster naar vorig werkblad verplaatsen
     .next-workspace = Venster naar volgend werkblad verplaatsen
-<#-- last workspace: last used workspace or the last in a row? -->
+### last workspace: last used workspace or the last in a row?
     .last-workspace = Venster naar laatst gebruikte werkblad verplaatsen
     .next-display = Venster naar volgend beeldscherm verplaatsen
     .prev-display = Venster naar vorig beeldscherm verplaatsen
@@ -624,7 +624,7 @@ move-windows = Venster verplaatsen
     .send-to-next-workspace = Venster naar volgend werkblad verplaatsen
 
 system-shortcut = Systeem
-    .app-library = Het startmenu openen
+    .app-library = Het appmenu openen
     .brightness-down = Schermhelderheid verlagen
     .brightness-up = Schermhelderheid verhogen
     .home-folder = De gebruikersmap (/home) openen
@@ -667,7 +667,7 @@ mouse = Muis
 
 ## Input: Touchpad
 
-click-behavior = Klik-eigenschappen
+click-behavior = Klikeigenschappen
     .click-finger = Secundaire klik met twee vingers en middelklik met drie vingers
     .button-areas = Secundaire klik in de rechterbenedenhoek en middelklik in het midden onderaan
 
@@ -678,13 +678,13 @@ tap-to-click = Tikken om te klikken
     .desc = Met één vinger tikken voor de primaire klik, met twee vingers voor de secundaire klik en met drie vingers voor de middelklik.
 
 touchpad = Touchpad
-    .acceleration = Schakelt touchpad-versnelling in
-    .desc = Touchpad-snelheid, klik-opties, touchpad-gebaren.
-    .speed = Touchpad-snelheid
+    .acceleration = Schakelt muisversnelling voor touchpad in
+    .desc = Muissnelheid, klikopties en veeggebaren voor touchpad
+    .speed = Touchpad muissnelheid
 
 ## Input: Gestures
 
-gestures = Touchpad-gebaren
+gestures = Veeggebaren
     .four-finger-down = Vier vingers naar beneden vegen
     .four-finger-left = Vier vingers naar links vegen
     .four-finger-right = Vier vingers naar rechts vegen
@@ -696,7 +696,7 @@ switch-workspaces = Werkbladen wisselen
     .vertical = Met vier vingers naar boven/beneden vegen 
 
 switch-between-windows = Tussen vensters wisselen
-open-application-library = Startmenu openen
+open-application-library = appmenu openen
 open-workspaces-view = Werkbladoverzicht openen
 
 ## Time & Language
@@ -735,7 +735,7 @@ formatting = Opmaak
     .paper = Papiervoormaat
 
 preferred-languages = Taalvoorkeur
-    .desc = De volgorde van de talen bepaalt welke door Cosmic wordt gebruikt. Wijzigingen worden doorgevoerd nadat u zich opnieuw heeft aangemeld.
+    .desc = De volgorde van de talen bepaalt welke door COSMIC wordt gebruikt. Wijzigingen worden doorgevoerd nadat u zich opnieuw heeft aangemeld.
 
 add-language = Taal toevoegen
     .context = Voeg een taal toe
