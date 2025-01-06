@@ -1,18 +1,132 @@
 app = Ustawienia COSMIC
 
+dbus-connection-error = Nieudane połączenie do DBus
+ok = OK
 unknown = Nieznane
 
 number = { $number }
 
 ## Networking: Wired
 
-wired = Przewodowe
-    .desc = Połączenie przewodowe, profil połączenia
+connections-and-profiles = { $variant ->
+    [wired] Przewodowe
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Nieznane
+} połączenia i profile połączeń.
+
+add-network = Dodaj sieć
+    .profile = Dodaj profil
+add-vpn = Dodaj VPN
+airplane-on = Tryb samolotowy jest włączony.
+cable-unplugged = Rozłączono połączenie przewodowe
+connect = Połącz
+connected = Połączono
+connecting = Łączę…
+disconnect = Rozłącz
+forget = Zapomnij
+known-networks = Znane Sieci
+network-and-wireless = Sieci i Połączenia Bezprzewodowe
+no-networks = Nie znaleziono żadnej sieci.
+no-vpn = Brak dostępnych połączeń VPN.
+password = Hasło
+remove = Usuń
+settings = Ustawienia
+username = Użytkownik
+visible-networks = Widoczne Sieci
+
+auth-dialog = Wymagane Uwierzytelnienie
+    .vpn-description = Wprowadź nazwę i hasło wymagane przez usługę VPN.
+    .wifi-description = Wprowadź hasło lub klucz odszyfrowania lub połącz się wciskając przycisk "WPS" na routerze.
+
+forget-dialog = Chcesz zapomnieć hasło tej sieci Wi-Fi?
+    .description = Będziesz musiał ponownie wprowadzać hasło do tej sieci Wi-Fi, by jej użyć.
+
+network-device-state =
+    .activated = Połączono
+    .config = Konfiguracja
+    .deactivating = Rozłączanie
+    .disconnected = Rozłączono
+    .failed = Nieudane połączenie
+    .ip-check = Sprawdzam połączenie
+    .ip-config = Wymagane IP i informacje o routingu
+    .need-auth = Wymagane uwierzytelnienie
+    .prepare = Przygotowuję do połączenia
+    .secondaries = Oczekuję na dodatkowe połączenie
+    .unavailable = Niedostępne
+    .unknown = Nieznany stan
+    .unmanaged = Niezarządzane
+    .unplugged = Wypięty kabel
+
+remove-connection-dialog = Usunąć Profil Połączenia?
+    .vpn-description = Będziesz musiał ponownie wprowadzać hasło do tej sieci, by jej użyć.
+    .wired-description = Będziesz musiał odtworzyć ten profil, by jej użyć.
+
+vpn = VPN
+    .connections = Połączenia VPN
+    .error = Nieudane dodania konfiguracji VPN
+    .remove = Usuń profil połączenia
+    .select-file = Wybierz plik konfiguracyjny VPN
+
+vpn-error = Błąd VPN
+    .config = Nieudane dodania konfiguracji VPN
+    .connect = Nieudane połączenie z VPN
+    .connection-editor = Nieudana edycja połączenia
+    .connection-settings = Nie udało się odczytać ustawień aktywnego połączenia
+    .updating-state = Nieudane uaktualnienie stanu zarządzania połączeniami
+    .wireguard-config-path = Nieprawidłowa ścieżka pliku dla konfiguracyjnego WireGuard
+    .wireguard-config-path-desc = Wybrany plik musi być w lokalnym systemie plików.
+    .wireguard-device = Nie udało się stworzyć urządzenia WireGuard
+    .with-password = Nie udało się ustawić { $field ->
+        *[username] użytkownika
+        [password] hasła
+        [password-flags] flag hasła
+    } VPS za pomocą nmcli
+
+wired = Przewodowa
+    .adapter = Adapter przewodowy { $id }
+    .connections = Połączenia Przewodowe
+    .devices = Urządzenia Przewodowe
+    .remove = Usuń profil połączenia
+
+wifi = Wi-Fi
+    .adapter = Adapter Wi-Fi { $id }
+    .forget = Zapomnij tą sieć
+
+wireguard-dialog = Dodaj urządzenie WireGuard
+    .description = Wybierz nazwę urządzenia dla konfiguracji WireGuard.
 
 ## Networking: Online Accounts
 
 online-accounts = Konta Online
     .desc = Dodaj konta, IMAP, SMTP i logowanie firmowe
+
+# Bluetooth
+
+confirm = Potwierdź
+
+bluetooth = Bluetooth
+    .desc = Zarządzaj urządzeniami Bluetooth
+    .status = Ten system jest widoczny jako { $aliases }, dla urządzeń Bluetooth.
+    .connected = Połączono
+    .connecting = Łączenie
+    .disconnecting = Rozłączanie
+    .connect = Połącz
+    .disconnect = Rozłącz
+    .forget = Zapomnij
+    .dbus-error = Wystąpił błąd podczas interakcji z DBus: { $why }
+    .show-device-without-name = Pokaż urządzenia bez nazw
+
+bluetooth-paired = Poprzednio Połączone Urządzenia
+    .connect = Połącz
+    .battery = { $percentage }% baterii
+
+bluetooth-confirm-pin = Potwierdź PINem Bluetooth
+    .description = Upewnij się, że PIN jest taki sam jak na urządzeniu { $device }
+
+bluetooth-available = Pobliskie Urządzenia
+
+bluetooth-adapters = Adaptery Bluetooth
 
 ## Desktop
 
@@ -92,12 +206,10 @@ control-tint = Sterowanie odcieniami komponentów
 frosted = Efekt zmrożonego szkła na interfejsie systemowym
     .desc = Nakłada efekt rozmycia na panel, dok, aplety, program startowy oraz bibliotekę aplikacji.
 
-experimental-settings = Ustawienia eksperymentalne
-
 enable-export = Użyj tego motywu do apek GNOME.
     .desc = Nie wszystkie toolkity wspierają automatyczne zmiany. Apki inne niż COSMIC mogą wymagać restartu do zmiany motywu.
 
-icon-theme = Motyw ikon
+icon-theme = Motyw Ikon
     .desc = Zastosuj inny zbiór ikon do aplikacji.
 
 text-tint = Odcień tekstu interfejsu
@@ -108,10 +220,21 @@ style = Styl
     .slightly-round = Lekko zaokrąglony
     .square = Kwadratowy
 
-# interface density left out for now
+interface-density = Zagęszczenie Interfejsu
+    .comfortable = Wygodne
+    .compact = Zwarte
+    .spacious = Swobodne
+
 window-management-appearance = Zarządzanie Oknami
     .active-hint = Rozmiar wyróżnienia aktywnego okna
     .gaps = Przerwa między ramkami okien w trybie kafelków
+
+### Experimental
+
+experimental-settings = Ustawienia Eksperymentalne
+icons-and-toolkit = Motywy biblioteki i ikon
+interface-font = Czcionka systemowa
+monospace-font = Czcionka o stałej szerokości
 
 ## Desktop: Notifications
 
@@ -178,7 +301,7 @@ dock = Dok
 window-management = Zarządzanie oknami
     .desc = Akcje klawisza super, ustawienia kontroli okien i dodatkowe ustawienia kafelkowania okien.
 
-super-key = Klawisz Super
+super-key = Akcje klawisza Super
     .launcher = Otwórz Program Startowy
     .workspaces = Otwórz Obszary Robocze
     .applications = Otwórz Aplikacje
@@ -187,11 +310,13 @@ super-key = Klawisz Super
 window-controls = Sterowanie Oknem
     .maximize = Pokaż Przycisk Maksymalizacji
     .minimize = Pokaż Przycisk Minimalizacji
+    .active-window-hint = Pokaż kolor wyróżnienia aktywnego okna
 
 focus-navigation = Nawigacja Aktywnym Oknem
     .focus-follows-cursor = Aktywuje okno nad kursorem
+    .focus-follows-cursor-delay = Opóźnienie kursora aktywującego okno w milisekundach
     .cursor-follows-focus = Przenosi kursor nad aktywne okno
-    
+
 ## Desktop: Workspaces
 
 workspaces = Obszary Robocze
@@ -267,6 +392,12 @@ orientation = Kierunek
     .rotate-90 = Obróć o 90
     .rotate-180 = Obróć o 180
     .rotate-270 = Obróć o 270
+
+vrr = Zmienne odświeżanie
+    .enabled = Wyłączone
+    .force = Zawsze
+    .auto = Automatyczne
+    .disabled = Wyłączone
 
 scheduling = Harmonogram
     .manual = Ręcznie ustawiony harmonogram
@@ -344,13 +475,19 @@ connected-devices = Podłączone Urządzenia
   .unknown = Nierozpoznane urządzenie
 
 power-mode = Profile Zasilania
-  .performance = Tryb Wysokowydajny
-  .balanced = Tryb Zbalansowany
   .battery = Tryb Oszczędzania Energii
-  .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
-  .balanced-desc = Standardowa wydajność i zużycie baterii.
   .battery-desc = Zmniejszone zużycie energii i zmniejszona wydajność.
+  .balanced = Tryb Zbalansowany
+  .balanced-desc = Standardowa wydajność i zużycie baterii.
+  .performance = Tryb Wysokowydajny
+  .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
   .no-backend = Nie znaleziono backendu. Zainstaluj system76-power lub power-profiles-daemon.
+
+power-saving = Opcje Oszczędzania Energii
+    .turn-off-screen-after = Wyłącz ekran po
+    .auto-suspend = Automatycznie wstrzymaj
+    .auto-suspend-ac = Automatycznie wstrzymuj na zasilaniu
+    .auto-suspend-battery = Automatycznie wstrzymuj na baterii
 
 ## Input
 
@@ -394,13 +531,15 @@ keyboard-sources = Żródła Wprowadzania Danych
 keyboard-special-char = Wpis Znaków Specjalnych
     .alternate = Alternatywne klawisze znaków
     .compose = Ustaw klawisz
+    .caps = Klawisz Caps Lock
 
 keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
-    .repeat-delay = Opóżnienie powtarzania
+    .repeat-delay = Opóźnienie powtarzania
 
 added = Dodany
 type-to-search = Naciśnij by wyszukać...
+show-extended-input-sources = Pokaż rozszerzone źródła wprowadzania danych
 
 ## Input: Keyboard: Shortcuts
 
@@ -514,6 +653,7 @@ system-shortcut = System
     .volume-raise = Zwiększ głośność wyjścia dźwięku
     .web-browser = Otwórz przeglądarkę
     .window-switcher = Przełącz między otwartymi oknami
+    .window-switcher-previous = Przełącz na poprzednie otwarte okno
     .workspace-overview = Otwórz podgląd obszaru roboczego
 
 window-tiling = Kafelkowanie okien
@@ -595,6 +735,22 @@ time-format = Format Daty i Czasu
 time-region = Region i Język
     .desc = Format dat, czasu i numerów na podstawie wybranego regionu
 
+formatting = Formatowanie
+    .dates = Daty
+    .time = Czas
+    .date-and-time = Czas i Data
+    .numbers = Numery
+    .measurement = Miary
+    .paper = Papieru
+
+preferred-languages = Preferowane Języki
+    .desc = Kolejność języków określa który język jest używany podczas tłumaczenia. Zmiany wejdą w życie podczas kolejnego logowania.
+
+add-language = Dodaj język
+    .context = Dodaj język
+install-additional-languages = Zainstaluj dodatkowy język
+region = Region
+
 ## System
 
 system = System i Konta
@@ -632,3 +788,29 @@ firmware = Mikrooprogramowanie
 
 users = Użytkownicy
     .desc = Uwierzytelnianie, logowanie i ekran blokady.
+    .admin = Administratora
+    .standard = Standardowe
+    .profile-add = Wybierz obraz profilowy
+
+administrator = Administrator
+    .desc = Administratorzy mogą zmieniać ustawienia wszystkich użytkowników, albo ich usuwać.
+
+add-user = Dodaj użytkownika
+remove-user = Usuń użytkownika
+full-name = Pełna nazwa
+username = Użytkownik
+password = Hasło
+
+## System: Default Applications
+
+default-apps = Domyślne Aplikacje
+    .desc = Domyślna przeglądarka, klient email, przeglądarka plików i inne aplikacje.
+    .web-browser = Przeglądarka
+    .file-manager = Przeglądarka plików
+    .mail-client = Klient email
+    .music = Musyka
+    .video = Wideo
+    .photos = Obrazy
+    .calendar = Kalendarz
+    .terminal = Konsola
+    .other-associations = Inne powiązania
