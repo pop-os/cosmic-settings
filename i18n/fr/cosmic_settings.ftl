@@ -463,7 +463,7 @@ power-profiles = Modes d'énergie
     .no-backend = Backend non trouvé. Installez system76-power ou power-profiles-daemon.
 
 power-saving = Options d'économie d'énergie
-	.turn-off-screen-after = Éteindre l'écran après
+    .turn-off-screen-after = Éteindre l'écran après
 	.auto-suspend = Suspension automatique
 	.auto-suspend-ac = Suspension automatique lors du branchement
 	.auto-suspend-battery = Suspension automatique sur batterie

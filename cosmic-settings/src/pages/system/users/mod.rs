@@ -1,6 +1,7 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+mod fprint;
 mod getent;
 
 use cosmic::{
@@ -10,6 +11,7 @@ use cosmic::{
     Apply, Element,
 };
 use cosmic_settings_page::{self as page, section, Section};
+use fprint::{FingerName, FprintInfo};
 use slab::Slab;
 use slotmap::SlotMap;
 use std::{
@@ -37,6 +39,7 @@ pub struct User {
     full_name_edit: bool,
     password_edit: bool,
     username_edit: bool,
+    fingerprint_info: FprintInfo,
     is_admin: bool,
 }
 
@@ -50,6 +53,7 @@ pub enum EditorField {
 #[derive(Clone, Debug)]
 pub enum Dialog {
     AddNewUser(User),
+    Fingerprint(zbus::zvariant::OwnedObjectPath, User, Vec<FingerName>),
 }
 
 #[derive(Clone, Debug)]
@@ -98,6 +102,7 @@ pub enum Message {
     SelectUser(usize),
     SelectedUserDelete(u64),
     SelectedUserSetAdmin(u64, bool),
+    StartEnrollFinger(zbus::zvariant::OwnedObjectPath, User),
     ToggleEdit(usize, EditorField),
 }
 
@@ -217,6 +222,30 @@ impl page::Page<crate::pages::Message> for Page {
                     .secondary_action(cancel_button)
                     .apply(Element::from)
             }
+            Dialog::Fingerprint(device, user, enrolled_fingers) => {
+                let mut control = widget::ListColumn::default();
+                for finger in FingerName::ALL {
+                    control = control.add(settings::item(
+                        finger.to_string(),
+                        if enrolled_fingers.contains(&finger) {
+                            widget::text(fl!("registered")).apply(Element::from)
+                        } else {
+                            widget::button::standard(fl!("register"))
+                                // .on_press(Message::StartEnrollFinger(device.clone(), user.clone()))
+                                .apply(Element::from)
+                        },
+                    ))
+                }
+
+                let cancel_button =
+                    widget::button::standard(fl!("close")).on_press(Message::Dialog(None));
+
+                widget::dialog()
+                    .title(fl!("fingerprints"))
+                    .control(control)
+                    .secondary_action(cancel_button)
+                    .apply(Element::from)
+            }
         };
 
         dialog_element.map(crate::pages::Message::User).into()
@@ -276,6 +305,13 @@ impl Page {
                     Ok(_) => false,
                     Err(_) => {
                         admin_group.map_or(false, |group| group.users.contains(&user.username))
+                    }
+                },
+                fingerprint_info: match fprint::get_fprint_info(&user.username).await {
+                    Ok(info) => info,
+                    Err(_) => {
+                        tracing::error!("Failed to get fprint info");
+                        FprintInfo::default()
                     }
                 },
                 username: String::from(user.username),
@@ -567,6 +603,10 @@ impl Page {
                     Message::ChangedAccountType(uid, is_admin)
                 });
             }
+
+            Message::StartEnrollFinger(device, user) => {
+                fprint::start_enroll_finger(device, &user.username);
+            }
         };
 
         cosmic::Task::none()
@@ -634,19 +674,40 @@ fn user_list() -> Section<crate::pages::Message> {
                         let mut details_list = widget::list_column()
                             .add(settings::item(&page.fullname_label, fullname))
                             .add(settings::item(&page.username_label, username))
-                            .add(settings::item(&page.password_label, password))
-                            .add(settings::item_row(vec![
-                                column::with_capacity(2)
-                                    .push(text::body(crate::fl!("administrator")))
-                                    .push(text::caption(crate::fl!("administrator", "desc")))
-                                    .into(),
-                                widget::horizontal_space().width(Length::Fill).into(),
-                                widget::toggler(user.is_admin)
-                                    .on_toggle(|enabled| {
-                                        Message::SelectedUserSetAdmin(user.id, enabled)
-                                    })
-                                    .into(),
-                            ]));
+                            .add(settings::item(&page.password_label, password));
+
+                        if let Some(device) = &user.fingerprint_info.default_device {
+                            details_list = details_list.add(settings::item(
+                                format!("{} (Default Device)", device.name.clone()),
+                                widget::button::standard(fl!("see-fingerprints")).on_press(
+                                    Message::Dialog(Some(Dialog::Fingerprint(
+                                        device.path.clone(),
+                                        user.clone(),
+                                        device.enrolled_fingers.clone(),
+                                    ))),
+                                ),
+                            ));
+                        }
+
+                        for device in &user.fingerprint_info.other_devices {
+                            details_list = details_list.add(settings::item(
+                                device.name.clone(),
+                                widget::text(format!("{:?}", device.enrolled_fingers)),
+                            ));
+                        }
+
+                        details_list = details_list.add(settings::item_row(vec![
+                            column::with_capacity(2)
+                                .push(text::body(crate::fl!("administrator")))
+                                .push(text::caption(crate::fl!("administrator", "desc")))
+                                .into(),
+                            widget::horizontal_space().width(Length::Fill).into(),
+                            widget::toggler(user.is_admin)
+                                .on_toggle(|enabled| {
+                                    Message::SelectedUserSetAdmin(user.id, enabled)
+                                })
+                                .into(),
+                        ]));
 
                         if page.users.len() > 1 {
                             details_list = details_list.add(settings::item_row(vec![

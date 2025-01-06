@@ -777,6 +777,8 @@ users = Users
     .standard = Standard
     .profile-add = Choose profile image
 
+see-fingerprints = See fingerprints
+
 administrator = Administrator
     .desc = Administrators can change settings for all users, add and remove other users.
 
@@ -785,6 +787,24 @@ remove-user = Remove user
 full-name = Full name
 username = Username
 password = Password
+
+fingerprints = Fingerprints
+
+finger = Finger
+    .any = Any
+    .left-thumb = Left Thumb
+    .left-index-finger = Left Index Finger
+    .left-middle-finger = Left Middle Finger
+    .left-ring-finger = Left Ring Finger
+    .left-little-finger = Left Little Finger
+    .right-thumb = Right Thumb
+    .right-index-finger = Right Index Finger
+    .right-middle-finger = Right Middle Finger
+    .right-ring-finger = Right Ring Finger
+    .right-little-finger = Right Little Finger
+
+registered = Registered
+register = Register
 
 ## System: Default Applications
 
