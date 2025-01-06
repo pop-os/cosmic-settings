@@ -127,11 +127,15 @@ fn touchpad() -> Section<crate::pages::Message> {
                 )
                 .add(
                     settings::item::builder(&descriptions[disable_while_typing]).toggler(
-                        input.input_touchpad.disable_while_typing.unwrap_or(
-                            CosmicCompConfig::default()
-                                .input_touchpad
-                                .disable_while_typing,
-                        ),
+                        input
+                            .input_touchpad
+                            .disable_while_typing
+                            .unwrap_or_else(|| {
+                                CosmicCompConfig::default()
+                                    .input_touchpad
+                                    .disable_while_typing
+                                    .unwrap_or(true)
+                            }),
                         |enabled| Message::DisableWhileTyping(enabled, true),
                     ),
                 )
