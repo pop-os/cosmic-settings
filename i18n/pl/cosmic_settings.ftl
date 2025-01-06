@@ -484,7 +484,7 @@ power-mode = Profile Zasilania
   .no-backend = Nie znaleziono backendu. Zainstaluj system76-power lub power-profiles-daemon.
 
 power-saving = Opcje Oszczędzania Energii
-    .turn-off-screen-after = Wyłącz ekran po
+    .turn-off-screen-after = Wyłącz ekran za
     .auto-suspend = Automatycznie wstrzymaj
     .auto-suspend-ac = Automatycznie wstrzymuj na zasilaniu
     .auto-suspend-battery = Automatycznie wstrzymuj na baterii
@@ -808,7 +808,7 @@ default-apps = Domyślne Aplikacje
     .web-browser = Przeglądarka
     .file-manager = Przeglądarka plików
     .mail-client = Klient email
-    .music = Musyka
+    .music = Muzyka
     .video = Wideo
     .photos = Obrazy
     .calendar = Kalendarz
