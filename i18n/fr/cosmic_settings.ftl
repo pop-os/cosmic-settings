@@ -37,7 +37,7 @@ visible-networks = Réseaux visibles
 
 auth-dialog = Authentification requise
     .vpn-description = Entrez l'identifiant et le mot de passe demandé par le service de VPN.
-    .wifi-description = Entrez le mot de passe ou la clé de chiffrement. Vous pouvez aussi vous connecter en pressant le boutton “WPS” sur votre box.
+    .wifi-description = Entrez le mot de passe ou la clé de chiffrement. Vous pouvez aussi vous connecter en pressant le bouton “WPS” sur votre box.
 
 forget-dialog = Oublier ce réseau Wi-Fi ?
     .description = Vous aurez besoin de réentrer le mot de passe pour réutiliser ce réseau Wi-Fi.
@@ -110,9 +110,9 @@ bluetooth = Bluetooth
     .status = Ce système est visible en tant que { $aliases } pendant que les paramètres Bluetooth sont ouvert.
     .connected = Connecté
     .connecting = Connexion
-    .disconnecting = Deconnexion
+    .disconnecting = Déconnexion
     .connect = Connecter
-    .disconnect = Deconnecter
+    .disconnect = Déconnecter
     .forget = Oublier
     .dbus-error = Une erreur est survenue lors de l'interaction avec DBus: { $why }
     .show-device-without-name = Afficher les périphériques sans nom
@@ -221,7 +221,7 @@ interface-density = Densité d'interface
     .compact = Compact
     .spacious = Spacieux
 
-window-management = Gestion des fenêtres
+window-management-appearance = Gestion des fenêtres
     .active-hint = Taille de l'indice de fenêtre active
     .gaps = Espaces entre les fenêtres en mosaïque
 
@@ -290,7 +290,7 @@ panel-missing = La configuration du panneau est manquante
 ## Desktop: Dock
 
 dock = Dock
-	.desc = Panneau avec des applications épinglées dans le plateau d'applications et d'autres applets.
+    .desc = Panneau avec des applications épinglées dans le plateau d'applications et d'autres applets.
 
 ## Desktop: Window management
 
@@ -453,7 +453,7 @@ battery = Batterie
 connected-devices = Périphériques connectés
   .unknown = Périphériques inconnu
 
-power-profiles = Modes d'énergie
+power-mode = Modes d'énergie
     .battery = Économie d'énergie
     .battery-desc = Performances réduites mais consommation d'énergie réduite.
     .balanced = Équilibré
@@ -463,10 +463,10 @@ power-profiles = Modes d'énergie
     .no-backend = Backend non trouvé. Installez system76-power ou power-profiles-daemon.
 
 power-saving = Options d'économie d'énergie
-	.turn-off-screen-after = Éteindre l'écran après
-	.auto-suspend = Suspension automatique
-	.auto-suspend-ac = Suspension automatique lors du branchement
-	.auto-suspend-battery = Suspension automatique sur batterie
+    .turn-off-screen-after = Éteindre l'écran après
+    .auto-suspend = Suspension automatique
+    .auto-suspend-ac = Suspension automatique lors du branchement
+    .auto-suspend-battery = Suspension automatique sur batterie
 
 ## Input
 
@@ -477,7 +477,7 @@ disable-while-typing = Désactiver pendant la saisie
 input-devices = Périphériques d'entrée
     .desc = Périphériques d'entrée
 
-primary-button = Boutton principal
+primary-button = Bouton principal
     .desc = Définit l'ordre des boutons physiques.
     .left = Gauche
     .right = Droite
@@ -632,6 +632,7 @@ system-shortcut = Système
     .volume-raise = Augmenter le volume de sortie audio
     .web-browser = Ouvrir un navigateur web
     .window-switcher = Passer d'une fenêtre ouverte à l'autre
+    .window-switcher-previous = Passer d'une fenêtre ouverte à l'autre inversée
     .workspace-overview = Ouvrir l’aperçu des espaces de travail
 
 window-tiling = Tuilage des fenêtres
@@ -703,7 +704,7 @@ time-zone = Fuseau Horaire
 
 time-format = Format date et heure
     .twenty-four = Format 24 heures
-	.show-seconds = Afficher les secondes
+    .show-seconds = Afficher les secondes
     .first = Premier jour de la semaine
     .show-date = Afficher la date sur le panneau supérieur
     .friday = Vendredi
@@ -712,7 +713,23 @@ time-format = Format date et heure
     .monday = Lundi
 
 time-region = Région et Langue
-    .desc = Formater les dates, les heures et les nombres en fonction de votre région
+    .desc = Formater les dates, les heures et les nombres en fonction de votre région.
+
+formatting = Format
+    .dates = Dates
+    .time = Heure
+    .date-and-time = Date et heure
+    .numbers = Nombre
+    .measurement = Mesure
+    .paper = Papier
+
+preferred-languages = Langues favorites
+    .desc = L'ordre des langues détermine la langue utilisée. Les changements prendront effet à la prochaine connexion.
+
+add-language = Ajouter une langue
+    .context = Ajouter une Langue
+install-additional-languages = Installer les langues ajoutées
+region = Région
 
 ## System
 
@@ -751,3 +768,29 @@ firmware = Micrologiciel
 
 users = Utilisateurs
     .desc = Authentification et connexion, écran de verrouillage.
+    .admin = Admin
+    .standard = Standard
+    .profile-add = Choisir l'image de profil
+
+administrator = Administrateur
+    .desc = Les administrateurs peuvent changer les paramètres de tous les utilisateurs, en ajouter de nouveaux et en supprimer.
+
+add-user = Ajouter l'utilisateur
+remove-user = Supprimer l'utilisateur
+full-name = Nom complet
+username = Nom d'utilisateur
+password = Mot de passe
+
+## System: Default Applications
+
+default-apps = Applications par défaut
+    .desc = Navigateur web, client mail, navigateur de fichiers, et autres applications.
+    .web-browser = Navigateur web
+    .file-manager = Navigateur de fichiers
+    .mail-client = Client mail
+    .music = Musique
+    .video = Vidéo
+    .photos = Photos
+    .calendar = Calendrier
+    .terminal = Terminal
+    .other-associations = Autres associations
