@@ -241,7 +241,7 @@ notifications = Meldingen
 ## Desktop: Panel
 
 panel = Paneel
-    .desc = Balk bovenin met bureaubladapplets en menu's.
+    .desc = Bovenbalk met bureaubladapplets en menu's.
 
 add = Toevoegen
 add-applet = Applet toevoegen
@@ -281,8 +281,8 @@ panel-style = Stijl
     .background-opacity = Doorzichtigheid van de achtergrond
 
 panel-applets = Configuratie
-    .dock-desc = Applets voor de Dock configureren
-    .desc = Applets voor het paneel configureren
+    .dock-desc = Dock-applets configureren
+    .desc = Paneel-applets configureren
 
 panel-missing = Paneelconfiguratie ontbreekt
     .desc = Het paneelconfiguratiebestand ontbreekt door het gebruik van een aangepaste configuratie of door corruptie.
@@ -363,8 +363,8 @@ display = Beeldschermen
     .scale = Schaal
 
 mirroring = Scherm dupliceren
-    .id = Publiceren { $id }
-    .dont = Don't mirror
+    .id = Dupliceren { $id }
+    .dont = Niet dupliceren
     .mirror = { $display } dupliceren
     .project = Naar { $display ->
         [all] alle schermen
