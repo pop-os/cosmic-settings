@@ -135,7 +135,7 @@ desktop = Bureaublad
 
 wallpaper = Schermachtergrond
     .change = Wijzig alle afbeeldingen
-    .desc = Opties voor schermachtergrond, kleuren en diavoorstellingen
+    .desc = Opties voor schermachtergrond, kleuren en diavoorstellingen.
     .fit = Achtergrond aanpassen
     .folder-dialog = Selecteer map met achtergronden
     .image-dialog = Selecteer achtergrond
@@ -200,7 +200,7 @@ container-background = Containerachergrondskleur
 control-tint = Tinten van controlecomponenten
     .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoekingangen, tekstingangen en soortgelijke onderdelen.
 frosted =  Matglaseffect op de systeeminterface
-    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, de snelstarter en het appmenu
+    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, snelstarter en het appmenu.
 
 enable-export = Pas dit thema toe op GNOME-apps.
     .desc = Niet alle toolkit-omgevingen ondersteunen automatische wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
@@ -317,7 +317,7 @@ focus-navigation = Focusbesturing
 ## Desktop: Workspaces
 
 workspaces = Virtuele werkbladen
-    .desc = Aantal, werking en positie van virtuele werkbladen instellen
+    .desc = Werking en oriëntatie van virtuele werkbladen instellen.
 
 workspaces-behavior = Werking virtuele werkbladen
     .dynamic = Dynamische werkbladen
@@ -333,7 +333,7 @@ workspaces-overview-thumbnails = Miniatuurweergaven van het werkbladoverzicht
     .show-number = Toon het nummer van de werkbladen
     .show-name = Toon de naam van de werkbladen
 
-workspaces-orientation = Oriëntatie van de virtuele werkbladen
+workspaces-orientation = Oriëntatie van virtuele werkbladen
     .vertical = Verticaal
     .horizontal = Horizontaal
 
@@ -661,7 +661,7 @@ replace-shortcut-dialog = Sneltoets overschrijven?
 ## Input: Mouse
 
 mouse = Muis
-    .desc = Muissnelheid, muisversnelling en natuurlijk scrollen
+    .desc = Muissnelheid, muisversnelling en natuurlijk scrollen.
     .speed = Muissnelheid
     .acceleration = Muisversnelling inschakelen
 
@@ -679,7 +679,7 @@ tap-to-click = Tikken om te klikken
 
 touchpad = Touchpad
     .acceleration = Schakelt muisversnelling voor touchpad in
-    .desc = Muissnelheid, klikopties en veeggebaren voor touchpad
+    .desc = Muissnelheid, klikopties en veeggebaren voor touchpad.
     .speed = Touchpad muissnelheid
 
 ## Input: Gestures
@@ -778,7 +778,7 @@ firmware = Firmware
 ## System: Users
 
 users = Gebruikers
-    .desc = Authenticatie en gebruikersinstellingen
+    .desc = Authenticatie en gebruikersinstellingen.
     .admin = Systeembeheerder
     .standard = Standaard
     .profile-add = Kies een profielafbeelding
