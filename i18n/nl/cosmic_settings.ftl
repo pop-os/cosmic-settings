@@ -758,7 +758,7 @@ about-hardware = Hardware
     .model = Hardwaremodel
     .memory = Geheugen
     .processor = Processor
-    .graphics = Grafische prestaties
+    .graphics = Grafische kaart
     .disk-capacity = Opslagcapaciteit
 
 about-os = Besturingssysteem
