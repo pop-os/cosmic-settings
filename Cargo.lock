@@ -1650,6 +1650,7 @@ dependencies = [
  "fontdb 0.16.2",
  "freedesktop-desktop-entry",
  "futures",
+ "gettext-rs",
  "hostname-validator",
  "hostname1-zbus",
  "i18n-embed",

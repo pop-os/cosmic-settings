@@ -208,6 +208,7 @@ impl Model {
 
     pub(super) fn on_clear(&mut self) {
         self.shortcut_models.clear();
+        self.shortcut_models.shrink_to_fit();
     }
 
     /// Gets the custom configuration for keyboard shortcuts.

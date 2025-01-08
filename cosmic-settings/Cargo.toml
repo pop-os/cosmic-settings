@@ -72,6 +72,9 @@ fontdb = "0.16.2"
 fixed_decimal = "0.5.6"
 mime = "0.3.17"
 rustix = "0.38.41"
+gettext-rs = { version = "0.7.2", features = [
+    "gettext-system",
+], optional = true }
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
@@ -95,6 +98,7 @@ optional = true
 
 [features]
 default = ["a11y", "dbus-config", "linux", "single-instance", "wgpu"]
+gettext = ["dep:gettext-rs"]
 
 # Default features for Linux
 linux = [
@@ -120,6 +124,7 @@ page-bluetooth = ["dep:bluez-zbus", "dep:zbus"]
 page-date = ["dep:timedate-zbus", "dep:zbus"]
 page-default-apps = ["dep:mime-apps"]
 page-input = [
+    "gettext",
     "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",
     "dep:udev",
