@@ -203,9 +203,9 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        self.search.actions.clear();
-        self.search.localized.clear();
-        self.search.input.clear();
+        self.search.actions = SlotMap::new();
+        self.search.localized = SecondaryMap::new();
+        self.search.input = String::new();
         self.search_model.on_clear();
         self.modified.custom = 0;
         self.modified.manage_windows = 0;

@@ -338,7 +338,7 @@ impl page::Page<crate::pages::Message> for Page {
                     self.keyboard_layouts.insert((
                         layout.name().to_owned(),
                         String::new(),
-                        layout.description().to_owned(),
+                        gettextrs::dgettext("xkeyboard-config", layout.description()),
                         source.clone(),
                     ));
 
@@ -347,7 +347,7 @@ impl page::Page<crate::pages::Message> for Page {
                             (
                                 layout.name().to_owned(),
                                 variant.name().to_owned(),
-                                variant.description().to_owned(),
+                                gettextrs::dgettext("xkeyboard-config", variant.description()),
                                 source.clone(),
                             )
                         })
@@ -393,6 +393,13 @@ impl page::Page<crate::pages::Message> for Page {
             }
         }
 
+        Task::none()
+    }
+
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        self.active_layouts = Vec::new();
+        self.keyboard_layouts = SlotMap::new();
+        self.input_source_search = String::new();
         Task::none()
     }
 }
