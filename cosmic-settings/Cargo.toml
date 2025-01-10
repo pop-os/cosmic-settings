@@ -67,7 +67,6 @@ url = "2.5.2"
 xkb-data = "0.2.1"
 zbus = { version = "4.4.0", features = ["tokio"], optional = true }
 zbus_polkit = { version = "4.0.0" }
-ustr = "1.0.0"
 fontdb = "0.16.2"
 fixed_decimal = "0.5.6"
 mime = "0.3.17"

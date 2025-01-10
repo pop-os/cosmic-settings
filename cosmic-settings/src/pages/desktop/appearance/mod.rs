@@ -1550,10 +1550,16 @@ impl page::Page<crate::pages::Message> for Page {
                 } else {
                     &self.font_filter
                 };
-                let current_font = cosmic::config::interface_font().family.as_str();
 
-                font_config::selection_context(filter, &self.font_search, current_font, true)
-                    .map(crate::pages::Message::Appearance)
+                let current_font = cosmic::config::interface_font();
+
+                font_config::selection_context(
+                    filter,
+                    &self.font_search,
+                    current_font.family.as_str(),
+                    true,
+                )
+                .map(crate::pages::Message::Appearance)
             }
 
             ContextView::MonospaceFont => {
@@ -1562,10 +1568,16 @@ impl page::Page<crate::pages::Message> for Page {
                 } else {
                     &self.font_filter
                 };
-                let current_font = cosmic::config::monospace_font().family.as_str();
 
-                font_config::selection_context(filter, &self.font_search, current_font, false)
-                    .map(crate::pages::Message::Appearance)
+                let current_font = cosmic::config::monospace_font();
+
+                font_config::selection_context(
+                    filter,
+                    &self.font_search,
+                    current_font.family.as_str(),
+                    false,
+                )
+                .map(crate::pages::Message::Appearance)
             }
 
             ContextView::IconsAndToolkit => self.icons_and_toolkit(),
@@ -2065,13 +2077,13 @@ pub fn experimental() -> Section<crate::pages::Message> {
 
             let system_font = crate::widget::go_next_with_item(
                 &descriptions[interface_font_txt],
-                text::body(cosmic::config::interface_font().family.as_str()),
+                text::body(cosmic::config::interface_font().family),
                 Message::DisplaySystemFont,
             );
 
             let mono_font = crate::widget::go_next_with_item(
                 &descriptions[monospace_font_txt],
-                text::body(cosmic::config::monospace_font().family.as_str()),
+                text::body(cosmic::config::monospace_font().family),
                 Message::DisplayMonoFont,
             );
 
