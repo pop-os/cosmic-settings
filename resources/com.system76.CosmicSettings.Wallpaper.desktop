@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Wallpaper
+Name[pl]=Tapeta
 Comment=Wallpaper images, colors, and slideshow options.
+Comment[pl]=Obraz tła, kolory i opcje pokazu slajdów.
 Type=Settings
 Exec=cosmic-settings wallpaper
 Terminal=false

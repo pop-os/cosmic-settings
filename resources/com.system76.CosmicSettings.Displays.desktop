@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Displays
+Name[pl]=Ekrany
 Comment=Display options, graphics modes, and night light.
+Comment[pl]=Ustawienia wyświetlania, opcje grafiki i podświetlanie nocne.
 Type=Settings
 Exec=cosmic-settings displays
 Terminal=false

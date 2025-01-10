@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Date & Time
+Name[pl]=Data i godzina
 Comment=Time zone, automatic clock settings, and time formatting.
+Comment[pl]=Strefy czasowe, automatyczna konfiguracja zegara i format wyświetlania czasu.
 Type=Settings
 Exec=cosmic-settings date-time
 Terminal=false

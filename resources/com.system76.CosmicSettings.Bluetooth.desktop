@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Bluetooth
+Name[pl]=Bluetooth
 Comment=Manage Bluetooth devices
+Comment[pl]=Zarządzaj urządzeniami Bluetooth
 Type=Settings
 Exec=cosmic-settings bluetooth
 Terminal=false
