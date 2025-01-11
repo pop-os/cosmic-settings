@@ -22,7 +22,6 @@ use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
 use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
 use tokio::sync::oneshot;
-use tokio::task::JoinHandle;
 use tracing::error;
 
 static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
@@ -30,6 +29,7 @@ static DPI_SCALE_LABELS: Lazy<Vec<String>> =
     Lazy::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
 
 /// Display color depth options
+#[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 pub struct ColorDepth(usize);
 
