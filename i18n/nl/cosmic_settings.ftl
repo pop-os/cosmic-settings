@@ -616,7 +616,6 @@ move-windows = Venster verplaatsen
     .workspace-num = Venster naar werkblad { $num } verplaatsen
     .prev-workspace = Venster naar vorig werkblad verplaatsen
     .next-workspace = Venster naar volgend werkblad verplaatsen
-### last workspace: last used workspace or the last in a row?
     .last-workspace = Venster naar laatst gebruikte werkblad verplaatsen
     .next-display = Venster naar volgend beeldscherm verplaatsen
     .prev-display = Venster naar vorig beeldscherm verplaatsen
