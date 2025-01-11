@@ -191,24 +191,23 @@ auto-switch = Automatisch wisselen tussen lichte en donkere modus
     .next-sunrise = Wissel naar lichte modus bij de volgende zonsopgang
     .next-sunset = Wissel naar donkere modus bij de volgende zonsondergang
 
-### not sure about these translations, don't know what is meant with Container color
-container-background = Containerachergrondskleur 
-    .desc-detail = De containerachtergrondskleur wordt gebruikt voor de navigatiebalk, het zijpaneel, dialoogvensters en soortgelijke widgets. Standaard wordt deze automatisch afgeleid van de achtergrond van de toepassing of het venster.
+container-background = Containerachtergrond 
+    .desc-detail = De containerachtergrondskleur wordt gebruikt voor de navigatiebalk, het zijpaneel, dialoogvensters en soortgelijke widgets. Standaard wordt deze automatisch afgeleid van de applicatie- of vensterachtergrondkleur.      
     .reset = Naar automatisch terugzetten
-    .desc = De primaire containerkleur wordt gebruikt voor de navigatiezijbalk, zijlade, dialoogvensters en soortgelijke widgets.
+    .desc = De primaire containerkleur wordt gebruikt voor de navigatiezijbalk, het zijpaneel, dialoogvensters en soortgelijke widgets.
 
-control-tint = Tinten van controlecomponenten
-    .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoekingangen, tekstingangen en soortgelijke onderdelen.
+control-tint = Kleuring van controlecomponenten
+    .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoek- en tekstinvoervelden en soortgelijke onderdelen.
 frosted =  Matglaseffect op de systeeminterface
     .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, snelstarter en het appmenu.
 
 enable-export = Pas dit thema toe op GNOME-apps.
-    .desc = Niet alle toolkit-omgevingen ondersteunen automatische wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
+    .desc = Niet alle toolkit-omgevingen ondersteunen automatische thema wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
 
 icon-theme = Icoonthema
     .desc = Past een andere set pictogrammen toe op applicaties.
 
-text-tint = Interface tekstkleur
+text-tint = Interfacetekstkleur
     .desc = Kleur die wordt gebruikt om interfacetekstkleuren te bepalen, zodat er voldoende contrast is op verschillende oppervlakken.
 
 style = Stijl
@@ -566,23 +565,21 @@ nav-shortcuts = Navigatie
     .last-workspace = Focus op laatste werkblad
     .prev-workspace = Focus op vorige werkblad
     .next-workspace = Focus op volgende werkblad
+    .focus = Vensterfocus naar { $direction ->
+        *[down] beneden
+        [in] binnen
+        [left] links
+        [out] buiten
+        [right] rechts
+        [up] boven
+    }
 
-<#-- Realy confusing English sentence to translate: Focus window down / in / left ... What does it mean!? -->
-    .focus = Focus op { $direction ->
-        *[down] onderste
-        [in] binnenste
-        [left] linker
-        [out] buitenste
-        [right] rechter
-        [up] bovenste
-    } venster
-
-    .output = Omschakelen naar uitvoer { $direction ->
+    .output = Naar uitvoer { $direction ->
         *[down] hieronder
         [left] links
         [right] rechts
         [up] hierboven
-    }
+    } omschakelen
     .workspace = Naar werkblad { $num } omschakelen
 
 manage-windows = Vensterbeheer
