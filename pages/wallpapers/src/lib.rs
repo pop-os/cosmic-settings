@@ -97,44 +97,36 @@ pub fn cache_dir() -> Option<PathBuf> {
 #[must_use]
 pub async fn load_each_from_path(
     path: PathBuf,
-    recurse: bool,
 ) -> Pin<Box<dyn Send + Stream<Item = (PathBuf, RgbaImage, RgbaImage)>>> {
     let wallpapers = tokio::task::spawn_blocking(move || {
-        // Directories to search recursively.
-        let mut paths = vec![path];
         // Discovered image files that will be loaded as wallpapers.
         let mut wallpapers = BTreeSet::new();
 
-        while let Some(path) = paths.pop() {
-            if let Ok(dir) = path.read_dir() {
-                for entry in dir.filter_map(Result::ok) {
-                    let Ok(file_type) = entry.file_type() else {
+        if let Ok(dir) = path.read_dir() {
+            for entry in dir.filter_map(Result::ok) {
+                let Ok(file_type) = entry.file_type() else {
+                    continue;
+                };
+
+                let path = entry.path();
+
+                if file_type.is_file() {
+                    let path = if path.extension().map_or(false, |ext| ext == "jxl") {
+                        path
+                    } else if let Ok(Some(kind)) = infer::get_from_path(&path) {
+                        if infer::MatcherType::Image == kind.matcher_type() {
+                            path
+                        } else {
+                            continue;
+                        }
+                    } else {
                         continue;
                     };
 
-                    let path = entry.path();
+                    wallpapers.insert(path);
 
-                    // Recursively search directories, while storing only image files.
-                    if recurse && file_type.is_dir() {
-                        paths.push(path);
-                    } else if file_type.is_file() {
-                        let path = if path.extension().map_or(false, |ext| ext == "jxl") {
-                            path
-                        } else if let Ok(Some(kind)) = infer::get_from_path(&path) {
-                            if infer::MatcherType::Image == kind.matcher_type() {
-                                path
-                            } else {
-                                continue;
-                            }
-                        } else {
-                            continue;
-                        };
-
-                        wallpapers.insert(path);
-
-                        if wallpapers.len() > 99 {
-                            break;
-                        }
+                    if wallpapers.len() > 99 {
+                        break;
                     }
                 }
             }

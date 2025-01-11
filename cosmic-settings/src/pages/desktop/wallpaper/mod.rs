@@ -221,12 +221,10 @@ impl page::Page<crate::pages::Message> for Page {
 
         let current_folder = self.config.current_folder().to_owned();
 
-        let recurse = self.categories.selected == Some(Category::Wallpapers);
-
         let (task, on_enter_handle) = Task::future(async move {
             let (service_config, displays) = wallpaper::config().await;
 
-            let mut selection = change_folder(current_folder, recurse).await;
+            let mut selection = change_folder(current_folder).await;
 
             // `selection.active` is usually empty because `change_folder` creates a fresh context.
             // This leads to blank previews in certain conditions when the program is restarted.
@@ -578,7 +576,7 @@ impl Page {
                 if self.config.current_folder.is_some() {
                     let _ = self.config.set_current_folder(None);
                     task = cosmic::task::future(async move {
-                        let folder = change_folder(Config::default_folder().to_owned(), true).await;
+                        let folder = change_folder(Config::default_folder().to_owned()).await;
                         Message::ChangeFolder(folder)
                     });
                 } else {
@@ -598,7 +596,7 @@ impl Page {
                     }
 
                     task = cosmic::task::future(async move {
-                        Message::ChangeFolder(change_folder(path, false).await)
+                        Message::ChangeFolder(change_folder(path).await)
                     });
                 }
             }
@@ -903,12 +901,9 @@ impl Page {
                         }
                     }
 
-                    // Avoid walking user-selected folders.
-                    let recurse = self.categories.selected == Some(Category::Wallpapers);
-
                     // Load the wallpapers from the selected folder into the view.
                     return cosmic::Task::future(async move {
-                        let message = Message::ChangeFolder(change_folder(path, recurse).await);
+                        let message = Message::ChangeFolder(change_folder(path).await);
                         let page_message = crate::pages::Message::DesktopWallpaper(message);
                         crate::Message::PageMessage(page_message)
                     });
@@ -1138,22 +1133,31 @@ impl Context {
     }
 }
 
-pub async fn change_folder(current_folder: PathBuf, recurse: bool) -> Context {
+pub async fn change_folder(current_folder: PathBuf) -> Context {
     let mut update = Context::default();
-    let mut wallpapers = wallpaper::load_each_from_path(current_folder, recurse).await;
+    let mut streams = Vec::with_capacity(2);
 
-    while let Some((path, display_image, selection_image)) = wallpapers.next().await {
-        let id = update.paths.insert(path);
+    // Include the cosmic background folder when loading the system wallpapers.
+    if current_folder == Config::default_folder() {
+        streams.push(wallpaper::load_each_from_path(Config::default_folder().join("cosmic")).await);
+    }
 
-        update.display_images.insert(id, display_image);
+    streams.push(wallpaper::load_each_from_path(current_folder).await);
 
-        let selection_handle = ImageHandle::from_rgba(
-            selection_image.width(),
-            selection_image.height(),
-            selection_image.into_vec(),
-        );
+    for mut wallpapers in streams {
+        while let Some((path, display_image, selection_image)) = wallpapers.next().await {
+            let id = update.paths.insert(path);
 
-        update.selection_handles.insert(id, selection_handle);
+            update.display_images.insert(id, display_image);
+
+            let selection_handle = ImageHandle::from_rgba(
+                selection_image.width(),
+                selection_image.height(),
+                selection_image.into_vec(),
+            );
+
+            update.selection_handles.insert(id, selection_handle);
+        }
     }
 
     update

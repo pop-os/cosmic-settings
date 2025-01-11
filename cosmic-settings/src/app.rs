@@ -243,6 +243,11 @@ impl cosmic::Application for SettingsApp {
         widgets
     }
 
+    fn on_app_exit(&mut self) -> Option<Self::Message> {
+        self.pages.on_leave(self.active_page);
+        None
+    }
+
     fn on_escape(&mut self) -> Task<Self::Message> {
         if self.search_active {
             self.search_active = false;
