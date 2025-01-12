@@ -523,7 +523,7 @@ keyboard-typing-assist = Typen
 
 added = Toegevoegd
 type-to-search = Typ om te zoeken...
-show-extended-input-sources = Toon uitgebreide invoermethodes
+show-extended-input-sources = Toon uitgebreide invoermethoden
 
 ## Input: Keyboard: Shortcuts
 
@@ -549,8 +549,8 @@ replace = Vervangen
 shortcut-name = Sneltoetsnaam
 system-controls = Systeemaansturing
 terminate = Beëindigen
-toggle-stacking = Zet vensterstapelen (stacking) aan/uit
-type-key-combination = Voer toetsencombinatie in
+toggle-stacking =Zet vensterstapelen aan/uit
+type-key-combination = Toetsencombinatie invoeren
 
 custom-shortcuts = Aangepaste sneltoetsen
     .add = Sneltoets toevoegen
@@ -647,7 +647,7 @@ window-tiling = Venstertegelen
     .vertical = Kies de verticale oriëntatie
     .swap-window = Vensters omwisselen
     .toggle-tiling = Zet venstertegelen aan/uit
-    .toggle-stacking = Zet vensterstapelen (stacking) aan/uit
+    .toggle-stacking = Zet vensterstapelen aan/uit
     .toggle-floating = Zet zwevende vensters aan/uit
     .toggle-orientation = Verander de oriëntatie
 
