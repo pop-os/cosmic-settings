@@ -32,6 +32,7 @@ derive_setters = "0.1.6"
 dirs = "5.0.1"
 downcast-rs = "1.2.1"
 eyre = "0.6.12"
+fprint-zbus = { git = "https://github.com/TitouanReal/dbus-settings-bindings", branch = "fprint-support", optional = true }
 freedesktop-desktop-entry = "0.7.5"
 futures = "0.3.30"
 hostname-validator = "1.1.1"
@@ -137,7 +138,7 @@ page-networking = [
 page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = ["dep:lichen-system", "dep:locale1"]
 page-sound = ["dep:cosmic-settings-subscriptions"]
-page-users = ["dep:accounts-zbus"]
+page-users = ["dep:accounts-zbus", "dep:fprint-zbus"]
 page-window-management = ["dep:cosmic-settings-config"]
 page-workspaces = ["dep:cosmic-comp-config"]
 
