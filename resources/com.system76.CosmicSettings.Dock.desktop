@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Dock
+Name[pl]=Dok
 Comment=Panel with pinned applications in the app tray and other applets.
+Comment[pl]=Panel z przypiętymi aplikacjami w zasobniku i innymi apletami.
 Type=Settings
 Exec=cosmic-settings dock
 Terminal=false

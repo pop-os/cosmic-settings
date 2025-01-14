@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Power & Battery
+Name[pl]=Zasilanie i bateria
 Comment=Power modes and power saving options.
+Comment[pl]=Tryby zasilania i opcje oszczędzania energii.
 Type=Settings
 Exec=cosmic-settings power
 Terminal=false

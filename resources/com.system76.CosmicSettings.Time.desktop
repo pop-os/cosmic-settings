@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Time & Language
+Name[pl]=Czas i język
 Comment=
 Type=Settings
 Exec=cosmic-settings time

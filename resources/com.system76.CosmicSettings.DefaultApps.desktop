@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Default applications
+Name[pl]=Domyślne aplikacje
 Comment=Default web browser, mail client, file browser, and other applications.
+Comment[pl]=Domyślna przeglądarka, klient poczty e-mail, menedżer plików i inne aplikacje.
 Type=Settings
 Exec=cosmic-settings default-apps
 Terminal=false
