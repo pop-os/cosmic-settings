@@ -549,7 +549,7 @@ replace = Vervangen
 shortcut-name = Sneltoetsnaam
 system-controls = Systeemaansturing
 terminate = Beëindigen
-toggle-stacking =Zet vensterstapelen aan/uit
+toggle-stacking = Zet vensterstapelen aan/uit
 type-key-combination = Toetsencombinatie invoeren
 
 custom-shortcuts = Aangepaste sneltoetsen
