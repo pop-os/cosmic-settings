@@ -7,6 +7,7 @@ use cosmic::iced::id::Internal;
 use cosmic::iced::Vector;
 
 use cosmic::iced_core;
+use cosmic::iced_core::clipboard::IconSurface;
 use cosmic::widget::{button, column, container, icon, list_column, row, text, text_input, Column};
 
 use cosmic::{
@@ -1024,16 +1025,16 @@ where
                                     iced_core::clipboard::start_dnd::<
                                         cosmic::Theme,
                                         cosmic::Renderer,
-                                        (),
                                     >(
                                         clipboard,
                                         false,
                                         Some(iced_core::clipboard::DndSource::Widget(
                                             self.id.clone(),
                                         )),
-                                        Some((
+                                        Some(IconSurface::new(
                                             dnd_icon(applet.clone(), &layout).into(),
                                             iced_core::widget::tree::State::new(state.clone()),
+                                            iced_core::Vector::new(0.0, 0.0),
                                         )),
                                         Box::new(AppletString(p.clone())),
                                         DndAction::Move,
