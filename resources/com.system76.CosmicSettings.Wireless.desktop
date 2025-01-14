@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Wi-Fi
+Name[pl]=Wi-Fi
 Comment=Wi-Fi connections and connection profiles.
+Comment[pl]=Połączenia Wi-Fi i profile połączeń.
 Type=Settings
 Exec=cosmic-settings wireless
 Terminal=false

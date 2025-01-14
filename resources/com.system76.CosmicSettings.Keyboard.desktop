@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Keyboard
+Name[pl]=Klawiatura
 Comment=Input sources, switching, special character entry, shortcuts.
+Comment[pl]=Źródła wprowadzania, przełączanie, specjalne klawisze, skróty.
 Type=Settings
 Exec=cosmic-settings keyboard
 Terminal=false

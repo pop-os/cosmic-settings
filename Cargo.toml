@@ -42,6 +42,7 @@ inherits = "release"
 debug = true
 
 [profile.release]
+opt-level = "s"
 lto = "thin"
 
 # [patch.'https://github.com/smithay/client-toolkit/']

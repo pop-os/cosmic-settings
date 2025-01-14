@@ -459,8 +459,8 @@ battery = Batteria
        *[other] scarica
    }
 
-connected-devices = Connected Devices
-  .unknown = Unknown device
+connected-devices = Dispositivi connessi
+  .unknown = Dispositivo sconosciuto
 
 power-mode = Power Mode
     .battery = Estendi la vita della batteria
@@ -641,6 +641,7 @@ system-shortcut = Sistema
     .volume-raise = Aumenta volume dell'audio
     .web-browser = Apri un browser web
     .window-switcher = Cambia finestra aperta
+    .window-switcher-previous = Cambia finestra aperta in senso contrario
     .workspace-overview = Apri panoramica degli spazi di lavoro
 
 window-tiling = Affiancamento finestre
@@ -689,8 +690,8 @@ gestures = Scorrimento
     .three-finger-any = Scorri in qualsiasi direzione usando tre dita
 
 switch-workspaces = Switch workspaces
-    .horizontal = Four-finger swipe left/right
-    .vertical = Four-finger swipe up/down
+    .horizontal = Swipe a quattro dita sinistra/destra
+    .vertical = Swipe a quattro dita su/giù
 
 switch-between-windows = Scorri tra le varie finestre
 open-application-library = Apri la libreria delle applicazioni
@@ -731,13 +732,13 @@ formatting = Formato
     .measurement = Unità di misura
     .paper = Fogli
 
-preferred-languages = Preferred Languages
-    .desc = The order of languages determines which language is used for the translation of the desktop. Changes take effect on next login.
+preferred-languages = Lingua principale
+    .desc = L'ordine delle lingue determina che lingua viene usata per la traduzione del desktop. Le modifiche saranno applicate al prossimo login.
 
-add-language = Add language
-    .context = Add Language
-install-additional-languages = Install additional languages
-region = Region
+add-language = Aggiungi lingua
+    .context = Aggiungi lingua
+install-additional-languages = Installa lingue aggiuntive
+region = Regione
 
 ## System
 

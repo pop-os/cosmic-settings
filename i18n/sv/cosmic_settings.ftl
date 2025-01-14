@@ -513,6 +513,21 @@ firmware = Fast programvara
 ## System: Användare
 
 users = Användare
+    .desc = Autentisering och användarkonton.
+    .admin = Administratör
+    .standard = Standard
+    .profile-add = Välj profilbild
+
+administrator = Administratör
+    .desc = Administratörer kan ändra inställningar för alla användare, lägga till och ta bort andra användare.
+
+add-user = Lägg till användare
+remove-user = Ta bort användare
+full-name = Fullständigt namn
+username = Användarnamn
+password = Lösenord
+
+users = Användare
     .desc = Autentisering och login, låsskärm.
 
 ## Ström
