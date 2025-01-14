@@ -135,7 +135,7 @@ desktop = Bureaublad
 
 wallpaper = Schermachtergrond
     .change = Wijzig alle afbeeldingen
-    .desc = Opties voor schermachtergrond, kleuren en diavoorstellingen
+    .desc = Opties voor schermachtergrond, kleuren en diavoorstellingen.
     .fit = Achtergrond aanpassen
     .folder-dialog = Selecteer map met achtergronden
     .image-dialog = Selecteer achtergrond
@@ -191,24 +191,23 @@ auto-switch = Automatisch wisselen tussen lichte en donkere modus
     .next-sunrise = Wissel naar lichte modus bij de volgende zonsopgang
     .next-sunset = Wissel naar donkere modus bij de volgende zonsondergang
 
-### not sure about these translations, don't know what is meant with Container color
-container-background = Containerachergrondskleur 
-    .desc-detail = De containerachtergrondskleur wordt gebruikt voor de navigatiebalk, het zijpaneel, dialoogvensters en soortgelijke widgets. Standaard wordt deze automatisch afgeleid van de achtergrond van de toepassing of het venster.
+container-background = Containerachtergrond 
+    .desc-detail = De containerachtergrondskleur wordt gebruikt voor de navigatiebalk, het zijpaneel, dialoogvensters en soortgelijke widgets. Standaard wordt deze automatisch afgeleid van de applicatie- of vensterachtergrondkleur.      
     .reset = Naar automatisch terugzetten
-    .desc = De primaire containerkleur wordt gebruikt voor de navigatiezijbalk, zijlade, dialoogvensters en soortgelijke widgets.
+    .desc = De primaire containerkleur wordt gebruikt voor de navigatiezijbalk, het zijpaneel, dialoogvensters en soortgelijke widgets.
 
-control-tint = Tinten van controlecomponenten
-    .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoekingangen, tekstingangen en soortgelijke onderdelen.
+control-tint = Kleuring van controlecomponenten
+    .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoek- en tekstinvoervelden en soortgelijke onderdelen.
 frosted =  Matglaseffect op de systeeminterface
-    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, de snelstarter en het appmenu
+    .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, snelstarter en het appmenu.
 
 enable-export = Pas dit thema toe op GNOME-apps.
-    .desc = Niet alle toolkit-omgevingen ondersteunen automatische wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
+    .desc = Niet alle toolkit-omgevingen ondersteunen automatische thema wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
 
 icon-theme = Icoonthema
     .desc = Past een andere set pictogrammen toe op applicaties.
 
-text-tint = Interface tekstkleur
+text-tint = Interfacetekstkleur
     .desc = Kleur die wordt gebruikt om interfacetekstkleuren te bepalen, zodat er voldoende contrast is op verschillende oppervlakken.
 
 style = Stijl
@@ -241,7 +240,7 @@ notifications = Meldingen
 ## Desktop: Panel
 
 panel = Paneel
-    .desc = Balk bovenin met bureaubladapplets en menu's.
+    .desc = Bovenbalk met bureaubladapplets en menu's.
 
 add = Toevoegen
 add-applet = Applet toevoegen
@@ -281,8 +280,8 @@ panel-style = Stijl
     .background-opacity = Doorzichtigheid van de achtergrond
 
 panel-applets = Configuratie
-    .dock-desc = Applets voor de Dock configureren
-    .desc = Applets voor het paneel configureren
+    .dock-desc = Dock-applets configureren
+    .desc = Paneel-applets configureren
 
 panel-missing = Paneelconfiguratie ontbreekt
     .desc = Het paneelconfiguratiebestand ontbreekt door het gebruik van een aangepaste configuratie of door corruptie.
@@ -317,7 +316,7 @@ focus-navigation = Focusbesturing
 ## Desktop: Workspaces
 
 workspaces = Virtuele werkbladen
-    .desc = Aantal, werking en positie van virtuele werkbladen instellen
+    .desc = Werking en oriëntatie van virtuele werkbladen instellen.
 
 workspaces-behavior = Werking virtuele werkbladen
     .dynamic = Dynamische werkbladen
@@ -333,7 +332,7 @@ workspaces-overview-thumbnails = Miniatuurweergaven van het werkbladoverzicht
     .show-number = Toon het nummer van de werkbladen
     .show-name = Toon de naam van de werkbladen
 
-workspaces-orientation = Oriëntatie van de virtuele werkbladen
+workspaces-orientation = Oriëntatie van virtuele werkbladen
     .vertical = Verticaal
     .horizontal = Horizontaal
 
@@ -363,8 +362,8 @@ display = Beeldschermen
     .scale = Schaal
 
 mirroring = Scherm dupliceren
-    .id = Publiceren { $id }
-    .dont = Don't mirror
+    .id = Dupliceren { $id }
+    .dont = Niet dupliceren
     .mirror = { $display } dupliceren
     .project = Naar { $display ->
         [all] alle schermen
@@ -524,7 +523,7 @@ keyboard-typing-assist = Typen
 
 added = Toegevoegd
 type-to-search = Typ om te zoeken...
-show-extended-input-sources = Toon uitgebreide invoermethodes
+show-extended-input-sources = Toon uitgebreide invoermethoden
 
 ## Input: Keyboard: Shortcuts
 
@@ -550,8 +549,8 @@ replace = Vervangen
 shortcut-name = Sneltoetsnaam
 system-controls = Systeemaansturing
 terminate = Beëindigen
-toggle-stacking = Zet vensterstapelen (stacking) aan/uit
-type-key-combination = Voer toetsencombinatie in
+toggle-stacking =Zet vensterstapelen aan/uit
+type-key-combination = Toetsencombinatie invoeren
 
 custom-shortcuts = Aangepaste sneltoetsen
     .add = Sneltoets toevoegen
@@ -566,23 +565,21 @@ nav-shortcuts = Navigatie
     .last-workspace = Focus op laatste werkblad
     .prev-workspace = Focus op vorige werkblad
     .next-workspace = Focus op volgende werkblad
+    .focus = Vensterfocus naar { $direction ->
+        *[down] beneden
+        [in] binnen
+        [left] links
+        [out] buiten
+        [right] rechts
+        [up] boven
+    }
 
-<#-- Realy confusing English sentence to translate: Focus window down / in / left ... What does it mean!? -->
-    .focus = Focus op { $direction ->
-        *[down] onderste
-        [in] binnenste
-        [left] linker
-        [out] buitenste
-        [right] rechter
-        [up] bovenste
-    } venster
-
-    .output = Omschakelen naar uitvoer { $direction ->
+    .output = Naar uitvoer { $direction ->
         *[down] hieronder
         [left] links
         [right] rechts
         [up] hierboven
-    }
+    } omschakelen
     .workspace = Naar werkblad { $num } omschakelen
 
 manage-windows = Vensterbeheer
@@ -616,7 +613,6 @@ move-windows = Venster verplaatsen
     .workspace-num = Venster naar werkblad { $num } verplaatsen
     .prev-workspace = Venster naar vorig werkblad verplaatsen
     .next-workspace = Venster naar volgend werkblad verplaatsen
-### last workspace: last used workspace or the last in a row?
     .last-workspace = Venster naar laatst gebruikte werkblad verplaatsen
     .next-display = Venster naar volgend beeldscherm verplaatsen
     .prev-display = Venster naar vorig beeldscherm verplaatsen
@@ -651,7 +647,7 @@ window-tiling = Venstertegelen
     .vertical = Kies de verticale oriëntatie
     .swap-window = Vensters omwisselen
     .toggle-tiling = Zet venstertegelen aan/uit
-    .toggle-stacking = Zet vensterstapelen (stacking) aan/uit
+    .toggle-stacking = Zet vensterstapelen aan/uit
     .toggle-floating = Zet zwevende vensters aan/uit
     .toggle-orientation = Verander de oriëntatie
 
@@ -661,7 +657,7 @@ replace-shortcut-dialog = Sneltoets overschrijven?
 ## Input: Mouse
 
 mouse = Muis
-    .desc = Muissnelheid, muisversnelling en natuurlijk scrollen
+    .desc = Muissnelheid, muisversnelling en natuurlijk scrollen.
     .speed = Muissnelheid
     .acceleration = Muisversnelling inschakelen
 
@@ -679,7 +675,7 @@ tap-to-click = Tikken om te klikken
 
 touchpad = Touchpad
     .acceleration = Schakelt muisversnelling voor touchpad in
-    .desc = Muissnelheid, klikopties en veeggebaren voor touchpad
+    .desc = Muissnelheid, klikopties en veeggebaren voor touchpad.
     .speed = Touchpad muissnelheid
 
 ## Input: Gestures
@@ -758,7 +754,7 @@ about-hardware = Hardware
     .model = Hardwaremodel
     .memory = Geheugen
     .processor = Processor
-    .graphics = Grafische prestaties
+    .graphics = Grafische kaart
     .disk-capacity = Opslagcapaciteit
 
 about-os = Besturingssysteem
@@ -778,7 +774,7 @@ firmware = Firmware
 ## System: Users
 
 users = Gebruikers
-    .desc = Authenticatie en gebruikersinstellingen
+    .desc = Authenticatie en gebruikersinstellingen.
     .admin = Systeembeheerder
     .standard = Standaard
     .profile-add = Kies een profielafbeelding
