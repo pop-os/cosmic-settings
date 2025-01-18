@@ -627,6 +627,7 @@ system-shortcut = Systeem
     .keyboard-brightness-down = Toetsenbordverlichting verlagen
     .keyboard-brightness-up = Toetsenbordverlichting verhogen
     .launcher = Snelstarter openen
+    .log-out = Afmelden
     .lock-screen = Scherm vergrendelen
     .mute = Geluid uit
     .mute-mic = Microfoon uitschakelen
