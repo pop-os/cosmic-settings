@@ -525,6 +525,7 @@ fn all_system_actions() -> &'static [Action] {
         Action::System(SystemAction::KeyboardBrightnessDown),
         Action::System(SystemAction::KeyboardBrightnessUp),
         Action::System(SystemAction::Launcher),
+        Action::System(SystemAction::LogOut),
         Action::System(SystemAction::LockScreen),
         Action::System(SystemAction::Mute),
         Action::System(SystemAction::MuteMic),
@@ -654,6 +655,7 @@ fn localize_action(action: &Action) -> String {
             }
             SystemAction::KeyboardBrightnessUp => fl!("system-shortcut", "keyboard-brightness-up"),
             SystemAction::Launcher => fl!("system-shortcut", "launcher"),
+            SystemAction::LogOut => fl!("system-shortcut", "log-out"),
             SystemAction::LockScreen => fl!("system-shortcut", "lock-screen"),
             SystemAction::Mute => fl!("system-shortcut", "mute"),
             SystemAction::MuteMic => fl!("system-shortcut", "mute-mic"),

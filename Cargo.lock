@@ -1463,7 +1463,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#4a97b3ddd2f972cb8fdc6b7c0482596aa31a8fb8"
+source = "git+https://github.com/pop-os/libcosmic#1914006cdd689491e3199d9887a715866c91d8aa"
 dependencies = [
  "atomicwrites",
  "cosmic-config-derive",
@@ -1485,7 +1485,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#4a97b3ddd2f972cb8fdc6b7c0482596aa31a8fb8"
+source = "git+https://github.com/pop-os/libcosmic#1914006cdd689491e3199d9887a715866c91d8aa"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -1672,7 +1672,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-daemon#747e482ca197497ee3bc5f6e9dcd23c73e592e47"
+source = "git+https://github.com/pop-os/cosmic-settings-daemon#fe529ae0edda45d53f3bd3a579c3a8f77457905a"
 dependencies = [
  "cosmic-config",
  "serde",
@@ -3155,7 +3155,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#4a97b3ddd2f972cb8fdc6b7c0482596aa31a8fb8"
+source = "git+https://github.com/pop-os/libcosmic#1914006cdd689491e3199d9887a715866c91d8aa"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -3164,7 +3164,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0-dev"
-source = "git+https://github.com/pop-os/libcosmic#4a97b3ddd2f972cb8fdc6b7c0482596aa31a8fb8"
+source = "git+https://github.com/pop-os/libcosmic#1914006cdd689491e3199d9887a715866c91d8aa"
 dependencies = [
  "bitflags 2.6.0",
  "bytes",
@@ -3189,7 +3189,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.14.0-dev"
-source = "git+https://github.com/pop-os/libcosmic#4a97b3ddd2f972cb8fdc6b7c0482596aa31a8fb8"
+source = "git+https://github.com/pop-os/libcosmic#1914006cdd689491e3199d9887a715866c91d8aa"
 dependencies = [
  "futures",
  "iced_core",
