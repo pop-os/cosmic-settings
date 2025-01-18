@@ -625,6 +625,7 @@ system-shortcut = System
     .keyboard-brightness-down = Decrease keyboard brightness
     .keyboard-brightness-up = Increase keyboard brightness
     .launcher = Open the launcher
+    .log-out = Log Out
     .lock-screen = Lock the screen
     .mute = Mute audio output
     .mute-mic = Mutes microphone input
