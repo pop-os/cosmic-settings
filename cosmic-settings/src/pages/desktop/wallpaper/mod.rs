@@ -262,6 +262,11 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        // Reclaim memory
+        self.cached_display_handle = None;
+        self.selection = Context::default();
+        self.outputs = SingleSelectModel::default();
+
         // Cancel the on_enter task if it was running.
         if let Some(handle) = self.on_enter_handle.take() {
             handle.abort();
