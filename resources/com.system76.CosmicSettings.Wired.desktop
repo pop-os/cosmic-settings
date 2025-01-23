@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Wired
+Name[pl]=Połączenia przewodowe
 Comment=Wired connections and connection profiles.
+Comment[pl]=Połączenia przewodowe i profile połączeń.
 Type=Settings
 Exec=cosmic-settings wired
 Terminal=false

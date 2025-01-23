@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Mouse
+Name[pl]=Mysz
 Comment=Mouse speed, acceleation, and natural scrolling.
+Comment[pl]=Prędkość myszy, przyspieszenie i naturalne przewijanie.
 Type=Settings
 Exec=cosmic-settings mouse
 Terminal=false

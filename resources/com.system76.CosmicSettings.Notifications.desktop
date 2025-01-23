@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Notifications
+Name[pl]=Powiadomienia
 Comment=Do Not Disturb, lockscreen notifications, and per-application settings.
+Comment[pl]=Tryb „nie przeszkadzać, powiadomienia na ekranie blokady i ustawienia poszczególnych aplikacji.
 Type=Settings
 Exec=cosmic-settings notifications
 Terminal=false

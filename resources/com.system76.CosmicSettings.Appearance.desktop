@@ -1,11 +1,13 @@
 [Desktop Entry]
 Name=Appearance
+Name[pl]=Wygląd
 Comment=Accent colors and theming.
+Comment[pl]=Kolory akcentów i styl.
 Type=Settings
 Exec=cosmic-settings appearance
 Terminal=false
 Categories=COSMIC
-Keywords=COSMIC
+Keywords=COSMIC;theme;
 NoDisplay=true
 OnlyShowIn=COSMIC
 Icon=preferences-appearance

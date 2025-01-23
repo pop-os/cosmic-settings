@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Sound
+Name[pl]=Dźwięk
 Comment=Audio settings for devices, alerts, and applications.
+Comment[pl]=Opcje dźwięku dla urządzeń, alertów i aplikacji.
 Type=Settings
 Exec=cosmic-settings sound
 Terminal=false

@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Region & Language
+Name[pl]=Region i język
 Comment=Format dates, times, and numbers based on your region.
+Comment[pl]=Format wyświetlanych dat, godzin i liczb dopasowany do regionu.
 Type=Settings
 Exec=cosmic-settings region-language
 Terminal=false

@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Panel
+Name[pl]=Panel
 Comment=Top bar with desktop controls and menus.
 Type=Settings
 Exec=cosmic-settings panel

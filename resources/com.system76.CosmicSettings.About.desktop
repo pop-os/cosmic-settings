@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=About
+Name[pl]=O systemie
 Comment=Device name, hardware information, operating system defaults.
+Comment[pl]=Nazwa urządzenia, informacje o sprzęcie i systemie operacyjnym.
 Type=Settings
 Exec=cosmic-settings about
 Terminal=false
