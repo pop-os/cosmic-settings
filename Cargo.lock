@@ -1529,7 +1529,7 @@ dependencies = [
 [[package]]
 name = "cosmic-freedesktop-icons"
 version = "0.2.6"
-source = "git+https://github.com/pop-os/freedesktop-icons#bfc22d531596b57646dc47bcd70b2eb6f3152cd4"
+source = "git+https://github.com/pop-os/freedesktop-icons#a43b510bee3a77bb29098e10c8e23c2735cfb774"
 dependencies = [
  "dirs",
  "ini_core",
@@ -1784,7 +1784,7 @@ dependencies = [
 [[package]]
 name = "cosmic-text"
 version = "0.12.1"
-source = "git+https://github.com/pop-os/cosmic-text.git#166b59f560c551dab391a864f7c1f503c1e18446"
+source = "git+https://github.com/pop-os/cosmic-text.git#485497973fbb6e1828e6da9a7f486257efb67b31"
 dependencies = [
  "bitflags 2.8.0",
  "fontdb 0.16.2",
@@ -2608,9 +2608,9 @@ dependencies = [
 
 [[package]]
 name = "freedesktop-desktop-entry"
-version = "0.7.6"
+version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d131c97670cff6cae566cb80387265b2ec1df2b40cd99c407c5c95d17a3b8347"
+checksum = "016f6ee9509f11c985aa402451f4ee900d1fafeb501a4c3d734ebecfc1130e05"
 dependencies = [
  "cached",
  "dirs",
@@ -5167,9 +5167,9 @@ dependencies = [
 
 [[package]]
 name = "objc2-encode"
-version = "4.0.3"
+version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7891e71393cd1f227313c9379a26a584ff3d7e6e7159e988851f0934c993f0f8"
+checksum = "ef25abbcd74fb2609453eb695bd2f860d389e457f67dc17cafc8b8cbc89d0c33"
 
 [[package]]
 name = "objc2-foundation"
@@ -7309,9 +7309,9 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "udev"
-version = "0.9.2"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e28ba5932aebe14104df97f3c48feba2b6a398ae6b6f4ed91831e5fb059d992e"
+checksum = "af4e37e9ea4401fc841ff54b9ddfc9be1079b1e89434c1a6a865dd68980f7e9f"
 dependencies = [
  "io-lifetimes 1.0.11",
  "libc",
@@ -7369,9 +7369,9 @@ checksum = "1df77b101bcc4ea3d78dafc5ad7e4f58ceffe0b2b16bf446aeb50b6cb4157656"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.14"
+version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
+checksum = "11cd88e12b17c6494200a9c1b683a04fcac9573ed74cd1b62aeb2727c5592243"
 
 [[package]]
 name = "unicode-linebreak"
