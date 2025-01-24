@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=System & Accounts
+Name[pl]=System i konta
 Comment=
 Type=Settings
 Exec=cosmic-settings system

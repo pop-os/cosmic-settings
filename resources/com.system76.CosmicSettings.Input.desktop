@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Input Devices
+Name[pl]=Urządzenia wprowadzania danych
 Comment=
 Type=Settings
 Exec=cosmic-settings input

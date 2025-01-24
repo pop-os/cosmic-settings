@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Users
+Name[pl]=Użytkownicy
 Comment=Authentication and user accounts.
+Comment[pl]=Uwierzytelnianie i konta użytkowników.
 Type=Settings
 Exec=cosmic-settings users
 Terminal=false

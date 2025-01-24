@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Workspaces
+Name[pl]=Obszary robocze
 Comment=Workspace orientation and behavior.
+Comment[pl]=Kierunek i zachowanie obszarów roboczych.
 Type=Settings
 Exec=cosmic-settings workspaces
 Terminal=false
