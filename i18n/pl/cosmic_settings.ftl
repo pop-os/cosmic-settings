@@ -642,6 +642,7 @@ system-shortcut = System
     .keyboard-brightness-down = Zmniejsz jasność klawiatury
     .keyboard-brightness-up = Zwiększ jasność klawiatury
     .launcher = Otwórz program startowy
+    .log-out = Wyloguj się
     .lock-screen = Zablokuj ekran
     .mute = Wycisz dzwięk wyjścia
     .mute-mic = Wycisz wejście mikrofonu
