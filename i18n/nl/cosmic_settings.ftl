@@ -549,7 +549,7 @@ replace = Vervangen
 shortcut-name = Sneltoetsnaam
 system-controls = Systeemaansturing
 terminate = Beëindigen
-toggle-stacking =Zet vensterstapelen aan/uit
+toggle-stacking = Zet vensterstapelen aan/uit
 type-key-combination = Toetsencombinatie invoeren
 
 custom-shortcuts = Aangepaste sneltoetsen
@@ -627,6 +627,7 @@ system-shortcut = Systeem
     .keyboard-brightness-down = Toetsenbordverlichting verlagen
     .keyboard-brightness-up = Toetsenbordverlichting verhogen
     .launcher = Snelstarter openen
+    .log-out = Afmelden
     .lock-screen = Scherm vergrendelen
     .mute = Geluid uit
     .mute-mic = Microfoon uitschakelen
