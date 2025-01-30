@@ -19,6 +19,7 @@ use tokio::sync::mpsc;
 use freedesktop_desktop_entry::{default_paths, DesktopEntry, Iter as DesktopEntryIter};
 use which;
 
+
 const DROPDOWN_WEB_BROWSER: usize = 0;
 const DROPDOWN_FILE_MANAGER: usize = 1;
 const DROPDOWN_MAIL: usize = 2;
@@ -242,6 +243,8 @@ impl Page {
                         }
                         return Task::none();
                     },
+
+                   
                     Category::Video => (DROPDOWN_VIDEO, {
                         mime_types = mime_apps
                             .known_mimes
@@ -535,7 +538,6 @@ async fn load_terminal_apps(assocs: &BTreeMap<Arc<str>, Arc<App>>) -> AppMeta {
         icons,
     }
 }
-
 fn find_terminal_binary_path(app_id: &str) -> Option<String> {
     // First try to find the desktop entry
     for path in freedesktop_desktop_entry::default_paths() {
