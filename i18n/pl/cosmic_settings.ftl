@@ -272,7 +272,7 @@ panel-appearance = Wygląd
 
 panel-behavior-and-position = Funkcjonowanie i położenie
     .autohide = Automatycznie chowaj panel
-    .dock-autohide = Automatycznie chowaj panel
+    .dock-autohide = Automatycznie chowaj dok
     .position = Położenie na ekranie
     .display = Pokaż na wyświetlaczu
 
