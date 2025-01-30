@@ -484,10 +484,10 @@ power-mode = Profile zasilania
   .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
   .no-backend = Nie znaleziono backendu. Zainstaluj system76-power lub power-profiles-daemon.
 
-power-saving = Opcje oszczędzania energii
-    .turn-off-screen-after = Wygaszaj ekran po
-    .auto-suspend = Automatycznie wstrzymuj
-    .auto-suspend-ac = Automatycznie wstrzymuj gdy podłączono
+power-saving = Opcje Oszczędzania Energii
+    .turn-off-screen-after = Wyłącz ekran za
+    .auto-suspend = Automatycznie wstrzymaj
+    .auto-suspend-ac = Automatycznie wstrzymuj na zasilaniu
     .auto-suspend-battery = Automatycznie wstrzymuj na baterii
 
 ## Input
@@ -806,14 +806,14 @@ password = Hasło
 
 ## System: Domyślne aplikacje
 
-default-apps = Domyślne aplikacje
-    .desc = Domyślna przeglądarka, klient e-mail, przeglądarka plików i inne aplikacje.
-    .web-browser = Przeglądarka internetowa
-    .file-manager = Menedżer plików
-    .mail-client = Klient poczty e-mail
+default-apps = Domyślne Aplikacje
+    .desc = Domyślna przeglądarka, klient email, przeglądarka plików i inne aplikacje.
+    .web-browser = Przeglądarka
+    .file-manager = Przeglądarka plików
+    .mail-client = Klient email
     .music = Muzyka
-    .video = Filmy
-    .photos = Zdjęcia
+    .video = Wideo
+    .photos = Obrazy
     .calendar = Kalendarz
     .terminal = Konsola
     .other-associations = Inne powiązania
