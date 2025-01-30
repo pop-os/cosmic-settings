@@ -201,10 +201,45 @@ impl Page {
                         &mime_types
                     }),
                     Category::Mail => (DROPDOWN_MAIL, &["x-scheme-handler/mailto"]),
-                    Category::Terminal => (DROPDOWN_TERMINAL, &[
-                        "x-scheme-handler/terminal",
-                        "application/x-terminal-emulator"
-                    ]),
+                    Category::Terminal => {
+                        let meta = &mut mime_apps.apps[DROPDOWN_TERMINAL];
+                        if meta.selected != Some(id) {
+                            meta.selected = Some(id);
+                            let appid = &meta.app_ids[id];
+
+                            // Update both MIME associations and alternatives
+                            for mime_type in [
+                                "x-scheme-handler/terminal", 
+                                "application/x-terminal-emulator"
+                            ] {
+                                if let Ok(mime) = mime_type.parse() {
+                                    mime_apps.local_list.set_default_app(
+                                        mime,
+                                        format!("{}.desktop", appid)
+                                    );
+                                }
+                            }
+
+                            // Update system alternatives
+                            if let Some(path) = find_alternative_path(appid) {
+                                let _ = std::process::Command::new("pkexec")
+                                    .args([
+                                        "update-alternatives",
+                                        "--set",
+                                        "x-terminal-emulator",
+                                        &path
+                                    ])
+                                    .status();
+                            }
+
+                            // Persist changes
+                            let mut buffer = mime_apps.local_list.to_string();
+                            buffer.push('\n');
+                            _ = std::fs::write(&mime_apps.config_path, buffer);
+                            _ = std::process::Command::new("update-desktop-database").status();
+                        }
+                        return Task::none();
+                    },
                     Category::Video => (DROPDOWN_VIDEO, {
                         mime_types = mime_apps
                             .known_mimes
@@ -497,4 +532,30 @@ async fn load_terminal_apps(assocs: &BTreeMap<Arc<str>, Arc<App>>) -> AppMeta {
         apps,
         icons,
     }
+}
+
+fn find_alternative_path(app_id: &str) -> Option<String> {
+    let output = std::process::Command::new("update-alternatives")
+        .arg("--query")
+        .arg("x-terminal-emulator")
+        .output()
+        .ok()?;
+
+    let query_output = String::from_utf8(output.stdout).ok()?;
+    
+    let mut current_alternative = None;
+    let mut in_alternative = false;
+    
+    for line in query_output.lines() {
+        if line.starts_with("Alternative: ") {
+            current_alternative = Some(line.trim_start_matches("Alternative: "));
+            in_alternative = true;
+        } else if line.starts_with("Value: ") {
+            in_alternative = false;
+        } else if in_alternative && line.contains(app_id) {
+            return current_alternative.map(str::to_string);
+        }
+    }
+    
+    None
 }
