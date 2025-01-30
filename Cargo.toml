@@ -35,6 +35,8 @@ git = "https://github.com/pop-os/cosmic-randr"
 [workspace.dependencies.sctk]
 git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
+which = "4.4"
+
 # rev = "c583de8"
 
 [profile.release-with-debug]

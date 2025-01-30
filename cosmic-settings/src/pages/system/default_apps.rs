@@ -17,6 +17,7 @@ use mime_apps::App;
 use slotmap::SlotMap;
 use tokio::sync::mpsc;
 use freedesktop_desktop_entry::{default_paths, DesktopEntry, Iter as DesktopEntryIter};
+use which;
 
 const DROPDOWN_WEB_BROWSER: usize = 0;
 const DROPDOWN_FILE_MANAGER: usize = 1;
@@ -207,7 +208,7 @@ impl Page {
                             meta.selected = Some(id);
                             let appid = &meta.app_ids[id];
 
-                            // Update both MIME associations and alternatives
+                            // Update MIME associations
                             for mime_type in [
                                 "x-scheme-handler/terminal", 
                                 "application/x-terminal-emulator"
@@ -220,14 +221,15 @@ impl Page {
                                 }
                             }
 
-                            // Update system alternatives
-                            if let Some(path) = find_alternative_path(appid) {
+                            // Create a symbolic link for system-wide compatibility
+                            if let Some(binary_path) = find_terminal_binary_path(appid) {
+                                // Try to create the symlink using pkexec
                                 let _ = std::process::Command::new("pkexec")
                                     .args([
-                                        "update-alternatives",
-                                        "--set",
-                                        "x-terminal-emulator",
-                                        &path
+                                        "ln",
+                                        "-sf",
+                                        &binary_path,
+                                        "/usr/local/bin/x-terminal-emulator"
                                     ])
                                     .status();
                             }
@@ -534,28 +536,28 @@ async fn load_terminal_apps(assocs: &BTreeMap<Arc<str>, Arc<App>>) -> AppMeta {
     }
 }
 
-fn find_alternative_path(app_id: &str) -> Option<String> {
-    let output = std::process::Command::new("update-alternatives")
-        .arg("--query")
-        .arg("x-terminal-emulator")
-        .output()
-        .ok()?;
-
-    let query_output = String::from_utf8(output.stdout).ok()?;
-    
-    let mut current_alternative = None;
-    let mut in_alternative = false;
-    
-    for line in query_output.lines() {
-        if line.starts_with("Alternative: ") {
-            current_alternative = Some(line.trim_start_matches("Alternative: "));
-            in_alternative = true;
-        } else if line.starts_with("Value: ") {
-            in_alternative = false;
-        } else if in_alternative && line.contains(app_id) {
-            return current_alternative.map(str::to_string);
+fn find_terminal_binary_path(app_id: &str) -> Option<String> {
+    // First try to find the desktop entry
+    for path in freedesktop_desktop_entry::default_paths() {
+        let desktop_path = path.join(format!("{}.desktop", app_id));
+        if let Ok(bytes) = std::fs::read_to_string(&desktop_path) {
+            if let Ok(entry) = DesktopEntry::from_str(&desktop_path, &bytes, None::<&[&str]>) {
+                // Get the Exec line and extract the binary path
+                if let Some(exec) = entry.exec() {
+                    // Extract the binary path (first part before any arguments)
+                    if let Some(binary) = exec.split_whitespace().next() {
+                        // If it's a relative path, try to find it in PATH
+                        if !binary.starts_with('/') {
+                            if let Ok(path) = which::which(binary) {
+                                return Some(path.to_string_lossy().into_owned());
+                            }
+                        } else {
+                            return Some(binary.to_string());
+                        }
+                    }
+                }
+            }
         }
     }
-    
     None
 }
