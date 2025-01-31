@@ -236,7 +236,6 @@ monospace-font = Lettertype met gelijke letterbreedte
 notifications = Meldingen
     .desc = Niet storen, meldingen op het vergrendelingsscherm en instellingen per applicatie.
 
-
 ## Desktop: Panel
 
 panel = Paneel
@@ -405,7 +404,6 @@ legacy-applications = Schaling van applicaties die het X11-venstersysteem gebrui
     .scaled-natively = X11-applicaties in native resolutie weergeven
     .native-description = X11-applicaties die geen schaling ondersteunen worden verkleint op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
 
-
 ## Sound
 
 sound = Geluid
@@ -435,7 +433,7 @@ profile = Profiel
 ## Power
 
 power = Energie- en batterijbeheer
-    .desc = N/A
+    .desc = Stroomgebruik beheren
 
 battery = Batterij
   .minute = { $value } { $value ->
@@ -450,10 +448,10 @@ battery = Batterij
   }
   .less-than-minute = In minder dan één minuut
   .and = en
-  .remaining-time = { $time } { $action ->
-        [full] opgeladen
+  .remaining-time = { $action ->
+        [full] vol
        *[other] leeg
-   }
+   } over { $time } 
 
 connected-devices = Verbonden apparaten
   .unknown = Onbekend apparaat
@@ -472,6 +470,8 @@ power-saving = Energiebesparingsopties
     .auto-suspend = Automatische slaapstand
     .auto-suspend-ac = Automatische slaapstand wanneer op het lichtnet aangesloten
     .auto-suspend-battery = Automatische slaapstand wanneer op batterijstroom
+
+
 
 ## Input
 
@@ -573,7 +573,6 @@ nav-shortcuts = Navigatie
         [right] rechts
         [up] boven
     }
-
     .output = Naar uitvoer { $direction ->
         *[down] hieronder
         [left] links
@@ -597,7 +596,6 @@ move-windows = Venster verplaatsen
         [right] rechts
         [up] boven
     } verplaatsen
-
     .display = Venster één beeldscherm naar { $direction ->
         *[down] beneden
         [left] links
