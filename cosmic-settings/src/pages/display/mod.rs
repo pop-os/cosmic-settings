@@ -21,6 +21,7 @@ use once_cell::sync::Lazy;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
 use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
+use tokio::sync::oneshot;
 use tracing::error;
 
 static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
@@ -28,6 +29,7 @@ static DPI_SCALE_LABELS: Lazy<Vec<String>> =
     Lazy::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
 
 /// Display color depth options
+#[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 pub struct ColorDepth(usize);
 
@@ -132,7 +134,7 @@ pub struct Page {
     mirror_map: SecondaryMap<OutputKey, OutputKey>,
     mirror_menu: widget::dropdown::multi::Model<String, Mirroring>,
     active_display: OutputKey,
-    background_service: Option<tokio::task::JoinHandle<()>>,
+    background_service_cancel: Option<oneshot::Sender<()>>,
     config: Config,
     cache: ViewCache,
     // context: Option<ContextDrawer>,
@@ -166,7 +168,7 @@ impl Default for Page {
             mirror_map: SecondaryMap::new(),
             mirror_menu: widget::dropdown::multi::model(),
             active_display: OutputKey::default(),
-            background_service: None,
+            background_service_cancel: None,
             config: Config::default(),
             cache: ViewCache::default(),
             // context: None,
@@ -246,51 +248,68 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Task<crate::pages::Message> {
         use std::time::Duration;
 
-        if let Some(task) = self.background_service.take() {
-            task.abort();
+        use futures::pin_mut;
+
+        if let Some(canceller) = self.background_service_cancel.take() {
+            _ = canceller.send(());
         }
 
         #[cfg(feature = "wayland")]
         {
+            let (tx, mut rx) = tachyonix::channel(4);
+            let (canceller, cancelled) = oneshot::channel();
+            let runtime = tokio::runtime::Handle::current();
+
             // Spawns a background service to monitor for display state changes.
             // This must be spawned onto its own thread because `*mut wayland_sys::client::wl_display` is not Send-able.
-            let runtime = tokio::runtime::Handle::current();
-            self.background_service = Some(tokio::task::spawn_blocking(move || {
-                runtime.block_on(async move {
-                    let (tx, mut rx) = tachyonix::channel(200);
+            tokio::task::spawn_blocking(move || {
+                let dispatcher = async move {
                     let Ok((mut context, mut event_queue)) = cosmic_randr::connect(tx) else {
                         return;
                     };
 
-                    while context.dispatch(&mut event_queue).await.is_ok() {
-                        if sender.is_closed() {
-                            break;
-                        }
-                        'outer: while let Ok(message) = rx.try_recv() {
-                            if let cosmic_randr::Message::ManagerDone = message {
-                                if matches!(
-                                    tokio::time::timeout(
-                                        Duration::from_secs(1),
-                                        sender.send(pages::Message::Displays(Message::Refresh))
-                                    )
-                                    .await,
-                                    Err(_) | Ok(Err(_))
-                                ) {
-                                    break 'outer;
-                                }
-                            }
+                    loop {
+                        if context.dispatch(&mut event_queue).await.is_err() {
+                            return;
                         }
                     }
-                });
-            }));
+                };
+
+                pin_mut!(dispatcher);
+                runtime.block_on(futures::future::select(cancelled, dispatcher));
+            });
+
+            // Forward messages from another thread to prevent the monitoring thread from blocking.
+            tokio::task::spawn(async move {
+                while let Ok(message) = rx.recv().await {
+                    if sender.is_closed() {
+                        return;
+                    }
+
+                    if let cosmic_randr::Message::ManagerDone = message {
+                        if matches!(
+                            tokio::time::timeout(
+                                Duration::from_secs(1),
+                                sender.send(pages::Message::Displays(Message::Refresh))
+                            )
+                            .await,
+                            Err(_) | Ok(Err(_))
+                        ) {
+                            return;
+                        }
+                    }
+                }
+            });
+
+            self.background_service_cancel = Some(canceller);
         }
 
         cosmic::task::future(on_enter())
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        if let Some(task) = self.background_service.take() {
-            task.abort();
+        if let Some(canceller) = self.background_service_cancel.take() {
+            _ = canceller.send(());
         }
 
         Task::none()
@@ -1095,7 +1114,6 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                         .width(Length::Shrink)
                         .direction(Direction::Horizontal(Scrollbar::new()))
                         .apply(container)
-                        .padding([48, 32, 32, 32])
                         .center_x(Length::Fill)
                 })
                 .apply(container)

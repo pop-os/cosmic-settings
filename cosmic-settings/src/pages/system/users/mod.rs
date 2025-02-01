@@ -6,7 +6,6 @@ mod getent;
 use cosmic::{
     dialog::file_chooser,
     iced::{Alignment, Length},
-    theme,
     widget::{self, column, icon, settings, text},
     Apply, Element,
 };
@@ -216,7 +215,7 @@ impl page::Page<crate::pages::Message> for Page {
                     )
                     .primary_action(add_user_button)
                     .secondary_action(cancel_button)
-                    .apply(cosmic::Element::from)
+                    .apply(Element::from)
             }
         };
 
@@ -587,12 +586,9 @@ fn user_list() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            let theme = cosmic::theme::active();
-            let theme = theme.cosmic();
-
             let cosmic::cosmic_theme::Spacing {
                 space_xxs, space_m, ..
-            } = theme::active().cosmic().spacing;
+            } = cosmic::theme::active().cosmic().spacing;
 
             let users_list = page
                 .users
@@ -661,7 +657,7 @@ fn user_list() -> Section<crate::pages::Message> {
                             ]));
                         }
 
-                        details_list.apply(cosmic::Element::from)
+                        details_list.apply(Element::from)
                     });
 
                     let profile_icon_handle = user
@@ -682,7 +678,7 @@ fn user_list() -> Section<crate::pages::Message> {
                                     .push(account_type),
                             )
                             .align_y(Alignment::Center)
-                            .spacing(theme.space_xxs())
+                            .spacing(space_xxs)
                             .into(),
                         widget::horizontal_space().width(Length::Fill).into(),
                         icon::from_name(if expanded {
@@ -701,7 +697,7 @@ fn user_list() -> Section<crate::pages::Message> {
                             .on_press(Message::SelectUser(idx))
                             .class(cosmic::theme::Button::ListItem)
                             .selected(expanded)
-                            .apply(cosmic::Element::from),
+                            .apply(Element::from),
                     );
 
                     vec![account_details, expanded_details]
@@ -715,7 +711,7 @@ fn user_list() -> Section<crate::pages::Message> {
                         .list_item_padding(0),
                     widget::ListColumn::add,
                 )
-                .apply(|list| cosmic::Element::from(settings::section::with_column(list)));
+                .apply(|list| Element::from(settings::section::with_column(list)));
 
             let add_user = widget::button::standard(crate::fl!("add-user"))
                 .on_press(Message::Dialog(Some(Dialog::AddNewUser(User::default()))))

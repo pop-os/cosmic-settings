@@ -16,6 +16,7 @@ use cosmic_settings_page::{self as page, section, Section};
 use mime_apps::App;
 use slotmap::SlotMap;
 use tokio::sync::mpsc;
+use freedesktop_desktop_entry::{default_paths, DesktopEntry, Iter as DesktopEntryIter};
 
 const DROPDOWN_WEB_BROWSER: usize = 0;
 const DROPDOWN_FILE_MANAGER: usize = 1;
@@ -24,7 +25,7 @@ const DROPDOWN_MUSIC: usize = 3;
 const DROPDOWN_VIDEO: usize = 4;
 const DROPDOWN_PHOTO: usize = 5;
 const DROPDOWN_CALENDAR: usize = 6;
-// const DROPDOWN_TERMINAL: usize = 7;
+const DROPDOWN_TERMINAL: usize = 7;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
 pub enum Category {
@@ -34,7 +35,7 @@ pub enum Category {
     Image,
     Mail,
     Mime(&'static str),
-    // Terminal,
+    Terminal,
     Video,
     WebBrowser,
 }
@@ -126,12 +127,7 @@ impl page::Page<crate::pages::Message> for Page {
                 load_defaults(&assocs, &["video/mp4"]).await,
                 load_defaults(&assocs, &["image/png"]).await,
                 load_defaults(&assocs, &["text/calendar"]).await,
-                AppMeta {
-                    selected: None,
-                    app_ids: Vec::new(),
-                    apps: Vec::new(),
-                    icons: Vec::new(),
-                },
+                load_terminal_apps(&assocs).await,
             ];
 
             Message::Update(CachedMimeApps {
@@ -205,7 +201,10 @@ impl Page {
                         &mime_types
                     }),
                     Category::Mail => (DROPDOWN_MAIL, &["x-scheme-handler/mailto"]),
-                    // Category::Terminal => (DROPDOWN_TERMINAL, &[]),
+                    Category::Terminal => (DROPDOWN_TERMINAL, &[
+                        "x-scheme-handler/terminal",
+                        "application/x-terminal-emulator"
+                    ]),
                     Category::Video => (DROPDOWN_VIDEO, {
                         mime_types = mime_apps
                             .known_mimes
@@ -337,17 +336,16 @@ fn apps() -> Section<crate::pages::Message> {
                     .icons(&meta.icons),
                 )
             })
-            // TODO: Decide on a mechanism for getting and setting the default terminal.
-            // .add({
-            //     let meta = &mime_apps.apps[DROPDOWN_TERMINAL];
-            //     settings::flex_item(
-            //         fl!("default-apps", "terminal"),
-            //         dropdown(&meta.apps, meta.selected, |id| {
-            //             Message::SetDefault(Category::Terminal, id)
-            //         })
-            //         .icons(&meta.icons),
-            //     )
-            // })
+            .add({
+                let meta = &mime_apps.apps[DROPDOWN_TERMINAL];
+                settings::flex_item(
+                    fl!("default-apps", "terminal"),
+                    dropdown(&meta.apps, meta.selected, |id| {
+                        Message::SetDefault(Category::Terminal, id)
+                    })
+                    .icons(&meta.icons),
+                )
+            })
             .apply(Element::from)
             .map(crate::pages::Message::DefaultApps)
     })
@@ -428,4 +426,75 @@ async fn xdg_mime_query_default(mime_type: &str) -> Option<String> {
     String::from_utf8(output.stdout)
         .ok()
         .map(|string| string.trim().to_owned())
+}
+
+async fn load_terminal_apps(assocs: &BTreeMap<Arc<str>, Arc<App>>) -> AppMeta {
+    let mut terminals = Vec::new();
+    let mut current_app = None;
+
+    // Get the current default terminal if set
+    let current_entry = xdg_mime_query_default("x-scheme-handler/terminal").await;
+    let current_appid = current_entry
+        .as_ref()
+        .and_then(|entry| entry.strip_suffix(".desktop"));
+
+    // Also check x-terminal-emulator
+    if current_app.is_none() {
+        let current_entry = xdg_mime_query_default("application/x-terminal-emulator").await;
+        let current_appid = current_entry
+            .as_ref()
+            .and_then(|entry| entry.strip_suffix(".desktop"));
+        if let Some(appid) = current_appid {
+            current_app = assocs.get(appid).cloned();
+        }
+    }
+
+    // Scan desktop entries for terminal applications
+    for path in DesktopEntryIter::new(default_paths()) {
+        if let Ok(bytes) = std::fs::read_to_string(&path) {
+            if let Ok(entry) = DesktopEntry::from_str(&path, &bytes, None::<&[&str]>) {
+                // Check if it's a terminal application
+                if entry.categories().map(|cats| cats.iter().any(|c| *c == "TerminalEmulator")).unwrap_or(false) {
+                    let id = entry.id();
+                    if let Some(app) = assocs.get(id) {
+                        if current_appid.as_ref().map(|c| *c == id).unwrap_or(false) {
+                            current_app = Some(app.clone());
+                        }
+                        terminals.push((Arc::from(id), app.clone()));
+                    }
+                }
+            }
+        }
+    }
+
+    terminals.sort_unstable_by_key(|(_, app): &(Arc<str>, Arc<App>)| app.name.clone());
+    terminals.dedup_by(|a, b| a.0 == b.0);
+
+    let mut selected = None;
+    let mut app_ids = Vec::new();
+    let mut apps = Vec::new();
+    let mut icons = Vec::new();
+
+    for (id, (appid, app)) in terminals.iter().enumerate() {
+        if let Some(ref current_app) = current_app {
+            if app.name.as_ref() == current_app.name.as_ref() {
+                selected = Some(id);
+            }
+        }
+
+        app_ids.push(appid.to_string());
+        apps.push(app.name.as_ref().into());
+        icons.push(if app.icon.starts_with('/') {
+            icon::from_path(PathBuf::from(app.icon.as_ref()))
+        } else {
+            icon::from_name(app.icon.as_ref()).size(20).handle()
+        });
+    }
+
+    AppMeta {
+        selected,
+        app_ids,
+        apps,
+        icons,
+    }
 }

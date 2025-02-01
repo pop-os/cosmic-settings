@@ -149,6 +149,11 @@ pub fn main() -> color_eyre::Result<()> {
     init_logger();
     init_localizer();
 
+    #[cfg(feature = "gettext")]
+    {
+        let _ = gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "");
+    }
+
     let args = Args::parse();
 
     let settings = cosmic::app::Settings::default()

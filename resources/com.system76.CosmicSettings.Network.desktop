@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Network & Wireless
+Name[pl]=Sieć i połączenia bezprzewodowe
 Comment=Manage network connections
+Comment[pl]=Zarządzaj połączeniami sieciowymi
 Type=Settings
 Exec=cosmic-settings network
 Terminal=false

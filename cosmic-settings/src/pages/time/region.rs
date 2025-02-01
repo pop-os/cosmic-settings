@@ -143,6 +143,19 @@ impl page::Page<crate::pages::Message> for Page {
         cosmic::task::future(async move { Message::Refresh(Arc::new(page_reload().await)) })
     }
 
+    fn on_leave(&mut self) -> cosmic::Task<crate::pages::Message> {
+        self.add_language_search = String::new();
+        self.available_languages = SlotMap::new();
+        self.config = None;
+        self.context = None;
+        self.expanded_source_popover = None;
+        self.language = None;
+        self.region = None;
+        self.registry = None;
+        self.system_locales = BTreeMap::new();
+        cosmic::Task::none()
+    }
+
     fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
         Some(match self.context.as_ref()? {
             ContextView::AddLanguage => self.add_language_view(),
@@ -574,6 +587,8 @@ impl Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 mod preferred_languages {
+    use crate::pages::time::region::localized_iso_codes;
+
     use super::Message;
     use cosmic::{
         iced::{Alignment, Length},
@@ -602,9 +617,11 @@ mod preferred_languages {
                 {
                     for (id, locale) in locales.iter().enumerate() {
                         if let Some(locale) = registry.locale(locale) {
+                            let (language, country) = localized_iso_codes(&locale);
+
                             content = content.add(super::language_element(
                                 id,
-                                locale.display_name.clone(),
+                                format!("{} ({})", language, country),
                                 page.expanded_source_popover,
                             ));
                         }
@@ -754,21 +771,11 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
             let mut fields = expression.split('=');
             let var = fields.next()?;
             let lang_code = fields.next()?;
-            let locale = registry.locale(lang_code);
+            let locale = registry.locale(lang_code)?;
+
             Some((
                 var.to_owned(),
-                SystemLocale {
-                    lang_code: lang_code.to_owned(),
-                    display_name: registry
-                        .locale(lang_code)
-                        .map_or(String::from(""), |locale| locale.display_name.clone()),
-                    region_name: locale.map_or(String::from(""), |locale| {
-                        format!(
-                            "{} ({})",
-                            locale.territory.display_name, locale.language.display_name
-                        )
-                    }),
-                },
+                localized_locale(&locale, lang_code.to_owned()),
             ))
         })
         .collect();
@@ -816,14 +823,7 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
         }
 
         if let Some(locale) = registry.locale(line) {
-            available_languages_set.insert(SystemLocale {
-                lang_code: line.to_owned(),
-                display_name: locale.display_name.clone(),
-                region_name: format!(
-                    "{} ({})",
-                    locale.territory.display_name, locale.language.display_name
-                ),
-            });
+            available_languages_set.insert(localized_locale(&locale, line.to_owned()));
         }
     }
 
@@ -850,6 +850,29 @@ fn language_element(
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
     widget::settings::item(description, popover_button(id, expanded)).into()
+}
+
+fn localized_iso_codes(locale: &lichen_system::locale::Locale) -> (String, String) {
+    let mut language = gettextrs::dgettext("iso_639", &locale.language.display_name);
+    let country = gettextrs::dgettext("iso_3166", &locale.territory.display_name);
+
+    // Ensure language is title-cased.
+    let mut chars = language.chars();
+    if let Some(c) = chars.next() {
+        language = c.to_uppercase().collect::<String>() + chars.as_str();
+    }
+
+    (language, country)
+}
+
+fn localized_locale(locale: &lichen_system::locale::Locale, lang_code: String) -> SystemLocale {
+    let (language, country) = localized_iso_codes(locale);
+
+    SystemLocale {
+        lang_code,
+        display_name: format!("{language} ({country})"),
+        region_name: format!("{country} ({language})"),
+    }
 }
 
 fn popover_button(id: usize, expanded: bool) -> Element<'static, Message> {

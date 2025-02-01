@@ -90,8 +90,8 @@ super-key = Super key åtgärd
 
 experimental-settings = Testinställningar
 icons-and-toolkit = Utformning av ikoner och verktyg
-interface-font = Systemets teckensnitt
-monospace-font = Teckensnitt med jämna mellanrum
+interface-font = Standardteckensnitt
+monospace-font = Teckensnitt med fast bredd
 
 ## Skrivbord: Skärm
 
@@ -513,6 +513,21 @@ firmware = Fast programvara
 ## System: Användare
 
 users = Användare
+    .desc = Autentisering och användarkonton.
+    .admin = Administratör
+    .standard = Standard
+    .profile-add = Välj profilbild
+
+administrator = Administratör
+    .desc = Administratörer kan ändra inställningar för alla användare, lägga till och ta bort andra användare.
+
+add-user = Lägg till användare
+remove-user = Ta bort användare
+full-name = Fullständigt namn
+username = Användarnamn
+password = Lösenord
+
+users = Användare
     .desc = Autentisering och login, låsskärm.
 
 ## Ström
@@ -551,6 +566,12 @@ power-mode = Strömalternativ
     .performance = Hög prestanda
     .performance-desc = Hög prestanda och strömförbrukning.
     .no-backend = Basbearbetning ej funnen. Installera system76-power eller power-profiles-daemon.
+
+power-saving = Energisparalternativ
+    .turn-off-screen-after = Stäng av skärmen efter
+    .auto-suspend = Automatisk suspendering
+    .auto-suspend-ac = Automatisk suspendering vid inkoppling
+    .auto-suspend-battery = Automatisk suspendering på batteridrift
 
 ## Input
 
@@ -770,3 +791,17 @@ switch-workspaces = Ändra arbetsyta
 switch-between-windows = Ändra mellan fönster
 open-application-library = Öppna Applikationsbibliotek
 open-workspaces-view = Öppna Översikt över arbetsytor
+
+## System: Standardprogram
+
+default-apps = Standardprogram
+    .desc = Standard webbläsare, e-postklient, filhanteringsprogram och andra program.
+    .web-browser = Webbläsare
+    .file-manager = Filhanteringsprogram
+    .mail-client = E-postklient
+    .music = Musik
+    .video = Video
+    .photos = Foton
+    .calendar = Kalender
+    .terminal = Terminal
+    .other-associations = Andra associeringar

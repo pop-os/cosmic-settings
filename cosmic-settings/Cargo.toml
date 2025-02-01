@@ -37,7 +37,7 @@ futures = "0.3.30"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 i18n-embed-fl = "0.9.1"
-image = "0.25"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "rayon", "webp", "hdr"] }
 indexmap = "2.5.0"
 itertools = "0.13.0"
 itoa = "1.0.11"
@@ -67,11 +67,13 @@ url = "2.5.2"
 xkb-data = "0.2.1"
 zbus = { version = "4.4.0", features = ["tokio"], optional = true }
 zbus_polkit = { version = "4.0.0" }
-ustr = "1.0.0"
 fontdb = "0.16.2"
 fixed_decimal = "0.5.6"
 mime = "0.3.17"
 rustix = "0.38.41"
+gettext-rs = { version = "0.7.2", features = [
+    "gettext-system",
+], optional = true }
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
@@ -95,6 +97,7 @@ optional = true
 
 [features]
 default = ["a11y", "dbus-config", "linux", "single-instance", "wgpu"]
+gettext = ["dep:gettext-rs"]
 
 # Default features for Linux
 linux = [
@@ -120,6 +123,7 @@ page-bluetooth = ["dep:bluez-zbus", "dep:zbus"]
 page-date = ["dep:timedate-zbus", "dep:zbus"]
 page-default-apps = ["dep:mime-apps"]
 page-input = [
+    "gettext",
     "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",
     "dep:udev",

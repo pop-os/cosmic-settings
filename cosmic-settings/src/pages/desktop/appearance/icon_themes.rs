@@ -219,12 +219,14 @@ pub async fn fetch() -> Message {
                 theme_paths.entry(name.clone()).or_insert(path);
 
                 let theme = id.clone();
+                /* This section is performance critical  */
                 // `icon::from_name` may perform blocking I/O
                 if let Ok(handles) =
                     tokio::task::spawn_blocking(|| preview_handles(theme, valid_dirs)).await
                 {
                     icon_themes.insert(IconTheme { id, name }, handles);
                 }
+                /* END  */
             }
         }
     }

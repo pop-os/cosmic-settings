@@ -1,18 +1,131 @@
 app = การตั้งค่า COSMIC
 
+dbus-connection-error = ล้มเหลวในการเชื่อมต่อไปยัง DBus
+ok = OK
 unknown = ไม่ทราบ
 
 number = { $number }
 
-## Networking: Wired
+## Network & Wireless
+
+connections-and-profiles = การเชื่อมต่อ{ $variant ->
+    [wired] แบบมีสาย
+    [wifi] ไวไฟ
+    [vpn] VPN
+    *[other] ที่ไม่รู้จัก
+} และโปรไฟล์การเชื่อมต่อ
+
+add-network = เพิ่มเครือข่าย
+    .profile = เพิ่มโปรไฟล์
+add-vpn = เพิ่ม VPN
+airplane-on = โหมดเครื่องบินเปิดอยู่
+cable-unplugged = สายถูกถอด
+connect = เชื่อมต่อ
+connected = เชื่อมต่อแล้ว
+connecting = กำลังเชื่อมต่อ…
+disconnect = ตัดการเชื่อมต่อ
+forget = ลืม
+known-networks = เครือข่ายที่รู้จัก
+network-and-wireless = เครือข่ายและไร้สาย
+no-networks = ไม่พบเจอเครือข่าย
+no-vpn = ไม่มีเครือข่าย VPN
+password = รหัสผ่าน
+remove = ลบ
+settings = การตั้งค่า
+username = ชื่อผู้ใช้
+visible-networks = เครือข่ายที่มองเห็น
+
+auth-dialog = จำเป็นต้องเข้าสู่ระบบ
+    .vpn-description = ใส่ชื่อผู้ใช้และรหัสผ่านที่จำเป็นต่อบริการ VPN
+    .wifi-description = ใส่รหัสผ่านหรือกุญแจเข้ารหัส คุณสามารถเชื่อมต่อโดยใช้ปุ่ม "WPS" บนเราเตอร์ได้เช่นกัน
+
+forget-dialog = ลิมเครือข่ายไวไฟนี้หรือไม่
+    .description = คุณจะต้องใส่รหัสผ่านอีกครั้งในการเชื่อมต่อเครือข่ายไวไฟนี้ในอนาคต
+
+network-device-state =
+    .activated = เชื่อมต่อแล้ว
+    .config = กำลังเชื่อมต่อ
+    .deactivating = กำลังตัดการเชื่อมต่อ
+    .disconnected = ตัดการเชื่อมต่อแล้ว
+    .failed = ล้มเหลวในการเชื่อมต่อ
+    .ip-check = กำลังตรวจสอบการเชื่อมต่อ
+    .ip-config = กำลังขอ IP และข้อมูลเส้นทางเครือข่าย
+    .need-auth = ต้องการการเข้าสู่ระบบ
+    .prepare = กำลังเตรียมพร้อมในการเชื่อมต่อ
+    .secondaries = กำลังรอการเชื่อมต่อรอง
+    .unavailable = ไม่มีมีอยู่
+    .unknown = ไม่ทราบสถานะ
+    .unmanaged = ไม่ได้รับการจัดการ
+    .unplugged = สายถูกถอด
+
+remove-connection-dialog = นำโปรไฟล์การเชื่อมต่อออกหรือไม่
+    .vpn-description = คุณจำเป็นต้องใส่รหัสผ่านอีกครั้งในการใช้เครือข่ายนี้อีกในอนาคต
+    .wired-description = คุณจะต้องสร้างโปรไฟล์นี้ซ้ำในการจะใช้มันอีกในอนาคต
+
+vpn = VPN
+    .connections = การเชื่อมต่อ VPN
+    .error = ล้มเหลวในการเพิ่มการตั้งค่า VPN
+    .remove = ลบโปรไฟล์การเชื่อมต่อ
+    .select-file = เลือกไฟล์การตั้งค่า VPN
+
+vpn-error = ความล้มเหลวที่เกี่ยวกับ VPN
+    .config = ล้มเหลวในการเพิ่มการตั้งค่า VPN
+    .connect = ล้มเหลวในการเชื่อมต่อไปยัง VPN
+    .connection-editor = ตัวแก้ไขการเชื่อมต่อล้มเหลว
+    .connection-settings = ล้มเหลวในการรับการตั้งค่าสำหรับการเชื่อมต่อที่เปิดอยู่
+    .updating-state = ล้มเหลวในการอัพเดทสถานะตัวจัดการเครือข่าย
+    .wireguard-config-path = เส้นทางไฟล์ของไฟล์การตั้งค่า WireGuard ไม่ถูกต้อง
+    .wireguard-config-path-desc = ไฟล์ที่เลือกจะต้องอยู่บนระบบไฟล์ภายในเครื่อง
+    .wireguard-device = ล้มเหลวในการสร้างอุปกรณ์ WireGuard
+    .with-password = ล้มเหลวในการตั้ง{ $field ->
+        *[username] ชื่อผู้ใช้
+        [password] รหัสผ่าน
+        [password-flags] password-flags
+    } VPN ด้วย nmcli
 
 wired = การเชื่อมต่อแบบมีสาย
-    .desc = การเชื่อมต่อแบบมีสายและโปรไฟล์การเชื่อมต่อ
+    .adapter = อะแดปเตอร์การเชื่อมต่อ { $id }
+    .connections = การเชื่อมต่อแบบมีสาย
+    .devices = อุปกรณ์มีสาย
+    .remove = ลบโปรไฟล์การเชื่อมต่อ
+
+wifi = Wi-Fi
+    .adapter = อะแดปเตอร์ Wi-Fi { $id }
+    .forget = ลืมเครือข่ายนี้
+
+wireguard-dialog = เพิ่มอุปกรณ์ WireGuard
+    .description = เลือกชื่ออุปกรณ์สำหรับการตั้งค่า WireGuard
 
 ## Networking: Online Accounts
 
 online-accounts = บัญชีออนไลน์
     .desc = เพิ่มบัญชีต่าง ๆ อีเมล IMAP และ SMTP และการล็อกอินของบริษัท
+
+# Bluetooth
+
+confirm = ยืนยัน
+
+bluetooth = บลูทูธ
+    .desc = จัดการอุปกรณ์บลูทูธ
+    .status = อุปกรณ์นี้สามารถมองเห็นได้ด้วยชื่อ { $aliases } ขณะที่การตั้งค่าบลูทูธเปิดอยู่
+    .connected = เชื่อมต่อแล้ว
+    .connecting = กำลังเชื่อมต่อ
+    .disconnecting = กำลังตัดการเชื่อมต่อ
+    .connect = เชื่อมต่อ
+    .disconnect = ตัดการเชื่อมต่อ
+    .forget = ลืม
+    .dbus-error = เกิดข้อผิดพลาดระหว่างการติดต่อกับ DBus: { $why }
+
+bluetooth-paired = อุปกรณ์ที่เชื่อมต่อก่อนหน้านี้
+    .connect = เชื่อมต่อ
+    .battery = แบตเตอรี่ { $percentage }%
+
+bluetooth-confirm-pin = ยืนยันรหัส PIN บลูทูธ
+    .description = โปรดยืนยันว่ารหัส PIN ต่อไปนี้ตรงกับรหัสที่แสดงอยู่บน { $device }
+
+bluetooth-available = อุปกรณ์ใกล้เคียง
+
+bluetooth-adapters = อะแดปเตอร์บลูทูธ
 
 ## Desktop
 
@@ -42,6 +155,7 @@ recent-folders = โฟลเดอร์ล่าสุด
 
 x-minutes = { $number } นาที
 x-hours = { $number } ชั่วโมง
+never = ไม่เคย
 
 ## Desktop: Appearance
 
@@ -84,8 +198,6 @@ control-tint = สีส่วนประกอบควบคุม
 frosted = เอฟเฟกต์กระจกฝ้าบนอินเทอร์เฟซระบบ
     .desc = เพิ่มการเบลอพื้นหลังให้กับแผงควบคุม แท่นวาง แอพเล็ต ตัวเรียกใช้งาน และไลบรารีแอปพลิเคชัน
 
-experimental-settings = การตั้งค่าทดลอง
-
 enable-export = นำธีมนี้ไปใช้กับแอพ GNOME
     .desc = ชุดเครื่องมือไม่รองรับการสลับอัตโนมัติทั้งหมด อาจต้องรีสตาร์ทแอพลิเคชั่นที่ไม่ใช่ COSMIC หลังจากการเปลี่ยนธีม
 
@@ -100,10 +212,21 @@ style = สไตล์
     .slightly-round = กลมเล็กน้อย
     .square = เหลี่ยม
 
-# interface density left out for now
+interface-density = ความหนาแน่นของอินเทอร์เฟซ
+    .comfortable = สะบาย
+    .compact = กะทัดรัด
+    .spacious = กว้างขวาง
+
 window-management-appearance = การจัดการหน้าต่าง
     .active-hint = ขนาดคำใบ้หน้าต่างที่ถูกใช้งาน
     .gaps = พื้นที่ว่างระหว่างหน้าต่างเมื่อวางติดกัน
+
+### Experimental
+
+experimental-settings = การตั้งค่าทดลอง
+icons-and-toolkit = ไอคอนและธีมชุดเครื่องมือ
+interface-font = ฟอนต์ระบบ
+monospace-font = ฟอนต์โมโนสเปซ
 
 ## Desktop: Notifications
 
@@ -174,10 +297,17 @@ super-key = ซุปเปอร์คีย์
     .launcher = เปิดลันเชอร์
     .workspaces = เปิดหน้าพื้นที่ทำงาน
     .applications = เปิดหน้าแอพลิเคชั่น
+    .disable = ปิด
 
 window-controls = การควบคุมหน้าต่าง
     .minimize = แสดงปุ่มซ่อนหน้าต่าง
     .maximize = แสดงปุ่มขยายหน้าต่างให้ใหญ่ที่สุด
+    .active-window-hint = แสดง
+
+focus-navigation = Focus Navigation
+    .focus-follows-cursor = Focus follows cursor
+    .focus-follows-cursor-delay = Focus follows cursor delay in ms
+    .cursor-follows-focus = Cursor follows focus
 
 ## Desktop: Workspaces
 
@@ -247,6 +377,12 @@ orientation = การวางแนว
     .rotate-180 = หมุน 180
     .rotate-270 = หมุน 270
 
+vrr = อัตราการรีเฟรชแบบแปรผัน
+    .enabled = เปิด
+    .force = บังคับเปิด
+    .auto = อัตโนมัติ
+    .disabled = ปิด
+
 scheduling = การจัดกำหนดการ
     .manual = การจัดกำหนดการด้วยมือ
 
@@ -255,6 +391,12 @@ dialog = ไดอะล็อก
     .keep-changes = เก็บการเปลี่ยนแปลงไว้
     .change-prompt = การเปลี่ยนแปลงการตั้งค่าจะคืนค่าเดิมภายใน { $time } วินาที
     .revert-settings = คงค่าการตั้งค่าเดิม
+
+legacy-applications = การขยายแอพลิเคชั่นที่ใช้ระบบจัดการหน้าต่าง X11
+    .scaled-by-system = ขยายแอพลิเคชั่น X11 ทั้งหมด
+    .system-description = แอพลิเคชั่น X11 จะเบลอบนหน้าจอ HiDPI
+    .scaled-natively = แสดงแอพลิเคชั่น X11 ทั้งหมดที่ความละเอียดดั้งเดิม
+    .native-description = แอพลิเคชั่น X11 ที่ไม่รองรับการขยายจะเล็กเมื่อใช้หน้าจอ HiDPI เปิดสำหรับเกมเพื่อใช้ประโยชน์ความละเอียดจอทั้งหมด
 
 ## Sound
 
@@ -287,6 +429,20 @@ profile = โปรไฟล์
 power = พลังงานและแบตเตอรี่
     .desc = จัดการการตั้งค่าพลังงาน
 
+battery = แบตเตอรี่
+    .minute = { $value } นาที
+  .hour = { $value } ชั่วโมง
+  .day = { $value } วัน
+  .less-than-minute = น้อยกว่าหนึ่งนาที
+  .and = และ
+  .remaining-time = { $time } ถึงจะ{ $action ->
+        [full] เต็ม
+       *[other] หมด
+   }
+
+connected-devices = อุปกรณ์ที่เชื่อมต่อ
+    .unknown = อุปกรณ์ที่ไม่รู้จัก
+
 power-mode = โหมดพลังงาน
     .battery = ยืดเวลาแบตเตอรี่
     .battery-desc = การใช้พลังงานที่ลดลงและประสิทธิภาพที่ไร้เสียงรบกวน
@@ -295,6 +451,12 @@ power-mode = โหมดพลังงาน
     .performance = ประสิทธิภาพสูง
     .performance-desc = ประสิทธิภาพและการใช้พลังงานสูงสุด
     .no-backend = ไม่พบแบ็คเอนด์ กรุณาติดตั้ง system76-power หรือ power-profiles-daemon
+
+power-saving = ตัวเลือกประหยัดพลังงาน
+    .turn-off-screen-after = ปิดหน้าจอหลังจาก
+    .auto-suspend = ปิดเครื่องโดยอัตโนมัติ
+    .auto-suspend-ac = ปิดเครื่องโดยอัตโนมัติเมื่อเสียบปลั๊กอยู่
+    .auto-suspend-battery = ปิดเครื่องโดยอัตโนมัติเมื่อใช้พลังงานแบตเตอรี่อยู่
 
 ## Input
 
@@ -306,6 +468,7 @@ input-devices = อุปกรณ์ป้อนข้อมูล
     .desc = อุปกรณ์ป้อนข้อมูล
 
 primary-button = ปุ่มหลัก
+    .desc = ตั้งลำดับปุ่มกายภาพ
     .left = ซ้าย
     .right = ขวา
 
@@ -337,6 +500,7 @@ keyboard-sources = แหล่งอินพุต
 keyboard-special-char = การพิมพ์ตัวอักษรพิเศษ
     .alternate = คีย์อักขระอื่น
     .compose = คีย์เรียบเรียง
+    .caps = ปุ่ม Caps Lock
 
 keyboard-typing-assist = การพิมพ์
     .repeat-rate = อัตราการทำซ้ำ
@@ -344,6 +508,7 @@ keyboard-typing-assist = การพิมพ์
 
 added = เพิ่มแล้ว
 type-to-search = พิมพ์เพื่อค้นหา
+show-extended-input-sources = แสดงแหล่งอินพุตเพิ่มเติม
 
 ## Input: Keyboard: Shortcuts
 
@@ -445,6 +610,7 @@ system-shortcut = ระบบ
     .keyboard-brightness-down = ลดความสว่างคีย์บอร์ด
     .keyboard-brightness-up = เพิ่มความสว่างคีย์บอร์ด
     .launcher = เปิดลันเชอร์
+    .log-out = ล็อกเอาท์
     .lock-screen = ล็อคหน้าจอ
     .mute = ปิดเสียงเอาท์พุต
     .mute-mic = ปิดเสียงอินพุตไมโครโฟน
@@ -457,6 +623,7 @@ system-shortcut = ระบบ
     .volume-raise = เพิ่มระดับเสียงเอาท์พุต
     .web-browser = เปิดเบราเซอร์
     .window-switcher = สลับระหว่างหน้าต่างที่เปิดอยู่
+    .window-switcher-previous = สลับไปยังหน้าต่างก่อนหน้า
     .workspace-overview = เปิดภาพรวมพื้นที่ทำงาน
 
 window-tiling = การไทล์หน้าต่าง
@@ -504,9 +671,11 @@ gestures = ท่าทาง
     .four-finger-up = สี่นิ้วปัดขึ้น
     .three-finger-any = สามนิ้วปัดไปทางใดก็ได้
 
+switch-workspaces = สลับพื้นที่ทำงาน
+    .horizontal = เลื่อนสี่นิ้วซ้าย/ขวา
+    .vertical = เลื่อนสี่นิ้วขึ้น/ลง
+
 switch-between-windows = สลับระหว่างหน้าต่าง
-switch-to-next-workspace = สลับไปพื้นที่ทำงานถัดไป
-switch-to-prev-workspace = สลับไปพื้นที่ทำงานก่อนหน้า
 open-application-library = เปิดไลบรารีแอพลิเคชั่น
 open-workspaces-view = เปิดภาพรวมพื้นที่ทำงาน
 
@@ -526,6 +695,7 @@ time-zone = โซนเวลา
 
 time-format = รูปแบบวันที่และเวลา
     .twenty-four = เวลาแบบ 24 ชั่วโมง
+    .show-seconds = แสดงวินาที
     .first = วันแรกของสัปดาห์
     .show-date = แสดงวันที่บนแผงด้านบน
     .friday = ศุกร์
@@ -535,6 +705,22 @@ time-format = รูปแบบวันที่และเวลา
 
 time-region = ภาษาและภูมิภาค
     .desc = รูปแบบวันที่ เวลา และตัวเลขตามภูมิภาคของคุณ
+
+formatting = การจัดรูปแบบ
+    .dates = วันที่
+    .time = เวลา
+    .date-and-time = วันที่และเวลา
+    .numbers = ตัวเลข
+    .measurement = การวัด
+    .paper = กระดาษ
+
+preferred-languages = ภาษาที่ต้องการ
+    .desc = ลำดับของภาษากำหนดภาษาที่จะถูกใช้สำหรับการแปลภาษาเดสก์ทอป การเปลี่ยนแปลงจะมีผลในการเข้าสู่ระบบครั้งต่อไป
+
+add-language = Add language
+    .context = Add Language
+install-additional-languages = Install additional languages
+region = Region
 
 ## System
 
@@ -572,4 +758,30 @@ firmware = เฟิร์มแวร์
 ## System: Users
 
 users = ผู้ใช้
-    .desc = บัญชีผู้ใช้
+    .desc = การเข้าสู่ระบบและบัญชีผู้ใช้
+    .admin = ผู้ดูแลระบบ
+    .standard = มาตรฐาน
+    .profile-add = เลือกรูปโปรไฟล์
+
+administrator = ผู้ดูแลระบบ
+    .desc = ผู้ดูแลระบบสามารถเปลี่ยนแปลงการตั้งค่าสำหรับผู้ใช้ทั้งหมดได้ เพิ่มและลบผู้ใช้อื่นได้
+
+add-user = เพิ่มผู้ใช้
+remove-user = ลบผู้ใช้
+full-name = ชื่อเต็ม
+username = ชื่อผู้ใช้
+password = รหัสผ่าน
+
+## System: Default Applications
+
+default-apps = แอพลิเคชั่นเริ่มต้น
+    .desc = ค่าเริ่มต้นแอพลิเคชั่นเว็บเบราเซอร์ ไคลเอนต์อีเมล ตัวจัดการไฟล์ และแอพลิเคชั่นอื่น ๆ
+    .web-browser = เว็บเบราเซอร์
+    .file-manager = ตัวจัดการไฟล์
+    .mail-client = ไคลเอนต์อีเมล
+    .music = เพลง
+    .video = วีดีโอ
+    .photos = รูปภาพ
+    .calendar = ปฏิทิน
+    .terminal = เทอร์มินัล
+    .other-associations = โปรแกรมที่เกี่ยวข้องกับรูปแบบไฟล์อื่น ๆ

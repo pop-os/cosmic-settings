@@ -60,7 +60,7 @@ enum ContextView {
     MonospaceFont,
     SystemFont,
 }
-
+#[allow(clippy::struct_excessive_bools)]
 pub struct Page {
     entity: page::Entity,
     on_enter_handle: Option<cosmic::iced::task::Handle>,
@@ -78,6 +78,10 @@ pub struct Page {
     font_config: font_config::Model,
     font_filter: Vec<Arc<str>>,
     font_search: String,
+
+    /**  Only fetch icons once. Allows for better cleanup. Also icon fetching can take for ages. */
+    icons_fetched: bool,
+    icon_fetch_handle: Option<cosmic::iced::task::Handle>,
 
     icon_theme_active: Option<usize>,
     icon_themes: IconThemes,
@@ -203,6 +207,8 @@ impl
             font_config: font_config::Model::new(),
             font_filter: Vec::new(),
             font_search: String::new(),
+            icons_fetched: false,
+            icon_fetch_handle: None,
             icon_theme_active: None,
             icon_themes: Vec::new(),
             icon_handles: Vec::new(),
@@ -1081,10 +1087,17 @@ impl Page {
 
             Message::IconsAndToolkit => {
                 self.context_view = Some(ContextView::IconsAndToolkit);
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    "".into(),
+                let mut tasks = Vec::new();
+                tasks.push(cosmic::task::message(
+                    crate::app::Message::OpenContextDrawer(self.entity, "".into()),
                 ));
+                if !self.icons_fetched {
+                    self.icons_fetched = true;
+                    let (task, handle) = cosmic::task::future(icon_themes::fetch()).abortable();
+                    self.icon_fetch_handle = Some(handle);
+                    tasks.push(task);
+                }
+                return Task::batch(tasks);
             }
 
             Message::Daytime(day_time) => {
@@ -1457,7 +1470,7 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Task<crate::pages::Message> {
         let (task, handle) = cosmic::task::batch(vec![
             // Load icon themes
-            cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
+            // cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
             // Load font families
             cosmic::task::future(async move {
                 let (mono, interface) = font_config::load_font_families();
@@ -1475,7 +1488,9 @@ impl page::Page<crate::pages::Message> for Page {
         if let Some(handle) = self.on_enter_handle.take() {
             handle.abort();
         }
-
+        if let Some(handle) = self.icon_fetch_handle.take() {
+            handle.abort();
+        }
         cosmic::task::message(crate::pages::Message::Appearance(Message::Left))
     }
 
@@ -1535,10 +1550,16 @@ impl page::Page<crate::pages::Message> for Page {
                 } else {
                     &self.font_filter
                 };
-                let current_font = cosmic::config::interface_font().family.as_str();
 
-                font_config::selection_context(filter, &self.font_search, current_font, true)
-                    .map(crate::pages::Message::Appearance)
+                let current_font = cosmic::config::interface_font();
+
+                font_config::selection_context(
+                    filter,
+                    &self.font_search,
+                    current_font.family.as_str(),
+                    true,
+                )
+                .map(crate::pages::Message::Appearance)
             }
 
             ContextView::MonospaceFont => {
@@ -1547,10 +1568,16 @@ impl page::Page<crate::pages::Message> for Page {
                 } else {
                     &self.font_filter
                 };
-                let current_font = cosmic::config::monospace_font().family.as_str();
 
-                font_config::selection_context(filter, &self.font_search, current_font, false)
-                    .map(crate::pages::Message::Appearance)
+                let current_font = cosmic::config::monospace_font();
+
+                font_config::selection_context(
+                    filter,
+                    &self.font_search,
+                    current_font.family.as_str(),
+                    false,
+                )
+                .map(crate::pages::Message::Appearance)
             }
 
             ContextView::IconsAndToolkit => self.icons_and_toolkit(),
@@ -1603,7 +1630,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(dark_mode_illustration.clone())
-                                        .width(Length::Fill)
+                                        .width(Length::Fixed(191.0))
                                         .height(Length::Fixed(100.0))
                                 )
                                 .class(button::ButtonClass::Image)
@@ -1612,13 +1639,13 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .on_press(Message::DarkMode(true)),
                                 text::body(&descriptions[dark])
                             ]
-                            .spacing(space_xxs)
+                            .spacing(8)
                             .width(Length::FillPortion(1))
                             .align_x(Alignment::Center),
                             cosmic::iced::widget::column![
                                 button::custom(
                                     icon(light_mode_illustration.clone(),)
-                                        .width(Length::Fill)
+                                        .width(Length::Fixed(191.0))
                                         .height(Length::Fixed(100.0))
                                 )
                                 .class(button::ButtonClass::Image)
@@ -1627,13 +1654,13 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                                 .on_press(Message::DarkMode(false)),
                                 text::body(&descriptions[light])
                             ]
-                            .spacing(space_xxs)
+                            .spacing(8)
                             .width(Length::FillPortion(1))
                             .align_x(Alignment::Center)
                         ]
-                        .spacing(48)
-                        .align_y(Alignment::Center)
-                        .width(Length::Fixed(424.0)),
+                        .spacing(8)
+                        .width(Length::Fixed(478.0))
+                        .align_y(Alignment::Center),
                     )
                     .center_x(Length::Fill),
                 )
@@ -1836,6 +1863,21 @@ pub fn style() -> Section<crate::pages::Message> {
     let dark_square_style = from_name("illustration-appearance-dark-style-square").handle();
     let light_square_style = from_name("illustration-appearance-light-style-square").handle();
 
+    fn style_container() -> cosmic::theme::Container<'static> {
+        cosmic::theme::Container::custom(|theme| {
+            let mut background = theme.cosmic().palette.neutral_9;
+            background.alpha = 0.1;
+            container::Style {
+                background: Some(cosmic::iced::Background::Color(background.into())),
+                border: cosmic::iced::Border {
+                    radius: theme.cosmic().radius_s().into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }
+        })
+    }
+
     Section::default()
         .title(fl!("style"))
         .descriptions(descriptions)
@@ -1862,8 +1904,11 @@ pub fn style() -> Section<crate::pages::Message> {
                                 )
                                 .selected(matches!(page.roundness, Roundness::Round))
                                 .class(button::ButtonClass::Image)
-                                .padding(8)
-                                .on_press(Message::Roundness(Roundness::Round)),
+                                .padding(0)
+                                .on_press(Message::Roundness(Roundness::Round))
+                                .apply(container)
+                                .width(Length::Fixed(191.0))
+                                .class(style_container()),
                                 text::body(&descriptions[round])
                             ]
                             .spacing(8)
@@ -1884,8 +1929,11 @@ pub fn style() -> Section<crate::pages::Message> {
                                 )
                                 .selected(matches!(page.roundness, Roundness::SlightlyRound))
                                 .class(button::ButtonClass::Image)
-                                .padding(8)
-                                .on_press(Message::Roundness(Roundness::SlightlyRound)),
+                                .padding(0)
+                                .on_press(Message::Roundness(Roundness::SlightlyRound))
+                                .apply(container)
+                                .width(Length::Fixed(191.0))
+                                .class(style_container()),
                                 text::body(&descriptions[slightly_round])
                             ]
                             .spacing(8)
@@ -1907,16 +1955,18 @@ pub fn style() -> Section<crate::pages::Message> {
                                 .width(Length::FillPortion(1))
                                 .selected(matches!(page.roundness, Roundness::Square))
                                 .class(button::ButtonClass::Image)
-                                .padding(8)
-                                .on_press(Message::Roundness(Roundness::Square)),
+                                .padding(0)
+                                .on_press(Message::Roundness(Roundness::Square))
+                                .apply(container)
+                                .width(Length::Fixed(191.0))
+                                .class(style_container()),
                                 text::body(&descriptions[square])
                             ]
                             .spacing(8)
                             .align_x(Alignment::Center)
                             .width(Length::FillPortion(1))
                         ]
-                        .spacing(12)
-                        .width(Length::Fixed(628.0))
+                        .spacing(8)
                         .align_y(Alignment::Center),
                     )
                     .center_x(Length::Fill),
@@ -2027,13 +2077,13 @@ pub fn experimental() -> Section<crate::pages::Message> {
 
             let system_font = crate::widget::go_next_with_item(
                 &descriptions[interface_font_txt],
-                text::body(cosmic::config::interface_font().family.as_str()),
+                text::body(cosmic::config::interface_font().family),
                 Message::DisplaySystemFont,
             );
 
             let mono_font = crate::widget::go_next_with_item(
                 &descriptions[monospace_font_txt],
-                text::body(cosmic::config::monospace_font().family.as_str()),
+                text::body(cosmic::config::monospace_font().family),
                 Message::DisplayMonoFont,
             );
 

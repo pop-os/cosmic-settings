@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Touchpad
+Name[pl]=Gładzik
 Comment=Touchpad speed, click options, gestures.
+Comment[pl]=Prędkość gładzika, opcje kliknięć, gesty.
 Type=Settings
 Exec=cosmic-settings touchpad
 Terminal=false

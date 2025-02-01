@@ -12,7 +12,6 @@ use cosmic::{
     Apply, Element, Task,
 };
 use cosmic_config::ConfigSet;
-use ustr::Ustr;
 
 const INTERFACE_FONT: &str = "interface_font";
 const MONOSPACE_FONT: &str = "monospace_font";
@@ -67,7 +66,7 @@ pub fn load_font_families() -> (Vec<Arc<str>>, Vec<Arc<str>>) {
 pub fn selection_context<'a>(
     families: &'a [Arc<str>],
     search: &'a str,
-    current_font: &'a str,
+    current_font: &str,
     system: bool,
 ) -> Element<'a, super::Message> {
     let space_l = theme::active().cosmic().spacing.space_l;
@@ -152,12 +151,10 @@ impl Model {
         match message {
             Message::InterfaceFontFamily(id) => {
                 if let Some(family) = self.interface_font_families.get(id) {
-                    let family = Ustr::from(family);
-
                     update_config(
                         INTERFACE_FONT,
                         FontConfig {
-                            family,
+                            family: family.to_string(),
                             weight: cosmic::iced::font::Weight::Normal,
                             style: cosmic::iced::font::Style::Normal,
                             stretch: cosmic::iced::font::Stretch::Normal,
@@ -166,8 +163,9 @@ impl Model {
 
                     self.interface_font_family = Some(id);
 
+                    let family = family.clone();
                     tokio::spawn(async move {
-                        set_gnome_font_name(family.as_str()).await;
+                        set_gnome_font_name(family.as_ref()).await;
                     });
                 }
             }
@@ -191,7 +189,7 @@ impl Model {
                     update_config(
                         MONOSPACE_FONT,
                         FontConfig {
-                            family: Ustr::from(family),
+                            family: family.to_string(),
                             weight: cosmic::iced::font::Weight::Normal,
                             style: cosmic::iced::font::Style::Normal,
                             stretch: cosmic::iced::font::Stretch::Normal,
