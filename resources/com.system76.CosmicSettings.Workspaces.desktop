@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Workspaces
 Name[pl]=Obszary robocze
+Name[hu]=Munkaterületek
 Comment=Workspace orientation and behavior.
 Comment[pl]=Kierunek i zachowanie obszarów roboczych.
+Comment[hu]=Munkaterületek tájolása és viselkedése.
 Type=Settings
 Exec=cosmic-settings workspaces
 Terminal=false

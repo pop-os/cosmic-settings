@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Input Devices
 Name[pl]=Urządzenia wprowadzania danych
+Name[hu]=Beviteli eszközök
 Comment=
 Type=Settings
 Exec=cosmic-settings input

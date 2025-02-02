@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Firmware
 Name[pl]=Oprogramowanie sprzętowe
+Name[hu]=Firmware
 Comment=View and update firmware.
 Comment[pl]=Zobacz i aktualizuj oprogramowanie sprzętowe.
+Comment[hu]=Firmware megtekintése és frissítése.
 Type=Settings
 Exec=cosmic-settings firmware
 Terminal=false

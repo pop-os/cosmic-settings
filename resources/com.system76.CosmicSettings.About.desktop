@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=About
 Name[pl]=O systemie
+Name[hu]=Névjegy
 Comment=Device name, hardware information, operating system defaults.
 Comment[pl]=Nazwa urządzenia, informacje o sprzęcie i systemie operacyjnym.
+Comment[hu]=Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai.
 Type=Settings
 Exec=cosmic-settings about
 Terminal=false

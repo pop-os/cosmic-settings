@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Window management
 Name[pl]=Zarządzanie oknami
+Name[hu]=Ablakkezelés
 Comment=Super key action, window control options, and additional window tiling options.
 Comment[pl]=Działanie klawisza Super, opcje kontroli oknami i dodatkowe ustawienia kafelkowania okien.
+Comment[hu]=Super billentyű művelet, ablakkezelési és csempézési beállítások.
 Type=Settings
 Exec=cosmic-settings window-management
 Terminal=false

@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=VPN
 Name[pl]=VPN
+Name[hu]=VPN
 Comment=VPN connections and connection profiles.
 Comment[pl]=Połączenia VPN i profile połączeń.
+Comment[hu]=VPN-kapcsolatok és kapcsolódási profilok.
 Type=Settings
 Exec=cosmic-settings vpn
 Terminal=false

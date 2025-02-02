@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Dock
 Name[pl]=Dok
+Name[hu]=Dokkoló
 Comment=Panel with pinned applications in the app tray and other applets.
 Comment[pl]=Panel z przypiętymi aplikacjami w zasobniku i innymi apletami.
+Comment[hu]=Panel rögzített alkalmazásokkal és egyéb kisalkalmazásokkal.
 Type=Settings
 Exec=cosmic-settings dock
 Terminal=false

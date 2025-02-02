@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Sound
 Name[pl]=Dźwięk
+Name[hu]=Hang
 Comment=Audio settings for devices, alerts, and applications.
 Comment[pl]=Opcje dźwięku dla urządzeń, alertów i aplikacji.
+Comment[hu]=Hangbeállítások eszközökhöz, figyelmeztetésekhez és alkalmazásokhoz.
 Type=Settings
 Exec=cosmic-settings sound
 Terminal=false

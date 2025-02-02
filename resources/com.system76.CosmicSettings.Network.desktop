@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Network & Wireless
 Name[pl]=Sieć i połączenia bezprzewodowe
+Name[hu]=Internet és Wi-Fi
 Comment=Manage network connections
 Comment[pl]=Zarządzaj połączeniami sieciowymi
+Comment[hu]=Hálózati kapcsolatok kezelése
 Type=Settings
 Exec=cosmic-settings network
 Terminal=false

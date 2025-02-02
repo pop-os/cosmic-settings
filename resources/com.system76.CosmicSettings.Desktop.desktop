@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Desktop
 Name[pl]=Pulpit
+Name[hu]=Asztal
 Comment=
 Type=Settings
 Exec=cosmic-settings desktop

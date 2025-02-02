@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Wallpaper
 Name[pl]=Tapeta
+Name[hu]=Háttérkép
 Comment=Wallpaper images, colors, and slideshow options.
 Comment[pl]=Obraz tła, kolory i opcje pokazu slajdów.
+Comment[hu]=Háttérképek, színek és diavetítési beállítások.
 Type=Settings
 Exec=cosmic-settings wallpaper
 Terminal=false

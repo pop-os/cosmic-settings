@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Keyboard
 Name[pl]=Klawiatura
+Name[hu]=Billentyűzet
 Comment=Input sources, switching, special character entry, shortcuts.
 Comment[pl]=Źródła wprowadzania, przełączanie, specjalne klawisze, skróty.
+Comment[hu]=Bemeneti források, azok váltása, speciális karakterek beírása, billentyűparancsok.
 Type=Settings
 Exec=cosmic-settings keyboard
 Terminal=false

@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Bluetooth
 Name[pl]=Bluetooth
+Name[hu]=Bluetooth
 Comment=Manage Bluetooth devices
 Comment[pl]=Zarządzaj urządzeniami Bluetooth
+Comment[hu]=Bluetooth-eszközök kezelése
 Type=Settings
 Exec=cosmic-settings bluetooth
 Terminal=false
