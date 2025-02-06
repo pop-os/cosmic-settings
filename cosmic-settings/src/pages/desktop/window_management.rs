@@ -25,6 +25,7 @@ pub enum Message {
     ShowActiveWindowHint(bool),
     ShowMaximizeButton(bool),
     ShowMinimizeButton(bool),
+    SetWindowSnapThreshold(u32),
 }
 
 pub struct Page {
@@ -36,6 +37,7 @@ pub struct Page {
     focus_delay_text: String,
     cursor_follows_focus: bool,
     show_active_hint: bool,
+    window_snap_threshold: u32,
 }
 
 impl Default for Page {
@@ -76,6 +78,15 @@ impl Default for Page {
             })
             .unwrap_or(true);
 
+        let window_snap_threshold = comp_config
+            .get("window_snap_threshold")
+            .inspect_err(|err| {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                    error!(?err, "Failed to read config 'window_snap_threshold'")
+                }
+            })
+            .unwrap_or(0);
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -90,6 +101,7 @@ impl Default for Page {
             focus_delay_text: format!("{focus_follows_cursor_delay}"),
             cursor_follows_focus,
             show_active_hint,
+            window_snap_threshold,
         }
     }
 }
@@ -168,6 +180,12 @@ impl Page {
                     error!(?err, "Failed to set config 'active_hint'");
                 }
             }
+            Message::SetWindowSnapThreshold(value) => {
+                self.window_snap_threshold = value;
+                if let Err(err) = self.comp_config.set("window_snap_threshold", value) {
+                    error!(?err, "Failed to set config 'window_snap_threshold'");
+                }
+            }
         }
     }
 }
@@ -182,6 +200,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(super_key_action()),
             sections.insert(window_controls()),
             sections.insert(focus_navigation()),
+            sections.insert(floating_layout()),
         ])
     }
 
@@ -291,6 +310,37 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                     &descriptions[cursor_follows_focus],
                     toggler(page.cursor_follows_focus).on_toggle(Message::SetCursorFollowsFocus),
                 ))
+                .apply(Element::from)
+                .map(crate::pages::Message::WindowManagement)
+        })
+}
+
+pub fn floating_layout() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let window_snap_threshold =
+        descriptions.insert(fl!("floating-layout", "window-snap-threshold"));
+
+    Section::default()
+        .title(fl!("floating-layout"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+
+            settings::section()
+                .title(&section.title)
+                .add(
+                    settings::item::builder(&descriptions[window_snap_threshold]).control(
+                        widget::spin_button(
+                            page.window_snap_threshold.to_string(),
+                            page.window_snap_threshold,
+                            5,
+                            0,
+                            500,
+                            Message::SetWindowSnapThreshold,
+                        ),
+                    ),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
         })

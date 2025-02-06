@@ -312,6 +312,9 @@ focus-navigation = Focus Navigation
     .focus-follows-cursor-delay = Focus follows cursor delay in ms
     .cursor-follows-focus = Cursor follows focus
 
+floating-layout = Floating Layout
+    .window-snap-threshold = Window snap-to-edge threshold
+
 ## Desktop: Workspaces
 
 workspaces = Workspaces
