@@ -7,6 +7,7 @@ license = "GPL-3.0-only"
 [dependencies]
 accounts-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 anyhow = "1.0"
+apt-cmd = { git = "https://github.com/pop-os/apt-cmd", optional = true }
 as-result = "0.2.1"
 ashpd = { version = "0.9", default-features = false, features = [
     "tokio",
@@ -46,6 +47,7 @@ locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional =
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", optional = true }
 notify = "6.1.1"
 once_cell = "1.19.0"
+pop-upgrade-client = { path = "../../upgrade/client", optional = true }
 regex = "1.10.6"
 ron = "0.8"
 rust-embed = "8.5.0"
@@ -72,6 +74,12 @@ fontdb = "0.16.2"
 fixed_decimal = "0.5.6"
 mime = "0.3.17"
 rustix = "0.38.41"
+bitflags = "2.6.0"
+async-stream = "0.3.6"
+thiserror = "2.0.9"
+num-traits = "0.2.19"
+users = "0.11.0"
+fomat-macros = "0.3.2"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
@@ -98,21 +106,25 @@ default = ["a11y", "dbus-config", "linux", "single-instance", "wgpu"]
 
 # Default features for Linux
 linux = [
-    "page-about",
-    "page-bluetooth",
-    "page-date",
-    "page-default-apps",
-    "page-input",
-    "page-networking",
-    "page-power",
-    "page-region",
-    "page-sound",
-    "page-users",
-    "page-window-management",
-    "page-workspaces",
-    "xdg-portal",
-    "wayland",
+    # "page-about",
+    # "page-bluetooth",
+    # "page-date",
+    # "page-default-apps",
+    # "page-input",
+    # "page-networking",
+    # "page-power",
+    # "page-region",
+    # "page-sound",
+    "page-upgrade",
+    # "page-users",
+    # "page-window-management",
+    # "page-workspaces",
+    # "xdg-portal",
+    # "wayland",
 ]
+
+# Features specific to Pop!_OS
+pop-os = ["dep:apt-cmd", "dep:pop-upgrade-client"]
 
 # Pages
 page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
@@ -133,6 +145,7 @@ page-networking = [
 page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = ["dep:lichen-system", "dep:locale1"]
 page-sound = ["dep:cosmic-settings-subscriptions"]
+page-upgrade = ["pop-os", "dep:zbus"]
 page-users = ["dep:accounts-zbus"]
 page-window-management = ["dep:cosmic-settings-config"]
 page-workspaces = ["dep:cosmic-comp-config"]

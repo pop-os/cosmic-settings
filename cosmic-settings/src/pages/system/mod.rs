@@ -6,6 +6,8 @@ pub mod about;
 #[cfg(feature = "page-default-apps")]
 pub mod default_apps;
 pub mod firmware;
+#[cfg(feature = "page-upgrade")]
+pub mod upgrade;
 #[cfg(feature = "page-users")]
 pub mod users;
 
@@ -30,6 +32,11 @@ impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(
         mut page: page::Insert<crate::pages::Message>,
     ) -> page::Insert<crate::pages::Message> {
+        #[cfg(feature = "page-upgrade")]
+        {
+            page = page.sub_page::<upgrade::Page>();
+        }
+
         #[cfg(feature = "page-users")]
         {
             page = page.sub_page::<users::Page>();

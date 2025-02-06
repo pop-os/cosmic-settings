@@ -108,6 +108,8 @@ impl SettingsApp {
             PageCommands::Time => self.pages.page_id::<time::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
+            #[cfg(feature = "page-upgrade")]
+            PageCommands::Upgrade => self.pages.page_id::<system::upgrade::Page>(),
             #[cfg(feature = "page-users")]
             PageCommands::Users => self.pages.page_id::<system::users::Page>(),
             #[cfg(feature = "page-networking")]
@@ -501,6 +503,13 @@ impl cosmic::Application for SettingsApp {
                 #[cfg(feature = "page-sound")]
                 crate::pages::Message::Sound(message) => {
                     if let Some(page) = self.pages.page_mut::<sound::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-upgrade")]
+                crate::pages::Message::Upgrade(message) => {
+                    if let Some(page) = self.pages.page_mut::<system::upgrade::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }

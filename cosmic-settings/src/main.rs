@@ -80,6 +80,7 @@ pub enum PageCommands {
     #[cfg(feature = "page-power")]
     Power,
     /// Region & Language settings page
+    #[cfg(feature = "page-region")]
     RegionLanguage,
     /// Sound settings page
     #[cfg(feature = "page-sound")]
@@ -91,6 +92,9 @@ pub enum PageCommands {
     /// Touchpad settings page
     #[cfg(feature = "page-input")]
     Touchpad,
+    /// OS Update & Recovery page
+    #[cfg(feature = "page-upgrade")]
+    Upgrade,
     /// Users settings page
     #[cfg(feature = "page-users")]
     Users,

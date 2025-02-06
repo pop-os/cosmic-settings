@@ -5,6 +5,7 @@ use cosmic_settings_page as page;
 
 #[cfg(feature = "page-date")]
 pub mod date;
+#[cfg(feature = "page-region")]
 pub mod region;
 
 #[derive(Default)]
