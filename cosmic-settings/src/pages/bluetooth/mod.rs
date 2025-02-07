@@ -746,6 +746,10 @@ fn available_devices() -> Section<crate::pages::Message> {
                         return None::<Element<'_, Message>>;
                     }
 
+                    if !device.is_known_device_type() && !device.has_alias() {
+                        return None::<Element<'_, Message>>;
+                    }
+
                     let mut items = vec![
                         widget::icon::from_name(device.icon).size(16).into(),
                         text(device.alias_or_addr()).wrapping(Wrapping::Word).into(),
