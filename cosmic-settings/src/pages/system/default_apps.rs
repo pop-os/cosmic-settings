@@ -17,6 +17,8 @@ use mime_apps::App;
 use slotmap::SlotMap;
 use tokio::sync::mpsc;
 use freedesktop_desktop_entry::{default_paths, DesktopEntry, Iter as DesktopEntryIter};
+use which;
+
 
 const DROPDOWN_WEB_BROWSER: usize = 0;
 const DROPDOWN_FILE_MANAGER: usize = 1;
@@ -201,10 +203,48 @@ impl Page {
                         &mime_types
                     }),
                     Category::Mail => (DROPDOWN_MAIL, &["x-scheme-handler/mailto"]),
-                    Category::Terminal => (DROPDOWN_TERMINAL, &[
-                        "x-scheme-handler/terminal",
-                        "application/x-terminal-emulator"
-                    ]),
+                    Category::Terminal => {
+                        let meta = &mut mime_apps.apps[DROPDOWN_TERMINAL];
+                        if meta.selected != Some(id) {
+                            meta.selected = Some(id);
+                            let appid = &meta.app_ids[id];
+
+                            // Update MIME associations
+                            for mime_type in [
+                                "x-scheme-handler/terminal", 
+                                "application/x-terminal-emulator"
+                            ] {
+                                if let Ok(mime) = mime_type.parse() {
+                                    mime_apps.local_list.set_default_app(
+                                        mime,
+                                        format!("{}.desktop", appid)
+                                    );
+                                }
+                            }
+
+                            // Create a symbolic link for system-wide compatibility
+                            if let Some(binary_path) = find_terminal_binary_path(appid) {
+                                // Try to create the symlink using pkexec
+                                let _ = std::process::Command::new("pkexec")
+                                    .args([
+                                        "ln",
+                                        "-sf",
+                                        &binary_path,
+                                        "/usr/local/bin/x-terminal-emulator"
+                                    ])
+                                    .status();
+                            }
+
+                            // Persist changes
+                            let mut buffer = mime_apps.local_list.to_string();
+                            buffer.push('\n');
+                            _ = std::fs::write(&mime_apps.config_path, buffer);
+                            _ = std::process::Command::new("update-desktop-database").status();
+                        }
+                        return Task::none();
+                    },
+
+                   
                     Category::Video => (DROPDOWN_VIDEO, {
                         mime_types = mime_apps
                             .known_mimes
@@ -497,4 +537,29 @@ async fn load_terminal_apps(assocs: &BTreeMap<Arc<str>, Arc<App>>) -> AppMeta {
         apps,
         icons,
     }
+}
+fn find_terminal_binary_path(app_id: &str) -> Option<String> {
+    // First try to find the desktop entry
+    for path in freedesktop_desktop_entry::default_paths() {
+        let desktop_path = path.join(format!("{}.desktop", app_id));
+        if let Ok(bytes) = std::fs::read_to_string(&desktop_path) {
+            if let Ok(entry) = DesktopEntry::from_str(&desktop_path, &bytes, None::<&[&str]>) {
+                // Get the Exec line and extract the binary path
+                if let Some(exec) = entry.exec() {
+                    // Extract the binary path (first part before any arguments)
+                    if let Some(binary) = exec.split_whitespace().next() {
+                        // If it's a relative path, try to find it in PATH
+                        if !binary.starts_with('/') {
+                            if let Ok(path) = which::which(binary) {
+                                return Some(path.to_string_lossy().into_owned());
+                            }
+                        } else {
+                            return Some(binary.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    None
 }
