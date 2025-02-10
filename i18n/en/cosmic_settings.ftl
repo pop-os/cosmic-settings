@@ -800,3 +800,4 @@ default-apps = Default Applications
     .calendar = Calendar
     .terminal = Terminal
     .other-associations = Other Associations
+    .text-editor = Text Editor
