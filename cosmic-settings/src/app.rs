@@ -816,9 +816,11 @@ impl SettingsApp {
         self.active_page = page;
 
         let mut leave_task = iced::Task::none();
+        let mut close_context_drawer_task = iced::Task::none();
 
         if current_page != page {
             self.loaded_pages.remove(&current_page);
+            close_context_drawer_task = cosmic::task::message(Message::CloseContextDrawer);
             leave_task = self
                 .pages
                 .on_leave(current_page)
@@ -850,6 +852,7 @@ impl SettingsApp {
         Task::batch(vec![
             leave_task,
             page_task,
+            close_context_drawer_task,
             cosmic::task::future(async { Message::SetWindowTitle }),
         ])
     }
