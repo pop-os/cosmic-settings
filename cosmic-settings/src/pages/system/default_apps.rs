@@ -13,10 +13,10 @@ use cosmic::{
     Apply, Element, Task,
 };
 use cosmic_settings_page::{self as page, section, Section};
+use freedesktop_desktop_entry::{default_paths, DesktopEntry, Iter as DesktopEntryIter};
 use mime_apps::App;
 use slotmap::SlotMap;
 use tokio::sync::mpsc;
-use freedesktop_desktop_entry::{default_paths, DesktopEntry, Iter as DesktopEntryIter};
 
 const DROPDOWN_WEB_BROWSER: usize = 0;
 const DROPDOWN_FILE_MANAGER: usize = 1;
@@ -26,6 +26,7 @@ const DROPDOWN_VIDEO: usize = 4;
 const DROPDOWN_PHOTO: usize = 5;
 const DROPDOWN_CALENDAR: usize = 6;
 const DROPDOWN_TERMINAL: usize = 7;
+const DROPDOWN_TEXT_EDITOR: usize = 8;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
 pub enum Category {
@@ -38,6 +39,7 @@ pub enum Category {
     Terminal,
     Video,
     WebBrowser,
+    TextEditor,
 }
 
 #[derive(Clone, Debug)]
@@ -128,6 +130,7 @@ impl page::Page<crate::pages::Message> for Page {
                 load_defaults(&assocs, &["image/png"]).await,
                 load_defaults(&assocs, &["text/calendar"]).await,
                 load_terminal_apps(&assocs).await,
+                load_defaults(&assocs, &["text/plain"]).await,
             ];
 
             Message::Update(CachedMimeApps {
@@ -201,10 +204,13 @@ impl Page {
                         &mime_types
                     }),
                     Category::Mail => (DROPDOWN_MAIL, &["x-scheme-handler/mailto"]),
-                    Category::Terminal => (DROPDOWN_TERMINAL, &[
-                        "x-scheme-handler/terminal",
-                        "application/x-terminal-emulator"
-                    ]),
+                    Category::Terminal => (
+                        DROPDOWN_TERMINAL,
+                        &[
+                            "x-scheme-handler/terminal",
+                            "application/x-terminal-emulator",
+                        ],
+                    ),
                     Category::Video => (DROPDOWN_VIDEO, {
                         mime_types = mime_apps
                             .known_mimes
@@ -224,6 +230,7 @@ impl Page {
                             "x-scheme-handler/https",
                         ],
                     ),
+                    Category::TextEditor => (DROPDOWN_TEXT_EDITOR, &["text/plain"]),
                     Category::Mime(_mime_type) => return Task::none(),
                 };
 
@@ -346,6 +353,16 @@ fn apps() -> Section<crate::pages::Message> {
                     .icons(&meta.icons),
                 )
             })
+            .add({
+                let meta = &mime_apps.apps[DROPDOWN_TEXT_EDITOR];
+                settings::flex_item(
+                    fl!("default-apps", "text-editor"),
+                    dropdown(&meta.apps, meta.selected, |id| {
+                        Message::SetDefault(Category::TextEditor, id)
+                    })
+                    .icons(&meta.icons),
+                )
+            })
             .apply(Element::from)
             .map(crate::pages::Message::DefaultApps)
     })
@@ -454,7 +471,11 @@ async fn load_terminal_apps(assocs: &BTreeMap<Arc<str>, Arc<App>>) -> AppMeta {
         if let Ok(bytes) = std::fs::read_to_string(&path) {
             if let Ok(entry) = DesktopEntry::from_str(&path, &bytes, None::<&[&str]>) {
                 // Check if it's a terminal application
-                if entry.categories().map(|cats| cats.iter().any(|c| *c == "TerminalEmulator")).unwrap_or(false) {
+                if entry
+                    .categories()
+                    .map(|cats| cats.iter().any(|c| *c == "TerminalEmulator"))
+                    .unwrap_or(false)
+                {
                     let id = entry.id();
                     if let Some(app) = assocs.get(id) {
                         if current_appid.as_ref().map(|c| *c == id).unwrap_or(false) {
