@@ -74,6 +74,7 @@ rustix = "0.38.41"
 gettext-rs = { version = "0.7.2", features = [
     "gettext-system",
 ], optional = true }
+async-fn-stream = "0.2.2"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"

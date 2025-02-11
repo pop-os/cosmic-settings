@@ -1,8 +1,7 @@
 use chrono::{Duration, TimeDelta};
-use futures::future::join_all;
-use futures::FutureExt;
+use futures::{future::join_all, FutureExt, Stream, StreamExt};
 use upower_dbus::{BatteryState, BatteryType, DeviceProxy};
-use zbus::Connection;
+use zbus::{zvariant::ObjectPath, Connection};
 
 mod ppdaemon;
 mod s76powerdaemon;
@@ -239,6 +238,7 @@ pub struct ConnectedDevice {
     pub model: String,
     pub device_icon: &'static str,
     pub battery: Battery,
+    pub device_path: String,
 }
 
 async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Error> {
@@ -406,6 +406,7 @@ impl Battery {
 impl ConnectedDevice {
     async fn from_device_maybe(proxy: DeviceProxy<'_>) -> Option<Self> {
         let device_type = proxy.type_().await.unwrap_or(BatteryType::Unknown);
+        let device_path = proxy.clone().into_inner().path().to_string();
         if matches!(
             device_type,
             BatteryType::Unknown | BatteryType::LinePower | BatteryType::Battery
@@ -445,7 +446,54 @@ impl ConnectedDevice {
             model,
             device_icon,
             battery,
+            device_path,
         })
+    }
+
+    pub async fn device_removed_stream(
+        connection: &'_ Connection,
+    ) -> Result<impl Stream<Item = String> + '_, zbus::Error> {
+        let proxy = upower_dbus::UPowerProxy::new(connection).await?;
+        let stream = proxy.receive_device_removed().await?;
+
+        let transformed_stream = stream.filter_map(move |device_removed| async move {
+            let device_path: ObjectPath<'static> = match device_removed.args() {
+                Ok(args) => args.device().to_owned(),
+                Err(e) => {
+                    tracing::error!("Failed to get DeviceRemoved arguments: {e}");
+                    return None;
+                }
+            };
+            Some(device_path.to_string())
+        });
+
+        Ok(transformed_stream)
+    }
+
+    pub async fn device_added_stream<'a>(
+        connection: &'_ Connection,
+    ) -> Result<impl futures::Stream<Item = ConnectedDevice> + '_, zbus::Error> {
+        let proxy = upower_dbus::UPowerProxy::new(connection).await?;
+        let stream = proxy.receive_device_added().await?;
+
+        let transformed_stream = stream.filter_map(move |device_added| async move {
+            let device_path: ObjectPath<'static> = match device_added.args() {
+                Ok(args) => args.device().to_owned(),
+                Err(e) => {
+                    tracing::error!("Failed to get DeviceAdded arguments: {e}");
+                    return None;
+                }
+            };
+            match DeviceProxy::new(connection, &device_path).await {
+                Ok(device) => ConnectedDevice::from_device_maybe(device).await,
+                Err(e) => {
+                    tracing::error!("Failed to create DeviceProxy from {device_path}: {e}");
+                    None
+                }
+            }
+        });
+
+        Ok(transformed_stream)
     }
 
     pub async fn update_connected_devices() -> Vec<Self> {

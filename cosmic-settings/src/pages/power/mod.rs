@@ -12,6 +12,7 @@ use cosmic::Task;
 use cosmic_config::{Config, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, section, Section};
+use futures::StreamExt;
 use itertools::Itertools;
 use slab::Slab;
 use slotmap::SlotMap;
@@ -123,6 +124,52 @@ impl page::Page<crate::pages::Message> for Page {
                 let devices = ConnectedDevice::update_connected_devices().await;
                 Message::UpdateConnectedDevices(devices)
             }),
+            cosmic::Task::run(
+                async_fn_stream::fn_stream(|emitter| async move {
+                    let span = tracing::span!(tracing::Level::INFO, "power::device_stream task");
+                    let _span_handle = span.enter();
+
+                    let Ok(connection) = zbus::Connection::system().await else {
+                        tracing::error!("could not established zbus connection to system");
+                        return;
+                    };
+
+                    let added_stream = ConnectedDevice::device_added_stream(&connection).await;
+                    let removed_stream = ConnectedDevice::device_removed_stream(&connection).await;
+
+                    let added_future = async {
+                        match added_stream {
+                            Ok(stream) => {
+                                futures::pin_mut!(stream);
+                                while let Some(device) = stream.next().await {
+                                    tracing::info!(device = device.model, "device added");
+                                    emitter.emit(Message::DeviceConnect(device)).await;
+                                }
+                            }
+                            Err(err) => tracing::error!(?err, "cannot establish added stream"),
+                        }
+                    };
+
+                    let removed_future = async {
+                        match removed_stream {
+                            Ok(stream) => {
+                                futures::pin_mut!(stream);
+                                while let Some(device_path) = stream.next().await {
+                                    tracing::info!(device_path, "device removed");
+                                    emitter.emit(Message::DeviceDisconnect(device_path)).await;
+                                }
+                            }
+                            Err(err) => tracing::error!(?err, "cannot establish removed stream"),
+                        }
+                    };
+
+                    futures::pin_mut!(added_future);
+                    futures::pin_mut!(removed_future);
+
+                    futures::future::select(added_future, removed_future).await;
+                }),
+                |msg| msg,
+            ),
         ];
 
         let (task, handle) = cosmic::Task::batch(futures)
@@ -147,6 +194,8 @@ pub enum Message {
     PowerProfileChange(PowerProfile),
     UpdateBattery(Battery),
     UpdateConnectedDevices(Vec<ConnectedDevice>),
+    DeviceDisconnect(String),
+    DeviceConnect(ConnectedDevice),
     ScreenOffTimeChange(Option<Duration>),
     SuspendOnAcTimeChange(Option<Duration>),
     SuspendOnBatteryTimeChange(Option<Duration>),
@@ -191,6 +240,12 @@ impl Page {
                 {
                     tracing::error!("failed to set suspend on battery time: {}", err)
                 }
+            }
+            Message::DeviceDisconnect(device_path) => self
+                .connected_devices
+                .retain(|device| device.device_path != device_path),
+            Message::DeviceConnect(connected_device) => {
+                self.connected_devices.push(connected_device)
             }
         };
     }
