@@ -352,6 +352,21 @@ impl Default for Page {
                 fl!("x-hours", number = 2)
                     .replace('\u{2068}', "")
                     .replace('\u{2069}', ""),
+                fl!("x-hours", number = 4)
+                    .replace('\u{2068}', "")
+                    .replace('\u{2069}', ""),
+                fl!("x-hours", number = 6)
+                    .replace('\u{2068}', "")
+                    .replace('\u{2069}', ""),
+                fl!("x-hours", number = 8)
+                    .replace('\u{2068}', "")
+                    .replace('\u{2069}', ""),
+                fl!("x-hours", number = 12)
+                    .replace('\u{2068}', "")
+                    .replace('\u{2069}', ""),
+                fl!("x-hours", number = 24)
+                    .replace('\u{2068}', "")
+                    .replace('\u{2069}', ""),
             ],
             selected_fit: 0,
             selected_rotation: 0,
