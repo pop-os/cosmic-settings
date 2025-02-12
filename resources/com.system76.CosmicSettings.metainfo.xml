@@ -9,9 +9,12 @@
   <url type="homepage">https://github.com/pop-os/cosmic-settings</url>
   <url type="bugtracker">https://github.com/pop-os/cosmic-settings</url>
   <name>COSMIC Settings</name>
+  <name xml:lang="pl">Ustawienia COSMIC</name>
   <summary>Settings application for the COSMIC desktop</summary>
+  <summary xml:lang="pl">Aplikacja ustawień pulpitu COSMIC</summary>
   <description>
       <p>Settings application for the COSMIC desktop</p>
+      <p xml:lang="pl">Aplikacja ustawień pulpitu COSMIC</p>
   </description>
   <launchable type="desktop-id">com.system76.CosmicSettings.desktop</launchable>
   <icon type="remote" height="256" width="256">https://raw.githubusercontent.com/pop-os/cosmic-settings/master/resources/icons/256x256/apps/com.system76.CosmicSettings.svg</icon>
