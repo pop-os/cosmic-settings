@@ -308,7 +308,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         row!(
                             widget::icon::from_name(connected_device.device_icon).size(48),
                             column!(
-                                text::heading(&connected_device.model),
+                                text::heading(&connected_device.model).height(20.0),
                                 row!(battery_icon, battery_percent_and_time)
                                     .spacing(4)
                                     .align_y(Alignment::Center),
