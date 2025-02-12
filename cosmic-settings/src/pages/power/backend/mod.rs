@@ -470,7 +470,7 @@ impl ConnectedDevice {
         Ok(transformed_stream)
     }
 
-    pub async fn device_added_stream<'a>(
+    pub async fn device_added_stream(
         connection: &'_ Connection,
     ) -> Result<impl futures::Stream<Item = ConnectedDevice> + '_, zbus::Error> {
         let proxy = upower_dbus::UPowerProxy::new(connection).await?;
