@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Power & Battery
 Name[pl]=Zasilanie i bateria
+Name[hu]=Energia és Akkumulátor
 Comment=Power modes and power saving options.
 Comment[pl]=Tryby zasilania i opcje oszczędzania energii.
+Comment[hu]=Energiagazdálkodási módok és energiagazdálkodási beállítások.
 Type=Settings
 Exec=cosmic-settings power
 Terminal=false

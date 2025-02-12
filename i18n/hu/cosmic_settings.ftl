@@ -1,9 +1,10 @@
 app = COSMIC Beállítások
 
+dbus-connection-error = Nem sikerült csatlakozni a DBus-hoz
+ok = OK
 unknown = Ismeretlen
 
 number = { $number }
-
 
 ## Network & Wireless
 
@@ -14,7 +15,8 @@ connections-and-profiles = { $variant ->
     *[other] Ismeretlen
 } Kapcsolatok és kapcsolati profilok.
 
-add-network = Hálozat hozzáadása
+add-network = Hálózat hozzáadása
+    .profile = Profil hozzáadása
 add-vpn = VPN hozzáadása
 airplane-on = Repülőgép üzemmód be van kapcsolva.
 cable-unplugged = Kábel kihúzva
@@ -24,9 +26,9 @@ connecting = Kapcsolódás...
 disconnect = Szétkapcsolás
 forget = Elfelejtés
 known-networks = Ismert hálózatok
-network-and-wireless = Internet és Wi-fi
+network-and-wireless = Internet és Wi-Fi
 no-networks = Nem található hálózat.
-no-vpn = Nincs elérhető VPN kapcsolat.
+no-vpn = Nincs elérhető VPN-kapcsolat.
 password = Jelszó
 remove = Törlés
 settings = Beállítások
@@ -35,10 +37,10 @@ visible-networks = Látható hálózatok
 
 auth-dialog = Azonosítás szükséges
     .vpn-description = Írja be a VPN szolgáltatás által követelt felhasználónevet és jelszót.
-    .wifi-description = Írja be a jelszót vagy a titkosítókulcsot. A rúter "WPS" gombjának megnyomásával is csatlakozhat.
+    .wifi-description = Írja be a jelszót vagy a titkosítókulcsot. A router "WPS" gombjának megnyomásával is csatlakozhat.
 
-forget-dialog = El akarja felejteni ez a Wi-Fi hálózatot?
-    .description = A jelszót újra be kell írnia a jővőbeli használathoz.
+forget-dialog = El akarja felejteni ezt a Wi-Fi hálózatot?
+    .description = A jelszót újra be kell írnia a jövőbeli használathoz.
 
 network-device-state =
     .activated = Csatlakozva a hálózathoz
@@ -47,9 +49,9 @@ network-device-state =
     .disconnected = Szétkapcsolva
     .failed = Csatlakozás sikertelen
     .ip-check = Kapcsolat ellenőrzése
-    .ip-config = IP és rúter információk lekérése
+    .ip-config = IP és router információk lekérése
     .need-auth = Azonosítás szükséges
-    .prepare = Felkészülés a hálózatra csatlkozáshoz
+    .prepare = Felkészülés a hálózatra csatlakozáshoz
     .secondaries = Várakozás egy másodlagos kapcsolatra
     .unavailable = Elérhetetlen
     .unknown = Ismeretlen állapot
@@ -57,36 +59,111 @@ network-device-state =
     .unplugged = Kábel kihúzva
 
 remove-connection-dialog = Törli a kapcsolódási profilt?
-    .vpn-description = A jelszót újra be kell írnia a jővőbeli használathoz.
-    .wired-description = A profil újból létre kell hoznia a jővőbeli használathoz.
+    .vpn-description = A jelszót újra be kell írnia a jövőbeli használathoz.
+    .wired-description = A profilt újból létre kell hoznia a jövőbeli használathoz.
 
 vpn = VPN
-    .connections = VPN kapcsolatok
+    .connections = VPN-kapcsolatok
+    .error = Nem sikerült hozzáadni a VPN-konfigurációt
     .remove = Kapcsolódási profil törlése
     .select-file = Válassz ki egy VPN konfigurációs fájlt
 
+vpn-error = VPN Hiba
+    .config = Nem sikerült hozzáadni a VPN-konfigurációt
+    .connect = Nem sikerült csatlakozni a VPN-hez
+    .connection-editor = A hálózati beállító nem működik
+    .connection-settings = Nem sikerült lekérni az aktív kapcsolatok beállításait
+    .updating-state = Nem sikerült frissíteni a hálózatkezelő állapotát
+    .wireguard-config-path = Érvénytelen fájlelérési út a WireGuard konfigurációhoz
+    .wireguard-config-path-desc = A kiválasztott fájlnak egy helyi fájlrendszeren kell lennie.
+    .wireguard-device = Nem sikerült létrehozni a WireGuard eszközt
+    .with-password = Nem sikerült beállítani a VPN { $field ->
+        *[username] felhasználónevét
+        [password] jelszavát
+        [password-flags] jelszóbeállításait
+    } az nmclivel
+
 wired = Vezetékes
+    .adapter = Vezetékes adapter { $id }
     .connections = Vezetékes kapcsolatok
     .devices = Vezetékes eszközök
     .remove = Kapcsolódási profil törlése
 
 wifi = Wi-Fi
+    .adapter = Wi-Fi adapter { $id }
     .forget = Hálózat elfelejtése
+
+wireguard-dialog = WireGuard eszköz hozzáadása
+    .description = Válassz egy eszköz nevet a WireGuard konfigurációhoz.
 
 ## Networking: Online Accounts
 
 online-accounts = Online fiókok
     .desc = fiókok hozzáadása, IMAP és SMTP, vállalati bejelentkezések
 
+# Bluetooth
+
+confirm = Megerősítés
+
+bluetooth = Bluetooth
+    .desc = Bluetooth-eszközök kezelése
+    .status = Ez a rendszer { $aliases } néven látható, amíg a Bluetooth beállítások vannak megnyitva.
+    .connected = Kapcsolódva
+    .connecting = Kapcsolódás
+    .disconnecting = Szétkapcsolódás
+    .connect = Kapcsolódás
+    .disconnect = Szétkapcsolás
+    .forget = Elfelejt
+    .dbus-error = Hiba történt a DBus-szal való kommunikáció során: { $why }
+
+bluetooth-paired = Korábban csatlakoztatott eszközök
+    .connect = Kapcsolódás
+    .battery = { $percentage }% töltöttség
+
+bluetooth-confirm-pin = Bluetooth PIN megerősítése
+    .description = Kérjük, erősítse meg, hogy a következő PIN megegyezik a(z) { $device } eszközön megjelenített PIN-kóddal
+
+bluetooth-available = Közeli Eszközök
+
+bluetooth-adapters = Bluetooth Adapterek
 
 ## Desktop
 
 desktop = Asztal
 
+## Desktop: Wallpaper
+
+wallpaper = Háttérkép
+    .change = Kép cseréje minden
+    .desc = Háttérképek, színek és diavetítési beállítások.
+    .fit = Háttérkép illeszkedése
+    .folder-dialog = Válasszon háttérkép mappát
+    .image-dialog = Válasszon háttérkép képet
+    .plural = Háttérképek
+    .same = Ugyanaz a háttérkép legyen minden kijelzőn
+    .slide = Diavetítés
+
+add-color = Szín hozzáadása
+add-image = Kép hozzáadása
+all-displays = Minden kijelző
+colors = Színek
+dialog-add = Hozzáadás
+fill = Kitöltés
+fit-to-screen = Képernyőhöz igazítás
+open-new-folder = Új mappa megnyitása
+recent-folders = Legutóbbi mappák
+
+x-minutes = { $number } perc
+x-hours = { $number ->
+    [1] 1 óra
+    *[other] { $number } óra
+}
+never = Soha
+
 ## Desktop: Appearance
 
-appearance = Kinézet
-    .desc = Kiemelő színék és COSMIC témák.
+appearance = Megjelenés
+    .desc = Kiemelő színek és COSMIC témák.
 
 accent-color = Kiemelő színek
 app-background = Alkalmazás vagy ablak háttér
@@ -101,11 +178,11 @@ hex = Hex
 import = Importálás
 light = Világos
 mode-and-colors = Mód és színek
-recent-colors = Előző színek
+recent-colors = Korábbi színek
 reset-to-default = Visszaállítás alapértelmezettre
 rgb = RGB
-window-hint-accent = Aktív ablak kiemelő szín
-window-hint-accent-toggle = Használja a téma kiemelő színét aktív ablak tippként
+window-hint-accent = Aktív ablakkiemelő szín
+window-hint-accent-toggle = A témaszín használata az aktív ablak jelölésére
 
 auto-switch = Automatikus váltás a világos és sötét módok között
     .sunrise = Napkeltekor Világos módra vált
@@ -121,10 +198,8 @@ container-background = Tároló háttér
 control-tint = Irányító komponens színezése
     .desc = Szabványos gombok hátterére, keresési bemenetekre, szövegbevitelre és hasonló összetevőkre használatos.
 
-frosted = Tetüveg hatás a rendszer interfészén
+frosted = Tejüveg-hatás a rendszerfelületen
     .desc = A háttér elmosását alkalmazza a panelre, a dokkolóra, a kisalkalmazásokra, az indítóra és az alkalmazáskönyvtárra.
-
-experimental-settings = Kísérleti beállítások
 
 enable-export = Alkalmazza ezt a témát a GNOME-alkalmazásokra.
     .desc = Nem minden eszközkészlet támogatja az automatikus váltást. Előfordulhat, hogy a téma módosítása után újra kell indítani a nem COSMIC alkalmazásokat.
@@ -140,12 +215,130 @@ style = Stílus
     .slightly-round = Némileg lekerekített
     .square = Négyzetes
 
-# interface density left out for now
+interface-density = Felület sűrűsége
+    .comfortable = Kényelmes
+    .compact = Kompakt
+    .spacious = Tágas
+
 window-management = Ablakkezelés
-    .active-hint = Aktív ablak tipp mérete
+    .active-hint = Aktív ablak jelölésének mérete
     .gaps = Rések a csempézett ablakok körül
 
-## Desktop: Display
+### Experimental
+
+experimental-settings = Kísérleti beállítások
+icons-and-toolkit = Ikonok és eszközkészlet témázása
+interface-font = Rendszer betűtípusa
+monospace-font = Állandó szélességű betűtípus
+
+## Desktop: Notifications
+
+notifications = Értesítések
+    .desc = Ne zavarjanak, zárolási képernyő értesítések és alkalmazásonkénti beállítások.
+
+## Desktop: Panel
+
+panel = Panel
+    .desc = Felső sáv asztali vezérlőkkel és menükkel
+
+add = Hozzáadás
+add-applet = Kisalkalmazás hozzáadása
+all = Összes
+applets = Kisalkalmazások
+center-segment = Középső szegmens
+drop-here = Húzza ide a kisalkalmazásokat
+end-segment = Szegmens vége
+large = Nagy
+no-applets-found = Nem található kisalkalmazás...
+panel-bottom = Alul
+panel-left = Balra
+panel-right = Jobbra
+panel-top = Felül
+search-applets = Kisalkalmazások keresése...
+small = Kicsi
+start-segment = Szegmens indítása
+
+panel-appearance = Megjelenés
+    .match = Asztallal egyező
+    .light = Világos
+    .dark = Sötét
+
+panel-behavior-and-position = Viselkedés és pozíció
+    .autohide = A panel automatikus elrejtése
+    .dock-autohide = A dokkoló automatikus elrejtése
+    .position = Elhelyezkedés a képernyőn
+    .display = Megjelenítés a kijelzőn
+
+panel-style = Stílus
+    .anchor-gap = Hézag a panel és a képernyő szélei között
+    .dock-anchor-gap = Hézag a dokkoló és a képernyő szélei között
+    .extend = Panel kinyújtása a képernyő széléig
+    .dock-extend = Dokkoló kinyújtása a képernyő széléig
+    .appearance = Megjelenés
+    .size = Méret
+    .background-opacity = Háttér átlátszósága
+
+panel-applets = Konfiguráció
+    .dock-desc = Konfigurálja a dokkoló kisalkalmazásait.
+    .desc = Konfigurálja a panel kisalkalmazásait.
+
+panel-missing = A panel konfigurációja hiányzik
+    .desc = A panel konfigurációs fájlja hiányzik, mert egyéni konfigurációt használtak, vagy sérült.
+    .fix = Visszaállítás alapértelmezettre
+
+## Desktop: Dock
+
+dock = Dokkoló
+    .desc = Panel kitűzött alkalmazásokkal és kisalkalmazásokkal az alkalmazástálcán.
+
+## Desktop: Window management
+
+window-management = Ablakkezelés
+    .desc = Super billentyű művelet, ablakkezelési és csempézési beállítások.
+
+super-key = Super billentyű
+    .launcher = Indító megnyitása
+    .workspaces = Munkaterületek megnyitása
+    .applications = Applikációk megnyitása
+    .disable = Kikapcsolás
+
+window-controls = Ablakkezelés
+    .maximize = Maximalizálás gomb mutatása
+    .minimize = Minimalizálás gomb mutatása
+    .active-window-hint = Aktív ablak kiemelése
+
+focus-navigation = Fókusznavigáció
+    .focus-follows-cursor = Fókusz követi az egeret
+    .focus-follows-cursor-delay = Fókusz késleltetése (ms)
+    .cursor-follows-focus = Mutató követi a fókuszt
+
+## Desktop: Workspaces
+
+workspaces = Munkaterületek
+    .desc = Munkaterületek tájolása és viselkedése.
+
+workspaces-behavior = Munkaterületek viselkedése
+    .dynamic = Dinamikus munkaterületek
+    .dynamic-desc = Az üres munkamenetek automatikus eltávolítása.
+    .fixed = Megadott számú munkaterület
+    .fixed-desc = Munkaterületek hozzáadása vagy eltávolítása az áttekintésben.
+
+workspaces-multi-behavior = Többmonitoros viselkedés
+    .span = A munkaterületek kiterjednek a kijelzőkre
+    .separate = A kijelzők külön munkaterülettel rendelkeznek
+
+workspaces-overview-thumbnails = Munkaterület-áttekintő bélyegképek
+    .show-number = Munkaterület számának megjelenítése
+    .show-name = Munkaterület nevének megjelenítése
+
+workspaces-orientation = Munkaterületek tájolása
+    .vertical = Függőleges
+    .horizontal = Vízszintes
+
+hot-corner = Forró sarok
+    .top-left-corner = A munkaterületek bal felső forró sarkának engedélyezése
+
+## Displays
 
 -requires-restart = Újraindítást igényel
 
@@ -190,6 +383,12 @@ orientation = Tájolás
     .rotate-180 = 180 fokos elforgatás
     .rotate-270 = 270 fokos elforgatás
 
+vrr = Változó frissítési gyakoriság
+    .enabled = Engedélyezve
+    .force = Mindig
+    .auto = Automatikus
+    .disabled = Letiltva
+
 scheduling = Ütemezés
     .manual = Kézi ütemezés
 
@@ -199,172 +398,11 @@ dialog = Párbeszédablak
     .change-prompt = A beállítások automatikusan visszaállnak { $time } másodperc múlva.
     .revert-settings = Beállítások visszaállítása
 
-## Desktop: Notifications
-
-notifications = Értesítések
-    .desc = Ne zavarjanak, zárolt képernyő értesítések, és alkalmazásonkénti beállításokat.
-
-## Desktop: Options
-
-desktop-panel-options = Asztal és Panel
-    .desc = Super billentyű művelet, forró sarkok, ablakvezérlési lehetőségek.
-
-desktop-panels-and-applets = Asztal panelek és kisalkalmazások
-
-dock = Dokkoló
-    .desc = Panel rögzített alkalmazásokkal.
-
-hot-corner = Forró sarok
-    .top-left-corner = A munkaterületek bal felső forró sarkának engedélyezése
-
-super-key = Super billentyű
-    .launcher = Indító megnyitása
-    .workspaces = Munkaterületek megnyitása
-    .applications = Applikációk menü megnyitása
-
-top-panel = Felső panel
-    .workspaces = Munkaterületek gomb mutatása
-    .applications = Applikációk gomb mutatása
-
-window-controls = Ablakvezérlők
-    .minimize = Minimalizálás gomb mutatása
-    .maximize = Maximalizálás gomb mutatása
-
-## Desktop: Panel
-
-panel = Panel
-    .desc = Felső sáv asztali vezérlőkkel és menükkel.
-
-add = Hozzáadás
-add-applet = Kisalkalmazás hozzáadása
-all = Összes
-applets = Kisalkalmazások
-center-segment = Középső szegmens
-drop-here = Dobja ide a Kisalkalmazásokat
-end-segment = Szegmens vége
-large = Nagy
-no-applets-found = Nem található kisalkalmazás...
-panel-bottom = Alul
-panel-left = Bal
-panel-right = Jobb
-panel-top = Felül
-search-applets = Kisalkalmazások keresése...
-small = Kicsi
-start-segment = Szegmens indítása
-
-panel-appearance = Kinézet
-    .match = Asztallal egyező
-    .light = Világos
-    .dark = Sötét
-
-panel-behavior-and-position = Viselkedés és pozíciók
-    .autohide = Panel automatikus elrejtése
-    .dock-autohide = A dokkoló automatikus elrejtése
-    .position = Elhelyezés a képernyőn
-    .display = Megjelenítés a kijelzőn
-
-panel-style = Stílus
-    .anchor-gap = Hézag a panel és a képernyő szélei között
-    .dock-anchor-gap = Hézag a dokkoló és a képernyő szélei között
-    .extend = Panel kinyújtása a képernyő széléig
-    .dock-extend = Dokkoló kinyújtása a képernyő széléig
-    .appearance = Kinézet
-    .size = Méret
-    .background-opacity = Háttér átlátszósága
-
-panel-applets = Konfiguráció
-    .dock-desc = Konfigurálja a dokkolókisalkalmazásait.
-    .desc = Konfigurálja a panelkisalkalmazásait.
-
-panel-missing = A panel konfigurációja hiányzik
-    .desc = A panel konfigurációs fájlja hiányzik, mert egyéni konfigurációt használtak, vagy sérült.
-    .fix = Visszaállítás alapértelmezettre
-
-## Desktop: Wallpaper
-
-wallpaper = Háttérkép
-    .change = Háttérkép megváltoztatása minden
-    .desc = Háttérképek, színek és diavetítési lehetőségek.
-    .fit = Háttérkép illeszkedése
-    .folder-dialog = Válasszon háttérkép mappát
-    .image-dialog = Válasszon háttérképet
-    .plural = Háttérképek
-    .same = Ugyanaz a háttérkép minden kijelzőn
-    .slide = Diavetítés
-
-add-color = Szín hozzáadása
-add-image = Kép hozzáadása
-all-displays = Minden kijelző
-colors = Színek
-dialog-add = Hozzáadás
-fill = Kitöltés
-fit-to-screen = Képernyőhöz igazítva
-open-new-folder = Új mappa megnyitása
-recent-folders = Legutóbbi mappák
-
-x-minutes = { $number } perc
-x-hours = { $number ->
-    [1] 1 óra
-    *[other] { $number } óra
-}
-
-## Desktop: Workspaces
-
-workspaces = Munkaterületek
-    .desc = Állítsa be a munkaterület számát, viselkedését és elhelyezését.
-
-workspaces-behavior = Munkaterületek viselkedése
-    .dynamic = Dinamikus munkaterületek
-    .dynamic-desc = Automatikusan eltávolítja az üres munkaterületeket.
-    .fixed = Megadott számú munkaterület
-    .fixed-desc = Munkaterületek hozzáadása vagy eltávolítása az áttekintésben.
-
-workspaces-multi-behavior = Többmonitoros viselkedés
-    .span = Munkaterületek megosztottak az összes kijelzőn
-    .separate = A kijelzőknek külön munkaterületük van
-
-workspaces-overview-thumbnails = A munkaterület áttekintési miniatűrök
-    .show-number = Munkaterület számának megjelenítése
-    .show-name = Munkaterület nevének megjelenítése
-
-workspaces-orientation = Munkaterületek tájolása
-    .vertical = Függőleges
-    .horizontal = Vízszintes
-
-## Networking: Wired
-
-wired = Vezetékes
-    .desc = Vezetékes kapcsolat, csatlakozási profilok
-
-## Networking: Online Accounts
-
-online-accounts = Online fiókok
-    .desc = Fiókok hozzáadása, IMAP és SMTP, vállalati bejelentkezés
-
-## Time & Language
-
-time = Idő és nyelv
-    .desc = N/A
-
-time-date = Dátum és idő
-    .desc = Időzóna, automatikus órabeállítások és bizonyos időformázás.
-    .auto = Automatikus beállítás
-
-time-zone = Időzóna
-    .auto = Automatikus időzóna
-    .auto-info = Helymeghatározási szolgáltatást és internet-hozzáférést igényel
-
-time-format = Dátum és idő formátum
-    .twenty-four = 24 órás idő
-    .first = A hét első napja
-    .show-date = Dátum megjelenítése a felső panelen
-    .friday = Péntek
-    .saturday = Szombat
-    .sunday = Vasárnap
-    .monday = Hétfő
-
-time-region = Régió és nyelv
-    .desc = Formázza a dátumokat, időpontokat és számokat a régiója alapján
+legacy-applications = X11-ablakrendszer alkalmazásméretezés
+    .scaled-by-system = Minden X11-alkalmazás méretezése
+    .system-description = Az X11-alkalmazások elmosódottak lehetnek HiDPI kijelzőkön.
+    .scaled-natively = X11-alkalmazások renderelése natív felbontásban
+    .native-description = Azok az X11-alkalmazások, amelyek nem támogatják a méretezést, kisméretűek lesznek HiDPI kijelzőkön. Engedélyezd a teljes monitorfelbontás kihasználásához játékok esetén.
 
 ## Sound
 
@@ -390,43 +428,50 @@ sound-alerts = Figyelmeztetések
 sound-applications = Alkalmazások
     .desc = Alkalmazások hangerejei és beállításai
 
-## System
+profile = Profilok
 
-system = Rendszer és fiókok
+## Power
 
-## System: About
+power = Energia és Akkumulátor
+    .desc = Energia beállítások kezelése
 
-about = Névjegy
-    .desc = Eszköznév, hardverinformációk, operációs rendszer alapértelmezett beállításai.
+battery = Akkumulátor
+  .minute = { $value } { $value ->
+        [one] perc
+       *[other] perc
+  }
+  .hour = { $value } { $value ->
+        [one] óra
+       *[other] óra
+  }
+  .day = { $value } { $value ->
+        [one] nap
+       *[other] nap
+  }
+  .less-than-minute = Kevesebb, mint egy perc
+  .and = és
+  .remaining-time = { $time } { $action ->
+        [full] a teljes töltöttségig
+       *[other] a lemerülésig
+   }
 
-about-device = Eszköz neve
-    .desc = Ez a név más hálózati vagy bluetooth-eszközökön jelenik meg.
+connected-devices = Csatlakoztatott eszközök
+  .unknown = Ismeretlen eszköz
 
-about-hardware = Hardver
-    .model = Hardver modell
-    .memory = Memória
-    .processor = Processzor
-    .graphics = Grafika
-    .disk-capacity = Tárhely
+power-mode = Energiagazdálkodási mód
+    .battery = Meghosszabbított akkumulátor üzemidő
+    .battery-desc = Csökkentett energiafogyasztás és csendes teljesítmény.
+    .balanced = Kiegyensúlyozott
+    .balanced-desc = Csendes teljesítmény és mérsékelt energiafogyasztás.
+    .performance = Nagy teljesítmény
+    .performance-desc = Csúcsteljesítmény és energiafelhasználás.
+    .no-backend = A háttérprogram nem található. Telepítse a system76-power vagy a power-profiles-daemont.
 
-about-os = Operációs rendszer
-    .os = Operációs rendszer
-    .os-architecture = Operációs rendszer architektúra
-    .desktop-environment = Asztali környezet
-    .windowing-system = Ablakrendszer
-
-about-related = Kapcsolódó beállítások
-    .support = Támogatás
-
-## System: Firmware
-
-firmware = Firmware
-    .desc = Firmware részletei.
-
-## System: Users
-
-users = Felhasználók
-    .desc = Hitelesítés és bejelentkezés, zár képernyő.
+power-saving = Energiagazdálkodási beállítások
+    .turn-off-screen-after = A képernyő kikapcsolása
+    .auto-suspend = Automatikus felfüggesztés
+    .auto-suspend-ac = Automatikus felfüggesztés hálózati áramforráson
+    .auto-suspend-battery = Automatikus felfüggesztés akkumulátoron
 
 ## Input
 
@@ -438,12 +483,13 @@ input-devices = Beviteli eszközök
     .desc = Beviteli eszközök
 
 primary-button = Elsődleges gomb
+    .desc = A gombok sorrendjének beállítása.
     .left = Bal
     .right = Jobb
 
 scrolling = Görgetés
     .two-finger = Görgetés két ujjal
-    .edge = Egy ujjal görgetés az érintőtábla szélén
+    .edge = Egy ujjal görgetés az érintőpárna szélén
     .speed = Görgetési sebesség
     .natural = Természetes görgetés
     .natural-desc = A görgetés a tartalmat mozgatja, nem a nézetet.
@@ -455,7 +501,7 @@ fast = Gyors
 short = Rövid
 long = Hosszú
 keyboard = Billentyűzet
-    .desc = Billentyűzet bemenet
+    .desc = Bemeneti források, azok váltása, speciális karakterek beírása, billentyűparancsok
 
 keyboard-sources = Bemeneti források
     .desc = A bemeneti források a Super+Space billentyűkombinációval válthatók. Ez testreszabható a billentyűparancsok beállításaiban.
@@ -466,9 +512,10 @@ keyboard-sources = Bemeneti források
     .remove = Eltávolítás
     .add = Bemeneti forrás hozzáadása
 
-keyboard-special-char = Speciális karakter bejegyzés
-    .alternate = Alternatív karakterek gomb
-    .compose = Íráskulcs
+keyboard-special-char = Speciális karakter beírása
+    .alternate = Alternatív karakterek billentyűje
+    .compose = Kombináló billentyű
+    .caps = Caps Lock billentyű
 
 keyboard-typing-assist = Gépelés
     .repeat-rate = Ismétlési arány
@@ -476,30 +523,31 @@ keyboard-typing-assist = Gépelés
 
 added = Hozzáadva
 type-to-search = Gépeljen a kereséshez...
+show-extended-input-sources = Bővített bemeneti források megjelenítése
 
 ## Input: Keyboard: Shortcuts
 
-keyboard-shortcuts = Gyorsbillentyűk
-    .desc = Gyorsbillentyűk megtekintése és testreszabása
+keyboard-shortcuts = Billentyűparancsok
+    .desc = Billentyűparancsok megtekintése és testreszabása
 
-add-keybinding = Billentyűzetkötés hozzáadása
+add-keybinding = Billentyűparancs hozzáadása
 cancel = Mégse
 command = Parancs
 custom = Egyedi
 debug = Hibakeresés
 disabled = Tiltva
-migrate-workspace-prev = Munkaterület áttelepítése az előző kimenetre
-migrate-workspace-next = Munkaterület áttelepítése az Következő kimenetre
-migrate-workspace = Munkaterület áttelepítése a { $direction ->
-    *[down] alsó
-    [left] bal
-    [right] jobb
-    [up] felsó
+migrate-workspace-prev = Munkaterület áthelyezése az előző kimenetre
+migrate-workspace-next = Munkaterület áthelyezése a következő kimenetre
+migrate-workspace = Munkaterület áttelepítése { $direction ->
+    *[down] az alsó
+    [left] a bal
+    [right] a jobb
+    [up] a felsó
 } kimenetre
 navigate = Navigálás
 replace = Kicserélés
-shortcut-name = Gyorsbillentyűk neve
-system-controls = System controls
+shortcut-name = Billentyűparancs neve
+system-controls = Rendszervezérlés
 terminate = Befejezés
 toggle-stacking = Az ablakok egymásra helyezésének váltása
 type-key-combination = Billentyűkombináció
@@ -517,7 +565,7 @@ nav-shortcuts = Navigáció
     .last-workspace = Az utolsó munkaterület fókuszálása
     .prev-workspace = Az előző munkaterület fókuszálása
     .next-workspace = Az következő munkaterület fókuszálása
-    .focus = Ablak fokuszálása { $direction ->
+    .focus = Ablak fókuszálása { $direction ->
         *[down] le
         [in] be
         [left] balra
@@ -565,7 +613,7 @@ move-windows = Ablakok mozgatása
     .next-workspace = Ablak áthelyezése a következő munkaterületre
     .last-workspace = Ablak áthelyezése az utolsó munkaterületre
     .next-display = Ablak áthelyezése a következő képernyőre
-    .prev-display = Ablak áthelyezése a előző képernyőre
+    .prev-display = Ablak áthelyezése az előző képernyőre
     .send-to-prev-workspace = Ablak küldése az előző munkaterületre
     .send-to-next-workspace = Ablak küldése a következő munkaterületre
 
@@ -577,15 +625,20 @@ system-shortcut = Rendszer
     .keyboard-brightness-down = Billentyűzet fényerejének csökkentése
     .keyboard-brightness-up = Billentyűzet fényerejének növelése
     .launcher = Indító megnyitása
+    .log-out = Kijelentkezés
     .lock-screen = Képernyő zárolása
     .mute = Hangkimenet némítása
     .mute-mic = Elnémítja a mikrofon bemenetet
+    .play-pause = Lejátszás/Szünet
+    .play-next = Következő szám
+    .play-prev = Előző szám
     .screenshot = Képernyőkép készítése
     .terminal = Egy terminál megnyitása
     .volume-lower = Hangkimenet hangerejének csökkentése
     .volume-raise = Hangkimenet hangerejének növelése
-    .web-browser = Megynyit egy webböngészőt
+    .web-browser = Megnyit egy webböngészőt
     .window-switcher = Váltás a nyitott ablakok között
+    .window-switcher-previous = Váltás a nyitott ablakok között fordított sorrendben
     .workspace-overview = Munkaterület áttekintésének megnyitása
 
 window-tiling = Ablak csempézés
@@ -609,7 +662,7 @@ mouse = Egér
 
 ## Input: Touchpad
 
-click-behavior = Klikk viselkedése
+click-behavior = Kattintási viselkedés
     .click-finger = Másodlagos kattintás két ujjal és középső kattintás három ujjal
     .button-areas = Másodlagos kattintás a jobb alsó sarokban, középső kattintás az alsó középső sarokban
 
@@ -619,10 +672,10 @@ pinch-to-zoom = Csípés a nagyításhoz
 tap-to-click = Koppintson a kattintáshoz
     .desc = Engedélyezi az egyujjas koppintást az elsődleges kattintáshoz, a kétujjas koppintást a másodlagos kattintáshoz és a háromujjas érintést a középső kattintáshoz.
 
-touchpad = Érintőtábla
-    .acceleration = Az Érintőtábla gyorsításának engedélyezése
-    .desc = Érintőtábla sebessége, kattintási lehetőségek, gesztusok.
-    .speed = Érintőtábla sebessége
+touchpad = Érintőpárna
+    .acceleration = Az Érintőpárna gyorsításának engedélyezése
+    .desc = Érintőpárna sebessége, kattintási lehetőségek, gesztusok.
+    .speed = Érintőpárna sebessége
 
 ## Input: Gestures
 
@@ -630,24 +683,121 @@ gestures = Gesztusok
     .four-finger-down = Négy ujjas csúsztatás lefelé
     .four-finger-left = Négy ujjas csúsztatás balra
     .four-finger-right = Négy ujjas csúsztatás jobbra
-    .four-finger-up = Három ujjas csúsztatás minden irányba
+    .four-finger-up = Négy ujjas csúsztatás minden irányba
+    .three-finger-any = Három ujjas csúztatás bármelyik irányba
+
+switch-workspaces = Munkaterület váltása
+    .horizontal = Négy ujjas csúsztatás balra/jobbra
+    .vertical = Négy ujjas csúsztatás felfelé/lefelé
 
 switch-between-windows = Váltás az ablakok között
-switch-to-next-workspace = Váltás a következő munkaterületre
-switch-to-prev-workspace = Váltás a előző munkaterületre
 open-application-library = Alkalmazáskönytár megnyitása
 open-workspaces-view = Munkaterületek áttekintésének megnyitása
 
-## Power
+## Time & Language
 
-power = Energia
-    .desc = Az energiabeállítások kezelése
+time = Idő és Nyelv
+    .desc = N/A
 
-power-mode = Energiagazdálkodási mód
-    .performance = Nagy teljesítmény
-    .balanced = Kiegyensúlyozott
-    .battery = Meghosszabbított akkumulátor-élettartam
-    .performance-desc = Csúcsteljesítmény és energiafelhasználás.
-    .balanced-desc = Csendes teljesítmény és mérsékelt energiafogyasztás.
-    .battery-desc = Csökkentett energiafogyasztás és csendes teljesítmény.
-    .no-backend = A háttérprogram nem található. Telepítse a system76-power vagy a power-profiles-daemont.
+time-date = Dátum és Idő
+    .desc = Időzóna, automatikus órabeállítások és időformátum.
+    .auto = Beállítás automatikusan
+    .auto-ntp = A dátum és idő automatikusan frissül, ha az időzóna be van állítva.
+
+time-zone = Időzóna
+    .auto = Automatikus időzóna
+    .auto-info = Helymeghatározási szolgáltatások és internetkapcsolat szükséges
+
+time-format = Dátum- és időformátum
+    .twenty-four = 24 órás időformátum
+    .show-seconds = Másodpercek mutatása
+    .first = A hét első napja
+    .show-date = Dátum megjelenítése a felső panelen
+    .friday = Péntek
+    .saturday = Szombat
+    .sunday = Vasárnap
+    .monday = Hétfő
+
+time-region = Régió és nyelv
+    .desc = A dátumok, időpontok és számok formázása a régió alapján
+
+formatting = Formátum
+    .dates = Dátum
+    .time = Idő
+    .date-and-time = Dátum és Idő
+    .numbers = Számok
+    .measurement = Mértékegységek
+    .paper = Papír
+
+preferred-languages = Preferált nyelvek
+    .desc = A nyelvek sorrendje határozza meg, hogy melyik nyelvet használja az asztali környezet. A módosítások a következő bejelentkezéskor lépnek életbe.
+
+add-language = Nyelv hozzáadása
+    .context = Nyelv hozzáadása
+install-additional-languages = További nyelvek telepítése
+region = Régió
+
+## System
+
+system = Rendszer és fiókok
+
+## System: About
+
+about = Névjegy
+    .desc = Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai.
+
+about-device = Eszköz neve
+    .desc = Ez a név más hálózati vagy Bluetooth-eszközök számára látható.
+
+about-hardware = Hardver
+    .model = Hardver modell
+    .memory = Memória
+    .processor = Processzor
+    .graphics = Grafika
+    .disk-capacity = Tárhely
+
+about-os = Operációs rendszer
+    .os = Operációs rendszer
+    .os-architecture = Operációs rendszer architektúra
+    .desktop-environment = Asztali környezet
+    .windowing-system = Ablakrendszer
+
+about-related = Kapcsolódó beállítások
+    .support = Támogatás kérése
+
+## System: Firmware
+
+firmware = Firmware
+    .desc = Firmware részletei.
+
+## System: Users
+
+users = Felhasználók
+    .desc = Hitelesítés és felhasználói fiókok.
+    .admin = Rendszergazda
+    .standard = Normál
+    .profile-add = Profilkép kiválasztása
+
+administrator = Rendszergazda
+    .desc = A rendszergazdák megváltoztathatják az összes felhasználó beállításait, új felhasználókat adhatnak hozzá és távolíthatnak el
+
+add-user = Felhasználó hozzáadása
+remove-user = Felhasználó eltávolítása
+full-name = Teljes név
+username = Felhasználónév
+password = Jelszó
+
+## System: Default Applications
+
+default-apps = Alapértelmezett alkalmazások
+    .desc = Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások.
+    .web-browser = Böngésző
+    .file-manager = Fájlkezelő
+    .mail-client = Levelezőprogram
+    .music = Zene
+    .video = Videó
+    .photos = Fényképek
+    .calendar = Naptár
+    .terminal = Terminál
+    .other-associations = Egyéb társítások
+    .text-editor = Szövegszerkesztő

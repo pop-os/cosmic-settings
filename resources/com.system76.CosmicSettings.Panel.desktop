@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=Panel
 Name[pl]=Panel
+Name[hu]=Panel
 Comment=Top bar with desktop controls and menus.
+Comment[hu]=Felső sáv asztali vezérlőkkel és menükkel.
 Type=Settings
 Exec=cosmic-settings panel
 Terminal=false

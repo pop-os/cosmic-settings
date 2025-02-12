@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Users
 Name[pl]=Użytkownicy
+Name[hu]=Felhasználók
 Comment=Authentication and user accounts.
 Comment[pl]=Uwierzytelnianie i konta użytkowników.
+Comment[hu]=Hitelesítés és felhasználói fiókok.
 Type=Settings
 Exec=cosmic-settings users
 Terminal=false

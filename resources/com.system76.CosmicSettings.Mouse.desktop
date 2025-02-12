@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Mouse
 Name[pl]=Mysz
-Comment=Mouse speed, acceleation, and natural scrolling.
+Name[hu]=Egér
+Comment=Mouse speed, acceleration, and natural scrolling.
 Comment[pl]=Prędkość myszy, przyspieszenie i naturalne przewijanie.
+Comment[hu]=Egérsebesség, gyorsulás, természetes görgetés.
 Type=Settings
 Exec=cosmic-settings mouse
 Terminal=false
