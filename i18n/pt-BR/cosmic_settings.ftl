@@ -625,6 +625,7 @@ system-shortcut = Sistema
     .keyboard-brightness-down = Reduzir o brilho do teclado
     .keyboard-brightness-up = Aumentar o brilho do teclado
     .launcher = Abrir o lançador
+    .log-out = Encerrar sessão
     .lock-screen = Bloquear a tela
     .mute = Silenciar saída de áudio
     .mute-mic = Silencias entrada do microfone
@@ -637,7 +638,8 @@ system-shortcut = Sistema
     .volume-raise = Aumentar o volume da saída de áudio
     .web-browser = Abrir o navegador web
     .window-switcher = Alternar entre as janelas abertas
-    .workspace-overview = Abrir a visão geral das Áreas de Trabalho
+    .window-switcher-previous = Alternar entre as janelas abertas invertidas
+    .workspace-overview = Abrir a visão geral das áreas de trabalho
 
 window-tiling = Janelas lado-a-lado (Window tiling)
     .horizontal = Definir orientação horizontal
