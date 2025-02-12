@@ -234,7 +234,7 @@ window-management-appearance = Zarządzanie oknami
 ### Experimental
 
 experimental-settings = Ustawienia eksperymentalne
-icons-and-toolkit = Motyw ikon i toolkita
+icons-and-toolkit = Motyw ikon i toolkitu
 interface-font = Font systemowy
 monospace-font = Font o stałej szerokości
 
@@ -312,6 +312,7 @@ super-key = Klawisz Super
 window-controls = Sterowanie oknami
     .maximize = Pokaż przycisk maksymalizacji
     .minimize = Pokaż przycisk minimalizacji
+    .active-window-hint = Pokaż kolor wyróżnienia aktywnego okna
 
 focus-navigation = Nawigacja aktywnym oknem
     .focus-follows-cursor = Aktywuje okno nad kursorem
