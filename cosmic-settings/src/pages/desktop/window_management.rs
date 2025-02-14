@@ -78,7 +78,7 @@ impl Default for Page {
             })
             .unwrap_or(true);
 
-        let window_snap_threshold = comp_config
+        let edge_snap_threshold = comp_config
             .get("window_snap_threshold")
             .inspect_err(|err| {
                 if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
@@ -101,7 +101,7 @@ impl Default for Page {
             focus_delay_text: format!("{focus_follows_cursor_delay}"),
             cursor_follows_focus,
             show_active_hint,
-            edge_snap_threshold: window_snap_threshold,
+            edge_snap_threshold,
         }
     }
 }
