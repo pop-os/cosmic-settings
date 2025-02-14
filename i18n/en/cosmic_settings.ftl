@@ -302,6 +302,8 @@ super-key = Super key action
     .applications = Open Applications
     .disable = Disable
 
+edge-gravity = Floating windows gravitate to nearby edges
+
 window-controls = Window Controls
     .maximize = Show maximize button
     .minimize = Show minimize button

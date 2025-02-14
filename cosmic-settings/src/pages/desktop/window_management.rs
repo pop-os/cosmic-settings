@@ -25,6 +25,7 @@ pub enum Message {
     ShowActiveWindowHint(bool),
     ShowMaximizeButton(bool),
     ShowMinimizeButton(bool),
+    SetEdgeSnapThreshold(u32),
 }
 
 pub struct Page {
@@ -36,6 +37,7 @@ pub struct Page {
     focus_delay_text: String,
     cursor_follows_focus: bool,
     show_active_hint: bool,
+    edge_snap_threshold: u32,
 }
 
 impl Default for Page {
@@ -76,6 +78,15 @@ impl Default for Page {
             })
             .unwrap_or(true);
 
+        let edge_snap_threshold = comp_config
+            .get("edge_snap_threshold")
+            .inspect_err(|err| {
+                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                    error!(?err, "Failed to read config 'edge_snap_threshold'")
+                }
+            })
+            .unwrap_or(0);
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -90,6 +101,7 @@ impl Default for Page {
             focus_delay_text: format!("{focus_follows_cursor_delay}"),
             cursor_follows_focus,
             show_active_hint,
+            edge_snap_threshold,
         }
     }
 }
@@ -168,6 +180,12 @@ impl Page {
                     error!(?err, "Failed to set config 'active_hint'");
                 }
             }
+            Message::SetEdgeSnapThreshold(value) => {
+                self.edge_snap_threshold = value;
+                if let Err(err) = self.comp_config.set("edge_snap_threshold", value) {
+                    error!(?err, "Failed to set config 'edge_snap_threshold'");
+                }
+            }
         }
     }
 }
@@ -179,7 +197,7 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
-            sections.insert(super_key_action()),
+            sections.insert(window_management()),
             sections.insert(window_controls()),
             sections.insert(focus_navigation()),
         ])
@@ -197,7 +215,7 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-pub fn super_key_action() -> Section<crate::pages::Message> {
+pub fn window_management() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
     let super_key = descriptions.insert(fl!("super-key"));
@@ -205,6 +223,8 @@ pub fn super_key_action() -> Section<crate::pages::Message> {
     let _workspaces = descriptions.insert(fl!("super-key", "workspaces"));
     let _applications = descriptions.insert(fl!("super-key", "applications"));
     let _disable = descriptions.insert(fl!("super-key", "disable"));
+
+    let edge_gravity = descriptions.insert(fl!("edge-gravity"));
 
     Section::default()
         .descriptions(descriptions)
@@ -220,6 +240,12 @@ pub fn super_key_action() -> Section<crate::pages::Message> {
                         Message::SuperKey,
                     )),
                 )
+                .add(settings::item(
+                    &descriptions[edge_gravity],
+                    toggler(page.edge_snap_threshold != 0).on_toggle(|is_enabled| {
+                        Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
+                    }),
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
         })
