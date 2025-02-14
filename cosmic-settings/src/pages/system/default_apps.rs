@@ -12,8 +12,13 @@ use cosmic::{
     widget::{self, dropdown, icon, settings},
     Apply, Element, Task,
 };
+use cosmic_config::{ConfigGet, ConfigSet};
+use cosmic_settings_config::shortcuts::action::System;
+use cosmic_settings_config::shortcuts::SystemActions;
 use cosmic_settings_page::{self as page, section, Section};
-use freedesktop_desktop_entry::{default_paths, DesktopEntry, Iter as DesktopEntryIter};
+use freedesktop_desktop_entry::{
+    default_paths, get_languages_from_env, DesktopEntry, Iter as DesktopEntryIter,
+};
 use mime_apps::App;
 use slotmap::SlotMap;
 use tokio::sync::mpsc;
@@ -81,6 +86,7 @@ pub struct AppMeta {
 pub struct Page {
     on_enter_handle: Option<cosmic::iced::task::Handle>,
     mime_apps: Option<CachedMimeApps>,
+    shortcuts_config: Option<cosmic_config::Config>,
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -105,6 +111,10 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Task<crate::pages::Message> {
         if let Some(handle) = self.on_enter_handle.take() {
             handle.abort();
+        }
+
+        if self.shortcuts_config.is_none() {
+            self.shortcuts_config = cosmic_settings_config::shortcuts::context().ok();
         }
 
         let (task, on_enter_handle) = Task::future(async move {
@@ -239,6 +249,13 @@ impl Page {
                 if meta.selected != Some(id) {
                     meta.selected = Some(id);
                     let appid = &meta.app_ids[id];
+
+                    if category == Category::Terminal && self.shortcuts_config.is_some() {
+                        if let Some(config) = self.shortcuts_config.as_ref() {
+                            assign_default_terminal(config, appid);
+                        }
+                    }
+
                     for mime in mime_types {
                         if let Ok(mime) = mime.parse() {
                             mime_apps
@@ -366,6 +383,41 @@ fn apps() -> Section<crate::pages::Message> {
             .apply(Element::from)
             .map(crate::pages::Message::DefaultApps)
     })
+}
+
+fn assign_default_terminal(config: &cosmic_config::Config, appid: &str) {
+    let mut actions = config
+        .get_local::<SystemActions>("system_actions")
+        .unwrap_or_default();
+
+    let default_paths = default_paths();
+    let mut resolved_path = None;
+
+    // loop through all FDE paths to try and find a valid .desktop file
+    for path in default_paths {
+        if let Ok(mut full_path) = path.canonicalize() {
+            full_path = full_path.join([appid, ".desktop"].concat());
+            if full_path.exists() && full_path.is_file() {
+                resolved_path = Some(full_path);
+                break;
+            }
+        }
+    }
+
+    // if we find a valid .desktop file, we can grab its exec
+    if let Some(resolved_path) = resolved_path {
+        let desktop_entry = DesktopEntry::from_path(resolved_path, Some(&get_languages_from_env()));
+
+        if let Ok(desktop_entry) = desktop_entry {
+            if let Some(exec) = desktop_entry.exec() {
+                actions.insert(System::Terminal, String::from(exec));
+
+                if let Err(why) = config.set("system_actions", actions) {
+                    tracing::error!(?why, "Unable to set system_actions shortcuts config");
+                }
+            }
+        }
+    }
 }
 
 async fn load_defaults(assocs: &BTreeMap<Arc<str>, Arc<App>>, for_mimes: &[&str]) -> AppMeta {
