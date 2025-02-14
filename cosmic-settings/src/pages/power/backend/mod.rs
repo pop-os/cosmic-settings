@@ -1,4 +1,5 @@
 use chrono::{Duration, TimeDelta};
+use cosmic::cctk::sctk::reexports::calloop::batch_reregister;
 use futures::{future::join_all, FutureExt, Stream, StreamExt};
 use upower_dbus::{BatteryState, BatteryType, DeviceProxy};
 use zbus::{zvariant::ObjectPath, Connection};
@@ -308,6 +309,10 @@ impl Battery {
 
         let is_charging = matches!(battery_state, BatteryState::Charging);
 
+        let charged = matches!(battery_state, BatteryState::FullyCharged)
+            || matches!(battery_state, BatteryState::Charging)
+                && (percent - 100.0_f64).abs() < f64::EPSILON;
+
         if !is_charging {
             if let Ok(time) = proxy.time_to_empty().await {
                 if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
@@ -339,7 +344,12 @@ impl Battery {
         } else {
             0
         };
-        let charging = if is_charging { "charging-" } else { "" };
+        // Due to not having a specific icon for charged we use the charging one
+        let charging = if is_charging || charged {
+            "charging-"
+        } else {
+            ""
+        };
 
         let icon_name =
             format!("cosmic-applet-battery-level-{battery_percent}-{charging}symbolic",);
