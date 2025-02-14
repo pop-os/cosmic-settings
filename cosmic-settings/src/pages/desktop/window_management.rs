@@ -79,10 +79,10 @@ impl Default for Page {
             .unwrap_or(true);
 
         let edge_snap_threshold = comp_config
-            .get("window_snap_threshold")
+            .get("edge_snap_threshold")
             .inspect_err(|err| {
                 if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
-                    error!(?err, "Failed to read config 'window_snap_threshold'")
+                    error!(?err, "Failed to read config 'edge_snap_threshold'")
                 }
             })
             .unwrap_or(0);
