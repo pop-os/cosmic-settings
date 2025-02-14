@@ -158,7 +158,7 @@ impl PartialEq for Adapter {
 
 impl Eq for Adapter {}
 
-const default_device_icon: &str = "bluetooth-symbolic";
+const DEFAULT_DEVICE_ICON: &str = "bluetooth-symbolic";
 
 fn device_type_to_icon(device_type: &str) -> &'static str {
     match device_type {
@@ -175,7 +175,7 @@ fn device_type_to_icon(device_type: &str) -> &'static str {
         "input-mouse" => "input-mouse-symbolic",
         "printer" => "printer-network-symbolic",
         "camera-photo" => "camera-photo-symbolic",
-        _ => default_device_icon,
+        _ => DEFAULT_DEVICE_ICON,
     }
 }
 
@@ -269,7 +269,7 @@ impl Device {
     }
     #[must_use]
     pub fn is_known_device_type(&self) -> bool {
-        self.icon != default_device_icon
+        self.icon != DEFAULT_DEVICE_ICON
     }
     #[must_use]
     pub fn alias_or_addr(&self) -> &str {

@@ -653,6 +653,9 @@ window-tiling = Window tiling
 replace-shortcut-dialog = Replace Shortcut?
     .desc = { $shortcut } is used by { $name }. If you replace it, { $name } will be disabled.
 
+zoom-in = Zoom In
+zoom-out = Zoom Out
+
 ## Input: Mouse
 
 mouse = Mouse

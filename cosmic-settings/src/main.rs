@@ -28,25 +28,6 @@ use ron::error::SpannedError;
 use serde::{Deserialize, Serialize};
 use tracing_subscriber::prelude::*;
 
-/// Access glibc malloc tunables.
-#[cfg(target_env = "gnu")]
-mod malloc {
-    use std::os::raw::c_int;
-
-    const M_MMAP_THRESHOLD: c_int = -3;
-
-    extern "C" {
-        fn mallopt(param: c_int, value: c_int) -> c_int;
-    }
-
-    /// Prevents glibc from hoarding memory via memory fragmentation.
-    pub fn limit_mmap_threshold() {
-        unsafe {
-            mallopt(M_MMAP_THRESHOLD, 65536);
-        }
-    }
-}
-
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
@@ -159,9 +140,6 @@ impl CosmicFlags for Args {
 ///
 /// Returns error if iced fails to run the application.
 pub fn main() -> color_eyre::Result<()> {
-    #[cfg(target_env = "gnu")]
-    malloc::limit_mmap_threshold();
-
     color_eyre::install()?;
 
     if std::env::var("RUST_SPANTRACE").is_err() {

@@ -674,6 +674,10 @@ fn localize_action(action: &Action) -> String {
             SystemAction::WorkspaceOverview => fl!("system-shortcut", "workspace-overview"),
         },
 
+        Action::ZoomIn => fl!("zoom-in"),
+
+        Action::ZoomOut => fl!("zoom-out"),
+
         Action::Spawn(task) => task.clone(),
     }
 }
