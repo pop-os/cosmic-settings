@@ -302,6 +302,8 @@ super-key = Super key action
     .applications = Open Applications
     .disable = Disable
 
+edge-gravity = Floating windows gravitate to nearby edges
+
 window-controls = Window Controls
     .maximize = Show maximize button
     .minimize = Show minimize button
@@ -311,9 +313,6 @@ focus-navigation = Focus Navigation
     .focus-follows-cursor = Focus follows cursor
     .focus-follows-cursor-delay = Focus follows cursor delay in ms
     .cursor-follows-focus = Cursor follows focus
-
-floating-layout = Floating Layout
-    .window-snap-threshold = Window snap-to-edge threshold
 
 ## Desktop: Workspaces
 
