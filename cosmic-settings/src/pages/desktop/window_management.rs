@@ -46,7 +46,7 @@ impl Default for Page {
         let focus_follows_cursor = comp_config
             .get("focus_follows_cursor")
             .unwrap_or_else(|err| {
-                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                if err.is_err() {
                     error!(?err, "Failed to read config 'focus_follows_cursor'");
                 }
                 false
@@ -54,7 +54,7 @@ impl Default for Page {
         let cursor_follows_focus = comp_config
             .get("cursor_follows_focus")
             .unwrap_or_else(|err| {
-                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                if err.is_err() {
                     error!(?err, "Failed to read config 'cursor_follows_focus'");
                 }
                 false
@@ -63,7 +63,7 @@ impl Default for Page {
         let focus_follows_cursor_delay = comp_config
             .get("focus_follows_cursor_delay")
             .inspect_err(|err| {
-                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                if err.is_err() {
                     error!(?err, "Failed to read config 'focus_follows_cursor_delay'")
                 }
             })
@@ -72,7 +72,7 @@ impl Default for Page {
         let show_active_hint = comp_config
             .get("active_hint")
             .inspect_err(|err| {
-                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                if err.is_err() {
                     error!(?err, "Failed to read config 'active_hint'")
                 }
             })
@@ -81,7 +81,7 @@ impl Default for Page {
         let edge_snap_threshold = comp_config
             .get("edge_snap_threshold")
             .inspect_err(|err| {
-                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                if err.is_err() {
                     error!(?err, "Failed to read config 'edge_snap_threshold'")
                 }
             })

@@ -162,7 +162,7 @@ impl Default for Page {
         let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
         let comp_config_descale_xwayland =
             comp_config.get("descale_xwayland").unwrap_or_else(|err| {
-                if !matches!(err, cosmic_config::Error::NoConfigDirectory) {
+                if err.is_err() {
                     error!(?err, "Failed to read config 'descale_xwayland'");
                 }
 
