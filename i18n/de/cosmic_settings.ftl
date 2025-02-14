@@ -783,8 +783,6 @@ administrator = Administrator
 add-user = Benutzer hinzufügen
 remove-user = Benutzer entfernen
 full-name = Vollständiger Name
-username = Benutzername
-password = Passwort
 
 ## System: Standardanwendungen
 

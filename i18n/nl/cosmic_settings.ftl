@@ -786,8 +786,6 @@ administrator = Systeembeheerder (root)
 add-user = Gebruiker toevoegen
 remove-user = Gebruiker verwijderen
 full-name = Volledige naam
-username = Gebruikersnaam
-password = Wachtwoord
 
 ## System: Default Applications
 

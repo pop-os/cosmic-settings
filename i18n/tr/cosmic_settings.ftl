@@ -783,8 +783,6 @@ administrator = Yönetici
 add-user = Kullanıcı ekle
 remove-user = Kullanıcı kaldır
 full-name = Tam ad
-username = Kullanıcı adı
-password = Parola
 
 ## System: Default Applications
 

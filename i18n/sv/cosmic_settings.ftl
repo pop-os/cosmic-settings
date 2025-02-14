@@ -524,8 +524,6 @@ administrator = Administratör
 add-user = Lägg till användare
 remove-user = Ta bort användare
 full-name = Fullständigt namn
-username = Användarnamn
-password = Lösenord
 
 users = Användare
     .desc = Autentisering och login, låsskärm.
