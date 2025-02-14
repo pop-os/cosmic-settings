@@ -361,6 +361,7 @@ display = Displays
     .refresh-rate = Refresh rate
     .resolution = Resolution
     .scale = Scale
+    .additional-scale-options = Additional scale options
 
 mirroring = Mirroring
     .id = Mirroring { $id }
