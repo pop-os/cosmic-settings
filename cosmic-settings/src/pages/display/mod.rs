@@ -27,6 +27,10 @@ use tracing::error;
 static DPI_SCALES: &[f64] = &[
     50.0, 75.0, 100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0,
 ];
+static DPI_SCALES_BREAKPOINTS: &[f64] = &[
+    50.0, 100.0, 150.0, 200.0, 250.0, 300.0
+];
+
 static DPI_SCALE_LABELS: Lazy<Vec<String>> =
     Lazy::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
 
@@ -1283,7 +1287,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                             Message::SliderChangeScale,
                         )
                         .on_release(Message::SliderApplyScale)
-                        .breakpoints(DPI_SCALES),
+                        .breakpoints(DPI_SCALES_BREAKPOINTS),
                     ),
                     widget::settings::item(
                         &descriptions[orientation],
