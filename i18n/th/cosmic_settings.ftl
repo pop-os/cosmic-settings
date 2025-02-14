@@ -769,8 +769,6 @@ administrator = ผู้ดูแลระบบ
 add-user = เพิ่มผู้ใช้
 remove-user = ลบผู้ใช้
 full-name = ชื่อเต็ม
-username = ชื่อผู้ใช้
-password = รหัสผ่าน
 
 ## System: Default Applications
 

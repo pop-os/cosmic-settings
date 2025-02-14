@@ -782,8 +782,6 @@ administrator = Riarthóir
 add-user = Cuir úsáideoir leis
 remove-user = Bain úsáideoir
 full-name = Ainm iomlán
-username = Ainm úsáideora
-password = Pasfhocal
 
 ## System: Default Applications
 

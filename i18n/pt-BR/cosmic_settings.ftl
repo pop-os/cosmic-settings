@@ -782,8 +782,6 @@ administrator = Administrador
 add-user = Adicionar usuário
 remove-user = Remover usuário
 full-name = Nome completo
-username = Usuário
-password = Senha
 
 ## System: Default Applications
 

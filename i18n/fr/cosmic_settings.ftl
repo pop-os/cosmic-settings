@@ -32,7 +32,7 @@ no-vpn = Pas de connexion VPN disponible.
 password = Mot de passe
 remove = Supprimer
 settings = Paramètres
-username = Identifiant
+username = Nom d'utilisateur
 visible-networks = Réseaux visibles
 
 auth-dialog = Authentification requise
@@ -778,8 +778,6 @@ administrator = Administrateur
 add-user = Ajouter l'utilisateur
 remove-user = Supprimer l'utilisateur
 full-name = Nom complet
-username = Nom d'utilisateur
-password = Mot de passe
 
 ## System: Default Applications
 

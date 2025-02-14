@@ -801,8 +801,6 @@ administrator = Administrator
 add-user = Dodaj użytkownika
 remove-user = Usuń użytkownika
 full-name = Pełna nazwa
-username = Nazwa użytkownika
-password = Hasło
 
 ## System: Domyślne aplikacje
 
