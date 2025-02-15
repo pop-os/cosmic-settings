@@ -516,7 +516,7 @@ scrolling = Przewijanie
 
 slow = Wolno
 fast = Szybko
-short = Któtko
+short = Krótko
 long = Długo
 keyboard = Klawiatura
     .desc = Wprowadzanie danych, zmienianie, wprowadzanie znaków specjalnych i skróty na klawiaturze.
@@ -687,8 +687,8 @@ click-behavior = Funkcjonowanie kliknięć
 pinch-to-zoom = Uszczypnij by przybliżyć
     .desc = Zbliż dwa palce do siebie by przybliżyć zawartość, w aplikacjach używających przybliżenia.
 
-tap-to-click = Tap to click
-    .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
+tap-to-click = Dotknij, aby kliknąć
+    .desc = Włącza klikanie przez dotknięcie jednym palcem dla głównego przycisku, dwoma palcami dla drugiego przycisku i trzema palcami dla środkowego przycisku.
 
 touchpad = Gładzik
     .acceleration = Włącz przyśpieszenie gładzika
@@ -706,7 +706,7 @@ gestures = Gesty
 
 switch-workspaces = Przełączenie pomiędzy obszarami roboczymi
     .horizontal = Przesunięcie czterema palcami w lewo/prawo
-    .vertical = Przesunięcie czterema palcami w góra/dół
+    .vertical = Przesunięcie czterema palcami w górę/dół
 
 switch-between-windows = Przełączenie pomiędzy oknami
 open-application-library = Otwarcie biblioteki aplikacji
