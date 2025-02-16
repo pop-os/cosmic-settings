@@ -14,9 +14,6 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use zbus::zvariant::OwnedObjectPath;
 
-mod agent;
-mod subscription;
-
 enum Dialog {
     // RequestAuthorization {
     //     device: OwnedObjectPath,
@@ -149,9 +146,6 @@ impl page::Page<crate::pages::Message> for Page {
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    AddedAdapter(OwnedObjectPath, Adapter),
-    AddedDevice(OwnedObjectPath, Device),
-    Agent(Arc<bluez_zbus::agent1::Message>),
     BluetoothEvent(Event),
     ConnectDevice(OwnedObjectPath),
     DBusConnect(
@@ -159,7 +153,6 @@ pub enum Message {
         tokio::sync::mpsc::Sender<crate::pages::Message>,
     ),
     DBusError(String),
-    DBusServiceUnknown,
     DisconnectDevice(OwnedObjectPath),
     ForgetDevice(OwnedObjectPath),
     PinCancel,
@@ -167,12 +160,8 @@ pub enum Message {
     PopupDevice(Option<OwnedObjectPath>),
     PopupSetting(bool),
     Nop,
-    RemovedAdapter(OwnedObjectPath),
-    RemovedDevice(OwnedObjectPath),
     SelectAdapter(Option<OwnedObjectPath>),
     SetActive(bool),
-    UpdatedAdapter(OwnedObjectPath, Vec<AdapterUpdate>),
-    UpdatedDevice(OwnedObjectPath, Vec<DeviceUpdate>),
 }
 
 impl From<Message> for crate::app::Message {
@@ -245,50 +234,101 @@ impl Page {
                         ));
                     }
                 }
-            },
-            Message::Agent(message) => {
-                let Some(message) = Arc::into_inner(message) else {
-                    return Task::none();
-                };
-
-                match message {
-                    bluez_zbus::agent1::Message::RequestAuthorization { response, .. } => {
-                        _ = response.send(true);
+                Event::UpdatedAdapter(path, update) => {
+                    if let Some(existing) = self.adapters.get_mut(&path) {
+                        tracing::debug!("Adapter {} updated: {update:#?}", existing.address);
+                        existing.update(update);
                     }
+                    self.update_status();
+                    if let Some(connection) = self.connection.clone() {
+                        match self.get_selected_adapter_mut() {
+                            Some((path, existing))
+                                if existing.enabled == Active::Enabled
+                                    && existing.scanning == Active::Disabled =>
+                            {
+                                existing.scanning = Active::Enabling;
+                                return cosmic::task::future(start_discovery(connection, path));
+                            }
+                            _ => {}
+                        }
+                    } else {
+                        tracing::warn!("No DBus connection ready");
+                    }
+                }
+                Event::UpdatedDevice(path, update) => {
+                    if let Some(existing) = self.devices.get_mut(&path) {
+                        tracing::debug!("Device {} updated", existing.address);
+                        existing.update(update);
+                    }
+                }
+                Event::RemovedAdapter(path) => {
+                    tracing::debug!("Device {path} removed");
+                    self.adapters.remove(&path);
+                    if self.selected_adapter == Some(path) {
+                        self.selected_adapter = None;
+                    }
+                }
+                Event::RemovedDevice(path) => {
+                    tracing::debug!("Device {path} removed");
+                    self.devices.remove(&path);
+                }
+                Event::AddedDevice(path, device) => {
+                    tracing::debug!("Device {} added", device.address);
+                    self.devices.insert(path, device);
+                }
+                Event::AddedAdapter(path, adapter) => {
+                    tracing::debug!("Adapter {} added", adapter.address);
+                    self.adapters.insert(path.clone(), adapter);
+                    if self.selected_adapter.is_none() {
+                        return cosmic::task::message(Message::SelectAdapter(Some(path)));
+                    }
+                }
+                Event::DBusServiceUnknown => {
+                    self.bluez_service_unknown = true;
+                }
+                Event::Agent(message) => {
+                    let Some(message) = Arc::into_inner(message) else {
+                        return Task::none();
+                    };
 
-                    bluez_zbus::agent1::Message::RequestConfirmation {
-                        device,
-                        passkey,
-                        response,
-                    } => {
-                        let device = self.devices.get(&device).map_or_else(
-                            || device.to_string(),
-                            |device| device.alias_or_addr().to_owned(),
-                        );
+                    match message {
+                        bluez_zbus::agent1::Message::RequestAuthorization { response, .. } => {
+                            _ = response.send(true);
+                        }
 
-                        self.dialog = Some(Dialog::RequestConfirmation {
+                        bluez_zbus::agent1::Message::RequestConfirmation {
                             device,
                             passkey,
                             response,
-                        });
-                    }
+                        } => {
+                            let device = self.devices.get(&device).map_or_else(
+                                || device.to_string(),
+                                |device| device.alias_or_addr().to_owned(),
+                            );
 
-                    bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
-                        _ = response.send(None);
-                    }
+                            self.dialog = Some(Dialog::RequestConfirmation {
+                                device,
+                                passkey,
+                                response,
+                            });
+                        }
 
-                    bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
-                        _ = response.send(None);
-                    }
+                        bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
+                            _ = response.send(None);
+                        }
 
-                    bluez_zbus::agent1::Message::Cancel => {
-                        self.dialog = None;
-                    }
+                        bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
+                            _ = response.send(None);
+                        }
 
-                    _ => (),
+                        bluez_zbus::agent1::Message::Cancel => {
+                            self.dialog = None;
+                        }
+
+                        _ => (),
+                    }
                 }
-            }
-
+            },
             Message::PinCancel => {
                 if let Some(Dialog::RequestConfirmation { response, .. }) = self.dialog.take() {
                     _ = response.send(false);
@@ -345,7 +385,9 @@ impl Page {
                     let connection = connection.clone();
                     self.subscription = Some(crate::utils::forward_event_loop(
                         sender,
-                        crate::pages::Message::Bluetooth,
+                        |response| {
+                            crate::pages::Message::Bluetooth(Message::BluetoothEvent(response))
+                        },
                         move |tx| async move {
                             _ = futures::join!(
                                 subscription::watch(connection.clone(), tx.clone()),
@@ -356,55 +398,6 @@ impl Page {
                 }
 
                 return cosmic::task::future(get_adapters(connection.clone()));
-            }
-            Message::AddedDevice(path, device) => {
-                tracing::debug!("Device {} added", device.address);
-                self.devices.insert(path, device);
-            }
-            Message::UpdatedDevice(path, update) => {
-                if let Some(existing) = self.devices.get_mut(&path) {
-                    tracing::debug!("Device {} updated", existing.address);
-                    existing.update(update);
-                }
-            }
-            Message::RemovedDevice(path) => {
-                tracing::debug!("Device {path} removed");
-                self.devices.remove(&path);
-            }
-            Message::AddedAdapter(path, adapter) => {
-                tracing::debug!("Adapter {} added", adapter.address);
-                self.adapters.insert(path.clone(), adapter);
-                if self.selected_adapter.is_none() {
-                    return cosmic::task::message(Message::SelectAdapter(Some(path)));
-                }
-            }
-            Message::UpdatedAdapter(path, update) => {
-                if let Some(existing) = self.adapters.get_mut(&path) {
-                    tracing::debug!("Adapter {} updated: {update:#?}", existing.address);
-                    existing.update(update);
-                }
-                self.update_status();
-                if let Some(connection) = self.connection.clone() {
-                    match self.get_selected_adapter_mut() {
-                        Some((path, existing))
-                            if existing.enabled == Active::Enabled
-                                && existing.scanning == Active::Disabled =>
-                        {
-                            existing.scanning = Active::Enabling;
-                            return cosmic::task::future(start_discovery(connection, path));
-                        }
-                        _ => {}
-                    }
-                } else {
-                    tracing::warn!("No DBus connection ready");
-                }
-            }
-            Message::RemovedAdapter(path) => {
-                tracing::debug!("Device {path} removed");
-                self.adapters.remove(&path);
-                if self.selected_adapter == Some(path) {
-                    self.selected_adapter = None;
-                }
             }
             Message::PopupDevice(popup) => {
                 self.popup_device = popup;
@@ -491,9 +484,6 @@ impl Page {
             Message::Nop => {}
             Message::DBusError(why) => {
                 tracing::error!("dbus connection failed. {why}");
-            }
-            Message::DBusServiceUnknown => {
-                self.bluez_service_unknown = true;
             }
         };
         cosmic::Task::none()
