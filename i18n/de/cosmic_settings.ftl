@@ -302,6 +302,8 @@ super-key = Super-Tasten-Aktion
     .applications = Anwendungen öffnen
     .disable = Deaktivieren
 
+edge-gravity = Schwebende Fenster werden von nahe gelegenen Kanten angezogen
+
 window-controls = Fenstersteuerung
     .minimize = Minimieren-Schaltfläche anzeigen
     .maximize = Maximieren-Schaltfläche anzeigen
@@ -359,6 +361,7 @@ display = Bildschirme
     .refresh-rate = Bildwiederholrate
     .resolution = Auflösung
     .scale = Skalierung
+    .additional-scale-options = Zusätzliche Skalierungsoptionen
 
 mirroring = Spiegelung
     .id = Spiegelung { $id }
@@ -625,6 +628,7 @@ system-shortcut = System
     .keyboard-brightness-down = Tastaturhelligkeit verringern
     .keyboard-brightness-up = Tastaturhelligkeit erhöhen
     .launcher = Starter öffnen
+    .log-out = Abmelden
     .lock-screen = Bildschirm sperren
     .mute = Audioausgabe stummschalten
     .mute-mic = Mikrofoneingang stummschalten
@@ -635,7 +639,7 @@ system-shortcut = System
     .terminal = Terminal öffnen
     .volume-lower = Lautstärke der Audioausgabe verringern
     .volume-raise = Lautstärke der Audioausgabe erhöhen
-    .web-browser = Öffnet einen Webbrowser
+    .web-browser = Webbrowser öffnen
     .window-switcher = Zwischen geöffneten Fenstern wechseln
     .window-switcher-previous = Zwischen geöffneten Fenstern umgekehrt wechseln
     .workspace-overview = Arbeitsflächenübersicht öffnen
@@ -651,6 +655,9 @@ window-tiling = Fensterkachelung
 
 replace-shortcut-dialog = Tastenkombination ersetzen?
     .desc = { $shortcut } wird von { $name } verwendet. Wenn du sie ersetzt, wird { $name } deaktiviert.
+
+zoom-in = Hineinzoomen
+zoom-out = Herauszoomen
 
 ## Eingabe: Maus
 
@@ -797,3 +804,4 @@ default-apps = Standardanwendungen
     .calendar = Kalender
     .terminal = Terminal
     .other-associations = Andere Zuordnungen
+    .text-editor = Texteditor
