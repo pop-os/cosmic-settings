@@ -15,8 +15,6 @@ use std::sync::Arc;
 use zbus::zvariant::OwnedObjectPath;
 
 mod agent;
-mod backend;
-pub use backend::*;
 mod subscription;
 
 enum Dialog {
@@ -173,7 +171,6 @@ pub enum Message {
     RemovedDevice(OwnedObjectPath),
     SelectAdapter(Option<OwnedObjectPath>),
     SetActive(bool),
-    SetAdapters(HashMap<OwnedObjectPath, Adapter>),
     UpdatedAdapter(OwnedObjectPath, Vec<AdapterUpdate>),
     UpdatedDevice(OwnedObjectPath, Vec<DeviceUpdate>),
 }
@@ -236,6 +233,16 @@ impl Page {
                             Active::Enabling => Active::Disabled,
                             e => e,
                         };
+                    }
+                }
+                Event::SetAdapters(adapters) => {
+                    self.adapters = adapters;
+                    self.update_status();
+
+                    if self.selected_adapter.is_none() && self.adapters.len() == 1 {
+                        return cosmic::task::message(Message::SelectAdapter(
+                            self.adapters.keys().next().cloned(),
+                        ));
                     }
                 }
             },
@@ -348,43 +355,7 @@ impl Page {
                     ));
                 }
 
-                return cosmic::task::future(async move {
-                    let result: zbus::Result<HashMap<OwnedObjectPath, Adapter>> = async {
-                        futures::future::join_all(
-                            bluez_zbus::get_adapters(&connection)
-                                .await?
-                                .into_iter()
-                                .map(|(path, proxy)| async move {
-                                    Ok((path.to_owned(), Adapter::from_device(&proxy).await?))
-                                }),
-                        )
-                        .await
-                        .into_iter()
-                        .collect::<zbus::Result<HashMap<_, _>>>()
-                    }
-                    .await;
-                    match result {
-                        Ok(adapters) => Message::SetAdapters(adapters),
-                        Err(why) => {
-                            tracing::error!("dbus connection failed. {why}");
-                            Message::DBusError(fl!(
-                                "bluetooth",
-                                "dbus-error",
-                                why = why.to_string()
-                            ))
-                        }
-                    }
-                });
-            }
-            Message::SetAdapters(adapters) => {
-                self.adapters = adapters;
-                self.update_status();
-
-                if self.selected_adapter.is_none() && self.adapters.len() == 1 {
-                    return cosmic::task::message(Message::SelectAdapter(
-                        self.adapters.keys().next().cloned(),
-                    ));
-                }
+                return cosmic::task::future(get_adapters(connection.clone()));
             }
             Message::AddedDevice(path, device) => {
                 tracing::debug!("Device {} added", device.address);
