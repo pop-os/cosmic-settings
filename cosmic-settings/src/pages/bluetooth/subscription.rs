@@ -9,6 +9,8 @@ use cosmic::iced::futures::{SinkExt, StreamExt};
 use futures::{channel::mpsc, stream::FusedStream};
 use zbus::{fdo, zvariant::OwnedObjectPath};
 
+use cosmic_settings_subscriptions::bluetooth::{Device, DeviceUpdate};
+
 enum DevicePropertyWatcherTask {
     Add(OwnedObjectPath),
     Removed(OwnedObjectPath),
@@ -123,7 +125,7 @@ pub async fn watch(
                             match header.path() {
                                 Some(path) if path.contains("/dev_") =>
                                     tx
-                                        .send(bluetooth::Message::UpdatedDevice(path.to_owned().into(), bluetooth::DeviceUpdate::from_update(args.changed_properties)))
+                                        .send(bluetooth::Message::UpdatedDevice(path.to_owned().into(), DeviceUpdate::from_update(args.changed_properties)))
                                         .await
                                         .map_err(|e| zbus::Error::Failure(e.to_string()))?,
                                 Some(path) => tx
@@ -142,7 +144,7 @@ pub async fn watch(
                             let args = signal.args()?;
                             match BluetoothDevice::new(&connection, args.object_path.clone()).await {
                                 Ok(device) => {
-                                    match bluetooth::Device::from_device(&device).await {
+                                    match Device::from_device(&device).await {
                                         Ok(device) => {
                                             property_watcher_task
                                                 .send(DevicePropertyWatcherTask::Add(args.object_path.to_owned().into())).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
@@ -180,7 +182,7 @@ pub async fn watch(
 
                             } else if args.interfaces.contains(&"org.bluez.Battery1") {
                                 tx
-                                    .send(bluetooth::Message::UpdatedDevice(args.object_path.to_owned().into(), vec![bluetooth::DeviceUpdate::Battery(None)]))
+                                    .send(bluetooth::Message::UpdatedDevice(args.object_path.to_owned().into(), vec![DeviceUpdate::Battery(None)]))
                                     .await
                                     .map_err(|e| zbus::Error::Failure(e.to_string()))?;
                             } else if args.interfaces.contains(&"org.bluez.Adapter1") {

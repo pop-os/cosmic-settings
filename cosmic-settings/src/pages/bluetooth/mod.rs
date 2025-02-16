@@ -6,6 +6,7 @@ use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, settings, text};
 use cosmic::{theme, Apply, Element, Task};
 use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_subscriptions::bluetooth::*;
 use futures::channel::oneshot;
 use slab::Slab;
 use slotmap::SlotMap;
@@ -153,6 +154,7 @@ pub enum Message {
     AddedAdapter(OwnedObjectPath, Adapter),
     AddedDevice(OwnedObjectPath, Device),
     Agent(Arc<bluez_zbus::agent1::Message>),
+    BluetoothEvent(Event),
     ConnectDevice(OwnedObjectPath),
     DBusConnect(
         zbus::Connection,
@@ -160,7 +162,6 @@ pub enum Message {
     ),
     DBusError(String),
     DBusServiceUnknown,
-    DeviceFailed(OwnedObjectPath),
     DisconnectDevice(OwnedObjectPath),
     ForgetDevice(OwnedObjectPath),
     PinCancel,
@@ -173,7 +174,6 @@ pub enum Message {
     SelectAdapter(Option<OwnedObjectPath>),
     SetActive(bool),
     SetAdapters(HashMap<OwnedObjectPath, Adapter>),
-    SetDevices(HashMap<OwnedObjectPath, Device>),
     UpdatedAdapter(OwnedObjectPath, Vec<AdapterUpdate>),
     UpdatedDevice(OwnedObjectPath, Vec<DeviceUpdate>),
 }
@@ -190,12 +190,55 @@ impl From<Message> for crate::pages::Message {
     }
 }
 
+impl From<Event> for crate::app::Message {
+    fn from(event: Event) -> Self {
+        crate::pages::Message::Bluetooth(Message::BluetoothEvent(event)).into()
+    }
+}
+
+impl From<Event> for crate::pages::Message {
+    fn from(event: Event) -> Self {
+        crate::pages::Message::Bluetooth(Message::BluetoothEvent(event))
+    }
+}
+
+impl From<Event> for Message {
+    fn from(event: Event) -> Self {
+        Message::BluetoothEvent(event)
+    }
+}
+
 impl Page {
     pub fn update(&mut self, message: Message) -> cosmic::Task<crate::Message> {
         let span = tracing::span!(tracing::Level::INFO, "bluetooth::update");
         let _span = span.enter();
 
         match message {
+            Message::BluetoothEvent(event) => match event {
+                Event::DBusError(why) => {
+                    tracing::error!(
+                        "dbus connection failed. {}",
+                        fl!("bluetooth", "dbus-error", why = why.to_string())
+                    );
+                }
+                Event::Ok => {}
+                Event::SetDevices(devices) => {
+                    self.devices = devices;
+                }
+                Event::DeviceFailed(path) => {
+                    tracing::warn!("Failed operation on device {path}");
+                    if let Some(device) = self.devices.get_mut(&path) {
+                        if matches!(device.enabled, Active::Disabled | Active::Disabling) {
+                            return cosmic::Task::none();
+                        }
+                        device.enabled = match device.enabled {
+                            Active::Disabling => Active::Enabled,
+                            Active::Enabling => Active::Disabled,
+                            e => e,
+                        };
+                    }
+                }
+            },
             Message::Agent(message) => {
                 let Some(message) = Arc::into_inner(message) else {
                     return Task::none();
@@ -332,9 +375,6 @@ impl Page {
                         }
                     }
                 });
-            }
-            Message::SetDevices(devices) => {
-                self.devices = devices;
             }
             Message::SetAdapters(adapters) => {
                 self.adapters = adapters;
@@ -475,19 +515,6 @@ impl Page {
                     }
                 } else {
                     tracing::warn!("No DBus connection ready");
-                }
-            }
-            Message::DeviceFailed(path) => {
-                tracing::warn!("Failed operation on device {path}");
-                if let Some(device) = self.devices.get_mut(&path) {
-                    if matches!(device.enabled, Active::Disabled | Active::Disabling) {
-                        return cosmic::Task::none();
-                    }
-                    device.enabled = match device.enabled {
-                        Active::Disabling => Active::Enabled,
-                        Active::Enabling => Active::Disabled,
-                        e => e,
-                    };
                 }
             }
             Message::Nop => {}
@@ -691,7 +718,11 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         if let Some(battery) = &device.battery {
                             widget::column::with_capacity(2)
                                 .push(text::body(device.alias_or_addr()))
-                                .push(text::caption(battery))
+                                .push(text::caption(fl!(
+                                    "bluetooth-paired",
+                                    "battery",
+                                    percentage = battery
+                                )))
                                 .into()
                         } else {
                             widget::text(device.alias_or_addr())
