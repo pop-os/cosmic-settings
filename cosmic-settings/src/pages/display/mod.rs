@@ -25,7 +25,6 @@ use tokio::sync::oneshot;
 use tracing::error;
 
 static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
-static ADJUSTED_SCALE_BREAKPOINTS: &[u32] = &[0, 1, 2, 3, 4];
 
 static DPI_SCALE_LABELS: Lazy<Vec<String>> =
     Lazy::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
@@ -104,8 +103,6 @@ pub enum Message {
     Scale(usize),
     /// Adjust the display scale.
     AdjustScale(u32),
-    /// Apply a custom scale adjustment.
-    AdjustScaleApply,
     /// Refreshes display outputs.
     Update {
         /// Available outputs from cosmic-randr.
@@ -531,10 +528,8 @@ impl Page {
             }
 
             Message::AdjustScale(scale) => {
-                self.adjusted_scale = scale * 5;
-            }
+                self.adjusted_scale = scale;
 
-            Message::AdjustScaleApply => {
                 if let Some(option) = self.cache.scale_selected {
                     return self.set_scale(option);
                 }
@@ -570,7 +565,7 @@ impl Page {
         )
     }
 
-    /// Displays the night light context drawer.
+    // /// Displays the night light context drawer.
     // pub fn night_light_context_view(&self) -> Element<pages::Message> {
     //     column().into()
     // }
@@ -685,7 +680,7 @@ impl Page {
         self.cache.refresh_rate_selected = None;
         self.cache.vrr_selected = None;
         self.adjusted_scale = ((self.config.scale % 25).min(20) as f32 / 5.0).round() as u32 * 5;
-        self.cache.scale_selected = Some(if self.adjusted_scale != 0 {
+        self.cache.scale_selected = Some(if self.adjusted_scale != 0 && selected_scale > 0 {
             selected_scale - 1
         } else {
             selected_scale
@@ -943,13 +938,9 @@ impl Page {
 
         let scale = (option * 25 + 50) as u32 + self.adjusted_scale.min(20);
 
-        let request = Randr::Scale(scale);
-        let revert_request = Randr::Scale(self.config.scale);
-
         self.cache.scale_selected = Some(option);
         self.config.scale = scale;
         tasks.push(self.exec_randr(output, Randr::Scale(scale)));
-        tasks.push(self.set_dialog(revert_request, &request));
         Task::batch(tasks)
     }
 
@@ -1198,9 +1189,14 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     ),
                     widget::settings::item(
                         &descriptions[additional_scale_options],
-                        widget::slider(0..=4, page.adjusted_scale / 5, Message::AdjustScale)
-                            .on_release(Message::AdjustScaleApply)
-                            .breakpoints(ADJUSTED_SCALE_BREAKPOINTS),
+                        widget::spin_button(
+                            format!("{}%", page.adjusted_scale),
+                            page.adjusted_scale,
+                            5,
+                            0,
+                            20,
+                            Message::AdjustScale,
+                        ),
                     ),
                     widget::settings::item(
                         &descriptions[orientation],
