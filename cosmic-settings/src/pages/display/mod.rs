@@ -1049,9 +1049,13 @@ impl Page {
                     return Task::none();
                 };
 
+                let rate = current.refresh_rate;
+
                 task.arg("mode")
                     .arg("--scale")
                     .arg(format!("{}.{:02}", scale / 100, scale % 100))
+                    .arg("--refresh")
+                    .arg(format!("{}.{:03}", rate / 1000, rate % 1000))
                     .arg(name)
                     .arg(itoa::Buffer::new().format(current.size.0))
                     .arg(itoa::Buffer::new().format(current.size.1));
