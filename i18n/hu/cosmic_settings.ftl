@@ -13,7 +13,7 @@ connections-and-profiles = { $variant ->
     [wifi] Wi-Fi
     [vpn] VPN
     *[other] Ismeretlen
-} Kapcsolatok és kapcsolati profilok.
+} kapcsolatok és profilok.
 
 add-network = Hálózat hozzáadása
     .profile = Profil hozzáadása
@@ -26,7 +26,7 @@ connecting = Kapcsolódás...
 disconnect = Szétkapcsolás
 forget = Elfelejtés
 known-networks = Ismert hálózatok
-network-and-wireless = Internet és Wi-Fi
+network-and-wireless = Hálózat és vezeték nélküli kapcsolatok
 no-networks = Nem található hálózat.
 no-vpn = Nincs elérhető VPN-kapcsolat.
 password = Jelszó
@@ -58,14 +58,14 @@ network-device-state =
     .unmanaged = Kezeletlen
     .unplugged = Kábel kihúzva
 
-remove-connection-dialog = Törli a kapcsolódási profilt?
+remove-connection-dialog = Törli a kapcsolati profilt?
     .vpn-description = A jelszót újra be kell írnia a jövőbeli használathoz.
     .wired-description = A profilt újból létre kell hoznia a jövőbeli használathoz.
 
 vpn = VPN
     .connections = VPN-kapcsolatok
     .error = Nem sikerült hozzáadni a VPN-konfigurációt
-    .remove = Kapcsolódási profil törlése
+    .remove = Kapcsolati profil törlése
     .select-file = Válassz ki egy VPN konfigurációs fájlt
 
 vpn-error = VPN Hiba
@@ -87,7 +87,7 @@ wired = Vezetékes
     .adapter = Vezetékes adapter { $id }
     .connections = Vezetékes kapcsolatok
     .devices = Vezetékes eszközök
-    .remove = Kapcsolódási profil törlése
+    .remove = Kapcsololati profil törlése
 
 wifi = Wi-Fi
     .adapter = Wi-Fi adapter { $id }
@@ -198,7 +198,7 @@ container-background = Tároló háttér
 control-tint = Irányító komponens színezése
     .desc = Szabványos gombok hátterére, keresési bemenetekre, szövegbevitelre és hasonló összetevőkre használatos.
 
-frosted = Tejüveg-hatás a rendszerfelületen
+frosted = Elmosódott üveg hatás a rendszerfelületen
     .desc = A háttér elmosását alkalmazza a panelre, a dokkolóra, a kisalkalmazásokra, az indítóra és az alkalmazáskönyvtárra.
 
 enable-export = Alkalmazza ezt a témát a GNOME-alkalmazásokra.
@@ -299,8 +299,10 @@ window-management = Ablakkezelés
 super-key = Super billentyű
     .launcher = Indító megnyitása
     .workspaces = Munkaterületek megnyitása
-    .applications = Applikációk megnyitása
+    .applications = Alkalmazások megnyitása
     .disable = Kikapcsolás
+
+edge-gravity = A lebegő ablakok a közeli szélekhez igazodnak
 
 window-controls = Ablakkezelés
     .maximize = Maximalizálás gomb mutatása
@@ -356,9 +358,10 @@ display = Kijelzők
     .external = { $size } { $output } Külső kijelző
     .laptop = { $size } Laptop kijelző
     .options = Kijelző lehetőségek
-    .refresh-rate = Frissítési ráta
+    .refresh-rate = Frissítési gyakoriság
     .resolution = Felbontás
-    .scale = Skála
+    .scale = Skálázás
+    .additional-scale-options = További skálázási beállítások
 
 mirroring = Tükrözés
     .id = Tükrözés { $id }
@@ -542,7 +545,7 @@ migrate-workspace = Munkaterület áttelepítése { $direction ->
     *[down] az alsó
     [left] a bal
     [right] a jobb
-    [up] a felsó
+    [up] a felső
 } kimenetre
 navigate = Navigálás
 replace = Kicserélés
@@ -618,7 +621,7 @@ move-windows = Ablakok mozgatása
     .send-to-next-workspace = Ablak küldése a következő munkaterületre
 
 system-shortcut = Rendszer
-    .app-library = Alkalmazáskönytár megnyitása
+    .app-library = Alkalmazáskönyvtár megnyitása
     .brightness-down = Kijelző fényerejének csökkentése
     .brightness-up = Kijelző fényerejének növelése
     .home-folder = Saját mappa megnyitása
@@ -653,10 +656,13 @@ window-tiling = Ablak csempézés
 replace-shortcut-dialog = Lecseréli a parancsikont?
     .desc = A { $shortcut } használja a { $name }. Ha lecseréli, a { $name } le lesz tiltva.
 
+zoom-in = Nagyítás
+zoom-out = Kicsinyítés
+
 ## Input: Mouse
 
 mouse = Egér
-    .desc = Egérsebesség, gyorsulás, természetes görgetés.
+    .desc = Egérsebesség, gyorsítás és természetes görgetés.
     .speed = Egér sebessége
     .acceleration = Egérgyorsítás engedélyezése
 
@@ -666,7 +672,7 @@ click-behavior = Kattintási viselkedés
     .click-finger = Másodlagos kattintás két ujjal és középső kattintás három ujjal
     .button-areas = Másodlagos kattintás a jobb alsó sarokban, középső kattintás az alsó középső sarokban
 
-pinch-to-zoom = Csípés a nagyításhoz
+pinch-to-zoom = Csippentéses nagyítás
     .desc = Használja két ujját a tartalom nagyításához a nagyítást támogató alkalmazásokhoz.
 
 tap-to-click = Koppintson a kattintáshoz
@@ -683,7 +689,7 @@ gestures = Gesztusok
     .four-finger-down = Négy ujjas csúsztatás lefelé
     .four-finger-left = Négy ujjas csúsztatás balra
     .four-finger-right = Négy ujjas csúsztatás jobbra
-    .four-finger-up = Négy ujjas csúsztatás minden irányba
+    .four-finger-up = Négy ujjas csúsztatás felfelé
     .three-finger-any = Három ujjas csúztatás bármelyik irányba
 
 switch-workspaces = Munkaterület váltása
@@ -691,7 +697,7 @@ switch-workspaces = Munkaterület váltása
     .vertical = Négy ujjas csúsztatás felfelé/lefelé
 
 switch-between-windows = Váltás az ablakok között
-open-application-library = Alkalmazáskönytár megnyitása
+open-application-library = Alkalmazáskönyvtár megnyitása
 open-workspaces-view = Munkaterületek áttekintésének megnyitása
 
 ## Time & Language
@@ -784,8 +790,6 @@ administrator = Rendszergazda
 add-user = Felhasználó hozzáadása
 remove-user = Felhasználó eltávolítása
 full-name = Teljes név
-username = Felhasználónév
-password = Jelszó
 
 ## System: Default Applications
 
