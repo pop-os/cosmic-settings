@@ -205,7 +205,7 @@ pub fn go_next_with_item<'a, Msg: Clone + 'static>(
     description: &'a str,
     item: impl Into<cosmic::Element<'a, Msg>>,
     msg: Msg,
-) -> cosmic::Element<'_, Msg> {
+) -> cosmic::Element<'a, Msg> {
     settings::item_row(vec![
         text::body(description).wrapping(Wrapping::Word).into(),
         horizontal_space().into(),
