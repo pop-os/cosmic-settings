@@ -550,6 +550,13 @@ keyboard-typing-assist = Typing
     .repeat-rate = Repeat rate
     .repeat-delay = Repeat delay
 
+keyboard-numlock-boot = Numlock
+    .boot-state = State on boot
+    .last-boot = Last boot
+    .on = On
+    .off = Off
+    .set = Set numlock boot state
+
 added = Added
 type-to-search = Type to search...
 show-extended-input-sources = Show extended input sources
