@@ -528,10 +528,12 @@ impl Page {
             }
 
             Message::AdjustScale(scale) => {
-                self.adjusted_scale = scale;
+                if self.adjusted_scale != scale {
+                    self.adjusted_scale = scale;
 
-                if let Some(option) = self.cache.scale_selected {
-                    return self.set_scale(option);
+                    if let Some(option) = self.cache.scale_selected {
+                        return self.set_scale(option);
+                    }
                 }
             }
 
