@@ -240,7 +240,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         Message::SuperKey,
                     )),
                 )
-                .add(settings::item(
+                .add(settings::flex_item(
                     &descriptions[edge_gravity],
                     toggler(page.edge_snap_threshold != 0).on_toggle(|is_enabled| {
                         Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
