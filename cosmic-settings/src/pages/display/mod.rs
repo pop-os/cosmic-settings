@@ -24,10 +24,8 @@ use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
 use tokio::sync::oneshot;
 use tracing::error;
 
-static DPI_SCALES: &[f64] = &[
-    50.0, 75.0, 100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0,
-];
-static DPI_SCALES_BREAKPOINTS: &[f64] = &[50.0, 100.0, 150.0, 200.0, 250.0, 300.0];
+static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
+static ADJUSTED_SCALE_BREAKPOINTS: &[u32] = &[0, 1, 2, 3, 4];
 
 static DPI_SCALE_LABELS: Lazy<Vec<String>> =
     Lazy::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
@@ -104,8 +102,10 @@ pub enum Message {
     Resolution(usize),
     /// Set the preferred scale for a display.
     Scale(usize),
-    SliderChangeScale(f64),
-    SliderApplyScale,
+    /// Adjust the display scale.
+    AdjustScale(u32),
+    /// Apply a custom scale adjustment.
+    AdjustScaleApply,
     /// Refreshes display outputs.
     Update {
         /// Available outputs from cosmic-randr.
@@ -154,7 +154,7 @@ pub struct Page {
     show_display_options: bool,
     comp_config: cosmic_config::Config,
     comp_config_descale_xwayland: bool,
-    slider_scale: Option<f64>,
+    adjusted_scale: u32,
 }
 
 impl Default for Page {
@@ -184,7 +184,7 @@ impl Default for Page {
             dialog: None,
             dialog_countdown: 0,
             show_display_options: true,
-            slider_scale: None,
+            adjusted_scale: 0,
             comp_config,
             comp_config_descale_xwayland,
         }
@@ -201,13 +201,6 @@ struct Config {
     scale: u32,
 }
 
-#[derive(Default)]
-struct ScaleOptionsViewCache {
-    scale_selected: Option<usize>,
-    scale_values: Vec<f64>,
-    scale_labels: Vec<String>,
-}
-
 /// Cached view content for widgets.
 #[derive(Default)]
 struct ViewCache {
@@ -220,21 +213,7 @@ struct ViewCache {
     refresh_rate_selected: Option<usize>,
     vrr_selected: Option<usize>,
     resolution_selected: Option<usize>,
-    scale_options: ScaleOptionsViewCache,
-}
-
-impl ScaleOptionsViewCache {
-    fn scale_selected_as_value(&self) -> f64 {
-        let selected = self.scale_selected;
-        if let Some(selected) = selected {
-            return *self
-                .scale_values
-                .get(selected)
-                .unwrap_or(DPI_SCALES.last().unwrap());
-        }
-
-        *DPI_SCALES.last().unwrap()
-    }
+    scale_selected: Option<usize>,
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -275,6 +254,13 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
+        self.cache.orientations = [
+            fl!("orientation", "standard"),
+            fl!("orientation", "rotate-90"),
+            fl!("orientation", "rotate-180"),
+            fl!("orientation", "rotate-270"),
+        ];
+
         use std::time::Duration;
 
         use futures::pin_mut;
@@ -438,11 +424,6 @@ impl Page {
             Message::RandrResult(result) => {
                 if let Some(Err(why)) = Arc::into_inner(result) {
                     tracing::error!(?why, "cosmic-randr error");
-                } else {
-                    // Reload display info
-                    return cosmic::task::future(async move {
-                        crate::Message::PageMessage(on_enter().await)
-                    });
                 }
             }
 
@@ -544,33 +525,32 @@ impl Page {
 
             Message::Resolution(option) => return self.set_resolution(option),
 
-            Message::Scale(option) => return self.set_scale_option(option),
-            Message::SliderChangeScale(scale) => {
-                self.slider_scale = Some(scale);
+            Message::Scale(option) => {
+                self.adjusted_scale = 0;
+                return self.set_scale(option);
             }
-            Message::SliderApplyScale => {
-                if let Some(value) = self.slider_scale {
-                    return self.set_scale_value(value);
+
+            Message::AdjustScale(scale) => {
+                self.adjusted_scale = scale * 5;
+            }
+
+            Message::AdjustScaleApply => {
+                if let Some(option) = self.cache.scale_selected {
+                    return self.set_scale(option);
                 }
             }
-            Message::Update { randr } => {
-                match Arc::into_inner(randr) {
-                    Some(Ok(outputs)) => self.update_displays(outputs),
 
-                    Some(Err(why)) => {
-                        tracing::error!(?why, "error fetching displays");
-                    }
-
-                    None => (),
+            Message::Update { randr } => match Arc::into_inner(randr) {
+                Some(Ok(outputs)) => {
+                    self.update_displays(outputs);
                 }
 
-                self.cache.orientations = [
-                    fl!("orientation", "standard"),
-                    fl!("orientation", "rotate-90"),
-                    fl!("orientation", "rotate-180"),
-                    fl!("orientation", "rotate-270"),
-                ];
-            }
+                Some(Err(why)) => {
+                    tracing::error!(?why, "error fetching displays");
+                }
+
+                None => (),
+            },
 
             Message::SetXwaylandDescaling(descale) => {
                 self.comp_config_descale_xwayland = descale;
@@ -678,6 +658,11 @@ impl Page {
             return;
         };
 
+        let selected_scale = DPI_SCALES
+            .iter()
+            .position(|scale| self.config.scale <= *scale)
+            .unwrap_or(DPI_SCALES.len() - 1);
+
         self.display_tabs.activate(display);
         self.active_display = output_id;
         self.config.refresh_rate = None;
@@ -699,19 +684,12 @@ impl Page {
         self.cache.resolution_selected = None;
         self.cache.refresh_rate_selected = None;
         self.cache.vrr_selected = None;
-
-        self.cache.scale_options.scale_labels =
-            get_sorted_scale_labels(self.config.scale.try_into().unwrap());
-        self.cache.scale_options.scale_values =
-            get_sorted_scales(self.config.scale.try_into().unwrap());
-        self.cache.scale_options.scale_selected = Some(
-            self.cache
-                .scale_options
-                .scale_values
-                .iter()
-                .position(|scale| self.config.scale <= scale.floor() as u32)
-                .unwrap_or(DPI_SCALES.len() - 1),
-        );
+        self.adjusted_scale = ((self.config.scale % 25).min(20) as f32 / 5.0).round() as u32 * 5;
+        self.cache.scale_selected = Some(if self.adjusted_scale != 0 {
+            selected_scale - 1
+        } else {
+            selected_scale
+        });
 
         if let Some(current_mode_id) = output.current {
             for (mode_id, mode) in output
@@ -955,41 +933,20 @@ impl Page {
         Task::batch(tasks)
     }
 
-    pub fn set_scale_option(&mut self, option: usize) -> Task<app::Message> {
-        let value = self
-            .cache
-            .scale_options
-            .scale_values
-            .get(option)
-            .unwrap_or(self.cache.scale_options.scale_values.last().unwrap());
-
-        self.set_scale_value(*value)
-    }
-
     /// Set the scale of the active display.
-    pub fn set_scale_value(&mut self, value: f64) -> Task<app::Message> {
-        let mut tasks = Vec::with_capacity(2);
-
+    pub fn set_scale(&mut self, option: usize) -> Task<app::Message> {
         let Some(output) = self.list.outputs.get(self.active_display) else {
             return Task::none();
         };
 
-        let scale = value.floor() as u32;
+        let mut tasks = Vec::with_capacity(2);
+
+        let scale = (option * 25 + 50) as u32 + self.adjusted_scale.min(20);
 
         let request = Randr::Scale(scale);
         let revert_request = Randr::Scale(self.config.scale);
 
-        self.cache.scale_options.scale_labels = get_sorted_scale_labels(value);
-        self.cache.scale_options.scale_values = get_sorted_scales(value);
-        self.cache.scale_options.scale_selected = Some(
-            self.cache
-                .scale_options
-                .scale_values
-                .iter()
-                .position(|scale| value <= *scale)
-                .unwrap_or(self.cache.scale_options.scale_values.len() - 1),
-        );
-
+        self.cache.scale_selected = Some(option);
         self.config.scale = scale;
         tasks.push(self.exec_randr(output, Randr::Scale(scale)));
         tasks.push(self.set_dialog(revert_request, &request));
@@ -1061,14 +1018,7 @@ impl Page {
 
                 task.arg("mode")
                     .arg("--refresh")
-                    .arg(
-                        [
-                            itoa::Buffer::new().format(rate / 1000),
-                            ".",
-                            itoa::Buffer::new().format(rate % 1000),
-                        ]
-                        .concat(),
-                    )
+                    .arg(format!("{}.{:03}", rate / 1000, rate % 1000))
                     .arg(name)
                     .arg(itoa::Buffer::new().format(current.size.0))
                     .arg(itoa::Buffer::new().format(current.size.1));
@@ -1101,14 +1051,7 @@ impl Page {
 
                 task.arg("mode")
                     .arg("--scale")
-                    .arg(
-                        [
-                            itoa::Buffer::new().format(scale / 100),
-                            ".",
-                            itoa::Buffer::new().format(scale % 100),
-                        ]
-                        .concat(),
-                    )
+                    .arg(format!("{}.{:02}", scale / 100, scale % 100))
                     .arg(name)
                     .arg(itoa::Buffer::new().format(current.size.0))
                     .arg(itoa::Buffer::new().format(current.size.1));
@@ -1139,29 +1082,6 @@ impl Page {
         }));
         Task::batch(tasks)
     }
-}
-
-fn get_sorted_scales(current_value: f64) -> Vec<f64> {
-    if DPI_SCALES.contains(&current_value) {
-        return DPI_SCALES.to_vec();
-    }
-
-    let mut scales: Vec<f64> = DPI_SCALES.iter().copied().collect();
-    scales.push(current_value);
-    scales.sort_by(|a, b| a.partial_cmp(b).unwrap());
-
-    scales
-}
-
-fn get_sorted_scale_labels(current_value: f64) -> Vec<String> {
-    if DPI_SCALES.contains(&current_value) {
-        return DPI_SCALE_LABELS.to_vec();
-    }
-
-    return get_sorted_scales(current_value)
-        .iter()
-        .map(|v| format!("{v}%"))
-        .collect();
 }
 
 /// View for the display arrangement section.
@@ -1270,22 +1190,13 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                 items.extend(vec![
                     widget::settings::item(
                         &descriptions[scale],
-                        dropdown(
-                            &page.cache.scale_options.scale_labels,
-                            page.cache.scale_options.scale_selected,
-                            Message::Scale,
-                        ),
+                        dropdown(&DPI_SCALE_LABELS, page.cache.scale_selected, Message::Scale),
                     ),
                     widget::settings::item(
                         &descriptions[additional_scale_options],
-                        widget::slider(
-                            50.0..=300.0,
-                            page.slider_scale
-                                .unwrap_or(page.cache.scale_options.scale_selected_as_value()),
-                            Message::SliderChangeScale,
-                        )
-                        .on_release(Message::SliderApplyScale)
-                        .breakpoints(DPI_SCALES_BREAKPOINTS),
+                        widget::slider(0..=4, page.adjusted_scale / 5, Message::AdjustScale)
+                            .on_release(Message::AdjustScaleApply)
+                            .breakpoints(ADJUSTED_SCALE_BREAKPOINTS),
                     ),
                     widget::settings::item(
                         &descriptions[orientation],
