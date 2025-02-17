@@ -6,17 +6,13 @@ use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, settings, text};
 use cosmic::{theme, Apply, Element, Task};
 use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_subscriptions::bluetooth::*;
 use futures::channel::oneshot;
 use slab::Slab;
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use zbus::zvariant::OwnedObjectPath;
-
-mod agent;
-mod backend;
-pub use backend::*;
-mod subscription;
 
 enum Dialog {
     // RequestAuthorization {
@@ -150,17 +146,13 @@ impl page::Page<crate::pages::Message> for Page {
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    AddedAdapter(OwnedObjectPath, Adapter),
-    AddedDevice(OwnedObjectPath, Device),
-    Agent(Arc<bluez_zbus::agent1::Message>),
+    BluetoothEvent(Event),
     ConnectDevice(OwnedObjectPath),
     DBusConnect(
         zbus::Connection,
         tokio::sync::mpsc::Sender<crate::pages::Message>,
     ),
     DBusError(String),
-    DBusServiceUnknown,
-    DeviceFailed(OwnedObjectPath),
     DisconnectDevice(OwnedObjectPath),
     ForgetDevice(OwnedObjectPath),
     PinCancel,
@@ -168,14 +160,8 @@ pub enum Message {
     PopupDevice(Option<OwnedObjectPath>),
     PopupSetting(bool),
     Nop,
-    RemovedAdapter(OwnedObjectPath),
-    RemovedDevice(OwnedObjectPath),
     SelectAdapter(Option<OwnedObjectPath>),
     SetActive(bool),
-    SetAdapters(HashMap<OwnedObjectPath, Adapter>),
-    SetDevices(HashMap<OwnedObjectPath, Device>),
-    UpdatedAdapter(OwnedObjectPath, Vec<AdapterUpdate>),
-    UpdatedDevice(OwnedObjectPath, Vec<DeviceUpdate>),
 }
 
 impl From<Message> for crate::app::Message {
@@ -190,55 +176,159 @@ impl From<Message> for crate::pages::Message {
     }
 }
 
+impl From<Event> for crate::app::Message {
+    fn from(event: Event) -> Self {
+        crate::pages::Message::Bluetooth(Message::BluetoothEvent(event)).into()
+    }
+}
+
+impl From<Event> for crate::pages::Message {
+    fn from(event: Event) -> Self {
+        crate::pages::Message::Bluetooth(Message::BluetoothEvent(event))
+    }
+}
+
+impl From<Event> for Message {
+    fn from(event: Event) -> Self {
+        Message::BluetoothEvent(event)
+    }
+}
+
 impl Page {
     pub fn update(&mut self, message: Message) -> cosmic::Task<crate::Message> {
         let span = tracing::span!(tracing::Level::INFO, "bluetooth::update");
         let _span = span.enter();
 
         match message {
-            Message::Agent(message) => {
-                let Some(message) = Arc::into_inner(message) else {
-                    return Task::none();
-                };
-
-                match message {
-                    bluez_zbus::agent1::Message::RequestAuthorization { response, .. } => {
-                        _ = response.send(true);
+            Message::BluetoothEvent(event) => match event {
+                Event::DBusError(why) => {
+                    tracing::error!(
+                        "dbus connection failed. {}",
+                        fl!("bluetooth", "dbus-error", why = why.to_string())
+                    );
+                }
+                Event::Ok => {}
+                Event::SetDevices(devices) => {
+                    self.devices = devices;
+                }
+                Event::DeviceFailed(path) => {
+                    tracing::warn!("Failed operation on device {path}");
+                    if let Some(device) = self.devices.get_mut(&path) {
+                        if matches!(device.enabled, Active::Disabled | Active::Disabling) {
+                            return cosmic::Task::none();
+                        }
+                        device.enabled = match device.enabled {
+                            Active::Disabling => Active::Enabled,
+                            Active::Enabling => Active::Disabled,
+                            e => e,
+                        };
                     }
+                }
+                Event::SetAdapters(adapters) => {
+                    self.adapters = adapters;
+                    self.update_status();
 
-                    bluez_zbus::agent1::Message::RequestConfirmation {
-                        device,
-                        passkey,
-                        response,
-                    } => {
-                        let device = self.devices.get(&device).map_or_else(
-                            || device.to_string(),
-                            |device| device.alias_or_addr().to_owned(),
-                        );
+                    if self.selected_adapter.is_none() && self.adapters.len() == 1 {
+                        return cosmic::task::message(Message::SelectAdapter(
+                            self.adapters.keys().next().cloned(),
+                        ));
+                    }
+                }
+                Event::UpdatedAdapter(path, update) => {
+                    if let Some(existing) = self.adapters.get_mut(&path) {
+                        tracing::debug!("Adapter {} updated: {update:#?}", existing.address);
+                        existing.update(update);
+                    }
+                    self.update_status();
+                    if let Some(connection) = self.connection.clone() {
+                        match self.get_selected_adapter_mut() {
+                            Some((path, existing))
+                                if existing.enabled == Active::Enabled
+                                    && existing.scanning == Active::Disabled =>
+                            {
+                                existing.scanning = Active::Enabling;
+                                return cosmic::task::future(start_discovery(connection, path));
+                            }
+                            _ => {}
+                        }
+                    } else {
+                        tracing::warn!("No DBus connection ready");
+                    }
+                }
+                Event::UpdatedDevice(path, update) => {
+                    if let Some(existing) = self.devices.get_mut(&path) {
+                        tracing::debug!("Device {} updated", existing.address);
+                        existing.update(update);
+                    }
+                }
+                Event::RemovedAdapter(path) => {
+                    tracing::debug!("Device {path} removed");
+                    self.adapters.remove(&path);
+                    if self.selected_adapter == Some(path) {
+                        self.selected_adapter = None;
+                    }
+                }
+                Event::RemovedDevice(path) => {
+                    tracing::debug!("Device {path} removed");
+                    self.devices.remove(&path);
+                }
+                Event::AddedDevice(path, device) => {
+                    tracing::debug!("Device {} added", device.address);
+                    self.devices.insert(path, device);
+                }
+                Event::AddedAdapter(path, adapter) => {
+                    tracing::debug!("Adapter {} added", adapter.address);
+                    self.adapters.insert(path.clone(), adapter);
+                    if self.selected_adapter.is_none() {
+                        return cosmic::task::message(Message::SelectAdapter(Some(path)));
+                    }
+                }
+                Event::DBusServiceUnknown => {
+                    self.bluez_service_unknown = true;
+                }
+                Event::Agent(message) => {
+                    let Some(message) = Arc::into_inner(message) else {
+                        return Task::none();
+                    };
 
-                        self.dialog = Some(Dialog::RequestConfirmation {
+                    match message {
+                        bluez_zbus::agent1::Message::RequestAuthorization { response, .. } => {
+                            _ = response.send(true);
+                        }
+
+                        bluez_zbus::agent1::Message::RequestConfirmation {
                             device,
                             passkey,
                             response,
-                        });
-                    }
+                        } => {
+                            let device = self.devices.get(&device).map_or_else(
+                                || device.to_string(),
+                                |device| device.alias_or_addr().to_owned(),
+                            );
 
-                    bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
-                        _ = response.send(None);
-                    }
+                            self.dialog = Some(Dialog::RequestConfirmation {
+                                device,
+                                passkey,
+                                response,
+                            });
+                        }
 
-                    bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
-                        _ = response.send(None);
-                    }
+                        bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
+                            _ = response.send(None);
+                        }
 
-                    bluez_zbus::agent1::Message::Cancel => {
-                        self.dialog = None;
-                    }
+                        bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
+                            _ = response.send(None);
+                        }
 
-                    _ => (),
+                        bluez_zbus::agent1::Message::Cancel => {
+                            self.dialog = None;
+                        }
+
+                        _ => (),
+                    }
                 }
-            }
-
+            },
             Message::PinCancel => {
                 if let Some(Dialog::RequestConfirmation { response, .. }) = self.dialog.take() {
                     _ = response.send(false);
@@ -295,7 +385,9 @@ impl Page {
                     let connection = connection.clone();
                     self.subscription = Some(crate::utils::forward_event_loop(
                         sender,
-                        crate::pages::Message::Bluetooth,
+                        |response| {
+                            crate::pages::Message::Bluetooth(Message::BluetoothEvent(response))
+                        },
                         move |tx| async move {
                             _ = futures::join!(
                                 subscription::watch(connection.clone(), tx.clone()),
@@ -305,95 +397,7 @@ impl Page {
                     ));
                 }
 
-                return cosmic::task::future(async move {
-                    let result: zbus::Result<HashMap<OwnedObjectPath, Adapter>> = async {
-                        futures::future::join_all(
-                            bluez_zbus::get_adapters(&connection)
-                                .await?
-                                .into_iter()
-                                .map(|(path, proxy)| async move {
-                                    Ok((path.to_owned(), Adapter::from_device(&proxy).await?))
-                                }),
-                        )
-                        .await
-                        .into_iter()
-                        .collect::<zbus::Result<HashMap<_, _>>>()
-                    }
-                    .await;
-                    match result {
-                        Ok(adapters) => Message::SetAdapters(adapters),
-                        Err(why) => {
-                            tracing::error!("dbus connection failed. {why}");
-                            Message::DBusError(fl!(
-                                "bluetooth",
-                                "dbus-error",
-                                why = why.to_string()
-                            ))
-                        }
-                    }
-                });
-            }
-            Message::SetDevices(devices) => {
-                self.devices = devices;
-            }
-            Message::SetAdapters(adapters) => {
-                self.adapters = adapters;
-                self.update_status();
-
-                if self.selected_adapter.is_none() && self.adapters.len() == 1 {
-                    return cosmic::task::message(Message::SelectAdapter(
-                        self.adapters.keys().next().cloned(),
-                    ));
-                }
-            }
-            Message::AddedDevice(path, device) => {
-                tracing::debug!("Device {} added", device.address);
-                self.devices.insert(path, device);
-            }
-            Message::UpdatedDevice(path, update) => {
-                if let Some(existing) = self.devices.get_mut(&path) {
-                    tracing::debug!("Device {} updated", existing.address);
-                    existing.update(update);
-                }
-            }
-            Message::RemovedDevice(path) => {
-                tracing::debug!("Device {path} removed");
-                self.devices.remove(&path);
-            }
-            Message::AddedAdapter(path, adapter) => {
-                tracing::debug!("Adapter {} added", adapter.address);
-                self.adapters.insert(path.clone(), adapter);
-                if self.selected_adapter.is_none() {
-                    return cosmic::task::message(Message::SelectAdapter(Some(path)));
-                }
-            }
-            Message::UpdatedAdapter(path, update) => {
-                if let Some(existing) = self.adapters.get_mut(&path) {
-                    tracing::debug!("Adapter {} updated: {update:#?}", existing.address);
-                    existing.update(update);
-                }
-                self.update_status();
-                if let Some(connection) = self.connection.clone() {
-                    match self.get_selected_adapter_mut() {
-                        Some((path, existing))
-                            if existing.enabled == Active::Enabled
-                                && existing.scanning == Active::Disabled =>
-                        {
-                            existing.scanning = Active::Enabling;
-                            return cosmic::task::future(start_discovery(connection, path));
-                        }
-                        _ => {}
-                    }
-                } else {
-                    tracing::warn!("No DBus connection ready");
-                }
-            }
-            Message::RemovedAdapter(path) => {
-                tracing::debug!("Device {path} removed");
-                self.adapters.remove(&path);
-                if self.selected_adapter == Some(path) {
-                    self.selected_adapter = None;
-                }
+                return cosmic::task::future(get_adapters(connection.clone()));
             }
             Message::PopupDevice(popup) => {
                 self.popup_device = popup;
@@ -477,25 +481,9 @@ impl Page {
                     tracing::warn!("No DBus connection ready");
                 }
             }
-            Message::DeviceFailed(path) => {
-                tracing::warn!("Failed operation on device {path}");
-                if let Some(device) = self.devices.get_mut(&path) {
-                    if matches!(device.enabled, Active::Disabled | Active::Disabling) {
-                        return cosmic::Task::none();
-                    }
-                    device.enabled = match device.enabled {
-                        Active::Disabling => Active::Enabled,
-                        Active::Enabling => Active::Disabled,
-                        e => e,
-                    };
-                }
-            }
             Message::Nop => {}
             Message::DBusError(why) => {
                 tracing::error!("dbus connection failed. {why}");
-            }
-            Message::DBusServiceUnknown => {
-                self.bluez_service_unknown = true;
             }
         };
         cosmic::Task::none()
@@ -691,7 +679,11 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         if let Some(battery) = &device.battery {
                             widget::column::with_capacity(2)
                                 .push(text::body(device.alias_or_addr()))
-                                .push(text::caption(battery))
+                                .push(text::caption(fl!(
+                                    "bluetooth-paired",
+                                    "battery",
+                                    percentage = battery
+                                )))
                                 .into()
                         } else {
                             widget::text(device.alias_or_addr())

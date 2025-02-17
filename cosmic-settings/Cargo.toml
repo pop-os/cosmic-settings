@@ -87,7 +87,7 @@ async-fn-stream = "0.2.2"
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
 #TODO: only select features as needed
-features = ["network_manager", "pipewire", "pulse"]
+features = ["network_manager", "pipewire", "pulse", "bluetooth"]
 optional = true
 
 [dependencies.icu]
@@ -128,7 +128,7 @@ linux = [
 
 # Pages
 page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
-page-bluetooth = ["dep:bluez-zbus", "dep:zbus"]
+page-bluetooth = ["dep:bluez-zbus", "dep:zbus", "dep:cosmic-settings-subscriptions"]
 page-date = ["dep:timedate-zbus", "dep:zbus"]
 page-default-apps = ["dep:mime-apps"]
 page-input = [
