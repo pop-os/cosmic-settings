@@ -5,6 +5,7 @@ Maintainer: Michael Murphy <mmstick@pm.me>
 Build-Depends:
     debhelper-compat (=13),
     cmake,
+    fonts-open-sans,
     just,
     libclang-dev,
     libexpat1-dev,
