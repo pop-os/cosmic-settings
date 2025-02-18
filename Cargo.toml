@@ -53,10 +53,12 @@ cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev =
 cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "178eb0b" }
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/libcosmic']
-# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "fontconfig" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "fontconfig" }
-# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "fontconfig" }
+[patch.'https://github.com/pop-os/libcosmic']
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "font" }
+cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "font" }
+cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "font" }
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "font" }
+
 # libcosmic = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
