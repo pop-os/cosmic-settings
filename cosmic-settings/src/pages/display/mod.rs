@@ -581,8 +581,8 @@ impl Page {
         let mut active_tab_pos: u16 = 0;
 
         self.active_display = OutputKey::null();
-        self.display_tabs.clear();
-        self.mirror_map.clear();
+        self.display_tabs = Default::default();
+        self.mirror_map = SecondaryMap::new();
         self.list = list;
 
         let sorted_outputs = self
