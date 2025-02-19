@@ -1497,7 +1497,7 @@ dependencies = [
 [[package]]
 name = "cosmic-client-toolkit"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-protocols//?rev=178eb0b#178eb0b14a0e5c192f64f6dee6c40341a8e5ee51"
+source = "git+https://github.com/pop-os/cosmic-protocols//?rev=ed2a481#ed2a48143cd6dc63274aa04461de3d341e50b16b"
 dependencies = [
  "cosmic-protocols",
  "libc",
@@ -1612,7 +1612,7 @@ dependencies = [
 [[package]]
 name = "cosmic-protocols"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-protocols//?rev=178eb0b#178eb0b14a0e5c192f64f6dee6c40341a8e5ee51"
+source = "git+https://github.com/pop-os/cosmic-protocols//?rev=ed2a481#ed2a48143cd6dc63274aa04461de3d341e50b16b"
 dependencies = [
  "bitflags 2.8.0",
  "wayland-backend",
