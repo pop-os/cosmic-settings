@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::config::Config;
+#[cfg(feature = "page-accessibility")]
+use crate::pages::accessibility;
 #[cfg(feature = "page-bluetooth")]
 use crate::pages::bluetooth;
 use crate::pages::desktop::{self, appearance};
@@ -74,6 +76,12 @@ pub struct SettingsApp {
 impl SettingsApp {
     fn subtask_to_page(&self, cmd: &PageCommands) -> Option<Entity> {
         match cmd {
+            #[cfg(feature = "page-accessibility")]
+            PageCommands::Accessibility => self.pages.page_id::<accessibility::Page>(),
+            #[cfg(feature = "page-accessibility")]
+            PageCommands::AccessibilityMagnifier => {
+                self.pages.page_id::<accessibility::magnifier::Page>()
+            }
             #[cfg(feature = "page-about")]
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
@@ -194,6 +202,8 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<networking::Page>();
         #[cfg(feature = "page-bluetooth")]
         app.insert_page::<bluetooth::Page>();
+        #[cfg(feature = "page-accessibility")]
+        app.insert_page::<accessibility::Page>();
         let desktop_id = app.insert_page::<desktop::Page>().id();
         app.insert_page::<display::Page>();
         #[cfg(feature = "page-sound")]
@@ -368,6 +378,18 @@ impl cosmic::Application for SettingsApp {
             }
 
             Message::PageMessage(message) => match message {
+                #[cfg(feature = "page-accessibility")]
+                crate::pages::Message::Accessibility(message) => {
+                    if let Some(page) = self.pages.page_mut::<accessibility::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+                #[cfg(feature = "page-accessibility")]
+                crate::pages::Message::AccessibilityMagnifier(message) => {
+                    if let Some(page) = self.pages.page_mut::<accessibility::magnifier::Page>() {
+                        return page.update(self.active_page, message).map(Into::into);
+                    }
+                }
                 #[cfg(feature = "page-about")]
                 crate::pages::Message::About(message) => {
                     page::update!(self.pages, message, system::about::Page);

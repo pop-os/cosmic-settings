@@ -21,6 +21,7 @@ cosmic-config.workspace = true
 cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 cosmic-idle-config.workspace = true
 cosmic-panel-config = { workspace = true, optional = true }
+cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
 cosmic-randr-shell.workspace = true
 cosmic-randr = { workspace = true, optional = true }
 cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
@@ -55,6 +56,7 @@ once_cell = "1.20.3"
 regex = "1.11.1"
 ron = "0.8"
 rust-embed = "8.5.0"
+sctk = { workspace = true, optional = true }
 secure-string = "0.3.0"
 serde = { version = "1.0.217", features = ["derive"] }
 slab = "0.4.9"
@@ -110,6 +112,7 @@ gettext = ["dep:gettext-rs"]
 
 # Default features for Linux
 linux = [
+    "page-accessibility",
     "page-about",
     "page-bluetooth",
     "page-date",
@@ -127,6 +130,7 @@ linux = [
 ]
 
 # Pages
+page-accessibility = ["dep:cosmic-protocols", "dep:sctk"]
 page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
 page-bluetooth = ["dep:bluez-zbus", "dep:zbus", "dep:cosmic-settings-subscriptions"]
 page-date = ["dep:timedate-zbus", "dep:zbus"]

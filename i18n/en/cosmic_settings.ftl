@@ -127,6 +127,27 @@ bluetooth-available = Nearby Devices
 
 bluetooth-adapters = Bluetooth Adapters
 
+## Accessibility
+
+accessibility = Accessibility
+    .vision = Vision
+    .on = On
+    .off = Off
+    .unavailable = Unavailable
+magnifier = Magnifier
+    .controls =
+        Or use keyboard shortcuts:
+        Super + = to zoom in,
+        Super + - to zoom out,
+        Super + scroll with your mouse
+    .increment = Zoom increment
+    .signin = Start magnifier on sign in
+    .applet = Toggle magnifier on/off in applet on the panel
+    .movement = Zoomed view moves
+    .continuous = Continuously with pointer
+    .onedge = When pointer reaches edge
+    .centered = To keep pointer centered
+
 ## Desktop
 
 desktop = Desktop
