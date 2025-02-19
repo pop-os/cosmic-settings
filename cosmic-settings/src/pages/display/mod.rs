@@ -17,9 +17,11 @@ use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
 };
 use cosmic_settings_page::{self as page, section, Section};
+use futures::pin_mut;
 use once_cell::sync::Lazy;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
 use tokio::sync::oneshot;
 use tracing::error;
@@ -91,8 +93,6 @@ pub enum Message {
     Pan(arrangement::Pan),
     /// Status of an applied display change.
     RandrResult(Arc<std::io::Result<ExitStatus>>),
-    /// Request to reload the page.
-    Refresh,
     /// Set the refresh rate of a display.
     RefreshRate(usize),
     /// Set the VRR mode of a display.
@@ -132,6 +132,8 @@ enum Randr {
 
 /// The page struct for the display settings page.
 pub struct Page {
+    /// Set when the page is being refreshed
+    refreshing_page: Arc<AtomicBool>,
     list: List,
     display_tabs: segmented_button::SingleSelectModel,
     mirror_map: SecondaryMap<OutputKey, OutputKey>,
@@ -167,6 +169,7 @@ impl Default for Page {
             });
 
         Self {
+            refreshing_page: Arc::new(AtomicBool::new(false)),
             list: List::default(),
             display_tabs: segmented_button::SingleSelectModel::default(),
             mirror_map: SecondaryMap::new(),
@@ -258,16 +261,15 @@ impl page::Page<crate::pages::Message> for Page {
             fl!("orientation", "rotate-270"),
         ];
 
-        use std::time::Duration;
-
-        use futures::pin_mut;
-
         if let Some(canceller) = self.background_service_cancel.take() {
             _ = canceller.send(());
         }
 
+        self.refreshing_page.store(true, Ordering::SeqCst);
+
         #[cfg(feature = "wayland")]
         {
+            let refreshing_page = self.refreshing_page.clone();
             let (tx, mut rx) = tachyonix::channel(4);
             let (canceller, cancelled) = oneshot::channel();
             let runtime = tokio::runtime::Handle::current();
@@ -299,15 +301,11 @@ impl page::Page<crate::pages::Message> for Page {
                     }
 
                     if let cosmic_randr::Message::ManagerDone = message {
-                        if matches!(
-                            tokio::time::timeout(
-                                Duration::from_secs(1),
-                                sender.send(pages::Message::Displays(Message::Refresh))
-                            )
-                            .await,
-                            Err(_) | Ok(Err(_))
-                        ) {
-                            return;
+                        if !refreshing_page.swap(true, Ordering::SeqCst) {
+                            let sender = sender.clone();
+                            tokio::spawn(async move {
+                                _ = sender.send(on_enter().await).await;
+                            });
                         }
                     }
                 }
@@ -510,12 +508,6 @@ impl Page {
 
             Message::Position(display, x, y) => return self.set_position(display, x, y),
 
-            Message::Refresh => {
-                return cosmic::task::future(async move {
-                    crate::Message::PageMessage(on_enter().await)
-                });
-            }
-
             Message::RefreshRate(rate) => return self.set_refresh_rate(rate),
 
             Message::VariableRefreshRate(mode) => return self.set_vrr(mode),
@@ -537,17 +529,21 @@ impl Page {
                 }
             }
 
-            Message::Update { randr } => match Arc::into_inner(randr) {
-                Some(Ok(outputs)) => {
-                    self.update_displays(outputs);
+            Message::Update { randr } => {
+                match Arc::into_inner(randr) {
+                    Some(Ok(outputs)) => {
+                        self.update_displays(outputs);
+                    }
+
+                    Some(Err(why)) => {
+                        tracing::error!(?why, "error fetching displays");
+                    }
+
+                    None => (),
                 }
 
-                Some(Err(why)) => {
-                    tracing::error!(?why, "error fetching displays");
-                }
-
-                None => (),
-            },
+                self.refreshing_page.store(false, Ordering::SeqCst);
+            }
 
             Message::SetXwaylandDescaling(descale) => {
                 self.comp_config_descale_xwayland = descale;
@@ -655,11 +651,6 @@ impl Page {
             return;
         };
 
-        let selected_scale = DPI_SCALES
-            .iter()
-            .position(|scale| self.config.scale <= *scale)
-            .unwrap_or(DPI_SCALES.len() - 1);
-
         self.display_tabs.activate(display);
         self.active_display = output_id;
         self.config.refresh_rate = None;
@@ -681,6 +672,12 @@ impl Page {
         self.cache.resolution_selected = None;
         self.cache.refresh_rate_selected = None;
         self.cache.vrr_selected = None;
+
+        let selected_scale = DPI_SCALES
+            .iter()
+            .position(|scale| self.config.scale <= *scale)
+            .unwrap_or(DPI_SCALES.len() - 1);
+
         self.adjusted_scale = ((self.config.scale % 25).min(20) as f32 / 5.0).round() as u32 * 5;
         self.cache.scale_selected = Some(if self.adjusted_scale != 0 && selected_scale > 0 {
             selected_scale - 1
