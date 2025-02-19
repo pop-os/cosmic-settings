@@ -153,8 +153,7 @@ fit-to-screen = Aan het scherm passend maken
 open-new-folder = Nieuwe map openen
 recent-folders = Recente mappen
 
-x-minutes = { 
-    $number -> 
+x-minutes = { $number -> 
         [1] 1 minuut
         *[other] { $number } minuten
     }
@@ -198,6 +197,7 @@ container-background = Containerachtergrond
 
 control-tint = Kleuring van controlecomponenten
     .desc = Wordt gebruikt voor achtergronden van standaardknoppen, zoek- en tekstinvoervelden en soortgelijke onderdelen.
+
 frosted =  Matglaseffect op de systeeminterface
     .desc = Past achtergrondvervaging toe op het paneel, de dock, applets, snelstarter en het appmenu.
 
@@ -235,7 +235,6 @@ monospace-font = Lettertype met gelijke letterbreedte
 
 notifications = Meldingen
     .desc = Niet storen, meldingen op het vergrendelingsscherm en instellingen per applicatie.
-
 
 ## Desktop: Panel
 
@@ -302,6 +301,8 @@ super-key = Actie van de supertoets
     .workspaces = Werkbladoverzicht openen
     .applications = Appmenu openen
     .disable = Supertoets uitschakelen
+<#-- Are floating windows gravitated bij screen edges or edges of other windows? -->
+edge-gravity = Zwevende vensters worden door nabij randen aangetrokken
 
 window-controls = Vensterbeheer
     .maximize = Maximaliseerknop tonen
@@ -360,6 +361,9 @@ display = Beeldschermen
     .refresh-rate = Refresh rate
     .resolution = Schermresolutie
     .scale = Schaal
+    .additional-scale-options = Extra schalingsopties
+
+mirroring = Mirroring
 
 mirroring = Scherm dupliceren
     .id = Dupliceren { $id }
@@ -404,7 +408,6 @@ legacy-applications = Schaling van applicaties die het X11-venstersysteem gebrui
     .system-description = X11-applicaties worden onscherp weergegeven op HiDPI-schermen.
     .scaled-natively = X11-applicaties in native resolutie weergeven
     .native-description = X11-applicaties die geen schaling ondersteunen worden verkleint op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
-
 
 ## Sound
 
@@ -573,7 +576,6 @@ nav-shortcuts = Navigatie
         [right] rechts
         [up] boven
     }
-
     .output = Naar uitvoer { $direction ->
         *[down] hieronder
         [left] links
@@ -597,7 +599,6 @@ move-windows = Venster verplaatsen
         [right] rechts
         [up] boven
     } verplaatsen
-
     .display = Venster één beeldscherm naar { $direction ->
         *[down] beneden
         [left] links
@@ -654,6 +655,9 @@ window-tiling = Venstertegelen
 
 replace-shortcut-dialog = Sneltoets overschrijven?
     .desc = { $shortcut } wordt al gebruikt door { $name }. Als u het overschrijft, wordt { $name } uitgeschakeld.
+
+zoom-in = Inzoomen
+zoom-out = Uitzoomen
 
 ## Input: Mouse
 
@@ -800,3 +804,4 @@ default-apps = Standaardapplicaties
     .calendar = Agenda
     .terminal = Terminal
     .other-associations = Andere koppelingen
+    .text-editor = Teksteditor
