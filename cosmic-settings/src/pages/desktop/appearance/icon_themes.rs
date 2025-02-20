@@ -63,7 +63,7 @@ pub fn button(
             )
             .on_press(Message::IconTheme(id))
             .selected(selected)
-            .padding([theme.space_xs(), theme.space_xs() + 1])
+            .padding(theme.space_xs())
             // Image button's style mostly works, but it needs a background to fit the design
             .class(button::ButtonClass::Custom {
                 active: Box::new(move |focused, theme| {

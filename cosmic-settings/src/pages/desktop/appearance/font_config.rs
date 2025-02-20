@@ -71,9 +71,8 @@ pub fn selection_context<'a>(
 ) -> Element<'a, super::Message> {
     let space_l = theme::active().cosmic().spacing.space_l;
 
-    let svg_accent = Rc::new(|theme: &cosmic::Theme| {
-        let color = theme.cosmic().accent_color().into();
-        svg::Style { color: Some(color) }
+    let svg_accent = Rc::new(|theme: &cosmic::Theme| svg::Style {
+        color: Some(theme.cosmic().accent_color().into()),
     });
 
     let search_input = widget::search_input(fl!("type-to-search"), search)
@@ -86,8 +85,8 @@ pub fn selection_context<'a>(
             settings::item_row(vec![
                 widget::text::body(&**family)
                     .wrapping(Wrapping::Word)
+                    .width(cosmic::iced::Length::Fill)
                     .into(),
-                widget::horizontal_space().into(),
                 if selected {
                     widget::icon::from_name("object-select-symbolic")
                         .size(16)
