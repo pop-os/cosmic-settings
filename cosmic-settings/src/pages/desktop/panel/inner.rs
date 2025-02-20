@@ -64,7 +64,7 @@ impl Default for PageInner {
                 |c| match CosmicPanelContainerConfig::load_from_config(&c, true) {
                     Ok(c) => c,
                     Err((errs, c)) => {
-                        for err in errs {
+                        for err in errs.into_iter().filter(cosmic_config::Error::is_err) {
                             tracing::error!(?err, "Error when loading Panel container config.");
                         }
                         c
