@@ -23,7 +23,7 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
     let theme = theme::active();
     let spacing = &theme.cosmic().spacing;
 
-    let description = description.map(|description| text(description).width(Length::Fill));
+    let description = description.map(|description| text::caption(description));
 
     let color_picker = model
         .builder(on_update)
@@ -35,15 +35,13 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
             fl!("copied-to-clipboard"),
         )
         .apply(container)
-        .width(Length::Fixed(248.0))
-        .align_x(Alignment::Center)
+        .center_x(Length::Fixed(248.0))
         .apply(container)
         .center_x(Length::Fill);
 
     cosmic::widget::column()
         .push_maybe(description)
         .push(color_picker)
-        .padding(spacing.space_l)
         .align_x(Alignment::Center)
         .spacing(spacing.space_m)
         .width(Length::Fill)
@@ -103,17 +101,13 @@ pub fn unimplemented_page<Message: 'static>() -> Element<'static, Message> {
 
 #[must_use]
 pub fn display_container<'a, Message: 'a>(widget: Element<'a, Message>) -> Element<'a, Message> {
-    let display = container(widget)
+    container(widget)
         .class(crate::theme::display_container_screen())
         .apply(container)
         .padding(4)
-        .class(crate::theme::display_container_frame());
-
-    row::with_capacity(3)
-        .push(horizontal_space())
-        .push(display)
-        .push(horizontal_space())
-        .padding([0, 0, 8, 0])
+        .class(crate::theme::display_container_frame())
+        .apply(container)
+        .center_x(Length::Fill)
         .into()
 }
 
