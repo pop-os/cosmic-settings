@@ -301,8 +301,8 @@ super-key = Actie van de supertoets
     .workspaces = Werkbladoverzicht openen
     .applications = Appmenu openen
     .disable = Supertoets uitschakelen
-<#-- Are floating windows gravitated bij screen edges or edges of other windows? -->
-edge-gravity = Zwevende vensters worden door nabij randen aangetrokken
+
+edge-gravity = Zwevende vensters worden door de randen van het scherm aangetrokken
 
 window-controls = Vensterbeheer
     .maximize = Maximaliseerknop tonen
