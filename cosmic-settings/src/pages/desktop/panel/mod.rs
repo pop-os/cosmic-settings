@@ -82,7 +82,7 @@ impl Default for Page {
         .map(|c| match CosmicPanelConfig::get_entry(&c) {
             Ok(c) => c,
             Err((errs, c)) => {
-                for err in errs {
+                for err in errs.into_iter().filter(cosmic_config::Error::is_err) {
                     tracing::error!(?err, "Failed to load Panel system config.");
                 }
                 c

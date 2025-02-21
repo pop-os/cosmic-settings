@@ -408,6 +408,8 @@ impl Page {
                 )
                 .row_spacing(theme.space_xs())
                 .column_spacing(theme.space_xs())
+                .apply(container)
+                .center_x(Length::Fill)
                 .into()
             ])
             .spacing(theme.space_xxs())

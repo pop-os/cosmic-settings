@@ -343,8 +343,8 @@ impl Page {
                             cosmic::theme::Text::Default
                         })
                         .wrapping(Wrapping::Word)
+                        .width(Length::Fill)
                         .into(),
-                    widget::horizontal_space().into(),
                     if is_installed {
                         widget::icon::from_name("object-select-symbolic")
                             .size(16)
@@ -549,6 +549,7 @@ impl Page {
                             cosmic::theme::Text::Default
                         })
                         .wrapping(Wrapping::Word)
+                        .width(Length::Fill)
                         .into(),
                     if is_selected {
                         widget::icon::from_name("object-select-symbolic")

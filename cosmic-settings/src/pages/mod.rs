@@ -3,6 +3,8 @@
 
 use cosmic_settings_page::Entity;
 
+#[cfg(feature = "page-accessibility")]
+pub mod accessibility;
 #[cfg(feature = "page-bluetooth")]
 pub mod bluetooth;
 pub mod desktop;
@@ -20,6 +22,10 @@ pub mod time;
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    #[cfg(feature = "page-accessibility")]
+    Accessibility(accessibility::Message),
+    #[cfg(feature = "page-accessibility")]
+    AccessibilityMagnifier(accessibility::magnifier::Message),
     #[cfg(feature = "page-about")]
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
