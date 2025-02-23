@@ -7,6 +7,7 @@ pub mod arrangement;
 use crate::{app, pages};
 use arrangement::Arrangement;
 use cosmic::iced::{time, Alignment, Length};
+use cosmic::iced_widget::row;
 use cosmic::iced_widget::scrollable::{Direction, RelativeOffset, Scrollbar};
 use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
@@ -18,7 +19,6 @@ use cosmic_randr_shell::{
 };
 use cosmic_settings_page::{self as page, section, Section};
 use futures::pin_mut;
-use once_cell::sync::Lazy;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -26,10 +26,25 @@ use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
 use tokio::sync::oneshot;
 use tracing::error;
 
-static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
-
-static DPI_SCALE_LABELS: Lazy<Vec<String>> =
-    Lazy::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
+static DPI_SCALES: &[ScaleValue] = &[
+    ScaleValue::Custom,
+    ScaleValue::Preset(50),
+    ScaleValue::Preset(75),
+    ScaleValue::Preset(100),
+    ScaleValue::Preset(125),
+    ScaleValue::Preset(150),
+    ScaleValue::Preset(175),
+    ScaleValue::Preset(200),
+    ScaleValue::Preset(225),
+    ScaleValue::Preset(250),
+    ScaleValue::Preset(275),
+    ScaleValue::Preset(300),
+];
+fn scale_is_custom(idx: usize) -> bool {
+    idx == 0
+}
+static DPI_CUSTOM_SCALE_BREAKPOINTS: &[u32] = &[50, 100, 150, 200, 250, 300];
+static DPI_CUSTOM_SCALE_RANGE: std::ops::RangeInclusive<u32> = 50..=300;
 
 /// Display color depth options
 #[allow(dead_code)]
@@ -48,6 +63,11 @@ pub enum Mirroring {
     // ProjectToAll,
     Project(OutputKey),
     Mirror(OutputKey),
+}
+
+pub enum ScaleValue {
+    Custom,
+    Preset(u32),
 }
 
 /// Night light preferences
@@ -101,8 +121,10 @@ pub enum Message {
     Resolution(usize),
     /// Set the preferred scale for a display.
     Scale(usize),
-    /// Adjust the display scale.
-    AdjustScale(u32),
+    /// Set the displayed value for the custom scale.
+    CustomScaleDrag(u32),
+    /// Confirm the custom scale change for a display.
+    CustomScale,
     /// Refreshes display outputs.
     Update {
         /// Available outputs from cosmic-randr.
@@ -153,7 +175,7 @@ pub struct Page {
     show_display_options: bool,
     comp_config: cosmic_config::Config,
     comp_config_descale_xwayland: bool,
-    adjusted_scale: u32,
+    custom_scale: Option<u32>,
 }
 
 impl Default for Page {
@@ -184,9 +206,9 @@ impl Default for Page {
             dialog: None,
             dialog_countdown: 0,
             show_display_options: true,
-            adjusted_scale: 0,
             comp_config,
             comp_config_descale_xwayland,
+            custom_scale: None,
         }
     }
 }
@@ -214,6 +236,7 @@ struct ViewCache {
     vrr_selected: Option<usize>,
     resolution_selected: Option<usize>,
     scale_selected: Option<usize>,
+    scales: Vec<String>,
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -515,18 +538,15 @@ impl Page {
             Message::Resolution(option) => return self.set_resolution(option),
 
             Message::Scale(option) => {
-                self.adjusted_scale = 0;
-                return self.set_scale(option);
+                return self.set_scale_preset(option);
             }
 
-            Message::AdjustScale(scale) => {
-                if self.adjusted_scale != scale {
-                    self.adjusted_scale = scale;
+            Message::CustomScaleDrag(scale) => {
+                self.custom_scale = Some(scale);
+            }
 
-                    if let Some(option) = self.cache.scale_selected {
-                        return self.set_scale(option);
-                    }
-                }
+            Message::CustomScale => {
+                return self.set_scale(self.custom_scale.unwrap());
             }
 
             Message::Update { randr } => {
@@ -673,18 +693,28 @@ impl Page {
         self.cache.refresh_rate_selected = None;
         self.cache.vrr_selected = None;
 
+        self.cache.scales = DPI_SCALES
+            .iter()
+            .map(|s| match s {
+                ScaleValue::Custom => fl!("display", "custom-scale-option"),
+                ScaleValue::Preset(v) => format!("{v}%"),
+            })
+            .collect();
         let selected_scale = DPI_SCALES
             .iter()
-            .position(|scale| self.config.scale <= *scale)
-            .unwrap_or(DPI_SCALES.len() - 1);
+            .position(|s| matches!(s, ScaleValue::Preset(s) if *s == self.config.scale))
+            .unwrap_or(0);
 
-        self.adjusted_scale = ((self.config.scale % 25).min(20) as f32 / 5.0).round() as u32 * 5;
-        self.cache.scale_selected = Some(if self.adjusted_scale != 0 && selected_scale > 0 {
-            selected_scale - 1
-        } else {
-            selected_scale
-        });
+        // If we are using a non-preset scale
+        if scale_is_custom(selected_scale) {
+            self.custom_scale = Some(self.config.scale);
+        }
+        // If the previous state of the page had a custom scale but it coincides with a preset scale, we are still using a custom scale
+        if let Some(v) = &mut self.custom_scale {
+            *v = self.config.scale;
+        }
 
+        self.cache.scale_selected = Some(selected_scale);
         if let Some(current_mode_id) = output.current {
             for (mode_id, mode) in output
                 .modes
@@ -927,20 +957,30 @@ impl Page {
         Task::batch(tasks)
     }
 
+    /// Set the scale preset of the active display.
+    pub fn set_scale_preset(&mut self, option: usize) -> Task<app::Message> {
+        self.custom_scale = scale_is_custom(option).then_some(self.config.scale);
+        let scale = match DPI_SCALES[option] {
+            ScaleValue::Custom => self.custom_scale.unwrap(),
+            ScaleValue::Preset(value) => value,
+        };
+
+        self.cache.scale_selected = Some(option);
+        self.set_scale(scale)
+    }
+
     /// Set the scale of the active display.
-    pub fn set_scale(&mut self, option: usize) -> Task<app::Message> {
+    pub fn set_scale(&mut self, scale: u32) -> Task<app::Message> {
         let Some(output) = self.list.outputs.get(self.active_display) else {
             return Task::none();
         };
 
-        let mut tasks = Vec::with_capacity(2);
-
-        let scale = (option * 25 + 50) as u32 + self.adjusted_scale.min(20);
-
-        self.cache.scale_selected = Some(option);
         self.config.scale = scale;
-        tasks.push(self.exec_randr(output, Randr::Scale(scale)));
-        Task::batch(tasks)
+        if let Some(s) = &mut self.custom_scale {
+            *s = scale;
+        }
+
+        self.exec_randr(output, Randr::Scale(scale))
     }
 
     /// Enables or disables the active display.
@@ -1132,7 +1172,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
     let vrr = descriptions.insert(fl!("vrr"));
     let resolution = descriptions.insert(fl!("display", "resolution"));
     let scale = descriptions.insert(fl!("display", "scale"));
-    let additional_scale_options = descriptions.insert(fl!("display", "additional-scale-options"));
+    let custom_scale = descriptions.insert(fl!("display", "custom-scale"));
     let orientation = descriptions.insert(fl!("orientation"));
     let enable_label = descriptions.insert(fl!("display", "enable"));
     let options_label = descriptions.insert(fl!("display", "options"));
@@ -1181,38 +1221,50 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     ));
                 }
 
-                items.extend(vec![
-                    widget::settings::item(
-                        &descriptions[scale],
-                        dropdown(&DPI_SCALE_LABELS, page.cache.scale_selected, Message::Scale),
+                items.push(widget::settings::item(
+                    &descriptions[scale],
+                    dropdown(
+                        &page.cache.scales,
+                        page.cache.scale_selected,
+                        Message::Scale,
                     ),
-                    widget::settings::item(
-                        &descriptions[additional_scale_options],
-                        widget::spin_button(
-                            format!("{}%", page.adjusted_scale),
-                            page.adjusted_scale,
-                            5,
-                            0,
-                            20,
-                            Message::AdjustScale,
-                        ),
+                ));
+
+                if let Some(s) = page.custom_scale {
+                    items.push(widget::settings::item(
+                        &descriptions[custom_scale],
+                        row![
+                            widget::text::body(format!("{}%", s))
+                                .width(Length::Fixed(22.0))
+                                .align_x(Alignment::Center),
+                            widget::horizontal_space().width(12),
+                            widget::slider(
+                                DPI_CUSTOM_SCALE_RANGE.clone(),
+                                s,
+                                Message::CustomScaleDrag
+                            )
+                            .on_release(Message::CustomScale)
+                            .breakpoints(DPI_CUSTOM_SCALE_BREAKPOINTS)
+                            .step(5u32)
+                        ],
+                    ));
+                }
+
+                items.push(widget::settings::item(
+                    &descriptions[orientation],
+                    dropdown(
+                        &page.cache.orientations,
+                        page.cache.orientation_selected,
+                        |id| {
+                            Message::Orientation(match id {
+                                0 => Transform::Normal,
+                                1 => Transform::Rotate90,
+                                2 => Transform::Rotate180,
+                                _ => Transform::Rotate270,
+                            })
+                        },
                     ),
-                    widget::settings::item(
-                        &descriptions[orientation],
-                        dropdown(
-                            &page.cache.orientations,
-                            page.cache.orientation_selected,
-                            |id| {
-                                Message::Orientation(match id {
-                                    0 => Transform::Normal,
-                                    1 => Transform::Rotate90,
-                                    2 => Transform::Rotate180,
-                                    _ => Transform::Rotate270,
-                                })
-                            },
-                        ),
-                    ),
-                ]);
+                ));
 
                 items
             });

@@ -382,7 +382,8 @@ display = Displays
     .refresh-rate = Refresh rate
     .resolution = Resolution
     .scale = Scale
-    .additional-scale-options = Additional scale options
+    .custom-scale-option = Custom
+    .custom-scale = Custom Scale
 
 mirroring = Mirroring
     .id = Mirroring { $id }
