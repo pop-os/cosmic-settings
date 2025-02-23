@@ -960,6 +960,8 @@ impl Page {
 
     /// Set the scale preset of the active display.
     pub fn set_scale_preset(&mut self, option: usize) -> Task<app::Message> {
+        self.cache.scale_selected = Some(option);
+
         if scale_is_custom(option) {
             self.custom_scale = Some(self.config.scale);
 
@@ -974,7 +976,6 @@ impl Page {
             ScaleValue::Preset(value) => value,
         };
 
-        self.cache.scale_selected = Some(option);
         self.set_scale(scale)
     }
 
