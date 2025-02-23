@@ -700,7 +700,7 @@ impl Page {
                 ScaleValue::Preset(v) => format!("{v}%"),
             })
             .collect();
-        let selected_scale = DPI_SCALES
+        let mut selected_scale = DPI_SCALES
             .iter()
             .position(|s| matches!(s, ScaleValue::Preset(s) if *s == self.config.scale))
             .unwrap_or(0);
@@ -712,6 +712,7 @@ impl Page {
         // If the previous state of the page had a custom scale but it coincides with a preset scale, we are still using a custom scale
         if let Some(v) = &mut self.custom_scale {
             *v = self.config.scale;
+            selected_scale = 0;
         }
 
         self.cache.scale_selected = Some(selected_scale);
@@ -959,9 +960,17 @@ impl Page {
 
     /// Set the scale preset of the active display.
     pub fn set_scale_preset(&mut self, option: usize) -> Task<app::Message> {
-        self.custom_scale = scale_is_custom(option).then_some(self.config.scale);
+        if scale_is_custom(option) {
+            self.custom_scale = Some(self.config.scale);
+
+            // Return early, as a custom scale begins the same as the previous value.
+            return Task::none();
+        } else {
+            self.custom_scale = None;
+        }
+
         let scale = match DPI_SCALES[option] {
-            ScaleValue::Custom => self.custom_scale.unwrap(),
+            ScaleValue::Custom => unreachable!(),
             ScaleValue::Preset(value) => value,
         };
 
