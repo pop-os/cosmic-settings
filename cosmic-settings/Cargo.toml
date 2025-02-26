@@ -132,7 +132,11 @@ linux = [
 # Pages
 page-accessibility = ["dep:cosmic-protocols", "dep:sctk"]
 page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
-page-bluetooth = ["dep:bluez-zbus", "dep:zbus", "dep:cosmic-settings-subscriptions"]
+page-bluetooth = [
+    "dep:bluez-zbus",
+    "dep:zbus",
+    "dep:cosmic-settings-subscriptions",
+]
 page-date = ["dep:timedate-zbus", "dep:zbus"]
 page-default-apps = ["dep:mime-apps"]
 page-input = [

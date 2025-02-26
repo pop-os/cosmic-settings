@@ -1,3 +1,6 @@
+// Copyright 2023 System76 <info@system76.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, row, settings, text};
 use cosmic::{Apply, Element};

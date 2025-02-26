@@ -1,3 +1,6 @@
+// Copyright 2024 System76 <info@system76.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use super::{ShortcutMessage, ShortcutModel};
 use cosmic::{Element, Task};
 use cosmic_settings_config::shortcuts::action::System as SystemAction;
@@ -94,6 +97,7 @@ pub const fn actions() -> &'static [Action] {
         Action::System(SystemAction::BrightnessUp),
         Action::System(SystemAction::KeyboardBrightnessDown),
         Action::System(SystemAction::KeyboardBrightnessUp),
+        Action::System(SystemAction::InputSourceSwitch),
         Action::System(SystemAction::Screenshot),
         Action::System(SystemAction::Terminal),
         Action::System(SystemAction::HomeFolder),
