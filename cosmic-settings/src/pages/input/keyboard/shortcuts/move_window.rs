@@ -1,3 +1,6 @@
+// Copyright 2024 System76 <info@system76.com>
+// SPDX-License-Identifier: GPL-3.0-only
+//
 use super::{ShortcutMessage, ShortcutModel};
 use cosmic::{Element, Task};
 use cosmic_settings_config::shortcuts::action::Direction;
