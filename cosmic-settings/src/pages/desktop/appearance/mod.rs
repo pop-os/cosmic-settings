@@ -2045,7 +2045,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         page.theme_builder.active_hint,
                         1,
                         0,
-                        500,
+                        64,
                         Message::WindowHintSize,
                     ),
                 ))
