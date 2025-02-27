@@ -26,7 +26,7 @@ connecting = Kapcsolódás...
 disconnect = Szétkapcsolás
 forget = Elfelejtés
 known-networks = Ismert hálózatok
-network-and-wireless = Hálózat és vezeték nélküli kapcsolatok
+network-and-wireless = Hálózat és Wi-Fi
 no-networks = Nem található hálózat.
 no-vpn = Nincs elérhető VPN-kapcsolat.
 password = Jelszó
@@ -87,7 +87,7 @@ wired = Vezetékes
     .adapter = Vezetékes adapter { $id }
     .connections = Vezetékes kapcsolatok
     .devices = Vezetékes eszközök
-    .remove = Kapcsololati profil törlése
+    .remove = Kapcsolati profil törlése
 
 wifi = Wi-Fi
     .adapter = Wi-Fi adapter { $id }
@@ -110,13 +110,13 @@ bluetooth = Bluetooth
     .status = Ez a rendszer { $aliases } néven látható, amíg a Bluetooth beállítások vannak megnyitva.
     .connected = Kapcsolódva
     .connecting = Kapcsolódás
-    .disconnecting = Szétkapcsolódás
+    .disconnecting = Szétkapcsolás
     .connect = Kapcsolódás
     .disconnect = Szétkapcsolás
     .forget = Elfelejt
     .dbus-error = Hiba történt a DBus-szal való kommunikáció során: { $why }
 
-bluetooth-paired = Korábban csatlakoztatott eszközök
+bluetooth-paired = Korábban párosított eszközök
     .connect = Kapcsolódás
     .battery = { $percentage }% töltöttség
 
@@ -126,6 +126,27 @@ bluetooth-confirm-pin = Bluetooth PIN megerősítése
 bluetooth-available = Közeli Eszközök
 
 bluetooth-adapters = Bluetooth Adapterek
+
+## Accessibility
+
+accessibility = Akadálymentesítés
+    .vision = Látás
+    .on = Bekapcsolva
+    .off = Kikapcsolva
+    .unavailable = Nem elérhető
+magnifier = Nagyító
+    .controls =
+        Vagy használd a billentyűparancsokat:
+        Super + = a nagyításhoz,
+        Super + - a kicsinyítéshez,
+        Super + görgetés az egérrel
+    .increment = Nagyítás mértéke
+    .signin = Nagyító indítása bejelentkezéskor
+    .applet = A nagyítót be- és kikapcsolhatja a panelen található kisalkalmazásban
+    .movement = Nagyított nézet mozgása
+    .continuous = A mutatóval
+    .onedge = Amikor a mutató eléri a szélet
+    .centered = Hogy a mutató középen maradjon
 
 ## Desktop
 
@@ -294,7 +315,7 @@ dock = Dokkoló
 ## Desktop: Window management
 
 window-management = Ablakkezelés
-    .desc = Super billentyű művelet, ablakkezelési és csempézési beállítások.
+    .desc = Super billentyű funkció, ablakkezelési és csempézési beállítások.
 
 super-key = Super billentyű
     .launcher = Indító megnyitása
@@ -539,9 +560,10 @@ command = Parancs
 custom = Egyedi
 debug = Hibakeresés
 disabled = Tiltva
+input-source-switch = Billentyűzetkiosztás váltása
 migrate-workspace-prev = Munkaterület áthelyezése az előző kimenetre
 migrate-workspace-next = Munkaterület áthelyezése a következő kimenetre
-migrate-workspace = Munkaterület áttelepítése { $direction ->
+migrate-workspace = Munkaterület áthelyezése { $direction ->
     *[down] az alsó
     [left] a bal
     [right] a jobb
