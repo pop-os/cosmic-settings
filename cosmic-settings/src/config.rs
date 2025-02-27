@@ -1,14 +1,19 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
+use cosmic::{
+    cosmic_config::{self, ConfigGet, ConfigSet},
+    cosmic_theme::palette::Srgba,
+};
 
 const NAME: &str = "com.system76.CosmicSettings";
 
 const ACTIVE_PAGE: &str = "active-page";
+const ACCENT_PALETTE_DARK: &str = "accent_palette_dark";
+const ACCENT_PALETTE_LIGHT: &str = "accent_palette_light";
 
 #[must_use]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Config {
     pub cosmic_config: Option<cosmic_config::Config>,
     pub active_page: Box<str>,
@@ -33,6 +38,20 @@ impl Config {
         config.cosmic_config = Some(context);
 
         config
+    }
+
+    pub fn accent_palette_dark(&self) -> Result<Vec<Srgba>, cosmic_config::Error> {
+        self.cosmic_config
+            .as_ref()
+            .unwrap()
+            .get::<Vec<Srgba>>(ACCENT_PALETTE_DARK)
+    }
+
+    pub fn accent_palette_light(&self) -> Result<Vec<Srgba>, cosmic_config::Error> {
+        self.cosmic_config
+            .as_ref()
+            .unwrap()
+            .get::<Vec<Srgba>>(ACCENT_PALETTE_LIGHT)
     }
 
     pub fn set_active_page(&mut self, page: Box<str>) {
