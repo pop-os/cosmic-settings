@@ -933,6 +933,9 @@ fn add_network() -> Task<crate::app::Message> {
                         Err(why) => Message::Error(ErrorKind::Config, why.to_string()),
                     }
                 }
+                Err(cosmic::dialog::file_chooser::Error::Cancelled) => {
+                    return Message::CancelDialog;
+                }
                 Err(why) => {
                     return Message::Error(ErrorKind::Config, why.to_string());
                 }
