@@ -127,6 +127,25 @@ bluetooth-available = Urządzenia w pobliżu
 
 bluetooth-adapters = Adaptery Bluetooth
 
+## Accessibility
+
+accessibility = Dostępność
+    .vision = Widoczność
+    .on = Włączona
+    .off = Wyłączona
+    .unavailable = Niedostępna
+magnifier = Lupa
+    .controls =
+        Lub użyj skrótów klawiszowych:
+        Super + = aby zbliżyć,
+        Super + - aby oddalić,
+        Super + rolka myszy
+    .applet = Wyłącz/włącz lupę w aplecie w panelu
+    .movement = Powiększony widok przesuwa się
+    .continuous = Razem ze wskaźnikiem
+    .onedge = Gdy wskaźnik osiąga krawędź
+    .centered = Tak, aby wskaźnik znajdował się w środku
+
 ## Desktop
 
 desktop = Pulpit
@@ -366,6 +385,7 @@ display = Wyświetlacz
     .refresh-rate = Prędkość odświeżania ekranu
     .resolution = Rozdzielczość
     .scale = Skala
+    .additional-scale-options = Dodatkowe opcje skalowania
 
 mirroring = Lustrzane Odbicie
     .id = Lustrzane Odbicie { $id }
@@ -671,6 +691,9 @@ window-tiling = Kafelkowanie okien
 replace-shortcut-dialog = Zmienić skrót?
     .desc = { $shortcut } jest używany przez { $name }. Jeśli go zamienisz, skrót do { $name } będzie wyłączony.
 
+zoom-in = Zwiększ
+zoom-out = Pomniejsz
+
 ## Input: Mouse
 
 mouse = Myszka
@@ -816,3 +839,4 @@ default-apps = Domyślne Aplikacje
     .calendar = Kalendarz
     .terminal = Konsola
     .other-associations = Inne powiązania
+    .text-editor = Edytor tekstu
