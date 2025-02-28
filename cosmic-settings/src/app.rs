@@ -58,6 +58,7 @@ use std::{borrow::Cow, str::FromStr};
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]
 pub struct SettingsApp {
+    last_active_page: Box<str>,
     active_page: page::Entity,
     active_context_page: Option<page::Entity>,
     loaded_pages: BTreeSet<page::Entity>,
@@ -182,11 +183,14 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn init(core: Core, flags: Self::Flags) -> (Self, Task<Self::Message>) {
+        let config = Config::new();
+
         let mut app = SettingsApp {
             active_page: page::Entity::default(),
             active_context_page: None,
+            last_active_page: config.active_page(),
             loaded_pages: BTreeSet::new(),
-            config: Config::new(),
+            config,
             core,
             nav_model: nav_bar::Model::default(),
             page_sender: None,
@@ -219,7 +223,7 @@ impl cosmic::Application for SettingsApp {
             Some(p) => app.subtask_to_page(&p),
             None => app
                 .pages
-                .find_page_by_id(&app.config.active_page)
+                .find_page_by_id(&app.last_active_page)
                 .map(|(id, _info)| id),
         }
         .unwrap_or(desktop_id);
@@ -849,9 +853,8 @@ impl SettingsApp {
                 .unwrap_or(iced::Task::none())
                 .map(Message::PageMessage)
                 .map(Into::into);
-            self.config.active_page = Box::from(&*self.pages.info[page].id);
-            self.config
-                .set_active_page(Box::from(&*self.pages.info[page].id));
+            self.last_active_page = Box::from(&*self.pages.info[page].id);
+            self.config.set_active_page(self.last_active_page.clone());
         }
 
         self.search_clear();
