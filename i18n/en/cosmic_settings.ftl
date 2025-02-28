@@ -135,10 +135,15 @@ accessibility = Accessibility
     .off = Off
     .unavailable = Unavailable
 magnifier = Magnifier
-    .controls =
-        Or use keyboard shortcuts:
-        Super + = to zoom in,
-        Super + - to zoom out,
+    .controls = Or use these shortcuts: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} to zoom in,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} to zoom out,
+        }
         Super + scroll with your mouse
     .increment = Zoom increment
     .signin = Start magnifier on sign in
