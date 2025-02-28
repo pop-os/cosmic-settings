@@ -146,7 +146,7 @@ page-input = [
     "dep:udev",
 ]
 page-networking = [
-    "ashpd",
+    "xdg-portal",
     "dep:cosmic-dbus-networkmanager",
     "dep:cosmic-settings-subscriptions",
     "dep:zbus",
@@ -166,4 +166,4 @@ single-instance = ["libcosmic/single-instance"]
 test = []
 wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr"]
 wgpu = ["libcosmic/wgpu"]
-xdg-portal = ["libcosmic/xdg-portal"]
+xdg-portal = ["ashpd", "libcosmic/xdg-portal"]

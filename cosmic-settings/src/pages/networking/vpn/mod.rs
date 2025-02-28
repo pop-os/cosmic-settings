@@ -6,7 +6,7 @@ mod nmcli;
 use std::sync::Arc;
 
 use anyhow::Context;
-use ashpd::desktop::file_chooser::FileFilter;
+use cosmic::dialog::file_chooser::FileFilter;
 use cosmic::{
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
