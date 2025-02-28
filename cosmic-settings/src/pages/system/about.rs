@@ -49,10 +49,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("about", "desc"))
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         let (task, handle) = Task::future(async move {
             crate::pages::Message::About(Message::Info(Box::new(Info::load())))
         })

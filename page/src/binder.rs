@@ -74,7 +74,7 @@ impl<Message: 'static> Binder<Message> {
         if self.contains_item(id) {
             self.storage
                 .entry(TypeId::of::<Data>())
-                .or_insert_with(SecondaryMap::new)
+                .or_default()
                 .insert(id, Box::new(data));
         }
     }
@@ -168,13 +168,9 @@ impl<Message: 'static> Binder<Message> {
     }
 
     /// Calls a page's load function to refresh its data.
-    pub fn on_enter(
-        &mut self,
-        id: crate::Entity,
-        sender: tokio::sync::mpsc::Sender<Message>,
-    ) -> Task<Message> {
+    pub fn on_enter(&mut self, id: crate::Entity) -> Task<Message> {
         if let Some(page) = self.page.get_mut(id) {
-            return page.on_enter(sender);
+            return page.on_enter();
         }
 
         Task::none()

@@ -15,7 +15,7 @@ use cosmic_dbus_networkmanager::{
 };
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::network_manager;
-use futures::{SinkExt, StreamExt};
+use futures::StreamExt;
 use slotmap::SlotMap;
 
 static NM_CONNECTION_EDITOR: &str = "nm-connection-editor";
@@ -35,12 +35,7 @@ pub enum Message {
     /// An error occurred.
     Error(String),
     /// Successfully connected to the system dbus.
-    NetworkManagerConnect(
-        (
-            zbus::Connection,
-            tokio::sync::mpsc::Sender<crate::pages::Message>,
-        ),
-    ),
+    NetworkManagerConnect(zbus::Connection),
     /// Open the wifi settings page with the selected device.
     OpenPage {
         page: page::Entity,
@@ -224,10 +219,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(device_list)])
     }
 
-    fn on_enter(
-        &mut self,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
             return cosmic::Task::future(async move {
                 zbus::Connection::system()
@@ -235,7 +227,7 @@ impl page::Page<crate::pages::Message> for Page {
                     .context("failed to create system dbus connection")
                     .map_or_else(
                         |why| Message::Error(why.to_string()),
-                        |conn| Message::NetworkManagerConnect((conn, sender.clone())),
+                        |conn| Message::NetworkManagerConnect(conn),
                     )
                     .apply(crate::pages::Message::Networking)
             });
@@ -278,8 +270,8 @@ impl Page {
         let _span = span.enter();
 
         match message {
-            Message::NetworkManagerConnect((conn, output)) => {
-                self.connect(conn.clone(), output);
+            Message::NetworkManagerConnect(conn) => {
+                return self.connect(conn.clone());
             }
 
             Message::Error(why) => {
@@ -315,46 +307,45 @@ impl Page {
         Task::none()
     }
 
-    fn connect(
-        &mut self,
-        conn: zbus::Connection,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) {
+    fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
-            self.nm_task = Some(crate::utils::forward_event_loop(
-                sender,
-                crate::pages::Message::Networking,
-                move |mut tx| async move {
-                    let network_manager = match NetworkManager::new(&conn).await {
-                        Ok(n) => n,
-                        Err(why) => {
-                            tracing::error!(
-                                why = why.to_string(),
-                                "failed to connect to network_manager"
-                            );
+            let (canceller, task) = crate::utils::forward_event_loop(move |emitter| async move {
+                let network_manager = match NetworkManager::new(&conn).await {
+                    Ok(n) => n,
+                    Err(why) => {
+                        tracing::error!(
+                            why = why.to_string(),
+                            "failed to connect to network_manager"
+                        );
 
-                            return futures::future::pending().await;
-                        }
-                    };
-
-                    let mut devices_changed = std::pin::pin!(network_manager
-                        .receive_devices_changed()
-                        .await
-                        .then(|_| async {
-                            match network_manager::devices::list(&conn, |_| true).await {
-                                Ok(devices) => Message::UpdateDevices(
-                                    devices.into_iter().map(Arc::new).collect(),
-                                ),
-                                Err(why) => Message::Error(why.to_string()),
-                            }
-                        }));
-
-                    while let Some(message) = devices_changed.next().await {
-                        _ = tx.send(message).await;
+                        return futures::future::pending().await;
                     }
-                },
-            ));
+                };
+
+                let mut devices_changed = std::pin::pin!(network_manager
+                    .receive_devices_changed()
+                    .await
+                    .then(|_| async {
+                        match network_manager::devices::list(&conn, |_| true).await {
+                            Ok(devices) => {
+                                Message::UpdateDevices(devices.into_iter().map(Arc::new).collect())
+                            }
+                            Err(why) => Message::Error(why.to_string()),
+                        }
+                    }));
+
+                while let Some(message) = devices_changed.next().await {
+                    _ = emitter
+                        .emit(crate::pages::Message::Networking(message))
+                        .await;
+                }
+            });
+
+            self.nm_task = Some(canceller);
+            return task.map(crate::app::Message::from);
         }
+
+        Task::none()
     }
 }
 

@@ -25,8 +25,7 @@ use cosmic::app::context_drawer::ContextDrawer;
 use cosmic::app::DbusActivationMessage;
 #[cfg(feature = "wayland")]
 use cosmic::cctk::{sctk::output::OutputInfo, wayland_client::protocol::wl_output::WlOutput};
-use cosmic::iced::futures::SinkExt;
-use cosmic::iced::{stream, Subscription};
+use cosmic::iced::Subscription;
 use cosmic::widget::{self, button, row, text_input};
 use cosmic::{
     app::{Core, Task},
@@ -65,7 +64,6 @@ pub struct SettingsApp {
     config: Config,
     core: Core,
     nav_model: nav_bar::Model,
-    page_sender: Option<tokio::sync::mpsc::Sender<crate::pages::Message>>,
     pages: page::Binder<crate::pages::Message>,
     search_active: bool,
     search_id: cosmic::widget::Id,
@@ -144,7 +142,6 @@ impl SettingsApp {
 #[derive(Clone, Debug)]
 pub enum Message {
     CloseContextDrawer,
-    DelayedInit(page::Entity),
     #[cfg(feature = "wayland")]
     DesktopInfo,
     Error(String),
@@ -158,7 +155,6 @@ pub enum Message {
     PageMessage(crate::pages::Message),
     #[cfg(feature = "wayland")]
     PanelConfig(CosmicPanelConfig),
-    RegisterSubscriptionSender(tokio::sync::mpsc::Sender<pages::Message>),
     SearchActivate,
     SearchChanged(String),
     SearchClear,
@@ -193,7 +189,6 @@ impl cosmic::Application for SettingsApp {
             config,
             core,
             nav_model: nav_bar::Model::default(),
-            page_sender: None,
             pages: page::Binder::default(),
             search_active: false,
             search_id: cosmic::widget::Id::unique(),
@@ -228,7 +223,8 @@ impl cosmic::Application for SettingsApp {
         }
         .unwrap_or(desktop_id);
 
-        (app, cosmic::task::message(Message::DelayedInit(active_id)))
+        let task = app.activate_page(active_id);
+        (app, task)
     }
 
     fn nav_model(&self) -> Option<&nav_bar::Model> {
@@ -286,22 +282,6 @@ impl cosmic::Application for SettingsApp {
 
     fn subscription(&self) -> Subscription<Message> {
         Subscription::batch(vec![
-            // Creates a channel that listens to messages from pages.
-            // The sender is given back to the application so that it may pass it on.
-            Subscription::run_with_id(
-                std::any::TypeId::of::<Self>(),
-                stream::channel(4, move |mut output| async move {
-                    let (tx, mut rx) = tokio::sync::mpsc::channel::<pages::Message>(4);
-
-                    let _res = output.send(Message::RegisterSubscriptionSender(tx)).await;
-
-                    while let Some(event) = rx.recv().await {
-                        let _res = output.send(Message::PageMessage(event)).await;
-                    }
-
-                    futures::future::pending::<()>().await;
-                }),
-            ),
             #[cfg(feature = "ashpd")]
             crate::subscription::daytime().map(|daytime| {
                 Message::PageMessage(pages::Message::Appearance(appearance::Message::Daytime(
@@ -754,19 +734,6 @@ impl cosmic::Application for SettingsApp {
             Message::Error(error) => {
                 tracing::error!(error, "error occurred");
             }
-
-            Message::RegisterSubscriptionSender(sender) => {
-                self.page_sender = Some(sender);
-            }
-
-            // It is necessary to delay init to allow time for the page sender to be initialized
-            Message::DelayedInit(active_id) => {
-                if self.page_sender.is_none() {
-                    return cosmic::task::message(Message::DelayedInit(active_id));
-                }
-
-                return self.activate_page(active_id);
-            }
         }
 
         Task::none()
@@ -860,17 +827,11 @@ impl SettingsApp {
         self.search_clear();
         self.search_active = false;
         self.activate_navbar(page);
-
-        let sender = self
-            .page_sender
-            .clone()
-            .expect("sender should be available");
-
         self.loaded_pages.insert(page);
 
         let page_task = self
             .pages
-            .on_enter(page, sender)
+            .on_enter(page)
             .map(Message::PageMessage)
             .map(Into::into);
 
@@ -1032,11 +993,9 @@ impl SettingsApp {
                     }
                 }
 
-                if let Some(ref sender) = self.page_sender {
-                    for page in load {
-                        self.loaded_pages.insert(page);
-                        tasks.push(self.pages.on_enter(page, sender.clone()));
-                    }
+                for page in load {
+                    self.loaded_pages.insert(page);
+                    tasks.push(self.pages.on_enter(page));
                 }
 
                 for page in unload {

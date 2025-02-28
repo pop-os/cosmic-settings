@@ -11,7 +11,6 @@ use cosmic_settings_page::{
     Insert,
 };
 use slotmap::SlotMap;
-use tokio::sync::mpsc;
 
 pub mod magnifier;
 mod wayland;
@@ -53,27 +52,30 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(vision())])
     }
 
-    fn on_enter(
-        &mut self,
-        sender: mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.wayland_thread.is_none() {
             match wayland::spawn_wayland_connection() {
                 Ok((tx, mut rx)) => {
                     self.wayland_available = true;
                     self.wayland_thread = Some(tx);
-                    tokio::task::spawn(async move {
-                        while let Some(event) = rx.recv().await {
-                            let _ = sender
-                                .send(crate::pages::Message::Accessibility(Message::Event(event)))
+
+                    return cosmic::Task::stream(async_fn_stream::fn_stream(
+                        |emitter| async move {
+                            while let Some(event) = rx.recv().await {
+                                let _ = emitter
+                                    .emit(crate::pages::Message::Accessibility(Message::Event(
+                                        event,
+                                    )))
+                                    .await;
+                            }
+
+                            let _ = emitter
+                                .emit(crate::pages::Message::Accessibility(
+                                    Message::ProtocolUnavailable,
+                                ))
                                 .await;
-                        }
-                        let _ = sender
-                            .send(crate::pages::Message::Accessibility(
-                                Message::ProtocolUnavailable,
-                            ))
-                            .await;
-                    });
+                        },
+                    ));
                 }
                 Err(err) => {
                     tracing::warn!(

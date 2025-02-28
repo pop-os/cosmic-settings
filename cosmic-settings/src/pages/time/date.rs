@@ -133,10 +133,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("time-date", "desc"))
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         cosmic::Task::future(async move {
             let client = match zbus::Connection::system().await {
                 Ok(client) => client,

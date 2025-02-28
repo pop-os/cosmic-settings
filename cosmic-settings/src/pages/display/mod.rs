@@ -17,7 +17,6 @@ use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
 };
 use cosmic_settings_page::{self as page, section, Section};
-use futures::pin_mut;
 use once_cell::sync::Lazy;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
@@ -252,10 +251,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     #[cfg(not(feature = "test"))]
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         use std::time::Duration;
 
         self.cache.orientations = [
@@ -290,7 +286,7 @@ impl page::Page<crate::pages::Message> for Page {
             // Spawns a background service to monitor for display state changes.
             // This must be spawned onto its own thread because `*mut wayland_sys::client::wl_display` is not Send-able.
             tokio::task::spawn_blocking(move || {
-                let dispatcher = async move {
+                let dispatcher = std::pin::pin!(async move {
                     let Ok((mut context, mut event_queue)) = cosmic_randr::connect(tx) else {
                         return;
                     };
@@ -300,9 +296,8 @@ impl page::Page<crate::pages::Message> for Page {
                             return;
                         }
                     }
-                };
+                });
 
-                pin_mut!(dispatcher);
                 runtime.block_on(futures::future::select(cancelled, dispatcher));
             });
 
@@ -365,7 +360,7 @@ impl page::Page<crate::pages::Message> for Page {
                     return;
                 };
 
-                let emitter = async move {
+                let emitter = std::pin::pin!(async move {
                     loop {
                         // If any DRM events occur, a message updating the display list will be sent.
                         if let Ok(mut guard) = async_fd.writable().await {
@@ -383,14 +378,11 @@ impl page::Page<crate::pages::Message> for Page {
 
                         tokio::time::sleep(Duration::from_secs(3)).await;
                     }
-                };
+                });
 
-                let cancellation = async move {
+                let cancellation = std::pin::pin!(async move {
                     _ = hotplug_cancel_rx.await;
-                };
-
-                futures::pin_mut!(emitter);
-                futures::pin_mut!(cancellation);
+                });
 
                 futures::future::select(cancellation, emitter).await;
             });
@@ -426,10 +418,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     #[cfg(feature = "test")]
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         cosmic::task::future(async move {
             let mut randr = List::default();
 

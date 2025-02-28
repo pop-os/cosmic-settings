@@ -1562,10 +1562,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("appearance", "desc"))
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         let (task, handle) = cosmic::task::batch(vec![
             // Load icon themes
             // cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
