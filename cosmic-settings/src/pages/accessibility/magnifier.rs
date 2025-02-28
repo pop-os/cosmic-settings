@@ -8,6 +8,7 @@ use cosmic::{
 };
 use cosmic_comp_config::{ZoomConfig, ZoomMovement};
 use cosmic_config::{ConfigGet, ConfigSet};
+use cosmic_settings_config::{shortcuts, Action, Binding};
 use cosmic_settings_page::{
     self as page,
     section::{self, Section},
@@ -27,6 +28,8 @@ pub struct Page {
     zoom_config: ZoomConfig,
     increment_values: Vec<String>,
     increment_idx: Option<usize>,
+    zoom_in_shortcuts: Vec<Binding>,
+    zoom_out_shortcuts: Vec<Binding>,
 
     wayland_thread: Option<wayland::Sender>,
     magnifier_state: bool,
@@ -57,7 +60,7 @@ impl Default for Page {
         let mut values = HashSet::<u32>::from_iter([25, 50, 100, 150, 200, zoom_config.increment])
             .into_iter()
             .collect::<Vec<_>>();
-        values.sort();
+        values.sort_unstable();
         let increment_values = values
             .into_iter()
             .map(|val| {
@@ -73,8 +76,10 @@ impl Default for Page {
             })
             .collect::<Vec<_>>();
         let increment_idx = increment_values.iter().position(|s| {
-            s.split("%").next().and_then(|val| str::parse(val).ok()) == Some(zoom_config.increment)
+            s.split('%').next().and_then(|val| str::parse(val).ok()) == Some(zoom_config.increment)
         });
+
+        let (zoom_in_shortcuts, zoom_out_shortcuts) = zoom_shortcuts();
 
         Page {
             entity: Entity::default(),
@@ -83,6 +88,8 @@ impl Default for Page {
             zoom_config,
             increment_values,
             increment_idx,
+            zoom_in_shortcuts,
+            zoom_out_shortcuts,
 
             wayland_thread: None,
             magnifier_state: false,
@@ -108,7 +115,7 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, page::Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
-            sections.insert(magnifier()),
+            sections.insert(magnifier(&self.zoom_in_shortcuts, &self.zoom_out_shortcuts)),
             sections.insert(tip()),
             sections.insert(view_movement()),
         ])
@@ -161,10 +168,36 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-pub fn magnifier() -> section::Section<crate::pages::Message> {
+pub fn magnifier(
+    zoom_in: &[Binding],
+    zoom_out: &[Binding],
+) -> section::Section<crate::pages::Message> {
+    let zoom_in = if zoom_in.is_empty() {
+        String::from("zero")
+    } else {
+        zoom_in.iter().fold(String::new(), |mut str, b| {
+            if !str.is_empty() {
+                str += ", ";
+            }
+            b.to_string_in_place(&mut str);
+            str
+        })
+    };
+    let zoom_out = if zoom_out.is_empty() {
+        String::from("zero")
+    } else {
+        zoom_out.iter().fold(String::new(), |mut str, b| {
+            if !str.is_empty() {
+                str += ", ";
+            }
+            b.to_string_in_place(&mut str);
+            str
+        })
+    };
+
     crate::slab!(descriptions {
         magnifier = fl!("magnifier");
-        controls = fl!("magnifier", "controls");
+        controls = fl!("magnifier", "controls", zoom_in = zoom_in, zoom_out = zoom_out);
         increment = fl!("magnifier", "increment");
         signin = fl!("magnifier", "signin");
     });
@@ -336,4 +369,24 @@ impl Page {
 
         cosmic::iced::Task::none()
     }
+}
+
+fn zoom_shortcuts() -> (Vec<Binding>, Vec<Binding>) {
+    let Some(config) = shortcuts::context().ok() else {
+        return (Vec::new(), Vec::new());
+    };
+    let shortcuts = dbg!(shortcuts::shortcuts(&config));
+
+    let zoom_in = shortcuts
+        .iter()
+        .filter(|&(_binding, action)| *action == Action::ZoomIn)
+        .map(|(binding, _action)| binding.clone())
+        .collect();
+    let zoom_out = shortcuts
+        .iter()
+        .filter(|&(_binding, action)| *action == Action::ZoomOut)
+        .map(|(binding, _action)| binding.clone())
+        .collect();
+
+    (zoom_in, zoom_out)
 }
