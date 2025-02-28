@@ -127,6 +127,27 @@ bluetooth-available = Urządzenia w pobliżu
 
 bluetooth-adapters = Adaptery Bluetooth
 
+## Accessibility
+
+accessibility = Dostępność
+    .vision = Widok
+    .on = Włączony
+    .off = Wyłączony
+    .unavailable = Niedostępne
+magnifier = Powiększalnik
+    .controls =
+        Możesz użyć także skrótów klawiszowych:
+        Super + = by przybliżyć,
+        Super + - by oddalić,
+                Super + przewijanie przy pomocy myszy
+    .increment = Stopień przybliżenia
+    .signin = Uruchom powiększalnik przy logowaniu
+    .applet = Przełącz włączanie/wyłączanie powiększalnika w applecie
+    .movement = Ruch widoku przybliżenia
+    .continuous = Stale z kursorem
+    .onedge = Gdy kursor dotknie krawędzi
+    .centered = Stale wycemtrowany
+
 ## Desktop
 
 desktop = Pulpit
@@ -309,6 +330,8 @@ super-key = Klawisz Super
     .applications = Otwórz aplikacje
     .disable = Wyłącz
 
+edge-gravity = Pływające okna ciążą ku pobliskim krawędziom
+
 window-controls = Sterowanie oknami
     .maximize = Pokaż przycisk maksymalizacji
     .minimize = Pokaż przycisk minimalizacji
@@ -366,6 +389,7 @@ display = Wyświetlacz
     .refresh-rate = Prędkość odświeżania ekranu
     .resolution = Rozdzielczość
     .scale = Skala
+    .additional-scale-options = Dodatkowe opcje skalowania
 
 mirroring = Lustrzane Odbicie
     .id = Lustrzane Odbicie { $id }
@@ -554,6 +578,7 @@ command = Komenda
 custom = Własne
 debug = Debuguj
 disabled = Wyłączone
+input-source-switch = Zmień język wprowadzania danych na klawiaturze
 migrate-workspace-prev = Migruj obszar roboczy do następnego ekranu
 migrate-workspace-next = Migruj obszar roboczy do poprzedniego ekranu
 migrate-workspace = Migruj obszar roboczy do { $direction ->
@@ -670,6 +695,9 @@ window-tiling = Kafelkowanie okien
 
 replace-shortcut-dialog = Zmienić skrót?
     .desc = { $shortcut } jest używany przez { $name }. Jeśli go zamienisz, skrót do { $name } będzie wyłączony.
+
+zoom-in = Przybliż
+zoom-out = Oddal
 
 ## Input: Mouse
 
@@ -816,3 +844,4 @@ default-apps = Domyślne Aplikacje
     .calendar = Kalendarz
     .terminal = Konsola
     .other-associations = Inne powiązania
+    .text-editor = Edytor tekstu
