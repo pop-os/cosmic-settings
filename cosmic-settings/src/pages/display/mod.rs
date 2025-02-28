@@ -314,23 +314,6 @@ impl page::Page<crate::pages::Message> for Page {
                 }))
                 .abortable();
 
-            // tokio::task::spawn(async move {
-            //     while let Ok(message) = rx.recv().await {
-            //         if sender.is_closed() {
-            //             return;
-            //         }
-
-            //         if let cosmic_randr::Message::ManagerDone = message {
-            //             if !refreshing_page.swap(true, Ordering::SeqCst) {
-            //                 let sender = sender.clone();
-            //                 tokio::spawn(async move {
-            //                     _ = sender.send(on_enter().await).await;
-            //                 });
-            //             }
-            //         }
-            //     }
-            // });
-
             tasks.push(randr_task);
             self.randr_handle = Some((canceller, randr_handle));
         }
