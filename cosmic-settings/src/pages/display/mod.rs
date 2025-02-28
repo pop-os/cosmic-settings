@@ -140,6 +140,7 @@ pub struct Page {
     mirror_menu: widget::dropdown::multi::Model<String, Mirroring>,
     active_display: OutputKey,
     background_service_cancel: Option<oneshot::Sender<()>>,
+    hotplug_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
     config: Config,
     cache: ViewCache,
     // context: Option<ContextDrawer>,
@@ -176,6 +177,7 @@ impl Default for Page {
             mirror_menu: widget::dropdown::multi::model(),
             active_display: OutputKey::default(),
             background_service_cancel: None,
+            hotplug_handle: None,
             config: Config::default(),
             cache: ViewCache::default(),
             // context: None,
@@ -254,6 +256,8 @@ impl page::Page<crate::pages::Message> for Page {
         &mut self,
         sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
     ) -> Task<crate::pages::Message> {
+        use std::time::Duration;
+
         self.cache.orientations = [
             fl!("orientation", "standard"),
             fl!("orientation", "rotate-90"),
@@ -314,10 +318,82 @@ impl page::Page<crate::pages::Message> for Page {
             self.background_service_cancel = Some(canceller);
         }
 
-        cosmic::task::future(on_enter())
+        // Channels for communicating messages from the DRM hotplug thread.
+        let (hotplug_cancel_tx, hotplug_cancel_rx) = tokio::sync::oneshot::channel::<()>();
+        let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+
+        // Spawn a background thread for asynchronously polling a udev monitor for DRM
+        // hotplug events. As udev is not thread-safe, it needs its own dedicated thread.
+        let tokio_handle = tokio::runtime::Handle::current();
+        std::thread::spawn(move || {
+            tokio_handle.block_on(async move {
+                let Ok(builder) = udev::MonitorBuilder::new() else {
+                    return;
+                };
+
+                let Ok(builder) = builder.match_subsystem("drm") else {
+                    return;
+                };
+
+                let Ok(socket) = builder.listen() else {
+                    return;
+                };
+
+                let Ok(mut async_fd) = tokio::io::unix::AsyncFd::new(socket) else {
+                    return;
+                };
+
+                let emitter = async move {
+                    loop {
+                        // If any DRM events occur, a message updating the display list will be sent.
+                        if let Ok(mut guard) = async_fd.writable().await {
+                            guard.clear_ready();
+
+                            let drm_hotplug_occurred = &mut false;
+                            async_fd.get_mut().iter().for_each(|_| {
+                                *drm_hotplug_occurred = true;
+                            });
+
+                            if *drm_hotplug_occurred {
+                                _ = tx.send(on_enter().await).await;
+                            }
+                        }
+
+                        tokio::time::sleep(Duration::from_secs(3)).await;
+                    }
+                };
+
+                let cancellation = async move {
+                    _ = hotplug_cancel_rx.await;
+                };
+
+                futures::pin_mut!(emitter);
+                futures::pin_mut!(cancellation);
+
+                futures::future::select(cancellation, emitter).await;
+            });
+        });
+
+        // Forward messages from the DRM hotplug thread.
+        let (hotplug_task, hotplug_handle) =
+            Task::stream(async_fn_stream::fn_stream(|emitter| async move {
+                while let Some(message) = rx.recv().await {
+                    _ = emitter.emit(message).await;
+                }
+            }))
+            .abortable();
+
+        self.hotplug_handle = Some((hotplug_cancel_tx, hotplug_handle));
+
+        cosmic::task::batch(vec![cosmic::task::future(on_enter()), hotplug_task])
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        if let Some((canceller, handle)) = self.hotplug_handle.take() {
+            _ = canceller.send(());
+            handle.abort();
+        }
+
         if let Some(canceller) = self.background_service_cancel.take() {
             _ = canceller.send(());
         }
