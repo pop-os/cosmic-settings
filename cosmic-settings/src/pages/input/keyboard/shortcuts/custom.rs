@@ -231,13 +231,13 @@ impl Page {
         let name_input = widget::text_input("", &self.add_shortcut.name)
             .padding([6, 12])
             .on_input(Message::NameInput)
-            .on_submit(Message::NameSubmit)
+            .on_submit(|_| Message::NameSubmit)
             .id(self.name_id.clone());
 
         let task_input = widget::text_input("", &self.add_shortcut.task)
             .padding([6, 12])
             .on_input(Message::TaskInput)
-            .on_submit(Message::EditCombination)
+            .on_submit(|_| Message::EditCombination)
             .id(self.task_id.clone());
 
         let name_control = widget::column()
@@ -267,7 +267,7 @@ impl Page {
                 )
                 .padding([0, 12])
                 .on_input(move |input| Message::KeyInput(id, input))
-                .on_submit(Message::AddKeybinding)
+                .on_submit(|_| Message::AddKeybinding)
                 .id(widget_id.clone())
                 .apply(widget::container)
                 .padding([8, 24]);
