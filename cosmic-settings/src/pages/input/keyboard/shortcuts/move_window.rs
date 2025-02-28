@@ -95,8 +95,6 @@ pub const fn actions() -> &'static [Action] {
         Action::MoveToWorkspace(7),
         Action::MoveToWorkspace(8),
         Action::MoveToWorkspace(9),
-        Action::MoveToPreviousOutput,
-        Action::MoveToNextOutput,
         Action::MoveToOutput(Direction::Down),
         Action::MoveToOutput(Direction::Left),
         Action::MoveToOutput(Direction::Right),
