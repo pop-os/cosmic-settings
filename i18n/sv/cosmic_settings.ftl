@@ -167,7 +167,7 @@ magnifier = Förstoringsglas
         Super + scrolla med musen
     .increment = Zoom inkrement
     .signin = Starta förstoringsglaset vid inloggning
-    .applet = TVäxla förstoringsglas på/av i applet på panelen
+    .applet = Växla förstoringsglas på/av i applet på panelen
     .movement = Zoomad vy flyttas
     .continuous = Kontinuerligt med pekare
     .onedge = När pekaren når kanten
