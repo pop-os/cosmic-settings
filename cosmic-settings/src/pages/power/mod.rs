@@ -111,10 +111,7 @@ impl page::Page<crate::pages::Message> for Page {
         ])
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         let futures: Vec<Task<Message>> = vec![
             cosmic::Task::future(async move {
                 let battery = Battery::update_battery().await;
@@ -137,10 +134,10 @@ impl page::Page<crate::pages::Message> for Page {
                     let added_stream = ConnectedDevice::device_added_stream(&connection).await;
                     let removed_stream = ConnectedDevice::device_removed_stream(&connection).await;
 
-                    let added_future = async {
+                    let added_future = std::pin::pin!(async {
                         match added_stream {
                             Ok(stream) => {
-                                futures::pin_mut!(stream);
+                                let mut stream = std::pin::pin!(stream);
                                 while let Some(device) = stream.next().await {
                                     tracing::info!(device = device.model, "device added");
                                     emitter.emit(Message::DeviceConnect(device)).await;
@@ -148,12 +145,12 @@ impl page::Page<crate::pages::Message> for Page {
                             }
                             Err(err) => tracing::error!(?err, "cannot establish added stream"),
                         }
-                    };
+                    });
 
-                    let removed_future = async {
+                    let removed_future = std::pin::pin!(async {
                         match removed_stream {
                             Ok(stream) => {
-                                futures::pin_mut!(stream);
+                                let mut stream = std::pin::pin!(stream);
                                 while let Some(device_path) = stream.next().await {
                                     tracing::info!(device_path, "device removed");
                                     emitter.emit(Message::DeviceDisconnect(device_path)).await;
@@ -161,10 +158,7 @@ impl page::Page<crate::pages::Message> for Page {
                             }
                             Err(err) => tracing::error!(?err, "cannot establish removed stream"),
                         }
-                    };
-
-                    futures::pin_mut!(added_future);
-                    futures::pin_mut!(removed_future);
+                    });
 
                     futures::future::select(added_future, removed_future).await;
                 }),

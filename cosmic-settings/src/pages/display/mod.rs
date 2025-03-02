@@ -17,7 +17,6 @@ use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
 };
 use cosmic_settings_page::{self as page, section, Section};
-use futures::pin_mut;
 use once_cell::sync::Lazy;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
@@ -139,7 +138,8 @@ pub struct Page {
     mirror_map: SecondaryMap<OutputKey, OutputKey>,
     mirror_menu: widget::dropdown::multi::Model<String, Mirroring>,
     active_display: OutputKey,
-    background_service_cancel: Option<oneshot::Sender<()>>,
+    randr_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
+    hotplug_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
     config: Config,
     cache: ViewCache,
     // context: Option<ContextDrawer>,
@@ -175,7 +175,8 @@ impl Default for Page {
             mirror_map: SecondaryMap::new(),
             mirror_menu: widget::dropdown::multi::model(),
             active_display: OutputKey::default(),
-            background_service_cancel: None,
+            randr_handle: None,
+            hotplug_handle: None,
             config: Config::default(),
             cache: ViewCache::default(),
             // context: None,
@@ -250,10 +251,9 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     #[cfg(not(feature = "test"))]
-    fn on_enter(
-        &mut self,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+        use std::time::Duration;
+
         self.cache.orientations = [
             fl!("orientation", "standard"),
             fl!("orientation", "rotate-90"),
@@ -261,8 +261,17 @@ impl page::Page<crate::pages::Message> for Page {
             fl!("orientation", "rotate-270"),
         ];
 
-        if let Some(canceller) = self.background_service_cancel.take() {
+        let mut tasks = Vec::with_capacity(3);
+        tasks.push(cosmic::task::future(on_enter()));
+
+        if let Some((canceller, handle)) = self.randr_handle.take() {
             _ = canceller.send(());
+            handle.abort();
+        }
+
+        if let Some((canceller, handle)) = self.hotplug_handle.take() {
+            _ = canceller.send(());
+            handle.abort();
         }
 
         self.refreshing_page.store(true, Ordering::SeqCst);
@@ -271,13 +280,13 @@ impl page::Page<crate::pages::Message> for Page {
         {
             let refreshing_page = self.refreshing_page.clone();
             let (tx, mut rx) = tachyonix::channel(4);
-            let (canceller, cancelled) = oneshot::channel();
+            let (canceller, cancelled) = oneshot::channel::<()>();
             let runtime = tokio::runtime::Handle::current();
 
             // Spawns a background service to monitor for display state changes.
             // This must be spawned onto its own thread because `*mut wayland_sys::client::wl_display` is not Send-able.
             tokio::task::spawn_blocking(move || {
-                let dispatcher = async move {
+                let dispatcher = std::pin::pin!(async move {
                     let Ok((mut context, mut event_queue)) = cosmic_randr::connect(tx) else {
                         return;
                     };
@@ -287,49 +296,112 @@ impl page::Page<crate::pages::Message> for Page {
                             return;
                         }
                     }
-                };
+                });
 
-                pin_mut!(dispatcher);
                 runtime.block_on(futures::future::select(cancelled, dispatcher));
             });
 
             // Forward messages from another thread to prevent the monitoring thread from blocking.
-            tokio::task::spawn(async move {
-                while let Ok(message) = rx.recv().await {
-                    if sender.is_closed() {
-                        return;
-                    }
-
-                    if let cosmic_randr::Message::ManagerDone = message {
-                        if !refreshing_page.swap(true, Ordering::SeqCst) {
-                            let sender = sender.clone();
-                            tokio::spawn(async move {
-                                _ = sender.send(on_enter().await).await;
-                            });
+            let (randr_task, randr_handle) =
+                Task::stream(async_fn_stream::fn_stream(|emitter| async move {
+                    while let Ok(message) = rx.recv().await {
+                        if let cosmic_randr::Message::ManagerDone = message {
+                            if !refreshing_page.swap(true, Ordering::SeqCst) {
+                                _ = emitter.emit(on_enter().await).await;
+                            }
                         }
                     }
-                }
-            });
+                }))
+                .abortable();
 
-            self.background_service_cancel = Some(canceller);
+            tasks.push(randr_task);
+            self.randr_handle = Some((canceller, randr_handle));
         }
 
-        cosmic::task::future(on_enter())
+        // Channels for communicating messages from the DRM hotplug thread.
+        let (hotplug_cancel_tx, hotplug_cancel_rx) = oneshot::channel::<()>();
+        let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+
+        // Spawn a background thread for asynchronously polling a udev monitor for DRM
+        // hotplug events. As udev is not thread-safe, it needs its own dedicated thread.
+        let tokio_handle = tokio::runtime::Handle::current();
+        std::thread::spawn(move || {
+            tokio_handle.block_on(async move {
+                let Ok(builder) = udev::MonitorBuilder::new() else {
+                    return;
+                };
+
+                let Ok(builder) = builder.match_subsystem("drm") else {
+                    return;
+                };
+
+                let Ok(socket) = builder.listen() else {
+                    return;
+                };
+
+                let Ok(mut async_fd) = tokio::io::unix::AsyncFd::new(socket) else {
+                    return;
+                };
+
+                let emitter = std::pin::pin!(async move {
+                    loop {
+                        // If any DRM events occur, a message updating the display list will be sent.
+                        if let Ok(mut guard) = async_fd.writable().await {
+                            guard.clear_ready();
+
+                            let drm_hotplug_occurred = &mut false;
+                            async_fd.get_mut().iter().for_each(|_| {
+                                *drm_hotplug_occurred = true;
+                            });
+
+                            if *drm_hotplug_occurred {
+                                _ = tx.send(on_enter().await).await;
+                            }
+                        }
+
+                        tokio::time::sleep(Duration::from_secs(3)).await;
+                    }
+                });
+
+                let cancellation = std::pin::pin!(async move {
+                    _ = hotplug_cancel_rx.await;
+                });
+
+                futures::future::select(cancellation, emitter).await;
+            });
+        });
+
+        // Forward messages from the DRM hotplug thread.
+        let (hotplug_task, hotplug_handle) =
+            Task::stream(async_fn_stream::fn_stream(|emitter| async move {
+                while let Some(message) = rx.recv().await {
+                    _ = emitter.emit(message).await;
+                }
+            }))
+            .abortable();
+
+        tasks.push(hotplug_task);
+        self.hotplug_handle = Some((hotplug_cancel_tx, hotplug_handle));
+
+        cosmic::task::batch(tasks)
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        if let Some(canceller) = self.background_service_cancel.take() {
+        if let Some((canceller, handle)) = self.hotplug_handle.take() {
             _ = canceller.send(());
+            handle.abort();
+        }
+
+        if let Some((canceller, handle)) = self.randr_handle.take() {
+            _ = canceller.send(());
+            handle.abort();
         }
 
         Task::none()
     }
 
     #[cfg(feature = "test")]
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         cosmic::task::future(async move {
             let mut randr = List::default();
 

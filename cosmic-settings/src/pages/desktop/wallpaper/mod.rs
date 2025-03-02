@@ -210,10 +210,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("wallpaper", "desc"))
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         // Check if the page is already being loaded.
         if self.on_enter_handle.is_some() {
             return Task::none();

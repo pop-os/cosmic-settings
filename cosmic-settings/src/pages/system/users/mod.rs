@@ -222,10 +222,7 @@ impl page::Page<crate::pages::Message> for Page {
         dialog_element.map(crate::pages::Message::User).into()
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if let Some(handle) = self.on_enter_handle.take() {
             handle.abort();
         }

@@ -6,6 +6,10 @@ The settings application for the [COSMIC desktop environment][cosmic-epoch].
 
 Translation files may be found in the [i18n directory](./i18n). New translations may copy the [English (en) localization](./i18n/en) of the project and rename `en` to the desired [ISO 639-1 language code][iso-codes]. Translations may be submitted through GitHub as an issue or pull request. Submissions by email or other means are also acceptable; with the preferred name and email to associate with the changes.
 
+## Distributors
+
+The accent palettes on the Appearance settings page are configurable through the cosmic-config directory at `/usr/share/cosmic/com.system76.CosmicSettings/v1/`. One at `accent_palette_dark`, and another at `accent_palette_light`. Examples can be found at [resources/accent_palette_dark.ron](./resources/accent_palette_dark.ron) and [resources/accent_palette_light.ron](./resources/accent_palette_light.ron). This can be copied locally to `~/.config/cosmic/com.system76.CosmicSettings/v1/` for testing, and then move to `/usr/share/cosmic` for packaging.
+
 ## Build
 
 ### Dependencies

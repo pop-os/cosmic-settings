@@ -560,6 +560,7 @@ command = Command
 custom = Custom
 debug = Debug
 disabled = Disabled
+input-source-switch = Switch keyboard language input source
 migrate-workspace-prev = Migrate workspace to previous output
 migrate-workspace-next = Migrate workspace to next output
 migrate-workspace = Migrate workspace to output { $direction ->

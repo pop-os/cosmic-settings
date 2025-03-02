@@ -52,6 +52,9 @@ lto = "thin"
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "ed2a481" }
 cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "ed2a481" }
 
+# [patch.'https://github.com/pop-os/cosmic-settings-daemon']
+# cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
+
 # For development and testing purposes
 # [patch.'https://github.com/pop-os/libcosmic']
 # libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "font" }

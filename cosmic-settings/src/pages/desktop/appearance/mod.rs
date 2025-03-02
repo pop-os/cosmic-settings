@@ -8,8 +8,6 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 //TODO: use embedded cosmic-files for portability
-#[cfg(feature = "ashpd")]
-use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
@@ -17,6 +15,7 @@ use cosmic::cosmic_theme::{
     CornerRadii, Density, Spacing, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
     LIGHT_THEME_BUILDER_ID,
 };
+use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced_core::{Alignment, Color, Length};
 use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
 use cosmic::widget::icon::{from_name, icon};
@@ -60,10 +59,12 @@ enum ContextView {
     MonospaceFont,
     SystemFont,
 }
+
 #[allow(clippy::struct_excessive_bools)]
 pub struct Page {
     entity: page::Entity,
     on_enter_handle: Option<cosmic::iced::task::Handle>,
+    accent_palette: AccentPalette,
     can_reset: bool,
     no_custom_window_hint: bool,
     context_view: Option<ContextView>,
@@ -96,12 +97,21 @@ pub struct Page {
     auto_switch_descs: [Cow<'static, str>; 4],
 
     tk_config: Option<Config>,
-
+    settings_config: crate::config::Config,
     day_time: bool,
+}
+
+#[derive(Default)]
+pub struct AccentPalette {
+    dark: Option<Vec<Srgba>>,
+    light: Option<Vec<Srgba>>,
+    theme: Vec<Srgba>,
 }
 
 impl Default for Page {
     fn default() -> Self {
+        let settings_config = crate::config::Config::new();
+
         let theme_mode_config = ThemeMode::config().ok();
         let theme_mode = theme_mode_config
             .as_ref()
@@ -116,26 +126,52 @@ impl Default for Page {
             })
             .unwrap_or_default();
 
-        (theme_mode_config, theme_mode).into()
+        let accent_palette = AccentPalette {
+            dark: settings_config.accent_palette_dark().ok(),
+            light: settings_config.accent_palette_light().ok(),
+            theme: Vec::new(),
+        };
+
+        let mut page: Page = (
+            settings_config,
+            theme_mode_config,
+            theme_mode,
+            accent_palette,
+        )
+            .into();
+        page.update_accent_palette();
+        page
     }
 }
 
 impl
     From<(
+        crate::config::Config,
         Option<Config>,
         ThemeMode,
         Option<Config>,
         ThemeBuilder,
         Option<Config>,
+        AccentPalette,
     )> for Page
 {
     fn from(
-        (theme_mode_config, theme_mode, theme_builder_config, theme_builder, tk_config): (
+        (
+            settings_config,
+            theme_mode_config,
+            theme_mode,
+            theme_builder_config,
+            theme_builder,
+            tk_config,
+            accent_palette,
+        ): (
+            crate::config::Config,
             Option<Config>,
             ThemeMode,
             Option<Config>,
             ThemeBuilder,
             Option<Config>,
+            AccentPalette,
         ),
     ) -> Self {
         let theme = if theme_mode.is_dark {
@@ -212,12 +248,14 @@ impl
             icon_theme_active: None,
             icon_themes: Vec::new(),
             icon_handles: Vec::new(),
+            accent_palette,
             theme,
             theme_mode_config,
             theme_builder_config,
             theme_mode,
             theme_builder,
             tk_config,
+            settings_config,
             day_time: true,
             auto_switch_descs: [
                 fl!("auto-switch", "sunrise").into(),
@@ -229,8 +267,22 @@ impl
     }
 }
 
-impl From<(Option<Config>, ThemeMode)> for Page {
-    fn from((theme_mode_config, theme_mode): (Option<Config>, ThemeMode)) -> Self {
+impl
+    From<(
+        crate::config::Config,
+        Option<Config>,
+        ThemeMode,
+        AccentPalette,
+    )> for Page
+{
+    fn from(
+        (settings_config, theme_mode_config, theme_mode, accent_palette): (
+            crate::config::Config,
+            Option<Config>,
+            ThemeMode,
+            AccentPalette,
+        ),
+    ) -> Self {
         let theme_builder_config = if theme_mode.is_dark {
             ThemeBuilder::dark_config()
         } else {
@@ -259,12 +311,32 @@ impl From<(Option<Config>, ThemeMode)> for Page {
         let tk_config = CosmicTk::config().ok();
 
         Self::from((
+            settings_config,
             theme_mode_config,
             theme_mode,
             theme_builder_config,
             theme_builder,
             tk_config,
+            accent_palette,
         ))
+    }
+}
+
+#[derive(Clone)]
+pub struct SaveResponse(pub Arc<file_chooser::save::Response>);
+
+impl std::fmt::Debug for SaveResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SaveResponse")
+    }
+}
+
+#[derive(Clone)]
+pub struct OpenResponse(pub Arc<file_chooser::open::FileResponse>);
+
+impl std::fmt::Debug for OpenResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("OpenResponse")
     }
 }
 
@@ -283,22 +355,22 @@ pub enum Message {
     DisplaySystemFont,
     Entered((IconThemes, IconHandles)),
     IconsAndToolkit,
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     ExportError,
-    #[cfg(feature = "ashpd")]
-    ExportFile(Arc<SelectedFiles>),
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
+    ExportFile(SaveResponse),
+    #[cfg(feature = "xdg-portal")]
     ExportSuccess,
     FontConfig(font_config::Message),
     FontSearch(String),
     FontSelect(bool, Arc<str>),
     GapSize(u32),
     IconTheme(usize),
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     ImportError,
-    #[cfg(feature = "ashpd")]
-    ImportFile(Arc<SelectedFiles>),
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
+    ImportFile(OpenResponse),
+    #[cfg(feature = "xdg-portal")]
     ImportSuccess(Box<ThemeBuilder>),
     InterfaceText(ColorPickerUpdate),
     Left,
@@ -306,9 +378,9 @@ pub enum Message {
     PaletteAccent(cosmic::iced::Color),
     Reset,
     Roundness(Roundness),
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     StartExport,
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     StartImport,
     UseDefaultWindowHint(bool),
     WindowHintSize(u32),
@@ -890,18 +962,17 @@ impl Page {
                 self.reload_theme_mode();
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::StartImport => {
                 tasks.push(cosmic::task::future(async move {
-                    let res = SelectedFiles::open_file()
+                    let res = file_chooser::open::Dialog::new()
                         .modal(true)
                         .filter(FileFilter::glob(FileFilter::new("ron"), "*.ron"))
-                        .send()
-                        .await
-                        .and_then(|request| request.response());
+                        .open_file()
+                        .await;
 
                     if let Ok(f) = res {
-                        Message::ImportFile(Arc::new(f))
+                        Message::ImportFile(OpenResponse(Arc::new(f)))
                     } else {
                         // TODO Error toast?
                         tracing::error!("failed to select a file for importing a custom theme.");
@@ -910,21 +981,20 @@ impl Page {
                 }));
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::StartExport => {
                 let is_dark = self.theme_mode.is_dark;
                 let name = format!("{}.ron", if is_dark { fl!("dark") } else { fl!("light") });
 
                 tasks.push(cosmic::task::future(async move {
-                    let res = SelectedFiles::save_file()
+                    let res = file_chooser::save::Dialog::new()
                         .modal(true)
-                        .current_name(Some(name.as_str()))
-                        .send()
-                        .await
-                        .and_then(|request| request.response());
+                        .file_name(name)
+                        .save_file()
+                        .await;
 
                     if let Ok(f) = res {
-                        Message::ExportFile(Arc::new(f))
+                        Message::ExportFile(SaveResponse(Arc::new(f)))
                     } else {
                         // TODO Error toast?
                         tracing::error!("failed to select a file for importing a custom theme.");
@@ -933,13 +1003,14 @@ impl Page {
                 }));
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ImportFile(f) => {
-                let path_res = f
-                    .uris()
-                    .first()
-                    .filter(|f| f.scheme() == "file")
-                    .and_then(|f| f.to_file_path().ok());
+                let path_res =
+                    f.0 .0
+                        .uris()
+                        .first()
+                        .filter(|f| f.scheme() == "file")
+                        .and_then(|f| f.to_file_path().ok());
 
                 let Some(path) = path_res else {
                     return Task::none();
@@ -957,13 +1028,14 @@ impl Page {
                 }));
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ExportFile(f) => {
-                let path_res = f
-                    .uris()
-                    .first()
-                    .filter(|f| f.scheme() == "file")
-                    .and_then(|f| f.to_file_path().ok());
+                let path_res =
+                    f.0 .0
+                        .uris()
+                        .first()
+                        .filter(|f| f.scheme() == "file")
+                        .and_then(|f| f.to_file_path().ok());
 
                 let Some(path) = path_res else {
                     return Task::none();
@@ -993,15 +1065,15 @@ impl Page {
             }
 
             // TODO: error message toast?
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ExportError | Message::ImportError => return Task::none(),
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ExportSuccess => {
                 tracing::trace!("Export successful");
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ImportSuccess(builder) => {
                 tracing::trace!("Import successful");
                 self.theme_builder = *builder;
@@ -1110,6 +1182,7 @@ impl Page {
 
         // If the theme builder changed, write a new theme to disk on a background thread.
         if needs_build {
+            self.update_accent_palette();
             let theme_builder = self.theme_builder.clone();
             let is_dark = self.theme_mode.is_dark;
             let current_theme = self.theme.clone();
@@ -1186,6 +1259,21 @@ impl Page {
         cosmic::Task::batch(tasks)
     }
 
+    fn update_accent_palette(&mut self) {
+        let palette = self.theme_builder.palette.as_ref();
+        self.accent_palette.theme = vec![
+            palette.accent_blue,
+            palette.accent_indigo,
+            palette.accent_purple,
+            palette.accent_pink,
+            palette.accent_red,
+            palette.accent_orange,
+            palette.accent_yellow,
+            palette.accent_green,
+            palette.accent_warm_grey,
+        ];
+    }
+
     fn reload_theme_mode(&mut self) {
         let entity = self.entity;
         let font_config = std::mem::take(&mut self.font_config);
@@ -1194,7 +1282,15 @@ impl Page {
         let icon_theme_active = self.icon_theme_active.take();
         let day_time = self.day_time;
 
-        *self = Self::from((self.theme_mode_config.clone(), self.theme_mode));
+        *self = Self::from((
+            self.settings_config.clone(),
+            self.theme_mode_config.take(),
+            self.theme_mode,
+            std::mem::take(&mut self.accent_palette),
+        ));
+
+        self.update_accent_palette();
+
         self.entity = entity;
         self.day_time = day_time;
         self.icon_themes = icon_themes;
@@ -1445,7 +1541,7 @@ impl page::Page<crate::pages::Message> for Page {
         ])
     }
 
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
         let content = row::with_capacity(2)
             .spacing(self.theme_builder.spacing.space_xxs)
@@ -1466,10 +1562,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("appearance", "desc"))
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         let (task, handle) = cosmic::task::batch(vec![
             // Load icon themes
             // cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
@@ -1624,6 +1717,58 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                 .theme_builder
                 .accent
                 .map_or(palette.accent_blue, Srgba::from);
+
+            let accent_palette_values = match (
+                page.theme_mode.is_dark,
+                page.accent_palette.dark.as_ref(),
+                page.accent_palette.light.as_ref(),
+            ) {
+                (true, Some(dark_palette), _) => &dark_palette,
+                (false, _, Some(light_palette)) => &light_palette,
+                _ => &page.accent_palette.theme,
+            };
+
+            let mut accent_palette_row =
+                cosmic::widget::row::with_capacity(accent_palette_values.len());
+
+            for &color in accent_palette_values {
+                accent_palette_row = accent_palette_row.push(color_button(
+                    Some(Message::PaletteAccent(color.into())),
+                    color.into(),
+                    cur_accent == color,
+                    48,
+                    48,
+                ));
+            }
+
+            let accent_color_palette = cosmic::iced::widget::column![
+                text::body(&descriptions[accent_color]),
+                scrollable(
+                    accent_palette_row
+                        .push(if let Some(c) = page.custom_accent.get_applied_color() {
+                            container(color_button(
+                                Some(Message::CustomAccent(ColorPickerUpdate::ToggleColorPicker)),
+                                c,
+                                cosmic::iced::Color::from(cur_accent) == c,
+                                48,
+                                48,
+                            ))
+                        } else {
+                            container(
+                                page.custom_accent
+                                    .picker_button(Message::CustomAccent, None)
+                                    .width(Length::Fixed(48.0))
+                                    .height(Length::Fixed(48.0)),
+                            )
+                        })
+                        .padding([0, 0, 16, 0])
+                        .spacing(16)
+                )
+                .direction(Direction::Horizontal(Scrollbar::new()))
+            ]
+            .padding([16, 0, 0, 0])
+            .spacing(space_xxs);
+
             let mut section = settings::section()
                 .title(&section.title)
                 .add(
@@ -1682,101 +1827,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         )
                         .toggler(page.theme_mode.auto_switch, Message::Autoswitch),
                 )
-                .add(
-                    cosmic::iced::widget::column![
-                        text::body(&descriptions[accent_color]),
-                        scrollable(
-                            cosmic::iced::widget::row![
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_blue.into())),
-                                    palette.accent_blue.into(),
-                                    cur_accent == palette.accent_blue,
-                                    48,
-                                    48
-                                ),
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_indigo.into())),
-                                    palette.accent_indigo.into(),
-                                    cur_accent == palette.accent_indigo,
-                                    48,
-                                    48
-                                ),
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_purple.into())),
-                                    palette.accent_purple.into(),
-                                    cur_accent == palette.accent_purple,
-                                    48,
-                                    48
-                                ),
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_pink.into())),
-                                    palette.accent_pink.into(),
-                                    cur_accent == palette.accent_pink,
-                                    48,
-                                    48
-                                ),
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_red.into())),
-                                    palette.accent_red.into(),
-                                    cur_accent == palette.accent_red,
-                                    48,
-                                    48
-                                ),
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_orange.into())),
-                                    palette.accent_orange.into(),
-                                    cur_accent == palette.accent_orange,
-                                    48,
-                                    48
-                                ),
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_yellow.into())),
-                                    palette.accent_yellow.into(),
-                                    cur_accent == palette.accent_yellow,
-                                    48,
-                                    48
-                                ),
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_green.into())),
-                                    palette.accent_green.into(),
-                                    cur_accent == palette.accent_green,
-                                    48,
-                                    48
-                                ),
-                                color_button(
-                                    Some(Message::PaletteAccent(palette.accent_warm_grey.into())),
-                                    palette.accent_warm_grey.into(),
-                                    cur_accent == palette.accent_warm_grey,
-                                    48,
-                                    48
-                                ),
-                                if let Some(c) = page.custom_accent.get_applied_color() {
-                                    container(color_button(
-                                        Some(Message::CustomAccent(
-                                            ColorPickerUpdate::ToggleColorPicker,
-                                        )),
-                                        c,
-                                        cosmic::iced::Color::from(cur_accent) == c,
-                                        48,
-                                        48,
-                                    ))
-                                } else {
-                                    container(
-                                        page.custom_accent
-                                            .picker_button(Message::CustomAccent, None)
-                                            .width(Length::Fixed(48.0))
-                                            .height(Length::Fixed(48.0)),
-                                    )
-                                },
-                            ]
-                            .padding([0, 0, 16, 0])
-                            .spacing(16)
-                        )
-                        .direction(Direction::Horizontal(Scrollbar::new()))
-                    ]
-                    .padding([16, 0, 0, 0])
-                    .spacing(space_xxs),
-                )
+                .add(accent_color_palette)
                 .add(
                     settings::item::builder(&descriptions[app_bg]).control(
                         page.application_background
@@ -2045,7 +2096,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         page.theme_builder.active_hint,
                         1,
                         0,
-                        500,
+                        64,
                         Message::WindowHintSize,
                     ),
                 ))

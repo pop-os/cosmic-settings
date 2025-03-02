@@ -1,3 +1,6 @@
+// Copyright 2023 System76 <info@system76.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 pub mod shortcuts;
 
 use std::cmp;
@@ -76,6 +79,7 @@ pub enum SourceContext {
 pub type Locale = String;
 pub type Variant = String;
 pub type Description = String;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum LayoutSource {
     Base,
@@ -88,6 +92,9 @@ const KB_REPEAT_DELAY_MAX: u32 = 1000;
 const KB_REPEAT_DELAY_MIN: u32 = 200;
 const KB_REPEAT_RATE_MAX: u32 = 45;
 const KB_REPEAT_RATE_MIN: u32 = 5;
+
+const COSMIC_COMP_CONFIG: &str = "com.system76.CosmicComp";
+const COSMIC_COMP_CONFIG_VERSION: u64 = 1;
 
 pub struct Page {
     entity: page::Entity,
@@ -103,7 +110,8 @@ pub struct Page {
 
 impl Default for Page {
     fn default() -> Self {
-        let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        let config =
+            cosmic_config::Config::new(COSMIC_COMP_CONFIG, COSMIC_COMP_CONFIG_VERSION).unwrap();
 
         Self {
             entity: page::Entity::null(),
@@ -209,7 +217,7 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
                 color: background.component.divider.into(),
                 width: 1.0,
                 radius: cosmic.corner_radii.radius_s.into(),
-                ..Default::default()
+                ..Border::default()
             },
             shadow: Default::default(),
         }
@@ -292,10 +300,7 @@ impl page::Page<crate::pages::Message> for Page {
         }
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
         match (
             xkb_data::keyboard_layouts(),
@@ -609,26 +614,20 @@ impl Page {
     }
 
     fn update_xkb_config(&mut self) {
-        let mut new_layout = String::new();
-        let mut new_variant = String::new();
+        let result = update_xkb_config(
+            &self.config,
+            &mut self.xkb,
+            &mut self
+                .active_layouts
+                .iter()
+                .filter_map(|id| self.keyboard_layouts.get(*id))
+                .map(|(locale, variant, _description, _source)| {
+                    (locale.as_str(), variant.as_str())
+                }),
+        );
 
-        for id in &self.active_layouts {
-            if let Some((locale, variant, _description, _source)) = self.keyboard_layouts.get(*id) {
-                new_layout.push_str(locale);
-                new_layout.push(',');
-                new_variant.push_str(variant);
-                new_variant.push(',');
-            }
-        }
-
-        let _excess_comma = new_layout.pop();
-        let _excess_comma = new_variant.pop();
-
-        self.xkb.layout = new_layout;
-        self.xkb.variant = new_variant;
-
-        if let Err(err) = self.config.set("xkb_config", &self.xkb) {
-            tracing::error!(?err, "Failed to set config 'xkb_config'");
+        if let Err(why) = result {
+            tracing::error!(?why, "Failed to set config 'xkb_config'");
         }
     }
 }
@@ -791,4 +790,28 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Keyboard)
         })
+}
+
+fn update_xkb_config(
+    config: &cosmic_config::Config,
+    xkb: &mut XkbConfig,
+    active_layouts: &mut dyn Iterator<Item = (&str, &str)>,
+) -> Result<(), cosmic_config::Error> {
+    let mut new_layout = String::new();
+    let mut new_variant = String::new();
+
+    for (locale, variant) in active_layouts {
+        new_layout.push_str(locale);
+        new_layout.push(',');
+        new_variant.push_str(variant);
+        new_variant.push(',');
+    }
+
+    let _excess_comma = new_layout.pop();
+    let _excess_comma = new_variant.pop();
+
+    xkb.layout = new_layout;
+    xkb.variant = new_variant;
+
+    config.set("xkb_config", xkb)
 }

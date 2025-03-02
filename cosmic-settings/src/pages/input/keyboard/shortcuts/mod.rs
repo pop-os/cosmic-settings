@@ -1,3 +1,6 @@
+// Copyright 2024 System76 <info@system76.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 mod common;
 
 pub use common::{Model, ShortcutBinding, ShortcutMessage, ShortcutModel};
@@ -139,10 +142,7 @@ impl page::Page<crate::pages::Message> for Page {
         }
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         if self.shortcuts_context.is_none() {
             self.shortcuts_context = cosmic_settings_config::shortcuts::context().ok();
         }
@@ -649,6 +649,7 @@ fn localize_action(action: &Action) -> String {
             SystemAction::AppLibrary => fl!("system-shortcut", "app-library"),
             SystemAction::BrightnessDown => fl!("system-shortcut", "brightness-down"),
             SystemAction::BrightnessUp => fl!("system-shortcut", "brightness-up"),
+            SystemAction::InputSourceSwitch => fl!("input-source-switch"),
             SystemAction::HomeFolder => fl!("system-shortcut", "home-folder"),
             SystemAction::KeyboardBrightnessDown => {
                 fl!("system-shortcut", "keyboard-brightness-down")

@@ -23,7 +23,6 @@ use icu::decimal::options::FixedDecimalFormatterOptions;
 use icu::decimal::FixedDecimalFormatter;
 use lichen_system::locale;
 use slotmap::{DefaultKey, SlotMap};
-use tokio::sync::mpsc;
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -136,10 +135,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("time-region", "desc"))
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         cosmic::task::future(async move { Message::Refresh(Arc::new(page_reload().await)) })
     }
 

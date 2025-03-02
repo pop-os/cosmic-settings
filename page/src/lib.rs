@@ -65,7 +65,7 @@ pub trait Page<Message: 'static>: Downcast {
 
     /// Reload page metadata via a Task.
     #[allow(unused)]
-    fn on_enter(&mut self, sender: tokio::sync::mpsc::Sender<Message>) -> Task<Message> {
+    fn on_enter(&mut self) -> Task<Message> {
         Task::none()
     }
 

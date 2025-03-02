@@ -21,7 +21,6 @@ use freedesktop_desktop_entry::{
 };
 use mime_apps::App;
 use slotmap::SlotMap;
-use tokio::sync::mpsc;
 
 const DROPDOWN_WEB_BROWSER: usize = 0;
 const DROPDOWN_FILE_MANAGER: usize = 1;
@@ -105,10 +104,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("default-apps", "desc"))
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         if let Some(handle) = self.on_enter_handle.take() {
             handle.abort();
         }

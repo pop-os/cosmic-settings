@@ -1,0 +1,29 @@
+// Example dark accent palette
+[
+// Blue
+(red: 0.3882353, green: 0.81568627, blue: 0.87450981, alpha: 1.0),
+
+// Indigo
+(red: 0.63137255, green: 0.75294118, blue: 0.92156863, alpha: 1.0),
+
+// Purple
+(red: 0.90588235, green: 0.61176471, blue: 0.99607843, alpha: 1.0),
+
+// Pink
+(red: 1.0, green: 0.61176471, blue: 0.69411765, alpha: 1.0),
+
+// Red
+(red: 0.99215686, green: 0.63137255, blue: 0.62745098, alpha: 1.0),
+
+// Orange
+(red: 1.0, green: 0.67843137, blue: 0.0, alpha: 1.0),
+
+// Yellow
+(red: 0.96862745, green: 0.87843137, blue: 0.38431373, alpha: 1.0),
+
+// Green
+(red: 0.57254902, green: 0.81176471, blue: 0.61176471, alpha: 1.0),
+
+// Warm Grey
+(red: 0.79215686, green: 0.72941176, blue: 0.70588235, alpha: 1.0)
+]
