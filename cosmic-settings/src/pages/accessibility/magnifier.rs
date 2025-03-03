@@ -24,8 +24,7 @@ pub struct Page {
 
     accessibility_config: cosmic_config::Config,
     zoom_config: ZoomConfig,
-    increment_values: Vec<String>,
-    increment_idx: Option<usize>,
+    zoom_increment: u32,
 
     wayland_thread: Option<wayland::Sender>,
     magnifier_state: bool,
@@ -36,7 +35,7 @@ pub enum Message {
     Event(wayland::AccessibilityEvent),
     ProtocolUnavailable,
     SetMagnifier(bool),
-    SetIncrement(usize),
+    SetIncrement(u32),
     SetSignin(bool),
     SetMovement(ZoomMovement),
 }
@@ -53,35 +52,12 @@ impl Default for Page {
             })
             .unwrap_or_default();
 
-        let mut values = HashSet::<u32>::from_iter([25, 50, 100, 150, 200, zoom_config.increment])
-            .into_iter()
-            .collect::<Vec<_>>();
-        values.sort();
-        let increment_values = values
-            .into_iter()
-            .map(|val| {
-                format!(
-                    "{}%{}",
-                    val,
-                    if val == ZoomConfig::default().increment {
-                        " (Default)"
-                    } else {
-                        ""
-                    }
-                )
-            })
-            .collect::<Vec<_>>();
-        let increment_idx = increment_values.iter().position(|s| {
-            s.split("%").next().and_then(|val| str::parse(val).ok()) == Some(zoom_config.increment)
-        });
-
         Page {
             entity: Entity::default(),
 
             accessibility_config: comp_config,
+            zoom_increment: zoom_config.increment,
             zoom_config,
-            increment_values,
-            increment_idx,
 
             wayland_thread: None,
             magnifier_state: false,
@@ -184,14 +160,29 @@ pub fn magnifier() -> section::Section<crate::pages::Message> {
                             widget::toggler(page.magnifier_state).on_toggle(Message::SetMagnifier),
                         ),
                 )
-                .add(settings::item(
-                    &descriptions[increment],
-                    widget::dropdown(
-                        &page.increment_values,
-                        page.increment_idx,
-                        Message::SetIncrement,
-                    ),
-                ))
+                .add(settings::item::builder(&descriptions[increment])
+                    .flex_control({
+                        let slider = widget::slider(25..=200, page.zoom_increment as i32, |value| {
+                            // Round to nearest multiple of 5
+                            let rounded_value = ((value + 2) / 5) * 5;
+                            Message::SetIncrement(rounded_value as u32)
+                        })
+                        .step(5)
+                        .width(Length::Fill)
+                        .apply(widget::container)
+                        .max_width(250);
+
+                        widget::row::with_capacity(2)
+                            .align_y(cosmic::iced::Alignment::Center)
+                            .spacing(8)
+                            .push(
+                                widget::text::body(format!("{}%", page.zoom_increment))
+                                    .width(Length::Fixed(48.0))
+                                    .align_x(cosmic::iced::Alignment::Center),
+                            )
+                            .push(slider)
+                    }),
+                )
                 .add(settings::item(
                     &descriptions[signin],
                     widget::toggler(page.zoom_config.start_on_login).on_toggle(Message::SetSignin),
@@ -287,15 +278,11 @@ impl Page {
                     let _ = sender.send(AccessibilityRequest::Magnifier(value));
                 }
             }
-            Message::SetIncrement(idx) => {
-                self.increment_idx = Some(idx);
-                let value = self.increment_values[idx]
-                    .split("%")
-                    .next()
-                    .unwrap()
-                    .parse::<u32>()
-                    .unwrap();
-                self.zoom_config.increment = value;
+            Message::SetIncrement(value) => {
+                // Ensure the value is a multiple of 5
+                let rounded_value = ((value + 2) / 5) * 5;
+                self.zoom_increment = rounded_value;
+                self.zoom_config.increment = rounded_value;
 
                 if let Err(err) = self
                     .accessibility_config
