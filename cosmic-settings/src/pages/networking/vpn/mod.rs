@@ -250,7 +250,7 @@ impl page::Page<crate::pages::Message> for Page {
                     *password_hidden,
                 )
                 .on_input(|input| Message::PasswordUpdate(SecureString::from(input)))
-                .on_submit(Message::ConnectWithPassword);
+                .on_submit(|_| Message::ConnectWithPassword);
 
                 let controls = widget::column::with_capacity(2)
                     .spacing(12)

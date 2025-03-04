@@ -310,7 +310,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                     })
                     .select_on_focus(true)
                     .on_input(Message::SetFocusFollowsCursorDelay)
-                    .on_submit(Message::SaveFocusFollowsCursorDelay(true))
+                    .on_submit(|_| Message::SaveFocusFollowsCursorDelay(true))
                     .width(Length::Fixed(80.0)),
                 ))
                 .add(settings::item(

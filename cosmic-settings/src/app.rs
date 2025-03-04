@@ -26,6 +26,7 @@ use cosmic::app::DbusActivationMessage;
 #[cfg(feature = "wayland")]
 use cosmic::cctk::{sctk::output::OutputInfo, wayland_client::protocol::wl_output::WlOutput};
 use cosmic::iced::Subscription;
+use cosmic::surface_message::SurfaceMessage;
 use cosmic::widget::{self, button, row, text_input};
 use cosmic::{
     app::{Core, Task},
@@ -139,6 +140,23 @@ impl SettingsApp {
     }
 }
 
+#[cfg(feature = "wayland")]
+impl From<Message> for cosmic::surface_message::MessageWrapper<Message> {
+    fn from(value: Message) -> Self {
+        match value {
+            Message::Surface(msg) => cosmic::surface_message::MessageWrapper::Surface(msg),
+            msg => cosmic::surface_message::MessageWrapper::Message(msg),
+        }
+    }
+}
+
+#[cfg(feature = "wayland")]
+impl From<SurfaceMessage> for Message {
+    fn from(value: SurfaceMessage) -> Self {
+        Message::Surface(value)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum Message {
     CloseContextDrawer,
@@ -161,6 +179,7 @@ pub enum Message {
     SearchSubmit,
     SetTheme(cosmic::theme::Theme),
     SetWindowTitle,
+    Surface(SurfaceMessage),
 }
 
 impl cosmic::Application for SettingsApp {
@@ -240,7 +259,7 @@ impl cosmic::Application for SettingsApp {
                 .id(self.search_id.clone())
                 .on_clear(Message::SearchClear)
                 .on_input(Message::SearchChanged)
-                .on_submit(Message::SearchSubmit)
+                .on_submit(|_| Message::SearchSubmit)
                 .into()
         } else {
             icon::from_name("system-search-symbolic")
@@ -734,6 +753,7 @@ impl cosmic::Application for SettingsApp {
             Message::Error(error) => {
                 tracing::error!(error, "error occurred");
             }
+            Message::Surface(_) => {}
         }
 
         Task::none()
