@@ -26,9 +26,9 @@ connecting = Kapcsolódás...
 disconnect = Szétkapcsolás
 forget = Elfelejtés
 known-networks = Ismert hálózatok
-network-and-wireless = Hálózat és vezeték nélküli kapcsolatok
+network-and-wireless = Hálózat és Wi-Fi
 no-networks = Nem található hálózat.
-no-vpn = Nincs elérhető VPN-kapcsolat.
+no-vpn = Nincsenek elérhető VPN-kapcsolatok.
 password = Jelszó
 remove = Törlés
 settings = Beállítások
@@ -40,7 +40,7 @@ auth-dialog = Azonosítás szükséges
     .wifi-description = Írja be a jelszót vagy a titkosítókulcsot. A router "WPS" gombjának megnyomásával is csatlakozhat.
 
 forget-dialog = El akarja felejteni ezt a Wi-Fi hálózatot?
-    .description = A jelszót újra be kell írnia a jövőbeli használathoz.
+    .description = A jelszót ismét meg kell adnia, ha újra csatlakozni szeretne.
 
 network-device-state =
     .activated = Csatlakozva a hálózathoz
@@ -66,7 +66,7 @@ vpn = VPN
     .connections = VPN-kapcsolatok
     .error = Nem sikerült hozzáadni a VPN-konfigurációt
     .remove = Kapcsolati profil törlése
-    .select-file = Válassz ki egy VPN konfigurációs fájlt
+    .select-file = Válasszon ki egy VPN konfigurációs fájlt
 
 vpn-error = VPN Hiba
     .config = Nem sikerült hozzáadni a VPN-konfigurációt
@@ -75,7 +75,7 @@ vpn-error = VPN Hiba
     .connection-settings = Nem sikerült lekérni az aktív kapcsolatok beállításait
     .updating-state = Nem sikerült frissíteni a hálózatkezelő állapotát
     .wireguard-config-path = Érvénytelen fájlelérési út a WireGuard konfigurációhoz
-    .wireguard-config-path-desc = A kiválasztott fájlnak egy helyi fájlrendszeren kell lennie.
+    .wireguard-config-path-desc = A kiválasztott fájlnak helyi fájlrendszeren kell lennie.
     .wireguard-device = Nem sikerült létrehozni a WireGuard eszközt
     .with-password = Nem sikerült beállítani a VPN { $field ->
         *[username] felhasználónevét
@@ -87,14 +87,14 @@ wired = Vezetékes
     .adapter = Vezetékes adapter { $id }
     .connections = Vezetékes kapcsolatok
     .devices = Vezetékes eszközök
-    .remove = Kapcsololati profil törlése
+    .remove = Kapcsolati profil törlése
 
 wifi = Wi-Fi
     .adapter = Wi-Fi adapter { $id }
     .forget = Hálózat elfelejtése
 
 wireguard-dialog = WireGuard eszköz hozzáadása
-    .description = Válassz egy eszköz nevet a WireGuard konfigurációhoz.
+    .description = Válasszon egy eszköz nevet a WireGuard konfigurációhoz.
 
 ## Networking: Online Accounts
 
@@ -110,13 +110,13 @@ bluetooth = Bluetooth
     .status = Ez a rendszer { $aliases } néven látható, amíg a Bluetooth beállítások vannak megnyitva.
     .connected = Kapcsolódva
     .connecting = Kapcsolódás
-    .disconnecting = Szétkapcsolódás
+    .disconnecting = Szétkapcsolás
     .connect = Kapcsolódás
     .disconnect = Szétkapcsolás
     .forget = Elfelejt
     .dbus-error = Hiba történt a DBus-szal való kommunikáció során: { $why }
 
-bluetooth-paired = Korábban csatlakoztatott eszközök
+bluetooth-paired = Korábban párosított eszközök
     .connect = Kapcsolódás
     .battery = { $percentage }% töltöttség
 
@@ -126,6 +126,27 @@ bluetooth-confirm-pin = Bluetooth PIN megerősítése
 bluetooth-available = Közeli Eszközök
 
 bluetooth-adapters = Bluetooth Adapterek
+
+## Accessibility
+
+accessibility = Akadálymentesség
+    .vision = Látás
+    .on = Bekapcsolva
+    .off = Kikapcsolva
+    .unavailable = Nem elérhető
+magnifier = Nagyító
+    .controls =
+        Vagy használd a billentyűparancsokat:
+        Super + = a nagyításhoz,
+        Super + - a kicsinyítéshez,
+        Super + görgetés az egérrel
+    .increment = Nagyítás mértéke
+    .signin = Nagyító indítása bejelentkezéskor
+    .applet = A nagyítót be- és kikapcsolhatja a panelen található kisalkalmazásban
+    .movement = Nagyított nézet mozgása
+    .continuous = A mutatóval
+    .onedge = Amikor a mutató eléri a szélet
+    .centered = Hogy a mutató középen maradjon
 
 ## Desktop
 
@@ -181,8 +202,8 @@ mode-and-colors = Mód és színek
 recent-colors = Korábbi színek
 reset-to-default = Visszaállítás alapértelmezettre
 rgb = RGB
-window-hint-accent = Aktív ablakkiemelő szín
-window-hint-accent-toggle = A témaszín használata az aktív ablak jelölésére
+window-hint-accent = Az Aktív ablak kiemelésének színe
+window-hint-accent-toggle = A témaszín használata az aktív ablak kiemelésére
 
 auto-switch = Automatikus váltás a világos és sötét módok között
     .sunrise = Napkeltekor Világos módra vált
@@ -221,7 +242,7 @@ interface-density = Felület sűrűsége
     .spacious = Tágas
 
 window-management = Ablakkezelés
-    .active-hint = Aktív ablak jelölésének mérete
+    .active-hint = Aktív ablak kiemelésének mérete
     .gaps = Rések a csempézett ablakok körül
 
 ### Experimental
@@ -245,7 +266,7 @@ add = Hozzáadás
 add-applet = Kisalkalmazás hozzáadása
 all = Összes
 applets = Kisalkalmazások
-center-segment = Középső szegmens
+center-segment = Szegmens közepe
 drop-here = Húzza ide a kisalkalmazásokat
 end-segment = Szegmens vége
 large = Nagy
@@ -256,10 +277,10 @@ panel-right = Jobbra
 panel-top = Felül
 search-applets = Kisalkalmazások keresése...
 small = Kicsi
-start-segment = Szegmens indítása
+start-segment = Szegmens eleje
 
 panel-appearance = Megjelenés
-    .match = Asztallal egyező
+    .match = Rendszertéma
     .light = Világos
     .dark = Sötét
 
@@ -294,7 +315,7 @@ dock = Dokkoló
 ## Desktop: Window management
 
 window-management = Ablakkezelés
-    .desc = Super billentyű művelet, ablakkezelési és csempézési beállítások.
+    .desc = Super billentyű funkció, ablakkezelési és csempézési beállítások.
 
 super-key = Super billentyű
     .launcher = Indító megnyitása
@@ -311,7 +332,7 @@ window-controls = Ablakkezelés
 
 focus-navigation = Fókusznavigáció
     .focus-follows-cursor = Fókusz követi az egeret
-    .focus-follows-cursor-delay = Fókusz késleltetése (ms)
+    .focus-follows-cursor-delay = Fókuszálás késleltetése (ms)
     .cursor-follows-focus = Mutató követi a fókuszt
 
 ## Desktop: Workspaces
@@ -462,7 +483,7 @@ connected-devices = Csatlakoztatott eszközök
   .unknown = Ismeretlen eszköz
 
 power-mode = Energiagazdálkodási mód
-    .battery = Meghosszabbított akkumulátor üzemidő
+    .battery = Meghosszabbított akkumulátor-üzemidő
     .battery-desc = Csökkentett energiafogyasztás és csendes teljesítmény.
     .balanced = Kiegyensúlyozott
     .balanced-desc = Csendes teljesítmény és mérsékelt energiafogyasztás.
@@ -539,9 +560,10 @@ command = Parancs
 custom = Egyedi
 debug = Hibakeresés
 disabled = Tiltva
+input-source-switch = Billentyűzetkiosztás váltása
 migrate-workspace-prev = Munkaterület áthelyezése az előző kimenetre
 migrate-workspace-next = Munkaterület áthelyezése a következő kimenetre
-migrate-workspace = Munkaterület áttelepítése { $direction ->
+migrate-workspace = Munkaterület áthelyezése { $direction ->
     *[down] az alsó
     [left] a bal
     [right] a jobb
@@ -552,7 +574,7 @@ replace = Kicserélés
 shortcut-name = Billentyűparancs neve
 system-controls = Rendszervezérlés
 terminate = Befejezés
-toggle-stacking = Az ablakok egymásra helyezésének váltása
+toggle-stacking = Az ablakok egymásra helyezésének be- és kikapcsolása
 type-key-combination = Billentyűkombináció
 
 custom-shortcuts = Egyedi billentyűkombinációk
@@ -590,7 +612,7 @@ manage-windows = Ablakok kezelése
     .minimize = Ablak minimalizálása
     .resize-inwards = Ablak átméretezése befelé
     .resize-outwards = Ablak átméretezése kifelé
-    .toggle-sticky = Ragadós ablak váltása
+    .toggle-sticky = Ragadós ablak be- és kikapcsolása
 
 move-windows = Ablakok mozgatása
     .direction = Ablakok mozgatása { $direction ->
@@ -648,9 +670,9 @@ window-tiling = Ablak csempézés
     .horizontal = Vízszintes tájolás beállítása
     .vertical = Függőleges tájolás beállítása
     .swap-window = Ablak cserélése
-    .toggle-tiling = Ablak csempézésének váltása
-    .toggle-stacking = Ablakok egymásra helyezésének váltása
-    .toggle-floating = Lebegő ablak váltása
+    .toggle-tiling = Az Ablakok csempézésének be- és kikapcsolása
+    .toggle-stacking = Az Ablakok egymásra helyezésének be- és kikapcsolása
+    .toggle-floating = Az ablakok lebegtetésének be- és kikapcsolása
     .toggle-orientation = Tájolás váltása
 
 replace-shortcut-dialog = Lecseréli a parancsikont?
