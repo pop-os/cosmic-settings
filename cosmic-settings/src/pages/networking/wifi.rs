@@ -145,7 +145,7 @@ impl page::Page<crate::pages::Message> for Page {
                     *password_hidden,
                 )
                 .on_input(|input| Message::PasswordUpdate(SecureString::from(input)))
-                .on_submit(Message::ConnectWithPassword);
+                .on_submit(|_| Message::ConnectWithPassword);
 
                 let primary_action = widget::button::suggested(fl!("connect"))
                     .on_press(Message::ConnectWithPassword);
