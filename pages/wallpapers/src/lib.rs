@@ -5,6 +5,7 @@ use futures_lite::Stream;
 use image::imageops::FilterType;
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
 use jxl_oxide::{EnumColourEncoding, JxlImage, PixelFormat};
+use std::os::unix::ffi::OsStrExt;
 use std::{
     borrow::Cow,
     collections::{hash_map::DefaultHasher, BTreeSet, HashMap},
@@ -111,7 +112,7 @@ pub async fn load_each_from_path(
                 let path = entry.path();
 
                 if file_type.is_file() {
-                    let path = if path.extension().map_or(false, |ext| ext == "jxl") {
+                    let path = if path.extension().map(|ext| ext == "jxl").unwrap_or_default() {
                         path
                     } else if let Ok(Some(kind)) = infer::get_from_path(&path) {
                         if infer::MatcherType::Image == kind.matcher_type() {
@@ -252,7 +253,7 @@ fn load_thumbnail(
 }
 
 fn open_image(input_buffer: &mut Vec<u8>, path: &Path) -> Option<DynamicImage> {
-    if path.extension().map_or(false, |ext| ext == "jxl") {
+    if path.extension().map(|ext| ext == "jxl").unwrap_or_default() {
         return match decode_jpegxl(path) {
             Ok(image) => Some(image),
             Err(why) => {
@@ -260,6 +261,24 @@ fn open_image(input_buffer: &mut Vec<u8>, path: &Path) -> Option<DynamicImage> {
                 None
             }
         };
+    }
+
+    const SUPPORTED_FORMATS: &[&[u8]] = &[
+        "jpg".as_bytes(),
+        "jpeg".as_bytes(),
+        "png".as_bytes(),
+        "avif".as_bytes(),
+        "webp".as_bytes(),
+        "heif".as_bytes(),
+    ];
+
+    let format_is_supported = path
+        .extension()
+        .map(|ext| SUPPORTED_FORMATS.contains(&ext.to_ascii_lowercase().as_bytes()))
+        .unwrap_or_default();
+
+    if !format_is_supported {
+        return None;
     }
 
     let capacity = match path.metadata() {
