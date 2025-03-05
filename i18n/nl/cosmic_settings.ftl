@@ -127,6 +127,27 @@ bluetooth-available = Nabije bluetooth-apparaten
 
 bluetooth-adapters = Bluetooth-adapters
 
+## Accessibility
+
+accessibility = Toegankelijkheid
+    .vision = Zicht
+    .on = Aan
+    .off = Uit
+    .unavailable = Niet beschikbaar
+magnifier = Vergrootglas
+    .controls =
+        Of gebruik de sneltoetsen:
+        Super + = om in te zoomen,
+        Super + - om uit te zoomen,
+        Super + scrollwiel om te zoomen met de muis
+    .increment = Zoom-stapgrootte
+    .signin = Het vergrootglas direct gebruiken als u inlogt
+    .applet = Met een panel-applet het vergrootglas in-/uitschakelen
+    .movement = Beweegt de vergroting
+    .continuous = De vergroting volgt de muis
+    .onedge = Verplaats als de muis de randen raakt
+    .centered = Houdt de muis steeds in het midden van de vergroting
+
 ## Desktop
 
 desktop = Bureaublad
