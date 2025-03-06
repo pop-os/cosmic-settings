@@ -256,8 +256,8 @@ window-management-appearance = Zarządzanie oknami
 
 experimental-settings = Ustawienia eksperymentalne
 icons-and-toolkit = Motyw ikon i toolkitu
-interface-font = Font systemowy
-monospace-font = Font o stałej szerokości
+interface-font = Czcionka systemowa
+monospace-font = Czcionka o stałej szerokości
 
 ## Desktop: Notifications
 
