@@ -127,6 +127,27 @@ bluetooth-available = Dispositivos próximos
 
 bluetooth-adapters = Adaptadores de Bluetooth
 
+## Accessibility
+
+accessibility = Acessibilidade
+    .vision = Visão
+    .on = Ligado
+    .off = Desligado
+    .unavailable = Indisponível
+magnifier = Ampliador de tela
+    .controls =
+        Ou use teclas de atalho:
+        Super + = para aumentar o zoom,
+        Super + - para diminuir o zoom,
+        Super + rolar com o mouse
+    .increment = Incremento de zoom
+    .signin = Iniciar o ampliador ao fazer login
+    .applet = Ativar/desativar o ampliador no applet do painel
+    .movement = A visualização ampliada se move
+    .continuous = Continuamente com ponteiro
+    .onedge = Quando o ponteiro atinge a borda
+    .centered = Para manter o ponteiro centralizado
+
 ## Desktop
 
 desktop = Desktop
@@ -302,9 +323,11 @@ super-key = Ação da tecla Super (Windows)
     .applications = Abrir Aplicativos
     .disable = Desabilitar
 
-window-controls = Controle de Janelas
-    .minimize = Mostrar o botão de minimizar
-    .maximize = Mostrar o botão de maximizar
+edge-gravity = Janelas flutuantes gravitam em direção às bordas próximas
+
+window-controls = Controles de Janela
+    .maximize = Mostrar botão de maximizar
+    .minimize = Mostrar botão de minimizar
     .active-window-hint = Mostrar dica de janela ativa
 
 focus-navigation = Navegação em Foco
@@ -359,6 +382,7 @@ display = Monitores
     .refresh-rate = Taxa de atualização
     .resolution = Resolução
     .scale = Escala
+    .additional-scale-options = Opções de escala adicionais
 
 mirroring = Espelhar
     .id = Espelhar { $id }
@@ -653,6 +677,9 @@ window-tiling = Janelas lado-a-lado (Window tiling)
 replace-shortcut-dialog = Substituir atalho?
     .desc = { $shortcut } está sendo usado por { $name }. se você substituí-lo, { $name } será desativado.
 
+zoom-in = Aumentar o zoom
+zoom-out = Diminuir o zoom
+
 ## Input: Mouse
 
 mouse = Mouse
@@ -798,3 +825,4 @@ default-apps = Aplicativos Padrão
     .calendar = Calendário
     .terminal = Terminal
     .other-associations = Outras associações
+    .text-editor = Editor de Texto
