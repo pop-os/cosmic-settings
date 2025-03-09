@@ -42,8 +42,7 @@ inherits = "release"
 debug = true
 
 [profile.release]
-opt-level = "s"
-lto = "thin"
+opt-level = 1
 
 # [patch.'https://github.com/smithay/client-toolkit/']
 # smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }
@@ -56,11 +55,11 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/libcosmic']
-# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "font" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "font" }
-# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "font" }
-# iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "font" }
+[patch.'https://github.com/pop-os/libcosmic']
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "fix-dbus-subscription-id" }
+cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "fix-dbus-subscription-id" }
+cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "fix-dbus-subscription-id" }
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "fix-dbus-subscription-id" }
 
 # libcosmic = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
