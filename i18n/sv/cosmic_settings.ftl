@@ -152,6 +152,28 @@ legacy-applications = X11 fönstersystem applikationsskalning
     .scaled-natively = Rendera X11-applikationer med inbyggd upplösning
     .native-description = X11-applikationer som inte stöder skalning kommer att vara små när HiDPI-skärmar används. Aktivera för att spel ska kunna använda hela skärmen
 
+## Tillgänglighet
+
+accessibility = Tillgänglighet
+    .vision = Syn
+    .on = På
+    .off = Av
+    .unavailable = Inte tillgänglig
+magnifier = Förstoringsglas
+    .controls =
+        Eller använd tangentbordsgenvägar:
+        Super + = för att zooma in,
+        Super + - för att zooma ut,
+        Super + scrolla med musen
+    .increment = Zoom inkrement
+    .signin = Starta förstoringsglaset vid inloggning
+    .applet = Växla förstoringsglas på/av i applet på panelen
+    .movement = Zoomad vy flyttas
+    .continuous = Kontinuerligt med pekare
+    .onedge = När pekaren når kanten
+    .centered = För att hålla pekaren centrerad
+
+
 ## Skrivbord: Aviseringar
 
 notifications = Aviseringar
