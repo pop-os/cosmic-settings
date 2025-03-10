@@ -134,6 +134,7 @@ accessibility = Accessibility
     .on = On
     .off = Off
     .unavailable = Unavailable
+    .high-contrast = High contrast mode
 magnifier = Magnifier
     .controls = Or use these shortcuts: { $zoom_in ->
              [zero] {""}
