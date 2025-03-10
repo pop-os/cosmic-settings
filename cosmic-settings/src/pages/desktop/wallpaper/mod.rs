@@ -468,7 +468,7 @@ impl Page {
 
         if self.wallpaper_service_config.same_on_all {
             self.wallpaper_service_config.backgrounds.clear();
-            // self.wallpaper_service_config.outputs.clear();
+            self.wallpaper_service_config.outputs.clear();
         } else if let Some(pos) = self
             .wallpaper_service_config
             .backgrounds

@@ -85,8 +85,6 @@ pub const fn actions() -> &'static [Action] {
         Action::PreviousWorkspace,
         Action::NextWorkspace,
         Action::LastWorkspace,
-        Action::PreviousOutput,
-        Action::NextOutput,
         Action::SwitchOutput(Direction::Left),
         Action::SwitchOutput(Direction::Right),
         Action::SwitchOutput(Direction::Up),
