@@ -800,6 +800,21 @@ impl cosmic::Application for SettingsApp {
             .dialog(self.active_page)
             .map(|e| e.map(Message::PageMessage))
     }
+
+    fn system_theme_update(
+        &mut self,
+        _keys: &[&'static str],
+        new_theme: &cosmic::cosmic_theme::Theme,
+    ) -> Task<Self::Message> {
+        if let Some(page) = self.pages.page_mut::<accessibility::Page>() {
+            page.update(accessibility::Message::SystemTheme(Box::new(
+                new_theme.clone(),
+            )))
+            .map(Into::into)
+        } else {
+            Task::none()
+        }
+    }
 }
 
 impl SettingsApp {
