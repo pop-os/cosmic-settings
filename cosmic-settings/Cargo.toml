@@ -88,6 +88,7 @@ async-fn-stream = "0.2.2"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
+branch = "eap-peap"
 #TODO: only select features as needed
 features = ["network_manager", "pipewire", "pulse", "bluetooth"]
 optional = true
