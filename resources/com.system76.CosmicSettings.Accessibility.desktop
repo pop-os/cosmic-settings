@@ -1,6 +1,8 @@
 [Desktop Entry]
 Name=Accessibility
+Name[hu]=Akadálymentesség
 Comment=Accessibility settings.
+Comment[hu]=Akadálymentességi beállítások.
 Type=Settings
 Exec=cosmic-settings accessibility
 Terminal=false
