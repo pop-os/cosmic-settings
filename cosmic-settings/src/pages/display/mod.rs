@@ -490,7 +490,7 @@ impl Page {
         match message {
             Message::RandrResult(result) => {
                 if let Some(Err(why)) = Arc::into_inner(result) {
-                    tracing::error!(?why, "cosmic-randr error");
+                    tracing::error!(why = why.to_string(), "cosmic-randr error");
                 }
             }
 
@@ -608,7 +608,7 @@ impl Page {
                     }
 
                     Some(Err(why)) => {
-                        tracing::error!(?why, "error fetching displays");
+                        tracing::error!(why = why.to_string(), "error fetching displays");
                     }
 
                     None => (),
