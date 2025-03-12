@@ -134,12 +134,21 @@ accessibility = Dostępność
     .on = Włączona
     .off = Wyłączona
     .unavailable = Niedostępna
+    .high-contrast = Tryb wysokiego kontrastu
 magnifier = Lupa
     .controls =
-        Użyj skrótów klawiszowych:
-        Super + = aby zbliżyć,
-        Super + - aby oddalić,
+        Użyj skrótów klawiszowych:{ $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} aby przybliżyć,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} aby oddalić,
+        }
         Super + przewijanie rolką myszy
+    .increment = Inkrementacja przybliżenia
+    .signin = Uruchom lupę przy zalogowaniu
     .applet = Włączanie/wyłączanie lupy w aplecie na panelu
     .movement = Widok powiększenia porusza się
     .continuous = Stale ze wskaźnikiem
@@ -560,6 +569,13 @@ keyboard-special-char = Wpis znaków specjalnych
 keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
     .repeat-delay = Opóźnienie powtarzania
+
+keyboard-numlock-boot = Numlock
+    .boot-state = Stan podczas uruchamiania
+    .last-boot = Taki jak ostatnio
+    .on = Włącz
+    .off = Wyłącz
+    .set = Ustaw stan numlocka podczas uruchamiania
 
 added = Dodany
 type-to-search = Naciśnij by wyszukać…
