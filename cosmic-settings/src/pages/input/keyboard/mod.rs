@@ -13,7 +13,7 @@ use cosmic::{
     widget::{self, button, container, icon, radio, row, settings, ListColumn},
     Apply, Element, Task,
 };
-use cosmic_comp_config::XkbConfig;
+use cosmic_comp_config::{KeyboardConfig, NumlockState, XkbConfig};
 use cosmic_settings_page::{self as page, section, Section};
 use itertools::Itertools;
 use slab::Slab;
@@ -58,6 +58,7 @@ pub enum Message {
     ExpandInputSourcePopover(Option<DefaultKey>),
     InputSourceSearch(String),
     OpenSpecialCharacterContext(SpecialKey),
+    OpenNumlockContext,
     ShowInputSourcesContext,
     SourceAdd(DefaultKey),
     SourceContext(SourceContext),
@@ -65,6 +66,7 @@ pub enum Message {
     SetRepeatKeysDelay(u32),
     SetRepeatKeysRate(u32),
     SetShowExtendedInputSources(bool),
+    SetNumlockState(NumlockState),
 }
 
 #[derive(Clone, Debug)]
@@ -102,6 +104,7 @@ pub struct Page {
     context: Option<Context>,
     input_source_search: String,
     xkb: XkbConfig,
+    keyboard_config: KeyboardConfig,
     keyboard_layouts: SlotMap<DefaultKey, (Locale, Variant, Description, LayoutSource)>,
     active_layouts: Vec<DefaultKey>,
     expanded_source_popover: Option<DefaultKey>,
@@ -120,6 +123,7 @@ impl Default for Page {
             keyboard_layouts: SlotMap::new(),
             active_layouts: Vec::new(),
             xkb: XkbConfig::default(),
+            keyboard_config: KeyboardConfig::default(),
             input_source_search: String::new(),
             show_extended_input_sources: false,
             config,
@@ -130,6 +134,7 @@ impl Default for Page {
 enum Context {
     ShowInputSourcesContext,
     SpecialCharacter(SpecialKey),
+    NumlockState,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -279,6 +284,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(special_character_entry()),
             sections.insert(keyboard_shortcuts()),
             sections.insert(keyboard_typing_assist()),
+            sections.insert(keyboard_num_lock()),
         ])
     }
 
@@ -295,16 +301,18 @@ impl page::Page<crate::pages::Message> for Page {
                 .special_character_key_view(special_key)
                 .map(crate::pages::Message::Keyboard)
                 .apply(Some),
+            Some(Context::NumlockState) => self
+                .numlock_state_view()
+                .map(crate::pages::Message::Keyboard)
+                .apply(Some),
 
             None => None,
         }
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
+        self.keyboard_config = super::get_config(&self.config, "keyboard_config");
         match (
             xkb_data::keyboard_layouts(),
             xkb_data::extra_keyboard_layouts(),
@@ -493,6 +501,14 @@ impl Page {
                 ));
             }
 
+            Message::OpenNumlockContext => {
+                self.context = Some(Context::NumlockState);
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    fl!("keyboard-numlock-boot", "set").into(),
+                ));
+            }
+
             Message::SpecialCharacterSelect(id) => {
                 if let Some(Context::SpecialCharacter(special_key)) = self.context {
                     let options = self.xkb.options.as_deref().unwrap_or_default();
@@ -520,6 +536,12 @@ impl Page {
             }
             Message::SetShowExtendedInputSources(value) => {
                 self.show_extended_input_sources = value;
+            }
+            Message::SetNumlockState(numlock_state) => {
+                self.keyboard_config.numlock_state = numlock_state;
+                if let Err(err) = self.config.set("keyboard_config", &self.keyboard_config) {
+                    tracing::error!(?err, "Failed to set config 'keyboard_config'");
+                }
             }
         }
 
@@ -612,6 +634,32 @@ impl Page {
             .iter()
             .map(|(desc, id)| special_char_radio_row(desc, Some(id), current))
             .fold(list, ListColumn::add);
+
+        cosmic::widget::container(list).padding(24).into()
+    }
+
+    fn numlock_state_view(&self) -> cosmic::Element<'_, Message> {
+        let current = self.keyboard_config.numlock_state;
+        let options = [
+            (fl!("keyboard-numlock-boot", "off"), NumlockState::BootOff),
+            (fl!("keyboard-numlock-boot", "on"), NumlockState::BootOn),
+            (
+                fl!("keyboard-numlock-boot", "last-boot"),
+                NumlockState::LastBoot,
+            ),
+        ];
+
+        let mut list = cosmic::widget::list_column();
+        for (desc, state) in options {
+            list = list.add(settings::item_row(vec![radio(
+                cosmic::widget::text(desc),
+                Some(state),
+                Some(Some(current)),
+                |_| Message::SetNumlockState(state),
+            )
+            .width(Length::Fill)
+            .into()]));
+        }
 
         cosmic::widget::container(list).padding(24).into()
     }
@@ -790,6 +838,28 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
                         .push(rate_slider)
                         .push(widget::text::body(&descriptions[fast]))
                 }))
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::Keyboard)
+        })
+}
+
+fn keyboard_num_lock() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let boot_state = descriptions.insert(fl!("keyboard-numlock-boot", "boot-state"));
+
+    Section::default()
+        .title(fl!("keyboard-numlock-boot"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, _page, section| {
+            let descriptions = &section.descriptions;
+
+            settings::section()
+                .title(&section.title)
+                .add(crate::widget::go_next_item(
+                    &descriptions[boot_state],
+                    Message::OpenNumlockContext,
+                ))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Keyboard)
         })

@@ -130,23 +130,21 @@ bluetooth-adapters = Adaptery Bluetooth
 ## Accessibility
 
 accessibility = Dostępność
-    .vision = Widok
-    .on = Włączony
-    .off = Wyłączony
-    .unavailable = Niedostępne
-magnifier = Powiększalnik
+    .vision = Widoczność
+    .on = Włączona
+    .off = Wyłączona
+    .unavailable = Niedostępna
+magnifier = Lupa
     .controls =
-        Możesz użyć także skrótów klawiszowych:
-        Super + = by przybliżyć,
-        Super + - by oddalić,
-                Super + przewijanie przy pomocy myszy
-    .increment = Stopień przybliżenia
-    .signin = Uruchom powiększalnik przy logowaniu
-    .applet = Przełącz włączanie/wyłączanie powiększalnika w applecie
-    .movement = Ruch widoku przybliżenia
-    .continuous = Stale z kursorem
-    .onedge = Gdy kursor dotknie krawędzi
-    .centered = Stale wycemtrowany
+        Lub użyj skrótów klawiszowych:
+        Super + = aby zbliżyć,
+        Super + - aby oddalić,
+        Super + przewijanie rolką myszy
+    .applet = Przełącznik włączania/wyłączania lupy w aplecie na panelu
+    .movement = Powiększony widok porusza się
+    .continuous = Stały ruch z kursorem
+    .onedge = Gdy wskaźnik osiągnie krawędź
+    .centered = Stale wycentrowany
 
 ## Desktop
 

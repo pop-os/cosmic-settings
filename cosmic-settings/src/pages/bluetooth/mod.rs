@@ -8,6 +8,7 @@ use cosmic::{theme, Apply, Element, Task};
 use cosmic_settings_page::{self as page, section, Section};
 use cosmic_settings_subscriptions::bluetooth::*;
 use futures::channel::oneshot;
+use futures::StreamExt;
 use slab::Slab;
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
@@ -69,14 +70,11 @@ impl page::Page<crate::pages::Message> for Page {
         ])
     }
 
-    fn on_enter(
-        &mut self,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         // TODO start stream for new device
         cosmic::task::future(async move {
             match zbus::Connection::system().await {
-                Ok(connection) => Message::DBusConnect(connection, sender),
+                Ok(connection) => Message::DBusConnect(connection),
                 Err(why) => Message::DBusError(why.to_string()),
             }
         })
@@ -148,10 +146,7 @@ impl page::Page<crate::pages::Message> for Page {
 pub enum Message {
     BluetoothEvent(Event),
     ConnectDevice(OwnedObjectPath),
-    DBusConnect(
-        zbus::Connection,
-        tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ),
+    DBusConnect(zbus::Connection),
     DBusError(String),
     DisconnectDevice(OwnedObjectPath),
     ForgetDevice(OwnedObjectPath),
@@ -378,26 +373,47 @@ impl Page {
                 tracing::warn!("No DBus connection ready");
             }
 
-            Message::DBusConnect(connection, sender) => {
+            Message::DBusConnect(connection) => {
                 self.connection = Some(connection.clone());
+
+                let get_adapters_fut = get_adapters(connection.clone());
 
                 if self.subscription.is_none() {
                     let connection = connection.clone();
-                    self.subscription = Some(crate::utils::forward_event_loop(
-                        sender,
-                        |response| {
-                            crate::pages::Message::Bluetooth(Message::BluetoothEvent(response))
-                        },
-                        move |tx| async move {
-                            _ = futures::join!(
-                                subscription::watch(connection.clone(), tx.clone()),
-                                agent::watch(connection, tx),
-                            );
-                        },
-                    ));
-                }
 
-                return cosmic::task::future(get_adapters(connection.clone()));
+                    let (cancellation, task) = crate::utils::forward_event_loop(move |emitter| {
+                        let connection = connection.clone();
+
+                        async move {
+                            let (tx, mut rx) = futures::channel::mpsc::channel(1);
+
+                            let watchers = std::pin::pin!(async move {
+                                _ = futures::future::join(
+                                    subscription::watch(connection.clone(), tx.clone()),
+                                    agent::watch(connection, tx),
+                                )
+                                .await;
+                            });
+
+                            let forwarder = std::pin::pin!(async move {
+                                while let Some(message) = rx.next().await {
+                                    _ = emitter
+                                        .emit(crate::pages::Message::Bluetooth(
+                                            Message::BluetoothEvent(message),
+                                        ))
+                                        .await;
+                                }
+                            });
+
+                            futures::future::select(watchers, forwarder).await;
+                        }
+                    });
+
+                    self.subscription = Some(cancellation);
+                    return cosmic::task::batch(vec![cosmic::task::future(get_adapters_fut), task]);
+                } else {
+                    return cosmic::task::future(get_adapters_fut);
+                }
             }
             Message::PopupDevice(popup) => {
                 self.popup_device = popup;

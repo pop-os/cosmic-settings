@@ -1,20 +1,23 @@
 use cosmic::{
+    app,
+    cosmic_theme::{CosmicPalette, ThemeBuilder},
     iced_core::text::Wrapping,
-    theme,
+    theme::{self, CosmicTheme},
     widget::{button, container, horizontal_space, icon, settings, text},
-    Apply,
+    Apply, Task,
 };
 pub use cosmic_comp_config::ZoomMovement;
+use cosmic_config::CosmicConfigEntry;
 use cosmic_settings_page::{
     self as page,
     section::{self, Section},
     Insert,
 };
 use slotmap::SlotMap;
-use tokio::sync::mpsc;
 
 pub mod magnifier;
 mod wayland;
+use tokio::task::spawn_blocking;
 pub use wayland::{AccessibilityEvent, AccessibilityRequest};
 
 #[derive(Debug, Default)]
@@ -24,6 +27,8 @@ pub struct Page {
 
     wayland_available: bool,
     wayland_thread: Option<wayland::Sender>,
+    theme: Box<cosmic::cosmic_theme::Theme>,
+    high_contrast: Option<bool>,
 }
 
 #[derive(Debug, Clone)]
@@ -31,6 +36,8 @@ pub enum Message {
     Event(wayland::AccessibilityEvent),
     ProtocolUnavailable,
     Return,
+    HighContrast(bool),
+    SystemTheme(Box<cosmic::cosmic_theme::Theme>),
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -53,27 +60,30 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(vision())])
     }
 
-    fn on_enter(
-        &mut self,
-        sender: mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.wayland_thread.is_none() {
             match wayland::spawn_wayland_connection() {
                 Ok((tx, mut rx)) => {
                     self.wayland_available = true;
                     self.wayland_thread = Some(tx);
-                    tokio::task::spawn(async move {
-                        while let Some(event) = rx.recv().await {
-                            let _ = sender
-                                .send(crate::pages::Message::Accessibility(Message::Event(event)))
+
+                    return cosmic::Task::stream(async_fn_stream::fn_stream(
+                        |emitter| async move {
+                            while let Some(event) = rx.recv().await {
+                                let _ = emitter
+                                    .emit(crate::pages::Message::Accessibility(Message::Event(
+                                        event,
+                                    )))
+                                    .await;
+                            }
+
+                            let _ = emitter
+                                .emit(crate::pages::Message::Accessibility(
+                                    Message::ProtocolUnavailable,
+                                ))
                                 .await;
-                        }
-                        let _ = sender
-                            .send(crate::pages::Message::Accessibility(
-                                Message::ProtocolUnavailable,
-                            ))
-                            .await;
-                    });
+                        },
+                    ));
                 }
                 Err(err) => {
                     tracing::warn!(
@@ -108,6 +118,7 @@ pub fn vision() -> section::Section<crate::pages::Message> {
         on = fl!("accessibility", "on");
         off = fl!("accessibility", "off");
         unavailable = fl!("accessibility", "unavailable");
+        high_contrast = fl!("accessibility", "high-contrast");
     });
 
     Section::default()
@@ -152,6 +163,13 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                             .then_some(crate::pages::Message::Page(magnifier_entity)),
                     )
                 })
+                .add(
+                    cosmic::Element::from(
+                        settings::item::builder(&descriptions[high_contrast])
+                            .toggler(page.theme.is_high_contrast, Message::HighContrast),
+                    )
+                    .map(crate::pages::Message::Accessibility),
+                )
                 .into()
         })
 }
@@ -167,6 +185,65 @@ impl Page {
             }
             Message::Return => {
                 return cosmic::iced::Task::done(crate::app::Message::Page(self.entity))
+            }
+            Message::SystemTheme(theme) => {
+                self.theme = theme;
+            }
+            Message::HighContrast(enabled) => {
+                if self.theme.is_high_contrast == enabled
+                    || self.high_contrast.is_some_and(|hc| hc == enabled)
+                {
+                    return Task::none();
+                }
+                self.high_contrast = Some(enabled);
+
+                _ = std::thread::spawn(move || {
+                    let set_hc = |is_dark: bool| {
+                        let builder_config = if is_dark {
+                            ThemeBuilder::dark_config()?
+                        } else {
+                            ThemeBuilder::light_config()?
+                        };
+                        let mut builder = match ThemeBuilder::get_entry(&builder_config) {
+                            Ok(b) => b,
+                            Err((errs, b)) => {
+                                tracing::warn!("{errs:?}");
+                                b
+                            }
+                        };
+
+                        builder.palette = if is_dark {
+                            if enabled {
+                                CosmicPalette::HighContrastDark(builder.palette.inner())
+                            } else {
+                                CosmicPalette::Dark(builder.palette.inner())
+                            }
+                        } else if enabled {
+                            CosmicPalette::HighContrastLight(builder.palette.inner())
+                        } else {
+                            CosmicPalette::Light(builder.palette.inner())
+                        };
+                        builder.write_entry(&builder_config)?;
+
+                        let new_theme = builder.build();
+
+                        let theme_config = if is_dark {
+                            CosmicTheme::dark_config()?
+                        } else {
+                            CosmicTheme::light_config()?
+                        };
+
+                        new_theme.write_entry(&theme_config)?;
+
+                        Result::<(), cosmic_config::Error>::Ok(())
+                    };
+                    if let Err(err) = set_hc(true) {
+                        tracing::warn!("{err:?}");
+                    }
+                    if let Err(err) = set_hc(false) {
+                        tracing::warn!("{err:?}");
+                    }
+                });
             }
         }
 

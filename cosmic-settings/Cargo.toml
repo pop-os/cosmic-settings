@@ -33,7 +33,7 @@ derive_setters = "0.1.6"
 dirs = "5.0.1"
 downcast-rs = "1.2.1"
 eyre = "0.6.12"
-freedesktop-desktop-entry = "0.7.7"
+freedesktop-desktop-entry = "0.7.8"
 futures = "0.3.31"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
@@ -146,7 +146,7 @@ page-input = [
     "dep:udev",
 ]
 page-networking = [
-    "ashpd",
+    "xdg-portal",
     "dep:cosmic-dbus-networkmanager",
     "dep:cosmic-settings-subscriptions",
     "dep:zbus",
@@ -166,4 +166,4 @@ single-instance = ["libcosmic/single-instance"]
 test = []
 wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr"]
 wgpu = ["libcosmic/wgpu"]
-xdg-portal = ["libcosmic/xdg-portal"]
+xdg-portal = ["ashpd", "libcosmic/xdg-portal"]

@@ -134,11 +134,17 @@ accessibility = Accessibility
     .on = On
     .off = Off
     .unavailable = Unavailable
+    .high-contrast = High contrast mode
 magnifier = Magnifier
-    .controls =
-        Or use keyboard shortcuts:
-        Super + = to zoom in,
-        Super + - to zoom out,
+    .controls = Or use these shortcuts: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} to zoom in,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} to zoom out,
+        }
         Super + scroll with your mouse
     .increment = Zoom increment
     .signin = Start magnifier on sign in
@@ -544,6 +550,13 @@ keyboard-special-char = Special Character Entry
 keyboard-typing-assist = Typing
     .repeat-rate = Repeat rate
     .repeat-delay = Repeat delay
+
+keyboard-numlock-boot = Numlock
+    .boot-state = State on boot
+    .last-boot = Last boot
+    .on = On
+    .off = Off
+    .set = Set numlock boot state
 
 added = Added
 type-to-search = Type to search...

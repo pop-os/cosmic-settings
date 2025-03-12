@@ -59,10 +59,7 @@ impl page::Page<crate::pages::Message> for Page {
             .map(|el| el.map(crate::pages::Message::NavShortcuts))
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         self.model.on_enter();
 
         Task::none()
@@ -88,8 +85,6 @@ pub const fn actions() -> &'static [Action] {
         Action::PreviousWorkspace,
         Action::NextWorkspace,
         Action::LastWorkspace,
-        Action::PreviousOutput,
-        Action::NextOutput,
         Action::SwitchOutput(Direction::Left),
         Action::SwitchOutput(Direction::Right),
         Action::SwitchOutput(Direction::Up),

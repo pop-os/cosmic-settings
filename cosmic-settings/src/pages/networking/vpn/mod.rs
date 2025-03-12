@@ -6,7 +6,7 @@ mod nmcli;
 use std::sync::Arc;
 
 use anyhow::Context;
-use ashpd::desktop::file_chooser::FileFilter;
+use cosmic::dialog::file_chooser::FileFilter;
 use cosmic::{
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
@@ -45,12 +45,7 @@ pub enum Message {
     /// An update from the network manager daemon
     NetworkManager(network_manager::Event),
     /// Successfully connected to the system dbus.
-    NetworkManagerConnect(
-        (
-            zbus::Connection,
-            tokio::sync::mpsc::Sender<crate::pages::Message>,
-        ),
-    ),
+    NetworkManagerConnect(zbus::Connection),
     /// Updates the password text input
     PasswordUpdate(SecureString),
     /// Refresh devices and their connection profiles
@@ -334,10 +329,7 @@ impl page::Page<crate::pages::Message> for Page {
         )
     }
 
-    fn on_enter(
-        &mut self,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> cosmic::Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
             return cosmic::task::future(async move {
                 zbus::Connection::system()
@@ -345,7 +337,7 @@ impl page::Page<crate::pages::Message> for Page {
                     .context("failed to create system dbus connection")
                     .map_or_else(
                         |why| Message::Error(ErrorKind::DbusConnection, why.to_string()),
-                        |conn| Message::NetworkManagerConnect((conn, sender.clone())),
+                        Message::NetworkManagerConnect,
                     )
             });
         }
@@ -625,8 +617,8 @@ impl Page {
                 self.dialog = Some(VpnDialog::Error(error_kind, why))
             }
 
-            Message::NetworkManagerConnect((conn, output)) => {
-                self.connect(conn.clone(), output);
+            Message::NetworkManagerConnect(conn) => {
+                return self.connect(conn.clone());
             }
         }
 
@@ -660,24 +652,36 @@ impl Page {
         })
     }
 
-    fn connect(
-        &mut self,
-        conn: zbus::Connection,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) {
+    fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
-            self.nm_task = Some(crate::utils::forward_event_loop(
-                sender,
-                |event| crate::pages::Message::Vpn(Message::NetworkManager(event)),
-                move |tx| async move {
+            let (canceller, task) = crate::utils::forward_event_loop(move |emitter| async move {
+                let (tx, mut rx) = futures::channel::mpsc::channel(1);
+
+                let watchers = std::pin::pin!(async move {
                     futures::join!(
                         network_manager::watch(conn.clone(), tx.clone()),
                         network_manager::active_conns::watch(conn.clone(), tx.clone()),
                         network_manager::devices::watch(conn, true, tx)
-                    );
-                },
-            ));
+                    )
+                });
+
+                let forwarder = std::pin::pin!(async move {
+                    while let Some(message) = rx.next().await {
+                        _ = emitter
+                            .emit(crate::pages::Message::Vpn(Message::NetworkManager(message)))
+                            .await;
+                    }
+                });
+
+                futures::future::select(watchers, forwarder).await;
+            });
+
+            self.nm_task = Some(canceller);
+
+            return task.map(crate::app::Message::from);
         }
+
+        Task::none()
     }
 
     /// Closes the view more popup and applies any withheld updates.

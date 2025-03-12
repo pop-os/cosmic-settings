@@ -8,8 +8,6 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 //TODO: use embedded cosmic-files for portability
-#[cfg(feature = "ashpd")]
-use ashpd::desktop::file_chooser::{FileFilter, SelectedFiles};
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
@@ -17,6 +15,7 @@ use cosmic::cosmic_theme::{
     CornerRadii, Density, Spacing, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
     LIGHT_THEME_BUILDER_ID,
 };
+use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced_core::{Alignment, Color, Length};
 use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
 use cosmic::widget::icon::{from_name, icon};
@@ -323,6 +322,24 @@ impl
     }
 }
 
+#[derive(Clone)]
+pub struct SaveResponse(pub Arc<file_chooser::save::Response>);
+
+impl std::fmt::Debug for SaveResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SaveResponse")
+    }
+}
+
+#[derive(Clone)]
+pub struct OpenResponse(pub Arc<file_chooser::open::FileResponse>);
+
+impl std::fmt::Debug for OpenResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("OpenResponse")
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Message {
     AccentWindowHint(ColorPickerUpdate),
@@ -338,22 +355,22 @@ pub enum Message {
     DisplaySystemFont,
     Entered((IconThemes, IconHandles)),
     IconsAndToolkit,
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     ExportError,
-    #[cfg(feature = "ashpd")]
-    ExportFile(Arc<SelectedFiles>),
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
+    ExportFile(SaveResponse),
+    #[cfg(feature = "xdg-portal")]
     ExportSuccess,
     FontConfig(font_config::Message),
     FontSearch(String),
     FontSelect(bool, Arc<str>),
     GapSize(u32),
     IconTheme(usize),
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     ImportError,
-    #[cfg(feature = "ashpd")]
-    ImportFile(Arc<SelectedFiles>),
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
+    ImportFile(OpenResponse),
+    #[cfg(feature = "xdg-portal")]
     ImportSuccess(Box<ThemeBuilder>),
     InterfaceText(ColorPickerUpdate),
     Left,
@@ -361,9 +378,9 @@ pub enum Message {
     PaletteAccent(cosmic::iced::Color),
     Reset,
     Roundness(Roundness),
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     StartExport,
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     StartImport,
     UseDefaultWindowHint(bool),
     WindowHintSize(u32),
@@ -945,18 +962,17 @@ impl Page {
                 self.reload_theme_mode();
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::StartImport => {
                 tasks.push(cosmic::task::future(async move {
-                    let res = SelectedFiles::open_file()
+                    let res = file_chooser::open::Dialog::new()
                         .modal(true)
                         .filter(FileFilter::glob(FileFilter::new("ron"), "*.ron"))
-                        .send()
-                        .await
-                        .and_then(|request| request.response());
+                        .open_file()
+                        .await;
 
                     if let Ok(f) = res {
-                        Message::ImportFile(Arc::new(f))
+                        Message::ImportFile(OpenResponse(Arc::new(f)))
                     } else {
                         // TODO Error toast?
                         tracing::error!("failed to select a file for importing a custom theme.");
@@ -965,21 +981,20 @@ impl Page {
                 }));
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::StartExport => {
                 let is_dark = self.theme_mode.is_dark;
                 let name = format!("{}.ron", if is_dark { fl!("dark") } else { fl!("light") });
 
                 tasks.push(cosmic::task::future(async move {
-                    let res = SelectedFiles::save_file()
+                    let res = file_chooser::save::Dialog::new()
                         .modal(true)
-                        .current_name(Some(name.as_str()))
-                        .send()
-                        .await
-                        .and_then(|request| request.response());
+                        .file_name(name)
+                        .save_file()
+                        .await;
 
                     if let Ok(f) = res {
-                        Message::ExportFile(Arc::new(f))
+                        Message::ExportFile(SaveResponse(Arc::new(f)))
                     } else {
                         // TODO Error toast?
                         tracing::error!("failed to select a file for importing a custom theme.");
@@ -988,13 +1003,14 @@ impl Page {
                 }));
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ImportFile(f) => {
-                let path_res = f
-                    .uris()
-                    .first()
-                    .filter(|f| f.scheme() == "file")
-                    .and_then(|f| f.to_file_path().ok());
+                let path_res =
+                    f.0 .0
+                        .uris()
+                        .first()
+                        .filter(|f| f.scheme() == "file")
+                        .and_then(|f| f.to_file_path().ok());
 
                 let Some(path) = path_res else {
                     return Task::none();
@@ -1012,13 +1028,14 @@ impl Page {
                 }));
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ExportFile(f) => {
-                let path_res = f
-                    .uris()
-                    .first()
-                    .filter(|f| f.scheme() == "file")
-                    .and_then(|f| f.to_file_path().ok());
+                let path_res =
+                    f.0 .0
+                        .uris()
+                        .first()
+                        .filter(|f| f.scheme() == "file")
+                        .and_then(|f| f.to_file_path().ok());
 
                 let Some(path) = path_res else {
                     return Task::none();
@@ -1048,15 +1065,15 @@ impl Page {
             }
 
             // TODO: error message toast?
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ExportError | Message::ImportError => return Task::none(),
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ExportSuccess => {
                 tracing::trace!("Export successful");
             }
 
-            #[cfg(feature = "ashpd")]
+            #[cfg(feature = "xdg-portal")]
             Message::ImportSuccess(builder) => {
                 tracing::trace!("Import successful");
                 self.theme_builder = *builder;
@@ -1524,7 +1541,7 @@ impl page::Page<crate::pages::Message> for Page {
         ])
     }
 
-    #[cfg(feature = "ashpd")]
+    #[cfg(feature = "xdg-portal")]
     fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
         let content = row::with_capacity(2)
             .spacing(self.theme_builder.spacing.space_xxs)
@@ -1545,10 +1562,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("appearance", "desc"))
     }
 
-    fn on_enter(
-        &mut self,
-        _sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
         let (task, handle) = cosmic::task::batch(vec![
             // Load icon themes
             // cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),

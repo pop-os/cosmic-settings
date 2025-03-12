@@ -129,13 +129,9 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("sound", "desc"))
     }
 
-    fn on_enter(
-        &mut self,
-        sender: tokio::sync::mpsc::Sender<crate::pages::Message>,
-    ) -> Task<crate::pages::Message> {
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+        let mut tasks = Vec::with_capacity(2);
         if self.pulse_thread.is_none() {
-            let sender = sender.clone();
-
             let (tx, mut rx) = futures::channel::mpsc::channel(1);
             let (cancel_tx, cancel_rx) = tokio::sync::oneshot::channel::<()>();
 
@@ -146,18 +142,18 @@ impl page::Page<crate::pages::Message> for Page {
 
             // Forward events from the pulse thread to the application until
             // the application requests to stop listening to the pulse thread.
-            tokio::task::spawn(async move {
-                let forwarder = std::pin::pin!(async move {
-                    while let Some(event) = rx.next().await {
-                        let event = crate::pages::Message::Sound(Message::Pulse(event));
-                        if sender.send(event).await.is_err() {
-                            break;
+            tasks.push(Task::stream(async_fn_stream::fn_stream(
+                |emitter| async move {
+                    let forwarder = std::pin::pin!(async move {
+                        while let Some(event) = rx.next().await {
+                            let event = crate::pages::Message::Sound(Message::Pulse(event));
+                            emitter.emit(event).await;
                         }
-                    }
-                });
+                    });
 
-                futures::future::select(std::pin::pin!(cancel_rx), forwarder).await;
-            });
+                    futures::future::select(std::pin::pin!(cancel_rx), forwarder).await;
+                },
+            )));
 
             self.pulse_thread = Some(cancel_tx);
         }
@@ -171,23 +167,23 @@ impl page::Page<crate::pages::Message> for Page {
 
             // Forward events from the pipewire thread to the application until
             // the application requests to stop listening to the pulse thread.
-            tokio::task::spawn(async move {
-                let forwarder = std::pin::pin!(async move {
-                    while let Some(event) = rx.next().await {
-                        let event = crate::pages::Message::Sound(Message::Pipewire(event));
-                        if sender.send(event).await.is_err() {
-                            break;
+            tasks.push(Task::stream(async_fn_stream::fn_stream(
+                |emitter| async move {
+                    let forwarder = std::pin::pin!(async move {
+                        while let Some(event) = rx.next().await {
+                            let event = crate::pages::Message::Sound(Message::Pipewire(event));
+                            emitter.emit(event).await;
                         }
-                    }
-                });
+                    });
 
-                futures::future::select(std::pin::pin!(cancel_rx), forwarder).await;
-            });
+                    futures::future::select(std::pin::pin!(cancel_rx), forwarder).await;
+                },
+            )));
 
             self.pipewire_thread = Some((cancel_tx, terminate));
         }
 
-        Task::none()
+        cosmic::task::batch(tasks)
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
