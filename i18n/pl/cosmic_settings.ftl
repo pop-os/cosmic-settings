@@ -136,15 +136,15 @@ accessibility = Dostępność
     .unavailable = Niedostępna
 magnifier = Lupa
     .controls =
-        Lub użyj skrótów klawiszowych:
+        Użyj skrótów klawiszowych:
         Super + = aby zbliżyć,
         Super + - aby oddalić,
         Super + przewijanie rolką myszy
-    .applet = Przełącznik włączania/wyłączania lupy w aplecie na panelu
-    .movement = Powiększony widok porusza się
-    .continuous = Stały ruch z kursorem
+    .applet = Włączanie/wyłączanie lupy w aplecie na panelu
+    .movement = Widok powiększenia porusza się
+    .continuous = Stale ze wskaźnikiem
     .onedge = Gdy wskaźnik osiągnie krawędź
-    .centered = Stale wycentrowany
+    .centered = Jest stale wycentrowany
 
 ## Desktop
 
