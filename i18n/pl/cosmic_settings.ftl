@@ -134,17 +134,26 @@ accessibility = Dostępność
     .on = Włączona
     .off = Wyłączona
     .unavailable = Niedostępna
+    .high-contrast = Tryb wysokiego kontrastu
 magnifier = Lupa
     .controls =
-        Lub użyj skrótów klawiszowych:
-        Super + = aby zbliżyć,
-        Super + - aby oddalić,
-        Super + rolka myszy
-    .applet = Wyłącz/włącz lupę w aplecie w panelu
-    .movement = Powiększony widok przesuwa się
-    .continuous = Razem ze wskaźnikiem
-    .onedge = Gdy wskaźnik osiąga krawędź
-    .centered = Tak, aby wskaźnik znajdował się w środku
+        Użyj skrótów klawiszowych:{ $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} aby przybliżyć,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} aby oddalić,
+        }
+        Super + przewijanie rolką myszy
+    .increment = Inkrementacja przybliżenia
+    .signin = Uruchom lupę przy zalogowaniu
+    .applet = Włączanie/wyłączanie lupy w aplecie na panelu
+    .movement = Widok powiększenia porusza się
+    .continuous = Stale ze wskaźnikiem
+    .onedge = Gdy wskaźnik osiągnie krawędź
+    .centered = Jest stale wycentrowany
 
 ## Desktop
 
@@ -254,8 +263,8 @@ window-management-appearance = Zarządzanie oknami
 
 experimental-settings = Ustawienia eksperymentalne
 icons-and-toolkit = Motyw ikon i toolkitu
-interface-font = Font systemowy
-monospace-font = Font o stałej szerokości
+interface-font = Czcionka systemowa
+monospace-font = Czcionka o stałej szerokości
 
 ## Desktop: Notifications
 
@@ -327,6 +336,8 @@ super-key = Klawisz Super
     .workspaces = Otwórz obszary robocze
     .applications = Otwórz aplikacje
     .disable = Wyłącz
+
+edge-gravity = Pływające okna ciążą ku pobliskim krawędziom
 
 window-controls = Sterowanie oknami
     .maximize = Pokaż przycisk maksymalizacji
@@ -559,6 +570,13 @@ keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
     .repeat-delay = Opóźnienie powtarzania
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Stan podczas uruchamiania
+    .last-boot = Taki jak ostatnio
+    .on = Włącz
+    .off = Wyłącz
+    .set = Ustaw stan numlocka podczas uruchamiania
+
 added = Dodany
 type-to-search = Naciśnij by wyszukać…
 show-extended-input-sources = Pokaż rozszerzone źródła wprowadzania
@@ -574,6 +592,7 @@ command = Komenda
 custom = Własne
 debug = Debuguj
 disabled = Wyłączone
+input-source-switch = Zmień język wprowadzania danych na klawiaturze
 migrate-workspace-prev = Migruj obszar roboczy do następnego ekranu
 migrate-workspace-next = Migruj obszar roboczy do poprzedniego ekranu
 migrate-workspace = Migruj obszar roboczy do { $direction ->
@@ -691,8 +710,8 @@ window-tiling = Kafelkowanie okien
 replace-shortcut-dialog = Zmienić skrót?
     .desc = { $shortcut } jest używany przez { $name }. Jeśli go zamienisz, skrót do { $name } będzie wyłączony.
 
-zoom-in = Zwiększ
-zoom-out = Pomniejsz
+zoom-in = Przybliż
+zoom-out = Oddal
 
 ## Input: Mouse
 
