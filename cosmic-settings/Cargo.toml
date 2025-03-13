@@ -101,9 +101,8 @@ version = "0.15.3"
 features = ["fluent-system", "desktop-requester"]
 
 # Contains region-handling logic for Linux
-[dependencies.lichen-system]
-git = "https://github.com/serpent-os/lichen"
-package = "system"
+[dependencies.locales-rs]
+git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
@@ -165,7 +164,7 @@ page-networking = [
 page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = [
     "gettext",
-    "dep:lichen-system",
+    "dep:locales-rs",
     "dep:locale1",
     "dep:zbus",
 ]
