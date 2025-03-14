@@ -2,7 +2,7 @@ use cosmic::{
     cctk::sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
     cosmic_config::{self, CosmicConfigEntry},
     iced::{Alignment, Length},
-    theme,
+    surface, theme,
     widget::{
         button, container, dropdown, horizontal_space, icon, row, settings, slider, text, toggler,
     },
@@ -122,15 +122,22 @@ pub(crate) fn behavior_and_position<
                 ))
                 .add(settings::item(
                     &descriptions[position],
-                    dropdown(
+                    dropdown::popup_dropdown(
                         page.anchors.as_slice(),
                         Some(panel_config.anchor as usize),
                         Message::PanelAnchor,
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| {
+                            crate::app::Message::PageMessage(crate::pages::Message::Panel(
+                                super::Message(a),
+                            ))
+                        },
                     ),
                 ))
                 .add(settings::item(
                     &descriptions[display],
-                    dropdown(
+                    dropdown::popup_dropdown(
                         page.outputs.as_slice(),
                         match &panel_config.output {
                             CosmicPanelOuput::All => Some(0),
@@ -138,6 +145,13 @@ pub(crate) fn behavior_and_position<
                             CosmicPanelOuput::Name(n) => page.outputs.iter().position(|o| o == n),
                         },
                         Message::Output,
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| {
+                            crate::app::Message::PageMessage(crate::pages::Message::Panel(
+                                super::Message(a),
+                            ))
+                        },
                     ),
                 ))
                 .apply(Element::from)
@@ -181,7 +195,7 @@ pub(crate) fn style<
                 ))
                 .add(settings::item(
                     &descriptions[appearance],
-                    dropdown(
+                    dropdown::popup_dropdown(
                         inner.backgrounds.as_slice(),
                         match panel_config.background {
                             CosmicPanelBackground::ThemeDefault => Some(0),
@@ -190,6 +204,13 @@ pub(crate) fn style<
                             CosmicPanelBackground::Color(_) => None,
                         },
                         Message::Appearance,
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| {
+                            crate::app::Message::PageMessage(crate::pages::Message::Panel(
+                                super::Message(a),
+                            ))
+                        },
                     ),
                 ))
                 .add(settings::flex_item(
@@ -423,6 +444,7 @@ pub enum Message {
     PanelConfig(CosmicPanelConfig),
     ResetPanel,
     FullReset,
+    Surface(surface::Action),
 }
 
 impl PageInner {
@@ -570,6 +592,9 @@ impl PageInner {
                 return Task::none();
             }
             Message::ResetPanel | Message::FullReset => {}
+            Message::Surface(a) => {
+                unimplemented!()
+            }
         }
 
         if panel_config.anchor_gap || !panel_config.expand_to_edges {

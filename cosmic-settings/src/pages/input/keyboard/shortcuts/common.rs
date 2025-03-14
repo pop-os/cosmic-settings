@@ -516,7 +516,7 @@ fn context_drawer(
             })
             .select_on_focus(true)
             .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
-            .on_submit(ShortcutMessage::SubmitBinding(bind_id))
+            .on_submit(move |_| ShortcutMessage::SubmitBinding(bind_id))
             .padding([0, space_xs])
             .id(shortcut.id.clone())
             .into();

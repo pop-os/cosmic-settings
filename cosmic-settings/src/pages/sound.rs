@@ -4,7 +4,8 @@
 use std::{collections::BTreeMap, time::Duration};
 
 use cosmic::{
-    iced::{Alignment, Length},
+    iced::{window, Alignment, Length},
+    surface,
     widget::{self, settings},
     Element, Task,
 };
@@ -48,6 +49,8 @@ pub enum Message {
     SourceVolumeApply(NodeId),
     /// Toggle the mute status of the input output.
     SourceMuteToggle,
+    /// Surface Action
+    Surface(surface::Action),
 }
 
 #[derive(Debug)]
@@ -315,7 +318,6 @@ impl Page {
                     return command;
                 }
             }
-
             Message::Pulse(pulse::Event::SourceVolume(volume)) => {
                 if self.sink_volume_debounce {
                     return Task::none();
@@ -324,7 +326,6 @@ impl Page {
                 self.source_volume = volume;
                 self.source_volume_text = volume.to_string();
             }
-
             Message::SinkVolumeChanged(volume) => {
                 self.sink_volume = volume;
                 self.sink_volume_text = volume.to_string();
@@ -345,7 +346,6 @@ impl Page {
                     return command;
                 }
             }
-
             Message::Pulse(pulse::Event::SinkVolume(volume)) => {
                 if self.sink_volume_debounce {
                     return Task::none();
@@ -354,27 +354,22 @@ impl Page {
                 self.sink_volume = volume;
                 self.sink_volume_text = volume.to_string();
             }
-
             Message::Pulse(pulse::Event::DefaultSink(sink)) => {
                 if !self.changing_sink_profile {
                     self.set_default_sink(sink);
                 }
             }
-
             Message::Pulse(pulse::Event::DefaultSource(source)) => {
                 if !self.changing_source_profile {
                     self.set_default_source(source);
                 }
             }
-
             Message::Pulse(pulse::Event::SinkMute(mute)) => {
                 self.sink_mute = mute;
             }
-
             Message::Pulse(pulse::Event::SourceMute(mute)) => {
                 self.source_mute = mute;
             }
-
             Message::Pulse(pulse::Event::CardInfo(card)) => {
                 let device_id = match card.variant {
                     pulse::DeviceVariant::Alsa { alsa_card, .. } => DeviceId::Alsa(alsa_card),
@@ -386,7 +381,6 @@ impl Page {
                 self.active_profiles
                     .insert(device_id, card.active_profile.map(|p| p.name));
             }
-
             Message::Pipewire(pipewire::DeviceEvent::Add(device)) => {
                 let device_id = match device.variant {
                     pipewire::DeviceVariant::Alsa { alsa_card, .. } => DeviceId::Alsa(alsa_card),
@@ -439,7 +433,6 @@ impl Page {
                 card.devices
                     .sort_unstable_by(|_, av, _, bv| av.description.cmp(&bv.description));
             }
-
             Message::Pipewire(pipewire::DeviceEvent::Remove(node_id)) => {
                 let mut remove = None;
                 for (card_id, card) in &mut self.devices {
@@ -473,7 +466,6 @@ impl Page {
                     }
                 }
             }
-
             Message::SinkChanged(pos) => {
                 if let Some(node_id) = self.sink_ids.get(pos) {
                     for card in self.devices.values() {
@@ -488,7 +480,6 @@ impl Page {
                     }
                 }
             }
-
             Message::SourceChanged(pos) => {
                 if let Some(node_id) = self.source_ids.get(pos) {
                     for card in self.devices.values() {
@@ -503,31 +494,26 @@ impl Page {
                     }
                 }
             }
-
             Message::SinkVolumeApply(node_id) => {
                 self.sink_volume_debounce = false;
                 wpctl_set_volume(node_id, self.sink_volume);
             }
-
             Message::SourceVolumeApply(node_id) => {
                 self.source_volume_debounce = false;
                 wpctl_set_volume(node_id, self.source_volume);
             }
-
             Message::SinkMuteToggle => {
                 self.sink_mute = !self.sink_mute;
                 if let Some(&node_id) = self.sink_ids.get(self.active_sink.unwrap_or(0)) {
                     wpctl_set_mute(node_id, self.sink_mute);
                 }
             }
-
             Message::SourceMuteToggle => {
                 self.source_mute = !self.source_mute;
                 if let Some(&node_id) = self.source_ids.get(self.active_source.unwrap_or(0)) {
                     wpctl_set_mute(node_id, self.source_mute);
                 }
             }
-
             Message::SinkProfileChanged(profile) => {
                 self.active_sink_profile = Some(profile);
 
@@ -548,7 +534,6 @@ impl Page {
                     }
                 }
             }
-
             Message::SinkProfileSelect(device_id) => {
                 self.changing_sink_profile = false;
                 let sink_pos = self.active_sink.unwrap_or(0);
@@ -560,7 +545,6 @@ impl Page {
                     }
                 }
             }
-
             Message::SourceProfileChanged(profile) => {
                 self.active_source_profile = Some(profile);
                 if let Some(profile) = self.source_profile_names.get(profile).cloned() {
@@ -580,7 +564,6 @@ impl Page {
                     }
                 }
             }
-
             Message::SourceProfileSelect(device_id) => {
                 self.changing_source_profile = false;
                 let source_pos = self.active_source.unwrap_or(0);
@@ -591,6 +574,9 @@ impl Page {
                         self.set_default_source(device.identifier.clone());
                     }
                 }
+            }
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
             }
         }
         Task::none()
@@ -629,11 +615,13 @@ fn input() -> Section<crate::pages::Message> {
                     widget::slider(0..=150, page.source_volume, Message::SourceVolumeChanged)
                         .breakpoints(&[100]),
                 );
-
-            let devices = widget::dropdown(
+            let mut devices = widget::dropdown::popup_dropdown(
                 &page.sources,
                 Some(page.active_source.unwrap_or(0)),
                 Message::SourceChanged,
+                window::Id::RESERVED,
+                Message::Surface,
+                |a| crate::app::Message::PageMessage(crate::pages::Message::Sound(a)),
             );
 
             let mut controls = settings::section()
@@ -645,10 +633,13 @@ fn input() -> Section<crate::pages::Message> {
                 .add(settings::item(&*section.descriptions[device], devices));
 
             if !page.source_profiles.is_empty() {
-                let dropdown = widget::dropdown(
+                let mut dropdown = widget::dropdown::popup_dropdown(
                     &page.source_profiles,
                     page.active_source_profile,
                     Message::SourceProfileChanged,
+                    window::Id::RESERVED,
+                    Message::Surface,
+                    |a| crate::app::Message::PageMessage(crate::pages::Message::Sound(a)),
                 );
 
                 controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
@@ -692,10 +683,13 @@ fn output() -> Section<crate::pages::Message> {
                         .breakpoints(&[100]),
                 );
 
-            let devices = widget::dropdown(
+            let devices = widget::dropdown::popup_dropdown(
                 &page.sinks,
                 Some(page.active_sink.unwrap_or(0)),
                 Message::SinkChanged,
+                window::Id::RESERVED,
+                Message::Surface,
+                |a| crate::app::Message::PageMessage(crate::pages::Message::Sound(a)),
             );
 
             let mut controls = settings::section()
@@ -707,10 +701,13 @@ fn output() -> Section<crate::pages::Message> {
                 .add(settings::item(&*section.descriptions[device], devices));
 
             if !page.sink_profiles.is_empty() {
-                let dropdown = widget::dropdown(
+                let dropdown = widget::dropdown::popup_dropdown(
                     &page.sink_profiles,
                     page.active_sink_profile,
                     Message::SinkProfileChanged,
+                    window::Id::RESERVED,
+                    Message::Surface,
+                    |a| crate::app::Message::PageMessage(crate::pages::Message::Sound(a)),
                 );
 
                 controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
