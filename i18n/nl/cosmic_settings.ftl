@@ -543,8 +543,8 @@ keyboard-sources = Invoermethodes
     .add = Invoermethode toevoegen
 
 keyboard-special-char = Invoer speciale tekens
-    .alternate = Toets voor speciale tekens
-    .compose = Compose-toets (voor speciale tekens)
+    .alternate = Toets voor speciale tekens (Alt-Gr)
+    .compose = Compose-toets
     .caps = Caps Lock-toets
 
 keyboard-typing-assist = Typen
