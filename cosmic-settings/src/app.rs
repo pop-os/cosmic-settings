@@ -7,6 +7,8 @@ use crate::pages::accessibility;
 #[cfg(feature = "page-bluetooth")]
 use crate::pages::bluetooth;
 use crate::pages::desktop::{self, appearance};
+#[cfg(feature = "page-display")]
+use crate::pages::display;
 #[cfg(feature = "page-input")]
 use crate::pages::input;
 #[cfg(feature = "page-networking")]
@@ -15,7 +17,7 @@ use crate::pages::networking;
 use crate::pages::power;
 #[cfg(feature = "page-sound")]
 use crate::pages::sound;
-use crate::pages::{self, display, system, time};
+use crate::pages::{self, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
@@ -91,6 +93,7 @@ impl SettingsApp {
             #[cfg(feature = "page-default-apps")]
             PageCommands::DefaultApps => self.pages.page_id::<system::default_apps::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
+            #[cfg(feature = "page-display")]
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             #[cfg(feature = "wayland")]
             PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
@@ -204,6 +207,7 @@ impl cosmic::Application for SettingsApp {
         #[cfg(feature = "page-accessibility")]
         app.insert_page::<accessibility::Page>();
         let desktop_id = app.insert_page::<desktop::Page>().id();
+        #[cfg(feature = "page-display")]
         app.insert_page::<display::Page>();
         #[cfg(feature = "page-sound")]
         app.insert_page::<sound::Page>();
@@ -421,6 +425,7 @@ impl cosmic::Application for SettingsApp {
                     page::update!(self.pages, message, desktop::workspaces::Page);
                 }
 
+                #[cfg(feature = "page-display")]
                 crate::pages::Message::Displays(message) => {
                     if let Some(page) = self.pages.page_mut::<display::Page>() {
                         return page.update(message).map(Into::into);
@@ -799,6 +804,23 @@ impl cosmic::Application for SettingsApp {
         self.pages
             .dialog(self.active_page)
             .map(|e| e.map(Message::PageMessage))
+    }
+
+    fn system_theme_update(
+        &mut self,
+        _keys: &[&'static str],
+        new_theme: &cosmic::cosmic_theme::Theme,
+    ) -> Task<Self::Message> {
+        #[cfg(feature = "page-accessibility")]
+        if let Some(page) = self.pages.page_mut::<accessibility::Page>() {
+            return page
+                .update(accessibility::Message::SystemTheme(Box::new(
+                    new_theme.clone(),
+                )))
+                .map(Into::into);
+        }
+
+        Task::none()
     }
 }
 

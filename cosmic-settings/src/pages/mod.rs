@@ -8,6 +8,7 @@ pub mod accessibility;
 #[cfg(feature = "page-bluetooth")]
 pub mod bluetooth;
 pub mod desktop;
+#[cfg(feature = "page-display")]
 pub mod display;
 #[cfg(feature = "page-input")]
 pub mod input;
@@ -41,6 +42,7 @@ pub enum Message {
     DesktopWallpaper(desktop::wallpaper::Message),
     #[cfg(feature = "page-workspaces")]
     DesktopWorkspaces(desktop::workspaces::Message),
+    #[cfg(feature = "page-display")]
     Displays(display::Message),
     #[cfg(feature = "wayland")]
     Dock(desktop::dock::Message),

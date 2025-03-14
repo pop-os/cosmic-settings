@@ -15,6 +15,7 @@ use cosmic::cosmic_theme::{
     CornerRadii, Density, Spacing, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
     LIGHT_THEME_BUILDER_ID,
 };
+#[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced_core::{Alignment, Color, Length};
 use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
@@ -322,18 +323,22 @@ impl
     }
 }
 
+#[cfg(feature = "xdg-portal")]
 #[derive(Clone)]
 pub struct SaveResponse(pub Arc<file_chooser::save::Response>);
 
+#[cfg(feature = "xdg-portal")]
 impl std::fmt::Debug for SaveResponse {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("SaveResponse")
     }
 }
 
+#[cfg(feature = "xdg-portal")]
 #[derive(Clone)]
 pub struct OpenResponse(pub Arc<file_chooser::open::FileResponse>);
 
+#[cfg(feature = "xdg-portal")]
 impl std::fmt::Debug for OpenResponse {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("OpenResponse")

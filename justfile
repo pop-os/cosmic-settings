@@ -159,6 +159,30 @@ heaptrack *args:
     zstd -dc < heaptrack.cosmic-settings.*.raw.zst + /usr/lib/heaptrack/libexec/heaptrack_env | zstd -c > heaptrack_env.cosmic-settings.zst
     heaptrack_gui heaptrack.cosmic-settings.zst
 
+check-features:
+    #!/usr/bin/env bash
+    set -ex
+    cargo check --no-default-features
+    cargo check
+    for feature in \
+        "page-accessibility" \
+        "page-about" \
+        "page-bluetooth" \
+        "page-date" \
+        "page-default-apps" \
+        "page-display" \
+        "page-input" \
+        "page-networking" \
+        "page-power" \
+        "page-region" \
+        "page-sound" \
+        "page-users" \
+        "page-window-management" \
+        "page-workspaces"
+    do
+        cargo check --no-default-features --features "${feature}"
+    done
+
 # Dependencies
 cmd-depends := "
 cargo

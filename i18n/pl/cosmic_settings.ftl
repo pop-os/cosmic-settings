@@ -127,6 +127,34 @@ bluetooth-available = Urządzenia w pobliżu
 
 bluetooth-adapters = Adaptery Bluetooth
 
+## Accessibility
+
+accessibility = Dostępność
+    .vision = Widoczność
+    .on = Włączona
+    .off = Wyłączona
+    .unavailable = Niedostępna
+    .high-contrast = Tryb wysokiego kontrastu
+magnifier = Lupa
+    .controls =
+        Użyj skrótów klawiszowych:{ $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} aby przybliżyć,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} aby oddalić,
+        }
+        Super + przewijanie rolką myszy
+    .increment = Inkrementacja przybliżenia
+    .signin = Uruchom lupę przy zalogowaniu
+    .applet = Włączanie/wyłączanie lupy w aplecie na panelu
+    .movement = Widok powiększenia porusza się
+    .continuous = Stale ze wskaźnikiem
+    .onedge = Gdy wskaźnik osiągnie krawędź
+    .centered = Jest stale wycentrowany
+
 ## Desktop
 
 desktop = Pulpit
@@ -235,8 +263,8 @@ window-management-appearance = Zarządzanie oknami
 
 experimental-settings = Ustawienia eksperymentalne
 icons-and-toolkit = Motyw ikon i toolkitu
-interface-font = Font systemowy
-monospace-font = Font o stałej szerokości
+interface-font = Czcionka systemowa
+monospace-font = Czcionka o stałej szerokości
 
 ## Desktop: Notifications
 
@@ -309,6 +337,8 @@ super-key = Klawisz Super
     .applications = Otwórz aplikacje
     .disable = Wyłącz
 
+edge-gravity = Pływające okna ciążą ku pobliskim krawędziom
+
 window-controls = Sterowanie oknami
     .maximize = Pokaż przycisk maksymalizacji
     .minimize = Pokaż przycisk minimalizacji
@@ -366,6 +396,7 @@ display = Wyświetlacz
     .refresh-rate = Prędkość odświeżania ekranu
     .resolution = Rozdzielczość
     .scale = Skala
+    .additional-scale-options = Dodatkowe opcje skalowania
 
 mirroring = Lustrzane Odbicie
     .id = Lustrzane Odbicie { $id }
@@ -539,6 +570,13 @@ keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania
     .repeat-delay = Opóźnienie powtarzania
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Stan podczas uruchamiania
+    .last-boot = Taki jak ostatnio
+    .on = Włącz
+    .off = Wyłącz
+    .set = Ustaw stan numlocka podczas uruchamiania
+
 added = Dodany
 type-to-search = Naciśnij by wyszukać…
 show-extended-input-sources = Pokaż rozszerzone źródła wprowadzania
@@ -554,6 +592,7 @@ command = Komenda
 custom = Własne
 debug = Debuguj
 disabled = Wyłączone
+input-source-switch = Zmień język wprowadzania danych na klawiaturze
 migrate-workspace-prev = Migruj obszar roboczy do następnego ekranu
 migrate-workspace-next = Migruj obszar roboczy do poprzedniego ekranu
 migrate-workspace = Migruj obszar roboczy do { $direction ->
@@ -670,6 +709,9 @@ window-tiling = Kafelkowanie okien
 
 replace-shortcut-dialog = Zmienić skrót?
     .desc = { $shortcut } jest używany przez { $name }. Jeśli go zamienisz, skrót do { $name } będzie wyłączony.
+
+zoom-in = Przybliż
+zoom-out = Oddal
 
 ## Input: Mouse
 
@@ -816,3 +858,4 @@ default-apps = Domyślne Aplikacje
     .calendar = Kalendarz
     .terminal = Konsola
     .other-associations = Inne powiązania
+    .text-editor = Edytor tekstu
