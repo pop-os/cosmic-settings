@@ -34,6 +34,7 @@ remove = Remove
 settings = Settings
 username = Username
 visible-networks = Visible Networks
+identity = Identity
 
 auth-dialog = Authentication Required
     .vpn-description = Enter the username and password required by the VPN service.
