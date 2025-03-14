@@ -11,16 +11,31 @@ use slotmap::SlotMap;
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    Error(String),
     HostnameEdit(bool),
     HostnameInput(String),
     HostnameSubmit,
+    HostnameSuccess(String),
     Info(Box<Info>),
+}
+
+impl From<Message> for crate::app::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::About(message).into()
+    }
+}
+
+impl From<Message> for crate::pages::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::About(message)
+    }
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct Page {
     entity: page::Entity,
     editing_device_name: bool,
+    hostname_input: String,
     info: Info,
     on_enter_handle: Option<cosmic::iced::task::Handle>,
 }
@@ -69,52 +84,82 @@ impl page::Page<crate::pages::Message> for Page {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) -> cosmic::app::Task<crate::Message> {
         match message {
             Message::HostnameEdit(editing) => {
                 self.editing_device_name = editing;
-            }
 
-            Message::HostnameInput(hostname) => {
-                self.info.device_name = hostname;
-            }
-
-            Message::HostnameSubmit => {
-                let hostname = &self.info.device_name;
-                if hostname_validator::is_valid(hostname) {
-                    // TODO: display errors
-                    self.editing_device_name = false;
-                    let hostname = hostname.clone();
-                    tokio::task::spawn(async move {
-                        let connection = match zbus::Connection::system().await {
-                            Ok(conn) => conn,
-                            Err(why) => {
-                                tracing::error!(?why, "failed to establish connection to dbus");
-                                return;
-                            }
-                        };
-
-                        let hostname1 = match hostname1_zbus::Hostname1Proxy::new(&connection).await
-                        {
-                            Ok(proxy) => proxy,
-                            Err(why) => {
-                                tracing::error!(
-                                    ?why,
-                                    "failed to connect to org.freedesktop.hostname1"
-                                );
-                                return;
-                            }
-                        };
-
-                        if let Err(why) = hostname1.set_static_hostname(&hostname, false).await {
-                            tracing::error!(?why, "failed to set static hostname");
-                        }
-                    });
+                if !editing {
+                    return self.hostname_submit();
                 }
             }
 
-            Message::Info(info) => self.info = *info,
+            Message::HostnameInput(hostname) => {
+                self.hostname_input = hostname;
+            }
+
+            Message::HostnameSubmit => return self.hostname_submit(),
+
+            Message::Info(info) => {
+                self.info = *info;
+                self.hostname_input = self.info.device_name.clone();
+            }
+
+            Message::Error(_why) => {
+                self.hostname_input = self.info.device_name.clone();
+                // TODO: display errors
+            }
+
+            Message::HostnameSuccess(name) => {
+                self.info.device_name = name;
+            }
         }
+
+        Task::none()
+    }
+
+    fn hostname_submit(&mut self) -> cosmic::app::Task<crate::app::Message> {
+        if self.hostname_input == self.info.device_name {
+            return Task::none();
+        }
+
+        let hostname = &self.hostname_input;
+        if hostname_validator::is_valid(hostname) {
+            self.editing_device_name = false;
+            let hostname = hostname.clone();
+            return cosmic::Task::future(async move {
+                let connection = match zbus::Connection::system().await {
+                    Ok(conn) => conn,
+                    Err(why) => {
+                        tracing::error!(?why, "failed to establish connection to dbus");
+                        return Message::Error(String::from(
+                            "failed to establish connection to dbus",
+                        ));
+                    }
+                };
+
+                let hostname1 = match hostname1_zbus::Hostname1Proxy::new(&connection).await {
+                    Ok(proxy) => proxy,
+                    Err(why) => {
+                        tracing::error!(?why, "failed to connect to org.freedesktop.hostname1");
+                        return Message::Error(String::from(
+                            "failed to connect to org.freedesktop.hostname1",
+                        ));
+                    }
+                };
+
+                if let Err(why) = hostname1.set_static_hostname(&hostname, false).await {
+                    tracing::error!(?why, "failed to set static hostname");
+                    return Message::Error(String::from("failed to set static hostname"));
+                }
+
+                Message::HostnameSuccess(hostname)
+            })
+            .map(crate::app::Message::from)
+            .map(Into::into);
+        }
+
+        Task::none()
     }
 }
 
@@ -131,7 +176,7 @@ fn device() -> Section<crate::pages::Message> {
 
             let hostname_input = editable_input(
                 "",
-                &page.info.device_name,
+                &page.hostname_input,
                 page.editing_device_name,
                 Message::HostnameEdit,
             )

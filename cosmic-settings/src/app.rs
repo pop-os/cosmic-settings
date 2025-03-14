@@ -380,7 +380,9 @@ impl cosmic::Application for SettingsApp {
                 }
                 #[cfg(feature = "page-about")]
                 crate::pages::Message::About(message) => {
-                    page::update!(self.pages, message, system::about::Page);
+                    if let Some(page) = self.pages.page_mut::<system::about::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
                 }
 
                 crate::pages::Message::Appearance(message) => {
