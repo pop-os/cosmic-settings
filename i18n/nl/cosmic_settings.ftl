@@ -552,11 +552,11 @@ keyboard-typing-assist = Typen
     .repeat-delay = Vertraging vóór herhaalde toetsaanslag
 
 keyboard-numlock-boot = Numlock
-    .boot-state = Wilt u de numlock aan of uit bij het opstarten?
-    .last-boot = Laat zoals die was bij het afsluiten
-    .on = Aan
-    .off = Uit
-    .set = Status van de numlock bij het opstarten
+    .boot-state = Status van de numlock bij het opstarten
+    .last-boot = Ongewijzigd laten
+    .on = Inschakelen
+    .off = Uitschakelen
+    .set = Numlock bij het opstarten
 
 added = Toegevoegd
 type-to-search = Typ om te zoeken...
