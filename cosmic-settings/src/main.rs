@@ -61,6 +61,7 @@ pub enum PageCommands {
     /// Desktop settings page
     Desktop,
     /// Displays settings page
+    #[cfg(feature = "page-display")]
     Displays,
     /// Dock settings page
     #[cfg(feature = "wayland")]
@@ -86,6 +87,7 @@ pub enum PageCommands {
     #[cfg(feature = "page-power")]
     Power,
     /// Region & Language settings page
+    #[cfg(feature = "page-region")]
     RegionLanguage,
     /// Sound settings page
     #[cfg(feature = "page-sound")]

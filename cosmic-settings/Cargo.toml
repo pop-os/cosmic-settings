@@ -76,7 +76,7 @@ xkb-data = "0.2.1"
 zbus = { version = "4.4.0", default-features = false, features = [
     "tokio",
 ], optional = true }
-zbus_polkit = { version = "4.0.0" }
+zbus_polkit = { version = "4.0.0", optional = true }
 fontdb = "0.16.2"
 fixed_decimal = "0.5.6"
 mime = "0.3.17"
@@ -101,9 +101,8 @@ version = "0.15.3"
 features = ["fluent-system", "desktop-requester"]
 
 # Contains region-handling logic for Linux
-[dependencies.lichen-system]
-git = "https://github.com/serpent-os/lichen"
-package = "system"
+[dependencies.locales-rs]
+git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
@@ -117,6 +116,7 @@ linux = [
     "page-bluetooth",
     "page-date",
     "page-default-apps",
+    "page-display",
     "page-input",
     "page-networking",
     "page-power",
@@ -130,15 +130,25 @@ linux = [
 ]
 
 # Pages
-page-accessibility = ["dep:cosmic-protocols", "dep:sctk"]
-page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
+page-accessibility = [
+    "dep:cosmic-comp-config",
+    "dep:cosmic-protocols",
+    "dep:cosmic-settings-config",
+    "dep:sctk",
+]
+page-about = [
+    "dep:cosmic-settings-system",
+    "dep:hostname1-zbus",
+    "dep:zbus",
+]
 page-bluetooth = [
     "dep:bluez-zbus",
     "dep:zbus",
     "dep:cosmic-settings-subscriptions",
 ]
 page-date = ["dep:timedate-zbus", "dep:zbus"]
-page-default-apps = ["dep:mime-apps"]
+page-default-apps = ["dep:cosmic-settings-config", "dep:mime-apps"]
+page-display = ["dep:udev"]
 page-input = [
     "gettext",
     "dep:cosmic-comp-config",
@@ -152,9 +162,19 @@ page-networking = [
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]
-page-region = ["dep:lichen-system", "dep:locale1"]
+page-region = [
+    "gettext",
+    "dep:locales-rs",
+    "dep:locale1",
+    "dep:zbus",
+]
 page-sound = ["dep:cosmic-settings-subscriptions"]
-page-users = ["dep:accounts-zbus"]
+page-users = [
+    "xdg-portal",
+    "dep:accounts-zbus",
+    "dep:zbus",
+    "dep:zbus_polkit",
+]
 page-window-management = ["dep:cosmic-settings-config"]
 page-workspaces = ["dep:cosmic-comp-config"]
 
@@ -164,6 +184,10 @@ ashpd = ["dep:ashpd"]
 dbus-config = ["libcosmic/dbus-config", "cosmic-config/dbus"]
 single-instance = ["libcosmic/single-instance"]
 test = []
-wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr"]
+wayland = [
+    "libcosmic/wayland",
+    "dep:cosmic-panel-config",
+    "dep:cosmic-randr"
+]
 wgpu = ["libcosmic/wgpu"]
 xdg-portal = ["ashpd", "libcosmic/xdg-portal"]
