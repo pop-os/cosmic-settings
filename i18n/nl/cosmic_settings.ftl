@@ -134,11 +134,17 @@ accessibility = Toegankelijkheid
     .on = Aan
     .off = Uit
     .unavailable = Niet beschikbaar
+    .high-contrast = Verhoogde contrast modus
 magnifier = Vergrootglas
-    .controls =
-        Of gebruik de sneltoetsen:
-        Super + = om in te zoomen,
-        Super + - om uit te zoomen,
+    .controls = U kunt ook deze sneltoetsen gebruiken: { $zoom_in ->
+            [zero] {""}
+            *[other] {""}
+                {$zoom_in} om in te zoomen,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} om uit te zoomen,
+        }
         Super + scrollwiel om te zoomen met de muis
     .increment = Zoom-stapgrootte
     .signin = Het vergrootglas direct gebruiken als u inlogt
@@ -542,12 +548,19 @@ keyboard-special-char = Invoer speciale tekens
     .caps = Caps Lock-toets
 
 keyboard-typing-assist = Typen
-    .repeat-rate = Snelheid van herhalen
-    .repeat-delay = Herhalingsvertraging
+    .repeat-rate = Herhalingssnelheid
+    .repeat-delay = Vertraging vóór herhaalde toetsaanslag
+
+keyboard-numlock-boot = Numlock
+    .boot-state = Wilt u de numlock aan of uit bij het opstarten?
+    .last-boot = Laat zoals die was bij het afsluiten
+    .on = Aan
+    .off = Uit
+    .set = Status van de numlock bij het opstarten
 
 added = Toegevoegd
 type-to-search = Typ om te zoeken...
-show-extended-input-sources = Toon uitgebreide invoermethoden
+show-extended-input-sources = Toon uitgebreide invoermethodes
 
 ## Input: Keyboard: Shortcuts
 
