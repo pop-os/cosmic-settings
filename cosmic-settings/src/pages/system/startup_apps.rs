@@ -133,9 +133,9 @@ impl page::Page<crate::pages::Message> for Page {
                 all_apps: get_all_apps(locales.clone()),
                 locales,
             })
-                .into()
+            .into()
         })
-            .abortable();
+        .abortable();
 
         self.on_enter_handle = Some(on_enter_handle);
 
@@ -308,9 +308,7 @@ impl Page {
         directory_type: DirectoryType,
     ) -> Element<'_, crate::pages::Message> {
         let cosmic::cosmic_theme::Spacing {
-            space_s,
-            space_l,
-            ..
+            space_s, space_l, ..
         } = cosmic::theme::active().cosmic().spacing;
 
         let search = widget::search_input(fl!("type-to-search"), &self.application_search)
@@ -366,10 +364,7 @@ impl Page {
 }
 
 fn apps() -> Section<crate::pages::Message> {
-    let cosmic::cosmic_theme::Spacing {
-        space_s,
-        ..
-    } = cosmic::theme::active().cosmic().spacing;
+    let cosmic::cosmic_theme::Spacing { space_s, .. } = cosmic::theme::active().cosmic().spacing;
 
     Section::default()
         .title(fl!("startup-apps"))
