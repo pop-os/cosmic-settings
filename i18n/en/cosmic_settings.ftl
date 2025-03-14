@@ -840,3 +840,14 @@ default-apps = Default Applications
     .terminal = Terminal
     .other-associations = Other Associations
     .text-editor = Text Editor
+
+## System: Startup Applications
+
+startup-apps = Startup Applications
+    .desc = Configure applications which run on login.
+    .add = Add app
+    .user = User specific applications
+    .user-description = These applications are launched when you log into your current user.
+    .remove-dialog-title = Remove { $name }?
+    .remove-dialog-description = Are you sure you want to remove this as a startup application?
+    .search-for-application = Search for application
