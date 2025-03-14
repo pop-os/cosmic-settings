@@ -11,7 +11,7 @@ use cosmic::iced_widget::scrollable::{Direction, RelativeOffset, Scrollbar};
 use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
 };
-use cosmic::{Apply, Element, Task};
+use cosmic::{surface, Apply, Element, Task};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
@@ -108,6 +108,7 @@ pub enum Message {
         randr: Arc<Result<List, cosmic_randr_shell::Error>>,
     },
     SetXwaylandDescaling(bool),
+    Surface(surface::Action),
 }
 
 impl From<Message> for app::Message {
@@ -625,6 +626,10 @@ impl Page {
                 {
                     error!(?err, "Failed to set config 'descale_xwayland'");
                 }
+            }
+
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
             }
         }
 
@@ -1226,18 +1231,28 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                 let mut items = vec![
                     widget::settings::item(
                         &descriptions[resolution],
-                        dropdown(
+                        dropdown::popup_dropdown(
                             &page.cache.resolutions,
                             page.cache.resolution_selected,
                             Message::Resolution,
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(crate::pages::Message::Displays(a))
+                            },
                         ),
                     ),
                     widget::settings::item(
                         &descriptions[refresh_rate],
-                        dropdown(
+                        dropdown::popup_dropdown(
                             &page.cache.refresh_rates,
                             page.cache.refresh_rate_selected,
                             Message::RefreshRate,
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(crate::pages::Message::Displays(a))
+                            },
                         ),
                     ),
                 ];
@@ -1245,10 +1260,15 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                 if let Some(vrr_selected) = page.cache.vrr_selected {
                     items.push(widget::settings::item(
                         &descriptions[vrr],
-                        dropdown(
+                        dropdown::popup_dropdown(
                             &page.cache.vrr_modes,
                             Some(vrr_selected),
                             Message::VariableRefreshRate,
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(crate::pages::Message::Displays(a))
+                            },
                         ),
                     ));
                 }
@@ -1256,7 +1276,16 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                 items.extend(vec![
                     widget::settings::item(
                         &descriptions[scale],
-                        dropdown(&DPI_SCALE_LABELS, page.cache.scale_selected, Message::Scale),
+                        dropdown::popup_dropdown(
+                            &DPI_SCALE_LABELS,
+                            page.cache.scale_selected,
+                            Message::Scale,
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(crate::pages::Message::Displays(a))
+                            },
+                        ),
                     ),
                     widget::settings::item(
                         &descriptions[additional_scale_options],
@@ -1271,7 +1300,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     ),
                     widget::settings::item(
                         &descriptions[orientation],
-                        dropdown(
+                        dropdown::popup_dropdown(
                             &page.cache.orientations,
                             page.cache.orientation_selected,
                             |id| {
@@ -1281,6 +1310,11 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                                     2 => Transform::Rotate180,
                                     _ => Transform::Rotate270,
                                 })
+                            },
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(crate::pages::Message::Displays(a))
                             },
                         ),
                     ),

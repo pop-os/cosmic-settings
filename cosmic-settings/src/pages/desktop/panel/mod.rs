@@ -23,11 +23,15 @@ pub struct Message(pub inner::Message);
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
-        self.inner
-            .update(message.0)
-            .map(Message)
-            .map(crate::pages::Message::Panel)
-            .map(crate::app::Message::PageMessage)
+        if let inner::Message::Surface(a) = message.0 {
+            return cosmic::task::message(crate::app::Message::Surface(a));
+        } else {
+            self.inner
+                .update(message.0)
+                .map(Message)
+                .map(crate::pages::Message::Panel)
+                .map(crate::app::Message::PageMessage)
+        }
     }
 }
 

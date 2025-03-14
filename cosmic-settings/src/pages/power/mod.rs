@@ -7,8 +7,8 @@ use chrono::TimeDelta;
 use cosmic::iced::{Alignment, Length};
 use cosmic::iced_widget::{column, row};
 use cosmic::widget::{self, radio, settings, text};
-use cosmic::Apply;
 use cosmic::Task;
+use cosmic::{surface, Apply};
 use cosmic_config::{Config, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, section, Section};
@@ -193,10 +193,11 @@ pub enum Message {
     ScreenOffTimeChange(Option<Duration>),
     SuspendOnAcTimeChange(Option<Duration>),
     SuspendOnBatteryTimeChange(Option<Duration>),
+    Surface(surface::Action),
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         let runtime = tokio::runtime::Runtime::new().unwrap();
 
         let backend = runtime.block_on(backend::get_backend());
@@ -241,7 +242,11 @@ impl Page {
             Message::DeviceConnect(connected_device) => {
                 self.connected_devices.push(connected_device)
             }
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
+            }
         };
+        Task::none()
     }
 }
 
@@ -417,7 +422,14 @@ fn power_saving_row<'a>(
 
     settings::item(
         label,
-        widget::dropdown(labels, selected, move |i| on_select(times.get(i).copied())),
+        widget::dropdown::popup_dropdown(
+            labels,
+            selected,
+            move |i| on_select(times.get(i).copied()),
+            cosmic::iced::window::Id::RESERVED,
+            Message::Surface,
+            |a| crate::app::Message::PageMessage(crate::pages::Message::Power(a)),
+        ),
     )
     .into()
 }

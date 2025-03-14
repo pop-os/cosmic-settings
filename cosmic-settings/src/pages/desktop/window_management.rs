@@ -3,8 +3,9 @@
 
 use cosmic::{
     iced::Length,
+    surface,
     widget::{self, settings, toggler},
-    Apply, Element,
+    Apply, Element, Task,
 };
 
 use cosmic_config::{ConfigGet, ConfigSet};
@@ -26,6 +27,7 @@ pub enum Message {
     ShowMaximizeButton(bool),
     ShowMinimizeButton(bool),
     SetEdgeSnapThreshold(u32),
+    Surface(surface::Action),
 }
 
 pub struct Page {
@@ -107,7 +109,7 @@ impl Default for Page {
 }
 
 impl Page {
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) -> cosmic::iced::Task<crate::app::Message> {
         match message {
             Message::SuperKey(id) => {
                 let action = match id {
@@ -115,7 +117,7 @@ impl Page {
                     1 => Some(shortcuts::action::System::WorkspaceOverview),
                     2 => Some(shortcuts::action::System::AppLibrary),
                     3 => None,
-                    _ => return,
+                    _ => return cosmic::iced::Task::none(),
                 };
 
                 self.super_key_active = Some(id);
@@ -186,7 +188,11 @@ impl Page {
                     error!(?err, "Failed to set config 'edge_snap_threshold'");
                 }
             }
-        }
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
+            }
+        };
+        cosmic::iced::Task::none()
     }
 }
 
@@ -233,13 +239,20 @@ pub fn window_management() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(
-                    settings::item::builder(&descriptions[super_key]).control(widget::dropdown(
+                .add(settings::item::builder(&descriptions[super_key]).control(
+                    widget::dropdown::popup_dropdown(
                         &page.super_key_selections,
                         page.super_key_active,
                         Message::SuperKey,
-                    )),
-                )
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| {
+                            crate::app::Message::PageMessage(
+                                crate::pages::Message::WindowManagement(a),
+                            )
+                        },
+                    ),
+                ))
                 .add(settings::flex_item(
                     &descriptions[edge_gravity],
                     toggler(page.edge_snap_threshold != 0).on_toggle(|is_enabled| {
@@ -310,7 +323,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                     })
                     .select_on_focus(true)
                     .on_input(Message::SetFocusFollowsCursorDelay)
-                    .on_submit(Message::SaveFocusFollowsCursorDelay(true))
+                    .on_submit(|_| Message::SaveFocusFollowsCursorDelay(true))
                     .width(Length::Fixed(80.0)),
                 ))
                 .add(settings::item(

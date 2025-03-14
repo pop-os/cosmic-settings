@@ -9,6 +9,7 @@ use std::{
 };
 
 use cosmic::{
+    surface,
     widget::{self, dropdown, icon, settings},
     Apply, Element, Task,
 };
@@ -50,6 +51,7 @@ pub enum Category {
 pub enum Message {
     SetDefault(Category, usize),
     Update(CachedMimeApps),
+    Surface(surface::Action),
 }
 
 impl From<Message> for crate::app::Message {
@@ -267,9 +269,11 @@ impl Page {
                     _ = std::process::Command::new("update-desktop-database").status();
                 }
             }
-
             Message::Update(mime_apps) => {
                 self.mime_apps = Some(mime_apps);
+            }
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
             }
         }
 
@@ -289,9 +293,14 @@ fn apps() -> Section<crate::pages::Message> {
                 let meta = &mime_apps.apps[DROPDOWN_WEB_BROWSER];
                 settings::flex_item(
                     fl!("default-apps", "web-browser"),
-                    dropdown(&meta.apps, meta.selected, |id| {
-                        Message::SetDefault(Category::WebBrowser, id)
-                    })
+                    dropdown::popup_dropdown(
+                        &meta.apps,
+                        meta.selected,
+                        |id| Message::SetDefault(Category::WebBrowser, id),
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                    )
                     .icons(&meta.icons),
                 )
                 .min_item_width(300.0)
@@ -300,9 +309,14 @@ fn apps() -> Section<crate::pages::Message> {
                 let meta = &mime_apps.apps[DROPDOWN_FILE_MANAGER];
                 settings::flex_item(
                     fl!("default-apps", "file-manager"),
-                    dropdown(&meta.apps, meta.selected, |id| {
-                        Message::SetDefault(Category::FileManager, id)
-                    })
+                    dropdown::popup_dropdown(
+                        &meta.apps,
+                        meta.selected,
+                        |id| Message::SetDefault(Category::FileManager, id),
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                    )
                     .icons(&meta.icons),
                 )
             })
@@ -310,9 +324,14 @@ fn apps() -> Section<crate::pages::Message> {
                 let meta = &mime_apps.apps[DROPDOWN_MAIL];
                 settings::flex_item(
                     fl!("default-apps", "mail-client"),
-                    dropdown(&meta.apps, meta.selected, |id| {
-                        Message::SetDefault(Category::Mail, id)
-                    })
+                    dropdown::popup_dropdown(
+                        &meta.apps,
+                        meta.selected,
+                        |id| Message::SetDefault(Category::Mail, id),
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                    )
                     .icons(&meta.icons),
                 )
             })
@@ -320,9 +339,14 @@ fn apps() -> Section<crate::pages::Message> {
                 let meta = &mime_apps.apps[DROPDOWN_MUSIC];
                 settings::flex_item(
                     fl!("default-apps", "music"),
-                    dropdown(&meta.apps, meta.selected, |id| {
-                        Message::SetDefault(Category::Audio, id)
-                    })
+                    dropdown::popup_dropdown(
+                        &meta.apps,
+                        meta.selected,
+                        |id| Message::SetDefault(Category::Audio, id),
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                    )
                     .icons(&meta.icons),
                 )
             })
@@ -330,9 +354,14 @@ fn apps() -> Section<crate::pages::Message> {
                 let meta = &mime_apps.apps[DROPDOWN_VIDEO];
                 settings::flex_item(
                     fl!("default-apps", "video"),
-                    dropdown(&meta.apps, meta.selected, |id| {
-                        Message::SetDefault(Category::Video, id)
-                    })
+                    dropdown::popup_dropdown(
+                        &meta.apps,
+                        meta.selected,
+                        |id| Message::SetDefault(Category::Video, id),
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                    )
                     .icons(&meta.icons),
                 )
             })
@@ -340,9 +369,14 @@ fn apps() -> Section<crate::pages::Message> {
                 let meta = &mime_apps.apps[DROPDOWN_PHOTO];
                 settings::flex_item(
                     fl!("default-apps", "photos"),
-                    dropdown(&meta.apps, meta.selected, |id| {
-                        Message::SetDefault(Category::Image, id)
-                    })
+                    dropdown::popup_dropdown(
+                        &meta.apps,
+                        meta.selected,
+                        |id| Message::SetDefault(Category::Image, id),
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                    )
                     .icons(&meta.icons),
                 )
             })
@@ -350,9 +384,14 @@ fn apps() -> Section<crate::pages::Message> {
                 let meta = &mime_apps.apps[DROPDOWN_CALENDAR];
                 settings::flex_item(
                     fl!("default-apps", "calendar"),
-                    dropdown(&meta.apps, meta.selected, |id| {
-                        Message::SetDefault(Category::Calendar, id)
-                    })
+                    dropdown::popup_dropdown(
+                        &meta.apps,
+                        meta.selected,
+                        |id| Message::SetDefault(Category::Calendar, id),
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                    )
                     .icons(&meta.icons),
                 )
             })
@@ -360,9 +399,14 @@ fn apps() -> Section<crate::pages::Message> {
                 let meta = &mime_apps.apps[DROPDOWN_TERMINAL];
                 settings::flex_item(
                     fl!("default-apps", "terminal"),
-                    dropdown(&meta.apps, meta.selected, |id| {
-                        Message::SetDefault(Category::Terminal, id)
-                    })
+                    dropdown::popup_dropdown(
+                        &meta.apps,
+                        meta.selected,
+                        |id| Message::SetDefault(Category::Terminal, id),
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                    )
                     .icons(&meta.icons),
                 )
             })
@@ -370,9 +414,14 @@ fn apps() -> Section<crate::pages::Message> {
                 let meta = &mime_apps.apps[DROPDOWN_TEXT_EDITOR];
                 settings::flex_item(
                     fl!("default-apps", "text-editor"),
-                    dropdown(&meta.apps, meta.selected, |id| {
-                        Message::SetDefault(Category::TextEditor, id)
-                    })
+                    dropdown::popup_dropdown(
+                        &meta.apps,
+                        meta.selected,
+                        |id| Message::SetDefault(Category::TextEditor, id),
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                    )
                     .icons(&meta.icons),
                 )
             })

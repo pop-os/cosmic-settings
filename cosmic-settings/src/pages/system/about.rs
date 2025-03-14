@@ -182,7 +182,7 @@ fn device() -> Section<crate::pages::Message> {
             )
             .width(250)
             .on_input(Message::HostnameInput)
-            .on_submit(Message::HostnameSubmit);
+            .on_submit(|_| Message::HostnameSubmit);
 
             let device_name = settings::item::builder(&*desc[device])
                 .description(&*desc[device_desc])

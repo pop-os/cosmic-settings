@@ -66,12 +66,17 @@ impl Page {
 
                 Task::none()
             }
-            Message::Inner(inner) => self
-                .inner
-                .update(inner)
-                .map(Message::Inner)
-                .map(crate::pages::Message::Dock)
-                .map(crate::app::Message::PageMessage),
+            Message::Inner(inner) => {
+                if let inner::Message::Surface(a) = inner {
+                    return cosmic::task::message(crate::app::Message::Surface(a));
+                } else {
+                    self.inner
+                        .update(inner)
+                        .map(Message::Inner)
+                        .map(crate::pages::Message::Dock)
+                        .map(crate::app::Message::PageMessage)
+                }
+            }
         }
     }
 }

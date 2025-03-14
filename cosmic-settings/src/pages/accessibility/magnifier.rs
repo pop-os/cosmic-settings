@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use cosmic::{
     iced::{Element, Length},
     iced_core::text::Wrapping,
+    surface,
     widget::{self, icon, settings, svg, text},
     Apply,
 };
@@ -42,6 +43,7 @@ pub enum Message {
     SetIncrement(usize),
     SetSignin(bool),
     SetMovement(ZoomMovement),
+    Surface(surface::Action),
 }
 
 impl Default for Page {
@@ -219,10 +221,17 @@ pub fn magnifier(
                 )
                 .add(settings::item(
                     &descriptions[increment],
-                    widget::dropdown(
+                    widget::dropdown::popup_dropdown(
                         &page.increment_values,
                         page.increment_idx,
                         Message::SetIncrement,
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| {
+                            crate::app::Message::PageMessage(
+                                crate::pages::Message::AccessibilityMagnifier(a),
+                            )
+                        },
                     ),
                 ))
                 .add(settings::item(
@@ -364,6 +373,9 @@ impl Page {
                         crate::pages::Message::Accessibility(super::Message::Return),
                     ));
                 }
+            }
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
             }
         }
 
