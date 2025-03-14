@@ -113,6 +113,7 @@ display = Skärmar
     .refresh-rate = Uppdateringsfrekvens
     .resolution = Upplösning
     .scale = Skala
+    .additional-scale-options = Ytterligare skalningsalternativ
 
 mirroring = Spegling
     .id = Spegling { $id }
@@ -159,6 +160,7 @@ accessibility = Tillgänglighet
     .on = På
     .off = Av
     .unavailable = Inte tillgänglig
+    .high-contrast = Högkontrast läge
 magnifier = Förstoringsglas
     .controls =
         Eller använd tangentbordsgenvägar:
