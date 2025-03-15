@@ -7,6 +7,7 @@ use chrono::{Datelike, Timelike};
 use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced_core::text::Wrapping,
+    surface,
     widget::{self, dropdown, settings},
     Apply, Element, Task,
 };
@@ -276,6 +277,10 @@ impl Page {
                 self.update_local_time();
             }
 
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
+            }
+
             Message::None => (),
         }
 
@@ -365,6 +370,7 @@ pub enum Message {
     TimezoneContext,
     TimezoneSearch(String),
     UpdateTime,
+    Surface(surface::Action),
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -416,23 +422,32 @@ fn format() -> Section<crate::pages::Message> {
                 )
                 // First day of week
                 .add(
-                    settings::item::builder(&section.descriptions[first]).control(dropdown(
-                        &*WEEKDAYS,
-                        match page.first_day_of_week {
-                            4 => Some(0), // friday
-                            5 => Some(1), // saturday
-                            0 => Some(3), // monday
-                            _ => Some(2), // sunday
-                        },
-                        |v| {
-                            match v {
-                                0 => Message::FirstDayOfWeek(4), // friday
-                                1 => Message::FirstDayOfWeek(5), // saturday
-                                3 => Message::FirstDayOfWeek(0), // monday
-                                _ => Message::FirstDayOfWeek(6), // sunday
-                            }
-                        },
-                    )),
+                    settings::item::builder(&section.descriptions[first]).control(
+                        dropdown::popup_dropdown(
+                            &*WEEKDAYS,
+                            match page.first_day_of_week {
+                                4 => Some(0), // friday
+                                5 => Some(1), // saturday
+                                0 => Some(3), // monday
+                                _ => Some(2), // sunday
+                            },
+                            |v| {
+                                match v {
+                                    0 => Message::FirstDayOfWeek(4), // friday
+                                    1 => Message::FirstDayOfWeek(5), // saturday
+                                    3 => Message::FirstDayOfWeek(0), // monday
+                                    _ => Message::FirstDayOfWeek(6), // sunday
+                                }
+                            },
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DateAndTime(a),
+                                )
+                            },
+                        ),
+                    ),
                 )
                 // Date on top panel toggle
                 .add(

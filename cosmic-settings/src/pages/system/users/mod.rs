@@ -600,14 +600,14 @@ fn user_list() -> Section<crate::pages::Message> {
                             Message::ToggleEdit(idx, EditorField::Username)
                         })
                         .on_input(move |name| Message::Edit(idx, EditorField::Username, name))
-                        .on_submit(Message::ApplyEdit(idx, EditorField::Username));
+                        .on_submit(move |_| Message::ApplyEdit(idx, EditorField::Username));
 
                     let password =
                         widget::editable_input("", &user.password, user.password_edit, move |_| {
                             Message::ToggleEdit(idx, EditorField::Password)
                         })
                         .on_input(move |pass| Message::Edit(idx, EditorField::Password, pass))
-                        .on_submit(Message::ApplyEdit(idx, EditorField::Password))
+                        .on_submit(move |_| Message::ApplyEdit(idx, EditorField::Password))
                         .password();
 
                     let fullname = widget::editable_input(
@@ -617,7 +617,7 @@ fn user_list() -> Section<crate::pages::Message> {
                         move |_| Message::ToggleEdit(idx, EditorField::FullName),
                     )
                     .on_input(move |name| Message::Edit(idx, EditorField::FullName, name))
-                    .on_submit(Message::ApplyEdit(idx, EditorField::FullName));
+                    .on_submit(move |_| Message::ApplyEdit(idx, EditorField::FullName));
 
                     let fullname_text = text::body(&user.full_name);
 

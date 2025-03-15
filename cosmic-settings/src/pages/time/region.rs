@@ -21,7 +21,7 @@ use icu::datetime::options::preferences;
 use icu::datetime::DateTimeFormatter;
 use icu::decimal::options::FixedDecimalFormatterOptions;
 use icu::decimal::FixedDecimalFormatter;
-use lichen_system::locale;
+use locales_rs as locale;
 use slotmap::{DefaultKey, SlotMap};
 
 #[derive(Clone, Debug)]
@@ -849,7 +849,7 @@ fn language_element(
     widget::settings::item(description, popover_button(id, expanded)).into()
 }
 
-fn localized_iso_codes(locale: &lichen_system::locale::Locale) -> (String, String) {
+fn localized_iso_codes(locale: &locale::Locale) -> (String, String) {
     let mut language = gettextrs::dgettext("iso_639", &locale.language.display_name);
     let country = gettextrs::dgettext("iso_3166", &locale.territory.display_name);
 
@@ -862,7 +862,7 @@ fn localized_iso_codes(locale: &lichen_system::locale::Locale) -> (String, Strin
     (language, country)
 }
 
-fn localized_locale(locale: &lichen_system::locale::Locale, lang_code: String) -> SystemLocale {
+fn localized_locale(locale: &locale::Locale, lang_code: String) -> SystemLocale {
     let (language, country) = localized_iso_codes(locale);
 
     SystemLocale {

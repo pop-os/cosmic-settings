@@ -16,12 +16,15 @@ use std::{
 
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser;
-use cosmic::iced::{Alignment, Color, Length};
 use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::widget::{
     button, dropdown, list_column, row,
     segmented_button::{self, SingleSelectModel},
     settings, tab_bar, text, toggler,
+};
+use cosmic::{
+    iced::{window, Alignment, Color, Length},
+    surface,
 };
 use cosmic::{
     widget::{color_picker::ColorPickerUpdate, icon, ColorPickerModel},
@@ -106,6 +109,7 @@ pub enum Message {
     Slideshow(bool),
     /// State change from cosmic-bg
     UpdateState(cosmic_bg_config::state::State),
+    Surface(surface::Action),
 }
 
 impl From<Message> for crate::app::Message {
@@ -990,6 +994,9 @@ impl Page {
                         ))),
                 );
             }
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
+            }
         }
 
         self.config_apply();
@@ -1236,8 +1243,14 @@ pub fn settings() -> Section<crate::pages::Message> {
                 children.push(element.into());
             }
 
-            let wallpaper_fit =
-                cosmic::widget::dropdown(&page.fit_options, Some(page.selected_fit), Message::Fit);
+            let wallpaper_fit = cosmic::widget::dropdown::popup_dropdown(
+                &page.fit_options,
+                Some(page.selected_fit),
+                Message::Fit,
+                window::Id::RESERVED,
+                Message::Surface,
+                |a| crate::app::Message::PageMessage(crate::pages::Message::DesktopWallpaper(a)),
+            );
 
             children.push({
                 let mut column = list_column()
@@ -1258,14 +1271,26 @@ pub fn settings() -> Section<crate::pages::Message> {
                 // The rotation frequency dropdown should only be shown when the slideshow is enabled.
                 if slideshow_enabled {
                     column
-                        .add(settings::item(
-                            &descriptions[change_label],
-                            dropdown(
+                        .add(settings::item(&descriptions[change_label], {
+                            let dropdown = dropdown(
                                 &page.rotation_options,
                                 Some(page.selected_rotation),
                                 Message::RotationFrequency,
-                            ),
-                        ))
+                            );
+                            #[cfg(feature = "wayland")]
+                            let dropdown = {
+                                dropdown.with_popup(
+                                    cosmic::iced::window::Id::RESERVED,
+                                    Message::Surface,
+                                    |a| {
+                                        crate::app::Message::PageMessage(
+                                            crate::pages::Message::DesktopWallpaper(a),
+                                        )
+                                    },
+                                )
+                            };
+                            dropdown
+                        }))
                         .into()
                 } else {
                     column.into()

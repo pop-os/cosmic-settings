@@ -21,10 +21,7 @@ use crate::pages::{self, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 use crate::PageCommands;
-use cosmic::app::command::set_theme;
 use cosmic::app::context_drawer::ContextDrawer;
-#[cfg(feature = "single-instance")]
-use cosmic::app::DbusActivationMessage;
 #[cfg(feature = "wayland")]
 use cosmic::cctk::{sctk::output::OutputInfo, wayland_client::protocol::wl_output::WlOutput};
 use cosmic::iced::Subscription;
@@ -37,6 +34,7 @@ use cosmic::{
         window, Length,
     },
     prelude::*,
+    surface,
     widget::{
         column, container, icon, id_container, nav_bar, scrollable, segmented_button, settings,
     },
@@ -164,6 +162,7 @@ pub enum Message {
     SearchSubmit,
     SetTheme(cosmic::theme::Theme),
     SetWindowTitle,
+    Surface(surface::Action),
 }
 
 impl cosmic::Application for SettingsApp {
@@ -244,7 +243,7 @@ impl cosmic::Application for SettingsApp {
                 .id(self.search_id.clone())
                 .on_clear(Message::SearchClear)
                 .on_input(Message::SearchChanged)
-                .on_submit(Message::SearchSubmit)
+                .on_submit(|_| Message::SearchSubmit)
                 .into()
         } else {
             icon::from_name("system-search-symbolic")
@@ -380,7 +379,9 @@ impl cosmic::Application for SettingsApp {
                 }
                 #[cfg(feature = "page-about")]
                 crate::pages::Message::About(message) => {
-                    page::update!(self.pages, message, system::about::Page);
+                    if let Some(page) = self.pages.page_mut::<system::about::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
                 }
 
                 crate::pages::Message::Appearance(message) => {
@@ -579,7 +580,9 @@ impl cosmic::Application for SettingsApp {
 
                 #[cfg(feature = "page-power")]
                 crate::pages::Message::Power(message) => {
-                    page::update!(self.pages, message, power::Page);
+                    if let Some(page) = self.pages.page_mut::<power::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
                 }
 
                 #[cfg(feature = "page-networking")]
@@ -723,7 +726,7 @@ impl cosmic::Application for SettingsApp {
                 }
             }
 
-            Message::SetTheme(t) => return set_theme(t),
+            Message::SetTheme(t) => return cosmic::command::set_theme(t),
 
             Message::OpenContextDrawer(page, title) => {
                 self.core.window.show_context = true;
@@ -739,17 +742,22 @@ impl cosmic::Application for SettingsApp {
             Message::Error(error) => {
                 tracing::error!(error, "error occurred");
             }
+            Message::Surface(a) => {
+                return cosmic::task::message(cosmic::Action::Cosmic(
+                    cosmic::app::Action::Surface(a),
+                ));
+            }
         }
 
         Task::none()
     }
 
     #[cfg(feature = "single-instance")]
-    fn dbus_activation(&mut self, msg: DbusActivationMessage) -> Task<Self::Message> {
+    fn dbus_activation(&mut self, msg: cosmic::dbus_activation::Message) -> Task<Self::Message> {
         match msg.msg {
-            cosmic::app::DbusActivationDetails::Activate
-            | cosmic::app::DbusActivationDetails::Open { .. } => None,
-            cosmic::app::DbusActivationDetails::ActivateAction { action, .. } => {
+            cosmic::dbus_activation::Details::Activate
+            | cosmic::dbus_activation::Details::Open { .. } => None,
+            cosmic::dbus_activation::Details::ActivateAction { action, .. } => {
                 PageCommands::from_str(&action)
                     .ok()
                     .and_then(|action| self.subtask_to_page(&action))
