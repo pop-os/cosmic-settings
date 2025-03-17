@@ -14,13 +14,13 @@ pub mod tiling;
 
 use cosmic::iced::Length;
 use cosmic::widget::{self, icon, settings, text};
-use cosmic::{theme, Apply, Element, Task};
+use cosmic::{Apply, Element, Task, theme};
 use cosmic_config::ConfigGet;
+use cosmic_settings_config::Binding;
 use cosmic_settings_config::shortcuts::action::{
     Direction, FocusDirection, Orientation, ResizeDirection,
 };
 use cosmic_settings_config::shortcuts::{self, Action, Shortcuts};
-use cosmic_settings_config::Binding;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use itertools::Itertools;
@@ -476,25 +476,21 @@ fn all_system_actions() -> &'static [Action] {
         Action::Focus(FocusDirection::Up),
         Action::LastWorkspace,
         Action::Maximize,
-        Action::MigrateWorkspaceToNextOutput,
         Action::MigrateWorkspaceToOutput(Direction::Down),
         Action::MigrateWorkspaceToOutput(Direction::Left),
         Action::MigrateWorkspaceToOutput(Direction::Right),
         Action::MigrateWorkspaceToOutput(Direction::Up),
-        Action::MigrateWorkspaceToPreviousOutput,
         Action::Minimize,
         Action::Move(Direction::Down),
         Action::Move(Direction::Left),
         Action::Move(Direction::Right),
         Action::Move(Direction::Up),
         Action::MoveToLastWorkspace,
-        Action::MoveToNextOutput,
         Action::MoveToNextWorkspace,
         Action::MoveToOutput(Direction::Down),
         Action::MoveToOutput(Direction::Left),
         Action::MoveToOutput(Direction::Right),
         Action::MoveToOutput(Direction::Up),
-        Action::MoveToPreviousOutput,
         Action::MoveToPreviousWorkspace,
         Action::MoveToWorkspace(1),
         Action::MoveToWorkspace(2),
@@ -505,11 +501,9 @@ fn all_system_actions() -> &'static [Action] {
         Action::MoveToWorkspace(7),
         Action::MoveToWorkspace(8),
         Action::MoveToWorkspace(9),
-        Action::NextOutput,
         Action::NextWorkspace,
         Action::Orientation(Orientation::Horizontal),
         Action::Orientation(Orientation::Vertical),
-        Action::PreviousOutput,
         Action::PreviousWorkspace,
         Action::Resizing(ResizeDirection::Inwards),
         Action::Resizing(ResizeDirection::Outwards),

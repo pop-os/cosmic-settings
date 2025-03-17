@@ -59,9 +59,13 @@ impl page::Page<crate::pages::Message> for Page {
             .map(|el| el.map(crate::pages::Message::SystemShortcuts))
     }
 
+    fn on_context_drawer_close(&mut self) -> Task<crate::pages::Message> {
+        self.model.on_context_drawer_close();
+        Task::none()
+    }
+
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
         self.model.on_enter();
-
         Task::none()
     }
 

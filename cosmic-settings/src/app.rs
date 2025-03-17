@@ -754,10 +754,7 @@ impl cosmic::Application for SettingsApp {
                 self.context_title = Some(title.to_string());
             }
 
-            Message::CloseContextDrawer => {
-                self.core.window.show_context = false;
-                self.active_context_page = None;
-            }
+            Message::CloseContextDrawer => return self.close_context_drawer(),
 
             Message::Error(error) => {
                 tracing::error!(error, "error occurred");
@@ -869,7 +866,9 @@ impl SettingsApp {
 
         if current_page != page {
             self.loaded_pages.remove(&current_page);
-            close_context_drawer_task = cosmic::task::message(Message::CloseContextDrawer);
+
+            close_context_drawer_task = self.close_context_drawer();
+
             leave_task = self
                 .pages
                 .on_leave(current_page)
@@ -918,6 +917,16 @@ impl SettingsApp {
         if let Some(nav_id) = self.pages.data(page) {
             self.nav_model.activate(*nav_id);
         }
+    }
+
+    fn close_context_drawer(&mut self) -> Task<Message> {
+        self.core.window.show_context = false;
+        self.active_context_page = None;
+        self.pages
+            .on_context_drawer_close(self.active_page)
+            .unwrap_or(iced::Task::none())
+            .map(Message::PageMessage)
+            .map(Into::into)
     }
 
     /// Adds a main page to the settings application.

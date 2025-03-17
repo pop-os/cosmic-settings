@@ -577,7 +577,7 @@ show-extended-input-sources = Show extended input sources
 keyboard-shortcuts = Keyboard Shortcuts
     .desc = View and customize shortcuts
 
-add-keybinding = Add keybinding
+add-another-keybinding = Add another keybinding
 cancel = Cancel
 command = Command
 custom = Custom
