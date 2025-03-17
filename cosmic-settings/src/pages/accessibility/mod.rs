@@ -17,7 +17,6 @@ use slotmap::SlotMap;
 
 pub mod magnifier;
 mod wayland;
-use tokio::task::spawn_blocking;
 pub use wayland::{AccessibilityEvent, AccessibilityRequest};
 
 #[derive(Debug, Default)]
