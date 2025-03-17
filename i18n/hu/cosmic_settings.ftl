@@ -134,11 +134,17 @@ accessibility = Akadálymentesség
     .on = Bekapcsolva
     .off = Kikapcsolva
     .unavailable = Nem elérhető
+    .high-contrast = Kontrasztos mód
 magnifier = Nagyító
-    .controls =
-        Vagy használd a billentyűparancsokat:
-        Super + = a nagyításhoz,
-        Super + - a kicsinyítéshez,
+    .controls = Vagy használd ezeket a billentyűparancsokat: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} a nagyításhoz,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} a kicsinyítéshez,
+        }
         Super + görgetés az egérrel
     .increment = Nagyítás mértéke
     .signin = Nagyító indítása bejelentkezéskor
@@ -387,12 +393,12 @@ display = Kijelzők
 mirroring = Tükrözés
     .id = Tükrözés { $id }
     .dont = Ne tükrözzön
-    .mirror = Tükrözze { $display }
+    .mirror = Tükrözze a(z) { $display } kijelzőt
     .project = Kivetítés { $display ->
-        [all] minden kijelzőre
-        *[other] { $display }
+        [all] az összes kijelzőre
+        *[other] a(z) { $display } kijelzőre
     }
-    .project-count = Kivetítés { $count} egyéb { $count ->
+    .project-count = Kivetítés { $count} további { $count ->
         [1] kijelzőre
         *[other] kijelzőkre
     }
@@ -544,6 +550,13 @@ keyboard-special-char = Speciális karakter beírása
 keyboard-typing-assist = Gépelés
     .repeat-rate = Ismétlési arány
     .repeat-delay = Ismétlési késleltetés
+
+keyboard-numlock-boot = Num Lock
+    .boot-state = Állapot indításkor
+    .last-boot = Utolsó indítás
+    .on = Bekapcsolva
+    .off = Kikapcsolva
+    .set = Num Lock indítási állapotának beállítása
 
 added = Hozzáadva
 type-to-search = Gépeljen a kereséshez...
