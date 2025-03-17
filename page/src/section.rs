@@ -54,6 +54,7 @@ impl<Message: 'static> Default for Section<Message> {
 
 impl<Message: 'static> Section<Message> {
     #[must_use]
+    #[inline]
     pub fn search_matches(&self, rule: &Regex) -> bool {
         if self.search_ignore {
             return false;
@@ -72,6 +73,7 @@ impl<Message: 'static> Section<Message> {
         false
     }
 
+    #[inline]
     pub fn show_while<Model: Page<Message>>(
         mut self,
         func: impl for<'a> Fn(&'a Model) -> bool + 'static,
@@ -92,6 +94,7 @@ impl<Message: 'static> Section<Message> {
     /// # Panics
     ///
     /// Will panic if the `Model` type does not match the page type.
+    #[inline]
     pub fn view<Model: Page<Message>>(
         mut self,
         func: impl for<'a> Fn(
@@ -116,6 +119,7 @@ impl<Message: 'static> Section<Message> {
 }
 
 #[must_use]
+#[inline]
 pub fn unimplemented<'a, Message: 'static>(
     _binder: &'a Binder<Message>,
     _page: &'a dyn Page<Message>,

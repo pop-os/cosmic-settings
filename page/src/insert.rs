@@ -9,13 +9,15 @@ pub struct Insert<'a, Message> {
     pub id: Entity,
 }
 
-impl<'a, Message: 'static> Insert<'a, Message> {
+impl<Message: 'static> Insert<'_, Message> {
     #[must_use]
+    #[inline]
     pub fn id(self) -> Entity {
         self.id
     }
 
     #[must_use]
+    #[inline]
     pub fn content(self, content: Content) -> Self {
         self.model.content.insert(self.id, content);
         self
@@ -26,7 +28,11 @@ impl<'a, Message: 'static> Insert<'a, Message> {
     #[allow(clippy::must_use_candidate)]
     pub fn sub_page<P: AutoBind<Message>>(self) -> Self {
         let sub_page = self.model.register::<P>().id();
+        self.sub_page_inner(sub_page)
+    }
 
+    #[inline(never)]
+    fn sub_page_inner(self, sub_page: Entity) -> Self {
         self.model.info[sub_page].parent = Some(self.id);
 
         self.model
@@ -43,7 +49,11 @@ impl<'a, Message: 'static> Insert<'a, Message> {
     #[allow(clippy::must_use_candidate)]
     pub fn sub_page_with_id<P: AutoBind<Message>>(&mut self) -> Entity {
         let sub_page = self.model.register::<P>().id();
+        self.sub_page_with_id_inner(sub_page)
+    }
 
+    #[inline(never)]
+    fn sub_page_with_id_inner(&mut self, sub_page: Entity) -> Entity {
         self.model.info[sub_page].parent = Some(self.id);
 
         self.model

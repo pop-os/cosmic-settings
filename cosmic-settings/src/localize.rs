@@ -39,6 +39,7 @@ macro_rules! fl {
 
 // Get the `Localizer` to be used for localizing this library.
 #[must_use]
+#[inline(always)]
 pub fn localizer() -> Box<dyn Localizer> {
     Box::from(DefaultLocalizer::new(&*LANGUAGE_LOADER, &Localizations))
 }

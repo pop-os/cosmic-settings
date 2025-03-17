@@ -25,6 +25,7 @@ pub struct Binder<Message> {
 }
 
 impl<Message> Default for Binder<Message> {
+    #[inline]
     fn default() -> Self {
         Self {
             content: SparseSecondaryMap::new(),
@@ -42,12 +43,14 @@ impl<Message> Default for Binder<Message> {
 impl<Message: 'static> Binder<Message> {
     /// Check if a page exists in the model.
     #[must_use]
+    #[inline]
     pub fn contains_item(&self, id: crate::Entity) -> bool {
         self.info.contains_key(id)
     }
 
     /// Returns the content of a page, if it has any.
     #[must_use]
+    #[inline]
     pub fn content(&self, page: crate::Entity) -> Option<&[section::Entity]> {
         self.content.get(page).map(Vec::as_slice)
     }
@@ -87,6 +90,7 @@ impl<Message: 'static> Binder<Message> {
     }
 
     #[must_use]
+    #[inline]
     pub fn find_page_by_id(&self, id: &str) -> Option<(crate::Entity, &Info)> {
         self.info.iter().find(|(_id, info)| info.id == id)
     }
@@ -117,22 +121,26 @@ impl<Message: 'static> Binder<Message> {
     }
 
     #[must_use]
+    #[inline]
     pub fn model(&self, id: crate::Entity) -> Option<&dyn Page<Message>> {
         self.page.get(id).map(AsRef::as_ref)
     }
 
     #[must_use]
+    #[inline]
     pub fn model_mut(&mut self, id: crate::Entity) -> Option<&mut dyn Page<Message>> {
         self.page.get_mut(id).map(AsMut::as_mut)
     }
 
     /// Get entity ID of page by its type ID.
+    #[inline]
     pub fn page_id<P: Page<Message>>(&self) -> Option<crate::Entity> {
         self.typed_page_ids.get(&TypeId::of::<P>()).copied()
     }
 
     /// Obtain a reference to a page by its type ID.
     #[must_use]
+    #[inline]
     pub fn page<P: Page<Message>>(&self) -> Option<&P> {
         let page = self.page.get(self.page_id::<P>()?)?;
         page.downcast_ref::<P>()
@@ -140,6 +148,7 @@ impl<Message: 'static> Binder<Message> {
 
     /// Create a context drawer for the given page.
     #[must_use]
+    #[inline]
     pub fn context_drawer(&self, id: crate::Entity) -> Option<Element<'_, Message>> {
         let page = self.page.get(id)?;
         page.context_drawer()
@@ -147,6 +156,7 @@ impl<Message: 'static> Binder<Message> {
 
     /// Create a dialog for the given page.
     #[must_use]
+    #[inline]
     pub fn dialog(&self, id: crate::Entity) -> Option<Element<'_, Message>> {
         let page = self.page.get(id)?;
         page.dialog()
@@ -154,12 +164,23 @@ impl<Message: 'static> Binder<Message> {
 
     /// Obtain a reference to a page by its type ID.
     #[must_use]
+    #[inline]
     pub fn page_mut<P: Page<Message>>(&mut self) -> Option<&mut P> {
         let page = self.page.get_mut(self.page_id::<P>()?)?;
         page.downcast_mut::<P>()
     }
 
+    /// Returns a Task when a context drawer is closed.
+    #[inline]
+    pub fn on_context_drawer_close(&mut self, id: crate::Entity) -> Option<Task<Message>> {
+        if let Some(page) = self.page.get_mut(id) {
+            return Some(page.on_context_drawer_close());
+        }
+        None
+    }
+
     /// Returns a Task when a page is left
+    #[inline]
     pub fn on_leave(&mut self, id: crate::Entity) -> Option<Task<Message>> {
         if let Some(page) = self.page.get_mut(id) {
             return Some(page.on_leave());
@@ -168,6 +189,7 @@ impl<Message: 'static> Binder<Message> {
     }
 
     /// Calls a page's load function to refresh its data.
+    #[inline]
     pub fn on_enter(&mut self, id: crate::Entity) -> Task<Message> {
         if let Some(page) = self.page.get_mut(id) {
             return page.on_enter();
@@ -204,13 +226,14 @@ impl<Message: 'static> Binder<Message> {
     ) -> impl Iterator<Item = (crate::Entity, section::Entity)> + 'a {
         self.content.iter().flat_map(move |(page, sections)| {
             sections
-                .into_iter()
+                .iter()
                 .filter(|&id| self.sections[*id].search_matches(rule))
                 .map(move |&id| (page, id))
         })
     }
 
     /// Returns the sub-pages of a page, if it has any.
+    #[inline]
     pub fn sub_pages(&self, page: crate::Entity) -> Option<&[crate::Entity]> {
         self.sub_pages.get(page).map(AsRef::as_ref)
     }
@@ -219,6 +242,7 @@ impl<Message: 'static> Binder<Message> {
 pub trait AutoBind<Message: 'static>: Page<Message> + Default + 'static {
     /// Attaches sub-pages to the page.
     #[allow(clippy::must_use_candidate)]
+    #[inline]
     fn sub_pages(page: crate::Insert<Message>) -> crate::Insert<Message> {
         page
     }
