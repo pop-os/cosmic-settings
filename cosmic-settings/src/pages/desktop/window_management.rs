@@ -5,7 +5,7 @@ use cosmic::{
     iced::Length,
     surface,
     widget::{self, settings, toggler},
-    Apply, Element, Task,
+    Apply, Element,
 };
 
 use cosmic_config::{ConfigGet, ConfigSet};

@@ -94,7 +94,7 @@ pub trait PanelPage {
 
 pub(crate) fn behavior_and_position<
     P: page::Page<crate::pages::Message> + PanelPage,
-    T: Fn(Message) -> crate::pages::Message + Copy + 'static,
+    T: Fn(Message) -> crate::pages::Message + Copy + Send + Sync + 'static,
 >(
     p: &P,
     msg_map: T,
@@ -128,11 +128,7 @@ pub(crate) fn behavior_and_position<
                         Message::PanelAnchor,
                         cosmic::iced::window::Id::RESERVED,
                         Message::Surface,
-                        |a| {
-                            crate::app::Message::PageMessage(crate::pages::Message::Panel(
-                                super::Message(a),
-                            ))
-                        },
+                        move |a| crate::app::Message::PageMessage(msg_map(a)),
                     ),
                 ))
                 .add(settings::item(
@@ -147,11 +143,7 @@ pub(crate) fn behavior_and_position<
                         Message::Output,
                         cosmic::iced::window::Id::RESERVED,
                         Message::Surface,
-                        |a| {
-                            crate::app::Message::PageMessage(crate::pages::Message::Panel(
-                                super::Message(a),
-                            ))
-                        },
+                        move |a| crate::app::Message::PageMessage(msg_map(a)),
                     ),
                 ))
                 .apply(Element::from)
@@ -161,7 +153,7 @@ pub(crate) fn behavior_and_position<
 
 pub(crate) fn style<
     P: page::Page<crate::pages::Message> + PanelPage,
-    T: Fn(Message) -> crate::pages::Message + Copy + 'static,
+    T: Fn(Message) -> crate::pages::Message + Copy + Send + Sync + 'static,
 >(
     p: &P,
     msg_map: T,
@@ -206,11 +198,7 @@ pub(crate) fn style<
                         Message::Appearance,
                         cosmic::iced::window::Id::RESERVED,
                         Message::Surface,
-                        |a| {
-                            crate::app::Message::PageMessage(crate::pages::Message::Panel(
-                                super::Message(a),
-                            ))
-                        },
+                        move |a| crate::app::Message::PageMessage(msg_map(a)),
                     ),
                 ))
                 .add(settings::flex_item(
@@ -592,7 +580,7 @@ impl PageInner {
                 return Task::none();
             }
             Message::ResetPanel | Message::FullReset => {}
-            Message::Surface(a) => {
+            Message::Surface(_) => {
                 unimplemented!()
             }
         }

@@ -615,7 +615,7 @@ fn input() -> Section<crate::pages::Message> {
                     widget::slider(0..=150, page.source_volume, Message::SourceVolumeChanged)
                         .breakpoints(&[100]),
                 );
-            let mut devices = widget::dropdown::popup_dropdown(
+            let devices = widget::dropdown::popup_dropdown(
                 &page.sources,
                 Some(page.active_source.unwrap_or(0)),
                 Message::SourceChanged,
@@ -633,7 +633,7 @@ fn input() -> Section<crate::pages::Message> {
                 .add(settings::item(&*section.descriptions[device], devices));
 
             if !page.source_profiles.is_empty() {
-                let mut dropdown = widget::dropdown::popup_dropdown(
+                let dropdown = widget::dropdown::popup_dropdown(
                     &page.source_profiles,
                     page.active_source_profile,
                     Message::SourceProfileChanged,
