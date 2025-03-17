@@ -135,6 +135,8 @@ accessibility = Accessibility
     .off = Off
     .unavailable = Unavailable
     .high-contrast = High contrast mode
+    .invert-colors = Invert Colors
+    .color-filters = Color filters
 magnifier = Magnifier
     .controls = Or use these shortcuts: { $zoom_in ->
              [zero] {""}
@@ -153,6 +155,12 @@ magnifier = Magnifier
     .continuous = Continuously with pointer
     .onedge = When pointer reaches edge
     .centered = To keep pointer centered
+color-filter = Color filter type
+    .unknown = Unknown Filter active
+    .greyscale = Greyscale
+    .deuteranopia = Green/Red (green weakness, Deuteranopia)
+    .protanopia = Red/Green (red weakness, Protanopia)
+    .tritanopia = Blue/Yellow (blue weakness, Tritanopia)
 
 ## Desktop
 

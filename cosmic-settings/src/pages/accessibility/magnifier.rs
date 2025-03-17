@@ -324,6 +324,9 @@ impl Page {
             Message::Event(AccessibilityEvent::Magnifier(value)) => {
                 self.magnifier_state = value;
             }
+            Message::Event(
+                AccessibilityEvent::Bound(_) | AccessibilityEvent::ScreenFilter { .. },
+            ) => {}
             Message::SetMagnifier(value) => {
                 if let Some(sender) = self.wayland_thread.as_ref() {
                     let _ = sender.send(AccessibilityRequest::Magnifier(value));
