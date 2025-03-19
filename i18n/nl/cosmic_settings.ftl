@@ -152,7 +152,7 @@ magnifier = Vergrootglas
     .movement = Beweegt de vergroting
     .continuous = De vergroting volgt de muis
     .onedge = Verplaats als de muis de randen raakt
-    .centered = Houdt de muis steeds in het midden van de vergroting
+    .centered = Houd de muis steeds in het midden van de vergroting
 
 ## Desktop
 
@@ -189,11 +189,11 @@ never = Nooit
 
 ## Desktop: Appearance
 
-appearance = Uiterlijk
-    .desc = Kleuren en thema's.
+appearance = Kleuren en thema's
+    .desc = Bepaal hoe COSMIC eruit ziet.
 
 accent-color = Accentkleur
-app-background = Achtergronden van applicaties of vensters
+app-background = De achtergrond van programma's of vensters
 auto = Automatisch
 close = Sluiten
 color-picker = Kleurkiezer
