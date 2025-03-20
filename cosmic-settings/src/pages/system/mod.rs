@@ -9,6 +9,8 @@ pub mod firmware;
 #[cfg(feature = "page-users")]
 pub mod users;
 
+pub mod startup_apps;
+
 use cosmic_settings_page as page;
 
 #[derive(Default)]
@@ -46,6 +48,8 @@ impl page::AutoBind<crate::pages::Message> for Page {
         {
             page = page.sub_page::<default_apps::Page>();
         }
+
+        page = page.sub_page::<startup_apps::Page>();
 
         page
     }
