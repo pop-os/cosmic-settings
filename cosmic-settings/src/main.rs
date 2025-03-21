@@ -155,7 +155,7 @@ pub fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
 
     if std::env::var("RUST_SPANTRACE").is_err() {
-        std::env::set_var("RUST_SPANTRACE", "0");
+        unsafe { std::env::set_var("RUST_SPANTRACE", "0") };
     }
 
     init_logger();

@@ -463,7 +463,7 @@ impl Page {
 
                 if let Some(settings) = self.known_connections.get(&uuid) {
                     let settings = match settings {
-                        ConnectionSettings::Vpn(ref settings) => settings,
+                        ConnectionSettings::Vpn(settings) => settings,
                         ConnectionSettings::Wireguard { id } => {
                             let connection_name = id.clone();
                             return cosmic::task::future(async move {
