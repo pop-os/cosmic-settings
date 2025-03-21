@@ -1,3 +1,5 @@
+
+
 app = COSMIC Inställningar
 
 dbus-connection-error = Misslyckades med att ansluta till DBus
@@ -827,3 +829,14 @@ default-apps = Standardprogram
     .calendar = Kalender
     .terminal = Terminal
     .other-associations = Andra associeringar
+
+## System: Uppstartsprogram
+
+startup-apps = Uppstartsprogram
+    .desc = Konfigurera program som som körs vid inloggning.
+    .add = Lägg till program
+    .user = Användarspeciferade program
+    .user-description = Dessa program startas när du loggar in på din nuvarande användare.
+    .remove-dialog-title = Ta bort { $name }?
+    .remove-dialog-description = Är du säker på att du vill ta bort detta som ett uppstartsrogram?
+    .search-for-application = Sök efter program
