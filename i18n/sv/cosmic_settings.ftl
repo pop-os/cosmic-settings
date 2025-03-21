@@ -838,5 +838,5 @@ startup-apps = Uppstartsprogram
     .user = Användarspeciferade program
     .user-description = Dessa program startas när du loggar in på din nuvarande användare.
     .remove-dialog-title = Ta bort { $name }?
-    .remove-dialog-description = Är du säker på att du vill ta bort detta som ett uppstartsrogram?
+    .remove-dialog-description = Är du säker på att du vill ta bort detta som ett Uppstartsprogram?
     .search-for-application = Sök efter program
