@@ -1,5 +1,4 @@
 use cosmic::{
-    app,
     cosmic_theme::{CosmicPalette, ThemeBuilder},
     iced_core::text::Wrapping,
     theme::{self, CosmicTheme},

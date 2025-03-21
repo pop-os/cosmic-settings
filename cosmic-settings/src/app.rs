@@ -4,6 +4,7 @@
 use crate::config::Config;
 #[cfg(feature = "page-accessibility")]
 use crate::pages::accessibility;
+use crate::pages::applications;
 #[cfg(feature = "page-bluetooth")]
 use crate::pages::bluetooth;
 use crate::pages::desktop::{self, appearance};
@@ -84,12 +85,13 @@ impl SettingsApp {
             #[cfg(feature = "page-about")]
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
+            PageCommands::Applications => self.pages.page_id::<applications::Page>(),
             #[cfg(feature = "page-bluetooth")]
             PageCommands::Bluetooth => self.pages.page_id::<bluetooth::Page>(),
             #[cfg(feature = "page-date")]
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
             #[cfg(feature = "page-default-apps")]
-            PageCommands::DefaultApps => self.pages.page_id::<system::default_apps::Page>(),
+            PageCommands::DefaultApps => self.pages.page_id::<applications::default_apps::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             #[cfg(feature = "page-display")]
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
@@ -100,6 +102,9 @@ impl SettingsApp {
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
+            PageCommands::LegacyApplications => self
+                .pages
+                .page_id::<applications::legacy_applications::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             #[cfg(feature = "page-networking")]
@@ -214,6 +219,7 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<power::Page>();
         #[cfg(feature = "page-input")]
         app.insert_page::<input::Page>();
+        app.insert_page::<applications::Page>();
         app.insert_page::<time::Page>();
         app.insert_page::<system::Page>();
 
@@ -390,6 +396,10 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                crate::pages::Message::Applications(message) => {
+                    page::update!(self.pages, message, applications::Page);
+                }
+
                 #[cfg(feature = "page-bluetooth")]
                 crate::pages::Message::Bluetooth(message) => {
                     if let Some(page) = self.pages.page_mut::<bluetooth::Page>() {
@@ -406,7 +416,7 @@ impl cosmic::Application for SettingsApp {
 
                 #[cfg(feature = "page-default-apps")]
                 crate::pages::Message::DefaultApps(message) => {
-                    if let Some(page) = self.pages.page_mut::<system::default_apps::Page>() {
+                    if let Some(page) = self.pages.page_mut::<applications::default_apps::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
@@ -476,6 +486,10 @@ impl cosmic::Application for SettingsApp {
                     {
                         return page.update(message).map(Into::into);
                     }
+                }
+
+                crate::pages::Message::LegacyApplications(message) => {
+                    page::update!(self.pages, message, applications::legacy_applications::Page);
                 }
 
                 #[cfg(feature = "page-input")]
@@ -614,7 +628,7 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 crate::pages::Message::StartupApps(message) => {
-                    if let Some(page) = self.pages.page_mut::<system::startup_apps::Page>() {
+                    if let Some(page) = self.pages.page_mut::<applications::startup_apps::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
