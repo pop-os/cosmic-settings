@@ -142,7 +142,7 @@ magnifier = Magnifier
                 {$zoom_in} to zoom in,
         }{ $zoom_out ->
              [zero] {""}
-            *[other] {""} 
+            *[other] {""}
                 {$zoom_out} to zoom out,
         }
         Super + scroll with your mouse
@@ -427,12 +427,6 @@ dialog = Dialog
     .keep-changes = Keep Changes
     .change-prompt = Settings changes will automatically revert in { $time } seconds.
     .revert-settings = Revert Settings
-
-legacy-applications = X11 Window System Application Scaling
-    .scaled-by-system = Scale all X11 Applications
-    .system-description = X11 applications will appear blurry on HiDPI screens.
-    .scaled-natively = Render X11 Applications at native resolution
-    .native-description = X11 applications that don't support scaling will be small when HiDPI displays are in use. Enable for games to utilize the full monitor resolution.
 
 ## Sound
 
@@ -778,6 +772,47 @@ add-language = Add language
 install-additional-languages = Install additional languages
 region = Region
 
+## Applications
+
+applications = Applications
+
+## Applications: Default Applications
+
+default-apps = Default Applications
+    .desc = Default web browser, mail client, file browser, and other applications.
+    .web-browser = Web browser
+    .file-manager = File manager
+    .mail-client = Mail client
+    .music = Music
+    .video = Video
+    .photos = Photos
+    .calendar = Calendar
+    .terminal = Terminal
+    .other-associations = Other Associations
+    .text-editor = Text Editor
+
+## Applications: Startup Applications
+
+startup-apps = Startup Applications
+    .desc = Configure applications which run on login.
+    .add = Add app
+    .user = User specific applications
+    .user-description = These applications are launched when you log into your current user.
+    .remove-dialog-title = Remove { $name }?
+    .remove-dialog-description = Are you sure you want to remove this as a startup application?
+    .search-for-application = Search for application
+
+## Applications: Legacy Applications
+
+legacy-applications = X11 Applications Compatibility
+    .desc = X11 Window system application scaling and Global shortcuts.
+
+legacy-app-scaling = X11 Window System Application Scaling
+    .scaled-by-system = Scale all X11 Applications
+    .system-description = X11 applications will appear blurry on HiDPI screens.
+    .scaled-natively = Render X11 Applications at native resolution
+    .native-description = X11 applications that don't support scaling will be small when HiDPI displays are in use. Enable for games to utilize the full monitor resolution.
+
 ## System
 
 system = System & Accounts
@@ -825,29 +860,3 @@ administrator = Administrator
 add-user = Add user
 remove-user = Remove user
 full-name = Full name
-
-## System: Default Applications
-
-default-apps = Default Applications
-    .desc = Default web browser, mail client, file browser, and other applications.
-    .web-browser = Web browser
-    .file-manager = File manager
-    .mail-client = Mail client
-    .music = Music
-    .video = Video
-    .photos = Photos
-    .calendar = Calendar
-    .terminal = Terminal
-    .other-associations = Other Associations
-    .text-editor = Text Editor
-
-## System: Startup Applications
-
-startup-apps = Startup Applications
-    .desc = Configure applications which run on login.
-    .add = Add app
-    .user = User specific applications
-    .user-description = These applications are launched when you log into your current user.
-    .remove-dialog-title = Remove { $name }?
-    .remove-dialog-description = Are you sure you want to remove this as a startup application?
-    .search-for-application = Search for application

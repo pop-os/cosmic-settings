@@ -49,6 +49,8 @@ pub enum PageCommands {
     About,
     /// Appearance settings page
     Appearance,
+    /// Applications settings page
+    Applications,
     /// Bluetooth settings page
     #[cfg(feature = "page-bluetooth")]
     Bluetooth,
@@ -74,6 +76,8 @@ pub enum PageCommands {
     /// Keyboard settings page
     #[cfg(feature = "page-input")]
     Keyboard,
+    /// Legacy Applications settings page
+    LegacyApplications,
     /// Mouse settings page
     #[cfg(feature = "page-input")]
     Mouse,

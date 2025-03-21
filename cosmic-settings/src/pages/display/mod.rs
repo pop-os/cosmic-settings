@@ -12,7 +12,6 @@ use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
 };
 use cosmic::{surface, Apply, Element, Task};
-use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
 };
@@ -23,7 +22,6 @@ use slotmap::{Key, SecondaryMap, SlotMap};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
 use tokio::sync::oneshot;
-use tracing::error;
 
 static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
 
@@ -107,7 +105,6 @@ pub enum Message {
         /// Available outputs from cosmic-randr.
         randr: Arc<Result<List, cosmic_randr_shell::Error>>,
     },
-    SetXwaylandDescaling(bool),
     Surface(surface::Action),
 }
 
@@ -152,23 +149,11 @@ pub struct Page {
     /// the instant the setting was changed.
     dialog_countdown: usize,
     show_display_options: bool,
-    comp_config: cosmic_config::Config,
-    comp_config_descale_xwayland: bool,
     adjusted_scale: u32,
 }
 
 impl Default for Page {
     fn default() -> Self {
-        let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
-        let comp_config_descale_xwayland =
-            comp_config.get("descale_xwayland").unwrap_or_else(|err| {
-                if err.is_err() {
-                    error!(?err, "Failed to read config 'descale_xwayland'");
-                }
-
-                false
-            });
-
         Self {
             refreshing_page: Arc::new(AtomicBool::new(false)),
             list: List::default(),
@@ -187,8 +172,6 @@ impl Default for Page {
             dialog_countdown: 0,
             show_display_options: true,
             adjusted_scale: 0,
-            comp_config,
-            comp_config_descale_xwayland,
         }
     }
 }
@@ -240,8 +223,6 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(display_arrangement()),
             // Display configuration
             sections.insert(display_configuration()),
-            // Xwayland scaling options
-            sections.insert(legacy_applications()),
         ])
     }
 
@@ -616,16 +597,6 @@ impl Page {
                 }
 
                 self.refreshing_page.store(false, Ordering::SeqCst);
-            }
-
-            Message::SetXwaylandDescaling(descale) => {
-                self.comp_config_descale_xwayland = descale;
-                if let Err(err) = self
-                    .comp_config
-                    .set("descale_xwayland", self.comp_config_descale_xwayland)
-                {
-                    error!(?err, "Failed to set config 'descale_xwayland'");
-                }
             }
 
             Message::Surface(a) => {
@@ -1375,46 +1346,6 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
             }
 
             content.apply(Element::from).map(pages::Message::Displays)
-        })
-}
-
-pub fn legacy_applications() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let system = descriptions.insert(fl!("legacy-applications", "scaled-by-system"));
-    let system_desc = descriptions.insert(fl!("legacy-applications", "system-description"));
-    let native = descriptions.insert(fl!("legacy-applications", "scaled-natively"));
-    let native_desc = descriptions.insert(fl!("legacy-applications", "native-description"));
-
-    Section::default()
-        .title(fl!("legacy-applications"))
-        .descriptions(descriptions)
-        .view::<Page>(move |_binder, page, section| {
-            let descriptions = &section.descriptions;
-            widget::settings::section()
-                .title(&section.title)
-                .add(widget::settings::item_row(vec![widget::radio(
-                    widget::column()
-                        .push(text::body(&descriptions[system]))
-                        .push(text::caption(&descriptions[system_desc])),
-                    false,
-                    Some(page.comp_config_descale_xwayland),
-                    Message::SetXwaylandDescaling,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(widget::settings::item_row(vec![widget::radio(
-                    widget::column()
-                        .push(text::body(&descriptions[native]))
-                        .push(text::caption(&descriptions[native_desc])),
-                    true,
-                    Some(page.comp_config_descale_xwayland),
-                    Message::SetXwaylandDescaling,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .apply(Element::from)
-                .map(crate::pages::Message::Displays)
         })
 }
 

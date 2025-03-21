@@ -5,6 +5,7 @@ use cosmic_settings_page::Entity;
 
 #[cfg(feature = "page-accessibility")]
 pub mod accessibility;
+pub mod applications;
 #[cfg(feature = "page-bluetooth")]
 pub mod bluetooth;
 pub mod desktop;
@@ -30,6 +31,7 @@ pub enum Message {
     #[cfg(feature = "page-about")]
     About(system::about::Message),
     Appearance(desktop::appearance::Message),
+    Applications(applications::Message),
     #[cfg(feature = "page-bluetooth")]
     Bluetooth(bluetooth::Message),
     #[cfg(feature = "page-input")]
@@ -37,7 +39,7 @@ pub enum Message {
     #[cfg(feature = "page-date")]
     DateAndTime(time::date::Message),
     #[cfg(feature = "page-default-apps")]
-    DefaultApps(system::default_apps::Message),
+    DefaultApps(applications::default_apps::Message),
     Desktop(desktop::Message),
     DesktopWallpaper(desktop::wallpaper::Message),
     #[cfg(feature = "page-workspaces")]
@@ -58,6 +60,7 @@ pub enum Message {
     Keyboard(input::keyboard::Message),
     #[cfg(feature = "page-input")]
     KeyboardShortcuts(input::keyboard::shortcuts::Message),
+    LegacyApplications(applications::legacy_applications::Message),
     #[cfg(feature = "page-input")]
     ManageWindowShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     #[cfg(feature = "page-input")]
@@ -77,7 +80,7 @@ pub enum Message {
     Region(time::region::Message),
     #[cfg(feature = "page-sound")]
     Sound(sound::Message),
-    StartupApps(system::startup_apps::Message),
+    StartupApps(applications::startup_apps::Message),
     #[cfg(feature = "page-users")]
     User(system::users::Message),
     #[cfg(feature = "page-input")]
