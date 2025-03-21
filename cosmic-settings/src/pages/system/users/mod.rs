@@ -681,7 +681,7 @@ fn user_list() -> Section<crate::pages::Message> {
                         icon::from_name(if expanded {
                             "go-up-symbolic"
                         } else {
-                            "go-next-symbolic"
+                            "go-down-symbolic"
                         })
                         .icon()
                         .size(16)

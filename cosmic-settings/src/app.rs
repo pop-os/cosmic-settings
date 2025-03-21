@@ -601,12 +601,20 @@ impl cosmic::Application for SettingsApp {
 
                 #[cfg(feature = "page-window-management")]
                 crate::pages::Message::WindowManagement(message) => {
-                    page::update!(self.pages, message, desktop::window_management::Page);
+                    if let Some(page) = self.pages.page_mut::<desktop::window_management::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
                 }
 
                 #[cfg(feature = "page-networking")]
                 crate::pages::Message::Wired(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::wired::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::StartupApps(message) => {
+                    if let Some(page) = self.pages.page_mut::<system::startup_apps::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }

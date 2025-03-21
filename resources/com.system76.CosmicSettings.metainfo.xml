@@ -13,11 +13,11 @@
   <name xml:lang="hu">COSMIC Beállítások</name>
   <summary>Settings application for the COSMIC desktop</summary>
   <summary xml:lang="pl">Aplikacja ustawień pulpitu COSMIC</summary>
-  <summary xml:lang="hu">Beállítások a COSMIC asztalhoz</summary>
+  <summary xml:lang="hu">Beállítások a COSMIC asztali környezethez</summary>
   <description>
       <p>Settings application for the COSMIC desktop</p>
       <p xml:lang="pl">Aplikacja ustawień pulpitu COSMIC</p>
-      <p xml:lang="hu">Beállítások a COSMIC asztalhoz</p>
+      <p xml:lang="hu">Beállítások a COSMIC asztali környezethez</p>
   </description>
   <launchable type="desktop-id">com.system76.CosmicSettings.desktop</launchable>
   <icon type="remote" height="256" width="256">https://raw.githubusercontent.com/pop-os/cosmic-settings/master/resources/icons/256x256/apps/com.system76.CosmicSettings.svg</icon>

@@ -127,6 +127,33 @@ bluetooth-available = Yakındaki Aygıtlar
 
 bluetooth-adapters = Bluetooth Adaptörleri
 
+## Accessibility
+
+accessibility = Erişilebilirlik
+    .vision = Görme
+    .on = Açık
+    .off = Kapalı
+    .unavailable = Mevcut değil
+    .high-contrast = Yüksek kontrast modu
+magnifier = Büyüteç
+    .controls = Veya bu kısayolları kullanın: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                Yakınlaştırmak için {$zoom_in},
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                Uzaklaştırmak için {$zoom_out},
+        }
+        Fareniz ile Super + fare tekeri
+    .increment = Yakınlaştırma miktarı
+    .signin = Büyüteci açılışta başlat
+    .applet = Büyüteci panel bileşeninden açıp kapat
+    .movement = Büyütülmüş görünümde gezinim
+    .continuous = İmleç ile beraber
+    .onedge = İmleç kenara ulaştığında
+    .centered = İmleci merkezde tutarak
+
 ## Desktop
 
 desktop = Masaüstü
@@ -302,6 +329,8 @@ super-key = Super tuşu davranışı
     .applications = Uygulamaları aç
     .disable = Devre dışı bırak
 
+edge-gravity = Yüzen pencereler kenarlara yapışır
+
 window-controls = Pencere Kontrolleri
     .minimize = Küçültme tuşunu göster
     .maximize = Büyültme tuşunu göster
@@ -359,6 +388,7 @@ display = Ekranlar
     .refresh-rate = Yenileme Hızı
     .resolution = Çözünürlük
     .scale = Ölçek
+    .additional-scale-options = Ek ölçek seçenekleri
 
 mirroring = Ekran Yansıtma
     .id = Yansıtma { $id }
@@ -521,6 +551,13 @@ keyboard-typing-assist = Yazma
     .repeat-rate = Tekrar hızı
     .repeat-delay = Tekrar gecikme süresi
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Başlangıç durumu
+    .last-boot = Son başlangıç
+    .on = Açık
+    .off = Kapalı
+    .set = Numlock başlangıç durumunu ayarlayın
+
 added = Eklendi
 type-to-search = Aramak için yazın...
 show-extended-input-sources = Genişletilmiş giriş kaynaklarını göster
@@ -536,6 +573,7 @@ command = Komut
 custom = Özel
 debug = Hata Ayıklama
 disabled = Devre Dışı
+input-source-switch = Klavye düzenini değiştir
 migrate-workspace-prev = Çalışma alanını önceki çıktıya taşı
 migrate-workspace-next = Çalışma alanını sonraki çıktıya taşı
 migrate-workspace = Çalışma alanını { $direction ->
@@ -625,6 +663,7 @@ system-shortcut = Sistem
     .keyboard-brightness-down = Klavye parlaklığını azalt
     .keyboard-brightness-up = Klavye parlaklığını arttır
     .launcher = Başlatıyıcı aç
+    .log-out = Çıkış Yap
     .lock-screen = Ekranı kitle
     .mute = Ses çıkışını sustur
     .mute-mic = Mikrofon girişini sustur
@@ -651,6 +690,9 @@ window-tiling = Pencere döşeme
 
 replace-shortcut-dialog = Kısayolu Değiştir?
     .desc = { $shortcut }, { $name } tarafından kullanılmakta. Eğer değiştirirseniz, { $name } devre dışı bırakılacak.
+
+zoom-in = Yakınlaştır
+zoom-out = Uzaklaştır
 
 ## Input: Mouse
 
@@ -797,3 +839,5 @@ default-apps = Varsayılan Uygulamalar
     .calendar = Takvim
     .terminal = Uçbirim
     .other-associations = Diğer ilişkiler
+    .text-editor = Metin Düzenleyici
+
