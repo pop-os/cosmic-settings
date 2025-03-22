@@ -134,11 +134,17 @@ accessibility = Acessibilidade
     .on = Ligado
     .off = Desligado
     .unavailable = Indisponível
+    .high-contrast = Modo de alto contraste
 magnifier = Ampliador de tela
-    .controls =
-        Ou use teclas de atalho:
-        Super + = para aumentar o zoom,
-        Super + - para diminuir o zoom,
+    .controls = Ou use teclas de atalho: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} para aumentar o zoom,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} para diminuir o zoom,
+        }
         Super + rolar com o mouse
     .increment = Incremento de zoom
     .signin = Iniciar o ampliador ao fazer login
@@ -483,13 +489,13 @@ connected-devices = Dispositivos conectados
   .unknown = Dispositivo desconhecido
 
 power-mode = Modo de Energia
-  .battery = Economia de bateria
-  .battery-desc = Baixo consumo de energia e desempenho limitado.
-  .balanced = Balanceado
-  .balanced-desc = Desempenho padrão e consumo de energia moderado.
-  .performance = Alto desempenho
-  .performance-desc = Desempenho e consumo de energia elevados.
-  .no-backend = Gestor de energia não encontrado. Instale o pacote "system76-power" ou "power-profiles-daemon".
+    .battery = Economia de bateria
+    .battery-desc = Baixo consumo de energia e desempenho limitado.
+    .balanced = Balanceado
+    .balanced-desc = Desempenho padrão e consumo de energia moderado.
+    .performance = Alto desempenho
+    .performance-desc = Desempenho e consumo de energia elevados.
+    .no-backend = Gestor de energia não encontrado. Instale o pacote "system76-power" ou "power-profiles-daemon".
 
 power-saving = Opções de Economia de Energia
     .turn-off-screen-after = Desligar a tela após
@@ -545,6 +551,13 @@ keyboard-typing-assist = Digitação
     .repeat-rate = Taxa de repetição
     .repeat-delay = Taxa de atraso
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Estado na inicialização
+    .last-boot = Última inicialização
+    .on = Ligado
+    .off = Desligado
+    .set = Definir estado de inicialização do numlock
+
 added = Adicionado
 type-to-search = Digite para pesquisar...
 show-extended-input-sources = Exibir fontes de entrada estendidas
@@ -560,6 +573,7 @@ command = Comando
 custom = Personalizado
 debug = Debug
 disabled = Desativado
+input-source-switch = Alterar fonte de entrada de idioma do teclado
 migrate-workspace-prev = Migrar a área de trabalho para a saída anterior
 migrate-workspace-next = Migrar a área de trabalho para a próxima saída
 migrate-workspace = Migrar a área de trabalho para a saída { $direction ->
