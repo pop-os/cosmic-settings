@@ -95,11 +95,11 @@ impl<Message: 'static> Section<Message> {
     pub fn view<Model: Page<Message>>(
         mut self,
         func: impl for<'a> Fn(
-                &'a Binder<Message>,
-                &'a Model,
-                &'a Section<Message>,
-            ) -> cosmic::Element<'a, Message>
-            + 'static,
+            &'a Binder<Message>,
+            &'a Model,
+            &'a Section<Message>,
+        ) -> cosmic::Element<'a, Message>
+        + 'static,
     ) -> Self {
         self.view_fn = Box::new(move |binder, model: &dyn Page<Message>, section| {
             let model = model.downcast_ref::<Model>().unwrap_or_else(|| {
