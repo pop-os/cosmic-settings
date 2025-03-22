@@ -23,12 +23,12 @@ use cosmic::widget::{
     settings, tab_bar, text, toggler,
 };
 use cosmic::{
-    iced::{window, Alignment, Color, Length},
-    surface,
+    Apply, Element, Task,
+    widget::{ColorPickerModel, color_picker::ColorPickerUpdate, icon},
 };
 use cosmic::{
-    widget::{color_picker::ColorPickerUpdate, icon, ColorPickerModel},
-    Apply, Element, Task,
+    iced::{Alignment, Color, Length, window},
+    surface,
 };
 use cosmic_bg_config::Source;
 use cosmic_settings_page::Section;
@@ -731,30 +731,40 @@ impl Page {
             }
 
             Message::ColorAdd(message) => {
-                if let ColorPickerUpdate::ActionFinished = message {
-                    let _res = self
-                        .color_model
-                        .update::<crate::app::Message>(ColorPickerUpdate::AppliedColor);
+                match message {
+                    ColorPickerUpdate::ActionFinished => {
+                        if let Some(color) = self.color_model.get_applied_color() {
+                            let ret = self
+                                .color_model
+                                .update::<crate::app::Message>(ColorPickerUpdate::ActionFinished);
+                            let color = wallpaper::Color::Single([color.r, color.g, color.b]);
 
-                    if let Some(color) = self.color_model.get_applied_color() {
-                        let color = wallpaper::Color::Single([color.r, color.g, color.b]);
+                            if let Choice::Color(c) = self.selection.active.clone() {
+                                if let Err(why) = self.config.remove_custom_color(&c) {
+                                    tracing::error!(?why, "could not set custom color");
+                                }
+                                self.selection.remove_custom_color(&c);
+                            }
+                            if let Err(why) = self.config.add_custom_color(color.clone()) {
+                                tracing::error!(?why, "could not set custom color");
+                            }
 
-                        if let Err(why) = self.config.add_custom_color(color.clone()) {
-                            tracing::error!(?why, "could not set custom color");
+                            self.cached_display_handle = None;
+                            self.selection.replace_active_custom(color.clone());
+                            self.config_apply();
+
+                            return ret;
                         }
-
-                        self.selection.add_custom_color(color.clone());
-                        self.selection.active = Choice::Color(color);
-                        self.cached_display_handle = None;
-                        self.context_view = None;
+                    }
+                    m => {
+                        return self.color_model.update::<crate::app::Message>(m);
                     }
                 };
-
-                return self.color_model.update::<crate::app::Message>(message);
             }
 
             Message::ColorAddContext => {
                 self.context_view = Some(ContextView::AddColor);
+                self.selection.active = Choice::Color(wallpaper::Color::Single([0., 0., 0.]));
                 return cosmic::task::message(crate::app::Message::OpenContextDrawer(
                     self.entity,
                     fl!("color-picker").into(),
@@ -1109,6 +1119,16 @@ impl Context {
     fn add_custom_color(&mut self, color: wallpaper::Color) {
         if !self.custom_colors.contains(&color) {
             self.custom_colors.push(color);
+        }
+    }
+
+    fn replace_active_custom(&mut self, color: wallpaper::Color) {
+        if let Choice::Color(active) = &self.active {
+            self.custom_colors.retain(|c| c != active);
+        }
+        if !self.custom_colors.contains(&color) {
+            self.custom_colors.push(color.clone());
+            self.active = Choice::Color(color);
         }
     }
 
