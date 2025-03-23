@@ -115,7 +115,6 @@ bluetooth = 蓝牙
     .disconnect = 断开连接
     .forget = 忘记
     .dbus-error = 与 DBus 交互时发生错误：{ $why }
-    .show-device-without-name = 显示无名称设备
 
 bluetooth-paired = 之前连接的设备
     .connect = 连接
@@ -127,6 +126,41 @@ bluetooth-confirm-pin = 确认蓝牙 PIN 码
 bluetooth-available = 附近的设备
 
 bluetooth-adapters = 蓝牙适配器
+
+## Accessibility
+
+accessibility = 辅助功能
+    .vision = 视觉
+    .on = 开启
+    .off = 关闭
+    .unavailable = 不可用
+    .high-contrast = 高对比度模式
+    .invert-colors = 反色
+    .color-filters = 色彩滤镜
+magnifier = 放大镜
+    .controls = 或使用这些快捷键: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} 放大,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} 缩小,
+        }
+        按住 Super 键并滚动鼠标滚轮
+    .increment = 缩放增量
+    .signin = 登录时启动放大镜
+    .applet = 在面板上的小部件中切换放大镜开关
+    .movement = 放大视图的移动方式
+    .continuous = 连续跟随光标
+    .onedge = 光标到达边缘时移动
+    .centered = 保持光标居中
+color-filter = 色彩滤镜类型
+    .unknown = 未知滤镜已启用
+    .greyscale = 灰度
+    .deuteranopia = 绿/红（绿色弱视，Deuteranopia）
+    .protanopia = 红/绿（红色弱视，Protanopia）
+    .tritanopia = 蓝/黄（蓝色弱视，Tritanopia）
 
 ## Desktop
 
@@ -303,6 +337,8 @@ super-key = Super 键动作
     .applications = 打开应用程序
     .disable = 禁用
 
+edge-gravity = 浮动窗口吸附到附近边缘
+
 window-controls = 窗口控制
     .maximize = 显示最大化按钮
     .minimize = 显示最小化按钮
@@ -360,6 +396,7 @@ display = 显示器
     .refresh-rate = 刷新率
     .resolution = 分辨率
     .scale = 缩放
+    .additional-scale-options = 其他缩放选项
 
 mirroring = 镜像显示
     .id = 镜像 { $id }
@@ -384,6 +421,12 @@ orientation = 显示方向
     .rotate-180 = 旋转 180 度
     .rotate-270 = 旋转 270 度
 
+vrr = 可变刷新率
+    .enabled = 已启用
+    .force = 始终启用
+    .auto = 自动
+    .disabled = 已禁用
+
 scheduling = 计划
     .manual = 手动计划
 
@@ -392,12 +435,6 @@ dialog = 对话框
     .keep-changes = 保留更改
     .change-prompt = 设置更改将在 { $time } 秒后自动恢复。
     .revert-settings = 恢复设置
-
-legacy-applications = X11 窗口系统应用程序缩放
-    .scaled-by-system = 缩放所有 X11 应用程序
-    .system-description = X11 应用程序在 HiDPI 屏幕上会显示模糊。
-    .scaled-natively = 以原生分辨率渲染 X11 应用程序
-    .native-description = 不支持缩放的 X11 应用程序在使用 HiDPI 显示器时会显示很小。启用此选项可让游戏使用完整的显示器分辨率。
 
 ## Sound
 
@@ -516,6 +553,13 @@ keyboard-typing-assist = 打字
     .repeat-rate = 重复速率
     .repeat-delay = 重复延迟
 
+keyboard-numlock-boot = Numlock 键
+    .boot-state = 开机时的状态
+    .last-boot = 上次开机
+    .on = 开启
+    .off = 关闭
+    .set = 设置开机时 Numlock 键状态
+
 added = 已添加
 type-to-search = 输入以搜索...
 show-extended-input-sources = 显示扩展输入法
@@ -531,6 +575,7 @@ command = 命令
 custom = 自定义
 debug = 调试
 disabled = 已禁用
+input-source-switch = 切换键盘语言输入法
 migrate-workspace-prev = 将工作区移至上一个输出
 migrate-workspace-next = 将工作区移至下一个输出
 migrate-workspace = 将工作区移至{ $direction ->
@@ -620,18 +665,20 @@ system-shortcut = 系统
     .keyboard-brightness-down = 降低键盘亮度
     .keyboard-brightness-up = 提高键盘亮度
     .launcher = 打开启动器
-    .lock-screen = 锁定屏幕
+    .log-out = 登出
+    .lock-screen = 锁定
     .mute = 静音
     .mute-mic = 麦克风静音
     .play-pause = 播放/暂停
-    .play-next = 下一曲
-    .play-prev = 上一曲
+    .play-next = 下一首
+    .play-prev = 上一首
     .screenshot = 截图
     .terminal = 打开终端
     .volume-lower = 降低音量
     .volume-raise = 提高音量
     .web-browser = 打开网络浏览器
     .window-switcher = 在打开的窗口间切换
+    .window-switcher-previous = 在打开的窗口间反向切换
     .workspace-overview = 打开工作区概览
 
 window-tiling = 窗口平铺
@@ -645,6 +692,9 @@ window-tiling = 窗口平铺
 
 replace-shortcut-dialog = 替换快捷键？
     .desc = { $shortcut } 已被 { $name } 使用。如果替换它，{ $name } 将被禁用。
+
+zoom-in = 放大
+zoom-out = 缩小
 
 ## Input: Mouse
 
@@ -714,6 +764,63 @@ time-format = 日期和时间格式
 time-region = 区域和语言
     .desc = 根据您的区域确定日期、时间和数字格式
 
+formatting = 格式
+    .dates = 日期格式
+    .time = 时间格式
+    .date-and-time = 日期和时间格式
+    .numbers = 数字格式
+    .measurement = 度量单位格式 
+    .paper = 纸张格式
+
+preferred-languages = 首选语言
+    .desc = 决定用于桌面翻译的语言顺序。更改将在下次登录时生效。
+
+add-language = 添加语言
+    .context = 添加语言 
+install-additional-languages = 安装其他语言
+region = 区域
+
+## Applications
+
+applications = 应用程序
+
+## Applications: Default Applications
+
+default-apps = 默认应用程序
+    .desc = 默认的网络浏览器、邮件客户端、文件浏览器和其他应用程序。
+    .web-browser = 网络浏览器
+    .file-manager = 文件管理器
+    .mail-client = 邮件客户端
+    .music = 音乐
+    .video = 视频
+    .photos = 照片
+    .calendar = 日历
+    .terminal = 终端
+    .other-associations = 其他关联
+    .text-editor = 文本编辑器
+
+## Applications: Startup Applications
+
+startup-apps = 开机启动应用程序
+    .desc = 配置登录时启动的应用程序。
+    .add = 添加应用程序
+    .user = 用户特定的应用程序
+    .user-description = 这些应用程序会在您登录当前用户时启动。
+    .remove-dialog-title = 移除 { $name }？
+    .remove-dialog-description = 您确定要移除这个开机启动项吗？
+    .search-for-application = 搜索应用程序
+
+## Applications: Legacy Applications
+
+legacy-applications = X11 应用程序兼容性
+    .desc = X11 窗口系统应用程序缩放和全局快捷键。
+
+legacy-app-scaling = X11 窗口系统应用程序缩放
+    .scaled-by-system = 缩放所有 X11 应用程序
+    .system-description = X11 应用程序在 HiDPI 屏幕上会显示模糊。
+    .scaled-natively = 以原生分辨率渲染 X11 应用程序
+    .native-description = 不支持缩放的 X11 应用程序在使用 HiDPI 显示器时会显示很小。启用此选项可让游戏使用完整的显示器分辨率。
+
 ## System
 
 system = 系统和帐户
@@ -751,3 +858,13 @@ firmware = 固件
 
 users = 用户
     .desc = 身份验证和登录、锁屏。
+    .admin = 管理员
+    .standard = 标准用户
+    .profile-add = 选择个人资料图片
+
+administrator = 管理员
+    .desc = 管理员可以更改所有用户的设置，添加和删除其他用户。
+
+add-user = 添加用户
+remove-user = 删除用户
+full-name = 全名
