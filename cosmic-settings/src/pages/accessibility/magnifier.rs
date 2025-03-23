@@ -1,24 +1,23 @@
 use std::collections::HashSet;
 
 use cosmic::{
+    Apply,
     iced::{Element, Length},
     iced_core::text::Wrapping,
     surface,
     widget::{self, icon, settings, svg, text},
-    Apply,
 };
 use cosmic_comp_config::{ZoomConfig, ZoomMovement};
 use cosmic_config::{ConfigGet, ConfigSet};
-use cosmic_settings_config::{shortcuts, Action, Binding};
+use cosmic_settings_config::{Action, Binding, shortcuts};
 use cosmic_settings_page::{
-    self as page,
+    self as page, Entity,
     section::{self, Section},
-    Entity,
 };
 use slotmap::SlotMap;
 use tracing::error;
 
-use super::{wayland, AccessibilityEvent, AccessibilityRequest};
+use super::{AccessibilityEvent, AccessibilityRequest, wayland};
 
 #[derive(Debug)]
 pub struct Page {
@@ -69,9 +68,9 @@ impl Default for Page {
                     "{}%{}",
                     val,
                     if val == ZoomConfig::default().increment {
-                        " (Default)"
+                        format!(" ({})", fl!("default")).to_string()
                     } else {
-                        ""
+                        "".to_string()
                     }
                 )
             })
@@ -256,10 +255,12 @@ pub fn tip() -> section::Section<crate::pages::Message> {
         .view::<Page>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
 
-            let mut items = vec![text::body(&descriptions[applet])
-                .wrapping(Wrapping::Word)
-                .width(Length::Shrink)
-                .into()];
+            let mut items = vec![
+                text::body(&descriptions[applet])
+                    .wrapping(Wrapping::Word)
+                    .width(Length::Shrink)
+                    .into(),
+            ];
             if let Some(illustration) = applet_illustration.clone() {
                 items.push(svg(illustration).width(Length::Fill).into());
             }
@@ -285,30 +286,36 @@ pub fn view_movement() -> section::Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(widget::settings::item_row(vec![widget::radio(
-                    text::body(&descriptions[continuous]),
-                    ZoomMovement::Continuously,
-                    Some(page.zoom_config.view_moves),
-                    Message::SetMovement,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(widget::settings::item_row(vec![widget::radio(
-                    text::body(&descriptions[onedge]),
-                    ZoomMovement::OnEdge,
-                    Some(page.zoom_config.view_moves),
-                    Message::SetMovement,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(widget::settings::item_row(vec![widget::radio(
-                    text::body(&descriptions[centered]),
-                    ZoomMovement::Centered,
-                    Some(page.zoom_config.view_moves),
-                    Message::SetMovement,
-                )
-                .width(Length::Fill)
-                .into()]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&descriptions[continuous]),
+                        ZoomMovement::Continuously,
+                        Some(page.zoom_config.view_moves),
+                        Message::SetMovement,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&descriptions[onedge]),
+                        ZoomMovement::OnEdge,
+                        Some(page.zoom_config.view_moves),
+                        Message::SetMovement,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&descriptions[centered]),
+                        ZoomMovement::Centered,
+                        Some(page.zoom_config.view_moves),
+                        Message::SetMovement,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
                 .apply(Element::from)
                 .map(crate::pages::Message::AccessibilityMagnifier)
         })
