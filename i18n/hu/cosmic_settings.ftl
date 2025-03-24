@@ -135,6 +135,9 @@ accessibility = Akadálymentesség
     .off = Kikapcsolva
     .unavailable = Nem elérhető
     .high-contrast = Kontrasztos mód
+    .invert-colors = Színek invertálása
+    .color-filters = Színszűrők
+default = Alapértelmezett
 magnifier = Nagyító
     .controls = Vagy használd ezeket a billentyűparancsokat: { $zoom_in ->
              [zero] {""}
@@ -142,7 +145,7 @@ magnifier = Nagyító
                 {$zoom_in} a nagyításhoz,
         }{ $zoom_out ->
              [zero] {""}
-            *[other] {""} 
+            *[other] {""}
                 {$zoom_out} a kicsinyítéshez,
         }
         Super + görgetés az egérrel
@@ -153,6 +156,12 @@ magnifier = Nagyító
     .continuous = A mutatóval
     .onedge = Amikor a mutató eléri a szélet
     .centered = Hogy a mutató középen maradjon
+color-filter = Színszűrő típusa
+    .unknown = Ismeretlen szűrő aktív
+    .greyscale = Szürkeárnyalatos
+    .deuteranopia = Zöld/Piros (zöld színre vak, Deuteranopia)
+    .protanopia = Piros/Zöld (vörös színre vak, Protanopia)
+    .tritanopia = Kék/Sárga (kék színre vak, Tritanopia)
 
 ## Desktop
 
@@ -161,7 +170,7 @@ desktop = Asztal
 ## Desktop: Wallpaper
 
 wallpaper = Háttérkép
-    .change = Kép cseréje minden
+    .change = Képcserék gyakorisága
     .desc = Háttérképek, színek és diavetítési beállítások.
     .fit = Háttérkép illeszkedése
     .folder-dialog = Válasszon háttérkép mappát
@@ -378,7 +387,7 @@ color = Szín
     .temperature = Színhőmérséklet
 
 display = Kijelzők
-    .desc = Kezelje a kijelzőket, a grafika váltást és az éjszakai fényt
+    .desc = Kijelzők kezelése, grafikus módváltás és éjszakai fény.
     .arrangement = Kijelző elrendezése
     .arrangement-desc = Húzza a kijelzőket az átrendezésükhöz.
     .enable = Kijelző engedélyezése
@@ -427,12 +436,6 @@ dialog = Párbeszédablak
     .keep-changes = Változtatások megtartása
     .change-prompt = A beállítások automatikusan visszaállnak { $time } másodperc múlva.
     .revert-settings = Beállítások visszaállítása
-
-legacy-applications = X11-ablakrendszer alkalmazásméretezés
-    .scaled-by-system = Minden X11-alkalmazás méretezése
-    .system-description = Az X11-alkalmazások elmosódottak lehetnek HiDPI kijelzőkön.
-    .scaled-natively = X11-alkalmazások renderelése natív felbontásban
-    .native-description = Azok az X11-alkalmazások, amelyek nem támogatják a méretezést, kisméretűek lesznek HiDPI kijelzőkön. Engedélyezd a teljes monitorfelbontás kihasználásához játékok esetén.
 
 ## Sound
 
@@ -531,7 +534,7 @@ fast = Gyors
 short = Rövid
 long = Hosszú
 keyboard = Billentyűzet
-    .desc = Bemeneti források, azok váltása, speciális karakterek beírása, billentyűparancsok
+    .desc = Bemeneti források, váltásuk, speciális karakterek, billentyűparancsok
 
 keyboard-sources = Bemeneti források
     .desc = A bemeneti források a Super+Space billentyűkombinációval válthatók. Ez testreszabható a billentyűparancsok beállításaiban.
@@ -778,13 +781,54 @@ add-language = Nyelv hozzáadása
 install-additional-languages = További nyelvek telepítése
 region = Régió
 
+## Applications
+
+applications = Alkalmazások
+
+## Applications: Default Applications
+
+default-apps = Alapértelmezett alkalmazások
+    .desc = Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások.
+    .web-browser = Böngésző
+    .file-manager = Fájlkezelő
+    .mail-client = Levelezőprogram
+    .music = Zene
+    .video = Videó
+    .photos = Fényképek
+    .calendar = Naptár
+    .terminal = Terminál
+    .other-associations = Egyéb társítások
+    .text-editor = Szövegszerkesztő
+
+## Applications: Startup Applications
+
+startup-apps = Indítási alkalmazások
+    .desc = Azoknak az alkalmazásoknak a beállítása, amelyek bejelentkezéskor elindulnak.
+    .add = Alkalmazás hozzáadása
+    .user = Felhasználói alkalmazások
+    .user-description = Ezek az alkalmazások a jelenlegi felhasználó bejelentkezésekor indulnak el.
+    .remove-dialog-title = { $name } eltávolítása?
+    .remove-dialog-description = Biztosan el akarja távolítani ezt az indítási alkalmazások közül?
+    .search-for-application = Alkalmazás keresése
+
+## Applications: Legacy Applications
+
+legacy-applications = X11 Alkalmazások Támogatása
+    .desc = X11 ablakkezelő rendszer alkalmazásméretezése és globális billentyűparancsok.
+
+legacy-app-scaling = X11-ablakrendszer alkalmazásméretezés
+    .scaled-by-system = Minden X11-alkalmazás méretezése
+    .system-description = Az X11-alkalmazások elmosódottak lehetnek HiDPI kijelzőkön.
+    .scaled-natively = X11-alkalmazások renderelése natív felbontásban
+    .native-description = Azok az X11-alkalmazások, amelyek nem támogatják a méretezést, kisméretűek lesznek HiDPI kijelzőkön. Engedélyezd a teljes monitorfelbontás kihasználásához játékok esetén.
+
 ## System
 
 system = Rendszer és fiókok
 
 ## System: About
 
-about = Névjegy
+about = Rendszerinformáció
     .desc = Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai.
 
 about-device = Eszköz neve
@@ -825,18 +869,3 @@ administrator = Rendszergazda
 add-user = Felhasználó hozzáadása
 remove-user = Felhasználó eltávolítása
 full-name = Teljes név
-
-## System: Default Applications
-
-default-apps = Alapértelmezett alkalmazások
-    .desc = Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások.
-    .web-browser = Böngésző
-    .file-manager = Fájlkezelő
-    .mail-client = Levelezőprogram
-    .music = Zene
-    .video = Videó
-    .photos = Fényképek
-    .calendar = Naptár
-    .terminal = Terminál
-    .other-associations = Egyéb társítások
-    .text-editor = Szövegszerkesztő
