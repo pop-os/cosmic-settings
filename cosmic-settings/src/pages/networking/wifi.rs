@@ -715,7 +715,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
 fn is_connected(state: &NetworkManagerState, network: &AccessPoint) -> bool {
     state.active_conns.iter().any(|active| {
-        if let ActiveConnectionInfo::WiFi { ref name, .. } = active {
+        if let ActiveConnectionInfo::WiFi { name, .. } = active {
             *name == network.ssid.as_ref()
         } else {
             false

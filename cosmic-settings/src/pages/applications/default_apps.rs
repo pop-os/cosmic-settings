@@ -133,7 +133,7 @@ impl page::Page<crate::pages::Message> for Page {
                 load_defaults(&assocs, &["x-scheme-handler/http"]).await,
                 load_defaults(&assocs, &["inode/directory"]).await,
                 load_defaults(&assocs, &["x-scheme-handler/mailto"]).await,
-                load_defaults(&assocs, &["audio/mp3", "video/mp4"]).await,
+                load_defaults(&assocs, &["audio/mp3", "application/ogg", "video/mp4"]).await,
                 load_defaults(&assocs, &["video/mp4"]).await,
                 load_defaults(&assocs, &["image/png"]).await,
                 load_defaults(&assocs, &["text/calendar"]).await,

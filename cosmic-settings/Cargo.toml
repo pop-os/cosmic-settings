@@ -1,7 +1,7 @@
 [package]
 name = "cosmic-settings"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 license = "GPL-3.0-only"
 
 [dependencies]
@@ -85,6 +85,8 @@ gettext-rs = { version = "0.7.2", features = [
     "gettext-system",
 ], optional = true }
 async-fn-stream = "0.2.2"
+num-traits = "0.2"
+num-derive = "0.4"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
@@ -136,11 +138,7 @@ page-accessibility = [
     "dep:cosmic-settings-config",
     "dep:sctk",
 ]
-page-about = [
-    "dep:cosmic-settings-system",
-    "dep:hostname1-zbus",
-    "dep:zbus",
-]
+page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
 page-bluetooth = [
     "dep:bluez-zbus",
     "dep:zbus",
@@ -162,19 +160,9 @@ page-networking = [
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]
-page-region = [
-    "gettext",
-    "dep:locales-rs",
-    "dep:locale1",
-    "dep:zbus",
-]
+page-region = ["gettext", "dep:locales-rs", "dep:locale1", "dep:zbus"]
 page-sound = ["dep:cosmic-settings-subscriptions"]
-page-users = [
-    "xdg-portal",
-    "dep:accounts-zbus",
-    "dep:zbus",
-    "dep:zbus_polkit",
-]
+page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
 page-window-management = ["dep:cosmic-settings-config"]
 page-workspaces = ["dep:cosmic-comp-config"]
 
@@ -184,10 +172,6 @@ ashpd = ["dep:ashpd"]
 dbus-config = ["libcosmic/dbus-config", "cosmic-config/dbus"]
 single-instance = ["libcosmic/single-instance"]
 test = []
-wayland = [
-    "libcosmic/wayland",
-    "dep:cosmic-panel-config",
-    "dep:cosmic-randr"
-]
+wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr"]
 wgpu = ["libcosmic/wgpu"]
 xdg-portal = ["ashpd", "libcosmic/xdg-portal"]

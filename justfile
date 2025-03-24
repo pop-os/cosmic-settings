@@ -34,6 +34,7 @@ entry-settings := appid + '.desktop'
 entry-about := appid + '.About.desktop'
 entry-accessibility := appid + '.Accessibility.desktop'
 entry-appear := appid + '.Appearance.desktop'
+entry-apps := appid + '.Applications.desktop'
 entry-bluetooth := appid + '.Bluetooth.desktop'
 entry-date-time := appid + '.DateTime.desktop'
 entry-default-apps := appid + '.DefaultApps.desktop'
@@ -43,6 +44,7 @@ entry-dock := appid + '.Dock.desktop'
 entry-firmware := appid + '.Firmware.desktop'
 entry-input := appid + '.Input.desktop'
 entry-keyboard := appid + '.Keyboard.desktop'
+entry-legacy-apps := appid + '.LegacyApplications.desktop'
 entry-mouse := appid + '.Mouse.desktop'
 entry-network := appid + '.Network.desktop'
 entry-notifications := appid + '.Notifications.desktop'
@@ -71,6 +73,7 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-about}}' '{{appdir}}/{{entry-about}}'
     install -Dm0644 'resources/{{entry-accessibility}}' '{{appdir}}/{{entry-accessibility}}'
     install -Dm0644 'resources/{{entry-appear}}' '{{appdir}}/{{entry-appear}}'
+    install -Dm0644 'resources/{{entry-apps}}' '{{appdir}}/{{entry-apps}}'
     install -Dm0644 'resources/{{entry-bluetooth}}' '{{appdir}}/{{entry-bluetooth}}'
     install -Dm0644 'resources/{{entry-date-time}}' '{{appdir}}/{{entry-date-time}}'
     install -Dm0644 'resources/{{entry-default-apps}}' '{{appdir}}/{{entry-default-apps}}'
@@ -80,6 +83,7 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-firmware}}' '{{appdir}}/{{entry-firmware}}'
     install -Dm0644 'resources/{{entry-input}}' '{{appdir}}/{{entry-input}}'
     install -Dm0644 'resources/{{entry-keyboard}}' '{{appdir}}/{{entry-keyboard}}'
+    install -Dm0644 'resources/{{entry-legacy-apps}}' '{{appdir}}/{{entry-legacy-apps}}'
     install -Dm0644 'resources/{{entry-mouse}}' '{{appdir}}/{{entry-mouse}}'
     install -Dm0644 'resources/{{entry-network}}' '{{appdir}}/{{entry-network}}'
     install -Dm0644 'resources/{{entry-notifications}}' '{{appdir}}/{{entry-notifications}}'
@@ -122,6 +126,7 @@ uninstall:
         '{{appdir}}/{{entry-about}}' \
         '{{appdir}}/{{entry-accessibility}}' \
         '{{appdir}}/{{entry-appear}}' \
+        '{{appdir}}/{{entry-apps}}' \
         '{{appdir}}/{{entry-bluetooth}}' \
         '{{appdir}}/{{entry-date-time}}' \
         '{{appdir}}/{{entry-default-apps}}' \
@@ -131,6 +136,7 @@ uninstall:
         '{{appdir}}/{{entry-firmware}}' \
         '{{appdir}}/{{entry-input}}' \
         '{{appdir}}/{{entry-keyboard}}' \
+        '{{appdir}}/{{entry-legacy-apps}}' \
         '{{appdir}}/{{entry-mouse}}' \
         '{{appdir}}/{{entry-network}}' \
         '{{appdir}}/{{entry-notifications}}' \
