@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fmt::Write;
 
 use cosmic::{
     iced::{Element, Length},
@@ -65,15 +66,12 @@ impl Default for Page {
         let increment_values = values
             .into_iter()
             .map(|val| {
-                format!(
-                    "{}%{}",
-                    val,
-                    if val == ZoomConfig::default().increment {
-                        " (Default)"
-                    } else {
-                        ""
-                    }
-                )
+                let mut option_string = String::new();
+                write!(&mut option_string, "{}%", val).expect("");
+                if val == ZoomConfig::default().increment {
+                    write!(&mut option_string, " ({})", fl!("default")).expect("");
+                }
+                option_string
             })
             .collect::<Vec<_>>();
         let increment_idx = increment_values.iter().position(|s| {

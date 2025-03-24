@@ -137,6 +137,7 @@ accessibility = Accessibility
     .high-contrast = High contrast mode
     .invert-colors = Invert Colors
     .color-filters = Color filters
+default = Default
 magnifier = Magnifier
     .controls = Or use these shortcuts: { $zoom_in ->
              [zero] {""}
