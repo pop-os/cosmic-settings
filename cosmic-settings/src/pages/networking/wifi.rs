@@ -8,19 +8,18 @@ use std::{
 
 use anyhow::Context;
 use cosmic::{
+    Apply, Element, Task,
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
     iced_widget::focus_next,
     widget::{self, column, icon},
-    Apply, Element, Task,
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_subscriptions::network_manager::{
-    self,
+    self, NetworkManagerState,
     available_wifi::{AccessPoint, NetworkType},
     current_networks::ActiveConnectionInfo,
     hw_address::HwAddress,
-    NetworkManagerState,
 };
 use futures::StreamExt;
 use secure_string::SecureString;
@@ -526,7 +525,7 @@ impl Page {
                 return cosmic::task::batch(vec![
                     self.connect(conn.clone()),
                     connection_settings(conn),
-                ])
+                ]);
             }
         }
 
