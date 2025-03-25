@@ -449,6 +449,8 @@ sound-output = Output
     .level = Output level
     .config = Configuration
     .balance = Balance
+    .left = Left
+    .right = Right
 
 sound-input = Input
     .volume = Input volume
