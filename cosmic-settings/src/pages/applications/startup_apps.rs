@@ -1,5 +1,5 @@
 use cosmic::iced::{Alignment, Length};
-use cosmic::widget::{button, icon, settings, text, vertical_space};
+use cosmic::widget::{button, icon, settings, text};
 use cosmic::{widget, Apply, Element, Task};
 use cosmic_settings_page::section::Entity;
 use cosmic_settings_page::{self as page, Content, Info, Section};
@@ -328,14 +328,13 @@ impl Page {
                         {
                             let mut row = widget::row::with_capacity(2).spacing(space_s);
 
-                            if let Some(icon) = app.icon() {
-                                row = row.push(icon::from_name(icon));
-                            } else {
-                                row = row.push(vertical_space().height(16.0));
-                            }
+                            row = row.push(icon::from_name(app.icon().unwrap_or("application-default")));
 
                             if let Some(name) = app.name(&startup_apps.locales) {
                                 row = row.push(text(name));
+                            }
+                            else {
+                                row = row.push(text(&app.appid));
                             }
 
                             list = list.add(settings::flex_item_row(vec![
@@ -387,14 +386,13 @@ fn apps() -> Section<crate::pages::Message> {
                         for app in apps {
                             let mut row = widget::row::with_capacity(2).spacing(space_s);
 
-                            if let Some(icon) = app.icon() {
-                                row = row.push(icon::from_name(icon));
-                            } else {
-                                row = row.push(vertical_space().height(16.0));
-                            }
+                            row = row.push(icon::from_name(app.icon().unwrap_or("application-default")));
 
                             if let Some(name) = app.name(&startup_apps.locales) {
                                 row = row.push(text(name));
+                            }
+                            else {
+                                row = row.push(text(&app.appid));
                             }
 
                             section = section.add(settings::flex_item_row(vec![
@@ -443,6 +441,10 @@ fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
         }
 
         if entry.exec().is_none() {
+            continue;
+        }
+
+        if entry.desktop_entry("X-CosmicApplet").is_some() {
             continue;
         }
 
