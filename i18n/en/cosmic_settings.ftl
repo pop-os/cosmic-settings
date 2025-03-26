@@ -869,3 +869,4 @@ administrator = Administrator
 add-user = Add user
 remove-user = Remove user
 full-name = Full name
+invalid-username = Invalid username
