@@ -1,6 +1,6 @@
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{button, icon, settings, text};
-use cosmic::{widget, Apply, Element, Task};
+use cosmic::{Apply, Element, Task, widget};
 use cosmic_settings_page::section::Entity;
 use cosmic_settings_page::{self as page, Content, Info, Section};
 use freedesktop_desktop_entry::DesktopEntry;
@@ -66,9 +66,11 @@ enum Context {
 impl Into<Vec<PathBuf>> for DirectoryType {
     fn into(self) -> Vec<PathBuf> {
         match self {
-            DirectoryType::User => vec![dirs::config_dir()
-                .expect("config dir not found")
-                .join("autostart")],
+            DirectoryType::User => vec![
+                dirs::config_dir()
+                    .expect("config dir not found")
+                    .join("autostart"),
+            ],
         }
     }
 }
@@ -309,7 +311,7 @@ impl Page {
     ) -> Element<'_, crate::pages::Message> {
         let cosmic::cosmic_theme::Spacing {
             space_s, space_l, ..
-        } = cosmic::theme::active().cosmic().spacing;
+        } = cosmic::theme::spacing();
 
         let search = widget::search_input(fl!("type-to-search"), &self.application_search)
             .on_input(Message::ApplicationSearch)
@@ -328,12 +330,12 @@ impl Page {
                         {
                             let mut row = widget::row::with_capacity(2).spacing(space_s);
 
-                            row = row.push(icon::from_name(app.icon().unwrap_or("application-default")));
+                            row = row
+                                .push(icon::from_name(app.icon().unwrap_or("application-default")));
 
                             if let Some(name) = app.name(&startup_apps.locales) {
                                 row = row.push(text(name));
-                            }
-                            else {
+                            } else {
                                 row = row.push(text(&app.appid));
                             }
 
@@ -363,13 +365,14 @@ impl Page {
 }
 
 fn apps() -> Section<crate::pages::Message> {
-    let cosmic::cosmic_theme::Spacing { space_s, .. } = cosmic::theme::active().cosmic().spacing;
+    let cosmic::cosmic_theme::Spacing {
+        space_xxs, space_s, ..
+    } = cosmic::theme::spacing();
 
     Section::default()
         .title(fl!("startup-apps"))
         .view::<Page>(move |_binder, page, _section| {
-            let mut view = widget::column::with_capacity(4)
-                .spacing(cosmic::theme::active().cosmic().space_xxs());
+            let mut view = widget::column::with_capacity(4).spacing(space_xxs);
 
             if let Some(startup_apps) = &page.cached_startup_apps {
                 let order = vec![DirectoryType::User];
@@ -386,12 +389,12 @@ fn apps() -> Section<crate::pages::Message> {
                         for app in apps {
                             let mut row = widget::row::with_capacity(2).spacing(space_s);
 
-                            row = row.push(icon::from_name(app.icon().unwrap_or("application-default")));
+                            row = row
+                                .push(icon::from_name(app.icon().unwrap_or("application-default")));
 
                             if let Some(name) = app.name(&startup_apps.locales) {
                                 row = row.push(text(name));
-                            }
-                            else {
+                            } else {
                                 row = row.push(text(&app.appid));
                             }
 

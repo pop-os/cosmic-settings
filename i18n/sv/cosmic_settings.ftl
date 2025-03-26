@@ -142,14 +142,14 @@ orientation = Orientering
 
 scheduling = Schemaläggning
     .manual = Manuellt schema
-    
+
 dialog = Dialogruta
     .title = Behåll dessa skärminställningar?
     .keep-changes = Behåll ändringar
     .change-prompt = Inställningsändringar återställs automatiskt om { $time } sekunder.
     .revert-settings = Återställ inställningar
-    
-legacy-applications = X11 fönstersystem applikationsskalning
+
+legacy-app-scaling = X11 fönstersystem applikationsskalning
     .scaled-by-system = Skala alla X11 applikationer
     .system-description = X11-applikationer kommer att se suddiga ut på HiDPI-skärmar.
     .scaled-natively = Rendera X11-applikationer med inbyggd upplösning
@@ -203,7 +203,7 @@ top-panel = Övre Panel
 window-controls = Fönsterkontroller
     .minimize = Visa minimera knapp
     .maximize = Visa maximera knapp
-    
+
 focus-navigation = Fokusnavigering
     .focus-follows-cursor = Fokus följer markören
     .focus-follows-cursor-delay = Fokus följer markörens fördröjning i ms
@@ -310,7 +310,7 @@ workspaces-overview-thumbnails = Arbetsyta Översikt Miniatyrer
 workspaces-orientation = Arbetsytor Orientering
     .vertical = Vertikal
     .horizontal = Horisontell
-    
+
 hot-corner = Heta hörn
     .top-left-corner = Aktivera det övre vänstra heta hörnet för arbetsytor
 
@@ -322,19 +322,19 @@ wired = Trådbunden anslutning
     .connections = Trådbundna anslutningar
     .devices = Trådbundna enheter
     .remove = Ta bort anslutningsprofil
-    
+
 ## Nätverk: WiFi
 
 wifi = Wi-Fi
     .adapter = WiFi adapter { $id }
     .forget = Glöm detta nätverket
-    
+
 ## Nätverk: Wireguard
 
 wireguard-dialog = Lägg till WireGuard enhet
     .description = Välj ett enhetsnamn för WireGuard-konfigurationen.
-    
-    
+
+
 
 ## Nätverksanslutningar
 
@@ -386,7 +386,7 @@ vpn = VPN
     .error = Misslyckades med att lägga till en VPN-konfiguration
     .remove = Ta bort ansluten profil
     .select-file = Välj en VPN-konfigurationsfil
-    
+
     vpn-error = VPN fel
     .config = Misslyckades med att lägga till en VPN-konfiguration
     .connect = Misslyckades att ansluta till VPN
@@ -422,14 +422,14 @@ bluetooth = Bluetooth
     .forget = Glöm bort
     .dbus-error = Ett fel har uppstått under interaktion med DBus: { $why }
     .show-device-without-name = Visa enheter utan namn
-    
+
 bluetooth-paired = Tidigare anslutna enheter
     .connect = Anslut
     .battery = { $percentage }% batteri
-    
+
 bluetooth-confirm-pin = Bekräfta Bluetooth PIN
     .description = Kontrollera att följande PIN-kod stämmer överens med den som visas på { $device }
-    
+
 bluetooth-available = Enheter i närheten
 
 bluetooth-adapters = Bluetooth Adapters
@@ -460,7 +460,7 @@ time-format = Datum & tidsformat
 
 time-region = Region & språk
     .desc = Formatera datum, tider och siffror baserat på din region
-    
+
     formatting = Formatering
     .dates = Datum
     .time = Tid
@@ -471,7 +471,7 @@ time-region = Region & språk
 
 preferred-languages = Föredragna språk
     .desc = Ordningen på språken avgör vilket språk som används för översättningen av skrivbordsmiljön. Ändringar träder i kraft vid nästa inloggning.
-    
+
 add-language = Lägg till språk
     .context = Lägg till språk
 install-additional-languages = Installera ytterligare språk
@@ -635,7 +635,7 @@ keyboard-sources = Inmatningskällor
     .view-layout = Visa tangentbordslayout
     .remove = Ta bort
     .add = Lägg till källa
-    
+
 keyboard-special-char = Specialkaraktärsinmatning
     .alternate = Knapp för alternativa tecken
     .compose = Compose knapp
@@ -653,7 +653,7 @@ show-extended-input-sources = Visa utökade ingångskällor
 
 keyboard-shortcuts = Tangentbordsgenvägar
     .desc = Visa och anpassa genvägar
-   
+
 add-keybinding = Lägg till tangentbindning
 cancel = Avbryt
 command = Kommando
@@ -667,7 +667,7 @@ migrate-workspace = Migrera arbetsytan till utdata { $direction ->
     [left] vänster
     [right] höger
     [up] upp
-    
+
 navigate = Navigera
 replace = Byt ut
 shortcut-name = Genvägsnamn
@@ -680,7 +680,7 @@ custom-shortcuts = Anpassade genvägar
     .add = Lägg till genväg
     .context = Lägg till anpassad genväg
     .none = Inga anpassade genvägar
-    
+
 modified = { $count } modiferad
 
 nav-shortcuts = Navigation
@@ -704,7 +704,7 @@ nav-shortcuts = Navigation
         [up] upp
     }
     .workspace = Ändra till arbetsyta { $num }
-    
+
 manage-windows = Hantera fönster
     .close = Stäng fönster
     .maximize = Maximera fönster
@@ -712,7 +712,7 @@ manage-windows = Hantera fönster
     .resize-inwards = Ändra storlek på fönstret inåt
     .resize-outwards = Ändra storlek på fönstret utåt
     .toggle-sticky = Växla klibbigt fönster
-    
+
 move-windows = Flytta fönster
     .direction = Flytta fönster { $direction ->
         *[down] ned
@@ -740,7 +740,7 @@ move-windows = Flytta fönster
     .prev-display = Flytta fönster till föregående skärm
     .send-to-prev-workspace = Flytta fönster till föregående arbetsyta
     .send-to-next-workspace = Flytta fönster till nästa arbetsyta
-    
+
 system-shortcut = System
     .app-library = Öppna app bibliotek
     .brightness-down = Minska skärmens ljusstyrka
@@ -762,7 +762,7 @@ system-shortcut = System
     .web-browser = Öppna en webbläsare
     .window-switcher = Växla mellan öppna fönster
     .workspace-overview = Öppna översikten över arbetsytor
-    
+
 window-tiling = Kakelsättning av fönster
     .horizontal = Ställ in horisontell orientering
     .vertical = Ställ in vertikal orientering
@@ -771,7 +771,7 @@ window-tiling = Kakelsättning av fönster
     .toggle-stacking = Växla fönsterstapling
     .toggle-floating = Växla flytande fönster
     .toggle-orientation = Växla orientering
-    
+
 replace-shortcut-dialog = Byt ut genväg?
     .desc = { $shortcut } används av { $name }. Om du byter ut den så kommer, { $name } att inaktiveras.
 
@@ -787,10 +787,10 @@ mouse = Mus
 click-behavior = Klickbeteende
     .click-finger = Sekundärklicka med två fingrar och mellanklicka med tre fingrar
     .button-areas = Sekundärklicka i det nedre högra hörnet och mittenklicka längst ner i mitten
-    
+
  pinch-to-zoom = Nyp för att zooma
     .desc = Använd två fingrar för att zooma in på innehåll, för applikationer som stöder zoom.
-    
+
 tap-to-click = Tryck för att klicka
     .desc = Aktiverar tryck med ett finger för primärt klick, tryck med två fingrar för sekundärt klick och tryck med tre fingrar för mittenklick.
 
@@ -811,7 +811,7 @@ gestures = Gester
 switch-workspaces = Ändra arbetsyta
     .horizontal = Fyra fingrar svep vänster/höger
     .vertical = Fyra fingrar svep upp/ned
-    
+
 switch-between-windows = Ändra mellan fönster
 open-application-library = Öppna Applikationsbibliotek
 open-workspaces-view = Öppna Översikt över arbetsytor

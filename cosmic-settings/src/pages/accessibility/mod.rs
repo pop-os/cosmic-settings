@@ -1,9 +1,10 @@
 use cosmic::{
-    Apply, Task,
+    Task,
     cosmic_theme::{CosmicPalette, ThemeBuilder},
     iced_core::text::Wrapping,
-    theme::{self, CosmicTheme},
-    widget::{button, container, dropdown, horizontal_space, icon, settings, text, toggler},
+    surface,
+    theme::CosmicTheme,
+    widget::{dropdown, settings, text, toggler},
 };
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;
@@ -68,6 +69,7 @@ pub enum Message {
     SetScreenInverted(bool),
     SetScreenFilterActive(bool),
     SetScreenFilterSelection(ColorFilter),
+    Surface(surface::Action),
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -178,19 +180,9 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         &descriptions[unavailable]
                     };
 
-                    settings::item_row(vec![
-                        text::body(&descriptions[magnifier])
-                            .wrapping(Wrapping::Word)
-                            .into(),
-                        horizontal_space().into(),
-                        text::body(status_text).wrapping(Wrapping::Word).into(),
-                        icon::from_name("go-next-symbolic").size(16).into(),
-                    ])
-                    .apply(container)
-                    .class(cosmic::theme::Container::List)
-                    .apply(button::custom)
-                    .class(theme::Button::Transparent)
-                    .on_press_maybe(
+                    crate::widget::go_next_with_item(
+                        &descriptions[magnifier],
+                        text::body(status_text).wrapping(Wrapping::Word),
                         page.wayland_available
                             .is_some()
                             .then_some(crate::pages::Message::Page(magnifier_entity)),
@@ -235,12 +227,19 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                     };
                     cosmic::Element::from(
                         settings::item::builder(&descriptions[color_filter_type]).control(
-                            dropdown(
+                            dropdown::popup_dropdown(
                                 selections,
                                 Some(page.screen_filter_selection as usize),
                                 move |idx| {
                                     let filter = ColorFilter::from_usize(idx).unwrap_or_default();
                                     Message::SetScreenFilterSelection(filter)
+                                },
+                                cosmic::iced::window::Id::RESERVED,
+                                Message::Surface,
+                                |a| {
+                                    crate::app::Message::PageMessage(
+                                        crate::pages::Message::Accessibility(a),
+                                    )
                                 },
                             ),
                         ),
@@ -360,6 +359,9 @@ impl Page {
                 } else {
                     self.screen_filter_selection = filter;
                 }
+            }
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
             }
         }
 
