@@ -2,9 +2,11 @@
 Name=Firmware
 Name[pl]=Oprogramowanie sprzętowe
 Name[hu]=Firmware
+Name[pt_BR]=Firmware
 Comment=View and update firmware.
 Comment[pl]=Zobacz i aktualizuj oprogramowanie sprzętowe.
 Comment[hu]=Firmware megtekintése és frissítése.
+Comment[pt_BR]=Visualizar e atualizar firmware.
 Type=Settings
 Exec=cosmic-settings firmware
 Terminal=false

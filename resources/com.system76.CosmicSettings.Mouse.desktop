@@ -2,9 +2,11 @@
 Name=Mouse
 Name[pl]=Mysz
 Name[hu]=Egér
+Name[pt_BR]=Mouse
 Comment=Mouse speed, acceleration, and natural scrolling.
 Comment[pl]=Prędkość myszy, przyspieszenie i naturalne przewijanie.
 Comment[hu]=Egérsebesség, gyorsítás és természetes görgetés.
+Comment[pt_BR]=Velocidade do mouse, aceleração e rolagem natural.
 Type=Settings
 Exec=cosmic-settings mouse
 Terminal=false
