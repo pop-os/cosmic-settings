@@ -116,7 +116,7 @@ bluetooth = Bluetooth
     .forget = Unut
     .dbus-error = DBus ile etkileşirken bir hata meydana geldi: { $why }
 
-bluetooth-paired = Önceden Bağlanılan Aygıtlar 
+bluetooth-paired = Önceden Bağlanılan Aygıtlar
     .connect = Bağlan
     .battery = %{ $percentage } şarj
 
@@ -214,7 +214,7 @@ window-hint-accent-toggle = Etkin pencereyi belirtmek için tema vurgu rengini k
 auto-switch = Otomatik olarak Açık ve Koyu modlar arasında geçiş yap
     .sunrise = Gün doğumunda Açık moda geçer
     .sunset = Gün batımında Koyu moda geçer
-    .next-sunrise = Bir dahaki gün doğumunda Açık moda geçer 
+    .next-sunrise = Bir dahaki gün doğumunda Açık moda geçer
     .next-sunset = Bir dahaki gün doğumunda Koyu moda geçer
 
 container-background = Konteyner arka planı
@@ -235,7 +235,7 @@ icon-theme = Simge Teması
     .desc = Uygulamalara farklı birtakım simgeler uygular.
 
 text-tint = Arayüz metin tonlaması
-    .desc = Çeşitli yüzeylerde yeterli kontrasta sahip metinlerin rengini belirlemekte kullanılan renk 
+    .desc = Çeşitli yüzeylerde yeterli kontrasta sahip metinlerin rengini belirlemekte kullanılan renk
 
 style = Stil
     .round = Yuvarlak
@@ -292,7 +292,7 @@ panel-appearance = Görünüm
 
 panel-behavior-and-position = Davranış ve Konumlar
     .autohide = Paneli otomatik gizle
-    .dock-autohide = Docku otomatik gizle 
+    .dock-autohide = Docku otomatik gizle
     .position = Ekrandaki konum
     .display = Ekranda göster
 
@@ -428,10 +428,10 @@ dialog = Diyalog
     .change-prompt = { $time } saniye içinde önceki görüntü ayarlarına dönülecek.
     .revert-settings = Ayarları Geri Al
 
-legacy-applications = X11 Pencere Sistemi Uygulama Ölçeği
+legacy-app-scaling = X11 Pencere Sistemi Uygulama Ölçeği
     .scaled-by-system = Tüm X11 Uygulamalarını ölçekle
     .system-description = X11 Uygulamaları HiDPI ekranlarda bulanık gözükecek.
-    .scaled-natively = X11 Uygulamalarını kendi çözünürlüğünde renderla 
+    .scaled-natively = X11 Uygulamalarını kendi çözünürlüğünde renderla
     .native-description = Ölçekleme desteklemeyen X11 uygulamaları HiDPI ekran kullanıldığında küçük gözükecek. Oyunların ekran çözünürlüğünün tamamından faydalanması için etkinleştirin.
 
 ## Sound
@@ -483,7 +483,7 @@ battery = Pil
   .remaining-time = { $action ->
         [full] Dolmasına
        *[other] Bitmesine
-   } { $time } 
+   } { $time }
 
 connected-devices = Bağlı Aygıtlar
   .unknown = Bilinmeyen aygıt
@@ -601,7 +601,7 @@ nav-shortcuts = Gezinim
     .prev-output = Önceki çıktıya odaklan
     .next-output = Sonraki çıktıya odaklan
     .last-workspace = Son çalışma alanına odaklan
-    .prev-workspace = Önceki çalışma alanına odaklan 
+    .prev-workspace = Önceki çalışma alanına odaklan
     .next-workspace = Sonraki çalışma alanına odaklan
     .focus = { $direction ->
         *[down] Aşağıdaki
@@ -705,9 +705,9 @@ mouse = Fare
 
 click-behavior = Tıklama davranışı
     .click-finger = İki parmak ile ikincil tıklama ve üç parmak ile orta tıklama
-    .button-areas = Sağ alt köşede ikincil tıklama ve orta alt kenarında orta tıklama 
+    .button-areas = Sağ alt köşede ikincil tıklama ve orta alt kenarında orta tıklama
 
-pinch-to-zoom = İki parmakla yakınlaştırma 
+pinch-to-zoom = İki parmakla yakınlaştırma
     .desc = Yakınlaştırma destekleyen uygulamalar için iki parmağınıla sıkıştırarak ve genişleterek yaklaştırın ve uzaklaştırın.
 
 tap-to-click = Tıklamak için dokun
@@ -771,7 +771,7 @@ formatting = Biçimlendirme
     .paper = Kağıt
 
 preferred-languages = Tercih Edilen Diller
-    .desc = Dillerin sırası masaüstünün çevirisinde hangi dilin kullanılacağını belirler. Değişiklikler bir dahaki girişinizde geçerli olur. 
+    .desc = Dillerin sırası masaüstünün çevirisinde hangi dilin kullanılacağını belirler. Değişiklikler bir dahaki girişinizde geçerli olur.
 
 add-language = Dil ekle
     .context = Dil Ekle
@@ -840,4 +840,3 @@ default-apps = Varsayılan Uygulamalar
     .terminal = Uçbirim
     .other-associations = Diğer ilişkiler
     .text-editor = Metin Düzenleyici
-

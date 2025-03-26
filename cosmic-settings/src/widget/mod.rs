@@ -8,10 +8,10 @@ use cosmic::iced::{Alignment, Length};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::{
-    self, button, column, container, divider, horizontal_space, icon, row, settings, text,
-    vertical_space, ColorPickerModel,
+    self, ColorPickerModel, button, column, container, divider, horizontal_space, icon, row,
+    settings, text, vertical_space,
 };
-use cosmic::{theme, Apply, Element};
+use cosmic::{Apply, Element, theme};
 use cosmic_settings_page as page;
 
 pub fn color_picker_context_view<'a, Message: Clone + 'static>(
@@ -124,7 +124,7 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
         space_s,
         space_m,
         ..
-    } = cosmic::theme::active().cosmic().spacing;
+    } = cosmic::theme::spacing();
 
     let mut builder = cosmic::widget::settings::item::builder(title);
 
@@ -181,7 +181,10 @@ pub fn sub_page_header<'a, Message: 'static + Clone>(
         .into()
 }
 
-pub fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic::Element<'_, Msg> {
+pub fn go_next_item<Msg: Clone + 'static>(
+    description: &str,
+    msg_opt: impl Into<Option<Msg>>,
+) -> cosmic::Element<'_, Msg> {
     settings::item_row(vec![
         text::body(description).wrapping(Wrapping::Word).into(),
         horizontal_space().into(),
@@ -190,15 +193,16 @@ pub fn go_next_item<Msg: Clone + 'static>(description: &str, msg: Msg) -> cosmic
     .apply(widget::container)
     .class(cosmic::theme::Container::List)
     .apply(button::custom)
+    .padding(0)
     .class(theme::Button::Transparent)
-    .on_press(msg)
+    .on_press_maybe(msg_opt.into())
     .into()
 }
 
 pub fn go_next_with_item<'a, Msg: Clone + 'static>(
     description: &'a str,
     item: impl Into<cosmic::Element<'a, Msg>>,
-    msg: Msg,
+    msg_opt: impl Into<Option<Msg>>,
 ) -> cosmic::Element<'a, Msg> {
     settings::item_row(vec![
         text::body(description).wrapping(Wrapping::Word).into(),
@@ -207,13 +211,14 @@ pub fn go_next_with_item<'a, Msg: Clone + 'static>(
             .push(item)
             .push(icon::from_name("go-next-symbolic").size(16).icon())
             .align_y(Alignment::Center)
-            .spacing(cosmic::theme::active().cosmic().spacing.space_s)
+            .spacing(cosmic::theme::spacing().space_s)
             .into(),
     ])
     .apply(widget::container)
     .class(cosmic::theme::Container::List)
     .apply(button::custom)
+    .padding(0)
     .class(theme::Button::Transparent)
-    .on_press(msg)
+    .on_press_maybe(msg_opt.into())
     .into()
 }

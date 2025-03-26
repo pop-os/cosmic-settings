@@ -410,7 +410,7 @@ dialog = Dialóg
     .change-prompt = Zmeny nastavení sa automaticky vrátia o { $time } sekúnd.
     .revert-settings = Vrátiť nastavenia
 
-legacy-applications = Škálovanie aplikácií systému okien X11
+legacy-app-scaling = Škálovanie aplikácií systému okien X11
     .scaled-by-system = Škálovať všetky aplikácie X11
     .system-description = Aplikácie X11 sa na obrazovkách HiDPI zobrazia rozmazane.
     .scaled-natively = Vykresľovať aplikácie X11 v natívnom rozlíšení

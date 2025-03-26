@@ -392,7 +392,7 @@ dialog = Diálogo
     .change-prompt = Los cambios en la configuración se revertirán automáticamente en { $time } segundos.
     .revert-settings = Revertir configuraciones
 
-legacy-applications = Escalado de aplicaciones del sistema de ventanas X11
+legacy-app-scaling = Escalado de aplicaciones del sistema de ventanas X11
     .scaled-by-system = Escalar todas las aplicaciones X11
     .system-description = Las aplicaciones X11 aparecerán borrosas en pantallas HiDPI.
     .scaled-natively = Renderizar aplicaciones X11 a resolución nativa

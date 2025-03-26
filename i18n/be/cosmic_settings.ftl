@@ -361,7 +361,7 @@ dialog = Дыялог
     .change-prompt = Змены налад будуць аўтаматычна вернуты праз { $time } секунд.
     .revert-settings = Вярнуць налады
 
-legacy-applications = Маштабаванне праграм аконнай сістэмы X11
+legacy-app-scaling = Маштабаванне праграм аконнай сістэмы X11
     .scaled-by-system = Маштабаваць усе праграмы X11
     .system-description = Праграмы X11 будуць размытымі на экранах HiDPI.
     .scaled-natively = Рэндэрыць праграмы X11 у роднай раздзяляльнасці
