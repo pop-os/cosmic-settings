@@ -1771,7 +1771,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-subscriptions"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-subscriptions?branch=sound#9c9b87dca2822060dbd776a4fb714902b6bab5e5"
+source = "git+https://github.com/pop-os/cosmic-settings-subscriptions?branch=sound#63936327ad8c81a920d3a68160a1211461270ab7"
 dependencies = [
  "bluez-zbus",
  "cosmic-dbus-networkmanager",
@@ -2338,7 +2338,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33d852cb9b869c2a9b3df2f71a3074817f01e1844f839a144f5fcef059a4eb5d"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3241,7 +3241,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#cb682be3c887bcbf591309d350bac4d4710e104b"
+source = "git+https://github.com/pop-os/libcosmic#2753941aad9bd2a6e2909a09b2350df50765daa9"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -3250,7 +3250,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0-dev"
-source = "git+https://github.com/pop-os/libcosmic#cb682be3c887bcbf591309d350bac4d4710e104b"
+source = "git+https://github.com/pop-os/libcosmic#2753941aad9bd2a6e2909a09b2350df50765daa9"
 dependencies = [
  "bitflags 2.8.0",
  "bytes",
@@ -4499,7 +4499,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -6451,7 +6451,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -7098,7 +7098,7 @@ dependencies = [
  "getrandom 0.3.1",
  "once_cell",
  "rustix 0.38.44",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -8095,7 +8095,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
