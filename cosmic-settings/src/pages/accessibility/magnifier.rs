@@ -40,6 +40,8 @@ pub enum Message {
     Event(wayland::AccessibilityEvent),
     ProtocolUnavailable,
     SetMagnifier(bool),
+    SetMouseShortcuts(bool),
+    SetOverlay(bool),
     SetIncrement(usize),
     SetSignin(bool),
     SetMovement(ZoomMovement),
@@ -197,6 +199,8 @@ pub fn magnifier(
     crate::slab!(descriptions {
         magnifier = fl!("magnifier");
         controls = fl!("magnifier", "controls", zoom_in = zoom_in, zoom_out = zoom_out);
+        scroll_controls = fl!("magnifier", "scroll_controls");
+        show_overlay = fl!("magnifier", "show_overlay");
         increment = fl!("magnifier", "increment");
         signin = fl!("magnifier", "signin");
     });
@@ -216,6 +220,15 @@ pub fn magnifier(
                             widget::toggler(page.magnifier_state).on_toggle(Message::SetMagnifier),
                         ),
                 )
+                .add(settings::item(
+                    &descriptions[scroll_controls],
+                    widget::toggler(page.zoom_config.enable_mouse_zoom_shortcuts)
+                        .on_toggle(Message::SetMouseShortcuts),
+                ))
+                .add(settings::item(
+                    &descriptions[show_overlay],
+                    widget::toggler(page.zoom_config.show_overlay).on_toggle(Message::SetOverlay),
+                ))
                 .add(settings::item(
                     &descriptions[increment],
                     widget::dropdown::popup_dropdown(
@@ -335,6 +348,26 @@ impl Page {
             Message::SetMagnifier(value) => {
                 if let Some(sender) = self.wayland_thread.as_ref() {
                     let _ = sender.send(AccessibilityRequest::Magnifier(value));
+                }
+            }
+            Message::SetMouseShortcuts(value) => {
+                self.zoom_config.enable_mouse_zoom_shortcuts = value;
+
+                if let Err(err) = self
+                    .accessibility_config
+                    .set("accessibility_zoom", self.zoom_config)
+                {
+                    error!(?err, "Failed to set config 'accessibility_zoom'");
+                }
+            }
+            Message::SetOverlay(value) => {
+                self.zoom_config.show_overlay = value;
+
+                if let Err(err) = self
+                    .accessibility_config
+                    .set("accessibility_zoom", self.zoom_config)
+                {
+                    error!(?err, "Failed to set config 'accessibility_zoom'");
                 }
             }
             Message::SetIncrement(idx) => {
