@@ -4,12 +4,12 @@
 use std::{collections::BTreeMap, time::Duration};
 
 use cosmic::{
-    iced::{window, Alignment, Length},
+    Element, Task,
+    iced::{Alignment, Length, window},
     surface,
     widget::{self, settings},
-    Element, Task,
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_subscriptions::{pipewire, pulse};
 use futures::StreamExt;
 use indexmap::IndexMap;
@@ -33,8 +33,12 @@ pub enum Message {
     SinkProfileSelect(DeviceId),
     /// Request to change the default output volume.
     SinkVolumeChanged(u32),
+    /// Request to change the default output balance.
+    SinkBalanceChanged(u32),
     /// Change the output volume.
     SinkVolumeApply(NodeId),
+    /// Change the output balance.
+    SinkBalanceApply,
     /// Toggle the mute status of the output.
     SinkMuteToggle,
     /// Change the default input output.
@@ -89,6 +93,10 @@ pub struct Page {
     sink_mute: bool,
     sink_volume_debounce: bool,
 
+    sink_balance: Option<f32>,
+    sink_balance_text: Option<String>,
+    sink_balance_debounce: bool,
+    sink_channels: Option<pulse::PulseChannels>,
     source_volume: u32,
     source_volume_text: String,
     source_mute: bool,
@@ -346,6 +354,26 @@ impl Page {
                     return command;
                 }
             }
+            Message::SinkBalanceChanged(balance) => {
+                self.sink_balance = Some((balance as f32 - 100.) / 100.);
+                self.sink_balance_text = Some(format!("{balance:.2}"));
+                if self.sink_balance_debounce {
+                    return Task::none();
+                }
+
+                let mut command = None;
+                if let Some(&node_id) = self.sink_ids.get(self.active_sink.unwrap_or(0)) {
+                    command = Some(cosmic::task::future(async move {
+                        tokio::time::sleep(Duration::from_millis(64)).await;
+                        crate::pages::Message::Sound(Message::SinkBalanceApply)
+                    }));
+                }
+
+                if let Some(command) = command {
+                    self.sink_balance_debounce = true;
+                    return command;
+                }
+            }
             Message::Pulse(pulse::Event::SinkVolume(volume)) => {
                 if self.sink_volume_debounce {
                     return Task::none();
@@ -380,6 +408,13 @@ impl Page {
                 self.card_profiles.insert(device_id.clone(), card.profiles);
                 self.active_profiles
                     .insert(device_id, card.active_profile.map(|p| p.name));
+            }
+            Message::Pulse(pulse::Event::Balance(balance)) => {
+                self.sink_balance = balance;
+                self.sink_balance_text = balance.map(|b| format!("{b:.2}"));
+            }
+            Message::Pulse(pulse::Event::Channels(channels)) => {
+                self.sink_channels = Some(channels);
             }
             Message::Pipewire(pipewire::DeviceEvent::Add(device)) => {
                 let device_id = match device.variant {
@@ -494,9 +529,19 @@ impl Page {
                     }
                 }
             }
-            Message::SinkVolumeApply(node_id) => {
+            Message::SinkBalanceApply => {
+                self.sink_balance_debounce = false;
+                if let Some((balance, channels)) =
+                    self.sink_balance.zip(self.sink_channels.as_mut())
+                {
+                    channels.set_balance(balance);
+                }
+            }
+            Message::SinkVolumeApply(_) => {
                 self.sink_volume_debounce = false;
-                wpctl_set_volume(node_id, self.sink_volume);
+                if let Some(channels) = self.sink_channels.as_mut() {
+                    channels.set_volume(self.sink_volume as f32 / 100.);
+                }
             }
             Message::SourceVolumeApply(node_id) => {
                 self.source_volume_debounce = false;
@@ -656,6 +701,9 @@ fn output() -> Section<crate::pages::Message> {
     let device = descriptions.insert(fl!("sound-output", "device"));
     let _level = descriptions.insert(fl!("sound-output", "level"));
     let profile = descriptions.insert(fl!("profile"));
+    let balance = descriptions.insert(fl!("sound-output", "balance"));
+    let left = descriptions.insert(fl!("sound-output", "left"));
+    let right = descriptions.insert(fl!("sound-output", "right"));
     // let balance = descriptions.insert(fl!("sound-output", "balance"));
 
     Section::default()
@@ -711,6 +759,33 @@ fn output() -> Section<crate::pages::Message> {
                 );
 
                 controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
+            }
+            if let Some(sink_balance) = page.sink_balance {
+                controls = controls.add(settings::item(
+                    &*section.descriptions[balance],
+                    widget::row::with_capacity(4)
+                        .align_y(Alignment::Center)
+                        .push(
+                            widget::text::body(&*section.descriptions[left])
+                                .width(Length::Fixed(22.0))
+                                .align_x(Alignment::Center),
+                        )
+                        .push(widget::horizontal_space().width(8))
+                        .push(
+                            widget::slider(
+                                0..=200,
+                                ((sink_balance + 1.).max(0.) * 100.).round() as u32,
+                                Message::SinkBalanceChanged,
+                            )
+                            .breakpoints(&[100]),
+                        )
+                        .push(widget::horizontal_space().width(8))
+                        .push(
+                            widget::text::body(&*section.descriptions[right])
+                                .width(Length::Fixed(22.0))
+                                .align_x(Alignment::Center),
+                        ),
+                ));
             }
 
             Element::from(controls).map(crate::pages::Message::Sound)

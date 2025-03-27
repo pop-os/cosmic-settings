@@ -395,7 +395,7 @@ fn zoom_shortcuts() -> (Vec<Binding>, Vec<Binding>) {
     let Some(config) = shortcuts::context().ok() else {
         return (Vec::new(), Vec::new());
     };
-    let shortcuts = dbg!(shortcuts::shortcuts(&config));
+    let shortcuts = shortcuts::shortcuts(&config);
 
     let zoom_in = shortcuts
         .iter()
