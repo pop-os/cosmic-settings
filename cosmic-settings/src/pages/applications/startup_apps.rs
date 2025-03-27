@@ -310,7 +310,7 @@ impl Page {
         directory_type: DirectoryType,
     ) -> Element<'_, crate::pages::Message> {
         let cosmic::cosmic_theme::Spacing {
-            space_s, space_l, ..
+            space_xs, space_l, ..
         } = cosmic::theme::spacing();
 
         let search = widget::search_input(fl!("type-to-search"), &self.application_search)
@@ -328,26 +328,25 @@ impl Page {
                             || exec.to_lowercase().contains(search_input)
                             || name.to_lowercase().contains(search_input)
                         {
-                            let mut row = widget::row::with_capacity(2).spacing(space_s);
+                            let mut row = widget::row::with_capacity(3)
+                                .spacing(space_xs)
+                                .align_y(Alignment::Center);
 
-                            row = row
-                                .push(icon::from_name(app.icon().unwrap_or("application-default")));
+                            row = row.push(
+                                icon::from_name(app.icon().unwrap_or("application-default"))
+                                    .size(32),
+                            );
 
                             if let Some(name) = app.name(&startup_apps.locales) {
-                                row = row.push(text(name));
+                                row = row.push(text(name).width(Length::Fill));
                             } else {
-                                row = row.push(text(&app.appid));
+                                row = row.push(text(&app.appid).width(Length::Fill));
                             }
+                            row = row.push(widget::button::text(fl!("add")).on_press(
+                                Message::AddStartupApplication(directory_type.clone(), app.clone()),
+                            ));
 
-                            list = list.add(settings::flex_item_row(vec![
-                                row.into(),
-                                widget::button::text(fl!("add"))
-                                    .on_press(Message::AddStartupApplication(
-                                        directory_type.clone(),
-                                        app.clone(),
-                                    ))
-                                    .into(),
-                            ]))
+                            list = list.add(row)
                         }
                     }
                 }
@@ -366,7 +365,9 @@ impl Page {
 
 fn apps() -> Section<crate::pages::Message> {
     let cosmic::cosmic_theme::Spacing {
-        space_xxs, space_s, ..
+        space_xxs,
+        space_xs,
+        ..
     } = cosmic::theme::spacing();
 
     Section::default()
@@ -387,28 +388,32 @@ fn apps() -> Section<crate::pages::Message> {
 
                     if let Some(apps) = startup_apps.apps.get(&directory_type) {
                         for app in apps {
-                            let mut row = widget::row::with_capacity(2).spacing(space_s);
+                            let mut row = widget::row::with_capacity(3)
+                                .spacing(space_xs)
+                                .align_y(Alignment::Center);
 
-                            row = row
-                                .push(icon::from_name(app.icon().unwrap_or("application-default")));
+                            row = row.push(
+                                icon::from_name(app.icon().unwrap_or("application-default"))
+                                    .size(32),
+                            );
 
                             if let Some(name) = app.name(&startup_apps.locales) {
-                                row = row.push(text(name));
+                                row = row.push(text(name).width(Length::Fill));
                             } else {
-                                row = row.push(text(&app.appid));
+                                row = row.push(text(&app.appid).width(Length::Fill));
                             }
 
-                            section = section.add(settings::flex_item_row(vec![
-                                row.into(),
+                            row = row.push(
                                 button::icon(icon::from_name("edit-delete-symbolic"))
                                     .extra_small()
                                     .on_press(Message::RemoveStartupApplication(
                                         directory_type.clone(),
                                         app.clone(),
                                         false,
-                                    ))
-                                    .into(),
-                            ]))
+                                    )),
+                            );
+
+                            section = section.add(row)
                         }
                     }
 
