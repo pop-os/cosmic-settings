@@ -3,13 +3,15 @@
 
 mod getent;
 
+use crate::pages;
 use cosmic::{
+    Apply, Element,
     dialog::file_chooser,
     iced::{Alignment, Length},
-    widget::{self, column, icon, settings, text},
-    Apply, Element,
+    widget::{self, Space, column, icon, row, settings, text},
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
+use regex::Regex;
 use slab::Slab;
 use slotmap::SlotMap;
 use std::{
@@ -21,8 +23,6 @@ use std::{
 };
 use url::Url;
 use zbus_polkit::policykit1::CheckAuthorizationFlags;
-
-use crate::pages;
 
 const DEFAULT_ICON_FILE: &str = "/usr/share/pixmaps/faces/pop-robot.png";
 const USERS_ADMIN_POLKIT_POLICY_ID: &str = "com.system76.CosmicSettings.Users.Admin";
@@ -133,8 +133,6 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn dialog(&self) -> Option<Element<pages::Message>> {
         let dialog = self.dialog.as_ref()?;
-        let theme = cosmic::theme::active();
-        let theme = theme.cosmic();
 
         let dialog_element = match dialog {
             Dialog::AddNewUser(user) => {
@@ -147,8 +145,7 @@ impl page::Page<crate::pages::Message> for Page {
                                 ..user.clone()
                             })))
                         }),
-                )
-                .padding([0, theme.space_s().into()]);
+                );
 
                 let username_input = widget::container(
                     widget::text_input("", &user.username)
@@ -159,8 +156,7 @@ impl page::Page<crate::pages::Message> for Page {
                                 ..user.clone()
                             })))
                         }),
-                )
-                .padding([0, theme.space_s().into()]);
+                );
 
                 let password_input = widget::container(
                     widget::text_input("", &user.password)
@@ -172,8 +168,7 @@ impl page::Page<crate::pages::Message> for Page {
                                 ..user.clone()
                             })))
                         }),
-                )
-                .padding([0, theme.space_s().into()]);
+                );
 
                 let admin_toggler = widget::toggler(user.is_admin).on_toggle(|value| {
                     Message::Dialog(Some(Dialog::AddNewUser(User {
@@ -182,17 +177,30 @@ impl page::Page<crate::pages::Message> for Page {
                     })))
                 });
 
+                // validation
+                let mut validation_msg = String::new();
+                let username_regex = Regex::new("^[a-z][a-z0-9-]{0,30}$").unwrap();
+                let username_valid = username_regex.is_match(&user.username);
+                let complete_maybe = if !username_valid && !user.username.is_empty() {
+                    validation_msg = fl!("invalid-username");
+                    None
+                } else if user.full_name.is_empty()
+                    || user.username.is_empty()
+                    || user.password.is_empty()
+                {
+                    None
+                } else {
+                    Some(Message::NewUser(
+                        user.username.clone(),
+                        user.full_name.clone(),
+                        user.password.clone(),
+                        user.is_admin,
+                    ))
+                };
+
                 let add_user_button = widget::button::suggested(fl!("add-user"))
-                    .on_press(())
-                    .apply(Element::from)
-                    .map(|_| {
-                        Message::NewUser(
-                            user.username.clone(),
-                            user.full_name.clone(),
-                            user.password.clone(),
-                            user.is_admin,
-                        )
-                    });
+                    .on_press_maybe(complete_maybe)
+                    .apply(Element::from);
 
                 let cancel_button =
                     widget::button::standard(fl!("cancel")).on_press(Message::Dialog(None));
@@ -204,17 +212,24 @@ impl page::Page<crate::pages::Message> for Page {
                             .add(full_name_input)
                             .add(username_input)
                             .add(password_input)
-                            .add(settings::item_row(vec![
-                                column::with_capacity(2)
-                                    .push(text::body(crate::fl!("administrator")))
-                                    .push(text::caption(crate::fl!("administrator", "desc")))
-                                    .into(),
-                                widget::horizontal_space().width(Length::Fill).into(),
-                                admin_toggler.into(),
-                            ])),
+                            .add(
+                                row::with_capacity(3)
+                                    .push(
+                                        column::with_capacity(2)
+                                            .push(text::body(crate::fl!("administrator")))
+                                            .push(text::caption(crate::fl!(
+                                                "administrator",
+                                                "desc"
+                                            ))),
+                                    )
+                                    .push(Space::new(5, 0))
+                                    .push(admin_toggler)
+                                    .align_y(Alignment::Center),
+                            ),
                     )
                     .primary_action(add_user_button)
                     .secondary_action(cancel_button)
+                    .tertiary_action(widget::text::body(validation_msg))
                     .apply(Element::from)
             }
         };
