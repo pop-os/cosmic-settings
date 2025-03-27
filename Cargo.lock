@@ -1676,6 +1676,7 @@ dependencies = [
  "cosmic-randr",
  "cosmic-randr-shell",
  "cosmic-settings-config",
+ "cosmic-settings-daemon-config",
  "cosmic-settings-page",
  "cosmic-settings-subscriptions",
  "cosmic-settings-system",
@@ -1751,6 +1752,16 @@ version = "0.1.0"
 source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
 dependencies = [
  "zbus 4.4.0",
+]
+
+[[package]]
+name = "cosmic-settings-daemon-config"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/cosmic-settings-daemon?branch=sound-mono#d9056a0fd2ff2b404e54c455ec9c00fc4028aba9"
+dependencies = [
+ "cosmic-config",
+ "ron 0.8.1",
+ "serde",
 ]
 
 [[package]]

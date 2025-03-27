@@ -138,6 +138,10 @@ accessibility = Accessibility
     .high-contrast = High contrast mode
     .invert-colors = Invert Colors
     .color-filters = Color filters
+
+hearing = Hearing
+    .mono = Play stereo audio as mono
+
 default = Default
 magnifier = Magnifier
     .controls = Or use these shortcuts: { $zoom_in ->

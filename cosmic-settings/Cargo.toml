@@ -28,6 +28,7 @@ cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daem
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
+cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true, branch = "sound-mono" }
 derivative = "2.2.0"
 derive_setters = "0.1.6"
 dirs = "5.0.1"
@@ -137,6 +138,7 @@ page-accessibility = [
     "dep:cosmic-comp-config",
     "dep:cosmic-protocols",
     "dep:cosmic-settings-config",
+    "dep:cosmic-settings-daemon-config",
     "dep:sctk",
 ]
 page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
