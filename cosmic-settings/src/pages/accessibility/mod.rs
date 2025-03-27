@@ -8,6 +8,7 @@ use cosmic::{
 };
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;
+use cosmic_settings_daemon_config::CosmicSettingsDaemonConfig;
 use cosmic_settings_page::{
     self as page, Insert,
     section::{self, Section},
@@ -32,10 +33,13 @@ pub struct Page {
     wayland_thread: Option<wayland::Sender>,
     theme: Box<cosmic::cosmic_theme::Theme>,
     high_contrast: Option<bool>,
+    daemon_config: CosmicSettingsDaemonConfig,
+    daemon_helper: cosmic_config::Config,
 }
 
 impl Default for Page {
     fn default() -> Self {
+        let daemon_helper = CosmicSettingsDaemonConfig::config().unwrap();
         Page {
             entity: page::Entity::default(),
             magnifier_state: false,
@@ -55,6 +59,9 @@ impl Default for Page {
             wayland_thread: None,
             theme: Box::default(),
             high_contrast: None,
+            daemon_config: CosmicSettingsDaemonConfig::get_entry(&daemon_helper)
+                .unwrap_or_default(),
+            daemon_helper,
         }
     }
 }
@@ -70,6 +77,7 @@ pub enum Message {
     SetScreenFilterActive(bool),
     SetScreenFilterSelection(ColorFilter),
     Surface(surface::Action),
+    SetSoundMono(bool),
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -89,7 +97,7 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, page::Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(vision())])
+        Some(vec![sections.insert(vision()), sections.insert(hearing())])
     }
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
@@ -250,6 +258,31 @@ pub fn vision() -> section::Section<crate::pages::Message> {
         })
 }
 
+pub fn hearing() -> section::Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        hearing = fl!("hearing");
+        mono = fl!("hearing", "mono");
+    });
+
+    Section::default()
+        .title(&descriptions[hearing])
+        .descriptions(descriptions)
+        .view::<Page>(move |_, page, section| {
+            let descriptions = &section.descriptions;
+
+            settings::section()
+                .title(&section.title)
+                .add(
+                    cosmic::Element::from(
+                        settings::item::builder(&descriptions[mono])
+                            .toggler(page.daemon_config.mono_sound, Message::SetSoundMono),
+                    )
+                    .map(crate::pages::Message::Accessibility),
+                )
+                .into()
+        })
+}
+
 impl Page {
     pub fn update(&mut self, message: Message) -> cosmic::iced::Task<crate::app::Message> {
         match message {
@@ -363,8 +396,15 @@ impl Page {
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
             }
+            Message::SetSoundMono(active) => {
+                if let Err(err) = self
+                    .daemon_config
+                    .set_mono_sound(&self.daemon_helper, active)
+                {
+                    tracing::error!("{err:?}");
+                }
+            }
         }
-
         cosmic::iced::Task::none()
     }
 }
