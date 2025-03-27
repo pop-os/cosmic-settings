@@ -3,10 +3,15 @@
 
 mod getent;
 
+use crate::pages;
 use cosmic::{
-    dialog::file_chooser, iced::{Alignment, Length}, widget::{self, column, icon, row, settings, text, Space}, Apply, Element
+    Apply, Element,
+    dialog::file_chooser,
+    iced::{Alignment, Length},
+    widget::{self, Space, column, icon, row, settings, text},
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
+use regex::Regex;
 use slab::Slab;
 use slotmap::SlotMap;
 use std::{
@@ -18,8 +23,6 @@ use std::{
 };
 use url::Url;
 use zbus_polkit::policykit1::CheckAuthorizationFlags;
-use regex::Regex;
-use crate::pages;
 
 const DEFAULT_ICON_FILE: &str = "/usr/share/pixmaps/faces/pop-robot.png";
 const USERS_ADMIN_POLKIT_POLICY_ID: &str = "com.system76.CosmicSettings.Users.Admin";
@@ -181,7 +184,10 @@ impl page::Page<crate::pages::Message> for Page {
                 let complete_maybe = if !username_valid && !user.username.is_empty() {
                     validation_msg = fl!("invalid-username");
                     None
-                } else if user.full_name.is_empty() || user.username.is_empty() || user.password.is_empty() {
+                } else if user.full_name.is_empty()
+                    || user.username.is_empty()
+                    || user.password.is_empty()
+                {
                     None
                 } else {
                     Some(Message::NewUser(
@@ -206,15 +212,21 @@ impl page::Page<crate::pages::Message> for Page {
                             .add(full_name_input)
                             .add(username_input)
                             .add(password_input)
-                            .add(row::with_capacity(3)
-                                .push(column::with_capacity(2)
-                                    .push(text::body(crate::fl!("administrator")))
-                                    .push(text::caption(crate::fl!("administrator", "desc")))
-                                )
-                                .push(Space::new(5,0))
-                                .push(admin_toggler)
+                            .add(
+                                row::with_capacity(3)
+                                    .push(
+                                        column::with_capacity(2)
+                                            .push(text::body(crate::fl!("administrator")))
+                                            .push(text::caption(crate::fl!(
+                                                "administrator",
+                                                "desc"
+                                            ))),
+                                    )
+                                    .push(Space::new(5, 0))
+                                    .push(admin_toggler)
                                     .align_y(Alignment::Center),
-                            ))
+                            ),
+                    )
                     .primary_action(add_user_button)
                     .secondary_action(cancel_button)
                     .tertiary_action(widget::text::body(validation_msg))
