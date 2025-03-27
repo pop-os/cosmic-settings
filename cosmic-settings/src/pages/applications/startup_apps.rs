@@ -417,11 +417,11 @@ fn apps() -> Section<crate::pages::Message> {
                         }
                     }
 
-                    let add_input_source = widget::button::standard(fl!("startup-apps", "add"))
+                    let add_startup_app = widget::button::standard(fl!("startup-apps", "add"))
                         .on_press(Message::ShowApplicationSidebar(directory_type.clone()));
 
                     view = view.push(section).push(widget::container(
-                        widget::container(add_input_source)
+                        widget::container(add_startup_app)
                             .width(Length::Fill)
                             .align_x(Alignment::End),
                     ));

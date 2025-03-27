@@ -22,23 +22,21 @@ use crate::pages::sound;
 use crate::pages::{self, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
-use cosmic::app::context_drawer::ContextDrawer;
 #[cfg(feature = "wayland")]
 use cosmic::cctk::{sctk::output::OutputInfo, wayland_client::protocol::wl_output::WlOutput};
-use cosmic::iced::Subscription;
-use cosmic::widget::{self, button, row, text_input};
 use cosmic::{
     Element,
-    app::{Core, Task},
+    app::{Core, Task, context_drawer::ContextDrawer},
     iced::{
-        self, Length,
+        self, Length, Subscription,
         event::{self, PlatformSpecific},
         window,
     },
     prelude::*,
     surface,
     widget::{
-        column, container, icon, id_container, nav_bar, scrollable, segmented_button, settings,
+        button, column, container, icon, id_container, nav_bar, row, scrollable, segmented_button,
+        settings, text_input,
     },
 };
 #[cfg(feature = "wayland")]
@@ -800,9 +798,7 @@ impl cosmic::Application for SettingsApp {
             return self.page_container(row::row());
         };
 
-        container(view)
-            .padding([cosmic::theme::active().cosmic().space_xxs(), 0])
-            .into()
+        container(view).into()
     }
 
     #[allow(clippy::too_many_lines)]
@@ -999,11 +995,8 @@ impl SettingsApp {
             .height(Length::Fill)
             .apply(|w| id_container(w, self.id()));
 
-        widget::column::with_capacity(3)
+        column::with_capacity(2)
             .push(self.page_container(header))
-            .push(widget::vertical_space().height(Length::Fixed(
-                cosmic::theme::active().cosmic().space_m().into(),
-            )))
             .push(view)
             .height(Length::Fill)
             .into()
@@ -1103,8 +1096,8 @@ impl SettingsApp {
             {
                 let section = (section.view_fn)(&self.pages, model.as_ref(), section)
                     .map(Message::PageMessage)
-                    .apply(iced::widget::container)
-                    .padding([0, 0, 0, cosmic::theme::active().cosmic().space_xl()]);
+                    .apply(container)
+                    .padding([0, 0, 0, cosmic::theme::active().cosmic().space_l()]);
 
                 sections.push(section.into());
             }
@@ -1137,14 +1130,12 @@ impl SettingsApp {
                 },
             )
             .spacing(theme.cosmic().space_s())
-            .padding(0)
             .apply(|widget| scrollable(self.page_container(widget)).height(Length::Fill))
             .apply(Element::from)
             .map(Message::Page);
 
-        widget::column::with_capacity(3)
+        column::with_capacity(2)
             .push(self.page_container(page_title(&self.pages.info[self.active_page])))
-            .push(widget::vertical_space().height(theme.cosmic().space_m()))
             .push(page_list)
             .height(Length::Fill)
             .into()
@@ -1161,13 +1152,15 @@ impl SettingsApp {
         } else {
             theme.cosmic().space_l()
         };
+        // prevents content from touching window edge on bottom of scroll
+        let bottom_spacer = theme.cosmic().space_m();
 
         container(content.into())
             .max_width(800)
             .width(Length::Fill)
             .apply(container)
             .center_x(Length::Fill)
-            .padding([0, padding])
+            .padding([0, padding, bottom_spacer, padding])
             .into()
     }
 }
