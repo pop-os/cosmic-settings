@@ -1757,7 +1757,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-daemon-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-daemon?branch=sound-mono#d9056a0fd2ff2b404e54c455ec9c00fc4028aba9"
+source = "git+https://github.com/pop-os/cosmic-settings-daemon#4a64bba4f103a5d4cc5c8d60382f06ef662eca02"
 dependencies = [
  "cosmic-config",
  "ron 0.8.1",
@@ -1782,7 +1782,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-subscriptions"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-subscriptions?branch=sound#63936327ad8c81a920d3a68160a1211461270ab7"
+source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#613e56f858db9e10d913b6d57e761e58d146ebc7"
 dependencies = [
  "bluez-zbus",
  "cosmic-dbus-networkmanager",
@@ -1791,7 +1791,6 @@ dependencies = [
  "itertools 0.14.0",
  "libpulse-binding",
  "log",
- "os_pipe",
  "pipewire",
  "rustix 1.0.3",
  "secure-string",
@@ -3252,7 +3251,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#2753941aad9bd2a6e2909a09b2350df50765daa9"
+source = "git+https://github.com/pop-os/libcosmic#f16bc4a7640a8895add431899b50eb4ec731b570"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -3261,7 +3260,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0-dev"
-source = "git+https://github.com/pop-os/libcosmic#2753941aad9bd2a6e2909a09b2350df50765daa9"
+source = "git+https://github.com/pop-os/libcosmic#f16bc4a7640a8895add431899b50eb4ec731b570"
 dependencies = [
  "bitflags 2.8.0",
  "bytes",
@@ -5509,16 +5508,6 @@ checksum = "9aa2b01e1d916879f73a53d01d1d6cee68adbb31d6d9177a8cfce093cced1d50"
 dependencies = [
  "futures-core",
  "pin-project-lite",
-]
-
-[[package]]
-name = "os_pipe"
-version = "1.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ffd2b0a5634335b135d5728d84c5e0fd726954b87111f7506a61c502280d982"
-dependencies = [
- "libc",
- "windows-sys 0.59.0",
 ]
 
 [[package]]
