@@ -28,7 +28,7 @@ cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daem
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
-cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true, branch = "sound-mono" }
+cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 derivative = "2.2.0"
 derive_setters = "0.1.6"
 dirs = "5.0.1"
@@ -91,7 +91,6 @@ num-derive = "0.4"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
-branch = "sound"
 #TODO: only select features as needed
 features = ["network_manager", "pipewire", "pulse", "bluetooth"]
 optional = true
