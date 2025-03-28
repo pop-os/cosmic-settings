@@ -4,10 +4,10 @@
 // TODO make settings work
 
 use cosmic::{
+    Apply, Element,
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced::Length,
     widget::{radio, settings, text},
-    Apply, Element,
 };
 use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
 use cosmic_settings_page::Section;
@@ -136,22 +136,26 @@ fn multi_behavior() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
             settings::section()
                 .title(&section.title)
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[span]),
-                    WorkspaceMode::Global,
-                    Some(page.comp_workspace_config.workspace_mode),
-                    Message::SetWorkspaceMode,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[separate]),
-                    WorkspaceMode::OutputBound,
-                    Some(page.comp_workspace_config.workspace_mode),
-                    Message::SetWorkspaceMode,
-                )
-                .width(Length::Fill)
-                .into()]))
+                .add(settings::item_row(vec![
+                    radio(
+                        text::body(&descriptions[span]),
+                        WorkspaceMode::Global,
+                        Some(page.comp_workspace_config.workspace_mode),
+                        Message::SetWorkspaceMode,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(settings::item_row(vec![
+                    radio(
+                        text::body(&descriptions[separate]),
+                        WorkspaceMode::OutputBound,
+                        Some(page.comp_workspace_config.workspace_mode),
+                        Message::SetWorkspaceMode,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })
@@ -170,22 +174,26 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
             settings::section()
                 .title(&section.title)
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[vertical]),
-                    WorkspaceLayout::Vertical,
-                    Some(page.comp_workspace_config.workspace_layout),
-                    Message::SetWorkspaceLayout,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[horizontal]),
-                    WorkspaceLayout::Horizontal,
-                    Some(page.comp_workspace_config.workspace_layout),
-                    Message::SetWorkspaceLayout,
-                )
-                .width(Length::Fill)
-                .into()]))
+                .add(settings::item_row(vec![
+                    radio(
+                        text::body(&descriptions[vertical]),
+                        WorkspaceLayout::Vertical,
+                        Some(page.comp_workspace_config.workspace_layout),
+                        Message::SetWorkspaceLayout,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(settings::item_row(vec![
+                    radio(
+                        text::body(&descriptions[horizontal]),
+                        WorkspaceLayout::Horizontal,
+                        Some(page.comp_workspace_config.workspace_layout),
+                        Message::SetWorkspaceLayout,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })

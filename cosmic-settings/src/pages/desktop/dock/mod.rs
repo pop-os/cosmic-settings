@@ -2,12 +2,12 @@ use std::collections::HashMap;
 
 use cosmic::Apply;
 use cosmic::{
+    Element, Task,
     cosmic_config::{ConfigSet, CosmicConfigEntry},
     widget::{settings, text, toggler},
-    Element, Task,
 };
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;

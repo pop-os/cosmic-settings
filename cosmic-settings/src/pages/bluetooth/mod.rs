@@ -1,14 +1,14 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::iced::{color, Alignment, Length};
+use cosmic::iced::{Alignment, Length, color};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, settings, text};
-use cosmic::{theme, Apply, Element, Task};
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic::{Apply, Element, Task, theme};
+use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_subscriptions::bluetooth::*;
-use futures::channel::oneshot;
 use futures::StreamExt;
+use futures::channel::oneshot;
 use slab::Slab;
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};

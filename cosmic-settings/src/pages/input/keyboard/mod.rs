@@ -6,15 +6,15 @@ pub mod shortcuts;
 use std::cmp;
 
 use cosmic::{
+    Apply, Element, Task,
     cosmic_config::{self, ConfigSet},
     iced::{Alignment, Color, Length},
     iced_core::Border,
     theme,
-    widget::{self, button, container, icon, radio, row, settings, ListColumn},
-    Apply, Element, Task,
+    widget::{self, ListColumn, button, container, icon, radio, row, settings},
 };
 use cosmic_comp_config::{KeyboardConfig, NumlockState, XkbConfig};
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use itertools::Itertools;
 use slab::Slab;
 use slotmap::{DefaultKey, Key, SlotMap};
@@ -262,11 +262,13 @@ fn special_char_radio_row<'a>(
     value: Option<&'static str>,
     current_value: Option<&'a str>,
 ) -> cosmic::Element<'a, Message> {
-    settings::item_row(vec![radio(desc, value, Some(current_value), |_| {
-        Message::SpecialCharacterSelect(value)
-    })
-    .width(Length::Fill)
-    .into()])
+    settings::item_row(vec![
+        radio(desc, value, Some(current_value), |_| {
+            Message::SpecialCharacterSelect(value)
+        })
+        .width(Length::Fill)
+        .into(),
+    ])
     .into()
 }
 
@@ -651,14 +653,16 @@ impl Page {
 
         let mut list = cosmic::widget::list_column();
         for (desc, state) in options {
-            list = list.add(settings::item_row(vec![radio(
-                cosmic::widget::text(desc),
-                Some(state),
-                Some(Some(current)),
-                |_| Message::SetNumlockState(state),
-            )
-            .width(Length::Fill)
-            .into()]));
+            list = list.add(settings::item_row(vec![
+                radio(
+                    cosmic::widget::text(desc),
+                    Some(state),
+                    Some(Some(current)),
+                    |_| Message::SetNumlockState(state),
+                )
+                .width(Length::Fill)
+                .into(),
+            ]));
         }
 
         cosmic::widget::container(list).padding(24).into()

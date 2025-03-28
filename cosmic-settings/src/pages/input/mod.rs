@@ -3,8 +3,8 @@
 
 use crate::app;
 use cosmic::{
-    cosmic_config::{self, ConfigGet, ConfigSet},
     Task,
+    cosmic_config::{self, ConfigGet, ConfigSet},
 };
 use cosmic_comp_config::input::{
     AccelConfig, AccelProfile, ClickMethod, InputConfig, ScrollConfig, ScrollMethod, TapButtonMap,

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::{
+    Apply, Element,
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced::Length,
     widget::{self, text},
-    Apply, Element,
 };
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -95,26 +95,30 @@ pub fn legacy_application_scaling() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
             widget::settings::section()
                 .title(&section.title)
-                .add(widget::settings::item_row(vec![widget::radio(
-                    widget::column()
-                        .push(text::body(&descriptions[system]))
-                        .push(text::caption(&descriptions[system_desc])),
-                    false,
-                    Some(page.comp_config_descale_xwayland),
-                    Message::SetXwaylandDescaling,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(widget::settings::item_row(vec![widget::radio(
-                    widget::column()
-                        .push(text::body(&descriptions[native]))
-                        .push(text::caption(&descriptions[native_desc])),
-                    true,
-                    Some(page.comp_config_descale_xwayland),
-                    Message::SetXwaylandDescaling,
-                )
-                .width(Length::Fill)
-                .into()]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        widget::column()
+                            .push(text::body(&descriptions[system]))
+                            .push(text::caption(&descriptions[system_desc])),
+                        false,
+                        Some(page.comp_config_descale_xwayland),
+                        Message::SetXwaylandDescaling,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        widget::column()
+                            .push(text::body(&descriptions[native]))
+                            .push(text::caption(&descriptions[native_desc])),
+                        true,
+                        Some(page.comp_config_descale_xwayland),
+                        Message::SetXwaylandDescaling,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
                 .apply(Element::from)
                 .map(crate::pages::Message::LegacyApplications)
         })

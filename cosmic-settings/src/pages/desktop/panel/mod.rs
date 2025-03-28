@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use cosmic::{cosmic_config::CosmicConfigEntry, Task};
+use cosmic::{Task, cosmic_config::CosmicConfigEntry};
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 
 use crate::pages::desktop::panel::inner::{

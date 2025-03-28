@@ -4,11 +4,11 @@
 use super::Message;
 use cosmic::iced::Radius;
 use cosmic::iced_core::Border;
-use cosmic::iced_core::{self, gradient::Linear, Background, Color, Degrees, Length};
+use cosmic::iced_core::{self, Background, Color, Degrees, Length, gradient::Linear};
 use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::prelude::*;
-use cosmic::widget::{button, container, Space};
-use cosmic::{iced, Element};
+use cosmic::widget::{Space, button, container};
+use cosmic::{Element, iced};
 use cosmic_settings_wallpaper as wallpaper;
 use slotmap::DefaultKey;
 use std::sync::OnceLock;

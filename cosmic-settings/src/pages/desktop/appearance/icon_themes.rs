@@ -5,9 +5,9 @@ use std::{collections::BTreeMap, path::PathBuf};
 
 use super::Message;
 use cosmic::{
+    Element,
     iced::{Background, Length},
     widget::{button, icon, text},
-    Element,
 };
 use tokio::io::AsyncBufReadExt;
 

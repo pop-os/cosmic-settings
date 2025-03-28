@@ -1,7 +1,7 @@
 use chrono::{Duration, TimeDelta};
-use futures::{future::join_all, FutureExt, Stream, StreamExt};
+use futures::{FutureExt, Stream, StreamExt, future::join_all};
 use upower_dbus::{BatteryState, BatteryType, DeviceProxy};
-use zbus::{zvariant::ObjectPath, Connection};
+use zbus::{Connection, zvariant::ObjectPath};
 
 mod ppdaemon;
 mod s76powerdaemon;
@@ -284,7 +284,9 @@ async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zb
             .filter_map(std::result::Result::err)
             .collect();
         if errors.len() > 1 {
-            eprintln!("Multiple errors occurs when fetching connected device: {errors:?}. Only the last one will be returned.");
+            eprintln!(
+                "Multiple errors occurs when fetching connected device: {errors:?}. Only the last one will be returned."
+            );
         }
         return Err(errors.pop().unwrap());
     }

@@ -3,9 +3,9 @@
 
 use super::{ShortcutMessage, ShortcutModel};
 use cosmic::{Element, Task};
-use cosmic_settings_config::shortcuts::action::{Direction, FocusDirection};
 use cosmic_settings_config::shortcuts::Action;
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_config::shortcuts::action::{Direction, FocusDirection};
+use cosmic_settings_page::{self as page, Section, section};
 use slab::Slab;
 
 pub struct Page {

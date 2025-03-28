@@ -5,11 +5,11 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use cosmic::{
+    Apply, Element, Task,
     config::{CosmicTk, FontConfig},
     iced_core::text::Wrapping,
     theme,
     widget::{self, settings, svg},
-    Apply, Element, Task,
 };
 use cosmic_config::ConfigSet;
 

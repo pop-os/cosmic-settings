@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::{
+    Apply, Element,
     iced::Length,
     surface,
     widget::{self, settings, toggler},
-    Apply, Element,
 };
 
 use cosmic_config::{ConfigGet, ConfigSet};
-use cosmic_settings_config::{shortcuts, Action, Binding, Shortcuts};
+use cosmic_settings_config::{Action, Binding, Shortcuts, shortcuts};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slab::Slab;

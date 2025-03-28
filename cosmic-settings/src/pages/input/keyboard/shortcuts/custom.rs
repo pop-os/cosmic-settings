@@ -8,9 +8,9 @@ use super::{ShortcutBinding, ShortcutMessage, ShortcutModel};
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, button, icon};
 use cosmic::{Apply, Element, Task};
-use cosmic_settings_config::shortcuts::{Action, Shortcuts};
 use cosmic_settings_config::Binding;
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_config::shortcuts::{Action, Shortcuts};
+use cosmic_settings_page::{self as page, Section, section};
 use slab::Slab;
 use slotmap::{Key, SlotMap};
 
@@ -441,11 +441,9 @@ fn shortcuts() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, _section| {
             let content = if page.model.shortcut_models.is_empty() {
                 widget::settings::section()
-                    .add(widget::settings::item_row(vec![widget::text::body(fl!(
-                        "custom-shortcuts",
-                        "none"
-                    ))
-                    .into()]))
+                    .add(widget::settings::item_row(vec![
+                        widget::text::body(fl!("custom-shortcuts", "none")).into(),
+                    ]))
                     .into()
             } else {
                 page.model.view().map(Message::Shortcut)

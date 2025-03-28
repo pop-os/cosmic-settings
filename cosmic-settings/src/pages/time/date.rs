@@ -5,13 +5,13 @@ use std::str::FromStr;
 
 use chrono::{Datelike, Timelike};
 use cosmic::{
+    Apply, Element, Task,
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced_core::text::Wrapping,
     surface,
     widget::{self, dropdown, settings},
-    Apply, Element, Task,
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use icu::{
     calendar::{DateTime, Iso},
     datetime::DateTimeFormatter,

@@ -6,16 +6,16 @@ pub mod arrangement;
 
 use crate::{app, pages};
 use arrangement::Arrangement;
-use cosmic::iced::{time, Alignment, Length};
+use cosmic::iced::{Alignment, Length, time};
 use cosmic::iced_widget::scrollable::{Direction, RelativeOffset, Scrollbar};
 use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
 };
-use cosmic::{surface, Apply, Element, Task};
+use cosmic::{Apply, Element, Task, surface};
 use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use once_cell::sync::Lazy;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};

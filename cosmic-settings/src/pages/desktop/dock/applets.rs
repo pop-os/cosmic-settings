@@ -1,11 +1,11 @@
 use cosmic::{
+    Apply, Element, Task,
     cosmic_config::CosmicConfigEntry,
     iced::{Alignment, Length},
     widget::{button, container, row},
-    Apply, Element, Task,
 };
 use cosmic_panel_config::CosmicPanelConfig;
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use slotmap::{Key, SlotMap};
 use std::borrow::Cow;
 
@@ -13,7 +13,7 @@ use crate::{
     app,
     pages::{
         self,
-        desktop::panel::applets_inner::{self, lists, AppletsPage, ContextDrawer},
+        desktop::panel::applets_inner::{self, AppletsPage, ContextDrawer, lists},
     },
 };
 

@@ -4,14 +4,14 @@ use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, ConnectedDevice, PowerProfile};
 
 use chrono::TimeDelta;
+use cosmic::Task;
 use cosmic::iced::{Alignment, Length};
 use cosmic::iced_widget::{column, row};
 use cosmic::widget::{self, radio, settings, text};
-use cosmic::Task;
-use cosmic::{surface, Apply};
+use cosmic::{Apply, surface};
 use cosmic_config::{Config, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use futures::StreamExt;
 use itertools::Itertools;
 use slab::Slab;
@@ -383,16 +383,18 @@ fn profiles() -> Section<crate::pages::Message> {
                 section = profiles
                     .into_iter()
                     .map(|profile| {
-                        settings::item_row(vec![radio(
-                            widget::column::with_capacity(2)
-                                .push(text::body(profile.title()))
-                                .push(text::caption(profile.description())),
-                            profile,
-                            Some(current_profile),
-                            Message::PowerProfileChange,
-                        )
-                        .width(Length::Fill)
-                        .into()])
+                        settings::item_row(vec![
+                            radio(
+                                widget::column::with_capacity(2)
+                                    .push(text::body(profile.title()))
+                                    .push(text::caption(profile.description())),
+                                profile,
+                                Some(current_profile),
+                                Message::PowerProfileChange,
+                            )
+                            .width(Length::Fill)
+                            .into(),
+                        ])
                     })
                     .fold(section, settings::Section::add);
             } else {

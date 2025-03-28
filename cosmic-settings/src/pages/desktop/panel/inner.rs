@@ -1,12 +1,12 @@
 use cosmic::{
-    cctk::sctk::reexports::client::{backend::ObjectId, protocol::wl_output::WlOutput, Proxy},
+    Element, Task,
+    cctk::sctk::reexports::client::{Proxy, backend::ObjectId, protocol::wl_output::WlOutput},
     cosmic_config::{self, CosmicConfigEntry},
     iced::{Alignment, Length},
     surface, theme,
     widget::{
         button, container, dropdown, horizontal_space, icon, row, settings, slider, text, toggler,
     },
-    Element, Task,
 };
 
 use cosmic::Apply;
