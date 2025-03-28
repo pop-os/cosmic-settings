@@ -2,6 +2,7 @@
 Name=Input Devices
 Name[pl]=Urządzenia wprowadzania danych
 Name[hu]=Beviteli eszközök
+Name[pt_BR]=Dispositivos de Entrada
 Comment=
 Type=Settings
 Exec=cosmic-settings input
