@@ -2,9 +2,11 @@
 Name=Dock
 Name[pl]=Dok
 Name[hu]=Dokkoló
+Name[pt_BR]=Dock
 Comment=Panel with pinned applications in the app tray and other applets.
 Comment[pl]=Panel z przypiętymi aplikacjami w zasobniku i innymi apletami.
 Comment[hu]=Panel rögzített alkalmazásokkal és egyéb kisalkalmazásokkal.
+Comment[pt_BR]=Painel com aplicativos fixados e outros miniaplicativos.
 Type=Settings
 Exec=cosmic-settings dock
 Terminal=false

@@ -2,9 +2,11 @@
 Name=Notifications
 Name[pl]=Powiadomienia
 Name[hu]=Értesítések
+Name[pt_BR]=Notificações
 Comment=Do Not Disturb, lockscreen notifications, and per-application settings.
 Comment[pl]=Tryb „nie przeszkadzać, powiadomienia na ekranie blokady i ustawienia poszczególnych aplikacji.
 Comment[hu]=Ne zavarjanak, zárolási képernyő értesítések és alkalmazásonkénti beállítások.
+Comment[pt_BR]=Não Pertube, notificações na tela de bloqueio e ajustes por aplicativo.
 Type=Settings
 Exec=cosmic-settings notifications
 Terminal=false

@@ -1,4 +1,4 @@
-app = Configurações do COSMIC
+app = Configurações
 
 dbus-connection-error = Falha de conexão no DBus
 ok = OK
@@ -34,6 +34,7 @@ remove = Remover
 settings = Configurações
 username = Usuário
 visible-networks = Redes visíveis
+identity = Identidade
 
 auth-dialog = Autenticação
     .vpn-description = Digite o usuário e a senha exigidos pelo serviço de VPN.
@@ -134,23 +135,44 @@ accessibility = Acessibilidade
     .on = Ligado
     .off = Desligado
     .unavailable = Indisponível
+    .high-contrast = Modo de alto contraste
+    .invert-colors = Inverter cores
+    .color-filters = Filtros de cores
+
+hearing = Ouvindo
+    .mono = Reproduzir áudio estéreo como mono
+
+default = Padrão
 magnifier = Ampliador de tela
-    .controls =
-        Ou use teclas de atalho:
-        Super + = para aumentar o zoom,
-        Super + - para diminuir o zoom,
+    .controls = Ou use teclas de atalho: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} para aumentar o zoom,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} para diminuir o zoom,
+        }
         Super + rolar com o mouse
+    .scroll_controls = Habilitar atalhos "Super + Scroll" (via mouse ou touchpad)
+    .show_overlay = Mostrar a sobreposição do ampliador
     .increment = Incremento de zoom
     .signin = Iniciar o ampliador ao fazer login
-    .applet = Ativar/desativar o ampliador no applet do painel
+    .applet = Ativar/desativar o ampliador no miniaplicativo do painel
     .movement = A visualização ampliada se move
     .continuous = Continuamente com ponteiro
     .onedge = Quando o ponteiro atinge a borda
     .centered = Para manter o ponteiro centralizado
+color-filter = Tipo de filtro de cores
+    .unknown = Filtro ativo desconhecido
+    .greyscale = Escala de cinza
+    .deuteranopia = Verde/Vermelho (fraqueza do verde, Deuteranopia)
+    .protanopia = Vermelho/Verde (fraqueza do vermelho, Protanopia)
+    .tritanopia = Azul/Amarelo (fraqueza do azul, Tritanopia)
 
 ## Desktop
 
-desktop = Desktop
+desktop = Área de Trabalho
 
 ## Desktop: Wallpaper
 
@@ -422,12 +444,6 @@ dialog = Dialog
     .change-prompt = As mudanças nas configurações serão revertidas automaticamente em { $time } segundos.
     .revert-settings = Reverter configurações
 
-legacy-applications = Dimensionamento de aplicativos X11
-    .scaled-by-system = Dimensionar todos os aplicativos X11
-    .system-description = Aplicativos X11 aparecerão desfocados em telas HiDPI.
-    .scaled-natively = Renderizar aplicativos X11 em resolução nativa
-    .native-description = Aplicativos X11 que não suportam dimensionamento ficarão menores quando monitores HiDPI estiverem em uso. Habilitar para que os jogos utilizem a resolução total do monitor.
-
 ## Sound
 
 sound = Som
@@ -439,6 +455,8 @@ sound-output = Saída
     .level = Nível de saída
     .config = Configuração
     .balance = Equilíbrio
+    .left = Esquerda
+    .right = Direita
 
 sound-input = Entrada
     .volume = Volume de entrada
@@ -483,13 +501,13 @@ connected-devices = Dispositivos conectados
   .unknown = Dispositivo desconhecido
 
 power-mode = Modo de Energia
-  .battery = Economia de bateria
-  .battery-desc = Baixo consumo de energia e desempenho limitado.
-  .balanced = Balanceado
-  .balanced-desc = Desempenho padrão e consumo de energia moderado.
-  .performance = Alto desempenho
-  .performance-desc = Desempenho e consumo de energia elevados.
-  .no-backend = Gestor de energia não encontrado. Instale o pacote "system76-power" ou "power-profiles-daemon".
+    .battery = Economia de bateria
+    .battery-desc = Baixo consumo de energia e desempenho limitado.
+    .balanced = Balanceado
+    .balanced-desc = Desempenho padrão e consumo de energia moderado.
+    .performance = Alto desempenho
+    .performance-desc = Desempenho e consumo de energia elevados.
+    .no-backend = Gestor de energia não encontrado. Instale o pacote "system76-power" ou "power-profiles-daemon".
 
 power-saving = Opções de Economia de Energia
     .turn-off-screen-after = Desligar a tela após
@@ -503,7 +521,7 @@ acceleration-desc = Ajusta automaticamente a sensibilidade com base na velocidad
 
 disable-while-typing = Desabilitar enquanto escreve
 
-input-devices = Dispositivos de entrada
+input-devices = Dispositivos de Entrada
     .desc = Dispositivos de entrada
 
 primary-button = Botão Primário
@@ -545,6 +563,13 @@ keyboard-typing-assist = Digitação
     .repeat-rate = Taxa de repetição
     .repeat-delay = Taxa de atraso
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Estado na inicialização
+    .last-boot = Última inicialização
+    .on = Ligado
+    .off = Desligado
+    .set = Definir estado de inicialização do numlock
+
 added = Adicionado
 type-to-search = Digite para pesquisar...
 show-extended-input-sources = Exibir fontes de entrada estendidas
@@ -560,6 +585,7 @@ command = Comando
 custom = Personalizado
 debug = Debug
 disabled = Desativado
+input-source-switch = Alterar fonte de entrada de idioma do teclado
 migrate-workspace-prev = Migrar a área de trabalho para a saída anterior
 migrate-workspace-next = Migrar a área de trabalho para a próxima saída
 migrate-workspace = Migrar a área de trabalho para a saída { $direction ->
@@ -764,6 +790,47 @@ add-language = Adicionar idioma
 install-additional-languages = Instalar idiomas adicionais
 region = Região
 
+## Applications
+
+applications = Aplicativos
+
+## Applications: Default Applications
+
+default-apps = Aplicativos padrão
+    .desc = Navegador web, cliente de email, gestor de arquivos e outros aplicativos padrões.
+    .web-browser = Navegador web
+    .file-manager = Gestor de arquivos
+    .mail-client = Cliente de email
+    .music = Música
+    .video = Vídeo
+    .photos = Fotos
+    .calendar = Calendário
+    .terminal = Terminal
+    .other-associations = Outras associações
+    .text-editor = Editor de Texto
+
+## Applications: Startup Applications
+
+startup-apps = Aplicativos de inicialização
+    .desc = Configurar applicativos que são iniciados automaticamente ao fazer login no sistema.
+    .add = Adicionar aplicativo
+    .user = Aplicativos específicos de usuário
+    .user-description = Esses aplicativos são iniciados quando você efetua login com seu usuário atual.
+    .remove-dialog-title = Remover { $name }?
+    .remove-dialog-description = Tem certeza de que deseja remover isso como um aplicativo de inicialização?
+    .search-for-application = Procurar por aplicativo
+
+## Applications: Legacy Applications
+
+legacy-applications = Compatibilidade com aplicativos X11
+    .desc = Dimensionamento de aplicativos de sistema de janelas X11 e atalhos globais.
+
+legacy-app-scaling = Dimensionamento de aplicativos X11
+    .scaled-by-system = Dimensionar todos os aplicativos X11
+    .system-description = Aplicativos X11 aparecerão desfocados em telas HiDPI.
+    .scaled-natively = Renderizar aplicativos X11 em resolução nativa
+    .native-description = Aplicativos X11 que não suportam dimensionamento ficarão menores quando monitores HiDPI estiverem em uso. Habilitar para que os jogos utilizem a resolução total do monitor.
+
 ## System
 
 system = Sistema e Contas
@@ -811,18 +878,4 @@ administrator = Administrador
 add-user = Adicionar usuário
 remove-user = Remover usuário
 full-name = Nome completo
-
-## System: Default Applications
-
-default-apps = Aplicativos Padrão
-    .desc = Navegador web, cliente de email, gestor de arquivos e outros aplicativos padrão.
-    .web-browser = Navegador web
-    .file-manager = Gestor de arquivos
-    .mail-client = Cliente de email
-    .music = Música
-    .video = Vídeo
-    .photos = Fotos
-    .calendar = Calendário
-    .terminal = Terminal
-    .other-associations = Outras associações
-    .text-editor = Editor de Texto
+invalid-username = Nome de usuário inválido
