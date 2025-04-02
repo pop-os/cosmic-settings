@@ -209,7 +209,7 @@ appearance = Kleuren en thema's
     .desc = Bepaal hoe COSMIC eruit ziet.
 
 accent-color = Accentkleur
-app-background = De achtergrond van programma's of vensters
+app-background = Toepassings- of vensterachtergrond
 auto = Automatisch
 close = Sluiten
 color-picker = Kleurkiezer
@@ -782,7 +782,7 @@ formatting = Opmaak
     .measurement = Maateenheden
     .paper = Papiervoormaat
 
-preferred-languages = Voorkeurstalen
+preferred-languages = Taalvoorkeur
     .desc = De volgorde van de talen bepaalt welke door COSMIC wordt gebruikt. Wijzigingen worden doorgevoerd nadat u zich opnieuw heeft aangemeld.
 
 add-language = Taal toevoegen
