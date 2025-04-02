@@ -100,6 +100,7 @@ impl SettingsApp {
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
+            #[cfg(feature = "page-legacy-applications")]
             PageCommands::LegacyApplications => self
                 .pages
                 .page_id::<applications::legacy_applications::Page>(),
@@ -486,6 +487,7 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-legacy-applications")]
                 crate::pages::Message::LegacyApplications(message) => {
                     page::update!(self.pages, message, applications::legacy_applications::Page);
                 }

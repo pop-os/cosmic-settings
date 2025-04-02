@@ -77,6 +77,7 @@ pub enum PageCommands {
     #[cfg(feature = "page-input")]
     Keyboard,
     /// Legacy Applications settings page
+    #[cfg(feature = "page-legacy-applications")]
     LegacyApplications,
     /// Mouse settings page
     #[cfg(feature = "page-input")]

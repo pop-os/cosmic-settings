@@ -60,6 +60,7 @@ pub enum Message {
     Keyboard(input::keyboard::Message),
     #[cfg(feature = "page-input")]
     KeyboardShortcuts(input::keyboard::shortcuts::Message),
+    #[cfg(feature = "page-legacy-applications")]
     LegacyApplications(applications::legacy_applications::Message),
     #[cfg(feature = "page-input")]
     ManageWindowShortcuts(input::keyboard::shortcuts::ShortcutMessage),
