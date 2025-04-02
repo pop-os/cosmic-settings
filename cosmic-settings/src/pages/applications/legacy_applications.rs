@@ -7,6 +7,7 @@ use cosmic::{
     iced::Length,
     widget::{self, text},
 };
+use cosmic_comp_config::{EavesdroppingKeyboardMode, XwaylandEavesdropping};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slab::Slab;
@@ -16,11 +17,14 @@ use tracing::error;
 #[derive(Clone, Debug)]
 pub enum Message {
     SetXwaylandDescaling(bool),
+    SetXwaylandKeyboardMode(EavesdroppingKeyboardMode),
+    SetXwaylandMouseButtonMode(bool),
 }
 
 pub struct Page {
     comp_config: cosmic_config::Config,
     comp_config_descale_xwayland: bool,
+    comp_config_xwayland_eavesdropping: XwaylandEavesdropping,
 }
 
 impl Default for Page {
@@ -34,9 +38,20 @@ impl Default for Page {
 
                 false
             });
+        let comp_config_xwayland_eavesdropping = comp_config
+            .get("xwayland_eavesdropping")
+            .unwrap_or_else(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'xwayland_eavesdropping'");
+                }
+
+                Default::default()
+            });
+
         Self {
             comp_config,
             comp_config_descale_xwayland,
+            comp_config_xwayland_eavesdropping,
         }
     }
 }
@@ -46,10 +61,10 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(
-            // Xwayland scaling options
-            legacy_application_scaling(),
-        )])
+        Some(vec![
+            sections.insert(legacy_application_global_shortcuts()),
+            sections.insert(legacy_application_scaling()),
+        ])
     }
 
     fn info(&self) -> page::Info {
@@ -76,8 +91,102 @@ impl Page {
                     error!(?err, "Failed to set config 'descale_xwayland'");
                 }
             }
+            Message::SetXwaylandKeyboardMode(mode) => {
+                self.comp_config_xwayland_eavesdropping.keyboard = mode;
+                if let Err(err) = self.comp_config.set(
+                    "xwayland_eavesdropping",
+                    self.comp_config_xwayland_eavesdropping,
+                ) {
+                    error!(?err, "Failed to set config 'xwayland_eavesdropping'");
+                }
+            }
+            Message::SetXwaylandMouseButtonMode(mode) => {
+                self.comp_config_xwayland_eavesdropping.pointer = mode;
+                if let Err(err) = self.comp_config.set(
+                    "xwayland_eavesdropping",
+                    self.comp_config_xwayland_eavesdropping,
+                ) {
+                    error!(?err, "Failed to set config 'xwayland_eavesdropping'");
+                }
+            }
         }
     }
+}
+
+pub fn legacy_application_global_shortcuts() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let desc = descriptions.insert(fl!("legacy-app-global-shortcuts", "desc"));
+    let none = descriptions.insert(fl!("legacy-app-global-shortcuts", "none"));
+    let modifiers = descriptions.insert(fl!("legacy-app-global-shortcuts", "modifiers"));
+    let combination = descriptions.insert(fl!("legacy-app-global-shortcuts", "combination"));
+    let all = descriptions.insert(fl!("legacy-app-global-shortcuts", "all"));
+    let mouse = descriptions.insert(fl!("legacy-app-global-shortcuts", "mouse"));
+
+    Section::default()
+        .title(fl!("legacy-app-global-shortcuts"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let title = widget::text::body(&section.title).font(cosmic::font::bold());
+            let description = widget::text::body(&section.descriptions[desc]);
+
+            let content = widget::settings::section()
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&section.descriptions[none]),
+                        EavesdroppingKeyboardMode::None,
+                        Some(page.comp_config_xwayland_eavesdropping.keyboard),
+                        Message::SetXwaylandKeyboardMode,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&section.descriptions[modifiers]),
+                        EavesdroppingKeyboardMode::Modifiers,
+                        Some(page.comp_config_xwayland_eavesdropping.keyboard),
+                        Message::SetXwaylandKeyboardMode,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&section.descriptions[combination]),
+                        EavesdroppingKeyboardMode::Combinations,
+                        Some(page.comp_config_xwayland_eavesdropping.keyboard),
+                        Message::SetXwaylandKeyboardMode,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&section.descriptions[all]),
+                        EavesdroppingKeyboardMode::All,
+                        Some(page.comp_config_xwayland_eavesdropping.keyboard),
+                        Message::SetXwaylandKeyboardMode,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item(
+                    &section.descriptions[mouse],
+                    widget::toggler(page.comp_config_xwayland_eavesdropping.pointer)
+                        .on_toggle(Message::SetXwaylandMouseButtonMode),
+                ))
+                .apply(Element::from)
+                .map(crate::pages::Message::LegacyApplications);
+
+            widget::column::with_capacity(3)
+                .push(title)
+                .push(description)
+                .push(content)
+                .spacing(cosmic::theme::active().cosmic().spacing.space_xxs)
+                .apply(cosmic::Element::from)
+                .map(Into::into)
+        })
 }
 
 pub fn legacy_application_scaling() -> Section<crate::pages::Message> {
