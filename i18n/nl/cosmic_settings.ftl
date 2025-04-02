@@ -170,7 +170,6 @@ color-filter = Type kleurfilter
     .protanopia = Rood/Groen (rood-zwakte, Protanopie)
     .tritanopia = Blauw/Geel (blauw-zwakte, Tritanopie)
 
-
 ## Desktop
 
 desktop = Bureaublad
@@ -558,7 +557,7 @@ keyboard-sources = Invoermethodes
 keyboard-special-char = Invoer speciale tekens
     .alternate = Toets voor speciale tekens (Alt-Gr)
     .compose = Compose-toets
-    .caps = Caps Lock-toets
+    .caps = Capslocktoets
 
 keyboard-typing-assist = Typen
     .repeat-rate = Herhalingssnelheid
@@ -567,8 +566,8 @@ keyboard-typing-assist = Typen
 keyboard-numlock-boot = Numlock
     .boot-state = Status van de numlock bij het opstarten
     .last-boot = Ongewijzigd laten
-    .on = Inschakelen
-    .off = Uitschakelen
+    .on = Ingeschakeld
+    .off = Uitgeschakeld
     .set = Numlock bij het opstarten
 
 added = Toegevoegd
@@ -586,6 +585,7 @@ command = Commando
 custom = Aangepast
 debug = Fouten opsporen
 disabled = Uitgeschakeld
+input-source-switch = Tussen toetsenbordindeling wisselen
 migrate-workspace-prev = Werkblad naar vorige uitvoer verplaatsen
 migrate-workspace-next = Werkblad naar volgende uitvoer verplaatsen
 migrate-workspace = Werkblad verplaatsen naar uitvoer { $direction ->
@@ -820,9 +820,28 @@ startup-apps = Autostart toepassingen
     .remove-dialog-description = Weet u zeker dat u { $name } niet meer automatisch wilt laten starten?
     .search-for-application = Autostart kiezen
 
+## Applications: Legacy Applications
+
+legacy-applications = Compatibiliteit met X11-toepassingen
+    .desc = Compatibiliteit voor het schalen van X11-vensters en voor globale sneltoetsen.
+
+legacy-app-global-shortcuts = Globale sneltoetsen in X11-toepassingen
+    .desc = Met globale sneltoetsen kunnen toetsaanslagen en muisbewegingen die u maakte in de ene toepassing worden herkend door andere toepassingen voor functies als push-to-talk en push-to-mute. Voor X11-toepassingen is dit standaard uitgeschakeld zodat andere toepassingen uw mogelijk gevoelige toetsaanslagen en muisbewegingen niet kunnen afluisteren.
+    .none = Toetsaanslagen niet met X11-toepassingen delen
+    .modifiers = Alleen de Super, Shift, Contol, Alt etc delen 
+    .combination = Toetsaanslagen alleen delen als u op Super, Shift, Control of Alt drukt
+    .all = Alle toetsaanslagen met X11-toepassingen delen
+    .mouse = Muisknoppen in X11-toepassingen delen
+
+legacy-app-scaling = Schaling van applicaties die het X11-venstersysteem gebruiken
+    .scaled-by-system = Schaal alle X11-applicaties
+    .system-description = X11-applicaties worden onscherp weergegeven op HiDPI-schermen.
+    .scaled-natively = X11-applicaties in native resolutie weergeven
+    .native-description = X11-applicaties die geen schaling ondersteunen worden verkleint op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
+
 ## System
 
-system = Systeem en accounts
+system = Systeem en gebruikersaccounts
 
 ## System: About
 
