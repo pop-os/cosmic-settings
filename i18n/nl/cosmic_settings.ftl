@@ -166,9 +166,9 @@ magnifier = Vergrootglas
 color-filter = Type kleurfilter
     .unknown = Onbekend kleurfilter actief
     .greyscale = Grijstinten
-    .deuteranopia = Groen/Rood (green weakness, Deuteranopia)
-    .protanopia = Rood/Groen (rood weakness, Protanopia)
-    .tritanopia = Blauw/Geel (blauw weakness, Tritanopia)
+    .deuteranopia = Groen/Rood (groen-zwakte, Deuteranopie)
+    .protanopia = Rood/Groen (rood-zwakte, Protanopie)
+    .tritanopia = Blauw/Geel (blauw-zwakte, Tritanopie)
 
 
 ## Desktop
