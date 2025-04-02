@@ -249,7 +249,7 @@ enable-export = Pas dit thema toe op GNOME-apps.
     .desc = Niet alle toolkit-omgevingen ondersteunen automatische thema wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
 
 icon-theme = Icoonthema
-    .desc = Past een andere set pictogrammen toe op applicaties.
+    .desc = Past een andere set pictogrammen toe op toepassingen.
 
 text-tint = Interfacetekstkleur
     .desc = Kleur die wordt gebruikt om interfacetekstkleuren te bepalen, zodat er voldoende contrast is op verschillende oppervlakken.
@@ -333,7 +333,7 @@ panel-missing = Paneelconfiguratie ontbreekt
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Paneel met vastgezetten applicaties vanuit het appmenu en andere applets.
+    .desc = Paneel met vastgezetten toepassingen vanuit het appmenu en andere applets.
 
 ## Desktop: Window management
 
@@ -434,7 +434,7 @@ orientation = Oriëntatie
 
 vrr = Variable refresh rate
     .enabled = Ingeschakeld
-    .force = Geforceerd ingeschakeld houden
+    .force = Ingeschakeld houden
     .auto = Automatisch
     .disabled = Uitgeschakeld
 
@@ -447,12 +447,6 @@ dialog = Dialoog
     .change-prompt = Instellingen worden automatisch hersteld in { $time } seconden.
     .revert-settings = Instellingen herstellen
 
-legacy-app-scaling = Schaling van applicaties die het X11-venstersysteem gebruiken
-    .scaled-by-system = Schaal alle X11-applicaties
-    .system-description = X11-applicaties worden onscherp weergegeven op HiDPI-schermen.
-    .scaled-natively = X11-applicaties in native resolutie weergeven
-    .native-description = X11-applicaties die geen schaling ondersteunen worden verkleint op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
-
 ## Sound
 
 sound = Geluid
@@ -464,6 +458,8 @@ sound-output = Uitvoer
     .level = Uitvoerniveau
     .config = Configuratie
     .balance = Geluidsbalans
+    .left = Links
+    .right = Rechts
 
 sound-input = Invoer
     .volume = Invoervolume
@@ -474,15 +470,15 @@ sound-alerts = Waarschuwingsgeluid
     .volume = Waarschuwingsvolume
     .sound = Type waarschuwingsgeluid
 
-sound-applications = Applicaties
-    .desc = Volume-instellingen per applicatie
+sound-applications = Toepassingen
+    .desc = Volume-instellingen per toepassing
 
 profile = Profiel
 
 ## Power
 
-power = Energie- en batterijbeheer
-    .desc = N/A
+power = Enegrie en batterij
+    .desc = Energieverbruik beheren
 
 battery = Batterij
   .minute = { $value } { $value ->
@@ -786,13 +782,43 @@ formatting = Opmaak
     .measurement = Maateenheden
     .paper = Papiervoormaat
 
-preferred-languages = Taalvoorkeur
+preferred-languages = Voorkeurstalen
     .desc = De volgorde van de talen bepaalt welke door COSMIC wordt gebruikt. Wijzigingen worden doorgevoerd nadat u zich opnieuw heeft aangemeld.
 
 add-language = Taal toevoegen
     .context = Voeg een taal toe
 install-additional-languages = Meer talen installeren
 region = Regio
+
+## Applications
+
+applications = Toepassingen
+
+## Applications: Default Applications
+
+default-apps = Standaardtoepassingen
+    .desc = Standaard webbrowser, e-mailprogramma, bestandsbeheerder, en andere toepassingen.
+    .web-browser = Webbrowser
+    .file-manager = Bestandsbeheerder
+    .mail-client = E-mailprogramma
+    .music = Muziek
+    .video = Video
+    .photos = Foto's
+    .calendar = Agenda
+    .terminal = Terminal
+    .other-associations = Andere koppelingen
+    .text-editor = Teksteditor
+
+## Applications: Startup Applications
+
+startup-apps = Autostart toepassingen
+    .desc = Configureer toepassingen die automatisch worden gestart nadat u bent ingelogd.
+    .add = Autostart toevoegen
+    .user = Autostart toepassingen voor de huidige gebruiker
+    .user-description = Deze toepassingen worden automatisch gestart als u met dit gebruikersaccount inlogt.
+    .remove-dialog-title = Autostart { $name } verwijderen?
+    .remove-dialog-description = Weet u zeker dat u { $name } niet meer automatisch wilt laten starten?
+    .search-for-application = Autostart kiezen
 
 ## System
 
@@ -841,18 +867,4 @@ administrator = Systeembeheerder (root)
 add-user = Gebruiker toevoegen
 remove-user = Gebruiker verwijderen
 full-name = Volledige naam
-
-## System: Default Applications
-
-default-apps = Standaardapplicaties
-    .desc = Standaard webbrowser, e-mailprogramma, bestandsbeheerder, en andere applicaties.
-    .web-browser = Webbrowser
-    .file-manager = Bestandsbeheerder
-    .mail-client = E-mailprogramma
-    .music = Muziek
-    .video = Video
-    .photos = Foto's
-    .calendar = Agenda
-    .terminal = Terminal
-    .other-associations = Andere koppelingen
-    .text-editor = Teksteditor
+invalid-username = Ongeldige gebruikersnaam
