@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=X11 Applications Compatibility
+Name[hu]=X11 Alkalmazások Támogatása
+Comment=X11 Window system application scaling and Global shortcuts.
+Comment[hu]=X11 ablakkezelő rendszer alkalmazásméretezése és globális billentyűparancsok.
+Type=Settings
+Exec=cosmic-settings legacy-applications
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-x11-applications-compatibility
+StartupNotify=true

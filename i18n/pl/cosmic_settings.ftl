@@ -143,7 +143,7 @@ magnifier = Lupa
                 {$zoom_in} aby przybliżyć,
         }{ $zoom_out ->
              [zero] {""}
-            *[other] {""} 
+            *[other] {""}
                 {$zoom_out} aby oddalić,
         }
         Super + przewijanie rolką myszy
@@ -445,7 +445,7 @@ dialog = Dialog
     }
     .revert-settings = Powróć do poprzednich ustawień
 
-legacy-applications = Skalowanie aplikacji systemu okien X11
+legacy-app-scaling = Skalowanie aplikacji systemu okien X11
     .scaled-by-system = Skaluj wszystkie aplikacje X11
     .system-description = Aplikacje X11 będą rozmyte na wyświetlaczach z wysokim DPI.
     .scaled-natively = Renderuj aplikacje X11 w pierwotnej rozdzielczości.

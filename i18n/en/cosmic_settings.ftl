@@ -34,6 +34,7 @@ remove = Remove
 settings = Settings
 username = Username
 visible-networks = Visible Networks
+identity = Identity
 
 auth-dialog = Authentication Required
     .vpn-description = Enter the username and password required by the VPN service.
@@ -135,6 +136,13 @@ accessibility = Accessibility
     .off = Off
     .unavailable = Unavailable
     .high-contrast = High contrast mode
+    .invert-colors = Invert Colors
+    .color-filters = Color filters
+
+hearing = Hearing
+    .mono = Play stereo audio as mono
+
+default = Default
 magnifier = Magnifier
     .controls = Or use these shortcuts: { $zoom_in ->
              [zero] {""}
@@ -142,10 +150,12 @@ magnifier = Magnifier
                 {$zoom_in} to zoom in,
         }{ $zoom_out ->
              [zero] {""}
-            *[other] {""} 
+            *[other] {""}
                 {$zoom_out} to zoom out,
         }
         Super + scroll with your mouse
+    .scroll_controls = Enable "Super + Scroll" (via mouse or touchpad) shortcuts
+    .show_overlay = Show the Magnifier Overlay
     .increment = Zoom increment
     .signin = Start magnifier on sign in
     .applet = Toggle magnifier on/off in applet on the panel
@@ -153,6 +163,12 @@ magnifier = Magnifier
     .continuous = Continuously with pointer
     .onedge = When pointer reaches edge
     .centered = To keep pointer centered
+color-filter = Color filter type
+    .unknown = Unknown Filter active
+    .greyscale = Greyscale
+    .deuteranopia = Green/Red (green weakness, Deuteranopia)
+    .protanopia = Red/Green (red weakness, Protanopia)
+    .tritanopia = Blue/Yellow (blue weakness, Tritanopia)
 
 ## Desktop
 
@@ -428,12 +444,6 @@ dialog = Dialog
     .change-prompt = Settings changes will automatically revert in { $time } seconds.
     .revert-settings = Revert Settings
 
-legacy-applications = X11 Window System Application Scaling
-    .scaled-by-system = Scale all X11 Applications
-    .system-description = X11 applications will appear blurry on HiDPI screens.
-    .scaled-natively = Render X11 Applications at native resolution
-    .native-description = X11 applications that don't support scaling will be small when HiDPI displays are in use. Enable for games to utilize the full monitor resolution.
-
 ## Sound
 
 sound = Sound
@@ -445,6 +455,8 @@ sound-output = Output
     .level = Output level
     .config = Configuration
     .balance = Balance
+    .left = Left
+    .right = Right
 
 sound-input = Input
     .volume = Input volume
@@ -567,7 +579,7 @@ show-extended-input-sources = Show extended input sources
 keyboard-shortcuts = Keyboard Shortcuts
     .desc = View and customize shortcuts
 
-add-keybinding = Add keybinding
+add-another-keybinding = Add another keybinding
 cancel = Cancel
 command = Command
 custom = Custom
@@ -778,6 +790,47 @@ add-language = Add language
 install-additional-languages = Install additional languages
 region = Region
 
+## Applications
+
+applications = Applications
+
+## Applications: Default Applications
+
+default-apps = Default Applications
+    .desc = Default web browser, mail client, file browser, and other applications.
+    .web-browser = Web browser
+    .file-manager = File manager
+    .mail-client = Mail client
+    .music = Music
+    .video = Video
+    .photos = Photos
+    .calendar = Calendar
+    .terminal = Terminal
+    .other-associations = Other Associations
+    .text-editor = Text Editor
+
+## Applications: Startup Applications
+
+startup-apps = Startup Applications
+    .desc = Configure applications which run on login.
+    .add = Add app
+    .user = User specific applications
+    .user-description = These applications are launched when you log into your current user.
+    .remove-dialog-title = Remove { $name }?
+    .remove-dialog-description = Are you sure you want to remove this as a startup application?
+    .search-for-application = Search for application
+
+## Applications: Legacy Applications
+
+legacy-applications = X11 Applications Compatibility
+    .desc = X11 Window system application scaling and Global shortcuts.
+
+legacy-app-scaling = X11 Window System Application Scaling
+    .scaled-by-system = Scale all X11 Applications
+    .system-description = X11 applications will appear blurry on HiDPI screens.
+    .scaled-natively = Render X11 Applications at native resolution
+    .native-description = X11 applications that don't support scaling will be small when HiDPI displays are in use. Enable for games to utilize the full monitor resolution.
+
 ## System
 
 system = System & Accounts
@@ -825,18 +878,4 @@ administrator = Administrator
 add-user = Add user
 remove-user = Remove user
 full-name = Full name
-
-## System: Default Applications
-
-default-apps = Default Applications
-    .desc = Default web browser, mail client, file browser, and other applications.
-    .web-browser = Web browser
-    .file-manager = File manager
-    .mail-client = Mail client
-    .music = Music
-    .video = Video
-    .photos = Photos
-    .calendar = Calendar
-    .terminal = Terminal
-    .other-associations = Other Associations
-    .text-editor = Text Editor
+invalid-username = Invalid username

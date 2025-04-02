@@ -8,9 +8,9 @@ use super::{ShortcutBinding, ShortcutMessage, ShortcutModel};
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, button, icon};
 use cosmic::{Apply, Element, Task};
-use cosmic_settings_config::shortcuts::{Action, Shortcuts};
 use cosmic_settings_config::Binding;
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_config::shortcuts::{Action, Shortcuts};
+use cosmic_settings_page::{self as page, Section, section};
 use slab::Slab;
 use slotmap::{Key, SlotMap};
 
@@ -67,9 +67,10 @@ pub enum Message {
 #[derive(Default)]
 struct AddShortcut {
     pub active: bool,
+    pub editing: Option<usize>,
     pub name: String,
     pub task: String,
-    pub keys: Slab<(String, widget::Id, bool)>,
+    pub keys: Slab<(String, widget::Id)>,
 }
 
 impl AddShortcut {
@@ -79,8 +80,7 @@ impl AddShortcut {
         self.task.clear();
 
         if self.keys.is_empty() {
-            self.keys
-                .insert((String::new(), widget::Id::unique(), false));
+            self.keys.insert((String::new(), widget::Id::unique()));
         } else {
             while self.keys.len() > 1 {
                 self.keys.remove(self.keys.len() - 1);
@@ -103,34 +103,20 @@ impl Page {
             }
 
             Message::KeyEditing(id, enable) => {
-                self.add_shortcut.keys[id].2 = enable;
+                if enable {
+                    self.add_shortcut.editing = Some(id)
+                } else if self.add_shortcut.editing == Some(id) {
+                    let task = self.add_keybinding();
+                    self.add_shortcut.editing = None;
+                    return task;
+                }
             }
 
             Message::NameInput(text) => {
                 self.add_shortcut.name = text;
             }
 
-            Message::AddKeybinding => {
-                // If an empty entry exists, focus it instead of creating a new input.
-                for (_, (binding, id, _)) in &mut self.add_shortcut.keys {
-                    if Binding::from_str(binding).is_ok() {
-                        continue;
-                    }
-
-                    binding.clear();
-
-                    return widget::text_input::focus(id.clone());
-                }
-
-                let new_id = widget::Id::unique();
-                self.add_shortcut
-                    .keys
-                    .insert((String::new(), new_id.clone(), true));
-                return Task::batch(vec![
-                    widget::text_input::focus(new_id.clone()),
-                    widget::text_input::select_all(new_id),
-                ]);
-            }
+            Message::AddKeybinding => return self.add_keybinding(),
 
             Message::AddShortcut => {
                 let name = self.add_shortcut.name.trim();
@@ -172,12 +158,13 @@ impl Page {
             }
 
             Message::EditCombination => {
-                let (_, id, editing) = &mut self.add_shortcut.keys[0];
-                *editing = true;
-                return Task::batch(vec![
-                    widget::text_input::focus(id.clone()),
-                    widget::text_input::select_all(id.clone()),
-                ]);
+                if let Some((slab_index, (_, id))) = self.add_shortcut.keys.iter().next() {
+                    self.add_shortcut.editing = Some(slab_index);
+                    return Task::batch(vec![
+                        widget::text_input::focus(id.clone()),
+                        widget::text_input::select_all(id.clone()),
+                    ]);
+                }
             }
 
             Message::NameSubmit => {
@@ -227,6 +214,31 @@ impl Page {
         Task::none()
     }
 
+    fn add_keybinding(&mut self) -> Task<crate::app::Message> {
+        // If an empty entry exists, focus it instead of creating a new input.
+        for (_, (binding, id)) in &mut self.add_shortcut.keys {
+            if Binding::from_str(binding).is_ok() {
+                continue;
+            }
+
+            binding.clear();
+
+            return widget::text_input::focus(id.clone());
+        }
+
+        let new_id = widget::Id::unique();
+        self.add_shortcut.editing = Some(
+            self.add_shortcut
+                .keys
+                .insert((String::new(), new_id.clone())),
+        );
+
+        Task::batch(vec![
+            widget::text_input::focus(new_id.clone()),
+            widget::text_input::select_all(new_id),
+        ])
+    }
+
     fn add_keybinding_context(&self) -> Element<'_, Message> {
         let name_input = widget::text_input("", &self.add_shortcut.name)
             .padding([6, 12])
@@ -258,15 +270,17 @@ impl Page {
 
         let keys = self.add_shortcut.keys.iter().fold(
             widget::list_column().spacing(0),
-            |column, (id, (text, widget_id, editing))| {
+            |column, (id, (text, widget_id))| {
                 let key_combination = widget::editable_input(
                     fl!("type-key-combination"),
                     text,
-                    *editing,
+                    self.add_shortcut.editing == Some(id),
                     move |enable| Message::KeyEditing(id, enable),
                 )
+                .select_on_focus(true)
                 .padding([0, 12])
                 .on_input(move |input| Message::KeyInput(id, input))
+                .on_unfocus(Message::AddKeybinding)
                 .on_submit(|_| Message::AddKeybinding)
                 .id(widget_id.clone())
                 .apply(widget::container)
@@ -278,7 +292,7 @@ impl Page {
 
         let controls = widget::list_column().add(input_fields).add(keys).spacing(0);
 
-        let add_keybinding_button = widget::button::standard(fl!("add-keybinding"))
+        let add_keybinding_button = widget::button::standard(fl!("add-another-keybinding"))
             .on_press(Message::AddShortcut)
             .apply(widget::container)
             .width(Length::Fill)
@@ -358,6 +372,11 @@ impl page::Page<crate::pages::Message> for Page {
         .map(|el| el.map(crate::pages::Message::CustomShortcuts))
     }
 
+    fn on_context_drawer_close(&mut self) -> Task<crate::pages::Message> {
+        self.model.on_context_drawer_close();
+        Task::none()
+    }
+
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
         self.model.on_enter();
         Task::none()
@@ -385,8 +404,8 @@ fn bindings(_defaults: &Shortcuts, keybindings: &Shortcuts) -> Slab<ShortcutMode
                     id: widget::Id::unique(),
                     binding: binding.clone(),
                     input: String::new(),
-                    editing: false,
                     is_default: false,
+                    is_saved: true,
                 };
 
                 if let Some((_, existing_model)) =
@@ -422,11 +441,9 @@ fn shortcuts() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, _section| {
             let content = if page.model.shortcut_models.is_empty() {
                 widget::settings::section()
-                    .add(widget::settings::item_row(vec![widget::text::body(fl!(
-                        "custom-shortcuts",
-                        "none"
-                    ))
-                    .into()]))
+                    .add(widget::settings::item_row(vec![
+                        widget::text::body(fl!("custom-shortcuts", "none")).into(),
+                    ]))
                     .into()
             } else {
                 page.model.view().map(Message::Shortcut)

@@ -1,28 +1,27 @@
-use button::Catalog as ButtonStyleSheet;
+use cosmic::iced::Vector;
 use cosmic::iced::clipboard::dnd::{
     DndAction, DndDestinationRectangle, DndEvent, OfferEvent, SourceEvent,
 };
 use cosmic::iced::clipboard::mime::AsMimeTypes;
 use cosmic::iced::id::Internal;
-use cosmic::iced::Vector;
 
 use cosmic::iced_core;
 use cosmic::iced_core::clipboard::IconSurface;
-use cosmic::widget::{button, column, container, icon, list_column, row, text, text_input, Column};
+use cosmic::widget::{Column, button, column, container, icon, list_column, row, text, text_input};
 
 use cosmic::{
+    Apply, Element,
     cosmic_config::{Config, CosmicConfigEntry},
     iced::{
-        core::window, event, mouse, overlay, touch, Alignment, Color, Length, Point, Rectangle,
-        Size,
+        Alignment, Color, Length, Point, Rectangle, Size, core::window, event, mouse, overlay,
+        touch,
     },
-    iced_runtime::{core::id::Id, Task},
+    iced_runtime::{Task, core::id::Id},
     iced_widget::core::{
-        layout, renderer,
-        widget::{tree, Operation, Tree},
-        Clipboard, Shell, Widget,
+        Clipboard, Shell, Widget, layout, renderer,
+        widget::{Operation, Tree, tree},
     },
-    theme, Apply, Element,
+    theme,
 };
 use once_cell::sync::Lazy;
 
@@ -31,7 +30,7 @@ use std::{borrow::Cow, fmt::Debug, mem, path::Path};
 
 use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use freedesktop_desktop_entry::DesktopEntry;
 use slotmap::{Key, SlotMap};
 use tracing::error;
@@ -111,7 +110,7 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
-            sections.insert(lists::<Page, _>(pages::Message::PanelApplet))
+            sections.insert(lists::<Page, _>(pages::Message::PanelApplet)),
         ])
     }
 
@@ -267,32 +266,7 @@ impl Page {
                         .spacing(space_xxxs)
                         .width(Length::Fill)
                         .into(),
-                    button::standard(fl!("add"))
-                        .class(button::ButtonClass::Custom {
-                            active: Box::new(|focused, theme| {
-                                let mut style =
-                                    theme.active(focused, false, &button::ButtonClass::Text);
-                                style.text_color = Some(theme.cosmic().accent_color().into());
-                                style
-                            }),
-                            disabled: Box::new(|theme| {
-                                let mut style = theme.disabled(&button::ButtonClass::Text);
-                                let mut text_color: Color = theme.cosmic().accent_color().into();
-                                text_color.a *= 0.5;
-                                style.text_color = Some(text_color);
-                                style
-                            }),
-                            hovered: Box::new(|focused, theme| {
-                                let mut style = theme.hovered(focused, false, &theme::Button::Text);
-                                style.text_color = Some(theme.cosmic().accent_color().into());
-                                style
-                            }),
-                            pressed: Box::new(|focused, theme| {
-                                let mut style = theme.pressed(focused, false, &theme::Button::Text);
-                                style.text_color = Some(theme.cosmic().accent_color().into());
-                                style
-                            }),
-                        })
+                    button::text(fl!("add"))
                         .on_press(msg_map(Message::AddApplet(info.clone())))
                         .into(),
                 ])

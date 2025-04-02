@@ -8,14 +8,18 @@ use std::{
 
 use anyhow::Context;
 use cosmic::{
+    Apply, Element, Task,
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
-    widget::{self, icon},
-    Apply, Element, Task,
+    iced_widget::focus_next,
+    widget::{self, column, icon},
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_subscriptions::network_manager::{
-    self, available_wifi::AccessPoint, current_networks::ActiveConnectionInfo, NetworkManagerState,
+    self, NetworkManagerState,
+    available_wifi::{AccessPoint, NetworkType},
+    current_networks::ActiveConnectionInfo,
+    hw_address::HwAddress,
 };
 use futures::StreamExt;
 use secure_string::SecureString;
@@ -36,6 +40,8 @@ pub enum Message {
     Disconnect(network_manager::SSID),
     /// An error occurred.
     Error(String),
+    /// Identity update from the dialog
+    IdentityUpdate(String),
     /// Create a dialog to ask for confirmation on forgetting a connection.
     ForgetRequest(network_manager::SSID),
     /// Forget a known access point.
@@ -52,6 +58,8 @@ pub enum Message {
     SelectDevice(Arc<network_manager::devices::DeviceInfo>),
     /// Opens settings page for the access point.
     Settings(network_manager::SSID),
+    /// Identity submitted from the dialog
+    SubmitIdentity,
     /// Toggles visibility of the password input
     TogglePasswordVisibility,
     /// Update NetworkManagerState
@@ -81,6 +89,8 @@ enum WiFiDialog {
     Forget(network_manager::SSID),
     Password {
         ssid: network_manager::SSID,
+        hw_address: HwAddress,
+        identity: Option<String>,
         password: SecureString,
         password_hidden: bool,
     },
@@ -135,6 +145,7 @@ impl page::Page<crate::pages::Message> for Page {
         self.dialog.as_ref().map(|dialog| match dialog {
             WiFiDialog::Password {
                 password,
+                identity,
                 password_hidden,
                 ..
             } => {
@@ -153,11 +164,25 @@ impl page::Page<crate::pages::Message> for Page {
                 let secondary_action =
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
+                let control: Element<_> = if let Some(identity) = identity {
+                    column::column()
+                        .spacing(8)
+                        .push(
+                            widget::text_input::text_input(fl!("identity"), identity)
+                                .on_input(Message::IdentityUpdate)
+                                .on_submit(|_| Message::SubmitIdentity),
+                        )
+                        .push(password)
+                        .into()
+                } else {
+                    password.into()
+                };
+
                 widget::dialog()
                     .title(fl!("auth-dialog"))
                     .icon(icon::from_name("preferences-wireless-symbolic").size(64))
                     .body(fl!("auth-dialog", "wifi-description"))
-                    .control(password)
+                    .control(control)
                     .primary_action(primary_action)
                     .secondary_action(secondary_action)
                     .apply(Element::from)
@@ -246,21 +271,28 @@ impl Page {
                 }
 
                 match req {
-                    network_manager::Request::Password(ssid, _) => {
+                    network_manager::Request::Authenticate {
+                        ssid,
+                        identity,
+                        hw_address,
+                        ..
+                    } => {
                         if success {
-                            self.connecting.remove(&ssid);
+                            self.connecting.remove(ssid.as_str());
                         } else {
                             // Request to retry
                             self.dialog = Some(WiFiDialog::Password {
-                                ssid,
+                                ssid: ssid.into(),
+                                identity,
+                                hw_address,
                                 password: SecureString::from(""),
                                 password_hidden: true,
                             });
                         }
                     }
 
-                    network_manager::Request::SelectAccessPoint(ssid) => {
-                        self.connecting.remove(&ssid);
+                    network_manager::Request::SelectAccessPoint(ssid, hw_address, network_type) => {
+                        self.connecting.remove(ssid.as_ref());
                     }
 
                     _ => (),
@@ -324,19 +356,54 @@ impl Page {
 
             Message::Connect(ssid) => {
                 if let Some(nm) = self.nm_state.as_mut() {
+                    let Some(ap) = nm
+                        .state
+                        .wireless_access_points
+                        .iter()
+                        .chain(nm.state.known_access_points.iter())
+                        .find(|ap| ap.ssid == ssid)
+                    else {
+                        return Task::none();
+                    };
                     self.connecting.insert(ssid.clone());
                     _ = nm
                         .sender
-                        .unbounded_send(network_manager::Request::SelectAccessPoint(ssid));
+                        .unbounded_send(network_manager::Request::SelectAccessPoint(
+                            ssid,
+                            ap.hw_address,
+                            ap.network_type,
+                        ));
+                }
+            }
+
+            Message::IdentityUpdate(new_identity) => {
+                if let Some(WiFiDialog::Password {
+                    ref mut identity, ..
+                }) = self.dialog
+                {
+                    *identity = Some(new_identity);
                 }
             }
 
             Message::PasswordRequest(ssid) => {
-                self.dialog = Some(WiFiDialog::Password {
-                    ssid,
-                    password: SecureString::from(""),
-                    password_hidden: true,
-                });
+                if let Some(nm) = self.nm_state.as_mut() {
+                    let Some(ap) = nm
+                        .state
+                        .wireless_access_points
+                        .iter()
+                        .chain(nm.state.known_access_points.iter())
+                        .find(|ap| ap.ssid == ssid)
+                    else {
+                        return Task::none();
+                    };
+                    self.dialog = Some(WiFiDialog::Password {
+                        ssid,
+                        identity: matches!(ap.network_type, NetworkType::EAP).then(String::new),
+                        hw_address: ap.hw_address,
+                        password: SecureString::from(""),
+                        password_hidden: true,
+                    });
+                }
             }
 
             Message::PasswordUpdate(pass) => {
@@ -353,12 +420,24 @@ impl Page {
                     return Task::none();
                 };
 
-                if let WiFiDialog::Password { ssid, password, .. } = dialog {
+                if let WiFiDialog::Password {
+                    ssid,
+                    identity,
+                    password,
+                    hw_address,
+                    ..
+                } = dialog
+                {
                     if let Some(nm) = self.nm_state.as_mut() {
                         self.connecting.insert(ssid.clone());
                         _ = nm
                             .sender
-                            .unbounded_send(network_manager::Request::Password(ssid, password));
+                            .unbounded_send(network_manager::Request::Authenticate {
+                                ssid: ssid.to_string(),
+                                identity,
+                                hw_address,
+                                password,
+                            });
                     }
                 }
             }
@@ -414,6 +493,12 @@ impl Page {
                 }
             }
 
+            Message::SubmitIdentity => {
+                if self.dialog.is_some() {
+                    return focus_next();
+                }
+            }
+
             Message::WiFiEnable(enable) => {
                 if let Some(nm) = self.nm_state.as_mut() {
                     _ = nm
@@ -440,7 +525,7 @@ impl Page {
                 return cosmic::task::batch(vec![
                     self.connect(conn.clone()),
                     connection_settings(conn),
-                ])
+                ]);
             }
         }
 
@@ -715,7 +800,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
 fn is_connected(state: &NetworkManagerState, network: &AccessPoint) -> bool {
     state.active_conns.iter().any(|active| {
-        if let ActiveConnectionInfo::WiFi { ref name, .. } = active {
+        if let ActiveConnectionInfo::WiFi { name, .. } = active {
             *name == network.ssid.as_ref()
         } else {
             false

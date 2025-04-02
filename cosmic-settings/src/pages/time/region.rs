@@ -9,18 +9,18 @@ use std::sync::Arc;
 use cosmic::iced::{Alignment, Border, Color, Length};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, button, container};
-use cosmic::{theme, Apply, Element};
+use cosmic::{Apply, Element, theme};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use eyre::Context;
 use fixed_decimal::FixedDecimal;
 use icu::calendar::DateTime;
+use icu::datetime::DateTimeFormatter;
 use icu::datetime::options::components::{self, Bag};
 use icu::datetime::options::preferences;
-use icu::datetime::DateTimeFormatter;
-use icu::decimal::options::FixedDecimalFormatterOptions;
 use icu::decimal::FixedDecimalFormatter;
+use icu::decimal::options::FixedDecimalFormatterOptions;
 use locales_rs as locale;
 use slotmap::{DefaultKey, SlotMap};
 
@@ -228,7 +228,7 @@ impl Page {
                         .await;
 
                     Message::Refresh(Arc::new(page_reload().await))
-                })
+                });
             }
 
             Message::Refresh(result) => match Arc::into_inner(result).unwrap() {
@@ -588,8 +588,9 @@ mod preferred_languages {
 
     use super::Message;
     use cosmic::{
+        Apply,
         iced::{Alignment, Length},
-        widget, Apply,
+        widget,
     };
     use cosmic_settings_page::Section;
 
@@ -646,7 +647,7 @@ mod preferred_languages {
 
 mod formatting {
     use super::Message;
-    use cosmic::{widget, Apply};
+    use cosmic::{Apply, widget};
     use cosmic_settings_page::Section;
 
     pub fn section() -> Section<crate::pages::Message> {

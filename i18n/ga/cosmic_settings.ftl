@@ -83,13 +83,13 @@ vpn-error = Earráid VPN
         [password-flags] pasfhocail-bratacha
     } le nmcli
 
-wired = Sreangaithe  
+wired = Sreangaithe
     .adapter = Adaptóir sreangaithe { $id }
     .connections = Ceangail Sreangaithe
     .devices = Gléasanna Sreangaithe
     .remove = Bain an próifíl ceangailte
 
-wifi = Wi-Fi  
+wifi = Wi-Fi
     .adapter = Adaptóir Wi-Fi { $id }
     .forget = Déan dearmad ar an líonra seo
 
@@ -398,7 +398,7 @@ dialog = Dialóg
     .change-prompt = Rachaidh athruithe socruithe ar ais go huathoibríoch i gceann { $time } soicind.
     .revert-settings = Cuir Socruithe ar ais
 
-legacy-applications = X11 Scálú Feidhmchlár an Chórais Fuinneog
+legacy-app-scaling = X11 Scálú Feidhmchlár an Chórais Fuinneog
     .scaled-by-system = Scála gach Feidhmchlár X11
     .system-description = Feicfear feidhmchláir X11 doiléir ar scáileáin HiDPI.
     .scaled-natively = Rindreáil X11 Feidhmchláir ag taifeach dúchais
@@ -653,7 +653,7 @@ replace-shortcut-dialog = Ionadaigh Aicearra?
 
 ## Input: Mouse
 
-mouse = Luch  
+mouse = Luch
     .desc = Luas luch, luasghéarú, scrollú nádúrtha.
     .speed = Luas luch
     .acceleration = Cum luasghéarú luch
@@ -765,7 +765,7 @@ about-related = Socruithe Gaolmhara
 
 ## System: Firmware
 
-firmware = Dochtearraí 
+firmware = Dochtearraí
     .desc = Sonraí maidir le dochtearraí.
 
 ## System: Users

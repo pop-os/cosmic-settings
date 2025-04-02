@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=Applications
+Name[hu]=Alkalmazások
+Comment=Manage application settings.
+Comment[hu]=Alkalmazásbeállítások kezelése.
+Type=Settings
+Exec=cosmic-settings applications
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-applications
+StartupNotify=true

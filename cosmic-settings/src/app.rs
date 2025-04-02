@@ -1,9 +1,11 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use crate::PageCommands;
 use crate::config::Config;
 #[cfg(feature = "page-accessibility")]
 use crate::pages::accessibility;
+use crate::pages::applications;
 #[cfg(feature = "page-bluetooth")]
 use crate::pages::bluetooth;
 use crate::pages::desktop::{self, appearance};
@@ -20,25 +22,22 @@ use crate::pages::sound;
 use crate::pages::{self, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
-use crate::PageCommands;
-use cosmic::app::context_drawer::ContextDrawer;
 #[cfg(feature = "wayland")]
 use cosmic::cctk::{sctk::output::OutputInfo, wayland_client::protocol::wl_output::WlOutput};
-use cosmic::iced::Subscription;
-use cosmic::widget::{self, button, row, text_input};
 use cosmic::{
-    app::{Core, Task},
+    Element,
+    app::{Core, Task, context_drawer::ContextDrawer},
     iced::{
-        self,
+        self, Length, Subscription,
         event::{self, PlatformSpecific},
-        window, Length,
+        window,
     },
     prelude::*,
     surface,
     widget::{
-        column, container, icon, id_container, nav_bar, scrollable, segmented_button, settings,
+        button, column, container, icon, id_container, nav_bar, row, scrollable, segmented_button,
+        settings, text_input,
     },
-    Element,
 };
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
@@ -84,12 +83,13 @@ impl SettingsApp {
             #[cfg(feature = "page-about")]
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
+            PageCommands::Applications => self.pages.page_id::<applications::Page>(),
             #[cfg(feature = "page-bluetooth")]
             PageCommands::Bluetooth => self.pages.page_id::<bluetooth::Page>(),
             #[cfg(feature = "page-date")]
             PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
             #[cfg(feature = "page-default-apps")]
-            PageCommands::DefaultApps => self.pages.page_id::<system::default_apps::Page>(),
+            PageCommands::DefaultApps => self.pages.page_id::<applications::default_apps::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
             #[cfg(feature = "page-display")]
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
@@ -100,6 +100,9 @@ impl SettingsApp {
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
+            PageCommands::LegacyApplications => self
+                .pages
+                .page_id::<applications::legacy_applications::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             #[cfg(feature = "page-networking")]
@@ -214,6 +217,7 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<power::Page>();
         #[cfg(feature = "page-input")]
         app.insert_page::<input::Page>();
+        app.insert_page::<applications::Page>();
         app.insert_page::<time::Page>();
         app.insert_page::<system::Page>();
 
@@ -390,6 +394,10 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                crate::pages::Message::Applications(message) => {
+                    page::update!(self.pages, message, applications::Page);
+                }
+
                 #[cfg(feature = "page-bluetooth")]
                 crate::pages::Message::Bluetooth(message) => {
                     if let Some(page) = self.pages.page_mut::<bluetooth::Page>() {
@@ -406,7 +414,7 @@ impl cosmic::Application for SettingsApp {
 
                 #[cfg(feature = "page-default-apps")]
                 crate::pages::Message::DefaultApps(message) => {
-                    if let Some(page) = self.pages.page_mut::<system::default_apps::Page>() {
+                    if let Some(page) = self.pages.page_mut::<applications::default_apps::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
@@ -476,6 +484,10 @@ impl cosmic::Application for SettingsApp {
                     {
                         return page.update(message).map(Into::into);
                     }
+                }
+
+                crate::pages::Message::LegacyApplications(message) => {
+                    page::update!(self.pages, message, applications::legacy_applications::Page);
                 }
 
                 #[cfg(feature = "page-input")]
@@ -601,12 +613,20 @@ impl cosmic::Application for SettingsApp {
 
                 #[cfg(feature = "page-window-management")]
                 crate::pages::Message::WindowManagement(message) => {
-                    page::update!(self.pages, message, desktop::window_management::Page);
+                    if let Some(page) = self.pages.page_mut::<desktop::window_management::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
                 }
 
                 #[cfg(feature = "page-networking")]
                 crate::pages::Message::Wired(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::wired::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::StartupApps(message) => {
+                    if let Some(page) = self.pages.page_mut::<applications::startup_apps::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
@@ -734,10 +754,7 @@ impl cosmic::Application for SettingsApp {
                 self.context_title = Some(title.to_string());
             }
 
-            Message::CloseContextDrawer => {
-                self.core.window.show_context = false;
-                self.active_context_page = None;
-            }
+            Message::CloseContextDrawer => return self.close_context_drawer(),
 
             Message::Error(error) => {
                 tracing::error!(error, "error occurred");
@@ -778,9 +795,7 @@ impl cosmic::Application for SettingsApp {
             return self.page_container(row::row());
         };
 
-        container(view)
-            .padding([cosmic::theme::active().cosmic().space_xxs(), 0])
-            .into()
+        container(view).into()
     }
 
     #[allow(clippy::too_many_lines)]
@@ -819,16 +834,24 @@ impl cosmic::Application for SettingsApp {
         _keys: &[&'static str],
         new_theme: &cosmic::cosmic_theme::Theme,
     ) -> Task<Self::Message> {
+        let mut tasks = Vec::new();
         #[cfg(feature = "page-accessibility")]
         if let Some(page) = self.pages.page_mut::<accessibility::Page>() {
-            return page
-                .update(accessibility::Message::SystemTheme(Box::new(
+            tasks.push(
+                page.update(accessibility::Message::SystemTheme(Box::new(
                     new_theme.clone(),
                 )))
-                .map(Into::into);
+                .map(Into::into),
+            );
+        }
+        if let Some(page) = self.pages.page_mut::<appearance::Page>() {
+            tasks.push(
+                page.update(appearance::Message::NewTheme(Box::new(new_theme.clone())))
+                    .map(Into::into),
+            );
         }
 
-        Task::none()
+        Task::batch(tasks)
     }
 }
 
@@ -843,7 +866,9 @@ impl SettingsApp {
 
         if current_page != page {
             self.loaded_pages.remove(&current_page);
-            close_context_drawer_task = cosmic::task::message(Message::CloseContextDrawer);
+
+            close_context_drawer_task = self.close_context_drawer();
+
             leave_task = self
                 .pages
                 .on_leave(current_page)
@@ -892,6 +917,16 @@ impl SettingsApp {
         if let Some(nav_id) = self.pages.data(page) {
             self.nav_model.activate(*nav_id);
         }
+    }
+
+    fn close_context_drawer(&mut self) -> Task<Message> {
+        self.core.window.show_context = false;
+        self.active_context_page = None;
+        self.pages
+            .on_context_drawer_close(self.active_page)
+            .unwrap_or(iced::Task::none())
+            .map(Message::PageMessage)
+            .map(Into::into)
     }
 
     /// Adds a main page to the settings application.
@@ -969,11 +1004,8 @@ impl SettingsApp {
             .height(Length::Fill)
             .apply(|w| id_container(w, self.id()));
 
-        widget::column::with_capacity(3)
+        column::with_capacity(2)
             .push(self.page_container(header))
-            .push(widget::vertical_space().height(Length::Fixed(
-                cosmic::theme::active().cosmic().space_m().into(),
-            )))
             .push(view)
             .height(Length::Fill)
             .into()
@@ -1073,8 +1105,8 @@ impl SettingsApp {
             {
                 let section = (section.view_fn)(&self.pages, model.as_ref(), section)
                     .map(Message::PageMessage)
-                    .apply(iced::widget::container)
-                    .padding([0, 0, 0, cosmic::theme::active().cosmic().space_xl()]);
+                    .apply(container)
+                    .padding([0, 0, 0, cosmic::theme::active().cosmic().space_l()]);
 
                 sections.push(section.into());
             }
@@ -1107,14 +1139,12 @@ impl SettingsApp {
                 },
             )
             .spacing(theme.cosmic().space_s())
-            .padding(0)
             .apply(|widget| scrollable(self.page_container(widget)).height(Length::Fill))
             .apply(Element::from)
             .map(Message::Page);
 
-        widget::column::with_capacity(3)
+        column::with_capacity(2)
             .push(self.page_container(page_title(&self.pages.info[self.active_page])))
-            .push(widget::vertical_space().height(theme.cosmic().space_m()))
             .push(page_list)
             .height(Length::Fill)
             .into()
@@ -1131,13 +1161,15 @@ impl SettingsApp {
         } else {
             theme.cosmic().space_l()
         };
+        // prevents content from touching window edge on bottom of scroll
+        let bottom_spacer = theme.cosmic().space_m();
 
         container(content.into())
             .max_width(800)
             .width(Length::Fill)
             .apply(container)
             .center_x(Length::Fill)
-            .padding([0, padding])
+            .padding([0, padding, bottom_spacer, padding])
             .into()
     }
 }

@@ -392,7 +392,7 @@ dialog = संवाद
     .change-prompt = सेटिंग में परिवर्तन { $time } सेकंड में स्वचालित रूप से वापस आ जाएगा।
     .revert-settings = सेटिंग्स वापस करें
 
-legacy-applications = X11 विंडो सिस्टम एप्लिकेशन स्केलिंग
+legacy-app-scaling = X11 विंडो सिस्टम एप्लिकेशन स्केलिंग
     .scaled-by-system = सभी X11 एप्लिकेशनों को स्केल करें
     .system-description = X11 एप्लिकेशन HiDPI स्क्रीन पर धुंधले दिखते हैं।
     .scaled-natively = स्थानीय संकल्प पर X11 एप्लिकेशनों को स्केल करें
@@ -530,7 +530,7 @@ migrate-workspace = कार्यक्षेत्र को { $direction ->
     *[down] नीचे
     [left] बायां
     [right] दायां
-    [up] ऊपर 
+    [up] ऊपर
 }
 navigate = नेविगेट करें
 replace = बदलें

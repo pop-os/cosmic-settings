@@ -49,6 +49,8 @@ pub enum PageCommands {
     About,
     /// Appearance settings page
     Appearance,
+    /// Applications settings page
+    Applications,
     /// Bluetooth settings page
     #[cfg(feature = "page-bluetooth")]
     Bluetooth,
@@ -74,6 +76,8 @@ pub enum PageCommands {
     /// Keyboard settings page
     #[cfg(feature = "page-input")]
     Keyboard,
+    /// Legacy Applications settings page
+    LegacyApplications,
     /// Mouse settings page
     #[cfg(feature = "page-input")]
     Mouse,
@@ -151,7 +155,7 @@ pub fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
 
     if std::env::var("RUST_SPANTRACE").is_err() {
-        std::env::set_var("RUST_SPANTRACE", "0");
+        unsafe { std::env::set_var("RUST_SPANTRACE", "0") };
     }
 
     init_logger();

@@ -92,11 +92,11 @@ wired = Kablet
 wifi = Wi-Fi
     .adapter = Wi-Fi adapter { $id }
     .forget = Glem dette netværk
-    
+
 wireguard-dialog = Tilføj WireGuard enhed
     .description = Vælg et enhedsnavn til WireGuard konfigurationen.
 
-## Networking: Online konti 
+## Networking: Online konti
 
 online-accounts = Online konti
     .desc = Tilføj konti, IMAP og SMTP, enterprise logins
@@ -393,7 +393,7 @@ dialog = Dialog
     .change-prompt = Ændringer af indstillinger vil automatisk vende tilbage om { $time } sekunder.
     .revert-settings = Gendan indstillinger
 
-legacy-applications = X11 Vinduessystem Applikationsskalering
+legacy-app-scaling = X11 Vinduessystem Applikationsskalering
     .scaled-by-system = Skalér alle X11 applikationer
     .system-description = X11 applikationer vil fremstå slørede på HiDPI-skærme.
     .scaled-natively = Render X11 applikationer i naturlig opløsning
@@ -515,7 +515,7 @@ keyboard-special-char = Indtastning af specialtegn
 keyboard-typing-assist = Indtastning
     .repeat-rate = Gentagelseshastighed
     .repeat-delay = Gentagelsesforsinkelse
-    
+
 added = Tilføjet
 type-to-search = Skriv for at søge...
 show-extended-input-sources = Vis udvidede inputkilder

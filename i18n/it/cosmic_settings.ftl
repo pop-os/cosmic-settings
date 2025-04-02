@@ -402,7 +402,7 @@ dialog = Dialog
     .change-prompt = Le impostazioni verranno automaticamente ripristinate tra { $time } secondi.
     .revert-settings = Ripristina impostazioni
 
-legacy-applications = Scala delle applicazioni del sistema X11
+legacy-app-scaling = Scala delle applicazioni del sistema X11
     .scaled-by-system = Scala tutte le applicazioni X11
     .system-description = Le applicazioni X11 appariranno sfocate su schermi HiDPI.
     .scaled-natively = Renderizza le applicazioni X11 alla risoluzione nativa

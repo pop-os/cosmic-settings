@@ -3,8 +3,9 @@ use std::any::TypeId;
 use ashpd::desktop::location::{Location, LocationProxy};
 use chrono::Datelike;
 use cosmic::iced::{
-    futures::{channel::mpsc::Sender, future, SinkExt, StreamExt},
-    stream, Subscription,
+    Subscription,
+    futures::{SinkExt, StreamExt, channel::mpsc::Sender, future},
+    stream,
 };
 use sunrise::sunrise_sunset;
 use tokio::select;

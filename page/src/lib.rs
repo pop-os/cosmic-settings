@@ -6,7 +6,7 @@ pub use binder::{AutoBind, Binder};
 
 mod insert;
 use cosmic::{Element, Task};
-use downcast_rs::{impl_downcast, Downcast};
+use downcast_rs::{Downcast, impl_downcast};
 pub use insert::Insert;
 
 pub mod section;
@@ -30,6 +30,7 @@ pub trait Page<Message: 'static>: Downcast {
 
     /// Initialize the sections used by this page.
     #[must_use]
+    #[inline]
     fn content(
         &self,
         _sections: &mut SlotMap<section::Entity, Section<Message>>,
@@ -39,46 +40,62 @@ pub trait Page<Message: 'static>: Downcast {
 
     /// Display a context drawer for the page.
     #[must_use]
+    #[inline]
     fn context_drawer(&self) -> Option<Element<'_, Message>> {
         None
     }
 
     /// Set a custom page header
+    #[inline]
     fn header(&self) -> Option<Element<'_, Message>> {
         None
     }
 
     /// Display an inner app dialog for the page.
+    #[inline]
     fn dialog(&self) -> Option<Element<'_, Message>> {
         None
     }
 
     /// Response from a file chooser dialog request.
+    #[inline]
     fn file_chooser(&mut self, _selected: Vec<url::Url>) -> Task<Message> {
         Task::none()
     }
 
     /// Alter the contents of the page's header view.
+    #[inline]
     fn header_view(&self) -> Option<Element<'_, Message>> {
         None
     }
 
+    /// Emit on the context drawer being closed
+    #[allow(unused)]
+    #[inline]
+    fn on_context_drawer_close(&mut self) -> Task<Message> {
+        Task::none()
+    }
+
     /// Reload page metadata via a Task.
     #[allow(unused)]
+    #[inline]
     fn on_enter(&mut self) -> Task<Message> {
         Task::none()
     }
 
     /// Emit a command when the page is left
+    #[inline]
     fn on_leave(&mut self) -> Task<Message> {
         Task::none()
     }
 
     /// Assigns the entity ID of the page to the page.
     #[allow(unused)]
+    #[inline]
     fn set_id(&mut self, entity: Entity) {}
 
     /// The title to display in the page header.
+    #[inline]
     fn title(&self) -> Option<&str> {
         None
     }
@@ -112,6 +129,7 @@ pub struct Info {
 }
 
 impl Info {
+    #[inline]
     pub fn new(id: impl Into<Cow<'static, str>>, icon_name: impl Into<Cow<'static, str>>) -> Self {
         Self {
             title: String::new(),

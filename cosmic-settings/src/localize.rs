@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use i18n_embed::{
-    fluent::{fluent_language_loader, FluentLanguageLoader},
     DefaultLocalizer, LanguageLoader, Localizer,
+    fluent::{FluentLanguageLoader, fluent_language_loader},
 };
 use once_cell::sync::Lazy;
 use rust_embed::RustEmbed;
@@ -39,6 +39,7 @@ macro_rules! fl {
 
 // Get the `Localizer` to be used for localizing this library.
 #[must_use]
+#[inline(always)]
 pub fn localizer() -> Box<dyn Localizer> {
     Box::from(DefaultLocalizer::new(&*LANGUAGE_LOADER, &Localizations))
 }

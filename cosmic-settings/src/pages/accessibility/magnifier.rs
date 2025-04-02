@@ -1,24 +1,24 @@
 use std::collections::HashSet;
+use std::fmt::Write;
 
 use cosmic::{
+    Apply,
     iced::{Element, Length},
     iced_core::text::Wrapping,
     surface,
     widget::{self, icon, settings, svg, text},
-    Apply,
 };
 use cosmic_comp_config::{ZoomConfig, ZoomMovement};
 use cosmic_config::{ConfigGet, ConfigSet};
-use cosmic_settings_config::{shortcuts, Action, Binding};
+use cosmic_settings_config::{Action, Binding, shortcuts};
 use cosmic_settings_page::{
-    self as page,
+    self as page, Entity,
     section::{self, Section},
-    Entity,
 };
 use slotmap::SlotMap;
 use tracing::error;
 
-use super::{wayland, AccessibilityEvent, AccessibilityRequest};
+use super::{AccessibilityEvent, AccessibilityRequest, wayland};
 
 #[derive(Debug)]
 pub struct Page {
@@ -40,6 +40,8 @@ pub enum Message {
     Event(wayland::AccessibilityEvent),
     ProtocolUnavailable,
     SetMagnifier(bool),
+    SetMouseShortcuts(bool),
+    SetOverlay(bool),
     SetIncrement(usize),
     SetSignin(bool),
     SetMovement(ZoomMovement),
@@ -65,15 +67,12 @@ impl Default for Page {
         let increment_values = values
             .into_iter()
             .map(|val| {
-                format!(
-                    "{}%{}",
-                    val,
-                    if val == ZoomConfig::default().increment {
-                        " (Default)"
-                    } else {
-                        ""
-                    }
-                )
+                let mut option_string = String::new();
+                write!(&mut option_string, "{}%", val).expect("");
+                if val == ZoomConfig::default().increment {
+                    write!(&mut option_string, " ({})", fl!("default")).expect("");
+                }
+                option_string
             })
             .collect::<Vec<_>>();
         let increment_idx = increment_values.iter().position(|s| {
@@ -200,6 +199,8 @@ pub fn magnifier(
     crate::slab!(descriptions {
         magnifier = fl!("magnifier");
         controls = fl!("magnifier", "controls", zoom_in = zoom_in, zoom_out = zoom_out);
+        scroll_controls = fl!("magnifier", "scroll_controls");
+        show_overlay = fl!("magnifier", "show_overlay");
         increment = fl!("magnifier", "increment");
         signin = fl!("magnifier", "signin");
     });
@@ -219,6 +220,15 @@ pub fn magnifier(
                             widget::toggler(page.magnifier_state).on_toggle(Message::SetMagnifier),
                         ),
                 )
+                .add(settings::item(
+                    &descriptions[scroll_controls],
+                    widget::toggler(page.zoom_config.enable_mouse_zoom_shortcuts)
+                        .on_toggle(Message::SetMouseShortcuts),
+                ))
+                .add(settings::item(
+                    &descriptions[show_overlay],
+                    widget::toggler(page.zoom_config.show_overlay).on_toggle(Message::SetOverlay),
+                ))
                 .add(settings::item(
                     &descriptions[increment],
                     widget::dropdown::popup_dropdown(
@@ -256,10 +266,12 @@ pub fn tip() -> section::Section<crate::pages::Message> {
         .view::<Page>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
 
-            let mut items = vec![text::body(&descriptions[applet])
-                .wrapping(Wrapping::Word)
-                .width(Length::Shrink)
-                .into()];
+            let mut items = vec![
+                text::body(&descriptions[applet])
+                    .wrapping(Wrapping::Word)
+                    .width(Length::Shrink)
+                    .into(),
+            ];
             if let Some(illustration) = applet_illustration.clone() {
                 items.push(svg(illustration).width(Length::Fill).into());
             }
@@ -285,30 +297,36 @@ pub fn view_movement() -> section::Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(widget::settings::item_row(vec![widget::radio(
-                    text::body(&descriptions[continuous]),
-                    ZoomMovement::Continuously,
-                    Some(page.zoom_config.view_moves),
-                    Message::SetMovement,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(widget::settings::item_row(vec![widget::radio(
-                    text::body(&descriptions[onedge]),
-                    ZoomMovement::OnEdge,
-                    Some(page.zoom_config.view_moves),
-                    Message::SetMovement,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(widget::settings::item_row(vec![widget::radio(
-                    text::body(&descriptions[centered]),
-                    ZoomMovement::Centered,
-                    Some(page.zoom_config.view_moves),
-                    Message::SetMovement,
-                )
-                .width(Length::Fill)
-                .into()]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&descriptions[continuous]),
+                        ZoomMovement::Continuously,
+                        Some(page.zoom_config.view_moves),
+                        Message::SetMovement,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&descriptions[onedge]),
+                        ZoomMovement::OnEdge,
+                        Some(page.zoom_config.view_moves),
+                        Message::SetMovement,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        text::body(&descriptions[centered]),
+                        ZoomMovement::Centered,
+                        Some(page.zoom_config.view_moves),
+                        Message::SetMovement,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
                 .apply(Element::from)
                 .map(crate::pages::Message::AccessibilityMagnifier)
         })
@@ -324,9 +342,32 @@ impl Page {
             Message::Event(AccessibilityEvent::Magnifier(value)) => {
                 self.magnifier_state = value;
             }
+            Message::Event(
+                AccessibilityEvent::Bound(_) | AccessibilityEvent::ScreenFilter { .. },
+            ) => {}
             Message::SetMagnifier(value) => {
                 if let Some(sender) = self.wayland_thread.as_ref() {
                     let _ = sender.send(AccessibilityRequest::Magnifier(value));
+                }
+            }
+            Message::SetMouseShortcuts(value) => {
+                self.zoom_config.enable_mouse_zoom_shortcuts = value;
+
+                if let Err(err) = self
+                    .accessibility_config
+                    .set("accessibility_zoom", self.zoom_config)
+                {
+                    error!(?err, "Failed to set config 'accessibility_zoom'");
+                }
+            }
+            Message::SetOverlay(value) => {
+                self.zoom_config.show_overlay = value;
+
+                if let Err(err) = self
+                    .accessibility_config
+                    .set("accessibility_zoom", self.zoom_config)
+                {
+                    error!(?err, "Failed to set config 'accessibility_zoom'");
                 }
             }
             Message::SetIncrement(idx) => {
@@ -387,7 +428,7 @@ fn zoom_shortcuts() -> (Vec<Binding>, Vec<Binding>) {
     let Some(config) = shortcuts::context().ok() else {
         return (Vec::new(), Vec::new());
     };
-    let shortcuts = dbg!(shortcuts::shortcuts(&config));
+    let shortcuts = shortcuts::shortcuts(&config);
 
     let zoom_in = shortcuts
         .iter()

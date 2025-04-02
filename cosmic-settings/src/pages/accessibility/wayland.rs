@@ -1,12 +1,13 @@
 use cosmic_protocols::a11y::v1::client::cosmic_a11y_manager_v1;
+use num_derive::{FromPrimitive, ToPrimitive};
 use sctk::{
     reexports::{
-        calloop::{self, channel, LoopSignal},
+        calloop::{self, LoopSignal, channel},
         calloop_wayland_source::WaylandSource,
         client::{
-            globals::{registry_queue_init, GlobalListContents},
+            ConnectError, Connection, Dispatch, Proxy, WEnum,
+            globals::{GlobalListContents, registry_queue_init},
             protocol::wl_registry,
-            ConnectError, Connection, Dispatch, Proxy,
         },
     },
     registry::RegistryState,
@@ -15,13 +16,37 @@ use tokio::sync::mpsc;
 
 #[derive(Debug, Clone, Copy)]
 pub enum AccessibilityEvent {
+    Bound(u32),
     Magnifier(bool),
+    ScreenFilter {
+        inverted: bool,
+        filter: Option<ColorFilter>,
+    },
     Closed,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, FromPrimitive, ToPrimitive)]
+pub enum ColorFilter {
+    Greyscale,
+    Deuteranopia,
+    Protanopia,
+    Tritanopia,
+    Unknown,
+}
+
+impl Default for ColorFilter {
+    fn default() -> Self {
+        ColorFilter::Unknown
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum AccessibilityRequest {
     Magnifier(bool),
+    ScreenFilter {
+        inverted: bool,
+        filter: Option<ColorFilter>,
+    },
 }
 
 pub type Sender = calloop::channel::Sender<AccessibilityRequest>;
@@ -40,7 +65,7 @@ pub fn spawn_wayland_connection() -> Result<
     std::thread::spawn(move || {
         if let Err(err) = wayland_thread(conn, event_tx.clone(), request_rx) {
             tracing::warn!("Accessibility protocol wayland thread crashed: {}", err);
-            let _ = event_tx.send(AccessibilityEvent::Closed);
+            let _ = event_tx.blocking_send(AccessibilityEvent::Closed);
         }
     });
 
@@ -58,6 +83,8 @@ fn wayland_thread(
         global: cosmic_a11y_manager_v1::CosmicA11yManagerV1,
 
         magnifier: bool,
+        screen_inverted: bool,
+        screen_filter: Option<ColorFilter>,
     }
 
     impl Dispatch<cosmic_a11y_manager_v1::CosmicA11yManagerV1, ()> for State {
@@ -85,6 +112,41 @@ fn wayland_thread(
                             state.loop_signal.wakeup();
                         };
                         state.magnifier = magnifier;
+                    }
+                }
+                cosmic_a11y_manager_v1::Event::ScreenFilter { inverted, filter } => {
+                    let inverted = inverted
+                        .into_result()
+                        .unwrap_or(cosmic_a11y_manager_v1::ActiveState::Disabled)
+                        == cosmic_a11y_manager_v1::ActiveState::Enabled;
+                    let filter = match filter {
+                        WEnum::Value(cosmic_a11y_manager_v1::Filter::Disabled) => None,
+                        WEnum::Value(cosmic_a11y_manager_v1::Filter::Greyscale) => {
+                            Some(ColorFilter::Greyscale)
+                        }
+                        WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeProtanopia) => {
+                            Some(ColorFilter::Protanopia)
+                        }
+                        WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeDeuteranopia) => {
+                            Some(ColorFilter::Deuteranopia)
+                        }
+                        WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeTritanopia) => {
+                            Some(ColorFilter::Tritanopia)
+                        }
+                        WEnum::Value(_) | WEnum::Unknown(_) => Some(ColorFilter::Unknown),
+                    };
+
+                    if inverted != state.screen_inverted || filter != state.screen_filter {
+                        if state
+                            .tx
+                            .blocking_send(AccessibilityEvent::ScreenFilter { inverted, filter })
+                            .is_err()
+                        {
+                            state.loop_signal.stop();
+                            state.loop_signal.wakeup();
+                        };
+                        state.screen_inverted = inverted;
+                        state.screen_filter = filter;
                     }
                 }
                 _ => unreachable!(),
@@ -117,11 +179,13 @@ fn wayland_thread(
     let registry_state = RegistryState::new(&globals);
     let Ok(global) = registry_state.bind_one::<cosmic_a11y_manager_v1::CosmicA11yManagerV1, _, _>(
         &qhandle,
-        1..=1,
+        1..=2,
         (),
     ) else {
         return Ok(());
     };
+
+    let _ = tx.blocking_send(AccessibilityEvent::Bound(global.version()));
 
     loop_handle
         .insert_source(rx, |request, _, state| match request {
@@ -131,6 +195,29 @@ fn wayland_thread(
                 } else {
                     cosmic_a11y_manager_v1::ActiveState::Disabled
                 });
+            }
+            channel::Event::Msg(AccessibilityRequest::ScreenFilter { inverted, filter }) => {
+                state.global.set_screen_filter(
+                    if inverted {
+                        cosmic_a11y_manager_v1::ActiveState::Enabled
+                    } else {
+                        cosmic_a11y_manager_v1::ActiveState::Disabled
+                    },
+                    match filter {
+                        None => cosmic_a11y_manager_v1::Filter::Disabled,
+                        Some(ColorFilter::Greyscale) => cosmic_a11y_manager_v1::Filter::Greyscale,
+                        Some(ColorFilter::Protanopia) => {
+                            cosmic_a11y_manager_v1::Filter::DaltonizeProtanopia
+                        }
+                        Some(ColorFilter::Deuteranopia) => {
+                            cosmic_a11y_manager_v1::Filter::DaltonizeDeuteranopia
+                        }
+                        Some(ColorFilter::Tritanopia) => {
+                            cosmic_a11y_manager_v1::Filter::DaltonizeTritanopia
+                        }
+                        Some(ColorFilter::Unknown) => cosmic_a11y_manager_v1::Filter::Unknown,
+                    },
+                );
             }
             channel::Event::Closed => {
                 state.loop_signal.stop();
@@ -145,6 +232,8 @@ fn wayland_thread(
         global,
 
         magnifier: false,
+        screen_inverted: false,
+        screen_filter: None,
     };
 
     event_loop.run(None, &mut state, |_| {})?;

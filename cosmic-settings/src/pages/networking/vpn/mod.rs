@@ -8,14 +8,14 @@ use std::sync::Arc;
 use anyhow::Context;
 use cosmic::dialog::file_chooser::FileFilter;
 use cosmic::{
+    Apply, Element, Task,
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
     widget::{self, icon},
-    Apply, Element, Task,
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_subscriptions::network_manager::{
-    self, current_networks::ActiveConnectionInfo, NetworkManagerState, UUID,
+    self, NetworkManagerState, UUID, current_networks::ActiveConnectionInfo,
 };
 use futures::{FutureExt, StreamExt};
 use indexmap::IndexMap;
@@ -463,7 +463,7 @@ impl Page {
 
                 if let Some(settings) = self.known_connections.get(&uuid) {
                     let settings = match settings {
-                        ConnectionSettings::Vpn(ref settings) => settings,
+                        ConnectionSettings::Vpn(settings) => settings,
                         ConnectionSettings::Wireguard { id } => {
                             let connection_name = id.clone();
                             return cosmic::task::future(async move {

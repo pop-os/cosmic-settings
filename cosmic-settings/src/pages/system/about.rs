@@ -1,7 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 
 use cosmic::widget::{editable_input, list_column, settings, text};
 use cosmic::{Apply, Task};
@@ -88,10 +88,6 @@ impl Page {
         match message {
             Message::HostnameEdit(editing) => {
                 self.editing_device_name = editing;
-
-                if !editing {
-                    return self.hostname_submit();
-                }
             }
 
             Message::HostnameInput(hostname) => {
@@ -119,6 +115,7 @@ impl Page {
     }
 
     fn hostname_submit(&mut self) -> cosmic::app::Task<crate::app::Message> {
+        eprintln!("hostname submit");
         if self.hostname_input == self.info.device_name {
             return Task::none();
         }
@@ -182,6 +179,7 @@ fn device() -> Section<crate::pages::Message> {
             )
             .width(250)
             .on_input(Message::HostnameInput)
+            .on_unfocus(Message::HostnameSubmit)
             .on_submit(|_| Message::HostnameSubmit);
 
             let device_name = settings::item::builder(&*desc[device])

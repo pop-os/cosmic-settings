@@ -1,33 +1,69 @@
 use cosmic::{
-    app,
+    Task,
     cosmic_theme::{CosmicPalette, ThemeBuilder},
     iced_core::text::Wrapping,
-    theme::{self, CosmicTheme},
-    widget::{button, container, horizontal_space, icon, settings, text},
-    Apply, Task,
+    surface,
+    theme::CosmicTheme,
+    widget::{dropdown, settings, text, toggler},
 };
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;
+use cosmic_settings_daemon_config::CosmicSettingsDaemonConfig;
 use cosmic_settings_page::{
-    self as page,
+    self as page, Insert,
     section::{self, Section},
-    Insert,
 };
+use num_traits::FromPrimitive;
 use slotmap::SlotMap;
 
 pub mod magnifier;
 mod wayland;
-pub use wayland::{AccessibilityEvent, AccessibilityRequest};
+pub use wayland::{AccessibilityEvent, AccessibilityRequest, ColorFilter};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Page {
     entity: page::Entity,
     magnifier_state: bool,
+    screen_inverted: bool,
+    screen_filter_active: bool,
+    screen_filter_selection: ColorFilter,
+    screen_filter_selections: Vec<String>,
 
-    wayland_available: bool,
+    wayland_available: Option<u32>,
     wayland_thread: Option<wayland::Sender>,
     theme: Box<cosmic::cosmic_theme::Theme>,
     high_contrast: Option<bool>,
+    daemon_config: CosmicSettingsDaemonConfig,
+    daemon_helper: cosmic_config::Config,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        let daemon_helper = CosmicSettingsDaemonConfig::config().unwrap();
+        Page {
+            entity: page::Entity::default(),
+            magnifier_state: false,
+            screen_inverted: false,
+            screen_filter_active: false,
+            screen_filter_selection: ColorFilter::Greyscale,
+            screen_filter_selections: vec![
+                // This order has to match the representation of `ColorFilter`
+                fl!("color-filter", "greyscale"),
+                fl!("color-filter", "deuteranopia"),
+                fl!("color-filter", "protanopia"),
+                fl!("color-filter", "tritanopia"),
+                fl!("color-filter", "unknown"),
+            ],
+
+            wayland_available: None,
+            wayland_thread: None,
+            theme: Box::default(),
+            high_contrast: None,
+            daemon_config: CosmicSettingsDaemonConfig::get_entry(&daemon_helper)
+                .unwrap_or_default(),
+            daemon_helper,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -37,6 +73,11 @@ pub enum Message {
     Return,
     HighContrast(bool),
     SystemTheme(Box<cosmic::cosmic_theme::Theme>),
+    SetScreenInverted(bool),
+    SetScreenFilterActive(bool),
+    SetScreenFilterSelection(ColorFilter),
+    Surface(surface::Action),
+    SetSoundMono(bool),
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -56,14 +97,13 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, page::Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(vision())])
+        Some(vec![sections.insert(vision()), sections.insert(hearing())])
     }
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.wayland_thread.is_none() {
             match wayland::spawn_wayland_connection() {
                 Ok((tx, mut rx)) => {
-                    self.wayland_available = true;
                     self.wayland_thread = Some(tx);
 
                     return cosmic::Task::stream(async_fn_stream::fn_stream(
@@ -89,7 +129,7 @@ impl page::Page<crate::pages::Message> for Page {
                         "Failed to spawn wayland connection for accessibility page: {}",
                         err
                     );
-                    self.wayland_available = false;
+                    self.wayland_available = None;
                 }
             }
         }
@@ -118,6 +158,9 @@ pub fn vision() -> section::Section<crate::pages::Message> {
         off = fl!("accessibility", "off");
         unavailable = fl!("accessibility", "unavailable");
         high_contrast = fl!("accessibility", "high-contrast");
+        invert_colors = fl!("accessibility", "invert-colors");
+        color_filters = fl!("accessibility", "color-filters");
+        color_filter_type = fl!("color-filter");
     });
 
     Section::default()
@@ -135,7 +178,7 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         .find(|(_, v)| v.id == "accessibility_magnifier")
                         .expect("magnifier page not found");
 
-                    let status_text = if page.wayland_available {
+                    let status_text = if page.wayland_available.is_some() {
                         if page.magnifier_state {
                             &descriptions[on]
                         } else {
@@ -145,20 +188,11 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         &descriptions[unavailable]
                     };
 
-                    settings::item_row(vec![
-                        text::body(&descriptions[magnifier])
-                            .wrapping(Wrapping::Word)
-                            .into(),
-                        horizontal_space().into(),
-                        text::body(status_text).wrapping(Wrapping::Word).into(),
-                        icon::from_name("go-next-symbolic").size(16).into(),
-                    ])
-                    .apply(container)
-                    .class(cosmic::theme::Container::List)
-                    .apply(button::custom)
-                    .class(theme::Button::Transparent)
-                    .on_press_maybe(
+                    crate::widget::go_next_with_item(
+                        &descriptions[magnifier],
+                        text::body(status_text).wrapping(Wrapping::Word),
                         page.wayland_available
+                            .is_some()
                             .then_some(crate::pages::Message::Page(magnifier_entity)),
                     )
                 })
@@ -169,6 +203,82 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                     )
                     .map(crate::pages::Message::Accessibility),
                 )
+                .add(
+                    cosmic::Element::from(
+                        settings::item::builder(&descriptions[invert_colors]).control(
+                            toggler(page.screen_inverted).on_toggle_maybe(
+                                page.wayland_available
+                                    .is_some_and(|ver| ver >= 2)
+                                    .then_some(Message::SetScreenInverted),
+                            ),
+                        ),
+                    )
+                    .map(crate::pages::Message::Accessibility),
+                )
+                .add({
+                    cosmic::Element::from(
+                        settings::item::builder(&descriptions[color_filters]).control(
+                            toggler(page.screen_filter_active).on_toggle_maybe(
+                                page.wayland_available
+                                    .is_some_and(|ver| ver >= 2)
+                                    .then_some(Message::SetScreenFilterActive),
+                            ),
+                        ),
+                    )
+                    .map(crate::pages::Message::Accessibility)
+                })
+                .add({
+                    let selections = if page.screen_filter_selection == ColorFilter::Unknown {
+                        &page.screen_filter_selections
+                    } else {
+                        &page.screen_filter_selections[0..4]
+                    };
+                    cosmic::Element::from(
+                        settings::item::builder(&descriptions[color_filter_type]).control(
+                            dropdown::popup_dropdown(
+                                selections,
+                                Some(page.screen_filter_selection as usize),
+                                move |idx| {
+                                    let filter = ColorFilter::from_usize(idx).unwrap_or_default();
+                                    Message::SetScreenFilterSelection(filter)
+                                },
+                                cosmic::iced::window::Id::RESERVED,
+                                Message::Surface,
+                                |a| {
+                                    crate::app::Message::PageMessage(
+                                        crate::pages::Message::Accessibility(a),
+                                    )
+                                },
+                            ),
+                        ),
+                    )
+                    .map(crate::pages::Message::Accessibility)
+                })
+                .into()
+        })
+}
+
+pub fn hearing() -> section::Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        hearing = fl!("hearing");
+        mono = fl!("hearing", "mono");
+    });
+
+    Section::default()
+        .title(&descriptions[hearing])
+        .descriptions(descriptions)
+        .view::<Page>(move |_, page, section| {
+            let descriptions = &section.descriptions;
+
+            settings::section()
+                .title(&section.title)
+                .add(
+                    cosmic::Element::from(
+                        settings::item::builder(&descriptions[mono])
+                            .toggler(page.daemon_config.mono_sound, Message::SetSoundMono),
+                    )
+                    .map(crate::pages::Message::Accessibility),
+                )
                 .into()
         })
 }
@@ -176,14 +286,25 @@ pub fn vision() -> section::Section<crate::pages::Message> {
 impl Page {
     pub fn update(&mut self, message: Message) -> cosmic::iced::Task<crate::app::Message> {
         match message {
+            Message::Event(AccessibilityEvent::Bound(version)) => {
+                self.wayland_available = Some(version);
+            }
             Message::Event(AccessibilityEvent::Magnifier(value)) => {
                 self.magnifier_state = value;
             }
+            Message::Event(AccessibilityEvent::ScreenFilter { inverted, filter }) => {
+                self.screen_inverted = inverted;
+                self.screen_filter_active = filter.is_some();
+                if let Some(filter) = filter {
+                    self.screen_filter_selection = filter;
+                }
+            }
             Message::Event(AccessibilityEvent::Closed) | Message::ProtocolUnavailable => {
-                self.wayland_available = false;
+                self.wayland_available = None;
+                self.screen_filter_active = false;
             }
             Message::Return => {
-                return cosmic::iced::Task::done(crate::app::Message::Page(self.entity))
+                return cosmic::iced::Task::done(crate::app::Message::Page(self.entity));
             }
             Message::SystemTheme(theme) => {
                 self.theme = theme;
@@ -244,8 +365,46 @@ impl Page {
                     }
                 });
             }
+            Message::SetScreenInverted(inverted) => {
+                if let Some(sender) = self.wayland_thread.as_ref() {
+                    let _ = sender.send(AccessibilityRequest::ScreenFilter {
+                        inverted,
+                        filter: Some(wayland::ColorFilter::Unknown),
+                    });
+                }
+            }
+            Message::SetScreenFilterActive(active) => {
+                if let Some(sender) = self.wayland_thread.as_ref() {
+                    let _ = sender.send(AccessibilityRequest::ScreenFilter {
+                        inverted: self.screen_inverted,
+                        filter: active.then_some(self.screen_filter_selection),
+                    });
+                }
+            }
+            Message::SetScreenFilterSelection(filter) => {
+                if self.screen_filter_active && self.wayland_available.is_some_and(|ver| ver >= 2) {
+                    if let Some(sender) = self.wayland_thread.as_ref() {
+                        let _ = sender.send(AccessibilityRequest::ScreenFilter {
+                            inverted: self.screen_inverted,
+                            filter: Some(filter),
+                        });
+                    }
+                } else {
+                    self.screen_filter_selection = filter;
+                }
+            }
+            Message::Surface(a) => {
+                return cosmic::task::message(crate::app::Message::Surface(a));
+            }
+            Message::SetSoundMono(active) => {
+                if let Err(err) = self
+                    .daemon_config
+                    .set_mono_sound(&self.daemon_helper, active)
+                {
+                    tracing::error!("{err:?}");
+                }
+            }
         }
-
         cosmic::iced::Task::none()
     }
 }

@@ -225,7 +225,7 @@ dialog = ダイヤログ
     .change-prompt = { $time }秒後に設定は自動的に元に戻ります。
     .revert-settings = 元に戻す
 
-legacy-applications = X11アプリケーションのスケーリング
+legacy-app-scaling = X11アプリケーションのスケーリング
     .scaled-by-system = X11アプリを全てスケーリングする
     .system-description = HiDPI画面はX11アプリケーションがボケに見えます。
     .scaled-natively = X11アプリをネーティブの解像度で表現する
@@ -550,7 +550,7 @@ battery = Battery
   .day = { $value }日
 
   .less-than-minute = 一分以下
-  
+
   .and =
 
   .remaining-time = { $action ->

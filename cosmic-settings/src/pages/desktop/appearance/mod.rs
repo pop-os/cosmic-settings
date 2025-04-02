@@ -12,8 +12,8 @@ use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{
-    CornerRadii, Density, Spacing, Theme, ThemeBuilder, ThemeMode, DARK_THEME_BUILDER_ID,
-    LIGHT_THEME_BUILDER_ID,
+    CornerRadii, DARK_THEME_BUILDER_ID, Density, LIGHT_THEME_BUILDER_ID, Spacing, Theme,
+    ThemeBuilder, ThemeMode,
 };
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
@@ -21,10 +21,10 @@ use cosmic::iced_core::{Alignment, Color, Length};
 use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, flex_row, horizontal_space, radio, row,
-    scrollable, settings, text, ColorPickerModel,
+    ColorPickerModel, button, color_picker::ColorPickerUpdate, container, flex_row,
+    horizontal_space, radio, row, scrollable, settings, text,
 };
-use cosmic::{widget, Apply, Element, Task};
+use cosmic::{Apply, Element, Task, widget};
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::Section;
@@ -162,7 +162,7 @@ impl
             theme_mode_config,
             theme_mode,
             theme_builder_config,
-            theme_builder,
+            mut theme_builder,
             tk_config,
             accent_palette,
         ): (
@@ -180,6 +180,18 @@ impl
         } else {
             Theme::light_default()
         };
+        theme_builder = theme_builder
+            .clone()
+            .accent(theme.accent.base.color)
+            .bg_color(theme.bg_color())
+            .corner_radii(theme.corner_radii)
+            .destructive(theme.destructive.base.color)
+            .spacing(theme.spacing)
+            .success(theme.success.base.color)
+            .warning(theme.warning.base.color)
+            .neutral_tint(theme.palette.neutral_5.color)
+            .text_tint(theme.background.on.color);
+        theme_builder.gaps = theme.gaps;
 
         let custom_accent = theme_builder.accent.filter(|c| {
             let c = Srgba::new(c.red, c.green, c.blue, 1.0);
@@ -580,6 +592,19 @@ impl Page {
 
             Message::NewTheme(theme) => {
                 self.theme = *theme;
+                self.theme_builder = self
+                    .theme_builder
+                    .clone()
+                    .accent(self.theme.accent.base.color)
+                    .bg_color(self.theme.bg_color())
+                    .corner_radii(self.theme.corner_radii)
+                    .destructive(self.theme.destructive.base.color)
+                    .spacing(self.theme.spacing)
+                    .success(self.theme.success.base.color)
+                    .warning(self.theme.warning.base.color)
+                    .neutral_tint(self.theme.palette.neutral_5.color)
+                    .text_tint(self.theme.background.on.color);
+                self.theme_builder.gaps = self.theme.gaps;
             }
             Message::DarkMode(enabled) => {
                 if let Some(config) = self.theme_mode_config.as_ref() {
@@ -1011,7 +1036,7 @@ impl Page {
             #[cfg(feature = "xdg-portal")]
             Message::ImportFile(f) => {
                 let path_res =
-                    f.0 .0
+                    f.0.0
                         .uris()
                         .first()
                         .filter(|f| f.scheme() == "file")
@@ -1036,7 +1061,7 @@ impl Page {
             #[cfg(feature = "xdg-portal")]
             Message::ExportFile(f) => {
                 let path_res =
-                    f.0 .0
+                    f.0.0
                         .uris()
                         .first()
                         .filter(|f| f.scheme() == "file")
@@ -1158,7 +1183,9 @@ impl Page {
                 if let Some(config) = self.tk_config.as_ref() {
                     _ = config.set("apply_theme_global", enabled);
                 } else {
-                    tracing::error!("Failed to apply theme to GNOME config because the CosmicTK config does not exist.");
+                    tracing::error!(
+                        "Failed to apply theme to GNOME config because the CosmicTK config does not exist."
+                    );
                 }
 
                 return Task::none();
@@ -2051,30 +2078,36 @@ pub fn interface_density() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[compact]),
-                    Density::Compact,
-                    Some(density),
-                    Message::Density,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[comfortable]),
-                    Density::Standard,
-                    Some(density),
-                    Message::Density,
-                )
-                .width(Length::Fill)
-                .into()]))
-                .add(settings::item_row(vec![radio(
-                    text::body(&descriptions[spacious]),
-                    Density::Spacious,
-                    Some(density),
-                    Message::Density,
-                )
-                .width(Length::Fill)
-                .into()]))
+                .add(settings::item_row(vec![
+                    radio(
+                        text::body(&descriptions[compact]),
+                        Density::Compact,
+                        Some(density),
+                        Message::Density,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(settings::item_row(vec![
+                    radio(
+                        text::body(&descriptions[comfortable]),
+                        Density::Standard,
+                        Some(density),
+                        Message::Density,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(settings::item_row(vec![
+                    radio(
+                        text::body(&descriptions[spacious]),
+                        Density::Spacious,
+                        Some(density),
+                        Message::Density,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })

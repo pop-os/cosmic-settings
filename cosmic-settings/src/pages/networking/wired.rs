@@ -5,15 +5,15 @@ use std::{collections::BTreeSet, sync::Arc};
 
 use anyhow::Context;
 use cosmic::{
+    Apply, Element, Task,
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
     widget::{self, icon},
-    Apply, Element, Task,
 };
 use cosmic_dbus_networkmanager::interface::enums::DeviceState;
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_subscriptions::network_manager::{
-    self, current_networks::ActiveConnectionInfo, NetworkManagerState,
+    self, NetworkManagerState, current_networks::ActiveConnectionInfo,
 };
 use futures::StreamExt;
 

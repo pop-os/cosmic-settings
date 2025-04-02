@@ -142,7 +142,7 @@ magnifier = Vergrootglas
                 {$zoom_in} om in te zoomen,
         }{ $zoom_out ->
              [zero] {""}
-            *[other] {""} 
+            *[other] {""}
                 {$zoom_out} om uit te zoomen,
         }
         Super + scrollwiel om te zoomen met de muis
@@ -180,7 +180,7 @@ fit-to-screen = Aan het scherm passend maken
 open-new-folder = Nieuwe map openen
 recent-folders = Recente mappen
 
-x-minutes = { $number -> 
+x-minutes = { $number ->
         [1] 1 minuut
         *[other] { $number } minuten
     }
@@ -217,8 +217,8 @@ auto-switch = Automatisch wisselen tussen lichte en donkere modus
     .next-sunrise = Wissel naar lichte modus bij de volgende zonsopgang
     .next-sunset = Wissel naar donkere modus bij de volgende zonsondergang
 
-container-background = Containerachtergrond 
-    .desc-detail = De containerachtergrondskleur wordt gebruikt voor de navigatiebalk, het zijpaneel, dialoogvensters en soortgelijke widgets. Standaard wordt deze automatisch afgeleid van de applicatie- of vensterachtergrondkleur.      
+container-background = Containerachtergrond
+    .desc-detail = De containerachtergrondskleur wordt gebruikt voor de navigatiebalk, het zijpaneel, dialoogvensters en soortgelijke widgets. Standaard wordt deze automatisch afgeleid van de applicatie- of vensterachtergrondkleur.
     .reset = Naar automatisch terugzetten
     .desc = De primaire containerkleur wordt gebruikt voor de navigatiezijbalk, het zijpaneel, dialoogvensters en soortgelijke widgets.
 
@@ -430,7 +430,7 @@ dialog = Dialoog
     .change-prompt = Instellingen worden automatisch hersteld in { $time } seconden.
     .revert-settings = Instellingen herstellen
 
-legacy-applications = Schaling van applicaties die het X11-venstersysteem gebruiken
+legacy-app-scaling = Schaling van applicaties die het X11-venstersysteem gebruiken
     .scaled-by-system = Schaal alle X11-applicaties
     .system-description = X11-applicaties worden onscherp weergegeven op HiDPI-schermen.
     .scaled-natively = X11-applicaties in native resolutie weergeven
@@ -728,7 +728,7 @@ gestures = Veeggebaren
 
 switch-workspaces = Werkbladen wisselen
     .horizontal = Met vier vingers naar links/recht vegen
-    .vertical = Met vier vingers naar boven/beneden vegen 
+    .vertical = Met vier vingers naar boven/beneden vegen
 
 switch-between-windows = Tussen vensters wisselen
 open-application-library = appmenu openen

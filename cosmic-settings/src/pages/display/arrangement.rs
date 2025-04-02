@@ -1,16 +1,16 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
+use cosmic::Renderer;
 use cosmic::iced_core::renderer::Quad;
-use cosmic::iced_core::widget::{tree, Tree};
+use cosmic::iced_core::widget::{Tree, tree};
 use cosmic::iced_core::{
     self as core, Border, Clipboard, Element, Layout, Length, Rectangle, Renderer as IcedRenderer,
     Shell, Size, Widget,
 };
+use cosmic::iced_core::{Point, layout, mouse, renderer, touch};
 use cosmic::iced_core::{alignment, event, text};
-use cosmic::iced_core::{layout, mouse, renderer, touch, Point};
 use cosmic::widget::segmented_button::{self, SingleSelectModel};
-use cosmic::Renderer;
 use cosmic_randr_shell::{self as randr, OutputKey};
 use randr::Transform;
 

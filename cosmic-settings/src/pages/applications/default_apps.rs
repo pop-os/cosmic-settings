@@ -9,16 +9,15 @@ use std::{
 };
 
 use cosmic::{
-    surface,
+    Apply, Element, Task, surface,
     widget::{self, dropdown, icon, settings},
-    Apply, Element, Task,
 };
 use cosmic_config::{ConfigGet, ConfigSet};
-use cosmic_settings_config::shortcuts::action::System;
 use cosmic_settings_config::shortcuts::SystemActions;
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_config::shortcuts::action::System;
+use cosmic_settings_page::{self as page, Section, section};
 use freedesktop_desktop_entry::{
-    default_paths, get_languages_from_env, DesktopEntry, Iter as DesktopEntryIter,
+    DesktopEntry, Iter as DesktopEntryIter, default_paths, get_languages_from_env,
 };
 use mime_apps::App;
 use slotmap::SlotMap;
@@ -133,7 +132,7 @@ impl page::Page<crate::pages::Message> for Page {
                 load_defaults(&assocs, &["x-scheme-handler/http"]).await,
                 load_defaults(&assocs, &["inode/directory"]).await,
                 load_defaults(&assocs, &["x-scheme-handler/mailto"]).await,
-                load_defaults(&assocs, &["audio/mp3", "video/mp4"]).await,
+                load_defaults(&assocs, &["audio/mp3", "application/ogg", "video/mp4"]).await,
                 load_defaults(&assocs, &["video/mp4"]).await,
                 load_defaults(&assocs, &["image/png"]).await,
                 load_defaults(&assocs, &["text/calendar"]).await,

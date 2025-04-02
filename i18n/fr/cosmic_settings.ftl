@@ -393,7 +393,7 @@ dialog = Dialogue
     .change-prompt = Les modifications des paramètres reviendront automatiquement dans { $time } secondes.
     .revert-settings = Revenir aux paramètres
 
-legacy-applications = Mise à l'échelle des applications X11
+legacy-app-scaling = Mise à l'échelle des applications X11
     .scaled-by-system = Mettre à l'échelle toutes les applications X11
     .system-description = Les applications X11 seront floues sur les écrans HiDPI.
     .scaled-natively = Afficher toutes les applications X11 à la résolution native

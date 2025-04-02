@@ -416,7 +416,7 @@ dialog = الحواري
         }.
     .revert-settings = استرد الإعدادات
 
-legacy-applications = تحجيم تطبيقات نظام النوافذ إكس11
+legacy-app-scaling = تحجيم تطبيقات نظام النوافذ إكس11
     .scaled-by-system = حجِّم كل تطبيقات إكس11
     .system-description = ستظهر تطبيقات إكس11 بشكل ضبابي على شاشات HiDPI.
     .scaled-natively = صيِّر تطبيقات إكس11 بميزها الأصيل

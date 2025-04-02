@@ -8,12 +8,12 @@ pub mod wired;
 use std::{ffi::OsStr, process::Stdio, sync::Arc};
 
 use anyhow::Context;
-use cosmic::{widget, Apply, Element, Task};
+use cosmic::{Apply, Element, Task, widget};
 use cosmic_dbus_networkmanager::{
     interface::enums::{DeviceState, DeviceType},
     nm::NetworkManager,
 };
-use cosmic_settings_page::{self as page, section, Section};
+use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_subscriptions::network_manager;
 use futures::StreamExt;
 use slotmap::SlotMap;
@@ -322,17 +322,17 @@ impl Page {
                     }
                 };
 
-                let mut devices_changed = std::pin::pin!(network_manager
-                    .receive_devices_changed()
-                    .await
-                    .then(|_| async {
-                        match network_manager::devices::list(&conn, |_| true).await {
-                            Ok(devices) => {
-                                Message::UpdateDevices(devices.into_iter().map(Arc::new).collect())
+                let mut devices_changed =
+                    std::pin::pin!(network_manager.receive_devices_changed().await.then(
+                        |_| async {
+                            match network_manager::devices::list(&conn, |_| true).await {
+                                Ok(devices) => Message::UpdateDevices(
+                                    devices.into_iter().map(Arc::new).collect(),
+                                ),
+                                Err(why) => Message::Error(why.to_string()),
                             }
-                            Err(why) => Message::Error(why.to_string()),
                         }
-                    }));
+                    ));
 
                 while let Some(message) = devices_changed.next().await {
                     _ = emitter

@@ -1,11 +1,11 @@
 use cosmic::{
-    iced::{stream, Subscription},
+    iced::{Subscription, stream},
     iced_futures::futures::{self, SinkExt},
 };
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 use std::fmt::Debug;
 use std::hash::Hash;
-use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
+use tokio::sync::mpsc::{UnboundedReceiver, unbounded_channel};
 
 #[derive(Debug)]
 pub enum State {
