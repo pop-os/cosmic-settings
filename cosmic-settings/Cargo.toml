@@ -121,6 +121,7 @@ linux = [
     "page-default-apps",
     "page-display",
     "page-input",
+    "page-legacy-applications",
     "page-networking",
     "page-power",
     "page-region",
@@ -154,6 +155,9 @@ page-input = [
     "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",
     "dep:udev",
+]
+page-legacy-applications = [
+    "dep:cosmic-comp-config",
 ]
 page-networking = [
     "xdg-portal",
