@@ -34,6 +34,7 @@ remove = Verwijderen
 settings = Instellingen
 username = Gebruikersnaam
 visible-networks = Zichtbare netwerken
+identity = Identiteit
 
 auth-dialog = Authenticatie vereist
     .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
@@ -135,6 +136,13 @@ accessibility = Toegankelijkheid
     .off = Uit
     .unavailable = Niet beschikbaar
     .high-contrast = Verhoogde contrast modus
+    .invert-colors = Kleuren omkeren
+    .color-filters = Kleurfilters
+
+hearing = Gehoor
+    .mono = Stereo audio als mono afspelen
+
+default = Standaard
 magnifier = Vergrootglas
     .controls = U kunt ook deze sneltoetsen gebruiken: { $zoom_in ->
             [zero] {""}
@@ -145,7 +153,9 @@ magnifier = Vergrootglas
             *[other] {""}
                 {$zoom_out} om uit te zoomen,
         }
-        Super + scrollwiel om te zoomen met de muis
+        'super + scrollen' om met de muis of touchpad te zoomen
+    .scroll_controls = Zoomen met 'super + scrollen' (met de muis of touchpad) inschakelen
+    .show_overlay = Het vergrootglasmenu tonen
     .increment = Zoom-stapgrootte
     .signin = Het vergrootglas direct gebruiken als u inlogt
     .applet = Met een panel-applet het vergrootglas in-/uitschakelen
@@ -153,6 +163,13 @@ magnifier = Vergrootglas
     .continuous = De vergroting volgt de muis
     .onedge = Verplaats als de muis de randen raakt
     .centered = Houd de muis steeds in het midden van de vergroting
+color-filter = Type kleurfilter
+    .unknown = Onbekend kleurfilter actief
+    .greyscale = Grijstinten
+    .deuteranopia = Groen/Rood (green weakness, Deuteranopia)
+    .protanopia = Rood/Groen (rood weakness, Protanopia)
+    .tritanopia = Blauw/Geel (blauw weakness, Tritanopia)
+
 
 ## Desktop
 
