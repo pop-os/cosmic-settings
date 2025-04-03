@@ -833,11 +833,11 @@ legacy-app-global-shortcuts = Globale sneltoetsen in X11-toepassingen
     .all = Alle toetsaanslagen met X11-toepassingen delen
     .mouse = Muisknoppen in X11-toepassingen delen
 
-legacy-app-scaling = Schaling van applicaties die het X11-venstersysteem gebruiken
-    .scaled-by-system = Schaal alle X11-applicaties
-    .system-description = X11-applicaties worden onscherp weergegeven op HiDPI-schermen.
-    .scaled-natively = X11-applicaties in native resolutie weergeven
-    .native-description = X11-applicaties die geen schaling ondersteunen worden verkleint op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
+legacy-app-scaling = Het schalen van vensters die het X11-venstersysteem gebruiken
+    .scaled-by-system = Alle X11-vensters schalen
+    .system-description = X11-vensters worden onscherp weergegeven op HiDPI-schermen.
+    .scaled-natively = X11-vensters in hun standaard venstergrootte weergeven
+    .native-description = X11-vensters die niet geschaald kunnen worden, worden verkleind op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
 
 ## System
 
