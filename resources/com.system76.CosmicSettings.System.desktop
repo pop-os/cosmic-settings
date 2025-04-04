@@ -2,6 +2,7 @@
 Name=System & Accounts
 Name[pl]=System i konta
 Name[hu]=Rendszer és fiókok
+Name[pt_BR]=Sistema e Contas
 Comment=
 Type=Settings
 Exec=cosmic-settings system

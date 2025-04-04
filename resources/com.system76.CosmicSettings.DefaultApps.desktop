@@ -2,9 +2,11 @@
 Name=Default applications
 Name[pl]=Domyślne aplikacje
 Name[hu]=Alapértelmezett alkalmazások
+Name[pt_BR]=Aplicativos padrão
 Comment=Default web browser, mail client, file browser, and other applications.
 Comment[pl]=Domyślna przeglądarka, klient poczty e-mail, menedżer plików i inne aplikacje.
 Comment[hu]=Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások.
+Comment[pt_BR]=Navegador web padrão, cliente de email, gestor de arquivos e outros aplicativos.
 Type=Settings
 Exec=cosmic-settings default-apps
 Terminal=false

@@ -2,9 +2,11 @@
 Name=Network & Wireless
 Name[pl]=Sieć i połączenia bezprzewodowe
 Name[hu]=Hálózat és Wi-Fi
+Name[pt_BR]=Rede e Wi-Fi
 Comment=Manage network connections
 Comment[pl]=Zarządzaj połączeniami sieciowymi
 Comment[hu]=Hálózati kapcsolatok kezelése
+Comment[pt_BR]=Gerenciar conexões de rede
 Type=Settings
 Exec=cosmic-settings network
 Terminal=false
