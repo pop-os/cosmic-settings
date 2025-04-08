@@ -9,10 +9,10 @@
 
   <action id="com.system76.CosmicSettings.Users.Admin">
     <description>Manage user accounts</description>
-    <description xml:lang="pt">Gerenciar contas de usuário</description>
+    <description xml:lang="pt_BR">Gerenciar contas de usuário</description>
     <description xml:lang="pt">Gerenciar contas de usuário</description>
     <message>Authentication is required to change user data</message>
-    <message xml:lang="pt">Autenticação é necessária para alterar dados de usuário</message>
+    <message xml:lang="pt_BR">Autenticação é necessária para alterar dados de usuário</message>
     <message xml:lang="pt">Autenticação é necessária para alterar dados de usuário</message>
     <defaults>
       <allow_any>no</allow_any>
