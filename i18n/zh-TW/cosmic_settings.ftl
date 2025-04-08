@@ -1,5 +1,7 @@
 app = COSMIC 控制中心
 
+dbus-connection-error = 無法連線到 DBus
+ok = OK
 unknown = 未知
 
 number = { $number }
@@ -62,8 +64,24 @@ remove-connection-dialog = 移除連線設定檔？
 
 vpn = VPN
     .connections = VPN 連線
+    .error = 新增 VPN 設定失敗
     .remove = 移除連線設定檔
-    .select-file = 選擇 VPN 設定檔案
+    .select-file = 選擇 VPN 配置檔案
+    
+vpn-error = VPN 錯誤
+    .config = 新增 VPN 設定失敗
+    .connect = 無法連線到 VPN
+    .connection-editor = 連線編輯器失敗
+    .connection-settings = 無法取得使用中連線的設定
+    .updating-state = 網路管理員狀態更新失敗
+    .wireguard-config-path = WireGuard 配置檔案路徑無效
+    .wireguard-config-path-desc = 選擇的檔案必須位於本機檔案系統。
+    .wireguard-device = 無法建立 WireGuard 裝置
+    .with-password = 使用 nmcli 指令設定 VPN { $field ->
+        *[username] 使用者名稱
+        [password] 密碼
+        [password-flags] password-flags
+    } 失敗
 
 wired = 有線網路
     .adapter = 有線網路卡 { $id }
@@ -75,9 +93,99 @@ wifi = 無線網路
     .adapter = 無線網路卡 { $id }
     .forget = 忘記此網路
 
+wireguard-dialog = 新增 WireGuard 設備
+    .description = 為 WireGuard 配置選擇裝置名稱。
+
+## Networking: Online Accounts
+
+online-accounts = 線上帳號
+    .desc = 新增帳號、郵件（IMAP、SMTP）或企業登入
+
+# Bluetooth
+
+confirm = 確認
+
+bluetooth = 藍芽
+    .desc = 管理藍芽設備
+    .status = 當藍牙設定開啟時，此系統顯示為 { $aliases }。
+    .connected = 已連線
+    .connecting = 連線中
+    .disconnecting = 中斷連線中
+    .connect = 連線
+    .disconnect = 中斷連線
+    .forget = 忘記
+    .dbus-error = 與 DBus 互動時發生錯誤：{ $why }
+
+bluetooth-paired = 先前連線過的裝置
+    .connect = 連線
+    .battery = { $percentage }% 電池電量
+
+bluetooth-confirm-pin = 確認藍牙PIN碼
+    .description = 請確認以下 PIN 碼與顯示在 { $device } 上的 PIN 碼相符
+
+bluetooth-available = 附近的裝置
+
+bluetooth-adapters = 藍芽接收器
+
+## Accessibility
+
+accessibility = 無障礙功能
+    .vision = 視覺
+    .on = 開啟
+    .off = 關閉
+    .unavailable = 無法使用
+    .high-contrast = 高對比模式
+magnifier = 放大鏡
+    .controls = 或使用這些快捷鍵: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} 放大,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""} 
+                {$zoom_out} 縮小,
+        }
+        Super + 滾動滑鼠
+    .increment = 放大增量
+    .signin = 登入時啟動放大鏡
+    .applet = 在面板的小程式中切換放大鏡開/關
+    .movement = 縮放檢視移動方式
+    .continuous = 跟隨指標連續移動
+    .onedge = 指標到達邊緣時移動
+    .centered = 保持指標置中
+
 ## Desktop
 
 desktop = 桌面
+
+## Desktop: Wallpaper
+
+wallpaper = 桌布
+    .change = 更換圖片每隔
+    .desc = 桌布圖片、顏色和幻燈片選項。
+    .fit = 桌布調整
+    .folder-dialog = 選擇桌布資料夾
+    .image-dialog = 選擇桌布圖片
+    .plural = 桌布
+    .same = 所有顯示器使用相同的桌布
+    .slide = 幻燈片放映
+
+add-color = 新增顏色
+add-image = 新增圖片
+all-displays = 所有顯示器
+colors = 顏色
+dialog-add = 新增
+fill = 填滿
+fit-to-screen = 適應螢幕
+open-new-folder = 開啟新的資料夾
+recent-folders = 最近使用的資料夾
+
+x-minutes = { $number } 分鐘
+x-hours = { $number ->
+    [1] 1 小時
+    *[other] { $number } 小時
+}
+never = 從不
 
 ## Desktop: Appearance
 
@@ -118,15 +226,13 @@ control-tint = 控制元件色調
     .desc = 標準按鈕、搜尋輸入、文字輸入和類似元件的背景
 
 frosted = 系統介面呈現磨砂玻璃的透明效果
-    .desc = 將磨砂玻璃的透明效果套用至面板、容器、Dock、工具程式、啟動器及程式庫
-
-experimental-settings = 實驗性功能
+    .desc = 將磨砂玻璃的透明效果套用至面板、容器、基座、工具程式、啟動器及程式庫
 
 enable-export = 將此主題套用於 GNOME 應用程式
     .desc = 並非所有圖形介面程式庫都支援自動切換，非 COSMIC 原生圖形介面程式庫所開發的程式可能需要在重啟啟動後才會套用新的主題
 
-icon-theme = 圖示主題
-    .desc = 為應用程式選用不同的圖示集合
+icon-theme = 圖示佈景主題
+    .desc = 將不同的圖示集套用至應用程式
 
 text-tint = 介面文字色調
     .desc = 在各種背景中衍生出足夠對比色的顏色
@@ -141,13 +247,129 @@ interface-density = 介面密度
     .compact = 緊湊
     .spacious = 寬敞
 
-window-management = 視窗管理
-    .active-hint = 使用中視窗提示尺寸
+window-management-appearance = 視窗管理
+    .active-hint = 作用中視窗提示尺寸
     .gaps = 平鋪視窗模式下的間隔距離
+
+### Experimental
+
+experimental-settings = 實驗性設定
+icons-and-toolkit = 圖示和工具組佈景主題
+interface-font = 系統字型
+monospace-font = 等寬字型
 
 ## Desktop: Notifications
 
--requires-restart = 需要重啟
+notifications = 通知
+    .desc = 勿擾模式，鎖定畫面通知以及個別應用程式設定
+
+## Desktop: Panel
+
+panel = 面板
+    .desc = 桌面控制項和選單的頂部欄。
+
+add = 新增
+add-applet = 新增工具程式
+all = 全部
+applets = 工具程式
+center-segment = 中間位置
+drop-here = 將工具程式拖曳至此處
+end-segment = 末尾位置
+large = 大
+no-applets-found = 找不到工具程式...
+panel-bottom = 底部
+panel-left = 左側
+panel-right = 右側
+panel-top = 頂部
+search-applets = 搜尋工具程式...
+small = 小
+start-segment = 起始位置
+
+panel-appearance = 外觀
+    .match = 匹配桌布主題
+    .light = 淺色
+    .dark = 深色
+
+panel-behavior-and-position = 行為和位置
+    .autohide = 自動隱藏面板
+    .dock-autohide = 自動隱藏基座
+    .position = 螢幕上的位置
+    .display = 顯示在螢幕上
+
+panel-style = 樣式
+    .anchor-gap = 面板與螢幕邊緣的間距
+    .dock-anchor-gap = 基座與螢幕邊緣的間距
+    .extend = 將面板延伸至螢幕邊緣
+    .dock-extend = 將基座延伸至螢幕邊緣
+    .appearance = 外觀
+    .size = 尺寸
+    .background-opacity = 背景透明度
+
+panel-applets = 配置
+    .dock-desc = 配置基座工具程式
+    .desc = 配置工具程式面板
+
+panel-missing = 面板配置遺失
+    .desc = 由於使用自訂設定或設定檔損毀，面板配置遺失。
+    .fix = 重設為預設值
+
+## Desktop: Dock
+
+dock = 基座
+    .desc = 應用程式匣中釘選的應用程式面板和其他工具程式。
+
+## Desktop: Window management
+
+window-management = 視窗管理
+    .desc = 超級鍵動作、視窗控制選項，以及額外的視窗平鋪選項。
+
+super-key = 超級鍵動作
+    .launcher = 開啟啟動器
+    .workspaces = 開啟工作區
+    .applications = 開啟應用程式
+    .disable = 關閉
+
+edge-gravity = 浮動視窗吸附至鄰近邊緣
+
+window-controls = 視窗控制項
+    .maximize = 顯示最大化按鈕
+    .minimize = 顯示最小化按鈕
+    .active-window-hint = 顯示活動視窗提示
+
+focus-navigation = 焦點導航
+    .focus-follows-cursor = 焦點跟隨滑鼠游標
+    .focus-follows-cursor-delay = 焦點跟隨滑鼠游標延遲（毫秒）
+    .cursor-follows-focus = 滑鼠游標跟隨焦點
+
+## Desktop: Workspaces
+
+workspaces = 工作區
+    .desc = 工作區方向和行為。
+
+workspaces-behavior = 工作區行為
+    .dynamic = 動態工作區
+    .dynamic-desc = 自動移除空白工作區。
+    .fixed = 固定數量的工作區
+    .fixed-desc = 在總覽中新增或移除工作區。
+
+workspaces-multi-behavior = 多螢幕行為
+    .span = 工作區跨螢幕顯示
+    .separate = 螢幕擁有各自的工作區
+
+workspaces-overview-thumbnails = 工作區概觀縮圖
+    .show-number = 顯示工作區編號
+    .show-name = 顯示工作區名稱
+
+workspaces-orientation = 工作區方向
+    .vertical = 垂直
+    .horizontal = 水平
+
+hot-corner = 觸發角
+    .top-left-corner = 啟用左上角觸發角以切換工作區
+
+## Displays
+
+-requires-restart = 需要重新啟動
 
 color = 顏色
     .depth = 色彩深度
@@ -166,6 +388,7 @@ display = 螢幕
     .refresh-rate = 螢幕更新率
     .resolution = 解析度
     .scale = 縮放比例
+    .additional-scale-options = 其他縮放選項
 
 mirroring = 投影
     .id = 正在投影 { $id }
@@ -190,165 +413,26 @@ orientation = 螢幕方向
     .rotate-180 = 旋轉 180
     .rotate-270 = 旋轉 270
 
+vrr = 可變刷新率
+    .enabled = 已啟用
+    .force = 總是
+    .auto = 自動
+    .disabled = 已停用
+
 scheduling = 排程
     .manual = 手動排程
 
-## Desktop: Notifications
+dialog = 對話框
+    .title = 保留這些顯示設定？
+    .keep-changes = 保留變更
+    .change-prompt = 設定變更將在 { $time } 秒後自動還原。
+    .revert-settings = 還原設定
 
-notifications = 通知
-    .desc = 勿擾模式，鎖定畫面通知以及個別應用程式設定
-
-## Desktop: Options
-
-desktop-panels-and-applets = 桌面面板與工具程式
-
-dock = Dock
-    .desc = 用於釘選常用應用程式的面板
-
-hot-corner = 螢幕角落熱點
-    .top-left-corner = 為工作區啟用位於左上方的螢幕角落熱點
-
-window-controls = 視窗控制
-    .minimize = 顯示最小話按鈕
-    .maximize = 顯示最大話按鈕
-
-## Desktop: Panel
-
-panel = 面板
-    .desc = 頂部條狀面板用於提供桌面控制和選單
-
-add = 新增
-add-applet = 新增工具程式
-all = 全部
-applets = 工具程式
-center-segment = 中間位置
-drop-here = 將工具程式放到此處
-end-segment = 末尾位置
-large = 大
-no-applets-found = 找不到工具程式...
-panel-bottom = 下
-panel-left = 左
-panel-right = 右
-panel-top = 上
-search-applets = 搜尋工具程式...
-small = 小
-start-segment = 起始位置
-
-panel-appearance = 外觀
-    .match = 配合桌面
-    .light = 亮
-    .dark = 暗
-
-panel-behavior-and-position = 呈現方式與位置
-    .autohide = 自動隱藏面板
-    .dock-autohide = 自動隱藏 Dock
-    .position = 螢幕上的位置
-    .display = 顯示於顯示器
-
-panel-style = 樣式
-    .anchor-gap = 面板與螢幕邊緣的間隙
-    .dock-anchor-gap = Dock 與螢幕邊緣的間隙
-    .extend = 面板延伸至螢幕邊緣
-    .dock-extend = Dock 延伸至螢幕邊緣
-    .appearance = 外觀
-    .size = 尺寸
-    .background-opacity = 背景透明度
-
-panel-applets = 設定
-    .dock-desc = 設定 Dock 工具
-    .desc = 設定面板工具
-
-panel-missing = 面板設定遺失
-    .desc = 由於使用了自定義設定或設定檔毀損以致面板設定檔遺失
-    .fix = 重設至預設值
-
-## Desktop: Wallpaper
-
-wallpaper = 桌布
-    .change = 圖片切換
-    .desc = 背景圖片、顏色和幻燈片選項
-    .fit = 延伸桌布
-    .folder-dialog = 選擇桌布資料夾
-    .image-dialog = 選擇桌布
-    .plural = 桌布
-    .same = 所有螢幕使用相同的背景
-    .slide = 幻燈片
-
-add-color = 新增顏色
-add-image = 新增圖片
-all-displays = 所有顯示器
-colors = 顏色
-dialog-add = 新增
-fill = 填充
-fit-to-screen = 延伸至全螢幕
-open-new-folder = 開啟新資料夾
-recent-folders = 最近使用的資料夾
-
-x-minutes = { $number } 分鐘
-x-hours = { $number ->
-    [1] 1 小時
-    *[other] { $number } 小時
-}
-
-## Desktop: Workspaces
-
-workspaces = 工作區
-    .desc = 設定工作區編號、行為、擺放位置
-
-workspaces-behavior = 工作區行為
-    .dynamic = 動態工作區數量
-    .dynamic-desc = 自動移除空的工作區
-    .fixed = 固定工作區數量
-    .fixed-desc = 概觀模式可新增或移除工作區
-
-workspaces-multi-behavior = 多顯示器行為
-    .span = 工作區橫跨顯示器
-    .separate = 顯示器各自擁有工作區
-
-workspaces-overview-thumbnails = 工作區概觀縮圖
-    .show-number = 顯示工作區編號
-    .show-name = 顯示工作區名稱
-
-workspaces-orientation = 工作區螢幕方向
-    .vertical = 垂直
-    .horizontal = 水平
-
-## Networking: Wired
-
-wired = 網路
-    .desc = 網路連線與設定檔
-
-## Networking: Online Accounts
-
-online-accounts = 線上帳號
-    .desc = 新增帳號、郵件（IMAP、SMTP）或企業登入
-
-## Time & Language
-
-time = 時間和語言
-    .desc = N/A
-
-time-date = 日期和時間
-    .desc = 時區、自動時間校正、時間格式設定
-    .auto = 自動設定
-
-time-zone = 時區
-    .auto = 自動設定時區
-    .auto-info = 需要定位服務和網路存取能力
-
-time-format = 日期和時間格式
-    .twenty-four = 24 小時制
-    .show-seconds = 顯示秒數
-    .first = 每週的第一天
-    .show-date = 在條狀面板顯示日期
-    .friday = 星期五
-    .saturday = 星期六
-    .sunday = 星期日
-    .monday = 星期一
-
-
-time-region = 地區和語言
-    .desc = 基於地區來格式化日期、時間及數字
+legacy-applications = X11 視窗系統應用程式縮放
+    .scaled-by-system = 縮放所有 X11 應用程式
+    .system-description = X11 應用程式在 HiDPI 螢幕上會顯示模糊。
+    .scaled-natively = 以原生解析度渲染 X11 應用程式
+    .native-description = 不支援縮放的 X11 應用程式在使用 HiDPI 顯示器時會顯示很小。啟用此選項可讓遊戲使用完整的螢幕解析度。
 
 ## Sound
 
@@ -373,6 +457,326 @@ sound-alerts = 警示音
 
 sound-applications = 程式音效
     .desc = 程式音效設定
+
+profile = 設定檔
+
+## Power
+
+power = 電源 & 電池
+    .desc = 管理電源設定
+
+battery = 電池
+  .minute = { $value } { $value ->
+        [one] 分鐘
+       *[other] 分鐘
+  }
+  .hour = { $value } { $value ->
+        [one] 小時
+       *[other] 小時
+  }
+  .day = { $value } { $value ->
+        [one] 天
+       *[other] 天
+  }
+  .less-than-minute = 小於一分鐘
+  .and = 和
+  .remaining-time = { $time } 還剩 { $action ->
+        [full] 充滿
+       *[other] 電量耗盡
+   }
+
+connected-devices = 已連線裝置
+  .unknown = 未知裝置
+
+power-mode = 電源模式
+    .battery = 延長電池續航力
+    .battery-desc = 降低耗電量並以靜音模式運作。
+    .balanced = 平衡
+    .balanced-desc = 安靜的效能和適中的耗電量。
+    .performance = 高效能
+    .performance-desc = 最高效能和耗電量。
+    .no-backend = 找不到後端。請安裝 system76-power 或 power-profiles-daemon。
+
+power-saving = 省電選項
+    .turn-off-screen-after = 關閉螢幕之後
+    .auto-suspend = 自動休眠
+    .auto-suspend-ac = 插電時自動休眠
+    .auto-suspend-battery = 使用電池時自動休眠
+
+## Input
+
+acceleration-desc = 自動依照觸控板移動加速度即時變更滑鼠速度
+
+disable-while-typing = 鍵盤輸入時關閉觸控板
+
+input-devices = 輸入裝置
+    .desc = 輸入裝置
+
+primary-button = 主要按鈕
+    .desc = 設定實體按鈕的順序。
+    .left = 左
+    .right = 右
+
+scrolling = 捲動
+    .two-finger = 以雙指捲動
+    .edge = 在觸控板邊緣以單指捲動
+    .speed = 捲動速度
+    .natural = 自然捲動
+    .natural-desc = 捲動內容而非視界
+
+## Input: Keyboard
+
+slow = 慢
+fast = 快
+short = 短
+long = 長
+keyboard = 鍵盤
+    .desc = 鍵盤輸入來源、切換、特殊字元輸入、捷徑。
+
+keyboard-sources = 輸入法
+    .desc = 輸入法可使用 Super+Space 按鍵組合進行切換，此項設定可以在鍵盤快捷鍵設定頁面進行修改
+    .move-up = 往上
+    .move-down = 往下
+    .settings = 設定
+    .view-layout = 檢視鍵盤布局
+    .remove = 移除
+    .add = 新增輸入法
+
+keyboard-special-char = 特殊輸入
+    .alternate = 進階按鍵
+    .compose = 組合鍵
+    .caps = 大寫鎖定鍵
+
+keyboard-typing-assist = 鍵盤輸入輔助
+    .repeat-rate = 重複率
+    .repeat-delay = 重複延遲
+
+keyboard-numlock-boot = 鍵盤數字鎖定開機
+    .boot-state = 開機狀態
+    .last-boot = 上次開機狀態
+    .on = 開
+    .off = 關
+    .set = 設定數字鎖定鍵開機狀態
+
+added = 新增
+type-to-search = 輸入關鍵字以進行搜尋
+show-extended-input-sources = 顯示延伸輸入來源
+
+## Input: Keyboard: Shortcuts
+
+keyboard-shortcuts = 鍵盤快捷鍵
+    .desc = 顯示與修改快捷鍵
+
+add-keybinding = 新增鍵位綁定
+cancel = 取消
+command = 命令
+custom = 自訂
+debug = 除錯
+disabled = 已停用
+input-source-switch = 切換鍵盤輸入法
+migrate-workspace-prev = 將工作區移至上一個輸出
+migrate-workspace-next = 將工作區移至下一個輸出
+migrate-workspace = 將工作區移至輸出 { $direction ->
+    *[down] 下方
+    [left] 左方
+    [right] 右方
+    [up] 上方
+}
+navigate = 導覽
+replace = 取代
+shortcut-name = 捷徑名稱
+system-controls = 系統控制
+terminate = 終止
+toggle-stacking = 切換視窗堆疊
+type-key-combination = 輸入按鍵組合
+
+custom-shortcuts = 自訂捷徑
+    .add = 新增捷徑
+    .context = 新增自訂捷徑
+    .none = 沒有自訂捷徑
+
+modified = { $count } 項已修改
+
+nav-shortcuts = 導覽
+    .prev-output = 聚焦到前一個輸出
+    .next-output = 聚焦到下一個輸出
+    .last-workspace = 聚焦到上一個工作區
+    .prev-workspace = 聚焦到前一個工作區
+    .next-workspace = 聚焦到下一個工作區
+    .focus = 聚焦視窗 { $direction ->
+        *[down] 下方
+        [in] 內
+        [left] 左方
+        [out] 外
+        [right] 右方
+        [up] 上方
+    }
+    .output = 切換到輸出 { $direction ->
+        *[down] 下方
+        [left] 左方
+        [right] 右方
+        [up] 上方
+    }
+    .workspace = 切換到工作區 { $num }
+
+manage-windows = 管理視窗
+    .close = 關閉視窗
+    .maximize = 最大化視窗
+    .minimize = 最小化視窗
+    .resize-inwards = 向內調整視窗大小
+    .resize-outwards = 向外調整視窗大小
+    .toggle-sticky = 切換置頂視窗
+
+move-windows = 移動視窗
+    .direction = 移動視窗 { $direction ->
+        *[down] 下
+        [left] 左
+        [right] 右
+        [up] 上
+    }
+    .display = 將視窗移動到另一個螢幕 { $direction ->
+        *[down] 下
+        [left] 左
+        [right] 右
+        [up] 上
+    }
+    .workspace = 將視窗移動到另一個工作區 { $direction ->
+        *[below] 下方
+        [left] 左方
+        [right] 右方
+        [above] 上方
+    }
+    .workspace-num = 將視窗移動到工作區 { $num }
+    .prev-workspace = 將視窗移動到上一個工作區
+    .next-workspace = 將視窗移動到下一個工作區
+    .last-workspace = 將視窗移動到最後一個工作區
+    .next-display = 將視窗移動到下一個顯示器
+    .prev-display = 將視窗移動到上一個顯示器
+    .send-to-prev-workspace = 將視窗移動到上一個工作區
+    .send-to-next-workspace = 將視窗移動到下一個工作區
+
+system-shortcut = 系統快捷
+    .app-library = 開啟應用程式庫
+    .brightness-down = 降低螢幕亮度
+    .brightness-up = 增加螢幕亮度
+    .home-folder = 開啟主目錄
+    .keyboard-brightness-down = 降低鍵盤亮度
+    .keyboard-brightness-up = 增加鍵盤亮度
+    .launcher = 開啟啟動器
+    .log-out = 登出
+    .lock-screen = 鎖定螢幕
+    .mute = 靜音
+    .mute-mic = 麥克風靜音
+    .play-pause = 播放/暫停
+    .play-next = 下一首
+    .play-prev = 上一首
+    .screenshot = 截圖
+    .terminal = 開啟終端機
+    .volume-lower = 降低音量
+    .volume-raise = 增加音量
+    .web-browser = 開啟網頁瀏覽器
+    .window-switcher = 切換視窗
+    .window-switcher-previous = 反向切換視窗
+    .workspace-overview = 開啟工作區概覽
+
+window-tiling = 視窗平鋪
+    .horizontal = 設定水平方向
+    .vertical = 設定垂直方向
+    .swap-window = 交換視窗
+    .toggle-tiling = 切換視窗平鋪
+    .toggle-stacking = 切換視窗堆疊
+    .toggle-floating = 切換視窗浮動
+    .toggle-orientation = 切換方向
+
+replace-shortcut-dialog = 取代捷徑？
+    .desc = { $shortcut } 已被 { $name } 使用。如果您取代它， { $name } 將會被停用。
+
+zoom-in = 放大
+zoom-out = 縮小
+
+## Input: Mouse
+
+mouse = 滑鼠
+    .desc = 滑鼠靈敏度、加速及捲動設定
+    .speed = 滑鼠速度
+    .acceleration = 啟用滑鼠加速
+
+## Input: Touchpad
+
+click-behavior = 觸控模式
+    .click-finger = 觸控板雙指點擊視為滑鼠右鍵，三指點擊視為滑鼠中鍵
+    .button-areas = 觸控板右下方點擊視為滑鼠右鍵，於中間下方點擊視為滑鼠中鍵
+
+pinch-to-zoom = 雙指撥動縮放
+    .desc = 若應用程式支援，可用雙指撥動來縮放內容
+
+tap-to-click = 觸擊
+    .desc = 啟用單指觸擊視作滑鼠左鍵，雙指觸擊視作滑鼠右鍵，三指觸擊視作滑鼠中鍵
+
+touchpad = 觸控板
+    .desc = 觸控靈敏度、點擊和手勢
+    .speed = 觸控靈敏度
+    .acceleration = 啟用觸控板加速
+
+## Input: Gestures
+
+swiping = 觸控滑動
+    .four-finger-down = 四指向下滑動
+    .four-finger-left = 四指向左滑動
+    .four-finger-right = 四指向右滑動
+    .four-finger-up = 四指向上滑動
+    .three-finger-any = 三指向任何方向滑動
+
+switch-workspaces = 切換工作區
+    .horizontal = 四指左右滑動
+    .vertical = 四指上下滑動
+
+switch-between-windows = 視窗間切換
+open-application-library = 開啟應用程式庫
+open-workspaces-view = 開啟工作區概觀
+
+## Time & Language
+
+time = 時間和語言
+    .desc = N/A
+
+time-date = 日期和時間
+    .desc = 時區、自動時間校正、時間格式設定
+    .auto = 自動設定
+   .auto-ntp = 設定時區後，日期和時間將會自動更新。
+
+time-zone = 時區
+    .auto = 自動設定時區
+    .auto-info = 需要定位服務和網路存取能力
+
+time-format = 日期和時間格式
+    .twenty-four = 24 小時制
+    .show-seconds = 顯示秒數
+    .first = 每週的第一天
+    .show-date = 在條狀面板顯示日期
+    .friday = 星期五
+    .saturday = 星期六
+    .sunday = 星期日
+    .monday = 星期一
+
+time-region = 地區和語言
+    .desc = 基於地區來格式化日期、時間及數字
+
+formatting = 格式設定
+    .dates = 日期
+    .time = 時間
+    .date-and-time = 日期 & 時間
+    .numbers = 數字
+    .measurement = 度量衡
+    .paper = 紙張
+
+preferred-languages = 偏好語言
+    .desc = 語言的順序決定桌面的翻譯語言，變更將在下次登入時生效。
+
+add-language = 新增語言
+    .context = 新增語言
+install-additional-languages = 安裝其他語言
+region = 地區
 
 ## System
 
@@ -411,88 +815,28 @@ firmware = 韌體
 
 users = 使用者
     .desc = 驗證、登入、畫面鎖定
+    .admin = 管理員
+    .standard = 標準
+    .profile-add = 選擇個人資料圖片
 
-## Input
+administrator = 系統管理員
+    .desc = 系統管理員可以變更所有使用者的設定，新增和移除其他使用者。
 
-acceleration-desc = 自動依照觸控板移動加速度即時變更滑鼠速度
+add-user = 新增使用者
+remove-user = 移除使用者
+full-name = 姓名
 
-disable-while-typing = 鍵盤輸入時關閉觸控板
+## System: Default Applications
 
-input-devices = 輸入裝置
-    .desc = 輸入裝置
-
-primary-button = 主要按鈕
-    .left = 左
-    .right = 右
-
-scrolling = 捲動
-    .two-finger = 以雙指捲動
-    .edge = 在觸控板邊緣以單指捲動
-    .speed = 捲動速度
-    .natural = 自然捲動
-    .natural-desc = 捲動內容而非視界
-
-## Input: Keyboard
-
-keyboard = 鍵盤
-    .desc = 鍵盤輸入
-
-keyboard-sources = 輸入法
-    .desc = 輸入法可使用 Super+Space 按鍵組合進行切換，此項設定可以在鍵盤快捷鍵設定頁面進行修改
-    .move-up = 往上
-    .move-down = 往下
-    .settings = 設定
-    .view-layout = 檢視鍵盤布局
-    .remove = 移除
-    .add = 新增輸入法
-
-keyboard-special-char = 特殊輸入
-    .alternate = 進階按鍵
-    .compose = 組合鍵
-
-added = 新增
-type-to-search = 輸入關鍵字以進行搜尋
-
-## Input: Keyboard: Shortcuts
-
-keyboard-shortcuts = 鍵盤快捷鍵
-    .desc = 顯示與修改快捷鍵
-
-## Input: Mouse
-
-mouse = 滑鼠
-    .desc = 滑鼠靈敏度、加速及捲動設定
-    .speed = 滑鼠速度
-    .acceleration = 啟用滑鼠加速
-
-## Input: Touchpad
-
-click-behavior = 觸控模式
-    .click-finger = 觸控板雙指點擊視為滑鼠右鍵，三指點擊視為滑鼠中鍵
-    .button-areas = 觸控板右下方點擊視為滑鼠右鍵，於中間下方點擊視為滑鼠中鍵
-
-pinch-to-zoom = 雙指撥動縮放
-    .desc = 若應用程式支援，可用雙指撥動來縮放內容
-
-tap-to-click = 觸擊
-    .desc = 啟用單指觸擊視作滑鼠左鍵，雙指觸擊視作滑鼠右鍵，三指觸擊視作滑鼠中鍵
-
-touchpad = 觸控板
-    .desc = 觸控靈敏度、點擊和手勢
-    .speed = 觸控靈敏度
-    .acceleration = 啟用觸控板加速
-
-## Input: Gestures
-
-swiping = 觸控滑動
-    .four-finger-down = 四指向下滑動
-    .four-finger-left = 四指向左滑動
-    .four-finger-right = 四指向右滑動
-    .four-finger-up = 四指向上滑動
-    .three-finger-any = 三指向任何方向滑動
-
-switch-between-windows = 視窗間切換
-switch-to-next-workspace = 切換至下一個工作區
-switch-to-prev-workspace = 切換至上一個工作區
-open-application-library = 開啟應用程式庫
-open-workspaces-view = 開啟工作區概觀
+default-apps = 預設應用程式
+    .desc = 預設網頁瀏覽器、郵件用戶端、檔案瀏覽器和其他應用程式。
+    .web-browser = 網頁瀏覽器
+    .file-manager = 檔案管理員
+    .mail-client = 郵件用戶端
+    .music = 音樂
+    .video = 影片
+    .photos = 照片
+    .calendar = 行事曆
+    .terminal = 終端機
+    .other-associations = 其他關聯
+    .text-editor = 文字編輯器
