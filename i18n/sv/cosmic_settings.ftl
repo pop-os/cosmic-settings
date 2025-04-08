@@ -155,27 +155,45 @@ legacy-app-scaling = X11 fönstersystem applikationsskalning
     .scaled-natively = Rendera X11-applikationer med inbyggd upplösning
     .native-description = X11-applikationer som inte stöder skalning kommer att vara små när HiDPI-skärmar används. Aktivera för att spel ska kunna använda hela skärmen
 
-## Tillgänglighet
-
-accessibility = Tillgänglighet
+accessibility = Tillgänlighet
     .vision = Syn
     .on = På
     .off = Av
     .unavailable = Inte tillgänglig
-    .high-contrast = Högkontrast läge
+    .high-contrast = Högkontrastläge
+    .invert-colors = Invertera färger
+    .color-filters = Färgfilter
+
+hearing = Hörsel
+    .mono = Spela stereo ljud som mono
+
+default = Standard
 magnifier = Förstoringsglas
-    .controls =
-        Eller använd tangentbordsgenvägar:
-        Super + = för att zooma in,
-        Super + - för att zooma ut,
+    .controls = Eller använd dessa genvägar: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} för att zooma in,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} för att zooma ut,
+        }
         Super + scrolla med musen
+    .scroll_controls = Aktivera "Super + Scroll" (via mus eller pekplatta) genvägar
+    .show_overlay = Visa förstoringsglas överlägget
     .increment = Zoom inkrement
     .signin = Starta förstoringsglaset vid inloggning
-    .applet = Växla förstoringsglas på/av i applet på panelen
+    .applet = Slå på/av förstoringsglaset i appleten på panelen
     .movement = Zoomad vy flyttas
     .continuous = Kontinuerligt med pekare
     .onedge = När pekaren når kanten
     .centered = För att hålla pekaren centrerad
+color-filter = Färgfilter typ
+    .unknown = Okänt filter aktivt
+    .greyscale = Gråskala
+    .deuteranopia = Grön/Röd (grön svaghet, Deuteranopia)
+    .protanopia = Röd/Grön (röd svaghet, Protanopia)
+    .tritanopia = Blå/Gul (blå svaghet, Tritanopia)
 
 
 ## Skrivbord: Aviseringar
