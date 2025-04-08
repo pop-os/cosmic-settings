@@ -34,6 +34,7 @@ remove = Verwijderen
 settings = Instellingen
 username = Gebruikersnaam
 visible-networks = Zichtbare netwerken
+identity = Identiteit
 
 auth-dialog = Authenticatie vereist
     .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
@@ -135,6 +136,13 @@ accessibility = Toegankelijkheid
     .off = Uit
     .unavailable = Niet beschikbaar
     .high-contrast = Verhoogde contrast modus
+    .invert-colors = Kleuren omkeren
+    .color-filters = Kleurfilters
+
+hearing = Gehoor
+    .mono = Stereo audio als mono afspelen
+
+default = Standaard
 magnifier = Vergrootglas
     .controls = U kunt ook deze sneltoetsen gebruiken: { $zoom_in ->
             [zero] {""}
@@ -145,14 +153,22 @@ magnifier = Vergrootglas
             *[other] {""}
                 {$zoom_out} om uit te zoomen,
         }
-        Super + scrollwiel om te zoomen met de muis
+        'super + scrollen' om met de muis of touchpad te zoomen
+    .scroll_controls = Zoomen met 'super + scrollen' (met de muis of touchpad) inschakelen
+    .show_overlay = Het vergrootglasmenu tonen
     .increment = Zoom-stapgrootte
     .signin = Het vergrootglas direct gebruiken als u inlogt
     .applet = Met een panel-applet het vergrootglas in-/uitschakelen
     .movement = Beweegt de vergroting
     .continuous = De vergroting volgt de muis
     .onedge = Verplaats als de muis de randen raakt
-    .centered = Houdt de muis steeds in het midden van de vergroting
+    .centered = Houd de muis steeds in het midden van de vergroting
+color-filter = Type kleurfilter
+    .unknown = Onbekend kleurfilter actief
+    .greyscale = Grijstinten
+    .deuteranopia = Groen/Rood (groen-zwakte, Deuteranopie)
+    .protanopia = Rood/Groen (rood-zwakte, Protanopie)
+    .tritanopia = Blauw/Geel (blauw-zwakte, Tritanopie)
 
 ## Desktop
 
@@ -189,11 +205,11 @@ never = Nooit
 
 ## Desktop: Appearance
 
-appearance = Uiterlijk
-    .desc = Kleuren en thema's.
+appearance = Kleuren en thema's
+    .desc = Bepaal hoe COSMIC eruit ziet.
 
 accent-color = Accentkleur
-app-background = Achtergronden van applicaties of vensters
+app-background = Toepassings- of vensterachtergrond
 auto = Automatisch
 close = Sluiten
 color-picker = Kleurkiezer
@@ -232,7 +248,7 @@ enable-export = Pas dit thema toe op GNOME-apps.
     .desc = Niet alle toolkit-omgevingen ondersteunen automatische thema wisseling. Niet-COSMIC-apps moeten mogelijk opnieuw worden opgestart na een themawijziging.
 
 icon-theme = Icoonthema
-    .desc = Past een andere set pictogrammen toe op applicaties.
+    .desc = Past een andere set pictogrammen toe op toepassingen.
 
 text-tint = Interfacetekstkleur
     .desc = Kleur die wordt gebruikt om interfacetekstkleuren te bepalen, zodat er voldoende contrast is op verschillende oppervlakken.
@@ -316,7 +332,7 @@ panel-missing = Paneelconfiguratie ontbreekt
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Paneel met vastgezetten applicaties vanuit het appmenu en andere applets.
+    .desc = Paneel met vastgezetten toepassingen vanuit het appmenu en andere applets.
 
 ## Desktop: Window management
 
@@ -417,7 +433,7 @@ orientation = Oriëntatie
 
 vrr = Variable refresh rate
     .enabled = Ingeschakeld
-    .force = Geforceerd ingeschakeld houden
+    .force = Ingeschakeld houden
     .auto = Automatisch
     .disabled = Uitgeschakeld
 
@@ -430,12 +446,6 @@ dialog = Dialoog
     .change-prompt = Instellingen worden automatisch hersteld in { $time } seconden.
     .revert-settings = Instellingen herstellen
 
-legacy-app-scaling = Schaling van applicaties die het X11-venstersysteem gebruiken
-    .scaled-by-system = Schaal alle X11-applicaties
-    .system-description = X11-applicaties worden onscherp weergegeven op HiDPI-schermen.
-    .scaled-natively = X11-applicaties in native resolutie weergeven
-    .native-description = X11-applicaties die geen schaling ondersteunen worden verkleint op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
-
 ## Sound
 
 sound = Geluid
@@ -447,6 +457,8 @@ sound-output = Uitvoer
     .level = Uitvoerniveau
     .config = Configuratie
     .balance = Geluidsbalans
+    .left = Links
+    .right = Rechts
 
 sound-input = Invoer
     .volume = Invoervolume
@@ -457,15 +469,15 @@ sound-alerts = Waarschuwingsgeluid
     .volume = Waarschuwingsvolume
     .sound = Type waarschuwingsgeluid
 
-sound-applications = Applicaties
-    .desc = Volume-instellingen per applicatie
+sound-applications = Toepassingen
+    .desc = Volume-instellingen per toepassing
 
 profile = Profiel
 
 ## Power
 
-power = Energie- en batterijbeheer
-    .desc = N/A
+power = Enegrie en batterij
+    .desc = Energieverbruik beheren
 
 battery = Batterij
   .minute = { $value } { $value ->
@@ -545,7 +557,7 @@ keyboard-sources = Invoermethodes
 keyboard-special-char = Invoer speciale tekens
     .alternate = Toets voor speciale tekens (Alt-Gr)
     .compose = Compose-toets
-    .caps = Caps Lock-toets
+    .caps = Capslocktoets
 
 keyboard-typing-assist = Typen
     .repeat-rate = Herhalingssnelheid
@@ -554,8 +566,8 @@ keyboard-typing-assist = Typen
 keyboard-numlock-boot = Numlock
     .boot-state = Status van de numlock bij het opstarten
     .last-boot = Ongewijzigd laten
-    .on = Inschakelen
-    .off = Uitschakelen
+    .on = Ingeschakeld
+    .off = Uitgeschakeld
     .set = Numlock bij het opstarten
 
 added = Toegevoegd
@@ -573,6 +585,7 @@ command = Commando
 custom = Aangepast
 debug = Fouten opsporen
 disabled = Uitgeschakeld
+input-source-switch = Tussen toetsenbordindeling wisselen
 migrate-workspace-prev = Werkblad naar vorige uitvoer verplaatsen
 migrate-workspace-next = Werkblad naar volgende uitvoer verplaatsen
 migrate-workspace = Werkblad verplaatsen naar uitvoer { $direction ->
@@ -777,9 +790,58 @@ add-language = Taal toevoegen
 install-additional-languages = Meer talen installeren
 region = Regio
 
+## Applications
+
+applications = Toepassingen
+
+## Applications: Default Applications
+
+default-apps = Standaardtoepassingen
+    .desc = Standaard webbrowser, e-mailprogramma, bestandsbeheerder, en andere toepassingen.
+    .web-browser = Webbrowser
+    .file-manager = Bestandsbeheerder
+    .mail-client = E-mailprogramma
+    .music = Muziek
+    .video = Video
+    .photos = Foto's
+    .calendar = Agenda
+    .terminal = Terminal
+    .other-associations = Andere koppelingen
+    .text-editor = Teksteditor
+
+## Applications: Startup Applications
+
+startup-apps = Autostart toepassingen
+    .desc = Configureer toepassingen die automatisch worden gestart nadat u bent ingelogd.
+    .add = Autostart toevoegen
+    .user = Autostart toepassingen voor de huidige gebruiker
+    .user-description = Deze toepassingen worden automatisch gestart als u met dit gebruikersaccount inlogt.
+    .remove-dialog-title = Autostart { $name } verwijderen?
+    .remove-dialog-description = Weet u zeker dat u { $name } niet meer automatisch wilt laten starten?
+    .search-for-application = Autostart kiezen
+
+## Applications: Legacy Applications
+
+legacy-applications = Compatibiliteit met X11-toepassingen
+    .desc = Compatibiliteit voor het schalen van X11-vensters en voor globale sneltoetsen.
+
+legacy-app-global-shortcuts = Globale sneltoetsen in X11-toepassingen
+    .desc = Met globale sneltoetsen kunnen toetsaanslagen en muisbewegingen die u maakte in de ene toepassing worden herkend door andere toepassingen voor functies als push-to-talk en push-to-mute. Voor X11-toepassingen is dit standaard uitgeschakeld zodat andere toepassingen uw mogelijk gevoelige toetsaanslagen en muisbewegingen niet kunnen afluisteren.
+    .none = Toetsaanslagen niet met X11-toepassingen delen
+    .modifiers = Alleen de Super, Shift, Contol, Alt etc delen 
+    .combination = Toetsaanslagen alleen delen als u op Super, Shift, Control of Alt drukt
+    .all = Alle toetsaanslagen met X11-toepassingen delen
+    .mouse = Muisknoppen in X11-toepassingen delen
+
+legacy-app-scaling = Het schalen van vensters die het X11-venstersysteem gebruiken
+    .scaled-by-system = Alle X11-vensters schalen
+    .system-description = X11-vensters worden onscherp weergegeven op HiDPI-schermen.
+    .scaled-natively = X11-vensters in hun standaard venstergrootte weergeven
+    .native-description = X11-vensters die niet geschaald kunnen worden, worden verkleind op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
+
 ## System
 
-system = Systeem en accounts
+system = Systeem en gebruikersaccounts
 
 ## System: About
 
@@ -824,18 +886,4 @@ administrator = Systeembeheerder (root)
 add-user = Gebruiker toevoegen
 remove-user = Gebruiker verwijderen
 full-name = Volledige naam
-
-## System: Default Applications
-
-default-apps = Standaardapplicaties
-    .desc = Standaard webbrowser, e-mailprogramma, bestandsbeheerder, en andere applicaties.
-    .web-browser = Webbrowser
-    .file-manager = Bestandsbeheerder
-    .mail-client = E-mailprogramma
-    .music = Muziek
-    .video = Video
-    .photos = Foto's
-    .calendar = Agenda
-    .terminal = Terminal
-    .other-associations = Andere koppelingen
-    .text-editor = Teksteditor
+invalid-username = Ongeldige gebruikersnaam
