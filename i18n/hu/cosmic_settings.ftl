@@ -34,6 +34,7 @@ remove = Törlés
 settings = Beállítások
 username = Felhasználónév
 visible-networks = Látható hálózatok
+identity = Azonosító
 
 auth-dialog = Azonosítás szükséges
     .vpn-description = Írja be a VPN szolgáltatás által követelt felhasználónevet és jelszót.
@@ -123,9 +124,9 @@ bluetooth-paired = Korábban párosított eszközök
 bluetooth-confirm-pin = Bluetooth PIN megerősítése
     .description = Kérjük, erősítse meg, hogy a következő PIN megegyezik a(z) { $device } eszközön megjelenített PIN-kóddal
 
-bluetooth-available = Közeli Eszközök
+bluetooth-available = Közeli eszközök
 
-bluetooth-adapters = Bluetooth Adapterek
+bluetooth-adapters = Bluetooth adapterek
 
 ## Accessibility
 
@@ -137,9 +138,13 @@ accessibility = Akadálymentesség
     .high-contrast = Kontrasztos mód
     .invert-colors = Színek invertálása
     .color-filters = Színszűrők
+
+hearing = Hallás
+    .mono = Sztereó hang lejátszása monóként
+
 default = Alapértelmezett
 magnifier = Nagyító
-    .controls = Vagy használd ezeket a billentyűparancsokat: { $zoom_in ->
+    .controls = Vagy használja ezeket a billentyűparancsokat: { $zoom_in ->
              [zero] {""}
             *[other] {""}
                 {$zoom_in} a nagyításhoz,
@@ -149,6 +154,8 @@ magnifier = Nagyító
                 {$zoom_out} a kicsinyítéshez,
         }
         Super + görgetés az egérrel
+    .scroll_controls = "Super + Görgetés" (egérrel vagy érintőpárnával) billentyűparancsok engedélyezése
+    .show_overlay = Nagyító megjelenítése
     .increment = Nagyítás mértéke
     .signin = Nagyító indítása bejelentkezéskor
     .applet = A nagyítót be- és kikapcsolhatja a panelen található kisalkalmazásban
@@ -391,8 +398,8 @@ display = Kijelzők
     .arrangement = Kijelző elrendezése
     .arrangement-desc = Húzza a kijelzőket az átrendezésükhöz.
     .enable = Kijelző engedélyezése
-    .external = { $size } { $output } Külső kijelző
-    .laptop = { $size } Laptop kijelző
+    .external = { $size } { $output } külső kijelző
+    .laptop = { $size } laptop kijelző
     .options = Kijelző lehetőségek
     .refresh-rate = Frissítési gyakoriság
     .resolution = Felbontás
@@ -447,7 +454,9 @@ sound-output = Kimenet
     .device = Kimeneti eszköz
     .level = Kimeneti szint
     .config = Konfiguráció
-    .balance = Egyensúlyozás
+    .balance = Balansz
+    .left = Bal
+    .right = Jobb
 
 sound-input = Bemenet
     .volume = Bemeneti hangerő
@@ -465,7 +474,7 @@ profile = Profilok
 
 ## Power
 
-power = Energia és Akkumulátor
+power = Energia és akkumulátor
     .desc = Energia beállítások kezelése
 
 battery = Akkumulátor
@@ -551,7 +560,7 @@ keyboard-special-char = Speciális karakter beírása
     .caps = Caps Lock billentyű
 
 keyboard-typing-assist = Gépelés
-    .repeat-rate = Ismétlési arány
+    .repeat-rate = Ismétlési sebesség
     .repeat-delay = Ismétlési késleltetés
 
 keyboard-numlock-boot = Num Lock
@@ -570,7 +579,7 @@ show-extended-input-sources = Bővített bemeneti források megjelenítése
 keyboard-shortcuts = Billentyűparancsok
     .desc = Billentyűparancsok megtekintése és testreszabása
 
-add-keybinding = Billentyűparancs hozzáadása
+add-another-keybinding = Új billentyűparancs hozzáadása
 cancel = Mégse
 command = Parancs
 custom = Egyedi
@@ -598,7 +607,7 @@ custom-shortcuts = Egyedi billentyűkombinációk
     .context = Egyedi billentyűkombináció hozzáadása
     .none = Nincsenek egyéni billentyűkombinációk
 
-modified = { $count }-szer szerkeszte
+modified = { $count } módosítva
 
 nav-shortcuts = Navigáció
     .prev-output = Az előző kimenet fókuszálása
@@ -620,7 +629,7 @@ nav-shortcuts = Navigáció
         [right] jobb
         [up] fenti
     } kimenetre
-    .workspace = Cserélés az { $num }. munkaterületre
+    .workspace = Váltás a(z) { $num }. munkaterületre
 
 manage-windows = Ablakok kezelése
     .close = Ablak bezárása
@@ -649,7 +658,7 @@ move-windows = Ablakok mozgatása
         [right] jobbra
         [above] feljebb
     }
-    .workspace-num = Ablak áthelyezése az { $num }. munkaterületre
+    .workspace-num = Ablak áthelyezése a(z) { $num }. munkaterületre
     .prev-workspace = Ablak áthelyezése az előző munkaterületre
     .next-workspace = Ablak áthelyezése a következő munkaterületre
     .last-workspace = Ablak áthelyezése az utolsó munkaterületre
@@ -692,7 +701,7 @@ window-tiling = Ablak csempézés
     .toggle-orientation = Tájolás váltása
 
 replace-shortcut-dialog = Lecseréli a parancsikont?
-    .desc = A { $shortcut } használja a { $name }. Ha lecseréli, a { $name } le lesz tiltva.
+    .desc = A(z) { $shortcut } használja a(z) { $name }. Ha lecseréli, a(z) { $name } le lesz tiltva.
 
 zoom-in = Nagyítás
 zoom-out = Kicsinyítés
@@ -740,10 +749,10 @@ open-workspaces-view = Munkaterületek áttekintésének megnyitása
 
 ## Time & Language
 
-time = Idő és Nyelv
+time = Idő és nyelv
     .desc = N/A
 
-time-date = Dátum és Idő
+time-date = Dátum és idő
     .desc = Időzóna, automatikus órabeállítások és időformátum.
     .auto = Beállítás automatikusan
     .auto-ntp = A dátum és idő automatikusan frissül, ha az időzóna be van állítva.
@@ -763,12 +772,12 @@ time-format = Dátum- és időformátum
     .monday = Hétfő
 
 time-region = Régió és nyelv
-    .desc = A dátumok, időpontok és számok formázása a régió alapján
+    .desc = Dátumok, időpontok és számok formázása a régió alapján
 
 formatting = Formátum
     .dates = Dátum
     .time = Idő
-    .date-and-time = Dátum és Idő
+    .date-and-time = Dátum és idő
     .numbers = Számok
     .measurement = Mértékegységek
     .paper = Papír
@@ -813,8 +822,16 @@ startup-apps = Indítási alkalmazások
 
 ## Applications: Legacy Applications
 
-legacy-applications = X11 Alkalmazások Támogatása
+legacy-applications = X11 alkalmazások támogatása
     .desc = X11 ablakkezelő rendszer alkalmazásméretezése és globális billentyűparancsok.
+
+legacy-app-global-shortcuts = Globális billentyűparancsok X11 alkalmazásokban
+    .desc = A globális parancsikonok lehetővé teszik, hogy az alkalmazásokban a billentyű- és egérkattintás eseményeket más alkalmazások is felismerjék, például a "nyomd-hogy-beszélj" vagy a "nyomd a némításhoz" funkciókhoz. Alapértelmezés szerint ez az X11 alkalmazásokban le van tiltva, hogy más alkalmazások ne figyelhessék a billentyűzet és az egér eseményeit, amelyek érzékeny információkat tartalmazhatnak.
+    .none = Nincsnek billentyűk
+    .modifiers = Módosítók (Super, Shift, Control, Alt)
+    .combination = Minden billentyű, miközben a Super, Control vagy Alt módosítók lenyomva vannak
+    .all = Minden billentyű
+    .mouse = Egérgomb-események X11 alkalmazásokban
 
 legacy-app-scaling = X11-ablakrendszer alkalmazásméretezés
     .scaled-by-system = Minden X11-alkalmazás méretezése
@@ -869,3 +886,4 @@ administrator = Rendszergazda
 add-user = Felhasználó hozzáadása
 remove-user = Felhasználó eltávolítása
 full-name = Teljes név
+invalid-username = Érvénytelen felhasználónév

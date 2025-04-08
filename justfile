@@ -178,6 +178,7 @@ check-features:
         "page-default-apps" \
         "page-display" \
         "page-input" \
+        "page-legacy-applications" \
         "page-networking" \
         "page-power" \
         "page-region" \
