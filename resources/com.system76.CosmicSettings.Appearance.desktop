@@ -2,9 +2,11 @@
 Name=Appearance
 Name[pl]=Wygląd
 Name[hu]=Megjelenés
+Name[pt_BR]=Aparência
 Comment=Accent colors and theming.
 Comment[pl]=Kolory akcentów i styl.
 Comment[hu]=Kiemelő színek és téma.
+Comment[pt_BR]=Cores de destaque e temas.
 Type=Settings
 Exec=cosmic-settings appearance
 Terminal=false

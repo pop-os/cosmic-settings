@@ -2,9 +2,11 @@
 Name=Bluetooth
 Name[pl]=Bluetooth
 Name[hu]=Bluetooth
+Name[pt_BR]=Bluetooth
 Comment=Manage Bluetooth devices
 Comment[pl]=Zarządzaj urządzeniami Bluetooth
 Comment[hu]=Bluetooth-eszközök kezelése
+Comment[pt_BR]=Gerenciar dispositivos Bluetooth
 Type=Settings
 Exec=cosmic-settings bluetooth
 Terminal=false
