@@ -2,11 +2,11 @@
 Name=Window management
 Name[pl]=Zarządzanie oknami
 Name[hu]=Ablakkezelés
-Name[pt_BR]=Gerenciamento de Janelas
+Name[pt]=Gerenciamento de Janelas
 Comment=Super key action, window control options, and additional window tiling options.
 Comment[pl]=Działanie klawisza Super, opcje kontroli oknami i dodatkowe ustawienia kafelkowania okien.
 Comment[hu]=Super billentyű funkció, ablakkezelési és csempézési beállítások.
-Comment[pt_BR]=Ação da tecla Super, opções de controle de janela e opções adicionais de janelas em mosaico.
+Comment[pt]=Ação da tecla Super, opções de controle de janela e opções adicionais de janelas em mosaico.
 Type=Settings
 Exec=cosmic-settings window-management
 Terminal=false

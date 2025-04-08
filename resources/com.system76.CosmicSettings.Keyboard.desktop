@@ -2,11 +2,11 @@
 Name=Keyboard
 Name[pl]=Klawiatura
 Name[hu]=Billentyűzet
-Name[pt_BR]=Teclado
+Name[pt]=Teclado
 Comment=Input sources, switching, special character entry, shortcuts.
 Comment[pl]=Źródła wprowadzania, przełączanie, specjalne klawisze, skróty.
 Comment[hu]=Bemeneti források, váltásuk, speciális karakterek, billentyűparancsok.
-Comment[pt_BR]=Métodos de entrada, entrada de caracteres especiais, atalhos.
+Comment[pt]=Métodos de entrada, entrada de caracteres especiais, atalhos.
 Type=Settings
 Exec=cosmic-settings keyboard
 Terminal=false

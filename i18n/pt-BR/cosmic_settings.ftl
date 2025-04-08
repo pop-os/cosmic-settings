@@ -334,10 +334,10 @@ panel-missing = Configuração do painel está ausente
 dock = Dock
     .desc = Painel com aplicativos fixados na bandeja de apps e outros applets.
 
-## Desktop: Window Management
+## Desktop: Window management
 
 window-management = Gerenciamento de Janelas
-    .desc = Ação da tecla Super, opções de controle e de alinhamento de janelas.
+    .desc = Ação da tecla Super, opções de controle e alinhamento de janelas.
 
 super-key = Ação da tecla Super (Windows)
     .launcher = Abrir Lançador
@@ -824,6 +824,14 @@ startup-apps = Aplicativos de inicialização
 
 legacy-applications = Compatibilidade com aplicativos X11
     .desc = Dimensionamento de aplicativos de sistema de janelas X11 e atalhos globais.
+
+legacy-app-global-shortcuts = Atalhos globais em aplicativos X11
+    .desc = Atalhos globais permitem que pressionamentos de teclas e eventos de botão do mouse realizados em aplicativos sejam reconhecidos por outros aplicativos para recursos como push-to-talk ou push-to-mute. Por padrão, isso é desabilitado em aplicativos X11 para garantir que outros aplicativos não possam monitorar eventos de teclado e mouse contendo informações confidenciais.
+    .none = Nenhuma tecla
+    .modifiers = Modificadores (Super, Shift, Control, Alt)
+    .combination = Todas as teclas enquanto modificadores Super, Control ou Alt estão sendo pressionados
+    .all = Todas as teclas
+    .mouse = Eventos de botão de mouse em aplicativos X11
 
 legacy-app-scaling = Dimensionamento de aplicativos X11
     .scaled-by-system = Dimensionar todos os aplicativos X11

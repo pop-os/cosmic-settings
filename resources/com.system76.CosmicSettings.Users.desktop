@@ -2,11 +2,11 @@
 Name=Users
 Name[pl]=Użytkownicy
 Name[hu]=Felhasználók
-Name[pt_BR]=Usuários
+Name[pt]=Usuários
 Comment=Authentication and user accounts.
 Comment[pl]=Uwierzytelnianie i konta użytkowników.
 Comment[hu]=Hitelesítés és felhasználói fiókok.
-Comment[pt_BR]=Autenticação e contas de usuário.
+Comment[pt]=Autenticação e contas de usuário.
 Type=Settings
 Exec=cosmic-settings users
 Terminal=false
