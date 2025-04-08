@@ -22,7 +22,7 @@ airplane-on = Modul avion este activ.
 cable-unplugged = Cablu deconectat
 connect = Conectează
 connected = Conectat
-connecting = Conectare…
+connecting = Se conectează…
 disconnect = Deconectează
 forget = Uită
 known-networks = Rețele cunoscute
@@ -110,8 +110,8 @@ bluetooth = Bluetooth
     .desc = Gestionează dispozitivele Bluetooth
     .status = Acest sistem este vizibil ca { $aliases } în timp ce setările Bluetooth sunt deschise.
     .connected = Conectat
-    .connecting = Conectare
-    .disconnecting = Deconectare
+    .connecting = Se conectează
+    .disconnecting = Se deconectează
     .connect = Conectează
     .disconnect = Deconectează
     .forget = Uită
@@ -165,7 +165,7 @@ magnifier = Lupă
     .centered = Pentru a păstra pointerul centrat
 color-filter = Tip filtru de culoare
     .unknown = Filtru necunoscut activ
-    .greyscale = Gris
+    .greyscale = Gri
     .deuteranopia = Verde/Roșu (slăbiciune verde, Deuteranopie)
     .protanopia = Roșu/Verde (slăbiciune roșie, Protanopie)
     .tritanopia = Albastru/Galben (slăbiciune albastră, Tritanopie)
@@ -334,7 +334,7 @@ panel-missing = Configurația panoului lipsește
 dock = Dock
     .desc = Panou cu aplicații fixate în bara de aplicații și alte applet-uri.
 
-## Desktop: Gestionarea ferestrelor
+## Desktop: Window management
 
 window-management = Gestionarea ferestrelor
     .desc = Acțiune pentru tasta Super, opțiuni de control ale ferestrelor și opțiuni suplimentare de aranjare.
@@ -474,7 +474,7 @@ profile = Profil
 
 ## Power
 
-power = Alimentare și baterie
+power = Alimentare & Baterie
     .desc = Gestionează setările de alimentare
 
 battery = Baterie
@@ -550,7 +550,7 @@ keyboard-sources = Surse de intrare
   .move-up = Mută în sus
   .move-down = Mută în jos
   .settings = Setări
-  .view-layout = Vezi aspectul tastaturii
+  .view-layout = Vezi aranjamentul tastaturii
   .remove = Elimină
   .add = Adaugă sursă de intrare
 
@@ -603,7 +603,7 @@ toggle-stacking = Comută stivuirea ferestrelor
 type-key-combination = Tastează combinația de taste
 
 custom-shortcuts = Scurtături personalizate
-  .add = Adaugă scurtătură
+  .add = Adaugă o scurtătură
   .context = Adaugă scurtătură personalizată
   .none = Fără scurtături personalizate
 
@@ -671,7 +671,7 @@ system-shortcut = Sistem
   .app-library = Deschide biblioteca de aplicații
   .brightness-down = Scade luminozitatea ecranului
   .brightness-up = Crește luminozitatea ecranului
-  .home-folder = Deschide folderul principal
+  .home-folder = Deschide folderul home
   .keyboard-brightness-down = Scade luminozitatea tastaturii
   .keyboard-brightness-up = Crește luminozitatea tastaturii
   .launcher = Deschide launcher-ul
@@ -701,7 +701,7 @@ window-tiling = Aranjarea feronsterelor
   .toggle-orientation = Comută orientarea
 
 replace-shortcut-dialog = Înlocuiește scurtătura?
-  .desc = { $shortcut } este folosit de { $name }. Dacă o înlocuiești, { $name } va fi dezactivat.
+  .desc = { $shortcut } este folosită de { $name }. Dacă o înlocuiești, { $name } va fi dezactivat.
 
 zoom-in = Mărește
 zoom-out = Micșorează
@@ -771,7 +771,7 @@ time-format = Format dată & oră
   .sunday = Duminică
   .monday = Luni
 
-time-region = Regiune și limbă
+time-region = Regiune & Limbă
     .desc = Formatează datele, orele și numerele în funcție de regiunea ta
 
 formatting = Formatare
