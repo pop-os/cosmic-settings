@@ -2,11 +2,11 @@
 Name=Wired
 Name[pl]=Połączenia przewodowe
 Name[hu]=Vezetékes kapcsolatok
-Name[pt_BR]=Rede Cabeada
+Name[pt]=Rede Cabeada
 Comment=Wired connections and connection profiles.
 Comment[pl]=Połączenia przewodowe i profile połączeń.
 Comment[hu]=Vezetékes kapcsolatok és kapcsolódási profilok.
-Comment[pt_BR]=Conexões de rede cabeada e perfis de conexão.
+Comment[pt]=Conexões de rede cabeada e perfis de conexão.
 Type=Settings
 Exec=cosmic-settings wired
 Terminal=false

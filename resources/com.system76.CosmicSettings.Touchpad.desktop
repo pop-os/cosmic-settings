@@ -2,11 +2,11 @@
 Name=Touchpad
 Name[pl]=Gładzik
 Name[hu]=Érintőpárna
-Name[pt_BR]=Touchpad
+Name[pt]=Touchpad
 Comment=Touchpad speed, click options, gestures.
 Comment[pl]=Prędkość gładzika, opcje kliknięć, gesty.
 Comment[hu]=Érintőpárna sebessége, kattintási beállítások, gesztusok.
-Comment[pt_BR]=Velocidade do touchpad, opções de clique, gestos.
+Comment[pt]=Velocidade do touchpad, opções de clique, gestos.
 Type=Settings
 Exec=cosmic-settings touchpad
 Terminal=false
