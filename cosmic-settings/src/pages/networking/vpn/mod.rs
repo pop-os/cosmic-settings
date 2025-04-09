@@ -822,7 +822,8 @@ fn devices_view() -> Section<crate::pages::Message> {
                                         ))
                                         .width(Length::Fixed(200.0))
                                         .apply(widget::container)
-                                        .class(cosmic::style::Container::Dialog)
+                                        .padding(1)
+                                        .class(cosmic::style::Container::Dropdown)
                                 })
                                 .apply(|e| Some(Element::from(e)))
                         } else {
