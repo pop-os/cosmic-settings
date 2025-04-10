@@ -407,6 +407,7 @@ impl page::Page<crate::pages::Message> for Page {
                 current: Some(test_mode),
                 adaptive_sync: None,
                 adaptive_sync_availability: None,
+                xwayland_primary: None,
             });
 
             randr.outputs.insert(cosmic_randr_shell::Output {
@@ -423,6 +424,7 @@ impl page::Page<crate::pages::Message> for Page {
                 current: Some(test_mode),
                 adaptive_sync: Some(AdaptiveSyncState::Disabled),
                 adaptive_sync_availability: Some(AdaptiveSyncAvailability::Supported),
+                xwayland_primary: None,
             });
 
             crate::pages::Message::Displays(Message::Update {
