@@ -2,9 +2,11 @@
 Name=Wallpaper
 Name[pl]=Tapeta
 Name[hu]=Háttérkép
+Name[pt]=Papel de Parede
 Comment=Wallpaper images, colors, and slideshow options.
 Comment[pl]=Obraz tła, kolory i opcje pokazu slajdów.
 Comment[hu]=Háttérképek, színek és diavetítési beállítások.
+Comment[pt]=Imagens de plano de fundo, cores, e opções de exibição em slide.
 Type=Settings
 Exec=cosmic-settings wallpaper
 Terminal=false

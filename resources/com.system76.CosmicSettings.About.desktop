@@ -2,9 +2,11 @@
 Name=About
 Name[pl]=O systemie
 Name[hu]=Rendszerinformáció
+Name[pt]=Sobre
 Comment=Device name, hardware information, operating system defaults.
 Comment[pl]=Nazwa urządzenia, informacje o sprzęcie i systemie operacyjnym.
 Comment[hu]=Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai.
+Comment[pt]=Nome do dispositivo, informações de hardware e padrões do sistema operacional.
 Type=Settings
 Exec=cosmic-settings about
 Terminal=false

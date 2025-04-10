@@ -2,9 +2,11 @@
 Name=Wi-Fi
 Name[pl]=Wi-Fi
 Name[hu]=Wi-Fi
+Name[pt]=Wi-Fi
 Comment=Wi-Fi connections and connection profiles.
+Comment[hu]=Wi-Fi kapcsolatok és kapcsolódási profilok.
 Comment[pl]=Połączenia Wi-Fi i profile połączeń.
-Comment[hu]=Wi-Fi-kapcsolatok és kapcsolódási profilok.
+Comment[pt]=Conexões de rede sem fio e perfis de conexão.
 Type=Settings
 Exec=cosmic-settings wireless
 Terminal=false

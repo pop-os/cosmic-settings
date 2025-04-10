@@ -2,6 +2,7 @@
 Name=Desktop
 Name[pl]=Pulpit
 Name[hu]=Asztal
+Name[pt]=Área de Trabalho
 Comment=
 Type=Settings
 Exec=cosmic-settings desktop

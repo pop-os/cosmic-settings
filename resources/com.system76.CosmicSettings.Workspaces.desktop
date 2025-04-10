@@ -2,9 +2,11 @@
 Name=Workspaces
 Name[pl]=Obszary robocze
 Name[hu]=Munkaterületek
+Name[pt]=Áreas de Trabalho
 Comment=Workspace orientation and behavior.
 Comment[pl]=Kierunek i zachowanie obszarów roboczych.
 Comment[hu]=Munkaterületek tájolása és viselkedése.
+Comment[pt]=Orientação e comportamento da área de trabalho.
 Type=Settings
 Exec=cosmic-settings workspaces
 Terminal=false

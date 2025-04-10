@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Applications
 Name[hu]=Alkalmazások
+Name[pt]=Aplicativos
 Comment=Manage application settings.
 Comment[hu]=Alkalmazásbeállítások kezelése.
+Comment[pt]=Gerenciar configurações de aplicativos.
 Type=Settings
 Exec=cosmic-settings applications
 Terminal=false

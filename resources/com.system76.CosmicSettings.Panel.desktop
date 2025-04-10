@@ -2,8 +2,10 @@
 Name=Panel
 Name[pl]=Panel
 Name[hu]=Panel
+Name[pt]=Painel
 Comment=Top bar with desktop controls and menus.
 Comment[hu]=Felső sáv asztali vezérlőkkel és menükkel.
+Comment[pt]=Barra superior com controles e menus.
 Type=Settings
 Exec=cosmic-settings panel
 Terminal=false

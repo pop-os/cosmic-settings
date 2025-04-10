@@ -1,10 +1,12 @@
 [Desktop Entry]
 Name=Date & Time
+Name[hu]=Dátum és idő
 Name[pl]=Data i godzina
-Name[hu]=Dátum és Idő
+Name[pt]=Data e Hora
 Comment=Time zone, automatic clock settings, and time formatting.
 Comment[pl]=Strefy czasowe, automatyczna konfiguracja zegara i format wyświetlania czasu.
 Comment[hu]=Időzóna, automatikus órabeállítások és időformátum.
+Comment[pt]=Fuso horário, hora automática e formatação.
 Type=Settings
 Exec=cosmic-settings date-time
 Terminal=false

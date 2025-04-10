@@ -2,6 +2,7 @@
 Name=Time & Language
 Name[pl]=Czas i język
 Name[hu]=Idő és nyelv
+Name[pt]=Hora e Idioma
 Comment=
 Type=Settings
 Exec=cosmic-settings time

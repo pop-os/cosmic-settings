@@ -825,6 +825,14 @@ startup-apps = Startup Applications
 legacy-applications = X11 Applications Compatibility
     .desc = X11 Window system application scaling and Global shortcuts.
 
+legacy-app-global-shortcuts = Global Shortcuts in X11 Applications
+    .desc = Global shortcuts allows keystrokes and mouse button events performed in applications to be recognized by other applications for features like push-to-talk or push-to-mute. By default, this is disabled in X11 applications to ensure other applications can’t monitor for keyboard and mouse events containing sensitive information.
+    .none = No keys
+    .modifiers = Modifiers (Super, Shift, Control, Alt)
+    .combination = All keys while modifiers Super, Control or Alt are being pressed
+    .all = All keys
+    .mouse = Mouse button events in X11 applications
+
 legacy-app-scaling = X11 Window System Application Scaling
     .scaled-by-system = Scale all X11 Applications
     .system-description = X11 applications will appear blurry on HiDPI screens.

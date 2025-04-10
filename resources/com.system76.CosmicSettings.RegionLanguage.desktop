@@ -2,9 +2,11 @@
 Name=Region & Language
 Name[pl]=Region i język
 Name[hu]=Régió és nyelv
+Name[pt]=Região e Idioma
 Comment=Format dates, times, and numbers based on your region.
+Comment[hu]=Dátumok, időpontok és számok formázása a régió alapján.
 Comment[pl]=Format wyświetlanych dat, godzin i liczb dopasowany do regionu.
-Comment[hu]=A dátumok, időpontok és számok formázása a régió alapján.
+Comment[pt]=Formatação de datas, horas e números baseados em sua região.
 Type=Settings
 Exec=cosmic-settings region-language
 Terminal=false

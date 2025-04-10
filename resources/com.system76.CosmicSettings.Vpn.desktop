@@ -2,9 +2,11 @@
 Name=VPN
 Name[pl]=VPN
 Name[hu]=VPN
+Name[pt]=VPN
 Comment=VPN connections and connection profiles.
 Comment[pl]=Połączenia VPN i profile połączeń.
 Comment[hu]=VPN-kapcsolatok és kapcsolódási profilok.
+Comment[pt]=Conexões VPN e perfis de conexão.
 Type=Settings
 Exec=cosmic-settings vpn
 Terminal=false

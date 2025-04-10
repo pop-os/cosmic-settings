@@ -2,9 +2,11 @@
 Name=Displays
 Name[pl]=Ekrany
 Name[hu]=Kijelzők
+Name[pt]=Monitores
 Comment=Display options, graphics modes, and night light.
 Comment[pl]=Ustawienia wyświetlania, opcje grafiki i podświetlanie nocne.
 Comment[hu]=Kijelzőbeállítások, grafikus módok és éjszakai fény.
+Comment[pt]=Opções de tela, modos gráficos e luz noturna.
 Type=Settings
 Exec=cosmic-settings displays
 Terminal=false
