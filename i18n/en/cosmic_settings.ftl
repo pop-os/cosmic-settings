@@ -834,10 +834,14 @@ legacy-app-global-shortcuts = Global Shortcuts in X11 Applications
     .mouse = Mouse button events in X11 applications
 
 legacy-app-scaling = X11 Window System Application Scaling
-    .scaled-by-system = Scale all X11 Applications
-    .system-description = X11 applications will appear blurry on HiDPI screens.
-    .scaled-natively = Render X11 Applications at native resolution
-    .native-description = X11 applications that don't support scaling will be small when HiDPI displays are in use. Enable for games to utilize the full monitor resolution.
+    .scaled-gaming = Optimize for gaming and full-screen apps
+    .gaming-description = X11 applications may appear slightly larger/smaller compared to Wayland apps.
+    .scaled-applications = Optimize for applications
+    .applications-description = Games and full-screen X11 apps may not match your display resolution. 
+    .scaled-compatibility = Maximum compatibility mode
+    .compatibility-description = X11 applications may appear blurry on HiDPI screens.
+    .preferred-display = Preferred display for games and full screen X11 applications
+    .no-display = <None>
 
 ## System
 
