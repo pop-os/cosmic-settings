@@ -1497,7 +1497,7 @@ dependencies = [
 [[package]]
 name = "cosmic-client-toolkit"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-protocols//?rev=ee0d46f#ee0d46f4b7e1508011a98225f14c4a0528ab2914"
+source = "git+https://github.com/pop-os/cosmic-protocols//?rev=67df697#67df697105486fa4c9dd6ce00889c8b0526c9bb4"
 dependencies = [
  "bitflags 2.9.0",
  "cosmic-protocols",
@@ -1510,7 +1510,7 @@ dependencies = [
 [[package]]
 name = "cosmic-comp-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-comp#cbc4ad6fc2010f7de04d680e8d4b90eaac0c6d4e"
+source = "git+https://github.com/pop-os/cosmic-comp#155f8d20d051719a1ae445f037c5f507c5e2bd4f"
 dependencies = [
  "cosmic-config",
  "input",
@@ -1520,7 +1520,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#f16bc4a7640a8895add431899b50eb4ec731b570"
+source = "git+https://github.com/pop-os/libcosmic#99d2478d98c29eaa872571be51e701856e94b6d2"
 dependencies = [
  "atomicwrites",
  "cosmic-config-derive",
@@ -1542,7 +1542,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#f16bc4a7640a8895add431899b50eb4ec731b570"
+source = "git+https://github.com/pop-os/libcosmic#99d2478d98c29eaa872571be51e701856e94b6d2"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -1613,7 +1613,7 @@ dependencies = [
 [[package]]
 name = "cosmic-protocols"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-protocols//?rev=ee0d46f#ee0d46f4b7e1508011a98225f14c4a0528ab2914"
+source = "git+https://github.com/pop-os/cosmic-protocols//?rev=67df697#67df697105486fa4c9dd6ce00889c8b0526c9bb4"
 dependencies = [
  "bitflags 2.9.0",
  "wayland-backend",
@@ -1627,7 +1627,7 @@ dependencies = [
 [[package]]
 name = "cosmic-randr"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-randr#c247019230c5d820dd1c3d47bc4e3c52fb03b42f"
+source = "git+https://github.com/pop-os/cosmic-randr#f285694515bc3a3a42f00f79fad256cde85045cf"
 dependencies = [
  "cosmic-protocols",
  "futures-lite 2.6.0",
@@ -1643,7 +1643,7 @@ dependencies = [
 [[package]]
 name = "cosmic-randr-shell"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-randr#c247019230c5d820dd1c3d47bc4e3c52fb03b42f"
+source = "git+https://github.com/pop-os/cosmic-randr#f285694515bc3a3a42f00f79fad256cde85045cf"
 dependencies = [
  "kdl",
  "slotmap",
