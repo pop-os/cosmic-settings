@@ -7,7 +7,7 @@ use cosmic::{
     iced::Length,
     widget::{self, text},
 };
-use cosmic_comp_config::{EavesdroppingKeyboardMode, XwaylandEavesdropping};
+use cosmic_comp_config::{EavesdroppingKeyboardMode, XwaylandDescaling, XwaylandEavesdropping};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use slab::Slab;
@@ -16,14 +16,14 @@ use tracing::error;
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    SetXwaylandDescaling(bool),
+    SetXwaylandDescaling(XwaylandDescaling),
     SetXwaylandKeyboardMode(EavesdroppingKeyboardMode),
     SetXwaylandMouseButtonMode(bool),
 }
 
 pub struct Page {
     comp_config: cosmic_config::Config,
-    comp_config_descale_xwayland: bool,
+    comp_config_descale_xwayland: XwaylandDescaling,
     comp_config_xwayland_eavesdropping: XwaylandEavesdropping,
 }
 
@@ -36,7 +36,7 @@ impl Default for Page {
                     error!(?err, "Failed to read config 'descale_xwayland'");
                 }
 
-                false
+                XwaylandDescaling::Disabled
             });
         let comp_config_xwayland_eavesdropping = comp_config
             .get("xwayland_eavesdropping")
@@ -192,10 +192,13 @@ pub fn legacy_application_global_shortcuts() -> Section<crate::pages::Message> {
 pub fn legacy_application_scaling() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let system = descriptions.insert(fl!("legacy-app-scaling", "scaled-by-system"));
-    let system_desc = descriptions.insert(fl!("legacy-app-scaling", "system-description"));
-    let native = descriptions.insert(fl!("legacy-app-scaling", "scaled-natively"));
-    let native_desc = descriptions.insert(fl!("legacy-app-scaling", "native-description"));
+    let gaming = descriptions.insert(fl!("legacy-app-scaling", "scaled-gaming"));
+    let gaming_desc = descriptions.insert(fl!("legacy-app-scaling", "gaming-description"));
+    let apps = descriptions.insert(fl!("legacy-app-scaling", "scaled-applications"));
+    let apps_desc = descriptions.insert(fl!("legacy-app-scaling", "applications-description"));
+    let compat = descriptions.insert(fl!("legacy-app-scaling", "scaled-compatibility"));
+    let compat_desc = descriptions.insert(fl!("legacy-app-scaling", "compatibility-description"));
+    let preferred_display = descriptions.insert(fl!("legacy-app-scaling", "preferred-display"));
 
     Section::default()
         .title(fl!("legacy-app-scaling"))
@@ -207,9 +210,9 @@ pub fn legacy_application_scaling() -> Section<crate::pages::Message> {
                 .add(widget::settings::item_row(vec![
                     widget::radio(
                         widget::column()
-                            .push(text::body(&descriptions[system]))
-                            .push(text::caption(&descriptions[system_desc])),
-                        false,
+                            .push(text::body(&descriptions[gaming]))
+                            .push(text::caption(&descriptions[gaming_desc])),
+                        XwaylandDescaling::Fractional,
                         Some(page.comp_config_descale_xwayland),
                         Message::SetXwaylandDescaling,
                     )
@@ -219,9 +222,21 @@ pub fn legacy_application_scaling() -> Section<crate::pages::Message> {
                 .add(widget::settings::item_row(vec![
                     widget::radio(
                         widget::column()
-                            .push(text::body(&descriptions[native]))
-                            .push(text::caption(&descriptions[native_desc])),
-                        true,
+                            .push(text::body(&descriptions[apps]))
+                            .push(text::caption(&descriptions[apps_desc])),
+                        XwaylandDescaling::Enabled,
+                        Some(page.comp_config_descale_xwayland),
+                        Message::SetXwaylandDescaling,
+                    )
+                    .width(Length::Fill)
+                    .into(),
+                ]))
+                .add(widget::settings::item_row(vec![
+                    widget::radio(
+                        widget::column()
+                            .push(text::body(&descriptions[compat]))
+                            .push(text::caption(&descriptions[compat_desc])),
+                        XwaylandDescaling::Disabled,
                         Some(page.comp_config_descale_xwayland),
                         Message::SetXwaylandDescaling,
                     )
