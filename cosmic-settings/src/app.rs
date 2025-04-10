@@ -489,7 +489,12 @@ impl cosmic::Application for SettingsApp {
 
                 #[cfg(feature = "page-legacy-applications")]
                 crate::pages::Message::LegacyApplications(message) => {
-                    page::update!(self.pages, message, applications::legacy_applications::Page);
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<applications::legacy_applications::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
                 }
 
                 #[cfg(feature = "page-input")]
