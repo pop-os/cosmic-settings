@@ -5,6 +5,7 @@ use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
 use cosmic_bg_config::Source;
 use cosmic_settings_wallpaper as wallpaper;
 use std::collections::VecDeque;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 const NAME: &str = "com.system76.CosmicSettings.Wallpaper";
@@ -107,7 +108,29 @@ impl Config {
 
     #[must_use]
     pub fn default_folder() -> &'static Path {
-        Path::new("/usr/share/backgrounds/")
+        let is_nixos_like: bool = match std::fs::File::open("/etc/os-release") {
+            Ok(mut file) => {
+                let mut os_release_contents = String::new();
+                let _ = file.read_to_string(&mut os_release_contents);
+
+                // While only want to match for distributions that are either
+                // NixOS or are based on NixOS.
+                if os_release_contents.contains("ID=nixos")
+                    || os_release_contents.contains("ID_LIKE=nixos")
+                {
+                    true
+                } else {
+                    false
+                }
+            }
+            Err(_) => false,
+        };
+
+        if is_nixos_like {
+            Path::new("/run/current-system/sw/share/backgrounds/")
+        } else {
+            Path::new("/usr/share/backgrounds/")
+        }
     }
 
     /// Sets the current background folder
