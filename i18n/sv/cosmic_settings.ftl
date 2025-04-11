@@ -85,8 +85,7 @@ super-key = Super key åtgärd
     .applications = Öppna applikationer
     .disable = Inaktivera
 
-
-
+edge-gravity = Flytande fönster dras till närliggande kanter
 
 ## Testinställningar
 
@@ -148,12 +147,6 @@ dialog = Dialogruta
     .keep-changes = Behåll ändringar
     .change-prompt = Inställningsändringar återställs automatiskt om { $time } sekunder.
     .revert-settings = Återställ inställningar
-
-legacy-app-scaling = X11 fönstersystem applikationsskalning
-    .scaled-by-system = Skala alla X11 applikationer
-    .system-description = X11-applikationer kommer att se suddiga ut på HiDPI-skärmar.
-    .scaled-natively = Rendera X11-applikationer med inbyggd upplösning
-    .native-description = X11-applikationer som inte stöder skalning kommer att vara små när HiDPI-skärmar används. Aktivera för att spel ska kunna använda hela skärmen
 
 accessibility = Tillgänlighet
     .vision = Syn
@@ -221,6 +214,7 @@ top-panel = Övre Panel
 window-controls = Fönsterkontroller
     .minimize = Visa minimera knapp
     .maximize = Visa maximera knapp
+    .active-window-hint = Visa aktiv fönster antydan
 
 focus-navigation = Fokusnavigering
     .focus-follows-cursor = Fokus följer markören
@@ -335,11 +329,12 @@ hot-corner = Heta hörn
 ## Nätverk: Trådbunden anslutning
 
 wired = Trådbunden anslutning
-    .adapter = Trådbunden adapter { $id }
-    .desc = Trådbunden anslutning, anslutningsprofiler
-    .connections = Trådbundna anslutningar
-    .devices = Trådbundna enheter
-    .remove = Ta bort anslutningsprofil
+.profile = Lägg till profil
+.adapter = Trådbunden adapter { $id }
+.desc = Trådbunden anslutning, anslutningsprofiler
+.connections = Trådbundna anslutningar
+.devices = Trådbundna enheter
+.remove = Ta bort anslutningsprofil
 
 ## Nätverk: WiFi
 
@@ -663,6 +658,13 @@ keyboard-typing-assist = Tangenttrycksrespons
     .repeat-rate = Upprepningshastighet
     .repeat-delay = Upprepningsfördröjning
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Status vid uppstart
+    .last-boot = Senaste uppstart
+    .on = På
+    .off = Av
+    .set = Ställ in numlock uppstartstatus
+
 added = Tillagd
 type-to-search = Skriv för att söka...
 show-extended-input-sources = Visa utökade ingångskällor
@@ -834,6 +836,10 @@ switch-between-windows = Ändra mellan fönster
 open-application-library = Öppna Applikationsbibliotek
 open-workspaces-view = Öppna Översikt över arbetsytor
 
+## Program
+
+applications = Program
+
 ## System: Standardprogram
 
 default-apps = Standardprogram
@@ -846,7 +852,26 @@ default-apps = Standardprogram
     .photos = Foton
     .calendar = Kalender
     .terminal = Terminal
+    .text-editor = Textredigerare
     .other-associations = Andra associeringar
+
+## Program: Äldre program
+legacy-applications = X11 program kompatibilitet
+    .desc = X11 fönstersystemprogramsskalning och globala genvägar.
+
+legacy-app-global-shortcuts = Globala genvägar i X11 program
+    .desc = Globala genvägar gör att tangenttryckningar och musknappshändelser som utförs i program kan kännas igen av andra program för funktioner som push-to-talk eller push-to-mute. Som standard är detta inaktiverat i X11-program för att säkerställa att andra program inte kan övervaka tangentbords och mushändelser som innehåller känslig information.
+.none = Inga tangenter
+.modifiers = Modifierare (Super, Shift, Control, Alt)
+.combination = Alla tangenter medan modifierare Super, Control eller Alt håller på att tryckas ned
+.all = Alla tangenter
+.mouse = Musknappshändelser i X11 program
+
+legacy-app-scaling = X11 fönstersystem programsskalning
+.scaled-by-system = Skala alla X11 program
+.system-description = X11-program kommer att se suddiga ut på HiDPI-skärmar.
+.scaled-natively = Rendera X11-program med inbyggd upplösning
+.native-description = X11-program som inte stöder skalning kommer att vara små när HiDPI-skärmar används. Aktivera för spel för att använda hela skärmens upplösning.
 
 ## System: Uppstartsprogram
 
