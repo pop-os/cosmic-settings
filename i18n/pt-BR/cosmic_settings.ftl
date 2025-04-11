@@ -242,7 +242,7 @@ control-tint = Tonalidade dos componentes de controle
     .desc = Usado para os fundos dos botões padrão, entradas de busca, entradas de texto e componentes similares.
 
 frosted = Efeito de vidro fosco na interface do sistema
-    .desc = Ativa desfoque de fundo ao painel, dock, applets, lançador e biblioteca de aplicativos.
+    .desc = Ativa desfoque de fundo ao painel, dock, miniaplicativos, lançador e biblioteca de aplicativos.
 
 enable-export = Aplicar este tema para aplicativos GNOME.
     .desc = Nem todos os toolkits suportam troca automática. Aplicativos não COSMIC podem precisar ser reiniciados após uma mudança de tema.
@@ -265,7 +265,7 @@ interface-density = Densidade da interface
 
 window-management = Gerenciamento de Janelas
     .active-hint = Tamanho da cor destaque da janela ativa
-    .gaps = Espaçamentos ao redor de janelas organizadas em mosaico
+    .gaps = Espaçamentos ao redor de janelas organizadas lado a lado
 
 ### Experimental
 
@@ -277,7 +277,7 @@ monospace-font = Fonte monoespaçada
 ## Desktop: Notifications
 
 notifications = Notificações
-    .desc = Não perturbe, notificações da tela de bloqueio e configurações por aplicação.
+    .desc = Não Perturbe, notificações da tela de bloqueio e configurações por aplicação.
 
 ## Desktop: Panel
 
@@ -285,19 +285,19 @@ panel = Painel
     .desc = Barra superior com controles e menus da área de trabalho.
 
 add = Adicionar
-add-applet = Adicionar Applet
+add-applet = Adicionar Miniaplicativo
 all = Todos
-applets = Applets
-center-segment = Segmento Central
-drop-here = Solte os applets aqui
+applets = Miniaplicativos
+center-segment = Segmento central
+drop-here = Solte os miniaplicativos aqui
 end-segment = Segmento final
 large = Grande
-no-applets-found = Nenhum applet encontrado...
+no-applets-found = Nenhum miniaplicativo encontrado...
 panel-bottom = Inferior
 panel-left = Esquerda
 panel-right = Direita
 panel-top = Superior
-search-applets = Procurar por applets...
+search-applets = Procurar por miniaplicativos...
 small = Pequeno
 start-segment = Segmento inicial
 
@@ -322,8 +322,8 @@ panel-style = Estilo
     .background-opacity = Opacidade do fundo
 
 panel-applets = Configuração
-    .dock-desc = Configurar applets do dock.
-    .desc = Configurar applets do painel.
+    .dock-desc = Configurar miniaplicativos do dock
+    .desc = Configurar miniaplicativos do painel.
 
 panel-missing = Configuração do painel está ausente
     .desc = O arquivo de configuração do painel está ausente devido ao uso de uma configuração personalizada ou encontra-se corrompido.
@@ -332,7 +332,7 @@ panel-missing = Configuração do painel está ausente
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Painel com aplicativos fixados na bandeja de apps e outros applets.
+    .desc = Painel com aplicativos fixados na bandeja de apps e outros miniaplicativos.
 
 ## Desktop: Window management
 
@@ -691,11 +691,11 @@ system-shortcut = Sistema
     .window-switcher-previous = Alternar entre as janelas abertas invertidas
     .workspace-overview = Abrir a visão geral das áreas de trabalho
 
-window-tiling = Janelas lado-a-lado (Window tiling)
+window-tiling = Janelas lado a lado (Tiling)
     .horizontal = Definir orientação horizontal
     .vertical = Definir orientação vertical
     .swap-window = Troca de janelas
-    .toggle-tiling = Ativar/Desativar janelas lado-a-lado (tiling)
+    .toggle-tiling = Ativar/Desativar janelas lado a lado
     .toggle-stacking = Ativas/Desativar janelas empilháveis
     .toggle-floating = Ativar/Desativar janelas flutuantes
     .toggle-orientation = Ativar/Desativar orientação
