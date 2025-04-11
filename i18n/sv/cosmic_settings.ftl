@@ -85,11 +85,7 @@ super-key = Super key åtgärd
     .applications = Öppna applikationer
     .disable = Inaktivera
 
- edge-gravity = Flytande fönster dras till närliggande kanter
-
-
-
-
+edge-gravity = Flytande fönster dras till närliggande kanter
 
 ## Testinställningar
 
@@ -331,15 +327,14 @@ hot-corner = Heta hörn
     .top-left-corner = Aktivera det övre vänstra heta hörnet för arbetsytor
 
 ## Nätverk: Trådbunden anslutning
- 
 
 wired = Trådbunden anslutning
-    .profile = Lägg till profil
-    .adapter = Trådbunden adapter { $id }
-    .desc = Trådbunden anslutning, anslutningsprofiler
-    .connections = Trådbundna anslutningar
-    .devices = Trådbundna enheter
-    .remove = Ta bort anslutningsprofil
+.profile = Lägg till profil
+.adapter = Trådbunden adapter { $id }
+.desc = Trådbunden anslutning, anslutningsprofiler
+.connections = Trådbundna anslutningar
+.devices = Trådbundna enheter
+.remove = Ta bort anslutningsprofil
 
 ## Nätverk: WiFi
 
@@ -865,18 +860,18 @@ legacy-applications = X11 program kompatibilitet
     .desc = X11 fönstersystemprogramsskalning och globala genvägar.
 
 legacy-app-global-shortcuts = Globala genvägar i X11 program
-.desc = Globala genvägar gör att tangenttryckningar och musknappshändelser som utförs i program kan kännas igen av andra program för funktioner som push-to-talk eller push-to-mute. Som standard är detta inaktiverat i X11-program för att säkerställa att andra program inte kan övervaka tangentbords och mushändelser som innehåller känslig information.
-    .none = Inga tangenter
-    .modifiers = Modifierare (Super, Shift, Control, Alt)
-    .combination = Alla tangenter medan modifierare Super, Control eller Alt håller på att tryckas ned
-    .all = Alla tangenter
-    .mouse = Musknappshändelser i X11 program
+    .desc = Globala genvägar gör att tangenttryckningar och musknappshändelser som utförs i program kan kännas igen av andra program för funktioner som push-to-talk eller push-to-mute. Som standard är detta inaktiverat i X11-program för att säkerställa att andra program inte kan övervaka tangentbords och mushändelser som innehåller känslig information.
+.none = Inga tangenter
+.modifiers = Modifierare (Super, Shift, Control, Alt)
+.combination = Alla tangenter medan modifierare Super, Control eller Alt håller på att tryckas ned
+.all = Alla tangenter
+.mouse = Musknappshändelser i X11 program
 
 legacy-app-scaling = X11 fönstersystem programsskalning
-    .scaled-by-system = Skala alla X11 program
-    .system-description = X11-program kommer att se suddiga ut på HiDPI-skärmar.
-    .scaled-natively = Rendera X11-program med inbyggd upplösning
-    .native-description = X11-program som inte stöder skalning kommer att vara små när HiDPI-skärmar används. Aktivera för spel för att använda hela skärmens upplösning.
+.scaled-by-system = Skala alla X11 program
+.system-description = X11-program kommer att se suddiga ut på HiDPI-skärmar.
+.scaled-natively = Rendera X11-program med inbyggd upplösning
+.native-description = X11-program som inte stöder skalning kommer att vara små när HiDPI-skärmar används. Aktivera för spel för att använda hela skärmens upplösning.
 
 ## System: Uppstartsprogram
 
