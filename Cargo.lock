@@ -1497,7 +1497,7 @@ dependencies = [
 [[package]]
 name = "cosmic-client-toolkit"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-protocols//?rev=ee0d46f#ee0d46f4b7e1508011a98225f14c4a0528ab2914"
+source = "git+https://github.com/pop-os/cosmic-protocols//?rev=0c3bef9#0c3bef999996f0b8c81aad02a3fcff0528793194"
 dependencies = [
  "bitflags 2.9.0",
  "cosmic-protocols",
@@ -1510,7 +1510,7 @@ dependencies = [
 [[package]]
 name = "cosmic-comp-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-comp#cbc4ad6fc2010f7de04d680e8d4b90eaac0c6d4e"
+source = "git+https://github.com/pop-os/cosmic-comp?rev=c28427c#c28427cdc1f39d03ab3716817101eebc3e8ac42e"
 dependencies = [
  "cosmic-config",
  "input",
@@ -1613,7 +1613,7 @@ dependencies = [
 [[package]]
 name = "cosmic-protocols"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-protocols//?rev=ee0d46f#ee0d46f4b7e1508011a98225f14c4a0528ab2914"
+source = "git+https://github.com/pop-os/cosmic-protocols//?rev=0c3bef9#0c3bef999996f0b8c81aad02a3fcff0528793194"
 dependencies = [
  "bitflags 2.9.0",
  "wayland-backend",
@@ -1627,7 +1627,7 @@ dependencies = [
 [[package]]
 name = "cosmic-randr"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-randr#c247019230c5d820dd1c3d47bc4e3c52fb03b42f"
+source = "git+https://github.com/pop-os/cosmic-randr?rev=b09f157#b09f157cd5d351741be12c4d22544647a5ecbaf1"
 dependencies = [
  "cosmic-protocols",
  "futures-lite 2.6.0",
@@ -1643,7 +1643,7 @@ dependencies = [
 [[package]]
 name = "cosmic-randr-shell"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-randr#c247019230c5d820dd1c3d47bc4e3c52fb03b42f"
+source = "git+https://github.com/pop-os/cosmic-randr?rev=b09f157#b09f157cd5d351741be12c4d22544647a5ecbaf1"
 dependencies = [
  "kdl",
  "slotmap",
