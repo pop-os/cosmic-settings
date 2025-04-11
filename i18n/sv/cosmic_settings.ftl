@@ -331,9 +331,10 @@ hot-corner = Heta hörn
     .top-left-corner = Aktivera det övre vänstra heta hörnet för arbetsytor
 
 ## Nätverk: Trådbunden anslutning
- .profile = Lägg till profil
+ 
 
 wired = Trådbunden anslutning
+    .profile = Lägg till profil
     .adapter = Trådbunden adapter { $id }
     .desc = Trådbunden anslutning, anslutningsprofiler
     .connections = Trådbundna anslutningar
