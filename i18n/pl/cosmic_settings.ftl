@@ -34,6 +34,7 @@ remove = Usuń
 settings = Ustawienia
 username = Nazwa użytkownika
 visible-networks = Widoczne sieci
+identity = Tożsamość
 
 auth-dialog = Wymagane jest uwierzytelnianie
     .vpn-description = Wprowadź nazwę użytkownika i hasło wymagane przez usługę VPN.
@@ -137,6 +138,10 @@ accessibility = Dostępność
     .high-contrast = Tryb wysokiego kontrastu
     .invert-colors = Odwróć kolory
     .color-filters = Filtr kolorów
+
+hearing = Słuchanie
+    .mono = Odtwarzaj dźwięk stereo jako mono
+    
 default = Domyślnie
 magnifier = Lupa
     .controls =
@@ -150,6 +155,8 @@ magnifier = Lupa
                 {$zoom_out} aby oddalić,
         }
         Super + przewijanie rolką myszy
+    .scroll_controls = Aktywuj skróty klawiszowe "Super + Scroll" (dla myszy lub gładzika)
+    .show_overlay = Pokaż nakładkę lupy
     .increment = Inkrementacja przybliżenia
     .signin = Uruchom lupę przy zalogowaniu
     .applet = Włączanie/wyłączanie lupy w aplecie na panelu
@@ -464,6 +471,8 @@ sound-output = Wyjście
     .level = Poziom wyjścia
     .config = Konfiguracja
     .balance = Balans
+    .left = Lewy
+    .right = Prawy
 
 sound-input = Wejście
     .volume = Głośność wejścia
@@ -588,7 +597,7 @@ show-extended-input-sources = Pokaż rozszerzone źródła wprowadzania
 keyboard-shortcuts = Skróty klawiaturowe
     .desc = Obejrzyj i spersonalizuj skróty
 
-add-keybinding = Dodaj skrót klawiszowy
+add-another-keybinding = Dodaj kolejny skrót klawiszowy
 cancel = Anuluj
 command = Komenda
 custom = Własne
@@ -834,6 +843,14 @@ startup-apps = Aplikacje Startowe
 legacy-applications = Kompatybilność Aplikacji X11
     .desc = Skalowanie i globalne skróty klawiszowe w aplikacjach systemu okien X11.
 
+legacy-app-global-shortcuts = Globalne Skróty Kalwiszowe Aplikacji X11
+    .desc = Globalne skróty umożliwiają by naciśnięcia klawiszy lub przycisków myszy w aplikacjach były rozpoznawane przez inne aplikacje do między innymi funkcjonalności jak naciśnij-by-rozmawiać lub naciśnij-by-wyciszyć. Domyślnie jest to zablokowane w aplikacjach X11 by nie miały dostępu do śledzenia naciśnięć klawiszy i przyciśnięć myszy w aplikacjach mogących zawierać poufne informacje.
+    .none = Żadne przyciski
+    .modifiers = Modifikatory (Super, Shift, Control, Alt)
+    .combination = Wszystkie przyciski kiedy modyfikatory Super, Control lub Alt są wciśnięte
+    .all = Wszystkie przyciski
+    .mouse = Naciśnięcia przycisków myszy w aplikacjach X11
+
 legacy-app-scaling = Skalowanie aplikacji systemu okien X11
     .scaled-by-system = Skaluj wszystkie aplikacje X11
     .system-description = Aplikacje X11 będą rozmyte na wyświetlaczach z wysokim DPI.
@@ -886,3 +903,4 @@ administrator = Administrator
 add-user = Dodaj użytkownika
 remove-user = Usuń użytkownika
 full-name = Pełna nazwa
+invalid-username = Nieprawidłowa nawa użytkownika
