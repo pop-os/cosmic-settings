@@ -154,7 +154,7 @@ magnifier = Magnifier
                 {$zoom_out} to zoom out,
         }
         Super + scroll with your mouse
-    .scroll_controls = Enable "Super + Scroll" (via mouse or touchpad) shortcuts
+    .scroll_controls = Enable mouse or touchpad zoom with Super + Scroll 
     .show_overlay = Show the Magnifier Overlay
     .increment = Zoom increment
     .signin = Start magnifier on sign in
