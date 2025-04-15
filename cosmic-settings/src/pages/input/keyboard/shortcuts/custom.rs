@@ -280,7 +280,6 @@ impl Page {
                 .select_on_focus(true)
                 .padding([0, 12])
                 .on_input(move |input| Message::KeyInput(id, input))
-                .on_unfocus(Message::AddKeybinding)
                 .on_submit(|_| Message::AddKeybinding)
                 .id(widget_id.clone())
                 .apply(widget::container)
