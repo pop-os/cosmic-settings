@@ -154,7 +154,7 @@ magnifier = Magnifier
                 {$zoom_out} to zoom out,
         }
         Super + scroll with your mouse
-    .scroll_controls = Enable mouse or touchpad zoom with Super + Scroll 
+    .scroll_controls = Enable mouse or touchpad zoom with Super + Scroll
     .show_overlay = Show the Magnifier Overlay
     .increment = Zoom increment
     .signin = Start magnifier on sign in
@@ -282,7 +282,7 @@ notifications = Notifications
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Top bar with desktop controls and menus.
+    .desc = Primary system bar for menus and applets.
 
 add = Add
 add-applet = Add Applet
@@ -332,7 +332,7 @@ panel-missing = Panel Configuration is Missing
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Panel with pinned applications in the app tray and other applets.
+    .desc = An optional bar for apps and applets.
 
 ## Desktop: Window management
 
@@ -765,7 +765,7 @@ time-format = Date & Time Format
     .twenty-four = 24-hour time
     .show-seconds = Show seconds
     .first = First day of week
-    .show-date = Show Date on Top Panel
+    .show-date = Show date in the time applet
     .friday = Friday
     .saturday = Saturday
     .sunday = Sunday
@@ -837,7 +837,7 @@ legacy-app-scaling = X11 Window System Application Scaling
     .scaled-gaming = Optimize for gaming and full-screen apps
     .gaming-description = X11 applications may appear slightly larger/smaller compared to Wayland apps.
     .scaled-applications = Optimize for applications
-    .applications-description = Games and full-screen X11 apps may not match your display resolution. 
+    .applications-description = Games and full-screen X11 apps may not match your display resolution.
     .scaled-compatibility = Maximum compatibility mode
     .compatibility-description = X11 applications may appear blurry on HiDPI screens.
     .preferred-display = Preferred display for games and full screen X11 applications
