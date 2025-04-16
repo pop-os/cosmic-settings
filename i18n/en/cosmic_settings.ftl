@@ -30,6 +30,7 @@ network-and-wireless = Network & Wireless
 no-networks = No networks have been found.
 no-vpn = No VPN connections available.
 password = Password
+password-confirm = Confirm Password
 remove = Remove
 settings = Settings
 username = Username
@@ -154,7 +155,7 @@ magnifier = Magnifier
                 {$zoom_out} to zoom out,
         }
         Super + scroll with your mouse
-    .scroll_controls = Enable mouse or touchpad zoom with Super + Scroll 
+    .scroll_controls = Enable mouse or touchpad zoom with Super + Scroll
     .show_overlay = Show the Magnifier Overlay
     .increment = Zoom increment
     .signin = Start magnifier on sign in
@@ -837,7 +838,7 @@ legacy-app-scaling = X11 Window System Application Scaling
     .scaled-gaming = Optimize for gaming and full-screen apps
     .gaming-description = X11 applications may appear slightly larger/smaller compared to Wayland apps.
     .scaled-applications = Optimize for applications
-    .applications-description = Games and full-screen X11 apps may not match your display resolution. 
+    .applications-description = Games and full-screen X11 apps may not match your display resolution.
     .scaled-compatibility = Maximum compatibility mode
     .compatibility-description = X11 applications may appear blurry on HiDPI screens.
     .preferred-display = Preferred display for games and full screen X11 applications
@@ -888,6 +889,9 @@ administrator = Administrator
     .desc = Administrators can change settings for all users, add and remove other users.
 
 add-user = Add user
+change-password = Change password
 remove-user = Remove user
 full-name = Full name
-invalid-username = Invalid username
+invalid-username = Invalid username.
+password-mismatch = Password and confirmation must match.
+save = Save
