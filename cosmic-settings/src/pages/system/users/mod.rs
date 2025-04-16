@@ -36,7 +36,6 @@ pub struct User {
     password: String,
     password_confirm: String,
     full_name_edit: bool,
-    password_edit: bool,
     username_edit: bool,
     is_admin: bool,
 }
@@ -400,7 +399,6 @@ impl Page {
                 password: String::new(),
                 password_confirm: String::new(),
                 full_name_edit: false,
-                password_edit: false,
                 username_edit: false,
             });
         }
