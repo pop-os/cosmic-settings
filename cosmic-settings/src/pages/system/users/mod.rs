@@ -790,6 +790,8 @@ fn user_list() -> Section<crate::pages::Message> {
 
                     let profile_icon = widget::button::icon(profile_icon_handle)
                         .large()
+                        .padding(0)
+                        .class(cosmic::theme::Button::Standard)
                         .on_press(Message::SelectProfileImage(user.id));
 
                     let account_details_content = settings::item_row(vec![
@@ -829,7 +831,7 @@ fn user_list() -> Section<crate::pages::Message> {
                 .fold(
                     widget::list_column()
                         .spacing(0)
-                        .padding(0)
+                        .padding([8, 0])
                         .divider_padding(0)
                         .list_item_padding(0),
                     widget::ListColumn::add,
