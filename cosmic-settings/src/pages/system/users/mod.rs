@@ -11,6 +11,7 @@ use cosmic::{
     widget::{self, Space, column, icon, row, settings, text},
 };
 use cosmic_settings_page::{self as page, Section, section};
+use pwhash::bcrypt;
 use regex::Regex;
 use slab::Slab;
 use slotmap::SlotMap;
@@ -556,7 +557,7 @@ impl Page {
                 self.dialog = None;
 
                 let uid = user.id;
-                let password = user.password;
+                let password_hashed = bcrypt::hash(user.password).unwrap();
 
                 return cosmic::Task::future(async move {
                     let Ok(conn) = zbus::Connection::system().await else {
@@ -567,8 +568,10 @@ impl Page {
                         return;
                     };
 
-                    match request_permission_on_denial(&conn, || user.set_password(&password, ""))
-                        .await
+                    match request_permission_on_denial(&conn, || {
+                        user.set_password(&password_hashed, "")
+                    })
+                    .await
                     {
                         Err(why) => {
                             tracing::error!(?why, "failed to set password");
@@ -652,9 +655,10 @@ impl Page {
                         }
                     };
 
+                    let password_hashed = bcrypt::hash(password).unwrap();
                     match accounts_zbus::UserProxy::new(&conn, user_object_path).await {
                         Ok(user) => {
-                            _ = user.set_password(&password, "").await;
+                            _ = user.set_password(&password_hashed, "").await;
                             _ = user.set_icon_file(DEFAULT_ICON_FILE).await
                         }
 

@@ -88,6 +88,7 @@ gettext-rs = { version = "0.7.2", features = [
 async-fn-stream = "0.2.2"
 num-traits = "0.2"
 num-derive = "0.4"
+pwhash = "1"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
@@ -156,9 +157,7 @@ page-input = [
     "dep:cosmic-settings-config",
     "dep:udev",
 ]
-page-legacy-applications = [
-    "dep:cosmic-comp-config",
-]
+page-legacy-applications = ["dep:cosmic-comp-config"]
 page-networking = [
     "xdg-portal",
     "dep:cosmic-dbus-networkmanager",
