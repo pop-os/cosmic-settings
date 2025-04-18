@@ -745,7 +745,7 @@ fn user_list() -> Section<crate::pages::Message> {
                     .on_input(move |name| Message::Edit(idx, EditorField::FullName, name))
                     .on_submit(move |_| Message::ApplyEdit(idx, EditorField::FullName));
 
-                    let fullname_text = text::body(if &user.full_name != "" {
+                    let fullname_text = text::body(if user.full_name != "" {
                         &user.full_name
                     } else {
                         &user.username
