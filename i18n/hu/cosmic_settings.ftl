@@ -30,6 +30,7 @@ network-and-wireless = Hálózat és Wi-Fi
 no-networks = Nem található hálózat.
 no-vpn = Nincsenek elérhető VPN-kapcsolatok.
 password = Jelszó
+password-confirm = Jelszó megerősítése
 remove = Törlés
 settings = Beállítások
 username = Felhasználónév
@@ -114,7 +115,7 @@ bluetooth = Bluetooth
     .disconnecting = Szétkapcsolás
     .connect = Kapcsolódás
     .disconnect = Szétkapcsolás
-    .forget = Elfelejt
+    .forget = Elfelejtés
     .dbus-error = Hiba történt a DBus-szal való kommunikáció során: { $why }
 
 bluetooth-paired = Korábban párosított eszközök
@@ -154,7 +155,7 @@ magnifier = Nagyító
                 {$zoom_out} a kicsinyítéshez,
         }
         Super + görgetés az egérrel
-    .scroll_controls = "Super + Görgetés" (egérrel vagy érintőpárnával) billentyűparancsok engedélyezése
+    .scroll_controls = Egérrel vagy érintőpárnával történő nagyítás Super + görgetéssel
     .show_overlay = Nagyító megjelenítése
     .increment = Nagyítás mértéke
     .signin = Nagyító indítása bejelentkezéskor
@@ -282,7 +283,7 @@ notifications = Értesítések
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Felső sáv asztali vezérlőkkel és menükkel
+    .desc = Fő rendszersáv menükhöz és kisalkalmazásokhoz.
 
 add = Hozzáadás
 add-applet = Kisalkalmazás hozzáadása
@@ -332,7 +333,7 @@ panel-missing = A panel konfigurációja hiányzik
 ## Desktop: Dock
 
 dock = Dokkoló
-    .desc = Panel kitűzött alkalmazásokkal és kisalkalmazásokkal az alkalmazástálcán.
+    .desc = Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz.
 
 ## Desktop: Window management
 
@@ -765,7 +766,7 @@ time-format = Dátum- és időformátum
     .twenty-four = 24 órás időformátum
     .show-seconds = Másodpercek mutatása
     .first = A hét első napja
-    .show-date = Dátum megjelenítése a felső panelen
+    .show-date = Dátum megjelenítése az idő kisalkalmazásban
     .friday = Péntek
     .saturday = Szombat
     .sunday = Vasárnap
@@ -827,17 +828,21 @@ legacy-applications = X11 alkalmazások támogatása
 
 legacy-app-global-shortcuts = Globális billentyűparancsok X11 alkalmazásokban
     .desc = A globális parancsikonok lehetővé teszik, hogy az alkalmazásokban a billentyű- és egérkattintás eseményeket más alkalmazások is felismerjék, például a "nyomd-hogy-beszélj" vagy a "nyomd a némításhoz" funkciókhoz. Alapértelmezés szerint ez az X11 alkalmazásokban le van tiltva, hogy más alkalmazások ne figyelhessék a billentyűzet és az egér eseményeit, amelyek érzékeny információkat tartalmazhatnak.
-    .none = Nincsnek billentyűk
+    .none = Nincsenek billentyűk
     .modifiers = Módosítók (Super, Shift, Control, Alt)
     .combination = Minden billentyű, miközben a Super, Control vagy Alt módosítók lenyomva vannak
     .all = Minden billentyű
     .mouse = Egérgomb-események X11 alkalmazásokban
 
 legacy-app-scaling = X11-ablakrendszer alkalmazásméretezés
-    .scaled-by-system = Minden X11-alkalmazás méretezése
-    .system-description = Az X11-alkalmazások elmosódottak lehetnek HiDPI kijelzőkön.
-    .scaled-natively = X11-alkalmazások renderelése natív felbontásban
-    .native-description = Azok az X11-alkalmazások, amelyek nem támogatják a méretezést, kisméretűek lesznek HiDPI kijelzőkön. Engedélyezd a teljes monitorfelbontás kihasználásához játékok esetén.
+    .scaled-gaming = Optimalizálás játékokra és teljes képernyős alkalmazásokra
+    .gaming-description = Az X11 alkalmazások kicsit nagyobbnak/kisebbnek tűnhetnek a Wayland alkalmazásokhoz képest.
+    .scaled-applications = Optimalizálás alkalmazásokra
+    .applications-description = A játékok és a teljes képernyős X11 alkalmazások felbontása eltérhet a kijelző felbontásától.
+    .scaled-compatibility = Maximális kompatibilitási mód
+    .compatibility-description = Az X11 alkalmazások elmosódottan jelenhetnek meg HiDPI képernyőkön.
+    .preferred-display = Elsődleges kijelző játékokhoz és teljes képernyős X11 alkalmazásokhoz
+    .no-display = <Nincs>
 
 ## System
 
@@ -884,6 +889,9 @@ administrator = Rendszergazda
     .desc = A rendszergazdák megváltoztathatják az összes felhasználó beállításait, új felhasználókat adhatnak hozzá és távolíthatnak el
 
 add-user = Felhasználó hozzáadása
+change-password = Jelszó megváltoztatása
 remove-user = Felhasználó eltávolítása
 full-name = Teljes név
-invalid-username = Érvénytelen felhasználónév
+invalid-username = Érvénytelen felhasználónév.
+password-mismatch = A jelszónak és a megerősítésének meg kell egyeznie.
+save = Mentés
