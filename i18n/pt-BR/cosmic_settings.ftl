@@ -30,6 +30,7 @@ network-and-wireless = Rede e Wireless
 no-networks = Nenhuma rede foi encontrada.
 no-vpn = Nenhuma conexão VPN está disponível.
 password = Senha
+password-confirm = Confirme a senha
 remove = Remover
 settings = Configurações
 username = Usuário
@@ -86,20 +87,20 @@ vpn-error = Erro de VPN
 
 wired = Rede Cabeada
     .adapter = Adaptador de rede cabeada { $id }
-    .connections = Conexões de rede cabeada
-    .devices = Dispositivos de rede cabeada
+    .connections = Conexões de Rede Cabeada
+    .devices = Dispositivos de Rede Cabeada
     .remove = Remover perfil de conexão
 
 wifi = Wi-Fi
     .adapter = Adaptador Wi-Fi { $id }
     .forget = Esquecer esta rede
 
-wireguard-dialog = Adicionar dispositivo WireGuard
+wireguard-dialog = Adicionar Dispositivo WireGuard
     .description = Escolha um nome de dispositivo para a configuração do WireGuard.
 
 ## Networking: Online Accounts
 
-online-accounts = Contas online
+online-accounts = Contas Online
     .desc = Adicionar contas, IMAP e SMTP, logins empresariais
 
 # Bluetooth
@@ -107,7 +108,7 @@ online-accounts = Contas online
 confirm = Confirmar
 
 bluetooth = Bluetooth
-    .desc = Gerenciamento de dispositivos Bluetooth
+    .desc = Gerenciamento de Dispositivos Bluetooth
     .status = Este sistema está visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
     .connected = Conectado
     .connecting = Conectando
@@ -117,14 +118,14 @@ bluetooth = Bluetooth
     .forget = Esquecer
     .dbus-error = Ocorreu um erro ao interagir com o DBus: { $why }
 
-bluetooth-paired = Dispositivos conectados anteriormente
+bluetooth-paired = Dispositivos Conectados Anteriormente
     .connect = Conectar
     .battery = { $percentage }% bateria
 
 bluetooth-confirm-pin = Confirmar o PIN do Bluetooth
     .description = Por favor, confirme se o seguinte PIN corresponde ao exibido em { $device }
 
-bluetooth-available = Dispositivos próximos
+bluetooth-available = Dispositivos Próximos
 
 bluetooth-adapters = Adaptadores de Bluetooth
 
@@ -143,14 +144,14 @@ hearing = Ouvindo
     .mono = Reproduzir áudio estéreo como mono
 
 default = Padrão
-magnifier = Ampliador de tela
+magnifier = Ampliador de Tela
     .controls = Ou use teclas de atalho: { $zoom_in ->
              [zero] {""}
             *[other] {""}
                 {$zoom_in} para aumentar o zoom,
         }{ $zoom_out ->
              [zero] {""}
-            *[other] {""} 
+            *[other] {""}
                 {$zoom_out} para diminuir o zoom,
         }
         Super + rolar com o mouse
@@ -258,18 +259,18 @@ style = Estilo
     .slightly-round = Levemente arredondado
     .square = Quadrado
 
-interface-density = Densidade da interface
+interface-density = Densidade da Interface
     .comfortable = Confortável
     .compact = Compacto
     .spacious = Espaçoso
 
-window-management = Gerenciamento de Janelas
-    .active-hint = Tamanho da cor destaque da janela ativa
-    .gaps = Espaçamentos ao redor de janelas organizadas lado a lado
+window-management-appearance = Gerenciamento de Janelas
+    .active-hint = Tamanho da borda de destaque da janela ativa
+    .gaps = Espaçamento ao redor de janelas organizadas lado a lado
 
 ### Experimental
 
-experimental-settings = Configuraçães experimentais
+experimental-settings = Configuraçães Experimentais
 icons-and-toolkit = Tema de ícones e toolkit
 interface-font = Fonte do sistema
 monospace-font = Fonte monoespaçada
@@ -306,24 +307,24 @@ panel-appearance = Aparência
     .light = Claro
     .dark = Escuro
 
-panel-behavior-and-position = Comportamento e Posições do Painel
+panel-behavior-and-position = Comportamento e Posições
     .autohide = Ocultar o painel automaticamente
-    .dock-autohide = Ocultar dock automaticamente
+    .dock-autohide = Ocultar a dock automaticamente
     .position = Posição na tela
     .display = Mostrar no monitor
 
 panel-style = Estilo
     .anchor-gap = Espaço entre o painel e as bordas da tela
-    .dock-anchor-gap = Espaço entre o dock e as bordas da tela
+    .dock-anchor-gap = Espaço entre a dock e as bordas da tela
     .extend = Estender o painel até as bordas da tela
-    .dock-extend = Estender o dock até as bordas da tela
+    .dock-extend = Estender a dock até as bordas da tela
     .appearance = Aparência
     .size = Tamanho
     .background-opacity = Opacidade do fundo
 
 panel-applets = Configuração
     .dock-desc = Configurar miniaplicativos do dock
-    .desc = Configurar miniaplicativos do painel.
+    .desc = Configurar miniaplicativos do painel
 
 panel-missing = Configuração do painel está ausente
     .desc = O arquivo de configuração do painel está ausente devido ao uso de uma configuração personalizada ou encontra-se corrompido.
@@ -332,17 +333,17 @@ panel-missing = Configuração do painel está ausente
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Painel com aplicativos fixados na bandeja de apps e outros miniaplicativos.
+    .desc = Um painel opcional com aplicativos fixados e miniaplicativos.
 
 ## Desktop: Window management
 
 window-management = Gerenciamento de Janelas
-    .desc = Ação da tecla Super, opções de controle e alinhamento de janelas.
+    .desc = Ação da tecla Super, opções de controle e organização de janelas.
 
 super-key = Ação da tecla Super (Windows)
-    .launcher = Abrir Lançador
-    .workspaces = Abrir Áreas de Trabalho
-    .applications = Abrir Aplicativos
+    .launcher = Abrir o lançador
+    .workspaces = Abrir a visão geral das áreas de trabalho
+    .applications = Abrir o menu de aplicativos
     .disable = Desabilitar
 
 edge-gravity = Janelas flutuantes gravitam em direção às bordas próximas
@@ -350,7 +351,7 @@ edge-gravity = Janelas flutuantes gravitam em direção às bordas próximas
 window-controls = Controles de Janela
     .maximize = Mostrar botão de maximizar
     .minimize = Mostrar botão de minimizar
-    .active-window-hint = Mostrar dica de janela ativa
+    .active-window-hint = Mostrar borda da janela ativa
 
 focus-navigation = Navegação em Foco
     .focus-follows-cursor = O foco segue o cursor
@@ -419,7 +420,7 @@ mirroring = Espelhar
         *[other] monitores
     }
 
-night-light = Luz noturna
+night-light = Luz Noturna
     .auto = Automático (do pôr ao nascer do sol)
     .desc = Reduz a luz azul com cores mais quentes.
 
@@ -439,7 +440,7 @@ scheduling = Agendamento
     .manual = Agendamento manual
 
 dialog = Dialog
-    .title = Manter estas configurações de telas?
+    .title = Manter estas configurações de tela?
     .keep-changes = Manter alterações
     .change-prompt = As mudanças nas configurações serão revertidas automaticamente em { $time } segundos.
     .revert-settings = Reverter configurações
@@ -497,7 +498,7 @@ battery = Bateria
        *[other] vazia
    }
 
-connected-devices = Dispositivos conectados
+connected-devices = Dispositivos Conectados
   .unknown = Dispositivo desconhecido
 
 power-mode = Modo de Energia
@@ -517,9 +518,9 @@ power-saving = Opções de Economia de Energia
 
 ## Input
 
-acceleration-desc = Ajusta automaticamente a sensibilidade com base na velocidade.
+acceleration-desc = Ajustar automaticamente a sensibilidade com base na velocidade.
 
-disable-while-typing = Desabilitar enquanto escreve
+disable-while-typing = Desabilitar enquanto digita
 
 input-devices = Dispositivos de Entrada
     .desc = Dispositivos de entrada
@@ -576,7 +577,7 @@ show-extended-input-sources = Exibir fontes de entrada estendidas
 
 ## Input: Keyboard: Shortcuts
 
-keyboard-shortcuts = Atalhos do teclado
+keyboard-shortcuts = Atalhos do Teclado
     .desc = Ver e personalizar atalhos
 
 add-keybinding = Adicionar atalho
@@ -602,12 +603,12 @@ terminate = Encerrar
 toggle-stacking = Ativar/Desativar empilhamento de janelas
 type-key-combination = Digite a combinação de teclas
 
-custom-shortcuts = Atalhos personalizados
+custom-shortcuts = Atalhos Personalizados
     .add = Adicionar atalho
-    .context = Adiciona um atalho personalizado
+    .context = Adicionar Atalho Personalizado
     .none = Sem atalhos personalizados
 
-modified = { $count } modificados
+modified = { $count } modificado(s)
 
 nav-shortcuts = Navegação
     .prev-output = Focar a saída anterior
@@ -631,7 +632,7 @@ nav-shortcuts = Navegação
     }
     .workspace = Alternar para a área de trabalho { $num }
 
-manage-windows = Gerenciamento de janelas
+manage-windows = Gerenciamento de Janelas
     .close = Fechar janela
     .maximize = Maximizar janela
     .minimize = Minimizar janela
@@ -639,7 +640,7 @@ manage-windows = Gerenciamento de janelas
     .resize-outwards = Redimensionar janela para fora
     .toggle-sticky = Ativar/Desativar janelas fixadas
 
-move-windows = Mover janelas
+move-windows = Mover Janelas
     .direction = Mover janela { $direction ->
         *[down] para baixo
         [left] para a esquerda
@@ -682,7 +683,7 @@ system-shortcut = Sistema
     .play-pause = Iniciar/Pausar
     .play-next = Próxima faixa
     .play-prev = Faixa anterior
-    .screenshot = Tirar um print da tela
+    .screenshot = Fazer uma captura de tela
     .terminal = Abrir o terminal
     .volume-lower = Reduzir o volume da saída de áudio
     .volume-raise = Aumentar o volume da saída de áudio
@@ -757,7 +758,7 @@ time-date = Data e Hora
     .auto = Definir automaticamente
     .auto-ntp = A data e a hora serão atualizadas automaticamente quando o fuso horário for definido.
 
-time-zone = Fuso horário
+time-zone = Fuso Horário
     .auto = Fuso horário automático
     .auto-info = Requer um serviço de localização e acesso à Internet
 
@@ -765,7 +766,7 @@ time-format = Formato de Data e Hora
     .twenty-four = Formato de 24 horas
     .show-seconds = Mostrar segundos
     .first = Primeiro dia da semana
-    .show-date = Mostrar data no painel superior
+    .show-date = Mostrar a data no painel
     .friday = Sexta-feira
     .saturday = Sábado
     .sunday = Domingo
@@ -782,11 +783,11 @@ formatting = Formatação
     .measurement = Medidas
     .paper = Papel
 
-preferred-languages = Idiomas preferidos
+preferred-languages = Idiomas Preferidos
     .desc = A ordem dos idiomas determina qual idioma será usado para a tradução do desktop. As alterações entram em vigor no próximo login.
 
 add-language = Adicionar idioma
-    .context = Adicionar idioma
+    .context = Adicionar Idioma
 install-additional-languages = Instalar idiomas adicionais
 region = Região
 
@@ -796,7 +797,7 @@ applications = Aplicativos
 
 ## Applications: Default Applications
 
-default-apps = Aplicativos padrão
+default-apps = Aplicativos Padrão
     .desc = Navegador web, cliente de email, gestor de arquivos e outros aplicativos padrões.
     .web-browser = Navegador web
     .file-manager = Gestor de arquivos
@@ -811,8 +812,8 @@ default-apps = Aplicativos padrão
 
 ## Applications: Startup Applications
 
-startup-apps = Aplicativos de inicialização
-    .desc = Configurar applicativos que são iniciados automaticamente ao fazer login no sistema.
+startup-apps = Aplicativos de Inicialização
+    .desc = Configurar aplicativos que são iniciados automaticamente ao fazer login no sistema.
     .add = Adicionar aplicativo
     .user = Aplicativos específicos de usuário
     .user-description = Esses aplicativos são iniciados quando você efetua login com seu usuário atual.
@@ -822,7 +823,7 @@ startup-apps = Aplicativos de inicialização
 
 ## Applications: Legacy Applications
 
-legacy-applications = Compatibilidade com aplicativos X11
+legacy-applications = Compatibilidade com Aplicativos X11
     .desc = Dimensionamento de aplicativos de sistema de janelas X11 e atalhos globais.
 
 legacy-app-global-shortcuts = Atalhos globais em aplicativos X11
@@ -833,11 +834,15 @@ legacy-app-global-shortcuts = Atalhos globais em aplicativos X11
     .all = Todas as teclas
     .mouse = Eventos de botão de mouse em aplicativos X11
 
-legacy-app-scaling = Dimensionamento de aplicativos X11
-    .scaled-by-system = Dimensionar todos os aplicativos X11
-    .system-description = Aplicativos X11 aparecerão desfocados em telas HiDPI.
-    .scaled-natively = Renderizar aplicativos X11 em resolução nativa
-    .native-description = Aplicativos X11 que não suportam dimensionamento ficarão menores quando monitores HiDPI estiverem em uso. Habilitar para que os jogos utilizem a resolução total do monitor.
+legacy-app-scaling = Dimensionamento de Aplicativos X11
+    .scaled-gaming = Otimizar para jogos e aplicativos em tela cheia
+    .gaming-description = Os aplicativos X11 podem parecer um pouco maiores/menores em comparação aos aplicativos Wayland.
+    .scaled-applications = Otimizar para aplicativos
+    .applications-description = Jogos e aplicativos X11 em tela cheia podem não corresponder com a resolução da tela.
+    .scaled-compatibility = Modo de máxima compatibilidade
+    .compatibility-description = Os aplicativos X11 podem aparecer desfocados em telas HiDPI.
+    .preferred-display = Preferência para jogos e aplicativos X11 em tela cheia
+    .no-display = <Nenhum>
 
 ## System
 
@@ -846,7 +851,7 @@ system = Sistema e Contas
 ## System: About
 
 about = Sobre
-    .desc = Nome do dispositivo, informações de hardware, configurações padrão do sistema operacional.
+    .desc = Nome do dispositivo, informações de hardware, configurações padrão do sistema.
 
 about-device = Nome do dispositivo
     .desc = Este nome aparece para outros dispositivos de rede ou bluetooth.
@@ -884,6 +889,9 @@ administrator = Administrador
     .desc = Administradores podem alterar configurações para todos os usuários, além de adicionar e remover outros usuários.
 
 add-user = Adicionar usuário
+change-password = Alterar senha
 remove-user = Remover usuário
 full-name = Nome completo
 invalid-username = Nome de usuário inválido
+password-mismatch = A senha e a confirmação devem ser iguais.
+save = Salvar
