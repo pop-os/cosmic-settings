@@ -203,10 +203,7 @@ impl Page {
             Message::ShortcutContext => {
                 self.add_shortcut.enable();
                 return Task::batch(vec![
-                    cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                        self.entity,
-                        fl!("custom-shortcuts", "context").into(),
-                    )),
+                    cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity)),
                     widget::text_input::focus(self.name_id.clone()),
                 ]);
             }
@@ -363,11 +360,14 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         if self.add_shortcut.active {
-            Some(cosmic::app::context_drawer(
-                self.add_keybinding_context()
-                    .map(crate::pages::Message::CustomShortcuts),
-                crate::pages::Message::CloseContextDrawer,
-            ))
+            Some(
+                cosmic::app::context_drawer(
+                    self.add_keybinding_context()
+                        .map(crate::pages::Message::CustomShortcuts),
+                    crate::pages::Message::CloseContextDrawer,
+                )
+                .title(fl!("custom-shortcuts", "context")),
+            )
         } else {
             self.model.context_drawer(|msg| {
                 crate::pages::Message::CustomShortcuts(Message::Shortcut(msg))

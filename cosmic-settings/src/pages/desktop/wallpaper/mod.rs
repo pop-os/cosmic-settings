@@ -290,6 +290,7 @@ impl page::Page<crate::pages::Message> for Page {
                 },
                 crate::pages::Message::CloseContextDrawer,
             )
+            .title(fl!("color-picker"))
         })
     }
 }
@@ -770,10 +771,7 @@ impl Page {
             Message::ColorAddContext => {
                 self.context_view = Some(ContextView::AddColor);
                 self.selection.active = Choice::Color(wallpaper::Color::Single([0., 0., 0.]));
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    fl!("color-picker").into(),
-                ));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::ColorRemove(color) => {

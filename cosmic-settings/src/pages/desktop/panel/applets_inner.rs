@@ -120,9 +120,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
-        let space_xxs = theme::active().cosmic().spacing.space_xxs;
-        let content = row::with_capacity(2)
-            .spacing(space_xxs)
+        let content = row::with_capacity(1)
             .push(button::standard(fl!("add-applet")).on_press(Message::AddAppletDrawer))
             .apply(container)
             .width(Length::Fill)
@@ -134,16 +132,24 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<pages::Message>> {
-        Some(cosmic::app::context_drawer(
-            match self.context {
-                Some(ContextDrawerVariant::AddApplet) => {
-                    self.add_applet_view(crate::pages::Message::PanelApplet)
-                }
+        Some(match self.context {
+            Some(ContextDrawerVariant::AddApplet) => {
+                let search_input = text_input::search_input(fl!("search-applets"), &self.search)
+                    .on_input(Message::Search)
+                    .on_paste(Message::Search)
+                    .width(Length::Fixed(312.0))
+                    .apply(Element::from)
+                    .map(crate::pages::Message::PanelApplet);
 
-                None => return None,
-            },
-            crate::pages::Message::CloseContextDrawer,
-        ))
+                cosmic::app::context_drawer(
+                    self.add_applet_view(crate::pages::Message::PanelApplet),
+                    crate::pages::Message::CloseContextDrawer,
+                )
+                .title(fl!("add-applet"))
+                .header(search_input)
+            }
+            None => return None,
+        })
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
@@ -228,9 +234,8 @@ impl Page {
         let cosmic::cosmic_theme::Spacing {
             space_xxxs,
             space_xs,
-            space_l,
             ..
-        } = theme::active().cosmic().spacing;
+        } = theme::spacing();
         let mut list_column = list_column();
         let mut has_some = false;
         for info in self
@@ -287,17 +292,7 @@ impl Page {
             );
         }
 
-        let search = text_input::search_input(fl!("search-applets"), &self.search)
-            .on_input(move |s| msg_map(Message::Search(s)))
-            .on_paste(move |s| msg_map(Message::Search(s)))
-            .width(Length::Fixed(312.0));
-
-        column::with_capacity(2)
-            .push(search)
-            .push(list_column)
-            .align_x(Alignment::Center)
-            .spacing(space_l)
-            .into()
+        list_column.into()
     }
 
     #[allow(clippy::too_many_lines)]
@@ -421,10 +416,7 @@ impl Page {
             }
             Message::AddAppletDrawer => {
                 self.context = Some(ContextDrawerVariant::AddApplet);
-                return cosmic::task::message(app::Message::OpenContextDrawer(
-                    self.entity,
-                    Cow::Owned(fl!("add-applet")),
-                ));
+                return cosmic::task::message(app::Message::OpenContextDrawer(self.entity));
             }
         };
         Task::none()
@@ -443,7 +435,7 @@ pub fn lists<
             space_xxs,
             space_xs,
             ..
-        } = theme::active().cosmic().spacing;
+        } = theme::spacing();
         let page = page.inner();
         let Some(config) = page.current_config.as_ref() else {
             return Element::from(text::body(fl!("unknown")));
@@ -642,7 +634,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             space_xxs,
             space_xs,
             ..
-        } = theme::active().cosmic().spacing;
+        } = theme::spacing();
         let applet_buttons = info
             .clone()
             .into_iter()
@@ -737,7 +729,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
         pos: Point,
         offered_applet: Applet<'a>,
     ) -> Vec<Applet<'a>> {
-        let space_xxs = theme::active().cosmic().spacing.space_xxs;
+        let space_xxs = theme::spacing().space_xxs;
         let mut reordered: Vec<_> = self.info.clone();
 
         if !layout.bounds().contains(pos) {
@@ -916,7 +908,7 @@ where
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> event::Status {
-        let space_xxs = theme::active().cosmic().spacing.space_xxs;
+        let space_xxs = theme::spacing().space_xxs;
         let mut ret = match self.inner.as_widget_mut().on_event(
             &mut tree.children[0],
             event.clone(),
