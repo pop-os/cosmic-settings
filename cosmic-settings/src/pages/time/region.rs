@@ -6,6 +6,7 @@ use std::rc::Rc;
 use std::str::FromStr;
 use std::sync::Arc;
 
+use cosmic::app::ContextDrawer;
 use cosmic::iced::{Alignment, Border, Color, Length};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, button, container};
@@ -152,11 +153,15 @@ impl page::Page<crate::pages::Message> for Page {
         cosmic::Task::none()
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
-        Some(match self.context.as_ref()? {
-            ContextView::AddLanguage => self.add_language_view(),
-            ContextView::Region => self.region_view(),
-        })
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
+        Some(cosmic::app::context_drawer(
+            match self.context.as_ref()? {
+                ContextView::AddLanguage => self.add_language_view(),
+                ContextView::Region => self.region_view(),
+            }
+            .map(crate::pages::Message::from),
+            crate::pages::Message::CloseContextDrawer,
+        ))
     }
 }
 

@@ -1,6 +1,7 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use cosmic::app::ContextDrawer;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, button, icon, settings, text};
 use cosmic::{Apply, Element, Task, theme};
@@ -168,15 +169,22 @@ impl Model {
         self.shortcuts_config_set(shortcuts);
     }
 
-    pub(super) fn context_drawer(&self) -> Option<Element<'_, ShortcutMessage>> {
+    pub(super) fn context_drawer(
+        &self,
+        apply: fn(ShortcutMessage) -> crate::pages::Message,
+    ) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         self.shortcut_context.as_ref().map(|id| {
-            context_drawer(
-                &self.shortcut_title,
-                &self.shortcut_models,
-                self.editing,
-                self.add_keybindings_button_id.clone(),
-                *id,
-                self.custom,
+            cosmic::app::context_drawer(
+                context_drawer(
+                    &self.shortcut_title,
+                    &self.shortcut_models,
+                    self.editing,
+                    self.add_keybindings_button_id.clone(),
+                    *id,
+                    self.custom,
+                )
+                .map(apply),
+                crate::pages::Message::CloseContextDrawer,
             )
         })
     }

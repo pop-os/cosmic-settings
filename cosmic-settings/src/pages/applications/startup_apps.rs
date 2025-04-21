@@ -1,3 +1,4 @@
+use cosmic::app::ContextDrawer;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{button, icon, settings, text};
 use cosmic::{Apply, Element, Task, widget};
@@ -43,14 +44,13 @@ impl Default for Page {
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    ShowApplicationSidebar(DirectoryType),
-    UpdateStartupApplications(CachedApps),
-    UpdateApplications(CachedApps),
-
-    ApplicationSearch(String),
     AddStartupApplication(DirectoryType, DesktopEntry),
-    RemoveStartupApplication(DirectoryType, DesktopEntry, bool),
+    ApplicationSearch(String),
     CancelRemoveStartupApplication,
+    RemoveStartupApplication(DirectoryType, DesktopEntry, bool),
+    ShowApplicationSidebar(DirectoryType),
+    UpdateApplications(CachedApps),
+    UpdateStartupApplications(CachedApps),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -110,11 +110,13 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(apps())])
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<crate::pages::Message>> {
         match &self.context {
-            Some(Context::AddApplication(directory_type)) => {
-                Some(self.add_application_context_view(directory_type.clone()))
-            }
+            Some(Context::AddApplication(directory_type)) => Some(cosmic::app::context_drawer(
+                self.add_application_context_view(directory_type.clone())
+                    .map(crate::pages::Message::from),
+                crate::pages::Message::CloseContextDrawer,
+            )),
             None => None,
         }
     }

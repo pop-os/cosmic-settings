@@ -1,3 +1,4 @@
+use cosmic::app::ContextDrawer;
 use cosmic::iced::Vector;
 use cosmic::iced::clipboard::dnd::{
     DndAction, DndDestinationRectangle, DndEvent, OfferEvent, SourceEvent,
@@ -56,7 +57,7 @@ pub struct Page {
     pub(crate) current_config: Option<CosmicPanelConfig>,
     pub(crate) reorder_widget_state: Option<(Applet<'static>, CosmicPanelConfig)>,
     pub(crate) search: String,
-    pub(crate) context: Option<ContextDrawer>,
+    pub(crate) context: Option<ContextDrawerVariant>,
 }
 
 impl Default for Page {
@@ -132,14 +133,17 @@ impl page::Page<crate::pages::Message> for Page {
         Some(content)
     }
 
-    fn context_drawer(&self) -> Option<Element<pages::Message>> {
-        Some(match self.context {
-            Some(ContextDrawer::AddApplet) => {
-                self.add_applet_view(crate::pages::Message::PanelApplet)
-            }
+    fn context_drawer(&self) -> Option<ContextDrawer<pages::Message>> {
+        Some(cosmic::app::context_drawer(
+            match self.context {
+                Some(ContextDrawerVariant::AddApplet) => {
+                    self.add_applet_view(crate::pages::Message::PanelApplet)
+                }
 
-            None => return None,
-        })
+                None => return None,
+            },
+            crate::pages::Message::CloseContextDrawer,
+        ))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
@@ -196,7 +200,7 @@ impl Debug for Message {
     }
 }
 
-pub enum ContextDrawer {
+pub enum ContextDrawerVariant {
     AddApplet,
 }
 
@@ -416,7 +420,7 @@ impl Page {
                 self.save();
             }
             Message::AddAppletDrawer => {
-                self.context = Some(ContextDrawer::AddApplet);
+                self.context = Some(ContextDrawerVariant::AddApplet);
                 return cosmic::task::message(app::Message::OpenContextDrawer(
                     self.entity,
                     Cow::Owned(fl!("add-applet")),

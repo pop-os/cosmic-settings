@@ -6,6 +6,7 @@ use std::str::FromStr;
 use chrono::{Datelike, Timelike};
 use cosmic::{
     Apply, Element, Task,
+    app::ContextDrawer,
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced_core::text::Wrapping,
     surface,
@@ -165,9 +166,13 @@ impl page::Page<crate::pages::Message> for Page {
         .map(crate::pages::Message::DateAndTime)
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<crate::pages::Message>> {
         if self.timezone_context {
-            return Some(self.timezone_context_view());
+            return Some(cosmic::app::context_drawer(
+                self.timezone_context_view()
+                    .map(crate::pages::Message::from),
+                crate::pages::Message::CloseContextDrawer,
+            ));
         }
 
         None
@@ -259,14 +264,14 @@ impl Page {
             Message::Error(why) => {
                 tracing::error!(why, "failed to set timezone");
                 self.timezone_context = false;
-                return cosmic::task::message(crate::Message::CloseContextDrawer);
+                return cosmic::task::message(crate::pages::Message::CloseContextDrawer);
             }
 
             Message::UpdateTime => {
                 self.set_ntp(true);
                 self.update_local_time();
                 self.timezone_context = false;
-                return cosmic::task::message(crate::Message::CloseContextDrawer);
+                return cosmic::task::message(crate::pages::Message::CloseContextDrawer);
             }
 
             Message::Refresh(info) => {

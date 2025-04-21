@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use super::{ShortcutMessage, ShortcutModel};
+use cosmic::app::ContextDrawer;
 use cosmic::{Element, Task};
 use cosmic_settings_config::shortcuts::Action;
 use cosmic_settings_config::shortcuts::action::{Direction, FocusDirection};
@@ -47,10 +48,9 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(shortcuts())])
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         self.model
-            .context_drawer()
-            .map(|el| el.map(crate::pages::Message::NavShortcuts))
+            .context_drawer(crate::pages::Message::NavShortcuts)
     }
 
     fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
