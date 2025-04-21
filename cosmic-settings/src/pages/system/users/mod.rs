@@ -11,12 +11,13 @@ use cosmic::{
     widget::{self, Space, column, icon, row, settings, text},
 };
 use cosmic_settings_page::{self as page, Section, section};
-use pwhash::bcrypt;
+use pwhash::{bcrypt, md5_crypt, sha256_crypt, sha512_crypt};
 use regex::Regex;
 use slab::Slab;
 use slotmap::SlotMap;
 use std::{
     collections::HashMap,
+    fs::File,
     future::Future,
     io::{BufRead, BufReader},
     path::PathBuf,
@@ -557,7 +558,7 @@ impl Page {
                 self.dialog = None;
 
                 let uid = user.id;
-                let password_hashed = bcrypt::hash(user.password).unwrap();
+                let password_hashed = hash_password(&user.password);
 
                 return cosmic::Task::future(async move {
                     let Ok(conn) = zbus::Connection::system().await else {
@@ -655,7 +656,7 @@ impl Page {
                         }
                     };
 
-                    let password_hashed = bcrypt::hash(password).unwrap();
+                    let password_hashed = hash_password(&password);
                     match accounts_zbus::UserProxy::new(&conn, user_object_path).await {
                         Ok(user) => {
                             _ = user.set_password(&password_hashed, "").await;
@@ -940,4 +941,40 @@ fn permission_was_denied(result: &zbus::Error) -> bool {
         }
         _ => false,
     }
+}
+
+// TODO: Should we allow deprecated methods?
+fn hash_password(password_plain: &str) -> String {
+    match get_encrypt_method().as_str() {
+        "SHA512" => sha512_crypt::hash(password_plain).unwrap(),
+        "SHA256" => sha256_crypt::hash(password_plain).unwrap(),
+        "MD5" => md5_crypt::hash(password_plain).unwrap(),
+        _ => bcrypt::hash(password_plain).unwrap(),
+    }
+}
+
+// TODO: In the future loading in the whole login.defs file into an object might be handy?
+// For now, just grabbing what we need
+fn get_encrypt_method() -> String {
+    let mut value = String::new();
+    let login_defs = if let Ok(file) = File::open("/etc/login.defs") {
+        file
+    } else {
+        return value;
+    };
+    let reader = BufReader::new(login_defs);
+
+    for line in reader.lines() {
+        if let Ok(line) = line {
+            if !line.trim().is_empty() {
+                if let Some(index) = line.find(|c: char| c.is_whitespace()) {
+                    let key = line[0..index].trim();
+                    if key == "ENCRYPT_METHOD" {
+                        value = line[(index + 1)..].trim().to_string();
+                    }
+                }
+            }
+        }
+    }
+    value
 }
