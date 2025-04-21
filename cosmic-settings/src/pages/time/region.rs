@@ -6,7 +6,7 @@ use std::rc::Rc;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use cosmic::app::ContextDrawer;
+use cosmic::app::{ContextDrawer, context_drawer};
 use cosmic::iced::{Alignment, Border, Color, Length};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, button, container};
@@ -154,14 +154,45 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
-        Some(cosmic::app::context_drawer(
-            match self.context.as_ref()? {
-                ContextView::AddLanguage => self.add_language_view(),
-                ContextView::Region => self.region_view(),
+        Some(match self.context.as_ref()? {
+            ContextView::AddLanguage => {
+                let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
+                    .on_input(Message::AddLanguageSearch)
+                    .on_clear(Message::AddLanguageSearch(String::new()))
+                    .apply(Element::from)
+                    .map(crate::pages::Message::from);
+                let install_additional_button =
+                    widget::button::standard(fl!("install-additional-languages"))
+                        .on_press(Message::InstallAdditionalLanguages)
+                        .apply(widget::container)
+                        .width(Length::Fill)
+                        .align_x(Alignment::End)
+                        .apply(Element::from)
+                        .map(crate::pages::Message::from);
+
+                context_drawer(
+                    self.add_language_view().map(crate::pages::Message::from),
+                    crate::pages::Message::CloseContextDrawer,
+                )
+                .title(fl!("add-language", "context"))
+                .header(search)
+                .footer(install_additional_button)
             }
-            .map(crate::pages::Message::from),
-            crate::pages::Message::CloseContextDrawer,
-        ))
+            ContextView::Region => {
+                let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
+                    .on_input(Message::AddLanguageSearch)
+                    .on_clear(Message::AddLanguageSearch(String::new()))
+                    .apply(Element::from)
+                    .map(crate::pages::Message::from);
+
+                context_drawer(
+                    self.region_view().map(crate::pages::Message::from),
+                    crate::pages::Message::CloseContextDrawer,
+                )
+                .title(fl!("region"))
+                .header(search)
+            }
+        })
     }
 }
 
@@ -208,10 +239,7 @@ impl Page {
 
             Message::AddLanguageContext => {
                 self.context = Some(ContextView::AddLanguage);
-                return cosmic::Task::done(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    fl!("add-language", "context").into(),
-                ));
+                return cosmic::Task::done(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::AddLanguageSearch(search) => {
@@ -253,10 +281,7 @@ impl Page {
 
             Message::RegionContext => {
                 self.context = Some(ContextView::Region);
-                return cosmic::Task::done(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    fl!("region").into(),
-                ));
+                return cosmic::Task::done(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::SourceContext(context_message) => {
@@ -310,12 +335,6 @@ impl Page {
     }
 
     fn add_language_view(&self) -> cosmic::Element<'_, crate::pages::Message> {
-        let cosmic::cosmic_theme::Spacing { space_l, .. } = theme::active().cosmic().spacing;
-
-        let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
-            .on_input(Message::AddLanguageSearch)
-            .on_clear(Message::AddLanguageSearch(String::new()));
-
         let mut list = widget::list_column();
 
         let search_input = &self.add_language_search.trim().to_lowercase();
@@ -370,21 +389,7 @@ impl Page {
             }
         }
 
-        let install_additional_button =
-            widget::button::standard(fl!("install-additional-languages"))
-                .on_press(Message::InstallAdditionalLanguages)
-                .apply(widget::container)
-                .width(Length::Fill)
-                .align_x(Alignment::End);
-
-        widget::column()
-            .padding([2, 0])
-            .spacing(space_l)
-            .push(search)
-            .push(list)
-            .push(install_additional_button)
-            .apply(Element::from)
-            .map(crate::pages::Message::Region)
+        list.apply(Element::from).map(crate::pages::Message::Region)
     }
 
     fn formatted_date(&self) -> String {
@@ -519,16 +524,10 @@ impl Page {
     }
 
     fn region_view(&self) -> cosmic::Element<'_, crate::pages::Message> {
-        let space_l = theme::active().cosmic().spacing.space_l;
-
         let svg_accent = Rc::new(|theme: &cosmic::Theme| {
             let color = theme.cosmic().accent_color().into();
             cosmic::widget::svg::Style { color: Some(color) }
         });
-
-        let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
-            .on_input(Message::AddLanguageSearch)
-            .on_clear(Message::AddLanguageSearch(String::new()));
 
         let mut list = widget::list_column();
 
@@ -576,13 +575,7 @@ impl Page {
             }
         }
 
-        widget::column()
-            .padding([2, 0])
-            .spacing(space_l)
-            .push(search)
-            .push(list)
-            .apply(Element::from)
-            .map(crate::pages::Message::Region)
+        list.apply(Element::from).map(crate::pages::Message::Region)
     }
 }
 
@@ -643,7 +636,7 @@ mod preferred_languages {
                     .push(description)
                     .push(content)
                     .push(add_language_button)
-                    .spacing(cosmic::theme::active().cosmic().spacing.space_xxs)
+                    .spacing(cosmic::theme::spacing().space_xxs)
                     .apply(cosmic::Element::from)
                     .map(Into::into)
             })

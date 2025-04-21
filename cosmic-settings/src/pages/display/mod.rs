@@ -7,7 +7,7 @@ pub mod arrangement;
 use crate::{app, pages};
 use arrangement::Arrangement;
 use cosmic::iced::{Alignment, Length, time};
-use cosmic::iced_widget::scrollable::{Direction, RelativeOffset, Scrollbar};
+use cosmic::iced_widget::scrollable::RelativeOffset;
 use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
 };
@@ -1144,7 +1144,7 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
             let cosmic::cosmic_theme::Spacing {
                 space_xxs, space_m, ..
-            } = cosmic::theme::active().cosmic().spacing;
+            } = cosmic::theme::spacing();
 
             column()
                 .push(
@@ -1159,10 +1159,9 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                         .on_placement(|id, x, y| {
                             pages::Message::Displays(Message::Position(id, x, y))
                         })
-                        .apply(widget::scrollable)
+                        .apply(widget::scrollable::horizontal)
                         .id(page.display_arrangement_scrollable.clone())
                         .width(Length::Shrink)
-                        .direction(Direction::Horizontal(Scrollbar::new()))
                         .apply(container)
                         .center_x(Length::Fill)
                 })
@@ -1192,7 +1191,6 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-            let theme = cosmic::theme::active();
 
             let Some(&active_id) = page.display_tabs.active_data::<OutputKey>() else {
                 return column().into();
@@ -1296,7 +1294,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                 items
             });
 
-            let mut content = column().spacing(theme.cosmic().space_xs());
+            let mut content = column().spacing(cosmic::theme::spacing().space_xs);
 
             if page.list.outputs.len() > 1 {
                 let display_switcher = tab_bar::horizontal(&page.display_tabs)

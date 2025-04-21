@@ -459,7 +459,7 @@ impl Model {
                 self.replace_dialog = None;
 
                 let mut tasks = vec![cosmic::task::message(
-                    crate::app::Message::OpenContextDrawer(self.entity, "".into()),
+                    crate::app::Message::OpenContextDrawer(self.entity),
                 )];
 
                 if let Some(model) = self.shortcut_models.get(0) {
@@ -572,7 +572,7 @@ fn context_drawer<'a>(
         space_xs,
         space_l,
         ..
-    } = theme::active().cosmic().spacing;
+    } = theme::spacing();
 
     let model = &shortcuts[id];
 

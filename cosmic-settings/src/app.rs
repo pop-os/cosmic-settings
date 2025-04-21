@@ -150,7 +150,7 @@ pub enum Message {
     DesktopInfo,
     Error(String),
     None,
-    OpenContextDrawer(Entity, Cow<'static, str>),
+    OpenContextDrawer(Entity),
     #[cfg(feature = "wayland")]
     OutputAdded(OutputInfo, WlOutput),
     #[cfg(feature = "wayland")]
@@ -756,10 +756,9 @@ impl cosmic::Application for SettingsApp {
 
             Message::SetTheme(t) => return cosmic::command::set_theme(t),
 
-            Message::OpenContextDrawer(page, title) => {
+            Message::OpenContextDrawer(page) => {
                 self.core.window.show_context = true;
                 self.active_context_page = Some(page);
-                self.context_title = Some(title.to_string());
             }
 
             Message::Error(error) => {
@@ -1124,8 +1123,6 @@ impl SettingsApp {
 
     /// Displays the sub-pages view of a page.
     fn sub_page_view(&self, sub_pages: &[page::Entity]) -> cosmic::Element<Message> {
-        let theme = cosmic::theme::active();
-
         let page_list = sub_pages
             .iter()
             .copied()
@@ -1143,7 +1140,7 @@ impl SettingsApp {
                     ))
                 },
             )
-            .spacing(theme.cosmic().space_s())
+            .spacing(cosmic::theme::spacing().space_s)
             .apply(|widget| scrollable(self.page_container(widget)).height(Length::Fill))
             .apply(Element::from)
             .map(Message::Page);

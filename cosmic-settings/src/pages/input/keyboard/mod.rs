@@ -7,7 +7,7 @@ use std::cmp;
 
 use cosmic::{
     Apply, Element, Task,
-    app::ContextDrawer,
+    app::{ContextDrawer, context_drawer},
     cosmic_config::{self, ConfigSet},
     iced::{Alignment, Color, Length},
     iced_core::Border,
@@ -298,19 +298,33 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
-        self.context.as_ref().map(|context| {
-            cosmic::app::context_drawer(
-                match context {
-                    Context::ShowInputSourcesContext => self.add_input_source_view(),
-                    Context::SpecialCharacter(special_key) => self
-                        .special_character_key_view(*special_key)
-                        .map(crate::pages::Message::Keyboard),
-                    Context::NumlockState => self
-                        .numlock_state_view()
-                        .map(crate::pages::Message::Keyboard),
-                },
+        self.context.as_ref().map(|context| match context {
+            Context::ShowInputSourcesContext => {
+                let search = widget::search_input(fl!("type-to-search"), &self.input_source_search)
+                    .on_input(Message::InputSourceSearch)
+                    .on_clear(Message::InputSourceSearch(String::new()))
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Keyboard);
+
+                context_drawer(
+                    self.add_input_source_view(),
+                    crate::pages::Message::CloseContextDrawer,
+                )
+                .title(fl!("keyboard-sources", "add"))
+                .header(search)
+            }
+            Context::SpecialCharacter(special_key) => context_drawer(
+                self.special_character_key_view(*special_key)
+                    .map(crate::pages::Message::Keyboard),
                 crate::pages::Message::CloseContextDrawer,
             )
+            .title(special_key.title()),
+            Context::NumlockState => context_drawer(
+                self.numlock_state_view()
+                    .map(crate::pages::Message::Keyboard),
+                crate::pages::Message::CloseContextDrawer,
+            )
+            .title(fl!("keyboard-numlock-boot", "set")),
         })
     }
 
@@ -487,10 +501,7 @@ impl Page {
 
             Message::ShowInputSourcesContext => {
                 self.context = Some(Context::ShowInputSourcesContext);
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    fl!("keyboard-sources", "add").into(),
-                ));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::ExpandInputSourcePopover(value) => {
@@ -499,18 +510,12 @@ impl Page {
 
             Message::OpenSpecialCharacterContext(key) => {
                 self.context = Some(Context::SpecialCharacter(key));
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    key.title().into(),
-                ));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::OpenNumlockContext => {
                 self.context = Some(Context::NumlockState);
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    fl!("keyboard-numlock-boot", "set").into(),
-                ));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::SpecialCharacterSelect(id) => {
@@ -553,11 +558,7 @@ impl Page {
     }
 
     pub fn add_input_source_view(&self) -> Element<'_, crate::pages::Message> {
-        let space_l = theme::active().cosmic().spacing.space_l;
-
-        let search = widget::search_input(fl!("type-to-search"), &self.input_source_search)
-            .on_input(Message::InputSourceSearch)
-            .on_clear(Message::InputSourceSearch(String::new()));
+        let space_l = theme::spacing().space_l;
 
         let toggler = settings::item::builder(fl!("show-extended-input-sources")).toggler(
             self.show_extended_input_sources,
@@ -577,9 +578,7 @@ impl Page {
         }
 
         widget::column()
-            .padding([2, 0])
             .spacing(space_l)
-            .push(search)
             .push(toggler)
             .push(list)
             .apply(Element::from)
@@ -715,7 +714,7 @@ fn input_sources() -> Section<crate::pages::Message> {
                 .on_press(Message::ShowInputSourcesContext);
 
             widget::column::with_capacity(2)
-                .spacing(cosmic::theme::active().cosmic().space_xxs())
+                .spacing(cosmic::theme::spacing().space_xxs)
                 .push(section)
                 .push(
                     widget::container(add_input_source)
@@ -800,7 +799,6 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-            let theme = cosmic::theme::active();
 
             settings::section()
                 .title(&section.title)
@@ -819,7 +817,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
 
                     row::with_capacity(3)
                         .align_y(Alignment::Center)
-                        .spacing(theme.cosmic().space_s())
+                        .spacing(cosmic::theme::spacing().space_s)
                         .push(widget::text::body(&descriptions[short]))
                         .push(delay_slider)
                         .push(widget::text::body(&descriptions[long]))
@@ -839,7 +837,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
 
                     row::with_capacity(3)
                         .align_y(Alignment::Center)
-                        .spacing(theme.cosmic().space_s())
+                        .spacing(cosmic::theme::spacing().space_s)
                         .push(widget::text::body(&descriptions[slow]))
                         .push(rate_slider)
                         .push(widget::text::body(&descriptions[fast]))
