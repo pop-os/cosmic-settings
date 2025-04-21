@@ -24,6 +24,7 @@ pub mod time;
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    // Page-specific messages
     #[cfg(feature = "page-accessibility")]
     Accessibility(accessibility::Message),
     #[cfg(feature = "page-accessibility")]
@@ -96,6 +97,9 @@ pub enum Message {
     WindowManagement(desktop::window_management::Message),
     #[cfg(feature = "page-networking")]
     Wired(networking::wired::Message),
+
+    // Common page functionality
+    CloseContextDrawer,
 }
 
 impl From<Message> for crate::Message {

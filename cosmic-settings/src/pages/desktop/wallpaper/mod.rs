@@ -16,7 +16,6 @@ use std::{
 
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser;
-use cosmic::iced_runtime::core::image::Handle as ImageHandle;
 use cosmic::widget::{
     button, dropdown, list_column, row,
     segmented_button::{self, SingleSelectModel},
@@ -26,6 +25,7 @@ use cosmic::{
     Apply, Element, Task,
     widget::{ColorPickerModel, color_picker::ColorPickerUpdate, icon},
 };
+use cosmic::{app::ContextDrawer, iced_runtime::core::image::Handle as ImageHandle};
 use cosmic::{
     iced::{Alignment, Color, Length, window},
     surface,
@@ -276,15 +276,20 @@ impl page::Page<crate::pages::Message> for Page {
         Task::none()
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
-        self.context_view.map(|view| match view {
-            ContextView::AddColor => crate::widget::color_picker_context_view(
-                None,
-                fl!("reset-to-default").into(),
-                Message::ColorAdd,
-                &self.color_model,
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
+        self.context_view.map(|view| {
+            cosmic::app::context_drawer(
+                match view {
+                    ContextView::AddColor => crate::widget::color_picker_context_view(
+                        None,
+                        fl!("reset-to-default").into(),
+                        Message::ColorAdd,
+                        &self.color_model,
+                    )
+                    .map(crate::pages::Message::DesktopWallpaper),
+                },
+                crate::pages::Message::CloseContextDrawer,
             )
-            .map(crate::pages::Message::DesktopWallpaper),
         })
     }
 }

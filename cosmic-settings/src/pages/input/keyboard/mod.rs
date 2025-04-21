@@ -7,6 +7,7 @@ use std::cmp;
 
 use cosmic::{
     Apply, Element, Task,
+    app::ContextDrawer,
     cosmic_config::{self, ConfigSet},
     iced::{Alignment, Color, Length},
     iced_core::Border,
@@ -296,20 +297,21 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("keyboard", "desc"))
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
-        match self.context {
-            Some(Context::ShowInputSourcesContext) => Some(self.add_input_source_view()),
-            Some(Context::SpecialCharacter(special_key)) => self
-                .special_character_key_view(special_key)
-                .map(crate::pages::Message::Keyboard)
-                .apply(Some),
-            Some(Context::NumlockState) => self
-                .numlock_state_view()
-                .map(crate::pages::Message::Keyboard)
-                .apply(Some),
-
-            None => None,
-        }
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
+        self.context.as_ref().map(|context| {
+            cosmic::app::context_drawer(
+                match context {
+                    Context::ShowInputSourcesContext => self.add_input_source_view(),
+                    Context::SpecialCharacter(special_key) => self
+                        .special_character_key_view(*special_key)
+                        .map(crate::pages::Message::Keyboard),
+                    Context::NumlockState => self
+                        .numlock_state_view()
+                        .map(crate::pages::Message::Keyboard),
+                },
+                crate::pages::Message::CloseContextDrawer,
+            )
+        })
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {

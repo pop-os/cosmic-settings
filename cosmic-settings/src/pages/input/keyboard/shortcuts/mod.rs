@@ -12,6 +12,7 @@ pub mod nav;
 pub mod system;
 pub mod tiling;
 
+use cosmic::app::ContextDrawer;
 use cosmic::iced::Length;
 use cosmic::widget::{self, icon, settings, text};
 use cosmic::{Apply, Element, Task, theme};
@@ -122,12 +123,12 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("keyboard-shortcuts", "desc"))
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         if self.search_model.shortcut_models.is_empty() {
             None
         } else {
-            self.search_model.context_drawer().map(|el| {
-                el.map(|msg| crate::pages::Message::KeyboardShortcuts(Message::SearchShortcut(msg)))
+            self.search_model.context_drawer(|msg| {
+                crate::pages::Message::KeyboardShortcuts(Message::SearchShortcut(msg))
             })
         }
     }

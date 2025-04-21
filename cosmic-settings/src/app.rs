@@ -146,7 +146,6 @@ impl SettingsApp {
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    CloseContextDrawer,
     #[cfg(feature = "wayland")]
     DesktopInfo,
     Error(String),
@@ -370,6 +369,8 @@ impl cosmic::Application for SettingsApp {
             }
 
             Message::PageMessage(message) => match message {
+                crate::pages::Message::CloseContextDrawer => return self.close_context_drawer(),
+
                 #[cfg(feature = "page-accessibility")]
                 crate::pages::Message::Accessibility(message) => {
                     if let Some(page) = self.pages.page_mut::<accessibility::Page>() {
@@ -761,8 +762,6 @@ impl cosmic::Application for SettingsApp {
                 self.context_title = Some(title.to_string());
             }
 
-            Message::CloseContextDrawer => return self.close_context_drawer(),
-
             Message::Error(error) => {
                 tracing::error!(error, "error occurred");
             }
@@ -814,10 +813,9 @@ impl cosmic::Application for SettingsApp {
         if self.core.window.show_context {
             self.active_context_page.and_then(|context_page| {
                 self.pages.context_drawer(context_page).map(|cd| {
-                    let cd = cosmic::app::context_drawer::context_drawer(
-                        cd.map(Message::PageMessage),
-                        Message::CloseContextDrawer,
-                    );
+                    let cd = cd.map(Message::from);
+
+                    // TODO: The page should handle this?
                     if let Some(title) = self.context_title.as_ref() {
                         cd.title(title)
                     } else {

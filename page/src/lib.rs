@@ -5,7 +5,7 @@ mod binder;
 pub use binder::{AutoBind, Binder};
 
 mod insert;
-use cosmic::{Element, Task};
+use cosmic::{Element, Task, app::ContextDrawer};
 use downcast_rs::{Downcast, impl_downcast};
 pub use insert::Insert;
 
@@ -24,7 +24,7 @@ slotmap::new_key_type! {
 /// A collection of sections which a page may be comprised of.
 pub type Content = Vec<section::Entity>;
 
-pub trait Page<Message: 'static>: Downcast {
+pub trait Page<Message: Clone + 'static>: Downcast {
     /// Information about the page
     fn info(&self) -> Info;
 
@@ -41,7 +41,7 @@ pub trait Page<Message: 'static>: Downcast {
     /// Display a context drawer for the page.
     #[must_use]
     #[inline]
-    fn context_drawer(&self) -> Option<Element<'_, Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, Message>> {
         None
     }
 
@@ -101,7 +101,7 @@ pub trait Page<Message: 'static>: Downcast {
     }
 }
 
-impl_downcast!(Page<Message>);
+impl_downcast!(Page<Message> where Message: Clone);
 
 /// Information about a page; including its title, icon, and description.
 #[derive(Setters)]

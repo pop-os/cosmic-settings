@@ -7,6 +7,7 @@ pub mod icon_themes;
 use std::borrow::Cow;
 use std::sync::Arc;
 
+use cosmic::app::ContextDrawer;
 //TODO: use embedded cosmic-files for portability
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
@@ -1342,7 +1343,7 @@ impl Page {
         let task = match message {
             ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
                 needs_update = true;
-                cosmic::task::message(crate::app::Message::CloseContextDrawer)
+                cosmic::task::message(crate::pages::Message::CloseContextDrawer)
             }
 
             ColorPickerUpdate::ActionFinished => {
@@ -1351,7 +1352,7 @@ impl Page {
             }
 
             ColorPickerUpdate::Cancel => {
-                cosmic::task::message(crate::app::Message::CloseContextDrawer)
+                cosmic::task::message(crate::pages::Message::CloseContextDrawer)
             }
 
             ColorPickerUpdate::ToggleColorPicker => {
@@ -1621,7 +1622,7 @@ impl page::Page<crate::pages::Message> for Page {
         cosmic::task::message(crate::pages::Message::Appearance(Message::Left))
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         let view = match self.context_view? {
             ContextView::AccentWindowHint => color_picker_context_view(
                 None,
@@ -1710,7 +1711,10 @@ impl page::Page<crate::pages::Message> for Page {
             ContextView::IconsAndToolkit => self.icons_and_toolkit(),
         };
 
-        Some(view)
+        Some(cosmic::app::context_drawer(
+            view,
+            crate::pages::Message::CloseContextDrawer,
+        ))
     }
 }
 
