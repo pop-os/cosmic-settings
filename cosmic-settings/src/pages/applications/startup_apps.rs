@@ -1,3 +1,4 @@
+use cosmic::app::ContextDrawer;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{button, icon, settings, text};
 use cosmic::{Apply, Element, Task, widget};
@@ -43,14 +44,13 @@ impl Default for Page {
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    ShowApplicationSidebar(DirectoryType),
-    UpdateStartupApplications(CachedApps),
-    UpdateApplications(CachedApps),
-
-    ApplicationSearch(String),
     AddStartupApplication(DirectoryType, DesktopEntry),
-    RemoveStartupApplication(DirectoryType, DesktopEntry, bool),
+    ApplicationSearch(String),
     CancelRemoveStartupApplication,
+    RemoveStartupApplication(DirectoryType, DesktopEntry, bool),
+    ShowApplicationSidebar(DirectoryType),
+    UpdateApplications(CachedApps),
+    UpdateStartupApplications(CachedApps),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -110,10 +110,24 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(apps())])
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<crate::pages::Message>> {
         match &self.context {
             Some(Context::AddApplication(directory_type)) => {
-                Some(self.add_application_context_view(directory_type.clone()))
+                let search = widget::search_input(fl!("type-to-search"), &self.application_search)
+                    .on_input(Message::ApplicationSearch)
+                    .on_clear(Message::ApplicationSearch(String::new()))
+                    .apply(Element::from)
+                    .map(crate::pages::Message::from);
+
+                Some(
+                    cosmic::app::context_drawer(
+                        self.add_application_context_view(directory_type.clone())
+                            .map(crate::pages::Message::from),
+                        crate::pages::Message::CloseContextDrawer,
+                    )
+                    .title(fl!("startup-apps", "search-for-application"))
+                    .header(search),
+                )
             }
             None => None,
         }
@@ -201,10 +215,7 @@ impl Page {
             }
             Message::ShowApplicationSidebar(directory_type) => {
                 self.context = Some(Context::AddApplication(directory_type));
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    fl!("startup-apps", "search-for-application").into(),
-                ));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
             Message::AddStartupApplication(directory_type, app) => {
                 let mut file_name = app.clone().appid;
@@ -309,13 +320,7 @@ impl Page {
         &self,
         directory_type: DirectoryType,
     ) -> Element<'_, crate::pages::Message> {
-        let cosmic::cosmic_theme::Spacing {
-            space_xs, space_l, ..
-        } = cosmic::theme::spacing();
-
-        let search = widget::search_input(fl!("type-to-search"), &self.application_search)
-            .on_input(Message::ApplicationSearch)
-            .on_clear(Message::ApplicationSearch(String::new()));
+        let cosmic::cosmic_theme::Spacing { space_xs, .. } = cosmic::theme::spacing();
 
         let mut list = widget::list_column();
         let search_input = &self.application_search.trim().to_lowercase();
@@ -353,12 +358,7 @@ impl Page {
             }
         }
 
-        widget::column()
-            .padding([2, 0])
-            .spacing(space_l)
-            .push(search)
-            .push(list)
-            .apply(Element::from)
+        list.apply(Element::from)
             .map(crate::pages::Message::StartupApps)
     }
 }

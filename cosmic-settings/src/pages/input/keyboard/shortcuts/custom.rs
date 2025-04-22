@@ -5,6 +5,7 @@ use std::str::FromStr;
 
 use super::{ShortcutBinding, ShortcutMessage, ShortcutModel};
 
+use cosmic::app::ContextDrawer;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, button, icon};
 use cosmic::{Apply, Element, Task};
@@ -202,10 +203,7 @@ impl Page {
             Message::ShortcutContext => {
                 self.add_shortcut.enable();
                 return Task::batch(vec![
-                    cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                        self.entity,
-                        fl!("custom-shortcuts", "context").into(),
-                    )),
+                    cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity)),
                     widget::text_input::focus(self.name_id.clone()),
                 ]);
             }
@@ -360,15 +358,21 @@ impl page::Page<crate::pages::Message> for Page {
             .map(|el| el.map(|m| crate::pages::Message::CustomShortcuts(Message::Shortcut(m))))
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         if self.add_shortcut.active {
-            Some(self.add_keybinding_context())
+            Some(
+                cosmic::app::context_drawer(
+                    self.add_keybinding_context()
+                        .map(crate::pages::Message::CustomShortcuts),
+                    crate::pages::Message::CloseContextDrawer,
+                )
+                .title(fl!("custom-shortcuts", "context")),
+            )
         } else {
-            self.model
-                .context_drawer()
-                .map(|el| el.map(Message::Shortcut))
+            self.model.context_drawer(|msg| {
+                crate::pages::Message::CustomShortcuts(Message::Shortcut(msg))
+            })
         }
-        .map(|el| el.map(crate::pages::Message::CustomShortcuts))
     }
 
     fn on_context_drawer_close(&mut self) -> Task<crate::pages::Message> {

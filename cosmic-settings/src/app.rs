@@ -146,12 +146,11 @@ impl SettingsApp {
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    CloseContextDrawer,
     #[cfg(feature = "wayland")]
     DesktopInfo,
     Error(String),
     None,
-    OpenContextDrawer(Entity, Cow<'static, str>),
+    OpenContextDrawer(Entity),
     #[cfg(feature = "wayland")]
     OutputAdded(OutputInfo, WlOutput),
     #[cfg(feature = "wayland")]
@@ -370,6 +369,8 @@ impl cosmic::Application for SettingsApp {
             }
 
             Message::PageMessage(message) => match message {
+                crate::pages::Message::CloseContextDrawer => return self.close_context_drawer(),
+
                 #[cfg(feature = "page-accessibility")]
                 crate::pages::Message::Accessibility(message) => {
                     if let Some(page) = self.pages.page_mut::<accessibility::Page>() {
@@ -755,13 +756,10 @@ impl cosmic::Application for SettingsApp {
 
             Message::SetTheme(t) => return cosmic::command::set_theme(t),
 
-            Message::OpenContextDrawer(page, title) => {
+            Message::OpenContextDrawer(page) => {
                 self.core.window.show_context = true;
                 self.active_context_page = Some(page);
-                self.context_title = Some(title.to_string());
             }
-
-            Message::CloseContextDrawer => return self.close_context_drawer(),
 
             Message::Error(error) => {
                 tracing::error!(error, "error occurred");
@@ -814,10 +812,9 @@ impl cosmic::Application for SettingsApp {
         if self.core.window.show_context {
             self.active_context_page.and_then(|context_page| {
                 self.pages.context_drawer(context_page).map(|cd| {
-                    let cd = cosmic::app::context_drawer::context_drawer(
-                        cd.map(Message::PageMessage),
-                        Message::CloseContextDrawer,
-                    );
+                    let cd = cd.map(Message::from);
+
+                    // TODO: The page should handle this?
                     if let Some(title) = self.context_title.as_ref() {
                         cd.title(title)
                     } else {
@@ -1126,8 +1123,6 @@ impl SettingsApp {
 
     /// Displays the sub-pages view of a page.
     fn sub_page_view(&self, sub_pages: &[page::Entity]) -> cosmic::Element<Message> {
-        let theme = cosmic::theme::active();
-
         let page_list = sub_pages
             .iter()
             .copied()
@@ -1145,7 +1140,7 @@ impl SettingsApp {
                     ))
                 },
             )
-            .spacing(theme.cosmic().space_s())
+            .spacing(cosmic::theme::spacing().space_s)
             .apply(|widget| scrollable(self.page_container(widget)).height(Length::Fill))
             .apply(Element::from)
             .map(Message::Page);

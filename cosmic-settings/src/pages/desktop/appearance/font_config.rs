@@ -8,7 +8,6 @@ use cosmic::{
     Apply, Element, Task,
     config::{CosmicTk, FontConfig},
     iced_core::text::Wrapping,
-    theme,
     widget::{self, settings, svg},
 };
 use cosmic_config::ConfigSet;
@@ -65,19 +64,12 @@ pub fn load_font_families() -> (Vec<Arc<str>>, Vec<Arc<str>>) {
 
 pub fn selection_context<'a>(
     families: &'a [Arc<str>],
-    search: &'a str,
     current_font: &str,
     system: bool,
 ) -> Element<'a, super::Message> {
-    let space_l = theme::active().cosmic().spacing.space_l;
-
     let svg_accent = Rc::new(|theme: &cosmic::Theme| svg::Style {
         color: Some(theme.cosmic().accent_color().into()),
     });
-
-    let search_input = widget::search_input(fl!("type-to-search"), search)
-        .on_input(super::Message::FontSearch)
-        .on_clear(super::Message::FontSearch(String::new()));
 
     let list = families.iter().fold(widget::list_column(), |list, family| {
         let selected = &**family == current_font;
@@ -105,12 +97,7 @@ pub fn selection_context<'a>(
         )
     });
 
-    widget::column()
-        .padding([2, 0])
-        .spacing(space_l)
-        .push(search_input)
-        .push(list)
-        .into()
+    list.into()
 }
 
 /// Set the preferred icon theme for GNOME/GTK applications.

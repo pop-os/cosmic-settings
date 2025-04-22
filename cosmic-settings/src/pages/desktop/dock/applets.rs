@@ -1,5 +1,6 @@
 use cosmic::{
     Apply, Element, Task,
+    app::ContextDrawer,
     cosmic_config::CosmicConfigEntry,
     iced::{Alignment, Length},
     widget::{button, container, row},
@@ -13,7 +14,7 @@ use crate::{
     app,
     pages::{
         self,
-        desktop::panel::applets_inner::{self, AppletsPage, ContextDrawer, lists},
+        desktop::panel::applets_inner::{self, AppletsPage, ContextDrawerVariant, lists},
     },
 };
 
@@ -98,14 +99,17 @@ impl page::Page<crate::pages::Message> for Page {
         Some(content)
     }
 
-    fn context_drawer(&self) -> Option<Element<crate::pages::Message>> {
-        Some(match self.inner.context {
-            Some(ContextDrawer::AddApplet) => self
-                .inner
-                .add_applet_view(|msg| crate::pages::Message::DockApplet(Message(msg))),
+    fn context_drawer(&self) -> Option<ContextDrawer<crate::pages::Message>> {
+        Some(cosmic::app::context_drawer(
+            match self.inner.context {
+                Some(ContextDrawerVariant::AddApplet) => self
+                    .inner
+                    .add_applet_view(|msg| crate::pages::Message::DockApplet(Message(msg))),
 
-            None => return None,
-        })
+                None => return None,
+            },
+            crate::pages::Message::CloseContextDrawer,
+        ))
     }
 
     fn set_id(&mut self, entity: cosmic_settings_page::Entity) {

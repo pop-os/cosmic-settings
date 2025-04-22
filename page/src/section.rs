@@ -52,7 +52,7 @@ impl<Message: 'static> Default for Section<Message> {
     }
 }
 
-impl<Message: 'static> Section<Message> {
+impl<Message: Clone + 'static> Section<Message> {
     #[must_use]
     #[inline]
     pub fn search_matches(&self, rule: &Regex) -> bool {

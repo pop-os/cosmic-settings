@@ -5,6 +5,7 @@ use crate::section::{self, Section};
 use crate::{Content, Info, Page};
 use cosmic::Element;
 use cosmic::Task;
+use cosmic::app::ContextDrawer;
 use regex::Regex;
 use slotmap::{SecondaryMap, SlotMap, SparseSecondaryMap};
 use std::{
@@ -40,7 +41,7 @@ impl<Message> Default for Binder<Message> {
     }
 }
 
-impl<Message: 'static> Binder<Message> {
+impl<Message: Clone + 'static> Binder<Message> {
     /// Check if a page exists in the model.
     #[must_use]
     #[inline]
@@ -149,7 +150,7 @@ impl<Message: 'static> Binder<Message> {
     /// Create a context drawer for the given page.
     #[must_use]
     #[inline]
-    pub fn context_drawer(&self, id: crate::Entity) -> Option<Element<'_, Message>> {
+    pub fn context_drawer(&self, id: crate::Entity) -> Option<ContextDrawer<'_, Message>> {
         let page = self.page.get(id)?;
         page.context_drawer()
     }
@@ -239,7 +240,7 @@ impl<Message: 'static> Binder<Message> {
     }
 }
 
-pub trait AutoBind<Message: 'static>: Page<Message> + Default + 'static {
+pub trait AutoBind<Message: Clone + 'static>: Page<Message> + Default + 'static {
     /// Attaches sub-pages to the page.
     #[allow(clippy::must_use_candidate)]
     #[inline]

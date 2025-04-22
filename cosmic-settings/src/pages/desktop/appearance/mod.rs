@@ -7,6 +7,7 @@ pub mod icon_themes;
 use std::borrow::Cow;
 use std::sync::Arc;
 
+use cosmic::app::{ContextDrawer, context_drawer};
 //TODO: use embedded cosmic-files for portability
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
@@ -18,7 +19,6 @@ use cosmic::cosmic_theme::{
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced_core::{Alignment, Color, Length};
-use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{
     ColorPickerModel, button, color_picker::ColorPickerUpdate, container, flex_row,
@@ -175,10 +175,18 @@ impl
             AccentPalette,
         ),
     ) -> Self {
-        let theme = if theme_mode.is_dark {
-            Theme::dark_default()
+        let theme = if let Ok(c) = if theme_mode.is_dark {
+            Theme::dark_config()
         } else {
-            Theme::light_default()
+            Theme::light_config()
+        } {
+            Theme::get_entry(&c).unwrap_or_default()
+        } else {
+            if theme_mode.is_dark {
+                Theme::dark_default()
+            } else {
+                Theme::light_default()
+            }
         };
         theme_builder = theme_builder
             .clone()
@@ -468,9 +476,14 @@ impl From<CornerRadii> for Roundness {
 
 impl Page {
     fn icons_and_toolkit(&self) -> Element<'_, crate::pages::Message> {
+        let Spacing {
+            space_xxs,
+            space_xs,
+            space_m,
+            ..
+        } = cosmic::theme::spacing();
+
         let active = self.icon_theme_active;
-        let theme = cosmic::theme::active();
-        let theme = theme.cosmic();
         cosmic::iced::widget::column![
             // Export theme choice
             settings::section().add(
@@ -495,15 +508,15 @@ impl Page {
                         })
                         .collect(),
                 )
-                .row_spacing(theme.space_xs())
-                .column_spacing(theme.space_xs())
+                .row_spacing(space_xs)
+                .column_spacing(space_xs)
                 .apply(container)
                 .center_x(Length::Fill)
                 .into()
             ])
-            .spacing(theme.space_xxs())
+            .spacing(space_xxs)
         ]
-        .spacing(theme.space_m())
+        .spacing(space_m)
         .width(Length::Fill)
         .apply(Element::from)
         .map(crate::pages::Message::Appearance)
@@ -521,20 +534,14 @@ impl Page {
                 self.context_view = Some(ContextView::MonospaceFont);
                 self.font_search.clear();
 
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    fl!("monospace-font").into(),
-                ));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::DisplaySystemFont => {
                 self.context_view = Some(ContextView::SystemFont);
                 self.font_search.clear();
 
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    fl!("interface-font").into(),
-                ));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::FontConfig(message) => {
@@ -626,11 +633,8 @@ impl Page {
             Message::AccentWindowHint(u) => {
                 needs_sync = true;
 
-                let (task, needs_update) = self.update_color_picker(
-                    &u,
-                    ContextView::AccentWindowHint,
-                    fl!("window-hint-accent").into(),
-                );
+                let (task, needs_update) =
+                    self.update_color_picker(&u, ContextView::AccentWindowHint);
 
                 tasks.push(task);
                 tasks.push(self.accent_window_hint.update::<app::Message>(u));
@@ -717,11 +721,8 @@ impl Page {
             }
 
             Message::ApplicationBackground(u) => {
-                let (task, needs_update) = self.update_color_picker(
-                    &u,
-                    ContextView::ApplicationBackground,
-                    fl!("app-background").into(),
-                );
+                let (task, needs_update) =
+                    self.update_color_picker(&u, ContextView::ApplicationBackground);
 
                 tasks.push(task);
                 tasks.push(self.application_background.update::<app::Message>(u));
@@ -744,11 +745,8 @@ impl Page {
             }
 
             Message::ContainerBackground(u) => {
-                let (task, needs_update) = self.update_color_picker(
-                    &u,
-                    ContextView::ContainerBackground,
-                    fl!("container-background").into(),
-                );
+                let (task, needs_update) =
+                    self.update_color_picker(&u, ContextView::ContainerBackground);
 
                 tasks.push(task);
                 tasks.push(self.container_background.update::<app::Message>(u));
@@ -771,11 +769,7 @@ impl Page {
             }
 
             Message::CustomAccent(u) => {
-                let (task, needs_update) = self.update_color_picker(
-                    &u,
-                    ContextView::CustomAccent,
-                    fl!("accent-color").into(),
-                );
+                let (task, needs_update) = self.update_color_picker(&u, ContextView::CustomAccent);
 
                 tasks.push(task);
                 tasks.push(self.custom_accent.update::<app::Message>(u));
@@ -796,11 +790,7 @@ impl Page {
             }
 
             Message::InterfaceText(u) => {
-                let (task, needs_update) = self.update_color_picker(
-                    &u,
-                    ContextView::InterfaceText,
-                    fl!("text-tint").into(),
-                );
+                let (task, needs_update) = self.update_color_picker(&u, ContextView::InterfaceText);
 
                 tasks.push(task);
                 tasks.push(self.interface_text.update::<app::Message>(u));
@@ -821,11 +811,8 @@ impl Page {
             }
 
             Message::ControlComponent(u) => {
-                let (task, needs_update) = self.update_color_picker(
-                    &u,
-                    ContextView::ControlComponent,
-                    fl!("control-tint").into(),
-                );
+                let (task, needs_update) =
+                    self.update_color_picker(&u, ContextView::ControlComponent);
 
                 tasks.push(task);
                 tasks.push(self.control_component.update::<app::Message>(u));
@@ -1195,7 +1182,7 @@ impl Page {
                 self.context_view = Some(ContextView::IconsAndToolkit);
                 let mut tasks = Vec::new();
                 tasks.push(cosmic::task::message(
-                    crate::app::Message::OpenContextDrawer(self.entity, "".into()),
+                    crate::app::Message::OpenContextDrawer(self.entity),
                 ));
                 if !self.icons_fetched {
                     self.icons_fetched = true;
@@ -1335,14 +1322,13 @@ impl Page {
         &mut self,
         message: &ColorPickerUpdate,
         context_view: ContextView,
-        context_title: Cow<'static, str>,
     ) -> (Task<app::Message>, bool) {
         let mut needs_update = false;
 
         let task = match message {
             ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
                 needs_update = true;
-                cosmic::task::message(crate::app::Message::CloseContextDrawer)
+                cosmic::task::message(crate::pages::Message::CloseContextDrawer)
             }
 
             ColorPickerUpdate::ActionFinished => {
@@ -1351,15 +1337,12 @@ impl Page {
             }
 
             ColorPickerUpdate::Cancel => {
-                cosmic::task::message(crate::app::Message::CloseContextDrawer)
+                cosmic::task::message(crate::pages::Message::CloseContextDrawer)
             }
 
             ColorPickerUpdate::ToggleColorPicker => {
                 self.context_view = Some(context_view);
-                cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    context_title,
-                ))
+                cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity))
             }
 
             _ => Task::none(),
@@ -1621,55 +1604,79 @@ impl page::Page<crate::pages::Message> for Page {
         cosmic::task::message(crate::pages::Message::Appearance(Message::Left))
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
-        let view = match self.context_view? {
-            ContextView::AccentWindowHint => color_picker_context_view(
-                None,
-                RESET_TO_DEFAULT.as_str().into(),
-                Message::AccentWindowHint,
-                &self.accent_window_hint,
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
+        Some(match self.context_view? {
+            ContextView::AccentWindowHint => context_drawer(
+                color_picker_context_view(
+                    None,
+                    RESET_TO_DEFAULT.as_str().into(),
+                    Message::AccentWindowHint,
+                    &self.accent_window_hint,
+                )
+                .map(crate::pages::Message::Appearance),
+                crate::pages::Message::CloseContextDrawer,
             )
-            .map(crate::pages::Message::Appearance),
+            .title(fl!("window-hint-accent")),
 
-            ContextView::ApplicationBackground => color_picker_context_view(
-                None,
-                RESET_TO_DEFAULT.as_str().into(),
-                Message::ApplicationBackground,
-                &self.application_background,
+            ContextView::ApplicationBackground => context_drawer(
+                color_picker_context_view(
+                    None,
+                    RESET_TO_DEFAULT.as_str().into(),
+                    Message::ApplicationBackground,
+                    &self.application_background,
+                )
+                .map(crate::pages::Message::Appearance),
+                crate::pages::Message::CloseContextDrawer,
             )
-            .map(crate::pages::Message::Appearance),
+            .title(fl!("app-background")),
 
-            ContextView::ContainerBackground => color_picker_context_view(
-                Some(fl!("container-background", "desc-detail").into()),
-                fl!("container-background", "reset").into(),
-                Message::ContainerBackground,
-                &self.container_background,
+            ContextView::ContainerBackground => context_drawer(
+                color_picker_context_view(
+                    Some(fl!("container-background", "desc-detail").into()),
+                    fl!("container-background", "reset").into(),
+                    Message::ContainerBackground,
+                    &self.container_background,
+                )
+                .map(crate::pages::Message::Appearance),
+                crate::pages::Message::CloseContextDrawer,
             )
-            .map(crate::pages::Message::Appearance),
+            .title(fl!("container-background")),
 
-            ContextView::ControlComponent => color_picker_context_view(
-                None,
-                RESET_TO_DEFAULT.as_str().into(),
-                Message::ControlComponent,
-                &self.control_component,
+            ContextView::ControlComponent => context_drawer(
+                color_picker_context_view(
+                    None,
+                    RESET_TO_DEFAULT.as_str().into(),
+                    Message::ControlComponent,
+                    &self.control_component,
+                )
+                .map(crate::pages::Message::Appearance),
+                crate::pages::Message::CloseContextDrawer,
             )
-            .map(crate::pages::Message::Appearance),
+            .title(fl!("control-tint")),
 
-            ContextView::CustomAccent => color_picker_context_view(
-                None,
-                RESET_TO_DEFAULT.as_str().into(),
-                Message::CustomAccent,
-                &self.custom_accent,
+            ContextView::CustomAccent => context_drawer(
+                color_picker_context_view(
+                    None,
+                    RESET_TO_DEFAULT.as_str().into(),
+                    Message::CustomAccent,
+                    &self.custom_accent,
+                )
+                .map(crate::pages::Message::Appearance),
+                crate::pages::Message::CloseContextDrawer,
             )
-            .map(crate::pages::Message::Appearance),
+            .title(fl!("accent-color")),
 
-            ContextView::InterfaceText => color_picker_context_view(
-                None,
-                RESET_TO_DEFAULT.as_str().into(),
-                Message::InterfaceText,
-                &self.interface_text,
+            ContextView::InterfaceText => context_drawer(
+                color_picker_context_view(
+                    None,
+                    RESET_TO_DEFAULT.as_str().into(),
+                    Message::InterfaceText,
+                    &self.interface_text,
+                )
+                .map(crate::pages::Message::Appearance),
+                crate::pages::Message::CloseContextDrawer,
             )
-            .map(crate::pages::Message::Appearance),
+            .title(fl!("text-tint")),
 
             ContextView::SystemFont => {
                 let filter = if self.font_search.is_empty() {
@@ -1677,16 +1684,21 @@ impl page::Page<crate::pages::Message> for Page {
                 } else {
                     &self.font_filter
                 };
+                let search_input = widget::search_input(fl!("type-to-search"), &self.font_search)
+                    .on_input(Message::FontSearch)
+                    .on_clear(Message::FontSearch(String::new()))
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Appearance);
 
                 let current_font = cosmic::config::interface_font();
 
-                font_config::selection_context(
-                    filter,
-                    &self.font_search,
-                    current_font.family.as_str(),
-                    true,
+                context_drawer(
+                    font_config::selection_context(filter, current_font.family.as_str(), true)
+                        .map(crate::pages::Message::Appearance),
+                    crate::pages::Message::CloseContextDrawer,
                 )
-                .map(crate::pages::Message::Appearance)
+                .title(fl!("interface-font"))
+                .header(search_input)
             }
 
             ContextView::MonospaceFont => {
@@ -1695,22 +1707,28 @@ impl page::Page<crate::pages::Message> for Page {
                 } else {
                     &self.font_filter
                 };
+                let search_input = widget::search_input(fl!("type-to-search"), &self.font_search)
+                    .on_input(Message::FontSearch)
+                    .on_clear(Message::FontSearch(String::new()))
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Appearance);
 
                 let current_font = cosmic::config::monospace_font();
 
-                font_config::selection_context(
-                    filter,
-                    &self.font_search,
-                    current_font.family.as_str(),
-                    false,
+                context_drawer(
+                    font_config::selection_context(filter, current_font.family.as_str(), false)
+                        .map(crate::pages::Message::Appearance),
+                    crate::pages::Message::CloseContextDrawer,
                 )
-                .map(crate::pages::Message::Appearance)
+                .title(fl!("monospace-font"))
+                .header(search_input)
             }
 
-            ContextView::IconsAndToolkit => self.icons_and_toolkit(),
-        };
-
-        Some(view)
+            ContextView::IconsAndToolkit => context_drawer(
+                self.icons_and_toolkit(),
+                crate::pages::Message::CloseContextDrawer,
+            ),
+        })
     }
 }
 
@@ -1741,7 +1759,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
         .title(fl!("mode-and-colors"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            let Spacing { space_xxs, .. } = cosmic::theme::active().cosmic().spacing;
+            let Spacing { space_xxs, .. } = cosmic::theme::spacing();
 
             let descriptions = &section.descriptions;
             let palette = &page.theme_builder.palette.as_ref();
@@ -1775,7 +1793,7 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
 
             let accent_color_palette = cosmic::iced::widget::column![
                 text::body(&descriptions[accent_color]),
-                scrollable(
+                scrollable::horizontal(
                     accent_palette_row
                         .push(if let Some(c) = page.custom_accent.get_applied_color() {
                             container(color_button(
@@ -1796,7 +1814,6 @@ pub fn mode_and_colors() -> Section<crate::pages::Message> {
                         .padding([0, 0, 16, 0])
                         .spacing(16)
                 )
-                .direction(Direction::Horizontal(Scrollbar::new()))
             ]
             .padding([16, 0, 0, 0])
             .spacing(space_xxs);
