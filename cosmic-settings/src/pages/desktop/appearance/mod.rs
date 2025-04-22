@@ -175,10 +175,18 @@ impl
             AccentPalette,
         ),
     ) -> Self {
-        let theme = if theme_mode.is_dark {
-            Theme::dark_default()
+        let theme = if let Ok(c) = if theme_mode.is_dark {
+            Theme::dark_config()
         } else {
-            Theme::light_default()
+            Theme::light_config()
+        } {
+            Theme::get_entry(&c).unwrap_or_default()
+        } else {
+            if theme_mode.is_dark {
+                Theme::dark_default()
+            } else {
+                Theme::light_default()
+            }
         };
         theme_builder = theme_builder
             .clone()
