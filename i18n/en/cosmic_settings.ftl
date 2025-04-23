@@ -105,7 +105,9 @@ online-accounts = Online Accounts
 
 # Bluetooth
 
+activate = Activate
 confirm = Confirm
+enable = Enable
 
 bluetooth = Bluetooth
     .desc = Manage Bluetooth devices
@@ -117,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Disconnect
     .forget = Forget
     .dbus-error = An error has occurred while interacting with DBus: { $why }
+    .disabled = The bluetooth service is disabled
+    .inactive = The bluetooth service is not active
+    .unknown = The bluetooth service could not be activated. Is bluez installed?
 
 bluetooth-paired = Previously Connected Devices
     .connect = Connect
