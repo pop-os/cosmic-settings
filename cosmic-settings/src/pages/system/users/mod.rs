@@ -512,43 +512,51 @@ impl Page {
 
                     match field {
                         EditorField::FullName => {
-                            let full_name = user.full_name.clone();
-                            return cosmic::Task::future(async move {
-                                let Ok(conn) = zbus::Connection::system().await else {
-                                    return;
-                                };
+                            if user.full_name_edit {
+                                let full_name = user.full_name.clone();
 
-                                let Ok(user) = accounts_zbus::UserProxy::from_uid(&conn, uid).await
-                                else {
-                                    return;
-                                };
+                                return cosmic::Task::future(async move {
+                                    let Ok(conn) = zbus::Connection::system().await else {
+                                        return;
+                                    };
 
-                                _ = request_permission_on_denial(&conn, || {
-                                    user.set_real_name(&full_name)
+                                    let Ok(user) =
+                                        accounts_zbus::UserProxy::from_uid(&conn, uid).await
+                                    else {
+                                        return;
+                                    };
+
+                                    _ = request_permission_on_denial(&conn, || {
+                                        user.set_real_name(&full_name)
+                                    })
+                                    .await;
                                 })
-                                .await;
-                            })
-                            .discard();
+                                .discard();
+                            }
                         }
 
                         EditorField::Username => {
-                            let username = user.username.clone();
-                            return cosmic::Task::future(async move {
-                                let Ok(conn) = zbus::Connection::system().await else {
-                                    return;
-                                };
+                            if user.username_edit {
+                                let username = user.username.clone();
 
-                                let Ok(user) = accounts_zbus::UserProxy::from_uid(&conn, uid).await
-                                else {
-                                    return;
-                                };
+                                return cosmic::Task::future(async move {
+                                    let Ok(conn) = zbus::Connection::system().await else {
+                                        return;
+                                    };
 
-                                _ = request_permission_on_denial(&conn, || {
-                                    user.set_user_name(&username)
+                                    let Ok(user) =
+                                        accounts_zbus::UserProxy::from_uid(&conn, uid).await
+                                    else {
+                                        return;
+                                    };
+
+                                    _ = request_permission_on_denial(&conn, || {
+                                        user.set_user_name(&username)
+                                    })
+                                    .await;
                                 })
-                                .await;
-                            })
-                            .discard();
+                                .discard();
+                            }
                         }
                     }
                 }
@@ -731,7 +739,8 @@ fn user_list() -> Section<crate::pages::Message> {
                             Message::ToggleEdit(idx, EditorField::Username)
                         })
                         .on_input(move |name| Message::Edit(idx, EditorField::Username, name))
-                        .on_submit(move |_| Message::ApplyEdit(idx, EditorField::Username));
+                        .on_submit(move |_| Message::ApplyEdit(idx, EditorField::Username))
+                        .on_unfocus(Message::ApplyEdit(idx, EditorField::Username));
 
                     let password = widget::button::standard(fl!("change-password"))
                         .on_press(Message::Dialog(Some(Dialog::UpdatePassword(user.clone()))))
@@ -744,7 +753,8 @@ fn user_list() -> Section<crate::pages::Message> {
                         move |_| Message::ToggleEdit(idx, EditorField::FullName),
                     )
                     .on_input(move |name| Message::Edit(idx, EditorField::FullName, name))
-                    .on_submit(move |_| Message::ApplyEdit(idx, EditorField::FullName));
+                    .on_submit(move |_| Message::ApplyEdit(idx, EditorField::FullName))
+                    .on_unfocus(Message::ApplyEdit(idx, EditorField::FullName));
 
                     let fullname_text = text::body(if user.full_name != "" {
                         &user.full_name
