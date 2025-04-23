@@ -1784,7 +1784,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-subscriptions"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#ebcb941f8bcff9dea9877b8f4e30b5a76c0469b3"
+source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#752429e70dc5a06f28922ce159afe52002683088"
 dependencies = [
  "bluez-zbus",
  "cosmic-dbus-networkmanager",
