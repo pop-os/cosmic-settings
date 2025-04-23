@@ -11,7 +11,7 @@ use cosmic_settings_page as page;
 use slab::Slab;
 use slotmap::Key;
 use std::borrow::Cow;
-use std::io;
+use std::{io, mem};
 use std::str::FromStr;
 
 #[derive(Clone, Debug)]
@@ -534,9 +534,8 @@ impl Model {
             if let Some(new_binding) = apply_binding {
                 if let Some(model) = self.shortcut_models.get_mut(short_id) {
                     if let Some(shortcut) = model.bindings.get_mut(id) {
-                        let prev_binding = shortcut.binding.clone();
-
-                        shortcut.binding = new_binding.clone();
+                        let prev_binding = mem::replace(&mut shortcut.binding, new_binding.clone());
+                        
                         shortcut.is_saved = true;
                         shortcut.input.clear();
 
@@ -545,7 +544,12 @@ impl Model {
                         }
 
                         let action = model.action.clone();
-                        self.config_remove(&prev_binding);
+                        
+                        if shortcut.is_default {
+                            self.config_add(Action::Disable, prev_binding);
+                        } else {
+                            self.config_remove(&prev_binding);
+                        }
                         self.config_add(action, new_binding);
                         return cosmic::widget::text_input::focus(
                             self.add_keybindings_button_id.clone(),
