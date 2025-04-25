@@ -30,6 +30,7 @@ network-and-wireless = Netwerk en wifi
 no-networks = Er zijn geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
+password-confirm = Bevestig het wachtwoord
 remove = Verwijderen
 settings = Instellingen
 username = Gebruikersnaam
@@ -104,7 +105,9 @@ online-accounts = Online accounts
 
 # Bluetooth
 
+activate = Activeren
 confirm = Bevestigen
+enable = Inschakelen
 
 bluetooth = Bluetooth
     .desc = Bluetooth-apparaten bewerken
@@ -116,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Verbinding verbreken
     .forget = Vergeten
     .dbus-error = Er is een fout opgetreden tijdens de interactie met DBus: { $why }
+    .disabled = De bluetooth-service is uitgeschakeld
+    .inactive = De bluetooth-service is niet actief
+    .unknown = Cosmic kon de bluetooth-service niet activeren. Heeft u bluez geïnstalleerd?
 
 bluetooth-paired = Eerder verbonden apparaten
     .connect = Verbinden
@@ -869,7 +875,7 @@ about-os = Besturingssysteem
     .windowing-system = Vensterbeheerder
 
 about-related = Gerelateerde instellingen
-    .support = Hulp aanvragen
+    .support = Om hulp vragen
 
 ## System: Firmware
 
@@ -888,6 +894,9 @@ administrator = Systeembeheerder (root)
     .desc = Beheerders kunnen instellingen voor alle gebruikers wijzigen, en andere gebruikers toevoegen of verwijderen.
 
 add-user = Gebruiker toevoegen
+change-password = Wachtwoord wijzigen
 remove-user = Gebruiker verwijderen
 full-name = Volledige naam
-invalid-username = Ongeldige gebruikersnaam
+invalid-username = Ongeldige gebruikersnaam.
+password-mismatch = De wachtwoorden komen niet overeen, probeer het opnieuw.
+save = Opslaan
