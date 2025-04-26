@@ -530,6 +530,9 @@ disable-while-typing = Disable while typing
 input-devices = Input Devices
     .desc = Input Devices
 
+middle-button-emulation = Enable middle button emulation
+middle-button-emulation-desc = Emulates a middle button click when pressing the left and right buttons simultaneously.
+
 primary-button = Primary button
     .desc = Sets the order of physical buttons.
     .left = Left

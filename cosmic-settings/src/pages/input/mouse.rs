@@ -54,6 +54,8 @@ fn mouse() -> Section<crate::pages::Message> {
     let mouse_speed = descriptions.insert(fl!("mouse", "speed"));
     let primary_button = descriptions.insert(fl!("primary-button"));
     let acceleration_desc = descriptions.insert(fl!("acceleration-desc"));
+    let middle_button_emulation = descriptions.insert(fl!("middle-button-emulation"));
+    let middle_button_emulation_desc = descriptions.insert(fl!("middle-button-emulation-desc"));
 
     Section::default()
         .descriptions(descriptions)
@@ -108,6 +110,17 @@ fn mouse() -> Section<crate::pages::Message> {
                                 .as_ref()
                                 .map_or(true, |x| x.profile == Some(AccelProfile::Adaptive)),
                             |x| Message::SetAcceleration(x, false),
+                        ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[middle_button_emulation])
+                        .description(&descriptions[middle_button_emulation_desc])
+                        .toggler(
+                            input
+                                .input_default
+                                .middle_button_emulation
+                                .unwrap_or(false),
+                            |x| Message::SetMiddleButtonEmulation(x, false),
                         ),
                 )
                 .apply(Element::from)
