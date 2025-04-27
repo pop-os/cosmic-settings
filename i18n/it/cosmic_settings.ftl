@@ -576,7 +576,11 @@ added = Aggiunto
 type-to-search = Digita per cercare...
 show-extended-input-sources = Mostra
 
-## Input: Keyboard: Scorciatoie
+added = Aggiunto
+type-to-search = Digita per cercare...
+show-extended-input-sources = Mostra
+
+## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = Scorciatoie da tastiera
     .desc = Visualizza e modifica le scorciatoie
