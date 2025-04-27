@@ -30,10 +30,12 @@ network-and-wireless = Rete e wireless
 no-networks = Nessuna rete trovata.
 no-vpn = Nessuna connessione VPN disponibile.
 password = Password
+password-confirm = Conferma password
 remove = Rimuovi
 settings = Impostazioni
 username = Nome utente
 visible-networks = Reti visibili
+identity = Identità
 
 auth-dialog = Autenticazione richiesta
     .vpn-description = Inserisci il nome utente e la password richiesti dal servizio VPN.
@@ -103,7 +105,9 @@ online-accounts = Account online
 
 # Bluetooth
 
+activate = Attiva
 confirm = Conferma
+enable = Abilita
 
 bluetooth = Bluetooth
     .desc = Gestisci dispositivi Bluetooth
@@ -116,6 +120,8 @@ bluetooth = Bluetooth
     .forget = Dimentica
     .dbus-error = Errore durante l'interazione con DBus: { $why }
     .show-device-without-name = Mostra dispositivi senza nome
+    .disabled = Il servizio bluetooth è disabilitato
+    .inactive = Il servizio bluetooth non è attivo
 
 bluetooth-paired = Dispositivi accoppiati
     .connect = Connetti
@@ -127,6 +133,48 @@ bluetooth-confirm-pin = Confirma PIN Bluetooth
 bluetooth-available = Dispositivi nelle vicinanze
 
 bluetooth-adapters = Adattatori Bluetooth
+
+## Accessibility
+
+accessibility = Accessibilità
+    .vision = Vista
+    .on = Attivo
+    .off = Disattivo
+    .unavailable = Non disponibile
+    .high-contrast = Modalità ad alto contrasto
+    .invert-colors = Inverti colori
+    .color-filters = Filtri colore
+
+hearing = Udito
+    .mono = Riproduci audio stereo come mono
+
+default = Default
+magnifier = Lente di ingrandimento
+    .controls = Oppure usa queste scorciatoie: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} per ingrandire,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} per ridurre,
+        }
+        Super + scorrimento con il mouse
+    .scroll_controls = Abilita zoom con mouse o touchpad usando Super + Scorrimento
+    .show_overlay = Mostra sovrapposizione della lente di ingrandimento
+    .increment = Incremento zoom
+    .signin = Avvia lente di ingrandimento all'accesso
+    .applet = Attiva/disattiva lente di ingrandimento dall'applet nel pannello
+    .movement = Movimento della vista ingrandita
+    .continuous = Continuo insieme al puntatore
+    .onedge = Quando il puntatore raggiunge il bordo
+    .centered = Per mantenere il puntatore centrato
+color-filter = Tipo di filtro colore
+    .unknown = Filtro sconosciuto attivo
+    .greyscale = Scala di grigi
+    .deuteranopia = Verde/Rosso (debolezza al verde, Deuteranopia)
+    .protanopia = Rosso/Verde (debolezza al rosso, Protanopia)
+    .tritanopia = Blu/Giallo (debolezza al blu, Tritanopia)
 
 ## Desktop
 
@@ -306,6 +354,8 @@ super-key = Tasto Super
     .applications = Apri Applicazioni
     .disable = Disabilita
 
+edge-gravity = Le finestre flottanti vengono attirate all'angolo più vicino
+
 window-controls = Controlli finestra
     .minimize = Mostra pulsante minimizza
     .maximize = Mostra pulsante massimizza
@@ -363,6 +413,7 @@ display = Schermi
     .refresh-rate = Frequenza d'aggiornamento
     .resolution = Risoluzione
     .scale = Scala
+    .additional-scale-options = Opzioni aggiuntive di scala
 
 mirroring = Duplicazione
     .id = Duplicazione { $id }
@@ -402,12 +453,6 @@ dialog = Dialog
     .change-prompt = Le impostazioni verranno automaticamente ripristinate tra { $time } secondi.
     .revert-settings = Ripristina impostazioni
 
-legacy-app-scaling = Scala delle applicazioni del sistema X11
-    .scaled-by-system = Scala tutte le applicazioni X11
-    .system-description = Le applicazioni X11 appariranno sfocate su schermi HiDPI.
-    .scaled-natively = Renderizza le applicazioni X11 alla risoluzione nativa
-    .native-description = Le applicazioni X11 che non supportano la scalatura saranno piccole quando si utilizzano display HiDPI. Abilita questa opzione per i giochi per utilizzare la risoluzione completa del monitor.
-
 ## Sound
 
 sound = Suono
@@ -419,6 +464,8 @@ sound-output = Output
     .level = Livello di output
     .config = Configurazione
     .balance = Bilanciamento
+    .left = Sinistra
+    .right = Destra
 
 sound-input = Input
     .volume = Volume di input
@@ -629,6 +676,7 @@ system-shortcut = Sistema
     .keyboard-brightness-down = Riduci luminosità della tastiera
     .keyboard-brightness-up = Aumenta luminosità della tastiera
     .launcher = Apri il launcher
+    .log-out = Disconnetti
     .lock-screen = Blocca lo schermo
     .mute = Disattiva audio
     .mute-mic = Disattiva microfono
@@ -655,6 +703,9 @@ window-tiling = Affiancamento finestre
 
 replace-shortcut-dialog = Sostituire scorciatoia?
     .desc = { $shortcut } è utilizzata da { $name }. Se la sostituisci, { $name } sarà disabilitato.
+
+zoom-in = Zoom In
+zoom-out = Zoom Out
 
 ## Input: Mouse
 
@@ -740,6 +791,59 @@ add-language = Aggiungi lingua
 install-additional-languages = Installa lingue aggiuntive
 region = Regione
 
+## Applications
+
+applications = Applicazioni
+
+## Applications: Default Applications
+
+default-apps = Applicazioni predefinite
+    .desc = Browser web predefinito, client di posta, gestore file e altre applicazioni.
+    .web-browser = Browser web
+    .file-manager = Gestore file
+    .mail-client = Client di posta
+    .music = Musica
+    .video = Video
+    .photos = Foto
+    .calendar = Calendario
+    .terminal = Terminale
+    .other-associations = Altre associazioni
+    .text-editor = Editor di testo
+
+## Applications: Startup Applications
+
+startup-apps = Applicazioni all'avvio
+    .desc = Configura le applicazioni che vengono eseguite al login.
+    .add = Aggiungi applicazione
+    .user = Applicazioni specifiche dell'utente
+    .user-description = Queste applicazioni vengono avviate quando accedi con il tuo utente attuale.
+    .remove-dialog-title = Rimuovere { $name }?
+    .remove-dialog-description = Sei sicuro di voler rimuovere questa applicazione dall'avvio automatico?
+    .search-for-application = Cerca applicazione
+
+## Applications: Legacy Applications
+
+legacy-applications = Compatibilità applicazioni X11
+    .desc = Ridimensionamento delle applicazioni del sistema X11 e scorciatoie globali.
+
+legacy-app-global-shortcuts = Scorciatoie globali nelle applicazioni X11
+    .desc = Le scorciatoie globali permettono ai tasti premuti e agli eventi del mouse eseguiti in un'applicazione di essere riconosciuti da altre applicazioni per funzionalità come push-to-talk o push-to-mute. Per impostazione predefinita, questo è disabilitato nelle applicazioni X11 per evitare che altre applicazioni possano intercettare eventi della tastiera o del mouse contenenti informazioni sensibili.
+    .none = Nessun tasto
+    .modifiers = Modificatori (Super, Shift, Control, Alt)
+    .combination = Tutti i tasti mentre sono premuti i modificatori Super, Control o Alt
+    .all = Tutti i tasti
+    .mouse = Eventi dei pulsanti del mouse nelle applicazioni X11
+
+legacy-app-scaling = Ridimensionamento delle applicazioni del sistema X11
+    .scaled-gaming = Ottimizza per giochi e applicazioni a schermo intero
+    .gaming-description = Le applicazioni X11 potrebbero apparire leggermente più grandi o più piccole rispetto alle applicazioni Wayland.
+    .scaled-applications = Ottimizza per le applicazioni
+    .applications-description = I giochi e le applicazioni X11 a schermo intero potrebbero non corrispondere alla risoluzione del tuo display.
+    .scaled-compatibility = Modalità di massima compatibilità
+    .compatibility-description = Le applicazioni X11 potrebbero apparire sfocate sugli schermi HiDPI.
+    .preferred-display = Display preferito per giochi e applicazioni X11 a schermo intero
+    .no-display = <Nessuno>
+
 ## System
 
 system = Sistema e account
@@ -785,19 +889,9 @@ administrator = Amministratore
     .desc = Gli amministratori possono modificare le impostazioni per tutti gli utenti, aggiungere e rimuovere altri utenti.
 
 add-user = Aggiungi utente
+change-password = Modifica password
 remove-user = Rimuovi utente
 full-name = Nome completo
-
-## System: Default Applications
-
-default-apps = Applicazioni predefinite
-    .desc = Browser web predefinito, client di posta, gestore file e altre applicazioni.
-    .web-browser = Browser web
-    .file-manager = Gestore file
-    .mail-client = Client di posta
-    .music = Musica
-    .video = Video
-    .photos = Foto
-    .calendar = Calendario
-    .terminal = Terminale
-    .other-associations = Altre associazioni
+invalid-username = Nome utente invalido.
+password-mismatch = La password e la conferma devono corrispondere.
+save = Salva
