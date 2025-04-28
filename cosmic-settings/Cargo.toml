@@ -78,7 +78,7 @@ zbus = { version = "4.4.0", default-features = false, features = [
     "tokio",
 ], optional = true }
 zbus_polkit = { version = "4.0.0", optional = true }
-fontdb = "=0.16.2"
+fontdb = "0.23.0"
 fixed_decimal = "0.5.6"
 mime = "0.3.17"
 rustix = { version = "1.0.3", features = ["process"] }
@@ -88,6 +88,7 @@ gettext-rs = { version = "0.7.2", features = [
 async-fn-stream = "0.2.2"
 num-traits = "0.2"
 num-derive = "0.4"
+pwhash = "1"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
@@ -156,9 +157,7 @@ page-input = [
     "dep:cosmic-settings-config",
     "dep:udev",
 ]
-page-legacy-applications = [
-    "dep:cosmic-comp-config",
-]
+page-legacy-applications = ["dep:cosmic-comp-config"]
 page-networking = [
     "xdg-portal",
     "dep:cosmic-dbus-networkmanager",

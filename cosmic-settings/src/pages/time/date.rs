@@ -6,6 +6,7 @@ use std::str::FromStr;
 use chrono::{Datelike, Timelike};
 use cosmic::{
     Apply, Element, Task,
+    app::ContextDrawer,
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced_core::text::Wrapping,
     surface,
@@ -165,9 +166,23 @@ impl page::Page<crate::pages::Message> for Page {
         .map(crate::pages::Message::DateAndTime)
     }
 
-    fn context_drawer(&self) -> Option<Element<'_, crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<crate::pages::Message>> {
         if self.timezone_context {
-            return Some(self.timezone_context_view());
+            let search = widget::search_input(fl!("type-to-search"), &self.timezone_search)
+                .on_input(Message::TimezoneSearch)
+                .on_clear(Message::TimezoneSearch(String::new()))
+                .apply(Element::from)
+                .map(crate::pages::Message::DateAndTime);
+
+            return Some(
+                cosmic::app::context_drawer(
+                    self.timezone_context_view()
+                        .map(crate::pages::Message::from),
+                    crate::pages::Message::CloseContextDrawer,
+                )
+                .title(fl!("time-zone"))
+                .header(search),
+            );
         }
 
         None
@@ -180,10 +195,7 @@ impl Page {
             Message::TimezoneContext => {
                 self.timezone_search.clear();
                 self.timezone_context = true;
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
-                    self.entity,
-                    fl!("time-zone").into(),
-                ));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::MilitaryTime(enable) => {
@@ -259,14 +271,14 @@ impl Page {
             Message::Error(why) => {
                 tracing::error!(why, "failed to set timezone");
                 self.timezone_context = false;
-                return cosmic::task::message(crate::Message::CloseContextDrawer);
+                return cosmic::task::message(crate::pages::Message::CloseContextDrawer);
             }
 
             Message::UpdateTime => {
                 self.set_ntp(true);
                 self.update_local_time();
                 self.timezone_context = false;
-                return cosmic::task::message(crate::Message::CloseContextDrawer);
+                return cosmic::task::message(crate::pages::Message::CloseContextDrawer);
             }
 
             Message::Refresh(info) => {
@@ -312,12 +324,6 @@ impl Page {
     }
 
     fn timezone_context_view(&self) -> Element<'_, crate::pages::Message> {
-        let space_l = cosmic::theme::active().cosmic().spacing.space_l;
-
-        let search = widget::search_input(fl!("type-to-search"), &self.timezone_search)
-            .on_input(Message::TimezoneSearch)
-            .on_clear(Message::TimezoneSearch(String::new()));
-
         let mut list = widget::list_column();
 
         let search_input = &self.timezone_search.trim().to_lowercase();
@@ -328,12 +334,7 @@ impl Page {
             }
         }
 
-        widget::column()
-            .padding([2, 0])
-            .spacing(space_l)
-            .push(search)
-            .push(list)
-            .apply(Element::from)
+        list.apply(Element::from)
             .map(crate::pages::Message::DateAndTime)
     }
 

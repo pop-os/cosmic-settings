@@ -9,7 +9,7 @@ pub struct Insert<'a, Message> {
     pub id: Entity,
 }
 
-impl<Message: 'static> Insert<'_, Message> {
+impl<Message: Clone + 'static> Insert<'_, Message> {
     #[must_use]
     #[inline]
     pub fn id(self) -> Entity {

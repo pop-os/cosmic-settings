@@ -1,6 +1,7 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use cosmic::app::ContextDrawer;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, button, icon, settings, text};
 use cosmic::{Apply, Element, Task, theme};
@@ -10,7 +11,7 @@ use cosmic_settings_page as page;
 use slab::Slab;
 use slotmap::Key;
 use std::borrow::Cow;
-use std::io;
+use std::{io, mem};
 use std::str::FromStr;
 
 #[derive(Clone, Debug)]
@@ -168,15 +169,22 @@ impl Model {
         self.shortcuts_config_set(shortcuts);
     }
 
-    pub(super) fn context_drawer(&self) -> Option<Element<'_, ShortcutMessage>> {
+    pub(super) fn context_drawer(
+        &self,
+        apply: fn(ShortcutMessage) -> crate::pages::Message,
+    ) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         self.shortcut_context.as_ref().map(|id| {
-            context_drawer(
-                &self.shortcut_title,
-                &self.shortcut_models,
-                self.editing,
-                self.add_keybindings_button_id.clone(),
-                *id,
-                self.custom,
+            cosmic::app::context_drawer(
+                context_drawer(
+                    &self.shortcut_title,
+                    &self.shortcut_models,
+                    self.editing,
+                    self.add_keybindings_button_id.clone(),
+                    *id,
+                    self.custom,
+                )
+                .map(apply),
+                crate::pages::Message::CloseContextDrawer,
             )
         })
     }
@@ -451,7 +459,7 @@ impl Model {
                 self.replace_dialog = None;
 
                 let mut tasks = vec![cosmic::task::message(
-                    crate::app::Message::OpenContextDrawer(self.entity, "".into()),
+                    crate::app::Message::OpenContextDrawer(self.entity),
                 )];
 
                 if let Some(model) = self.shortcut_models.get(0) {
@@ -526,9 +534,8 @@ impl Model {
             if let Some(new_binding) = apply_binding {
                 if let Some(model) = self.shortcut_models.get_mut(short_id) {
                     if let Some(shortcut) = model.bindings.get_mut(id) {
-                        let prev_binding = shortcut.binding.clone();
-
-                        shortcut.binding = new_binding.clone();
+                        let prev_binding = mem::replace(&mut shortcut.binding, new_binding.clone());
+                        
                         shortcut.is_saved = true;
                         shortcut.input.clear();
 
@@ -537,7 +544,12 @@ impl Model {
                         }
 
                         let action = model.action.clone();
-                        self.config_remove(&prev_binding);
+                        
+                        if shortcut.is_default {
+                            self.config_add(Action::Disable, prev_binding);
+                        } else {
+                            self.config_remove(&prev_binding);
+                        }
                         self.config_add(action, new_binding);
                         return cosmic::widget::text_input::focus(
                             self.add_keybindings_button_id.clone(),
@@ -564,7 +576,7 @@ fn context_drawer<'a>(
         space_xs,
         space_l,
         ..
-    } = theme::active().cosmic().spacing;
+    } = theme::spacing();
 
     let model = &shortcuts[id];
 

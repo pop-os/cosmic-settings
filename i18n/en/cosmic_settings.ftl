@@ -30,6 +30,7 @@ network-and-wireless = Network & Wireless
 no-networks = No networks have been found.
 no-vpn = No VPN connections available.
 password = Password
+password-confirm = Confirm Password
 remove = Remove
 settings = Settings
 username = Username
@@ -104,7 +105,9 @@ online-accounts = Online Accounts
 
 # Bluetooth
 
+activate = Activate
 confirm = Confirm
+enable = Enable
 
 bluetooth = Bluetooth
     .desc = Manage Bluetooth devices
@@ -116,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Disconnect
     .forget = Forget
     .dbus-error = An error has occurred while interacting with DBus: { $why }
+    .disabled = The bluetooth service is disabled
+    .inactive = The bluetooth service is not active
+    .unknown = The bluetooth service could not be activated. Is bluez installed?
 
 bluetooth-paired = Previously Connected Devices
     .connect = Connect
@@ -154,7 +160,7 @@ magnifier = Magnifier
                 {$zoom_out} to zoom out,
         }
         Super + scroll with your mouse
-    .scroll_controls = Enable "Super + Scroll" (via mouse or touchpad) shortcuts
+    .scroll_controls = Enable mouse or touchpad zoom with Super + Scroll
     .show_overlay = Show the Magnifier Overlay
     .increment = Zoom increment
     .signin = Start magnifier on sign in
@@ -282,7 +288,7 @@ notifications = Notifications
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Top bar with desktop controls and menus.
+    .desc = Primary system bar for menus and applets.
 
 add = Add
 add-applet = Add Applet
@@ -332,7 +338,7 @@ panel-missing = Panel Configuration is Missing
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Panel with pinned applications in the app tray and other applets.
+    .desc = An optional bar for apps and applets.
 
 ## Desktop: Window management
 
@@ -765,7 +771,7 @@ time-format = Date & Time Format
     .twenty-four = 24-hour time
     .show-seconds = Show seconds
     .first = First day of week
-    .show-date = Show Date on Top Panel
+    .show-date = Show date in the time applet
     .friday = Friday
     .saturday = Saturday
     .sunday = Sunday
@@ -834,10 +840,14 @@ legacy-app-global-shortcuts = Global Shortcuts in X11 Applications
     .mouse = Mouse button events in X11 applications
 
 legacy-app-scaling = X11 Window System Application Scaling
-    .scaled-by-system = Scale all X11 Applications
-    .system-description = X11 applications will appear blurry on HiDPI screens.
-    .scaled-natively = Render X11 Applications at native resolution
-    .native-description = X11 applications that don't support scaling will be small when HiDPI displays are in use. Enable for games to utilize the full monitor resolution.
+    .scaled-gaming = Optimize for gaming and full-screen apps
+    .gaming-description = X11 applications may appear slightly larger/smaller compared to Wayland apps.
+    .scaled-applications = Optimize for applications
+    .applications-description = Games and full-screen X11 apps may not match your display resolution.
+    .scaled-compatibility = Maximum compatibility mode
+    .compatibility-description = X11 applications may appear blurry on HiDPI screens.
+    .preferred-display = Preferred display for games and full screen X11 applications
+    .no-display = <None>
 
 ## System
 
@@ -884,6 +894,9 @@ administrator = Administrator
     .desc = Administrators can change settings for all users, add and remove other users.
 
 add-user = Add user
+change-password = Change password
 remove-user = Remove user
 full-name = Full name
-invalid-username = Invalid username
+invalid-username = Invalid username.
+password-mismatch = Password and confirmation must match.
+save = Save

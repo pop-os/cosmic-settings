@@ -653,7 +653,7 @@ manage-windows = Zarządzanie oknami
     .close = Zamknij okno
     .maximize = Maksymalizuj okno
     .minimize = Minimalizuj okno
-    .resize-inwards = Powiększ okno
+    .resize-inwards = Zmniejsz okno
     .resize-outwards = Powiększ okno
     .toggle-sticky = Przełącznik zakrywających okien
 

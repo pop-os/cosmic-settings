@@ -30,6 +30,7 @@ network-and-wireless = Netwerk en wifi
 no-networks = Er zijn geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
+password-confirm = Bevestig het wachtwoord
 remove = Verwijderen
 settings = Instellingen
 username = Gebruikersnaam
@@ -104,7 +105,9 @@ online-accounts = Online accounts
 
 # Bluetooth
 
+activate = Activeren
 confirm = Bevestigen
+enable = Inschakelen
 
 bluetooth = Bluetooth
     .desc = Bluetooth-apparaten bewerken
@@ -116,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Verbinding verbreken
     .forget = Vergeten
     .dbus-error = Er is een fout opgetreden tijdens de interactie met DBus: { $why }
+    .disabled = De bluetooth-service is uitgeschakeld
+    .inactive = De bluetooth-service is niet actief
+    .unknown = Cosmic kon de bluetooth-service niet activeren. Heeft u bluez geïnstalleerd?
 
 bluetooth-paired = Eerder verbonden apparaten
     .connect = Verbinden
@@ -828,16 +834,20 @@ legacy-applications = Compatibiliteit met X11-toepassingen
 legacy-app-global-shortcuts = Globale sneltoetsen in X11-toepassingen
     .desc = Met globale sneltoetsen kunnen toetsaanslagen en muisbewegingen die u maakte in de ene toepassing worden herkend door andere toepassingen voor functies als push-to-talk en push-to-mute. Voor X11-toepassingen is dit standaard uitgeschakeld zodat andere toepassingen uw mogelijk gevoelige toetsaanslagen en muisbewegingen niet kunnen afluisteren.
     .none = Toetsaanslagen niet met X11-toepassingen delen
-    .modifiers = Alleen de Super, Shift, Contol, Alt etc delen 
-    .combination = Toetsaanslagen alleen delen als u op Super, Shift, Control of Alt drukt
+    .modifiers = Alleen modifiers (Super, Shift, Control, Alt) delen
+    .combination = Toetsaanslagen delen als u een modifier (Super, Shift, Control, Alt) ingedrukt houdt
     .all = Alle toetsaanslagen met X11-toepassingen delen
-    .mouse = Muisknoppen in X11-toepassingen delen
+    .mouse = Muisknoppen met X11-toepassingen delen
 
 legacy-app-scaling = Het schalen van vensters die het X11-venstersysteem gebruiken
     .scaled-by-system = Alle X11-vensters schalen
     .system-description = X11-vensters worden onscherp weergegeven op HiDPI-schermen.
-    .scaled-natively = X11-vensters in hun standaard venstergrootte weergeven
-    .native-description = X11-vensters die niet geschaald kunnen worden, worden verkleind op HiDPI-schermen weergegeven. Zet deze optie aan zodat games de volledige schermresolutie kunnen gebruiken.
+    .scaled-applications = Voor toepassingen optimaliseren
+    .applications-description = Games en X11-vensters in volledig scherm hebben mogelijk niet de juiste resolutie voor uw scherm.
+    .scaled-compatibility = Modus voor maximale compatibiliteit
+    .compatibility-description = X11-vensters kunnen wazig lijken op HiDPI-schermen.
+    .preferred-display = Uw voorkeursscherm voor games en X11-vensters in volledig scherm
+    .no-display = <Geen>
 
 ## System
 
@@ -865,7 +875,7 @@ about-os = Besturingssysteem
     .windowing-system = Vensterbeheerder
 
 about-related = Gerelateerde instellingen
-    .support = Hulp aanvragen
+    .support = Om hulp vragen
 
 ## System: Firmware
 
@@ -884,6 +894,9 @@ administrator = Systeembeheerder (root)
     .desc = Beheerders kunnen instellingen voor alle gebruikers wijzigen, en andere gebruikers toevoegen of verwijderen.
 
 add-user = Gebruiker toevoegen
+change-password = Wachtwoord wijzigen
 remove-user = Gebruiker verwijderen
 full-name = Volledige naam
-invalid-username = Ongeldige gebruikersnaam
+invalid-username = Ongeldige gebruikersnaam.
+password-mismatch = De wachtwoorden komen niet overeen, probeer het opnieuw.
+save = Opslaan

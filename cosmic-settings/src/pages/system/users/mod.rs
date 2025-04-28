@@ -11,11 +11,13 @@ use cosmic::{
     widget::{self, Space, column, icon, row, settings, text},
 };
 use cosmic_settings_page::{self as page, Section, section};
+use pwhash::{bcrypt, md5_crypt, sha256_crypt, sha512_crypt};
 use regex::Regex;
 use slab::Slab;
 use slotmap::SlotMap;
 use std::{
     collections::HashMap,
+    fs::File,
     future::Future,
     io::{BufRead, BufReader},
     path::PathBuf,
@@ -32,10 +34,10 @@ pub struct User {
     id: u64,
     profile_icon: Option<icon::Handle>,
     full_name: String,
-    password: String,
     username: String,
+    password: String,
+    password_confirm: String,
     full_name_edit: bool,
-    password_edit: bool,
     username_edit: bool,
     is_admin: bool,
 }
@@ -43,13 +45,13 @@ pub struct User {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EditorField {
     FullName,
-    Password,
     Username,
 }
 
 #[derive(Clone, Debug)]
 pub enum Dialog {
     AddNewUser(User),
+    UpdatePassword(User),
 }
 
 #[derive(Clone, Debug)]
@@ -62,8 +64,11 @@ pub struct Page {
     dialog: Option<Dialog>,
     default_icon: icon::Handle,
     password_label: String,
+    password_confirm_label: String,
     username_label: String,
     fullname_label: String,
+    password_hidden: bool,
+    password_confirm_hidden: bool,
 }
 
 impl Default for Page {
@@ -77,8 +82,11 @@ impl Default for Page {
             dialog: None,
             default_icon: icon::from_path(PathBuf::from(DEFAULT_ICON_FILE)),
             password_label: crate::fl!("password"),
+            password_confirm_label: crate::fl!("password-confirm"),
             username_label: crate::fl!("username"),
             fullname_label: crate::fl!("full-name"),
+            password_hidden: true,
+            password_confirm_hidden: true,
         }
     }
 }
@@ -99,6 +107,9 @@ pub enum Message {
     SelectedUserDelete(u64),
     SelectedUserSetAdmin(u64, bool),
     ToggleEdit(usize, EditorField),
+    TogglePasswordVisibility,
+    TogglePasswordConfirmVisibility,
+    SaveNewPassword(User),
 }
 
 impl From<Message> for crate::app::Message {
@@ -159,15 +170,35 @@ impl page::Page<crate::pages::Message> for Page {
                 );
 
                 let password_input = widget::container(
-                    widget::text_input("", &user.password)
-                        .password()
-                        .label(&self.password_label)
-                        .on_input(|value| {
-                            Message::Dialog(Some(Dialog::AddNewUser(User {
-                                password: value,
-                                ..user.clone()
-                            })))
-                        }),
+                    widget::secure_input(
+                        "",
+                        &user.password,
+                        Some(Message::TogglePasswordVisibility),
+                        self.password_hidden,
+                    )
+                    .label(&self.password_label)
+                    .on_input(|value| {
+                        Message::Dialog(Some(Dialog::AddNewUser(User {
+                            password: value,
+                            ..user.clone()
+                        })))
+                    }),
+                );
+
+                let password_confirm_input = widget::container(
+                    widget::secure_input(
+                        "",
+                        &user.password_confirm,
+                        Some(Message::TogglePasswordConfirmVisibility),
+                        self.password_confirm_hidden,
+                    )
+                    .label(&self.password_confirm_label)
+                    .on_input(|value| {
+                        Message::Dialog(Some(Dialog::AddNewUser(User {
+                            password_confirm: value,
+                            ..user.clone()
+                        })))
+                    }),
                 );
 
                 let admin_toggler = widget::toggler(user.is_admin).on_toggle(|value| {
@@ -184,9 +215,16 @@ impl page::Page<crate::pages::Message> for Page {
                 let complete_maybe = if !username_valid && !user.username.is_empty() {
                     validation_msg = fl!("invalid-username");
                     None
+                } else if user.password != user.password_confirm
+                    && user.password != ""
+                    && user.password_confirm != ""
+                {
+                    validation_msg = fl!("password-mismatch");
+                    None
                 } else if user.full_name.is_empty()
                     || user.username.is_empty()
                     || user.password.is_empty()
+                    || user.password_confirm.is_empty()
                 {
                     None
                 } else {
@@ -212,6 +250,7 @@ impl page::Page<crate::pages::Message> for Page {
                             .add(full_name_input)
                             .add(username_input)
                             .add(password_input)
+                            .add(password_confirm_input)
                             .add(
                                 row::with_capacity(3)
                                     .push(
@@ -228,6 +267,73 @@ impl page::Page<crate::pages::Message> for Page {
                             ),
                     )
                     .primary_action(add_user_button)
+                    .secondary_action(cancel_button)
+                    .tertiary_action(widget::text::body(validation_msg))
+                    .apply(Element::from)
+            }
+
+            Dialog::UpdatePassword(user) => {
+                let password_input = widget::container(
+                    widget::secure_input(
+                        "",
+                        &user.password,
+                        Some(Message::TogglePasswordVisibility),
+                        self.password_hidden,
+                    )
+                    .label(&self.password_label)
+                    .on_input(|value| {
+                        Message::Dialog(Some(Dialog::UpdatePassword(User {
+                            password: value,
+                            ..user.clone()
+                        })))
+                    }),
+                );
+
+                let password_confirm_input = widget::container(
+                    widget::secure_input(
+                        "",
+                        &user.password_confirm,
+                        Some(Message::TogglePasswordConfirmVisibility),
+                        self.password_confirm_hidden,
+                    )
+                    .label(&self.password_confirm_label)
+                    .on_input(|value| {
+                        Message::Dialog(Some(Dialog::UpdatePassword(User {
+                            password_confirm: value,
+                            ..user.clone()
+                        })))
+                    }),
+                );
+
+                // validation
+                let mut validation_msg = String::new();
+                let complete_maybe = if user.password != user.password_confirm
+                    && user.password != ""
+                    && user.password_confirm != ""
+                {
+                    validation_msg = fl!("password-mismatch");
+                    None
+                } else if user.password.is_empty() || user.password_confirm.is_empty() {
+                    None
+                } else {
+                    Some(Message::SaveNewPassword(user.clone()))
+                };
+
+                let save_button = widget::button::suggested(fl!("save"))
+                    .on_press_maybe(complete_maybe)
+                    .apply(Element::from);
+
+                let cancel_button =
+                    widget::button::standard(fl!("cancel")).on_press(Message::Dialog(None));
+
+                widget::dialog()
+                    .title(fl!("change-password"))
+                    .control(
+                        widget::ListColumn::default()
+                            .add(password_input)
+                            .add(password_confirm_input),
+                    )
+                    .primary_action(save_button)
                     .secondary_action(cancel_button)
                     .tertiary_action(widget::text::body(validation_msg))
                     .apply(Element::from)
@@ -293,8 +399,8 @@ impl Page {
                 username: String::from(user.username),
                 full_name: String::from(user.full_name),
                 password: String::new(),
+                password_confirm: String::new(),
                 full_name_edit: false,
-                password_edit: false,
                 username_edit: false,
             });
         }
@@ -379,7 +485,6 @@ impl Page {
                 if let Some(user) = self.users.get_mut(id) {
                     match field {
                         EditorField::FullName => user.full_name = value,
-                        EditorField::Password => user.password = value,
                         EditorField::Username => user.username = value,
                     }
                 }
@@ -389,10 +494,16 @@ impl Page {
                 if let Some(user) = self.users.get_mut(id) {
                     match field {
                         EditorField::FullName => user.full_name_edit = !user.full_name_edit,
-                        EditorField::Password => user.password_edit = !user.password_edit,
                         EditorField::Username => user.username_edit = !user.username_edit,
                     }
                 }
+            }
+
+            Message::TogglePasswordVisibility => {
+                self.password_hidden = !self.password_hidden;
+            }
+            Message::TogglePasswordConfirmVisibility => {
+                self.password_confirm_hidden = !self.password_confirm_hidden;
             }
 
             Message::ApplyEdit(id, field) => {
@@ -401,74 +512,84 @@ impl Page {
 
                     match field {
                         EditorField::FullName => {
-                            let full_name = user.full_name.clone();
-                            return cosmic::Task::future(async move {
-                                let Ok(conn) = zbus::Connection::system().await else {
-                                    return;
-                                };
+                            if user.full_name_edit {
+                                let full_name = user.full_name.clone();
 
-                                let Ok(user) = accounts_zbus::UserProxy::from_uid(&conn, uid).await
-                                else {
-                                    return;
-                                };
+                                return cosmic::Task::future(async move {
+                                    let Ok(conn) = zbus::Connection::system().await else {
+                                        return;
+                                    };
 
-                                _ = request_permission_on_denial(&conn, || {
-                                    user.set_real_name(&full_name)
+                                    let Ok(user) =
+                                        accounts_zbus::UserProxy::from_uid(&conn, uid).await
+                                    else {
+                                        return;
+                                    };
+
+                                    _ = request_permission_on_denial(&conn, || {
+                                        user.set_real_name(&full_name)
+                                    })
+                                    .await;
                                 })
-                                .await;
-                            })
-                            .discard();
-                        }
-
-                        EditorField::Password => {
-                            let password = std::mem::take(&mut user.password);
-
-                            return cosmic::Task::future(async move {
-                                let Ok(conn) = zbus::Connection::system().await else {
-                                    return;
-                                };
-
-                                let Ok(user) = accounts_zbus::UserProxy::from_uid(&conn, uid).await
-                                else {
-                                    return;
-                                };
-
-                                match request_permission_on_denial(&conn, || {
-                                    user.set_password(&password, "")
-                                })
-                                .await
-                                {
-                                    Err(why) => {
-                                        tracing::error!(?why, "failed to set password");
-                                    }
-
-                                    Ok(_) => (),
-                                }
-                            })
-                            .discard();
+                                .discard();
+                            }
                         }
 
                         EditorField::Username => {
-                            let username = user.username.clone();
-                            return cosmic::Task::future(async move {
-                                let Ok(conn) = zbus::Connection::system().await else {
-                                    return;
-                                };
+                            if user.username_edit {
+                                let username = user.username.clone();
 
-                                let Ok(user) = accounts_zbus::UserProxy::from_uid(&conn, uid).await
-                                else {
-                                    return;
-                                };
+                                return cosmic::Task::future(async move {
+                                    let Ok(conn) = zbus::Connection::system().await else {
+                                        return;
+                                    };
 
-                                _ = request_permission_on_denial(&conn, || {
-                                    user.set_user_name(&username)
+                                    let Ok(user) =
+                                        accounts_zbus::UserProxy::from_uid(&conn, uid).await
+                                    else {
+                                        return;
+                                    };
+
+                                    _ = request_permission_on_denial(&conn, || {
+                                        user.set_user_name(&username)
+                                    })
+                                    .await;
                                 })
-                                .await;
-                            })
-                            .discard();
+                                .discard();
+                            }
                         }
                     }
                 }
+            }
+
+            Message::SaveNewPassword(user) => {
+                self.dialog = None;
+
+                let uid = user.id;
+                let password_hashed = hash_password(&user.password);
+
+                return cosmic::Task::future(async move {
+                    let Ok(conn) = zbus::Connection::system().await else {
+                        return;
+                    };
+
+                    let Ok(user) = accounts_zbus::UserProxy::from_uid(&conn, uid).await else {
+                        return;
+                    };
+
+                    match request_permission_on_denial(&conn, || {
+                        user.set_password(&password_hashed, "")
+                    })
+                    .await
+                    {
+                        Err(why) => {
+                            tracing::error!(?why, "failed to set password");
+                        }
+
+                        Ok(_) => (),
+                    }
+                })
+                .discard();
             }
 
             Message::LoadPage(uid, users) => {
@@ -514,6 +635,8 @@ impl Page {
             }
 
             Message::Dialog(dialog) => {
+                self.password_hidden = true;
+                self.password_confirm_hidden = true;
                 self.dialog = dialog;
             }
 
@@ -541,9 +664,10 @@ impl Page {
                         }
                     };
 
+                    let password_hashed = hash_password(&password);
                     match accounts_zbus::UserProxy::new(&conn, user_object_path).await {
                         Ok(user) => {
-                            _ = user.set_password(&password, "").await;
+                            _ = user.set_password(&password_hashed, "").await;
                             _ = user.set_icon_file(DEFAULT_ICON_FILE).await
                         }
 
@@ -615,15 +739,12 @@ fn user_list() -> Section<crate::pages::Message> {
                             Message::ToggleEdit(idx, EditorField::Username)
                         })
                         .on_input(move |name| Message::Edit(idx, EditorField::Username, name))
-                        .on_submit(move |_| Message::ApplyEdit(idx, EditorField::Username));
+                        .on_submit(move |_| Message::ApplyEdit(idx, EditorField::Username))
+                        .on_unfocus(Message::ApplyEdit(idx, EditorField::Username));
 
-                    let password =
-                        widget::editable_input("", &user.password, user.password_edit, move |_| {
-                            Message::ToggleEdit(idx, EditorField::Password)
-                        })
-                        .on_input(move |pass| Message::Edit(idx, EditorField::Password, pass))
-                        .on_submit(move |_| Message::ApplyEdit(idx, EditorField::Password))
-                        .password();
+                    let password = widget::button::standard(fl!("change-password"))
+                        .on_press(Message::Dialog(Some(Dialog::UpdatePassword(user.clone()))))
+                        .apply(Element::from);
 
                     let fullname = widget::editable_input(
                         "",
@@ -632,9 +753,14 @@ fn user_list() -> Section<crate::pages::Message> {
                         move |_| Message::ToggleEdit(idx, EditorField::FullName),
                     )
                     .on_input(move |name| Message::Edit(idx, EditorField::FullName, name))
-                    .on_submit(move |_| Message::ApplyEdit(idx, EditorField::FullName));
+                    .on_submit(move |_| Message::ApplyEdit(idx, EditorField::FullName))
+                    .on_unfocus(Message::ApplyEdit(idx, EditorField::FullName));
 
-                    let fullname_text = text::body(&user.full_name);
+                    let fullname_text = text::body(if user.full_name != "" {
+                        &user.full_name
+                    } else {
+                        &user.username
+                    });
 
                     let account_type = text::caption(if user.is_admin {
                         &descriptions[user_type_admin]
@@ -679,6 +805,8 @@ fn user_list() -> Section<crate::pages::Message> {
 
                     let profile_icon = widget::button::icon(profile_icon_handle)
                         .large()
+                        .padding(0)
+                        .class(cosmic::theme::Button::Standard)
                         .on_press(Message::SelectProfileImage(user.id));
 
                     let account_details_content = settings::item_row(vec![
@@ -718,7 +846,7 @@ fn user_list() -> Section<crate::pages::Message> {
                 .fold(
                     widget::list_column()
                         .spacing(0)
-                        .padding(0)
+                        .padding([8, 0])
                         .divider_padding(0)
                         .list_item_padding(0),
                     widget::ListColumn::add,
@@ -823,4 +951,40 @@ fn permission_was_denied(result: &zbus::Error) -> bool {
         }
         _ => false,
     }
+}
+
+// TODO: Should we allow deprecated methods?
+fn hash_password(password_plain: &str) -> String {
+    match get_encrypt_method().as_str() {
+        "SHA512" => sha512_crypt::hash(password_plain).unwrap(),
+        "SHA256" => sha256_crypt::hash(password_plain).unwrap(),
+        "MD5" => md5_crypt::hash(password_plain).unwrap(),
+        _ => bcrypt::hash(password_plain).unwrap(),
+    }
+}
+
+// TODO: In the future loading in the whole login.defs file into an object might be handy?
+// For now, just grabbing what we need
+fn get_encrypt_method() -> String {
+    let mut value = String::new();
+    let login_defs = if let Ok(file) = File::open("/etc/login.defs") {
+        file
+    } else {
+        return value;
+    };
+    let reader = BufReader::new(login_defs);
+
+    for line in reader.lines() {
+        if let Ok(line) = line {
+            if !line.trim().is_empty() {
+                if let Some(index) = line.find(|c: char| c.is_whitespace()) {
+                    let key = line[0..index].trim();
+                    if key == "ENCRYPT_METHOD" {
+                        value = line[(index + 1)..].trim().to_string();
+                    }
+                }
+            }
+        }
+    }
+    value
 }
