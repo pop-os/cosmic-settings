@@ -422,7 +422,9 @@ online-accounts = Onlinekonton
 
 # Bluetooth
 
+activate = Aktivera    
 confirm = Bekräfta
+enable = Aktivera
 
 bluetooth = Bluetooth
     .desc = Hantera Bluetooth enheter
@@ -434,7 +436,9 @@ bluetooth = Bluetooth
     .disconnect = Koppla från
     .forget = Glöm bort
     .dbus-error = Ett fel har uppstått under interaktion med DBus: { $why }
-    .show-device-without-name = Visa enheter utan namn
+    .disabled = Bluetooth-tjänsten är inaktiverad
+    .inactive = Bluetooth-tjänsten är inte aktiv
+    .unknown = Bluetooth-tjänsten kunde inte aktiveras. Är bluez installerat?
 
 bluetooth-paired = Tidigare anslutna enheter
     .connect = Anslut
