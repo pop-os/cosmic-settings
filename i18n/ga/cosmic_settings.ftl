@@ -30,10 +30,12 @@ network-and-wireless = Líonra & Gan Sreang
 no-networks = Ní bhfuarthas aon líonraí.
 no-vpn = Níl aon naisc VPN ar fáil.
 password = Pasfhocal
+password-confirm = Deimhnigh Pasfhocal
 remove = Bain
 settings = Socruithe
 username = Ainm úsáideora
 visible-networks = Líonraí Infheicthe
+identity = Féiniúlacht
 
 auth-dialog = Fíordheimhniú de dhíth
     .vpn-description = Cuir isteach an t-ainm úsáideora agus pasfhocal a theastaíonn ón tseirbhís VPN.
@@ -103,7 +105,9 @@ online-accounts = Cuntais Ar Líne
 
 # Bluetooth
 
+activate = Gníomhachtaigh
 confirm = Deimhnigh
+enable = Cumasaigh
 
 bluetooth = Bluetooth
     .desc = Bainistigh gléasanna Bluetooth
@@ -115,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Dícheangail
     .forget = Déan dearmad
     .dbus-error = Tharla earráid agus tú ag idirghníomhú le DBus: { $why }
+    .disabled = Tá an tseirbhís bluetooth díchumasaithe
+    .inactive = Níl an tseirbhís bluetooth gníomhach
+    .unknown = Níorbh fhéidir an tseirbhís bluetooth a ghníomhachtú. An bhfuil bluez suiteáilte?
 
 bluetooth-paired = Gléasanna Ceangailte Roimhe Seo
     .connect = Ceangail
@@ -126,6 +133,48 @@ bluetooth-confirm-pin = Deimhnigh PIN Bluetooth
 bluetooth-available = Gléasanna in aice láimhe
 
 bluetooth-adapters = Cuibheoirí Bluetooth
+
+## Accessibility
+
+accessibility = Inrochtaineacht
+    .vision = Fís
+    .on = Ar
+    .off = As
+    .unavailable = Níl ar fáil
+    .high-contrast = Mód codarsnachta ard
+    .invert-colors = Inbhéartaigh Dathanna
+    .color-filters = Scagairí dathanna
+
+hearing = Éisteacht
+    .mono =Seinn fuaim steireo mar mhonó
+
+default = Réamhshocrú
+magnifier = Formhéadaitheoir
+    .controls = Nó bain úsáid as na haicearraí seo: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} chun súmáil isteach,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} chun súmáil amach,
+        }
+        Super + scrollaigh le do luch
+    .scroll_controls = Cumasaigh súmáil luiche nó tadhaill le Super + Scrollaigh
+    .show_overlay = Taispeáin an Forleagan Formhéadúcháin
+    .increment = Incrimint súmála
+    .signin = Tosaigh an formhéadaitheoir nuair a shíníonn tú isteach
+    .applet = Cas an formhéadaitheoir air/as san aipléid ar an bpainéal
+    .movement = Bogann an radharc súmáilte
+    .continuous = Go leanúnach leis an pointeoir
+    .onedge = Nuair a shroicheann an pointeoir an imeall
+    .centered = Chun an pointeoir a choinneáil lárnach
+color-filter = Cineál scagaire datha
+    .unknown = Scagaire anaithnid gníomhach
+    .greyscale = Liathscála
+    .deuteranopia = Glas/Dearg (laige glas, Deuteranopia)
+    .protanopia = Dearg/Glas (laige dearg, Protanopia)
+    .tritanopia = Gorm/Buí (laige gorm, Tritanopia)
 
 ## Desktop
 
@@ -302,6 +351,8 @@ super-key = Gníomh na heochrach Super
     .applications = Oscail Feidhmchláir
     .disable = Díchumasaigh
 
+edge-gravity = Imíonn fuinneoga snámhacha go dtí imill in aice láimhe
+
 window-controls = Rialuithe Fuinneog
     .maximize = Taispeáin an cnaipe uasmhéadú
     .minimize = Taispeáin cnaipe íoslaghdú
@@ -359,6 +410,7 @@ display = Taispeántais
     .refresh-rate = Ráta athnuachana
     .resolution = Taifeach
     .scale = Scáil
+    .additional-scale-options = Roghanna scála breise
 
 mirroring = Scáthánú
     .id = Scáthánú { $id }
@@ -398,12 +450,6 @@ dialog = Dialóg
     .change-prompt = Rachaidh athruithe socruithe ar ais go huathoibríoch i gceann { $time } soicind.
     .revert-settings = Cuir Socruithe ar ais
 
-legacy-app-scaling = X11 Scálú Feidhmchlár an Chórais Fuinneog
-    .scaled-by-system = Scála gach Feidhmchlár X11
-    .system-description = Feicfear feidhmchláir X11 doiléir ar scáileáin HiDPI.
-    .scaled-natively = Rindreáil X11 Feidhmchláir ag taifeach dúchais
-    .native-description = Beidh feidhmchláir X11 nach dtacaíonn le scálaiú beag nuair a bheidh taispeántais HiDPI in úsáid. Cumasaigh do chluichí taifeach iomlán an mhonatóra a úsáid.
-
 ## Sound
 
 sound = Fuaim
@@ -415,6 +461,8 @@ sound-output = Aschur
     .level = Leibhéal aschuir
     .config = Cumraíocht
     .balance = Iarmhéid
+    .left = Ar chlé
+    .right = Ar dheis
 
 sound-input = Ionchur
     .volume = Toirt ionchuir
@@ -521,6 +569,13 @@ keyboard-typing-assist = Ag clóscríobh
     .repeat-rate = Ráta athuair
     .repeat-delay = Moill athrá
 
+keyboard-numlock-boot = GlasUimhir
+    .boot-state = Stát ar tosaithe
+    .last-boot = An tosaithe deireanach
+    .on = Ar
+    .off = As
+    .set = Socraigh staid tosaithe glas uimhir
+
 added = Curtha leis
 type-to-search = Clóscríobh le cuardach...
 show-extended-input-sources = Taispeáin foinsí ionchuir sínte
@@ -536,6 +591,7 @@ command = Ordú
 custom = Saincheaptha
 debug = Dífhabhtaigh
 disabled = Díchumasaithe
+input-source-switch = Athraigh foinse ionchuir teanga an mhéarchláir
 migrate-workspace-prev = Aistrigh spás oibre go dtí an t-aschur roimhe seo
 migrate-workspace-next = Aistrigh spás oibre go dtí an chéad aschur eile
 migrate-workspace = Aistrigh spás oibre go dtí an t-aschur { $direction ->
@@ -625,6 +681,7 @@ system-shortcut = Córas
     .keyboard-brightness-down = Laghdú ar ghile an mhéarchláir
     .keyboard-brightness-up = Méadú ar ghile an mhéarchláir
     .launcher = Oscail an tosaitheoir
+    .log-out = Logáil Amach
     .lock-screen = Glas an scáileán
     .mute = Balbhaigh aschur fuaime
     .mute-mic = Balbhaíonn ionchur micreafón
@@ -637,6 +694,7 @@ system-shortcut = Córas
     .volume-raise = Méadú ar an aschur fuaime
     .web-browser = Osclaíonn sé brabhsálaí gréasáin
     .window-switcher = Athraigh idir fuinneoga oscailte
+    .window-switcher-previous = Athraigh idir fuinneoga oscailte cúlaithe
     .workspace-overview = Oscail an forbhreathnú spás oibre
 
 window-tiling = Tíleáil fuinneoige
@@ -650,6 +708,9 @@ window-tiling = Tíleáil fuinneoige
 
 replace-shortcut-dialog = Ionadaigh Aicearra?
     .desc = { $shortcut } in úsáid ag { $name }. Má tá tú in ionad é, { $name } beidh sé faoi mhíchumas.
+
+zoom-in = Súmáil Isteach
+zoom-out = Súmáil Amach
 
 ## Input: Mouse
 
@@ -708,7 +769,7 @@ time-zone = Crios Ama
 
 time-format = Formáid Dáta & Am
     .twenty-four = Am 24-uair
-    .show-seconds = Taispeáin soicind
+    .show-seconds = Taispeáin soicindí
     .first = An chéad lá den tseachtain
     .show-date = Taispeáin Dáta ar an bPainéal Barr
     .friday = Aoine
@@ -734,6 +795,59 @@ add-language = Cuir teanga leis
     .context = Cuir teanga leis
 install-additional-languages = Suiteáil teangacha breise
 region = Réigiún
+
+## Applications
+
+applications = Feidhmchláir
+
+## Applications: Default Applications
+
+default-apps = Feidhmchláir Réamhshocraithe
+    .desc = Brabhsálaí gréasáin réamhshocraithe, cliant ríomhphoist, brabhsálaí comhad, agus feidhmchláir eile.
+    .web-browser = Brabhsálaí gréasáin
+    .file-manager = Bainisteoir comhad
+    .mail-client = Cliant ríomhphoist
+    .music = Ceol
+    .video = Físeán
+    .photos = Grianghraif
+    .calendar = Féilire
+    .terminal = Teirminéal
+    .other-associations = Cumainn Eile
+    .text-editor = Eagarthóir Téacs
+
+## Applications: Startup Applications
+
+startup-apps = Feidhmchláir Tosaithe
+    .desc = Cumraigh feidhmchláir a ritheann ar logáil isteach.
+    .add = Cuir feidhmchlár leis
+    .user = Feidhmchláir shonracha don úsáideoir
+    .user-description = Seoltar na feidhmchláir seo nuair a logálann tú isteach i d’úsáideoir reatha.
+    .remove-dialog-title = Bain { $name }?
+    .remove-dialog-description = An bhfuil tú cinnte gur mian leat é seo a bhaint mar fheidhmchlár tosaithe?
+    .search-for-application = Cuardaigh feidhmchlár
+
+## Applications: Legacy Applications
+
+legacy-applications = Comhoiriúnacht Feidhmchláir X11
+    .desc = Scálú feidhmchlár córais fuinneoige X11 agus aicearraí domhanda.
+
+legacy-app-global-shortcuts = Aicearraí Domhanda in Feidhmchláir X11
+    .desc = Le haicearraí domhanda, is féidir le feidhmchláir eile aitheantas a thabhairt do bhuillí eochracha agus d’imeachtaí cnaipe luiche a dhéantar in aipeanna le haghaidh gnéithe cosúil le brúigh-chun-caint nó brúigh-chun-balbhú. De réir réamhshocraithe, tá sé seo díchumasaithe in aipeanna X11 lena chinntiú nach féidir le feidhmchláir eile monatóireacht a dhéanamh ar imeachtaí méarchláir agus luiche ina bhfuil faisnéis íogair.
+    .none = Gan eochracha
+    .modifiers = Mionathraitheoirí (Super, Shift, Control, Alt)
+    .combination = Gach eochair agus na modhnóirí Super, Control nó Alt á mbrú
+    .all = Gach eochair
+    .mouse = Imeachtaí cnaipe luiche in fheidhmchláir X11
+
+legacy-app-scaling = Scálú Feidhmchláir Chóras Fuinneoige X11
+    .scaled-gaming = Optamaigh le haghaidh cearrbhachais agus feidhmchláir lánscáileáin
+    .gaming-description = D’fhéadfadh feidhmchláir X11 a bheith beagán níos mó/níos lú i gcomparáid le feidhmchláir Wayland.
+    .scaled-applications = Optamaigh le haghaidh feidhmchláir
+    .applications-description = B’fhéidir nach mbeidh cluichí agus feidhmchláir lán-scáileáin X11 ag teacht le réiteach do thaispeána.
+    .scaled-compatibility = Mód comhoiriúnachta uasta
+    .compatibility-description = D’fhéadfadh feidhmchláir X11 a bheith doiléir ar scáileáin HiDPI.
+    .preferred-display = Taispeántas is fearr le haghaidh cluichí agus feidhmchláir X11 lánscáileáin
+    .no-display = <Gan aon cheann>
 
 ## System
 
@@ -780,19 +894,9 @@ administrator = Riarthóir
     .desc = Is féidir le riarthóirí socruithe do gach úsáideoir a athrú, úsáideoirí eile a chur leis agus iad a bhaint.
 
 add-user = Cuir úsáideoir leis
+change-password = Change password
 remove-user = Bain úsáideoir
 full-name = Ainm iomlán
-
-## System: Default Applications
-
-default-apps = Aipeanna Réamhshocraithe
-    .desc = Brabhsálaí gréasáin réamhshocraithe, cliant ríomhphoist, brabhsálaí comhad, agus aipeanna eile.
-    .web-browser = Brabhsálaí gréasáin
-    .file-manager = Bainisteoir comhad
-    .mail-client = Cliant ríomhphoist
-    .music = Ceol
-    .video = Físeán
-    .photos = Grianghraif
-    .calendar = Clárchlár
-    .terminal = Téarmaiméadar
-    .other-associations = Ceangail eile
+invalid-username = Ainm úsáideora neamhbhailí.
+password-mismatch = Ní mór don phasfhocal agus don dearbhú a bheith mar a chéile.
+save = Sábháil
