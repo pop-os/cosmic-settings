@@ -5,6 +5,7 @@ use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
 use cosmic_bg_config::Source;
 use cosmic_settings_wallpaper as wallpaper;
 use std::collections::VecDeque;
+use std::env;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
@@ -14,6 +15,7 @@ const CURRENT_FOLDER: &str = "current-folder";
 const CUSTOM_COLORS: &str = "custom-colors";
 const CUSTOM_IMAGES: &str = "custom-images";
 const RECENT_FOLDERS: &str = "recent-folders";
+const BACKGROUNDS_DIR: &'static str = "backgrounds";
 
 #[derive(Debug, Default)]
 pub struct Config {
@@ -100,37 +102,27 @@ impl Config {
     }
 
     #[must_use]
-    pub fn current_folder(&self) -> &Path {
+    pub fn current_folder(&self) -> PathBuf {
         self.current_folder
-            .as_deref()
+            .clone()
             .unwrap_or(Self::default_folder())
     }
 
     #[must_use]
-    pub fn default_folder() -> &'static Path {
-        let is_nixos_like: bool = match std::fs::File::open("/etc/os-release") {
-            Ok(mut file) => {
-                let mut os_release_contents = String::new();
-                let _ = file.read_to_string(&mut os_release_contents);
+    pub fn default_folder() -> PathBuf {
+        if let Some(data_dirs) = env::var_os("XDG_DATA_DIRS") {
+            if let Some(data_dirs) = data_dirs.to_str() {
+                let data_dirs = data_dirs.split(":");
 
-                // While only want to match for distributions that are either
-                // NixOS or are based on NixOS.
-                if os_release_contents.contains("ID=nixos")
-                    || os_release_contents.contains("ID_LIKE=nixos")
-                {
-                    true
-                } else {
-                    false
+                for data_dir in data_dirs {
+                    let potential_path = PathBuf::from(data_dir).join(BACKGROUNDS_DIR);
+                    if let Ok(true) = &potential_path.try_exists() {
+                        return potential_path;
+                    }
                 }
             }
-            Err(_) => false,
-        };
-
-        if is_nixos_like {
-            Path::new("/run/current-system/sw/share/backgrounds/")
-        } else {
-            Path::new("/usr/share/backgrounds/")
         }
+        PathBuf::from("/usr/share").join(BACKGROUNDS_DIR)
     }
 
     /// Sets the current background folder
