@@ -11,8 +11,8 @@ use cosmic_settings_page as page;
 use slab::Slab;
 use slotmap::Key;
 use std::borrow::Cow;
-use std::{io, mem};
 use std::str::FromStr;
+use std::{io, mem};
 
 #[derive(Clone, Debug)]
 pub enum ShortcutMessage {
@@ -535,7 +535,7 @@ impl Model {
                 if let Some(model) = self.shortcut_models.get_mut(short_id) {
                     if let Some(shortcut) = model.bindings.get_mut(id) {
                         let prev_binding = mem::replace(&mut shortcut.binding, new_binding.clone());
-                        
+
                         shortcut.is_saved = true;
                         shortcut.input.clear();
 
@@ -544,7 +544,7 @@ impl Model {
                         }
 
                         let action = model.action.clone();
-                        
+
                         if shortcut.is_default {
                             self.config_add(Action::Disable, prev_binding);
                         } else {
