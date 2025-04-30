@@ -141,6 +141,7 @@ accessibility = Accessibility
     .on = On
     .off = Off
     .unavailable = Unavailable
+    .screen-reader = Screen reader
     .high-contrast = High contrast mode
     .invert-colors = Invert Colors
     .color-filters = Color filters

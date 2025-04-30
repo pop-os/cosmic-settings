@@ -13,11 +13,13 @@ use cosmic_settings_page::{
     self as page, Insert,
     section::{self, Section},
 };
+use cosmic_settings_subscriptions::accessibility::{self, DBusRequest, DBusUpdate};
 use num_traits::FromPrimitive;
 use slotmap::SlotMap;
 
 pub mod magnifier;
 mod wayland;
+use tokio::sync::mpsc::UnboundedSender;
 pub use wayland::{AccessibilityEvent, AccessibilityRequest, ColorFilter};
 
 #[derive(Debug)]
@@ -35,12 +37,15 @@ pub struct Page {
     high_contrast: Option<bool>,
     daemon_config: CosmicSettingsDaemonConfig,
     daemon_helper: cosmic_config::Config,
+    dbus_sender: Option<UnboundedSender<DBusRequest>>,
+    reader_enabled: bool,
 }
 
 impl Default for Page {
     fn default() -> Self {
         let daemon_helper = CosmicSettingsDaemonConfig::config().unwrap();
         Page {
+            dbus_sender: None,
             entity: page::Entity::default(),
             magnifier_state: false,
             screen_inverted: false,
@@ -62,6 +67,7 @@ impl Default for Page {
             daemon_config: CosmicSettingsDaemonConfig::get_entry(&daemon_helper)
                 .unwrap_or_default(),
             daemon_helper,
+            reader_enabled: false,
         }
     }
 }
@@ -78,6 +84,8 @@ pub enum Message {
     SetScreenFilterSelection(ColorFilter),
     Surface(surface::Action),
     SetSoundMono(bool),
+    DBusUpdate(DBusUpdate),
+    ScreenReaderEnabled(bool),
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -152,6 +160,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
 
 pub fn vision() -> section::Section<crate::pages::Message> {
     crate::slab!(descriptions {
+        screen_reader = fl!("accessibility", "screen-reader");
         magnifier = fl!("magnifier");
         vision = fl!("accessibility", "vision");
         on = fl!("accessibility", "on");
@@ -171,6 +180,13 @@ pub fn vision() -> section::Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
+                .add(
+                    cosmic::Element::from(
+                        settings::item::builder(&descriptions[screen_reader])
+                            .toggler(page.reader_enabled, Message::ScreenReaderEnabled),
+                    )
+                    .map(crate::pages::Message::Accessibility),
+                )
                 .add({
                     let (magnifier_entity, _magnifier_info) = binder
                         .info
@@ -402,6 +418,28 @@ impl Page {
                     .set_mono_sound(&self.daemon_helper, active)
                 {
                     tracing::error!("{err:?}");
+                }
+            }
+            Message::DBusUpdate(update) => match update {
+                DBusUpdate::Error(err) => {
+                    tracing::error!("{err}");
+                    let _ = self.dbus_sender.take();
+                    self.reader_enabled = false;
+                }
+                DBusUpdate::Status(enabled) => {
+                    self.reader_enabled = enabled;
+                }
+                DBusUpdate::Init(enabled, tx) => {
+                    self.reader_enabled = enabled;
+                    self.dbus_sender = Some(tx);
+                }
+            },
+            Message::ScreenReaderEnabled(enabled) => {
+                if let Some(tx) = &self.dbus_sender {
+                    self.reader_enabled = enabled;
+                    let _ = tx.send(DBusRequest::Status(enabled));
+                } else {
+                    self.reader_enabled = false;
                 }
             }
         }
