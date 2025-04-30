@@ -42,6 +42,10 @@ use cosmic::{
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
+#[cfg(feature = "page-accessibility")]
+use cosmic_settings_subscriptions::accessibility::{
+    DBusRequest, DBusUpdate, subscription as a11y_subscription,
+};
 #[cfg(feature = "wayland")]
 use desktop::{
     dock,
@@ -339,6 +343,12 @@ impl cosmic::Application for SettingsApp {
                         pages::desktop::wallpaper::Message::UpdateState(update.config),
                     ))
                 }),
+            #[cfg(feature = "page-accessibility")]
+            a11y_subscription().map(|m| {
+                Message::PageMessage(pages::Message::Accessibility(
+                    pages::accessibility::Message::DBusUpdate(m),
+                ))
+            }),
         ])
     }
 
