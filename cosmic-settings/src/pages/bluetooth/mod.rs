@@ -38,20 +38,128 @@ enum Dialog {
 }
 
 #[derive(Default)]
-pub struct Page {
+pub struct Model {
     active: Active,
-    connection: Option<zbus::Connection>,
-    dialog: Option<Dialog>,
     adapters: HashMap<OwnedObjectPath, Adapter>,
     selected_adapter: Option<OwnedObjectPath>,
-    heading: String,
     devices: HashMap<OwnedObjectPath, Device>,
+    popup_device: Option<OwnedObjectPath>,
+    popup_setting: bool,
+}
+
+impl Model {
+    pub fn clear(&mut self) {
+        self.adapters.clear();
+        self.selected_adapter = None;
+        self.devices.clear();
+        self.popup_device = None;
+        self.popup_setting = false;
+    }
+
+    /// Updates known adapters, and selects an adapter if no adapter was selected.
+    pub fn set_adapters(
+        &mut self,
+        adapters: HashMap<OwnedObjectPath, Adapter>,
+    ) -> Option<OwnedObjectPath> {
+        self.adapters = adapters;
+        self.update_status();
+
+        if self.selected_adapter.is_none() && self.adapters.len() == 1 {
+            return self.adapters.keys().next().cloned();
+        }
+
+        None
+    }
+
+    fn update_status(&mut self) {
+        self.active = if let Some((_, adapter)) = self.get_selected_adapter() {
+            adapter.enabled
+        } else if self
+            .adapters
+            .values()
+            .any(|adapter| matches!(adapter.enabled, Active::Enabled | Active::Enabling))
+        {
+            Active::Enabled
+        } else {
+            Active::Disabled
+        }
+    }
+
+    // Updates an adapter, and initiates discovery if an existing adapter is enabled.
+    fn updated_adapter(
+        &mut self,
+        path: OwnedObjectPath,
+        update: Vec<AdapterUpdate>,
+        connection: zbus::Connection,
+    ) -> Option<impl Future<Output = Event> + Send + 'static> {
+        if let Some(existing) = self.adapters.get_mut(&path) {
+            tracing::debug!("Adapter {} updated: {update:#?}", existing.address);
+            existing.update(update);
+        }
+
+        self.update_status();
+
+        if let Some((path, existing)) = self.get_selected_adapter_mut() {
+            if existing.enabled == Active::Enabled && existing.scanning == Active::Disabled {
+                existing.scanning = Active::Enabling;
+                return Some(start_discovery(connection, path));
+            }
+        }
+
+        None
+    }
+
+    fn adapter_connected(&self, adapter_path: &OwnedObjectPath) -> bool {
+        self.devices
+            .iter()
+            .any(|(path, device)| path.starts_with(adapter_path.as_str()) && device.is_connected())
+    }
+
+    fn get_selected_adapter(&self) -> Option<(&'_ OwnedObjectPath, &'_ Adapter)> {
+        if let Some(iface) = &self.selected_adapter {
+            self.adapters.get_key_value(iface)
+        } else {
+            None
+        }
+    }
+
+    fn devices_for_adapter<'a>(
+        &'a self,
+        adapter_path: &'a OwnedObjectPath,
+    ) -> impl Iterator<Item = (&'a OwnedObjectPath, &'a Device)> {
+        self.devices.iter().filter_map(|(path, device)| {
+            if device.adapter.eq(adapter_path) {
+                Some((path, device))
+            } else {
+                None
+            }
+        })
+    }
+
+    fn get_selected_adapter_mut(&mut self) -> Option<(OwnedObjectPath, &'_ mut Adapter)> {
+        if let Some(path) = &self.selected_adapter {
+            self.adapters
+                .get_mut(path)
+                .map(|adapter| (path.to_owned(), adapter))
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct Page {
+    model: Model,
+
+    connection: Option<zbus::Connection>,
+    dialog: Option<Dialog>,
+    heading: String,
+
     // Set to true when the org.bluez dbus service is unknown.
     bluez_service_unknown: bool,
     service_is_enabled: bool,
     service_is_active: bool,
-    popup_setting: bool,
-    popup_device: Option<OwnedObjectPath>,
+
     subscription: Option<tokio::sync::oneshot::Sender<()>>,
 }
 
@@ -103,11 +211,7 @@ impl page::Page<crate::pages::Message> for Page {
             });
         }
 
-        self.adapters.clear();
-        self.selected_adapter = None;
-        self.devices.clear();
-        self.popup_device = None;
-        self.popup_setting = false;
+        self.model.clear();
 
         Task::none()
     }
@@ -230,12 +334,12 @@ impl Page {
                 Event::Ok => {}
 
                 Event::SetDevices(devices) => {
-                    self.devices = devices;
+                    self.model.devices = devices;
                 }
 
                 Event::DeviceFailed(path) => {
                     tracing::warn!("Failed operation on device {path}");
-                    if let Some(device) = self.devices.get_mut(&path) {
+                    if let Some(device) = self.model.devices.get_mut(&path) {
                         if matches!(device.enabled, Active::Disabled | Active::Disabling) {
                             return cosmic::Task::none();
                         }
@@ -248,13 +352,32 @@ impl Page {
                 }
 
                 Event::SetAdapters(adapters) => {
-                    self.adapters = adapters;
-                    self.update_status();
+                    let select_adapter = self.model.set_adapters(adapters);
 
-                    if self.selected_adapter.is_none() && self.adapters.len() == 1 {
-                        return cosmic::task::message(Message::SelectAdapter(
-                            self.adapters.keys().next().cloned(),
-                        ));
+                    if let Some((_, adapter)) = self.model.get_selected_adapter() {
+                        self.heading = fl!(
+                            "bluetooth",
+                            "status",
+                            aliases = format!("“{}”", adapter.alias)
+                        );
+                    } else {
+                        self.heading = fl!(
+                            "bluetooth",
+                            "status",
+                            aliases = self
+                                .model
+                                .adapters
+                                .values()
+                                .map(|adapter| format!("“{}”", adapter.alias))
+                                .collect::<HashSet<String>>()
+                                .into_iter()
+                                .collect::<Vec<String>>()
+                                .join(", ")
+                        );
+                    }
+
+                    if let Some(adapter) = select_adapter {
+                        return cosmic::task::message(Message::SelectAdapter(Some(adapter)));
                     }
                 }
 
@@ -266,15 +389,10 @@ impl Page {
 
                     self.update_status();
                     if let Some(connection) = self.connection.clone() {
-                        match self.get_selected_adapter_mut() {
-                            Some((path, existing))
-                                if existing.enabled == Active::Enabled
-                                    && existing.scanning == Active::Disabled =>
-                            {
-                                existing.scanning = Active::Enabling;
-                                return cosmic::task::future(start_discovery(connection, path));
-                            }
-                            _ => {}
+                        if let Some(discovery_future) =
+                            self.model.updated_adapter(path, update, connection)
+                        {
+                            return cosmic::task::future(discovery_future);
                         }
                     } else {
                         tracing::warn!("No DBus connection ready");
@@ -282,7 +400,7 @@ impl Page {
                 }
 
                 Event::UpdatedDevice(path, update) => {
-                    if let Some(existing) = self.devices.get_mut(&path) {
+                    if let Some(existing) = self.model.devices.get_mut(&path) {
                         tracing::debug!("Device {} updated", existing.address);
                         existing.update(update);
                     }
@@ -290,26 +408,26 @@ impl Page {
 
                 Event::RemovedAdapter(path) => {
                     tracing::debug!("Device {path} removed");
-                    self.adapters.remove(&path);
-                    if self.selected_adapter == Some(path) {
-                        self.selected_adapter = None;
+                    self.model.adapters.remove(&path);
+                    if self.model.selected_adapter == Some(path) {
+                        self.model.selected_adapter = None;
                     }
                 }
 
                 Event::RemovedDevice(path) => {
                     tracing::debug!("Device {path} removed");
-                    self.devices.remove(&path);
+                    self.model.devices.remove(&path);
                 }
 
                 Event::AddedDevice(path, device) => {
                     tracing::debug!("Device {} added", device.address);
-                    self.devices.insert(path, device);
+                    self.model.devices.insert(path, device);
                 }
 
                 Event::AddedAdapter(path, adapter) => {
                     tracing::debug!("Adapter {} added", adapter.address);
-                    self.adapters.insert(path.clone(), adapter);
-                    if self.selected_adapter.is_none() {
+                    self.model.adapters.insert(path.clone(), adapter);
+                    if self.model.selected_adapter.is_none() {
                         return cosmic::task::message(Message::SelectAdapter(Some(path)));
                     }
                 }
@@ -333,7 +451,7 @@ impl Page {
                             passkey,
                             response,
                         } => {
-                            let device = self.devices.get(&device).map_or_else(
+                            let device = self.model.devices.get(&device).map_or_else(
                                 || device.to_string(),
                                 |device| device.alias_or_addr().to_owned(),
                             );
@@ -376,7 +494,7 @@ impl Page {
 
             Message::SetActive(active) => {
                 if let Some(connection) = self.connection.clone() {
-                    if let Some((path, adapter)) = self.get_selected_adapter_mut() {
+                    if let Some((path, adapter)) = self.model.get_selected_adapter_mut() {
                         adapter.enabled = if active {
                             Active::Enabling
                         } else {
@@ -398,6 +516,7 @@ impl Page {
                         .chain(Task::done(Message::UpdateStatus.into()));
                     }
                     let tasks: Vec<Task<Message>> = self
+                        .model
                         .adapters
                         .iter_mut()
                         .map(|(path, adapter)| {
@@ -428,7 +547,7 @@ impl Page {
             }
 
             Message::UpdateStatus => {
-                self.update_status();
+                self.model.update_status();
             }
 
             Message::DBusConnect(connection) => {
@@ -477,24 +596,24 @@ impl Page {
             }
 
             Message::PopupDevice(popup) => {
-                self.popup_device = popup;
+                self.model.popup_device = popup;
             }
 
             Message::PopupSetting(popup) => {
-                self.popup_setting = popup;
+                self.model.popup_setting = popup;
             }
 
             Message::SelectAdapter(adapter_maybe) => {
                 tracing::debug!("Adapter selected: {adapter_maybe:?}");
-                self.selected_adapter = adapter_maybe;
-                self.update_status();
+                self.model.selected_adapter = adapter_maybe;
+                self.model.update_status();
                 let Some(connection) = self.connection.as_ref() else {
                     tracing::error!("No DBus connection ready");
                     return Task::none();
                 };
 
                 let connection = connection.clone();
-                if let Some((path, adapter)) = self.get_selected_adapter_mut() {
+                if let Some((path, adapter)) = self.model.get_selected_adapter_mut() {
                     let mut fut: Vec<Task<Message>> = vec![cosmic::task::future(get_devices(
                         connection.clone(),
                         path.clone(),
@@ -512,13 +631,13 @@ impl Page {
 
             Message::ForgetDevice(path) => {
                 tracing::debug!("Forgetting to device {path}");
-                self.popup_device = None;
+                self.model.popup_device = None;
                 if self.connection.is_none() {
                     return cosmic::Task::none();
                 }
                 if let Some(connection) = self.connection.as_ref() {
                     let connection = connection.clone();
-                    if let Some(device) = self.devices.get_mut(&path) {
+                    if let Some(device) = self.model.devices.get_mut(&path) {
                         device.enabled = Active::Disabling;
                         return cosmic::task::future(forget_device(connection, path.clone()));
                     }
@@ -534,7 +653,7 @@ impl Page {
                 }
                 if let Some(connection) = self.connection.as_ref() {
                     let connection = connection.clone();
-                    if let Some(device) = self.devices.get_mut(&path) {
+                    if let Some(device) = self.model.devices.get_mut(&path) {
                         if matches!(device.enabled, Active::Enabled | Active::Enabling) {
                             return cosmic::Task::none();
                         }
@@ -548,10 +667,10 @@ impl Page {
 
             Message::DisconnectDevice(path) => {
                 tracing::debug!("Disconnecting device {path}");
-                self.popup_device = None;
+                self.model.popup_device = None;
                 if let Some(connection) = self.connection.as_ref() {
                     let connection = connection.clone();
-                    if let Some(device) = self.devices.get_mut(&path) {
+                    if let Some(device) = self.model.devices.get_mut(&path) {
                         if matches!(device.enabled, Active::Disabled | Active::Disabling) {
                             return cosmic::Task::none();
                         }
@@ -600,73 +719,6 @@ impl Page {
 
         cosmic::Task::none()
     }
-
-    fn update_status(&mut self) {
-        if let Some((_, adapter)) = self.get_selected_adapter() {
-            self.heading = fl!(
-                "bluetooth",
-                "status",
-                aliases = format!("“{}”", adapter.alias)
-            );
-        } else {
-            self.heading = fl!(
-                "bluetooth",
-                "status",
-                aliases = self
-                    .adapters
-                    .values()
-                    .map(|adapter| format!("“{}”", adapter.alias))
-                    .collect::<HashSet<String>>()
-                    .into_iter()
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            );
-        }
-        self.active = if let Some((_, adapter)) = self.get_selected_adapter() {
-            adapter.enabled
-        } else if self
-            .adapters
-            .values()
-            .any(|adapter| matches!(adapter.enabled, Active::Enabled | Active::Enabling))
-        {
-            Active::Enabled
-        } else {
-            Active::Disabled
-        }
-    }
-    fn adapter_connected(&self, adapter_path: &OwnedObjectPath) -> bool {
-        self.devices
-            .iter()
-            .any(|(path, device)| path.starts_with(adapter_path.as_str()) && device.is_connected())
-    }
-    fn get_selected_adapter(&self) -> Option<(&'_ OwnedObjectPath, &'_ Adapter)> {
-        if let Some(iface) = &self.selected_adapter {
-            self.adapters.get_key_value(iface)
-        } else {
-            None
-        }
-    }
-    fn devices_for_adapter<'a>(
-        &'a self,
-        adapter_path: &'a OwnedObjectPath,
-    ) -> impl Iterator<Item = (&'a OwnedObjectPath, &'a Device)> {
-        self.devices.iter().filter_map(|(path, device)| {
-            if device.adapter.eq(adapter_path) {
-                Some((path, device))
-            } else {
-                None
-            }
-        })
-    }
-    fn get_selected_adapter_mut(&mut self) -> Option<(OwnedObjectPath, &'_ mut Adapter)> {
-        if let Some(path) = &self.selected_adapter {
-            self.adapters
-                .get_mut(path)
-                .map(|adapter| (path.to_owned(), adapter))
-        } else {
-            None
-        }
-    }
 }
 
 fn status() -> Section<crate::pages::Message> {
@@ -708,8 +760,9 @@ fn status() -> Section<crate::pages::Message> {
             }
 
             let status = page
+                .model
                 .get_selected_adapter()
-                .map_or(page.active, |(_, adapter)| adapter.enabled);
+                .map_or(page.model.active, |(_, adapter)| adapter.enabled);
 
             let mut bluetooth_toggle = settings::item::builder(&descriptions[bluetooth]);
             if matches!(status, Active::Enabling | Active::Enabled) {
@@ -754,23 +807,26 @@ fn connected_devices() -> Section<crate::pages::Message> {
         .title(fl!("bluetooth-paired"))
         .descriptions(descriptions)
         .show_while::<Page>(|page| {
-            page.selected_adapter.as_ref().map(|adapter| {
-                page.devices_for_adapter(adapter)
+            page.model.selected_adapter.as_ref().map(|adapter| {
+                page.model
+                    .devices_for_adapter(adapter)
                     .any(|(_, device)| device.paired)
             }) == Some(true)
-                && page.active != Active::Disabled
+                && page.model.active != Active::Disabled
         })
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let section = settings::section().title(&section.title);
 
-            page.devices_for_adapter(page.selected_adapter.as_ref().unwrap())
+            page.model
+                .devices_for_adapter(page.model.selected_adapter.as_ref().unwrap())
                 .filter_map(|(path, device)| {
                     if !device.paired {
                         return None;
                     }
 
                     let device_menu: Element<_> = if page
+                        .model
                         .popup_device
                         .as_deref()
                         .map_or(false, |p| path.as_str() == p.as_str())
@@ -854,17 +910,19 @@ fn available_devices() -> Section<crate::pages::Message> {
         .title(fl!("bluetooth-available"))
         .descriptions(descriptions)
         .show_while::<Page>(|page| {
-            page.selected_adapter.as_ref().map(|adapter| {
-                page.devices_for_adapter(adapter)
+            page.model.selected_adapter.as_ref().map(|adapter| {
+                page.model
+                    .devices_for_adapter(adapter)
                     .any(|(_, device)| !device.paired)
             }) == Some(true)
-                && page.active != Active::Disabled
+                && page.model.active != Active::Disabled
         })
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let section = settings::section().title(&section.title);
 
-            page.devices_for_adapter(page.selected_adapter.as_ref().unwrap())
+            page.model
+                .devices_for_adapter(page.model.selected_adapter.as_ref().unwrap())
                 .filter_map(|(path, device)| {
                     if device.paired {
                         return None::<Element<'_, Message>>;
@@ -907,12 +965,15 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("bluetooth-adapters"))
         .descriptions(descriptions)
-        .show_while::<Page>(|page| page.adapters.len() > 1 && page.selected_adapter.is_none())
+        .show_while::<Page>(|page| {
+            page.model.adapters.len() > 1 && page.model.selected_adapter.is_none()
+        })
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let section = settings::section().title(&section.title);
 
-            page.adapters
+            page.model
+                .adapters
                 .iter()
                 .map(|(path, adapter)| {
                     let mut items = vec![
