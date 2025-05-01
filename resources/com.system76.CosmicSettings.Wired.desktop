@@ -1,9 +1,11 @@
 [Desktop Entry]
 Name=Wired
+Name[zh_CN]=有线连接
 Name[pl]=Połączenia przewodowe
 Name[hu]=Vezetékes kapcsolatok
 Name[pt]=Rede Cabeada
 Comment=Wired connections and connection profiles.
+Comment[zh_CN]=有线连接和配置文件
 Comment[pl]=Połączenia przewodowe i profile połączeń.
 Comment[hu]=Vezetékes kapcsolatok és kapcsolódási profilok.
 Comment[pt]=Conexões de rede cabeada e perfis de conexão.

@@ -1,9 +1,11 @@
 [Desktop Entry]
 Name=Wallpaper
+Name[zh_CN]=壁纸
 Name[pl]=Tapeta
 Name[hu]=Háttérkép
 Name[pt]=Papel de Parede
 Comment=Wallpaper images, colors, and slideshow options.
+Comment[zh_CN]=壁纸图片、颜色和幻灯片选项
 Comment[pl]=Obraz tła, kolory i opcje pokazu slajdów.
 Comment[hu]=Háttérképek, színek és diavetítési beállítások.
 Comment[pt]=Imagens de plano de fundo, cores, e opções de exibição em slide.
