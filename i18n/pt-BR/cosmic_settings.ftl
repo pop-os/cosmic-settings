@@ -105,7 +105,9 @@ online-accounts = Contas Online
 
 # Bluetooth
 
+activate = Ativar
 confirm = Confirmar
+enable = Habilitar
 
 bluetooth = Bluetooth
     .desc = Gerenciamento de Dispositivos Bluetooth
@@ -117,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Desconectar
     .forget = Esquecer
     .dbus-error = Ocorreu um erro ao interagir com o DBus: { $why }
+    .disabled = O serviço de bluetooth está desabilitado
+    .inactive = O serviço de bluetooth não está ativo
+    .unknown = O serviço de bluetooth não pôde ser ativado. O pacote "bluez" está instalado?
 
 bluetooth-paired = Dispositivos Conectados Anteriormente
     .connect = Conectar
@@ -136,6 +141,7 @@ accessibility = Acessibilidade
     .on = Ligado
     .off = Desligado
     .unavailable = Indisponível
+    .screen-reader = Leitor de tela
     .high-contrast = Modo de alto contraste
     .invert-colors = Inverter cores
     .color-filters = Filtros de cores
@@ -323,7 +329,7 @@ panel-style = Estilo
     .background-opacity = Opacidade do fundo
 
 panel-applets = Configuração
-    .dock-desc = Configurar miniaplicativos do dock
+    .dock-desc = Configurar miniaplicativos da dock
     .desc = Configurar miniaplicativos do painel
 
 panel-missing = Configuração do painel está ausente
@@ -394,14 +400,14 @@ color = Cor
     .sidebar = Perfis de cor
     .temperature = Temperatura de cor
 
-display = Monitores
+display = Telas
     .desc = Gerencie monitores, altere gráficos, e luz noturna
     .arrangement = Organização dos Monitores
     .arrangement-desc = Arraste os monitores para rearranjá-los.
     .enable = Ativar monitor
     .external = { $size } { $output } Monitor Externo
     .laptop = { $size } Tela do notebook
-    .options = Opções do Monitor
+    .options = Opções de Tela
     .refresh-rate = Taxa de atualização
     .resolution = Resolução
     .scale = Escala
