@@ -220,7 +220,7 @@ impl page::Page<crate::pages::Message> for Page {
             return Task::none();
         }
 
-        let current_folder = self.config.current_folder().to_owned();
+        let current_folder = self.config.current_folder();
 
         let (task, on_enter_handle) = Task::future(async move {
             let (service_config, displays) = wallpaper::config().await;
@@ -490,9 +490,7 @@ impl Page {
 
         let entry = match self.selection.active {
             Choice::Slideshow => {
-                match self
-                    .config_wallpaper_entry(output, self.config.current_folder().to_path_buf())
-                {
+                match self.config_wallpaper_entry(output, self.config.current_folder()) {
                     Some(entry) => entry,
                     None => return,
                 }
@@ -588,7 +586,7 @@ impl Page {
                 if self.config.current_folder.is_some() {
                     let _ = self.config.set_current_folder(None);
                     task = cosmic::task::future(async move {
-                        let folder = change_folder(Config::default_folder().to_owned()).await;
+                        let folder = change_folder(Config::default_folder()).await;
                         Message::ChangeFolder(folder)
                     });
                 } else {
@@ -968,7 +966,7 @@ impl Page {
                 if let Choice::Wallpaper(_) | Choice::Slideshow = self.selection.active {
                     let folder = self.config.current_folder();
                     for (id, recent) in self.config.recent_folders().iter().enumerate() {
-                        if recent == folder {
+                        if &folder == recent {
                             self.categories.selected = Some(Category::RecentFolder(id));
                         }
                     }
