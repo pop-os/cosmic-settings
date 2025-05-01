@@ -1,9 +1,11 @@
 [Desktop Entry]
 Name=Date & Time
+Name[zh_CN]=日期和时间
 Name[hu]=Dátum és idő
 Name[pl]=Data i godzina
 Name[pt]=Data e Hora
 Comment=Time zone, automatic clock settings, and time formatting.
+Comment[zh_CN]=时区，自动时钟设置和时间格式
 Comment[pl]=Strefy czasowe, automatyczna konfiguracja zegara i format wyświetlania czasu.
 Comment[hu]=Időzóna, automatikus órabeállítások és időformátum.
 Comment[pt]=Fuso horário, hora automática e formatação.

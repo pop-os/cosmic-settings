@@ -1,9 +1,11 @@
 [Desktop Entry]
 Name=Panel
+Name[zh_CN]=面板
 Name[pl]=Panel
 Name[hu]=Panel
 Name[pt]=Painel
 Comment=Primary system bar for menus and applets.
+Comment[zh_CN]=主系统栏，用于菜单和小部件。
 Comment[hu]=Fő rendszersáv menükhöz és kisalkalmazásokhoz.
 Comment[pt]=Barra superior com controles e menus.
 Type=Settings

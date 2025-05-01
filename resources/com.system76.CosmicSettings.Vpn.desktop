@@ -1,9 +1,11 @@
 [Desktop Entry]
 Name=VPN
+Name[zh_CN]=VPN
 Name[pl]=VPN
 Name[hu]=VPN
 Name[pt]=VPN
 Comment=VPN connections and connection profiles.
+Comment[zh_CN]=VPN连接和配置文件
 Comment[pl]=Połączenia VPN i profile połączeń.
 Comment[hu]=VPN-kapcsolatok és kapcsolódási profilok.
 Comment[pt]=Conexões VPN e perfis de conexão.
