@@ -43,7 +43,7 @@ debug = true
 
 [profile.release]
 opt-level = "s"
-lto = "thin"
+lto = "off"
 
 # [patch.'https://github.com/smithay/client-toolkit/']
 # smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }
