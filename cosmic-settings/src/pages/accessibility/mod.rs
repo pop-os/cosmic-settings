@@ -14,13 +14,13 @@ use cosmic_settings_page::{
     section::{self, Section},
 };
 use cosmic_settings_subscriptions::accessibility::{self, DBusRequest, DBusUpdate};
+use cosmic_settings_subscriptions::cosmic_a11y_manager;
 use num_traits::FromPrimitive;
 use slotmap::SlotMap;
 
 pub mod magnifier;
-mod wayland;
+pub use cosmic_a11y_manager::{AccessibilityEvent, AccessibilityRequest, ColorFilter};
 use tokio::sync::mpsc::UnboundedSender;
-pub use wayland::{AccessibilityEvent, AccessibilityRequest, ColorFilter};
 
 #[derive(Debug)]
 pub struct Page {
@@ -32,7 +32,7 @@ pub struct Page {
     screen_filter_selections: Vec<String>,
 
     wayland_available: Option<u32>,
-    wayland_thread: Option<wayland::Sender>,
+    wayland_thread: Option<cosmic_a11y_manager::Sender>,
     theme: Box<cosmic::cosmic_theme::Theme>,
     high_contrast: Option<bool>,
     daemon_config: CosmicSettingsDaemonConfig,
@@ -74,7 +74,7 @@ impl Default for Page {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Event(wayland::AccessibilityEvent),
+    Event(cosmic_a11y_manager::AccessibilityEvent),
     ProtocolUnavailable,
     Return,
     HighContrast(bool),
@@ -110,7 +110,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.wayland_thread.is_none() {
-            match wayland::spawn_wayland_connection() {
+            match cosmic_a11y_manager::spawn_wayland_connection() {
                 Ok((tx, mut rx)) => {
                     self.wayland_thread = Some(tx);
 
@@ -385,7 +385,7 @@ impl Page {
                 if let Some(sender) = self.wayland_thread.as_ref() {
                     let _ = sender.send(AccessibilityRequest::ScreenFilter {
                         inverted,
-                        filter: Some(wayland::ColorFilter::Unknown),
+                        filter: Some(cosmic_a11y_manager::ColorFilter::Unknown),
                     });
                 }
             }
