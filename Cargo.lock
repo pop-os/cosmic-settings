@@ -1792,19 +1792,23 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-subscriptions"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#650f0bc1dbfdce2e541c104674257d1621b2de4c"
+source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#6c36b82d5f7264f3b06ca83e1b2d01c9f979d104"
 dependencies = [
  "bluez-zbus",
  "cosmic-dbus-a11y",
  "cosmic-dbus-networkmanager",
+ "cosmic-protocols",
  "futures",
  "iced_futures",
  "itertools 0.14.0",
  "libpulse-binding",
  "log",
+ "num-derive",
+ "num-traits",
  "pipewire",
  "rustix 1.0.5",
  "secure-string",
+ "smithay-client-toolkit",
  "thiserror 2.0.12",
  "tokio",
  "tokio-stream",
