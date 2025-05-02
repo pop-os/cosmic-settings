@@ -93,7 +93,14 @@ pwhash = "1"
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
 #TODO: only select features as needed
-features = ["cosmic_a11y_manager", "accessibility", "network_manager", "pipewire", "pulse", "bluetooth"]
+features = [
+    "cosmic_a11y_manager",
+    "accessibility",
+    "network_manager",
+    "pipewire",
+    "pulse",
+    "bluetooth",
+]
 optional = true
 
 [dependencies.icu]
