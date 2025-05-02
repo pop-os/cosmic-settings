@@ -153,6 +153,7 @@ accessibility = Tillgänlighet
     .on = På
     .off = Av
     .unavailable = Inte tillgänglig
+    .screen-reader = Skärmläsare
     .high-contrast = Högkontrastläge
     .invert-colors = Invertera färger
     .color-filters = Färgfilter
@@ -172,7 +173,7 @@ magnifier = Förstoringsglas
                 {$zoom_out} för att zooma ut,
         }
         Super + scrolla med musen
-    .scroll_controls = Aktivera "Super + Scroll" (via mus eller pekplatta) genvägar
+    .scroll_controls = Aktivera mus eller pekplattazoom med Super + Scroll
     .show_overlay = Visa förstoringsglas överlägget
     .increment = Zoom inkrement
     .signin = Starta förstoringsglaset vid inloggning
@@ -202,8 +203,7 @@ desktop-panel-options = Skrivbord och Panel
 desktop-panels-and-applets = Skrivbordspaneler och applets
 
 dock = Docka
-    .desc = Panel med fästa applikationer.
-
+    .desc = En valfri stapel för program och applets.
 hot-corner = Het hörn
     .top-left-corner = Aktivera det övre vänstra hörnet för arbetsytor
 
@@ -225,8 +225,7 @@ focus-navigation = Fokusnavigering
 ## Skrivbord: Panel
 
 panel = Panel
-    .desc = Översta fältet med skrivbordskontroller och menyer.
-
+    .desc = Primärt systemfält för menyer och applets.
 add = Lägg till
 add-applet = Lägg till Applet
 all = Alla
@@ -367,10 +366,12 @@ network-and-wireless = Nätverksanslutningar
 no-networks = Inga nätverk har hittats.
 no-vpn = Inga VPN-anslutningar tillgängliga.
 password = Lösenord
+password-confirm = Bekräfta lösenord
 remove = Ta bort
 settings = Inställningar
 username = Användarnamn
 visible-networks = Tillgängliga nätverk
+identity = Identitet
 
 ## Nätverksanslutningar: Beskrivningar
 
@@ -469,7 +470,7 @@ time-format = Datum & tidsformat
     .twenty-four = 24-timmars tid
     .show-seconds = Visa sekunder
     .first = Första dagen på veckan
-    .show-date = Visa datum på övre panel.
+    .show-date = Visa datum i tidsappleten
     .friday = Fredag
     .saturday = Lördag
     .sunday = Söndag
@@ -505,6 +506,8 @@ sound-output = Utgång
     .level = Utgångsnivå
     .config = Konfiguration
     .balance = Balans
+    .left = Vänster
+    .right = Höger
 
 sound-input = Ingång
     .volume = Ingångsvolym
@@ -565,8 +568,16 @@ administrator = Administratör
     .desc = Administratörer kan ändra inställningar för alla användare, lägga till och ta bort andra användare.
 
 add-user = Lägg till användare
+change-password = Ändra lösenord
 remove-user = Ta bort användare
 full-name = Fullständigt namn
+invalid-username = Ogiltigt användarnamn.
+ 
+
+password-mismatch = Lösenord och bekräftelse måste matcha.
+ 
+
+save = Spara
 
 users = Användare
     .desc = Autentisering och login, låsskärm.
@@ -679,6 +690,7 @@ keyboard-shortcuts = Tangentbordsgenvägar
     .desc = Visa och anpassa genvägar
 
 add-keybinding = Lägg till tangentbindning
+add-another-keybinding = Lägg till ytterligare en tangentbindning
 cancel = Avbryt
 command = Kommando
 custom = Anpassat
@@ -872,10 +884,14 @@ legacy-app-global-shortcuts = Globala genvägar i X11 program
 .mouse = Musknappshändelser i X11 program
 
 legacy-app-scaling = X11 fönstersystem programsskalning
-.scaled-by-system = Skala alla X11 program
-.system-description = X11-program kommer att se suddiga ut på HiDPI-skärmar.
-.scaled-natively = Rendera X11-program med inbyggd upplösning
-.native-description = X11-program som inte stöder skalning kommer att vara små när HiDPI-skärmar används. Aktivera för spel för att använda hela skärmens upplösning.
+.scaled-gaming = Optimera för spel och helskärmsprogram
+    .gaming-description = X11-program kan verka något större/mindre jämfört med Wayland-program.
+    .scaled-applications = Optimera för program
+    .applications-description = Spel och helskärms X11-program kanske inte matchar din skärmupplösning.
+    .scaled-compatibility = Maximalt kompatibilitetsläge
+    .compatibility-description = X11 program kan se suddiga ut på HiDPI-skärmar.
+    .preferred-display = Föredragen skärm för spel och helskärms X11-program
+    .no-display = <Ingen>
 
 ## System: Uppstartsprogram
 
