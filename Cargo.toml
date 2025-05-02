@@ -49,8 +49,8 @@ lto = "thin"
 # smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }
 
 [patch.'https://github.com/pop-os/cosmic-protocols']
-cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "67df697" }
-cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "67df697" }
+cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "1425bd4" }
+cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "1425bd4" }
 
 # [patch.'https://github.com/pop-os/cosmic-settings-daemon']
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }

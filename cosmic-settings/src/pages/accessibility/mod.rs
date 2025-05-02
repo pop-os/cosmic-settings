@@ -110,7 +110,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.wayland_thread.is_none() {
-            match cosmic_a11y_manager::spawn_wayland_connection() {
+            match cosmic_a11y_manager::spawn_wayland_connection(1) {
                 Ok((tx, mut rx)) => {
                     self.wayland_thread = Some(tx);
 
