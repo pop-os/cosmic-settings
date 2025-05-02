@@ -1,9 +1,11 @@
 [Desktop Entry]
 Name=Users
+Name[zh_CN]=用户
 Name[pl]=Użytkownicy
 Name[hu]=Felhasználók
 Name[pt]=Usuários
 Comment=Authentication and user accounts.
+Comment[zh_CN]=身份验证和用户账户
 Comment[pl]=Uwierzytelnianie i konta użytkowników.
 Comment[hu]=Hitelesítés és felhasználói fiókok.
 Comment[pt]=Autenticação e contas de usuário.

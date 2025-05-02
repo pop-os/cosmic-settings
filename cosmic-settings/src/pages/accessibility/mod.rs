@@ -13,12 +13,14 @@ use cosmic_settings_page::{
     self as page, Insert,
     section::{self, Section},
 };
+use cosmic_settings_subscriptions::accessibility::{self, DBusRequest, DBusUpdate};
+use cosmic_settings_subscriptions::cosmic_a11y_manager;
 use num_traits::FromPrimitive;
 use slotmap::SlotMap;
 
 pub mod magnifier;
-mod wayland;
-pub use wayland::{AccessibilityEvent, AccessibilityRequest, ColorFilter};
+pub use cosmic_a11y_manager::{AccessibilityEvent, AccessibilityRequest, ColorFilter};
+use tokio::sync::mpsc::UnboundedSender;
 
 #[derive(Debug)]
 pub struct Page {
@@ -30,17 +32,20 @@ pub struct Page {
     screen_filter_selections: Vec<String>,
 
     wayland_available: Option<u32>,
-    wayland_thread: Option<wayland::Sender>,
+    wayland_thread: Option<cosmic_a11y_manager::Sender>,
     theme: Box<cosmic::cosmic_theme::Theme>,
     high_contrast: Option<bool>,
     daemon_config: CosmicSettingsDaemonConfig,
     daemon_helper: cosmic_config::Config,
+    dbus_sender: Option<UnboundedSender<DBusRequest>>,
+    reader_enabled: bool,
 }
 
 impl Default for Page {
     fn default() -> Self {
         let daemon_helper = CosmicSettingsDaemonConfig::config().unwrap();
         Page {
+            dbus_sender: None,
             entity: page::Entity::default(),
             magnifier_state: false,
             screen_inverted: false,
@@ -62,13 +67,14 @@ impl Default for Page {
             daemon_config: CosmicSettingsDaemonConfig::get_entry(&daemon_helper)
                 .unwrap_or_default(),
             daemon_helper,
+            reader_enabled: false,
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Event(wayland::AccessibilityEvent),
+    Event(cosmic_a11y_manager::AccessibilityEvent),
     ProtocolUnavailable,
     Return,
     HighContrast(bool),
@@ -78,6 +84,8 @@ pub enum Message {
     SetScreenFilterSelection(ColorFilter),
     Surface(surface::Action),
     SetSoundMono(bool),
+    DBusUpdate(DBusUpdate),
+    ScreenReaderEnabled(bool),
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -102,7 +110,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.wayland_thread.is_none() {
-            match wayland::spawn_wayland_connection() {
+            match cosmic_a11y_manager::spawn_wayland_connection() {
                 Ok((tx, mut rx)) => {
                     self.wayland_thread = Some(tx);
 
@@ -152,6 +160,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
 
 pub fn vision() -> section::Section<crate::pages::Message> {
     crate::slab!(descriptions {
+        screen_reader = fl!("accessibility", "screen-reader");
         magnifier = fl!("magnifier");
         vision = fl!("accessibility", "vision");
         on = fl!("accessibility", "on");
@@ -171,6 +180,13 @@ pub fn vision() -> section::Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
+                .add(
+                    cosmic::Element::from(
+                        settings::item::builder(&descriptions[screen_reader])
+                            .toggler(page.reader_enabled, Message::ScreenReaderEnabled),
+                    )
+                    .map(crate::pages::Message::Accessibility),
+                )
                 .add({
                     let (magnifier_entity, _magnifier_info) = binder
                         .info
@@ -369,7 +385,7 @@ impl Page {
                 if let Some(sender) = self.wayland_thread.as_ref() {
                     let _ = sender.send(AccessibilityRequest::ScreenFilter {
                         inverted,
-                        filter: Some(wayland::ColorFilter::Unknown),
+                        filter: Some(cosmic_a11y_manager::ColorFilter::Unknown),
                     });
                 }
             }
@@ -402,6 +418,28 @@ impl Page {
                     .set_mono_sound(&self.daemon_helper, active)
                 {
                     tracing::error!("{err:?}");
+                }
+            }
+            Message::DBusUpdate(update) => match update {
+                DBusUpdate::Error(err) => {
+                    tracing::error!("{err}");
+                    let _ = self.dbus_sender.take();
+                    self.reader_enabled = false;
+                }
+                DBusUpdate::Status(enabled) => {
+                    self.reader_enabled = enabled;
+                }
+                DBusUpdate::Init(enabled, tx) => {
+                    self.reader_enabled = enabled;
+                    self.dbus_sender = Some(tx);
+                }
+            },
+            Message::ScreenReaderEnabled(enabled) => {
+                if let Some(tx) = &self.dbus_sender {
+                    self.reader_enabled = enabled;
+                    let _ = tx.send(DBusRequest::Status(enabled));
+                } else {
+                    self.reader_enabled = false;
                 }
             }
         }

@@ -1551,6 +1551,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmic-dbus-a11y"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
+dependencies = [
+ "zbus 4.4.0",
+]
+
+[[package]]
 name = "cosmic-dbus-networkmanager"
 version = "0.1.0"
 source = "git+https://github.com/pop-os/dbus-settings-bindings#0eee63a96c8b1f6555ca797b5c12545c372b1a1b"
@@ -1784,18 +1792,23 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-subscriptions"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#752429e70dc5a06f28922ce159afe52002683088"
+source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#6c36b82d5f7264f3b06ca83e1b2d01c9f979d104"
 dependencies = [
  "bluez-zbus",
+ "cosmic-dbus-a11y",
  "cosmic-dbus-networkmanager",
+ "cosmic-protocols",
  "futures",
  "iced_futures",
  "itertools 0.14.0",
  "libpulse-binding",
  "log",
+ "num-derive",
+ "num-traits",
  "pipewire",
  "rustix 1.0.5",
  "secure-string",
+ "smithay-client-toolkit",
  "thiserror 2.0.12",
  "tokio",
  "tokio-stream",
@@ -3268,7 +3281,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#7aadfe6ba627236173405144c4deb4bdcff8208c"
+source = "git+https://github.com/pop-os/libcosmic#264b9d83678e2125b51f9dc5de964d6a804d633e"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -3277,7 +3290,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0-dev"
-source = "git+https://github.com/pop-os/libcosmic#7aadfe6ba627236173405144c4deb4bdcff8208c"
+source = "git+https://github.com/pop-os/libcosmic#264b9d83678e2125b51f9dc5de964d6a804d633e"
 dependencies = [
  "bitflags 2.9.0",
  "bytes",

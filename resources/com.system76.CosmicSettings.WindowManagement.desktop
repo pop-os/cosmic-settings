@@ -1,9 +1,11 @@
 [Desktop Entry]
 Name=Window management
+Name[zh_CN]=窗口管理
 Name[pl]=Zarządzanie oknami
 Name[hu]=Ablakkezelés
 Name[pt]=Gerenciamento de Janelas
 Comment=Super key action, window control options, and additional window tiling options.
+Comment[zh_CN]=Super键操作、窗口控制选项和额外的窗口平铺选项
 Comment[pl]=Działanie klawisza Super, opcje kontroli oknami i dodatkowe ustawienia kafelkowania okien.
 Comment[hu]=Super billentyű funkció, ablakkezelési és csempézési beállítások.
 Comment[pt]=Ação da tecla Super, opções de controle de janela e opções adicionais de janelas em mosaico.

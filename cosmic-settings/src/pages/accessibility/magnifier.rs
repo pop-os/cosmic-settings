@@ -18,7 +18,7 @@ use cosmic_settings_page::{
 use slotmap::SlotMap;
 use tracing::error;
 
-use super::{AccessibilityEvent, AccessibilityRequest, wayland};
+use super::{AccessibilityEvent, AccessibilityRequest, cosmic_a11y_manager as wayland};
 
 #[derive(Debug)]
 pub struct Page {
