@@ -30,10 +30,12 @@ network-and-wireless = Netzwerk & Kabellos
 no-networks = Es wurden keine Netzwerke gefunden.
 no-vpn = Keine VPN-Verbindungen verfügbar.
 password = Passwort
+password-confirm = Passwort bestätigen
 remove = Entfernen
 settings = Einstellungen
 username = Benutzername
 visible-networks = Sichtbare Netzwerke
+identity = Identität
 
 auth-dialog = Authentifizierung erforderlich
     .vpn-description = Gib den vom VPN-Dienst geforderten Benutzernamen und das Passwort ein.
@@ -103,7 +105,9 @@ online-accounts = Online-Konten
 
 # Bluetooth
 
+activate = Einschalten
 confirm = Bestätigen
+enable = Aktivieren
 
 bluetooth = Bluetooth
     .desc = Bluetooth-Geräte verwalten
@@ -115,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Trennen
     .forget = Vergessen
     .dbus-error = Bei der Interaktion mit DBus ist ein Fehler aufgetreten: { $why }
+    .disabled = Bluetooth Service ist deaktiviert
+    .inactive = Bluetooth Service nicht aktiv
+    .unknown = Bluetooth Service konnte nicht aktiviert werden. Is bluez installiert?
 
 bluetooth-paired = Zuvor verbundene Geräte
     .connect = Verbinden
@@ -126,6 +133,49 @@ bluetooth-confirm-pin = Bluetooth-PIN bestätigen
 bluetooth-available = Geräte in der Nähe
 
 bluetooth-adapters = Bluetooth-Adapter
+
+## Accessibility
+
+accessibility = Accessibility
+    .vision = Sehen
+    .on = Ein
+    .off = Aus
+    .unavailable = Nicht verfübar
+    .screen-reader = Bildschirm Vorleser
+    .high-contrast = Erweiterter Kontrast Modus
+    .invert-colors = Farben umkehren
+    .color-filters = Farbfilter
+
+hearing = Hören
+    .mono = Klang in Mono abspielen
+
+default = Default
+magnifier = Lupe
+    .controls = Or use these shortcuts: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} to zoom in,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} to zoom out,
+        }
+        Super + scroll with your mouse
+    .scroll_controls = Aktiviere Maus oder Toucpad Zoom mit Super + Scrollen
+    .show_overlay = Zeige die Lupen Ebene 
+    .increment = Zoom Stufen
+    .signin = Starte Lupe beim Login
+    .applet = Schalte Lupe vom Panel Eintrag An/Aus
+    .movement = Zeige gezoomte Ansicht
+    .continuous = Lupe folgt dem Mauszeiger
+    .onedge = Wenn Zeiger ein Ende erreicht
+    .centered = To keep pointer centered
+color-filter = Color filter type
+    .unknown = Unbekannter Filter aktiv
+    .greyscale = Graustufen
+    .deuteranopia = Grün/Rot (Grün Einschränkung, Deuteranopia)
+    .protanopia = Rot/Grün (Rot Einschränkung, Protanopia)
+    .tritanopia = Blau/Gelb (Blau Einschränkung, Tritanopia)
 
 ## Desktop
 
