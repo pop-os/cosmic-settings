@@ -28,12 +28,14 @@ forget = Unut
 known-networks = Bilinen Ağlar
 network-and-wireless = Ağ & Kablosuz
 no-networks = Herhangi bir ağ bulunamadı.
-no-vpn = Herhangi bir VPN bağlantısı mevcut değil.
+no-vpn = Herhangi bir VPN bağlantısı bulunmamaktadır.
 password = Parola
+password-confirm = Parolayı Onayla
 remove = Kaldır
 settings = Ayarlar
 username = Kullanıcı Adı
 visible-networks = Görünen Ağlar
+identity = Kimlik
 
 auth-dialog = Kimlik Doğrulama Gerekli
     .vpn-description = VPN hizmeti tarafından istenilen kullanıcı adı ve parolayı girin.
@@ -103,7 +105,9 @@ online-accounts = Çevrim İçi Hesaplar
 
 # Bluetooth
 
+activate = Aktifleştir
 confirm = Onayla
+enable = Etkinleştir
 
 bluetooth = Bluetooth
     .desc = Bluetooth aygıtlarını yönet
@@ -115,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Bağlantıyı kes
     .forget = Unut
     .dbus-error = DBus ile etkileşirken bir hata meydana geldi: { $why }
+    .disabled = Bluetooth hizmeti devre dışı
+    .inactive = Bluetooth hizmeti inaktif
+    .unknown = Bluetooth hizmeti aktifleştirilemedi. bluez kurulu mu?
 
 bluetooth-paired = Önceden Bağlanılan Aygıtlar
     .connect = Bağlan
@@ -135,6 +142,14 @@ accessibility = Erişilebilirlik
     .off = Kapalı
     .unavailable = Mevcut değil
     .high-contrast = Yüksek kontrast modu
+    .invert-colors = Renkleri Ters Çevir
+    .color-filters = Renk filtreleri
+
+
+hearing = Duyma
+    .mono = Stereo sesi mono olarak çal
+
+default = Varsayılan
 magnifier = Büyüteç
     .controls = Veya bu kısayolları kullanın: { $zoom_in ->
              [zero] {""}
@@ -146,6 +161,8 @@ magnifier = Büyüteç
                 Uzaklaştırmak için {$zoom_out},
         }
         Fareniz ile Super + fare tekeri
+    .scroll_controls = Super + Fare tekeri kullanarak fare veya dokunmatik yüzey ile kaydırmayı etkinleştir.
+    .show_overlay = Büyüteç Overlay'ini göster.
     .increment = Yakınlaştırma miktarı
     .signin = Büyüteci açılışta başlat
     .applet = Büyüteci panel bileşeninden açıp kapat
@@ -153,6 +170,12 @@ magnifier = Büyüteç
     .continuous = İmleç ile beraber
     .onedge = İmleç kenara ulaştığında
     .centered = İmleci merkezde tutarak
+color-filter = Renk filtresi biçimi
+    .unknown = Bilinmeyen Filtre etkin
+    .greyscale = Gri tonlama
+    .deuteranopia = Yeşil/Kırmızı (yeşil zayıflığı, Döteranopi)
+    .protanopia = Kırmızı/Yeşil (kırmızı zayıflığı, Protanopi)
+    .tritanopia = Blue/Yellow (mavi zayıflığı, Tritanopi)
 
 ## Desktop
 
@@ -428,12 +451,6 @@ dialog = Diyalog
     .change-prompt = { $time } saniye içinde önceki görüntü ayarlarına dönülecek.
     .revert-settings = Ayarları Geri Al
 
-legacy-app-scaling = X11 Pencere Sistemi Uygulama Ölçeği
-    .scaled-by-system = Tüm X11 Uygulamalarını ölçekle
-    .system-description = X11 Uygulamaları HiDPI ekranlarda bulanık gözükecek.
-    .scaled-natively = X11 Uygulamalarını kendi çözünürlüğünde renderla
-    .native-description = Ölçekleme desteklemeyen X11 uygulamaları HiDPI ekran kullanıldığında küçük gözükecek. Oyunların ekran çözünürlüğünün tamamından faydalanması için etkinleştirin.
-
 ## Sound
 
 sound = Ses
@@ -445,6 +462,8 @@ sound-output = Çıkış
     .level = Çıkış düzeyi
     .config = Yapılandırma
     .balance = Denge
+    .left = Sol
+    .right = Sağ
 
 sound-input = Giriş
     .volume = Giriş sesi
@@ -778,6 +797,59 @@ add-language = Dil ekle
 install-additional-languages = Ek dil kurun
 region = Bölge
 
+## Applications
+
+applications = Uygulamalar
+
+## Applications: Default Applications
+
+default-apps = Varsayılan Uygulamalar
+    .desc = Varsayılan web tarayıcısı, e-posta istemcisi, dosya gezgini ve diğer uygulamalar.
+    .web-browser = Web tarayıcısı
+    .file-manager = Dosya gezgini
+    .mail-client = E-posta istemcisi
+    .music = Müzik
+    .video = Video
+    .photos = Görseller
+    .calendar = Takvim
+    .terminal = Uçbirim
+    .other-associations = Diğer ilişkiler
+    .text-editor = Metin Düzenleyici
+
+## Applications: Startup Applications
+
+startup-apps = Başlangıç Uygulamaları
+    .desc = Girişte çalıştırılacak uygulamaları ayarlayın.
+    .add = Uygulama ekle
+    .user = Kullanıcıya özgü uygulamalar
+    .user-description = Bu uygulamalar mevcut kullanıcınıza giriş yaptığınızda başlatılır.
+    .remove-dialog-title = { $name } ögesini kaldır?
+    .remove-dialog-description = Bunu başlangıç uygulamalarından kaldırmak istediğinize emin misiniz?
+    .search-for-application = Uygulama ara
+
+## Applications: Legacy Applications
+
+legacy-applications = X11 Uygulamaları Uyumluluğu
+    .desc = X11 Pencere sistemi uygulama ölçeklemesi ve Genel kısayollar.
+
+legacy-app-global-shortcuts = X11 Uygulamalarında Genel Kısayollar
+    .desc = Genel kısayollar bir  uygulamda gerçekleştirilen fare ve klavye olaylarının diğer uygulamalar tarafından bas-konuş ve bas-sustur gibi özellikler için algılanmasını sağlar. Varsayılan olarak bu X11 uygulamalarında diğer uygulamaların hassas bilgiler içerebilen klavye ve fare olaylarını gözetlemesini engellemek için devre dışıdır.
+    .none = Hiçbir tuş
+    .modifiers = Modifierlar (Super, Shift, Control, Alt)
+    .combination = Super, Control veya Alt tuşları basılı tutulduğu sürece tüm tuşlar
+    .all = Tüm tuşlar
+    .mouse = X11 uygulamalarında fare tuş olayları
+
+legacy-app-scaling = X11 Pencere Sistemi Uygulama Ölçeklemesi
+    .scaled-gaming = Oyun ve tam ekran uygulamalar için uyarla 
+    .gaming-description = X11 uygulamaları Wayland uygulamalarına göre biraz büyük veya küçük görünebilir.
+    .scaled-applications = Uygulamalar için uyarla
+    .applications-description = Oyunlar ve tam ekran X11 uygulamaları ekran çözünürlüğünüze uymayabilir.
+    .scaled-compatibility = Maksimum uyumluluk modu
+    .compatibility-description = X11 uygulamaları HiDPI ekranlarda bulanık gözükebilir.
+    .preferred-display = Oyunlar ve tam ekran X11 uygulamaları için tercih edilen ekran
+    .no-display = <Hiçbiri>
+
 ## System
 
 system = Sistem & Hesaplar
@@ -823,20 +895,10 @@ administrator = Yönetici
     .desc = Yöneticiler tüm kullanıcılar için ayarları değiştirebilir, başka kullanıcılar ekleyebilir ve onları kaldırabilir.
 
 add-user = Kullanıcı ekle
-remove-user = Kullanıcı kaldır
+change-password = Parolayı değiştir
+remove-user = Kullanıcıyı kaldır
 full-name = Tam ad
+invalid-username = Geçersiz kullanıcı adı.
+password-mismatch = Parola ve doğrulama birbirine uymalıdır.
+save = Kaydet
 
-## System: Default Applications
-
-default-apps = Varsayılan Uygulamalar
-    .desc = Varsayılan web tarayıcısı, e-posta istemcisi, dosya gezgini ve diğer uygulamalar.
-    .web-browser = Web tarayıcısı
-    .file-manager = Dosya gezgini
-    .mail-client = E-posta istemcisi
-    .music = Müzik
-    .video = Video
-    .photos = Görseller
-    .calendar = Takvim
-    .terminal = Uçbirim
-    .other-associations = Diğer ilişkiler
-    .text-editor = Metin Düzenleyici
