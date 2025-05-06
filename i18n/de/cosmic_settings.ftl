@@ -136,7 +136,7 @@ bluetooth-adapters = Bluetooth-Adapter
 
 ## Accessibility
 
-accessibility = Accessibility
+accessibility = Zugangshilfen
     .vision = Sehen
     .on = Ein
     .off = Aus
