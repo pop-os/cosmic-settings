@@ -149,7 +149,7 @@ accessibility = Zugangshilfen
 hearing = Hören
     .mono = Klang in Mono abspielen
 
-default = Default
+default = Voreinstellung
 magnifier = Lupe
     .controls = Or use these shortcuts: { $zoom_in ->
              [zero] {""}
