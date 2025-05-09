@@ -1,4 +1,4 @@
-app = COSMIC-instellingen
+app = COSMIC Instellingen
 
 dbus-connection-error = Kon geen verbinding maken met DBus
 ok = Oké
@@ -141,6 +141,7 @@ accessibility = Toegankelijkheid
     .on = Aan
     .off = Uit
     .unavailable = Niet beschikbaar
+    .screen-reader = Schermverteller
     .high-contrast = Verhoogde contrast modus
     .invert-colors = Kleuren omkeren
     .color-filters = Kleurfilters
