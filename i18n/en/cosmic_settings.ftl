@@ -892,7 +892,7 @@ users = Users
     .profile-add = Choose profile image
 
 administrator = Administrator
-    .desc = Administrators can change settings for all users, add and remove other users.
+    .desc = Administrators can change settings for all users, add and remove other users, add and remove other users.
 
 add-user = Add user
 change-password = Change password

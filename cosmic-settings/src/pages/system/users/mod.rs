@@ -251,20 +251,21 @@ impl page::Page<crate::pages::Message> for Page {
                             .add(username_input)
                             .add(password_input)
                             .add(password_confirm_input)
-                            .add(
-                                row::with_capacity(3)
+                            .add(widget::container(
+                                row::with_capacity(2)
                                     .push(
-                                        column::with_capacity(2)
+                                        column::with_capacity(3)
                                             .push(text::body(crate::fl!("administrator")))
                                             .push(text::caption(crate::fl!(
                                                 "administrator",
                                                 "desc"
-                                            ))),
+                                            )))
+                                            .width(Length::Fill),
                                     )
                                     .push(Space::new(5, 0))
                                     .push(admin_toggler)
                                     .align_y(Alignment::Center),
-                            ),
+                            )),
                     )
                     .primary_action(add_user_button)
                     .secondary_action(cancel_button)
