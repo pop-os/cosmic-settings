@@ -121,7 +121,7 @@ bluetooth = Bluetooth
     .dbus-error = Błąd interakcji z DBus: { $why }
     .disabled = Usługa bluetooth jest wyłączona
     .inactive = Usługa bluetooth nie jest aktywna
-    .unknown = Nie można aktywować usługi bluetooth. Czy bluez jest zainstalowane?
+    .unknown = Nie można aktywować usługi bluetooth. Czy bluez jest zainstalowany?
 
 bluetooth-paired = Wcześniej połączone urządzenia
     .connect = Połącz
@@ -160,7 +160,7 @@ magnifier = Lupa
             *[other] {""}
                 {$zoom_out} aby oddalić,
         }
-        Super + przewijanie rolką myszy
+        Super+Scroll
     .scroll_controls = Aktywuj przybliżanie myszą lub touchpadem za pomocą Super + Scroll
     .show_overlay = Pokaż Nakładkę Lupy
     .increment = Inkrementacja przybliżenia
@@ -294,7 +294,7 @@ notifications = Powiadomienia
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Górna belka ze sterowaniem pulpitem i menu.
+    .desc = Główna belka z menu i apletami.
 
 add = Dodaj
 add-applet = Dodaj aplet
@@ -344,7 +344,7 @@ panel-missing = Brakuje Konfiguracji Panelu
 ## Desktop: Dock
 
 dock = Dok
-    .desc = opcjonalny panel z aplikacjami i appletami.
+    .desc = Dodatkowa belka z aplikacjami i apletami.
 
 ## Desktop: Window management
 
@@ -357,7 +357,7 @@ super-key = Klawisz Super
     .applications = Otwórz aplikacje
     .disable = Wyłącz
 
-edge-gravity = Pływające okna są przyciągane ku pobliskim krawędziom
+edge-gravity = Pływające okna są przyciągane do pobliskich krawędzi
 
 window-controls = Sterowanie oknami
     .maximize = Pokaż przycisk maksymalizacji
@@ -406,7 +406,7 @@ color = Kolor
     .temperature = Temperatura koloru
 
 display = Wyświetlacz
-    .desc = Zarządzaj wyświetlaczami, zmianami grafik i nocnym światłem
+    .desc = Zarządzaj wyświetlaczami, zmianami kart graficznych i nocnym światłem
     .arrangement = Układ wyświetlaczy
     .arrangement-desc = Przeciągaj wyświetlacze by zmienić układ.
     .enable = Włącz wyświetlacz
@@ -527,7 +527,7 @@ power-mode = Profil zasilania
   .battery = Tryb oszczędzania energii
   .battery-desc = Zmniejszone zużycie energii i ciche działanie.
   .balanced = Tryb zbalansowany
-  .balanced-desc = Cicha wydajność i średnie zużycie baterii.
+  .balanced-desc = Wysoka wydajność i średnie zużycie baterii.
   .performance = Tryb wysokiej wydajności
   .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
   .no-backend = Nie znaleziono backendu. Zainstaluj system76-power lub power-profiles-daemon.
