@@ -259,7 +259,8 @@ impl page::Page<crate::pages::Message> for Page {
                                             .push(text::caption(crate::fl!(
                                                 "administrator",
                                                 "desc"
-                                            ))),
+                                            )))
+                                            .width(Length::Fill),
                                     )
                                     .push(Space::new(5, 0))
                                     .push(admin_toggler)
