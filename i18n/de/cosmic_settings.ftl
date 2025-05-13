@@ -127,6 +127,27 @@ bluetooth-available = Geräte in der Nähe
 
 bluetooth-adapters = Bluetooth-Adapter
 
+## Barrierefreiheit
+
+accessibility = Barrierefreiheit
+    .vision = Sehen
+    .on = Ein
+    .off = Aus
+    .unavailable = Nicht verfügbar
+magnifier = Lupe
+    .controls =
+    Oder verwende Tastenkombinationen:
+            Super + = zum Hineinzoomen,
+            Super + - zum Herauszoomen,
+            Super + Scrollen mit deiner Maus
+    .increment = Zoom-Schrittweite
+    .signin = Lupe bei der Anmeldung starten
+    .applet = Lupe im Applet auf dem Panel ein-/ausschalten
+    .movement = Gezoomte Ansicht bewegt sich
+    .continuous = Kontinuierlich mit Zeiger
+    .onedge = Wenn der Zeiger die Kante erreicht
+    .centered = Zeiger zentriert halten
+
 ## Desktop
 
 desktop = Desktop
