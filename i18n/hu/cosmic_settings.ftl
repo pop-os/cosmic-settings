@@ -39,7 +39,7 @@ identity = Azonosító
 
 auth-dialog = Azonosítás szükséges
     .vpn-description = Írja be a VPN szolgáltatás által követelt felhasználónevet és jelszót.
-    .wifi-description = Írja be a jelszót vagy a titkosítókulcsot. A router "WPS" gombjának megnyomásával is csatlakozhat.
+    .wifi-description = Írja be a jelszót vagy a titkosítókulcsot. A router „WPS” gombjának megnyomásával is csatlakozhat.
 
 forget-dialog = El akarja felejteni ezt a Wi-Fi hálózatot?
     .description = A jelszót ismét meg kell adnia, ha újra csatlakozni szeretne.
@@ -55,7 +55,7 @@ network-device-state =
     .need-auth = Azonosítás szükséges
     .prepare = Felkészülés a hálózatra csatlakozáshoz
     .secondaries = Várakozás egy másodlagos kapcsolatra
-    .unavailable = Elérhetetlen
+    .unavailable = Nem elérhető
     .unknown = Ismeretlen állapot
     .unmanaged = Kezeletlen
     .unplugged = Kábel kihúzva
@@ -70,7 +70,7 @@ vpn = VPN
     .remove = Kapcsolati profil törlése
     .select-file = Válasszon ki egy VPN konfigurációs fájlt
 
-vpn-error = VPN Hiba
+vpn-error = VPN hiba
     .config = Nem sikerült hozzáadni a VPN-konfigurációt
     .connect = Nem sikerült csatlakozni a VPN-hez
     .connection-editor = A hálózati beállító nem működik
@@ -105,7 +105,9 @@ online-accounts = Online fiókok
 
 # Bluetooth
 
+activate = Aktiválás
 confirm = Megerősítés
+enable = Engedélyezés
 
 bluetooth = Bluetooth
     .desc = Bluetooth-eszközök kezelése
@@ -117,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Szétkapcsolás
     .forget = Elfelejtés
     .dbus-error = Hiba történt a DBus-szal való kommunikáció során: { $why }
+    .disabled = A Bluetooth szolgáltatás ki van kapcsolva
+    .inactive = A Bluetooth szolgáltatás nem aktív
+    .unknown = A Bluetooth szolgáltatást nem sikerült aktiválni. A BlueZ telepítve van?
 
 bluetooth-paired = Korábban párosított eszközök
     .connect = Kapcsolódás
@@ -136,6 +141,7 @@ accessibility = Akadálymentesség
     .on = Bekapcsolva
     .off = Kikapcsolva
     .unavailable = Nem elérhető
+    .screen-reader = Képernyőolvasó
     .high-contrast = Kontrasztos mód
     .invert-colors = Színek invertálása
     .color-filters = Színszűrők
@@ -178,7 +184,7 @@ desktop = Asztal
 ## Desktop: Wallpaper
 
 wallpaper = Háttérkép
-    .change = Képcserék gyakorisága
+    .change = Háttérkép váltásának gyakorisága
     .desc = Háttérképek, színek és diavetítési beállítások.
     .fit = Háttérkép illeszkedése
     .folder-dialog = Válasszon háttérkép mappát
@@ -229,10 +235,10 @@ window-hint-accent = Az Aktív ablak kiemelésének színe
 window-hint-accent-toggle = A témaszín használata az aktív ablak kiemelésére
 
 auto-switch = Automatikus váltás a világos és sötét módok között
-    .sunrise = Napkeltekor Világos módra vált
-    .sunset = Napnyugtakor Sötét módra vált
-    .next-sunrise = Következő napfelkeltekor Világos módra vált
-    .next-sunset = Következő napnyugtakor Sötét módra vált
+    .sunrise = Napkeltekor világos módra vált
+    .sunset = Napnyugtakor sötét módra vált
+    .next-sunrise = Következő napfelkeltekor világos módra vált
+    .next-sunset = Következő napnyugtakor sötét módra vált
 
 container-background = Tároló háttér
     .desc-detail = A tároló háttérszínét a navigációs oldalsáv, az oldalsó fiók, a párbeszédpanelek és hasonló widgetek használják. Alapértelmezés szerint automatikusan az alkalmazás vagy ablak hátteréből származik.
@@ -251,8 +257,8 @@ enable-export = Alkalmazza ezt a témát a GNOME-alkalmazásokra.
 icon-theme = Ikon téma
     .desc = Más ikonkészletet alkalmaz az alkalmazásokra.
 
-text-tint = A felület szövegének árnyalata
-    .desc = Színek, amelyek a felület szövegének színeinek származtatására szolgálnak, amelyek megfelelő kontrasztot mutatnak a különböző felületeken.
+text-tint = Felületiszöveg-árnyalat
+    .desc = Olyan szín, amelyet a felület szövegszíneinek meghatározásához használnak, hogy azok megfelelő kontrasztot biztosítsanak különböző felületeken.
 
 style = Stílus
     .round = Lekerekített
@@ -390,8 +396,8 @@ hot-corner = Forró sarok
 
 color = Szín
     .depth = Színmélység
-    .profile = Szín profil
-    .sidebar = Szín profilok
+    .profile = Színprofil
+    .sidebar = Színprofilok
     .temperature = Színhőmérséklet
 
 display = Kijelzők
@@ -738,7 +744,7 @@ gestures = Gesztusok
     .four-finger-left = Négy ujjas csúsztatás balra
     .four-finger-right = Négy ujjas csúsztatás jobbra
     .four-finger-up = Négy ujjas csúsztatás felfelé
-    .three-finger-any = Három ujjas csúztatás bármelyik irányba
+    .three-finger-any = Három ujjas csúsztatás bármelyik irányba
 
 switch-workspaces = Munkaterület váltása
     .horizontal = Négy ujjas csúsztatás balra/jobbra
@@ -824,10 +830,10 @@ startup-apps = Indítási alkalmazások
 ## Applications: Legacy Applications
 
 legacy-applications = X11 alkalmazások támogatása
-    .desc = X11 ablakkezelő rendszer alkalmazásméretezése és globális billentyűparancsok.
+    .desc = X11 ablakkezelő rendszer alkalmazásméretezés és globális billentyűparancsok.
 
 legacy-app-global-shortcuts = Globális billentyűparancsok X11 alkalmazásokban
-    .desc = A globális parancsikonok lehetővé teszik, hogy az alkalmazásokban a billentyű- és egérkattintás eseményeket más alkalmazások is felismerjék, például a "nyomd-hogy-beszélj" vagy a "nyomd a némításhoz" funkciókhoz. Alapértelmezés szerint ez az X11 alkalmazásokban le van tiltva, hogy más alkalmazások ne figyelhessék a billentyűzet és az egér eseményeit, amelyek érzékeny információkat tartalmazhatnak.
+    .desc = A globális billentyűparancsok lehetővé teszik, hogy az alkalmazásokban a billentyű- és egérkattintás eseményeket más alkalmazások is felismerjék, például a „push-to-talk” vagy a „push-to-mute” funkciókhoz. Alapértelmezés szerint ez az X11 alkalmazásokban le van tiltva, hogy más alkalmazások ne figyelhessék a billentyűzet és az egér eseményeit, amelyek érzékeny információkat tartalmazhatnak.
     .none = Nincsenek billentyűk
     .modifiers = Módosítók (Super, Shift, Control, Alt)
     .combination = Minden billentyű, miközben a Super, Control vagy Alt módosítók lenyomva vannak
