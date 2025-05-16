@@ -74,7 +74,7 @@ pub enum Message {
     DialogCancel,
     /// The dialog was completed.
     DialogComplete,
-    /// How long until the dialog automatically cancelles, in seconds.
+    /// How long until the dialog automatically cancels, in seconds.
     DialogCountdown,
     /// Toggles display on or off.
     DisplayToggle(bool),
@@ -475,6 +475,34 @@ impl Page {
             Message::RandrResult(result) => {
                 if let Some(Err(why)) = Arc::into_inner(result) {
                     tracing::error!(why = why.to_string(), "cosmic-randr error");
+                    // Cancel the revert dialog if resolution or refresh rate did not change.
+                    // RandR may revert those changes in certain circumstances so showing the
+                    // dialog is superfluous and confusing.
+                    if let Some(mode) =
+                        self.list
+                            .outputs
+                            .get(self.active_display)
+                            .and_then(|display| {
+                                display.current.and_then(|key| self.list.modes.get(key))
+                            })
+                    {
+                        tracing::debug!(old = ?self.dialog, new = ?mode, "Mode update");
+                        match self.dialog {
+                            Some(Randr::Resolution(width, height)) => {
+                                if mode.size.0 == width && mode.size.1 == height {
+                                    self.config.resolution = Some((width, height));
+                                    return self.update(Message::DialogComplete);
+                                }
+                            }
+                            Some(Randr::RefreshRate(rate)) => {
+                                if mode.refresh_rate == rate {
+                                    self.config.refresh_rate = Some(rate);
+                                    return self.update(Message::DialogComplete);
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
                 }
             }
 
