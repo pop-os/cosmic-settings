@@ -119,9 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Disconnect
     .forget = Forget
     .dbus-error = An error has occurred while interacting with DBus: { $why }
-    .disabled = The bluetooth service is disabled
-    .inactive = The bluetooth service is not active
-    .unknown = The bluetooth service could not be activated. Is bluez installed?
+    .disabled = The Bluetooth service is disabled
+    .inactive = The Bluetooth service is not active
+    .unknown = The Bluetooth service could not be activated. Is BlueZ installed?
 
 bluetooth-paired = Previously Connected Devices
     .connect = Connect
@@ -860,7 +860,7 @@ about = About
     .desc = Device name, hardware information, operating system defaults.
 
 about-device = Device name
-    .desc = This name appears to other network or bluetooth devices.
+    .desc = This name appears to other network or Bluetooth devices.
 
 about-hardware = Hardware
     .model = Hardware model
