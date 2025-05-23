@@ -73,6 +73,7 @@ struct Device {
 pub enum DeviceId {
     Alsa(u32),
     Bluez5(String),
+    Unknown(),
 }
 
 #[derive(Default)]
@@ -402,6 +403,7 @@ impl Page {
                 let device_id = match card.variant {
                     pulse::DeviceVariant::Alsa { alsa_card, .. } => DeviceId::Alsa(alsa_card),
                     pulse::DeviceVariant::Bluez5 { address, .. } => DeviceId::Bluez5(address),
+                    pulse::DeviceVariant::Unknown { } => DeviceId::Unknown{},
                 };
 
                 self.card_names.insert(device_id.clone(), card.name);
@@ -420,6 +422,7 @@ impl Page {
                 let device_id = match device.variant {
                     pipewire::DeviceVariant::Alsa { alsa_card, .. } => DeviceId::Alsa(alsa_card),
                     pipewire::DeviceVariant::Bluez5 { address, .. } => DeviceId::Bluez5(address),
+                    pipewire::DeviceVariant::Unknown { } => DeviceId::Unknown {},
                 };
 
                 match device.media_class {
