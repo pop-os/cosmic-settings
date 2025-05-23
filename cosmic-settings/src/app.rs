@@ -43,9 +43,7 @@ use cosmic::{
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
 #[cfg(feature = "page-accessibility")]
-use cosmic_settings_subscriptions::accessibility::{
-    DBusRequest, DBusUpdate, subscription as a11y_subscription,
-};
+use cosmic_settings_subscriptions::accessibility::subscription as a11y_subscription;
 #[cfg(feature = "wayland")]
 use desktop::{
     dock,

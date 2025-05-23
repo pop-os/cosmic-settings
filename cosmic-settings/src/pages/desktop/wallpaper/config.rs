@@ -6,7 +6,6 @@ use cosmic_bg_config::Source;
 use cosmic_settings_wallpaper as wallpaper;
 use std::collections::VecDeque;
 use std::env;
-use std::io::Read;
 use std::path::{Path, PathBuf};
 
 const NAME: &str = "com.system76.CosmicSettings.Wallpaper";
