@@ -291,7 +291,7 @@ impl Page {
                         }
                     }
 
-                    network_manager::Request::SelectAccessPoint(ssid, hw_address, network_type) => {
+                    network_manager::Request::SelectAccessPoint(ssid, _hw_address, _network_type) => {
                         self.connecting.remove(ssid.as_ref());
                     }
 
