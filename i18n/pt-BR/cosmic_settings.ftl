@@ -150,7 +150,7 @@ hearing = Ouvindo
     .mono = Reproduzir áudio estéreo como mono
 
 default = Padrão
-magnifier = Ampliador de Tela
+magnifier = Ampliador de Tela (Lupa)
     .controls = Ou use teclas de atalho: { $zoom_in ->
              [zero] {""}
             *[other] {""}
@@ -231,8 +231,8 @@ mode-and-colors = Modo e Cores
 recent-colors = Cores recentes
 reset-to-default = Restaurar padrão
 rgb = RGB
-window-hint-accent = Cor de destaque da janela ativa
-window-hint-accent-toggle = Utilizar a cor de destaque do tema como destaque de janela ativa
+window-hint-accent = Cor de realce da janela ativa
+window-hint-accent-toggle = Utilizar a cor de destaque do tema como realce de janela ativa
 
 auto-switch = Alternar automaticamente do modo Claro para o modo Escuro
     .sunrise = Altera para o modo Claro ao nascer do sol
@@ -309,9 +309,9 @@ small = Pequeno
 start-segment = Segmento inicial
 
 panel-appearance = Aparência
-    .match = Corresponder à área de trabalho
-    .light = Claro
-    .dark = Escuro
+    .match = Estilo do sistema
+    .light = Estilo claro
+    .dark = Estilo escuro
 
 panel-behavior-and-position = Comportamento e Posições
     .autohide = Ocultar o painel automaticamente
