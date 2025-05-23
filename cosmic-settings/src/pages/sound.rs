@@ -362,7 +362,7 @@ impl Page {
                 }
 
                 let mut command = None;
-                if let Some(&node_id) = self.sink_ids.get(self.active_sink.unwrap_or(0)) {
+                if !self.sink_ids.get(self.active_sink.unwrap_or(0)).is_none() {
                     command = Some(cosmic::task::future(async move {
                         tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SinkBalanceApply)

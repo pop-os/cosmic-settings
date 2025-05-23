@@ -1,13 +1,12 @@
 use std::any::TypeId;
 
 use ashpd::desktop::location::{Location, LocationProxy};
-use chrono::Datelike;
 use cosmic::iced::{
     Subscription,
     futures::{SinkExt, StreamExt, channel::mpsc::Sender, future},
     stream,
 };
-use sunrise::sunrise_sunset;
+use sunrise::{Coordinates, SolarDay, SolarEvent};
 use tokio::select;
 
 pub fn daytime() -> cosmic::iced::Subscription<bool> {
@@ -45,11 +44,16 @@ async fn inner(mut tx: Sender<bool>) -> anyhow::Result<()> {
         let Some(loc) = loc.as_ref() else {
             break;
         };
-        let (lat, long) = (loc.latitude(), loc.longitude());
+
+        let coord = Coordinates::new(loc.latitude(), loc.longitude()).unwrap();
         let now = chrono::Local::now();
         let date = now.date_naive();
-        let (sunrise, sunset) = sunrise_sunset(lat, long, date.year(), date.month0(), date.day0());
         let now_in_seconds = now.timestamp();
+        let current_solar_day = SolarDay::new(coord, date);
+        let sunrise = current_solar_day
+            .event_time(SolarEvent::Sunrise)
+            .timestamp();
+        let sunset = current_solar_day.event_time(SolarEvent::Sunset).timestamp();
         let daytime = now_in_seconds >= sunrise && now_in_seconds <= sunset;
         tx.send(daytime).await?;
 
@@ -59,14 +63,9 @@ async fn inner(mut tx: Sender<bool>) -> anyhow::Result<()> {
             sunrise - now_in_seconds
         } else {
             let tmrw = now + chrono::Duration::days(1);
-            let tmrw_date = tmrw.date_naive();
-            let (tmrw_sunrise, _) = sunrise_sunset(
-                lat,
-                long,
-                tmrw_date.year(),
-                tmrw_date.month0(),
-                tmrw_date.day0(),
-            );
+            let tmrw_sunrise = SolarDay::new(coord, tmrw.date_naive())
+                .event_time(SolarEvent::Sunrise)
+                .timestamp();
             tmrw_sunrise - now_in_seconds
         };
         next = select! {

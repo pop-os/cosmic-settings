@@ -13,7 +13,7 @@ use cosmic_settings_page::{
     self as page, Insert,
     section::{self, Section},
 };
-use cosmic_settings_subscriptions::accessibility::{self, DBusRequest, DBusUpdate};
+use cosmic_settings_subscriptions::accessibility::{DBusRequest, DBusUpdate};
 use cosmic_settings_subscriptions::cosmic_a11y_manager;
 use num_traits::FromPrimitive;
 use slotmap::SlotMap;
