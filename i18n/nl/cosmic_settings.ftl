@@ -413,8 +413,6 @@ display = Beeldschermen
     .scale = Schaal
     .additional-scale-options = Extra schalingsopties
 
-mirroring = Mirroring
-
 mirroring = Scherm dupliceren
     .id = Dupliceren { $id }
     .dont = Niet dupliceren
@@ -429,7 +427,7 @@ mirroring = Scherm dupliceren
     } projecteren
 
 night-light = Nachtlichtbeheer
-    .auto = Automatisch (van zonsondergang tot zonsopgang)
+    .auto = Automatisch (van zonsondergang zonsopgang)
     .desc = Blauw licht verminderen met warmere lichtkleuren.
 
 orientation = Oriëntatie
@@ -487,22 +485,24 @@ power = Enegrie en batterij
     .desc = Energieverbruik beheren
 
 battery = Batterij
-  .minute = { $value } { $value ->
+    .minute = { $value } { $value ->
         [one] minuut
-       *[other] minuten
-  }
-  .hour = { $value } uur
-  }
-  .day = { $value } { $value ->
+        *[other] minuten
+    }   
+    .hour = { $value } uur
+
+
+    }
+    .day = { $value } { $value ->
         [one] dag
-       *[other] dagen
-  }
-  .less-than-minute = In minder dan één minuut
-  .and = en
-  .remaining-time = { $time } { $action ->
+        *[other] dagen
+    }
+    .less-than-minute = In minder dan één minuut
+    .and = en
+    .remaining-time = De batterij is over { $time } { $action -> 
         [full] opgeladen
-       *[other] leeg
-   }
+        *[other] leeg
+    }
 
 connected-devices = Verbonden apparaten
   .unknown = Onbekend apparaat
