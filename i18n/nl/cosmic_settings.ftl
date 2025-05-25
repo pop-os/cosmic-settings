@@ -427,7 +427,7 @@ mirroring = Scherm dupliceren
     } projecteren
 
 night-light = Nachtlichtbeheer
-    .auto = Automatisch (van zonsondergang zonsopgang)
+    .auto = Automatisch (van zonsondergang tot zonsopgang)
     .desc = Blauw licht verminderen met warmere lichtkleuren.
 
 orientation = Oriëntatie
