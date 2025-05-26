@@ -322,6 +322,10 @@ impl Search {
             let id = self.actions.insert(action.clone());
             self.localized.insert(id, localized);
         }
+        // Remove unicode isolation characters to fix searching localized text that has them.
+        for (_, localized) in self.localized.iter_mut() {
+            *localized = localized.replace("\u{2068}", "").replace("\u{2069}", "");
+        }
     }
 
     fn retrieve_custom_actions(&self) -> Vec<(Binding, Action)> {
