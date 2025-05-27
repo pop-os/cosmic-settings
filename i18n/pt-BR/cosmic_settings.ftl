@@ -150,7 +150,7 @@ hearing = Ouvindo
     .mono = Reproduzir áudio estéreo como mono
 
 default = Padrão
-magnifier = Ampliador de Tela (Lupa)
+magnifier = Ampliador de tela
     .controls = Ou use teclas de atalho: { $zoom_in ->
              [zero] {""}
             *[other] {""}
@@ -160,12 +160,12 @@ magnifier = Ampliador de Tela (Lupa)
             *[other] {""}
                 {$zoom_out} para diminuir o zoom,
         }
-        Super + rolar com o mouse
-    .scroll_controls = Habilitar atalhos "Super + Scroll" (via mouse ou touchpad)
+        Super + Scroll para rolar com o mouse
+    .scroll_controls = Habilitar atalho "Super + Scroll" (via mouse ou touchpad)
     .show_overlay = Mostrar a sobreposição do ampliador
     .increment = Incremento de zoom
     .signin = Iniciar o ampliador ao fazer login
-    .applet = Ativar/desativar o ampliador no miniaplicativo do painel
+    .applet = Ativar/desativar a lupa no miniaplicativo do painel
     .movement = A visualização ampliada se move
     .continuous = Continuamente com ponteiro
     .onedge = Quando o ponteiro atinge a borda
@@ -300,10 +300,10 @@ drop-here = Solte os miniaplicativos aqui
 end-segment = Segmento final
 large = Grande
 no-applets-found = Nenhum miniaplicativo encontrado...
-panel-bottom = Inferior
-panel-left = Esquerda
-panel-right = Direita
-panel-top = Superior
+panel-bottom = Lado inferior
+panel-left = Lado esquerdo
+panel-right = Lado direito
+panel-top = Lado superior
 search-applets = Procurar por miniaplicativos...
 small = Pequeno
 start-segment = Segmento inicial
@@ -411,10 +411,10 @@ display = Telas
     .refresh-rate = Taxa de atualização
     .resolution = Resolução
     .scale = Escala
-    .additional-scale-options = Opções de escala adicionais
+    .additional-scale-options = Ajuste de escala
 
 mirroring = Espelhar
-    .id = Espelhar { $id }
+    .id = Espelhando { $id }
     .dont = Não espelhar
     .mirror = Espelhar { $display }
     .project = Projetar para { $display ->
@@ -499,7 +499,7 @@ battery = Bateria
   }
   .less-than-minute = Menos de 1 minuto
   .and = e
-  .remaining-time = { $time } até { $action ->
+  .remaining-time = { $time } até estar { $action ->
         [full] cheia
        *[other] vazia
    }
@@ -805,15 +805,15 @@ applications = Aplicativos
 
 default-apps = Aplicativos Padrão
     .desc = Navegador web, cliente de email, gestor de arquivos e outros aplicativos padrões.
-    .web-browser = Navegador web
-    .file-manager = Gestor de arquivos
-    .mail-client = Cliente de email
+    .web-browser = Navegador Web
+    .file-manager = Gestor de Arquivos
+    .mail-client = Cliente de Email
     .music = Música
     .video = Vídeo
     .photos = Fotos
     .calendar = Calendário
     .terminal = Terminal
-    .other-associations = Outras associações
+    .other-associations = Outras Associações
     .text-editor = Editor de Texto
 
 ## Applications: Startup Applications
