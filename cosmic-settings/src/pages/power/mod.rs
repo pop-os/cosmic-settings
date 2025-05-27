@@ -58,6 +58,7 @@ pub struct Page {
     suspend_labels: Vec<String>,
     idle_config: Config,
     idle_conf: CosmicIdleConfig,
+    backend_available: bool,
 }
 
 impl Default for Page {
@@ -84,6 +85,7 @@ impl Default for Page {
                 .collect(),
             idle_config,
             idle_conf,
+            backend_available: true,
         }
     }
 }
@@ -197,10 +199,37 @@ pub enum Message {
 }
 
 impl Page {
+    /// Check if backend is available, caching the result to avoid repeated timeouts
+    fn check_backend_availability(&mut self) -> Option<backend::PowerBackendEnum> {
+        // If we already know the backend status, return accordingly
+        if let false = self.backend_available {
+            return None;
+        }
+
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let backend = runtime.block_on(async {
+            match tokio::time::timeout(
+                std::time::Duration::from_millis(1000),
+                backend::get_backend(),
+            )
+            .await
+            {
+                Ok(backend) => backend,
+                Err(_) => {
+                    tracing::warn!("Backend initialization timed out after 1000ms");
+                    None
+                }
+            }
+        });
+
+        // Cache the result
+        self.backend_available = backend.is_some();
+        backend
+    }
+
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         let runtime = tokio::runtime::Runtime::new().unwrap();
-
-        let backend = runtime.block_on(backend::get_backend());
+        let backend = self.check_backend_availability();
 
         match message {
             Message::PowerProfileChange(p) => {
@@ -368,38 +397,57 @@ fn profiles() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("power-mode"))
         .descriptions(descriptions)
-        .view::<Page>(move |_binder, _page, section| {
+        .view::<Page>(move |_binder, page, section| {
             let mut section = settings::section().title(&section.title);
 
-            let runtime = tokio::runtime::Runtime::new().unwrap();
-
-            let backend = runtime.block_on(backend::get_backend());
-
-            if let Some(b) = backend {
-                let profiles = backend::get_power_profiles();
-
-                let current_profile = runtime.block_on(b.get_current_power_profile());
-
-                section = profiles
-                    .into_iter()
-                    .map(|profile| {
-                        settings::item_row(vec![
-                            radio(
-                                widget::column::with_capacity(2)
-                                    .push(text::body(profile.title()))
-                                    .push(text::caption(profile.description())),
-                                profile,
-                                Some(current_profile),
-                                Message::PowerProfileChange,
-                            )
-                            .width(Length::Fill)
-                            .into(),
-                        ])
-                    })
-                    .fold(section, settings::Section::add);
-            } else {
+            // If we already know there's no backend, skip the check
+            if let false = page.backend_available {
                 let item = text::body(fl!("power-mode", "no-backend"));
                 section = section.add(item);
+            } else {
+                let runtime = tokio::runtime::Runtime::new().unwrap();
+
+                let backend = runtime.block_on(async {
+                    match tokio::time::timeout(
+                        std::time::Duration::from_millis(1000),
+                        backend::get_backend(),
+                    )
+                    .await
+                    {
+                        Ok(backend) => backend,
+                        Err(_) => {
+                            tracing::warn!("Backend initialization timed out after 1000ms");
+                            None
+                        }
+                    }
+                });
+
+                if let Some(b) = backend {
+                    let profiles = backend::get_power_profiles();
+
+                    let current_profile = runtime.block_on(b.get_current_power_profile());
+
+                    section = profiles
+                        .into_iter()
+                        .map(|profile| {
+                            settings::item_row(vec![
+                                radio(
+                                    widget::column::with_capacity(2)
+                                        .push(text::body(profile.title()))
+                                        .push(text::caption(profile.description())),
+                                    profile,
+                                    Some(current_profile),
+                                    Message::PowerProfileChange,
+                                )
+                                .width(Length::Fill)
+                                .into(),
+                            ])
+                        })
+                        .fold(section, settings::Section::add);
+                } else {
+                    let item = text::body(fl!("power-mode", "no-backend"));
+                    section = section.add(item);
+                }
             }
 
             section
