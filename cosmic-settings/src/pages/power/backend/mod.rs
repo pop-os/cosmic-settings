@@ -14,6 +14,7 @@ pub trait GetCurrentPowerProfile {
     async fn get_current_power_profile(&self) -> PowerProfile;
 }
 
+#[derive(Debug, Clone)]
 pub enum PowerBackendEnum {
     S76(S76Backend),
     PP(PPBackend),
@@ -94,6 +95,7 @@ pub fn get_power_profiles() -> Vec<PowerProfile> {
     ]
 }
 
+#[derive(Debug, Clone)]
 pub struct S76Backend {}
 
 impl SetPowerProfile for S76Backend {
@@ -157,6 +159,7 @@ async fn get_s76power_daemon_proxy<'a>() -> Result<s76powerdaemon::PowerDaemonPr
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct PPBackend {}
 
 impl SetPowerProfile for PPBackend {

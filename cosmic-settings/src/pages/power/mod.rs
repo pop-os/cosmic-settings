@@ -58,7 +58,8 @@ pub struct Page {
     suspend_labels: Vec<String>,
     idle_config: Config,
     idle_conf: CosmicIdleConfig,
-    backend_available: bool,
+    backend: Option<backend::PowerBackendEnum>,
+    current_power_profile: Option<PowerProfile>,
 }
 
 impl Default for Page {
@@ -85,7 +86,8 @@ impl Default for Page {
                 .collect(),
             idle_config,
             idle_conf,
-            backend_available: true,
+            backend: None,
+            current_power_profile: None,
         }
     }
 }
@@ -122,6 +124,19 @@ impl page::Page<crate::pages::Message> for Page {
             cosmic::Task::future(async move {
                 let devices = ConnectedDevice::update_connected_devices().await;
                 Message::UpdateConnectedDevices(devices)
+            }),
+            cosmic::Task::future(async move {
+                if let Ok(backend) = tokio::time::timeout(
+                    std::time::Duration::from_millis(1000),
+                    backend::get_backend(),
+                )
+                .await
+                {
+                    Message::BackendAvailabilityCheck(backend)
+                } else {
+                    tracing::warn!("Power backend initialization timed out after 1000ms");
+                    Message::BackendAvailabilityCheck(None)
+                }
             }),
             cosmic::Task::run(
                 async_fn_stream::fn_stream(|emitter| async move {
@@ -195,46 +210,22 @@ pub enum Message {
     ScreenOffTimeChange(Option<Duration>),
     SuspendOnAcTimeChange(Option<Duration>),
     SuspendOnBatteryTimeChange(Option<Duration>),
+    BackendAvailabilityCheck(Option<backend::PowerBackendEnum>),
+    CurrentPowerProfileUpdate(PowerProfile),
     Surface(surface::Action),
 }
 
 impl Page {
-    /// Check if backend is available, caching the result to avoid repeated timeouts
-    fn check_backend_availability(&mut self) -> Option<backend::PowerBackendEnum> {
-        // If we already know the backend status, return accordingly
-        if let false = self.backend_available {
-            return None;
-        }
-
-        let runtime = tokio::runtime::Runtime::new().unwrap();
-        let backend = runtime.block_on(async {
-            match tokio::time::timeout(
-                std::time::Duration::from_millis(1000),
-                backend::get_backend(),
-            )
-            .await
-            {
-                Ok(backend) => backend,
-                Err(_) => {
-                    tracing::warn!("Backend initialization timed out after 1000ms");
-                    None
-                }
-            }
-        });
-
-        // Cache the result
-        self.backend_available = backend.is_some();
-        backend
-    }
-
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
-        let runtime = tokio::runtime::Runtime::new().unwrap();
-        let backend = self.check_backend_availability();
-
         match message {
             Message::PowerProfileChange(p) => {
-                if let Some(b) = backend {
-                    runtime.block_on(b.set_power_profile(p));
+                if let Some(ref backend) = self.backend {
+                    self.current_power_profile = Some(p);
+                    let backend = backend.clone();
+                    return cosmic::Task::future(async move {
+                        backend.set_power_profile(p).await;
+                        crate::app::Message::None
+                    });
                 }
             }
             Message::UpdateBattery(battery) => self.battery = battery,
@@ -273,6 +264,22 @@ impl Page {
             }
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
+            }
+            Message::BackendAvailabilityCheck(backend) => {
+                self.backend.clone_from(&backend);
+
+                // If backend is available, get the current power profile
+                if let Some(backend) = backend {
+                    return cosmic::Task::future(async move {
+                        let profile = backend.get_current_power_profile().await;
+                        crate::app::Message::PageMessage(crate::pages::Message::Power(
+                            Message::CurrentPowerProfileUpdate(profile),
+                        ))
+                    });
+                }
+            }
+            Message::CurrentPowerProfileUpdate(profile) => {
+                self.current_power_profile = Some(profile);
             }
         };
         Task::none()
@@ -400,33 +407,10 @@ fn profiles() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let mut section = settings::section().title(&section.title);
 
-            // If we already know there's no backend, skip the check
-            if let false = page.backend_available {
-                let item = text::body(fl!("power-mode", "no-backend"));
-                section = section.add(item);
-            } else {
-                let runtime = tokio::runtime::Runtime::new().unwrap();
+            if page.backend.is_some() {
+                let profiles = backend::get_power_profiles();
 
-                let backend = runtime.block_on(async {
-                    match tokio::time::timeout(
-                        std::time::Duration::from_millis(1000),
-                        backend::get_backend(),
-                    )
-                    .await
-                    {
-                        Ok(backend) => backend,
-                        Err(_) => {
-                            tracing::warn!("Backend initialization timed out after 1000ms");
-                            None
-                        }
-                    }
-                });
-
-                if let Some(b) = backend {
-                    let profiles = backend::get_power_profiles();
-
-                    let current_profile = runtime.block_on(b.get_current_power_profile());
-
+                if let Some(current_profile) = page.current_power_profile {
                     section = profiles
                         .into_iter()
                         .map(|profile| {
@@ -444,10 +428,10 @@ fn profiles() -> Section<crate::pages::Message> {
                             ])
                         })
                         .fold(section, settings::Section::add);
-                } else {
-                    let item = text::body(fl!("power-mode", "no-backend"));
-                    section = section.add(item);
                 }
+            } else {
+                let item = text::body(fl!("power-mode", "no-backend"));
+                section = section.add(item);
             }
 
             section
