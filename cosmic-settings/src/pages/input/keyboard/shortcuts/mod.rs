@@ -25,9 +25,11 @@ use cosmic_settings_config::shortcuts::{self, Action, Shortcuts};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use itertools::Itertools;
+use sctk::seat::keyboard::Keysym;
 use shortcuts::action::System as SystemAction;
 use slab::Slab;
 use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
+use std::collections::BTreeSet;
 use std::io;
 
 pub struct Page {
@@ -320,6 +322,10 @@ impl Search {
             let id = self.actions.insert(action.clone());
             self.localized.insert(id, localized);
         }
+        // Remove unicode isolation characters to fix searching localized text that has them.
+        for (_, localized) in self.localized.iter_mut() {
+            *localized = localized.replace("\u{2068}", "").replace("\u{2069}", "");
+        }
     }
 
     fn retrieve_custom_actions(&self) -> Vec<(Binding, Action)> {
@@ -341,10 +347,29 @@ impl Search {
     }
 
     fn shortcut_models(&mut self) -> Slab<ShortcutModel> {
+        let shortcut_search_actions = match Binding::from_str_partial(&self.input) {
+            Ok(input_binding) => self
+                .shortcuts
+                .iter()
+                .filter_map(|(binding, action)| {
+                    if input_binding.is_subset(binding) {
+                        Some(action)
+                    } else {
+                        None
+                    }
+                })
+                .collect::<BTreeSet<_>>(),
+            Err(_) => Default::default(),
+        };
+
         let input = self.input.to_lowercase();
+
         self.actions
             .iter()
-            .filter(|(id, _)| self.localized[*id].to_lowercase().contains(&input))
+            .filter(|(id, action)| {
+                self.localized[*id].to_lowercase().contains(&input)
+                    || shortcut_search_actions.contains(action)
+            })
             .fold(Slab::new(), |mut slab, (_, action)| {
                 slab.insert(ShortcutModel::new(
                     &self.defaults,
