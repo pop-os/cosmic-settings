@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use std::{
+    borrow::Cow,
     collections::{BTreeMap, BTreeSet},
     path::{Path, PathBuf},
     sync::Arc,
@@ -300,7 +301,7 @@ fn apps() -> Section<crate::pages::Message> {
                         Message::Surface,
                         |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
                     )
-                    .icons(&meta.icons),
+                    .icons(Cow::Borrowed(&meta.icons)),
                 )
                 .min_item_width(300.0)
             })
@@ -316,7 +317,7 @@ fn apps() -> Section<crate::pages::Message> {
                         Message::Surface,
                         |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
                     )
-                    .icons(&meta.icons),
+                    .icons(Cow::Borrowed(&meta.icons)),
                 )
             })
             .add({
@@ -331,7 +332,7 @@ fn apps() -> Section<crate::pages::Message> {
                         Message::Surface,
                         |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
                     )
-                    .icons(&meta.icons),
+                    .icons(Cow::Borrowed(&meta.icons)),
                 )
             })
             .add({
@@ -346,7 +347,7 @@ fn apps() -> Section<crate::pages::Message> {
                         Message::Surface,
                         |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
                     )
-                    .icons(&meta.icons),
+                    .icons(Cow::Borrowed(&meta.icons)),
                 )
             })
             .add({
@@ -361,7 +362,7 @@ fn apps() -> Section<crate::pages::Message> {
                         Message::Surface,
                         |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
                     )
-                    .icons(&meta.icons),
+                    .icons(Cow::Borrowed(&meta.icons)),
                 )
             })
             .add({
@@ -376,7 +377,7 @@ fn apps() -> Section<crate::pages::Message> {
                         Message::Surface,
                         |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
                     )
-                    .icons(&meta.icons),
+                    .icons(Cow::Borrowed(&meta.icons)),
                 )
             })
             .add({
@@ -391,7 +392,7 @@ fn apps() -> Section<crate::pages::Message> {
                         Message::Surface,
                         |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
                     )
-                    .icons(&meta.icons),
+                    .icons(Cow::Borrowed(&meta.icons)),
                 )
             })
             .add({
@@ -406,7 +407,7 @@ fn apps() -> Section<crate::pages::Message> {
                         Message::Surface,
                         |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
                     )
-                    .icons(&meta.icons),
+                    .icons(Cow::Borrowed(&meta.icons)),
                 )
             })
             .add({
@@ -421,7 +422,7 @@ fn apps() -> Section<crate::pages::Message> {
                         Message::Surface,
                         |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
                     )
-                    .icons(&meta.icons),
+                    .icons(Cow::Borrowed(&meta.icons)),
                 )
             })
             .apply(Element::from)

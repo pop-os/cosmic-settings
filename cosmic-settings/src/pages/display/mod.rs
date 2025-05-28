@@ -1276,7 +1276,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     widget::settings::item(
                         &descriptions[scale],
                         dropdown::popup_dropdown(
-                            &DPI_SCALE_LABELS,
+                            DPI_SCALE_LABELS.as_slice(),
                             page.cache.scale_selected,
                             Message::Scale,
                             cosmic::iced::window::Id::RESERVED,
