@@ -154,6 +154,8 @@ fn click_behavior() -> Section<crate::pages::Message> {
     let button_areas = descriptions.insert(fl!("click-behavior", "button-areas"));
     let tap_to_click = descriptions.insert(fl!("tap-to-click"));
     let _tap_to_click_desc = descriptions.insert(fl!("tap-to-click", "desc"));
+    let middle_button_emulation = descriptions.insert(fl!("middle-button-emulation"));
+    let middle_button_emulation_desc = descriptions.insert(fl!("middle-button-emulation-desc"));
 
     Section::default()
         .title(fl!("click-behavior"))
@@ -196,6 +198,16 @@ fn click_behavior() -> Section<crate::pages::Message> {
                             .map_or(false, |x| x.enabled),
                         Message::TapToClick,
                     ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[middle_button_emulation])
+                        .description(&descriptions[middle_button_emulation_desc])
+                        .toggler(
+                            page.input_touchpad
+                                .middle_button_emulation
+                                .unwrap_or(false),
+                            |x| Message::SetMiddleButtonEmulation(x, false),
+                        ),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
