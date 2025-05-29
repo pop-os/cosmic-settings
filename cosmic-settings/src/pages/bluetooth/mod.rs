@@ -14,6 +14,7 @@ use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Duration;
+use tokio::runtime::Handle;
 use zbus::zvariant::OwnedObjectPath;
 
 enum Dialog {
@@ -90,7 +91,14 @@ impl page::Page<crate::pages::Message> for Page {
         }
 
         if let Some(connection) = self.connection.take() {
-            tokio::spawn(async move {
+            let adapters = self.adapters.clone();
+
+            // Block the current thread to ensure that discovery is stopped
+            // on all adapters when the app is closed.
+            Handle::current().block_on(async move {
+                for (path, _) in adapters {
+                    stop_discovery(connection.clone(), path.clone()).await;
+                }
                 _ = agent::unregister(connection).await;
             });
         }
@@ -255,6 +263,7 @@ impl Page {
                         tracing::debug!("Adapter {} updated: {update:#?}", existing.address);
                         existing.update(update);
                     }
+
                     self.update_status();
                     if let Some(connection) = self.connection.clone() {
                         match self.get_selected_adapter_mut() {
