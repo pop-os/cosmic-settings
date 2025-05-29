@@ -12,6 +12,10 @@ use cosmic::{
 };
 use cosmic_config::ConfigSet;
 
+use crate::app;
+
+use super::{ContextView, Message, drawer};
+
 const INTERFACE_FONT: &str = "interface_font";
 const MONOSPACE_FONT: &str = "monospace_font";
 
@@ -62,42 +66,174 @@ pub fn load_font_families() -> (Vec<Arc<str>>, Vec<Arc<str>>) {
     (interface, mono)
 }
 
-pub fn selection_context<'a>(
-    families: &'a [Arc<str>],
-    current_font: &str,
-    system: bool,
-) -> Element<'a, super::Message> {
-    let svg_accent = Rc::new(|theme: &cosmic::Theme| svg::Style {
-        color: Some(theme.cosmic().accent_color().into()),
-    });
+#[derive(Debug)]
+pub struct Model {
+    font_search: String,
+    font_filter: Vec<Arc<str>>,
 
-    let list = families.iter().fold(widget::list_column(), |list, family| {
-        let selected = &**family == current_font;
-        list.add(
-            settings::item_row(vec![
-                widget::text::body(&**family)
-                    .wrapping(Wrapping::Word)
-                    .width(cosmic::iced::Length::Fill)
-                    .into(),
-                if selected {
-                    widget::icon::from_name("object-select-symbolic")
-                        .size(16)
-                        .icon()
-                        .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
-                        .into()
-                } else {
-                    widget::horizontal_space().width(16).into()
-                },
-            ])
-            .apply(widget::container)
-            .class(cosmic::theme::Container::List)
-            .apply(widget::button::custom)
-            .class(cosmic::theme::Button::Transparent)
-            .on_press(super::Message::FontSelect(system, family.clone())),
-        )
-    });
+    interface_font_families: Vec<Arc<str>>,
+    pub interface_font: FontConfig,
 
-    list.into()
+    monospace_font_families: Vec<Arc<str>>,
+    pub monospace_font: FontConfig,
+}
+
+impl Model {
+    pub fn new() -> Model {
+        Model {
+            font_filter: Vec::new(),
+            font_search: String::new(),
+            interface_font_families: Vec::new(),
+            interface_font: cosmic::config::interface_font(),
+            monospace_font_families: Vec::new(),
+            monospace_font: cosmic::config::monospace_font(),
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.font_search.clear();
+        self.font_filter.clear();
+    }
+
+    pub fn font_loaded(
+        &mut self,
+        mono: Vec<Arc<str>>,
+        interface: Vec<Arc<str>>,
+    ) -> Task<crate::app::Message> {
+        self.interface_font_families = interface;
+        self.monospace_font_families = mono;
+
+        Task::none()
+    }
+
+    pub fn select(
+        &mut self,
+        font: String,
+        context_view: &ContextView,
+    ) -> Option<Task<app::Message>> {
+        match *context_view {
+            ContextView::MonospaceFont => {
+                self.monospace_font = FontConfig {
+                    family: font.to_string(),
+                    weight: cosmic::iced::font::Weight::Normal,
+                    style: cosmic::iced::font::Style::Normal,
+                    stretch: cosmic::iced::font::Stretch::Normal,
+                };
+
+                update_config(MONOSPACE_FONT, self.monospace_font.clone());
+                return None;
+            }
+            ContextView::SystemFont => {
+                self.interface_font = FontConfig {
+                    family: font.to_string(),
+                    weight: cosmic::iced::font::Weight::Normal,
+                    style: cosmic::iced::font::Style::Normal,
+                    stretch: cosmic::iced::font::Stretch::Normal,
+                };
+                update_config(INTERFACE_FONT, self.interface_font.clone());
+                tokio::spawn(async move {
+                    set_gnome_font_name(font.as_ref()).await;
+                });
+                return None;
+            }
+            _ => return None,
+        }
+    }
+
+    pub fn search(&mut self, input: String, context_view: &ContextView) -> Task<app::Message> {
+        self.font_search = input.to_lowercase();
+        self.font_filter.clear();
+
+        let mut result: Option<Vec<Arc<str>>> = None;
+
+        if let Some(fonts) = self.current_font_family(context_view) {
+            result = Some(
+                fonts
+                    .iter()
+                    .filter(|f| f.to_lowercase().contains(&self.font_search))
+                    .map(|f| f.clone())
+                    .collect(),
+            );
+        }
+
+        if let Some(fonts) = result.as_mut() {
+            self.font_filter.append(fonts);
+        }
+        Task::none()
+    }
+
+    pub fn search_input(&self) -> Element<'_, crate::pages::Message> {
+        widget::search_input(fl!("type-to-search"), &self.font_search)
+            .on_input(|input| Message::DrawerFont(drawer::FontMessage::Search(input)))
+            .on_clear(Message::DrawerFont(drawer::FontMessage::Search(
+                String::new(),
+            )))
+            .apply(Element::from)
+            .map(crate::pages::Message::Appearance)
+    }
+
+    pub fn selection_context(
+        &self,
+        context_view: &ContextView,
+        callback: impl Fn(Arc<str>) -> super::Message,
+    ) -> Element<'_, super::Message> {
+        let svg_accent = Rc::new(|theme: &cosmic::Theme| svg::Style {
+            color: Some(theme.cosmic().accent_color().into()),
+        });
+
+        let (mut families, current_font) = match *context_view {
+            ContextView::MonospaceFont => {
+                (&self.monospace_font_families, &self.monospace_font.family)
+            }
+            ContextView::SystemFont => (&self.interface_font_families, &self.interface_font.family),
+            _ => (&self.monospace_font_families, &self.monospace_font.family),
+        };
+
+        if !self.font_filter.is_empty() {
+            families = &self.font_filter;
+        }
+
+        let list = families.iter().fold(widget::list_column(), |list, family| {
+            let selected = &**family == current_font;
+            list.add(
+                settings::item_row(vec![
+                    widget::text::body(&**family)
+                        .wrapping(Wrapping::Word)
+                        .width(cosmic::iced::Length::Fill)
+                        .into(),
+                    if selected {
+                        widget::icon::from_name("object-select-symbolic")
+                            .size(16)
+                            .icon()
+                            .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
+                            .into()
+                    } else {
+                        widget::horizontal_space().width(16).into()
+                    },
+                ])
+                .apply(widget::container)
+                .class(cosmic::theme::Container::List)
+                .apply(widget::button::custom)
+                .class(cosmic::theme::Button::Transparent)
+                .on_press(callback(family.clone())),
+            )
+        });
+        list.into()
+    }
+
+    fn current_font_family(&self, context_view: &ContextView) -> Option<&Vec<Arc<str>>> {
+        match *context_view {
+            ContextView::SystemFont => Some(&self.interface_font_families),
+            ContextView::MonospaceFont => Some(&self.monospace_font_families),
+            _ => None,
+        }
+    }
+}
+
+fn update_config(variant: &str, font: FontConfig) {
+    if let Ok(config) = CosmicTk::config() {
+        _ = config.set(variant, font);
+    }
 }
 
 /// Set the preferred icon theme for GNOME/GTK applications.
@@ -106,97 +242,4 @@ pub async fn set_gnome_font_name(font_name: &str) {
         .args(["set", "org.gnome.desktop.interface", "font-name", font_name])
         .status()
         .await;
-}
-
-#[derive(Debug, Clone)]
-pub enum Message {
-    InterfaceFontFamily(usize),
-    LoadedFonts(Vec<Arc<str>>, Vec<Arc<str>>),
-    MonospaceFontFamily(usize),
-}
-
-#[derive(Debug, Default)]
-pub struct Model {
-    pub interface_font_families: Vec<Arc<str>>,
-    pub interface_font_family: Option<usize>,
-    pub monospace_font_families: Vec<Arc<str>>,
-    pub monospace_font_family: Option<usize>,
-}
-
-impl Model {
-    pub const fn new() -> Model {
-        Model {
-            interface_font_families: Vec::new(),
-            interface_font_family: None,
-            monospace_font_families: Vec::new(),
-            monospace_font_family: None,
-        }
-    }
-
-    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
-        match message {
-            Message::InterfaceFontFamily(id) => {
-                if let Some(family) = self.interface_font_families.get(id) {
-                    update_config(
-                        INTERFACE_FONT,
-                        FontConfig {
-                            family: family.to_string(),
-                            weight: cosmic::iced::font::Weight::Normal,
-                            style: cosmic::iced::font::Style::Normal,
-                            stretch: cosmic::iced::font::Stretch::Normal,
-                        },
-                    );
-
-                    self.interface_font_family = Some(id);
-
-                    let family = family.clone();
-                    tokio::spawn(async move {
-                        set_gnome_font_name(family.as_ref()).await;
-                    });
-                }
-            }
-
-            Message::LoadedFonts(interface, mono) => {
-                self.interface_font_families = interface;
-                self.monospace_font_families = mono;
-
-                let interface_font = cosmic::config::interface_font();
-                let monospace_font = cosmic::config::monospace_font();
-
-                self.interface_font_family =
-                    font_family_to_pos(&self.interface_font_families, &interface_font.family);
-
-                self.monospace_font_family =
-                    font_family_to_pos(&self.monospace_font_families, &monospace_font.family);
-            }
-
-            Message::MonospaceFontFamily(id) => {
-                if let Some(family) = self.monospace_font_families.get(id) {
-                    update_config(
-                        MONOSPACE_FONT,
-                        FontConfig {
-                            family: family.to_string(),
-                            weight: cosmic::iced::font::Weight::Normal,
-                            style: cosmic::iced::font::Style::Normal,
-                            stretch: cosmic::iced::font::Stretch::Normal,
-                        },
-                    );
-
-                    self.monospace_font_family = Some(id);
-                }
-            }
-        }
-
-        Task::none()
-    }
-}
-
-fn font_family_to_pos(families: &[Arc<str>], family: &str) -> Option<usize> {
-    families.iter().position(|f| &**f == family)
-}
-
-fn update_config(variant: &str, font: FontConfig) {
-    if let Ok(config) = CosmicTk::config() {
-        _ = config.set(variant, font);
-    }
 }
