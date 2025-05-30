@@ -362,7 +362,7 @@ window-controls = Vensterbeheer
 focus-navigation = Focusbesturing
     .focus-follows-cursor = Focus volgt de cursor
     .focus-follows-cursor-delay = Vertraging voor focus volgt de cursor in ms
-    .cursor-follows-focus = De cursor volgt de focus
+    .cursor-follows-focus = De cursor volgt focus
 
 ## Desktop: Workspaces
 
@@ -414,7 +414,7 @@ display = Beeldschermen
     .additional-scale-options = Extra schalingsopties
 
 mirroring = Scherm dupliceren
-    .id = Dupliceren { $id }
+    .id = { $id } dupliceren
     .dont = Niet dupliceren
     .mirror = { $display } dupliceren
     .project = Naar { $display ->
