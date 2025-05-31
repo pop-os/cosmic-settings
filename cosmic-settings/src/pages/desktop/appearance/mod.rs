@@ -10,7 +10,7 @@ use std::sync::Arc;
 use cosmic::app::{ContextDrawer, context_drawer};
 //TODO: use embedded cosmic-files for portability
 use cosmic::config::CosmicTk;
-use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
+use cosmic::cosmic_config::{Config, ConfigGet, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb, Srgba};
 use cosmic::cosmic_theme::{
     CornerRadii, DARK_THEME_BUILDER_ID, Density, LIGHT_THEME_BUILDER_ID, Spacing, Theme,
@@ -857,6 +857,7 @@ impl Page {
             }
 
             Message::Density(density) => {
+                tracing::info!("Density changed: {:?}", density);
                 needs_sync = true;
 
                 if let Some(config) = self.tk_config.as_mut() {
@@ -2090,8 +2091,11 @@ pub fn interface_density() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, _page, section| {
             let descriptions = &section.descriptions;
-
-            let density = cosmic::config::interface_density();
+            let density = CosmicTk::config()
+                .ok()
+                .unwrap()
+                .get("interface_density")
+                .unwrap();
 
             settings::section()
                 .title(&section.title)
