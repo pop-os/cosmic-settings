@@ -344,7 +344,7 @@ dock = Dock
 ## Desktop: Window management
 
 window-management = Vensterbeheer
-    .desc = Actie van de supertoets, vensterbeheeropties en aanvullende opties voor het tegelen van vensters.
+    .desc = Opties voor de Supertoets, vensterbeheer en aanvullende opties voor het tegelen van vensters.
 
 super-key = Actie van de supertoets
     .launcher = Snelstarter openen
