@@ -9,9 +9,9 @@ number = { $number }
 ## Network & Wireless
 
 connections-and-profiles = { $variant ->
-    [wired] Kabelverbinding
-    [wifi] Wifi
-    [vpn] VPN
+    [wired] Kabelverbindingen
+    [wifi] Wifiverbindingen
+    [vpn] VPN-verbindingen
     *[other] Onbekende verbindingen
 } en verbindingsprofielen.
 
@@ -30,7 +30,7 @@ network-and-wireless = Netwerk en wifi
 no-networks = Er zijn geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
-password-confirm = Bevestig het wachtwoord
+password-confirm = Wachtwoord bevestigen
 remove = Verwijderen
 settings = Instellingen
 username = Gebruikersnaam
