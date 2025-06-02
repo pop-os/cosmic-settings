@@ -9,9 +9,9 @@ number = { $number }
 ## Network & Wireless
 
 connections-and-profiles = { $variant ->
-    [wired] Bekabelde verbindingen
-    [wifi] Wifi
-    [vpn] VPN
+    [wired] Kabelverbindingen
+    [wifi] Wifiverbindingen
+    [vpn] VPN-verbindingen
     *[other] Onbekende verbindingen
 } en verbindingsprofielen.
 
@@ -30,7 +30,7 @@ network-and-wireless = Netwerk en wifi
 no-networks = Er zijn geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
-password-confirm = Bevestig het wachtwoord
+password-confirm = Wachtwoord bevestigen
 remove = Verwijderen
 settings = Instellingen
 username = Gebruikersnaam
@@ -283,8 +283,8 @@ monospace-font = Lettertype met gelijke letterbreedte
 
 ## Desktop: Notifications
 
-notifications = Meldingen
-    .desc = Niet storen, meldingen op het vergrendelingsscherm en instellingen per applicatie.
+notifications = Meldingsinstellingen
+    .desc = 'Niet storen', meldingen op het vergrendelingsscherm en meldingsinstellingen per app.
 
 ## Desktop: Panel
 
@@ -344,7 +344,7 @@ dock = Dock
 ## Desktop: Window management
 
 window-management = Vensterbeheer
-    .desc = Actie van de supertoets, vensterbeheeropties en aanvullende opties voor het tegelen van vensters.
+    .desc = Opties voor de Supertoets, vensterbeheer en aanvullende opties voor het tegelen van vensters.
 
 super-key = Actie van de supertoets
     .launcher = Snelstarter openen
@@ -362,7 +362,7 @@ window-controls = Vensterbeheer
 focus-navigation = Focusbesturing
     .focus-follows-cursor = Focus volgt de cursor
     .focus-follows-cursor-delay = Vertraging voor focus volgt de cursor in ms
-    .cursor-follows-focus = De cursor volgt de focus
+    .cursor-follows-focus = De cursor volgt focus
 
 ## Desktop: Workspaces
 
@@ -414,7 +414,7 @@ display = Beeldschermen
     .additional-scale-options = Extra schalingsopties
 
 mirroring = Scherm dupliceren
-    .id = Dupliceren { $id }
+    .id = { $id } dupliceren
     .dont = Niet dupliceren
     .mirror = { $display } dupliceren
     .project = Naar { $display ->
@@ -779,7 +779,7 @@ time-format = Datum- en tijdweergave
     .monday = Maandag
 
 time-region = Taal en regio
-    .desc = Regionale datum- en tijd- en getalweergave.
+    .desc = Regionale datum-, tijd- en getalweergave.
 
 formatting = Opmaak
     .dates = Datum

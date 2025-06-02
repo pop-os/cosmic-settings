@@ -9,6 +9,7 @@ Comment[zh_CN]=触摸板速度、点击选项和手势
 Comment[pl]=Prędkość gładzika, opcje kliknięć, gesty.
 Comment[hu]=Érintőpárna sebessége, kattintási beállítások, gesztusok.
 Comment[pt]=Velocidade do touchpad, opções de clique, gestos.
+Comment[nl]=Touchpad muisversnelling, klikeigenschappen en veeggebaren.
 Type=Settings
 Exec=cosmic-settings touchpad
 Terminal=false

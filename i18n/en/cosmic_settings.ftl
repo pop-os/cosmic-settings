@@ -432,9 +432,9 @@ night-light = Night Light
 
 orientation = Orientation
     .standard = Standard
-    .rotate-90 = Rotate 90
-    .rotate-180 = Rotate 180
-    .rotate-270 = Rotate 270
+    .rotate-90 = Rotate 90°
+    .rotate-180 = Rotate 180°
+    .rotate-270 = Rotate 270°
 
 vrr = Variable refresh rate
     .enabled = Enabled

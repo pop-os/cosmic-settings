@@ -8,6 +8,7 @@ Comment=Primary system bar for menus and applets.
 Comment[zh_CN]=主系统栏，用于菜单和小部件。
 Comment[hu]=Fő rendszersáv menükhöz és kisalkalmazásokhoz.
 Comment[pt]=Barra superior com controles e menus.
+Comment[nl]=De standaard systeembalk voor menu's en applets.
 Type=Settings
 Exec=cosmic-settings panel
 Terminal=false

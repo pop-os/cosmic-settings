@@ -4,6 +4,7 @@ Name[zh_CN]=桌面
 Name[pl]=Pulpit
 Name[hu]=Asztal
 Name[pt]=Área de Trabalho
+Name[nl]=Bureaublad
 Comment=
 Type=Settings
 Exec=cosmic-settings desktop

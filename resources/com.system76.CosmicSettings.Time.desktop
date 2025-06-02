@@ -4,6 +4,7 @@ Name[zh_CN]=时间与语言
 Name[pl]=Czas i język
 Name[hu]=Idő és nyelv
 Name[pt]=Hora e Idioma
+Name[nl]=Tijd- en taalinstellingen
 Comment=
 Type=Settings
 Exec=cosmic-settings time
