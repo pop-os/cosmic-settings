@@ -283,7 +283,7 @@ monospace-font = Lettertype met gelijke letterbreedte
 
 ## Desktop: Notifications
 
-notifications = Meldingen
+notifications = Meldingsinstellinge
     .desc = 'Niet storen', meldingen op het vergrendelingsscherm en meldingsinstellingen per app.
 
 ## Desktop: Panel
@@ -779,7 +779,7 @@ time-format = Datum- en tijdweergave
     .monday = Maandag
 
 time-region = Taal en regio
-    .desc = Regionale datum- en tijd- en getalweergave.
+    .desc = Regionale datum-, tijd- en getalweergave.
 
 formatting = Opmaak
     .dates = Datum
