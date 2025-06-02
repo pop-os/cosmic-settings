@@ -283,7 +283,7 @@ monospace-font = Lettertype met gelijke letterbreedte
 
 ## Desktop: Notifications
 
-notifications = Meldingsinstellinge
+notifications = Meldingsinstellingen
     .desc = 'Niet storen', meldingen op het vergrendelingsscherm en meldingsinstellingen per app.
 
 ## Desktop: Panel
