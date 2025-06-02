@@ -9,7 +9,7 @@ number = { $number }
 ## Network & Wireless
 
 connections-and-profiles = { $variant ->
-    [wired] Bekabelde verbindingen
+    [wired] Kabelverbinding
     [wifi] Wifi
     [vpn] VPN
     *[other] Onbekende verbindingen
