@@ -42,8 +42,6 @@ use cosmic::{
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
-#[cfg(feature = "page-accessibility")]
-use cosmic_settings_subscriptions::accessibility::subscription as a11y_subscription;
 #[cfg(feature = "wayland")]
 use desktop::{
     dock,
@@ -290,7 +288,9 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        Subscription::batch(vec![
+        let page = &self.pages.page[self.active_page];
+
+        let subscriptions = vec![
             #[cfg(feature = "ashpd")]
             crate::subscription::daytime().map(|daytime| {
                 Message::PageMessage(pages::Message::Appearance(appearance::Message::Daytime(
@@ -313,6 +313,7 @@ impl cosmic::Application for SettingsApp {
             // Watch for changes to installed desktop entries
             desktop_files(0).map(|_| Message::DesktopInfo),
             // Watch for configuration changes to the panel.
+            // TODO: This should only be active when the panel page is active.
             #[cfg(feature = "wayland")]
             self.core()
                 .watch_config::<CosmicPanelConfig>("com.system76.CosmicPanel.Panel")
@@ -323,6 +324,7 @@ impl cosmic::Application for SettingsApp {
 
                     Message::PanelConfig(update.config)
                 }),
+            // TODO: This should only be active when the dock page is active.
             #[cfg(feature = "wayland")]
             self.core()
                 .watch_config::<CosmicPanelConfig>("com.system76.CosmicPanel.Dock")
@@ -333,21 +335,10 @@ impl cosmic::Application for SettingsApp {
 
                     Message::PanelConfig(update.config)
                 }),
-            // Watch for state changes from the cosmic-bg session service.
-            self.core()
-                .watch_state::<cosmic_bg_config::state::State>(cosmic_bg_config::NAME)
-                .map(|update| {
-                    Message::PageMessage(pages::Message::DesktopWallpaper(
-                        pages::desktop::wallpaper::Message::UpdateState(update.config),
-                    ))
-                }),
-            #[cfg(feature = "page-accessibility")]
-            a11y_subscription().map(|m| {
-                Message::PageMessage(pages::Message::Accessibility(
-                    pages::accessibility::Message::DBusUpdate(m),
-                ))
-            }),
-        ])
+            page.subscription(self.core()).map(Message::PageMessage),
+        ];
+
+        Subscription::batch(subscriptions)
     }
 
     #[allow(clippy::too_many_lines)]
