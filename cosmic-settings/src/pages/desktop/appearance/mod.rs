@@ -76,6 +76,7 @@ pub struct Page {
     interface_text: ColorPickerModel,
     control_component: ColorPickerModel,
     roundness: Roundness,
+    density: Density,
 
     font_config: font_config::Model,
     font_filter: Vec<Arc<str>>,
@@ -224,6 +225,7 @@ impl
             },
             context_view: None,
             roundness: theme_builder.corner_radii.into(),
+            density: cosmic::config::interface_density(),
             custom_accent: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
@@ -859,6 +861,7 @@ impl Page {
             Message::Density(density) => {
                 tracing::info!("Density changed: {:?}", density);
                 needs_sync = true;
+                self.density = density;
 
                 if let Some(config) = self.tk_config.as_mut() {
                     _ = config.set("interface_density", density);
@@ -2089,13 +2092,8 @@ pub fn interface_density() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("interface-density"))
         .descriptions(descriptions)
-        .view::<Page>(move |_binder, _page, section| {
+        .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-            let density = CosmicTk::config()
-                .ok()
-                .unwrap()
-                .get("interface_density")
-                .unwrap();
 
             settings::section()
                 .title(&section.title)
@@ -2103,7 +2101,7 @@ pub fn interface_density() -> Section<crate::pages::Message> {
                     radio(
                         text::body(&descriptions[compact]),
                         Density::Compact,
-                        Some(density),
+                        Some(page.density),
                         Message::Density,
                     )
                     .width(Length::Fill)
@@ -2113,7 +2111,7 @@ pub fn interface_density() -> Section<crate::pages::Message> {
                     radio(
                         text::body(&descriptions[comfortable]),
                         Density::Standard,
-                        Some(density),
+                        Some(page.density),
                         Message::Density,
                     )
                     .width(Length::Fill)
@@ -2123,7 +2121,7 @@ pub fn interface_density() -> Section<crate::pages::Message> {
                     radio(
                         text::body(&descriptions[spacious]),
                         Density::Spacious,
-                        Some(density),
+                        Some(page.density),
                         Message::Density,
                     )
                     .width(Length::Fill)
