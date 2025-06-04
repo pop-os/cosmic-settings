@@ -293,6 +293,17 @@ impl page::Page<crate::pages::Message> for Page {
             .title(fl!("color-picker"))
         })
     }
+
+    /// Watch for state changes from the cosmic-bg session service.
+    fn subscription(
+        &self,
+        core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<crate::pages::Message> {
+        core.watch_state::<cosmic_bg_config::state::State>(cosmic_bg_config::NAME)
+            .map(|update| {
+                crate::pages::Message::DesktopWallpaper(Message::UpdateState(update.config))
+            })
+    }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}

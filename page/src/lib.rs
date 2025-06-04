@@ -5,7 +5,7 @@ mod binder;
 pub use binder::{AutoBind, Binder};
 
 mod insert;
-use cosmic::{Element, Task, app::ContextDrawer};
+use cosmic::{Element, Task, app::ContextDrawer, iced::Subscription};
 use downcast_rs::{Downcast, impl_downcast};
 pub use insert::Insert;
 
@@ -87,6 +87,12 @@ pub trait Page<Message: Clone + 'static>: Downcast {
     #[inline]
     fn on_leave(&mut self) -> Task<Message> {
         Task::none()
+    }
+
+    /// Subscription unique to the page when it is active.
+    #[inline]
+    fn subscription(&self, _core: &cosmic::Core) -> Subscription<Message> {
+        Subscription::none()
     }
 
     /// Assigns the entity ID of the page to the page.

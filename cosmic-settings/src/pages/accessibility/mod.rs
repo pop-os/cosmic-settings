@@ -13,7 +13,9 @@ use cosmic_settings_page::{
     self as page, Insert,
     section::{self, Section},
 };
-use cosmic_settings_subscriptions::accessibility::{DBusRequest, DBusUpdate};
+use cosmic_settings_subscriptions::accessibility::{
+    DBusRequest, DBusUpdate, subscription as a11y_subscription,
+};
 use cosmic_settings_subscriptions::cosmic_a11y_manager;
 use num_traits::FromPrimitive;
 use slotmap::SlotMap;
@@ -88,6 +90,18 @@ pub enum Message {
     ScreenReaderEnabled(bool),
 }
 
+impl From<Message> for crate::pages::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::Accessibility(message)
+    }
+}
+
+impl From<Message> for crate::app::Message {
+    fn from(message: Message) -> Self {
+        crate::app::Message::PageMessage(message.into())
+    }
+}
+
 impl page::Page<crate::pages::Message> for Page {
     fn set_id(&mut self, entity: page::Entity) {
         self.entity = entity;
@@ -149,6 +163,13 @@ impl page::Page<crate::pages::Message> for Page {
         let _ = self.wayland_thread.take();
 
         cosmic::Task::none()
+    }
+
+    fn subscription(
+        &self,
+        _core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<crate::pages::Message> {
+        a11y_subscription().map(|m| super::Message::Accessibility(Message::DBusUpdate(m)))
     }
 }
 
