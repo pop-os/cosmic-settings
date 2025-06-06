@@ -204,8 +204,6 @@ desktop-panels-and-applets = Skrivbordspaneler och applets
 
 dock = Docka
     .desc = En valfri stapel för program och applets.
-hot-corner = Het hörn
-    .top-left-corner = Aktivera det övre vänstra hörnet för arbetsytor
 
 top-panel = Övre Panel
     .workspaces = Visa knappen arbetsytor
@@ -351,7 +349,6 @@ wireguard-dialog = Lägg till WireGuard enhet
 ## Nätverksanslutningar
 
 add-network = Lägg till nätverk
-add-vpn = Lägg till VPN
 airplane-on = Flygplansläge aktiverat.
 cable-unplugged = Kabel bortkopplad
 connect = Anslut
@@ -384,7 +381,6 @@ connections-and-profiles = { $variant ->
 
 ## Virtuellt privat nätverk (VPN)
 
-add-network = Lägg till nätverk
 add-vpn = Lägg till VPN
 
 auth-dialog = Autentisering krävs
@@ -579,9 +575,6 @@ password-mismatch = Lösenord och bekräftelse måste matcha.
 
 save = Spara
 
-users = Användare
-    .desc = Autentisering och login, låsskärm.
-
 ## Ström
 
 power = Ström & Batteri
@@ -703,6 +696,7 @@ migrate-workspace = Migrera arbetsytan till utdata { $direction ->
     [left] vänster
     [right] höger
     [up] upp
+}
 
 navigate = Navigera
 replace = Byt ut
