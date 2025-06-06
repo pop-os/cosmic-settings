@@ -1,8 +1,8 @@
 app = Configuración de COSMIC
 
-unknown = Desconocidodbus-connection-error = Error al conectar con DBus
-ok = Aceptar
 unknown = Desconocido
+dbus-connection-error = Error al conectar con DBus
+ok = Aceptar
 
 number = { $number }
 
