@@ -14,7 +14,7 @@ use cosmic::{
 };
 use cosmic_settings_page::{self as page, Section, section};
 use icu::{
-    calendar::{DateTime, Iso},
+    calendar::{DateTime, Iso, types::IsoWeekday, week},
     datetime::DateTimeFormatter,
     locid::Locale,
 };
@@ -62,7 +62,9 @@ impl Default for Page {
                     error!(?err, "Failed to read config 'military_time'");
                 }
 
-                false
+                let default = get_locale_default_24h();
+                let _ = cosmic_applet_config.set("military_time", default);
+                default
             });
 
         let show_seconds = cosmic_applet_config
@@ -82,7 +84,9 @@ impl Default for Page {
                     error!(?err, "Failed to read config 'first_day_of_week'");
                 }
 
-                6
+                let default = get_locale_default_first_day();
+                let _ = cosmic_applet_config.set("first_day_of_week", default);
+                default
             });
 
         let show_date_in_top_panel = cosmic_applet_config
@@ -550,4 +554,45 @@ fn update_local_time() -> DateTime<Iso> {
     )
     .unwrap()
     .to_iso()
+}
+
+fn get_locale_default_24h() -> bool {
+    let Ok(locale) = locale() else { return false };
+
+    let test_time = icu::calendar::DateTime::try_new_gregorian_datetime(2024, 1, 1, 13, 0, 0)
+        .unwrap()
+        .to_iso();
+
+    let bag = icu::datetime::options::length::Bag::from_time_style(
+        icu::datetime::options::length::Time::Medium,
+    );
+
+    let Ok(dtf) =
+        icu::datetime::DateTimeFormatter::try_new_experimental(&locale.into(), bag.into())
+    else {
+        return false;
+    };
+
+    let formatted = dtf.format(&test_time.to_any()).unwrap().to_string();
+
+    // If we see "13" in the output, it's 24-hour format
+    // If we see "1" (but not "13"), it's 12-hour format
+    formatted.contains("13")
+}
+
+fn get_locale_default_first_day() -> usize {
+    let Ok(locale) = locale() else { return 6 };
+    let Ok(week_calc) = week::WeekCalculator::try_new(&locale.into()) else {
+        return 6;
+    };
+
+    match week_calc.first_weekday {
+        IsoWeekday::Monday => 0,
+        IsoWeekday::Tuesday => 1,
+        IsoWeekday::Wednesday => 2,
+        IsoWeekday::Thursday => 3,
+        IsoWeekday::Friday => 4,
+        IsoWeekday::Saturday => 5,
+        IsoWeekday::Sunday => 6,
+    }
 }
