@@ -434,7 +434,7 @@ impl Page {
             Message::SelectProfileImage(uid) => {
                 return cosmic::task::future(async move {
                     let dialog_result = file_chooser::open::Dialog::new()
-                        .title(fl!("user-account-page", "profile-add"))
+                        .title(fl!("users", "profile-add"))
                         .accept_label(fl!("dialog-add"))
                         .modal(false)
                         .open_file()
