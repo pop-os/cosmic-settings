@@ -34,7 +34,7 @@ static COMPOSE_OPTIONS: &[(&str, &str)] = &[
 
 static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
     ("Left Alt", "lv3:lalt_switch"),
-    ("Right Alt", "lv3:alt_switch"),
+    ("Right Alt", "lv3:ralt_switch"),
     ("Left Super", "lv3:lwin_switch"),
     ("Right Super", "lv3:rwin_switch"),
     ("Menu key", "lv3:menu_switch"),
