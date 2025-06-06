@@ -17,11 +17,15 @@ use cosmic_settings_page::{self as page, section};
 use eyre::Context;
 use fixed_decimal::FixedDecimal;
 use icu::calendar::DateTime;
-use icu::datetime::DateTimeFormatter;
 use icu::datetime::options::components::{self, Bag};
-use icu::datetime::options::preferences;
+use icu::datetime::options::length;
+use icu::datetime::{DateTimeFormatter, DateTimeFormatterOptions};
 use icu::decimal::FixedDecimalFormatter;
 use icu::decimal::options::FixedDecimalFormatterOptions;
+use icu::{
+    calendar::{types::IsoWeekday, week},
+    locid::Locale,
+};
 use locales_rs as locale;
 use slotmap::{DefaultKey, SlotMap};
 
@@ -231,7 +235,10 @@ impl Page {
                     let region = region.lang_code.clone();
 
                     return cosmic::task::future(async move {
-                        _ = set_locale(lang, region).await;
+                        _ = set_locale(lang, region.clone()).await;
+
+                        update_time_settings_after_region_change(region);
+
                         Message::Refresh(Arc::new(page_reload().await))
                     });
                 }
@@ -439,23 +446,12 @@ impl Page {
             return String::new();
         };
 
-        let mut bag = Bag::empty();
-        bag.hour = Some(components::Numeric::Numeric);
-        bag.minute = Some(components::Numeric::Numeric);
-        bag.second = Some(components::Numeric::Numeric);
-        bag.preferences = Some(preferences::Bag::from_hour_cycle(
-            preferences::HourCycle::H12,
-        ));
-        // bag.time_zone_name = Some(components::TimeZoneName::ShortSpecific);
-        bag.day = Some(components::Day::TwoDigitDayOfMonth);
-        bag.month = Some(components::Month::Short);
-        bag.year = Some(components::Year::Numeric);
-
-        let options = icu::datetime::DateTimeFormatterOptions::Components(bag);
+        let bag = length::Bag::from_date_time_style(length::Date::Long, length::Time::Medium);
+        let options = DateTimeFormatterOptions::Length(bag);
 
         let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), options).unwrap();
 
-        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 12, 0, 0)
+        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 13, 0, 0)
             .unwrap()
             .to_iso()
             .to_any();
@@ -479,19 +475,11 @@ impl Page {
             return String::new();
         };
 
-        let mut bag = Bag::empty();
-        bag.hour = Some(components::Numeric::Numeric);
-        bag.minute = Some(components::Numeric::Numeric);
-        bag.second = Some(components::Numeric::Numeric);
-        bag.preferences = Some(preferences::Bag::from_hour_cycle(
-            preferences::HourCycle::H12,
-        ));
+        let options = length::Bag::from_time_style(length::Time::Medium);
 
-        let options = icu::datetime::DateTimeFormatterOptions::Components(bag);
+        let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), options.into()).unwrap();
 
-        let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), options).unwrap();
-
-        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 12, 0, 0)
+        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 13, 0, 0)
             .unwrap()
             .to_iso()
             .to_any();
@@ -962,4 +950,92 @@ pub async fn set_locale(lang: String, region: String) {
         ])
         .status()
         .await;
+}
+
+fn parse_locale(locale: String) -> Result<Locale, Box<dyn std::error::Error>> {
+    let locale = locale
+        .split('.')
+        .next()
+        .ok_or(format!("Can't split the locale {locale}"))?;
+
+    let locale = Locale::from_str(locale).map_err(|e| format!("{e:?}"))?;
+    Ok(locale)
+}
+
+fn get_default_24h(locale: String) -> bool {
+    let Ok(locale) = parse_locale(locale) else {
+        return false;
+    };
+
+    let test_time = icu::calendar::DateTime::try_new_gregorian_datetime(2024, 1, 1, 13, 0, 0)
+        .unwrap()
+        .to_iso();
+
+    let bag = icu::datetime::options::length::Bag::from_time_style(
+        icu::datetime::options::length::Time::Medium,
+    );
+
+    let Ok(dtf) =
+        icu::datetime::DateTimeFormatter::try_new_experimental(&locale.into(), bag.into())
+    else {
+        return false;
+    };
+
+    let formatted = match dtf.format(&test_time.to_any()) {
+        Ok(formatted) => formatted.to_string(),
+        Err(_) => return false,
+    };
+
+    // If we see "13" in the output, it's 24-hour format
+    // If we see "1" (but not "13"), it's 12-hour format
+    formatted.contains("13")
+}
+
+fn get_default_first_day(locale: String) -> usize {
+    let Ok(locale) = parse_locale(locale) else {
+        return 6;
+    };
+    let Ok(week_calc) = week::WeekCalculator::try_new(&locale.into()) else {
+        return 6;
+    };
+
+    match week_calc.first_weekday {
+        IsoWeekday::Monday => 0,
+        IsoWeekday::Tuesday => 1,
+        IsoWeekday::Wednesday => 2,
+        IsoWeekday::Thursday => 3,
+        IsoWeekday::Friday => 4,
+        IsoWeekday::Saturday => 5,
+        IsoWeekday::Sunday => 6,
+    }
+}
+
+fn update_time_settings_after_region_change(region: String) {
+    // Create the same config that date.rs uses
+    let cosmic_applet_config = match cosmic_config::Config::new("com.system76.CosmicAppletTime", 1)
+    {
+        Ok(config) => config,
+        Err(err) => {
+            tracing::error!(
+                ?err,
+                "Failed to create cosmic applet config for time settings"
+            );
+            return;
+        }
+    };
+
+    // Update military_time based on new locale
+    let new_military_time = get_default_24h(region.clone());
+    if let Err(why) = cosmic_applet_config.set("military_time", new_military_time) {
+        tracing::error!(?why, "Failed to update military_time after region change");
+    }
+
+    // Update first_day_of_week based on new locale
+    let new_first_day = get_default_first_day(region);
+    if let Err(why) = cosmic_applet_config.set("first_day_of_week", new_first_day) {
+        tracing::error!(
+            ?why,
+            "Failed to update first_day_of_week after region change"
+        );
+    }
 }
