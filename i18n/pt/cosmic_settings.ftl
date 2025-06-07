@@ -103,11 +103,6 @@ style = Estilo
     .slightly-round = Ligeiramente redondo
     .square = Quadrado
 
-# interface density left out for now
-window-management = Gestão de janelas
-    .active-hint = Tamanho da sugestão da janela ativa
-    .gaps = Espaços à volta das janelas em mosaico
-
 ## Desktop: Notifications
 
 notifications = Notificações
@@ -170,8 +165,11 @@ dock = Doca
 
 ## Desktop: Window management
 
+# interface density left out for now
 window-management = Gestão de Janelas
     .desc = Ação da tecla Super, opções de controlo de janelas, e opções adicionais de alinhamento de janelas.
+    .active-hint = Tamanho da sugestão da janela ativa
+    .gaps = Espaços à volta das janelas em mosaico
 
 super-key = Tecla Super
     .launcher = Abrir Lançador
