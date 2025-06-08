@@ -882,6 +882,7 @@ about-related = Related settings
 
 firmware = Firmware
     .desc = Firmware details.
+    .bios-version = BIOS version
 
 ## System: Users
 
