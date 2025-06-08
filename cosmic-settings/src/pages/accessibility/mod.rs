@@ -13,7 +13,9 @@ use cosmic_settings_page::{
     self as page, Insert,
     section::{self, Section},
 };
-use cosmic_settings_subscriptions::accessibility::{DBusRequest, DBusUpdate, subscription as a11y_subscription};
+use cosmic_settings_subscriptions::accessibility::{
+    DBusRequest, DBusUpdate, subscription as a11y_subscription,
+};
 use cosmic_settings_subscriptions::cosmic_a11y_manager;
 use num_traits::FromPrimitive;
 use slotmap::SlotMap;
@@ -163,10 +165,11 @@ impl page::Page<crate::pages::Message> for Page {
         cosmic::Task::none()
     }
 
-    fn subscription(&self, _core: &cosmic::Core) -> cosmic::iced::Subscription<crate::pages::Message> {
-        a11y_subscription().map(|m| {
-            super::Message::Accessibility(Message::DBusUpdate(m))
-        })
+    fn subscription(
+        &self,
+        _core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<crate::pages::Message> {
+        a11y_subscription().map(|m| super::Message::Accessibility(Message::DBusUpdate(m)))
     }
 }
 
@@ -198,10 +201,14 @@ pub fn vision() -> section::Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::item::builder(&descriptions[screen_reader])
-                            .toggler(page.reader_enabled, |enabled| {
-                                crate::pages::Message::from(Message::ScreenReaderEnabled(enabled))
-                            }))
+                .add(
+                    settings::item::builder(&descriptions[screen_reader]).toggler(
+                        page.reader_enabled,
+                        |enabled| {
+                            crate::pages::Message::from(Message::ScreenReaderEnabled(enabled))
+                        },
+                    ),
+                )
                 .add({
                     let (magnifier_entity, _magnifier_info) = binder
                         .info
@@ -227,22 +234,30 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                             .then_some(crate::pages::Message::Page(magnifier_entity).into()),
                     )
                 })
-                .add(settings::item::builder(&descriptions[high_contrast])
-                            .toggler(page.theme.is_high_contrast, |enable| Message::HighContrast(enable).into()))
-                .add(settings::item::builder(&descriptions[invert_colors]).control(
-                            toggler(page.screen_inverted).on_toggle_maybe(
-                                page.wayland_available
-                                    .is_some_and(|ver| ver >= 2)
-                                    .then_some(|set| Message::SetScreenInverted(set).into()),
-                            ),
-                        ))
-                .add(settings::item::builder(&descriptions[color_filters]).control(
-                            toggler(page.screen_filter_active).on_toggle_maybe(
-                                page.wayland_available
-                                    .is_some_and(|ver| ver >= 2)
-                                    .then_some(|set| Message::SetScreenFilterActive(set).into()),
-                            ),
-                        ))
+                .add(
+                    settings::item::builder(&descriptions[high_contrast])
+                        .toggler(page.theme.is_high_contrast, |enable| {
+                            Message::HighContrast(enable).into()
+                        }),
+                )
+                .add(
+                    settings::item::builder(&descriptions[invert_colors]).control(
+                        toggler(page.screen_inverted).on_toggle_maybe(
+                            page.wayland_available
+                                .is_some_and(|ver| ver >= 2)
+                                .then_some(|set| Message::SetScreenInverted(set).into()),
+                        ),
+                    ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[color_filters]).control(
+                        toggler(page.screen_filter_active).on_toggle_maybe(
+                            page.wayland_available
+                                .is_some_and(|ver| ver >= 2)
+                                .then_some(|set| Message::SetScreenFilterActive(set).into()),
+                        ),
+                    ),
+                )
                 .add({
                     let selections = if page.screen_filter_selection == ColorFilter::Unknown {
                         &page.screen_filter_selections
@@ -250,20 +265,23 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         &page.screen_filter_selections[0..4]
                     };
 
-                    let dropdown = dropdown::popup_dropdown::<_, crate::pages::Message, crate::pages::Message>(
-                            selections,
-                            Some(page.screen_filter_selection as usize),
-                            move |idx| {
-                                let filter = ColorFilter::from_usize(idx).unwrap_or_default();
-                                Message::SetScreenFilterSelection(filter).into()
-                            },
-                            cosmic::iced::window::Id::RESERVED,
-                            |action| Message::Surface(action).into(),
-                            |a| a
-                        );
+                    let dropdown = dropdown::popup_dropdown::<
+                        _,
+                        crate::pages::Message,
+                        crate::pages::Message,
+                    >(
+                        selections,
+                        Some(page.screen_filter_selection as usize),
+                        move |idx| {
+                            let filter = ColorFilter::from_usize(idx).unwrap_or_default();
+                            Message::SetScreenFilterSelection(filter).into()
+                        },
+                        cosmic::iced::window::Id::RESERVED,
+                        |action| Message::Surface(action).into(),
+                        |a| a,
+                    );
 
-                    settings::item::builder(&descriptions[color_filter_type])
-                        .control(dropdown)
+                    settings::item::builder(&descriptions[color_filter_type]).control(dropdown)
                 })
                 .into()
         })
