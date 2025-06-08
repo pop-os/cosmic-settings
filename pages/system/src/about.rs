@@ -48,6 +48,9 @@ impl Info {
         processor_name(&bump, &mut info.processor);
         bump.reset();
 
+        bios_version(&bump, &mut info.bios_version);
+        bump.reset();
+
         let mut sys = sysinfo::System::new();
 
         let disks = sysinfo::Disks::new_with_refreshed_list();
