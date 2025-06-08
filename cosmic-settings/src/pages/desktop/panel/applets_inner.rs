@@ -670,7 +670,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 .padding(8)
                 .class(theme::Container::Custom(Box::new(move |theme| {
                     let mut style = container::Catalog::style(theme, &theme::Container::Primary);
-                    style.border.radius = 8.0.into();
+                    style.border.radius = theme.cosmic().radius_s().into();
                     if is_dragged {
                         style.border.color = theme.cosmic().accent_color().into();
                         style.border.width = 2.0;
@@ -702,7 +702,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 .padding(8)
                 .class(theme::Container::Custom(Box::new(move |theme| {
                     let mut style = container::Catalog::style(theme, &theme::Container::Primary);
-                    style.border.radius = 8.0.into();
+                    style.border.radius = theme.cosmic().radius_s().into();
                     style.border.color = theme.cosmic().bg_divider().into();
                     style.border.width = 2.0;
                     style.background = Some(Color::TRANSPARENT.into());

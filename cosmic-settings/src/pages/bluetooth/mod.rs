@@ -199,7 +199,7 @@ impl page::Page<crate::pages::Message> for Page {
         }
 
         if let Some(connection) = self.connection.take() {
-            let adapters = self.adapters.clone();
+            let adapters = self.model.adapters.clone();
 
             // Block the current thread to ensure that discovery is stopped
             // on all adapters when the app is closed.
@@ -382,12 +382,12 @@ impl Page {
                 }
 
                 Event::UpdatedAdapter(path, update) => {
-                    if let Some(existing) = self.adapters.get_mut(&path) {
+                    if let Some(existing) = self.model.adapters.get_mut(&path) {
                         tracing::debug!("Adapter {} updated: {update:#?}", existing.address);
-                        existing.update(update);
+                        existing.update(update.clone());
                     }
 
-                    self.update_status();
+                    self.model.update_status();
                     if let Some(connection) = self.connection.clone() {
                         if let Some(discovery_future) =
                             self.model.updated_adapter(path, update, connection)
@@ -987,7 +987,7 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
                         widget::horizontal_space().into(),
                         widget::icon::from_name("go-next-symbolic").into(),
                     ];
-                    if page.adapter_connected(path) {
+                    if page.model.adapter_connected(path) {
                         items.insert(
                             4,
                             text(&descriptions[device_connected])

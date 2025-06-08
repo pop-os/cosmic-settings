@@ -25,7 +25,6 @@ use cosmic_settings_config::shortcuts::{self, Action, Shortcuts};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use itertools::Itertools;
-use sctk::seat::keyboard::Keysym;
 use shortcuts::action::System as SystemAction;
 use slab::Slab;
 use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
