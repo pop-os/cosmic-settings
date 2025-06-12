@@ -11,6 +11,7 @@ const DMI_DIR: &str = "/sys/devices/virtual/dmi/id/";
 const BOARD_NAME: &str = concatcp!(DMI_DIR, "board_name");
 const BOARD_VERSION: &str = concatcp!(DMI_DIR, "board_version");
 const SYS_VENDOR: &str = concatcp!(DMI_DIR, "sys_vendor");
+const BIOS_VERSION: &str = concatcp!(DMI_DIR, "bios_version");
 
 const VERSION_IGNORING_PRODUCTS: &[&str] = &["Dev One"];
 
@@ -27,6 +28,7 @@ pub struct Info {
     pub os_architecture: String,
     pub processor: String,
     pub windowing_system: String,
+    pub bios_version: String,
 }
 
 impl Info {
@@ -44,6 +46,9 @@ impl Info {
         bump.reset();
 
         processor_name(&bump, &mut info.processor);
+        bump.reset();
+
+        bios_version(&bump, &mut info.bios_version);
         bump.reset();
 
         let mut sys = sysinfo::System::new();
@@ -185,6 +190,13 @@ pub fn processor_name(bump: &Bump, name: &mut String) {
                 break;
             }
         }
+    }
+}
+
+pub fn bios_version(bump: &Bump, bios_version: &mut String) {
+    let buffer = &mut bumpalo::collections::Vec::new_in(bump);
+    if let Some(value) = read_to_string(BIOS_VERSION, buffer) {
+        bios_version.push_str(value.trim());
     }
 }
 

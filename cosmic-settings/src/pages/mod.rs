@@ -55,6 +55,7 @@ pub enum Message {
         id: String,
         message: Vec<u8>,
     },
+    Firmware(system::firmware::Message),
     #[cfg(feature = "page-input")]
     Input(input::Message),
     #[cfg(feature = "page-input")]
