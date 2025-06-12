@@ -45,6 +45,10 @@ debug = true
 opt-level = "s"
 lto = "off"
 
+# Fix text rendering being cut off on the right
+[patch.'https://github.com/pop-os/cosmic-text']
+cosmic-text = { git = "https://github.com/pop-os/cosmic-text//", rev = "b017d7c" }
+
 # [patch.'https://github.com/smithay/client-toolkit/']
 # smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }
 
