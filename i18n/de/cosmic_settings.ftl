@@ -30,10 +30,12 @@ network-and-wireless = Netzwerk & Kabellos
 no-networks = Es wurden keine Netzwerke gefunden.
 no-vpn = Keine VPN-Verbindungen verfügbar.
 password = Passwort
+password-confirm = Passwort bestätigen
 remove = Entfernen
 settings = Einstellungen
 username = Benutzername
 visible-networks = Sichtbare Netzwerke
+identity = Identität
 
 auth-dialog = Authentifizierung erforderlich
     .vpn-description = Gib den vom VPN-Dienst geforderten Benutzernamen und das Passwort ein.
@@ -96,14 +98,16 @@ wifi = Wi-Fi
 wireguard-dialog = WireGuard-Gerät hinzufügen
     .description = Wähle einen Gerätenamen für die WireGuard-Konfiguration aus.
 
-## Vernetzung: Online-Konten
+## Networking: Online Accounts
 
 online-accounts = Online-Konten
     .desc = Hinzufügen von Konten, IMAP und SMTP, Unternehmensanmeldungen
 
 # Bluetooth
 
+activate = Aktivieren
 confirm = Bestätigen
+enable = Aktivieren
 
 bluetooth = Bluetooth
     .desc = Bluetooth-Geräte verwalten
@@ -115,6 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Trennen
     .forget = Vergessen
     .dbus-error = Bei der Interaktion mit DBus ist ein Fehler aufgetreten: { $why }
+    .disabled = Der Bluetooth-Dienst ist deaktiviert
+    .inactive = Der Bluetooth-Dienst ist nicht aktiv
+    .unknown = Der Bluetooth-Dienst konnte nicht aktiviert werden. Ist BlueZ installiert?
 
 bluetooth-paired = Zuvor verbundene Geräte
     .connect = Verbinden
@@ -126,6 +133,49 @@ bluetooth-confirm-pin = Bluetooth-PIN bestätigen
 bluetooth-available = Geräte in der Nähe
 
 bluetooth-adapters = Bluetooth-Adapter
+
+## Accessibility
+
+accessibility = Zugänglichkeit
+    .vision = Sehkraft
+    .on = Ein
+    .off = Aus
+    .unavailable = Nicht verfügbar
+    .screen-reader = Bildschirmleser
+    .high-contrast = Modus mit hohem Kontrast
+    .invert-colors = Farben invertieren
+    .color-filters = Farbfilter
+
+hearing = Gehör
+    .mono = Stereo-Audio als Mono abspielen
+
+default = Standard
+magnifier = Vergrößerungsglas
+    .controls = Oder verwenden Sie diese Tastenkombinationen: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} zum Vergrößern,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} zum Verkleinern,
+        }
+        Super + Scrollen mit der Maus
+    .scroll_controls = Aktivieren Sie den Maus- oder Touchpad-Zoom mit Super + Scroll
+    .show_overlay = Das Vergrößerungsglasmenü anzeigen
+    .increment = Zoom-Schrittweite
+    .signin = Vergrößerungsglas bei der Anmeldung starten
+    .applet = Ein- und Ausschalten des Vergrößerungsglases im Applet
+    .movement = Vergrößerte Ansicht bewegt sich
+    .continuous = Vergrößerung folgt der Maus
+    .onedge = Bewegt sich, wenn die Maus die Kanten berürt
+    .centered = Den Mauszeiger auf der Vergrößerung zentriert halten
+color-filter = Typ des Farbfilters
+    .unknown = Unbekannt Filter aktiv
+    .greyscale = Graustufen
+    .deuteranopia = Grün/Rot (Grünschwäche, Deuteranopie)
+    .protanopia = Rot/Grün (Rotschwäche, Protanopie)
+    .tritanopia = Blau/Gelb (Blauschwäche, Tritanopie)
 
 ## Desktop
 
@@ -153,10 +203,13 @@ fit-to-screen = An Bildschirm anpassen
 open-new-folder = Neuen Ordner öffnen
 recent-folders = Letzte Ordner
 
-x-minutes = { $number } Minuten
-x-hours = { $number ->
-    [1] 1 Stunde
-    *[other] { $number } Stunden
+x-minutes = { $number } { $number ->
+    [one] Minute
+    *[other] Minuten
+}
+x-hours = { $number } { $number ->
+    [one] Stunde
+    *[other] Stunden
 }
 never = Nie
 
@@ -340,7 +393,7 @@ workspaces-orientation = Ausrichtung der Arbeitsflächen
 hot-corner = Aktive Ecken
     .top-left-corner = Aktive Ecke oben links für Arbeitsflächen aktivieren
 
-## Bildschirme
+## Displays
 
 -requires-restart = Erfordert Neustart
 
@@ -407,7 +460,7 @@ legacy-app-scaling = Anwendungsskalierung des X11-Fenstersystems
     .scaled-natively = X11-Anwendungen in nativer Auflösung rendern
     .native-description = X11-Anwendungen, die keine Skalierung unterstützen, werden klein dargestellt, wenn HiDPI-Bildschirme verwendet werden. Für Spiele aktivieren, um die volle Monitorauflösung auszunutzen.
 
-## Klang
+## Sound
 
 sound = Klang
     .desc = N/V
