@@ -194,6 +194,8 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        let mut task = Task::none();
+
         if let Some(cancel) = self.subscription.take() {
             _ = cancel.send(());
         }
@@ -201,19 +203,19 @@ impl page::Page<crate::pages::Message> for Page {
         if let Some(connection) = self.connection.take() {
             let adapters = self.model.adapters.clone();
 
-            // Block the current thread to ensure that discovery is stopped
-            // on all adapters when the app is closed.
-            Handle::current().block_on(async move {
+            // Execute within task to ensure it completes before the app exits.
+            task = Task::future(async move {
                 for (path, _) in adapters {
                     stop_discovery(connection.clone(), path.clone()).await;
                 }
                 _ = agent::unregister(connection).await;
-            });
+            })
+            .discard();
         }
 
         self.model.clear();
 
-        Task::none()
+        task
     }
 
     fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
