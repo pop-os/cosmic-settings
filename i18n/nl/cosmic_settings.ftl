@@ -22,7 +22,7 @@ airplane-on = Vliegtuigmodus is ingeschakeld.
 cable-unplugged = Kabel losgekoppeld
 connect = Verbinden
 connected = Verbonden
-connecting = Verbinding maken...
+connecting = Verbinding maken…
 disconnect = Verbinden verbreken
 forget = Vergeten
 known-networks = Bekende netwerken
@@ -113,15 +113,15 @@ bluetooth = Bluetooth
     .desc = Bluetooth-apparaten bewerken
     .status = Dit systeem is zichtbaar als { $aliases } zolang de bluetooth-instellingen open staan.
     .connected = Verbonden
-    .connecting = Verbinding maken...
-    .disconnecting = Verbinding verbreken...
+    .connecting = Verbinding maken
+    .disconnecting = Verbinding verbreken
     .connect = Verbinden
     .disconnect = Verbinding verbreken
     .forget = Vergeten
     .dbus-error = Er is een fout opgetreden tijdens de interactie met DBus: { $why }
     .disabled = De bluetooth-service is uitgeschakeld
     .inactive = De bluetooth-service is niet actief
-    .unknown = Cosmic kon de bluetooth-service niet activeren. Heeft u bluez geïnstalleerd?
+    .unknown = De bluetooth-service kon niet worden geactiveerd. Is BlueZ geïnstalleerd?
 
 bluetooth-paired = Eerder verbonden apparaten
     .connect = Verbinden
@@ -166,10 +166,10 @@ magnifier = Vergrootglas
     .increment = Zoom-stapgrootte
     .signin = Het vergrootglas direct gebruiken als u inlogt
     .applet = Met een panel-applet het vergrootglas in-/uitschakelen
-    .movement = Beweegt de vergroting
+    .movement = De vergroting beweegt mee
     .continuous = De vergroting volgt de muis
-    .onedge = Verplaats als de muis de randen raakt
-    .centered = Houd de muis steeds in het midden van de vergroting
+    .onedge = Verplaatst als de muis de randen raakt
+    .centered = Houdt de muis steeds in het midden van de vergroting
 color-filter = Type kleurfilter
     .unknown = Onbekend kleurfilter actief
     .greyscale = Grijstinten
@@ -203,9 +203,9 @@ fit-to-screen = Aan het scherm passend maken
 open-new-folder = Nieuwe map openen
 recent-folders = Recente mappen
 
-x-minutes = { $number ->
-        [1] 1 minuut
-        *[other] { $number } minuten
+x-minutes = { $number } { $number ->
+        [one] minuut
+        *[other] minuten
     }
 x-hours = { $number } uur
 never = Nooit
