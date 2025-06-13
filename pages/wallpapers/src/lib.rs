@@ -2,18 +2,20 @@ pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
 use eyre::{eyre, OptionExt};
 use fast_image_resize::SrcCropping;
 use futures_lite::Stream;
+use futures_util::StreamExt;
 use image::imageops::FilterType;
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
 use jxl_oxide::{EnumColourEncoding, JxlImage, PixelFormat};
 use std::os::unix::ffi::OsStrExt;
 use std::{
     borrow::Cow,
-    collections::{hash_map::DefaultHasher, BTreeSet, HashMap},
+    collections::{hash_map::DefaultHasher, HashMap},
     hash::{Hash, Hasher},
     io::Read,
     path::{Path, PathBuf},
     pin::Pin,
 };
+use walkdir::WalkDir;
 
 pub const DEFAULT_COLORS: &[Color] = &[
     Color::Single([0.580, 0.922, 0.922]),
@@ -99,54 +101,40 @@ pub fn cache_dir() -> Option<PathBuf> {
 pub async fn load_each_from_path(
     path: PathBuf,
 ) -> Pin<Box<dyn Send + Stream<Item = (PathBuf, RgbaImage, RgbaImage)>>> {
-    let wallpapers = tokio::task::spawn_blocking(move || {
-        // Discovered image files that will be loaded as wallpapers.
-        let mut wallpapers = BTreeSet::new();
+    let candidate_paths: Vec<_> = WalkDir::new(path)
+        .max_depth(3)
+        .into_iter()
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_file())
+        .map(|entry| entry.path().to_path_buf())
+        .collect();
 
-        if let Ok(dir) = path.read_dir() {
-            for entry in dir.filter_map(Result::ok) {
-                let Ok(file_type) = entry.file_type() else {
-                    continue;
+    let future = futures_util::stream::iter(candidate_paths)
+        .map(|path| {
+            tokio::task::spawn_blocking(move || {
+                let is_jxl = path.extension().map(|ext| ext == "jxl").unwrap_or_default();
+                let is_image = if !is_jxl {
+                    if let Ok(Some(kind)) = infer::get_from_path(&path) {
+                        infer::MatcherType::Image == kind.matcher_type()
+                    } else {
+                        false
+                    }
+                } else {
+                    true
                 };
 
-                let path = entry.path();
-
-                if file_type.is_file() {
-                    let path = if path.extension().map(|ext| ext == "jxl").unwrap_or_default() {
-                        path
-                    } else if let Ok(Some(kind)) = infer::get_from_path(&path) {
-                        if infer::MatcherType::Image == kind.matcher_type() {
-                            path
-                        } else {
-                            continue;
-                        }
-                    } else {
-                        continue;
-                    };
-
-                    wallpapers.insert(path);
-
-                    if wallpapers.len() > 99 {
-                        break;
-                    }
+                if is_jxl || is_image {
+                    load_image_with_thumbnail(path)
+                } else {
+                    None
                 }
-            }
-        }
+            })
+        })
+        .buffered(4)
+        .filter_map(|value| async { value.ok().flatten() })
+        .take(100);
 
-        wallpapers
-    });
-
-    if let Ok(wallpapers) = wallpapers.await {
-        use futures_util::StreamExt;
-        let future = futures_util::stream::iter(wallpapers)
-            .map(|path| tokio::task::spawn_blocking(|| load_image_with_thumbnail(path)))
-            .buffered(4)
-            .filter_map(|value| async { value.ok()? });
-
-        Box::pin(future)
-    } else {
-        Box::pin(futures_lite::stream::empty())
-    }
+    Box::pin(future)
 }
 
 #[must_use]

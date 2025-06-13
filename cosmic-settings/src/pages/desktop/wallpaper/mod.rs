@@ -1178,11 +1178,6 @@ pub async fn change_folder(current_folder: PathBuf) -> Context {
     let mut update = Context::default();
     let mut streams = Vec::with_capacity(2);
 
-    // Include the cosmic background folder when loading the system wallpapers.
-    if current_folder == Config::default_folder() {
-        streams.push(wallpaper::load_each_from_path(Config::default_folder().join("cosmic")).await);
-    }
-
     streams.push(wallpaper::load_each_from_path(current_folder).await);
 
     for mut wallpapers in streams {
