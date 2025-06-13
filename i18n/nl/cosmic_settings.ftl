@@ -492,7 +492,6 @@ battery = Batterij
     .hour = { $value } uur
 
 
-    }
     .day = { $value } { $value ->
         [one] dag
         *[other] dagen

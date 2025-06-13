@@ -272,10 +272,6 @@ interface-density = Interface Density
     .compact = Compatta
     .spacious = Spaziosa
 
-window-management = Gestione finestre
-    .active-hint = Dimensione bordo finestra attiva
-    .gaps = Spaziatura finestre in modalità tiling
-
 ### Experimental
 
 experimental-settings = Impostazioni sperimentali
@@ -347,6 +343,8 @@ dock = Barra delle applicazioni
 
 window-management = Gestione finestre
     .desc = Azione tasto Super, opzioni controllo delle finestre, allineamento e impostazioni aggiuntive.
+    .active-hint = Dimensione bordo finestra attiva
+    .gaps = Spaziatura finestre in modalità tiling
 
 super-key = Tasto Super
     .launcher = Apri Launcher
@@ -571,10 +569,6 @@ keyboard-special-char = Immissione caratteri speciali
 keyboard-typing-assist = Digitazione
     .repeat-rate = Ripeti ritmo
     .repeat-delay = Ripeti ritardo
-
-added = Aggiunto
-type-to-search = Digita per cercare...
-show-extended-input-sources = Mostra
 
 added = Aggiunto
 type-to-search = Digita per cercare...
