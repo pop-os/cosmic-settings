@@ -1844,6 +1844,7 @@ dependencies = [
  "jxl-oxide",
  "tokio",
  "tracing",
+ "walkdir",
 ]
 
 [[package]]
