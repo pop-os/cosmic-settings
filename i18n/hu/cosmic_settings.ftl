@@ -270,6 +270,9 @@ interface-density = Felület sűrűsége
     .compact = Kompakt
     .spacious = Tágas
 
+window-management-appearance = Ablakkezelés
+    .active-hint = Aktív ablak kiemelésének mérete
+    .gaps = Rések a csempézett ablakok körül
 
 ### Experimental
 
@@ -342,8 +345,6 @@ dock = Dokkoló
 
 window-management = Ablakkezelés
     .desc = Super billentyű funkció, ablakkezelési és csempézési beállítások.
-    .active-hint = Aktív ablak kiemelésének mérete
-    .gaps = Rések a csempézett ablakok körül
 
 super-key = Super billentyű
     .launcher = Indító megnyitása
