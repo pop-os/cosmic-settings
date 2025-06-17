@@ -682,6 +682,7 @@ fn localize_action(action: &Action) -> String {
             SystemAction::PlayPause => fl!("system-shortcut", "play-pause"),
             SystemAction::PlayNext => fl!("system-shortcut", "play-next"),
             SystemAction::PlayPrev => fl!("system-shortcut", "play-prev"),
+            SystemAction::PowerOff => fl!("system-shortcut", "poweroff"),
             SystemAction::Screenshot => fl!("system-shortcut", "screenshot"),
             SystemAction::Terminal => fl!("system-shortcut", "terminal"),
             SystemAction::VolumeLower => fl!("system-shortcut", "volume-lower"),

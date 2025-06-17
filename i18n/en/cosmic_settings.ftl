@@ -692,6 +692,7 @@ system-shortcut = System
     .play-pause = Play/Pause
     .play-next = Next track
     .play-prev = Previous track
+    .poweroff = Power off
     .screenshot = Take a screenshot
     .terminal = Open a terminal
     .volume-lower = Decrease audio output volume
