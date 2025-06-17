@@ -40,6 +40,8 @@ pub enum Message {
     Deactivate(ConnectionId),
     /// An error occurred.
     Error(ErrorKind, String),
+    /// VPN connection error.
+    VpnDialogError(VpnDialog),
     /// Update the list of known connections.
     KnownConnections(IndexMap<UUID, ConnectionSettings>),
     /// An update from the network manager daemon
@@ -169,6 +171,7 @@ enum VpnDialog {
         username: String,
         password: SecureString,
         password_hidden: bool,
+        error: Option<(ErrorKind, String)>,
     },
     RemoveProfile(ConnectionId),
     WireGuardName(String, String, String),
@@ -238,6 +241,7 @@ impl page::Page<crate::pages::Message> for Page {
                 username,
                 password,
                 password_hidden,
+                error,
                 ..
             } => {
                 let username = widget::text_input(fl!("username"), username.as_str())
@@ -251,11 +255,20 @@ impl page::Page<crate::pages::Message> for Page {
                 )
                 .on_input(|input| Message::PasswordUpdate(SecureString::from(input)))
                 .on_submit(|_| Message::ConnectWithPassword);
+                let (err_kind, error) = if let Some(err) = error.as_ref() {
+                    (
+                        Some(err.0),
+                        Some(widget::text::body(err.1.as_str()).wrapping(Wrapping::Word)),
+                    )
+                } else {
+                    (None, None)
+                };
 
                 let controls = widget::column::with_capacity(2)
                     .spacing(12)
                     .push(username)
                     .push(password)
+                    .push_maybe(error)
                     .apply(Element::from);
 
                 let primary_action = widget::button::suggested(fl!("connect"))
@@ -265,7 +278,11 @@ impl page::Page<crate::pages::Message> for Page {
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
                 widget::dialog()
-                    .title(fl!("auth-dialog"))
+                    .title(if let Some(error_kind) = err_kind {
+                        error_kind.localized()
+                    } else {
+                        fl!("auth-dialog")
+                    })
                     .icon(icon::from_name("network-vpn-symbolic").size(64))
                     .body(fl!("auth-dialog", "vpn-description"))
                     .control(controls)
@@ -488,17 +505,26 @@ impl Page {
                                 username: settings.username.clone().unwrap_or_default(),
                                 password: SecureString::from(""),
                                 password_hidden: true,
+                                error: None,
                             });
                         }
 
                         _ => {
                             let connection_name = settings.id.clone();
+                            let username = settings.username.clone();
                             return cosmic::task::future(async move {
                                 if let Err(why) = nmcli::connect(&connection_name).await {
-                                    return Message::Error(
-                                        ErrorKind::Connect,
-                                        format!("failed to connect to VPN: {why}"),
-                                    );
+                                    return Message::VpnDialogError(VpnDialog::Password {
+                                        error: Some((
+                                            ErrorKind::Connect,
+                                            format!("failed to connect to VPN: {why}"),
+                                        )),
+                                        id: connection_name.clone(),
+                                        uuid,
+                                        username: username.clone().unwrap_or_default(),
+                                        password: SecureString::from(""),
+                                        password_hidden: true,
+                                    });
                                 }
 
                                 Message::Refresh
@@ -534,7 +560,6 @@ impl Page {
                     self.close_popup_and_apply_updates();
                 }
             }
-
             Message::Settings(uuid) => {
                 self.close_popup_and_apply_updates();
 
@@ -578,13 +603,14 @@ impl Page {
 
                 if let VpnDialog::Password {
                     id,
+                    uuid,
                     username,
                     password,
                     ..
                 } = dialog
                 {
                     return self
-                        .activate_with_password(id, username, password)
+                        .activate_with_password(id, uuid, username, password)
                         .map(crate::app::Message::from);
                 }
             }
@@ -597,11 +623,9 @@ impl Page {
                     *username = user;
                 }
             }
-
             Message::CancelDialog => {
                 self.dialog = None;
             }
-
             Message::TogglePasswordVisibility => {
                 if let Some(VpnDialog::Password {
                     ref mut password_hidden,
@@ -620,6 +644,10 @@ impl Page {
             Message::NetworkManagerConnect(conn) => {
                 return self.connect(conn.clone());
             }
+
+            Message::VpnDialogError(vpn_dialog) => {
+                self.dialog = Some(vpn_dialog);
+            }
         }
 
         Task::none()
@@ -628,24 +656,64 @@ impl Page {
     fn activate_with_password(
         &mut self,
         connection_name: String,
+        uuid: Arc<str>,
         username: String,
         password: SecureString,
     ) -> Task<Message> {
         cosmic::task::future(async move {
             if let Err(why) = nmcli::set_username(&connection_name, &username).await {
-                return Message::Error(ErrorKind::WithPassword("username"), why.to_string());
+                return Message::VpnDialogError(VpnDialog::Password {
+                    error: Some((ErrorKind::WithPassword("username"), why.to_string())),
+                    id: connection_name.clone(),
+                    uuid,
+                    username,
+                    password,
+                    password_hidden: true,
+                });
             }
 
             if let Err(why) = nmcli::set_password_flags_none(&connection_name).await {
-                return Message::Error(ErrorKind::WithPassword("password-flags"), why.to_string());
+                return Message::VpnDialogError(VpnDialog::Password {
+                    error: Some((ErrorKind::WithPassword("password-flags"), why.to_string())),
+                    id: connection_name.clone(),
+                    uuid,
+                    username,
+                    password,
+                    password_hidden: true,
+                });
+            }
+
+            if let Err(why) = nmcli::set_password_flags_none(&connection_name).await {
+                return Message::VpnDialogError(VpnDialog::Password {
+                    error: Some((ErrorKind::WithPassword("password-flags"), why.to_string())),
+                    id: connection_name.clone(),
+                    uuid,
+                    username,
+                    password,
+                    password_hidden: true,
+                });
             }
 
             if let Err(why) = nmcli::set_password(&connection_name, password.unsecure()).await {
-                return Message::Error(ErrorKind::WithPassword("password"), why.to_string());
+                return Message::VpnDialogError(VpnDialog::Password {
+                    error: Some((ErrorKind::WithPassword("password"), why.to_string())),
+                    id: connection_name.clone(),
+                    uuid,
+                    username,
+                    password,
+                    password_hidden: true,
+                });
             }
 
             if let Err(why) = nmcli::connect(&connection_name).await {
-                return Message::Error(ErrorKind::Connect, why.to_string());
+                return Message::VpnDialogError(VpnDialog::Password {
+                    error: Some((ErrorKind::Connect, why.to_string())),
+                    id: connection_name.clone(),
+                    uuid,
+                    username,
+                    password,
+                    password_hidden: true,
+                });
             }
 
             Message::Refresh
