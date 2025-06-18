@@ -16,16 +16,19 @@ use std::{
 
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser;
-use cosmic::widget::{
-    button, dropdown, list_column, row,
-    segmented_button::{self, SingleSelectModel},
-    settings, tab_bar, text, toggler,
-};
 use cosmic::{
     Apply, Element, Task,
     widget::{ColorPickerModel, color_picker::ColorPickerUpdate, icon},
 };
 use cosmic::{app::ContextDrawer, iced_runtime::core::image::Handle as ImageHandle};
+use cosmic::{
+    iced::Subscription,
+    widget::{
+        button, dropdown, list_column, row,
+        segmented_button::{self, SingleSelectModel},
+        settings, tab_bar, text, toggler,
+    },
+};
 use cosmic::{
     iced::{Alignment, Color, Length, window},
     surface,
@@ -38,6 +41,8 @@ use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
 use slab::Slab;
 use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
+
+use crate::subscription::WallpaperEvent;
 
 const ZOOM: usize = 0;
 const FIT: usize = 1;
@@ -61,7 +66,6 @@ struct OutputName(String);
 pub struct InitUpdate {
     service_config: wallpaper::Config,
     displays: HashMap<String, (String, (u32, u32))>,
-    selection: Context,
 }
 
 /// Messages for the wallpaper view.
@@ -79,6 +83,8 @@ pub enum Message {
     ChangeCategory(Category),
     /// Changes the displayed images in the wallpaper view.
     ChangeFolder(Context),
+    /// Emits a wallpaper event.
+    Event(WallpaperEvent),
     /// Handles messages from the color dialog.
     ColorAdd(ColorPickerUpdate),
     /// Creates a color context drawer
@@ -220,40 +226,12 @@ impl page::Page<crate::pages::Message> for Page {
             return Task::none();
         }
 
-        let current_folder = self.config.current_folder();
-
         let (task, on_enter_handle) = Task::future(async move {
             let (service_config, displays) = wallpaper::config().await;
-
-            let mut selection = change_folder(current_folder).await;
-
-            // `selection.active` is usually empty because `change_folder` creates a fresh context.
-            // This leads to blank previews in certain conditions when the program is restarted.
-            let fix_active = match selection.active {
-                Choice::Wallpaper(key) if !selection.paths.contains_key(key) => true,
-                Choice::Color(ref color) if !selection.custom_colors.contains(color) => true,
-                _ => false,
-            };
-            if fix_active {
-                selection.active = match service_config.default_background.source {
-                    Source::Path(ref path) if !path.is_dir() => selection
-                        .paths
-                        .iter()
-                        .find(|(_key, valid_path)| path == valid_path.as_path())
-                        .map(|(key, _)| Choice::Wallpaper(key))
-                        .unwrap_or_default(),
-                    Source::Path(_) => Choice::Slideshow,
-                    Source::Color(ref color) => {
-                        selection.add_custom_color(color.clone());
-                        Choice::Color(color.clone())
-                    }
-                }
-            }
 
             crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
                 service_config,
                 displays,
-                selection,
             })))
         })
         .abortable();
@@ -299,10 +277,15 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         core: &cosmic::Core,
     ) -> cosmic::iced::Subscription<crate::pages::Message> {
-        core.watch_state::<cosmic_bg_config::state::State>(cosmic_bg_config::NAME)
-            .map(|update| {
-                crate::pages::Message::DesktopWallpaper(Message::UpdateState(update.config))
-            })
+        let subscriptions = vec![
+            core.watch_state::<cosmic_bg_config::state::State>(cosmic_bg_config::NAME)
+                .map(|update| {
+                    crate::pages::Message::DesktopWallpaper(Message::UpdateState(update.config))
+                }),
+            crate::subscription::wallpapers(self.config.current_folder())
+                .map(|event| crate::pages::Message::DesktopWallpaper(Message::Event(event))),
+        ];
+        Subscription::batch(subscriptions)
     }
 }
 
@@ -590,16 +573,10 @@ impl Page {
 
     /// Changes the selection category, such as wallpaper select or color select.
     fn change_category(&mut self, category: Category) -> Task<crate::app::Message> {
-        let mut task = Task::none();
-
         match category {
             Category::Wallpapers => {
                 if self.config.current_folder.is_some() {
                     let _ = self.config.set_current_folder(None);
-                    task = cosmic::task::future(async move {
-                        let folder = change_folder(Config::default_folder()).await;
-                        Message::ChangeFolder(folder)
-                    });
                 } else {
                     self.select_first_wallpaper();
                 }
@@ -615,10 +592,6 @@ impl Page {
                     if let Err(why) = self.config.set_current_folder(Some(path.clone())) {
                         tracing::error!(?path, ?why, "failed to set current folder");
                     }
-
-                    task = cosmic::task::future(async move {
-                        Message::ChangeFolder(change_folder(path).await)
-                    });
                 }
             }
 
@@ -641,7 +614,7 @@ impl Page {
         }
 
         self.categories.selected = Some(category);
-        task
+        Task::none()
     }
 
     /// Changes the output being configured
@@ -928,13 +901,6 @@ impl Page {
                             self.categories.selected = Some(Category::RecentFolder(id));
                         }
                     }
-
-                    // Load the wallpapers from the selected folder into the view.
-                    return cosmic::Task::future(async move {
-                        let message = Message::ChangeFolder(change_folder(path).await);
-                        let page_message = crate::pages::Message::DesktopWallpaper(message);
-                        crate::Message::PageMessage(page_message)
-                    });
                 }
             }
 
@@ -962,10 +928,66 @@ impl Page {
                 }
             }
 
+            Message::Event(event) => match event {
+                WallpaperEvent::Loading => {
+                    self.selection = Context::default();
+                }
+                WallpaperEvent::Load {
+                    path,
+                    display,
+                    selection,
+                } => {
+                    let key = self.selection.paths.insert(path);
+                    self.selection.display_images.insert(key, display);
+                    self.selection.selection_handles.insert(
+                        key,
+                        ImageHandle::from_rgba(
+                            selection.width(),
+                            selection.height(),
+                            selection.into_vec(),
+                        ),
+                    );
+
+                    // `selection.active` is usually empty because `change_folder` creates a fresh context.
+                    // This leads to blank previews in certain conditions when the program is restarted.
+                    let fix_active = match self.selection.active {
+                        Choice::Wallpaper(key) if !self.selection.paths.contains_key(key) => true,
+                        Choice::Color(ref color)
+                            if !self.selection.custom_colors.contains(color) =>
+                        {
+                            true
+                        }
+                        _ => false,
+                    };
+                    if fix_active {
+                        self.selection.active =
+                            match self.wallpaper_service_config.default_background.source {
+                                Source::Path(ref path) if !path.is_dir() => self
+                                    .selection
+                                    .paths
+                                    .iter()
+                                    .find(|(_key, valid_path)| path == valid_path.as_path())
+                                    .map(|(key, _)| Choice::Wallpaper(key))
+                                    .unwrap_or_default(),
+                                Source::Path(_) => Choice::Slideshow,
+                                Source::Color(ref color) => {
+                                    self.selection.add_custom_color(color.clone());
+                                    Choice::Color(color.clone())
+                                }
+                            }
+                    }
+                }
+                WallpaperEvent::Loaded => {
+                    self.select_first_wallpaper();
+                }
+                WallpaperEvent::Error(error) => {
+                    tracing::error!("Failed to load wallpaper: {}", error);
+                }
+            },
+
             Message::Init(update) => {
                 self.outputs.clear();
                 self.wallpaper_service_config = update.service_config;
-                self.selection = update.selection;
                 self.show_tab_bar = update.displays.len() > 1;
 
                 // Sync custom colors from config.
@@ -1172,31 +1194,6 @@ impl Context {
 
         None
     }
-}
-
-pub async fn change_folder(current_folder: PathBuf) -> Context {
-    let mut update = Context::default();
-    let mut streams = Vec::with_capacity(2);
-
-    streams.push(wallpaper::load_each_from_path(current_folder).await);
-
-    for mut wallpapers in streams {
-        while let Some((path, display_image, selection_image)) = wallpapers.next().await {
-            let id = update.paths.insert(path);
-
-            update.display_images.insert(id, display_image);
-
-            let selection_handle = ImageHandle::from_rgba(
-                selection_image.width(),
-                selection_image.height(),
-                selection_image.into_vec(),
-            );
-
-            update.selection_handles.insert(id, selection_handle);
-        }
-    }
-
-    update
 }
 
 #[allow(clippy::too_many_lines)]
