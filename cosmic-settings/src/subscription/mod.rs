@@ -5,3 +5,5 @@ pub use desktop_files::*;
 mod daytime;
 #[cfg(feature = "ashpd")]
 pub use daytime::*;
+mod wallpapers;
+pub use wallpapers::*;
