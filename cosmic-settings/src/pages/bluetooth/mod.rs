@@ -14,7 +14,6 @@ use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::runtime::Handle;
 use zbus::zvariant::OwnedObjectPath;
 
 enum Dialog {

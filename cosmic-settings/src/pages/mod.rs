@@ -22,6 +22,8 @@ pub mod sound;
 pub mod system;
 pub mod time;
 
+pub type Element<'a> = cosmic::Element<'a, Message>;
+
 #[derive(Clone, Debug)]
 pub enum Message {
     // Page-specific messages

@@ -36,6 +36,12 @@ pub enum Message {
     Surface(surface::Action),
 }
 
+impl From<Message> for crate::pages::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::LegacyApplications(message)
+    }
+}
+
 pub struct Page {
     refresh_pending: Arc<AtomicBool>,
     randr_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
@@ -272,13 +278,13 @@ pub fn legacy_application_global_shortcuts() -> Section<crate::pages::Message> {
             let title = widget::text::body(&section.title).font(cosmic::font::bold());
             let description = widget::text::body(&section.descriptions[desc]);
 
-            let content = widget::settings::section()
+            let content = widget::settings::section::<'_, crate::pages::Message>()
                 .add(widget::settings::item_row(vec![
                     widget::radio(
                         text::body(&section.descriptions[none]),
                         EavesdroppingKeyboardMode::None,
                         Some(page.comp_config_xwayland_eavesdropping.keyboard),
-                        Message::SetXwaylandKeyboardMode,
+                        |t| Message::SetXwaylandKeyboardMode(t).into(),
                     )
                     .width(Length::Fill)
                     .into(),
@@ -288,7 +294,7 @@ pub fn legacy_application_global_shortcuts() -> Section<crate::pages::Message> {
                         text::body(&section.descriptions[modifiers]),
                         EavesdroppingKeyboardMode::Modifiers,
                         Some(page.comp_config_xwayland_eavesdropping.keyboard),
-                        Message::SetXwaylandKeyboardMode,
+                        |t| Message::SetXwaylandKeyboardMode(t).into(),
                     )
                     .width(Length::Fill)
                     .into(),
@@ -298,7 +304,7 @@ pub fn legacy_application_global_shortcuts() -> Section<crate::pages::Message> {
                         text::body(&section.descriptions[combination]),
                         EavesdroppingKeyboardMode::Combinations,
                         Some(page.comp_config_xwayland_eavesdropping.keyboard),
-                        Message::SetXwaylandKeyboardMode,
+                        |t| Message::SetXwaylandKeyboardMode(t).into(),
                     )
                     .width(Length::Fill)
                     .into(),
@@ -308,7 +314,7 @@ pub fn legacy_application_global_shortcuts() -> Section<crate::pages::Message> {
                         text::body(&section.descriptions[all]),
                         EavesdroppingKeyboardMode::All,
                         Some(page.comp_config_xwayland_eavesdropping.keyboard),
-                        Message::SetXwaylandKeyboardMode,
+                        |t| Message::SetXwaylandKeyboardMode(t).into(),
                     )
                     .width(Length::Fill)
                     .into(),
@@ -316,10 +322,8 @@ pub fn legacy_application_global_shortcuts() -> Section<crate::pages::Message> {
                 .add(widget::settings::item(
                     &section.descriptions[mouse],
                     widget::toggler(page.comp_config_xwayland_eavesdropping.pointer)
-                        .on_toggle(Message::SetXwaylandMouseButtonMode),
-                ))
-                .apply(Element::from)
-                .map(crate::pages::Message::LegacyApplications);
+                        .on_toggle(|t| Message::SetXwaylandMouseButtonMode(t).into()),
+                ));
 
             widget::column::with_capacity(3)
                 .push(title)

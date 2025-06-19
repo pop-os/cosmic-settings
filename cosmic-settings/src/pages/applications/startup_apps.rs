@@ -114,16 +114,14 @@ impl page::Page<crate::pages::Message> for Page {
         match &self.context {
             Some(Context::AddApplication(directory_type)) => {
                 let search = widget::search_input(fl!("type-to-search"), &self.application_search)
-                    .on_input(Message::ApplicationSearch)
-                    .on_clear(Message::ApplicationSearch(String::new()))
-                    .apply(Element::from)
-                    .map(crate::pages::Message::from);
+                    .on_input(|i| Message::ApplicationSearch(i).into())
+                    .on_clear(Message::ApplicationSearch(String::new()).into())
+                    .apply(Element::from);
 
                 Some(
                     cosmic::app::context_drawer(
-                        self.add_application_context_view(directory_type.clone())
-                            .map(crate::pages::Message::from),
-                        crate::pages::Message::CloseContextDrawer,
+                        self.add_application_context_view(directory_type.clone()),
+                        crate::pages::Message::CloseContextDrawer.into(),
                     )
                     .title(fl!("startup-apps", "search-for-application"))
                     .header(search),
@@ -158,7 +156,7 @@ impl page::Page<crate::pages::Message> for Page {
         task
     }
 
-    fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
+    fn dialog(&self) -> Option<crate::pages::Element<'_>> {
         if let Some(app_to_remove) = &self.app_to_remove {
             if let Some(cached_startup_apps) = &self.cached_startup_apps {
                 if let Some(target_directory_type) = &self.target_directory_type {
@@ -171,19 +169,21 @@ impl page::Page<crate::pages::Message> for Page {
                             ))
                             .icon(icon::from_name("dialog-warning").size(64))
                             .body(fl!("startup-apps", "remove-dialog-description"))
-                            .primary_action(button::suggested(fl!("remove")).on_press(
-                                Message::RemoveStartupApplication(
-                                    target_directory_type.clone(),
-                                    app_to_remove.clone(),
-                                    true,
+                            .primary_action(
+                                button::suggested(fl!("remove")).on_press(
+                                    Message::RemoveStartupApplication(
+                                        target_directory_type.clone(),
+                                        app_to_remove.clone(),
+                                        true,
+                                    )
+                                    .into(),
                                 ),
-                            ))
+                            )
                             .secondary_action(
                                 button::standard(fl!("cancel"))
-                                    .on_press(Message::CancelRemoveStartupApplication),
+                                    .on_press(Message::CancelRemoveStartupApplication.into()),
                             )
-                            .apply(Element::from)
-                            .map(crate::pages::Message::StartupApps),
+                            .apply(Element::from),
                     );
                 }
             }
@@ -322,7 +322,7 @@ impl Page {
     pub fn add_application_context_view(
         &self,
         directory_type: DirectoryType,
-    ) -> Element<'_, crate::pages::Message> {
+    ) -> crate::pages::Element<'_> {
         let cosmic::cosmic_theme::Spacing { space_xs, .. } = cosmic::theme::spacing();
 
         let mut list = widget::list_column();
@@ -350,9 +350,15 @@ impl Page {
                             } else {
                                 row = row.push(text(&app.appid).width(Length::Fill));
                             }
-                            row = row.push(widget::button::text(fl!("add")).on_press(
-                                Message::AddStartupApplication(directory_type.clone(), app.clone()),
-                            ));
+                            row = row.push(
+                                widget::button::text(fl!("add")).on_press(
+                                    Message::AddStartupApplication(
+                                        directory_type.clone(),
+                                        app.clone(),
+                                    )
+                                    .into(),
+                                ),
+                            );
 
                             list = list.add(row)
                         }
@@ -361,8 +367,7 @@ impl Page {
             }
         }
 
-        list.apply(Element::from)
-            .map(crate::pages::Message::StartupApps)
+        list.into()
     }
 }
 
@@ -409,11 +414,14 @@ fn apps() -> Section<crate::pages::Message> {
                             row = row.push(
                                 button::icon(icon::from_name("edit-delete-symbolic"))
                                     .extra_small()
-                                    .on_press(Message::RemoveStartupApplication(
-                                        directory_type.clone(),
-                                        app.clone(),
-                                        false,
-                                    )),
+                                    .on_press(
+                                        Message::RemoveStartupApplication(
+                                            directory_type.clone(),
+                                            app.clone(),
+                                            false,
+                                        )
+                                        .into(),
+                                    ),
                             );
 
                             section = section.add(row)
@@ -421,7 +429,7 @@ fn apps() -> Section<crate::pages::Message> {
                     }
 
                     let add_startup_app = widget::button::standard(fl!("startup-apps", "add"))
-                        .on_press(Message::ShowApplicationSidebar(directory_type.clone()));
+                        .on_press(Message::ShowApplicationSidebar(directory_type.clone()).into());
 
                     view = view.push(section).push(widget::container(
                         widget::container(add_startup_app)
@@ -431,8 +439,7 @@ fn apps() -> Section<crate::pages::Message> {
                 }
             }
 
-            view.apply(Element::from)
-                .map(crate::pages::Message::StartupApps)
+            view.into()
         })
 }
 
