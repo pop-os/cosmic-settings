@@ -387,30 +387,21 @@ impl Model {
             }
 
             ShortcutMessage::DeleteBinding(id) => {
-                eprintln!("delete shortcut");
                 if let Some(short_id) = self.shortcut_context {
                     if let Some(model) = self.shortcut_models.get_mut(short_id) {
                         let shortcut = model.bindings.remove(id);
                         if shortcut.is_default {
-                            eprintln!("disabling {shortcut:?}");
                             self.config_add(Action::Disable, shortcut.binding.clone());
                         } else {
-                            eprintln!("removing {shortcut:?}");
                             self.config_remove(&shortcut.binding);
                         }
-                    } else {
-                        eprintln!("no shortcut model found");
                     }
-                } else {
-                    eprintln!("no shortcut context");
                 }
             }
 
             ShortcutMessage::DeleteShortcut(id) => {
-                eprintln!("deleting shortcut");
                 let model = self.shortcut_models.remove(id);
                 for (_, shortcut) in model.bindings {
-                    eprintln!("removing shortcut {shortcut:?}");
                     self.config_remove(&shortcut.binding);
                 }
             }
