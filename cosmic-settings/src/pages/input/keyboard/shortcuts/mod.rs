@@ -149,6 +149,70 @@ impl page::Page<crate::pages::Message> for Page {
             self.shortcuts_context = cosmic_settings_config::shortcuts::context().ok();
         }
 
+        self.reload_search();
+
+        Task::none()
+    }
+
+    fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        self.clear();
+        Task::none()
+    }
+}
+
+impl Page {
+    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
+        match message {
+            Message::Category(category) => match category {
+                Category::Custom => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.custom))
+                }
+
+                Category::ManageWindow => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.manage_window))
+                }
+
+                Category::MoveWindow => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.move_window))
+                }
+
+                Category::Nav => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.nav))
+                }
+
+                Category::System => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.system))
+                }
+
+                Category::WindowTiling => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.window_tiling))
+                }
+            },
+
+            Message::Search(input) => {
+                self.search(input);
+                Task::none()
+            }
+
+            Message::SearchShortcut(message) => self.search_model.update(message),
+        }
+    }
+
+    fn clear(&mut self) {
+        self.search.actions = SlotMap::new();
+        self.search.localized = SecondaryMap::new();
+        self.search.input = String::new();
+        self.search_model.on_clear();
+        self.modified.custom = 0;
+        self.modified.manage_windows = 0;
+        self.modified.move_windows = 0;
+        self.modified.nav = 0;
+        self.modified.system = 0;
+    }
+
+    fn reload_search(&mut self) {
+        self.clear();
+
         if let Some(context) = self.shortcuts_context.as_ref() {
             let mut defaults = context.get::<Shortcuts>("defaults").unwrap_or_default();
             let custom = context.get::<Shortcuts>("custom").unwrap_or_default();
@@ -200,72 +264,21 @@ impl page::Page<crate::pages::Message> for Page {
             defaults.0.extend(custom.0);
             self.search.shortcuts = defaults;
         }
-
-        Task::none()
-    }
-
-    fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        self.search.actions = SlotMap::new();
-        self.search.localized = SecondaryMap::new();
-        self.search.input = String::new();
-        self.search_model.on_clear();
-        self.modified.custom = 0;
-        self.modified.manage_windows = 0;
-        self.modified.move_windows = 0;
-        self.modified.nav = 0;
-        self.modified.system = 0;
-        Task::none()
-    }
-}
-
-impl Page {
-    pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
-        match message {
-            Message::Category(category) => match category {
-                Category::Custom => {
-                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.custom))
-                }
-
-                Category::ManageWindow => {
-                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.manage_window))
-                }
-
-                Category::MoveWindow => {
-                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.move_window))
-                }
-
-                Category::Nav => {
-                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.nav))
-                }
-
-                Category::System => {
-                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.system))
-                }
-
-                Category::WindowTiling => {
-                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.window_tiling))
-                }
-            },
-
-            Message::Search(input) => {
-                self.search(input);
-                Task::none()
-            }
-
-            Message::SearchShortcut(message) => self.search_model.update(message),
-        }
     }
 
     fn search(&mut self, input: String) {
-        self.search.input = input;
-        if self.search.input.is_empty() {
+        self.reload_search();
+
+        if input.is_empty() {
             self.search_model.on_clear();
             return;
         }
+
         if self.search.actions.is_empty() {
             self.search.cache_localized_actions();
         }
 
+        self.search.input = input;
         self.search_model.shortcut_models = self.search.shortcut_models();
     }
 }
