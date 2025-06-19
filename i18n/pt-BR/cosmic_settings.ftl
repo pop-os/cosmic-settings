@@ -203,10 +203,13 @@ fit-to-screen = Ajustar à Tela
 open-new-folder = Abrir Nova Pasta
 recent-folders = Pastas Recentes
 
-x-minutes = { $number } minutos
-x-hours = { $number ->
-    [1] 1 hora
-    *[other] { $number } horas
+x-minutes = { $number } { $number ->
+    [one] minuto
+    *[other] minutos
+}
+x-hours = { $number } { $number ->
+    [one] hora
+    *[other] horas
 }
 never = Nunca
 
@@ -689,6 +692,7 @@ system-shortcut = Sistema
     .play-pause = Iniciar/Pausar
     .play-next = Próxima faixa
     .play-prev = Faixa anterior
+    .poweroff = Desligar
     .screenshot = Fazer uma captura de tela
     .terminal = Abrir o terminal
     .volume-lower = Reduzir o volume da saída de áudio
