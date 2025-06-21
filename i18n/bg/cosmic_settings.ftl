@@ -119,9 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Прекъсване
     .forget = Забравяне
     .dbus-error = Възникна грешка по време на работа с DBus: { $why }
-    .disabled = Услугата за bluetooth е изключена
-    .inactive = Услугата за bluetooth не е активна
-    .unknown = Услугата за bluetooth не може да бъде включена. Инсталирано ли е bluez?
+    .disabled = Услугата за Bluetooth е изключена
+    .inactive = Услугата за Bluetooth не е активна
+    .unknown = Услугата за Bluetooth не може да бъде включена. Инсталирано ли е bluez?
 
 bluetooth-paired = Предишно свързани устройства
     .connect = Свързване
@@ -203,10 +203,13 @@ fit-to-screen = Напасване в екрана
 open-new-folder = Отваряне на нова папка
 recent-folders = Скоро отваряни папки
 
-x-minutes = { $number } минути
-x-hours = { $number ->
-    [1] 1 час
-    *[other] { $number } часа
+x-minutes = { $number } { $number ->
+    [one] минута
+    *[other] минути
+}
+x-hours = { $number } { $number ->
+    [one] час
+    *[other] часа
 }
 never = Никога
 
@@ -432,9 +435,9 @@ night-light = Нощен режим
 
 orientation = Ориентация
     .standard = Стандартна
-    .rotate-90 = Завъртане на 90 градуса
-    .rotate-180 = Завъртане на 180 градуса
-    .rotate-270 = Завъртане на 270 градуса
+    .rotate-90 = Завъртане на 90°
+    .rotate-180 = Завъртане на 180°
+    .rotate-270 = Завъртане на 270°
 
 vrr = Променлива честота на опресняване
     .enabled = Включено
@@ -690,6 +693,7 @@ system-shortcut = Система
     .play-pause = Изпълняване/пауза
     .play-next = Следваща песен
     .play-prev = Предишна песен
+    .poweroff = Изключване
     .screenshot = Снимка на екрана
     .terminal = Отваряне на терминал
     .volume-lower = Намаляване на силата на звука
