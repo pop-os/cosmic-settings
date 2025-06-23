@@ -619,7 +619,7 @@ impl Page {
                         tracing::error!(?err, "Error setting dark mode");
                     }
 
-                    self.reload_theme_mode();
+                    tasks.push(self.reload_theme_mode());
                 }
             }
 
@@ -894,6 +894,10 @@ impl Page {
                     .iter()
                     .position(|theme| theme.id == active_icon_theme);
                 self.icon_handles = icon_handles;
+
+                tasks.push(cosmic::task::message(app::Message::SetTheme(
+                    cosmic::theme::system_preference(),
+                )));
             }
 
             Message::Left => {
@@ -976,7 +980,7 @@ impl Page {
                     Self::update_panel_spacing(Density::Standard);
                 });
 
-                self.reload_theme_mode();
+                tasks.push(self.reload_theme_mode());
             }
 
             #[cfg(feature = "xdg-portal")]
@@ -1111,7 +1115,7 @@ impl Page {
                     tracing::error!("Failed to get the theme config.");
                 }
 
-                self.reload_theme_mode();
+                tasks.push(self.reload_theme_mode());
             }
 
             Message::UseDefaultWindowHint(v) => {
@@ -1293,7 +1297,7 @@ impl Page {
         ];
     }
 
-    fn reload_theme_mode(&mut self) {
+    fn reload_theme_mode(&mut self) -> Task<app::Message> {
         let entity = self.entity;
         let font_config = std::mem::take(&mut self.font_config);
         let icon_themes = std::mem::take(&mut self.icon_themes);
@@ -1316,6 +1320,8 @@ impl Page {
         self.icon_handles = icon_handles;
         self.icon_theme_active = icon_theme_active;
         self.font_config = font_config;
+
+        cosmic::task::message(app::Message::SetTheme(cosmic::theme::system_preference()))
     }
 
     fn update_color_picker(

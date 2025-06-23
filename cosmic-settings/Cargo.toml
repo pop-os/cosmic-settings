@@ -117,7 +117,7 @@ git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
-default = ["a11y", "dbus-config", "linux", "single-instance", "wgpu"]
+default = ["a11y", "linux", "single-instance", "wgpu"]
 gettext = ["dep:gettext-rs"]
 
 # Default features for Linux
