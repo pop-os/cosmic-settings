@@ -52,9 +52,9 @@ cosmic-text = { git = "https://github.com/pop-os/cosmic-text//", rev = "b017d7c"
 # [patch.'https://github.com/smithay/client-toolkit/']
 # smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }
 
-# [patch.'https://github.com/pop-os/cosmic-protocols']
-# cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "1425bd4" }
-# cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "1425bd4" }
+[patch.'https://github.com/pop-os/cosmic-protocols']
+cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "408af98" }
+cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "408af98" }
 
 # [patch.'https://github.com/pop-os/cosmic-settings-daemon']
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
