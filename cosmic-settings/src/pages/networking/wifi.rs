@@ -684,8 +684,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                             }))
                             .any(|known| known == network.ssid.as_ref());
 
-                        // TODO: detect if access point is secured or not.
-                        let is_encrypted = true;
+                        let is_encrypted = network.network_type != NetworkType::Open;
 
                         let (connect_txt, connect_msg) = if is_connected {
                             (&section.descriptions[connected_txt], None)
