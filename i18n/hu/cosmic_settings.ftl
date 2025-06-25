@@ -18,7 +18,7 @@ connections-and-profiles = { $variant ->
 add-network = Hálózat hozzáadása
     .profile = Profil hozzáadása
 add-vpn = VPN hozzáadása
-airplane-on = Repülőgép üzemmód be van kapcsolva.
+airplane-on = A repülőgép üzemmód be van kapcsolva.
 cable-unplugged = Kábel kihúzva
 connect = Kapcsolódás
 connected = Kapcsolódva
@@ -38,11 +38,11 @@ visible-networks = Látható hálózatok
 identity = Azonosító
 
 auth-dialog = Azonosítás szükséges
-    .vpn-description = Írja be a VPN szolgáltatás által követelt felhasználónevet és jelszót.
-    .wifi-description = Írja be a jelszót vagy a titkosítókulcsot. A router „WPS” gombjának megnyomásával is csatlakozhat.
+    .vpn-description = Írd be a VPN szolgáltatás által követelt felhasználónevet és jelszót.
+    .wifi-description = Írd be a jelszót vagy a titkosítókulcsot. A router „WPS” gombjának megnyomásával is csatlakozhatsz.
 
-forget-dialog = El akarja felejteni ezt a Wi-Fi hálózatot?
-    .description = A jelszót ismét meg kell adnia, ha újra csatlakozni szeretne.
+forget-dialog = El akarod felejteni ezt a Wi-Fi hálózatot?
+    .description = A jelszót ismét meg kell adnod, ha újra csatlakozni szeretnél.
 
 network-device-state =
     .activated = Csatlakozva a hálózathoz
@@ -60,15 +60,15 @@ network-device-state =
     .unmanaged = Kezeletlen
     .unplugged = Kábel kihúzva
 
-remove-connection-dialog = Törli a kapcsolati profilt?
-    .vpn-description = A jelszót újra be kell írnia a jövőbeli használathoz.
-    .wired-description = A profilt újból létre kell hoznia a jövőbeli használathoz.
+remove-connection-dialog = Törlöd a kapcsolati profilt?
+    .vpn-description = A jelszót újra be kell írnod a jövőbeli használathoz.
+    .wired-description = A profilt újból létre kell hoznod a jövőbeli használathoz.
 
 vpn = VPN
     .connections = VPN-kapcsolatok
     .error = Nem sikerült hozzáadni a VPN-konfigurációt
     .remove = Kapcsolati profil törlése
-    .select-file = Válasszon ki egy VPN konfigurációs fájlt
+    .select-file = Válassz ki egy VPN konfigurációs fájlt
 
 vpn-error = VPN hiba
     .config = Nem sikerült hozzáadni a VPN-konfigurációt
@@ -96,12 +96,12 @@ wifi = Wi-Fi
     .forget = Hálózat elfelejtése
 
 wireguard-dialog = WireGuard eszköz hozzáadása
-    .description = Válasszon egy eszköz nevet a WireGuard konfigurációhoz.
+    .description = Válassz egy eszköz nevet a WireGuard konfigurációhoz.
 
 ## Networking: Online Accounts
 
 online-accounts = Online fiókok
-    .desc = fiókok hozzáadása, IMAP és SMTP, vállalati bejelentkezések
+    .desc = Fiókok hozzáadása, IMAP és SMTP, vállalati bejelentkezések
 
 # Bluetooth
 
@@ -128,7 +128,7 @@ bluetooth-paired = Korábban párosított eszközök
     .battery = { $percentage }% töltöttség
 
 bluetooth-confirm-pin = Bluetooth PIN megerősítése
-    .description = Kérjük, erősítse meg, hogy a következő PIN megegyezik a(z) { $device } eszközön megjelenített PIN-kóddal
+    .description = Erősítsd meg, hogy a következő PIN megegyezik a(z) { $device } eszközön megjelenített PIN-kóddal
 
 bluetooth-available = Közeli eszközök
 
@@ -151,7 +151,7 @@ hearing = Hallás
 
 default = Alapértelmezett
 magnifier = Nagyító
-    .controls = Vagy használja ezeket a billentyűparancsokat: { $zoom_in ->
+    .controls = Vagy használd ezeket a billentyűparancsokat: { $zoom_in ->
              [zero] {""}
             *[other] {""}
                 {$zoom_in} a nagyításhoz,
@@ -165,7 +165,7 @@ magnifier = Nagyító
     .show_overlay = Nagyító megjelenítése
     .increment = Nagyítás mértéke
     .signin = Nagyító indítása bejelentkezéskor
-    .applet = A nagyítót be- és kikapcsolhatja a panelen található kisalkalmazásban
+    .applet = A nagyítót be- és kikapcsolhatod a panelen található kisalkalmazásban
     .movement = Nagyított nézet mozgása
     .continuous = A mutatóval
     .onedge = Amikor a mutató eléri a szélet
@@ -187,8 +187,8 @@ wallpaper = Háttérkép
     .change = Háttérkép váltásának gyakorisága
     .desc = Háttérképek, színek és diavetítési beállítások.
     .fit = Háttérkép illeszkedése
-    .folder-dialog = Válasszon háttérkép mappát
-    .image-dialog = Válasszon háttérkép képet
+    .folder-dialog = Válassz háttérkép mappát
+    .image-dialog = Válassz háttérkép képet
     .plural = Háttérképek
     .same = Ugyanaz a háttérkép legyen minden kijelzőn
     .slide = Diavetítés
@@ -203,10 +203,13 @@ fit-to-screen = Képernyőhöz igazítás
 open-new-folder = Új mappa megnyitása
 recent-folders = Legutóbbi mappák
 
-x-minutes = { $number } perc
-x-hours = { $number ->
-    [1] 1 óra
-    *[other] { $number } óra
+x-minutes = { $number } { $number ->
+    [one] perc
+    *[other] perc
+}
+x-hours = { $number } { $number ->
+    [one] óra
+    *[other] óra
 }
 never = Soha
 
@@ -216,7 +219,7 @@ appearance = Megjelenés
     .desc = Kiemelő színek és COSMIC témák.
 
 accent-color = Kiemelő színek
-app-background = Alkalmazás vagy ablak háttér
+app-background = Alkalmazás- vagy ablakháttér
 auto = Auto
 close = Bezárás
 color-picker = Színválasztó
@@ -251,10 +254,10 @@ control-tint = Irányító komponens színezése
 frosted = Elmosódott üveg hatás a rendszerfelületen
     .desc = A háttér elmosását alkalmazza a panelre, a dokkolóra, a kisalkalmazásokra, az indítóra és az alkalmazáskönyvtárra.
 
-enable-export = Alkalmazza ezt a témát a GNOME-alkalmazásokra.
-    .desc = Nem minden eszközkészlet támogatja az automatikus váltást. Előfordulhat, hogy a téma módosítása után újra kell indítani a nem COSMIC alkalmazásokat.
+enable-export = Téma alkalmazása a GNOME-alkalmazásokra.
+    .desc = Nem minden eszközkészlet támogatja az automatikus váltást. Előfordulhat, hogy a téma módosítása után újra kell indítanod a nem COSMIC-alapú alkalmazásokat.
 
-icon-theme = Ikon téma
+icon-theme = Ikontéma
     .desc = Más ikonkészletet alkalmaz az alkalmazásokra.
 
 text-tint = Felületiszöveg-árnyalat
@@ -296,7 +299,7 @@ add-applet = Kisalkalmazás hozzáadása
 all = Összes
 applets = Kisalkalmazások
 center-segment = Szegmens közepe
-drop-here = Húzza ide a kisalkalmazásokat
+drop-here = Húzd ide a kisalkalmazásokat
 end-segment = Szegmens vége
 large = Nagy
 no-applets-found = Nem található kisalkalmazás...
@@ -329,8 +332,8 @@ panel-style = Stílus
     .background-opacity = Háttér átlátszósága
 
 panel-applets = Konfiguráció
-    .dock-desc = Konfigurálja a dokkoló kisalkalmazásait.
-    .desc = Konfigurálja a panel kisalkalmazásait.
+    .dock-desc = Konfiguráld a dokkoló kisalkalmazásait.
+    .desc = Konfiguráld a panel kisalkalmazásait.
 
 panel-missing = A panel konfigurációja hiányzik
     .desc = A panel konfigurációs fájlja hiányzik, mert egyéni konfigurációt használtak, vagy sérült.
@@ -403,7 +406,7 @@ color = Szín
 display = Kijelzők
     .desc = Kijelzők kezelése, grafikus módváltás és éjszakai fény.
     .arrangement = Kijelző elrendezése
-    .arrangement-desc = Húzza a kijelzőket az átrendezésükhöz.
+    .arrangement-desc = Húzd a kijelzőket az átrendezésükhöz.
     .enable = Kijelző engedélyezése
     .external = { $size } { $output } külső kijelző
     .laptop = { $size } laptop kijelző
@@ -446,7 +449,7 @@ scheduling = Ütemezés
     .manual = Kézi ütemezés
 
 dialog = Párbeszédablak
-    .title = Megtartja ezeket a kijelzőbeállításokat?
+    .title = Megtartod ezeket a kijelzőbeállításokat?
     .keep-changes = Változtatások megtartása
     .change-prompt = A beállítások automatikusan visszaállnak { $time } másodperc múlva.
     .revert-settings = Beállítások visszaállítása
@@ -514,7 +517,7 @@ power-mode = Energiagazdálkodási mód
     .balanced-desc = Csendes teljesítmény és mérsékelt energiafogyasztás.
     .performance = Nagy teljesítmény
     .performance-desc = Csúcsteljesítmény és energiafelhasználás.
-    .no-backend = A háttérprogram nem található. Telepítse a system76-power vagy a power-profiles-daemont.
+    .no-backend = A háttérprogram nem található. Telepítsd a system76-power vagy a power-profiles-daemon csomagot.
 
 power-saving = Energiagazdálkodási beállítások
     .turn-off-screen-after = A képernyő kikapcsolása
@@ -578,7 +581,7 @@ keyboard-numlock-boot = Num Lock
     .set = Num Lock indítási állapotának beállítása
 
 added = Hozzáadva
-type-to-search = Gépeljen a kereséshez...
+type-to-search = Írj a kereséshez...
 show-extended-input-sources = Bővített bemeneti források megjelenítése
 
 ## Input: Keyboard: Shortcuts
@@ -689,11 +692,12 @@ system-shortcut = Rendszer
     .play-pause = Lejátszás/Szünet
     .play-next = Következő szám
     .play-prev = Előző szám
+    .poweroff = Leállítás
     .screenshot = Képernyőkép készítése
-    .terminal = Egy terminál megnyitása
+    .terminal = Terminál megnyitása
     .volume-lower = Hangkimenet hangerejének csökkentése
     .volume-raise = Hangkimenet hangerejének növelése
-    .web-browser = Megnyit egy webböngészőt
+    .web-browser = Böngésző megnyitása
     .window-switcher = Váltás a nyitott ablakok között
     .window-switcher-previous = Váltás a nyitott ablakok között fordított sorrendben
     .workspace-overview = Munkaterület áttekintésének megnyitása
@@ -707,8 +711,8 @@ window-tiling = Ablak csempézés
     .toggle-floating = Az ablakok lebegtetésének be- és kikapcsolása
     .toggle-orientation = Tájolás váltása
 
-replace-shortcut-dialog = Lecseréli a parancsikont?
-    .desc = A(z) { $shortcut } használja a(z) { $name }. Ha lecseréli, a(z) { $name } le lesz tiltva.
+replace-shortcut-dialog = Lecseréled a parancsikont?
+    .desc = A(z) { $shortcut } billentyűt a(z) { $name } használja. Ha lecseréled, a(z) { $name } le lesz tiltva.
 
 zoom-in = Nagyítás
 zoom-out = Kicsinyítés
@@ -727,9 +731,9 @@ click-behavior = Kattintási viselkedés
     .button-areas = Másodlagos kattintás a jobb alsó sarokban, középső kattintás az alsó középső sarokban
 
 pinch-to-zoom = Csippentéses nagyítás
-    .desc = Használja két ujját a tartalom nagyításához a nagyítást támogató alkalmazásokhoz.
+    .desc = Két ujjal belenagyíthatsz a tartalomba azokban az alkalmazásokban, amik támogatják a nagyítást.
 
-tap-to-click = Koppintson a kattintáshoz
+tap-to-click = Koppints a kattintáshoz
     .desc = Engedélyezi az egyujjas koppintást az elsődleges kattintáshoz, a kétujjas koppintást a másodlagos kattintáshoz és a háromujjas érintést a középső kattintáshoz.
 
 touchpad = Érintőpárna
@@ -824,7 +828,7 @@ startup-apps = Indítási alkalmazások
     .user = Felhasználói alkalmazások
     .user-description = Ezek az alkalmazások a jelenlegi felhasználó bejelentkezésekor indulnak el.
     .remove-dialog-title = { $name } eltávolítása?
-    .remove-dialog-description = Biztosan el akarja távolítani ezt az indítási alkalmazások közül?
+    .remove-dialog-description = Biztosan el akarod távolítani ezt az indítási alkalmazások közül?
     .search-for-application = Alkalmazás keresése
 
 ## Applications: Legacy Applications
@@ -847,7 +851,7 @@ legacy-app-scaling = X11-ablakrendszer alkalmazásméretezés
     .applications-description = A játékok és a teljes képernyős X11 alkalmazások felbontása eltérhet a kijelző felbontásától.
     .scaled-compatibility = Maximális kompatibilitási mód
     .compatibility-description = Az X11 alkalmazások elmosódottan jelenhetnek meg HiDPI képernyőkön.
-    .preferred-display = Elsődleges kijelző játékokhoz és teljes képernyős X11 alkalmazásokhoz
+    .preferred-display = Preferált kijelző játékokhoz és teljes képernyős X11-alkalmazásokhoz
     .no-display = <Nincs>
 
 ## System
