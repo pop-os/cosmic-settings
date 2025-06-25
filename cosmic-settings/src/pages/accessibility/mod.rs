@@ -265,11 +265,7 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         &page.screen_filter_selections[0..4]
                     };
 
-                    let dropdown = dropdown::popup_dropdown::<
-                        _,
-                        crate::pages::Message,
-                        crate::pages::Message,
-                    >(
+                    let dropdown = cosmic::Element::from(dropdown::popup_dropdown(
                         selections,
                         Some(page.screen_filter_selection as usize),
                         move |idx| {
@@ -277,9 +273,14 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                             Message::SetScreenFilterSelection(filter).into()
                         },
                         cosmic::iced::window::Id::RESERVED,
-                        |action| Message::Surface(action).into(),
-                        |a| a,
-                    );
+                        Message::Surface,
+                        |a| {
+                            crate::app::Message::PageMessage(crate::pages::Message::Accessibility(
+                                a,
+                            ))
+                        },
+                    ))
+                    .map(crate::pages::Message::Accessibility);
 
                     settings::item::builder(&descriptions[color_filter_type]).control(dropdown)
                 })
