@@ -203,15 +203,15 @@ fit-to-screen = Dopasuj do rozmiaru ekranu
 open-new-folder = Otwórz nowy katalog
 recent-folders = Ostatnie katalogi
 
-x-minutes = { $number ->
-    [1] 1 minuta
-    [few] { $number } minuty
-    *[other] { $number } minut
+x-minutes = { $number } { $number ->
+    [one] minuta
+    [few] minuty
+    *[other] minut
 }
-x-hours = { $number ->
-    [1] 1 godzina
-    [few] { $number } godziny
-    *[other] { $number } godzin
+x-hours = { $number } { $number ->
+    [one] godzina
+    [few] godziny
+    *[other] godzin
 }
 never = Nigdy
 
@@ -442,9 +442,9 @@ night-light = Nocne Światło
 
 orientation = Orientacja
     .standard = Standardowa
-    .rotate-90 = Obróć o 90
-    .rotate-180 = Obróć o 180
-    .rotate-270 = Obróć o 270
+    .rotate-90 = Obróć o 90°
+    .rotate-180 = Obróć o 180°
+    .rotate-270 = Obróć o 270°
 
 vrr = Zmienna częstotliwość odświeżania
     .enabled = Włączona
@@ -594,7 +594,7 @@ keyboard-numlock-boot = Numlock
     .set = Ustaw stan numlocka podczas uruchamiania
 
 added = Dodano
-type-to-search = Naciśnij by wyszukać...
+type-to-search = Naciśnij by wyszukać…
 show-extended-input-sources = Pokaż rozszerzone źródła wprowadzania
 
 ## Input: Keyboard: Shortcuts
@@ -705,6 +705,7 @@ system-shortcut = System
     .play-pause = Odtwarzaj/Zatrzymaj
     .play-next = Następny utwór
     .play-prev = Poprzedni utwór
+    .poweroff = Wyłącz
     .screenshot = Zrób zrzut ekranu
     .terminal = Otwórz terminal
     .volume-lower = Zmniejsz głośność wyjścia dźwięku
