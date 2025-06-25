@@ -15,7 +15,9 @@ use cosmic::app::ContextDrawer;
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
-use cosmic::cosmic_theme::{CornerRadii, Density, Theme, ThemeBuilder};
+use cosmic::cosmic_theme::{
+    CornerRadii, DARK_THEME_BUILDER_ID, Density, LIGHT_THEME_BUILDER_ID, Theme, ThemeBuilder,
+};
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced_core::{Alignment, Length};
@@ -225,27 +227,39 @@ impl Page {
 
         match message {
             Message::NewTheme(theme) => {
-                if *self.theme_manager.theme() != *theme {
-                    let customizer = self.theme_manager.selected_customizer_mut();
-                    customizer.replace_theme(*theme);
-                }
+                _ = self.theme_manager.dark_mode(theme.is_dark);
 
-                tasks.push(cosmic::task::message(app::Message::SetTheme(
-                    self.theme_manager.cosmic_theme(),
-                )));
+                self.theme_manager
+                    .selected_customizer_mut()
+                    .set_theme(*theme);
+
+                self.can_reset = if self.theme_manager.mode().is_dark {
+                    *self.theme_manager.builder() != ThemeBuilder::dark()
+                } else {
+                    *self.theme_manager.builder() != ThemeBuilder::light()
+                };
+
+                return cosmic::task::batch(vec![
+                    self.drawer.reset(&self.theme_manager),
+                    cosmic::task::message(app::Message::SetTheme(
+                        self.theme_manager.cosmic_theme(),
+                    )),
+                ]);
             }
+
             Message::Autoswitch(enabled) => self.theme_manager.auto_switch(enabled),
+
             Message::DarkMode(enabled) => {
                 if let Err(err) = self.theme_manager.dark_mode(enabled) {
                     tracing::error!(?err, "Error setting dark mode");
                 }
 
+                tasks.push(self.drawer.reset(&self.theme_manager));
                 tasks.push(cosmic::task::message(app::Message::SetTheme(
                     self.theme_manager.cosmic_theme(),
                 )));
-                tasks.push(self.drawer.reset(&self.theme_manager));
 
-                return cosmic::task::batch(tasks);
+                theme_staged = Some(theme_manager::ThemeStaged::Current);
             }
 
             Message::DrawerOpen(context_view) => {
@@ -338,7 +352,21 @@ impl Page {
             }
 
             Message::Reset => {
-                // self.theme_manager.reset_theme();
+                let theme_type = self.theme_manager.cosmic_theme().theme_type;
+
+                let builder = if theme_type.is_dark() {
+                    ThemeBuilder::dark()
+                } else {
+                    ThemeBuilder::light()
+                };
+
+                self.theme_manager
+                    .selected_customizer_mut()
+                    .set_builder(builder.clone())
+                    .set_theme(builder.build());
+
+                theme_staged = Some(theme_manager::ThemeStaged::Current);
+
                 if let Some(config) = self.tk_config.as_mut() {
                     _ = config.set("interface_density", Density::Standard);
                     _ = config.set("header_size", Density::Standard);
@@ -467,9 +495,13 @@ impl Page {
             #[cfg(feature = "xdg-portal")]
             Message::ImportSuccess(builder) => {
                 tracing::trace!("Import successful");
+
                 self.theme_manager
                     .selected_customizer_mut()
-                    .replace_builder(*builder);
+                    .set_builder(*builder.clone())
+                    .set_theme(builder.build())
+                    .apply_builder()
+                    .apply_theme();
 
                 tasks.push(self.drawer.reset(&self.theme_manager));
                 tasks.push(cosmic::task::message(app::Message::SetTheme(
@@ -516,17 +548,13 @@ impl Page {
             }
         }
 
-        if let Some(stage) = theme_staged {
-            tasks.push(self.theme_manager.build_theme(stage));
-        }
-        // If the theme builder changed, write a new theme to disk on a background thread.
-        self.can_reset = if self.theme_manager.mode().is_dark {
-            *self.theme_manager.builder() != ThemeBuilder::dark()
-        } else {
-            *self.theme_manager.builder() != ThemeBuilder::light()
-        };
+        let mut tasks = cosmic::Task::batch(tasks);
 
-        cosmic::Task::batch(tasks)
+        if let Some(stage) = theme_staged {
+            tasks = tasks.chain(self.theme_manager.build_theme(stage));
+        }
+
+        tasks
     }
 
     // TODO: cache panel and dock configs so that they needn't be re-read

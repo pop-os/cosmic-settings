@@ -1,6 +1,9 @@
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{Srgb, Srgba};
-use cosmic::cosmic_theme::{CornerRadii, Spacing, Theme, ThemeBuilder, ThemeMode};
+use cosmic::cosmic_theme::{
+    CornerRadii, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID, Spacing, Theme, ThemeBuilder,
+    ThemeMode,
+};
 use cosmic::iced_core::Color;
 
 use cosmic::Task;
@@ -150,18 +153,18 @@ impl Default for Manager {
 impl Manager {
     pub fn build_theme<'a>(&mut self, stage: ThemeStaged) -> Task<app::Message> {
         macro_rules! theme_transaction {
-                        ($config:ident, $current_theme:ident, $new_theme:ident, { $($name:ident;)+ }) => {
-                            let tx = $config.transaction();
+            ($config:ident, $current_theme:ident, $new_theme:ident, { $($name:ident;)+ }) => {
+                let tx = $config.transaction();
 
-                            $(
-                                if $current_theme.$name != $new_theme.$name {
-                                    _ = tx.set(stringify!($name), $new_theme.$name.clone());
-                                }
-                            )+
-
-                            _ = tx.commit();
-                        }
+                $(
+                    if $current_theme.$name != $new_theme.$name {
+                        _ = tx.set(stringify!($name), $new_theme.$name.clone());
                     }
+                )+
+
+                _ = tx.commit();
+            }
+        }
 
         let mut tasks: Vec<Task<app::Message>> = Vec::new();
         let customizers = match stage {
@@ -218,7 +221,7 @@ impl Manager {
 
     #[inline]
     pub fn selected_customizer_mut(&mut self) -> &mut ThemeCustomizer {
-        if self.mode.0.is_dark {
+        if dbg!(self.mode.0.is_dark) {
             &mut self.dark
         } else {
             &mut self.light
@@ -264,6 +267,31 @@ impl Manager {
         if let Some(config) = self.mode.1.as_ref() {
             return self.mode.0.set_is_dark(config, enabled);
         }
+
+        self.mode.0.is_dark = enabled;
+
+        let (theme_id, builder_fn): (&str, fn() -> ThemeBuilder) = if enabled {
+            (DARK_THEME_BUILDER_ID, ThemeBuilder::dark)
+        } else {
+            (LIGHT_THEME_BUILDER_ID, ThemeBuilder::light)
+        };
+
+        let builder = cosmic::cosmic_config::Config::system(theme_id, ThemeBuilder::VERSION)
+            .map_or_else(
+                |_| builder_fn(),
+                |config| match ThemeBuilder::get_entry(&config) {
+                    Ok(t) => t,
+                    Err((errs, t)) => {
+                        for err in errs {
+                            tracing::warn!(?err, "Error getting system theme builder");
+                        }
+                        t
+                    }
+                },
+            );
+
+        self.selected_customizer_mut().set_builder(builder);
+
         Ok(true)
     }
 
@@ -345,20 +373,34 @@ impl Manager {
 }
 
 impl ThemeCustomizer {
-    pub fn replace_builder(&mut self, builder: ThemeBuilder) {
-        self.builder.0 = builder.clone();
+    /// Set theme builder without writing to cosmic-config.
+    pub fn set_builder(&mut self, builder: ThemeBuilder) -> &mut Self {
+        self.builder.0 = builder;
+        self
+    }
+
+    /// Write theme builder to cosmic-config, notifying all subscribers.
+    pub fn apply_builder(&mut self) -> &mut Self {
         if let Some(config) = self.builder.1.as_ref() {
             let _ = self.builder.0.write_entry(config);
         }
 
-        self.replace_theme(builder.build());
+        self
     }
 
-    pub fn replace_theme(&mut self, theme: Theme) {
+    /// Set theme without writing to cosmic-config.
+    pub fn set_theme(&mut self, theme: Theme) -> &mut Self {
         self.theme.0 = theme;
+        self
+    }
+
+    /// Write theme to cosmic-config, notifying all subscribers.
+    pub fn apply_theme(&mut self) -> &mut Self {
         if let Some(config) = self.theme.1.as_ref() {
             let _ = self.theme.0.write_entry(config);
         }
+
+        self
     }
 
     pub fn set_window_hint(&mut self, color: Option<Srgb>) -> Option<ThemeStaged> {

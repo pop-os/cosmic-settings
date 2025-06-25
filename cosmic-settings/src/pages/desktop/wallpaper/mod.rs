@@ -5,7 +5,6 @@ mod config;
 pub mod widgets;
 
 pub use config::Config;
-use futures::StreamExt;
 use url::Url;
 
 use std::{
