@@ -239,12 +239,9 @@ impl Page {
                     *self.theme_manager.builder() != ThemeBuilder::light()
                 };
 
-                return cosmic::task::batch(vec![
-                    self.drawer.reset(&self.theme_manager),
-                    cosmic::task::message(app::Message::SetTheme(
-                        self.theme_manager.cosmic_theme(),
-                    )),
-                ]);
+                return cosmic::task::message(app::Message::SetTheme(
+                    self.theme_manager.cosmic_theme(),
+                ));
             }
 
             Message::Autoswitch(enabled) => self.theme_manager.auto_switch(enabled),
@@ -363,9 +360,8 @@ impl Page {
                 self.theme_manager
                     .selected_customizer_mut()
                     .set_builder(builder.clone())
-                    .set_theme(builder.build());
-
-                theme_staged = Some(theme_manager::ThemeStaged::Current);
+                    .set_theme(builder.build())
+                    .apply_theme();
 
                 if let Some(config) = self.tk_config.as_mut() {
                     _ = config.set("interface_density", Density::Standard);
@@ -373,6 +369,7 @@ impl Page {
                 }
 
                 let r = self.roundness;
+                tasks.push(self.drawer.reset(&self.theme_manager));
 
                 #[cfg(feature = "wayland")]
                 tokio::task::spawn(async move {
