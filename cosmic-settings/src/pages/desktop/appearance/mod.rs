@@ -251,7 +251,7 @@ impl Page {
                     tracing::error!(?err, "Error setting dark mode");
                 }
 
-                tasks.push(self.drawer.reset(&self.theme_manager));
+                self.drawer.reset(&self.theme_manager);
                 tasks.push(cosmic::task::message(app::Message::SetTheme(
                     self.theme_manager.cosmic_theme(),
                 )));
@@ -369,7 +369,7 @@ impl Page {
                 }
 
                 let r = self.roundness;
-                tasks.push(self.drawer.reset(&self.theme_manager));
+                self.drawer.reset(&self.theme_manager);
 
                 #[cfg(feature = "wayland")]
                 tokio::task::spawn(async move {
@@ -500,7 +500,7 @@ impl Page {
                     .apply_builder()
                     .apply_theme();
 
-                tasks.push(self.drawer.reset(&self.theme_manager));
+                self.drawer.reset(&self.theme_manager);
                 tasks.push(cosmic::task::message(app::Message::SetTheme(
                     self.theme_manager.cosmic_theme(),
                 )));

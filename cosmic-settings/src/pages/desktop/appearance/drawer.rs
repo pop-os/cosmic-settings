@@ -271,46 +271,43 @@ impl Content {
         }
     }
 
-    pub fn reset(&mut self, manager: &theme_manager::Manager) -> Task<app::Message> {
-        let mut tasks = Vec::new();
-
-        tasks.append(&mut reset_color_control(
-            &mut self.application_background,
-            manager,
-            ContextView::ApplicationBackground,
-        ));
-
-        tasks.append(&mut reset_color_control(
-            &mut self.accent_window_hint,
-            manager,
-            ContextView::AccentWindowHint,
-        ));
-
-        tasks.append(&mut reset_color_control(
-            &mut self.custom_accent,
-            manager,
-            ContextView::CustomAccent,
-        ));
-
-        tasks.append(&mut reset_color_control(
-            &mut self.container_background,
-            manager,
-            ContextView::ContainerBackground,
-        ));
-
-        tasks.append(&mut reset_color_control(
-            &mut self.interface_text,
-            manager,
-            ContextView::InterfaceText,
-        ));
-
-        tasks.append(&mut reset_color_control(
-            &mut self.control_component,
-            manager,
-            ContextView::ControlComponent,
-        ));
-
-        cosmic::Task::batch(tasks)
+    pub fn reset(&mut self, manager: &theme_manager::Manager) {
+        self.application_background = ColorPickerModel::new(
+            &*HEX,
+            &*RGB,
+            Some(manager.theme().background.base.into()),
+            manager.get_color(&ContextView::ApplicationBackground),
+        );
+        self.custom_accent = ColorPickerModel::new(
+            &*HEX,
+            &*RGB,
+            None,
+            manager.get_color(&ContextView::CustomAccent),
+        );
+        self.container_background = ColorPickerModel::new(
+            &*HEX,
+            &*RGB,
+            None,
+            manager.get_color(&ContextView::ContainerBackground),
+        );
+        self.interface_text = ColorPickerModel::new(
+            &*HEX,
+            &*RGB,
+            Some(manager.theme().background.on.into()),
+            manager.get_color(&ContextView::InterfaceText),
+        );
+        self.control_component = ColorPickerModel::new(
+            &*HEX,
+            &*RGB,
+            Some(manager.theme().palette.neutral_5.into()),
+            manager.get_color(&ContextView::ControlComponent),
+        );
+        self.accent_window_hint = ColorPickerModel::new(
+            &*HEX,
+            &*RGB,
+            None,
+            manager.get_color(&ContextView::AccentWindowHint),
+        );
     }
 
     pub fn context_drawer(
