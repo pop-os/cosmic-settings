@@ -221,7 +221,7 @@ impl Manager {
 
     #[inline]
     pub fn selected_customizer_mut(&mut self) -> &mut ThemeCustomizer {
-        if dbg!(self.mode.0.is_dark) {
+        if self.mode.0.is_dark {
             &mut self.dark
         } else {
             &mut self.light
