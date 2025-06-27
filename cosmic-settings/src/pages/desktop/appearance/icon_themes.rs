@@ -26,6 +26,7 @@ pub fn button(
     handles: &[icon::Handle],
     id: usize,
     selected: bool,
+    callback: impl Fn(usize) -> super::Message,
 ) -> Element<'static, Message> {
     let theme = cosmic::theme::active();
     let theme = theme.cosmic();
@@ -61,7 +62,7 @@ pub fn button(
                 .spacing(theme.space_xxxs()),
                 None,
             )
-            .on_press(Message::IconTheme(id))
+            .on_press(callback(id))
             .selected(selected)
             .padding(theme.space_xs())
             // Image button's style mostly works, but it needs a background to fit the design
@@ -231,7 +232,9 @@ pub async fn fetch() -> Message {
         }
     }
 
-    Message::Entered(icon_themes.into_iter().unzip())
+    Message::DrawerIcon(super::drawer::IconMessage::IconLoaded(
+        icon_themes.into_iter().unzip(),
+    ))
 }
 
 /// Set the preferred icon theme for GNOME/GTK applications.

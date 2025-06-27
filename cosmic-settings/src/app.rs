@@ -756,8 +756,9 @@ impl cosmic::Application for SettingsApp {
                 }
             }
 
-            Message::SetTheme(t) => return cosmic::command::set_theme(t),
-
+            Message::SetTheme(t) => {
+                return cosmic::command::set_theme(t);
+            }
             Message::OpenContextDrawer(page) => {
                 self.core.window.show_context = true;
                 self.active_context_page = Some(page);
