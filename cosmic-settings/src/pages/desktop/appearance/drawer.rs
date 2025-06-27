@@ -465,22 +465,3 @@ impl Content {
         .map(crate::pages::Message::Appearance)
     }
 }
-
-fn reset_color_control(
-    field: &mut ColorPickerModel,
-    manager: &theme_manager::Manager,
-    context_view: ContextView,
-) -> Vec<Task<app::Message>> {
-    let mut tasks = Vec::new();
-
-    let color = manager.get_color(&context_view).map(Srgb::from);
-
-    if let Some(c) = color {
-        tasks.push(field.update(ColorPickerUpdate::ActiveColor(Hsv::from_color(c))));
-        tasks.push(field.update(ColorPickerUpdate::AppliedColor));
-    } else {
-        tasks.push(field.update(ColorPickerUpdate::Reset));
-    }
-
-    tasks
-}
