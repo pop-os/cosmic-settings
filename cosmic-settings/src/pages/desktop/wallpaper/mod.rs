@@ -976,9 +976,7 @@ impl Page {
                             }
                     }
                 }
-                WallpaperEvent::Loaded => {
-                    self.select_first_wallpaper();
-                }
+                WallpaperEvent::Loaded => self.cache_display_image(),
                 WallpaperEvent::Error(error) => {
                     tracing::error!("Failed to load wallpaper: {}", error);
                 }
