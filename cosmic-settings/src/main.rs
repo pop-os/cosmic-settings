@@ -10,6 +10,10 @@
 pub mod app;
 use std::str::FromStr;
 
+use clap_lex::RawArgs;
+
+use std::error::Error;
+
 pub use app::{Message, SettingsApp};
 pub mod config;
 
@@ -152,7 +156,29 @@ impl CosmicFlags for Args {
 /// # Errors
 ///
 /// Returns error if iced fails to run the application.
-pub fn main() -> color_eyre::Result<()> {
+fn main() -> Result<(), Box<dyn Error>> {
+    let raw_args = RawArgs::from_args();
+    let mut cursor = raw_args.cursor();
+
+    // Parse the arguments
+    while let Some(arg) = raw_args.next_os(&mut cursor) {
+        match arg.to_str() {
+            Some("--help") | Some("-h") => {
+                print_help();
+		return Ok(());
+            }
+            Some("--version") | Some("-V") => {
+		println!(
+		    "cosmic-settings {} (git commit {})",
+                    env!("CARGO_PKG_VERSION"),
+                    env!("VERGEN_GIT_SHA")
+                );
+                return Ok(());
+            }
+            _ => {}
+        }
+    }
+
     color_eyre::install()?;
 
     if std::env::var("RUST_SPANTRACE").is_err() {
@@ -217,6 +243,19 @@ fn init_logger() {
         }));
 
     tracing_subscriber::registry().with(log_filter).init();
+}
+
+fn print_help() {
+    println!(    
+        r#"COSMIC Settings
+Designed for the COSMIC™ desktop environment, cosmic-settings is the application that manages the user's environment settings.
+	    
+Project home page: https://github.com/pop-os/cosmic-settings
+	    
+Options:
+  -h, --help       Show this message
+  -v, --version    Show the version of cosmic-settings"#
+    );
 }
 
 #[macro_export]
