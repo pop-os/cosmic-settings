@@ -644,6 +644,7 @@ nav-shortcuts = Navigation
 manage-windows = Manage windows
     .close = Close window
     .maximize = Maximize window
+    .fullscreen = Fullscreen window
     .minimize = Minimize window
     .resize-inwards = Resize window inwards
     .resize-outwards = Resize window outwards

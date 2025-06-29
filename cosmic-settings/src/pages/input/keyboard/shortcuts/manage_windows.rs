@@ -81,6 +81,7 @@ pub const fn actions() -> &'static [Action] {
     &[
         Action::Close,
         Action::Maximize,
+        Action::Fullscreen,
         Action::Minimize,
         Action::Resizing(ResizeDirection::Inwards),
         Action::Resizing(ResizeDirection::Outwards),
