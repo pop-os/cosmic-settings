@@ -784,7 +784,6 @@ impl cosmic::Application for SettingsApp {
             | cosmic::dbus_activation::Details::Open { .. } => None,
             cosmic::dbus_activation::Details::ActivateAction { action, .. } => {
                 PageCommands::from_str(&action)
-                    .ok()
                     .and_then(|action| self.subtask_to_page(&action))
                     .map(|e| self.activate_page(e))
             }
