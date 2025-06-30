@@ -44,6 +44,7 @@ debug = true
 [profile.release]
 opt-level = "s"
 lto = "off"
+strip = true
 
 # Fix text rendering being cut off on the right
 [patch.'https://github.com/pop-os/cosmic-text']
