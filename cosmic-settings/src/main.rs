@@ -51,73 +51,153 @@ impl Args {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PageCommands {
+    /// Accessibility settings page
+    #[cfg(feature = "page-accessibility")]
     Accessibility,
+    /// Accessibility Magnifier settings page
+    #[cfg(feature = "page-accessibility")]
     AccessibilityMagnifier,
+    /// About settings page
+    #[cfg(feature = "page-about")]
     About,
+    /// Appearance settings page
     Appearance,
+    /// Applications settings page
     Applications,
+    /// Bluetooth settings page
+    #[cfg(feature = "page-bluetooth")]
     Bluetooth,
+    /// Date & Time settings page
+    #[cfg(feature = "page-date")]
     DateTime,
+    /// Default application associations
+    #[cfg(feature = "page-default-apps")]
     DefaultApps,
+    /// Desktop settings page
     Desktop,
+    /// Displays settings page
+    #[cfg(feature = "page-display")]
     Displays,
+    /// Dock settings page
+    #[cfg(feature = "wayland")]
     Dock,
+    /// Firmware settings page
     Firmware,
+    /// Input Devices settings page
+    #[cfg(feature = "page-input")]
     Input,
+    /// Keyboard settings page
+    #[cfg(feature = "page-input")]
     Keyboard,
+    /// Legacy Applications settings page
+    #[cfg(feature = "page-legacy-applications")]
     LegacyApplications,
+    /// Mouse settings page
+    #[cfg(feature = "page-input")]
     Mouse,
+    /// Network settings page
+    #[cfg(feature = "page-networking")]
     Network,
+    /// Panel settings page
+    #[cfg(feature = "wayland")]
     Panel,
+    /// Power settings page
+    #[cfg(feature = "page-power")]
     Power,
+    /// Region & Language settings page
+    #[cfg(feature = "page-region")]
     RegionLanguage,
+    /// Sound settings page
+    #[cfg(feature = "page-sound")]
     Sound,
+    /// System & Accounts settings page
     System,
+    /// Time & Language settings page
     Time,
+    /// Touchpad settings page
+    #[cfg(feature = "page-input")]
     Touchpad,
+    /// Users settings page
+    #[cfg(feature = "page-users")]
     Users,
+    /// VPN settings page
+    #[cfg(feature = "page-networking")]
     Vpn,
+    /// Wallpaper settings page
     Wallpaper,
+    /// Window management settings page
+    #[cfg(feature = "page-window-management")]
     WindowManagement,
+    /// Wired settings page
+    #[cfg(feature = "page-networking")]
     Wired,
+    /// WiFi settings page
+    #[cfg(feature = "page-networking")]
     Wireless,
+    /// Workspaces settings page
+    #[cfg(feature = "page-workspaces")]
     Workspaces,
 }
 
 impl PageCommands {
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
+            #[cfg(feature = "page-accessibility")]
             "Accessibility" => Some(Self::Accessibility),
+            #[cfg(feature = "page-accessibility")]
             "AccessibilityMagnifier" => Some(Self::AccessibilityMagnifier),
+            #[cfg(feature = "page-about")]
             "About" => Some(Self::About),
             "Appearance" => Some(Self::Appearance),
             "Applications" => Some(Self::Applications),
+            #[cfg(feature = "page-bluetooth")]
             "Bluetooth" => Some(Self::Bluetooth),
+            #[cfg(feature = "page-date")]
             "DateTime" => Some(Self::DateTime),
+            #[cfg(feature = "page-default-apps")]
             "DefaultApps" => Some(Self::DefaultApps),
             "Desktop" => Some(Self::Desktop),
+            #[cfg(feature = "page-display")]
             "Displays" => Some(Self::Displays),
+            #[cfg(feature = "wayland")]
             "Dock" => Some(Self::Dock),
             "Firmware" => Some(Self::Firmware),
+            #[cfg(feature = "page-input")]
             "Input" => Some(Self::Input),
+            #[cfg(feature = "page-input")]
             "Keyboard" => Some(Self::Keyboard),
+            #[cfg(feature = "page-legacy-applications")]
             "LegacyApplications" => Some(Self::LegacyApplications),
+            #[cfg(feature = "page-input")]
             "Mouse" => Some(Self::Mouse),
+            #[cfg(feature = "page-networking")]
             "Network" => Some(Self::Network),
+            #[cfg(feature = "wayland")]
             "Panel" => Some(Self::Panel),
+            #[cfg(feature = "page-power")]
             "Power" => Some(Self::Power),
+            #[cfg(feature = "page-region")]
             "RegionLanguage" => Some(Self::RegionLanguage),
+            #[cfg(feature = "page-sound")]
             "Sound" => Some(Self::Sound),
             "System" => Some(Self::System),
             "Time" => Some(Self::Time),
+            #[cfg(feature = "page-input")]
             "Touchpad" => Some(Self::Touchpad),
+            #[cfg(feature = "page-users")]
             "Users" => Some(Self::Users),
+            #[cfg(feature = "page-networking")]
             "Vpn" => Some(Self::Vpn),
             "Wallpaper" => Some(Self::Wallpaper),
+            #[cfg(feature = "page-window-management")]
             "WindowManagement" => Some(Self::WindowManagement),
+            #[cfg(feature = "page-networking")]
             "Wired" => Some(Self::Wired),
+            #[cfg(feature = "page-networking")]
             "Wireless" => Some(Self::Wireless),
+            #[cfg(feature = "page-workspaces")]
             "Workspaces" => Some(Self::Workspaces),
+            
             _ => None,
         }
     }
