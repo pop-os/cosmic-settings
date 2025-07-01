@@ -27,7 +27,6 @@ use i18n_embed::DesktopLanguageRequester;
 use serde::{Deserialize, Serialize};
 use tracing_subscriber::prelude::*;
 
-
 pub struct Args {
     sub_command: Option<PageCommands>,
 }
