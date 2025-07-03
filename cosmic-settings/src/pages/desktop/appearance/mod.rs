@@ -297,14 +297,7 @@ impl Page {
                 self.roundness = r;
 
                 let radii = self.roundness.into();
-
-                if let None = self
-                    .theme_manager
-                    .selected_customizer_mut()
-                    .set_corner_radii(radii)
-                {
-                    return Task::none();
-                }
+                theme_staged = self.theme_manager.set_corner_radii(radii);
 
                 #[cfg(feature = "wayland")]
                 tokio::task::spawn(async move {

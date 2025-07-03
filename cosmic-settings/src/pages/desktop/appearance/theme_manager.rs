@@ -319,6 +319,12 @@ impl Manager {
         Some(ThemeStaged::Both)
     }
 
+    pub fn set_corner_radii(&mut self, radii: CornerRadii) -> Option<ThemeStaged> {
+        self.dark.set_corner_radii(radii)?;
+        self.light.set_corner_radii(radii)?;
+        Some(ThemeStaged::Both)
+    }
+
     pub fn set_gap_size(&mut self, gap: u32) -> Option<ThemeStaged> {
         self.dark.set_gap_size(gap)?;
         self.light.set_gap_size(gap)?;
