@@ -25,10 +25,14 @@ use cosmic::{
     },
     theme,
 };
-use once_cell::sync::Lazy;
 
-use std::path::PathBuf;
-use std::{borrow::Cow, fmt::Debug, mem, path::Path};
+use std::{
+    borrow::Cow,
+    fmt::Debug,
+    mem,
+    path::{Path, PathBuf},
+    sync::LazyLock,
+};
 
 use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;
@@ -49,7 +53,7 @@ const MIME_TYPE: &str = "text/uri-list";
 // radius is 8.0
 const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
 
-pub static APPLET_DND_ICON_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
+pub static APPLET_DND_ICON_ID: LazyLock<window::Id> = LazyLock::new(window::Id::unique);
 
 pub struct Page {
     pub(crate) entity: page::Entity,
@@ -591,7 +595,7 @@ impl Applet<'static> {
     }
 }
 
-impl<'a> Applet<'a> {
+impl Applet<'_> {
     fn into_owned(self) -> Applet<'static> {
         Applet {
             id: Cow::from(self.id.into_owned()),
@@ -642,7 +646,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             .into_iter()
             .map(|info| {
                 let id_clone = info.id.to_string();
-                let is_dragged = active_dnd.as_ref().map_or(false, |dnd| dnd.id == info.id);
+                let is_dragged = active_dnd.as_ref().is_some_and(|dnd| dnd.id == info.id);
 
                 let content = if is_dragged {
                     row::with_capacity(0).height(Length::Fixed(32.0))
@@ -860,8 +864,8 @@ pub fn dnd_icon(info: Applet<'static>, layout: &layout::Layout) -> AppletReorder
     }
 }
 
-impl<'a, Message: 'static> Widget<Message, cosmic::Theme, cosmic::Renderer>
-    for AppletReorderList<'a, Message>
+impl<Message: 'static> Widget<Message, cosmic::Theme, cosmic::Renderer>
+    for AppletReorderList<'_, Message>
 where
     Message: Clone,
 {

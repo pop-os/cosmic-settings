@@ -1714,7 +1714,6 @@ dependencies = [
  "notify 6.1.1",
  "num-derive",
  "num-traits",
- "once_cell",
  "pwhash",
  "regex",
  "ron 0.9.0",
