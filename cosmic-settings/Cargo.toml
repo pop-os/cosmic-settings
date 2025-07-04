@@ -13,7 +13,7 @@ ashpd = { version = "0.9", default-features = false, features = [
 ], optional = true }
 async-channel = "2.3.1"
 chrono = "0.4.40"
-clap = { version = "4.5.32", features = ["derive"] }
+clap_lex = "0.7" 
 color-eyre = "0.6.3"
 cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
