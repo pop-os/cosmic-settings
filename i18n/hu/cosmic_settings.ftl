@@ -58,7 +58,7 @@ network-device-state =
     .unavailable = Nem elérhető
     .unknown = Ismeretlen állapot
     .unmanaged = Kezeletlen
-    .unplugged = Kábel kihúzva
+    .unplugged = A kábel ki van húzva
 
 remove-connection-dialog = Törlöd a kapcsolati profilt?
     .vpn-description = A jelszót újra be kell írnod a jövőbeli használathoz.
@@ -160,7 +160,7 @@ magnifier = Nagyító
             *[other] {""}
                 {$zoom_out} a kicsinyítéshez,
         }
-        Super + görgetés az egérrel
+        Super + egérgörgő
     .scroll_controls = Egérrel vagy érintőpárnával történő nagyítás Super + görgetéssel
     .show_overlay = Nagyító megjelenítése
     .increment = Nagyítás mértéke
@@ -168,8 +168,8 @@ magnifier = Nagyító
     .applet = A nagyítót be- és kikapcsolhatod a panelen található kisalkalmazásban
     .movement = Nagyított nézet mozgása
     .continuous = A mutatóval
-    .onedge = Amikor a mutató eléri a szélet
-    .centered = Hogy a mutató középen maradjon
+    .onedge = Amikor a mutató eléri a szélét
+    .centered = A mutató középen tartásához
 color-filter = Színszűrő típusa
     .unknown = Ismeretlen szűrő aktív
     .greyscale = Szürkeárnyalatos
@@ -216,9 +216,9 @@ never = Soha
 ## Desktop: Appearance
 
 appearance = Megjelenés
-    .desc = Kiemelő színek és COSMIC témák.
+    .desc = Kiemelőszínek és COSMIC témák.
 
-accent-color = Kiemelő színek
+accent-color = Kiemelőszín
 app-background = Alkalmazás- vagy ablakháttér
 auto = Auto
 close = Bezárás
@@ -243,12 +243,12 @@ auto-switch = Automatikus váltás a világos és sötét módok között
     .next-sunrise = Következő napfelkeltekor világos módra vált
     .next-sunset = Következő napnyugtakor sötét módra vált
 
-container-background = Tároló háttér
-    .desc-detail = A tároló háttérszínét a navigációs oldalsáv, az oldalsó fiók, a párbeszédpanelek és hasonló widgetek használják. Alapértelmezés szerint automatikusan az alkalmazás vagy ablak hátteréből származik.
+container-background = Konténerháttér
+    .desc-detail = A konténer háttérszínét a navigációs oldalsáv, az oldalsó fiók, a párbeszédpanelek és hasonló widgetek használják. Alapértelmezés szerint automatikusan az alkalmazás vagy ablak hátteréből származik.
     .reset = Visszaállítás automatikusra
-    .desc = Az elsődleges tárolószín a navigációs oldalsávhoz, az oldalsó fiókhoz, a párbeszédablakhoz és hasonló widgetekhez használatos.
+    .desc = Az elsődleges konténerszín a navigációs oldalsávhoz, az oldalsó fiókhoz, a párbeszédablakhoz és hasonló widgetekhez használatos.
 
-control-tint = Irányító komponens színezése
+control-tint = Vezérlőelemek színezése
     .desc = Szabványos gombok hátterére, keresési bemenetekre, szövegbevitelre és hasonló összetevőkre használatos.
 
 frosted = Elmosódott üveg hatás a rendszerfelületen
@@ -336,7 +336,7 @@ panel-applets = Konfiguráció
     .desc = Konfiguráld a panel kisalkalmazásait.
 
 panel-missing = A panel konfigurációja hiányzik
-    .desc = A panel konfigurációs fájlja hiányzik, mert egyéni konfigurációt használtak, vagy sérült.
+    .desc = A panel konfigurációs fájlja hiányzik egyéni konfiguráció használata miatt vagy mert a fájl megsérült.
     .fix = Visszaállítás alapértelmezettre
 
 ## Desktop: Dock
@@ -520,7 +520,7 @@ power-mode = Energiagazdálkodási mód
     .no-backend = A háttérprogram nem található. Telepítsd a system76-power vagy a power-profiles-daemon csomagot.
 
 power-saving = Energiagazdálkodási beállítások
-    .turn-off-screen-after = A képernyő kikapcsolása
+    .turn-off-screen-after = Képernyő kikapcsolása
     .auto-suspend = Automatikus felfüggesztés
     .auto-suspend-ac = Automatikus felfüggesztés hálózati áramforráson
     .auto-suspend-battery = Automatikus felfüggesztés akkumulátoron
@@ -553,7 +553,7 @@ fast = Gyors
 short = Rövid
 long = Hosszú
 keyboard = Billentyűzet
-    .desc = Bemeneti források, váltásuk, speciális karakterek, billentyűparancsok
+    .desc = Bemeneti források, váltásuk, speciális karakterek, billentyűparancsok.
 
 keyboard-sources = Bemeneti források
     .desc = A bemeneti források a Super+Space billentyűkombinációval válthatók. Ez testreszabható a billentyűparancsok beállításaiban.
@@ -605,7 +605,7 @@ migrate-workspace = Munkaterület áthelyezése { $direction ->
     [up] a felső
 } kimenetre
 navigate = Navigálás
-replace = Kicserélés
+replace = Lecserélés
 shortcut-name = Billentyűparancs neve
 system-controls = Rendszervezérlés
 terminate = Befejezés
@@ -624,7 +624,7 @@ nav-shortcuts = Navigáció
     .next-output = A következő kimenet fókuszálása
     .last-workspace = Az utolsó munkaterület fókuszálása
     .prev-workspace = Az előző munkaterület fókuszálása
-    .next-workspace = Az következő munkaterület fókuszálása
+    .next-workspace = A következő munkaterület fókuszálása
     .focus = Ablak fókuszálása { $direction ->
         *[down] le
         [in] be
@@ -644,6 +644,7 @@ nav-shortcuts = Navigáció
 manage-windows = Ablakok kezelése
     .close = Ablak bezárása
     .maximize = Ablak maximalizálása
+    .fullscreen = Teljes képernyő
     .minimize = Ablak minimalizálása
     .resize-inwards = Ablak átméretezése befelé
     .resize-outwards = Ablak átméretezése kifelé
@@ -688,7 +689,7 @@ system-shortcut = Rendszer
     .log-out = Kijelentkezés
     .lock-screen = Képernyő zárolása
     .mute = Hangkimenet némítása
-    .mute-mic = Elnémítja a mikrofon bemenetet
+    .mute-mic = Mikrofonbemenet némítása
     .play-pause = Lejátszás/Szünet
     .play-next = Következő szám
     .play-prev = Előző szám
@@ -702,16 +703,16 @@ system-shortcut = Rendszer
     .window-switcher-previous = Váltás a nyitott ablakok között fordított sorrendben
     .workspace-overview = Munkaterület áttekintésének megnyitása
 
-window-tiling = Ablak csempézés
+window-tiling = Ablakcsempézés
     .horizontal = Vízszintes tájolás beállítása
     .vertical = Függőleges tájolás beállítása
-    .swap-window = Ablak cserélése
-    .toggle-tiling = Az Ablakok csempézésének be- és kikapcsolása
-    .toggle-stacking = Az Ablakok egymásra helyezésének be- és kikapcsolása
+    .swap-window = Ablak felcserélése
+    .toggle-tiling = Az ablakok csempézésének be- és kikapcsolása
+    .toggle-stacking = Az ablakok egymásra helyezésének be- és kikapcsolása
     .toggle-floating = Az ablakok lebegtetésének be- és kikapcsolása
     .toggle-orientation = Tájolás váltása
 
-replace-shortcut-dialog = Lecseréled a parancsikont?
+replace-shortcut-dialog = Lecseréled a billentyűt?
     .desc = A(z) { $shortcut } billentyűt a(z) { $name } használja. Ha lecseréled, a(z) { $name } le lesz tiltva.
 
 zoom-in = Nagyítás
@@ -783,7 +784,7 @@ time-format = Dátum- és időformátum
     .monday = Hétfő
 
 time-region = Régió és nyelv
-    .desc = Dátumok, időpontok és számok formázása a régió alapján
+    .desc = Dátumok, időpontok és számok formázása a régió alapján.
 
 formatting = Formátum
     .dates = Dátum
@@ -837,8 +838,8 @@ legacy-applications = X11 alkalmazások támogatása
     .desc = X11 ablakkezelő rendszer alkalmazásméretezés és globális billentyűparancsok.
 
 legacy-app-global-shortcuts = Globális billentyűparancsok X11 alkalmazásokban
-    .desc = A globális billentyűparancsok lehetővé teszik, hogy az alkalmazásokban a billentyű- és egérkattintás eseményeket más alkalmazások is felismerjék, például a „push-to-talk” vagy a „push-to-mute” funkciókhoz. Alapértelmezés szerint ez az X11 alkalmazásokban le van tiltva, hogy más alkalmazások ne figyelhessék a billentyűzet és az egér eseményeit, amelyek érzékeny információkat tartalmazhatnak.
-    .none = Nincsenek billentyűk
+    .desc = A globális billentyűparancsok lehetővé teszik, hogy az alkalmazásokban a billentyűleütéseket és egérkattintásokat más alkalmazások is felismerjék, például a „push-to-talk” vagy a „push-to-mute” funkciókhoz. Alapértelmezés szerint ez az X11 alkalmazásokban le van tiltva, hogy más alkalmazások ne figyelhessék a billentyű- és egéreseményeket, amelyek érzékeny információkat tartalmazhatnak.
+    .none = Nincs billentyű
     .modifiers = Módosítók (Super, Shift, Control, Alt)
     .combination = Minden billentyű, miközben a Super, Control vagy Alt módosítók lenyomva vannak
     .all = Minden billentyű
@@ -848,7 +849,7 @@ legacy-app-scaling = X11-ablakrendszer alkalmazásméretezés
     .scaled-gaming = Optimalizálás játékokra és teljes képernyős alkalmazásokra
     .gaming-description = Az X11 alkalmazások kicsit nagyobbnak/kisebbnek tűnhetnek a Wayland alkalmazásokhoz képest.
     .scaled-applications = Optimalizálás alkalmazásokra
-    .applications-description = A játékok és a teljes képernyős X11 alkalmazások felbontása eltérhet a kijelző felbontásától.
+    .applications-description = A játékok és a teljes képernyős X11 alkalmazások felbontása eltérhet a kijelző natív felbontásától.
     .scaled-compatibility = Maximális kompatibilitási mód
     .compatibility-description = Az X11 alkalmazások elmosódottan jelenhetnek meg HiDPI képernyőkön.
     .preferred-display = Preferált kijelző játékokhoz és teljes képernyős X11-alkalmazásokhoz
