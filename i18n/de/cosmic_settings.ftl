@@ -6,7 +6,7 @@ unknown = Unbekannt
 
 number = { $number }
 
-## Netzwerk & Kabellos
+## Network & Wireless
 
 connections-and-profiles = { $variant ->
 [wired] Kabelgebundene Verbindungen
@@ -213,7 +213,7 @@ x-hours = { $number } { $number ->
 }
 never = Nie
 
-## Desktop: Aussehen
+## Desktop: Appearance
 
 appearance = Aussehen
     .desc = Akzentfarben und Themen.
@@ -284,7 +284,7 @@ icons-and-toolkit = Symbole und Toolkit-Theming
 interface-font = Systemschriftart
 monospace-font = Nichtproportionale Schriftart
 
-## Desktop: Benachrichtigungen
+## Desktop: Notifications
 
 notifications = Benachrichtigungen
     .desc = Nicht stören, Sperrbildschirm-Benachrichtigungen und Einstellungen pro Anwendung.
@@ -344,7 +344,7 @@ panel-missing = Panel-Konfiguration fehlt
 dock = Dock
     .desc = Panel mit angehefteten Anwendungen in der App-Ablage und anderen Applets.
 
-## Desktop: Fensterverwaltung
+## Desktop: Window management
 
 window-management = Fensterverwaltung
     .desc = Super-Tasten-Aktion, Optionen für die Fenstersteuerung und zusätzliche Optionen für die Fensterkachelung.
@@ -367,7 +367,7 @@ focus-navigation = Fokus-Navigation
     .focus-follows-cursor-delay = Verzögerung für Fokus folgt dem Cursor in ms
     .cursor-follows-focus = Cursor folgt dem Fokus
 
-## Desktop: Arbeitsflächen
+## Desktop: Workspaces
 
 workspaces = Arbeitsflächen
     .desc = Anzahl, Verhalten und Platzierung der Arbeitsflächen festlegen.
@@ -454,12 +454,6 @@ dialog = Dialog
     .change-prompt = Änderungen an den Einstellungen werden in { $time } Sekunden automatisch rückgängig gemacht.
     .revert-settings = Einstellungen rückgängig machen
 
-legacy-app-scaling = Anwendungsskalierung des X11-Fenstersystems
-    .scaled-by-system = Alle X11-Anwendungen skalieren
-    .system-description = X11-Anwendungen werden auf HiDPI-Bildschirmen unscharf dargestellt.
-    .scaled-natively = X11-Anwendungen in nativer Auflösung rendern
-    .native-description = X11-Anwendungen, die keine Skalierung unterstützen, werden klein dargestellt, wenn HiDPI-Bildschirme verwendet werden. Für Spiele aktivieren, um die volle Monitorauflösung auszunutzen.
-
 ## Sound
 
 sound = Klang
@@ -471,6 +465,8 @@ sound-output = Ausgabe
     .level = Ausgangspegel
     .config = Konfiguration
     .balance = Balance
+    .left = Links
+    .right = Rechts
 
 sound-input = Eingang
     .volume = Eingangslautstärke
@@ -529,7 +525,7 @@ power-saving = Energiesparoptionen
     .auto-suspend-ac = Automatischer Standby-Modus, wenn am Stromnetz angeschlossen
     .auto-suspend-battery = Automatischer Standby-Modus bei Akkubetrieb
 
-## Eingabe
+## Input
 
 acceleration-desc = Passt die Tracking-Empfindlichkeit automatisch an die Geschwindigkeit an.
 
@@ -550,7 +546,7 @@ scrolling = Scrollen
     .natural = Natürliches Scrollen
     .natural-desc = Den Inhalt scrollen, anstatt der Ansicht
 
-## Eingabe: Tastatur
+## Input: Keyboard
 
 slow = Langsam
 fast = Schnell
@@ -577,21 +573,29 @@ keyboard-typing-assist = Tippen
     .repeat-rate = Wiederholungsrate
     .repeat-delay = Wiederholungsverzögerung
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Status des Numlocks beim Booten
+    .last-boot = Gleich wie beim letzten Boot
+    .on = Aktiviert
+    .off = Deaktiviert
+    .set = Numlock-Boot-Status setzen
+
 added = Hinzugefügt
 type-to-search = Zum Suchen tippen...
 show-extended-input-sources = Erweiterte Eingabequellen anzeigen
 
-## Eingabe: Tastatur: Tastenkombinationen
+## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = Tastenkombinationen
     .desc = Tastenkombinationen anzeigen und anpassen
 
-add-keybinding = Tastenbelegung hinzufügen
+add-another-keybinding = Weitere Tastenkombination hinzufügen
 cancel = Abbrechen
 command = Befehl
 custom = Benutzerdefiniert
 debug = Debug
 disabled = Deaktiviert
+input-source-switch = Tastaturlayout umschalten
 migrate-workspace-prev = Arbeitsfläche zur vorherigen Ausgabe migrieren
 migrate-workspace-next = Arbeitsfläche zur nächsten Ausgabe migrieren
 migrate-workspace = Arbeitsfläche zur { $direction ->
@@ -640,6 +644,7 @@ nav-shortcuts = Navigation
 manage-windows = Fenster verwalten
     .close = Fenster schließen
     .maximize = Fenster maximieren
+    .fullscreen = Fenster zum Vollbild
     .minimize = Fenster minimieren
     .resize-inwards = Fenstergröße nach innen ändern
     .resize-outwards = Fenstergröße nach außen ändern
@@ -688,6 +693,7 @@ system-shortcut = System
     .play-pause = Wiedergabe/Pause
     .play-next = Nächster Titel
     .play-prev = Vorheriger Titel
+    .poweroff = System ausschalten
     .screenshot = Bildschirmfoto machen
     .terminal = Terminal öffnen
     .volume-lower = Lautstärke der Audioausgabe verringern
@@ -712,14 +718,14 @@ replace-shortcut-dialog = Tastenkombination ersetzen?
 zoom-in = Hineinzoomen
 zoom-out = Herauszoomen
 
-## Eingabe: Maus
+## Input: Mouse
 
 mouse = Maus
     .desc = Mausgeschwindigkeit, -beschleunigung, natürliches Scrollen.
     .speed = Mausgeschwindigkeit
     .acceleration = Mausbeschleunigung aktivieren
 
-## Eingabe: Touchpad
+## Input: Touchpad
 
 click-behavior = Klickverhalten
     .click-finger = Sekundärklick mit zwei Fingern und Mittelklick mit drei Fingern
@@ -736,7 +742,7 @@ touchpad = Touchpad
     .desc = Touchpad-Geschwindigkeit, Klickoptionen, Gesten.
     .speed = Touchpad-Geschwindigkeit
 
-## Eingabe: Gesten
+## Input: Gestures
 
 gestures = Gesten
     .four-finger-down = Mit vier Fingern nach unten wischen
@@ -753,7 +759,7 @@ switch-between-windows = Zwischen Fenstern wechseln
 open-application-library = Anwendungsbibliothek öffnen
 open-workspaces-view = Arbeitsflächenübersicht öffnen
 
-## Uhrzeit & Sprache
+## Time & Language
 
 time = Uhrzeit & Sprache
     .desc = N/V
@@ -795,6 +801,48 @@ add-language = Sprache hinzufügen
     .context = Sprache hinzufügen
 install-additional-languages = Zusätzliche Sprachen installieren
 region = Region
+
+## Applications
+
+applications = Anwendungen
+
+## Applications: Default Applications
+
+default-apps = Standardanwendungen
+    .desc = Standard-Webbrowser, E-Mail-Client, Dateibrowser und andere Anwendungen.
+    .web-browser = Webbrowser
+    .file-manager = Dateibrowser
+    .mail-client = E-Mail-Client
+    .music = Musik
+    .video = Videos
+    .photos = Fotos
+    .calendar = Kalender
+    .terminal = Terminal
+    .other-associations = Weitere Standardanwendungen
+    .text-editor = Text-Editor
+
+## Applications: Startup Applications
+
+startup-apps = Startup-Anwendungen
+    .desc = Konfigurieren Sie Anwendungen, die bei der Anmeldung ausgeführt werden.
+    .add = Anwendung hinzufügen
+    .user = Benutzerspezifische Anwendungen
+    .user-description = Diese Anwendungen werden gestartet, wenn Sie sich bei Ihrem aktuellen Benutzer anmelden.
+    .remove-dialog-title = { $name } entfernen?
+    .remove-dialog-description = Sind Sie sicher, dass Sie diese Anwendung als Startup-Anwendung entfernen möchten?
+    .search-for-application = Nach Anwendungen suche
+
+## Applications: Legacy Applications
+
+legacy-applications = Kompatibilität mit X11-Anwendungen
+    .desc = Anwendungsskalierung des X11-Fenstersystems und globale Tastaturkürzel.
+
+<#-- This is still work in progress, as I didn't have enough time. Therefore, I left this here temporarily. -->
+legacy-app-scaling = Anwendungsskalierung des X11-Fenstersystems
+    .scaled-by-system = Alle X11-Anwendungen skalieren
+    .system-description = X11-Anwendungen werden auf HiDPI-Bildschirmen unscharf dargestellt.
+    .scaled-natively = X11-Anwendungen in nativer Auflösung rendern
+    .native-description = X11-Anwendungen, die keine Skalierung unterstützen, werden klein dargestellt, wenn HiDPI-Bildschirme verwendet werden. Für Spiele aktivieren, um die volle Monitorauflösung auszunutzen.
 
 ## System
 
