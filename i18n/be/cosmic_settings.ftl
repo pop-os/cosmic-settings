@@ -1,5 +1,7 @@
 app = Налады COSMIC
 
+dbus-connection-error = Не атрымалася падключыцца да DBus
+ok = OK
 unknown = Невядома
 
 number = { $number }
@@ -28,10 +30,12 @@ network-and-wireless = Сетка і бесправадная сувязь
 no-networks = Сетак не знойдзена.
 no-vpn = Няма даступных VPN-злучэнняў.
 password = Пароль
+password-confirm = Пацвердзіць пароль
 remove = Выдаліць
 settings = Налады
 username = Імя карыстальніка
 visible-networks = Бачныя сеткі
+identity = Ідэнтыфікатар
 
 auth-dialog = Патрабуецца аўтэнтыфікацыя
     .vpn-description = Увядзіце імя карыстальніка і пароль, неабходныя для службы VPN.
@@ -62,8 +66,24 @@ remove-connection-dialog = Выдаліць профіль злучэння?
 
 vpn = VPN
     .connections = VPN-падключэнні
+    .error = Не атрымалася дадаць канфігурацыю VPN
     .remove = Выдалісь профіль падключэння
     .select-file = Выберыца файл канфігураыі VPN
+
+vpn-error = Памылка VPN
+    .config = Не ўдалося дадаць канфігурацыю VPN
+    .connect = Не ўдалося падключэння да VPN
+    .connection-editor = Памылка рэдактара злучэнняў
+    .connection-settings = Не ўдалося атрымаць налады для актыўных злучэнняў
+    .updating-state = Не ўдалося абнавіць стан сеткавага менеджара
+    .wireguard-config-path = Недапушчальны шлях да файла канфігурацыі WireGuard
+    .wireguard-config-path-desc = Выбраны файл мусіць знаходзіцца ў лакальнай файлавай сістэме.
+    .wireguard-device = Не ўдалося стварыць прыладу WireGuard
+    .with-password = Не ўдалося задаць { $field ->
+        *[username] імя карыстальніка
+        [password] пароль
+        [password-flags] пазнакі пароля
+    } VPN праз nmcli
 
 wired = Правадная
     .adapter = Правадны адаптар { $id }
@@ -75,12 +95,19 @@ wifi = Wi-Fi
     .adapter = Wi-Fi адаптар { $id }
     .forget = Забыць гэтую сетку
 
+wireguard-dialog = Дадаць WireGuard прыладу
+    .description = Выберыце імя прылады для канфігурацыі WireGuard.
+
 ## Networking: Online Accounts
 
 online-accounts = Анлайн акаўнты
     .desc = Дадаць акаўнты, IMAP і SMTP, карпаратыўныя лагіны
 
 # Bluetooth
+
+activate = Актываваць
+confirm = Пацвердзіць
+enable = Уключыць
 
 bluetooth = Bluetooth
     .desc = Кіраваць прыладамі Bluetooth
@@ -92,15 +119,63 @@ bluetooth = Bluetooth
     .disconnect = Адключыцца
     .forget = Забыць
     .dbus-error = Адбылася памылка падчас узаемадзеяння з DBus: { $why }
-    .show-device-without-name = Паказаць прылады без назвы
+    .disabled = Служба Bluetooth адключана
+    .inactive = Служба Bluetooth неактыўная
+    .unknown = Не ўдалося актываваць службу Bluetooth. Ці ўсталяваны BlueZ?
 
 bluetooth-paired = Раней падлучаныя прылады
     .connect = Падключыцца
     .battery = { $percentage }% батарэі
 
+bluetooth-confirm-pin = Пацвердзіць PIN-код Bluetooth
+    .description = Пацвердзіце, што наступны PIN-код супадае з тым, што адлюстроўваецца на прыладзе { $device }
+
 bluetooth-available = Прылады паблізу
 
 bluetooth-adapters = Bluetooth Адаптары
+
+## Accessibility
+
+accessibility = Спецыяльныя магчымасці
+    .vision = Зрок
+    .on = Уключана
+    .off = Выключана
+    .unavailable = Недаступна
+    .screen-reader = Праграма чытання з экрана
+    .high-contrast = Рэжым высокай кантраснасці
+    .invert-colors = Інвертаваць колеры
+    .color-filters = Колеравыя фільтры
+
+hearing = Слых
+    .mono = Прайграваць стэрэа-аўдыё як мона
+
+default = Па змаўчанні
+magnifier = Лупа
+    .controls = Ці выкарыстоўвайце гэтыя спалучэнні: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} для павялічэння,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} для памяншэння,
+        }
+        Super + пракрутка мышкай
+    .scroll_controls = Уключыць маштабаванне мышкай ці тачпадам праз Super + Пракрутка
+    .show_overlay = Паказваць накладку лупы
+    .increment = Крок маштабавання
+    .signin = Запускаць лупу пры ўваходзе
+    .applet = Уключыць/выключыць лупу ў аплеце на панэлі
+    .movement = Маштабаваны выгляд рухаецца
+    .continuous = Бесперапынна за указальнікам
+    .onedge = Калі указальнік дасягае краю
+    .centered = Каб утрымліваць указальнік у цэнтры
+color-filter = Тып колеравага фільтра
+    .unknown = Невядомы фільтр актыўны
+    .greyscale = Шэры
+    .deuteranopia = Зялёны/Чырвоны (зялёная слабасць, дэйтэранапія)
+    .protanopia = Чырвоны/Зялёны (чырвоная слабасць, пратанапія)
+    .tritanopia = Сіні/Жоўты (сіняя слабасць, трытанапія)
 
 ## Desktop
 
@@ -128,12 +203,17 @@ fit-to-screen = Падганяць да экрана
 open-new-folder = Адкрыць новую папку
 recent-folders = Апошнія папкі
 
-x-minutes = { $number } мінут
+x-minutes = { $number } { $number ->
+    [one] мінута
+    [few] мінуты
+    *[other] мінут
+}
 x-hours = { $number ->
     [1] 1 гадзіну
     [few] { $number } гадзіны
     *[other] { $number } гадзін
 }
+never = Ніколі
 
 ## Desktop: Appearance
 
@@ -176,8 +256,6 @@ control-tint = Афарбоўка кампанентаў кіравання
 frosted = Эфект замарожанага шкла ў сістэмным інтэрфейсе
     .desc = Прымяняе размыццё фону да панэлі, дока, віджэтаў, праграмы запуску і бібліятэкі праграм.
 
-experimental-settings = Эксперыментальныя налады
-
 enable-export = Прымяніць гэтую тэму да праграм GNOME.
     .desc = Не ўсе інструменты падтрымліваюць аўтаматычнае пераключэнне. Для праграм, якія не належаць да COSMIC, можа спатрэбіцца перазапуск пасля змены тэмы.
 
@@ -200,6 +278,13 @@ interface-density = Шчыльнасць інтэрфейсу
 window-management-appearance = Кіраванне вокнамі
     .active-hint = Памер падказкі актыўнага акна
     .gaps = Прамежкі вакол вакон, размешчаных у сетцы
+
+### Experimental
+
+experimental-settings = Эксперыментальныя налады
+icons-and-toolkit = Тэмы значкоў і набору інструментаў
+interface-font = Сістмны шрыфт
+monospace-font = Манашырынны шрыфт
 
 ## Desktop: Notifications
 
@@ -272,9 +357,12 @@ super-key = Дзеянне клавішы Super
     .applications = Адкрыць праграмы
     .disable = Адключыць
 
+edge-gravity = Плаваючыя вокны прыцягваюцца да бліжэйшых краёў
+
 window-controls = Кіраванне вокнамі
     .minimize = Паказаць кнопку згортвання
     .maximize = Паказаць кнопку разгортвання
+    .active-window-hint = Паказваць падказку актыўнага акна
 
 focus-navigation = Кіраванне фокусам
     .focus-follows-cursor = Фокус ідзе за курсорам
@@ -328,6 +416,7 @@ display = Дысплэі
     .refresh-rate = Частата абнаўлення
     .resolution = Раздзяляльнасць
     .scale = Масштаб
+    .additional-scale-options = Дадатковыя параметры маштабавання
 
 mirroring = Адлюстраванне
     .id = Адлюстраванне { $id }
@@ -352,6 +441,12 @@ orientation = Арыентацыя
     .rotate-180 = Павярнуць на 180
     .rotate-270 = Павярнуць на 270
 
+vrr = Пераменная частата абнаўлення
+    .enabled = Уключана
+    .force = Заўсёды
+    .auto = Аўтаматычна
+    .disabled = Адключана
+
 scheduling = Планаванне
     .manual = Ручное планаванне
 
@@ -360,12 +455,6 @@ dialog = Дыялог
     .keep-changes = Захаваць змены
     .change-prompt = Змены налад будуць аўтаматычна вернуты праз { $time } секунд.
     .revert-settings = Вярнуць налады
-
-legacy-app-scaling = Маштабаванне праграм аконнай сістэмы X11
-    .scaled-by-system = Маштабаваць усе праграмы X11
-    .system-description = Праграмы X11 будуць размытымі на экранах HiDPI.
-    .scaled-natively = Рэндэрыць праграмы X11 у роднай раздзяляльнасці
-    .native-description = Праграмы X11, якія не падтрымліваюць маштабаванне, будуць малымі, калі выкарыстоўваюцца дэсплэй HiDPI. Уключыце для гульняў, каб выкарыстоўваць усю раздзяляльнасць манітора.
 
 ## Sound
 
@@ -378,6 +467,8 @@ sound-output = Выхад
     .level = Выхадны ўзровень
     .config = Налады
     .balance = Баланс
+    .left = Лева
+    .right = Права
 
 sound-input = Уваход
     .volume = Уваходная гучнасць
@@ -433,6 +524,12 @@ power-mode = Рэжым сілкавання
     .performance-desc = Пікавая прадукцыйнасць і энергаспажыванне.
     .no-backend = Бэкенд не знойдзены. Усталюйце system76-power або power-profiles-daemon.
 
+power-saving = Параметры эканоміі энергіі
+    .turn-off-screen-after = Выключыць экран праз
+    .auto-suspend = Аўтаматычнае прыпыненне
+    .auto-suspend-ac = Аўтаматычнае прыпыненне пры падключэнні да электрасеткі
+    .auto-suspend-battery = Аўтаматычнае прыпыненне ад батарэі
+
 ## Input
 
 acceleration-desc = Аўтаматычна рэгулюе адчувальнасць адсочвання ў залежнасці ад хуткасці.
@@ -481,6 +578,13 @@ keyboard-typing-assist = Увод
     .repeat-rate = Хуткасць паўтарэння
     .repeat-delay = Затрымка паўтору
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Стан пры загрузцы
+    .last-boot = Апошняя загрузка
+    .on = Уключаны
+    .off = Выключаны
+    .set = Задаць стан NumLock пры загрузцы
+
 added = Дададзена
 type-to-search = Набярыце для пошуку...
 show-extended-input-sources = Паказаць пашыраныя крыніцу ўводу
@@ -496,6 +600,7 @@ command = Каманда
 custom = Карыстальніцкія
 debug = Адладка
 disabled = Адключана
+input-source-switch = Пераключыць крыніцу ўводу мовы клавіятуры
 migrate-workspace-prev = Перанесці працоўную прастору на папярэдні вывад
 migrate-workspace-next = Перанесці працоўную прастору на наступны вывад
 migrate-workspace = Перанесці працоўную прастору на вывад { $direction ->
@@ -544,6 +649,7 @@ nav-shortcuts = Навігацыя
 manage-windows = Кіраванне вокнамі
     .close = Закрыць акно
     .maximize = Разгарнуць акно
+    .fullscreen = Акно на ўвесь экран
     .minimize = Згарнуць акно
     .resize-inwards = Змяніць памер акна ўнутр
     .resize-outwards = Змяніць памер акна вонкі
@@ -585,6 +691,7 @@ system-shortcut = Сістэма
     .keyboard-brightness-down = Зменшыць яркасць клавіятуры
     .keyboard-brightness-up = Павялічыць яркасць клавіятуры
     .launcher = Адкрыць праграму запуску
+    .log-out = Выйсці
     .lock-screen = Заблакіраваць экран
     .mute = Выключыць вывад гуку
     .mute-mic = Выключыць мікрафон
@@ -597,6 +704,7 @@ system-shortcut = Сістэма
     .volume-raise = Павялічыць гучнасць
     .web-browser = Адкрыць вэб-браўзер
     .window-switcher = Пераключыцца паміж адкрытымі вокнамі
+    .window-switcher-previous = Пераключыцца паміж адкрытымі вокнамі ў зваротным парадку
     .workspace-overview = Адкрыць агляд працоўнай прасторы
 
 window-tiling = Укладанне вокнаў
@@ -610,6 +718,9 @@ window-tiling = Укладанне вокнаў
 
 replace-shortcut-dialog = Замянць спалучэнне?
     .desc = { $shortcut } выкарыстоўваецца для { $name }. Калі вы заменіце яго, { $name } будзе адаключана.
+
+zoom-in = Павялічыць
+zoom-out = Паменшыць
 
 ## Input: Mouse
 
@@ -679,6 +790,75 @@ time-format = Фармат даты і часу
 time-region = Рэгіён і мова
     .desc = Фарматаванне дат, часу і лічбаў у залежнасці ад рэгіёну
 
+formatting = Фарматаванне
+    .dates = Даты
+    .time = Час
+    .date-and-time = Дата і час
+    .numbers = Лічбы
+    .measurement = Адзінкі вымярэння
+    .paper = Папера
+
+preferred-languages = Выбраныя мовы
+    .desc = Парадак моў вызначае, якая мова будзе выкарыстоўвацца для перакладу асяроддзя працоўнага стала. Змены ўступяць у сілу пасля наступнага ўваходу.
+
+add-language = Дадаць мову
+    .context = Дадаць Мову
+install-additional-languages = Усталяваць дадатковыя мовы
+region = Рэгіён
+
+## Applications
+
+applications = Праграмы
+
+## Applications: Default Applications
+
+default-apps = Праграмы па змаўчанні
+    .desc = Вэб-браўзер па змаўчанні, паштовы кліент, файлавы мэнэджар і іншыя праграмы.
+    .web-browser = Вэб-браўзер
+    .file-manager = Файлавы мэнэджар
+    .mail-client = Пошта
+    .music = Музыка
+    .video = Відэа
+    .photos = Фота
+    .calendar = Календар
+    .terminal = Тэрмінал
+    .other-associations = Іншыя асацыяцыі
+    .text-editor = Тэкставы рэдактар
+
+## Applications: Startup Applications
+
+startup-apps = Праграмы пры запуску
+    .desc = Наладзьце праграмы, якія запускаюцца пры ўваходзе ў сістэму.
+    .add = Дадаць праграму
+    .user = Праграмы карыстальніка
+    .user-description = Гэтыя праграмы запускаюцца пры ўваходзе ў сістэму вашага бягучага карыстальніка.
+    .remove-dialog-title = Выдаліць { $name }?
+    .remove-dialog-description = Вы сапраўды жадаеце выдаліць гэта як праграму для запуску?
+    .search-for-application = Пошук праграмы
+
+## Applications: Legacy Applications
+
+legacy-applications = Сумяшчальнасць праграм X11
+    .desc = Маштабаванне праграм аконнай сістэмы X11 і глабальныя спалучэнні клавіш.
+
+legacy-app-global-shortcuts = Глабальныя спалучэнні клавіш у праграмах X11
+    .desc = Глабальныя спалучэнні клавіш дазваляюць распазнаваць націсканні клавіш і падзеі кнопак мышы ў праграмах іншымі праграмамі для такіх функцый, як "націсні і кажы" або "націсні і адключы гук". Па змаўчанні гэта адключана ў праграмах X11, каб іншыя праграмы не маглі маніторыць падзеі клавіятуры і мышы, якія змяшчаюць канфідэнцыйную інфармацыю.
+    .none = Без клавіш
+    .modifiers = Мадыфікатары (Super, Shift, Control, Alt)
+    .combination = Усе клавішы, пакуль націснутыя мадыфікатары Super, Control або Alt
+    .all = Усе клавішы
+    .mouse = Падзеі кнопак мышы ў праграмах X11
+
+legacy-app-scaling = Маштабаванне праграм аконнай сістэмы X11
+    .scaled-gaming = Аптымізаваць для гульняў і поўнаэкранных праграм
+    .gaming-description = Праграмы X11 могуць выглядаць крыху большымі/меншымі ў параўнанні з праграмамі Wayland.
+    .scaled-applications = Аптымізаваць для праграм
+    .applications-description = Гульні і поўнаэкранныя праграмы X11 могуць не адпавядаць разрозненню вашага дысплея.
+    .scaled-compatibility = Рэжым максімальнай сумяшчальнасці
+    .compatibility-description = Праграмы X11 могуць выглядаць размытымі на HiDPI-экранах.
+    .preferred-display = Выбраны дысплей для гульняў і поўнаэкранных праграм X11
+    .no-display = <Няма>
+
 ## System
 
 system = Сістэма і акаўнты
@@ -716,3 +896,17 @@ firmware = Праграмнае забеспячэнне
 
 users = Карыстальнікі
     .desc = Аўтэнтыфікацыя і ўваход, экран блакіроўкі.
+    .admin = Адміністратар
+    .standard = Звычайны
+    .profile-add = Выбраць выяву профілю
+
+administrator = Адміністратар
+    .desc = Адміністратары могуць змяняць налады для ўсіх карыстальнікаў, дадаваць і выдаляць іншых карыстальнікаў.
+
+add-user = Дадаць карыстальніка
+change-password = Змяніць пароль
+remove-user = Выдаліць карыстальніка
+full-name = Поўнае імя
+invalid-username = Недапушчальнае імя карыстальніка
+password-mismatch = Пароль і пацвярджэнне мусяць супадаць.
+save = Захаваць
