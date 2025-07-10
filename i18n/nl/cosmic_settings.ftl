@@ -208,6 +208,9 @@ x-minutes = { $number } { $number ->
         *[other] minuten
     }
 x-hours = { $number } uur
+<#-- these three lines are intentionally left empty -->
+
+
 never = Nooit
 
 ## Desktop: Appearance
@@ -490,6 +493,7 @@ battery = Batterij
         *[other] minuten
     }   
     .hour = { $value } uur
+<#-- these three lines are intentionally left empty -->
 
 
     .day = { $value } { $value ->
@@ -640,6 +644,7 @@ nav-shortcuts = Navigatie
 manage-windows = Vensterbeheer
     .close = Venster sluiten
     .maximize = Venster maximaliseren
+    .fullscreen = Volledig scherm
     .minimize = Venster minimaliseren
     .resize-inwards = Venster verkleinen
     .resize-outwards = Venster vergroten
@@ -688,6 +693,7 @@ system-shortcut = Systeem
     .play-pause = Afspelen/Pauzeren
     .play-next = Volgend nummer
     .play-prev = Vorig nummer
+    .poweroff = Computer afsluiten
     .screenshot = Schermafbeelding maken
     .terminal = Open een terminal
     .volume-lower = Uitvoervolume lager
@@ -812,8 +818,8 @@ default-apps = Standaardtoepassingen
     .photos = Foto's
     .calendar = Agenda
     .terminal = Terminal
-    .other-associations = Andere koppelingen
-    .text-editor = Teksteditor
+    .other-associations = Andere standaardtoepassingen
+    .text-editor = Tekstbewerking
 
 ## Applications: Startup Applications
 
