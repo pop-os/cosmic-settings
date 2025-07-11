@@ -45,7 +45,15 @@ impl From<(Option<Config>, Option<Config>, Option<Vec<Srgba>>)> for ThemeCustomi
             Option<Vec<Srgba>>,
         ),
     ) -> Self {
-        let theme = Theme::get_entry(theme_config.as_ref().unwrap()).unwrap_or_default();
+        let theme = match Theme::get_entry(theme_config.as_ref().unwrap()) {
+            Ok(theme) => theme,
+            Err((errs, theme)) => {
+                for err in errs {
+                    tracing::warn!("Error while loading theme: {err:?}");
+                }
+                theme
+            }
+        };
 
         let mut theme_builder = match ThemeBuilder::get_entry(builder_config.as_ref().unwrap()) {
             Ok(t) => t,
