@@ -946,7 +946,8 @@ impl Page {
                             selection.into_vec(),
                         ),
                     );
-
+                }
+                WallpaperEvent::Loaded => {
                     // `selection.active` is usually empty because `change_folder` creates a fresh context.
                     // This leads to blank previews in certain conditions when the program is restarted.
                     let fix_active = match self.selection.active {
@@ -975,8 +976,9 @@ impl Page {
                                 }
                             }
                     }
+
+                    self.cache_display_image()
                 }
-                WallpaperEvent::Loaded => self.cache_display_image(),
                 WallpaperEvent::Error(error) => {
                     tracing::error!("Failed to load wallpaper: {}", error);
                 }
