@@ -80,8 +80,6 @@ pub enum Message {
     CacheDisplayImage,
     /// Selects an option in the category dropdown menu.
     ChangeCategory(Category),
-    /// Changes the displayed images in the wallpaper view.
-    ChangeFolder(Context),
     /// Emits a wallpaper event.
     Event(WallpaperEvent),
     /// Handles messages from the color dialog.
@@ -695,27 +693,6 @@ impl Page {
             }
 
             Message::CacheDisplayImage => self.cache_display_image(),
-
-            Message::ChangeFolder(mut context) => {
-                // Reassign custom colors and images to the new context.
-                std::mem::swap(&mut context, &mut self.selection);
-
-                for color in context.custom_colors {
-                    self.selection.add_custom_color(color);
-                }
-
-                for image in context.custom_images {
-                    let path = context.paths.remove(image);
-                    let display = context.display_images.remove(image);
-                    let selection = context.selection_handles.remove(image);
-
-                    if let Some(((display, selection), path)) = display.zip(selection).zip(path) {
-                        self.selection.add_custom_image(path, display, selection);
-                    }
-                }
-
-                self.select_first_wallpaper();
-            }
 
             Message::ColorAdd(message) => {
                 match message {
