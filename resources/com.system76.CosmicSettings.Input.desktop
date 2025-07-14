@@ -8,6 +8,7 @@ Name[nl]=Invoerapparaten
 Comment=Keyboard, cursor, etc.
 Comment[zh_CN]=输入设备
 Comment[nl]=Toetsenbord, muis, etc.
+Comment[hu]=Billentyűzet, mutató, stb.
 Type=Settings
 Exec=cosmic-settings input
 Terminal=false

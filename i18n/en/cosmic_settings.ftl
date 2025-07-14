@@ -784,7 +784,7 @@ time-format = Date & Time Format
     .monday = Monday
 
 time-region = Region & Language
-    .desc = Format dates, times, and numbers based on your region
+    .desc = Format dates, times, and numbers based on your region.
 
 formatting = Formatting
     .dates = Dates
