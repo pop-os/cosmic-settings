@@ -21,22 +21,34 @@ pub mod theme;
 pub mod utils;
 pub mod widget;
 
-use clap::{Parser, Subcommand};
+use clap_lex::RawArgs;
 use cosmic::{app::CosmicFlags, iced::Limits};
 use i18n_embed::DesktopLanguageRequester;
-use ron::error::SpannedError;
 use serde::{Deserialize, Serialize};
 use tracing_subscriber::prelude::*;
 
-#[derive(Parser, Debug, Serialize, Deserialize, Clone)]
-#[command(author, version, about, long_about = None)]
-#[command(propagate_version = true)]
 pub struct Args {
-    #[command(subcommand)]
     sub_command: Option<PageCommands>,
 }
 
-#[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
+impl Args {
+    pub fn parse() -> Self {
+        let raw_args = RawArgs::from_args();
+        let mut cursor = raw_args.cursor();
+
+        // Ignore App name
+        let _ = raw_args.next_os(&mut cursor);
+
+        let sub_command = raw_args
+            .next_os(&mut cursor)
+            .and_then(|os_str| os_str.to_str())
+            .and_then(|s| <PageCommands as FromStr>::from_str(s).ok());
+
+        Args { sub_command }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PageCommands {
     /// Accessibility settings page
     #[cfg(feature = "page-accessibility")]
@@ -126,17 +138,81 @@ pub enum PageCommands {
     Workspaces,
 }
 
+impl PageCommands {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            #[cfg(feature = "page-accessibility")]
+            "Accessibility" => Some(Self::Accessibility),
+            #[cfg(feature = "page-accessibility")]
+            "AccessibilityMagnifier" => Some(Self::AccessibilityMagnifier),
+            #[cfg(feature = "page-about")]
+            "About" => Some(Self::About),
+            "Appearance" => Some(Self::Appearance),
+            "Applications" => Some(Self::Applications),
+            #[cfg(feature = "page-bluetooth")]
+            "Bluetooth" => Some(Self::Bluetooth),
+            #[cfg(feature = "page-date")]
+            "DateTime" => Some(Self::DateTime),
+            #[cfg(feature = "page-default-apps")]
+            "DefaultApps" => Some(Self::DefaultApps),
+            "Desktop" => Some(Self::Desktop),
+            #[cfg(feature = "page-display")]
+            "Displays" => Some(Self::Displays),
+            #[cfg(feature = "wayland")]
+            "Dock" => Some(Self::Dock),
+            "Firmware" => Some(Self::Firmware),
+            #[cfg(feature = "page-input")]
+            "Input" => Some(Self::Input),
+            #[cfg(feature = "page-input")]
+            "Keyboard" => Some(Self::Keyboard),
+            #[cfg(feature = "page-legacy-applications")]
+            "LegacyApplications" => Some(Self::LegacyApplications),
+            #[cfg(feature = "page-input")]
+            "Mouse" => Some(Self::Mouse),
+            #[cfg(feature = "page-networking")]
+            "Network" => Some(Self::Network),
+            #[cfg(feature = "wayland")]
+            "Panel" => Some(Self::Panel),
+            #[cfg(feature = "page-power")]
+            "Power" => Some(Self::Power),
+            #[cfg(feature = "page-region")]
+            "RegionLanguage" => Some(Self::RegionLanguage),
+            #[cfg(feature = "page-sound")]
+            "Sound" => Some(Self::Sound),
+            "System" => Some(Self::System),
+            "Time" => Some(Self::Time),
+            #[cfg(feature = "page-input")]
+            "Touchpad" => Some(Self::Touchpad),
+            #[cfg(feature = "page-users")]
+            "Users" => Some(Self::Users),
+            #[cfg(feature = "page-networking")]
+            "Vpn" => Some(Self::Vpn),
+            "Wallpaper" => Some(Self::Wallpaper),
+            #[cfg(feature = "page-window-management")]
+            "WindowManagement" => Some(Self::WindowManagement),
+            #[cfg(feature = "page-networking")]
+            "Wired" => Some(Self::Wired),
+            #[cfg(feature = "page-networking")]
+            "Wireless" => Some(Self::Wireless),
+            #[cfg(feature = "page-workspaces")]
+            "Workspaces" => Some(Self::Workspaces),
+            
+            _ => None,
+        }
+    }
+}
+
 impl FromStr for PageCommands {
-    type Err = SpannedError;
+    type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        ron::de::from_str(s)
+        PageCommands::from_str(s).ok_or(())
     }
 }
 
 impl std::fmt::Display for PageCommands {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", ron::ser::to_string(self).unwrap())
+        write!(f, "{:?}", self)
     }
 }
 
