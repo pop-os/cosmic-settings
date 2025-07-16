@@ -184,38 +184,39 @@ impl Manager {
             let builder = customizer.builder.0.clone();
             let (current_theme, config) = customizer.theme.clone();
 
-            tasks.push(cosmic::task::future(async move {
-                if let Some(config) = config {
-                    let new_theme = builder.build();
+            tasks.push(
+                cosmic::Task::future(async move {
+                    if let Some(config) = config {
+                        let new_theme = builder.build();
 
-                    theme_transaction!(config, current_theme, new_theme, {
-                        accent;
-                        accent_button;
-                        background;
-                        button;
-                        destructive;
-                        destructive_button;
-                        link_button;
-                        icon_button;
-                        palette;
-                        primary;
-                        secondary;
-                        shade;
-                        success;
-                        text_button;
-                        warning;
-                        warning_button;
-                        window_hint;
-                    });
-
-                    app::Message::from(super::Message::NewTheme(Box::new(new_theme)))
-                } else {
-                    app::Message::None
-                }
-            }));
+                        theme_transaction!(config, current_theme, new_theme, {
+                            accent;
+                            accent_button;
+                            background;
+                            button;
+                            destructive;
+                            destructive_button;
+                            link_button;
+                            icon_button;
+                            palette;
+                            primary;
+                            secondary;
+                            shade;
+                            success;
+                            text_button;
+                            warning;
+                            warning_button;
+                            window_hint;
+                        });
+                    }
+                })
+                .discard(),
+            );
         });
 
-        cosmic::task::batch(tasks)
+        cosmic::task::batch(tasks).chain(cosmic::task::message(app::Message::SetTheme(
+            self.cosmic_theme(),
+        )))
     }
 
     #[inline]
