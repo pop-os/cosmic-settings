@@ -15,6 +15,7 @@ use crate::app;
 
 use super::ContextView;
 
+#[derive(Debug)]
 pub enum ThemeStaged {
     Current,
     Both,
@@ -214,9 +215,9 @@ impl Manager {
             );
         });
 
-        cosmic::task::batch(tasks).chain(cosmic::task::message(app::Message::SetTheme(
-            self.cosmic_theme(),
-        )))
+        cosmic::task::batch(tasks).chain(cosmic::task::future(async {
+            app::Message::SetTheme(cosmic::theme::system_preference())
+        }))
     }
 
     #[inline]
