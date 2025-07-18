@@ -644,6 +644,7 @@ nav-shortcuts = Navegação
 manage-windows = Gerenciamento de Janelas
     .close = Fechar janela
     .maximize = Maximizar janela
+    .fullscreen = Janela em tela cheia
     .minimize = Minimizar janela
     .resize-inwards = Redimensionar janela para dentro
     .resize-outwards = Redimensionar janela para fora
