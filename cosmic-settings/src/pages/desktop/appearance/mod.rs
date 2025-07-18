@@ -342,11 +342,15 @@ impl Page {
                 let r = self.roundness;
                 self.drawer.reset(&self.theme_manager);
 
-                #[cfg(feature = "wayland")]
-                tokio::task::spawn(async move {
-                    Self::update_panel_radii(r);
-                    Self::update_panel_spacing(Density::Standard);
-                });
+                tasks.push(cosmic::task::future(async move {
+                    #[cfg(feature = "wayland")]
+                    {
+                        Self::update_panel_radii(r);
+                        Self::update_panel_spacing(Density::Standard);
+                    }
+
+                    app::Message::SetTheme(cosmic::theme::system_preference())
+                }));
             }
 
             #[cfg(feature = "xdg-portal")]
@@ -521,11 +525,7 @@ impl Page {
         let mut tasks = cosmic::Task::batch(tasks);
 
         if let Some(stage) = theme_staged {
-            tasks = tasks
-                .chain(self.theme_manager.build_theme(stage))
-                .chain(cosmic::task::future(async {
-                    app::Message::SetTheme(cosmic::theme::system_preference())
-                }))
+            tasks = tasks.chain(self.theme_manager.build_theme(stage))
         }
 
         self.can_reset = if self.theme_manager.mode().is_dark {
