@@ -362,12 +362,15 @@ impl Page {
                         .open_file()
                         .await;
 
-                    if let Ok(f) = res {
-                        Message::ImportFile(OpenResponse(Arc::new(f)))
-                    } else {
-                        // TODO Error toast?
-                        tracing::error!("failed to select a file for importing a custom theme.");
-                        Message::ImportError
+                    match res {
+                        Ok(f) => Message::ImportFile(OpenResponse(Arc::new(f))),
+                        Err(why) => {
+                            tracing::error!(
+                                ?why,
+                                "failed to select a file for importing a custom theme."
+                            );
+                            Message::ImportError
+                        }
                     }
                 }));
             }
@@ -481,6 +484,10 @@ impl Page {
                     .apply_theme();
 
                 self.drawer.reset(&self.theme_manager);
+
+                return cosmic::task::future(async move {
+                    app::Message::SetTheme(cosmic::theme::system_preference())
+                });
             }
 
             Message::UseDefaultWindowHint(v) => {
