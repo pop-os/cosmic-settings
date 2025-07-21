@@ -327,7 +327,7 @@ fn i18n() -> (slab::Slab<String>, HashMap<String, usize>) {
         ),
         (
             "auto_switch_desc/sunset".into(),
-            descriptions.insert(fl!("auto-switch", "sunrise")),
+            descriptions.insert(fl!("auto-switch", "sunset")),
         ),
         (
             "auto_switch_desc/next-sunrise".into(),
@@ -335,7 +335,7 @@ fn i18n() -> (slab::Slab<String>, HashMap<String, usize>) {
         ),
         (
             "auto_switch_desc/next-sunset".into(),
-            descriptions.insert(fl!("auto-switch", "next-sunrise")),
+            descriptions.insert(fl!("auto-switch", "next-sunset")),
         ),
         (
             "accent_color".into(),
