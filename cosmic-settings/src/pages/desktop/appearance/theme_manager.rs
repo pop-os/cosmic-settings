@@ -192,6 +192,7 @@ impl Manager {
 
                         theme_transaction!(config, current_theme, new_theme, {
                             accent;
+                            accent_text;
                             accent_button;
                             background;
                             button;
