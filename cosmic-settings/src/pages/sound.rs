@@ -81,44 +81,66 @@ pub struct Page {
     entity: page::Entity,
     pipewire_thread: Option<(tokio::sync::oneshot::Sender<()>, pipewire::Sender<()>)>,
     pulse_thread: Option<tokio::sync::oneshot::Sender<()>>,
+    sink_channels: Option<pulse::PulseChannels>,
+
     devices: BTreeMap<DeviceId, Card>,
     card_names: IndexMap<DeviceId, String>,
     card_profiles: IndexMap<DeviceId, Vec<pulse::CardProfile>>,
     active_profiles: IndexMap<DeviceId, Option<String>>,
 
-    default_sink: String,
-    default_source: String,
+    /** Sink devices */
 
-    sink_volume: u32,
-    sink_volume_text: String,
-    sink_mute: bool,
-    sink_volume_debounce: bool,
-
-    sink_balance: Option<f32>,
-    sink_balance_text: Option<String>,
-    sink_balance_debounce: bool,
-    sink_channels: Option<pulse::PulseChannels>,
-    source_volume: u32,
-    source_volume_text: String,
-    source_mute: bool,
-    source_volume_debounce: bool,
-
+    /// Product names for source sink devices.
     sinks: Vec<String>,
-    sink_ids: Vec<NodeId>,
+    /// Pipewire object IDs for sink devices.
+    sink_pw_ids: Vec<NodeId>,
+    /// Profile IDs for the actively-selected sink device.
     sink_profiles: Vec<String>,
+    /// Names of profiles for the actively-selected sink device.
     sink_profile_names: Vec<String>,
-    sources: Vec<String>,
-    source_ids: Vec<NodeId>,
-    source_profiles: Vec<String>,
-    source_profile_names: Vec<String>,
-
-    active_sink: Option<usize>,
+    /// Device ID of active sink device.
     active_sink_device: Option<DeviceId>,
+    /// Index of active sink device.
+    active_sink: Option<usize>,
+    /// Card profile index of active sink device.
     active_sink_profile: Option<usize>,
-    active_source: Option<usize>,
+
+    /** Source devices */
+
+    /// Product names for source devices.
+    sources: Vec<String>,
+    /// Pipewire object IDs for source devices.
+    source_pw_ids: Vec<NodeId>,
+    /// Profile IDs for the actively-selected source device.
+    source_profiles: Vec<String>,
+    /// Names of profiles for the actively-selected source device.
+    source_profile_names: Vec<String>,
+    /// Device ID of active source device.
     active_source_device: Option<DeviceId>,
+    /// Index of active source device.
+    active_source: Option<usize>,
+    /// Card profile index of active source device.
     active_source_profile: Option<usize>,
 
+    /// Device identifier of the default sink.
+    default_sink: String,
+    /// Device identifier of the default source.
+    default_source: String,
+
+    sink_volume_text: String,
+    source_volume_text: String,
+
+    sink_balance_text: Option<String>,
+    sink_balance: Option<f32>,
+
+    sink_volume: u32,
+    source_volume: u32,
+
+    sink_mute: bool,
+    sink_volume_debounce: bool,
+    sink_balance_debounce: bool,
+    source_mute: bool,
+    source_volume_debounce: bool,
     changing_sink_profile: bool,
     changing_source_profile: bool,
 }
@@ -224,8 +246,7 @@ impl Page {
             .map_or((Vec::new(), Vec::new()), |profiles| {
                 profiles
                     .iter()
-                    // TODO: Allow disabling
-                    .filter(|p| p.available && p.description != "Off")
+                    .filter(|p| p.available && p.name != "off")
                     .map(|p| (p.name.clone(), p.description.clone()))
                     .collect()
             });
@@ -269,7 +290,7 @@ impl Page {
             for (&node_id, device) in &card.devices {
                 if let pipewire::MediaClass::Sink = device.class {
                     if device.identifier == self.default_sink {
-                        self.active_sink = self.sink_ids.iter().position(|&id| id == node_id);
+                        self.active_sink = self.sink_pw_ids.iter().position(|&id| id == node_id);
                         let device_id = device_id.clone();
                         self.set_sink_profiles(&device_id);
                         self.active_sink_device = Some(device_id);
@@ -294,7 +315,8 @@ impl Page {
             for (&node_id, device) in &card.devices {
                 if let pipewire::MediaClass::Source = device.class {
                     if device.identifier == self.default_source {
-                        self.active_source = self.source_ids.iter().position(|&id| id == node_id);
+                        self.active_source =
+                            self.source_pw_ids.iter().position(|&id| id == node_id);
                         let device_id = device_id.clone();
                         self.set_source_profiles(&device_id);
                         self.active_source_device = Some(device_id);
@@ -315,7 +337,7 @@ impl Page {
                 }
 
                 let mut command = None;
-                if let Some(&node_id) = self.source_ids.get(self.active_source.unwrap_or(0)) {
+                if let Some(&node_id) = self.source_pw_ids.get(self.active_source.unwrap_or(0)) {
                     command = Some(cosmic::task::future(async move {
                         tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SourceVolumeApply(node_id))
@@ -343,7 +365,7 @@ impl Page {
                 }
 
                 let mut command = None;
-                if let Some(&node_id) = self.sink_ids.get(self.active_sink.unwrap_or(0)) {
+                if let Some(&node_id) = self.sink_pw_ids.get(self.active_sink.unwrap_or(0)) {
                     command = Some(cosmic::task::future(async move {
                         tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SinkVolumeApply(node_id))
@@ -363,7 +385,11 @@ impl Page {
                 }
 
                 let mut command = None;
-                if !self.sink_ids.get(self.active_sink.unwrap_or(0)).is_none() {
+                if !self
+                    .sink_pw_ids
+                    .get(self.active_sink.unwrap_or(0))
+                    .is_none()
+                {
                     command = Some(cosmic::task::future(async move {
                         tokio::time::sleep(Duration::from_millis(64)).await;
                         crate::pages::Message::Sound(Message::SinkBalanceApply)
@@ -426,28 +452,28 @@ impl Page {
 
                 match device.media_class {
                     pipewire::MediaClass::Sink => {
-                        self.sinks.push(device.node_description.clone());
-                        self.sink_ids.push(device.object_id);
-                        sort_pulse_devices(&mut self.sinks, &mut self.sink_ids);
+                        self.sinks.push(device.product_name.clone());
+                        self.sink_pw_ids.push(device.object_id);
+
+                        sort_pulse_devices(&mut self.sinks, &mut self.sink_pw_ids);
+
                         if self.default_sink == device.node_name {
-                            self.active_sink = self
-                                .sinks
-                                .iter()
-                                .position(|s| *s == device.node_description);
+                            self.active_sink =
+                                self.sinks.iter().position(|s| *s == device.product_name);
                             self.active_sink_device = Some(device_id.clone());
                             self.set_sink_profiles(&device_id);
                         }
                     }
 
                     pipewire::MediaClass::Source => {
-                        self.sources.push(device.node_description.clone());
-                        self.source_ids.push(device.object_id);
-                        sort_pulse_devices(&mut self.sources, &mut self.source_ids);
+                        self.sources.push(device.product_name.clone());
+                        self.source_pw_ids.push(device.object_id);
+
+                        sort_pulse_devices(&mut self.sources, &mut self.source_pw_ids);
+
                         if self.default_source == device.node_name {
-                            self.active_source = self
-                                .sources
-                                .iter()
-                                .position(|s| *s == device.node_description);
+                            self.active_source =
+                                self.sources.iter().position(|s| *s == device.product_name);
                             self.active_source_device = Some(device_id.clone());
                             self.set_source_profiles(&device_id);
                         }
@@ -463,7 +489,7 @@ impl Page {
                     Device {
                         class: device.media_class,
                         identifier: device.node_name,
-                        description: device.node_description,
+                        description: device.product_name,
                     },
                 );
 
@@ -485,16 +511,16 @@ impl Page {
                     _ = self.devices.remove(&card_id);
                 }
 
-                if let Some(pos) = self.sink_ids.iter().position(|&id| id == node_id) {
-                    _ = self.sink_ids.remove(pos);
+                if let Some(pos) = self.sink_pw_ids.iter().position(|&id| id == node_id) {
+                    _ = self.sink_pw_ids.remove(pos);
                     _ = self.sinks.remove(pos);
                     if self.active_sink == Some(pos) {
                         self.active_sink = None;
                         self.active_sink_device = None;
                         self.active_sink_profile = None;
                     }
-                } else if let Some(pos) = self.source_ids.iter().position(|&id| id == node_id) {
-                    _ = self.source_ids.remove(pos);
+                } else if let Some(pos) = self.source_pw_ids.iter().position(|&id| id == node_id) {
+                    _ = self.source_pw_ids.remove(pos);
                     _ = self.sources.remove(pos);
                     if self.active_source == Some(pos) {
                         self.active_source = None;
@@ -504,7 +530,7 @@ impl Page {
                 }
             }
             Message::SinkChanged(pos) => {
-                if let Some(node_id) = self.sink_ids.get(pos) {
+                if let Some(node_id) = self.sink_pw_ids.get(pos) {
                     for card in self.devices.values() {
                         for (nid, device) in &card.devices {
                             if node_id == nid {
@@ -518,7 +544,7 @@ impl Page {
                 }
             }
             Message::SourceChanged(pos) => {
-                if let Some(node_id) = self.source_ids.get(pos) {
+                if let Some(node_id) = self.source_pw_ids.get(pos) {
                     for card in self.devices.values() {
                         for (nid, device) in &card.devices {
                             if node_id == nid {
@@ -551,13 +577,13 @@ impl Page {
             }
             Message::SinkMuteToggle => {
                 self.sink_mute = !self.sink_mute;
-                if let Some(&node_id) = self.sink_ids.get(self.active_sink.unwrap_or(0)) {
+                if let Some(&node_id) = self.sink_pw_ids.get(self.active_sink.unwrap_or(0)) {
                     wpctl_set_mute(node_id, self.sink_mute);
                 }
             }
             Message::SourceMuteToggle => {
                 self.source_mute = !self.source_mute;
-                if let Some(&node_id) = self.source_ids.get(self.active_source.unwrap_or(0)) {
+                if let Some(&node_id) = self.source_pw_ids.get(self.active_source.unwrap_or(0)) {
                     wpctl_set_mute(node_id, self.source_mute);
                 }
             }

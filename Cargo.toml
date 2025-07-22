@@ -37,13 +37,18 @@ git = "https://github.com/smithay/client-toolkit/"
 package = "smithay-client-toolkit"
 # rev = "c583de8"
 
-[profile.release-with-debug]
-inherits = "release"
-debug = true
+[profile.dev]
+opt-level = "s"
+lto = "off"
 
 [profile.release]
 opt-level = "s"
+lto = "thin"
+
+[profile.release-with-debug]
+inherits = "release"
 lto = "off"
+debug = true
 
 # Fix text rendering being cut off on the right
 [patch.'https://github.com/pop-os/cosmic-text']
@@ -60,10 +65,11 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/libcosmic']
-# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "drop-menu-tree-changes" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "drop-menu-tree-changes" }
-# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "drop-menu-tree-changes" }
+[patch.'https://github.com/pop-os/libcosmic']
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", rev = "7748e59" }
+cosmic-config = { git = "https://github.com/pop-os/libcosmic//", rev = "7748e59" }
+cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", rev = "7748e59" }
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", rev = "7748e59" }
 # libcosmic = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }

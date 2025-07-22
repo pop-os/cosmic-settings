@@ -92,15 +92,6 @@ pwhash = "1"
 
 [dependencies.cosmic-settings-subscriptions]
 git = "https://github.com/pop-os/cosmic-settings-subscriptions"
-#TODO: only select features as needed
-features = [
-    "cosmic_a11y_manager",
-    "accessibility",
-    "network_manager",
-    "pipewire",
-    "pulse",
-    "bluetooth",
-]
 optional = true
 
 [dependencies.icu]
@@ -143,17 +134,19 @@ linux = [
 
 # Pages
 page-accessibility = [
-    "dep:cosmic-comp-config",
+    "dep:sctk",
     "dep:cosmic-protocols",
+    "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",
     "dep:cosmic-settings-daemon-config",
-    "dep:sctk",
+    "cosmic-settings-subscriptions/accessibility",
+    "cosmic-settings-subscriptions/cosmic_a11y_manager",
 ]
 page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
 page-bluetooth = [
-    "dep:bluez-zbus",
+    "cosmic-settings-subscriptions/bluetooth",
     "dep:zbus",
-    "dep:cosmic-settings-subscriptions",
+    "dep:bluez-zbus",
 ]
 page-date = ["dep:timedate-zbus", "dep:zbus"]
 page-default-apps = ["dep:cosmic-settings-config", "dep:mime-apps"]
@@ -166,14 +159,17 @@ page-input = [
 ]
 page-legacy-applications = ["dep:cosmic-comp-config"]
 page-networking = [
+    "cosmic-settings-subscriptions/network_manager",
     "xdg-portal",
     "dep:cosmic-dbus-networkmanager",
-    "dep:cosmic-settings-subscriptions",
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = ["gettext", "dep:locales-rs", "dep:locale1", "dep:zbus"]
-page-sound = ["dep:cosmic-settings-subscriptions"]
+page-sound = [
+    "cosmic-settings-subscriptions/pipewire",
+    "cosmic-settings-subscriptions/pulse",
+]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
 page-window-management = ["dep:cosmic-settings-config"]
 page-workspaces = ["dep:cosmic-comp-config"]
