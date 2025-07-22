@@ -189,7 +189,6 @@ impl Manager {
                 cosmic::Task::future(async move {
                     if let Some(config) = config {
                         let new_theme = builder.build();
-
                         theme_transaction!(config, current_theme, new_theme, {
                             accent;
                             accent_text;
