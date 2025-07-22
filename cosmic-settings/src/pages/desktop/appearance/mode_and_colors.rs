@@ -35,7 +35,7 @@ pub fn section() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&descriptions[label_keys["window_hint_toggle"]])
                         .toggler(
-                            theme_manager.custom_window_hint().is_some(),
+                            theme_manager.custom_window_hint().is_none(),
                             Message::UseDefaultWindowHint,
                         ),
                 );

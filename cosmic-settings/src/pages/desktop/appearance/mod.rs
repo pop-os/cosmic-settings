@@ -491,7 +491,7 @@ impl Page {
             }
 
             Message::UseDefaultWindowHint(v) => {
-                if !v {
+                if v {
                     let _ = self
                         .theme_manager
                         .selected_customizer_mut()
