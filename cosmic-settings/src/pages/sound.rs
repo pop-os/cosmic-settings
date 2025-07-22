@@ -696,6 +696,10 @@ fn input() -> Section<crate::pages::Message> {
         .title(fl!("sound-input"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
+            if page.sources.is_empty() {
+                return widget::row().into();
+            }
+
             let volume_control = widget::row::with_capacity(4)
                 .align_y(Alignment::Center)
                 .push(
