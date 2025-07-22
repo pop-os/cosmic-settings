@@ -475,6 +475,12 @@ impl Page {
             #[cfg(feature = "xdg-portal")]
             Message::ImportSuccess(builder) => {
                 tracing::trace!("Import successful");
+                let new_is_dark = builder.palette.is_dark();
+                if new_is_dark != self.theme_manager.mode().is_dark {
+                    if let Err(err) = self.theme_manager.dark_mode(new_is_dark) {
+                        tracing::error!(?err, "Error setting dark mode");
+                    }
+                }
 
                 self.theme_manager
                     .selected_customizer_mut()
