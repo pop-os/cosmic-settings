@@ -4,7 +4,7 @@ default-members = ["cosmic-settings"]
 resolver = "2"
 
 [workspace.package]
-rust-version = "1.80.0"
+rust-version = "1.85.0"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
@@ -31,6 +31,9 @@ git = "https://github.com/pop-os/cosmic-panel"
 
 [workspace.dependencies.cosmic-randr-shell]
 git = "https://github.com/pop-os/cosmic-randr"
+
+[workspace.dependencies.cosmic-settings-subscriptions]
+git = "https://github.com/pop-os/cosmic-settings-subscriptions"
 
 [workspace.dependencies.sctk]
 git = "https://github.com/smithay/client-toolkit/"

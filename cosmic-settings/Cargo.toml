@@ -26,6 +26,7 @@ cosmic-randr-shell.workspace = true
 cosmic-randr = { workspace = true, optional = true }
 cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 cosmic-settings-page = { path = "../page" }
+cosmic-settings-subscriptions = { workspace = true, optional = true }
 cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
@@ -89,10 +90,6 @@ async-fn-stream = "0.2.2"
 num-traits = "0.2"
 num-derive = "0.4"
 pwhash = "1"
-
-[dependencies.cosmic-settings-subscriptions]
-git = "https://github.com/pop-os/cosmic-settings-subscriptions"
-optional = true
 
 [dependencies.icu]
 version = "1.5.0"

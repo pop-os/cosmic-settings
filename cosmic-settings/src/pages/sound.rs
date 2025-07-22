@@ -1,10 +1,10 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{collections::BTreeMap, time::Duration};
+use std::{collections::BTreeMap, sync::Arc, time::Duration};
 
 use cosmic::{
-    Element, Task,
+    Apply, Element, Task,
     iced::{Alignment, Length, window},
     surface,
     widget::{self, settings},
@@ -53,8 +53,33 @@ pub enum Message {
     SourceVolumeApply(NodeId),
     /// Toggle the mute status of the input output.
     SourceMuteToggle,
+    /// On init of the subscription, channels for closing background threads are given to the app.
+    SubHandle(Arc<SubscriptionHandle>),
     /// Surface Action
     Surface(surface::Action),
+}
+
+pub struct SubscriptionHandle {
+    cancel_tx: futures::channel::oneshot::Sender<()>,
+    pipewire: pipewire::Sender<()>,
+}
+
+impl std::fmt::Debug for SubscriptionHandle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SubscriptionHandle")
+    }
+}
+
+impl From<Message> for crate::pages::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::Sound(message)
+    }
+}
+
+impl From<Message> for crate::Message {
+    fn from(message: Message) -> Self {
+        crate::Message::PageMessage(message.into())
+    }
 }
 
 #[derive(Debug)]
@@ -79,8 +104,7 @@ pub enum DeviceId {
 #[derive(Default)]
 pub struct Page {
     entity: page::Entity,
-    pipewire_thread: Option<(tokio::sync::oneshot::Sender<()>, pipewire::Sender<()>)>,
-    pulse_thread: Option<tokio::sync::oneshot::Sender<()>>,
+    subscription_handle: Option<SubscriptionHandle>,
     sink_channels: Option<pulse::PulseChannels>,
 
     devices: BTreeMap<DeviceId, Card>,
@@ -146,10 +170,6 @@ pub struct Page {
 }
 
 impl page::Page<crate::pages::Message> for Page {
-    fn set_id(&mut self, entity: page::Entity) {
-        self.entity = entity;
-    }
-
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
@@ -163,74 +183,80 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("sound", "desc"))
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
-        let mut tasks = Vec::with_capacity(2);
-        if self.pulse_thread.is_none() {
-            let (tx, mut rx) = futures::channel::mpsc::channel(1);
-            let (cancel_tx, cancel_rx) = tokio::sync::oneshot::channel::<()>();
+    fn subscription(
+        &self,
+        _core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<crate::pages::Message> {
+        cosmic::iced::Subscription::run(|| {
+            async_fn_stream::fn_stream(|emitter| async move {
+                let (cancel_tx, mut cancel_rx) = futures::channel::oneshot::channel::<()>();
 
-            // Listen to events from the pulse thread until the tx channel is closed.
-            _ = std::thread::spawn(move || {
-                pulse::thread(tx);
-            });
+                let (tx, mut pulse_rx) = futures::channel::mpsc::channel(1);
+                let _pulse_handle = std::thread::spawn(move || {
+                    pulse::thread(tx);
+                });
 
-            // Forward events from the pulse thread to the application until
-            // the application requests to stop listening to the pulse thread.
-            tasks.push(Task::stream(async_fn_stream::fn_stream(
-                |emitter| async move {
-                    let forwarder = std::pin::pin!(async move {
-                        while let Some(event) = rx.next().await {
-                            let event = crate::pages::Message::Sound(Message::Pulse(event));
-                            emitter.emit(event).await;
+                let (tx, mut pw_rx) = futures::channel::mpsc::channel(1);
+                let (_pipewire_handle, pipewire_terminate) = pipewire::thread(tx);
+
+                emitter
+                    .emit(
+                        Message::SubHandle(Arc::new(SubscriptionHandle {
+                            cancel_tx,
+                            pipewire: pipewire_terminate,
+                        }))
+                        .into(),
+                    )
+                    .await;
+
+                loop {
+                    futures::select! {
+                        event = pulse_rx.next() => {
+                            let Some(event) = event else {
+                                break;
+                            };
+
+                            emitter
+                                .emit(crate::pages::Message::from(Message::Pulse(event)))
+                                .await;
                         }
-                    });
 
-                    futures::future::select(std::pin::pin!(cancel_rx), forwarder).await;
-                },
-            )));
+                        event = pw_rx.next() => {
+                            let Some(event) = event else {
+                                break;
+                            };
 
-            self.pulse_thread = Some(cancel_tx);
-        }
-
-        if self.pipewire_thread.is_none() {
-            let (tx, mut rx) = futures::channel::mpsc::channel(1);
-            let (cancel_tx, cancel_rx) = tokio::sync::oneshot::channel::<()>();
-
-            // Listen to events from the pipewire thread until the tx channel is closed.
-            let (_handle, terminate) = pipewire::thread(tx);
-
-            // Forward events from the pipewire thread to the application until
-            // the application requests to stop listening to the pulse thread.
-            tasks.push(Task::stream(async_fn_stream::fn_stream(
-                |emitter| async move {
-                    let forwarder = std::pin::pin!(async move {
-                        while let Some(event) = rx.next().await {
-                            let event = crate::pages::Message::Sound(Message::Pipewire(event));
-                            emitter.emit(event).await;
+                            emitter
+                                .emit(crate::pages::Message::from(Message::Pipewire(event)))
+                                .await;
                         }
-                    });
 
-                    futures::future::select(std::pin::pin!(cancel_rx), forwarder).await;
-                },
-            )));
+                        _ = cancel_rx => break,
+                    }
+                }
 
-            self.pipewire_thread = Some((cancel_tx, terminate));
-        }
+                drop(pulse_rx);
+                drop(pw_rx);
 
-        cosmic::task::batch(tasks)
+                futures::future::pending::<crate::pages::Message>().await;
+            })
+        })
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        if let Some(cancellation) = self.pulse_thread.take() {
-            _ = cancellation.send(());
+        if let Some(handle) = self.subscription_handle.take() {
+            _ = handle.cancel_tx.send(());
+            _ = handle.pipewire.send(());
         }
 
-        if let Some((cancellation, terminate)) = self.pipewire_thread.take() {
-            _ = cancellation.send(());
-            _ = terminate.send(());
+        if let Some(channel) = self.sink_channels.take() {
+            channel.quit();
         }
 
-        *self = Page::default();
+        *self = Page {
+            entity: self.entity,
+            ..Page::default()
+        };
 
         Task::none()
     }
@@ -338,9 +364,9 @@ impl Page {
 
                 let mut command = None;
                 if let Some(&node_id) = self.source_pw_ids.get(self.active_source.unwrap_or(0)) {
-                    command = Some(cosmic::task::future(async move {
+                    command = Some(cosmic::Task::future(async move {
                         tokio::time::sleep(Duration::from_millis(64)).await;
-                        crate::pages::Message::Sound(Message::SourceVolumeApply(node_id))
+                        Message::SourceVolumeApply(node_id).into()
                     }));
                 }
 
@@ -366,9 +392,9 @@ impl Page {
 
                 let mut command = None;
                 if let Some(&node_id) = self.sink_pw_ids.get(self.active_sink.unwrap_or(0)) {
-                    command = Some(cosmic::task::future(async move {
+                    command = Some(cosmic::Task::future(async move {
                         tokio::time::sleep(Duration::from_millis(64)).await;
-                        crate::pages::Message::Sound(Message::SinkVolumeApply(node_id))
+                        Message::SinkVolumeApply(node_id).into()
                     }));
                 }
 
@@ -390,9 +416,9 @@ impl Page {
                     .get(self.active_sink.unwrap_or(0))
                     .is_none()
                 {
-                    command = Some(cosmic::task::future(async move {
+                    command = Some(cosmic::Task::future(async move {
                         tokio::time::sleep(Duration::from_millis(64)).await;
-                        crate::pages::Message::Sound(Message::SinkBalanceApply)
+                        Message::SinkBalanceApply.into()
                     }));
                 }
 
@@ -597,12 +623,10 @@ impl Page {
                                 .insert(device_id.clone(), Some(profile.clone()));
 
                             self.changing_sink_profile = true;
-                            return cosmic::task::future(async move {
+                            return cosmic::Task::future(async move {
                                 pactl_set_card_profile(name, profile).await;
-                                Message::SinkProfileSelect(device_id)
-                            })
-                            .map(crate::pages::Message::Sound)
-                            .map(crate::app::Message::PageMessage);
+                                Message::SinkProfileSelect(device_id).into()
+                            });
                         }
                     }
                 }
@@ -627,12 +651,10 @@ impl Page {
                                 .insert(device_id.clone(), Some(profile.clone()));
 
                             self.changing_source_profile = true;
-                            return cosmic::task::future(async move {
+                            return cosmic::Task::future(async move {
                                 pactl_set_card_profile(name, profile).await;
-                                Message::SourceProfileSelect(device_id)
-                            })
-                            .map(crate::pages::Message::Sound)
-                            .map(crate::app::Message::PageMessage);
+                                Message::SourceProfileSelect(device_id).into()
+                            });
                         }
                     }
                 }
@@ -650,6 +672,12 @@ impl Page {
             }
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
+            }
+
+            Message::SubHandle(handle) => {
+                if let Some(handle) = Arc::into_inner(handle) {
+                    self.subscription_handle = Some(handle);
+                }
             }
         }
         Task::none()
@@ -676,7 +704,7 @@ fn input() -> Section<crate::pages::Message> {
                     } else {
                         "audio-input-microphone-symbolic"
                     }))
-                    .on_press(Message::SourceMuteToggle),
+                    .on_press(Message::SourceMuteToggle.into()),
                 )
                 .push(
                     widget::text::body(&page.source_volume_text)
@@ -685,8 +713,10 @@ fn input() -> Section<crate::pages::Message> {
                 )
                 .push(widget::horizontal_space().width(8))
                 .push(
-                    widget::slider(0..=150, page.source_volume, Message::SourceVolumeChanged)
-                        .breakpoints(&[100]),
+                    widget::slider(0..=150, page.source_volume, |change| {
+                        Message::SourceVolumeChanged(change).into()
+                    })
+                    .breakpoints(&[100]),
                 );
             let devices = widget::dropdown::popup_dropdown(
                 &page.sources,
@@ -694,8 +724,10 @@ fn input() -> Section<crate::pages::Message> {
                 Message::SourceChanged,
                 window::Id::RESERVED,
                 Message::Surface,
-                |a| crate::app::Message::PageMessage(crate::pages::Message::Sound(a)),
-            );
+                |a| crate::Message::from(a),
+            )
+            .apply(Element::from)
+            .map(crate::pages::Message::from);
 
             let mut controls = settings::section()
                 .title(&section.title)
@@ -712,13 +744,15 @@ fn input() -> Section<crate::pages::Message> {
                     Message::SourceProfileChanged,
                     window::Id::RESERVED,
                     Message::Surface,
-                    |a| crate::app::Message::PageMessage(crate::pages::Message::Sound(a)),
-                );
+                    |a| crate::Message::from(a),
+                )
+                .apply(Element::from)
+                .map(crate::pages::Message::from);
 
                 controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
             }
 
-            Element::from(controls).map(crate::pages::Message::Sound)
+            Element::from(controls)
         })
 }
 
@@ -746,7 +780,7 @@ fn output() -> Section<crate::pages::Message> {
                     } else {
                         widget::icon::from_name("audio-volume-high-symbolic")
                     })
-                    .on_press(Message::SinkMuteToggle),
+                    .on_press(Message::SinkMuteToggle.into()),
                 )
                 .push(
                     widget::text::body(&page.sink_volume_text)
@@ -755,8 +789,10 @@ fn output() -> Section<crate::pages::Message> {
                 )
                 .push(widget::horizontal_space().width(8))
                 .push(
-                    widget::slider(0..=150, page.sink_volume, Message::SinkVolumeChanged)
-                        .breakpoints(&[100]),
+                    widget::slider(0..=150, page.sink_volume, |change| {
+                        Message::SinkVolumeChanged(change).into()
+                    })
+                    .breakpoints(&[100]),
                 );
 
             let devices = widget::dropdown::popup_dropdown(
@@ -765,8 +801,10 @@ fn output() -> Section<crate::pages::Message> {
                 Message::SinkChanged,
                 window::Id::RESERVED,
                 Message::Surface,
-                |a| crate::app::Message::PageMessage(crate::pages::Message::Sound(a)),
-            );
+                |a| crate::Message::from(a),
+            )
+            .apply(Element::from)
+            .map(crate::pages::Message::from);
 
             let mut controls = settings::section()
                 .title(&section.title)
@@ -783,8 +821,10 @@ fn output() -> Section<crate::pages::Message> {
                     Message::SinkProfileChanged,
                     window::Id::RESERVED,
                     Message::Surface,
-                    |a| crate::app::Message::PageMessage(crate::pages::Message::Sound(a)),
-                );
+                    |a| crate::Message::from(a),
+                )
+                .apply(Element::from)
+                .map(crate::pages::Message::from);
 
                 controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
             }
@@ -803,7 +843,7 @@ fn output() -> Section<crate::pages::Message> {
                             widget::slider(
                                 0..=200,
                                 ((sink_balance + 1.).max(0.) * 100.).round() as u32,
-                                Message::SinkBalanceChanged,
+                                |change| Message::SinkBalanceChanged(change).into(),
                             )
                             .breakpoints(&[100]),
                         )
@@ -816,7 +856,7 @@ fn output() -> Section<crate::pages::Message> {
                 ));
             }
 
-            Element::from(controls).map(crate::pages::Message::Sound)
+            Element::from(controls)
         })
 }
 
