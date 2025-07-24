@@ -5,6 +5,7 @@ use cosmic_settings_page::{self as page, Section, section};
 
 use cosmic::widget::{editable_input, list_column, settings, text};
 use cosmic::{Apply, Task};
+use cosmic::iced_core::text::Wrapping;
 use cosmic_settings_system::about::Info;
 use slab::Slab;
 use slotmap::SlotMap;
@@ -182,9 +183,15 @@ fn device() -> Section<crate::pages::Message> {
             .on_unfocus(Message::HostnameSubmit)
             .on_submit(|_| Message::HostnameSubmit);
 
-            let device_name = settings::item::builder(&*desc[device])
-                .description(&*desc[device_desc])
-                .flex_control(hostname_input);
+            let device_name = settings::item_row(vec![
+                cosmic::widget::column::with_capacity(2)
+                    .push(text::body(&*desc[device]))
+                    .push(text::caption(&*desc[device_desc]).wrapping(Wrapping::Word))
+                    .spacing(4)
+                    .into(),
+                cosmic::widget::horizontal_space().into(),
+                hostname_input.into(),
+            ]);
 
             list_column()
                 .add(device_name)
