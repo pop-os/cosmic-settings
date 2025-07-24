@@ -178,23 +178,20 @@ fn device() -> Section<crate::pages::Message> {
                 page.editing_device_name,
                 Message::HostnameEdit,
             )
-            .width(250)
+            .width(cosmic::iced::Length::FillPortion(1))
             .on_input(Message::HostnameInput)
             .on_unfocus(Message::HostnameSubmit)
             .on_submit(|_| Message::HostnameSubmit);
 
-            let device_name = settings::item_row(vec![
-                cosmic::widget::column::with_capacity(2)
-                    .push(text::body(&*desc[device]))
-                    .push(text::caption(&*desc[device_desc]).wrapping(Wrapping::Word))
-                    .spacing(4)
-                    .into(),
-                cosmic::widget::horizontal_space().into(),
-                hostname_input.into(),
-            ]);
+            let device_name = cosmic::widget::column::with_capacity(3)
+                .push(text::body(&*desc[device]))
+                .push(text::caption(&*desc[device_desc]).wrapping(Wrapping::Word))
+                .push(cosmic::widget::vertical_space().height(cosmic::iced::Length::Fixed(8.0)))
+                .push(hostname_input.width(cosmic::iced::Length::Fill))
+                .spacing(4);
 
             list_column()
-                .add(device_name)
+                .add(settings::item_row(vec![device_name.into()]))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::About)
         })
