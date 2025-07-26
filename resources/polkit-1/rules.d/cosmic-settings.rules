@@ -6,7 +6,7 @@ polkit.addRule(function(action, subject) {
             action.id == "org.freedesktop.hostname1.set-hostname") &&
         subject.local &&
         subject.active &&
-        subject.isInGroup ("sudo")) {
+        (subject.isInGroup("sudo") || subject.isInGroup("wheel"))) {
             return polkit.Result.YES;
         }
 });
