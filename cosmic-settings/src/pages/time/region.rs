@@ -347,7 +347,7 @@ impl Page {
         let search_input = &self.add_language_search.trim().to_lowercase();
 
         let svg_accent = Rc::new(|theme: &cosmic::Theme| {
-            let color = theme.cosmic().accent_color().into();
+            let color = theme.cosmic().accent_text_color().into();
             cosmic::widget::svg::Style { color: Some(color) }
         });
 
@@ -513,7 +513,7 @@ impl Page {
 
     fn region_view(&self) -> cosmic::Element<'_, crate::pages::Message> {
         let svg_accent = Rc::new(|theme: &cosmic::Theme| {
-            let color = theme.cosmic().accent_color().into();
+            let color = theme.cosmic().accent_text_color().into();
             cosmic::widget::svg::Style { color: Some(color) }
         });
 
