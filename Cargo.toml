@@ -8,7 +8,7 @@ rust-version = "1.85.0"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
-tokio = { version = "1.43.0", features = ["macros"] }
+tokio = { version = "1.47.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
 features = ["multi-window", "winit", "tokio"]

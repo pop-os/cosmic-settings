@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-derive_setters = "0.1.6"
+derive_setters = "0.1.8"
 regex = "1.11.1"
 slotmap = "1.0.7"
 libcosmic = { workspace = true }
-downcast-rs = "1.2.1"
+downcast-rs = "2.0.1"
 tokio.workspace = true
 url = "2.5.4"
-slab = "0.4.9"
+slab = "0.4.10"
