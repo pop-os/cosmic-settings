@@ -1,8 +1,8 @@
 (
     base: (
-        red: 0.105882354,
-        green: 0.105882354,
-        blue: 0.105882354,
+        red: 0.10588235,
+        green: 0.10588235,
+        blue: 0.10588235,
         alpha: 1.0,
     ),
     component: (
@@ -69,13 +69,13 @@
         border: (
             red: 0.743206,
             green: 0.74320585,
-            blue: 0.743206,
+            blue: 0.74320585,
             alpha: 1.0,
         ),
         disabled_border: (
             red: 0.743206,
             green: 0.74320585,
-            blue: 0.743206,
+            blue: 0.74320585,
             alpha: 0.5,
         ),
     ),
@@ -93,8 +93,8 @@
     ),
     small_widget: (
         red: 0.15292811,
-        green: 0.15292808,
-        blue: 0.15292814,
+        green: 0.15292811,
+        blue: 0.15292808,
         alpha: 0.25,
     ),
 )
