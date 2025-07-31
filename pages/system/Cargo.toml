@@ -1,7 +1,7 @@
 [package]
 name = "cosmic-settings-system"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 license = "GPL-3.0-only"
 rust-version.workspace = true
 
@@ -11,9 +11,9 @@ rust-version.workspace = true
 byte-unit = "5.1.6"
 const_format = "0.2.34"
 concat-in-place = "1.1.0"
-sysinfo = "0.31.4"
-memchr = "2.7.4"
+sysinfo = "0.36.1"
+memchr = "2.7.5"
 
 [dependencies.bumpalo]
-version = "3.17.0"
+version = "3.19.0"
 features = ["collections"]

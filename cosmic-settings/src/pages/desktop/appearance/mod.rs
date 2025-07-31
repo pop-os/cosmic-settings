@@ -15,9 +15,7 @@ use cosmic::app::ContextDrawer;
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
-use cosmic::cosmic_theme::{
-    CornerRadii, DARK_THEME_BUILDER_ID, Density, LIGHT_THEME_BUILDER_ID, Theme, ThemeBuilder,
-};
+use cosmic::cosmic_theme::{CornerRadii, Density, Theme, ThemeBuilder};
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced_core::{Alignment, Length};

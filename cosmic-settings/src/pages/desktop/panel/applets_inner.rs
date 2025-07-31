@@ -25,10 +25,9 @@ use cosmic::{
     },
     theme,
 };
-use once_cell::sync::Lazy;
 
-use std::path::PathBuf;
-use std::{borrow::Cow, fmt::Debug, mem, path::Path};
+use std::path::{Path, PathBuf};
+use std::{borrow::Cow, fmt::Debug, mem, sync::LazyLock};
 
 use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;
@@ -49,7 +48,7 @@ const MIME_TYPE: &str = "text/uri-list";
 // radius is 8.0
 const DRAG_START_DISTANCE_SQUARED: f32 = 64.0;
 
-pub static APPLET_DND_ICON_ID: Lazy<window::Id> = Lazy::new(window::Id::unique);
+pub static APPLET_DND_ICON_ID: LazyLock<window::Id> = LazyLock::new(window::Id::unique);
 
 pub struct Page {
     pub(crate) entity: page::Entity,

@@ -214,7 +214,7 @@ pub(crate) fn style<
                                 PanelSize::M => 2,
                                 PanelSize::L => 3,
                                 PanelSize::XL => 4,
-                                PanelSize::Custom(s) => 2,
+                                PanelSize::Custom(_) => 2,
                             },
                             |v| {
                                 if v == 0 {

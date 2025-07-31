@@ -1,4 +1,4 @@
-use cosmic::iced_core::{Alignment, Length};
+use cosmic::iced_core::{Alignment, Length, text::Wrapping};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{button, container, settings, text};
 use cosmic::{Apply, Element};
@@ -72,7 +72,7 @@ pub fn section() -> Section<crate::pages::Message> {
                                 .apply(container)
                                 .width(Length::Fixed(191.0))
                                 .class(style_container()),
-                                text::body(&descriptions[round])
+                                text::body(&descriptions[round]).wrapping(Wrapping::None)
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -97,7 +97,7 @@ pub fn section() -> Section<crate::pages::Message> {
                                 .apply(container)
                                 .width(Length::Fixed(191.0))
                                 .class(style_container()),
-                                text::body(&descriptions[slightly_round])
+                                text::body(&descriptions[slightly_round]).wrapping(Wrapping::None)
                             ]
                             .spacing(8)
                             .width(Length::FillPortion(1))
@@ -123,7 +123,7 @@ pub fn section() -> Section<crate::pages::Message> {
                                 .apply(container)
                                 .width(Length::Fixed(191.0))
                                 .class(style_container()),
-                                text::body(&descriptions[square])
+                                text::body(&descriptions[square]).wrapping(Wrapping::None)
                             ]
                             .spacing(8)
                             .align_x(Alignment::Center)

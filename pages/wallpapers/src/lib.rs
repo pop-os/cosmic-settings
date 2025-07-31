@@ -1,5 +1,5 @@
 pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
-use eyre::{eyre, OptionExt};
+use eyre::{OptionExt, eyre};
 use fast_image_resize::SrcCropping;
 use futures_lite::Stream;
 use futures_util::StreamExt;
@@ -9,7 +9,7 @@ use jxl_oxide::{EnumColourEncoding, JxlImage, PixelFormat};
 use std::os::unix::ffi::OsStrExt;
 use std::{
     borrow::Cow,
-    collections::{hash_map::DefaultHasher, HashMap},
+    collections::{HashMap, hash_map::DefaultHasher},
     hash::{Hash, Hasher},
     io::Read,
     path::{Path, PathBuf},

@@ -16,17 +16,17 @@ use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
 };
 use cosmic_settings_page::{self as page, Section, section};
-use once_cell::sync::Lazy;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::{collections::BTreeMap, process::ExitStatus, sync::Arc};
+use std::sync::{Arc, LazyLock};
+use std::{collections::BTreeMap, process::ExitStatus};
 use tokio::sync::oneshot;
 
 static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
 
-static DPI_SCALE_LABELS: Lazy<Vec<String>> =
-    Lazy::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
+static DPI_SCALE_LABELS: LazyLock<Vec<String>> =
+    LazyLock::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
 
 /// Display color depth options
 #[allow(dead_code)]
