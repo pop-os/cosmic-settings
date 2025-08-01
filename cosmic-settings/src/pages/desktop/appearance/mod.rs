@@ -15,7 +15,7 @@ use cosmic::app::ContextDrawer;
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
-use cosmic::cosmic_theme::{CornerRadii, Density, Theme, ThemeBuilder};
+use cosmic::cosmic_theme::{CornerRadii, Density, ThemeBuilder};
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced_core::{Alignment, Length};
@@ -142,7 +142,6 @@ pub enum Message {
     #[cfg(feature = "xdg-portal")]
     ImportSuccess(Box<ThemeBuilder>),
     Left,
-    NewTheme(Box<Theme>),
     PaletteAccent(cosmic::iced::Color),
     Reset,
     Roundness(Roundness),
@@ -224,14 +223,6 @@ impl Page {
         let mut theme_staged: Option<theme_manager::ThemeStaged> = None;
 
         match message {
-            Message::NewTheme(theme) => {
-                _ = self.theme_manager.dark_mode(theme.is_dark);
-
-                self.theme_manager
-                    .selected_customizer_mut()
-                    .set_theme(*theme);
-            }
-
             Message::Autoswitch(enabled) => self.theme_manager.auto_switch(enabled),
 
             Message::DarkMode(enabled) => {
@@ -290,17 +281,13 @@ impl Page {
             }
 
             Message::Density(density) => {
-                tracing::info!("Density changed: {:?}", density);
                 self.density = density;
+                theme_staged = self.theme_manager.set_spacing(density.into());
 
                 if let Some(config) = self.tk_config.as_mut() {
                     _ = config.set("interface_density", density);
                     _ = config.set("header_size", density);
                 }
-
-                let spacing = density.into();
-
-                self.theme_manager.set_spacing(spacing);
 
                 #[cfg(feature = "wayland")]
                 tokio::task::spawn(async move {

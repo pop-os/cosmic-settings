@@ -851,12 +851,6 @@ impl cosmic::Application for SettingsApp {
                 .map(Into::into),
             );
         }
-        if let Some(page) = self.pages.page_mut::<appearance::Page>() {
-            tasks.push(
-                page.update(appearance::Message::NewTheme(Box::new(new_theme.clone())))
-                    .map(Into::into),
-            );
-        }
 
         Task::batch(tasks)
     }
