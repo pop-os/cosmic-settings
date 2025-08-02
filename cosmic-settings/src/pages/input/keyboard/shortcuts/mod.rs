@@ -573,6 +573,7 @@ fn all_system_actions() -> &'static [Action] {
         Action::System(SystemAction::WindowSwitcher),
         Action::System(SystemAction::WindowSwitcherPrevious),
         Action::System(SystemAction::WorkspaceOverview),
+        Action::System(SystemAction::InputSourceSwitch),
         Action::Terminate,
         Action::ToggleOrientation,
         Action::ToggleStacking,
