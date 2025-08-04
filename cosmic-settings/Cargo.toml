@@ -162,10 +162,7 @@ page-networking = [
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = ["gettext", "dep:locales-rs", "dep:locale1", "dep:zbus"]
-page-sound = [
-    "cosmic-settings-subscriptions/pipewire",
-    "cosmic-settings-subscriptions/pulse",
-]
+page-sound = ["cosmic-settings-subscriptions/sound"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
 page-window-management = ["dep:cosmic-settings-config"]
 page-workspaces = ["dep:cosmic-comp-config"]

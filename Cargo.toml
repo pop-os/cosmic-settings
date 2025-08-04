@@ -11,7 +11,7 @@ cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
 tokio = { version = "1.47.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
-features = ["multi-window", "winit", "tokio"]
+features = ["dbus-config", "multi-window", "winit", "tokio"]
 git = "https://github.com/pop-os/libcosmic"
 
 [workspace.dependencies.cosmic-config]
@@ -33,7 +33,8 @@ git = "https://github.com/pop-os/cosmic-panel"
 git = "https://github.com/pop-os/cosmic-randr"
 
 [workspace.dependencies.cosmic-settings-subscriptions]
-git = "https://github.com/pop-os/cosmic-settings-subscriptions"
+# git = "https://github.com/pop-os/cosmic-settings-subscriptions"
+path = "../../pop/cosmic-settings-subscriptions"
 
 [workspace.dependencies.sctk]
 git = "https://github.com/smithay/client-toolkit/"
