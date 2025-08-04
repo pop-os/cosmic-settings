@@ -15,6 +15,7 @@ use cosmic_settings_subscriptions::sound as subscription;
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    /// Change the balance of the active sink.
     SinkBalanceChanged(u32),
     /// Change the default output.
     SinkChanged(usize),
@@ -32,8 +33,8 @@ pub enum Message {
     SourceProfileChanged(usize),
     /// Request to change the input volume.
     SourceVolumeChanged(u32),
-    ///
-    Subscription(subscription::sound::Message),
+    /// Messages handled by the sound module in cosmic-settings-subscriptions
+    Subscription(subscription::Message),
     /// Surface Action
     Surface(surface::Action),
 }
@@ -50,7 +51,7 @@ impl From<Message> for crate::Message {
     }
 }
 
-impl Into<Message> for subscription::sound::Message {
+impl Into<Message> for subscription::Message {
     fn into(self) -> Message {
         Message::Subscription(self)
     }
@@ -59,7 +60,7 @@ impl Into<Message> for subscription::sound::Message {
 #[derive(Default)]
 pub struct Page {
     entity: page::Entity,
-    model: subscription::sound::Model,
+    model: subscription::Model,
 }
 
 impl page::Page<crate::pages::Message> for Page {

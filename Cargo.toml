@@ -33,8 +33,7 @@ git = "https://github.com/pop-os/cosmic-panel"
 git = "https://github.com/pop-os/cosmic-randr"
 
 [workspace.dependencies.cosmic-settings-subscriptions]
-# git = "https://github.com/pop-os/cosmic-settings-subscriptions"
-path = "../../pop/cosmic-settings-subscriptions"
+git = "https://github.com/pop-os/cosmic-settings-subscriptions"
 
 [workspace.dependencies.sctk]
 git = "https://github.com/smithay/client-toolkit/"
