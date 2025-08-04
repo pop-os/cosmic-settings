@@ -1771,7 +1771,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-subscriptions"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#ebb1f7f186ca1bbfcb5a969bbeba122c70b1e961"
+source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#deafa8c6f9d349d54bc2ec0da702f896ab44e2e3"
 dependencies = [
  "async-fn-stream",
  "bluez-zbus",
