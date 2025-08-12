@@ -175,9 +175,7 @@ impl Manager {
         }
 
         let map_data_fn = |customizer: &ThemeCustomizer| {
-            let builder = customizer.builder.0.clone();
-            let (current_theme, config) = customizer.theme.clone();
-            (builder, current_theme, config)
+            (customizer.builder.0.clone(), customizer.theme.1.clone())
         };
 
         let current = map_data_fn(if self.mode.0.is_dark {
@@ -199,12 +197,16 @@ impl Manager {
         let mut data = std::iter::once(current).chain(other.into_iter());
 
         cosmic::task::future(async move {
-            while let Some((builder, current_theme, config)) = data.next() {
+            while let Some((builder, config)) = data.next() {
                 if let Some(config) = config {
+                    let current_theme = match Theme::get_entry(&config) {
+                        Ok(theme) => theme,
+                        Err((_errs, theme)) => theme,
+                    };
+
                     let new_theme = builder.build();
                     theme_transaction!(config, current_theme, new_theme, {
                         accent;
-                        accent_text;
                         accent_button;
                         background;
                         button;
@@ -221,6 +223,7 @@ impl Manager {
                         warning;
                         warning_button;
                         window_hint;
+                        accent_text;
                     });
                 }
             }
