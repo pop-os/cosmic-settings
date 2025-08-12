@@ -299,11 +299,10 @@ impl Page {
             Message::Left => {}
 
             Message::PaletteAccent(c) => {
-                theme_staged = dbg!(
-                    self.theme_manager
-                        .selected_customizer_mut()
-                        .set_accent(Some(c).map(Srgb::from))
-                );
+                theme_staged = self
+                    .theme_manager
+                    .selected_customizer_mut()
+                    .set_accent(Some(c).map(Srgb::from));
             }
 
             Message::Reset => {
