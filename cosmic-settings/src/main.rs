@@ -68,6 +68,9 @@ pub enum PageCommands {
     /// Dock settings page
     #[cfg(feature = "wayland")]
     Dock,
+    /// Dock applets page
+    #[cfg(feature = "wayland")]
+    DockApplet,
     /// Firmware settings page
     Firmware,
     /// Input Devices settings page
@@ -88,6 +91,9 @@ pub enum PageCommands {
     /// Panel settings page
     #[cfg(feature = "wayland")]
     Panel,
+    /// Panel applets page
+    #[cfg(feature = "wayland")]
+    PanelApplet,
     /// Power settings page
     #[cfg(feature = "page-power")]
     Power,

@@ -1,0 +1,21 @@
+[Desktop Entry]
+Name=Dock
+Name[zh_CN]=程序坞
+Name[pl]=Dok
+Name[hu]=Dokkoló
+Name[pt]=Dock
+Comment=An optional bar for apps and applets.
+Comment[zh_CN]=可选的应用程序和小部件的工具栏
+Comment[pl]=Panel z przypiętymi aplikacjami w zasobniku i innymi apletami.
+Comment[hu]=Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz.
+Comment[pt]=Painel com aplicativos fixados e outros miniaplicativos.
+Comment[nl]=Een extra balk op het scherm met vastgezette apps en applets.
+Type=Settings
+Exec=cosmic-settings dock
+Terminal=false
+Categories=COSMIC
+Keywords=COSMIC
+NoDisplay=true
+OnlyShowIn=COSMIC
+Icon=preferences-dock
+StartupNotify=true
