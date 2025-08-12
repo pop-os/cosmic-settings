@@ -148,26 +148,34 @@ impl Content {
 
     pub fn update_color(
         &mut self,
+        tasks: &mut Vec<Task<app::Message>>,
         message: ColorPickerUpdate,
         context_view: &ContextView,
-    ) -> Task<app::Message> {
-        let mut tasks = Vec::new();
+    ) -> bool {
+        let mut needs_update = false;
 
-        tasks.push(match message {
-            ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
-                self.context_view = None;
-                cosmic::task::message(crate::pages::Message::CloseContextDrawer)
+        match message {
+            ColorPickerUpdate::ActionFinished => {
+                needs_update = true;
             }
 
-            ColorPickerUpdate::ActionFinished => Task::none(),
+            ColorPickerUpdate::AppliedColor | ColorPickerUpdate::Reset => {
+                needs_update = true;
+                self.context_view = None;
+                tasks.push(cosmic::task::message(
+                    crate::pages::Message::CloseContextDrawer,
+                ));
+            }
 
             ColorPickerUpdate::Cancel => {
                 self.context_view = None;
-                cosmic::task::message(crate::pages::Message::CloseContextDrawer)
+                tasks.push(cosmic::task::message(
+                    crate::pages::Message::CloseContextDrawer,
+                ));
             }
 
-            _ => Task::none(),
-        });
+            _ => (),
+        }
 
         tasks.push(match *context_view {
             ContextView::CustomAccent => self.custom_accent.update(message),
@@ -176,10 +184,10 @@ impl Content {
             ContextView::InterfaceText => self.interface_text.update(message),
             ContextView::ControlComponent => self.control_component.update(message),
             ContextView::AccentWindowHint => self.accent_window_hint.update(message),
-            _ => Task::none(),
+            _ => return needs_update,
         });
 
-        cosmic::Task::batch(tasks)
+        needs_update
     }
 
     pub fn update_icon(

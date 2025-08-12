@@ -248,10 +248,11 @@ impl Page {
 
             Message::DrawerColor(u) => {
                 if let Some(context_view) = self.context_view.as_ref() {
-                    tasks.push(self.drawer.update_color(u, context_view));
-                    theme_staged = self
-                        .theme_manager
-                        .set_color(self.drawer.current_color(context_view), context_view);
+                    if self.drawer.update_color(&mut tasks, u, context_view) {
+                        theme_staged = self
+                            .theme_manager
+                            .set_color(self.drawer.current_color(context_view), context_view);
+                    }
                 }
             }
 
@@ -298,10 +299,11 @@ impl Page {
             Message::Left => {}
 
             Message::PaletteAccent(c) => {
-                theme_staged = self
-                    .theme_manager
-                    .selected_customizer_mut()
-                    .set_accent(Some(c).map(Srgb::from));
+                theme_staged = dbg!(
+                    self.theme_manager
+                        .selected_customizer_mut()
+                        .set_accent(Some(c).map(Srgb::from))
+                );
             }
 
             Message::Reset => {

@@ -187,13 +187,11 @@ fn accent_color_palette<'a>(
 ) -> impl Into<Element<'a, Message>> {
     let Spacing { space_xxs, .. } = cosmic::theme::spacing();
     let descriptions = &section.descriptions;
-    let palette = &page.theme_manager.builder().palette.as_ref();
     let accent = page.theme_manager.accent_palette().as_ref().unwrap();
-    let cur_accent = page
-        .theme_manager
-        .builder()
-        .accent
-        .map_or(palette.accent_blue, Srgba::from);
+    let cur_accent = page.theme_manager.builder().accent.map_or_else(
+        || page.theme_manager.builder().palette.as_ref().accent_blue,
+        Srgba::from,
+    );
     let mut accent_palette_row = cosmic::widget::row::with_capacity(accent.len());
 
     for &color in accent {
