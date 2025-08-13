@@ -257,7 +257,6 @@ fn theme_mode<'a>(
                     None
                 )
                 .class(button::ButtonClass::Image)
-                .padding([8, 0])
                 .selected(page.theme_manager.mode().is_dark)
                 .on_press(super::Message::DarkMode(true)),
                 text::body(&descriptions[labels["dark"]])
@@ -274,7 +273,6 @@ fn theme_mode<'a>(
                 )
                 .class(button::ButtonClass::Image)
                 .selected(!page.theme_manager.mode().is_dark)
-                .padding([8, 0])
                 .on_press(super::Message::DarkMode(false)),
                 text::body(&descriptions[labels["light"]])
             ]
