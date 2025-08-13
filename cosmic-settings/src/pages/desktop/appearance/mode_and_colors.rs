@@ -250,10 +250,11 @@ fn theme_mode<'a>(
     container(
         cosmic::iced::widget::row![
             cosmic::iced::widget::column![
-                button::custom(
+                button::custom_image_button(
                     icon(dark_mode_illustration)
                         .width(Length::Fixed(191.0))
-                        .height(Length::Fixed(100.0))
+                        .height(Length::Fixed(100.0)),
+                    None
                 )
                 .class(button::ButtonClass::Image)
                 .padding([8, 0])
@@ -265,10 +266,11 @@ fn theme_mode<'a>(
             .width(Length::FillPortion(1))
             .align_x(Alignment::Center),
             cosmic::iced::widget::column![
-                button::custom(
+                button::custom_image_button(
                     icon(light_mode_illustration,)
                         .width(Length::Fixed(191.0))
-                        .height(Length::Fixed(100.0))
+                        .height(Length::Fixed(100.0)),
+                    None
                 )
                 .class(button::ButtonClass::Image)
                 .selected(!page.theme_manager.mode().is_dark)
@@ -295,12 +297,15 @@ pub fn color_button<'a, Message: 'a + Clone>(
     width: u16,
     height: u16,
 ) -> Element<'a, Message> {
-    button::custom(color_image(
-        wallpaper::Color::Single([color.r, color.g, color.b]),
-        width,
-        height,
+    button::custom_image_button(
+        color_image(
+            wallpaper::Color::Single([color.r, color.g, color.b]),
+            width,
+            height,
+            None,
+        ),
         None,
-    ))
+    )
     .padding(0)
     .selected(selected)
     .class(button::ButtonClass::Image)

@@ -53,7 +53,7 @@ pub fn section() -> Section<crate::pages::Message> {
                     container(
                         cosmic::iced::widget::row![
                             cosmic::iced::widget::column![
-                                button::custom(
+                                button::custom_image_button(
                                     icon(
                                         if page.theme_manager.mode().is_dark {
                                             &dark_round_style
@@ -63,7 +63,8 @@ pub fn section() -> Section<crate::pages::Message> {
                                         .clone()
                                     )
                                     .width(Length::Fill)
-                                    .height(Length::Fixed(100.0))
+                                    .height(Length::Fixed(100.0)),
+                                    None
                                 )
                                 .selected(matches!(page.roundness, Roundness::Round))
                                 .class(button::ButtonClass::Image)
@@ -78,7 +79,7 @@ pub fn section() -> Section<crate::pages::Message> {
                             .width(Length::FillPortion(1))
                             .align_x(Alignment::Center),
                             cosmic::iced::widget::column![
-                                button::custom(
+                                button::custom_image_button(
                                     icon(
                                         if page.theme_manager.mode().is_dark {
                                             &dark_slightly_round_style
@@ -88,7 +89,8 @@ pub fn section() -> Section<crate::pages::Message> {
                                         .clone()
                                     )
                                     .width(Length::Fill)
-                                    .height(Length::Fixed(100.0))
+                                    .height(Length::Fixed(100.0)),
+                                    None
                                 )
                                 .selected(matches!(page.roundness, Roundness::SlightlyRound))
                                 .class(button::ButtonClass::Image)
@@ -103,7 +105,7 @@ pub fn section() -> Section<crate::pages::Message> {
                             .width(Length::FillPortion(1))
                             .align_x(Alignment::Center),
                             cosmic::iced::widget::column![
-                                button::custom(
+                                button::custom_image_button(
                                     icon(
                                         if page.theme_manager.mode().is_dark {
                                             &dark_square_style
@@ -113,7 +115,8 @@ pub fn section() -> Section<crate::pages::Message> {
                                         .clone()
                                     )
                                     .width(Length::Fill)
-                                    .height(Length::Fixed(100.0))
+                                    .height(Length::Fixed(100.0)),
+                                    None
                                 )
                                 .width(Length::FillPortion(1))
                                 .selected(matches!(page.roundness, Roundness::Square))
