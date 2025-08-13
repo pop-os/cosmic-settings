@@ -593,6 +593,7 @@ fn all_system_actions() -> &'static [Action] {
 }
 
 fn localize_action(action: &Action) -> String {
+    #[allow(deprecated)]
     match action {
         Action::Close => fl!("manage-windows", "close"),
         Action::Disable => fl!("disabled"),

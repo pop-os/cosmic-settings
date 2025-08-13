@@ -163,7 +163,7 @@ enum PasswordFlag {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-enum VpnDialog {
+pub enum VpnDialog {
     Error(ErrorKind, String),
     Password {
         id: String,

@@ -957,6 +957,7 @@ fn permission_was_denied(result: &zbus::Error) -> bool {
 
 // TODO: Should we allow deprecated methods?
 fn hash_password(password_plain: &str) -> String {
+    #[allow(deprecated)]
     match get_encrypt_method().as_str() {
         "SHA512" => sha512_crypt::hash(password_plain).unwrap(),
         "SHA256" => sha256_crypt::hash(password_plain).unwrap(),
