@@ -35,7 +35,7 @@ derive_setters = "0.1.8"
 dirs = "6.0.0"
 downcast-rs = "2.0.1"
 eyre = "0.6.12"
-freedesktop-desktop-entry = "0.7.13"
+freedesktop-desktop-entry = "0.7.14"
 futures = "0.3.31"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
