@@ -3,7 +3,7 @@ use cosmic::cosmic_theme::Spacing;
 use cosmic::cosmic_theme::palette::Srgba;
 use cosmic::iced_core::{Alignment, Length};
 use cosmic::widget::icon::{from_name, icon};
-use cosmic::widget::{button, container, scrollable, settings, text};
+use cosmic::widget::{self, button, container, scrollable, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
 use cosmic_settings_wallpaper as wallpaper;
@@ -192,47 +192,47 @@ fn accent_color_palette<'a>(
         || page.theme_manager.builder().palette.as_ref().accent_blue,
         Srgba::from,
     );
-    let mut accent_palette_row = cosmic::widget::row::with_capacity(accent.len());
+    let mut accent_palette_row = Vec::with_capacity(accent.len());
 
     for &color in accent {
-        accent_palette_row = accent_palette_row.push(color_button(
-            Some(Message::PaletteAccent(color.into())),
-            color.into(),
-            cur_accent == color,
-            48,
-            48,
-        ));
+        accent_palette_row.push(
+            color_button(
+                Some(Message::PaletteAccent(color.into())),
+                color.into(),
+                cur_accent == color,
+                48,
+                48,
+            )
+            .into(),
+        );
     }
+
+    accent_palette_row.push(
+        if let Some(c) = page.drawer.custom_accent.get_applied_color() {
+            container(color_button(
+                Some(Message::DrawerOpen(ContextView::CustomAccent)),
+                c,
+                cosmic::iced::Color::from(cur_accent) == c,
+                48,
+                48,
+            ))
+        } else {
+            container(
+                page.drawer
+                    .custom_accent
+                    .picker_button(|_| Message::DrawerOpen(ContextView::CustomAccent), Some(24))
+                    .width(Length::Fixed(48.0))
+                    .height(Length::Fixed(48.0)),
+            )
+        }
+        .into(),
+    );
 
     cosmic::iced::widget::column![
         text::body(&descriptions[labels["accent_color"]]),
-        scrollable::horizontal(
-            accent_palette_row
-                .push(
-                    if let Some(c) = page.drawer.custom_accent.get_applied_color() {
-                        container(color_button(
-                            Some(Message::DrawerOpen(ContextView::CustomAccent)),
-                            c,
-                            cosmic::iced::Color::from(cur_accent) == c,
-                            48,
-                            48,
-                        ))
-                    } else {
-                        container(
-                            page.drawer
-                                .custom_accent
-                                .picker_button(
-                                    |_| Message::DrawerOpen(ContextView::CustomAccent),
-                                    Some(24),
-                                )
-                                .width(Length::Fixed(48.0))
-                                .height(Length::Fixed(48.0)),
-                        )
-                    }
-                )
-                .padding([0, 0, 16, 0])
-                .spacing(16)
-        )
+        widget::flex_row(accent_palette_row)
+            .padding([0, 0, 16, 0])
+            .spacing(16)
     ]
     .padding([16, 0, 0, 0])
     .spacing(space_xxs)
