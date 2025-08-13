@@ -1,9 +1,10 @@
 use crate::pages::desktop::wallpaper::widgets::color_image;
 use cosmic::cosmic_theme::Spacing;
 use cosmic::cosmic_theme::palette::Srgba;
+use cosmic::iced::ContentFit;
 use cosmic::iced_core::{Alignment, Length};
 use cosmic::widget::icon::{from_name, icon};
-use cosmic::widget::{self, button, container, scrollable, settings, text};
+use cosmic::widget::{self, button, container, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
 use cosmic_settings_wallpaper as wallpaper;
@@ -252,13 +253,17 @@ fn theme_mode<'a>(
             cosmic::iced::widget::column![
                 button::custom_image_button(
                     icon(dark_mode_illustration)
-                        .width(Length::Fixed(191.0))
+                        .content_fit(ContentFit::Contain)
+                        .width(Length::Fill)
                         .height(Length::Fixed(100.0)),
                     None
                 )
                 .class(button::ButtonClass::Image)
                 .selected(page.theme_manager.mode().is_dark)
-                .on_press(super::Message::DarkMode(true)),
+                .on_press(super::Message::DarkMode(true))
+                .padding(1)
+                .apply(widget::container)
+                .max_width(191),
                 text::body(&descriptions[labels["dark"]])
             ]
             .spacing(8)
@@ -266,14 +271,18 @@ fn theme_mode<'a>(
             .align_x(Alignment::Center),
             cosmic::iced::widget::column![
                 button::custom_image_button(
-                    icon(light_mode_illustration,)
-                        .width(Length::Fixed(191.0))
+                    icon(light_mode_illustration)
+                        .content_fit(ContentFit::Contain)
+                        .width(Length::Fill)
                         .height(Length::Fixed(100.0)),
                     None
                 )
                 .class(button::ButtonClass::Image)
                 .selected(!page.theme_manager.mode().is_dark)
-                .on_press(super::Message::DarkMode(false)),
+                .on_press(super::Message::DarkMode(false))
+                .padding(1)
+                .apply(widget::container)
+                .max_width(191),
                 text::body(&descriptions[labels["light"]])
             ]
             .spacing(8)
