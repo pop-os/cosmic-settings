@@ -683,6 +683,17 @@ impl Page {
                 });
             }
 
+            if let Err(why) = nmcli::add_fallback(&connection_name).await {
+                return Message::VpnDialogError(VpnDialog::Password {
+                    error: Some((ErrorKind::Config, why.to_string())),
+                    id: connection_name.clone(),
+                    uuid,
+                    username,
+                    password,
+                    password_hidden: true,
+                });
+            }
+
             if let Err(why) = nmcli::set_password_flags_none(&connection_name).await {
                 return Message::VpnDialogError(VpnDialog::Password {
                     error: Some((ErrorKind::WithPassword("password-flags"), why.to_string())),

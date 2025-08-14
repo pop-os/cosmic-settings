@@ -28,6 +28,21 @@ pub async fn set_password_flags_none(connection_name: &str) -> Result<(), String
         .apply(crate::utils::map_stderr_output)
 }
 
+pub async fn add_fallback(connection_name: &str) -> Result<(), String> {
+    tokio::process::Command::new("nmcli")
+        .args([
+            "con",
+            "mod",
+            connection_name,
+            "+vpn.data",
+            "data-ciphers=AES-256-GCM:AES-128-GCM:CHACHA20-POLY1305:AES-256-CBC:AES-128-CBC",
+        ])
+        .stderr(Stdio::piped())
+        .output()
+        .await
+        .apply(crate::utils::map_stderr_output)
+}
+
 pub async fn set_password(connection_name: &str, password: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
         .args([
