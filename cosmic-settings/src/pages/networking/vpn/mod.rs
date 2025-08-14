@@ -998,7 +998,8 @@ fn add_network() -> Task<crate::app::Message> {
 
                         return Message::AddWireGuardDevice(device, filename.to_owned(), path);
                     } else {
-                        super::nm_add_vpn_file("openvpn", response.url().path()).await
+                        super::nm_add_vpn_file("openvpn", response.url().to_file_path().unwrap())
+                            .await
                     };
 
                     match result {
