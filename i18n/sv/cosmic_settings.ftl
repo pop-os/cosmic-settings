@@ -614,9 +614,9 @@ power-mode = Strömalternativ
 
 power-saving = Energisparalternativ
     .turn-off-screen-after = Stäng av skärmen efter
-    .auto-suspend = Automatisk suspendering
-    .auto-suspend-ac = Automatisk suspendering vid inkoppling
-    .auto-suspend-battery = Automatisk suspendering på batteridrift
+    .auto-suspend = Automatiskt vänteläge
+    .auto-suspend-ac = Automatiskt vänteläge vid inkoppling
+    .auto-suspend-battery = Automatiskt vänteläge på batteridrift
 
 ## Input
 
