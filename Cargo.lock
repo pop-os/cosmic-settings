@@ -4282,9 +4282,9 @@ dependencies = [
 
 [[package]]
 name = "jxl-coding"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6748ba8af69b87c68f8dcdf992de959c207962689bc28ddb7906abf4a0b786c9"
+checksum = "cd972bcd125e776f1eb241ac50e39f956095a1c2770c64736c968f8946bd9a3c"
 dependencies = [
  "jxl-bitstream",
  "tracing",
@@ -4307,9 +4307,9 @@ dependencies = [
 
 [[package]]
 name = "jxl-frame"
-version = "0.13.2"
+version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5b0b31f0de176f38c1b8da911f9cab337bf29e2f59bc38398fd96ef05357b95"
+checksum = "2d967c6fd669c7c01060b5022d8835fa82fd46b06ffc98b549f17600a097c2b3"
 dependencies = [
  "jxl-bitstream",
  "jxl-coding",
@@ -4345,9 +4345,9 @@ dependencies = [
 
 [[package]]
 name = "jxl-jbr"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d91ba39b083a82788a17717edbcc4b08160b51fdffc9fec640deba9e8268da1a"
+checksum = "e35d032bcec660647828527ff42c6f5776d2fd44b8357f9f6d9ac6dc07218e46"
 dependencies = [
  "brotli-decompressor",
  "jxl-bitstream",
@@ -4363,9 +4363,9 @@ dependencies = [
 
 [[package]]
 name = "jxl-modular"
-version = "0.11.1"
+version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa97a2e3752859d45506fa062e38a0768867beca5993b2ca20227d3aab5a1cc9"
+checksum = "da758b2f989aafd9eeb39489fe43d7be5a3a0d2ad61cf1bad705eb6990a6053c"
 dependencies = [
  "jxl-bitstream",
  "jxl-coding",
@@ -4377,11 +4377,13 @@ dependencies = [
 
 [[package]]
 name = "jxl-oxide"
-version = "0.12.3"
+version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6644c2764ff41cd9b366804229e21a3cd7db45da4a436f9a21e15c0c26433651"
+checksum = "fa635162d7d53c650ae9e429a4e354ac1d63f0d3b1bdd1991b400c22cd301a6d"
 dependencies = [
  "brotli-decompressor",
+ "bytemuck",
+ "image",
  "jxl-bitstream",
  "jxl-color",
  "jxl-frame",
@@ -4405,9 +4407,9 @@ dependencies = [
 
 [[package]]
 name = "jxl-render"
-version = "0.12.2"
+version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab17c55b16932f1e931c51f82f6b22dfaa0a70cfb257b66863a3f7d421a3681e"
+checksum = "aa0c3100918bd3c41bb0f8ce1f4f1664e48f3032ff8eeab0d6a2cfc3276f462d"
 dependencies = [
  "bytemuck",
  "jxl-bitstream",

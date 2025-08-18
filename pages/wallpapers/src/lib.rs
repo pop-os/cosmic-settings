@@ -5,7 +5,8 @@ use futures_lite::Stream;
 use futures_util::StreamExt;
 use image::imageops::FilterType;
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
-use jxl_oxide::{EnumColourEncoding, JxlImage, PixelFormat};
+use jxl_oxide::integration::JxlDecoder;
+use std::fs::File;
 use std::os::unix::ffi::OsStrExt;
 use std::{
     borrow::Cow,
@@ -120,6 +121,7 @@ pub async fn load_each_from_path(
                         false
                     }
                 } else {
+                    eprintln!("is jxl");
                     true
                 };
 
@@ -430,70 +432,13 @@ fn border_radius(
 
 /// Decodes JPEG XL image files into `image::DynamicImage` via `jxl-oxide`.
 pub fn decode_jpegxl(path: &std::path::Path) -> eyre::Result<DynamicImage> {
-    let mut image = JxlImage::builder()
-        .open(path)
-        .map_err(|why| eyre!("failed to read image header: {why}"))?;
-    image.request_color_encoding(EnumColourEncoding::srgb(
-        jxl_oxide::RenderingIntent::Relative,
-    ));
-    let render = image
-        .render_frame(0)
-        .map_err(|why| eyre!("failed to render image frame: {why}"))?;
+    let file = File::open(path).map_err(|why| eyre!("failed to open jxl image file: {why}"))?;
 
-    let framebuffer = render.image_all_channels();
-    match image.pixel_format() {
-        PixelFormat::Graya => image::GrayAlphaImage::from_raw(
-            framebuffer.width() as u32,
-            framebuffer.height() as u32,
-            framebuffer
-                .buf()
-                .iter()
-                .map(|x| x * 255. + 0.5)
-                .map(|x| x as u8)
-                .collect::<Vec<_>>(),
-        )
-        .map(DynamicImage::ImageLumaA8)
-        .ok_or_eyre("Can't decode gray alpha buffer"),
-        PixelFormat::Gray => image::GrayImage::from_raw(
-            framebuffer.width() as u32,
-            framebuffer.height() as u32,
-            framebuffer
-                .buf()
-                .iter()
-                .map(|x| x * 255. + 0.5)
-                .map(|x| x as u8)
-                .collect::<Vec<_>>(),
-        )
-        .map(DynamicImage::ImageLuma8)
-        .ok_or_eyre("Can't decode gray buffer"),
-        PixelFormat::Rgba => image::RgbaImage::from_raw(
-            framebuffer.width() as u32,
-            framebuffer.height() as u32,
-            framebuffer
-                .buf()
-                .iter()
-                .map(|x| x * 255. + 0.5)
-                .map(|x| x as u8)
-                .collect::<Vec<_>>(),
-        )
-        .map(DynamicImage::ImageRgba8)
-        .ok_or_eyre("Can't decode rgba buffer"),
-        PixelFormat::Rgb => image::RgbImage::from_raw(
-            framebuffer.width() as u32,
-            framebuffer.height() as u32,
-            framebuffer
-                .buf()
-                .iter()
-                .map(|x| x * 255. + 0.5)
-                .map(|x| x as u8)
-                .collect::<Vec<_>>(),
-        )
-        .map(DynamicImage::ImageRgb8)
-        .ok_or_eyre("Can't decode rgb buffer"),
-        //TODO: handle this
-        PixelFormat::Cmyk => Err(eyre!("unsupported pixel format: CMYK")),
-        PixelFormat::Cmyka => Err(eyre!("unsupported pixel format: CMYKA")),
-    }
+    let decoder =
+        JxlDecoder::new(file).map_err(|why| eyre!("failed to read jxl image header: {why}"))?;
+
+    image::DynamicImage::from_decoder(decoder)
+        .map_err(|why| eyre!("failed to decode jxl image: {why}"))
 }
 
 /// Use `fast-image-resize` crate for faster thumbnail generation.
