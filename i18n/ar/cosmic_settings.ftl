@@ -1,4 +1,4 @@
-app = إعدادات COSMIC
+app = إعدادات كوزميك
 
 dbus-connection-error = تعذَّر الاتصال بـDBus
 ok = حسنًا
