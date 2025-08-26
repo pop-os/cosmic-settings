@@ -5,6 +5,7 @@ use cosmic_settings_page::{self as page, Section, section};
 
 use cosmic::widget::{editable_input, list_column, settings, text};
 use cosmic::{Apply, Task};
+use cosmic::iced_core::text::Wrapping;
 use cosmic_settings_system::about::Info;
 use slab::Slab;
 use slotmap::SlotMap;
@@ -176,17 +177,20 @@ fn device() -> Section<crate::pages::Message> {
                 page.editing_device_name,
                 Message::HostnameEdit,
             )
-            .width(250)
+            .width(cosmic::iced::Length::FillPortion(1))
             .on_input(Message::HostnameInput)
             .on_unfocus(Message::HostnameSubmit)
             .on_submit(|_| Message::HostnameSubmit);
 
-            let device_name = settings::item::builder(&*desc[device])
-                .description(&*desc[device_desc])
-                .flex_control(hostname_input);
+            let device_name = cosmic::widget::column::with_capacity(3)
+                .push(text::body(&*desc[device]))
+                .push(text::caption(&*desc[device_desc]).wrapping(Wrapping::Word))
+                .push(cosmic::widget::vertical_space().height(cosmic::iced::Length::Fixed(8.0)))
+                .push(hostname_input.width(cosmic::iced::Length::Fill))
+                .spacing(4);
 
             list_column()
-                .add(device_name)
+                .add(settings::item_row(vec![device_name.into()]))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::About)
         })
