@@ -22,6 +22,7 @@ git = "https://github.com/pop-os/cosmic-bg"
 
 [workspace.dependencies.cosmic-comp-config]
 git = "https://github.com/pop-os/cosmic-comp"
+features = ["output"]
 
 [workspace.dependencies.cosmic-idle-config]
 git = "https://github.com/pop-os/cosmic-idle"
