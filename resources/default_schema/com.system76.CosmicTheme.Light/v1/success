@@ -12,9 +12,9 @@
         alpha: 1.0,
     ),
     pressed: (
-        red: 0.090110846,
-        green: 0.20971881,
-        blue: 0.12344426,
+        red: 0.41866165,
+        green: 0.5382697,
+        blue: 0.45199507,
         alpha: 1.0,
     ),
     selected: (
@@ -36,15 +36,15 @@
         alpha: 1.0,
     ),
     divider: (
-        red: 0.0,
-        green: 0.0,
-        blue: 0.0,
+        red: 0.99999946,
+        green: 1.0,
+        blue: 0.99999994,
         alpha: 1.0,
     ),
     on: (
-        red: 0.0,
-        green: 0.0,
-        blue: 0.0,
+        red: 0.99999946,
+        green: 1.0,
+        blue: 0.99999994,
         alpha: 1.0,
     ),
     disabled: (
@@ -54,9 +54,9 @@
         alpha: 1.0,
     ),
     on_disabled: (
-        red: 0.047058824,
-        green: 0.16666667,
-        blue: 0.08039215,
+        red: 0.5470586,
+        green: 0.6666667,
+        blue: 0.5803921,
         alpha: 1.0,
     ),
     border: (
