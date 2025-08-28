@@ -842,7 +842,7 @@ legacy-app-scaling = Ridimensionamento delle applicazioni del sistema X11
     .scaled-compatibility = Modalità di massima compatibilità
     .compatibility-description = Le applicazioni X11 potrebbero apparire sfocate sugli schermi HiDPI.
     .preferred-display = Display preferito per giochi e applicazioni X11 a schermo intero
-    .no-display = <Nessuno>
+    .no-display = Nessuno
 
 ## System
 

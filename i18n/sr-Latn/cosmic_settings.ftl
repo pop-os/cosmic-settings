@@ -1,18 +1,182 @@
 app = COSMIC podešavanja
 
+dbus-connection-error = Neuspešno povezivanje sa DBus-om
+ok = U redu
 unknown = Nepoznato
 
 number = { $number }
 
-## Networking: Wired
+## Network & Wireless
+
+connections-and-profiles = { $variant ->
+    [wired] Žičane
+    [wifi] Wi-Fi
+    [vpn] VPN
+    *[other] Nepoznate
+} konekcije i profili konekcija.
+
+add-network = Dodaj mrežu
+    .profile = Dodaj profil
+add-vpn = Dodaj VPN
+airplane-on = Avionski režim je uključen.
+cable-unplugged = Kabl je iskopčan
+connect = Poveži se
+connected = Povezano
+connecting = Povezuje se…
+disconnect = Prekini konekciju
+forget = Zaboravi
+known-networks = Poznate mreže
+network-and-wireless = Mreža i bežična konekcija
+no-networks = Nisu pronađene mreže.
+no-vpn = Nema dostupnih VPN konekcija.
+password = Lozinka
+password-confirm = Potvrdi lozinku
+remove = Ukloni
+settings = Podešavanja
+username = Korisničko ime
+visible-networks = Vidljive mreže
+identity = Identitet
+
+auth-dialog = Potrebna autentifikacija
+    .vpn-description = Unesite korisničko ime i lozinku potrebne za VPN servis.
+    .wifi-description = Unesite lozinku ili ključ za šifrovanje. Možete se povezati i pritiskom na "WPS" dugme na ruteru.
+
+forget-dialog = Zaboravi ovu Wi-Fi mrežu?
+    .description = Moraćete ponovo da unesete lozinku da biste koristili ovu Wi-Fi mrežu u budućnosti.
+
+network-device-state =
+    .activated = Povezano
+    .config = Povezuje se
+    .deactivating = Prekida se konekcija
+    .disconnected = Nije povezano
+    .failed = Neuspešno povezivanje
+    .ip-check = Proverava se konekcija
+    .ip-config = Traže se IP i informacije rutiranja
+    .need-auth = Potrebna autentifikacija
+    .prepare = Priprema se za povezivanje
+    .secondaries = Čeka se sekundarna konekcija
+    .unavailable = Nedostupno
+    .unknown = Nepoznato stanje
+    .unmanaged = Neupravljano
+    .unplugged = Kabl je iskopčan
+
+remove-connection-dialog = Ukloni profil konekcije?
+    .vpn-description = Moraćete ponovo da unesete lozinku da biste koristili ovu mrežu u budućnosti.
+    .wired-description = Moraćete ponovo da kreirate ovaj profil da biste ga koristili u budućnosti.
+
+vpn = VPN
+    .connections = VPN konekcije
+    .error = Neuspešno dodavanje VPN konfiguracije
+    .remove = Ukloni profil konekcije
+    .select-file = Izaberite VPN konfiguracionu datoteku
+
+vpn-error = VPN greška
+    .config = Neuspešno dodavanje VPN konfiguracije
+    .connect = Neuspešno povezivanje sa VPN-om
+    .connection-editor = Uređivač konekcije neuspešan
+    .connection-settings = Neuspešno dobijanje podešavanja za aktivne konekcije
+    .updating-state = Neuspešno ažuriranje stanja mrežnog menadžera
+    .wireguard-config-path = Neispravna putanja datoteke za WireGuard konfiguraciju
+    .wireguard-config-path-desc = Izabrana datoteka mora biti na lokalnom sistemu datoteka.
+    .wireguard-device = Neuspešno kreiranje WireGuard uređaja
+    .with-password = Neuspešno podešavanje VPN { $field ->
+        *[username] korisničko ime
+        [password] lozinka
+        [password-flags] flag-ova lozinke
+    } sa nmcli
 
 wired = Žičana
+    .adapter = Žičani adapter { $id }
+    .connections = Žičane konekcije
+    .devices = Žičani uređaji
+    .remove = Ukloni profil konekcije
     .desc = Žičana konekcija, profili konekcije
+
+wifi = Wi-Fi
+    .adapter = Wi-Fi adapter { $id }
+    .forget = Zaboravi ovu mrežu
+
+wireguard-dialog = Dodaj WireGuard uređaj
+    .description = Izaberite ime uređaja za WireGuard konfiguraciju.
 
 ## Networking: Online Accounts
 
 online-accounts = Onlajn nalozi
     .desc = Dodaj naloge, IMAP i SMTP, prijavljivanje za preduzeća
+
+# Bluetooth
+
+activate = Aktiviraj
+confirm = Potvrdi
+enable = Omogući
+
+bluetooth = Bluetooth
+    .desc = Upravljaj Bluetooth uređajima
+    .status = Ovaj sistem je vidljiv kao { $aliases } dok su Bluetooth podešavanja otvorena.
+    .connected = Povezano
+    .connecting = Povezuje se
+    .disconnecting = Prekida se konekcija
+    .connect = Poveži se
+    .disconnect = Prekini konekciju
+    .forget = Zaboravi
+    .dbus-error = Došlo je do greške pri interakciji sa DBus-om: { $why }
+    .disabled = Bluetooth servis je onemogućen
+    .inactive = Bluetooth servis nije aktivan
+    .unknown = Bluetooth servis se ne može aktivirati. Da li je BlueZ instaliran?
+
+bluetooth-paired = Prethodno povezani uređaji
+    .connect = Poveži se
+    .battery = { $percentage }% baterije
+
+bluetooth-confirm-pin = Potvrdi Bluetooth PIN
+    .description = Molimo potvrdite da se sledeći PIN slaže sa onim prikazanim na { $device }
+
+bluetooth-available = Obližnji uređaji
+
+bluetooth-adapters = Bluetooth adapteri
+
+## Accessibility
+
+accessibility = Pristupačnost
+    .vision = Vid
+    .on = Uključeno
+    .off = Isključeno
+    .unavailable = Nedostupno
+    .screen-reader = Čitač ekrana
+    .high-contrast = Visok kontrast
+    .invert-colors = Obrni boje
+    .color-filters = Filteri boja
+
+hearing = Sluh
+    .mono = Reprodukuj stereo zvuk kao mono
+
+default = Podrazumevano
+magnifier = Lupa
+    .controls = Ili koristi ove prečice: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} za uvećanje,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} za umanjenje,
+        }
+        Super + skrol mišem
+    .scroll_controls = Omogući uvećavanje mišem ili dodirnom tablom sa Super + Skrol
+    .show_overlay = Prikaži interfejs lupe
+    .increment = Korak uvećanja
+    .signin = Pokreni lupu pri prijavljivanju
+    .applet = Uključi/isključi lupu u apletu na panelu
+    .movement = Uvećani prikaz se pomera
+    .continuous = Kontinuirano sa pokazivačem
+    .onedge = Kada pokazivač dostigne ivicu
+    .centered = Da zadrži pokazivač centriran
+color-filter = Tip filtera boja
+    .unknown = Nepoznat filter je aktivan
+    .greyscale = Nijanse sive
+    .deuteranopia = Zeleno/Crveno (slabost zelene, Deuteranopija)
+    .protanopia = Crveno/Zeleno (slabost crvene, Protanopija)
+    .tritanopia = Plavo/Žuto (slabost plave, Tritanopija)
 
 ## Desktop
 
@@ -40,11 +204,15 @@ fit-to-screen = Uklopi u ekran
 open-new-folder = Otvori novu fasciklu
 recent-folders = Nedavne fascikle
 
-x-minutes = { $number } min.
-x-hours = { $number ->
-    [1] 60 minuta
-    *[other] { $number } sat.
+x-minutes = { $number } { $number ->
+    [one] minut
+    *[other] minuta
 }
+x-hours = { $number } { $number ->
+    [one] sat
+    *[other] sati
+}
+never = Nikad
 
 ## Desktop: Appearance
 
@@ -85,12 +253,10 @@ control-tint = Nijansa kontrolnih komponenti
     .desc = Koristi se za pozadinu standardnih dugmadi, unosa za pretragu, unosa teksta i sličnih komponenti.
 
 frosted = Efekat mat stakla na interfejsu sistema
-    .desc = Primenjuje zamućenje pozadine na panel, dok, aplete, pokretač i biblioteku aplikacija.
-
-experimental-settings = Eksperimentalna podešavanja
+    .desc = Primenjuje zamućenje pozadine na panel, dok, aplete, pokretač i biblioteku aplikacija.
 
 enable-export = Primeni ovu temu na GNOME aplikacije.
-    .desc = Automatsku promenu teme ne podržavaju sve aplikacije. Ne-COSMIC aplikacije će možda morati da se ponovo pokrenu nakon promene teme.
+    .desc = Automatsku promenu teme ne podržavaju sve aplikacije. Ne-COSMIC aplikacije će možda morati da se ponovo pokrenu nakon promene teme.
 
 icon-theme = Tema ikonica
     .desc = Primenjuje drugačiji skup ikonica na aplikacije.
@@ -103,10 +269,21 @@ style = Stil
     .slightly-round = Blago okrugli
     .square = Četvrtast
 
-# interface density left out for now
+interface-density = Gustina interfejsa
+    .comfortable = Udobno
+    .compact = Kompaktno
+    .spacious = Prostrano
+
 window-management-appearance = Upravljanje prozorima
     .active-hint = Debljina nagoveštaja aktivnog prozora
     .gaps = Praznine oko složenih prozora
+
+### Experimental
+
+experimental-settings = Eksperimentalna podešavanja
+icons-and-toolkit = Tema ikonica i toolkit-a
+interface-font = Font sistema
+monospace-font = Monoprostorni font
 
 ## Desktop: Notifications
 
@@ -115,8 +292,8 @@ notifications = Obaveštenja
 
 ## Desktop: Panel
 
-panel = Gornji panel
-    .desc = Gornja traka sa kontrolama radne površine i menijima.
+panel = Panel
+    .desc = Glavna sistemska traka za menije i aplete.
 
 add = Dodaj
 add-applet = Dodaj aplet
@@ -160,13 +337,13 @@ panel-applets = Konfiguracija
     .desc = Podesi aplete na panelu.
 
 panel-missing = Nedostaje konfiguracija panela
-    .desc = Konfiguraciona datoteka panela nedostaje zbog korišćenja prilagođene konfiguracije ili je oštećena.
+    .desc = Konfiguraciona datoteka panela nedostaje zbog korišćenja prilagođene konfiguracije ili je oštećena.
     .fix = Vrati na podrazumevano
 
 ## Desktop: Dock
 
 dock = Dok
-    .desc = Traka sa zakačenim aplikacijama i drugim apletima.
+    .desc = Opciona traka za aplikacije i aplete.
 
 ## Desktop: Window management
 
@@ -177,15 +354,24 @@ super-key = Super taster
     .launcher = Otvori Pokretač
     .workspaces = Otvori Radne prostore
     .applications = Otvori Aplikacije
+    .disable = Onemogući
+
+edge-gravity = Plutajući prozori se privlače ka ivicama ekrana
 
 window-controls = Kontrole prozora
     .maximize = Prikaži dugme za maksimizovanje
     .minimize = Prikaži dugme za minimizovanje
+    .active-window-hint = Prikaži nagoveštaj aktivnog prozora
+
+focus-navigation = Navigacija fokusa
+    .focus-follows-cursor = Fokus prati pokazivač
+    .focus-follows-cursor-delay = Kašnjenje fokusa za pokazivačem u ms
+    .cursor-follows-focus = Pokazivač prati fokus
 
 ## Desktop: Workspaces
 
 workspaces = Radni prostori
-    .desc = Postavi broj radnih prostora, ponašanje, i poziciju.
+    .desc = Orijentacija i ponašanje radnog prostora.
 
 workspaces-behavior = Ponašanje radnih prostora
     .dynamic = Dinamični radni prostori
@@ -219,16 +405,17 @@ color = Boja
     .temperature = Temperatura boje
 
 display = Ekrani
-    .desc = Upravljajte ekranima, prebacivanjem grafike i noćnim svetlom
+    .desc = Upravljajte ekranima i noćnim svetlom
     .arrangement = Raspored ekrana
     .arrangement-desc = Prevucite ekrane da biste ih preuredili.
-    .enable = Omogući ekran
+    .enable = Omogući ekran
     .external = { $size } { $output } spoljašnji ekran
     .laptop = { $size } ekran laptopa
     .options = Opcije ekrana
     .refresh-rate = Osvežavanje
     .resolution = Rezolucija
     .scale = Razmera
+    .additional-scale-options = Dodatne opcije razmere
 
 mirroring = Preslikavanje
     .id = Preslikavanje { $id }
@@ -243,15 +430,21 @@ mirroring = Preslikavanje
         *[other] ekrana
     }
 
-night-light = Noćno svetlo
+night-light = Noćno svetlo
     .auto = Automatsko (od zalaska do izlaska sunca)
     .desc = Smanjite plavo svetlo toplijim bojama.
 
 orientation = Orijentacija
     .standard = Standardna
-    .rotate-90 = Rotirano 90
-    .rotate-180 = Rotirano 180
-    .rotate-270 = Rotirano 270
+    .rotate-90 = Rotirano 90°
+    .rotate-180 = Rotirano 180°
+    .rotate-270 = Rotirano 270°
+
+vrr = Varijabilna brzina osvežavanja
+    .enabled = Omogućeno
+    .force = Uvek
+    .auto = Automatski
+    .disabled = Onemogućeno
 
 scheduling = Raspored
     .manual = Ručni raspored
@@ -259,7 +452,7 @@ scheduling = Raspored
 dialog = Dijalog
     .title = Zadrži ova podešavanja ekrana?
     .keep-changes = Zadrži promene
-    .change-prompt = Promene podešavanja će se automatski vratiti za { $time } s.
+    .change-prompt = Promene podešavanja će se automatski vratiti za { $time } sekundi.
     .revert-settings = Vrati podešavanja
 
 ## Sound
@@ -270,14 +463,16 @@ sound = Zvuk
 sound-output = Izlaz
     .volume = Jačina izlaznog zvuka
     .device = Izlazni uređaj
-    .level = Poravnanje izlaznog zvuka
+    .level = Nivo izlaza
     .config = Konfiguracija
     .balance = Balans
+    .left = Levo
+    .right = Desno
 
 sound-input = Ulaz
     .volume = Jačina ulaznog zvuka
     .device = Ulazni uređaj
-    .level = Poravnanje ulaznog zvuka
+    .level = Nivo ulaza
 
 sound-alerts = Upozorenja
     .volume = Jačina zvuka upozorenja
@@ -293,6 +488,29 @@ profile = Profil
 power = Napajanje i baterija
     .desc = Upravljajte postavkama napajanja.
 
+battery = Baterija
+  .minute = { $value } { $value ->
+        [one] minut
+       *[other] minuta
+  }
+  .hour = { $value } { $value ->
+        [one] sat
+       *[other] sati
+  }
+  .day = { $value } { $value ->
+        [one] dan
+       *[other] dana
+  }
+  .less-than-minute = Manje od minuta
+  .and = i
+  .remaining-time = { $time } do { $action ->
+        [full] pune
+       *[other] prazne
+   }
+
+connected-devices = Povezani uređaji
+  .unknown = Nepoznat uređaj
+
 power-mode = Režim napajanja
     .battery = Produženo trajanje baterije
     .battery-desc = Smanjena potrošnja energije i tihe performanse.
@@ -302,14 +520,20 @@ power-mode = Režim napajanja
     .performance-desc = Najveće performanse i potrošnja energije.
     .no-backend = Podsistem nije pronađen. Instalirajte system76-power ili power-profiles-daemon.
 
+power-saving = Opcije štednje energije
+    .turn-off-screen-after = Ugasi ekran posle
+    .auto-suspend = Automatsko spavanje
+    .auto-suspend-ac = Automatsko spavanje priključeno za struju
+    .auto-suspend-battery = Automatsko spavanje na bateriji
+
 ## Input
 
-acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
+acceleration-desc = Automatski podešava osetljivost praćenja na osnovu brzine.
 
 disable-while-typing = Onemogući tokom kucanja
 
-input-devices = Unos
-    .desc = Unos
+input-devices = Ulazni uređaji
+    .desc = Ulazni uređaji
 
 primary-button = Primarno dugme
     .desc = Određuje redosled fizičkih dugmadi.
@@ -330,10 +554,10 @@ fast = Brzo
 short = Kratko
 long = Dugo
 keyboard = Tastatura
-    .desc = Jezik unosa, unos specijalnih karaktera, prečice.
+    .desc = Izvor unosa, prebacivanje, unos specijalnih karaktera, prečice.
 
 keyboard-sources = Jezik unosa
-    .desc = Jezik unosa se može menjati pomoću kombinacije tastera Super+Space. Ovo ponašanje se može promeniti u podešavanjima prečica na tastaturi.
+    .desc = Jezik unosa se može menjati pomoću kombinacije tastera Super+Space. Ovo se može promeniti u podešavanjima prečica na tastaturi.
     .move-up = Pomeri gore
     .move-down = Pomeri dole
     .settings = Podešavanja
@@ -344,27 +568,37 @@ keyboard-sources = Jezik unosa
 keyboard-special-char = Unošenje specijalnih znakova
     .alternate = Taster za alternativne znakove
     .compose = Compose taster
+    .caps = Caps Lock taster
 
 keyboard-typing-assist = Kucanje
     .repeat-rate = Stopa ponavljanja
     .repeat-delay = Kašnjenje ponavljanja
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Stanje pri pokretanju sistema
+    .last-boot = Prethodno pokretanje
+    .on = Uključeno
+    .off = Isključeno
+    .set = Podesi stanje numlock-a pri pokretanju
+
 added = Dodato
 type-to-search = Kucajte za pretragu...
+show-extended-input-sources = Prikaži proširene izvore unosa
 
 ## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = Prečice na tastaturi
     .desc = Pregledajte i prilagodite prečice
 
-add-keybinding = Dodaj
+add-another-keybinding = Dodaj drugu prečicu
 cancel = Poništi
 command = Komanda
 custom = Prilagođene
 debug = Debaguj
-disabled = Onemogućeno
+disabled = Onemogućeno
+input-source-switch = Prebaci izvor unosa jezika tastature
 migrate-workspace-prev = Premesti radni prostor na prethodni ekran
-migrate-workspace-next = Premesti radni prostor na sledeći ekran
+migrate-workspace-next = Premesti radni prostor na sledeći ekran
 migrate-workspace = Premesti radni prostor na ekran { $direction ->
     *[down] dole
     [left] levo
@@ -384,7 +618,7 @@ custom-shortcuts = Prilagođene prečice
     .context = Dodaj prilagođenu prečicu
     .none = Nema prilagođenih prečica
 
-modified = { $count } modifikovan.
+modified = { $count } izmenjeno
 
 nav-shortcuts = Navigacija
     .prev-output = Fokusiraj prethodni ekran
@@ -411,6 +645,7 @@ nav-shortcuts = Navigacija
 manage-windows = Upravljanje prozorima
     .close = Zatvori prozor
     .maximize = Maksimizuj prozor
+    .fullscreen = Ceo ekran
     .minimize = Minimizuj prozor
     .resize-inwards = Smanji prozor
     .resize-outwards = Povećaj prozor
@@ -452,18 +687,21 @@ system-shortcut = Sistem
     .keyboard-brightness-down = Smanji osvetljenost tastature
     .keyboard-brightness-up = Povećaj osvetljenost tastature
     .launcher = Otvori pokretač
+    .log-out = Odjavi se
     .lock-screen = Zaključaj ekran
     .mute = Isključi audio izlaz
     .mute-mic = Isključi ulaz mikrofona
     .play-pause = Pusti/Pauziraj
-    .play-next = Sledeća numera
+    .play-next = Sledeća numera
     .play-prev = Prethodna numera
+    .poweroff = Isključi sistem
     .screenshot = Napravi snimak ekrana
     .terminal = Otvori terminal
     .volume-lower = Smanji jačinu audio izlaza
-    .volume-raise = Povećaj jačinu audio izlaza
+    .volume-raise = Povećaj jačinu audio izlaza
     .web-browser = Otvori veb pretraživač
     .window-switcher = Prebacivanje između otvorenih prozora
+    .window-switcher-previous = Prebacivanje između otvorenih prozora unatrag
     .workspace-overview = Otvori pregled radnih prostora
 
 window-tiling = Slaganje prozora
@@ -477,6 +715,9 @@ window-tiling = Slaganje prozora
 
 replace-shortcut-dialog = Zameni prečicu?
     .desc = { $shortcut } se koristi od strane { $name }. Ako je zamenite, { $name } će biti onemogućeno.
+
+zoom-in = Uvećaj
+zoom-out = Umanji
 
 ## Input: Mouse
 
@@ -495,16 +736,16 @@ pinch-to-zoom = Stisnite prste za zumiranje
     .desc = Koristite dva prsta za zumiranje sadržaja, za aplikacije koje podržavaju zumiranje.
 
 tap-to-click = Dodir za klik
-    .desc = Omogućava dodir jednim prstom za primarni klik, dva prsta za sekundarni klik i tri prsta za srednji klik.
+    .desc = Omogućava dodir jednim prstom za primarni klik, dva prsta za sekundarni klik i tri prsta za srednji klik.
 
 touchpad = Dodirna tabla
+    .acceleration = Omogući ubrzanje dodirne table
     .desc = Brzina dodirne table, opcije klika, pokreti.
     .speed = Brzina dodirne table
-    .acceleration = Omogući ubrzanje dodirne table
 
 ## Input: Gestures
 
-swiping = Pokreti
+gestures = Pokreti
     .four-finger-down = Prevuci prema dole sa četiri prsta
     .four-finger-left = Prevuci prema levo sa četiri prsta
     .four-finger-right = Prevuci prema desno sa četiri prsta
@@ -525,25 +766,95 @@ time = Vreme i jezik
     .desc = N/A
 
 time-date = Datum i vreme
-    .desc = Vremenska zona, automatsko podešavanje sata, format vremena.
+    .desc = Vremenska zona, automatska podešavanja sata i formatiranje vremena.
     .auto = Podesi automatski
-    .auto-ntp = Datum i vreme će se automatski ažurirati kada se podesi vremenska zona.
+    .auto-ntp = Datum i vreme će se automatski ažurirati kada se podesi vremenska zona.
 
 time-zone = Vremenska zona
     .auto = Automatska vremenska zona
-    .auto-info = Zahteva pristup lokaciji i internetu
+    .auto-info = Zahteva usluge lokacije i pristup internetu
 
 time-format = Format datuma i vremena
-    .twenty-four = 24-časa
+    .twenty-four = 24-časovno vreme
+    .show-seconds = Prikaži sekunde
     .first = Prvi dan nedelje
-    .show-date = Prikaži datum na panelu
+    .show-date = Prikaži datum u apletu za vreme
     .friday = Petak
     .saturday = Subota
     .sunday = Nedelja
     .monday = Ponedeljak
 
 time-region = Region i jezik
-    .desc = Format datuma, vremena i brojeva dobijen na osnovu regiona
+    .desc = Format datuma, vremena i brojeva na osnovu regiona.
+
+formatting = Formatiranje
+    .dates = Datumi
+    .time = Vreme
+    .date-and-time = Datum i vreme
+    .numbers = Brojevi
+    .measurement = Merenja
+    .paper = Papir
+
+preferred-languages = Preferiran jezik
+    .desc = Redosled jezika određuje koji se jezik koristi za korisnički interfejs. Promene se primenjuju pri sledećem prijavljivanju.
+
+add-language = Dodaj jezik
+    .context = Dodaj jezik
+install-additional-languages = Instaliraj dodatne jezike
+region = Region
+
+## Applications
+
+applications = Aplikacije
+
+## Applications: Default Applications
+
+default-apps = Podrazumevane aplikacije
+    .desc = Podrazumevani veb pretraživač, imejl klijent, upravljač datoteka i druge aplikacije.
+    .web-browser = Veb pretraživač
+    .file-manager = Upravljač datoteka
+    .mail-client = Imejl klijent
+    .music = Muzika
+    .video = Video
+    .photos = Fotografije
+    .calendar = Kalendar
+    .terminal = Terminal
+    .other-associations = Ostale asocijacije
+    .text-editor = Uređivač teksta
+
+## Applications: Startup Applications
+
+startup-apps = Aplikacije pri pokretanju
+    .desc = Konfigurišite aplikacije koje se pokreću pri prijavljivanju.
+    .add = Dodaj aplikaciju
+    .user = Aplikacije koje se pokreću kada se prijavite
+    .none = Nisu dodate aplikacije za pokretanje
+    .remove-dialog-title = Ukloni { $name }?
+    .remove-dialog-description = Da li ste sigurni da želite da uklonite ovu aplikaciju za pokretanje?
+    .search-for-application = Pretraži aplikaciju
+
+## Applications: Legacy Applications
+
+legacy-applications = Kompatibilnost X11 aplikacija
+    .desc = Skaliranje aplikacija X11 sistema prozora i globalne prečice.
+
+legacy-app-global-shortcuts = Globalne prečice u X11 aplikacijama
+    .desc = Globalne prečice omogućavaju da pritiske tastera i dugmadi miša izvedenih u aplikacijama budu prepoznati od strane drugih aplikacija za funkcije kao što su push-to-talk ili push-to-mute. Podrazumevano, ovo je onemogućeno u X11 aplikacijama da bi se osiguralo da druge aplikacije ne mogu da prate događaje tastature i miša koji sadrže osetljive informacije.
+    .none = Nijedan taster
+    .modifiers = Modifikatori (Super, Shift, Control, Alt)
+    .combination = Svi tasteri dok se drže modifikatori Super, Control ili Alt
+    .all = Svi tasteri
+    .mouse = Događaji dugmadi miša u X11 aplikacijama
+
+legacy-app-scaling = Skaliranje aplikacija X11 sistema prozora
+    .scaled-gaming = Optimizuj za igre i aplikacije preko celog ekrana
+    .gaming-description = X11 aplikacije mogu izgledati nešto veće/manje u poređenju sa Wayland aplikacijama.
+    .scaled-applications = Optimizuj za aplikacije
+    .applications-description = Igre i X11 aplikacije preko celog ekrana možda neće odgovarati vašoj rezoluciji ekrana.
+    .scaled-compatibility = Režim maksimalne kompatibilnosti
+    .compatibility-description = X11 aplikacije mogu izgledati zamućeno na HiDPI ekranima.
+    .preferred-display = Preferirani ekran za igre i X11 aplikacije preko celog ekrana
+    .no-display = Nijedan
 
 ## System
 
@@ -570,7 +881,7 @@ about-os = Operativni sistem
     .desktop-environment = Okruženje radne površine
     .windowing-system = Sistem prozora
 
-about-related = Dodatna podešavanja
+about-related = Povezana podešavanja
     .support = Podrška
 
 ## System: Firmware
@@ -581,4 +892,18 @@ firmware = Firmver
 ## System: Users
 
 users = Korisnici
-    .desc = Autentifikacija i prijavljivanje, zaključan ekran.
+    .desc = Autentifikacija i korisnički nalozi.
+    .admin = Admin
+    .standard = Standardan
+    .profile-add = Izaberi sliku profila
+
+administrator = Administrator
+    .desc = Administratori mogu da menjaju podešavanja za sve korisnike, dodaju i uklanjaju druge korisnike.
+
+add-user = Dodaj korisnika
+change-password = Promeni lozinku
+remove-user = Ukloni korisnika
+full-name = Puno ime
+invalid-username = Neispravno korisničko ime.
+password-mismatch = Lozinka i potvrda moraju se poklapati.
+save = Sačuvaj

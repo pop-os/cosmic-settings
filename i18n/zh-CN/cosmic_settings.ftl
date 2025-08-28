@@ -389,7 +389,7 @@ workspaces-orientation = 工作区方向
 
 hot-corner = 热角
     .top-left-corner = 启用左上角热角以打开工作区
-    
+
 ## Desktop: Display
 
 -requires-restart = 需要重启
@@ -848,7 +848,7 @@ legacy-app-scaling = X11 窗口系统应用程序缩放
     .scaled-compatibility = 最大兼容性模式
     .compatibility-description = X11 应用程序在 HiDPI 屏幕上可能显示模糊。
     .preferred-display = 游戏和全屏 X11 应用程序的首选显示器
-    .no-display = <无>
+    .no-display = 无
 
 ## System
 

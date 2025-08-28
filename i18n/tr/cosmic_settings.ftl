@@ -841,14 +841,14 @@ legacy-app-global-shortcuts = X11 Uygulamalarında Genel Kısayollar
     .mouse = X11 uygulamalarında fare tuş olayları
 
 legacy-app-scaling = X11 Pencere Sistemi Uygulama Ölçeklemesi
-    .scaled-gaming = Oyun ve tam ekran uygulamalar için uyarla 
+    .scaled-gaming = Oyun ve tam ekran uygulamalar için uyarla
     .gaming-description = X11 uygulamaları Wayland uygulamalarına göre biraz büyük veya küçük görünebilir.
     .scaled-applications = Uygulamalar için uyarla
     .applications-description = Oyunlar ve tam ekran X11 uygulamaları ekran çözünürlüğünüze uymayabilir.
     .scaled-compatibility = Maksimum uyumluluk modu
     .compatibility-description = X11 uygulamaları HiDPI ekranlarda bulanık gözükebilir.
     .preferred-display = Oyunlar ve tam ekran X11 uygulamaları için tercih edilen ekran
-    .no-display = <Hiçbiri>
+    .no-display = Hiçbiri
 
 ## System
 
@@ -901,4 +901,3 @@ full-name = Tam ad
 invalid-username = Geçersiz kullanıcı adı.
 password-mismatch = Parola ve doğrulama birbirine uymalıdır.
 save = Kaydet
-
