@@ -148,7 +148,7 @@ accessibility = Dostępność
 
 hearing = Słuchanie
     .mono = Odtwarzaj dźwięk stereo jako mono
-    
+
 default = Domyślne
 magnifier = Lupa
     .controls = Lub użyj skrótów klawiszowych:{ $zoom_in ->
@@ -832,7 +832,7 @@ default-apps = Domyślne Aplikacje
     .terminal = Konsola
     .other-associations = Inne powiązania
     .text-editor = Edytor tekstu
-    
+
 ## Applications: Startup Applications
 
 startup-apps = Aplikacje Startowe
@@ -865,7 +865,7 @@ legacy-app-scaling = Skalowanie aplikacji systemu okien X11
     .scaled-compatibility = Tryb maksymalnej kompatynilności
     .compatibility-description = Aplikacje X11 mogą być rozmazane na wyświetlaczach HiDPI.
     .preferred-display = Preferowany wyświetlacz dla gier i aplikacji pełnoekranowych X11
-    .no-display = <Brak>
+    .no-display = Brak
 
 ## System
 

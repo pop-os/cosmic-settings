@@ -847,7 +847,7 @@ legacy-app-scaling = Scálú Feidhmchláir Chóras Fuinneoige X11
     .scaled-compatibility = Mód comhoiriúnachta uasta
     .compatibility-description = D’fhéadfadh feidhmchláir X11 a bheith doiléir ar scáileáin HiDPI.
     .preferred-display = Taispeántas is fearr le haghaidh cluichí agus feidhmchláir X11 lánscáileáin
-    .no-display = <Gan aon cheann>
+    .no-display = Gan aon cheann
 
 ## System
 

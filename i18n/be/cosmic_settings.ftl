@@ -857,7 +857,7 @@ legacy-app-scaling = Маштабаванне праграм аконнай сі
     .scaled-compatibility = Рэжым максімальнай сумяшчальнасці
     .compatibility-description = Праграмы X11 могуць выглядаць размытымі на HiDPI-экранах.
     .preferred-display = Выбраны дысплей для гульняў і поўнаэкранных праграм X11
-    .no-display = <Няма>
+    .no-display = Няма
 
 ## System
 

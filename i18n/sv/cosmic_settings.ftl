@@ -419,7 +419,7 @@ online-accounts = Onlinekonton
 
 # Bluetooth
 
-activate = Aktivera    
+activate = Aktivera
 confirm = Bekräfta
 enable = Aktivera
 
@@ -568,10 +568,10 @@ change-password = Ändra lösenord
 remove-user = Ta bort användare
 full-name = Fullständigt namn
 invalid-username = Ogiltigt användarnamn.
- 
+
 
 password-mismatch = Lösenord och bekräftelse måste matcha.
- 
+
 
 save = Spara
 
@@ -885,7 +885,7 @@ legacy-app-scaling = X11 fönstersystem programsskalning
     .scaled-compatibility = Maximalt kompatibilitetsläge
     .compatibility-description = X11 program kan se suddiga ut på HiDPI-skärmar.
     .preferred-display = Föredragen skärm för spel och helskärms X11-program
-    .no-display = <Ingen>
+    .no-display = Ingen
 
 ## System: Uppstartsprogram
 

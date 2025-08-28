@@ -49,7 +49,7 @@ network-device-state =
     .config = Conectándose
     .deactivating = Desconectando
     .disconnected = Desconectado
-    .failed = No se pudo establecer la conexión 
+    .failed = No se pudo establecer la conexión
     .ip-check = Verificando la conexión
     .ip-config = Solicitando información de IP y enrutamiento
     .need-auth = Necesita autenticación
@@ -82,7 +82,7 @@ vpn-error = Error de VPN
     .with-password = Error al configurar la { $field ->
         *[username] Usuario
         [password] Contraseña
-        [password-flags] Indicadores de contraseña 
+        [password-flags] Indicadores de contraseña
     } con nmcli
 
 wired = Conectado
@@ -160,11 +160,11 @@ magnifier = Lupa
             *[other] {""}
                 {$zoom_out} para disminuir,
         }
-        Super + rueda del ratón 
+        Super + rueda del ratón
     .scroll_controls = Habilita ampliar y disminuir usando el ratón o el panel táctil con Super + Scroll
     .show_overlay = Mostrar los valores de la lupa
     .increment = Incrementos de acercamiento o alejamiento
-    .signin = Habilitar la lupa al iniciar sesión 
+    .signin = Habilitar la lupa al iniciar sesión
     .applet = Habilitar o deshabilitar la lupa desde el panel
     .movement = Control de la pantalla mientras usa la lupa
     .continuous = Continuamente siguiendo el movimiento del puntero
@@ -208,7 +208,7 @@ x-hours = { $number ->
     [1] 1 hora
     *[other] { $number } horas
 }
-never = Nunca 
+never = Nunca
 
 ## Desktop: Appearance
 
@@ -266,7 +266,7 @@ style = Estilo
     .square = Cuadrado
 
 interface-density = Densidad de la Interfaz
-    .comfortable = Confortable 
+    .comfortable = Confortable
     .compact = Compacta
     .spacious = Espaciosa
 
@@ -295,7 +295,7 @@ add = Añadir
 add-applet = Añadir subprograma
 all = Todos
 applets = Subprogramas
-center-segment = Centrar segmento 
+center-segment = Centrar segmento
 drop-here = Soltar los subprogramas aquí
 end-segment = Terminar segmento
 large = Grande
@@ -334,7 +334,7 @@ panel-applets = Configuración
 
 panel-missing = No se ha encontrado la configuración de la barra
     .desc = El archivo de configuración de la barra se ha eliminado debido al uso de una configuración personalizada o está dañado.
-    .fix = Restablecer a la configuración predeterminada. 
+    .fix = Restablecer a la configuración predeterminada.
 
 ## Desktop: Dock
 
@@ -436,7 +436,7 @@ orientation = Orientación
     .rotate-180 = Rotar 180
     .rotate-270 = Rotar 270
 
-vrr = Tasa de refresco variable 
+vrr = Tasa de refresco variable
     .enabled = Habilitada
     .force = Siempre
     .auto = Automático
@@ -470,7 +470,7 @@ sound-input = Entrada de sonido
     .device = Dispositivo de entrada
     .level = Nivel de entrada
 
-sound-alerts = Alertas 
+sound-alerts = Alertas
     .volume = Volumen de alertas
     .sound = Sonido de alertas
 
@@ -479,10 +479,10 @@ sound-applications = Aplicaciones
 
 profile = Perfil
 
-## Power 
+## Power
 
 power = Energía
-  .desc = Gestionar configuraciones de energía 
+  .desc = Gestionar configuraciones de energía
 
 battery = Batería
   .minute = { $value } { $value ->
@@ -516,7 +516,7 @@ power-mode = Perfiles de Energía
     .performance-desc = Máximo rendimiento pero mayor consumo de energía
     .no-backend = Backend no encontrado. Instala system76-power o power-profiles-daemon.
 
-power-saving = Opciones de ahorro de energía 
+power-saving = Opciones de ahorro de energía
     .turn-off-screen-after = Apagar la pantalla después de
     .auto-suspend = Suspensión automática
     .auto-suspend-ac = Suspensión automática cuando el ordenador esté enchufado
@@ -570,7 +570,7 @@ keyboard-typing-assist = Escritura
     .repeat-rate = Tasa de repetición
     .repeat-delay = Retardo de repetición
 
-keyboard-numlock-boot = Bloq Num 
+keyboard-numlock-boot = Bloq Num
     .boot-state = Estado al arrancar
     .last-boot = Último arranque
     .on = Activado
@@ -726,7 +726,7 @@ click-behavior = Comportamiento del Clic
     .click-finger = Clic secundario con dos dedos y clic medio con tres dedos
     .button-areas = Clic secundario en la esquina inferior derecha y clic medio en el centro inferior
 
-pinch-to-zoom = Pellizcar para ampliar 
+pinch-to-zoom = Pellizcar para ampliar
     .desc = Usar dos dedos para ampliar el contenido, para aplicaciones que soportan zoom
 
 tap-to-click = Tocar para hacer clic
@@ -848,7 +848,7 @@ legacy-app-scaling = Escalado de las aplicaciones del sistema de ventanas X11
     .scaled-compatibility = Modo de compatibilidad máxima
     .compatibility-description = Las aplicaciones X11 podrían aparecer difuminadas en monitores HiDPI.
     .preferred-display = Monitor preferido para videojuegos y aplicaciones X11 en pantalla completa
-    .no-display = <Ninguno>
+    .no-display = Ninguno
 
 ## System
 
@@ -862,8 +862,8 @@ about = Acerca de
 about-device = Nombre del dispositivo
     .desc = Este nombre identifica a este equipo en otros dispositivos de red o bluetooth.
 
-about-hardware = Componentes físicos 
-    .model = Placa Base 
+about-hardware = Componentes físicos
+    .model = Placa Base
     .memory = Memoria
     .processor = Procesador
     .graphics = Gráficos

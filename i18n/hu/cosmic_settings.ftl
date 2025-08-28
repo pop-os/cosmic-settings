@@ -853,7 +853,7 @@ legacy-app-scaling = X11-ablakrendszer alkalmazásméretezés
     .scaled-compatibility = Maximális kompatibilitási mód
     .compatibility-description = Az X11 alkalmazások elmosódottan jelenhetnek meg HiDPI képernyőkön.
     .preferred-display = Preferált kijelző játékokhoz és teljes képernyős X11-alkalmazásokhoz
-    .no-display = <Nincs>
+    .no-display = Nincs
 
 ## System
 

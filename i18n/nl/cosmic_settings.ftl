@@ -491,7 +491,7 @@ battery = Batterij
     .minute = { $value } { $value ->
         [one] minuut
         *[other] minuten
-    }   
+    }
     .hour = { $value } uur
 <#-- these three lines are intentionally left empty -->
 
@@ -502,7 +502,7 @@ battery = Batterij
     }
     .less-than-minute = In minder dan één minuut
     .and = en
-    .remaining-time = De batterij is over { $time } { $action -> 
+    .remaining-time = De batterij is over { $time } { $action ->
         [full] opgeladen
         *[other] leeg
     }
@@ -853,7 +853,7 @@ legacy-app-scaling = Het schalen van vensters die het X11-venstersysteem gebruik
     .scaled-compatibility = Modus voor maximale compatibiliteit
     .compatibility-description = X11-vensters kunnen wazig lijken op HiDPI-schermen.
     .preferred-display = Uw voorkeursscherm voor games en X11-vensters in volledig scherm
-    .no-display = <Geen>
+    .no-display = Geen
 
 ## System
 
