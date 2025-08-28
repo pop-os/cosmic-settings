@@ -381,61 +381,61 @@ fn apps() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("startup-apps"))
         .view::<Page>(move |_binder, page, _section| {
-            let mut view = widget::column::with_capacity(4).spacing(space_xxs);
+            let mut view = widget::column::with_capacity(3).spacing(space_xxs);
 
             if let Some(startup_apps) = &page.cached_startup_apps {
                 let order = vec![DirectoryType::User];
                 for directory_type in order {
                     let mut section = settings::section();
 
-                    view = view
-                        .push(text::heading(directory_type.to_string()))
-                        .push(text(match directory_type {
-                            DirectoryType::User => fl!("startup-apps", "user-description"),
-                        }));
+                    view = view.push(text::heading(directory_type.to_string()));
 
                     if let Some(apps) = startup_apps.apps.get(&directory_type) {
-                        for app in apps {
-                            let mut row = widget::row::with_capacity(3)
-                                .spacing(space_xs)
-                                .align_y(Alignment::Center);
+                        if apps.is_empty() {
+                            section = section.add(text::body(fl!("startup-apps", "none")))
+                        } else {
+                            for app in apps {
+                                let mut row = widget::row::with_capacity(3)
+                                    .spacing(space_xs)
+                                    .align_y(Alignment::Center);
 
-                            row = row.push(
-                                icon::from_name(app.icon().unwrap_or("application-default"))
-                                    .size(32),
-                            );
+                                row = row.push(
+                                    icon::from_name(app.icon().unwrap_or("application-default"))
+                                        .size(32),
+                                );
 
-                            if let Some(name) = app.name(&startup_apps.locales) {
-                                row = row.push(text(name).width(Length::Fill));
-                            } else {
-                                row = row.push(text(&app.appid).width(Length::Fill));
+                                if let Some(name) = app.name(&startup_apps.locales) {
+                                    row = row.push(text::body(name).width(Length::Fill));
+                                } else {
+                                    row = row.push(text::body(&app.appid).width(Length::Fill));
+                                }
+
+                                row = row.push(
+                                    button::icon(icon::from_name("edit-delete-symbolic"))
+                                        .extra_small()
+                                        .on_press(
+                                            Message::RemoveStartupApplication(
+                                                directory_type.clone(),
+                                                app.clone(),
+                                                false,
+                                            )
+                                            .into(),
+                                        ),
+                                );
+
+                                section = section.add(row)
                             }
-
-                            row = row.push(
-                                button::icon(icon::from_name("edit-delete-symbolic"))
-                                    .extra_small()
-                                    .on_press(
-                                        Message::RemoveStartupApplication(
-                                            directory_type.clone(),
-                                            app.clone(),
-                                            false,
-                                        )
-                                        .into(),
-                                    ),
-                            );
-
-                            section = section.add(row)
                         }
                     }
 
                     let add_startup_app = widget::button::standard(fl!("startup-apps", "add"))
                         .on_press(Message::ShowApplicationSidebar(directory_type.clone()).into());
 
-                    view = view.push(section).push(widget::container(
+                    view = view.push(section).push(
                         widget::container(add_startup_app)
                             .width(Length::Fill)
                             .align_x(Alignment::End),
-                    ));
+                    );
                 }
             }
 
