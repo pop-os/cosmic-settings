@@ -1,5 +1,5 @@
 pub use cosmic_bg_config::{Color, Config, Entry, Gradient, ScalingMode, Source};
-use eyre::{OptionExt, eyre};
+use eyre::eyre;
 use fast_image_resize::SrcCropping;
 use futures_lite::Stream;
 use futures_util::StreamExt;
