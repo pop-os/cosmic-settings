@@ -252,7 +252,7 @@ control-tint = Vezérlőelemek színezése
     .desc = Szabványos gombok hátterére, keresési bemenetekre, szövegbevitelre és hasonló összetevőkre használatos.
 
 frosted = Elmosódott üveg hatás a rendszerfelületen
-    .desc = A háttér elmosását alkalmazza a panelre, a dokkolóra, a kisalkalmazásokra, az indítóra és az alkalmazáskönyvtárra.
+    .desc = A háttér elmosását alkalmazza a panelre, a dokkra, a kisalkalmazásokra, az indítóra és az alkalmazáskönyvtárra.
 
 enable-export = Téma alkalmazása a GNOME-alkalmazásokra.
     .desc = Nem minden eszközkészlet támogatja az automatikus váltást. Előfordulhat, hogy a téma módosítása után újra kell indítanod a nem COSMIC-alapú alkalmazásokat.
@@ -318,22 +318,22 @@ panel-appearance = Megjelenés
 
 panel-behavior-and-position = Viselkedés és pozíció
     .autohide = A panel automatikus elrejtése
-    .dock-autohide = A dokkoló automatikus elrejtése
+    .dock-autohide = A dokk automatikus elrejtése
     .position = Elhelyezkedés a képernyőn
     .display = Megjelenítés a kijelzőn
 
 panel-style = Stílus
     .anchor-gap = Hézag a panel és a képernyő szélei között
-    .dock-anchor-gap = Hézag a dokkoló és a képernyő szélei között
+    .dock-anchor-gap = Hézag a dokk és a képernyő szélei között
     .extend = Panel kinyújtása a képernyő széléig
-    .dock-extend = Dokkoló kinyújtása a képernyő széléig
+    .dock-extend = Dokk kinyújtása a képernyő széléig
     .appearance = Megjelenés
     .size = Méret
     .background-opacity = Háttér átlátszósága
 
 panel-applets = Konfiguráció
-    .dock-desc = Konfiguráld a dokkoló kisalkalmazásait.
-    .desc = Konfiguráld a panel kisalkalmazásait.
+    .dock-desc = A dokk kisalkalmazásainak konfigurálása.
+    .desc = A panel kisalkalmazásainak konfigurálása.
 
 panel-missing = A panel konfigurációja hiányzik
     .desc = A panel konfigurációs fájlja hiányzik egyéni konfiguráció használata miatt vagy mert a fájl megsérült.
@@ -341,7 +341,7 @@ panel-missing = A panel konfigurációja hiányzik
 
 ## Desktop: Dock
 
-dock = Dokkoló
+dock = Dokk
     .desc = Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz.
 
 ## Desktop: Window management
@@ -390,8 +390,8 @@ workspaces-orientation = Munkaterületek tájolása
     .vertical = Függőleges
     .horizontal = Vízszintes
 
-hot-corner = Forró sarok
-    .top-left-corner = A munkaterületek bal felső forró sarkának engedélyezése
+hot-corner = Aktív sarok
+    .top-left-corner = A munkaterületek bal felső aktív sarkának engedélyezése
 
 ## Displays
 
@@ -404,7 +404,7 @@ color = Szín
     .temperature = Színhőmérséklet
 
 display = Kijelzők
-    .desc = Kijelzők kezelése, grafikus módváltás és éjszakai fény.
+    .desc = Kijelzők kezelése és éjszakai fény.
     .arrangement = Kijelző elrendezése
     .arrangement-desc = Húzd a kijelzőket az átrendezésükhöz.
     .enable = Kijelző engedélyezése
@@ -795,7 +795,7 @@ formatting = Formátum
     .paper = Papír
 
 preferred-languages = Preferált nyelvek
-    .desc = A nyelvek sorrendje határozza meg, hogy melyik nyelvet használja az asztali környezet. A módosítások a következő bejelentkezéskor lépnek életbe.
+    .desc = A nyelvek sorrendje határozza meg, hogy melyik nyelvet használja a felhasználói felület. A módosítások a következő bejelentkezéskor lépnek életbe.
 
 add-language = Nyelv hozzáadása
     .context = Nyelv hozzáadása
@@ -826,10 +826,10 @@ default-apps = Alapértelmezett alkalmazások
 startup-apps = Indítási alkalmazások
     .desc = Azoknak az alkalmazásoknak a beállítása, amelyek bejelentkezéskor elindulnak.
     .add = Alkalmazás hozzáadása
-    .user = Felhasználói alkalmazások
-    .user-description = Ezek az alkalmazások a jelenlegi felhasználó bejelentkezésekor indulnak el.
+    .user = Bejelentkezéskor indított alkalmazások
+    .none = Nincs indítási alkalmazás hozzáadva
     .remove-dialog-title = { $name } eltávolítása?
-    .remove-dialog-description = Biztosan el akarod távolítani ezt az indítási alkalmazások közül?
+    .remove-dialog-description = Biztosan el akarod távolítani ezt az indítási alkalmazást?
     .search-for-application = Alkalmazás keresése
 
 ## Applications: Legacy Applications
