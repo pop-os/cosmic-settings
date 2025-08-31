@@ -9,7 +9,7 @@
 
 pub mod app;
 use std::str::FromStr;
-
+pub mod sway;
 pub use app::{Message, SettingsApp};
 pub mod config;
 

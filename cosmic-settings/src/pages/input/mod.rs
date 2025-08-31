@@ -1,6 +1,6 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
-
+use tracing::info;
 use crate::app;
 use cosmic::{
     Task,
@@ -16,6 +16,8 @@ use tracing::error;
 pub mod keyboard;
 pub mod mouse;
 pub mod touchpad;
+pub mod sway;
+use swayipc::{Connection as SwayConnection};
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -42,6 +44,7 @@ pub struct Page {
 
     // Touchpad
     touchpad_primary_button: cosmic::widget::segmented_button::SingleSelectModel,
+    connection : SwayConnection,
 }
 
 fn get_config<T: Default + serde::de::DeserializeOwned>(
@@ -70,6 +73,7 @@ impl Default for Page {
         let mut touchpad_primary_button = mouse::default_primary_button();
         let idx = input_touchpad.left_handed.unwrap_or(false) as u16;
         touchpad_primary_button.activate_position(idx);
+        let connection = SwayConnection::new().expect("Failed Connection to Sway IPC");
 
         Self {
             config,
@@ -81,6 +85,7 @@ impl Default for Page {
 
             // Touchpad
             touchpad_primary_button,
+            connection
         }
     }
 }
@@ -100,6 +105,10 @@ impl Page {
 
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Task<app::Message> {
+        // let mut connection = &mut self.connection;
+        if let Err(err) = sway::execute_sway_pointer_commands(&message, self) {
+            tracing::warn!(?err, "Failed to execute Sway keyboard command");
+        }
         match message {
             Message::SetAcceleration(value, touchpad) => {
                 let profile = if value {

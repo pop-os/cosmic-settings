@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 pub mod shortcuts;
-
+pub mod sway;
+use tracing::info;
 use std::cmp;
 
 use cosmic::{
@@ -19,6 +20,7 @@ use cosmic_settings_page::{self as page, Section, section};
 use itertools::Itertools;
 use slab::Slab;
 use slotmap::{DefaultKey, Key, SlotMap};
+use swayipc::Connection as SwayConnection;
 
 static COMPOSE_OPTIONS: &[(&str, &str)] = &[
     // ("Left Alt", "compose:lalt"), XXX?
@@ -110,13 +112,14 @@ pub struct Page {
     active_layouts: Vec<DefaultKey>,
     expanded_source_popover: Option<DefaultKey>,
     show_extended_input_sources: bool,
+    connection: SwayConnection,
 }
 
 impl Default for Page {
     fn default() -> Self {
         let config =
             cosmic_config::Config::new(COSMIC_COMP_CONFIG, COSMIC_COMP_CONFIG_VERSION).unwrap();
-
+        let connection = SwayConnection::new().expect("Failed Connection to Sway IPC");
         Self {
             entity: page::Entity::null(),
             context: None,
@@ -127,6 +130,7 @@ impl Default for Page {
             keyboard_config: KeyboardConfig::default(),
             input_source_search: String::new(),
             show_extended_input_sources: false,
+            connection: connection,
             config,
         }
     }
@@ -440,6 +444,11 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
+        // Execute Sway commands if we're running under Sway
+        if let Err(err) = sway::execute_sway_keyboard_commands(&message, self) {
+            tracing::warn!(?err, "Failed to execute Sway keyboard command");
+        }
+        
         match message {
             Message::InputSourceSearch(search) => {
                 self.input_source_search = search;
