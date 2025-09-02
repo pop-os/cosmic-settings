@@ -28,10 +28,7 @@ pub fn load_font_families() -> (Vec<Arc<str>>, Vec<Arc<str>>) {
         font_system.raw().db().faces().fold(
             (Vec::new(), Vec::new()),
             |(mut interface, mut mono), face| {
-                if face.stretch != fontdb::Stretch::Normal
-                    || face.weight != fontdb::Weight::NORMAL
-                    || face.style != fontdb::Style::Normal
-                {
+                if face.stretch != fontdb::Stretch::Normal || face.style != fontdb::Style::Normal {
                     return (interface, mono);
                 }
 
