@@ -30,10 +30,12 @@ network-and-wireless = Netværk & trådløst
 no-networks = Der blev ikke fundet nogen netværk.
 no-vpn = Ingen VPN-forbindelser tilgængelige.
 password = Adgangskode
+password-confirm = Godkend Adgangskode
 remove = Fjern
 settings = Indstillinger
 username = Brugernavn
 visible-networks = Synlige Netværk
+identity = Identitet
 
 Auth-dialog = Godkendelse Påkrævet
     .vpn-description = Indtast brugernavnet og adgangskoden, der kræves af VPN-tjenesten.
@@ -103,10 +105,12 @@ online-accounts = Online konti
 
 # Bluetooth
 
+activate = Aktiver
 confirm = Bekræft
+enable = Enable
 
 bluetooth = Bluetooth
-    .desc = Administrer Bluetooth-enheder
+    .desc = Administrer Bluetooth enheder
     .status = This system is visible as { $aliases } while Bluetooth settings are open.
     .connected = Tilsluttet
     .connecting = Tilslutter
@@ -115,7 +119,9 @@ bluetooth = Bluetooth
     .disconnect = Afbryd forbindelsen
     .forget = Glem
     .dbus-error = Der opstod en fejl under interaktion med DBus: { $why }
-    .show-device-without-name = Vis enheder uden navn
+    .disabled = Bluetooth-tjenesten er deaktiveret
+    .inactive = Bluetooth-tjenesten er ikke aktiv
+    .unknown = Bluetooth-tjenesten kunne ikke aktiveres. Er BlueZ installeret?
 
 bluetooth-paired = Tidligere forbundne enheder
     .connect = Tilslut
@@ -127,6 +133,49 @@ bluetooth-confirm-pin = Bekræft Bluetooth PIN-kode
 bluetooth-available = Enheder i nærheden
 
 bluetooth-adapters = Bluetooth Enheder
+
+## Accessibility
+
+accessibility = Tilgængelighed
+    .vision = Syn
+    .on = Til
+    .off = Fra
+    .unavailable = Ikke tilgængelig
+    .screen-reader = Skærmlæser
+    .high-contrast = Høj kontrast
+    .invert-colors = Inverter farver
+    .color-filters = Farvefiltre
+
+hearing = Hørelse
+    .mono = Afspil stereolyd som mono
+
+default = Standard
+magnifier = Forstørrelsesglas
+    .controls = Eller brug disse genveje: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} for at zoome ind,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} for at zoome ud,
+        }
+        Super + scroll med din mus
+    .scroll_controls = Aktivér zoom med mus eller touchpad med Super + Scroll
+    .show_overlay = Vis forstørrelsesglas-overlay
+    .increment = Zoom-trin
+    .signin = Start forstørrelsesglas ved login
+    .applet = Skift forstørrelsesglas til/fra i panelets applet
+    .movement = Forstørret visning bevæger sig
+    .continuous = Kontinuerligt med markøren
+    .onedge = Når markøren når kanten
+    .centered = For at holde markøren centreret
+color-filter = Farvefiltertype
+    .unknown = Ukendt filter aktivt
+    .greyscale = Gråtoner
+    .deuteranopia = Grøn/Rød (grøn-svaghed, Deuteranopia)
+    .protanopia = Rød/Grøn (rød-svaghed, Protanopia)
+    .tritanopia = Blå/Gul (blå-svaghed, Tritanopia)
 
 ## Desktop
 
@@ -154,10 +203,13 @@ fit-to-screen = Tilpas til Skærm
 open-new-folder = Åben ny mappe
 recent-folders = Seneste Mapper
 
-x-minutes = { $number } minutter
-x-hours = { $number ->
-    [1] 1 time
-    *[other] { $number } timer
+x-minutes = { $number } { $number ->
+    [one] minut
+    *[other] minutter
+}
+x-hours = { $number } { $number ->
+    [one] time
+    *[other] timer
 }
 never = Aldrig
 
@@ -223,14 +275,14 @@ interface-density = Grænsefladerdensitet
 
 window-management-appearance = Window Management
     .active-hint = Aktiv vinduestip størrelse
-    .gaps = Gaps around tiled windows
+    .gaps = Mellemrum omkring flisevinduer
 
 ### Experimental
 
-experimental-settings = Experimental Settings
-icons-and-toolkit = Icons and toolkit theming
-interface-font = System font
-monospace-font = Monospace font
+experimental-settings = Eksperimentelle Indstillinger
+icons-and-toolkit = Ikoner og toolkit tema
+interface-font = System skrifttype
+monospace-font = Monospace skrifttype
 
 ## Desktop: Notifikationer
 
@@ -303,6 +355,8 @@ super-key = Super tast handling
     .applications = Åben Applikationer
     .disable = Deaktiver
 
+edge-gravity = Flydende vinduer bevæger sig mod nærmeste kant
+
 window-controls = Vinduesstyring
     .maximize = Vis maksimer knap
     .minimize = Vis minimer knap
@@ -360,6 +414,7 @@ display = Displays
     .refresh-rate = Opdateringshastighed
     .resolution = Opløsning
     .scale = Skallér
+    .additional-scale-options = Ydeligere skalerings indstillinger
 
 mirroring = Spejling
     .id = Spejling { $id }
@@ -380,9 +435,15 @@ night-light = Natlys
 
 orientation = Orientering
     .standard = Standard
-    .rotate-90 = Roter 90
-    .rotate-180 = Roter 180
-    .rotate-270 = Roter 270
+    .rotate-90 = Roter 90°
+    .rotate-180 = Roter 180°
+    .rotate-270 = Roter 270°
+
+vrr = Variable refresh rate
+    .enabled = Slå til
+    .force = Altid
+    .auto = Automatisk
+    .disabled = Deaktiveret
 
 scheduling = Planlægning
     .manual = Manuel planlægning
@@ -392,12 +453,6 @@ dialog = Dialog
     .keep-changes = Behold ændringer
     .change-prompt = Ændringer af indstillinger vil automatisk vende tilbage om { $time } sekunder.
     .revert-settings = Gendan indstillinger
-
-legacy-app-scaling = X11 Vinduessystem Applikationsskalering
-    .scaled-by-system = Skalér alle X11 applikationer
-    .system-description = X11 applikationer vil fremstå slørede på HiDPI-skærme.
-    .scaled-natively = Render X11 applikationer i naturlig opløsning
-    .native-description = X11 applikationer, der ikke understøtter skalering, vil være små, når HiDPI-skærme er i brug. Aktiver for spil at bruge den fulde skærmopløsning.
 
 ## Sound
 
@@ -410,6 +465,8 @@ sound-output = Udgang
     .level = Udgangsniveau
     .config = Konfiguration
     .balance = Balance
+    .left = Venstre
+    .right = Højre
 
 sound-input = Input
     .volume = Input Lydstyrke
@@ -516,6 +573,13 @@ keyboard-typing-assist = Indtastning
     .repeat-rate = Gentagelseshastighed
     .repeat-delay = Gentagelsesforsinkelse
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Tilstand ved start
+    .last-boot = Sidste start
+    .on = Til
+    .off = Fra
+    .set = Set numlock start tilstand
+
 added = Tilføjet
 type-to-search = Skriv for at søge...
 show-extended-input-sources = Vis udvidede inputkilder
@@ -531,6 +595,7 @@ command = Kommando
 custom = Brugerdefineret
 debug = Debug
 disabled = Deaktiveret
+input-source-switch = Skift inputkilde for tastatursprog
 migrate-workspace-prev = Migrer arbejdsområdet til tidligere output
 migrate-workspace-next = Migrer arbejdsområdet til næste output
 migrate-workspace = Migrer arbejdsområdet til output { $direction ->
@@ -579,6 +644,7 @@ nav-shortcuts = Navigation
 manage-windows = Administrer vinduer
     .close = Luk vindue
     .maximize = Maksimér vindue
+    .fullscreen = Fuldskærm vindue
     .minimize = Minimér vindue
     .resize-inwards = Ændr størrelsen på vinduet indad
     .resize-outwards = Ændr størrelsen på vinduet udad
@@ -620,18 +686,21 @@ system-shortcut = System
     .keyboard-brightness-down = Reducer tastaturets lysstyrke
     .keyboard-brightness-up = Øg tastaturets lysstyrke
     .launcher = Åbn launcher
+    .log-out = Log ud
     .lock-screen = Lås skærmen
     .mute = Slå lydudgang fra
     .mute-mic = Slår mikrofonindgangen fra
     .play-pause = Afspil/Pause
     .play-next = Næste nummer
     .play-prev = Forrige nummer
+    .poweroff = Luk ned
     .screenshot = Tag et skærmbillede
     .terminal = Åbn en terminal
     .volume-lower = Sænk lydudgangs lydstyrken
     .volume-raise = Øg lydudgangs lydstyrken
     .web-browser = Åbner en webbrowser
     .window-switcher = Skift mellem åbne vinduer
+    .window-switcher-previous = Skift mellem åbne vinduer omvendt
     .workspace-overview = Åbn oversigten over arbejdsområdet
 
 window-tiling = Vinduesfliser
@@ -645,6 +714,9 @@ window-tiling = Vinduesfliser
 
 replace-shortcut-dialog = Erstat Genvej?
     .desc = { $shortcut } bruges af { $name }. Hvis du erstatter det, { $name } vil blive deaktiveret.
+
+zoom-in = Zoom Ind
+zoom-out = Zoom Ud
 
 ## Input: Mouse
 
@@ -730,6 +802,59 @@ add-language = Tilføj sprog
 install-additional-languages = Installer yderligere sprog
 region = Region
 
+## Applications
+
+applications = Applikationer
+
+## Applications: Default Applications
+
+default-apps = Standardapplikationer
+    .desc = Standard webbrowser, mailklient, filhåndtering og andre applikationer.
+    .web-browser = Webbrowser
+    .file-manager = Filhåndtering
+    .mail-client = Mailklient
+    .music = Musik
+    .video = Video
+    .photos = Billeder
+    .calendar = Kalender
+    .terminal = Terminal
+    .other-associations = Andre tilknytninger
+    .text-editor = Tekstredigering
+
+## Applications: Startup Applications
+
+startup-apps = Startapplikationer
+    .desc = Konfigurer applikationer der starter ved login.
+    .add = Tilføj app
+    .user = Applikationer der åbnes ved login
+    .none = Ingen startapplikationer tilføjet
+    .remove-dialog-title = Fjern { $name }?
+    .remove-dialog-description = Er du sikker på, at du vil fjerne denne startapplikation?
+    .search-for-application = Søg efter applikation
+
+## Applications: Legacy Applications
+
+legacy-applications = X11 applikationskompatibilitet
+    .desc = Skalering af X11 vinduessystemapplikationer og globale genveje.
+
+legacy-app-global-shortcuts = Globale genveje i X11-applikationer
+    .desc = Globale genveje tillader tastetryk og museklik udført i applikationer at blive genkendt af andre applikationer, f.eks. til push-to-talk eller push-to-mute. Som standard er dette deaktiveret i X11-applikationer for at forhindre, at andre applikationer kan overvåge tastatur- og museevents, der indeholder følsomme oplysninger.
+    .none = Ingen taster
+    .modifiers = Modifikatortaster (Super, Shift, Control, Alt)
+    .combination = Alle taster, mens modifikatortasterne Super, Control eller Alt holdes nede
+    .all = Alle taster
+    .mouse = Museklik i X11-applikationer
+
+legacy-app-scaling = Skalering af X11 vinduessystemapplikationer
+    .scaled-gaming = Optimer til spil og fuldskærmsapps
+    .gaming-description = X11-applikationer kan fremstå lidt større eller mindre sammenlignet med Wayland-apps.
+    .scaled-applications = Optimer til applikationer
+    .applications-description = Spil og fuldskærms X11-apps matcher måske ikke din skærmopløsning.
+    .scaled-compatibility = Maksimal kompatibilitetstilstand
+    .compatibility-description = X11-applikationer kan se slørede ud på HiDPI-skærme.
+    .preferred-display = Foretrukken skærm til spil og fuldskærms X11-applikationer
+    .no-display = Ingen
+
 ## System
 
 system = System & Konti
@@ -766,4 +891,18 @@ firmware = Firmware
 ## System: Brugere
 
 users = Brugere
-    .desc = Autentificering og brugerkonti.
+    .desc = Godkendelse og brugerkonti.
+    .admin = Administrator
+    .standard = Standard
+    .profile-add = Vælg profilbillede
+
+administrator = Administrator
+    .desc = Administratorer kan ændre indstillinger for alle brugere samt tilføje og fjerne andre brugere.
+
+add-user = Tilføj bruger
+change-password = Skift adgangskode
+remove-user = Fjern bruger
+full-name = Fulde navn
+invalid-username = Ugyldigt brugernavn.
+password-mismatch = Adgangskode og bekræftelse skal være ens.
+save = Gem
