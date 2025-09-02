@@ -39,7 +39,7 @@ identity = Tożsamość
 
 auth-dialog = Konieczne uwierzytelnienie
     .vpn-description = Wprowadź nazwę użytkownika i hasło wymagane przez usługę VPN.
-    .wifi-description = Wprowadź hasło lub klucz szyfrowania. Możesz też połączyć się, używajac przycisku „WPS” na routerze.
+    .wifi-description = Wprowadź hasło lub klucz szyfrowania. Możesz też połączyć się, używając przycisku „WPS” na routerze.
 
 forget-dialog = Chcesz zapomnieć o tej sieci Wi-Fi?
     .description = Będziesz musiał(a) wprowadzić hasło jeszcze raz, aby ponownie użyć tej sieci Wi-Fi.
@@ -61,7 +61,7 @@ network-device-state =
     .unplugged = Odłączono kabel
 
 remove-connection-dialog = Usunąć profil połączenia?
-    .vpn-description = Będziesz musiał(a) wprowadzić hasło jeszcze raz, aby ponownie użyć tej siecii.
+    .vpn-description = Będziesz musiał(a) wprowadzić hasło jeszcze raz, aby ponownie użyć tej sieci.
     .wired-description = Będziesz musiał(a) utworzyć profil jeszcze raz, aby ponownie użyć tej sieci Wi-Fi.
 
 vpn = VPN
@@ -88,8 +88,8 @@ vpn-error = Błąd VPN
 wired = Przewodowe
     .adapter = Adapter przewodowy { $id }
     .connections = Połączenia przewodowe
-    .devices = Urządzenia przeowodowe
-    .remove = Remove connection profile
+    .devices = Urządzenia przewodowe
+    .remove = Usuń profil połączenia
 
 wifi = Wi-Fi
     .adapter = Adapter Wi-Fi { $id }
@@ -105,7 +105,7 @@ online-accounts = Konta online
 
 # Bluetooth
 
-activate =  Aktywuj
+activate = Aktywuj
 confirm = Potwierdź
 enable = Włącz
 
@@ -161,7 +161,7 @@ magnifier = Lupa
                 {$zoom_out} aby oddalić,
         }
         Super+Scroll
-    .scroll_controls = Aktywuj przybliżanie myszą lub touchpadem za pomocą Super + Scroll
+    .scroll_controls = Aktywuj przybliżanie myszą lub touchpadem za pomocą Super + Scroll
     .show_overlay = Pokaż Nakładkę Lupy
     .increment = Inkrementacja przybliżenia
     .signin = Uruchom lupę przy logowaniu
@@ -338,7 +338,7 @@ panel-applets = Konfiguracja
     .desc = Konfiguracja apletów panelu.
 
 panel-missing = Brakuje Konfiguracji Panelu
-    .desc = Brakuje pliku konfiguracji panelu, albo z powodu użycia spersonalizowanej konfiguracji, albo plik jest uszkodzony.
+    .desc = Brakuje pliku konfiguracji panelu albo z powodu użycia spersonalizowanej konfiguracji, albo plik jest uszkodzony.
     .fix = Przywróć ustawienia domyślne
 
 ## Desktop: Dock
@@ -357,7 +357,7 @@ super-key = Klawisz Super
     .applications = Otwórz aplikacje
     .disable = Wyłącz
 
-edge-gravity = Pływające okna są przyciągane do pobliskich krawędzi
+edge-gravity = Pływające okna są przyciągane do pobliskich krawędzi
 
 window-controls = Sterowanie oknami
     .maximize = Pokaż przycisk maksymalizacji
@@ -408,7 +408,7 @@ color = Kolor
 display = Wyświetlacz
     .desc = Zarządzaj wyświetlaczami, zmianami kart graficznych i nocnym światłem
     .arrangement = Układ wyświetlaczy
-    .arrangement-desc = Przeciągaj wyświetlacze by zmienić układ.
+    .arrangement-desc = Przeciągaj wyświetlacze, aby zmienić układ
     .enable = Włącz wyświetlacz
     .external = { $size } { $output } Zewnętrzny Wyświetlacz
     .laptop = { $size } Wyświetlacz Laptopa
@@ -421,7 +421,7 @@ display = Wyświetlacz
 mirroring = Lustrzane Odbicie
     .id = Lustrzane Odbicie { $id }
     .dont = Nie stosuj Lustrzanego Odbicia
-    .mirror = Zastosuj Lustrzene Odbicie na { $display }
+    .mirror = Zastosuj Lustrzane Odbicie na { $display }
     .project = Rzutuj na { $display ->
         [all] wszystkie wyświetlacze
         *[other] { $display }
@@ -530,7 +530,7 @@ power-mode = Profil zasilania
   .balanced-desc = Wysoka wydajność i średnie zużycie baterii.
   .performance = Tryb wysokiej wydajności
   .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
-  .no-backend = Nie znaleziono backendu. Zainstaluj system76-power lub power-profiles-daemon.
+  .no-backend = Nie znaleziono silnika. Zainstaluj system76-power lub power-profiles-daemon.
 
 power-saving = Opcje Oszczędzania Energii
     .turn-off-screen-after = Wyłącz ekran po
@@ -568,9 +568,9 @@ long = Długo
 keyboard = Klawiatura
     .desc = Wprowadzanie danych, przełączanie, wprowadzanie znaków specjalnych i skróty na klawiaturze.
 
-keyboard-sources = Żródła wprowadzania danych
-    .desc = Żródła wprowadzania danych można zmienić naciskając kombinację klawiszy Super i Spacja. Może być to spersonalizowane w ustawieniach skrótów klawiaturowych.
-    .move-up = Przesuń w górę
+keyboard-sources = Źródła wprowadzania danych
+    .desc = Źródła wprowadzania danych można zmienić, naciskając kombinację klawiszy Super i Spacja. Może być to spersonalizowane w ustawieniach skrótów klawiaturowych.
+    .move-up = Przesuń w górę
     .move-down = Przesuń w dół
     .settings = Ustawienia
     .view-layout = Pokaż układ klawiatury
@@ -591,7 +591,7 @@ keyboard-numlock-boot = Numlock
     .last-boot = Taki jak ostatnio
     .on = Włącz
     .off = Wyłącz
-    .set = Ustaw stan numlocka podczas uruchamiania
+    .set = Ustaw stan Numlocka podczas uruchamiania
 
 added = Dodano
 type-to-search = Naciśnij by wyszukać…
@@ -628,7 +628,7 @@ type-key-combination = Wpisz kombinację klawiszy
 custom-shortcuts = Własne skróty klawiszowe
     .add = Dodaj skrót klawiszowy
     .context = Dodaj własny skrót klawiszowy
-    .none = Nie masz własych skrótów klawiszowych
+    .none = Nie masz własnych skrótów klawiszowych
 
     modified = Zmodyfikowano { $count }
 
@@ -682,12 +682,12 @@ move-windows = Przemieszczanie okien
         [above] wyżej
     }
     .workspace-num = Przenieś okno do obszaru roboczego { $num }
-    .prev-workspace = Przenieś okno do poprz. obszaru roboczego
-    .next-workspace = Przenieś okno do nast. obszaru roboczego
-    .last-workspace = Przenieś okno do ostat. obszaru roboczego
-    .next-display = Przenieś okno ma nast. wyświetlacz
-    .prev-display = Przenieś okno na poprz. wyświetlacz
-    .send-to-prev-workspace = Przenieś okno do poprzedeniego obszaru roboczego
+    .prev-workspace = Przenieś okno do poprzedniego obszaru roboczego
+    .next-workspace = Przenieś okno do następnego obszaru roboczego
+    .last-workspace = Przenieś okno do ostatniego obszaru roboczego
+    .next-display = Przenieś okno na następny wyświetlacz
+    .prev-display = Przenieś okno na poprzedni wyświetlacz
+    .send-to-prev-workspace = Przenieś okno do poprzedniego obszaru roboczego
     .send-to-next-workspace = Przenieś okno do następnego obszaru roboczego
 
 system-shortcut = System
@@ -700,7 +700,7 @@ system-shortcut = System
     .launcher = Otwórz program startowy
     .log-out = Wyloguj się
     .lock-screen = Zablokuj ekran
-    .mute = Wycisz dzwięk wyjścia
+    .mute = Wycisz dźwięk wyjścia
     .mute-mic = Wycisz wejście mikrofonu
     .play-pause = Odtwarzaj/Zatrzymaj
     .play-next = Następny utwór
@@ -741,10 +741,10 @@ mouse = Myszka
 
 click-behavior = Funkcjonowanie kliknięć
     .click-finger = Drugi przycisk uzyskujemy kliknięciem dwoma palcami, a środkowy przycisk trzema
-    .button-areas = Drugi przycisk uzyskujemy kliknięciem w prawy dolny róg, a środkowy przycisk kliknięciem w środek dołu
+    .button-areas = Drugi przycisk uzyskujemy kliknięciem prawy dolny róg, a środkowy przycisk kliknięciem środek dołu
 
-pinch-to-zoom = Uszczypnij by przybliżyć
-    .desc = Zbliż dwa palce do siebie by przybliżyć zawartość, w aplikacjach używających przybliżenia.
+pinch-to-zoom = Uszczypnij, by przybliżyć
+    .desc = Zbliż dwa palce do siebie, by przybliżyć zawartość, w aplikacjach używających przybliżenia.
 
 tap-to-click = Dotknij, aby kliknąć
     .desc = Włącza klikanie przez dotknięcie jednym palcem dla głównego przycisku, dwoma palcami dla drugiego przycisku i trzema palcami dla środkowego przycisku.
@@ -807,7 +807,7 @@ formatting = Formatowanie
     .paper = Papier
 
 preferred-languages = Preferowane języki
-    .desc = Kolejność języków określa który język jest używany podczas tłumaczenia. Zmiany wejdą w życie podczas kolejnego logowania.
+    .desc = Kolejność języków określa, który język jest używany podczas tłumaczenia. Zmiany wejdą w życie podczas kolejnego logowania.
 
 add-language = Dodaj język
     .context = Dodaj Język
@@ -841,7 +841,7 @@ startup-apps = Aplikacje Startowe
     .user = Aplikacje dla konkretnego użytkownika
     .user-description = Aplikacje te uruchomią się po zalogowaniu przez obecnego użytkownika.
     .remove-dialog-title = Czy usunąć { $name }?
-    .remove-dialog-description = Czy jesteś pewien, że chcesz usunąć tą aplikację startową?
+    .remove-dialog-description = Czy jesteś pewien, że chcesz usunąć tę aplikację startową?
     .search-for-application = Wyszukaj aplikację
 
 ## Applications: Legacy Applications
@@ -849,11 +849,11 @@ startup-apps = Aplikacje Startowe
 legacy-applications = Kompatybilność Aplikacji X11
     .desc = Skalowanie i globalne skróty klawiszowe w aplikacjach systemu okien X11.
 
-legacy-app-global-shortcuts = Globalne Skróty Kalwiszowe Aplikacji X11
-    .desc = Globalne skróty umożliwiają by naciśnięcia klawiszy lub przycisków myszy w aplikacjach były rozpoznawane przez inne aplikacje do między innymi funkcjonalności jak naciśnij-by-rozmawiać lub naciśnij-by-wyciszyć. Domyślnie jest to zablokowane w aplikacjach X11 by nie miały dostępu do śledzenia naciśnięć klawiszy i przyciśnięć myszy w aplikacjach mogących zawierać poufne informacje.
+legacy-app-global-shortcuts = Globalne Skróty Klawiszowe Aplikacji X11
+    .desc = Globalne skróty umożliwiają by naciśnięcia klawiszy lub przycisków myszy w aplikacjach były rozpoznawane przez inne aplikacje do między innymi funkcjonalności jak naciśnij-by-rozmawiać lub naciśnij-by-wyciszyć. Domyślnie jest to zablokowane w aplikacjach X11, by nie miały dostępu do śledzenia naciśnięć klawiszy i przyciśnięć myszy w aplikacjach mogących zawierać poufne informacje.
     .none = Żadne przyciski
-    .modifiers = Modifikatory (Super, Shift, Control, Alt)
-    .combination = Wszystkie przyciski kiedy modyfikatory Super, Control lub Alt są wciśnięte
+    .modifiers = Modyfikatory (Super, Shift, Control, Alt)
+    .combination = Wszystkie przyciski, kiedy modyfikatory Super, Control lub Alt są wciśnięte
     .all = Wszystkie przyciski
     .mouse = Naciśnięcia przycisków myszy w aplikacjach X11
 
@@ -862,7 +862,7 @@ legacy-app-scaling = Skalowanie aplikacji systemu okien X11
     .gaming-description = Aplikacje X11 mogą być nieco mniejsze/większe w porównaniu z aplikacjami Wayland
     .scaled-applications = Zoptymalizuj dla aplikacji
     .applications-description = Gry i aplikacje pełnoekranowe X11 mogą nie zgadzać się z rozdzielczością twojego ekranu
-    .scaled-compatibility = Tryb maksymalnej kompatynilności
+    .scaled-compatibility = Tryb maksymalnej kompatybilności
     .compatibility-description = Aplikacje X11 mogą być rozmazane na wyświetlaczach HiDPI.
     .preferred-display = Preferowany wyświetlacz dla gier i aplikacji pełnoekranowych X11
     .no-display = Brak
@@ -897,7 +897,7 @@ about-related = Pokrewne ustawienia
 
 ## System: Firmware
 
-firmware = Firmaware
+firmware = Firmware
     .desc = Szczegóły firmware
 
 ## System: Users
