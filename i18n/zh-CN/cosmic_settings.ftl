@@ -59,6 +59,7 @@ network-device-state =
     .unknown = 未知状态
     .unmanaged = 未管理
     .unplugged = 网线已拔出
+
 remove-connection-dialog = 移除连接配置？
     .vpn-description = 将来要使用这个网络时需要重新输入密码。
     .wired-description = 将来要使用这个配置时需要重新创建。
@@ -135,7 +136,7 @@ bluetooth-adapters = 蓝牙适配器
 
 ## Accessibility
 
-accessibility = 辅助功能
+accessibility = 无障碍
     .vision = 视觉
     .on = 开启
     .off = 关闭
@@ -169,7 +170,6 @@ magnifier = 放大镜
     .continuous = 跟随指针连续移动
     .onedge = 当指针到达边缘时
     .centered = 保持指针居中
-
 color-filter = 色彩滤镜类型
     .unknown = 未知滤镜已激活
     .greyscale = 灰度
@@ -203,9 +203,12 @@ fit-to-screen = 适应屏幕
 open-new-folder = 打开新文件夹
 recent-folders = 最近的文件夹
 
-x-minutes = { $number } 分钟
+x-minutes = { $number } { $number ->
+    [one] 分钟
+    *[other] minutes
+}
 x-hours = { $number ->
-    [1] 1 小时
+    [one] 小时
     *[other] { $number } 小时
 }
 never = 从不
@@ -390,7 +393,7 @@ workspaces-orientation = 工作区方向
 hot-corner = 热角
     .top-left-corner = 启用左上角热角以打开工作区
 
-## Desktop: Display
+## Display
 
 -requires-restart = 需要重启
 
@@ -401,7 +404,7 @@ color = 颜色
     .temperature = 色温
 
 display = 显示
-    .desc = 管理显示器、图形切换和夜光
+    .desc = 管理显示器和夜灯
     .arrangement = 显示器排列
     .arrangement-desc = 拖动显示器来重新排列。
     .enable = 启用显示器
@@ -462,8 +465,8 @@ sound-output = 输出
     .level = 输出电平
     .config = 配置
     .balance = 平衡
-    .left = 左声道
-    .right = 右声道
+    .left = 左
+    .right = 右
 
 sound-input = 输入
     .volume = 输入音量
@@ -641,6 +644,7 @@ nav-shortcuts = 导航快捷键
 manage-windows = 管理窗口
     .close = 关闭窗口
     .maximize = 最大化窗口
+    .fullscreen = 窗口全屏
     .minimize = 最小化窗口
     .resize-inwards = 向内调整窗口大小
     .resize-outwards = 向外调整窗口大小
@@ -689,6 +693,7 @@ system-shortcut = 系统快捷键
     .play-pause = 播放/暂停
     .play-next = 下一曲
     .play-prev = 上一曲
+    .poweroff = 关机
     .screenshot = 截图
     .terminal = 打开终端
     .volume-lower = 降低音量
@@ -790,7 +795,7 @@ formatting = 格式设置
     .paper = 纸张
 
 preferred-languages = 首选语言
-    .desc = 语言顺序决定了桌面翻译使用的语言。更改将在下次登录时生效。
+    .desc = 语言的顺序决定了用户界面使用的语言。更改在下次登录时生效。
 
 add-language = 添加语言
     .context = 添加语言
@@ -818,13 +823,13 @@ default-apps = 默认应用程序
 
 ## Applications: Startup Applications
 
-startup-apps = 启动应用程序
+startup-apps = 自动启动应用程序
     .desc = 配置登录时运行的应用程序。
     .add = 添加应用程序
-    .user = 用户特定的应用程序
-    .user-description = 这些应用程序将在您登录当前用户时启动。
+    .user = 登录时启动的应用程序
+    .none = 未添加自动启动应用程序
     .remove-dialog-title = 移除 { $name } ？
-    .remove-dialog-description = 您确定要将其从启动应用程序中移除吗？
+    .remove-dialog-description = 您确定要删除此自动启动应用程序吗？
     .search-for-application = 搜索应用程序
 
 ## Applications: Legacy Applications
