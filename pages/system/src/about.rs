@@ -119,8 +119,6 @@ pub fn architecture(bump: &Bump, arch: &mut String) {
 }
 
 pub fn hardware_model(bump: &Bump, hardware_model: &mut String) {
-    hardware_model.push_str(&Product::name().unwrap());
-
     let buffer = &mut bumpalo::collections::Vec::new_in(bump);
 
     if let Some(mut sys_vendor) = read_to_string(SYS_VENDOR, buffer) {
@@ -153,7 +151,7 @@ pub fn hardware_model(bump: &Bump, hardware_model: &mut String) {
         }
     } else {
         // simple fallback to sysinfo if DMI information is not available
-        hardware_model.push_str(&Product::name().unwrap());
+        hardware_model.push_str(&Product::name().unwrap_or("".to_string()));
     }
 }
 
@@ -195,7 +193,7 @@ pub fn processor_name(bump: &Bump, name: &mut String) {
         }
     }
 
-    // fallback to sysinfo if cpuinfo is not present (e.g. asahi linux on M series macs)
+    // fallback to sysinfo if /proc/cpuinfo is not present
     let s =
         System::new_with_specifics(RefreshKind::nothing().with_cpu(CpuRefreshKind::everything()));
     name.push_str(s.cpus().into_iter().nth(0).unwrap().brand());
