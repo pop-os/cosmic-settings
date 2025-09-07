@@ -1709,7 +1709,6 @@ dependencies = [
  "smithay-client-toolkit",
  "static_init",
  "sunrise",
- "sysinfo",
  "tachyonix",
  "timedate-zbus",
  "tokio",
