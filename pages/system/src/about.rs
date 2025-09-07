@@ -7,6 +7,8 @@ use std::{collections::HashSet, ffi::OsStr, io::Read};
 use concat_in_place::strcat;
 use const_format::concatcp;
 
+use sysinfo::{Product, System, RefreshKind, CpuRefreshKind};
+
 const DMI_DIR: &str = "/sys/devices/virtual/dmi/id/";
 const BOARD_NAME: &str = concatcp!(DMI_DIR, "board_name");
 const BOARD_VERSION: &str = concatcp!(DMI_DIR, "board_version");
@@ -118,6 +120,7 @@ pub fn architecture(bump: &Bump, arch: &mut String) {
 
 pub fn hardware_model(bump: &Bump, hardware_model: &mut String) {
     let buffer = &mut bumpalo::collections::Vec::new_in(bump);
+
     if let Some(mut sys_vendor) = read_to_string(SYS_VENDOR, buffer) {
         sys_vendor = sys_vendor.trim();
 
@@ -146,6 +149,10 @@ pub fn hardware_model(bump: &Bump, hardware_model: &mut String) {
                 }
             }
         }
+    }
+    else {
+        // fallback to sysinfo
+        hardware_model.push_str(&Product::name().unwrap());
     }
 }
 
@@ -186,6 +193,12 @@ pub fn processor_name(bump: &Bump, name: &mut String) {
             }
         }
     }
+
+    // fallback to sysinfo
+    let s = System::new_with_specifics(
+        RefreshKind::nothing().with_cpu(CpuRefreshKind::everything()),
+    );
+    name.push_str(s.cpus().into_iter().nth(0).unwrap().brand());
 }
 
 pub fn read_to_string<'a, P: AsRef<OsStr>>(
