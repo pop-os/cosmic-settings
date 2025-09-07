@@ -1709,7 +1709,7 @@ dependencies = [
  "smithay-client-toolkit",
  "static_init",
  "sunrise",
- "sysinfo 0.37.0",
+ "sysinfo",
  "tachyonix",
  "timedate-zbus",
  "tokio",
@@ -1808,7 +1808,7 @@ dependencies = [
  "concat-in-place",
  "const_format",
  "memchr",
- "sysinfo 0.36.1",
+ "sysinfo",
 ]
 
 [[package]]
@@ -7344,20 +7344,6 @@ name = "sysinfo"
 version = "0.36.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "252800745060e7b9ffb7b2badbd8b31cfa4aa2e61af879d0a3bf2a317c20217d"
-dependencies = [
- "libc",
- "memchr",
- "ntapi",
- "objc2-core-foundation",
- "objc2-io-kit",
- "windows 0.61.3",
-]
-
-[[package]]
-name = "sysinfo"
-version = "0.37.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07cec4dc2d2e357ca1e610cfb07de2fa7a10fc3e9fe89f72545f3d244ea87753"
 dependencies = [
  "libc",
  "memchr",
