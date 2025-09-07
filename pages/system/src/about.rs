@@ -7,8 +7,6 @@ use std::{collections::HashSet, ffi::OsStr, io::Read};
 use concat_in_place::strcat;
 use const_format::concatcp;
 
-use sysinfo::{CpuRefreshKind, Product, RefreshKind, System};
-
 const DMI_DIR: &str = "/sys/devices/virtual/dmi/id/";
 const BOARD_NAME: &str = concatcp!(DMI_DIR, "board_name");
 const BOARD_VERSION: &str = concatcp!(DMI_DIR, "board_version");
@@ -151,7 +149,7 @@ pub fn hardware_model(bump: &Bump, hardware_model: &mut String) {
         }
     } else {
         // simple fallback to sysinfo if DMI information is not available
-        hardware_model.push_str(&Product::name().unwrap_or("".to_string()));
+        hardware_model.push_str(&sysinfo::Product::name().unwrap_or("".to_string()));
     }
 }
 
@@ -195,7 +193,7 @@ pub fn processor_name(bump: &Bump, name: &mut String) {
 
     // fallback to sysinfo if /proc/cpuinfo is not present
     let s =
-        System::new_with_specifics(RefreshKind::nothing().with_cpu(CpuRefreshKind::everything()));
+        sysinfo::System::new_with_specifics(sysinfo::RefreshKind::nothing().with_cpu(sysinfo::CpuRefreshKind::everything()));
     name.push_str(s.cpus().into_iter().nth(0).unwrap().brand());
 }
 
