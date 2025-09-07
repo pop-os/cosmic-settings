@@ -5,6 +5,7 @@ Name[pl]=Ustawienia COSMIC
 Name[pt]=Configurações
 Name[hu]=COSMIC Beállítások
 Name[pt_BR]=Configurações
+Name[sk]=Nastavenia COSMIC
 Type=Application
 Exec=cosmic-settings
 Terminal=false
