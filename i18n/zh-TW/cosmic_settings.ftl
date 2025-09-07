@@ -30,10 +30,12 @@ network-and-wireless = 網路與無線
 no-networks = 找不到網路
 no-vpn = 無可用的 VPN 連線
 password = 密碼
+password-confirm = 確認密碼
 remove = 移除
 settings = 設定
 username = 使用者名稱
 visible-networks = 可見的網路
+identity = 身分
 
 auth-dialog = 需要驗證
     .vpn-description = 請輸入 VPN 服務所需的使用者名稱及密碼。
@@ -67,7 +69,7 @@ vpn = VPN
     .error = 新增 VPN 設定失敗
     .remove = 移除連線設定檔
     .select-file = 選擇 VPN 配置檔案
-    
+
 vpn-error = VPN 錯誤
     .config = 新增 VPN 設定失敗
     .connect = 無法連線到 VPN
@@ -103,10 +105,12 @@ online-accounts = 線上帳號
 
 # Bluetooth
 
+activate = 啟用
 confirm = 確認
+enable = 啟用
 
-bluetooth = 藍芽
-    .desc = 管理藍芽設備
+bluetooth = 藍牙
+    .desc = 管理藍牙設備
     .status = 當藍牙設定開啟時，此系統顯示為 { $aliases }。
     .connected = 已連線
     .connecting = 連線中
@@ -115,6 +119,9 @@ bluetooth = 藍芽
     .disconnect = 中斷連線
     .forget = 忘記
     .dbus-error = 與 DBus 互動時發生錯誤：{ $why }
+    .disabled = 藍牙服務已停用
+    .inactive = 藍牙服務未啟用
+    .unknown = 無法啟用藍牙服務。是否已安裝 BlueZ？
 
 bluetooth-paired = 先前連線過的裝置
     .connect = 連線
@@ -125,7 +132,7 @@ bluetooth-confirm-pin = 確認藍牙PIN碼
 
 bluetooth-available = 附近的裝置
 
-bluetooth-adapters = 藍芽接收器
+bluetooth-adapters = 藍牙接收器
 
 ## Accessibility
 
@@ -134,7 +141,15 @@ accessibility = 無障礙功能
     .on = 開啟
     .off = 關閉
     .unavailable = 無法使用
+    .screen-reader = 螢幕閱讀器
     .high-contrast = 高對比模式
+    .invert-colors = 反相顏色
+    .color-filters = 濾色鏡
+
+hearing = 聽覺
+    .mono = 將立體聲音訊作為單聲道播放
+
+default = 預設
 magnifier = 放大鏡
     .controls = 或使用這些快捷鍵: { $zoom_in ->
              [zero] {""}
@@ -142,10 +157,12 @@ magnifier = 放大鏡
                 {$zoom_in} 放大,
         }{ $zoom_out ->
              [zero] {""}
-            *[other] {""} 
+            *[other] {""}
                 {$zoom_out} 縮小,
         }
         Super + 滾動滑鼠
+    .scroll_controls = 使用 Super + 滾動啟用滑鼠或觸控板縮放
+    .show_overlay = 顯示放大鏡浮層
     .increment = 放大增量
     .signin = 登入時啟動放大鏡
     .applet = 在面板的小程式中切換放大鏡開/關
@@ -153,6 +170,12 @@ magnifier = 放大鏡
     .continuous = 跟隨指標連續移動
     .onedge = 指標到達邊緣時移動
     .centered = 保持指標置中
+color-filter = 濾色鏡類型
+    .unknown = 未知的濾鏡已啟用
+    .greyscale = 灰階
+    .deuteranopia = 綠/紅（綠色弱，Deuteranopia）
+    .protanopia = 紅/綠（紅色弱，Protanopia）
+    .tritanopia = 藍/黃（藍色弱，Tritanopia）
 
 ## Desktop
 
@@ -180,10 +203,13 @@ fit-to-screen = 適應螢幕
 open-new-folder = 開啟新的資料夾
 recent-folders = 最近使用的資料夾
 
-x-minutes = { $number } 分鐘
-x-hours = { $number ->
-    [1] 1 小時
-    *[other] { $number } 小時
+x-minutes = { $number } { $number ->
+    [one] 分鐘
+    *[other] 分鐘
+}
+x-hours = { $number } { $number ->
+    [one] 小時
+    *[other] 小時
 }
 never = 從不
 
@@ -197,8 +223,8 @@ app-background = 應用程式背景
 auto = 自動
 close = 關閉
 color-picker = 調色盤
-copy-to-clipboard = 複製到剪貼簿
 copied-to-clipboard = 已複製到剪貼簿
+copy-to-clipboard = 複製到剪貼簿
 dark = 夜色
 export = 匯出
 hex = Hex
@@ -286,7 +312,7 @@ small = 小
 start-segment = 起始位置
 
 panel-appearance = 外觀
-    .match = 匹配桌布主題
+    .match = 符合桌布主題
     .light = 淺色
     .dark = 深色
 
@@ -409,9 +435,9 @@ night-light = 夜間模式
 
 orientation = 螢幕方向
     .standard = 橫式
-    .rotate-90 = 旋轉 90
-    .rotate-180 = 旋轉 180
-    .rotate-270 = 旋轉 270
+    .rotate-90 = 旋轉 90°
+    .rotate-180 = 旋轉 180°
+    .rotate-270 = 旋轉 270°
 
 vrr = 可變刷新率
     .enabled = 已啟用
@@ -428,12 +454,6 @@ dialog = 對話框
     .change-prompt = 設定變更將在 { $time } 秒後自動還原。
     .revert-settings = 還原設定
 
-legacy-applications = X11 視窗系統應用程式縮放
-    .scaled-by-system = 縮放所有 X11 應用程式
-    .system-description = X11 應用程式在 HiDPI 螢幕上會顯示模糊。
-    .scaled-natively = 以原生解析度渲染 X11 應用程式
-    .native-description = 不支援縮放的 X11 應用程式在使用 HiDPI 顯示器時會顯示很小。啟用此選項可讓遊戲使用完整的螢幕解析度。
-
 ## Sound
 
 sound = 音效
@@ -444,7 +464,9 @@ sound-output = 輸出
     .device = 輸出裝置
     .level = 音量大小
     .config = 設定
-    .balance = 設定
+    .balance = 平衡
+    .left = 左
+    .right = 右
 
 sound-input = 輸入
     .volume = 音量
@@ -452,7 +474,7 @@ sound-input = 輸入
     .level = 音量大小
 
 sound-alerts = 警示音
-    .volume = 警示音量
+    .volume = 音量
     .sound = 警示聲音
 
 sound-applications = 程式音效
@@ -480,7 +502,7 @@ battery = 電池
   }
   .less-than-minute = 小於一分鐘
   .and = 和
-  .remaining-time = { $time } 還剩 { $action ->
+  .remaining-time = { $time } 直到 { $action ->
         [full] 充滿
        *[other] 電量耗盡
    }
@@ -498,7 +520,7 @@ power-mode = 電源模式
     .no-backend = 找不到後端。請安裝 system76-power 或 power-profiles-daemon。
 
 power-saving = 省電選項
-    .turn-off-screen-after = 關閉螢幕之後
+    .turn-off-screen-after = 閒置多久後關閉螢幕
     .auto-suspend = 自動休眠
     .auto-suspend-ac = 插電時自動休眠
     .auto-suspend-battery = 使用電池時自動休眠
@@ -547,7 +569,7 @@ keyboard-special-char = 特殊輸入
     .compose = 組合鍵
     .caps = 大寫鎖定鍵
 
-keyboard-typing-assist = 鍵盤輸入輔助
+keyboard-typing-assist = 鍵盤輸入
     .repeat-rate = 重複率
     .repeat-delay = 重複延遲
 
@@ -567,7 +589,7 @@ show-extended-input-sources = 顯示延伸輸入來源
 keyboard-shortcuts = 鍵盤快捷鍵
     .desc = 顯示與修改快捷鍵
 
-add-keybinding = 新增鍵位綁定
+add-another-keybinding = 新增其他按鍵綁定
 cancel = 取消
 command = 命令
 custom = 自訂
@@ -622,6 +644,7 @@ nav-shortcuts = 導覽
 manage-windows = 管理視窗
     .close = 關閉視窗
     .maximize = 最大化視窗
+    .fullscreen = 全螢幕視窗
     .minimize = 最小化視窗
     .resize-inwards = 向內調整視窗大小
     .resize-outwards = 向外調整視窗大小
@@ -655,7 +678,7 @@ move-windows = 移動視窗
     .send-to-prev-workspace = 將視窗移動到上一個工作區
     .send-to-next-workspace = 將視窗移動到下一個工作區
 
-system-shortcut = 系統快捷
+system-shortcut = 系統
     .app-library = 開啟應用程式庫
     .brightness-down = 降低螢幕亮度
     .brightness-up = 增加螢幕亮度
@@ -670,6 +693,7 @@ system-shortcut = 系統快捷
     .play-pause = 播放/暫停
     .play-next = 下一首
     .play-prev = 上一首
+    .poweroff = 關機
     .screenshot = 截圖
     .terminal = 開啟終端機
     .volume-lower = 降低音量
@@ -714,13 +738,13 @@ tap-to-click = 觸擊
     .desc = 啟用單指觸擊視作滑鼠左鍵，雙指觸擊視作滑鼠右鍵，三指觸擊視作滑鼠中鍵
 
 touchpad = 觸控板
+    .acceleration = 啟用觸控板加速
     .desc = 觸控靈敏度、點擊和手勢
     .speed = 觸控靈敏度
-    .acceleration = 啟用觸控板加速
 
 ## Input: Gestures
 
-swiping = 觸控滑動
+gestures = 手勢
     .four-finger-down = 四指向下滑動
     .four-finger-left = 四指向左滑動
     .four-finger-right = 四指向右滑動
@@ -743,7 +767,7 @@ time = 時間和語言
 time-date = 日期和時間
     .desc = 時區、自動時間校正、時間格式設定
     .auto = 自動設定
-   .auto-ntp = 設定時區後，日期和時間將會自動更新。
+    .auto-ntp = 設定時區後，日期和時間將會自動更新。
 
 time-zone = 時區
     .auto = 自動設定時區
@@ -778,6 +802,59 @@ add-language = 新增語言
 install-additional-languages = 安裝其他語言
 region = 地區
 
+## Applications
+
+applications = 應用程式
+
+## Applications: Default Applications
+
+default-apps = 預設應用程式
+    .desc = 預設網頁瀏覽器、郵件用戶端、檔案瀏覽器和其他應用程式。
+    .web-browser = 網頁瀏覽器
+    .file-manager = 檔案管理員
+    .mail-client = 郵件用戶端
+    .music = 音樂
+    .video = 影片
+    .photos = 照片
+    .calendar = 行事曆
+    .terminal = 終端機
+    .other-associations = 其他關聯
+    .text-editor = 文字編輯器
+
+## Applications: Startup Applications
+
+startup-apps = 啟動應用程式
+    .desc = 設定登入時執行的應用程式。
+    .add = 新增應用程式
+    .user = 您登入時啟動的應用程式
+    .none = 未新增啟動應用程式
+    .remove-dialog-title = 移除 { $name }？
+    .remove-dialog-description = 您確定要移除此啟動應用程式嗎？
+    .search-for-application = 搜尋應用程式
+
+## Applications: Legacy Applications
+
+legacy-applications = X11 應用程式相容性
+    .desc = X11 視窗系統應用程式縮放和全域快捷鍵。
+
+legacy-app-global-shortcuts = X11 應用程式中的全域快捷鍵
+    .desc = 全域快捷鍵允許在應用程式中執行的按鍵和滑鼠按鈕事件被其他應用程式識別，用於「按鍵通話」或「按鍵靜音」等功能。預設情況下，此功能在 X11 應用程式中被停用，以確保其他應用程式無法監視包含敏感資訊的鍵盤和滑鼠事件。
+    .none = 無按鍵
+    .modifiers = 修飾鍵 (Super, Shift, Control, Alt)
+    .combination = 當按下 Super、Control 或 Alt 修飾鍵時的所有按鍵
+    .all = 所有按鍵
+    .mouse = X11 應用程式中的滑鼠按鈕事件
+
+legacy-app-scaling = X11 視窗系統應用程式縮放
+    .scaled-gaming = 為遊戲和全螢幕應用程式最佳化
+    .gaming-description = X11 應用程式可能比 Wayland 應用程式稍大/稍小。
+    .scaled-applications = 為應用程式最佳化
+    .applications-description = 遊戲和全螢幕 X11 應用程式可能不符合您的顯示器解析度。
+    .scaled-compatibility = 最大相容性模式
+    .compatibility-description = X11 應用程式在 HiDPI 螢幕上可能會出現模糊。
+    .preferred-display = 遊戲和全螢幕 X11 應用程式的偏好顯示器
+    .no-display = 無
+
 ## System
 
 system = 系統與帳戶
@@ -788,7 +865,7 @@ about = 關於
     .desc = 裝置名稱、硬體資訊、作業系統
 
 about-device = 裝置名稱
-    .desc = 此名稱用於顯示給其他網路或藍芽裝置
+    .desc = 此名稱用於顯示給其他網路或藍牙裝置
 
 about-hardware = 硬體
     .model = 硬體型號
@@ -823,20 +900,9 @@ administrator = 系統管理員
     .desc = 系統管理員可以變更所有使用者的設定，新增和移除其他使用者。
 
 add-user = 新增使用者
+change-password = 變更密碼
 remove-user = 移除使用者
 full-name = 姓名
-
-## System: Default Applications
-
-default-apps = 預設應用程式
-    .desc = 預設網頁瀏覽器、郵件用戶端、檔案瀏覽器和其他應用程式。
-    .web-browser = 網頁瀏覽器
-    .file-manager = 檔案管理員
-    .mail-client = 郵件用戶端
-    .music = 音樂
-    .video = 影片
-    .photos = 照片
-    .calendar = 行事曆
-    .terminal = 終端機
-    .other-associations = 其他關聯
-    .text-editor = 文字編輯器
+invalid-username = 無效的使用者名稱。
+password-mismatch = 密碼與確認密碼必須相符。
+save = 儲存
