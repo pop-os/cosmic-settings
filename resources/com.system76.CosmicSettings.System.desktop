@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=System & Accounts
+Name[sk]=Systém & Účty
 Name[zh_CN]=系统和账户
 Name[pl]=System i konta
 Name[hu]=Rendszer és fiókok
@@ -7,6 +8,7 @@ Name[pt]=Sistema e Contas
 Name[nl]=Systeem en gebruikersaccount
 Comment=
 Comment[nl]=Systeeminformatie, gebruikers en firmware
+Comment[sk]=Systémové informácie, používatelia a firmware
 Type=Settings
 Exec=cosmic-settings system
 Terminal=false
