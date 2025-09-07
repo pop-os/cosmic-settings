@@ -733,7 +733,7 @@ impl Page {
         self.active_display = output_id;
         self.config.refresh_rate = None;
         self.config.resolution = None;
-        self.config.vrr = output.adaptive_sync;
+        self.config.vrr = dbg!(output.adaptive_sync);
         self.config.scale = (output.scale * 100.0) as u32;
 
         self.cache.modes.clear();
@@ -1099,7 +1099,7 @@ impl Page {
 
                 task.arg("mode")
                     .arg("--adaptive-sync")
-                    .arg(format!("{}", mode))
+                    .arg(<&'static str>::from(mode))
                     .arg(name)
                     .arg(itoa::Buffer::new().format(current.size.0))
                     .arg(itoa::Buffer::new().format(current.size.1));

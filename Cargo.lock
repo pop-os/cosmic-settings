@@ -1617,7 +1617,7 @@ dependencies = [
 [[package]]
 name = "cosmic-randr"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-randr#a38d5fbd7f9747cd6f756160ec5c97852f5a8770"
+source = "git+https://github.com/pop-os/cosmic-randr#bce9cdf2d447508d4e2d54a2be4fcd738ab51df5"
 dependencies = [
  "cosmic-protocols",
  "futures-lite 2.6.1",
@@ -1633,7 +1633,7 @@ dependencies = [
 [[package]]
 name = "cosmic-randr-shell"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-randr#a38d5fbd7f9747cd6f756160ec5c97852f5a8770"
+source = "git+https://github.com/pop-os/cosmic-randr#bce9cdf2d447508d4e2d54a2be4fcd738ab51df5"
 dependencies = [
  "kdl",
  "slotmap",
@@ -2370,7 +2370,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -6731,7 +6731,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -6744,7 +6744,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.9.4",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -7417,7 +7417,7 @@ dependencies = [
  "getrandom 0.3.3",
  "once_cell",
  "rustix 1.0.8",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
