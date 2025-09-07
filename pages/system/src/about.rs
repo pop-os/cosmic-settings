@@ -118,7 +118,6 @@ pub fn architecture(bump: &Bump, arch: &mut String) {
 
 pub fn hardware_model(bump: &Bump, hardware_model: &mut String) {
     let buffer = &mut bumpalo::collections::Vec::new_in(bump);
-
     if let Some(mut sys_vendor) = read_to_string(SYS_VENDOR, buffer) {
         sys_vendor = sys_vendor.trim();
 
