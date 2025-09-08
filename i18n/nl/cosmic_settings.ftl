@@ -1,7 +1,7 @@
-app = COSMIC Instellingen
+app = COSMIC-instellingen
 
 dbus-connection-error = Kon geen verbinding maken met DBus
-ok = Oké
+ok = OK
 unknown = Onbekend
 
 number = { $number }
@@ -10,7 +10,7 @@ number = { $number }
 
 connections-and-profiles = { $variant ->
     [wired] Kabelverbindingen
-    [wifi] Wifiverbindingen
+    [wifi] Wifi-verbindingen
     [vpn] VPN-verbindingen
     *[other] Onbekende verbindingen
 } en verbindingsprofielen.
@@ -18,7 +18,7 @@ connections-and-profiles = { $variant ->
 add-network = Netwerk toevoegen
     .profile = Profiel toevoegen
 add-vpn = VPN toevoegen
-airplane-on = Vliegtuigmodus is ingeschakeld.
+airplane-on = Vliegtuigmodus staat aan.
 cable-unplugged = Kabel losgekoppeld
 connect = Verbinden
 connected = Verbonden
@@ -27,7 +27,7 @@ disconnect = Verbinden verbreken
 forget = Vergeten
 known-networks = Bekende netwerken
 network-and-wireless = Netwerk en wifi
-no-networks = Er zijn geen netwerken gevonden.
+no-networks = Geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
 password-confirm = Wachtwoord bevestigen
@@ -39,39 +39,39 @@ identity = Identiteit
 
 auth-dialog = Authenticatie vereist
     .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
-    .wifi-description = Voer het wachtwoord of de encryptiesleutel in. U kunt ook verbinden door op de "WPS"-knop op de router te drukken.
+    .wifi-description = Voer het wachtwoord of de encryptiesleutel in. U kunt ook verbinden door op de “WPS”-knop op de router te drukken.
 
-forget-dialog = Wifinetwerk vergeten?
-    .description = U moet opnieuw een wachtwoord invoeren om dit wifinetwerk in de toekomst te gebruiken.
-
+forget-dialog = Dit wifi-netwerk vergeten?
+    .description = U zal opnieuw een wachtwoord moeten invoeren als u dit wifi-netwerk in de toekomst gaat gebruiken.
+    
 network-device-state =
     .activated = Verbonden
-    .config = Verbinding maken...
-    .deactivating = Verbinding verbreken...
-    .disconnected = Verbinding is verbroken
+    .config = Verbinding maken…
+    .deactivating = Verbinding verbreken…
+    .disconnected = Verbinding verbroken
     .failed = Verbinding mislukt
-    .ip-check = Verbinding wordt gecontroleerd...
-    .ip-config =  IP- en routeringsinformatie wordt opgevraagd...
+    .ip-check = Verbinding controleren…
+    .ip-config =  IP- en routeringsinformatie opvragen…
     .need-auth = Vereist authenticatie
-    .prepare = Verbinding voorbereiden...
-    .secondaries = Wachten op secundaire verbinding...
+    .prepare = Verbinding voorbereiden…
+    .secondaries = Wachten op secundaire verbinding…
     .unavailable = Niet beschikbaar
     .unknown = Status onbekend
     .unmanaged = Onbeheerd
     .unplugged = Kabel losgekoppeld
 
 remove-connection-dialog = Verbindingsprofiel verwijderen?
-    .vpn-description =  Om dit netwerk in de toekomst te kunnen gebruiken, moet u opnieuw een wachtwoord invoeren.
-    .wired-description = U moet dit profiel opnieuw aanmaken om het in de toekomst te kunnen gebruiken.
+    .vpn-description =  U zal opnieuw een wachtwoord moeten invoeren als u dit netwerk in de toekomst gaat gebruiken.
+    .wired-description = U zal dit profiel opnieuw moeten aanmaken om het in de toekomst te kunnen gebruiken.
 
 vpn = VPN
     .connections = VPN-verbindingen
-    .error = Kon geen VPN-configuratie aanmaken
+    .error = Kon VPN-configuratie niet toevoegen
     .remove = Verbindingsprofiel verwijderen
-    .select-file = Selecteer VPN-configuratiebestand
+    .select-file = Selecteer een VPN-configuratiebestand
 
 vpn-error = VPN-fout
-    .config = Kon geen VPN-configuratie aanmaken
+    .config = Kon VPN-configuratie niet toevoegen
     .connect = VPN-verbinding mislukt
     .connection-editor =  Verbindingseditor mislukt
     .connection-settings = Het ophalen van instellingen voor actieve verbindingen is mislukt
