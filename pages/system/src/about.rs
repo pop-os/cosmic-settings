@@ -191,8 +191,9 @@ pub fn processor_name(bump: &Bump, name: &mut String) {
     }
 
     // fallback to sysinfo if /proc/cpuinfo is not present
-    let s =
-        sysinfo::System::new_with_specifics(sysinfo::RefreshKind::nothing().with_cpu(sysinfo::CpuRefreshKind::everything()));
+    let s = sysinfo::System::new_with_specifics(
+        sysinfo::RefreshKind::nothing().with_cpu(sysinfo::CpuRefreshKind::everything()),
+    );
     name.push_str(s.cpus().into_iter().nth(0).unwrap().brand());
 }
 
