@@ -62,14 +62,14 @@ debug = true
 # smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }
 
 [patch.'https://github.com/pop-os/cosmic-protocols']
-cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "408af98" }
-cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "408af98" }
+cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "6254f50" }
+cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "6254f50" }
 
 # [patch.'https://github.com/pop-os/cosmic-settings-daemon']
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/libcosmic']
+[patch.'https://github.com/pop-os/libcosmic']
 # libcosmic = { git = "https://github.com/pop-os/libcosmic//", rev = "8c4cb2e" }
 # cosmic-config = { git = "https://github.com/pop-os/libcosmic//", rev = "8c4cb2e" }
 # cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", rev = "8c4cb2e" }
@@ -84,4 +84,6 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
 
 [patch."https://github.com/smithay/client-toolkit.git"]
-sctk = { package = "smithay-client-toolkit", version = "=0.19.2" }
+sctk = { package = "smithay-client-toolkit", version = "=0.20.0" }
+[patch."https://github.com/pop-os/cosmic-protocols.git"]
+cctk = { git = "https://github.com/pop-os/cosmic-protocols//", package = "cosmic-client-toolkit", rev = "6254f50" }
