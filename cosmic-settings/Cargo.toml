@@ -24,13 +24,13 @@ cosmic-panel-config = { workspace = true, optional = true }
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
 cosmic-randr-shell.workspace = true
 cosmic-randr = { workspace = true, optional = true }
-cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true, branch = "keycode" }
+cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 # cosmic-settings-config = { path = "../../cosmic-settings-daemon/config", optional = true }
 cosmic-settings-page = { path = "../page" }
 cosmic-settings-subscriptions = { workspace = true, optional = true }
 cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
-cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true, branch = "keycode" }
+cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 # cosmic-settings-daemon-config = { path = "../../cosmic-settings-daemon/cosmic-settings-daemon-config", optional = true }
 derivative = "2.2.0"
 derive_setters = "0.1.8"

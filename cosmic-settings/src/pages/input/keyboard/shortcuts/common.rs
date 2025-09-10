@@ -325,7 +325,10 @@ impl Model {
                             self.editing = Some(binding_id);
                             shortcut.input.clear();
 
-                            return widget::text_input::focus(shortcut.id.clone());
+                            return Task::batch(vec![
+                                iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
+                                widget::text_input::focus(shortcut.id.clone())
+                            ]);
                         }
 
                         // Create a new input and focus it.
@@ -339,7 +342,10 @@ impl Model {
                             is_saved: false,
                         }));
 
-                        return widget::text_input::focus(id);
+                        return Task::batch(vec![
+                            iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
+                            widget::text_input::focus(id)
+                        ]);
                     }
                 }
             }
@@ -430,7 +436,11 @@ impl Model {
                     }
                 }
             }
-            ShortcutMessage::InputBinding(..) => {}
+            ShortcutMessage::InputBinding(bind_id, ..) => {
+                if self.editing.is_none() {
+                    return self.update(ShortcutMessage::EditBinding(bind_id, true));
+                }
+            }
             ShortcutMessage::ResetBindings => {
                 if let Some(short_id) = self.shortcut_context {
                     if let Some(model) = self.shortcut_models.get(short_id) {
@@ -731,6 +741,7 @@ fn context_drawer<'a>(
                 ShortcutMessage::EditBinding(bind_id, enable)
             })
             .select_on_focus(true)
+            .on_focus(ShortcutMessage::EditBinding(bind_id, true))
             .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
             .on_unfocus(ShortcutMessage::SubmitBinding(bind_id))
             .on_submit(move |_| ShortcutMessage::SubmitBinding(bind_id))

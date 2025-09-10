@@ -245,7 +245,8 @@ impl Page {
                     if self.add_shortcut.binding.keycode.is_none() && modifiers.is_empty() {
                         self.add_shortcut = Default::default();
                         self.add_shortcut = Default::default();
-                        self.model.on_enter();
+                        _ = self.model.on_enter();
+
                         return Task::batch(vec![
                             iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
                         ]);
@@ -378,6 +379,7 @@ impl Page {
                     self.add_shortcut.editing == Some(id),
                     move |enable| Message::KeyEditing(id, enable),
                 )
+                .on_focus(Message::KeyEditing(id, true))
                 .select_on_focus(true)
                 .padding([0, 12])
                 .on_input(move |input| Message::KeyInput(id, input))
@@ -491,7 +493,10 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
         _ = self.model.on_clear();
-        Task::none()
+        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(
+            false,
+        )
+        .discard()
     }
 
     #[cfg(feature = "wayland")]
@@ -511,7 +516,6 @@ impl page::Page<crate::pages::Message> for Page {
                         ..
                     }) => {
                         use cosmic::iced::keyboard::{Key, key::Named};
-
                         if matches!(
                             key,
                             Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
