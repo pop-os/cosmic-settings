@@ -155,7 +155,7 @@ impl Page {
                     self.add_shortcut(binding);
                 }
 
-                self.model.on_enter();
+                _ = self.model.on_enter();
             }
 
             Message::EditCombination => {
@@ -180,7 +180,7 @@ impl Page {
                     self.add_shortcut(binding);
 
                     if self.replace_dialog.is_empty() {
-                        self.model.on_enter();
+                        _ = self.model.on_enter();
                     }
                 }
             }
@@ -188,7 +188,7 @@ impl Page {
             Message::ReplaceCancel => {
                 _ = self.replace_dialog.pop();
                 if self.replace_dialog.is_empty() {
-                    self.model.on_enter();
+                    _ = self.model.on_enter();
                 }
             }
 
@@ -277,7 +277,7 @@ impl Page {
                 )
                 .select_on_focus(true)
                 .padding([0, 12])
-                .on_input(move |input| Message::KeyInput(id, input))
+                // .on_input(move |input| Message::KeyInput(id, input))
                 .on_submit(|_| Message::AddKeybinding)
                 .id(widget_id.clone())
                 .apply(widget::container)
@@ -381,13 +381,23 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
-        self.model.on_enter();
+        _ = self.model.on_enter();
         Task::none()
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        self.model.on_clear();
+        _ = self.model.on_clear();
         Task::none()
+    }
+
+    #[cfg(feature = "wayland")]
+    fn subscription(
+        &self,
+        core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<crate::pages::Message> {
+        self.model
+            .subscription(core)
+            .map(|m| crate::pages::Message::CustomShortcuts(Message::Shortcut(m)))
     }
 }
 
@@ -406,6 +416,7 @@ fn bindings(_defaults: &Shortcuts, keybindings: &Shortcuts) -> Slab<ShortcutMode
                 let new_binding = ShortcutBinding {
                     id: widget::Id::unique(),
                     binding: binding.clone(),
+                    pending: binding.clone(),
                     input: String::new(),
                     is_default: false,
                     is_saved: true,
