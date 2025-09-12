@@ -15,16 +15,14 @@ use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use eyre::Context;
-use fixed_decimal::FixedDecimal;
-use icu::calendar::DateTime;
-use icu::datetime::options::components::{self, Bag};
-use icu::datetime::options::length;
-use icu::datetime::{DateTimeFormatter, DateTimeFormatterOptions};
-use icu::decimal::FixedDecimalFormatter;
-use icu::decimal::options::FixedDecimalFormatterOptions;
 use icu::{
-    calendar::{types::IsoWeekday, week},
-    locid::Locale,
+    calendar::{types::Weekday, week},
+    datetime::{
+        DateTimeFormatter, DateTimeFormatterPreferences, fieldsets,
+        input::{Date, DateTime, Time},
+    },
+    decimal::{DecimalFormatter, input::Decimal},
+    locale::Locale,
 };
 use locales_rs as locale;
 use slotmap::{DefaultKey, SlotMap};
@@ -409,27 +407,19 @@ impl Page {
             .next()
             .unwrap_or("en_US");
 
-        let Ok(locale) = icu::locid::Locale::from_str(time_locale) else {
+        let Ok(locale) = Locale::from_str(time_locale) else {
             return String::new();
         };
 
-        let mut bag = Bag::empty();
-        bag.day = Some(components::Day::TwoDigitDayOfMonth);
-        bag.month = Some(components::Month::TwoDigit);
-        bag.year = Some(components::Year::Numeric);
+        let prefs = DateTimeFormatterPreferences::from(locale);
+        let dtf = DateTimeFormatter::try_new(prefs, fieldsets::YMD::medium()).unwrap();
 
-        let options = icu::datetime::DateTimeFormatterOptions::Components(bag);
+        let datetime = DateTime {
+            date: Date::try_new_gregorian(1776, 7, 4).unwrap(),
+            time: Time::try_new(12, 0, 0, 0).unwrap(),
+        };
 
-        let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), options).unwrap();
-
-        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 12, 0, 0)
-            .unwrap()
-            .to_iso()
-            .to_any();
-
-        dtf.format(&datetime)
-            .expect("can't format value")
-            .to_string()
+        dtf.format(&datetime).to_string()
     }
 
     fn formatted_dates_and_times(&self) -> String {
@@ -442,23 +432,19 @@ impl Page {
             .next()
             .unwrap_or("en_US");
 
-        let Ok(locale) = icu::locid::Locale::from_str(time_locale) else {
+        let Ok(locale) = Locale::from_str(time_locale) else {
             return String::new();
         };
 
-        let bag = length::Bag::from_date_time_style(length::Date::Long, length::Time::Medium);
-        let options = DateTimeFormatterOptions::Length(bag);
+        let prefs = DateTimeFormatterPreferences::from(locale);
+        let dtf = DateTimeFormatter::try_new(prefs, fieldsets::YMDT::long()).unwrap();
 
-        let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), options).unwrap();
+        let datetime = DateTime {
+            date: Date::try_new_gregorian(1776, 7, 4).unwrap(),
+            time: Time::try_new(13, 0, 0, 0).unwrap(),
+        };
 
-        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 13, 0, 0)
-            .unwrap()
-            .to_iso()
-            .to_any();
-
-        dtf.format(&datetime)
-            .expect("can't format value")
-            .to_string()
+        dtf.format(&datetime).to_string()
     }
 
     fn formatted_time(&self) -> String {
@@ -471,22 +457,19 @@ impl Page {
             .next()
             .unwrap_or("en_US");
 
-        let Ok(locale) = icu::locid::Locale::from_str(time_locale) else {
+        let Ok(locale) = Locale::from_str(time_locale) else {
             return String::new();
         };
 
-        let options = length::Bag::from_time_style(length::Time::Medium);
+        let prefs = DateTimeFormatterPreferences::from(locale);
+        let dtf = DateTimeFormatter::try_new(prefs, fieldsets::T::medium()).unwrap();
 
-        let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), options.into()).unwrap();
+        let datetime = DateTime {
+            date: Date::try_new_gregorian(1776, 7, 4).unwrap(),
+            time: Time::try_new(13, 0, 0, 0).unwrap(),
+        };
 
-        let datetime = DateTime::try_new_gregorian_datetime(1776, 7, 4, 13, 0, 0)
-            .unwrap()
-            .to_iso()
-            .to_any();
-
-        dtf.format(&datetime)
-            .expect("can't format value")
-            .to_string()
+        dtf.format(&datetime).to_string()
     }
 
     fn formatted_numbers(&self) -> String {
@@ -499,13 +482,12 @@ impl Page {
             .next()
             .unwrap_or("en_US");
 
-        let Ok(locale) = icu::locid::Locale::from_str(numerical_locale) else {
+        let Ok(locale) = Locale::from_str(numerical_locale) else {
             return String::new();
         };
 
-        let options = FixedDecimalFormatterOptions::default();
-        let formatter = FixedDecimalFormatter::try_new(&locale.into(), options).unwrap();
-        let mut value = FixedDecimal::from(123456789);
+        let formatter = DecimalFormatter::try_new(locale.into(), Default::default()).unwrap();
+        let mut value = Decimal::from(123456789);
         value.multiply_pow10(-2);
 
         formatter.format(&value).to_string()
@@ -967,24 +949,17 @@ fn get_default_24h(locale: String) -> bool {
         return false;
     };
 
-    let test_time = icu::calendar::DateTime::try_new_gregorian_datetime(2024, 1, 1, 13, 0, 0)
-        .unwrap()
-        .to_iso();
+    let test_time = DateTime {
+        date: Date::try_new_gregorian(2024, 1, 1).unwrap(),
+        time: Time::try_new(13, 0, 0, 0).unwrap(),
+    };
 
-    let bag = icu::datetime::options::length::Bag::from_time_style(
-        icu::datetime::options::length::Time::Medium,
-    );
-
-    let Ok(dtf) =
-        icu::datetime::DateTimeFormatter::try_new_experimental(&locale.into(), bag.into())
-    else {
+    let prefs = DateTimeFormatterPreferences::from(locale);
+    let Ok(dtf) = DateTimeFormatter::try_new(prefs, fieldsets::T::medium()) else {
         return false;
     };
 
-    let formatted = match dtf.format(&test_time.to_any()) {
-        Ok(formatted) => formatted.to_string(),
-        Err(_) => return false,
-    };
+    let formatted = dtf.format(&test_time).to_string();
 
     // If we see "13" in the output, it's 24-hour format
     // If we see "1" (but not "13"), it's 12-hour format
@@ -995,18 +970,18 @@ fn get_default_first_day(locale: String) -> usize {
     let Ok(locale) = parse_locale(locale) else {
         return 6;
     };
-    let Ok(week_calc) = week::WeekCalculator::try_new(&locale.into()) else {
+    let Ok(week_info) = week::WeekInformation::try_new(week::WeekPreferences::from(&locale)) else {
         return 6;
     };
 
-    match week_calc.first_weekday {
-        IsoWeekday::Monday => 0,
-        IsoWeekday::Tuesday => 1,
-        IsoWeekday::Wednesday => 2,
-        IsoWeekday::Thursday => 3,
-        IsoWeekday::Friday => 4,
-        IsoWeekday::Saturday => 5,
-        IsoWeekday::Sunday => 6,
+    match week_info.first_weekday {
+        Weekday::Monday => 0,
+        Weekday::Tuesday => 1,
+        Weekday::Wednesday => 2,
+        Weekday::Thursday => 3,
+        Weekday::Friday => 4,
+        Weekday::Saturday => 5,
+        Weekday::Sunday => 6,
     }
 }
 
