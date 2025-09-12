@@ -474,6 +474,9 @@ sound-input = Ulaz
     .device = Ulazni uređaj
     .level = Nivo ulaza
 
+amplification = Pojačavanje
+    .desc = Omogućava povećanje jačine zvuka do 150%.
+
 sound-alerts = Upozorenja
     .volume = Jačina zvuka upozorenja
     .sound = Zvuk upozorenja
