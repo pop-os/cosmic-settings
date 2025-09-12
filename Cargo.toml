@@ -1,14 +1,14 @@
 [workspace]
 members = ["cosmic-settings", "page", "pages/*"]
 default-members = ["cosmic-settings"]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
-rust-version = "1.85.0"
+rust-version = "1.85"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
-tokio = { version = "1.47.0", features = ["macros"] }
+tokio = { version = "1.47.1", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
 features = ["dbus-config", "multi-window", "winit", "tokio"]
@@ -58,22 +58,15 @@ debug = true
 # [patch.'https://github.com/pop-os/cosmic-text']
 # cosmic-text = { git = "https://github.com/pop-os/cosmic-text//", rev = "b017d7c" }
 
-# [patch.'https://github.com/smithay/client-toolkit/']
-# smithay-client-toolkit = { git = "https://github.com/smithay/client-toolkit//", rev = "c583de8" }
-
 [patch.'https://github.com/pop-os/cosmic-protocols']
-cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "408af98" }
-cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "408af98" }
+cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "6254f50" }
+cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "6254f50" }
 
 # [patch.'https://github.com/pop-os/cosmic-settings-daemon']
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
 
 # For development and testing purposes
 # [patch.'https://github.com/pop-os/libcosmic']
-# libcosmic = { git = "https://github.com/pop-os/libcosmic//", rev = "8c4cb2e" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", rev = "8c4cb2e" }
-# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", rev = "8c4cb2e" }
-# iced_futures = { git = "https://github.com/pop-os/libcosmic//", rev = "8c4cb2e" }
 # libcosmic = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
@@ -84,4 +77,4 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
 
 [patch."https://github.com/smithay/client-toolkit.git"]
-sctk = { package = "smithay-client-toolkit", version = "=0.19.2" }
+sctk = { package = "smithay-client-toolkit", version = "0.20.0" }
