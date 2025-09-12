@@ -473,6 +473,9 @@ sound-input = Input
     .device = Input device
     .level = Input level
 
+amplification = Amplification
+    .desc = Allows raising the volume to 150%.
+
 sound-alerts = Alerts
     .volume = Alerts volume
     .sound = Alerts sound
