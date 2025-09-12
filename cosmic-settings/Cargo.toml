@@ -91,8 +91,8 @@ num-derive = "0.4"
 pwhash = "1"
 
 [dependencies.icu]
-version = "1.5.0"
-features = ["experimental", "compiled_data", "icu_datetime_experimental"]
+version = "2.0.0"
+features = ["compiled_data"]
 
 [dependencies.i18n-embed]
 version = "0.16.0"

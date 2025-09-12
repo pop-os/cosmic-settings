@@ -14,9 +14,13 @@ use cosmic::{
 };
 use cosmic_settings_page::{self as page, Section, section};
 use icu::{
-    calendar::{DateTime, Iso, types::IsoWeekday, week},
-    datetime::DateTimeFormatter,
-    locid::Locale,
+    calendar::{Gregorian, types::Weekday, week},
+    datetime::{
+        DateTimeFormatter, DateTimeFormatterPreferences, fieldsets,
+        input::{Date, DateTime, Time},
+        options::TimePrecision,
+    },
+    locale::{Locale, preferences::extensions::unicode::keywords::HourCycle},
 };
 use slab::Slab;
 use slotmap::{Key, SlotMap};
@@ -43,7 +47,7 @@ pub struct Page {
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
     timezone_context: bool,
-    local_time: Option<DateTime<Iso>>,
+    local_time: Option<DateTime<Gregorian>>,
     timezone: Option<usize>,
     timezone_list: Vec<String>,
     timezone_search: String,
@@ -513,67 +517,51 @@ fn locale() -> Result<Locale, Box<dyn std::error::Error>> {
     Ok(locale)
 }
 
-fn format_date(date: &DateTime<Iso>, military: bool, show_seconds: bool) -> String {
+fn format_date(date: &DateTime<Gregorian>, military: bool, show_seconds: bool) -> String {
     let Ok(locale) = locale() else {
         return String::new();
     };
 
-    let mut bag = icu::datetime::options::components::Bag::empty();
+    let mut prefs = DateTimeFormatterPreferences::from(locale);
+    prefs.hour_cycle = Some(if military {
+        HourCycle::H23
+    } else {
+        HourCycle::H12
+    });
 
-    bag.year = Some(icu::datetime::options::components::Year::Numeric);
-    bag.day = Some(icu::datetime::options::components::Day::NumericDayOfMonth);
-    bag.month = Some(icu::datetime::options::components::Month::Long);
-    bag.hour = Some(icu::datetime::options::components::Numeric::Numeric);
-    bag.minute = Some(icu::datetime::options::components::Numeric::Numeric);
-    bag.second = show_seconds.then_some(icu::datetime::options::components::Numeric::Numeric);
-    bag.preferences = Some(icu::datetime::options::preferences::Bag::from_hour_cycle(
-        if military {
-            icu::datetime::options::preferences::HourCycle::H23
-        } else {
-            icu::datetime::options::preferences::HourCycle::H12
-        },
-    ));
+    let mut fs = fieldsets::YMDT::long();
+    if !show_seconds {
+        fs = fs.with_time_precision(TimePrecision::Minute);
+    }
 
-    let dtf = DateTimeFormatter::try_new_experimental(&locale.into(), bag.into()).unwrap();
+    let dtf = DateTimeFormatter::try_new(prefs, fs).unwrap();
 
-    dtf.format(&date.to_any())
-        .expect("can't format value")
-        .to_string()
+    dtf.format(date).to_string()
 }
 
-fn update_local_time() -> DateTime<Iso> {
+fn update_local_time() -> DateTime<Gregorian> {
     let now = chrono::Local::now();
 
-    DateTime::try_new_gregorian_datetime(
-        now.year(),
-        now.month() as u8,
-        now.day() as u8,
-        now.hour() as u8,
-        now.minute() as u8,
-        now.second() as u8,
-    )
-    .unwrap()
-    .to_iso()
+    DateTime {
+        date: Date::try_new_gregorian(now.year(), now.month() as u8, now.day() as u8).unwrap(),
+        time: Time::try_new(now.hour() as u8, now.minute() as u8, now.second() as u8, 0).unwrap(),
+    }
 }
 
 fn get_locale_default_24h() -> bool {
     let Ok(locale) = locale() else { return false };
 
-    let test_time = icu::calendar::DateTime::try_new_gregorian_datetime(2024, 1, 1, 13, 0, 0)
-        .unwrap()
-        .to_iso();
+    let test_time = DateTime {
+        date: Date::try_new_gregorian(2024, 1, 1).unwrap(),
+        time: Time::try_new(13, 0, 0, 0).unwrap(),
+    };
 
-    let bag = icu::datetime::options::length::Bag::from_time_style(
-        icu::datetime::options::length::Time::Medium,
-    );
-
-    let Ok(dtf) =
-        icu::datetime::DateTimeFormatter::try_new_experimental(&locale.into(), bag.into())
-    else {
+    let prefs = DateTimeFormatterPreferences::from(locale);
+    let Ok(dtf) = DateTimeFormatter::try_new(prefs, fieldsets::T::medium()) else {
         return false;
     };
 
-    let formatted = dtf.format(&test_time.to_any()).unwrap().to_string();
+    let formatted = dtf.format(&test_time).to_string();
 
     // If we see "13" in the output, it's 24-hour format
     // If we see "1" (but not "13"), it's 12-hour format
@@ -582,17 +570,17 @@ fn get_locale_default_24h() -> bool {
 
 fn get_locale_default_first_day() -> usize {
     let Ok(locale) = locale() else { return 6 };
-    let Ok(week_calc) = week::WeekCalculator::try_new(&locale.into()) else {
+    let Ok(week_info) = week::WeekInformation::try_new(week::WeekPreferences::from(&locale)) else {
         return 6;
     };
 
-    match week_calc.first_weekday {
-        IsoWeekday::Monday => 0,
-        IsoWeekday::Tuesday => 1,
-        IsoWeekday::Wednesday => 2,
-        IsoWeekday::Thursday => 3,
-        IsoWeekday::Friday => 4,
-        IsoWeekday::Saturday => 5,
-        IsoWeekday::Sunday => 6,
+    match week_info.first_weekday {
+        Weekday::Monday => 0,
+        Weekday::Tuesday => 1,
+        Weekday::Wednesday => 2,
+        Weekday::Thursday => 3,
+        Weekday::Friday => 4,
+        Weekday::Saturday => 5,
+        Weekday::Sunday => 6,
     }
 }
