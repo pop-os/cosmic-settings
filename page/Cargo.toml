@@ -5,10 +5,9 @@ edition = "2024"
 
 [dependencies]
 derive_setters = "0.1.8"
-regex = "1.11.1"
+regex = "1.11.2"
 slotmap = "1.0.7"
 libcosmic = { workspace = true }
-downcast-rs = "2.0.1"
-tokio.workspace = true
-url = "2.5.4"
-slab = "0.4.10"
+downcast-rs = "2.0.2"
+url = "2.5.7"
+slab = "0.4.11"

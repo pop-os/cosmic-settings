@@ -7,13 +7,11 @@ license = "GPL-3.0-only"
 [dependencies]
 accounts-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 anyhow = "1.0"
-as-result = "0.2.1"
-ashpd = { version = "0.11", default-features = false, features = [
+ashpd = { version = "0.12", default-features = false, features = [
     "tokio",
 ], optional = true }
-async-channel = "2.5.0"
-chrono = "0.4.41"
-clap = { version = "4.5.42", features = ["derive"] }
+chrono = "0.4.42"
+clap = { version = "4.5.47", features = ["derive"] }
 color-eyre = "0.6.5"
 cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
@@ -30,10 +28,8 @@ cosmic-settings-subscriptions = { workspace = true, optional = true }
 cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
-derivative = "2.2.0"
 derive_setters = "0.1.8"
 dirs = "6.0.0"
-downcast-rs = "2.0.1"
 eyre = "0.6.12"
 freedesktop-desktop-entry = "0.7.14"
 futures = "0.3.31"
@@ -47,20 +43,21 @@ image = { version = "0.25", default-features = false, features = [
     "webp",
     "hdr",
 ] }
-indexmap = "2.10.0"
+indexmap = "2.11.1"
 itertools = "0.14.0"
 itoa = "1.0.15"
 libcosmic.workspace = true
 locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", optional = true }
+# TODO: updating notify beyond this hangs the app
 notify = "6.1.1"
-regex = "1.11.1"
-ron = "0.10.1"
+regex = "1.11.2"
+ron = "0.11"
 rust-embed = "8.7.2"
 sctk = { workspace = true, optional = true }
 secure-string = "0.3.0"
 serde = { version = "1.0.219", features = ["derive"] }
-slab = "0.4.10"
+slab = "0.4.11"
 slotmap = "1.0.7"
 static_init = "1.0.4"
 sunrise = "2.1.0"
@@ -68,26 +65,24 @@ tachyonix = "0.3.1"
 timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 tokio = { workspace = true, features = ["fs", "io-util", "sync"] }
 tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
+tracing-subscriber = "0.3.20"
 udev = { version = "0.9.3", optional = true }
 upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-url = "2.5.4"
+url = "2.5.7"
 xkb-data = "0.2.1"
-zbus = { version = "5.9.0", default-features = false, features = [
+zbus = { version = "5.11.0", default-features = false, features = [
     "tokio",
 ], optional = true }
 zbus_polkit = { version = "5.0.0", optional = true }
 fontdb = "0.23.0"
-fixed_decimal = "0.5.6"
 mime = "0.3.17"
-rustix = { version = "1.0.8", features = ["process"] }
+rustix = { version = "1.1.2", features = ["process"] }
 gettext-rs = { version = "0.7.2", features = [
     "gettext-system",
 ], optional = true }
-async-fn-stream = "0.2.2"
+async-fn-stream = "0.3"
 num-traits = "0.2"
-num-derive = "0.4"
 pwhash = "1"
 
 [dependencies.icu]
