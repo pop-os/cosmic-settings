@@ -103,6 +103,8 @@ pub enum PageCommands {
     /// Sound settings page
     #[cfg(feature = "page-sound")]
     Sound,
+    /// Startup applications settings page
+    StartupApps,
     /// System & Accounts settings page
     System,
     /// Time & Language settings page
