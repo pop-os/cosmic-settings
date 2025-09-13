@@ -99,7 +99,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> Info {
-        page::Info::new("startup-apps", "system-reboot-symbolic")
+        page::Info::new("startup-apps", "preferences-startup-applications-symbolic")
             .title(fl!("startup-apps"))
             .description(fl!("startup-apps", "desc"))
     }

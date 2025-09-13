@@ -120,6 +120,7 @@ impl SettingsApp {
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             #[cfg(feature = "page-sound")]
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
+            PageCommands::StartupApps => self.pages.page_id::<applications::startup_apps::Page>(),
             PageCommands::System => self.pages.page_id::<system::Page>(),
             PageCommands::Time => self.pages.page_id::<time::Page>(),
             #[cfg(feature = "page-input")]
@@ -548,6 +549,12 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                crate::pages::Message::StartupApps(message) => {
+                    if let Some(page) = self.pages.page_mut::<applications::startup_apps::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 #[cfg(feature = "page-users")]
                 crate::pages::Message::User(message) => {
                     if let Some(page) = self.pages.page_mut::<system::users::Page>() {
@@ -635,12 +642,6 @@ impl cosmic::Application for SettingsApp {
                 #[cfg(feature = "page-networking")]
                 crate::pages::Message::Wired(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::wired::Page>() {
-                        return page.update(message).map(Into::into);
-                    }
-                }
-
-                crate::pages::Message::StartupApps(message) => {
-                    if let Some(page) = self.pages.page_mut::<applications::startup_apps::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
