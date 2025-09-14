@@ -473,6 +473,9 @@ sound-input = Entrada
     .device = Dispositivo de entrada
     .level = Nível de entrada
 
+amplification = Amplificação
+    .desc = Permite aumentar o volume até 150%.
+
 sound-alerts = Alertas
     .volume = Volume dos alertas
     .sound = Som dos alertas
