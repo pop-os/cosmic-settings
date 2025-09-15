@@ -64,13 +64,26 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
-        self.model.on_enter();
+        _ = self.model.on_enter();
         Task::none()
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        self.model.on_clear();
-        Task::none()
+        _ = self.model.on_clear();
+        cosmic::iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(
+            false,
+        )
+        .discard()
+    }
+
+    #[cfg(feature = "wayland")]
+    fn subscription(
+        &self,
+        core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<crate::pages::Message> {
+        self.model
+            .subscription(core)
+            .map(crate::pages::Message::TilingShortcuts)
     }
 }
 
