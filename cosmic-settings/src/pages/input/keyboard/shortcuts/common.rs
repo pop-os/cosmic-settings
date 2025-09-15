@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::app::ContextDrawer;
-use cosmic::iced::{Alignment, Length};
+use cosmic::iced::event::listen_with;
+use cosmic::iced::keyboard::key::Named;
+use cosmic::iced::keyboard::{Key, Location, Modifiers};
+use cosmic::iced::{self, Alignment, Length};
 use cosmic::widget::{self, button, icon, settings, text};
-use cosmic::{Apply, Element, Task, theme};
+use cosmic::{Apply, Element, Task, iced_winit, theme};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::shortcuts::{self, Action, Binding, Shortcuts};
 use cosmic_settings_page as page;
 use slab::Slab;
-use slotmap::Key;
+use slotmap::Key as SlotmapKey;
 use std::borrow::Cow;
 use std::str::FromStr;
 use std::{io, mem};
@@ -26,12 +29,18 @@ pub enum ShortcutMessage {
     ResetBindings,
     ShowShortcut(usize, String),
     SubmitBinding(usize),
+    Inhibited(bool),
+    ProtocolUnavailable,
+    ModifiersChanged(Modifiers),
+    KeyReleased(u32, Key, Location),
+    KeyPressed(u32, Key, Location, Modifiers),
 }
 
 #[derive(Debug)]
 pub struct ShortcutBinding {
     pub id: widget::Id,
     pub binding: Binding,
+    pub pending: Binding,
     pub input: String,
     pub is_default: bool,
     pub is_saved: bool,
@@ -67,6 +76,7 @@ impl ShortcutModel {
                     slab.insert(ShortcutBinding {
                         id: widget::Id::unique(),
                         binding: binding.clone(),
+                        pending: binding.clone(),
                         input: String::new(),
                         is_default,
                         is_saved: true,
@@ -150,6 +160,7 @@ impl Model {
     pub(super) fn config_add(&self, action: Action, binding: Binding) {
         let mut shortcuts = self.shortcuts_config();
         shortcuts.0.insert(binding, action);
+
         self.shortcuts_config_set(shortcuts);
     }
 
@@ -226,7 +237,7 @@ impl Model {
         None
     }
 
-    pub(super) fn on_enter(&mut self) {
+    pub(super) fn on_enter(&mut self) -> cosmic::Task<ShortcutMessage> {
         let mut shortcuts = self.config.get::<Shortcuts>("defaults").unwrap_or_default();
         self.defaults = shortcuts.clone();
 
@@ -240,6 +251,8 @@ impl Model {
         self.shortcut_models = (self.actions)(&self.defaults, &shortcuts);
         self.shortcut_context = None;
         self.editing = None;
+
+        return Task::none();
     }
 
     pub(super) fn on_context_drawer_close(&mut self) {
@@ -313,7 +326,10 @@ impl Model {
                             self.editing = Some(binding_id);
                             shortcut.input.clear();
 
-                            return widget::text_input::focus(shortcut.id.clone());
+                            return Task::batch(vec![
+                                iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
+                                widget::text_input::focus(shortcut.id.clone())
+                            ]);
                         }
 
                         // Create a new input and focus it.
@@ -321,16 +337,19 @@ impl Model {
                         self.editing = Some(model.bindings.insert(ShortcutBinding {
                             id: id.clone(),
                             binding: Binding::default(),
+                            pending: Binding::default(),
                             input: String::new(),
                             is_default: false,
                             is_saved: false,
                         }));
 
-                        return widget::text_input::focus(id);
+                        return Task::batch(vec![
+                            iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
+                            widget::text_input::focus(id)
+                        ]);
                     }
                 }
             }
-
             ShortcutMessage::ApplyReplace => {
                 if let Some((id, new_binding, ..)) = self.replace_dialog.take() {
                     if let Some(short_id) = self.shortcut_context {
@@ -368,11 +387,10 @@ impl Model {
                             }
                         }
 
-                        self.on_enter();
+                        _ = self.on_enter();
                     }
                 }
             }
-
             ShortcutMessage::CancelReplace => {
                 if let Some(((id, _, _, _), short_id)) =
                     self.replace_dialog.take().zip(self.shortcut_context)
@@ -385,7 +403,6 @@ impl Model {
                     }
                 }
             }
-
             ShortcutMessage::DeleteBinding(id) => {
                 if let Some(short_id) = self.shortcut_context {
                     if let Some(model) = self.shortcut_models.get_mut(short_id) {
@@ -398,41 +415,47 @@ impl Model {
                     }
                 }
             }
-
             ShortcutMessage::DeleteShortcut(id) => {
                 let model = self.shortcut_models.remove(id);
                 for (_, shortcut) in model.bindings {
                     self.config_remove(&shortcut.binding);
                 }
             }
-
             ShortcutMessage::EditBinding(id, enable) => {
+                if !enable && self.editing == Some(id) {
+                    self.editing = None;
+                    if let Some(short_id) = self.shortcut_context {
+                        if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                            if let Some(shortcut) = model.bindings.get_mut(id) {
+                                shortcut.pending = shortcut.binding.clone();
+                            }
+                        }
+                    }
+                    return Task::batch(vec![
+                        cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
+                    ]);
+                }
                 if let Some(short_id) = self.shortcut_context {
                     if let Some(model) = self.shortcut_models.get_mut(short_id) {
                         if let Some(shortcut) = model.bindings.get_mut(id) {
                             if enable {
                                 self.editing = Some(id);
                                 shortcut.input = shortcut.binding.to_string();
-                                return widget::text_input::select_all(shortcut.id.clone());
+                                return iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard();
                             } else if self.editing == Some(id) {
                                 self.editing = None;
+                                return iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard();
                             }
                         }
                     }
                 }
             }
-
-            ShortcutMessage::InputBinding(id, text) => {
-                if let Some(short_id) = self.shortcut_context {
-                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
-                        if let Some(shortcut) = model.bindings.get_mut(id) {
-                            shortcut.input = text;
-                        }
-                    }
+            ShortcutMessage::InputBinding(bind_id, ..) => {
+                if self.editing.is_none() {
+                    return self.update(ShortcutMessage::EditBinding(bind_id, true));
                 }
             }
-
-            // Removes all bindings from the active shortcut context, and reloads the shortcuts model.
             ShortcutMessage::ResetBindings => {
                 if let Some(short_id) = self.shortcut_context {
                     if let Some(model) = self.shortcut_models.get(short_id) {
@@ -449,10 +472,9 @@ impl Model {
                         }
                     }
 
-                    self.on_enter();
+                    _ = self.on_enter();
                 }
             }
-
             ShortcutMessage::ShowShortcut(id, description) => {
                 self.shortcut_context = Some(id);
                 self.shortcut_title = description;
@@ -472,11 +494,160 @@ impl Model {
 
                 return Task::batch(tasks);
             }
+            ShortcutMessage::SubmitBinding(_) => {}
+            ShortcutMessage::ProtocolUnavailable => {
+                tracing::error!("shortcut inhibit protocol is unavailable");
+            }
+            ShortcutMessage::Inhibited(v) => {
+                panic!("{}", v);
+            }
+            ShortcutMessage::ModifiersChanged(modifiers) => {
+                if let Some((short_id, id)) = self.shortcut_context.zip(self.editing) {
+                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                        if let Some(shortcut) = model.bindings.get_mut(id) {
+                            let mut cfg_modifiers =
+                                cosmic_settings_config::shortcuts::Modifiers::new();
+                            if modifiers.alt() {
+                                cfg_modifiers = cfg_modifiers.alt()
+                            }
+                            if modifiers.control() {
+                                cfg_modifiers = cfg_modifiers.ctrl()
+                            }
+                            if modifiers.shift() {
+                                cfg_modifiers = cfg_modifiers.shift()
+                            }
+                            if modifiers.logo() {
+                                cfg_modifiers = cfg_modifiers.logo()
+                            }
+                            shortcut.pending.modifiers = cfg_modifiers;
 
-            ShortcutMessage::SubmitBinding(id) => return self.submit_binding(id),
+                            if shortcut.pending.keycode.is_none() && modifiers.is_empty() {
+                                self.editing = None;
+                                shortcut.input = String::new();
+                                return Task::batch(vec![
+                                    cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
+                                    iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
+                                ]);
+                            }
+                            shortcut.input = shortcut.pending.to_string();
+                        }
+                    }
+                }
+            }
+            ShortcutMessage::KeyReleased(keycode, _, _) => {
+                if let Some((short_id, id)) = self.shortcut_context.zip(self.editing) {
+                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                        if let Some(shortcut) = model.bindings.get_mut(id) {
+                            // if the currently selected shortcut matches, finish selecting shortcut
+                            if shortcut.pending.key.is_some()
+                                && shortcut.pending.keycode.is_some_and(|k| k == keycode)
+                            {
+                                if shortcut.pending.modifiers
+                                    != cosmic_settings_config::shortcuts::Modifiers::new()
+                                {
+                                    shortcut.input = shortcut.pending.to_string();
+                                    // XX for now avoid applying the keycode
+                                    shortcut.binding.keycode = None;
+                                    return Task::batch(vec![
+                                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                                        self.submit_binding(id)
+                                    ]);
+                                }
+
+                                return Task::batch(vec![
+                                    cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
+                                    iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+            ShortcutMessage::KeyPressed(keycode, unmodified_keysym, location, modifiers) => {
+                if unmodified_keysym == Key::Named(Named::Escape) && modifiers.is_empty() {
+                    if let Some((short_id, id)) = self.shortcut_context.zip(self.editing) {
+                        if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                            if let Some(binding) = model.bindings.get_mut(id) {
+                                binding.reset();
+                                self.editing = None;
+                                return Task::batch(vec![
+                                    cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
+                                    iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
+                                ]);
+                            }
+                        }
+                    }
+                    return Task::none();
+                }
+                if let Some((short_id, id)) = self.shortcut_context.zip(self.editing) {
+                    if let Some(model) = self.shortcut_models.get_mut(short_id) {
+                        if let Some(shortcut) = model.bindings.get_mut(id) {
+                            shortcut.pending.keycode = Some(keycode);
+                            shortcut.pending.key =
+                                iced_winit::platform_specific::wayland::keymap::key_to_keysym(
+                                    unmodified_keysym,
+                                    location,
+                                );
+                        }
+                    }
+                }
+            }
         }
 
         Task::none()
+    }
+
+    #[cfg(feature = "wayland")]
+    pub(crate) fn subscription(
+        &self,
+        _core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<ShortcutMessage> {
+        if self.editing.is_some() {
+            listen_with(|event, _, _| match event {
+                iced::event::Event::Keyboard(iced::keyboard::Event::KeyPressed {
+                    key,
+                    physical_key,
+                    location,
+                    modifiers,
+                    ..
+                }) => {
+                    use cosmic::iced::keyboard::{Key, key::Named};
+
+                    if matches!(
+                        key,
+                        Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
+                    ) {
+                        return None;
+                    }
+                    cosmic::iced_winit::conversion::physical_to_scancode(physical_key)
+                        .map(|code| ShortcutMessage::KeyPressed(code, key, location, modifiers))
+                }
+                iced::event::Event::Keyboard(iced::keyboard::Event::KeyReleased {
+                    key,
+                    physical_key,
+                    location,
+                    ..
+                }) => {
+                    use cosmic::iced::keyboard::{Key, key::Named};
+
+                    if matches!(
+                        key,
+                        Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
+                    ) {
+                        return None;
+                    }
+                    cosmic::iced_winit::conversion::physical_to_scancode(physical_key)
+                        .map(|code| ShortcutMessage::KeyReleased(code, key, location))
+                }
+                iced::event::Event::Keyboard(iced::keyboard::Event::ModifiersChanged(e)) => {
+                    Some(ShortcutMessage::ModifiersChanged(e))
+                }
+
+                _ => None,
+            })
+        } else {
+            cosmic::iced::Subscription::none()
+        }
     }
 
     pub(super) fn view(&self) -> Element<ShortcutMessage> {
@@ -535,7 +706,6 @@ impl Model {
                 if let Some(model) = self.shortcut_models.get_mut(short_id) {
                     if let Some(shortcut) = model.bindings.get_mut(id) {
                         let prev_binding = mem::replace(&mut shortcut.binding, new_binding.clone());
-
                         shortcut.is_saved = true;
                         shortcut.input.clear();
 
@@ -544,7 +714,6 @@ impl Model {
                         }
 
                         let action = model.action.clone();
-
                         if shortcut.is_default {
                             self.config_add(Action::Disable, prev_binding);
                         } else {
@@ -604,6 +773,7 @@ fn context_drawer<'a>(
                 ShortcutMessage::EditBinding(bind_id, enable)
             })
             .select_on_focus(true)
+            .on_focus(ShortcutMessage::EditBinding(bind_id, true))
             .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
             .on_unfocus(ShortcutMessage::SubmitBinding(bind_id))
             .on_submit(move |_| ShortcutMessage::SubmitBinding(bind_id))
