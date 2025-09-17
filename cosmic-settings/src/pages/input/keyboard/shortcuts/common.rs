@@ -526,9 +526,13 @@ impl Model {
                             if modifiers.logo() {
                                 cfg_modifiers = cfg_modifiers.logo()
                             }
-                            shortcut.pending.modifiers = cfg_modifiers;
+                            let old =
+                                std::mem::replace(&mut shortcut.pending.modifiers, cfg_modifiers);
 
-                            if shortcut.pending.keycode.is_none() && modifiers.is_empty() {
+                            if shortcut.pending.keycode.is_none()
+                                && modifiers.is_empty()
+                                && (old.alt || old.ctrl || old.shift || old.logo)
+                            {
                                 self.editing = None;
                                 shortcut.reset();
                                 return Task::batch(vec![
@@ -557,7 +561,8 @@ impl Model {
                                     shortcut.binding.keycode = None;
                                     return Task::batch(vec![
                                         iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
-                                        self.submit_binding(id)
+                                        self.submit_binding(id),
+                                        cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
                                     ]);
                                 }
 
@@ -624,6 +629,9 @@ impl Model {
                         key,
                         Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
                     ) {
+                        return None;
+                    } else if matches!((&key, modifiers), (Key::Named(Named::Tab), modifiers) if modifiers.is_empty() || modifiers == Modifiers::SHIFT)
+                    {
                         return None;
                     }
                     cosmic::iced_winit::conversion::physical_to_scancode(physical_key)

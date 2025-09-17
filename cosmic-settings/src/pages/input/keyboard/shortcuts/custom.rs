@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 use std::str::FromStr;
+use std::time::Duration;
 
 use super::{ShortcutBinding, ShortcutMessage, ShortcutModel};
 
@@ -219,10 +220,15 @@ impl Page {
             }
 
             Message::ShortcutContext => {
+                let name_id = self.name_id.clone();
                 self.add_shortcut.enable();
                 return Task::batch(vec![
                     cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity)),
-                    widget::text_input::focus(self.name_id.clone()),
+                    // XX hack: wait a bit before focusing the input to avoid it being ignored before it exists
+                    cosmic::task::future(async move {
+                        tokio::time::sleep(Duration::from_millis(10)).await;
+                    })
+                    .then(move |_: ()| widget::text_input::focus(name_id.clone())),
                 ]);
             }
 
@@ -241,9 +247,13 @@ impl Page {
                     if modifiers.logo() {
                         cfg_modifiers = cfg_modifiers.logo()
                     }
-                    self.add_shortcut.binding.modifiers = cfg_modifiers;
+                    let old =
+                        std::mem::replace(&mut self.add_shortcut.binding.modifiers, cfg_modifiers);
 
-                    if self.add_shortcut.binding.keycode.is_none() && modifiers.is_empty() {
+                    if self.add_shortcut.binding.keycode.is_none()
+                        && modifiers.is_empty()
+                        && (old.alt || old.ctrl || old.shift || old.logo)
+                    {
                         self.add_shortcut = Default::default();
                         self.add_shortcut = Default::default();
                         _ = self.model.on_enter();
@@ -411,9 +421,9 @@ impl Page {
                 )
                 .on_focus(Message::KeyEditing(id, true))
                 .select_on_focus(true)
-                .padding([0, 12])
                 .on_input(move |input| Message::KeyInput(id, input))
                 .on_submit(|_| Message::AddKeybinding)
+                .padding([0, 12])
                 .id(widget_id.clone())
                 .apply(widget::container)
                 .padding([8, 24]);
@@ -551,6 +561,9 @@ impl page::Page<crate::pages::Message> for Page {
                             key,
                             Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
                         ) {
+                            return None;
+                        } else if matches!((&key, modifiers), (Key::Named(Named::Tab), modifiers) if modifiers.is_empty() || modifiers == Modifiers::SHIFT)
+                        {
                             return None;
                         }
                         cosmic::iced_winit::conversion::physical_to_scancode(physical_key).map(
