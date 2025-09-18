@@ -139,35 +139,33 @@ impl Page {
 
                 let mut addable_bindings = Vec::new();
 
-                for (_, (keys, ..)) in &self.add_shortcut.keys {
-                    if keys.is_empty() {
+                for (index, (keys, id)) in &self.add_shortcut.keys {
+                    if !keys.is_empty() {
                         continue;
                     }
 
-                    let Ok(binding) = Binding::from_str(keys) else {
-                        return Task::none();
-                    };
-
-                    if !binding.is_set() {
-                        return Task::none();
-                    }
-
-                    if let Some(action) = self.model.config_contains(&binding) {
-                        let action_str = super::localize_action(&action);
-                        self.replace_dialog.push((binding, action, action_str));
-                        continue;
-                    }
-
-                    addable_bindings.push(binding);
+                    addable_bindings.push((index, id.clone()));
                 }
 
-                for mut binding in addable_bindings {
-                    binding.keycode = None;
-                    self.add_shortcut(binding);
+                if let Some((index, binding)) = addable_bindings.first() {
+                    self.add_shortcut.editing = Some(*index);
+                    return Task::batch(vec![
+                        widget::text_input::focus(binding.clone()),
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                    ]);
+                } else {
+                    // make a new empty binding if none exist
+                    let new_id = widget::Id::unique();
+                    self.add_shortcut.editing = Some(
+                        self.add_shortcut
+                            .keys
+                            .insert((String::new(), new_id.clone())),
+                    );
+                    return Task::batch(vec![
+                        widget::text_input::focus(new_id.clone()),
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
+                    ]);
                 }
-
-                self.add_shortcut.binding = Default::default();
-                _ = self.model.on_enter();
             }
 
             Message::EditCombination => {
@@ -255,7 +253,6 @@ impl Page {
                         && (old.alt || old.ctrl || old.shift || old.logo)
                     {
                         self.add_shortcut = Default::default();
-                        self.add_shortcut = Default::default();
                         _ = self.model.on_enter();
 
                         return Task::batch(vec![
@@ -309,10 +306,10 @@ impl Page {
                         ]);
                     }
                     self.add_shortcut(binding);
-                    self.add_shortcut = Default::default();
                     _ = self.model.on_enter();
 
                     return Task::batch(vec![
+                        widget::text_input::focus(widget::Id::unique()),
                         iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                     ]);
                 }
@@ -448,7 +445,11 @@ impl Page {
     }
 
     fn add_shortcut(&mut self, mut binding: Binding) {
-        self.add_shortcut.active = !self.replace_dialog.is_empty();
+        if let Some(action) = self.model.config_contains(&binding) {
+            let action_str = super::localize_action(&action);
+            self.replace_dialog.push((binding, action, action_str));
+            return;
+        }
         binding.description = Some(self.add_shortcut.name.clone());
         let new_action = Action::Spawn(self.add_shortcut.task.clone());
         self.model.config_add(new_action, binding);
