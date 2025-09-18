@@ -115,6 +115,7 @@ pub const fn actions() -> &'static [Action] {
         Action::System(SystemAction::Terminal),
         Action::System(SystemAction::HomeFolder),
         Action::System(SystemAction::WebBrowser),
+        Action::System(SystemAction::TouchpadToggle),
     ]
 }
 
