@@ -732,6 +732,7 @@ system-shortcut = النظام
     .screenshot = التقاط لقطة شاشة
     .poweroff = أطفئ
     .terminal = فتح طرفيَّة
+    .touchpad-toggle = بدّل لوحة اللمس
     .volume-lower = تقليل مستوى صوت المخرج
     .volume-raise = رفع مستوى صوت المخرج
     .web-browser = فتح متصفح وِب
