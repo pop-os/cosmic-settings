@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Power & Battery
+Name[ar]=الطاقة والبطارية
 Name[zh_CN]=电源和电池
 Name[hu]=Energia és akkumulátor
 Name[pl]=Zasilanie i bateria
@@ -7,6 +8,7 @@ Name[pt]=Energia e Bateria
 Name[nl]=Energie en batterij
 Name[sk]=Napájanie & Batéria
 Comment=Power modes and power saving options.
+Comment[ar]=أوضاع الطاقة وخيارات توفير الطاقة.
 Comment[zh_CN]=电源模式和节能选项
 Comment[pl]=Tryby zasilania i opcje oszczędzania energii.
 Comment[hu]=Energiagazdálkodási módok és energiagazdálkodási beállítások.
