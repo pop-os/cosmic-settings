@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Keyboard
+Name[ar]=لوحة المفاتيح
 Name[zh_CN]=键盘
 Name[pl]=Klawiatura
 Name[hu]=Billentyűzet
@@ -7,6 +8,7 @@ Name[pt]=Teclado
 Name[nl]=Toetsenbord
 Name[sk]=Klávesnica
 Comment=Input sources, switching, special character entry, shortcuts.
+Comment[ar]=مصادر الإدخال، التبديل، إدخال الأحرف الخاصة، الاختصارات.
 Comment[zh_CN]=输入源、切换、特殊字符输入、快捷键
 Comment[pl]=Źródła wprowadzania, przełączanie, specjalne klawisze, skróty.
 Comment[hu]=Bemeneti források, váltásuk, speciális karakterek, billentyűparancsok.
