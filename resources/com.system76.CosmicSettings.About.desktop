@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=About
+Name[ar]=عن
 Name[zh_CN]=关于
 Name[pl]=O systemie
 Name[hu]=Rendszerinformáció
@@ -7,6 +8,7 @@ Name[pt]=Sobre
 Name[nl]=Over
 Name[sk]=O systéme
 Comment=Device name, hardware information, operating system defaults.
+Comment[ar]=اسم الجهاز، معلومات العتاد، إعدادات نظام التشغيل المبدئية.
 Comment[zh_CN]=设备名称、硬件信息、操作系统默认设置
 Comment[pl]=Nazwa urządzenia, informacje o sprzęcie i systemie operacyjnym.
 Comment[hu]=Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai.
