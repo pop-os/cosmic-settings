@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Date & Time
+Name[ar]=التاريخ والوقت
 Name[zh_CN]=日期和时间
 Name[hu]=Dátum és idő
 Name[pl]=Data i godzina
@@ -8,6 +9,7 @@ Name[nl]=Datum en tijd
 Name[sk]=Dátum a čas
 Name[es]=Fecha y Hora
 Comment=Time zone, automatic clock settings, and time formatting.
+Comment[ar]=المنطقة الزمنية وإعدادات الساعة التلقائية وتنسيق الوقت.
 Comment[zh_CN]=时区，自动时钟设置和时间格式
 Comment[pl]=Strefy czasowe, automatyczna konfiguracja zegara i format wyświetlania czasu.
 Comment[hu]=Időzóna, automatikus órabeállítások és időformátum.

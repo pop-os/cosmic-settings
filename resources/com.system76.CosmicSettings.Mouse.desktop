@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Mouse
+Name[ar]=الفأرة
 Name[zh_CN]=鼠标
 Name[pl]=Mysz
 Name[hu]=Egér
@@ -8,6 +9,7 @@ Name[nl]=Muis
 Name[sk]=Myš
 Name[es]=Ratón
 Comment=Mouse speed, acceleration, and natural scrolling.
+Comment[ar]=سرعة الفأرة، والتسارع، والتمرير الطبيعي.
 Comment[zh_CN]=鼠标速度、加速度和自然滚动
 Comment[pl]=Prędkość myszy, przyspieszenie i naturalne przewijanie.
 Comment[hu]=Egérsebesség, gyorsítás és természetes görgetés.
