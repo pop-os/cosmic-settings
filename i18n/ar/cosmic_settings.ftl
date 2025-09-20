@@ -651,8 +651,8 @@ type-key-combination = اكتب تجميعة المفاتيح
 custom-shortcuts = الاختصارات المخصَّصة
     .add = أضِف اختصارًا
     .context = أضِف اختصارًا مخصصًا
-    .none = لا اختصارات مخصَّصة
-ة
+    .none = لا اختصارات مخصَّصةة
+
 modified = { $count } معدَّل
 
 nav-shortcuts = التنقل
