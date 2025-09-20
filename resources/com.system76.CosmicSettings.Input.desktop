@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Input Devices
+Name[ar]=أجهزة الإدخال
 Name[zh_CN]=输入设备
 Name[pl]=Urządzenia wprowadzania danych
 Name[hu]=Beviteli eszközök
@@ -7,6 +8,7 @@ Name[pt]=Dispositivos de Entrada
 Name[nl]=Invoerapparaten
 Name[sk]=Vstupné zariadenia
 Comment=Keyboard, cursor, etc.
+Comment[ar]=لوحة المفاتيح، المؤشر، إلخ.
 Comment[zh_CN]=输入设备
 Comment[nl]=Toetsenbord, muis, etc.
 Comment[hu]=Billentyűzet, mutató, stb.
