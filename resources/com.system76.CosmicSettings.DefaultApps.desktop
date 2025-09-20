@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Default applications
+Name[ar]=التطبيقات المبدئية
 Name[zh_CN]=默认应用程序
 Name[pl]=Domyślne aplikacje
 Name[hu]=Alapértelmezett alkalmazások
@@ -7,6 +8,7 @@ Name[pt]=Aplicativos padrão
 Name[nl]=Standaard toepassingen
 Name[sk]=Predvolené aplikácie
 Comment=Default web browser, mail client, file browser, and other applications.
+Comment[ar]=متصفح الويب المبدئي، عميل البريد، متصفح الملفات، والتطبيقات الأخرى.
 Comment[zh_CN]=默认网络浏览器、邮件客户端、文件浏览器和其他应用程序
 Comment[pl]=Domyślna przeglądarka, klient poczty e-mail, menedżer plików i inne aplikacje.
 Comment[hu]=Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások.
