@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Notifications
+Name[ar]=الإشعارات
 Name[zh_CN]=通知
 Name[pl]=Powiadomienia
 Name[hu]=Értesítések
@@ -8,6 +9,7 @@ Name[nl]=Meldingsinstellingen
 Name[sk]=Oznámenia
 Name[es]=Notificaciones
 Comment=Do Not Disturb, lockscreen notifications, and per-application settings.
+Comment[ar]=عدم الإزعاج، إشعارات شاشة القفل، وإعدادات لكل تطبيق.
 Comment[zh_CN]=勿扰模式、锁屏通知和每个应用程序的设置
 Comment[pl]=Tryb „nie przeszkadzać”, powiadomienia na ekranie blokady i ustawienia poszczególnych aplikacji.
 Comment[hu]=Ne zavarjanak, zárolási képernyő értesítések és alkalmazásonkénti beállítások.
