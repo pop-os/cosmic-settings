@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Region & Language
+Name[ar]=اللغة والمنطقة 
 Name[zh_CN]=区域和语言
 Name[pl]=Region i język
 Name[hu]=Régió és nyelv
@@ -7,6 +8,7 @@ Name[pt]=Região e Idioma
 Name[nl]=Taal en regio
 Name[sk]=Región & Jazyk
 Comment=Format dates, times, and numbers based on your region.
+Comment[ar]=نسق التواريخ والأوقات والأرقام بناءً على منطقتك.
 Comment[zh_CN]=根据您的区域格式化日期、时间和数字
 Comment[hu]=Dátumok, időpontok és számok formázása a régió alapján.
 Comment[pl]=Format wyświetlanych dat, godzin i liczb dopasowany do regionu.
