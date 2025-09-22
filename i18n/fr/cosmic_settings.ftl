@@ -122,7 +122,7 @@ bluetooth-paired = Périphériques précédemment connectés
     .battery = { $percentage }% de batterie
 
 bluetooth-confirm-pin = Confirmer le code PIN Bluetooth
-	.description = Veuillez confirmer que le code PIN suivant correspond à celui affiché sur { $device }
+    .description = Veuillez confirmer que le code PIN suivant correspond à celui affiché sur { $device }
 
 bluetooth-available = Périphériques à proximité
 
