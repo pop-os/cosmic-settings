@@ -493,7 +493,7 @@ battery = Batterij
         *[other] minuten
     }
     .hour = { $value } uur
-<#-- these three lines are intentionally left empty -->
+# these three lines are intentionally left empty
 
 
     .day = { $value } { $value ->

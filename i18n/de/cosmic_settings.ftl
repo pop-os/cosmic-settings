@@ -891,18 +891,3 @@ administrator = Administrator
 add-user = Benutzer hinzufügen
 remove-user = Benutzer entfernen
 full-name = Vollständiger Name
-
-## System: Standardanwendungen
-
-default-apps = Standardanwendungen
-    .desc = Voreingestellter Webbrowser, E-Mail-Client, Dateimanager und andere Anwendungen.
-    .web-browser = Webbrowser
-    .file-manager = Dateimanager
-    .mail-client = E-Mail-Client
-    .music = Musik
-    .video = Video
-    .photos = Fotos
-    .calendar = Kalender
-    .terminal = Terminal
-    .other-associations = Andere Zuordnungen
-    .text-editor = Texteditor

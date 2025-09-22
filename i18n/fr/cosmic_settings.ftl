@@ -69,19 +69,19 @@ vpn = VPN
     .select-file = Sélectionnez un fichier de configuration VPN
 
 vpn-error = Erreur VPN
-	.config = Échec de l'ajout de la configuration VPN
-	.connect = Échec de la connexion au VPN
-	.connection-editor = Échec de l'éditeur de connexion
-	.connection-settings = Échec de l'obtention des paramètres des connexions actives
-	.updating-state = Échec de la mise à jour de l'état du gestionnaire de réseau
-	.wireguard-config-path = Chemin de fichier non valide pour la configuration WireGuard
-	.wireguard-config-path-desc = Le fichier choisi doit se trouver sur un système de fichiers local.
-	.wireguard-device = Échec de la création du périphérique WireGuard
-	.with-password = Échec de la configuration du VPN { $field ->
-	*[username] nom d'utilisateur
-	[password] mot de passe
-	[password-flags] indicateurs de mot de passe
-	} avec nmcli
+    .config = Échec de l'ajout de la configuration VPN
+    .connect = Échec de la connexion au VPN
+    .connection-editor = Échec de l'éditeur de connexion
+    .connection-settings = Échec de l'obtention des paramètres des connexions actives
+    .updating-state = Échec de la mise à jour de l'état du gestionnaire de réseau
+    .wireguard-config-path = Chemin de fichier non valide pour la configuration WireGuard
+    .wireguard-config-path-desc = Le fichier choisi doit se trouver sur un système de fichiers local.
+    .wireguard-device = Échec de la création du périphérique WireGuard
+    .with-password = Échec de la configuration du VPN { $field ->
+        *[username] nom d'utilisateur
+        [password] mot de passe
+        [password-flags] indicateurs de mot de passe
+    } avec nmcli
 
 wired = Filaire
     .adapter = Adaptateur filaire { $id }
