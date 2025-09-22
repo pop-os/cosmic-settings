@@ -94,7 +94,7 @@ wifi = Wi-Fi
     .forget = Oublier ce réseau
 
 wireguard-dialog = Ajouter un périphérique WireGuard
-	.description = Choisir un nom de périphérique pour la configuration WireGuard.
+    .description = Choisir un nom de périphérique pour la configuration WireGuard.
 
 ## Networking: Online Accounts
 
