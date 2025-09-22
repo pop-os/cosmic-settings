@@ -1,20 +1,18 @@
 app = Configurações
-
 dbus-connection-error = Falha de conexão no DBus
 ok = OK
 unknown = Desconhecido
-
 number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles = { $variant ->
-    [wired] Conexões cabeadas
-    [wifi] Conexões Wi-Fi
-    [vpn] Conexões VPN
-    *[other] Conexões desconhecidas
-} e perfis de conexão.
-
+connections-and-profiles =
+    { $variant ->
+        [wired] Conexões cabeadas
+        [wifi] Conexões Wi-Fi
+        [vpn] Conexões VPN
+       *[other] Conexões desconhecidas
+    } e perfis de conexão.
 add-network = Adicionar rede
     .profile = Adicionar perfil
 add-vpn = Adicionar VPN
@@ -36,14 +34,11 @@ settings = Configurações
 username = Usuário
 visible-networks = Redes visíveis
 identity = Identidade
-
 auth-dialog = Autenticação
     .vpn-description = Digite o usuário e a senha exigidos pelo serviço de VPN.
     .wifi-description = Digite a senha ou chave de criptografia. Você também pode conectar pressionando o botão “WPS” no roteador.
-
 forget-dialog = Esquecer esta rede Wi-Fi?
     .description = Você precisará informar uma senha novamente para usar esta rede no futuro.
-
 network-device-state =
     .activated = Conectado
     .config = Conectando
@@ -59,17 +54,14 @@ network-device-state =
     .unknown = Estado desconhecido
     .unmanaged = Não gerenciado
     .unplugged = Cabo desconectado
-
 remove-connection-dialog = Remover perfil de conexão?
     .vpn-description = Você precisará informar uma senha novamente para usar esta rede no futuro.
     .wired-description = Você precisará recriar este perfil para usá-lo no futuro.
-
 vpn = VPN
     .connections = Conexões VPN
     .error = Falha ao adicionar a configuração da VPN
     .remove = Remover perfil de conexão
     .select-file = Selecione um arquivo de conexão VPN
-
 vpn-error = Erro de VPN
     .config = Falha ao adicionar a configuração da VPN
     .connect = Falha ao conectar na VPN
@@ -79,22 +71,20 @@ vpn-error = Erro de VPN
     .wireguard-config-path = Caminho do arquivo inválido para a configuração do WireGuard
     .wireguard-config-path-desc = O arquivo selecionado deve estar em um sistema de arquivos local.
     .wireguard-device = Falha ao criar um dispositivo WireGuard
-    .with-password = Falha ao definir VPN { $field ->
-        *[username] usuário
-        [password] senha
-        [password-flags] sinalizadores de senha
-    } com nmcli
-
+    .with-password =
+        Falha ao definir VPN { $field ->
+           *[username] usuário
+            [password] senha
+            [password-flags] sinalizadores de senha
+        } com nmcli
 wired = Rede Cabeada
     .adapter = Adaptador de rede cabeada { $id }
     .connections = Conexões de Rede Cabeada
     .devices = Dispositivos de Rede Cabeada
     .remove = Remover perfil de conexão
-
 wifi = Wi-Fi
     .adapter = Adaptador Wi-Fi { $id }
     .forget = Esquecer esta rede
-
 wireguard-dialog = Adicionar Dispositivo WireGuard
     .description = Escolha um nome de dispositivo para a configuração do WireGuard.
 
@@ -108,7 +98,6 @@ online-accounts = Contas Online
 activate = Ativar
 confirm = Confirmar
 enable = Habilitar
-
 bluetooth = Bluetooth
     .desc = Gerenciamento de Dispositivos Bluetooth
     .status = Este sistema está visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
@@ -122,16 +111,12 @@ bluetooth = Bluetooth
     .disabled = O serviço de bluetooth está desabilitado
     .inactive = O serviço de bluetooth não está ativo
     .unknown = O serviço de bluetooth não pôde ser ativado. O pacote "bluez" está instalado?
-
 bluetooth-paired = Dispositivos Conectados Anteriormente
     .connect = Conectar
     .battery = { $percentage }% bateria
-
 bluetooth-confirm-pin = Confirmar o PIN do Bluetooth
     .description = Por favor, confirme se o seguinte PIN corresponde ao exibido em { $device }
-
 bluetooth-available = Dispositivos Próximos
-
 bluetooth-adapters = Adaptadores de Bluetooth
 
 ## Accessibility
@@ -145,20 +130,21 @@ accessibility = Acessibilidade
     .high-contrast = Modo de alto contraste
     .invert-colors = Inverter cores
     .color-filters = Filtros de cores
-
 hearing = Ouvindo
     .mono = Reproduzir áudio estéreo como mono
-
 default = Padrão
 magnifier = Ampliador de tela
-    .controls = Ou use teclas de atalho: { $zoom_in ->
-             [zero] {""}
-            *[other] {""}
-                {$zoom_in} para aumentar o zoom,
+    .controls =
+        Ou use teclas de atalho: { $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_in } para aumentar o zoom,
         }{ $zoom_out ->
-             [zero] {""}
-            *[other] {""}
-                {$zoom_out} para diminuir o zoom,
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_out } para diminuir o zoom,
         }
         Super + Scroll para rolar com o mouse
     .scroll_controls = Habilitar atalho "Super + Scroll" (via mouse ou touchpad)
@@ -192,7 +178,6 @@ wallpaper = Papel de Parede
     .plural = Papéis de Parede
     .same = Mesmo papel de parede em todos os monitores
     .slide = Apresentação de slides
-
 add-color = Adicionar cor
 add-image = Adicionar imagem
 all-displays = Todos os Monitores
@@ -202,22 +187,22 @@ fill = Preencher
 fit-to-screen = Ajustar à Tela
 open-new-folder = Abrir Nova Pasta
 recent-folders = Pastas Recentes
-
-x-minutes = { $number } { $number ->
-    [one] minuto
-    *[other] minutos
-}
-x-hours = { $number } { $number ->
-    [one] hora
-    *[other] horas
-}
+x-minutes =
+    { $number } { $number ->
+        [one] minuto
+       *[other] minutos
+    }
+x-hours =
+    { $number } { $number ->
+        [one] hora
+       *[other] horas
+    }
 never = Nunca
 
 ## Desktop: Appearance
 
 appearance = Aparência
     .desc = Cores de destaque e temas.
-
 accent-color = Cor de destaque
 app-background = Fundo da aplicação ou da janela
 auto = Automático
@@ -236,43 +221,33 @@ reset-to-default = Restaurar padrão
 rgb = RGB
 window-hint-accent = Cor de realce da janela ativa
 window-hint-accent-toggle = Utilizar a cor de destaque do tema como realce de janela ativa
-
 auto-switch = Alternar automaticamente do modo Claro para o modo Escuro
     .sunrise = Altera para o modo Claro ao nascer do sol
     .sunset = Altera para o modo Escuro ao pôr do sol
     .next-sunrise = Altera para o modo Claro no próximo nascer do sol
     .next-sunset = Altera para o modo Escuro no próximo pôr do sol
-
 container-background = Fundo do contêiner
     .desc-detail = A cor de fundo do contêiner é usada para a barra lateral de navegação, gaveta lateral, nas caixas de diálogos e em widgets similares. Por padrão, ela é automaticamente derivada do fundo da aplicação ou da janela.
     .reset = Restaurar para automático
     .desc = A cor primária do contêiner é usada para a barra lateral de navegação, gaveta lateral, caixas de diálogos, e widgets similares.
-
 control-tint = Tonalidade dos componentes de controle
     .desc = Usado para os fundos dos botões padrão, entradas de busca, entradas de texto e componentes similares.
-
 frosted = Efeito de vidro fosco na interface do sistema
     .desc = Ativa desfoque de fundo ao painel, dock, miniaplicativos, lançador e biblioteca de aplicativos.
-
 enable-export = Aplicar este tema para aplicativos GNOME.
     .desc = Nem todos os toolkits suportam troca automática. Aplicativos não COSMIC podem precisar ser reiniciados após uma mudança de tema.
-
 icon-theme = Tema de ícones
     .desc = Aplica um conjunto diferente de ícones para aplicativos.
-
 text-tint = Tonalidade do texto da interface
     .desc = Cor usada para derivar cores de texto da interface que têm contraste suficiente em várias superfícies.
-
 style = Estilo
     .round = Arredondado
     .slightly-round = Levemente arredondado
     .square = Quadrado
-
 interface-density = Densidade da Interface
     .comfortable = Confortável
     .compact = Compacto
     .spacious = Espaçoso
-
 window-management-appearance = Gerenciamento de Janelas
     .active-hint = Tamanho da borda de destaque da janela ativa
     .gaps = Espaçamento ao redor de janelas organizadas lado a lado
@@ -293,7 +268,6 @@ notifications = Notificações
 
 panel = Painel
     .desc = Barra superior com controles e menus da área de trabalho.
-
 add = Adicionar
 add-applet = Adicionar Miniaplicativo
 all = Todos
@@ -310,18 +284,15 @@ panel-top = Lado superior
 search-applets = Procurar por miniaplicativos...
 small = Pequeno
 start-segment = Segmento inicial
-
 panel-appearance = Aparência
     .match = Estilo do sistema
     .light = Estilo claro
     .dark = Estilo escuro
-
 panel-behavior-and-position = Comportamento e Posições
     .autohide = Ocultar o painel automaticamente
     .dock-autohide = Ocultar a dock automaticamente
     .position = Posição na tela
     .display = Mostrar no monitor
-
 panel-style = Estilo
     .anchor-gap = Espaço entre o painel e as bordas da tela
     .dock-anchor-gap = Espaço entre a dock e as bordas da tela
@@ -330,11 +301,9 @@ panel-style = Estilo
     .appearance = Aparência
     .size = Tamanho
     .background-opacity = Opacidade do fundo
-
 panel-applets = Configuração
     .dock-desc = Configurar miniaplicativos da dock
     .desc = Configurar miniaplicativos do painel
-
 panel-missing = Configuração do painel está ausente
     .desc = O arquivo de configuração do painel está ausente devido ao uso de uma configuração personalizada ou encontra-se corrompido.
     .fix = Redefinir para padrão
@@ -348,20 +317,16 @@ dock = Dock
 
 window-management = Gerenciamento de Janelas
     .desc = Ação da tecla Super, opções de controle e organização de janelas.
-
 super-key = Ação da tecla Super (Windows)
     .launcher = Abrir o lançador
     .workspaces = Abrir a visão geral das áreas de trabalho
     .applications = Abrir o menu de aplicativos
     .disable = Desabilitar
-
 edge-gravity = Janelas flutuantes gravitam em direção às bordas próximas
-
 window-controls = Controles de Janela
     .maximize = Mostrar botão de maximizar
     .minimize = Mostrar botão de minimizar
     .active-window-hint = Mostrar borda da janela ativa
-
 focus-navigation = Navegação em Foco
     .focus-follows-cursor = O foco segue o cursor
     .focus-follows-cursor-delay = O foco segue o atraso do cursor em ms
@@ -371,38 +336,31 @@ focus-navigation = Navegação em Foco
 
 workspaces = Áreas de Trabalho
     .desc = Configurar número de áreas de trabalho, comportamento e posicionamento.
-
 workspaces-behavior = Comportamento das Áreas de Trabalho
     .dynamic = Áreas de trabalho dinâmicas
     .dynamic-desc = Remove automaticamente áreas de trabalho vazias.
     .fixed = Número fixo de Áreas de Trabalho
     .fixed-desc = Adicione ou remova áreas de trabalho na visão geral.
-
 workspaces-multi-behavior = Comportamento de vários monitores
     .span = Áreas de trabalho expandem monitores
     .separate = Monitores têm áreas de trabalho separadas
-
 workspaces-overview-thumbnails = Miniaturas da Visão Geral das Áreas de Trabalho
     .show-number = Mostrar Número da Área de Trabalho
     .show-name = Mostrar Nome da Área de Trabalho
-
 workspaces-orientation = Orientação das Áreas de Trabalho
     .vertical = Vertical
     .horizontal = Horizontal
-
 hot-corner = Hot Corner
     .top-left-corner = Habilitar o canto superior esquerdo para exibir as áreas de trabalho
 
 ## Displays
 
 -requires-restart = Requer reinicialização
-
 color = Cor
     .depth = Profundidade de cor
     .profile = Perfil de cor
     .sidebar = Perfis de cor
     .temperature = Temperatura de cor
-
 display = Telas
     .desc = Gerencie monitores, altere gráficos, e luz noturna
     .arrangement = Organização dos Monitores
@@ -415,39 +373,35 @@ display = Telas
     .resolution = Resolução
     .scale = Escala
     .additional-scale-options = Ajuste de escala
-
 mirroring = Espelhar
     .id = Espelhando { $id }
     .dont = Não espelhar
     .mirror = Espelhar { $display }
-    .project = Projetar para { $display ->
-        [all] todos os monitores
-        *[other] { $display }
-    }
-    .project-count = Projetar para { $count} outros { $count ->
-        [1] monitor
-        *[other] monitores
-    }
-
+    .project =
+        Projetar para { $display ->
+            [all] todos os monitores
+           *[other] { $display }
+        }
+    .project-count =
+        Projetar para { $count } outros { $count ->
+            [1] monitor
+           *[other] monitores
+        }
 night-light = Luz Noturna
     .auto = Automático (do pôr ao nascer do sol)
     .desc = Reduz a luz azul com cores mais quentes.
-
 orientation = Orientação
     .standard = Padrão
     .rotate-90 = Rotacionar 90°
     .rotate-180 = Rotacionar 180°
     .rotate-270 = Rotacionar 270°
-
 vrr = Taxa de atualização variável
     .enabled = Habilitado
     .force = Sempre
     .auto = Automático
     .disabled = Desabilitado
-
 scheduling = Agendamento
     .manual = Agendamento manual
-
 dialog = Dialog
     .title = Manter estas configurações de tela?
     .keep-changes = Manter alterações
@@ -458,7 +412,6 @@ dialog = Dialog
 
 sound = Som
     .desc = N/D
-
 sound-output = Saída
     .volume = Volume de saída
     .device = Dispositivo de saída
@@ -467,52 +420,48 @@ sound-output = Saída
     .balance = Equilíbrio
     .left = Esquerda
     .right = Direita
-
 sound-input = Entrada
     .volume = Volume de entrada
     .device = Dispositivo de entrada
     .level = Nível de entrada
-
 amplification = Amplificação
     .desc = Permite aumentar o volume até 150%.
-
 sound-alerts = Alertas
     .volume = Volume dos alertas
     .sound = Som dos alertas
-
 sound-applications = Aplicações
     .desc = Volume e configurações das aplicações
-
 profile = Perfil
 
 ## Power
 
 power = Energia e Bateria
     .desc = Gerencie as configurações de energia
-
 battery = Bateria
-  .minute = { $value } { $value ->
-        [one] minuto
-       *[other] minutos
-  }
-  .hour = { $value } { $value ->
-        [one] hora
-       *[other] horas
-  }
-  .day = { $value } { $value ->
-        [one] dia
-       *[other] dias
-  }
-  .less-than-minute = Menos de 1 minuto
-  .and = e
-  .remaining-time = { $time } até estar { $action ->
-        [full] cheia
-       *[other] vazia
-   }
-
+    .minute =
+        { $value } { $value ->
+            [one] minuto
+           *[other] minutos
+        }
+    .hour =
+        { $value } { $value ->
+            [one] hora
+           *[other] horas
+        }
+    .day =
+        { $value } { $value ->
+            [one] dia
+           *[other] dias
+        }
+    .less-than-minute = Menos de 1 minuto
+    .and = e
+    .remaining-time =
+        { $time } até estar { $action ->
+            [full] cheia
+           *[other] vazia
+        }
 connected-devices = Dispositivos Conectados
-  .unknown = Dispositivo desconhecido
-
+    .unknown = Dispositivo desconhecido
 power-mode = Modo de Energia
     .battery = Economia de bateria
     .battery-desc = Baixo consumo de energia e desempenho limitado.
@@ -521,7 +470,6 @@ power-mode = Modo de Energia
     .performance = Alto desempenho
     .performance-desc = Desempenho e consumo de energia elevados.
     .no-backend = Gestor de energia não encontrado. Instale o pacote "system76-power" ou "power-profiles-daemon".
-
 power-saving = Opções de Economia de Energia
     .turn-off-screen-after = Desligar a tela após
     .auto-suspend = Suspensão automática
@@ -531,17 +479,13 @@ power-saving = Opções de Economia de Energia
 ## Input
 
 acceleration-desc = Ajustar automaticamente a sensibilidade com base na velocidade.
-
 disable-while-typing = Desabilitar enquanto digita
-
 input-devices = Dispositivos de Entrada
     .desc = Dispositivos de entrada
-
 primary-button = Botão Primário
     .desc = Define a ordem dos botões físicos.
     .left = Esquerda
     .right = Direita
-
 scrolling = Rolagem
     .two-finger = Rolagem com dois dedos
     .edge = Rolagem ao longo da borda com um dedo
@@ -557,7 +501,6 @@ short = Curto
 long = Longo
 keyboard = Teclado
     .desc = Layout, entrada de caracteres especiais, atalhos.
-
 keyboard-sources = Fontes de Entrada
     .desc = As fontes de entrada podem ser alternadas usando a combinação de teclas Super+Espaço. Isso pode ser personalizado nas configurações de atalho de teclado.
     .move-up = Mover para cima
@@ -566,23 +509,19 @@ keyboard-sources = Fontes de Entrada
     .view-layout = Ver layout do teclado
     .remove = Remover
     .add = Adicionar fonte de entrada
-
 keyboard-special-char = Entrada de Caracteres Especiais
     .alternate = Tecla de caracteres alternativos
     .compose = Tecla de composição
     .caps = Tecla Caps Lock
-
 keyboard-typing-assist = Digitação
     .repeat-rate = Taxa de repetição
     .repeat-delay = Taxa de atraso
-
 keyboard-numlock-boot = Numlock
     .boot-state = Estado na inicialização
     .last-boot = Última inicialização
     .on = Ligado
     .off = Desligado
     .set = Definir estado de inicialização do numlock
-
 added = Adicionado
 type-to-search = Digite para pesquisar...
 show-extended-input-sources = Exibir fontes de entrada estendidas
@@ -591,7 +530,6 @@ show-extended-input-sources = Exibir fontes de entrada estendidas
 
 keyboard-shortcuts = Atalhos do Teclado
     .desc = Ver e personalizar atalhos
-
 add-keybinding = Adicionar atalho
 cancel = Cancelar
 command = Comando
@@ -601,12 +539,13 @@ disabled = Desativado
 input-source-switch = Alterar fonte de entrada de idioma do teclado
 migrate-workspace-prev = Migrar a área de trabalho para a saída anterior
 migrate-workspace-next = Migrar a área de trabalho para a próxima saída
-migrate-workspace = Migrar a área de trabalho para a saída { $direction ->
-    *[down] abaixo
-    [left] à esquerda
-    [right] à direita
-    [up] acima
-}
+migrate-workspace =
+    Migrar a área de trabalho para a saída { $direction ->
+       *[down] abaixo
+        [left] à esquerda
+        [right] à direita
+        [up] acima
+    }
 navigate = Navegar
 replace = Substituir
 shortcut-name = Nome do atalho
@@ -614,36 +553,34 @@ system-controls = Controles de sistema
 terminate = Encerrar
 toggle-stacking = Ativar/Desativar empilhamento de janelas
 type-key-combination = Digite a combinação de teclas
-
 custom-shortcuts = Atalhos Personalizados
     .add = Adicionar atalho
     .context = Adicionar Atalho Personalizado
     .none = Sem atalhos personalizados
-
 modified = { $count } modificado(s)
-
 nav-shortcuts = Navegação
     .prev-output = Focar a saída anterior
     .next-output = Focus a próxima saída
     .last-workspace = Focar a última área de trabalho
     .prev-workspace = Focar a área de trabalho anterior
     .next-workspace = Focar a próxima área de trabalho
-    .focus = Focar a janela  { $direction ->
-        *[down] abaixo
-        [in] interna
-        [left] à esquerda
-        [out] externa
-        [right] à direita
-        [up] acima
-    }
-    .output = Alternar para a saída { $direction ->
-        *[down] abaixo
-        [left] à esquerda
-        [right] à direita
-        [up] acima
-    }
+    .focus =
+        Focar a janela  { $direction ->
+           *[down] abaixo
+            [in] interna
+            [left] à esquerda
+            [out] externa
+            [right] à direita
+            [up] acima
+        }
+    .output =
+        Alternar para a saída { $direction ->
+           *[down] abaixo
+            [left] à esquerda
+            [right] à direita
+            [up] acima
+        }
     .workspace = Alternar para a área de trabalho { $num }
-
 manage-windows = Gerenciamento de Janelas
     .close = Fechar janela
     .maximize = Maximizar janela
@@ -652,26 +589,28 @@ manage-windows = Gerenciamento de Janelas
     .resize-inwards = Redimensionar janela para dentro
     .resize-outwards = Redimensionar janela para fora
     .toggle-sticky = Ativar/Desativar janelas fixadas
-
 move-windows = Mover Janelas
-    .direction = Mover janela { $direction ->
-        *[down] para baixo
-        [left] para a esquerda
-        [right] para a direita
-        [up] para cima
-    }
-    .display = Mover a janela um monitor { $direction ->
-        *[down] abaixo
-        [left] à esquerda
-        [right] à direita
-        [up] acima
-    }
-    .workspace = Mover a janela uma área de trabalho { $direction ->
-        *[below] abaixo
-        [left] à esquerda
-        [right] à direita
-        [above] acima
-    }
+    .direction =
+        Mover janela { $direction ->
+           *[down] para baixo
+            [left] para a esquerda
+            [right] para a direita
+            [up] para cima
+        }
+    .display =
+        Mover a janela um monitor { $direction ->
+           *[down] abaixo
+            [left] à esquerda
+            [right] à direita
+            [up] acima
+        }
+    .workspace =
+        Mover a janela uma área de trabalho { $direction ->
+           *[below] abaixo
+            [left] à esquerda
+            [right] à direita
+            [above] acima
+        }
     .workspace-num = Mover a janela para a área de trabalho { $num }
     .prev-workspace = Mover a janela para a área de trabalho anterior
     .next-workspace = Mover a janela para a próxima área de trabalho
@@ -680,7 +619,6 @@ move-windows = Mover Janelas
     .prev-display = Mover a janela para a tela anterior
     .send-to-prev-workspace = Mover a janela para a área de trabalho anterior
     .send-to-next-workspace = Mover a janela para a próxima área de trabalho
-
 system-shortcut = Sistema
     .app-library = Abrir o menu de aplicativos
     .brightness-down = Reduzir o brilho do monitor
@@ -705,7 +643,6 @@ system-shortcut = Sistema
     .window-switcher = Alternar entre as janelas abertas
     .window-switcher-previous = Alternar entre as janelas abertas invertidas
     .workspace-overview = Abrir a visão geral das áreas de trabalho
-
 window-tiling = Janelas lado a lado (Tiling)
     .horizontal = Definir orientação horizontal
     .vertical = Definir orientação vertical
@@ -714,10 +651,8 @@ window-tiling = Janelas lado a lado (Tiling)
     .toggle-stacking = Ativas/Desativar janelas empilháveis
     .toggle-floating = Ativar/Desativar janelas flutuantes
     .toggle-orientation = Ativar/Desativar orientação
-
 replace-shortcut-dialog = Substituir atalho?
     .desc = { $shortcut } está sendo usado por { $name }. se você substituí-lo, { $name } será desativado.
-
 zoom-in = Aumentar o zoom
 zoom-out = Diminuir o zoom
 
@@ -733,13 +668,10 @@ mouse = Mouse
 click-behavior = Comportamento de Cliques
     .click-finger = Clique secundário com dois dedos e clique do meio com três dedos
     .button-areas = Clique secundário no canto inferior direito e clique do meio no centro inferior
-
 pinch-to-zoom = Movimento de pinça para ampliar
     .desc = Use dois dedos para ampliar o conteúdo, para aplciativos que suportam zoom.
-
 tap-to-click = Toque para clicar
     .desc = Habilita o toque de um dedo para clique primário, toque de dois dedos para clique secundário e toque de três dedos para o clique do meio.
-
 touchpad = Touchpad
     .acceleration = Habilitar aceleração do touchpad
     .desc = Velocidade do touchpad, opções de clique e gestos.
@@ -753,11 +685,9 @@ gestures = Gestos
     .four-finger-right = Deslizar quatro dedos para a direita
     .four-finger-up = Deslizar quatro dedos para cima
     .three-finger-any = Deslizar três dedos para qualquer direção
-
 switch-workspaces = Alternar entre áreas de trabalho
     .horizontal = Deslizar quatro dedos para a direita ou esquerda
     .vertical = Deslizar quatro dedos para cima ou para baixo
-
 switch-between-windows = Alternar entre janelas
 open-application-library = Abrir o menu de aplicativos
 open-workspaces-view = Abrir a visão geral das áreas de trabalho
@@ -766,16 +696,13 @@ open-workspaces-view = Abrir a visão geral das áreas de trabalho
 
 time = Hora e Idioma
     .desc = N/D
-
 time-date = Data e Hora
     .desc = Fuso horário, definições automáticas de relógio e algumas formatações de hora.
     .auto = Definir automaticamente
     .auto-ntp = A data e a hora serão atualizadas automaticamente quando o fuso horário for definido.
-
 time-zone = Fuso Horário
     .auto = Fuso horário automático
     .auto-info = Requer um serviço de localização e acesso à Internet
-
 time-format = Formato de Data e Hora
     .twenty-four = Formato de 24 horas
     .show-seconds = Mostrar segundos
@@ -785,10 +712,8 @@ time-format = Formato de Data e Hora
     .saturday = Sábado
     .sunday = Domingo
     .monday = Segunda-feira
-
 time-region = Região e Idioma
     .desc = Formatar datas, horas e números com base na sua região
-
 formatting = Formatação
     .dates = Datas
     .time = Horas
@@ -796,10 +721,8 @@ formatting = Formatação
     .numbers = Números
     .measurement = Medidas
     .paper = Papel
-
 preferred-languages = Idiomas Preferidos
     .desc = A ordem dos idiomas determina qual idioma será usado para a tradução do desktop. As alterações entram em vigor no próximo login.
-
 add-language = Adicionar idioma
     .context = Adicionar Idioma
 install-additional-languages = Instalar idiomas adicionais
@@ -839,7 +762,6 @@ startup-apps = Aplicativos de Inicialização
 
 legacy-applications = Compatibilidade com Aplicativos X11
     .desc = Dimensionamento de aplicativos de sistema de janelas X11 e atalhos globais.
-
 legacy-app-global-shortcuts = Atalhos globais em aplicativos X11
     .desc = Atalhos globais permitem que pressionamentos de teclas e eventos de botão do mouse realizados em aplicativos sejam reconhecidos por outros aplicativos para recursos como push-to-talk ou push-to-mute. Por padrão, isso é desabilitado em aplicativos X11 para garantir que outros aplicativos não possam monitorar eventos de teclado e mouse contendo informações confidenciais.
     .none = Nenhuma tecla
@@ -847,7 +769,6 @@ legacy-app-global-shortcuts = Atalhos globais em aplicativos X11
     .combination = Todas as teclas enquanto modificadores Super, Control ou Alt estão sendo pressionados
     .all = Todas as teclas
     .mouse = Eventos de botão de mouse em aplicativos X11
-
 legacy-app-scaling = Dimensionamento de Aplicativos X11
     .scaled-gaming = Otimizar para jogos e aplicativos em tela cheia
     .gaming-description = Os aplicativos X11 podem parecer um pouco maiores/menores em comparação aos aplicativos Wayland.
@@ -866,23 +787,19 @@ system = Sistema e Contas
 
 about = Sobre
     .desc = Nome do dispositivo, informações de hardware, configurações padrão do sistema.
-
 about-device = Nome do dispositivo
     .desc = Este nome aparece para outros dispositivos de rede ou bluetooth.
-
 about-hardware = Hardware
     .model = Modelo do hardware
     .memory = Memória
     .processor = Processador
     .graphics = Gráficos
     .disk-capacity = Capacidade do disco
-
 about-os = Sistema Operacional
     .os = Sistema operacional
     .os-architecture = Arquitetura do sistema operacional
     .desktop-environment = Ambiente de trabalho
     .windowing-system = Sistema de janelas
-
 about-related = Configurações relacionadas
     .support = Obter ajuda
 
@@ -898,10 +815,8 @@ users = Usuários
     .admin = Administrador
     .standard = Padrão
     .profile-add = Escolher uma imagem de perfil
-
 administrator = Administrador
     .desc = Administradores podem alterar configurações para todos os usuários, além de adicionar e remover outros usuários.
-
 add-user = Adicionar usuário
 change-password = Alterar senha
 remove-user = Remover usuário
@@ -909,3 +824,4 @@ full-name = Nome completo
 invalid-username = Nome de usuário inválido
 password-mismatch = A senha e a confirmação devem ser iguais.
 save = Salvar
+add-another-keybinding = Adicionar outra tecla de atalho
