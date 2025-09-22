@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Wired
+Name[ar]=سلكي
 Name[zh_CN]=有线连接
 Name[pl]=Połączenia przewodowe
 Name[hu]=Vezetékes kapcsolatok
@@ -8,6 +9,7 @@ Name[nl]=Kabelverbinding
 Name[sk]=Káblové
 Name[es]=Red cableada
 Comment=Wired connections and connection profiles.
+Comment[ar]=الاتصالات السلكية وملفات تعريف الاتصال.
 Comment[zh_CN]=有线连接和配置文件
 Comment[pl]=Połączenia przewodowe i profile połączeń.
 Comment[hu]=Vezetékes kapcsolatok és kapcsolódási profilok.
