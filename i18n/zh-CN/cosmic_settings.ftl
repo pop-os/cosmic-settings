@@ -1,20 +1,18 @@
 app = COSMIC 设置
-
 dbus-connection-error = 无法连接到 DBus
 ok = 确定
 unknown = 未知
-
 number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles = { $variant ->
-    [wired] 有线
-    [wifi] Wi-Fi
-    [vpn] VPN
-    *[other] 未知
-} 连接和连接配置。
-
+connections-and-profiles =
+    { $variant ->
+        [wired] 有线
+        [wifi] Wi-Fi
+        [vpn] VPN
+       *[other] 未知
+    } 连接和连接配置。
 add-network = 添加网络
     .profile = 添加配置
 add-vpn = 添加 VPN
@@ -22,7 +20,7 @@ airplane-on = 飞行模式已开启
 cable-unplugged = 网线已拔出
 connect = 连接
 connected = 已连接
-connecting = 正在连接...
+connecting = 正在连接…
 disconnect = 断开连接
 forget = 忘记
 known-networks = 已知网络
@@ -36,14 +34,11 @@ settings = 设置
 username = 用户名
 visible-networks = 可见网络
 identity = 标识
-
 auth-dialog = 需要认证
     .vpn-description = 请输入 VPN 服务要求的用户名和密码
     .wifi-description = 输入密码或加密密钥。您也可以通过按路由器上的“WPS”按钮来连接。
-
 forget-dialog = 忘记这个 Wi-Fi 网络？
     .description = 将来要使用这个 Wi-Fi 网络时需要重新输入密码。
-
 network-device-state =
     .activated = 已连接
     .config = 正在连接
@@ -59,17 +54,14 @@ network-device-state =
     .unknown = 未知状态
     .unmanaged = 未管理
     .unplugged = 网线已拔出
-
 remove-connection-dialog = 移除连接配置？
     .vpn-description = 将来要使用这个网络时需要重新输入密码。
     .wired-description = 将来要使用这个配置时需要重新创建。
-
 vpn = VPN
     .connections = VPN 连接
     .error = 添加 VPN 配置失败
     .remove = 移除连接配置
     .select-file = 选择一个 VPN 配置文件
-
 vpn-error = VPN 错误
     .config = 添加 VPN 配置失败
     .connect = 连接 VPN 失败
@@ -79,22 +71,20 @@ vpn-error = VPN 错误
     .wireguard-config-path = WireGuard 配置文件路径无效
     .wireguard-config-path-desc = 所选文件必须在本地文件系统上。
     .wireguard-device = 创建 WireGuard 设备失败
-    .with-password = 使用 nmcli 设置 VPN { $field ->
-        *[username] 用户名
-        [password] 密码
-        [password-flags] 密码标志
-    } 失败
-
+    .with-password =
+        使用 nmcli 设置 VPN { $field ->
+           *[username] 用户名
+            [password] 密码
+            [password-flags] 密码标志
+        } 失败
 wired = 有线网络
     .adapter = 有线适配器 { $id }
     .connections = 有线连接
     .devices = 有线设备
     .remove = 移除连接配置
-
 wifi = Wi-Fi
     .adapter = Wi-Fi 适配器 { $id }
     .forget = 忘记此网络
-
 wireguard-dialog = 添加 WireGuard 设备
     .description = 为 WireGuard 配置选择一个设备名称。
 
@@ -108,7 +98,6 @@ online-accounts = 在线账户
 activate = 激活
 confirm = 确认
 enable = 启用
-
 bluetooth = 蓝牙
     .desc = 管理蓝牙设备
     .status = 当蓝牙设置打开时，此系统显示为 { $aliases }。
@@ -122,16 +111,12 @@ bluetooth = 蓝牙
     .disabled = 蓝牙服务已禁用
     .inactive = 蓝牙服务未激活
     .unknown = 无法激活蓝牙服务。是否已安装 bluez？
-
 bluetooth-paired = 之前连接的设备
     .connect = 连接
     .battery = 电池 { $percentage }%
-
 bluetooth-confirm-pin = 确认蓝牙 PIN 码
     .description = 请确认以下 PIN 码与 { $device } 上显示的是否匹配
-
 bluetooth-available = 附近的设备
-
 bluetooth-adapters = 蓝牙适配器
 
 ## Accessibility
@@ -145,20 +130,21 @@ accessibility = 无障碍
     .high-contrast = 高对比度模式
     .invert-colors = 反转颜色
     .color-filters = 色彩滤镜
-
 hearing = 听觉
     .mono = 将立体声音频播放为单声道
-
 default = 默认
 magnifier = 放大镜
-    .controls = 或使用这些快捷键：{ $zoom_in ->
-             [zero] {""}
-            *[other] {""}
-                按 {$zoom_in} 放大，
+    .controls =
+        或使用这些快捷键：{ $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                按 { $zoom_in } 放大，
         }{ $zoom_out ->
-             [zero] {""}
-            *[other] {""}
-                按 {$zoom_out} 缩小，
+            [zero] { "" }
+           *[other]
+                { "" }
+                按 { $zoom_out } 缩小，
         }
         按 Super 键并滚动鼠标
     .scroll_controls = 按 Super 键并使用鼠标或触摸板滚动来启用缩放
@@ -192,7 +178,6 @@ wallpaper = 壁纸
     .plural = 壁纸
     .same = 所有显示器使用相同壁纸
     .slide = 幻灯片
-
 add-color = 添加颜色
 add-image = 添加图片
 all-displays = 所有显示器
@@ -202,22 +187,22 @@ fill = 填充
 fit-to-screen = 适应屏幕
 open-new-folder = 打开新文件夹
 recent-folders = 最近的文件夹
-
-x-minutes = { $number } { $number ->
-    [one] 分钟
-    *[other] minutes
-}
-x-hours = { $number ->
-    [one] 小时
-    *[other] { $number } 小时
-}
+x-minutes =
+    { $number } { $number ->
+        [one] 分钟
+       *[other] minutes
+    }
+x-hours =
+    { $number ->
+        [one] 小时
+       *[other] { $number } 小时
+    }
 never = 从不
 
 ## Desktop: Appearance
 
 appearance = 外观
     .desc = 主题色和主题设置。
-
 accent-color = 主题色
 app-background = 应用程序或窗口背景
 auto = 自动
@@ -236,43 +221,33 @@ reset-to-default = 重置为默认值
 rgb = RGB
 window-hint-accent = 活动窗口提示颜色
 window-hint-accent-toggle = 使用主题色作为活动窗口提示色
-
 auto-switch = 自动在亮色和深色模式之间切换
     .sunrise = 日出时切换到亮色模式
     .sunset = 日落时切换到深色模式
     .next-sunrise = 下次日出时切换到亮色模式
     .next-sunset = 下次日落时切换到深色模式
-
 container-background = 容器背景
     .desc-detail = 容器背景色用于导航侧栏、侧边抽屉、对话框等小部件。默认情况下，它会自动从应用程序或窗口背景派生。
     .reset = 重置为自动
     .desc = 主容器颜色用于导航侧栏、侧边抽屉、对话框等小部件。
-
 control-tint = 控件色调
     .desc = 用于标准按钮、搜索输入框、文本输入框等组件的背景。
-
 frosted = 系统界面磨砂玻璃效果
     .desc = 对面板、托盘、小程序、启动器和应用程序库应用背景模糊效果。
-
 enable-export = 将此主题应用到 GNOME 应用程序。
     .desc = 并非所有工具包都支持自动切换。非 COSMIC 应用程序可能需要在主题更改后重新启动。
-
 icon-theme = 图标主题
     .desc = 为应用程序应用不同的图标集。
-
 text-tint = 界面文本色调
     .desc = 用于派生在各种表面上具有足够对比度的界面文本颜色。
-
 style = 样式
     .round = 圆角
     .slightly-round = 微圆角
     .square = 方角
-
 interface-density = 界面密度
     .comfortable = 舒适
     .compact = 紧凑
     .spacious = 宽敞
-
 window-management-appearance = 窗口管理
     .active-hint = 活动窗口提示大小
     .gaps = 平铺窗口周围的间隙
@@ -293,7 +268,6 @@ notifications = 通知
 
 panel = 面板
     .desc = 用于菜单和小程序的主系统栏。
-
 add = 添加
 add-applet = 添加小程序
 all = 全部
@@ -310,18 +284,15 @@ panel-top = 顶部
 search-applets = 搜索小程序...
 small = 小
 start-segment = 开始区段
-
 panel-appearance = 外观
     .match = 匹配桌面
     .light = 亮色
     .dark = 深色
-
 panel-behavior-and-position = 行为和位置
     .autohide = 自动隐藏面板
     .dock-autohide = 自动隐藏程序坞
     .position = 屏幕位置
     .display = 在显示器上显示
-
 panel-style = 样式
     .anchor-gap = 面板与屏幕边缘的间距
     .dock-anchor-gap = 程序坞与屏幕边缘的间距
@@ -330,11 +301,9 @@ panel-style = 样式
     .appearance = 外观
     .size = 大小
     .background-opacity = 背景不透明度
-
 panel-applets = 配置
     .dock-desc = 配置程序坞小程序
     .desc = 配置面板小程序
-
 panel-missing = 缺少面板配置
     .desc = 由于使用自定义配置或配置已损坏，面板配置文件丢失。
     .fix = 重置为默认值
@@ -348,20 +317,16 @@ dock = 程序坞
 
 window-management = 窗口管理
     .desc = Super 键动作、窗口控制选项和额外的窗口平铺选项。
-
 super-key = Super 键动作
     .launcher = 打开启动器
     .workspaces = 打开工作区
     .applications = 打开应用程序
     .disable = 禁用
-
 edge-gravity = 浮动窗口吸附到附近边缘
-
 window-controls = 窗口控制
     .maximize = 显示最大化按钮
     .minimize = 显示最小化按钮
     .active-window-hint = 显示活动窗口提示
-
 focus-navigation = 焦点导航
     .focus-follows-cursor = 焦点跟随光标
     .focus-follows-cursor-delay = 焦点跟随光标延迟（毫秒）
@@ -371,38 +336,31 @@ focus-navigation = 焦点导航
 
 workspaces = 工作区
     .desc = 工作区方向和行为。
-
 workspaces-behavior = 工作区行为
     .dynamic = 动态工作区
     .dynamic-desc = 自动移除空工作区。
     .fixed = 固定工作区数量
     .fixed-desc = 在概览中添加或移除工作区。
-
 workspaces-multi-behavior = 多显示器行为
     .span = 工作区跨显示器
     .separate = 显示器有独立工作区
-
 workspaces-overview-thumbnails = 工作区概览缩略图
     .show-number = 显示工作区编号
     .show-name = 显示工作区名称
-
 workspaces-orientation = 工作区方向
     .vertical = 垂直
     .horizontal = 水平
-
 hot-corner = 热角
     .top-left-corner = 启用左上角热角以打开工作区
 
 ## Display
 
 -requires-restart = 需要重启
-
 color = 颜色
     .depth = 色深
     .profile = 颜色配置文件
     .sidebar = 颜色配置文件
     .temperature = 色温
-
 display = 显示
     .desc = 管理显示器和夜灯
     .arrangement = 显示器排列
@@ -415,39 +373,35 @@ display = 显示
     .resolution = 分辨率
     .scale = 缩放
     .additional-scale-options = 其他缩放选项
-
 mirroring = 镜像
     .id = 镜像 { $id }
     .dont = 不镜像
     .mirror = 镜像到 { $display }
-    .project = 投影到 { $display ->
-        [all] 所有显示器
-        *[other] { $display }
-    }
-    .project-count = 正在投影到 { $count} 个其他{ $count ->
-        [1] 显示器
-        *[other] 显示器
-    }
-
+    .project =
+        投影到 { $display ->
+            [all] 所有显示器
+           *[other] { $display }
+        }
+    .project-count =
+        正在投影到 { $count } 个其他{ $count ->
+            [1] 显示器
+           *[other] 显示器
+        }
 night-light = 夜光
     .auto = 自动（日落到日出）
     .desc = 通过更暖的颜色减少蓝光。
-
 orientation = 方向
     .standard = 标准
     .rotate-90 = 旋转 90 度
     .rotate-180 = 旋转 180 度
     .rotate-270 = 旋转 270 度
-
 vrr = 可变刷新率
     .enabled = 已启用
     .force = 始终启用
     .auto = 自动
     .disabled = 已禁用
-
 scheduling = 日程
     .manual = 手动日程
-
 dialog = 对话框
     .title = 保留这些显示设置？
     .keep-changes = 保留更改
@@ -458,7 +412,6 @@ dialog = 对话框
 
 sound = 声音
     .desc = 音频设置
-
 sound-output = 输出
     .volume = 输出音量
     .device = 输出设备
@@ -467,49 +420,46 @@ sound-output = 输出
     .balance = 平衡
     .left = 左
     .right = 右
-
 sound-input = 输入
     .volume = 输入音量
     .device = 输入设备
     .level = 输入电平
-
 sound-alerts = 警告音
     .volume = 警告音音量
     .sound = 警告音效
-
 sound-applications = 应用程序
     .desc = 应用程序音量和设置
-
 profile = 配置文件
 
 ## Power
 
 power = 电源和电池
     .desc = 管理电源设置
-
 battery = 电池
-    .minute = { $value } { $value ->
-        [1] 分钟
-        *[other] 分钟
-    }
-    .hour = { $value } { $value ->
-        [1] 小时
-        *[other] 小时
-    }
-    .day = { $value } { $value ->
-        [1] 天
-        *[other] 天
-    }
+    .minute =
+        { $value } { $value ->
+            [1] 分钟
+           *[other] 分钟
+        }
+    .hour =
+        { $value } { $value ->
+            [1] 小时
+           *[other] 小时
+        }
+    .day =
+        { $value } { $value ->
+            [1] 天
+           *[other] 天
+        }
     .less-than-minute = 不到一分钟
     .and = 和
-    .remaining-time = { $time }后{ $action ->
-        [full] 充满
-        *[other] 电量耗尽
-    }
-
+    .remaining-time =
+        { $time }后{ $action ->
+            [full] 充满
+           *[other] 电量耗尽
+        }
 connected-devices = 已连接设备
     .unknown = 未知设备
-
 power-mode = 电源模式
     .battery = 延长电池续航
     .battery-desc = 降低功耗并保持静音运行。
@@ -518,7 +468,6 @@ power-mode = 电源模式
     .performance = 高性能
     .performance-desc = 最高性能和功耗。
     .no-backend = 未找到后端服务。请安装 system76-power 或 power-profiles-daemon。
-
 power-saving = 节能选项
     .turn-off-screen-after = 在此时间后关闭屏幕
     .auto-suspend = 自动挂起
@@ -528,17 +477,13 @@ power-saving = 节能选项
 ## Input
 
 acceleration-desc = 根据速度自动调整跟踪灵敏度。
-
 disable-while-typing = 打字时禁用触摸板
-
 input-devices = 输入设备
     .desc = 输入设备
-
 primary-button = 主按钮
     .desc = 设置物理按钮的顺序。
     .left = 左键
     .right = 右键
-
 scrolling = 滚动
     .two-finger = 双指滚动
     .edge = 单指边缘滚动
@@ -554,7 +499,6 @@ short = 短
 long = 长
 keyboard = 键盘
     .desc = 输入源、输入切换、特殊字符输入和快捷键。
-
 keyboard-sources = 输入源
     .desc = 可以使用 Super+空格键组合切换输入源。可以在键盘快捷键设置中自定义。
     .move-up = 上移
@@ -563,23 +507,19 @@ keyboard-sources = 输入源
     .view-layout = 查看键盘布局
     .remove = 移除
     .add = 添加输入源
-
 keyboard-special-char = 特殊字符输入
     .alternate = 备用字符键
     .compose = 组合键
     .caps = 大写锁定键
-
 keyboard-typing-assist = 打字
     .repeat-rate = 重复率
     .repeat-delay = 重复延迟
-
 keyboard-numlock-boot = 数字锁定
     .boot-state = 启动时状态
     .last-boot = 上次启动
     .on = 开启
     .off = 关闭
     .set = 设置数字锁定启动状态
-
 added = 已添加
 type-to-search = 输入以搜索...
 show-extended-input-sources = 显示扩展输入源
@@ -588,7 +528,6 @@ show-extended-input-sources = 显示扩展输入源
 
 keyboard-shortcuts = 键盘快捷键
     .desc = 查看和自定义快捷键
-
 add-another-keybinding = 添加另一个快捷键
 cancel = 取消
 command = 命令
@@ -598,12 +537,13 @@ disabled = 已禁用
 input-source-switch = 切换键盘语言输入源
 migrate-workspace-prev = 将工作区移至上一个输出
 migrate-workspace-next = 将工作区移至下一个输出
-migrate-workspace = 将工作区移至{ $direction ->
-    *[down] 下方
-    [left] 左侧
-    [right] 右侧
-    [up] 上方
-}输出
+migrate-workspace =
+    将工作区移至{ $direction ->
+       *[down] 下方
+        [left] 左侧
+        [right] 右侧
+        [up] 上方
+    }输出
 navigate = 导航
 replace = 替换
 shortcut-name = 快捷键名称
@@ -611,36 +551,34 @@ system-controls = 系统控制
 terminate = 终止
 toggle-stacking = 切换窗口堆叠
 type-key-combination = 输入按键组合
-
 custom-shortcuts = 自定义快捷键
     .add = 添加快捷键
     .context = 添加自定义快捷键
     .none = 无自定义快捷键
-
 modified = 已修改 { $count } 项
-
 nav-shortcuts = 导航快捷键
     .prev-output = 聚焦上一个输出
     .next-output = 聚焦下一个输出
     .last-workspace = 聚焦最后一个工作区
     .prev-workspace = 聚焦上一个工作区
     .next-workspace = 聚焦下一个工作区
-    .focus = 聚焦{ $direction ->
-        *[down] 下方
-        [in] 内部
-        [left] 左侧
-        [out] 外部
-        [right] 右侧
-        [up] 上方
-    }窗口
-    .output = 切换到{ $direction ->
-        *[down] 下方
-        [left] 左侧
-        [right] 右侧
-        [up] 上方
-    }输出
+    .focus =
+        聚焦{ $direction ->
+           *[down] 下方
+            [in] 内部
+            [left] 左侧
+            [out] 外部
+            [right] 右侧
+            [up] 上方
+        }窗口
+    .output =
+        切换到{ $direction ->
+           *[down] 下方
+            [left] 左侧
+            [right] 右侧
+            [up] 上方
+        }输出
     .workspace = 切换到工作区 { $num }
-
 manage-windows = 管理窗口
     .close = 关闭窗口
     .maximize = 最大化窗口
@@ -649,26 +587,28 @@ manage-windows = 管理窗口
     .resize-inwards = 向内调整窗口大小
     .resize-outwards = 向外调整窗口大小
     .toggle-sticky = 切换窗口置顶
-
 move-windows = 移动窗口
-    .direction = 将窗口移动到{ $direction ->
-        *[down] 下方
-        [left] 左侧
-        [right] 右侧
-        [up] 上方
-    }
-    .display = 将窗口移动到{ $direction ->
-        *[down] 下方
-        [left] 左侧
-        [right] 右侧
-        [up] 上方
-    }显示器
-    .workspace = 将窗口移动到{ $direction ->
-        *[below] 下方
-        [left] 左侧
-        [right] 右侧
-        [above] 上方
-    }工作区
+    .direction =
+        将窗口移动到{ $direction ->
+           *[down] 下方
+            [left] 左侧
+            [right] 右侧
+            [up] 上方
+        }
+    .display =
+        将窗口移动到{ $direction ->
+           *[down] 下方
+            [left] 左侧
+            [right] 右侧
+            [up] 上方
+        }显示器
+    .workspace =
+        将窗口移动到{ $direction ->
+           *[below] 下方
+            [left] 左侧
+            [right] 右侧
+            [above] 上方
+        }工作区
     .workspace-num = 将窗口移动到工作区 { $num }
     .prev-workspace = 将窗口移动到上一个工作区
     .next-workspace = 将窗口移动到下一个工作区
@@ -677,7 +617,6 @@ move-windows = 移动窗口
     .prev-display = 将窗口移动到上一个显示器
     .send-to-prev-workspace = 将窗口移动到上一个工作区
     .send-to-next-workspace = 将窗口移动到下一个工作区
-
 system-shortcut = 系统快捷键
     .app-library = 打开应用程序库
     .brightness-down = 降低显示器亮度
@@ -702,7 +641,6 @@ system-shortcut = 系统快捷键
     .window-switcher = 切换打开的窗口
     .window-switcher-previous = 反向切换打开的窗口
     .workspace-overview = 打开工作区概览
-
 window-tiling = 窗口平铺
     .horizontal = 设置水平布局
     .vertical = 设置垂直布局
@@ -711,10 +649,8 @@ window-tiling = 窗口平铺
     .toggle-stacking = 开关窗口堆叠
     .toggle-floating = 开关窗口浮动
     .toggle-orientation = 切换布局方向
-
 replace-shortcut-dialog = 替换快捷键？
     .desc = { $shortcut } 已被 { $name } 使用。如果替换它， { $name } 将被禁用。
-
 zoom-in = 放大
 zoom-out = 缩小
 
@@ -730,13 +666,10 @@ mouse = 鼠标
 click-behavior = 点击行为
     .click-finger = 双指点击为右键点击，三指点击为中键点击
     .button-areas = 右下角点击为右键点击，底部中间点击为中键点击
-
 pinch-to-zoom = 捏合缩放
     .desc = 对支持缩放的应用程序，使用双指进行内容缩放。
-
 tap-to-click = 点触点击
     .desc = 启用单指点触为主要点击，双指点触为次要点击，三指点触为中键点击。
-
 touchpad = 触摸板
     .acceleration = 启用触摸板加速
     .desc = 触摸板速度、点击选项、手势。
@@ -750,11 +683,9 @@ gestures = 手势
     .four-finger-right = 四指向右滑动
     .four-finger-up = 四指向上滑动
     .three-finger-any = 三指任意方向滑动
-
 switch-workspaces = 切换工作区
     .horizontal = 四指左右滑动
     .vertical = 四指上下滑动
-
 switch-between-windows = 在窗口间切换
 open-application-library = 打开应用程序库
 open-workspaces-view = 打开工作区概览
@@ -763,16 +694,13 @@ open-workspaces-view = 打开工作区概览
 
 time = 时间和语言
     .desc = 暂无
-
 time-date = 日期和时间
     .desc = 时区、自动时钟设置和一些时间格式。
     .auto = 自动设置
     .auto-ntp = 设置时区后日期和时间将自动更新。
-
 time-zone = 时区
     .auto = 自动设置时区
     .auto-info = 需要位置服务和网络连接
-
 time-format = 日期和时间格式
     .twenty-four = 24小时制
     .show-seconds = 显示秒数
@@ -782,10 +710,8 @@ time-format = 日期和时间格式
     .saturday = 星期六
     .sunday = 星期日
     .monday = 星期一
-
 time-region = 区域和语言
     .desc = 根据您所在区域设置日期、时间和数字的格式
-
 formatting = 格式设置
     .dates = 日期
     .time = 时间
@@ -793,10 +719,8 @@ formatting = 格式设置
     .numbers = 数字
     .measurement = 度量单位
     .paper = 纸张
-
 preferred-languages = 首选语言
     .desc = 语言的顺序决定了用户界面使用的语言。更改在下次登录时生效。
-
 add-language = 添加语言
     .context = 添加语言
 install-additional-languages = 安装其他语言
@@ -836,7 +760,6 @@ startup-apps = 自动启动应用程序
 
 legacy-applications = X11 应用程序兼容性
     .desc = X11 窗口系统应用程序缩放和全局快捷键。
-
 legacy-app-global-shortcuts = X11 应用程序的全局快捷键
     .desc = 全局快捷键允许其他应用程序识别应用程序中执行的按键和鼠标按钮事件，用于按键通话或按键静音等功能。默认情况下，在 X11 应用程序中禁用此功能，以确保其他应用程序无法监视包含敏感信息的键盘和鼠标事件。
     .none = 不允许任何按键
@@ -844,7 +767,6 @@ legacy-app-global-shortcuts = X11 应用程序的全局快捷键
     .combination = 按下 Super、Control 或 Alt 修饰键时的所有按键
     .all = 所有按键
     .mouse = X11 应用程序中的鼠标按钮事件
-
 legacy-app-scaling = X11 窗口系统应用程序缩放
     .scaled-gaming = 优化游戏和全屏应用程序
     .gaming-description = X11 应用程序与 Wayland 应用程序相比可能稍大/稍小。
@@ -863,23 +785,19 @@ system = 系统和账户
 
 about = 关于
     .desc = 设备名称、硬件信息、操作系统默认设置。
-
 about-device = 设备名称
     .desc = 此名称将显示给其他网络或蓝牙设备。
-
 about-hardware = 硬件
     .model = 硬件型号
     .memory = 内存
     .processor = 处理器
     .graphics = 图形
     .disk-capacity = 磁盘容量
-
 about-os = 操作系统
     .os = 操作系统
     .os-architecture = 操作系统架构
     .desktop-environment = 桌面环境
     .windowing-system = 窗口系统
-
 about-related = 相关设置
     .support = 获取支持
 
@@ -895,10 +813,8 @@ users = 用户
     .admin = 管理员
     .standard = 标准用户
     .profile-add = 选择个人头像
-
 administrator = 管理员
     .desc = 管理员可以更改所有用户的设置，添加和删除其他用户。
-
 add-user = 添加用户
 change-password = 修改密码
 remove-user = 删除用户
@@ -906,3 +822,5 @@ full-name = 全名
 invalid-username = 用户名无效。
 password-mismatch = 密码和确认密码必须匹配。
 save = 保存
+amplification = 放大
+    .desc = 允许将音量提高到150%.
