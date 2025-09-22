@@ -364,10 +364,10 @@ mirroring = ಪ್ರತಿಬಿಂಬಿಸುವುದು
     .id = ಪ್ರತಿಬಿಂಬಿಸುತ್ತಿರುವುದು { $id }
     .dont = ಪ್ರತಿಬಿಂಬಿಸಬೇಡಿ
     .mirror = ಪ್ರತಿಬಿಂಬಿಸಿ { $display }
-    .project = { $display } ಗೆ ಪ್ರಕ್ಷಿಪ್ತವಾಗಿರಿ ->
+    .project = { $display } ಗೆ ಪ್ರಕ್ಷಿಪ್ತವಾಗಿರಿ { $display ->
         [all] ಎಲ್ಲಾ ಡಿಸ್ಪ್ಲೇಗಳು
         *[other] { $display }
-
+    }
     .project-count = { $count} ಇತರ { $count ->
         [1] ಡಿಸ್ಪ್ಲೇ
         *[other] ಡಿಸ್ಪ್ಲೇಗಳು

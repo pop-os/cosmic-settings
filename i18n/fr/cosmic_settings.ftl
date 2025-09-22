@@ -64,7 +64,7 @@ remove-connection-dialog = Supprimer le profil de connexion?
 
 vpn = VPN
     .connections = Connexions VPN
-	.error = Échec de l'ajout de la configuration VPN
+    .error = Échec de l'ajout de la configuration VPN
     .remove = Supprimer le profil de connexion
     .select-file = Sélectionnez un fichier de configuration VPN
 

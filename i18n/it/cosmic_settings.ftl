@@ -230,7 +230,7 @@ interface-density = Interface Density
     .compact = Compatta
     .spacious = Spaziosa
 
-window-management = Gestione finestre
+window-management-appearance = Gestione finestre
     .active-hint = Dimensione bordo finestra attiva
     .gaps = Spaziatura finestre in modalità tiling
 

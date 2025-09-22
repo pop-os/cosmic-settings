@@ -837,7 +837,7 @@ startup-apps = Startup-Anwendungen
 legacy-applications = Kompatibilität mit X11-Anwendungen
     .desc = Anwendungsskalierung des X11-Fenstersystems und globale Tastaturkürzel.
 
-<#-- This is still work in progress, as I didn't have enough time. Therefore, I left this here temporarily. -->
+# This is still work in progress, as I didn't have enough time. Therefore, I left this here temporarily.
 legacy-app-scaling = Anwendungsskalierung des X11-Fenstersystems
     .scaled-by-system = Alle X11-Anwendungen skalieren
     .system-description = X11-Anwendungen werden auf HiDPI-Bildschirmen unscharf dargestellt.

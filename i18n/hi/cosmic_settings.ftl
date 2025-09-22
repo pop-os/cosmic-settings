@@ -364,10 +364,10 @@ mirroring = परावर्तन
     .id = परावर्तित { $id }
     .dont = परावर्तित न करें
     .mirror = परावर्तित करें { $display }
-    .project = { $display } पर प्रक्षिप्त करें ->
+    .project = { $display } पर प्रक्षिप्त करें { $display ->
         [all] सभी प्रदर्शन
         *[other] { $display }
-
+    }
     .project-count = { $count} अन्य { $count ->
         [1] प्रदर्शन
         *[other] प्रदर्शन
