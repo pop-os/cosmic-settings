@@ -2,18 +2,22 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 use std::str::FromStr;
+use std::time::Duration;
 
 use super::{ShortcutBinding, ShortcutMessage, ShortcutModel};
 
 use cosmic::app::ContextDrawer;
+use cosmic::iced::keyboard::key::Named;
+use cosmic::iced::keyboard::{Key, Location, Modifiers};
 use cosmic::iced::{Alignment, Length};
+use cosmic::iced_winit;
 use cosmic::widget::{self, button, icon};
 use cosmic::{Apply, Element, Task};
 use cosmic_settings_config::Binding;
 use cosmic_settings_config::shortcuts::{Action, Shortcuts};
 use cosmic_settings_page::{self as page, Section, section};
 use slab::Slab;
-use slotmap::{Key, SlotMap};
+use slotmap::{Key as SlotKey, SlotMap};
 
 pub struct Page {
     entity: page::Entity,
@@ -63,6 +67,9 @@ pub enum Message {
     Shortcut(ShortcutMessage),
     /// Open the add shortcut context drawer
     ShortcutContext,
+    ModifiersChanged(Modifiers),
+    KeyReleased(u32, Key, Location),
+    KeyPressed(u32, Key, Location, Modifiers),
 }
 
 #[derive(Default)]
@@ -72,6 +79,7 @@ struct AddShortcut {
     pub name: String,
     pub task: String,
     pub keys: Slab<(String, widget::Id)>,
+    pub binding: Binding,
 }
 
 impl AddShortcut {
@@ -99,17 +107,19 @@ impl Page {
                 self.add_shortcut.task = text;
             }
 
-            Message::KeyInput(id, text) => {
-                self.add_shortcut.keys[id].0 = text;
-            }
+            Message::KeyInput(..) => {}
 
             Message::KeyEditing(id, enable) => {
                 if enable {
-                    self.add_shortcut.editing = Some(id)
+                    self.add_shortcut.editing = Some(id);
+                    return iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard();
                 } else if self.add_shortcut.editing == Some(id) {
-                    let task = self.add_keybinding();
                     self.add_shortcut.editing = None;
-                    return task;
+
+                    return Task::batch(vec![
+                        widget::text_input::focus(widget::Id::unique()),
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                    ]);
                 }
             }
 
@@ -129,33 +139,33 @@ impl Page {
 
                 let mut addable_bindings = Vec::new();
 
-                for (_, (keys, ..)) in &self.add_shortcut.keys {
-                    if keys.is_empty() {
+                for (index, (keys, id)) in &self.add_shortcut.keys {
+                    if !keys.is_empty() {
                         continue;
                     }
 
-                    let Ok(binding) = Binding::from_str(keys) else {
-                        return Task::none();
-                    };
-
-                    if !binding.is_set() {
-                        return Task::none();
-                    }
-
-                    if let Some(action) = self.model.config_contains(&binding) {
-                        let action_str = super::localize_action(&action);
-                        self.replace_dialog.push((binding, action, action_str));
-                        continue;
-                    }
-
-                    addable_bindings.push(binding);
+                    addable_bindings.push((index, id.clone()));
                 }
 
-                for binding in addable_bindings {
-                    self.add_shortcut(binding);
+                if let Some((index, binding)) = addable_bindings.first() {
+                    self.add_shortcut.editing = Some(*index);
+                    return Task::batch(vec![
+                        widget::text_input::focus(binding.clone()),
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                    ]);
+                } else {
+                    // make a new empty binding if none exist
+                    let new_id = widget::Id::unique();
+                    self.add_shortcut.editing = Some(
+                        self.add_shortcut
+                            .keys
+                            .insert((String::new(), new_id.clone())),
+                    );
+                    return Task::batch(vec![
+                        widget::text_input::focus(new_id.clone()),
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
+                    ]);
                 }
-
-                self.model.on_enter();
             }
 
             Message::EditCombination => {
@@ -164,6 +174,10 @@ impl Page {
                     return Task::batch(vec![
                         widget::text_input::focus(id.clone()),
                         widget::text_input::select_all(id.clone()),
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(
+                            true,
+                        )
+                        .discard()
                     ]);
                 }
             }
@@ -175,12 +189,14 @@ impl Page {
             }
 
             Message::ReplaceApply => {
-                if let Some((binding, ..)) = self.replace_dialog.pop() {
+                if let Some((mut binding, ..)) = self.replace_dialog.pop() {
                     self.model.config_remove(&binding);
+                    binding.keycode = None;
                     self.add_shortcut(binding);
 
                     if self.replace_dialog.is_empty() {
-                        self.model.on_enter();
+                        self.add_shortcut = Default::default();
+                        _ = self.model.on_enter();
                     }
                 }
             }
@@ -188,7 +204,8 @@ impl Page {
             Message::ReplaceCancel => {
                 _ = self.replace_dialog.pop();
                 if self.replace_dialog.is_empty() {
-                    self.model.on_enter();
+                    self.add_shortcut = Default::default();
+                    _ = self.model.on_enter();
                 }
             }
 
@@ -201,11 +218,125 @@ impl Page {
             }
 
             Message::ShortcutContext => {
+                let name_id = self.name_id.clone();
                 self.add_shortcut.enable();
                 return Task::batch(vec![
                     cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity)),
-                    widget::text_input::focus(self.name_id.clone()),
+                    // XX hack: wait a bit before focusing the input to avoid it being ignored before it exists
+                    cosmic::task::future(async move {
+                        tokio::time::sleep(Duration::from_millis(10)).await;
+                    })
+                    .then(move |_: ()| widget::text_input::focus(name_id.clone())),
                 ]);
+            }
+
+            Message::ModifiersChanged(modifiers) => {
+                if self.add_shortcut.active {
+                    let mut cfg_modifiers = cosmic_settings_config::shortcuts::Modifiers::new();
+                    if modifiers.alt() {
+                        cfg_modifiers = cfg_modifiers.alt()
+                    }
+                    if modifiers.control() {
+                        cfg_modifiers = cfg_modifiers.ctrl()
+                    }
+                    if modifiers.shift() {
+                        cfg_modifiers = cfg_modifiers.shift()
+                    }
+                    if modifiers.logo() {
+                        cfg_modifiers = cfg_modifiers.logo()
+                    }
+                    let old =
+                        std::mem::replace(&mut self.add_shortcut.binding.modifiers, cfg_modifiers);
+
+                    if self.add_shortcut.binding.keycode.is_none()
+                        && modifiers.is_empty()
+                        && (old.alt || old.ctrl || old.shift || old.logo)
+                    {
+                        self.add_shortcut = Default::default();
+                        _ = self.model.on_enter();
+
+                        return Task::batch(vec![
+                            iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
+                        ]);
+                    }
+                    if let Some(k) = self
+                        .add_shortcut
+                        .keys
+                        .get_mut(self.add_shortcut.editing.unwrap())
+                    {
+                        k.0 = self.add_shortcut.binding.to_string();
+                    }
+                }
+            }
+            Message::KeyReleased(keycode, _, _) => {
+                // if the currently selected shortcut matches, finish selecting shortcut
+                if self.add_shortcut.editing.is_some()
+                    && self.add_shortcut.active
+                    && self.add_shortcut.binding.key.is_some()
+                    && self
+                        .add_shortcut
+                        .binding
+                        .keycode
+                        .is_some_and(|k| k == keycode)
+                    && self.add_shortcut.binding.modifiers
+                        != cosmic_settings_config::shortcuts::Modifiers::new()
+                {
+                    // XX for now avoid applying the keycode
+                    let binding = Binding {
+                        modifiers: self.add_shortcut.binding.modifiers.clone(),
+                        key: self.add_shortcut.binding.key,
+                        keycode: None,
+                        description: None,
+                    };
+                    let Some(k) = self
+                        .add_shortcut
+                        .keys
+                        .get_mut(self.add_shortcut.editing.unwrap())
+                    else {
+                        return iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard();
+                    };
+                    k.0 = binding.to_string();
+
+                    if self.add_shortcut.name.trim().is_empty()
+                        || self.add_shortcut.task.trim().is_empty()
+                    {
+                        return Task::batch(vec![
+                            widget::text_input::focus(widget::Id::unique()),
+                            iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                        ]);
+                    }
+                    self.add_shortcut(binding);
+                    _ = self.model.on_enter();
+
+                    return Task::batch(vec![
+                        widget::text_input::focus(widget::Id::unique()),
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                    ]);
+                }
+            }
+            Message::KeyPressed(keycode, unmodified_keysym, location, modifiers) => {
+                if unmodified_keysym == Key::Named(Named::Escape) && modifiers.is_empty() {
+                    self.add_shortcut.editing = None;
+                    return Task::batch(vec![
+                        widget::text_input::focus(widget::Id::unique()),
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                    ]);
+                }
+                if self.add_shortcut.active {
+                    self.add_shortcut.binding.keycode = Some(keycode);
+                    self.add_shortcut.binding.key =
+                        iced_winit::platform_specific::wayland::keymap::key_to_keysym(
+                            unmodified_keysym,
+                            location,
+                        );
+                    if let Some(k) = self
+                        .add_shortcut
+                        .keys
+                        .get_mut(self.add_shortcut.editing.unwrap())
+                    {
+                        k.0 = self.add_shortcut.binding.to_string();
+                    }
+                }
             }
         }
 
@@ -221,7 +352,13 @@ impl Page {
 
             binding.clear();
 
-            return widget::text_input::focus(id.clone());
+            return Task::batch(vec![
+            widget::text_input::focus(id.clone()),
+            iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(
+                    true,
+                )
+                .discard(),
+            ]);
         }
 
         let new_id = widget::Id::unique();
@@ -234,6 +371,10 @@ impl Page {
         Task::batch(vec![
             widget::text_input::focus(new_id.clone()),
             widget::text_input::select_all(new_id),
+            iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(
+                true,
+            )
+            .discard(),
         ])
     }
 
@@ -275,10 +416,11 @@ impl Page {
                     self.add_shortcut.editing == Some(id),
                     move |enable| Message::KeyEditing(id, enable),
                 )
+                .on_focus(Message::KeyEditing(id, true))
                 .select_on_focus(true)
-                .padding([0, 12])
                 .on_input(move |input| Message::KeyInput(id, input))
                 .on_submit(|_| Message::AddKeybinding)
+                .padding([0, 12])
                 .id(widget_id.clone())
                 .apply(widget::container)
                 .padding([8, 24]);
@@ -303,7 +445,11 @@ impl Page {
     }
 
     fn add_shortcut(&mut self, mut binding: Binding) {
-        self.add_shortcut.active = !self.replace_dialog.is_empty();
+        if let Some(action) = self.model.config_contains(&binding) {
+            let action_str = super::localize_action(&action);
+            self.replace_dialog.push((binding, action, action_str));
+            return;
+        }
         binding.description = Some(self.add_shortcut.name.clone());
         let new_action = Action::Spawn(self.add_shortcut.task.clone());
         self.model.config_add(new_action, binding);
@@ -381,13 +527,90 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
-        self.model.on_enter();
+        self.add_shortcut = Default::default();
+        _ = self.model.on_enter();
         Task::none()
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        self.model.on_clear();
-        Task::none()
+        _ = self.model.on_clear();
+        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(
+            false,
+        )
+        .discard()
+    }
+
+    #[cfg(feature = "wayland")]
+    fn subscription(
+        &self,
+        core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<crate::pages::Message> {
+        use cosmic::iced::{self, event::listen_with};
+
+        cosmic::iced::Subscription::batch(vec![
+            if self.add_shortcut.active && self.add_shortcut.editing.is_some() {
+                listen_with(|event, _, _| match event {
+                    iced::event::Event::Keyboard(iced::keyboard::Event::KeyPressed {
+                        key,
+                        physical_key,
+                        location,
+                        modifiers,
+                        ..
+                    }) => {
+                        use cosmic::iced::keyboard::{Key, key::Named};
+                        if matches!(
+                            key,
+                            Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
+                        ) {
+                            return None;
+                        } else if matches!((&key, modifiers), (Key::Named(Named::Tab), modifiers) if modifiers.is_empty() || modifiers == Modifiers::SHIFT)
+                        {
+                            return None;
+                        }
+                        cosmic::iced_winit::conversion::physical_to_scancode(physical_key).map(
+                            |code| {
+                                crate::pages::Message::CustomShortcuts(Message::KeyPressed(
+                                    code, key, location, modifiers,
+                                ))
+                            },
+                        )
+                    }
+                    iced::event::Event::Keyboard(iced::keyboard::Event::KeyReleased {
+                        key,
+                        physical_key,
+                        location,
+                        ..
+                    }) => {
+                        use cosmic::iced::keyboard::{Key, key::Named};
+                        if matches!(
+                            key,
+                            Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
+                        ) {
+                            return None;
+                        }
+                        cosmic::iced_winit::conversion::physical_to_scancode(physical_key).map(
+                            |code| {
+                                crate::pages::Message::CustomShortcuts(Message::KeyReleased(
+                                    code, key, location,
+                                ))
+                            },
+                        )
+                    }
+                    iced::event::Event::Keyboard(iced::keyboard::Event::ModifiersChanged(e)) => {
+                        Some(crate::pages::Message::CustomShortcuts(
+                            Message::ModifiersChanged(e),
+                        ))
+                    }
+
+                    _ => None,
+                })
+            } else {
+                cosmic::iced::Subscription::none()
+            },
+            self.model
+                .subscription(core)
+                .map(|m| crate::pages::Message::CustomShortcuts(Message::Shortcut(m))),
+        ])
     }
 }
 
@@ -406,6 +629,7 @@ fn bindings(_defaults: &Shortcuts, keybindings: &Shortcuts) -> Slab<ShortcutMode
                 let new_binding = ShortcutBinding {
                     id: widget::Id::unique(),
                     binding: binding.clone(),
+                    pending: binding.clone(),
                     input: String::new(),
                     is_default: false,
                     is_saved: true,

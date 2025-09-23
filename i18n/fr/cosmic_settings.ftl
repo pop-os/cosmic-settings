@@ -64,24 +64,24 @@ remove-connection-dialog = Supprimer le profil de connexion?
 
 vpn = VPN
     .connections = Connexions VPN
-	.error = Échec de l'ajout de la configuration VPN
+    .error = Échec de l'ajout de la configuration VPN
     .remove = Supprimer le profil de connexion
     .select-file = Sélectionnez un fichier de configuration VPN
 
 vpn-error = Erreur VPN
-	.config = Échec de l'ajout de la configuration VPN
-	.connect = Échec de la connexion au VPN
-	.connection-editor = Échec de l'éditeur de connexion
-	.connection-settings = Échec de l'obtention des paramètres des connexions actives
-	.updating-state = Échec de la mise à jour de l'état du gestionnaire de réseau
-	.wireguard-config-path = Chemin de fichier non valide pour la configuration WireGuard
-	.wireguard-config-path-desc = Le fichier choisi doit se trouver sur un système de fichiers local.
-	.wireguard-device = Échec de la création du périphérique WireGuard
-	.with-password = Échec de la configuration du VPN { $field ->
-	*[username] nom d'utilisateur
-	[password] mot de passe
-	[password-flags] indicateurs de mot de passe
-	} avec nmcli
+    .config = Échec de l'ajout de la configuration VPN
+    .connect = Échec de la connexion au VPN
+    .connection-editor = Échec de l'éditeur de connexion
+    .connection-settings = Échec de l'obtention des paramètres des connexions actives
+    .updating-state = Échec de la mise à jour de l'état du gestionnaire de réseau
+    .wireguard-config-path = Chemin de fichier non valide pour la configuration WireGuard
+    .wireguard-config-path-desc = Le fichier choisi doit se trouver sur un système de fichiers local.
+    .wireguard-device = Échec de la création du périphérique WireGuard
+    .with-password = Échec de la configuration du VPN { $field ->
+        *[username] nom d'utilisateur
+        [password] mot de passe
+        [password-flags] indicateurs de mot de passe
+    } avec nmcli
 
 wired = Filaire
     .adapter = Adaptateur filaire { $id }
@@ -94,7 +94,7 @@ wifi = Wi-Fi
     .forget = Oublier ce réseau
 
 wireguard-dialog = Ajouter un périphérique WireGuard
-	.description = Choisir un nom de périphérique pour la configuration WireGuard.
+    .description = Choisir un nom de périphérique pour la configuration WireGuard.
 
 ## Networking: Online Accounts
 
@@ -122,7 +122,7 @@ bluetooth-paired = Périphériques précédemment connectés
     .battery = { $percentage }% de batterie
 
 bluetooth-confirm-pin = Confirmer le code PIN Bluetooth
-	.description = Veuillez confirmer que le code PIN suivant correspond à celui affiché sur { $device }
+    .description = Veuillez confirmer que le code PIN suivant correspond à celui affiché sur { $device }
 
 bluetooth-available = Périphériques à proximité
 

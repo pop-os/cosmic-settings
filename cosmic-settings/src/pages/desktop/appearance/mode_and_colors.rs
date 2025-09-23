@@ -231,11 +231,8 @@ fn accent_color_palette<'a>(
 
     cosmic::iced::widget::column![
         text::body(&descriptions[labels["accent_color"]]),
-        widget::flex_row(accent_palette_row)
-            .padding([0, 0, 16, 0])
-            .spacing(16)
+        widget::flex_row(accent_palette_row).spacing(16)
     ]
-    .padding([16, 0, 0, 0])
     .spacing(space_xxs)
 }
 

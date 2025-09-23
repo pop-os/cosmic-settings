@@ -1,11 +1,13 @@
 [Desktop Entry]
 Name=Desktop
+Name[ar]=سطح المكتب
 Name[zh_CN]=桌面
 Name[pl]=Pulpit
 Name[hu]=Asztal
 Name[pt]=Área de Trabalho
 Name[nl]=Bureaublad
 Name[sk]=Pracovná plocha
+Name[es]=Escritorio
 Comment=
 Comment[sk]=Nastavenia pracovnej plochy, vzhľadu a správania okien
 Type=Settings

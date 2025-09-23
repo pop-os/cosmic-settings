@@ -52,6 +52,7 @@ entry-panel := appid + '.Panel.desktop'
 entry-power := appid + '.Power.desktop'
 entry-region-language := appid + '.RegionLanguage.desktop'
 entry-sound := appid + '.Sound.desktop'
+entry-startup-apps := appid + '.StartupApps.desktop'
 entry-system := appid + '.System.desktop'
 entry-time := appid + '.Time.desktop'
 entry-touchpad := appid + '.Touchpad.desktop'
@@ -91,6 +92,7 @@ install-desktop-entries:
     install -Dm0644 'resources/{{entry-power}}' '{{appdir}}/{{entry-power}}'
     install -Dm0644 'resources/{{entry-region-language}}' '{{appdir}}/{{entry-region-language}}'
     install -Dm0644 'resources/{{entry-sound}}' '{{appdir}}/{{entry-sound}}'
+    install -Dm0644 'resources/{{entry-startup-apps}}' '{{appdir}}/{{entry-startup-apps}}'
     install -Dm0644 'resources/{{entry-system}}' '{{appdir}}/{{entry-system}}'
     install -Dm0644 'resources/{{entry-time}}' '{{appdir}}/{{entry-time}}'
     install -Dm0644 'resources/{{entry-touchpad}}' '{{appdir}}/{{entry-touchpad}}'
@@ -144,6 +146,7 @@ uninstall:
         '{{appdir}}/{{entry-power}}' \
         '{{appdir}}/{{entry-region-language}}' \
         '{{appdir}}/{{entry-sound}}' \
+        '{{appdir}}/{{entry-startup-apps}}' \
         '{{appdir}}/{{entry-system}}' \
         '{{appdir}}/{{entry-time}}' \
         '{{appdir}}/{{entry-touchpad}}' \

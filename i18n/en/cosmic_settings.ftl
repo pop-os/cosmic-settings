@@ -473,6 +473,9 @@ sound-input = Input
     .device = Input device
     .level = Input level
 
+amplification = Amplification
+    .desc = Allows raising the volume to 150%.
+
 sound-alerts = Alerts
     .volume = Alerts volume
     .sound = Alerts sound
@@ -696,6 +699,7 @@ system-shortcut = System
     .poweroff = Power off
     .screenshot = Take a screenshot
     .terminal = Open a terminal
+    .touchpad-toggle = Toggle touchpad
     .volume-lower = Decrease audio output volume
     .volume-raise = Increase audio output volume
     .web-browser = Open a web browser

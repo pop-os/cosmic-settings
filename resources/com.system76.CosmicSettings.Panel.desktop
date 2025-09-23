@@ -1,16 +1,20 @@
 [Desktop Entry]
 Name=Panel
+Name[ar]=اللوحة
 Name[zh_CN]=面板
 Name[pl]=Panel
 Name[hu]=Panel
 Name[pt]=Painel
 Name[sk]=Panel
+Name[es]=Barra
 Comment=Primary system bar for menus and applets.
+Comment[ar]=شريط النظام الأساسي للقوائم والبريمجات.
 Comment[zh_CN]=主系统栏，用于菜单和小部件。
 Comment[hu]=Fő rendszersáv menükhöz és kisalkalmazásokhoz.
 Comment[pt]=Barra superior com controles e menus.
 Comment[nl]=De standaard systeembalk voor menu's en applets.
 Comment[sk]=Hlavný systémový panel pre menu a applety.
+Comment[es]=Barra principal del sistema para menús y applets.
 Type=Settings
 Exec=cosmic-settings panel
 Terminal=false

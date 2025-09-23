@@ -8,7 +8,6 @@ rust-version.workspace = true
 
 [dependencies]
 cosmic-bg-config = { workspace = true }
-cosmic-config = { workspace = true }
 cosmic-randr-shell = { workspace = true }
 dirs = "6.0.0"
 eyre = "0.6.12"
@@ -16,12 +15,11 @@ eyre = "0.6.12"
 fast_image_resize = { git = "https://github.com/jackpot51/fast_image_resize.git", features = [
     "image",
 ] }
-freedesktop-icons = { package = "cosmic-freedesktop-icons", git = "https://github.com/pop-os/freedesktop-icons" }
-futures-lite = "2.6.0"
+futures-lite = "2.6.1"
 futures-util = "0.3.31"
-image = "0.25.6"
+image = "0.25.8"
 infer = "0.19.0"
 jxl-oxide = { version = "0.12.4", features = ["image"] }
-tokio = { version = "1.47.0", features = ["sync"] }
+tokio = { workspace = true, features = ["sync"] }
 tracing = "0.1.41"
 walkdir = "=2.5.0"

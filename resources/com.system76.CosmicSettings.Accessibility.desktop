@@ -1,16 +1,20 @@
 [Desktop Entry]
 Name=Accessibility
+Name[ar]=الإتاحة
 Name[zh_CN]=辅助功能
 Name[hu]=Akadálymentesség
 Name[pt]=Acessibilidade
 Name[nl]=Toegankelijkheid
 Name[sk]=Prístupnosť
+Name[es]=Accesibilidad
 Comment=Accessibility settings.
+Comment[ar]=إعدادات الإتاحة
 Comment[zh_CN]=辅助功能设置
 Comment[hu]=Akadálymentességi beállítások.
 Comment[pt]=Configurações de acessibilidade.
 Comment[nl]=Toegankelijkheidsinstellingen.
 Comment[sk]=Nastavenia prístupnosti.
+Comment[es]=Configuración de accesibilidad.
 Type=Settings
 Exec=cosmic-settings accessibility
 Terminal=false

@@ -484,6 +484,9 @@ sound-input = Wejście
     .device = Urządzenie wejścia
     .level = Poziom wejścia
 
+amplification = Wzmocnienie
+    .desc = Pozwala zwiększać głośność do 150%.
+
 sound-alerts = Alerty
     .volume = Głośność alertów
     .sound = Dźwięk alertów
@@ -708,6 +711,7 @@ system-shortcut = System
     .poweroff = Wyłącz
     .screenshot = Zrób zrzut ekranu
     .terminal = Otwórz terminal
+    .touchpad-toggle = Włączanie/wyłączanie gładzika
     .volume-lower = Zmniejsz głośność wyjścia dźwięku
     .volume-raise = Zwiększ głośność wyjścia dźwięku
     .web-browser = Otwórz przeglądarkę

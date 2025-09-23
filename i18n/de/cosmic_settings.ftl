@@ -837,7 +837,7 @@ startup-apps = Startup-Anwendungen
 legacy-applications = Kompatibilität mit X11-Anwendungen
     .desc = Anwendungsskalierung des X11-Fenstersystems und globale Tastaturkürzel.
 
-<#-- This is still work in progress, as I didn't have enough time. Therefore, I left this here temporarily. -->
+# This is still work in progress, as I didn't have enough time. Therefore, I left this here temporarily.
 legacy-app-scaling = Anwendungsskalierung des X11-Fenstersystems
     .scaled-by-system = Alle X11-Anwendungen skalieren
     .system-description = X11-Anwendungen werden auf HiDPI-Bildschirmen unscharf dargestellt.
@@ -891,18 +891,3 @@ administrator = Administrator
 add-user = Benutzer hinzufügen
 remove-user = Benutzer entfernen
 full-name = Vollständiger Name
-
-## System: Standardanwendungen
-
-default-apps = Standardanwendungen
-    .desc = Voreingestellter Webbrowser, E-Mail-Client, Dateimanager und andere Anwendungen.
-    .web-browser = Webbrowser
-    .file-manager = Dateimanager
-    .mail-client = E-Mail-Client
-    .music = Musik
-    .video = Video
-    .photos = Fotos
-    .calendar = Kalender
-    .terminal = Terminal
-    .other-associations = Andere Zuordnungen
-    .text-editor = Texteditor

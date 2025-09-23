@@ -1,18 +1,22 @@
 [Desktop Entry]
 Name=Appearance
+Name[ar]=المظهر
 Name[zh_CN]=外观
 Name[pl]=Wygląd
 Name[hu]=Megjelenés
 Name[pt]=Aparência
 Name[nl]=Weergave
 Name[sk]=Vzhľad
+Name[es]=Apariencia
 Comment=Accent colors and theming.
+Comment[ar]=ألوان التمييز والسمات.
 Comment[zh_CN]=强调色和个性化
 Comment[pl]=Kolory akcentów i styl.
 Comment[hu]=Kiemelő színek és téma.
 Comment[pt]=Cores de destaque e temas.
 Comment[nl]=Accentkleuren en thema's.
 Comment[sk]=Akcentové farby a témy.
+Comment[es]=Colores de énfasis y temas.
 Type=Settings
 Exec=cosmic-settings appearance
 Terminal=false

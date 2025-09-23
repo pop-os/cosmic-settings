@@ -1,18 +1,22 @@
 [Desktop Entry]
 Name=Network & Wireless
+Name[ar]=الشبكة والاتصالات اللاسلكية 
 Name[zh_CN]=网络和无线
 Name[pl]=Sieć i połączenia bezprzewodowe
 Name[hu]=Hálózat és Wi-Fi
 Name[pt]=Rede e Wi-Fi
 Name[nl]=Netwerk en wifi
 Name[sk]=Sieť & Bezdrôtové
+Name[es]=Red e inalámbrico
 Comment=Manage network connections
+Comment[ar]=أدر اتصالات الشبكة
 Comment[zh_CN]=管理网络连接
 Comment[pl]=Zarządzaj połączeniami sieciowymi
 Comment[hu]=Hálózati kapcsolatok kezelése
 Comment[pt]=Gerenciar conexões de rede
 Comment[nl]=Netwerkverbindingen beheren
 Comment[sk]=Spravovať sieťové pripojenia
+Comment[es]=Gestionar conexiones de red
 Type=Settings
 Exec=cosmic-settings network
 Terminal=false

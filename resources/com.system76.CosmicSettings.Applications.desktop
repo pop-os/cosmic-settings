@@ -1,16 +1,20 @@
 [Desktop Entry]
 Name=Applications
+Name[ar]=التطبيقات
 Name[zh_CN]=应用程序
 Name[hu]=Alkalmazások
 Name[pt]=Aplicativos
 Name[nl]=Toepassingen
 Name[sk]=Aplikácie
+Name[es]=Aplicaciones
 Comment=Manage application settings.
+Comment[ar]=أدر إعدادات التطبيق.
 Comment[zh_CN]=管理应用程序设置
 Comment[hu]=Alkalmazásbeállítások kezelése.
 Comment[pt]=Gerenciar configurações de aplicativos.
 Comment[nl]=Instellingen voor toepassingen beheren.
 Comment[sk]=Spravovať nastavenia aplikácií.
+Comment[es]=Gestionar configuración de aplicaciones.
 Type=Settings
 Exec=cosmic-settings applications
 Terminal=false

@@ -146,6 +146,9 @@ pub fn hardware_model(bump: &Bump, hardware_model: &mut String) {
                 }
             }
         }
+    } else {
+        // simple fallback to sysinfo if DMI information is not available
+        hardware_model.push_str(&sysinfo::Product::name().unwrap_or("".to_string()));
     }
 }
 
@@ -186,6 +189,12 @@ pub fn processor_name(bump: &Bump, name: &mut String) {
             }
         }
     }
+
+    // fallback to sysinfo if /proc/cpuinfo is not present
+    let s = sysinfo::System::new_with_specifics(
+        sysinfo::RefreshKind::nothing().with_cpu(sysinfo::CpuRefreshKind::everything()),
+    );
+    name.push_str(s.cpus().into_iter().nth(0).unwrap().brand());
 }
 
 pub fn read_to_string<'a, P: AsRef<OsStr>>(

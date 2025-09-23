@@ -543,20 +543,14 @@ power = 電源とバッテリー
   .desc = 電源設定を管理
 
 battery = Battery
-  .minute = { $value }分
-
-  .hour = { $value }時間
-
-  .day = { $value }日
-
-  .less-than-minute = 一分以下
-
-  .and =
-
-  .remaining-time = { $action ->
+    .minute = { $value }分
+    .hour = { $value }時間
+    .day = { $value }日
+    .less-than-minute = 一分以下
+    .remaining-time = { $action ->
         [full] 充電完了
        *[other] 電池切れ
-   }まで{ $time }
+    }まで{ $time }
 
 connected-devices = 接続されたデバイス
   .unknown = 不明なデバイス

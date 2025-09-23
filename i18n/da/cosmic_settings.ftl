@@ -365,7 +365,6 @@ window-controls = Vinduesstyring
 focus-navigation = Fokus navigation
     .focus-follows-cursor = Fokus følger markøren
     .cursor-follows-focus = Markøren følger fokus
-    .cursor-follows-focus = Markøren følger fokus
 
 ## Desktop: Arbejdsområder
 

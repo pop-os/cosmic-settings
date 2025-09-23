@@ -823,6 +823,7 @@ startup-apps = Aplicaciones de inicio
     .add = Añadir aplicación
     .user = Aplicaciones específicas del usuario
     .user-description = Estas aplicaciones se ejecutarán cuando inicies sesión con tu usuario actual.
+    .none = No se han añadido aplicaciones de inicio
     .remove-dialog-title = Eliminar { $name }?
     .remove-dialog-description = ¿Estás seguro que quieres eliminarla como aplicación de inicio?
     .search-for-application = Buscar una aplicación
