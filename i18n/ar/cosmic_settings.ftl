@@ -1,26 +1,24 @@
 app = إعدادات COSMIC
-
 dbus-connection-error = تعذَّر الاتصال بـDBus
 ok = حسنًا
 unknown = مجهول
-
 number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles = { $variant ->
-    [wired] سلكي
-    [wifi] واي فاي
-    [vpn] شبكة خاصة افتراضية
-    *[other] مجهول
-} الاتصالات ولاحات الاتصالات.
-
+connections-and-profiles =
+    { $variant ->
+        [wired] سلكي
+        [wifi] واي فاي
+        [vpn] شبكة خاصة افتراضية
+       *[other] مجهول
+    } الاتصالات ولاحات الاتصالات.
 add-network = أضِف شبكة
     .profile = أضِف ملف تعريف
 add-vpn = أضِف شبكة خاصة افتراضية
 airplane-on = وضع الطائرة مفعَّل.
 cable-unplugged = الكبل مفصول
-connect = اتَّصل
+connect = اتصل
 connected = متَّصل
 connecting = يتَّصل…
 disconnect = اقطع الاتِّصال
@@ -36,14 +34,11 @@ settings = الإعدادات
 username = اسم المستخدم
 visible-networks = الشبكات المرئية
 identity = الهوية
-
 auth-dialog = الاستيثاق مطلوب
     .vpn-description = أدخِل اسم المستخدم وكلمة السر المطلوبة من قبل خدمة الشبكة الخاصة الافتراضية.
     .wifi-description = أدخِل كلمة السر أو مفتاح التعمية. يمكنك أيضًا الاتِّصال عبر ضغط زر “WPS” على الموجِّه.
-
 forget-dialog = أنسَ شبكة واي فاي هذه؟
     .description = سيتعين إدخال كلمة السر لاستخدامها مستقبلًا.
-
 network-device-state =
     .activated = متَّصل
     .config = يتَّصل
@@ -59,17 +54,14 @@ network-device-state =
     .unknown = حالة مجهولة
     .unmanaged = غير مُدار
     .unplugged = الكبل مفصول
-
 remove-connection-dialog = أزيلُ ملف تعريف الاتِّصال؟
     .vpn-description = سيتعين إدخال كلمة السر لاستخدام هذه الشبكة مستقبلًا.
     .wired-description = ستتعين إعادة إنشاء ملف التعريف هذا لاستخدامه مستقبلًا.
-
 vpn = شبكة خاصة افتراضية
     .connections = اتصالات الشبكات الخاصة الافتراضية
     .error = تعذّّرت إضافة ضبط الشبكة الخاصة الافتراضية
     .remove = أزِل ملف تعريف الاتِّصال
     .select-file = اختر ملف ضبط الشبكة الخاصة الافتراضية
-
 vpn-error = خطأ في الشبكة الخاصة الافتراضية
     .config = تعذَّرت إضافة ضبط الشبكة الخاصة الافتراضية
     .connect = تعذَّر الاتِّصال بالشبكة الخاصة الافتراضية
@@ -79,22 +71,20 @@ vpn-error = خطأ في الشبكة الخاصة الافتراضية
     .wireguard-config-path = مسار ملف غير صالح لضبط واير غارد
     .wireguard-config-path-desc = ينبغي أن يكون الملف المحدد على نظام الملفات المحلي.
     .wireguard-device = تعذَّر إنشاء جهاز واير غارد
-    .with-password =   تعذَّر تعيين الشبكة الخاصة الافتراضية { $field ->
-        *[username] اسم المستخدم
-        [password] كلمة السر
-        [password-flags] خيارات كلمة السر
-    } باستخدام nmcli
-
+    .with-password =
+        تعذَّر تعيين الشبكة الخاصة الافتراضية { $field ->
+           *[username] اسم المستخدم
+            [password] كلمة السر
+            [password-flags] خيارات كلمة السر
+        } باستخدام nmcli
 wired = سلكي
     .adapter = المحوِّل السلكي { $id }
     .connections = الاتصالات السلكية
     .devices = الأجهزة السلكة
     .remove = أزِل ملف تعريف الاتِّصال
-
 wifi = واي فاي
     .adapter = محوِّل واي فاي { $id }
     .forget = انسَ هذه الشبكة
-
 wireguard-dialog = أضِف جهاز واير غارد
     .description = اختر اسم جهاز لضبط واير غارد.
 
@@ -108,7 +98,6 @@ online-accounts = حسابات الإنترنت
 activate = نشّط
 confirm = أكِّد
 enable = فعِّل
-
 bluetooth = بلوتوث
     .desc = أدر أجهزة بلوتوث
     .status = سيظهر النظام باسم { $aliases } حين تُفتح إعدادات بلوتوث.
@@ -122,16 +111,12 @@ bluetooth = بلوتوث
     .disabled = خدمة البلوتوث معطّلة
     .inactive = خدمة البلوتوث غير نشطة
     .unknown = تعذر تنشيط خدمة البلوتوث. هل BlueZ مثبت؟
-
 bluetooth-paired = الأجهزة المتَّصَلة مسبقًا
     .connect = اتَّصِل
     .battery = البطارية { $percentage }٪
-
 bluetooth-confirm-pin = أكِّد رمز بلوتوث
     .description = تحقق بأن الرمز التالي يطابق المعروض على { $device }
-
 bluetooth-available = الأجهزة القريبة
-
 bluetooth-adapters = محوِّلات بلوتوث
 
 ## Accessibility
@@ -140,25 +125,26 @@ accessibility = الإتاحة
     .vision = الرؤية
     .on = مفعّل
     .off = معطّل
-    .unavailable =  غير متوفّر
-    .screen-reader =  قارئ الشاشة
+    .unavailable = غير متوفّر
+    .screen-reader = قارئ الشاشة
     .high-contrast = وضع تباين عالٍ
     .invert-colors = اعكس الألوان
     .color-filters = تصفيات الألوان
-
 hearing = السمع
     .mono = شغَّل الصوت الاستريو كأحادي
-
 default = المبدئي
 magnifier = المكبّر
-    .controls = أو استخدم هذه الاختصارات: { $zoom_in ->
-             [zero] {""}
-            *[other] {""}
-                {$zoom_in} للتقريب,
+    .controls =
+        أو استخدم هذه الاختصارات: { $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_in } للتقريب,
         }{ $zoom_out ->
-             [zero] {""}
-            *[other] {""}
-                {$zoom_out} للتبعيد,
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_out } للتبعيد,
         }
         Super + التمرير بعجلة الفأرة
     .scroll_controls = فعِّل التكبير بالفأرة أو لوحة اللمس مع Super + التمرير
@@ -183,7 +169,7 @@ desktop = سطح المكتب
 
 ## Desktop: Wallpaper
 
-wallpaper = الخلفية
+wallpaper = خلفية الشاشة
     .change = يغير الصورة كل
     .desc = صور الخلفية، والألوان، وخيارات عرض الشرائح.
     .fit = ملائمة الخلفية
@@ -192,7 +178,6 @@ wallpaper = الخلفية
     .plural = الخلفيات
     .same = اعرض نفس الخلفية على كافة الشاشات
     .slide = عرض الشرائح
-
 add-color = أضِف لونًا
 add-image = أضِف صورة
 all-displays = جميع الشاشات
@@ -202,29 +187,29 @@ fill = مملوءة
 fit-to-screen = ملائمة للشاشة
 open-new-folder = افتح مجلدًا جديدًا
 recent-folders = المجلدات الأخيرة
-
-x-minutes = { $number ->
-    [0] أقل من دقيقة
-    [1] دقيقة واحدة
-    [2] دقيقتان
-    [few] { $number } دقائق
-    [many] { $number } دقيقة
-    *[other] { $number } دقيقة
-}
-x-hours = { $number ->
-    [0] أقل من دقيقة
-    [1] دقيقة واحدة
-    [2] دقيقتان
-    [few] { $number } دقائق
-    [many] { $number } دقيقة
-    *[other] { $number } دقيقة
-}
+x-minutes =
+    { $number ->
+        [0] أقل من دقيقة
+        [1] دقيقة واحدة
+        [2] دقيقتان
+        [few] { $number } دقائق
+        [many] { $number } دقيقة
+       *[other] { $number } دقيقة
+    }
+x-hours =
+    { $number ->
+        [0] أقل من دقيقة
+        [1] دقيقة واحدة
+        [2] دقيقتان
+        [few] { $number } دقائق
+        [many] { $number } دقيقة
+       *[other] { $number } دقيقة
+    }
 
 ## Desktop: Appearance
 
 appearance = المظهر
     .desc = لون التمييز والسمات.
-
 accent-color = لون التمييز
 app-background = خلفية النافذة أو التطبيق
 auto = آلي
@@ -243,43 +228,33 @@ reset-to-default = صفِّر إلى المبدئيات
 rgb = ح‌خ‌ز
 window-hint-accent = لون تلميح النافذة النشطة
 window-hint-accent-toggle = استخدام تمييز اللون للسمة كنافذة تلميح نشطة
-
 auto-switch = التبديل تلقائيًا بين الوضعين الفاتح والداكن
     .sunrise = يبدِّل إلى الوضع الفاتح عند شروق الشمس
     .sunset = يبدِّل إلى الوضع الداكن عند غروب الشمس
     .next-sunrise = يبدِّل إلى الوضع الفاتح عند شروق الشمس المقبل
     .next-sunset = يبدِّل إلى الوضع الداكن عند غروب الشمس المقبل
-
 container-background = خلفية الحاوية
     .desc-detail = لون خلفية الحاوية يستخدم لشريط التنقل الجانبي، والدرج الجانبي، والحواريات، والودجات المشابهة. يستمد اللون آليًا من التطبيق أو نافذة الخلفية مبدئيًا.
     .reset = صفِّر إلى الآلي
     .desc = يستخدم اللون الأساسي للحاوية لشريط التنقل الجانبي، والدرج الجانبي، والحواريات، والودجات المشابهة.
-
 control-tint = صيغة مكون التحكم
     .desc = يستعمل لخلفيات الأزرار القياسية، ومدخلات البحث، ومدخلات النص، والمكوِّنات المشابهة.
-
 frosted = تأثير الزجاج المسنفر على واجهة النظام
     .desc = يطبِّق تمويه الخلفية للشريط، والبُرَيْمجات، والمطلق، ومكتبة التطبيقات.
-
 enable-export = طبِّق هذه السمة على تطبيقات جنوم.
     .desc = لا تدعم كل عُدَد الأدوات التبديل الآلي. بقية التطبيقات غير المرتبطة بـCOSMIC ستحتاج لإعادة التشغيل بعد تغيير السمة.
-
 icon-theme = سمة الأيقونات
     .desc = يطبِّق مجموعة مختلفة من الأيقونات للتطبيقات.
-
 text-tint = صيغة نص الواجهة
     .desc = اللون المستخدم لاشتقاق ألوان النصوص في الواجهة بحيث تحقق تباينًا كافيًا على الأسطح المختلفة.
-
 style = الأسلوب
     .round = مدوَّر
     .slightly-round = مدوَّر نسبيًا
     .square = مربع
-
 interface-density = كثافة الواجهة
     .comfortable = مريحة
     .compact = مدمجة
     .spacious = واسعة
-
 window-management-appearance = إدارة النوافذ
     .active-hint = حجم تلميح النافذة النشطة
     .gaps = الفراغات حول النوافذ المبلَّطة
@@ -300,7 +275,6 @@ notifications = التنبيهات
 
 panel = الشريط
     .desc = شريط النظام الأساسي للقوائم والبُريمجات.
-
 add = أضِف
 add-applet = أضِف بُريمج
 all = الكل
@@ -317,18 +291,15 @@ panel-top = أعلى
 search-applets = ابحث البُريمجات…
 small = صغير
 start-segment = قطعة البداية
-
 panel-appearance = المظهر
     .match = مطابقة سطح المكتب
     .light = فاتح
     .dark = داكن
-
 panel-behavior-and-position = السلوك والمواضع
     .autohide = أخفِ الشريط آليًا
     .dock-autohide = أخفِ المرسى آليًا
     .position = الموضع على الشاشة
     .display = اعرض على الشاشة
-
 panel-style = الأسلوب
     .anchor-gap = فراغ بين الشريط وحواف الشاشة
     .dock-anchor-gap = فراغ بين المرسى وحواف الشاشة
@@ -337,11 +308,9 @@ panel-style = الأسلوب
     .appearance = المظهر
     .size = الحجم
     .background-opacity = عتمة الخلفية
-
 panel-applets = الضبط
     .dock-desc = اضبط بُريمجات المرسى
     .desc = اضبط بُريمجات الشريط
-
 panel-missing = ضبط الشريط مفقود
     .desc = فُقِد ضبط الشريط لاستخدام ضبط مخصَّص أو لأنه معطوب.
     .fix = صفِّر إلى المبدئيات
@@ -355,20 +324,16 @@ dock = المرسى
 
 window-management = إدارة النوافذ
     .desc = إجراء المفتاح Super وخيارات تحكم النوافذ، وخيارات تبليط نوافذ إضافية.
-
 super-key = إجراء المفتاح Super
     .launcher = فتح المطلق
     .workspaces = فتح مساحات العمل
     .applications = فتح التطبيقات
     .disable = معطَّل
-
 edge-gravity = تنجذب النوافذ العائمة إلى الحواف القريبة
-
 window-controls = تحكمات النوافذ
     .maximize = أظهر زر التكبير
     .minimize = أظهر زر التصغير
     .active-window-hint = أظهر تلميح النافذة النشطة
-
 focus-navigation = بؤرة التنقل
     .focus-follows-cursor = البؤرة تتبع المؤشر
     .focus-follows-cursor-delay = تأخير اتباع البؤرة للمؤشر بالملي ثانية
@@ -378,38 +343,31 @@ focus-navigation = بؤرة التنقل
 
 workspaces = مساحات العمل
     .desc = سلوك واتجاه مساحات العمل.
-
 workspaces-behavior = سلوك مساحة العمل
     .dynamic = مساحات عمل حركيَّة
     .dynamic-desc = يُزيل مساحات العمل الفارغة آليًا.
     .fixed = عدد محدّد من مساحات العمل
     .fixed-desc = يُضيف أو يُزيل مساحات العمل للنظرة العامة.
-
 workspaces-multi-behavior = سلوك المرقابات المتعدد
     .span = مساحات العمل تمتد عبر الشاشات
     .separate = لكل شاشة مساحات عمل مختلفة
-
 workspaces-overview-thumbnails = مُصغَّرات منظور مساحة العمل العام
     .show-number = أظهر رقم مساحة العمل
     .show-name = أظهر اسم مساحة العمل
-
 workspaces-orientation = اتجاه مساحات العمل
     .vertical = عمودي
     .horizontal = أفقي
-
 hot-corner = الزاوية الساخنة
     .top-left-corner = فعِّل الزاوية الساخنة أعلى اليسار لمساحات العمل
 
 ## Displays
 
 -requires-restart = يتطلب إعادة التشغيل
-
 color = اللون
     .depth = عمق اللون
     .profile = ملف تعريف اللون
     .sidebar = ملفات تعريف اللون
     .temperature = حرارة اللون
-
 display = الشاشات
     .desc = أدر الشاشات والإضاءة الليلية
     .arrangement = ترتيبة الشاشة
@@ -422,7 +380,6 @@ display = الشاشات
     .resolution = الميز
     .scale = المقياس
     .additional-scale-options = خيارات مقياس إضافية
-
 mirroring = المرآوية
     .id = يعكس { $id }
     .dont = لا تعكس
@@ -441,26 +398,21 @@ mirroring = المرآوية
             [many] { $count } شاشة أخرى
            *[other] { $count } شاشة أخرى
         }
-
 night-light = الإضاءة الليلية
     .auto = آلي (من شروق الشمس إلى مغربها)
     .desc = يخفف الضوء الأزرق بألوان أكثر دفئًا.
-
 orientation = الاتِّجاه
     .standard = قياسي
     .rotate-90 = أدِر 90°
     .rotate-180 = أدِر 180°
     .rotate-270 = أدِر 270°
-
 vrr = معدّل التحديث المتغير
     .enabled = مفعَّل
     .force = دائمًا
     .auto = تلقائي
     .disabled = معطَّل
-
 scheduling = الجدولة
     .manual = جدولة يدوية
-
 dialog = الحواري
     .title = أبقي هذه الإعدادات؟
     .keep-changes = أبقِ الإعدادات
@@ -479,7 +431,6 @@ dialog = الحواري
 
 sound = الصوت
     .desc = غير متوفِّر
-
 sound-output = الإخراج
     .volume = مستوى صوت المخرج
     .device = جهاز الإخراج
@@ -488,64 +439,60 @@ sound-output = الإخراج
     .balance = التوازن
     .left = يسار
     .right = يمين
-
 sound-input = الإدخال
     .volume = مستوى صوت المدخل
     .device = جهاز الإدخال
     .level = مستوى الإدخال
-
 amplification = تضخيم
     .desc = يسمح برفع مستوى الصوت إلى 150٪.
-
 sound-alerts = الإنذارات
     .volume = مستوى صوت الإنذارات
     .sound = صوت الإنذارات
-
 sound-applications = التطبيقات
     .desc = مستوى صوت التطبيقات والإعدادات
-
 profile = ملف التعريف
 
 ## Power
 
 power = الطاقة والبطارية
     .desc = أدر إعدادات الطاقة
-
 battery = البطارية
-  .minute = { $value ->
-        [zero] أقل من دقيقة
-        [one] دقيقة واحدة
-        [two] دقيقتان
-        [few] { $value } دقائق
-        [many] { $value } دقيقة
-       *[other] { $value } دقيقة
-  }
-  .hour = { $value ->
-        [zero] أقل من ساعة
-        [one] ساعة واحدة
-        [two] ساعتان
-        [few] { $value } ساعات
-        [many] { $value } ساعة
-       *[other] { $value } ساعة
-  }
-  .day = { $value ->
-        [zero] أقل من يوم
-        [one] يوم واحد
-        [two] يومان
-        [few] { $value } أيام
-        [many] { $value } يومًا
-       *[other] { $value } يوم
-  }
+    .minute =
+        { $value ->
+            [zero] أقل من دقيقة
+            [one] دقيقة واحدة
+            [two] دقيقتان
+            [few] { $value } دقائق
+            [many] { $value } دقيقة
+           *[other] { $value } دقيقة
+        }
+    .hour =
+        { $value ->
+            [zero] أقل من ساعة
+            [one] ساعة واحدة
+            [two] ساعتان
+            [few] { $value } ساعات
+            [many] { $value } ساعة
+           *[other] { $value } ساعة
+        }
+    .day =
+        { $value ->
+            [zero] أقل من يوم
+            [one] يوم واحد
+            [two] يومان
+            [few] { $value } أيام
+            [many] { $value } يومًا
+           *[other] { $value } يوم
+        }
     .less-than-minute = أقل من دقيقة
     .and = و
-  .remaining-time = { $time } حتى { $action ->
-        [full] تمتلئ
-       *[other] تفرغ
-   }
-
+    .remaining-time =
+        { $time } حتى { $action ->
+            [full] تمتلئ
+           *[other] تفرغ
+        }
 connected-devices = الأجهزة المتَّصلة
     .unknown = جهاز مجهول
-
 power-mode = نمط الطاقة
     .battery = عمر بطارية ممتد
     .battery-desc = استهلاك طاقة مخفض وأداء صامت.
@@ -554,7 +501,6 @@ power-mode = نمط الطاقة
     .performance = أداء عالي
     .performance-desc = قمة استهلاك الطاقة والأداء.
     .no-backend = لم يُعثَر على المنتهى الخلفي. ثبِّت system76-power أو power-profiles-daemon.
-
 power-saving = خيارات توفير الطاقة
     .turn-off-screen-after = أوقِف تشغيل الشاشة بعد
     .auto-suspend = تعليق تلقائي
@@ -564,17 +510,13 @@ power-saving = خيارات توفير الطاقة
 ## Input
 
 acceleration-desc = يعيِّن حساسية التتبع آليًا استنادًا للسرعة.
-
 disable-while-typing = عطِّل أثناء الكتابة
-
 input-devices = أجهزة الإدخال
     .desc = أجهزة الإدخال
-
 primary-button = الزر الأساسي
     .desc = يعيِّن ترتيب الأزرار الملموسة.
     .left = يسار
     .right = يمين
-
 scrolling = الزلق
     .two-finger = الزلق باصبعين
     .edge = الزلق على الحافة بإصبع واحد
@@ -590,7 +532,6 @@ short = قصيرة
 long = طويلة
 keyboard = لوحة المفاتيح
     .desc = مصادر الإدخال، والتبديل، وإدخال المحارف الخاصة، والاختصارات.
-
 keyboard-sources = مصادر الإدخال
     .desc = يمكن تبديل مصادر الإدخال باستعمال تجميعة مفتاحي Super+المسافة. يمكن أن يخصص هذا من خلال إعدادات اختصارات لوحة المفاتيح.
     .move-up = حرِك لأعلى
@@ -599,23 +540,13 @@ keyboard-sources = مصادر الإدخال
     .view-layout = اعرض تخطيط لوحة المفاتيح
     .remove = أزِل
     .add = أضِف مصدر إدخال
-
 keyboard-special-char = إدخال المحارف الخاصة
     .alternate = مفتاح المحارف الثانوية
     .compose = مفتاح التركيب
     .caps = مفتاح قفل الأحرف الكبيرة
-
 keyboard-typing-assist = الكتابة
-    .repeat-rate = نسبة التكرار
+    .repeat-rate = معدّل التكرار
     .repeat-delay = تأخير التكرار
-
-    keyboard-numlock-boot = قفل الأرقام
-    .boot-state = الحالة عند الإقلاع
-    .last-boot = آخر إقلاع
-    .on = مفعَّل
-    .off = معطَّل
-    .set = عيِّن حالة إقلاع قفل الأرقام
-
 added = مُضاف
 type-to-search = اكتب تبحث…
 show-extended-input-sources = أظهر مصادر الإدخال الممتدة
@@ -624,7 +555,6 @@ show-extended-input-sources = أظهر مصادر الإدخال الممتدة
 
 keyboard-shortcuts = اختصارات لوحة المفاتيح
     .desc = أظهِر وخصِص الاختصارات
-
 add-another-keybinding = أضِف اختصارًا آخر
 cancel = ألغِ
 command = الأمر
@@ -634,12 +564,13 @@ disabled = معطَّل
 input-source-switch = بدِّل مصدر إدخال لغة لوحة المفاتيح
 migrate-workspace-prev = انقل مساحة العمل للمخرج السابق
 migrate-workspace-next = انقل مساحة العمل للمخرج التالي
-migrate-workspace = نقل مساحة العمل للمخرج { $direction ->
-    *[down] الأدنى
-    [left] اليسار
-    [right] اليمين
-    [up] الأعلى
-}
+migrate-workspace =
+    نقل مساحة العمل للمخرج { $direction ->
+       *[down] الأدنى
+        [left] اليسار
+        [right] اليمين
+        [up] الأعلى
+    }
 navigate = التنقل
 replace = استبدل
 shortcut-name = اسم الاختصار
@@ -647,36 +578,34 @@ system-controls = تحكمات النظام
 terminate = أنهِ
 toggle-stacking = تبديل تكديس النوافذ
 type-key-combination = اكتب تجميعة المفاتيح
-
 custom-shortcuts = الاختصارات المخصَّصة
     .add = أضِف اختصارًا
     .context = أضِف اختصارًا مخصصًا
-    .none = لا اختصارات مخصَّصةة
-
+    .none = لا اختصارات مخصَّصة
 modified = { $count } معدَّل
-
 nav-shortcuts = التنقل
     .prev-output = التركيز على المخرج السابق
     .next-output = التركيز على المخرج التالي
     .last-workspace = التركيز على آخر مساحة عمل
     .prev-workspace = التركيز على مساحة العمل السابقة
     .next-workspace = التركيز على مساحة العمل التالية
-    .focus = نافذة التركيز { $direction ->
-        *[down] لأسفل
-        [in] للداخل
-        [left] لليسار
-        [out] للخارج
-        [right] لليمين
-        [up] لأعلى
-    }
-    .output = التحويل إلى المخرج { $direction ->
-        *[down] الأسفل
-        [left] اليسار
-        [right] اليمين
-        [up] الأعلى
-    }
+    .focus =
+        نافذة التركيز { $direction ->
+           *[down] لأسفل
+            [in] للداخل
+            [left] لليسار
+            [out] للخارج
+            [right] لليمين
+            [up] لأعلى
+        }
+    .output =
+        التحويل إلى المخرج { $direction ->
+           *[down] الأسفل
+            [left] اليسار
+            [right] اليمين
+            [up] الأعلى
+        }
     .workspace = التحويل إلى مساحة العمل رقم { $num }
-
 manage-windows = أدر النوافذ
     .close = أغلق النافذة
     .maximize = كبّر النافذة
@@ -685,26 +614,28 @@ manage-windows = أدر النوافذ
     .resize-inwards = حجّم النافذة للداخل
     .resize-outwards = حجّم النافذة للخارج
     .toggle-sticky = تبديل النافذة اللاصقة
-
 move-windows = نقل النوافذ
-    .direction = نقل النافذة { $direction ->
-        *[down] لأسفل
-        [left] لليسار
-        [right] لليمين
-        [up] لأعلى
-    }
-    .display = نقل النافذة باتجاه شاشة أخرى { $direction ->
-        *[down] لأسفل
-        [left] لليسار
-        [right] لليمين
-        [up] لأعلى
-    }
-    .workspace = نقل النافذة باتجاه مساحة عمل أخرى { $direction ->
-        *[below] لأسفل
-        [left] لليسار
-        [right] لليمين
-        [above] لأعلى
-    }
+    .direction =
+        نقل النافذة { $direction ->
+           *[down] لأسفل
+            [left] لليسار
+            [right] لليمين
+            [up] لأعلى
+        }
+    .display =
+        نقل النافذة باتجاه شاشة أخرى { $direction ->
+           *[down] لأسفل
+            [left] لليسار
+            [right] لليمين
+            [up] لأعلى
+        }
+    .workspace =
+        نقل النافذة باتجاه مساحة عمل أخرى { $direction ->
+           *[below] لأسفل
+            [left] لليسار
+            [right] لليمين
+            [above] لأعلى
+        }
     .workspace-num = نقل النافذة باتجاه مساحة العمل رقم { $num }
     .prev-workspace = نقل النافذة لمساحة العمل السابقة
     .next-workspace = نقل النافذة لمساحة العمل التالية
@@ -713,7 +644,6 @@ move-windows = نقل النوافذ
     .prev-display = نقل النافذة للشاشة السابقة
     .send-to-prev-workspace = نقل النافذة لمساحة العمل السابقة
     .send-to-next-workspace = نقل النافذة لمساحة العمل التالية
-
 system-shortcut = النظام
     .app-library = فتح مكتبة التطبيقات
     .brightness-down = تقليل سطوع الشاشة
@@ -739,7 +669,6 @@ system-shortcut = النظام
     .window-switcher = التبديل بين النوافذ
     .window-switcher-previous = تبديل بين النوافذ المفتوحة معكوسًا
     .workspace-overview = فتح منظور مساحة العمل العام
-
 window-tiling = تبليط النوافذ
     .horizontal = تعيين الاتجاه الأفقي
     .vertical = تعيين الاتجاه العمودي
@@ -748,10 +677,8 @@ window-tiling = تبليط النوافذ
     .toggle-stacking = تبديل تكديس النافذة
     .toggle-floating = تبديل تعويم النافذة
     .toggle-orientation = تبديل الاتجاه
-
 replace-shortcut-dialog = بدل الاختصار؟
     .desc = { $shortcut } مستخدم من قبل { $name }. إذا استبدِل، فسيعطَّل { $name }.
-
 zoom-in = قرّب
 zoom-out = بعّد
 
@@ -767,13 +694,10 @@ mouse = الفأرة
 click-behavior = سلوك النقر
     .click-finger = النقرة الثانوية بإصبعين والنقرة الوسطى بثلاث أصابع
     .button-areas = النقرة الثانوية أسفل اليمين والنقرة الوسطى في أسفل المنتصف
-
 pinch-to-zoom = اقرِص تُكبِّر
     .desc = استخدام إصبعين لتحجيم محتوى التطبيقات التي تدعم ذلك.
-
 tap-to-click = اضغط تنقر
     .desc = يفعِّل النقرة الأساسية بضغطة أصبع، و النقرة الثانوية بضغطة أصبعين، والنقرة الوسطى بضغط ثلاث أصابع.
-
 touchpad = لوحة اللمس
     .acceleration = يفعِّل تسارع لوحة اللمس
     .desc = سرعة لوحة اللمس، وخيارات النقر، والإيماءات.
@@ -787,11 +711,9 @@ gestures = الإيماءات
     .four-finger-right = تمرير أربع أصابع لليمين
     .four-finger-up = تمرير أربع أصابع لأعلى
     .three-finger-any = تمرير ثلاث أصابع لأي اتجاه
-
 switch-workspaces = تبديل مساحات العمل
     .horizontal = تمريرة أربع أصابع لليسار/اليمين
     .vertical = تمريرة أربع أصابع لأعلى/أدنى
-
 switch-between-windows = التبديل بين النوافذ
 open-application-library = فتح مكتبة التطبيقات
 open-workspaces-view = فتح منظور مساحات العمل العام
@@ -800,16 +722,13 @@ open-workspaces-view = فتح منظور مساحات العمل العام
 
 time = التوقيت واللغة
     .desc = غير متوفِّر
-
 time-date = التاريخ والوقت
     .desc = المنطقة الزمنية، وإعدادات الساعة الآلية، وتنسيق الوقت.
     .auto = عيِّن آليًا
     .auto-ntp = سيحدَّث التاريخ والوقت آليًا عند تعيين المنطقة الزمنية.
-
 time-zone = المنطقة الزمنية
     .auto = منطقة زمنية تلقائية
     .auto-info = يتطلب خدمات التموضع والوصول للإنترنت
-
 time-format = تنسيق التاريخ والوقت
     .twenty-four = توقيت 24 ساعة
     .show-seconds = عرض الثواني
@@ -819,10 +738,8 @@ time-format = تنسيق التاريخ والوقت
     .saturday = السبت
     .sunday = الأحد
     .monday = الاثنين
-
 time-region = المنطقة واللغة
     .desc = نسق التواريخ، والتوقيت، والأرقام استنادًا لمنطقتك.
-
 formatting = التنسيق
     .dates = التواريخ
     .time = الوقت
@@ -830,10 +747,8 @@ formatting = التنسيق
     .numbers = الأرقام
     .measurement = القياس
     .paper = ورقة
-
 preferred-languages = اللغات المفضلة
     .desc = يحدد ترتيب اللُغات اللُغة المستخدمة لواجهة المستخدم. تسري التغييرات عند الولوج التالي.
-
 add-language = إضافة لُغة
     .context = أضِف لُغة
 install-additional-languages = ثبِّت لُغات إضافية
@@ -873,7 +788,6 @@ startup-apps = تطبيقات بدء التشغيل
 
 legacy-applications = توافق تطبيقات اكس11
     .desc = تحجيم نطاق تطبيق نظام نافذة اكس11 والاختصارات العامة.
-
 legacy-app-global-shortcuts = اختصارات عامة في تطبيقات اكس11
     .desc = تسمح الاختصارات العامة بالتعرّف على ضغطات المفاتيح وأحداث زر الفأرة المُجراة في تطبيقٍ ما لتطبيقاتٍ أخرى — لميزات مثل «اضغط لتتحدث» أو «اضغط لكتم الصوت». مبدئيًا، يُعطّل هذا في تطبيقات اكس11 لضمان عدم تمكن التطبيقات الأخرى من مراقبة أحداث لوحة المفاتيح والفأرة التي تحتوي على معلومات حساسة.
     .none = لا مفاتيح
@@ -881,7 +795,6 @@ legacy-app-global-shortcuts = اختصارات عامة في تطبيقات اك
     .combination = جميع المفاتيح أثناء الضغط على مفاتيح التعديل Super أو Control أو Alt
     .all = كل المفاتيح
     .mouse = أحداث زر الفأرة في تطبيقات اكس11
-
 legacy-app-scaling = تحجيم نطاق تطبيقات نظام النوافذ اكس11
     .scaled-gaming = تحسين للألعاب وتطبيقات ملء الشاشة
     .gaming-description = قد تبدو تطبيقات اكس11 أكبر/أصغر قليلاً مقارنة بتطبيقات وايلاند.
@@ -900,23 +813,19 @@ system = النظام والحسابات
 
 about = عَنْ
     .desc = اسم الجهاز، ومعلومات العتاد، ومبدئيات نظام التشغيل.
-
 about-device = اسم الجهاز
     .desc = هذا الاسم يظهر للشبكات الأخرى وأجهزة بلوتوث.
-
 about-hardware = العتاد
     .model = طراز العتاد
     .memory = الذاكرة
     .processor = المعالج
     .graphics = الرسوميات
     .disk-capacity = سعة القرص
-
 about-os = نظام التشغيل
     .os = نظام التشغيل
     .os-architecture = معمارية نظام التشغيل
     .desktop-environment = بيئة سطح المكتب
     .windowing-system = نظام النوافذ
-
 about-related = إعدادات متعلقة
     .support = احصل على الدعم
 
@@ -932,10 +841,8 @@ users = المستخدمون
     .admin = مدير
     .standard = عادي
     .profile-add = اختر صورة ملف تعريف
-
 administrator = مدير
     .desc = يمكن للمديرين تغيير الإعدادات لجميع المستخدمين، وإضافة مستخدمين آخرين وإزالتهم.
-
 add-user = أضِف مستخدم
 change-password = غيَّر كلمة السر
 remove-user = أزِل المستخدم
@@ -943,3 +850,10 @@ full-name = الاسم الكامل
 invalid-username = اسم مستخدم غير صالح.
 password-mismatch = يجب أن تتطابق كلمة السر والتأكيد.
 save = احفظ
+never = أبدًا
+keyboard-numlock-boot = قفل الأرقام
+    .boot-state = الحالة عند الإقلاع
+    .last-boot = آخر إقلاع
+    .on = مفعَّل
+    .off = معطَّل
+    .set = عيِّن حالة إقلاع قفل الأرقام
