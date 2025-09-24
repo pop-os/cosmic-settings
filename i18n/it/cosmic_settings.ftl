@@ -752,12 +752,12 @@ default-apps = Applicazioni predefinite
 
 startup-apps = Applicazioni d'avvio
     .desc = Configura logica di avvio delle applicazioni
-    .add = Aggiungi applicazionie
+    .add = Aggiungi applicazione
     .user = Applicazioni specifiche per utente
-    .user-description = Queste applicazioni verranno avviate al login dell'utente corrente.
-    .remove-dialog-title = Rimuovi { $name }?
+    .none = Nessuna applicazione d’avvio aggiunta
+    .remove-dialog-title = Rimuovere { $name }?
     .remove-dialog-description = Sei sicuro di voler rimuovere questa applicazione d'avvio?
-    .search-for-application = Cerca applicazioni
+    .search-for-application = Cerca applicazione
 
 ## Applications: Legacy Applications
 
@@ -787,9 +787,9 @@ system = Sistema e account
 ## System: About
 
 about = Informazioni
-    .desc = Nome dispositivo, informazioni hardware e impostazioni predefinite di sistema
+    .desc = Nome dispositivo, informazioni hardware e impostazioni predefinite di sistema.
 about-device = Nome dispositivo
-    .desc = Ai dispositivi bluetooth, o a una rete, apparirà questo nome
+    .desc = Questo nome appare ai dispositivi di rete o Bluetooth.
 about-hardware = Hardware
     .model = Modello hardware
     .memory = Memoria
@@ -807,12 +807,12 @@ about-related = Impostazioni correlate
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Dettagli del firmware
+    .desc = Dettagli del firmware.
 
 ## System: Users
 
 users = Utenti
-    .desc = Autenticazione e account utente.
+    .desc = Autenticazione e account utenti.
     .admin = Amministratore
     .standard = Standard
     .profile-add = Scegli immagine del profilo
@@ -822,6 +822,6 @@ add-user = Aggiungi utente
 change-password = Cambia password
 remove-user = Rimuovi utente
 full-name = Nome completo
-invalid-username = Nome utente non valido
+invalid-username = Nome utente non valido.
 password-mismatch = La password inserita e la conferma non coincidono.
 save = Salva
