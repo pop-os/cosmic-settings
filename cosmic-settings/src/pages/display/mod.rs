@@ -733,7 +733,7 @@ impl Page {
         self.active_display = output_id;
         self.config.refresh_rate = None;
         self.config.resolution = None;
-        self.config.vrr = dbg!(output.adaptive_sync);
+        self.config.vrr = output.adaptive_sync;
         self.config.scale = (output.scale * 100.0) as u32;
 
         self.cache.modes.clear();
