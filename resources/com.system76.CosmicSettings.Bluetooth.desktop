@@ -15,6 +15,7 @@ Comment[hu]=Bluetooth-eszközök kezelése
 Comment[pt]=Gerenciar dispositivos Bluetooth
 Comment[sk]=Spravovať Bluetooth zariadenia
 Comment[nl]=Bluetooth-apparaten beheren
+Comment[af]=Bestuur Bluetooth-toestelle
 Comment[es]=Gestionar dispositivos Bluetooth
 Type=Settings
 Exec=cosmic-settings bluetooth
