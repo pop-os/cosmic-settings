@@ -1,8 +1,6 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::str::FromStr;
-
 use chrono::{Datelike, Timelike};
 use cosmic::{
     Apply, Element, Task,
@@ -507,14 +505,15 @@ fn timezone() -> Section<crate::pages::Message> {
 }
 
 fn locale() -> Result<Locale, Box<dyn std::error::Error>> {
-    let locale = std::env::var("LC_TIME").or_else(|_| std::env::var("LANG"))?;
-    let locale = locale
+    let locale_env = std::env::var("LC_TIME").or_else(|_| std::env::var("LANG"))?;
+
+    locale_env
         .split('.')
         .next()
-        .ok_or(format!("Can't split the locale {locale}"))?;
-
-    let locale = Locale::from_str(locale).map_err(|e| format!("{e:?}"))?;
-    Ok(locale)
+        .ok_or(format!("Can't split the locale {locale_env}"))?
+        .replacen("_", "-", 1)
+        .parse::<Locale>()
+        .map_err(|e| format!("{e:?}").into())
 }
 
 fn format_date(date: &DateTime<Gregorian>, military: bool, show_seconds: bool) -> String {
