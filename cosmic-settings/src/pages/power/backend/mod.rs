@@ -242,9 +242,10 @@ pub struct ConnectedDevice {
     pub device_icon: &'static str,
     pub battery: Battery,
     pub device_path: String,
+    pub proxy: Option<DeviceProxy<'static>>,
 }
 
-async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Error> {
+pub async fn get_device_proxy<'a>() -> Result<upower_dbus::DeviceProxy<'a>, zbus::Error> {
     let connection = match Connection::system().await {
         Ok(c) => c,
         Err(e) => {
@@ -300,7 +301,7 @@ async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zb
 }
 
 impl Battery {
-    pub async fn from_device(proxy: DeviceProxy<'_>) -> Self {
+    pub async fn from_device(proxy: &DeviceProxy<'_>) -> Self {
         let mut remaining_duration: Duration = Duration::default();
 
         let (is_present, percentage, battery_state) = futures::join!(
@@ -371,7 +372,7 @@ impl Battery {
         let proxy = get_device_proxy().await;
 
         if let Ok(proxy) = proxy {
-            return Self::from_device(proxy).await;
+            return Self::from_device(&proxy).await;
         }
 
         Battery::default()
@@ -418,7 +419,7 @@ impl Battery {
 }
 
 impl ConnectedDevice {
-    async fn from_device_maybe(proxy: DeviceProxy<'_>) -> Option<Self> {
+    async fn from_device_maybe(proxy: DeviceProxy<'static>) -> Option<Self> {
         let device_type = proxy.type_().await.unwrap_or(BatteryType::Unknown);
         let device_path = proxy.clone().into_inner().path().to_string();
         if matches!(
@@ -431,7 +432,7 @@ impl ConnectedDevice {
             .model()
             .await
             .unwrap_or(fl!("connected-devices", "unknown"));
-        let battery = Battery::from_device(proxy).await;
+        let battery = Battery::from_device(&proxy).await;
         let device_icon = match device_type {
             BatteryType::Ups => "uninterruptible-power-supply-symbolic",
             BatteryType::Monitor => "display-symbolic",
@@ -461,6 +462,7 @@ impl ConnectedDevice {
             device_icon,
             battery,
             device_path,
+            proxy: Some(proxy),
         })
     }
 
