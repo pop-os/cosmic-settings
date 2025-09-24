@@ -409,7 +409,7 @@ orientation = الاتِّجاه
 vrr = معدّل التحديث المتغير
     .enabled = مفعَّل
     .force = دائمًا
-    .auto = تلقائي
+    .auto = آلي
     .disabled = معطَّل
 scheduling = الجدولة
     .manual = جدولة يدوية
@@ -503,9 +503,9 @@ power-mode = نمط الطاقة
     .no-backend = لم يُعثَر على المنتهى الخلفي. ثبِّت system76-power أو power-profiles-daemon.
 power-saving = خيارات توفير الطاقة
     .turn-off-screen-after = أوقِف تشغيل الشاشة بعد
-    .auto-suspend = تعليق تلقائي
-    .auto-suspend-ac = علِّق تلقائيًا عند التوصيل
-    .auto-suspend-battery = علِّق تلقائيًا عند استخدام طاقة البطارية
+    .auto-suspend = تعليق آلي
+    .auto-suspend-ac = علِّق آليًا عند التوصيل
+    .auto-suspend-battery = علِّق آليًا عند استخدام طاقة البطارية
 
 ## Input
 
@@ -727,7 +727,7 @@ time-date = التاريخ والوقت
     .auto = عيِّن آليًا
     .auto-ntp = سيحدَّث التاريخ والوقت آليًا عند تعيين المنطقة الزمنية.
 time-zone = المنطقة الزمنية
-    .auto = منطقة زمنية تلقائية
+    .auto = منطقة زمنية آلية
     .auto-info = يتطلب خدمات التموضع والوصول للإنترنت
 time-format = تنسيق التاريخ والوقت
     .twenty-four = توقيت 24 ساعة
