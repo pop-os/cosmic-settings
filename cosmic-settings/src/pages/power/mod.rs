@@ -4,20 +4,21 @@ use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, ConnectedDevice, PowerProfile};
 
 use chrono::TimeDelta;
-use cosmic::Task;
-use cosmic::iced::{Alignment, Length};
+use cosmic::iced::{self, Alignment, Length};
 use cosmic::iced_widget::{column, row};
 use cosmic::widget::{self, radio, settings, text};
 use cosmic::{Apply, surface};
+use cosmic::{Task, iced_futures};
 use cosmic_config::{Config, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, Section, section};
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use itertools::Itertools;
 use slab::Slab;
 use slotmap::SlotMap;
 use std::iter;
 use std::time::Duration;
+use upower_dbus::DeviceProxy;
 
 static SCREEN_OFF_TIMES: &[Duration] = &[
     Duration::from_secs(2 * 60),
@@ -115,6 +116,66 @@ impl page::Page<crate::pages::Message> for Page {
         ])
     }
 
+    fn subscription(
+        &self,
+        _core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<crate::pages::Message> {
+        // Shared logic between the system battery and connected device batteries.
+        async fn receive_battery_changes(
+            proxy: DeviceProxy<'static>,
+            device_path: String,
+            mut sender: futures::channel::mpsc::Sender<crate::pages::Message>,
+            message_fn: fn(String, Battery) -> Message,
+        ) {
+            let mut battery_level = proxy.receive_battery_level_changed().await;
+            let mut battery_state = proxy.receive_state_changed().await;
+
+            loop {
+                let _ = futures::future::select(battery_level.next(), battery_state.next()).await;
+
+                _ = sender
+                    .send(
+                        message_fn(device_path.clone(), Battery::from_device(&proxy).await).into(),
+                    )
+                    .await;
+            }
+        }
+
+        // A subscription for the system battery.
+        let system_battery = iced::Subscription::run(|| {
+            iced_futures::stream::channel(1, |sender| async move {
+                if let Ok(proxy) = backend::get_device_proxy().await {
+                    receive_battery_changes(proxy, String::new(), sender, |_, b| {
+                        Message::UpdateBattery(b)
+                    })
+                    .await;
+                }
+            })
+        });
+
+        // Subscriptions for all connected device batteries.
+        let device_batteries = self
+            .connected_devices
+            .iter()
+            .filter_map(|device| {
+                device
+                    .proxy
+                    .clone()
+                    .map(|p| (device.device_path.clone(), p))
+            })
+            .map(|(path, proxy)| {
+                iced::Subscription::run_with_id(
+                    path.clone(),
+                    iced_futures::stream::channel(1, |sender| async move {
+                        receive_battery_changes(proxy, path, sender, Message::UpdateDeviceBattery)
+                            .await
+                    }),
+                )
+            });
+
+        iced::Subscription::batch(std::iter::once(system_battery).chain(device_batteries))
+    }
+
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         let futures: Vec<Task<Message>> = vec![
             cosmic::Task::future(async move {
@@ -139,7 +200,7 @@ impl page::Page<crate::pages::Message> for Page {
                 }
             }),
             cosmic::Task::run(
-                async_fn_stream::fn_stream(|emitter| async move {
+                iced_futures::stream::channel(1, |mut emitter| async move {
                     let span = tracing::span!(tracing::Level::INFO, "power::device_stream task");
                     let _span_handle = span.enter();
 
@@ -151,13 +212,14 @@ impl page::Page<crate::pages::Message> for Page {
                     let added_stream = ConnectedDevice::device_added_stream(&connection).await;
                     let removed_stream = ConnectedDevice::device_removed_stream(&connection).await;
 
+                    let mut sender = emitter.clone();
                     let added_future = std::pin::pin!(async {
                         match added_stream {
                             Ok(stream) => {
                                 let mut stream = std::pin::pin!(stream);
                                 while let Some(device) = stream.next().await {
                                     tracing::debug!(device = device.model, "device added");
-                                    emitter.emit(Message::DeviceConnect(device)).await;
+                                    _ = sender.send(Message::DeviceConnect(device)).await;
                                 }
                             }
                             Err(err) => tracing::error!(?err, "cannot establish added stream"),
@@ -170,7 +232,7 @@ impl page::Page<crate::pages::Message> for Page {
                                 let mut stream = std::pin::pin!(stream);
                                 while let Some(device_path) = stream.next().await {
                                     tracing::debug!(device_path, "device removed");
-                                    emitter.emit(Message::DeviceDisconnect(device_path)).await;
+                                    _ = emitter.send(Message::DeviceDisconnect(device_path)).await;
                                 }
                             }
                             Err(err) => tracing::error!(?err, "cannot establish removed stream"),
@@ -203,7 +265,10 @@ impl page::Page<crate::pages::Message> for Page {
 #[derive(Clone, Debug)]
 pub enum Message {
     PowerProfileChange(PowerProfile),
+    /// Update the system battery
     UpdateBattery(Battery),
+    /// Update the battery of a connected device
+    UpdateDeviceBattery(String, Battery),
     UpdateConnectedDevices(Vec<ConnectedDevice>),
     DeviceDisconnect(String),
     DeviceConnect(ConnectedDevice),
@@ -213,6 +278,18 @@ pub enum Message {
     BackendAvailabilityCheck(Option<backend::PowerBackendEnum>),
     CurrentPowerProfileUpdate(PowerProfile),
     Surface(surface::Action),
+}
+
+impl From<Message> for crate::app::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::Power(message).into()
+    }
+}
+
+impl From<Message> for crate::pages::Message {
+    fn from(message: Message) -> Self {
+        crate::pages::Message::Power(message)
+    }
 }
 
 impl Page {
@@ -229,6 +306,14 @@ impl Page {
                 }
             }
             Message::UpdateBattery(battery) => self.battery = battery,
+            Message::UpdateDeviceBattery(path, battery) => {
+                for device in &mut self.connected_devices {
+                    if device.device_path == path {
+                        device.battery = battery;
+                        break;
+                    }
+                }
+            }
             Message::UpdateConnectedDevices(connected_devices) => {
                 self.connected_devices = connected_devices;
             }
