@@ -368,6 +368,7 @@ impl cosmic::Application for SettingsApp {
             }
 
             Message::SearchClear => {
+                self.search_active = false;
                 self.search_clear();
             }
 

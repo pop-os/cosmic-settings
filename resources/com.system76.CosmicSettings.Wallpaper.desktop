@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Wallpaper
+Name[ar]=خلفية الشاشة
 Name[zh_CN]=壁纸
 Name[pl]=Tapeta
 Name[hu]=Háttérkép
@@ -8,6 +9,7 @@ Name[nl]=Schermachtergrond
 Name[sk]=Tapeta
 Name[es]=Fondo de pantalla
 Comment=Wallpaper images, colors, and slideshow options.
+Comment[ar]=صور خلفية الشاشة والألوان وخيارات عرض الشرائح.
 Comment[zh_CN]=壁纸图片、颜色和幻灯片选项
 Comment[pl]=Obraz tła, kolory i opcje pokazu slajdów.
 Comment[hu]=Háttérképek, színek és diavetítési beállítások.

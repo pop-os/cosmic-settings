@@ -3,7 +3,6 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::rc::Rc;
-use std::str::FromStr;
 use std::sync::Arc;
 
 use cosmic::app::{ContextDrawer, context_drawer};
@@ -32,7 +31,6 @@ pub enum Message {
     AddLanguage(DefaultKey),
     AddLanguageContext,
     AddLanguageSearch(String),
-    SystemLocales(SlotMap<DefaultKey, SystemLocale>),
     ExpandLanguagePopover(Option<usize>),
     InstallAdditionalLanguages,
     SelectRegion(DefaultKey),
@@ -115,6 +113,10 @@ pub struct Page {
     registry: Option<locale::Registry>,
     expanded_source_popover: Option<usize>,
     add_language_search: String,
+    /// Cached LC_NUMERIC locale in icu locale format.
+    numeric_locale: Option<Locale>,
+    /// Cached LC_TIME locale in icu locale format.
+    time_locale: Option<Locale>,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -251,10 +253,6 @@ impl Page {
                 self.add_language_search = search;
             }
 
-            Message::SystemLocales(languages) => {
-                self.available_languages = languages;
-            }
-
             Message::ExpandLanguagePopover(id) => {
                 self.expanded_source_popover = id;
             }
@@ -277,6 +275,8 @@ impl Page {
                     self.language = page_refresh.language;
                     self.region = page_refresh.region;
                     self.registry = Some(page_refresh.registry.0);
+                    self.numeric_locale = self.icu_locale_from_env("LC_NUMERIC");
+                    self.time_locale = self.icu_locale_from_env("LC_TIME");
                 }
 
                 Err(why) => {
@@ -397,17 +397,21 @@ impl Page {
         list.apply(Element::from).map(crate::pages::Message::Region)
     }
 
-    fn formatted_date(&self) -> String {
-        let time_locale = self
-            .system_locales
-            .get("LC_TIME")
+    fn icu_locale_from_env(&self, key: &'static str) -> Option<Locale> {
+        self.system_locales
+            .get(key)
             .or_else(|| self.system_locales.get("LANG"))
-            .map_or("en_US", |locale| &locale.lang_code)
+            .map_or("en-US", |locale| &locale.lang_code)
             .split('.')
             .next()
-            .unwrap_or("en_US");
+            .unwrap_or("en-US")
+            .replacen('_', "-", 1)
+            .parse::<Locale>()
+            .ok()
+    }
 
-        let Ok(locale) = Locale::from_str(time_locale) else {
+    fn formatted_date(&self) -> String {
+        let Some(locale) = self.time_locale.as_ref() else {
             return String::new();
         };
 
@@ -423,16 +427,7 @@ impl Page {
     }
 
     fn formatted_dates_and_times(&self) -> String {
-        let time_locale = self
-            .system_locales
-            .get("LC_TIME")
-            .or_else(|| self.system_locales.get("LANG"))
-            .map_or("en_US", |locale| &locale.lang_code)
-            .split('.')
-            .next()
-            .unwrap_or("en_US");
-
-        let Ok(locale) = Locale::from_str(time_locale) else {
+        let Some(locale) = self.time_locale.as_ref() else {
             return String::new();
         };
 
@@ -448,16 +443,7 @@ impl Page {
     }
 
     fn formatted_time(&self) -> String {
-        let time_locale = self
-            .system_locales
-            .get("LC_TIME")
-            .or_else(|| self.system_locales.get("LANG"))
-            .map_or("en_US", |locale| &locale.lang_code)
-            .split('.')
-            .next()
-            .unwrap_or("en_US");
-
-        let Ok(locale) = Locale::from_str(time_locale) else {
+        let Some(locale) = self.time_locale.as_ref() else {
             return String::new();
         };
 
@@ -473,16 +459,7 @@ impl Page {
     }
 
     fn formatted_numbers(&self) -> String {
-        let numerical_locale = self
-            .system_locales
-            .get("LC_NUMERIC")
-            .or_else(|| self.system_locales.get("LANG"))
-            .map_or("en_US", |locale| &locale.lang_code)
-            .split('.')
-            .next()
-            .unwrap_or("en_US");
-
-        let Ok(locale) = Locale::from_str(numerical_locale) else {
+        let Some(locale) = self.numeric_locale.as_ref() else {
             return String::new();
         };
 
@@ -621,21 +598,12 @@ mod formatting {
     pub fn section() -> Section<crate::pages::Message> {
         crate::slab!(descriptions {
             formatting_txt = fl!("formatting");
-            dates_txt = fl!("formatting", "dates");
-            time_txt = fl!("formatting", "time");
-            date_and_time_txt = fl!("formatting", "date-and-time");
-            numbers_txt = fl!("formatting", "numbers");
-            // measurement_txt = fl!("formatting", "measurement");
-            // paper_txt = fl!("formatting", "paper");
+            dates_txt = [&fl!("formatting", "dates"), ":"].concat();
+            time_txt = [&fl!("formatting", "time"), ":"].concat();
+            date_and_time_txt = [&fl!("formatting", "date-and-time"), ":"].concat();
+            numbers_txt = [&fl!("formatting", "numbers"), ":"].concat();
             region_txt = fl!("region");
         });
-
-        let dates_label = [&descriptions[dates_txt], ":"].concat();
-        let time_label = [&descriptions[time_txt], ":"].concat();
-        let date_and_time_label = [&descriptions[date_and_time_txt], ":"].concat();
-        let numbers_label = [&descriptions[numbers_txt], ":"].concat();
-        // let measurement_label = [&descriptions[measurement_txt], ":"].concat();
-        // let paper_label = [&descriptions[paper_txt], ":"].concat();
 
         Section::default()
             .title(fl!("formatting"))
@@ -644,17 +612,17 @@ mod formatting {
                 let desc = &section.descriptions;
 
                 let dates = widget::row::with_capacity(2)
-                    .push(widget::text::body(dates_label.clone()))
+                    .push(widget::text::body(&desc[dates_txt]))
                     .push(widget::text::body(page.formatted_date()).font(cosmic::font::bold()))
                     .spacing(4);
 
                 let time = widget::row::with_capacity(2)
-                    .push(widget::text::body(time_label.clone()))
+                    .push(widget::text::body(&desc[time_txt]))
                     .push(widget::text::body(page.formatted_time()).font(cosmic::font::bold()))
                     .spacing(4);
 
                 let dates_and_times = widget::row::with_capacity(2)
-                    .push(widget::text::body(date_and_time_label.clone()))
+                    .push(widget::text::body(&desc[date_and_time_txt]))
                     .push(
                         widget::text::body(page.formatted_dates_and_times())
                             .font(cosmic::font::bold()),
@@ -662,7 +630,7 @@ mod formatting {
                     .spacing(4);
 
                 let numbers = widget::row::with_capacity(2)
-                    .push(widget::text::body(numbers_label.clone()))
+                    .push(widget::text::body(&desc[numbers_txt]))
                     .push(widget::text::body(page.formatted_numbers()).font(cosmic::font::bold()))
                     .spacing(4);
 
@@ -934,18 +902,17 @@ pub async fn set_locale(lang: String, region: String) {
         .await;
 }
 
-fn parse_locale(locale: String) -> Result<Locale, Box<dyn std::error::Error>> {
-    let locale = locale
+fn parse_locale(locale: &str) -> Option<Locale> {
+    locale
         .split('.')
-        .next()
-        .ok_or(format!("Can't split the locale {locale}"))?;
-
-    let locale = Locale::from_str(locale).map_err(|e| format!("{e:?}"))?;
-    Ok(locale)
+        .next()?
+        .replacen('_', "-", 1)
+        .parse::<Locale>()
+        .ok()
 }
 
-fn get_default_24h(locale: String) -> bool {
-    let Ok(locale) = parse_locale(locale) else {
+fn get_default_24h(locale: &str) -> bool {
+    let Some(locale) = parse_locale(locale) else {
         return false;
     };
 
@@ -966,8 +933,8 @@ fn get_default_24h(locale: String) -> bool {
     formatted.contains("13")
 }
 
-fn get_default_first_day(locale: String) -> usize {
-    let Ok(locale) = parse_locale(locale) else {
+fn get_default_first_day(locale: &str) -> usize {
+    let Some(locale) = parse_locale(locale) else {
         return 6;
     };
     let Ok(week_info) = week::WeekInformation::try_new(week::WeekPreferences::from(&locale)) else {
@@ -1000,13 +967,13 @@ fn update_time_settings_after_region_change(region: String) {
     };
 
     // Update military_time based on new locale
-    let new_military_time = get_default_24h(region.clone());
+    let new_military_time = get_default_24h(&region);
     if let Err(why) = cosmic_applet_config.set("military_time", new_military_time) {
         tracing::error!(?why, "Failed to update military_time after region change");
     }
 
     // Update first_day_of_week based on new locale
-    let new_first_day = get_default_first_day(region);
+    let new_first_day = get_default_first_day(&region);
     if let Err(why) = cosmic_applet_config.set("first_day_of_week", new_first_day) {
         tracing::error!(
             ?why,

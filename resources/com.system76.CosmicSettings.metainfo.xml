@@ -9,6 +9,7 @@
   <url type="homepage">https://github.com/pop-os/cosmic-settings</url>
   <url type="bugtracker">https://github.com/pop-os/cosmic-settings</url>
   <name>COSMIC Settings</name>
+  <name xml:lang="ar">إعدادات COSMIC</name>
   <name xml:lang="pl">Ustawienia COSMIC</name>
   <name xml:lang="hu">COSMIC Beállítások</name>
   <name xml:lang="pt">Configurações</name>
@@ -16,6 +17,7 @@
   <name xml:lang="sk">Nastavenia COSMIC</name>
   <name xml:lang="es">Configuración COSMIC</name>
   <summary>Settings application for the COSMIC desktop</summary>
+  <summary xml:lang="ar">تطبيق الإعدادات لسطح مكتب COSMIC</summary>
   <summary xml:lang="pl">Aplikacja ustawień pulpitu COSMIC</summary>
   <summary xml:lang="hu">Beállítások a COSMIC asztali környezethez</summary>
   <summary xml:lang="pt">Ajuste de configurações para o desktop COSMIC</summary>
@@ -24,6 +26,7 @@
   <summary xml:lang="es">Aplicación de configuración para escritorio COSMIC</summary>
   <description>
       <p>Settings application for the COSMIC desktop</p>
+      <p xml:lang="ar">تطبيق الإعدادات لسطح مكتب COSMIC</p>
       <p xml:lang="pl">Aplikacja ustawień pulpitu COSMIC</p>
       <p xml:lang="hu">Beállítások a COSMIC asztali környezethez</p>
       <p xml:lang="pt">Ajuste de configurações para o desktop COSMIC</p>

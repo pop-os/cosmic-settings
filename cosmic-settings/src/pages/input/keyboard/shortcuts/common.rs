@@ -614,7 +614,7 @@ impl Model {
         &self,
         _core: &cosmic::Core,
     ) -> cosmic::iced::Subscription<ShortcutMessage> {
-        if self.editing.is_some() {
+        if self.editing.is_some() && self.replace_dialog.is_none() {
             listen_with(|event, _, _| match event {
                 iced::event::Event::Keyboard(iced::keyboard::Event::KeyPressed {
                     key,

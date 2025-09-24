@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Touchpad
+Name[ar]=لوحة اللمس 
 Name[zh_CN]=触摸板
 Name[pl]=Gładzik
 Name[hu]=Érintőpárna
@@ -7,6 +8,7 @@ Name[pt]=Touchpad
 Name[sk]=Touchpad
 Name[es]=Panel táctil
 Comment=Touchpad speed, click options, gestures.
+Comment[ar]=سرعة لوحة اللمس، خيارات النقر، الإيماءات.
 Comment[zh_CN]=触摸板速度、点击选项和手势
 Comment[pl]=Prędkość gładzika, opcje kliknięć, gesty.
 Comment[hu]=Érintőpárna sebessége, kattintási beállítások, gesztusok.

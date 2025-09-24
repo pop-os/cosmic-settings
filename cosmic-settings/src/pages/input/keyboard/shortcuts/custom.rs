@@ -548,7 +548,10 @@ impl page::Page<crate::pages::Message> for Page {
         use cosmic::iced::{self, event::listen_with};
 
         cosmic::iced::Subscription::batch(vec![
-            if self.add_shortcut.active && self.add_shortcut.editing.is_some() {
+            if self.add_shortcut.active
+                && self.add_shortcut.editing.is_some()
+                && self.replace_dialog.is_empty()
+            {
                 listen_with(|event, _, _| match event {
                     iced::event::Event::Keyboard(iced::keyboard::Event::KeyPressed {
                         key,
