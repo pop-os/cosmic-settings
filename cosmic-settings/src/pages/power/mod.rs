@@ -156,7 +156,7 @@ impl page::Page<crate::pages::Message> for Page {
                             Ok(stream) => {
                                 let mut stream = std::pin::pin!(stream);
                                 while let Some(device) = stream.next().await {
-                                    tracing::info!(device = device.model, "device added");
+                                    tracing::debug!(device = device.model, "device added");
                                     emitter.emit(Message::DeviceConnect(device)).await;
                                 }
                             }
@@ -169,7 +169,7 @@ impl page::Page<crate::pages::Message> for Page {
                             Ok(stream) => {
                                 let mut stream = std::pin::pin!(stream);
                                 while let Some(device_path) = stream.next().await {
-                                    tracing::info!(device_path, "device removed");
+                                    tracing::debug!(device_path, "device removed");
                                     emitter.emit(Message::DeviceDisconnect(device_path)).await;
                                 }
                             }
@@ -259,8 +259,17 @@ impl Page {
             Message::DeviceDisconnect(device_path) => self
                 .connected_devices
                 .retain(|device| device.device_path != device_path),
-            Message::DeviceConnect(connected_device) => {
-                self.connected_devices.push(connected_device)
+            Message::DeviceConnect(new_device) => {
+                // If a connected device already exists at a path, replace it.
+                if let Some(old) = self
+                    .connected_devices
+                    .iter_mut()
+                    .find(|existing| existing.device_path == new_device.device_path)
+                {
+                    *old = new_device;
+                } else {
+                    self.connected_devices.push(new_device)
+                }
             }
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
