@@ -1,8 +1,14 @@
 [Desktop Entry]
 Name=Startup applications
+Name[af]=Opstarttoepassings
 Name[ar]=تطبيقات بدء التشغيل
+Name[de]=Startanwendungen
+Name[nl]=Opstarttoepassingen
 Comment=Configure applications which run on login.
+Comment[af]=Konfigureer toepassings wat met aanmelding loop.
 Comment[ar]=اضبط التطبيقات التي تعمل عند الولوج.
+Comment[de]=Konfigurieren Sie Anwendungen, die bei der Anmeldung ausgeführt werden.
+Comment[nl]=Configureer toepassingen die bij het inloggen worden uitgevoerd.
 Type=Settings
 Exec=cosmic-settings startup-apps
 Terminal=false
