@@ -134,6 +134,49 @@ bluetooth-available = Dispositivi nelle vicinanze
 
 bluetooth-adapters = Adattatori Bluetooth
 
+## Accessibility
+
+accessibility = Accessibilità
+    .vision = Vista
+    .on = Attivo
+    .off = Disattivo
+    .unavailable = Non disponibile
+    .screen-reader = Lettore schermo
+    .high-contrast = Modalità ad alto contrasto
+    .invert-colors = Inverti colori
+    .color-filters = Filtri colore
+
+hearing = Udito
+    .mono = Riproduci audio stereo come mono
+
+default = Predefinito
+magnifier = Lente d’ingrandimento
+    .controls = Oppure usa queste scorciatoie: { $zoom_in ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_in} per ingrandire,
+        }{ $zoom_out ->
+             [zero] {""}
+            *[other] {""}
+                {$zoom_out} per ridurre,
+        }
+        Super + scorrimento con il mouse
+    .scroll_controls = Abilita zoom con Super + Scorrimento del mouse o touchpad
+    .show_overlay = Mostra sovrapposizione della lente d’ingrandimento
+    .increment = Incremento zoom
+    .signin = Avvia la lente d’ingrandimento all’accesso
+    .applet = Attiva/disattiva lente d’ingrandimento nell’applet del pannello
+    .movement = Vista ingrandita si muove
+    .continuous = Continuamente con il puntatore
+    .onedge = Quando il puntatore raggiunge il bordo
+    .centered = Per mantenere il puntatore centrato
+color-filter = Tipo di filtro colore
+    .unknown = Filtro sconosciuto attivo
+    .greyscale = Scala di grigi
+    .deuteranopia = Verde/Rosso (debolezza del verde, Deuteranopia)
+    .protanopia = Rosso/Verde (debolezza del rosso, Protanopia)
+    .tritanopia = Blu/Giallo (debolezza del blu, Tritanopia)
+
 ## Desktop
 
 desktop = Desktop
@@ -411,12 +454,6 @@ dialog = Dialog
     .change-prompt = Le impostazioni verranno automaticamente ripristinate tra { $time } secondi.
     .revert-settings = Ripristina impostazioni
 
-legacy-app-scaling = Scala delle applicazioni del sistema X11
-    .scaled-by-system = Scala tutte le applicazioni X11
-    .system-description = Le applicazioni X11 appariranno sfocate su schermi HiDPI.
-    .scaled-natively = Renderizza le applicazioni X11 alla risoluzione nativa
-    .native-description = Le applicazioni X11 che non supportano la scalatura saranno piccole quando si utilizzano display HiDPI. Abilita questa opzione per i giochi per utilizzare la risoluzione completa del monitor.
-
 ## Sound
 
 sound = Suono
@@ -435,6 +472,9 @@ sound-input = Input
     .volume = Volume di input
     .device = Dispositivo di input
     .level = Livello di input
+
+amplification = Amplificazione
+    .desc = Permette di aumentare il volume fino al 150%.
 
 sound-alerts = Suoni di sistema
     .volume = Volume dei suoni di sistema
@@ -536,21 +576,29 @@ keyboard-typing-assist = Digitazione
     .repeat-rate = Ripeti ritmo
     .repeat-delay = Ripeti ritardo
 
+keyboard-numlock-boot = Numlock
+    .boot-state = Stato all'avvio
+    .last-boot = Ultimo avvio
+    .on = Attivo
+    .off = Disattivo
+    .set = Imposta stato Numlock all'avvio
+
 added = Aggiunto
 type-to-search = Digita per cercare...
 show-extended-input-sources = Mostra
 
-## Input: Keyboard: Scorciatoie
+## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = Scorciatoie da tastiera
     .desc = Visualizza e modifica le scorciatoie
 
-add-keybinding = Aggiungere un collegamento ai tasti
+add-another-keybinding = Aggiungere un altro collegamento ai tasti
 cancel = Annulla
 command = Comando
 custom = Personalizzato
 debug = Debug
 disabled = Disabilitato
+input-source-switch = Cambia sorgente di input della tastiera
 migrate-workspace-prev = Sposta lo spazio di lavoro all'output precedente
 migrate-workspace-next = Sposta lo spazio di lavoro all'output successivo
 migrate-workspace = Sposta lo spazio di lavoro all'output { $direction ->
@@ -599,6 +647,7 @@ nav-shortcuts = Navigazione
 manage-windows = Gestione finestre
     .close = Chiudi finestra
     .maximize = Massimizza finestra
+    .fullscreen = Finestra a schermo intero
     .minimize = Minimizza finestra
     .resize-inwards = Ridimensiona finestra verso l'interno
     .resize-outwards = Ridimensiona finestra verso l'esterno
@@ -647,8 +696,10 @@ system-shortcut = Sistema
     .play-pause = Riproduci/Pausa
     .play-next = Traccia successiva
     .play-prev = Traccia precedente
+    .poweroff = Spegni
     .screenshot = Cattura schermata
     .terminal = Apri un terminale
+    .touchpad-toggle = Attiva/disattiva touchpad
     .volume-lower = Riduci volume dell'audio
     .volume-raise = Aumenta volume dell'audio
     .web-browser = Apri un browser web
@@ -785,6 +836,29 @@ startup-apps = Applicazioni d'avvio
     .remove-dialog-description = Sei sicuro di voler rimuovere questa applicazione d'avvio?
     .search-for-application = Cerca applicazioni
 
+## Applications: Legacy Applications
+
+legacy-applications = Compatibilità applicazioni X11
+    .desc = Ridimensionamento delle applicazioni del sistema X11 e scorciatoie globali.
+
+legacy-app-global-shortcuts = Scorciatoie globali nelle applicazioni X11
+    .desc = Le scorciatoie globali permettono ai tasti premuti e agli eventi del mouse eseguiti in un'applicazione di essere riconosciuti da altre applicazioni per funzionalità come push-to-talk o push-to-mute. Per impostazione predefinita, questo è disabilitato nelle applicazioni X11 per evitare che altre applicazioni possano intercettare eventi della tastiera o del mouse contenenti informazioni sensibili.
+    .none = Nessun tasto
+    .modifiers = Modificatori (Super, Shift, Control, Alt)
+    .combination = Tutti i tasti mentre sono premuti i modificatori Super, Control o Alt
+    .all = Tutti i tasti
+    .mouse = Eventi dei pulsanti del mouse nelle applicazioni X11
+
+legacy-app-scaling = Ridimensionamento delle applicazioni del sistema X11
+    .scaled-gaming = Ottimizza per giochi e applicazioni a schermo intero
+    .gaming-description = Le applicazioni X11 potrebbero apparire leggermente più grandi o più piccole rispetto alle applicazioni Wayland.
+    .scaled-applications = Ottimizza per le applicazioni
+    .applications-description = I giochi e le applicazioni X11 a schermo intero potrebbero non corrispondere alla risoluzione del tuo display.
+    .scaled-compatibility = Modalità di massima compatibilità
+    .compatibility-description = Le applicazioni X11 potrebbero apparire sfocate sugli schermi HiDPI.
+    .preferred-display = Display preferito per giochi e applicazioni X11 a schermo intero
+    .no-display = Nessuno
+
 ## System
 
 system = Sistema e account
@@ -830,6 +904,7 @@ administrator = Amministratore
     .desc = Gli amministratori possono modificare le impostazioni per tutti gli utenti, aggiungere e rimuovere altri utenti.
 
 add-user = Aggiungi utente
+change-password = Cambia password
 remove-user = Rimuovi utente
 full-name = Nome completo
 invalid-username = Nome utente non valido
