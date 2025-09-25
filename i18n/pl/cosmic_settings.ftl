@@ -414,16 +414,16 @@ dialog = Dialog
     .keep-changes = Zachowaj zmiany
     .change-prompt =
         Ustawienia automatycznie powrócą do poprzednich za { $time ->
-            [1] sekundę.
-            [few] { $time } sekundy.
-           *[other] { $time } sekund.
-        }
-    .revert-settings = Powróć do poprzednich ustawień
+            [1] sekundę
+            [few] { $time } sekundy
+           *[other] { $time } sekund
+        }.
+    .revert-settings = Przywróć poprzednie ustawienia
 
 ## Sound
 
 sound = Dźwięk
-    .desc = nd.
+    .desc = Nie dotyczy
 sound-output = Wyjście
     .volume = Głośność wyjścia
     .device = Urządzenie wyjścia
