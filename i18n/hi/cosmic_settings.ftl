@@ -139,7 +139,11 @@ fill = भरें
 fit-to-screen = स्क्रीन पर समायोजन
 open-new-folder = नया फ़ोल्डर खोलें
 recent-folders = हाल के फ़ोल्डर
-x-minutes = { $number } मिनट
+x-minutes =
+    { $number } { $number ->
+        [one] मिनट
+       *[other] मिनट
+    }
 x-hours =
     { $number ->
         [1] 1 घंटा
@@ -317,7 +321,8 @@ display = प्रदर्शन
     .options = प्रदर्शन विकल्प
     .refresh-rate = ताज़ा दर
     .resolution = संकल्प
-    .scale = आकार
+    .scale = स्तर
+    .additional-scale-options = अतिरिक्त स्तर के विकल्प
 mirroring = परावर्तन
     .id = परावर्तित { $id }
     .dont = परावर्तित न करें
@@ -363,6 +368,8 @@ sound-output = आउटपुट
     .level = आउटपुट स्तर
     .config = कॉन्फ़िगरेशन
     .balance = संतुलन
+    .left = बाएं
+    .right = दाएं
 sound-input = इनपुट
     .volume = इनपुट ध्वनि
     .device = इनपुट उपकरण
@@ -675,3 +682,66 @@ password-confirm = पासवर्ड की पुष्टि करें
 identity = पहचान
 activate = सक्रिय करें
 enable = सक्षम करें
+default = डिफ़ॉल्ट
+accessibility = उपलब्धता
+    .vision = दृष्टि
+    .on = चालू
+    .off = बंद
+    .unavailable = अनुपलब्ध
+    .screen-reader = स्क्रीन रीडर
+    .high-contrast = उच्च कंट्रास्ट मोड
+    .invert-colors = रंगों को औंधा करें
+    .color-filters = रंग फिल्टर
+hearing = सुनने की शक्ति
+    .mono = स्टीरियो ऑडियो को मोनो के रूप में चलाएँ
+magnifier = आवर्धक
+    .controls =
+        या इन शॉर्टकट का उपयोग करें: { $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_in } ,ज़ूम इन करने के लिए
+        }{ $zoom_out ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_out } ज़ूम आउट करने के लिए,
+        }
+        Super + स्क्रॉल अपने माउस से करें
+    .scroll_controls = Super + स्क्राॅल से माउस या टचपैड सक्षम करें
+    .show_overlay = आवर्धक ओवरले दिखाएं
+    .increment = ज़ूम वृद्धि
+    .signin = साइन इन करने पर आवर्धक चालू करें
+    .applet = पैनल पर एप्लेट में आवर्धक को चालू/बंद करें
+    .movement = ज़ूम किया गया दृश्य चलेगा
+    .continuous = पॉइंटर के साथ लगातार
+    .onedge = जब पॉइंटर किनारे पर पहुँचता है
+    .centered = पॉइंटर को केंद्रित रखने के लिए
+color-filter = रंग फिल्टर का प्रकार
+    .unknown = अज्ञात फ़िल्टर सक्रिय
+    .greyscale = ग्रेस्केल
+    .deuteranopia = हरा/लाल(हरा कमजोर, ड्यूटेरानोपिया)
+    .protanopia = लाल/हरा (लाल कमजोर, प्रोटानोपिया)
+    .tritanopia = नीला/पीला (नीला कमजोर, ट्रिटानोपिया)
+never = कभी नहीं
+edge-gravity = फ्लोटिंग विंडो आस-पास के किनारों की ओर आकर्षित होती हैं
+vrr = परिवर्तनीय रिफ्रेश दर
+    .enabled = सक्रिय
+    .force = सदैव
+    .auto = स्वचालित
+    .disabled = अक्षम
+amplification = एंप्लीफ़िकेशन
+    .desc = 150% तक ध्वनि बढ़ाने की अनुमति देता है
+power-saving = पाॅवर बचत के विकल्प
+    .turn-off-screen-after = इतने समय के बाद स्क्रीन बंद कर दें
+    .auto-suspend = स्वचालित निलंबन
+    .auto-suspend-ac = चार्जिंग करने पर स्वचालित निलंबन
+    .auto-suspend-battery = बैटरी पाॅवर पर स्वचालित निलंबन
+keyboard-numlock-boot = न्यूमेरिकल लॉक
+    .boot-state = बूट पर अवस्था
+    .last-boot = पिछला बूट
+    .on = चालू
+    .off = बंद
+    .set = न्यूमेरिकल लॉक बूट अवस्था सेट करें
+add-another-keybinding = एक और कीबाइंडिंग जोड़ें
+input-source-switch = कीबोर्ड भाषा इनपुट स्रोत स्विच करें
