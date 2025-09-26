@@ -11,3 +11,5 @@ connections-and-profiles =
         [vpn] VPN-ferbiningen
        *[other] Ûnbekende ferbiningen
     } en ferbiningsprofilen.
+cancel = Annulearje
+settings = Ynstellings
