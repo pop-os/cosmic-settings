@@ -1,20 +1,18 @@
 app = Socruithe COSMIC
-
 dbus-connection-error = Theip ar nascadh le DBus
 ok = Ceart go leor
 unknown = Anaithnid
-
 number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles = { $variant ->
-    [wired] Nasctha
-    [wifi] Wi-Fi
-    [vpn] VPN
-    *[other] anaithnid
-} ceangail agus próifílí ceangailte.
-
+connections-and-profiles =
+    { $variant ->
+        [wired] Nasctha
+        [wifi] Wi-Fi
+        [vpn] VPN
+       *[other] anaithnid
+    } ceangail agus próifílí ceangailte.
 add-network = Cuir líonra leis
     .profile = Cuir próifíl leis
 add-vpn = Cuir VPN leis
@@ -36,14 +34,11 @@ settings = Socruithe
 username = Ainm úsáideora
 visible-networks = Líonraí Infheicthe
 identity = Féiniúlacht
-
 auth-dialog = Fíordheimhniú de dhíth
     .vpn-description = Cuir isteach an t-ainm úsáideora agus pasfhocal a theastaíonn ón tseirbhís VPN.
     .wifi-description = Cuir isteach an focal faire nó eochair criptithe. Is féidir leat ceangal a dhéanamh freisin ach an cnaipe “WPS” a bhrú ar an ródaire.
-
 forget-dialog = Déan dearmad ar an líonra Wi-Fi seo?
     .description = Beidh ort pasfhocal a chur isteach arís chun an líonra Wi-Fi seo a úsáid amach anseo.
-
 network-device-state =
     .activated = Ceangailte
     .config = Ag nascadh
@@ -59,17 +54,14 @@ network-device-state =
     .unknown = Stát anaithnid
     .unmanaged = Gan bhainistiú
     .unplugged = Cábla díphlugáilte
-
 remove-connection-dialog = Bain Próifíl Ceangail?
     .vpn-description = Beidh ort pasfhocal a chur isteach arís chun an líonra seo a úsáid amach anseo.
     .wired-description = Beidh ort an phróifíl seo a athchruthú chun í a úsáid amach anseo.
-
 vpn = VPN
     .connections = Naisc VPN
     .error = Theip ar chumraíocht VPN a chur leis
     .remove = Bain próifíl naisc
     .select-file = Roghnaigh comhad cumraíochta VPN
-
 vpn-error = Earráid VPN
     .config = Theip ar chumraíocht VPN a chur leis
     .connect = Theip ar nascadh le VPN
@@ -79,22 +71,20 @@ vpn-error = Earráid VPN
     .wireguard-config-path = Cosán comhaid neamhbhailí le haghaidh cumraíochta WireGuard
     .wireguard-config-path-desc = Caithfidh an comhad roghnaithe a bheith ar chóras comhad áitiúil.
     .wireguard-device = Theip ar chruthú gléas WireGuard
-    .with-password = Theip ar VPN a shocrú { $field ->
-        *[username] ainm úsáideora
-        [password] pasfhocal
-        [password-flags] pasfhocail-bratacha
-    } le nmcli
-
+    .with-password =
+        Theip ar VPN a shocrú { $field ->
+           *[username] ainm úsáideora
+            [password] pasfhocal
+            [password-flags] pasfhocail-bratacha
+        } le nmcli
 wired = Sreangaithe
     .adapter = Adaptóir sreangaithe { $id }
     .connections = Ceangail Sreangaithe
     .devices = Gléasanna Sreangaithe
     .remove = Bain an próifíl ceangailte
-
 wifi = Wi-Fi
     .adapter = Adaptóir Wi-Fi { $id }
     .forget = Déan dearmad ar an líonra seo
-
 wireguard-dialog = Cuir gléas WireGuard leis
     .description = Roghnaigh ainm gléis don chumraíocht WireGuard.
 
@@ -108,7 +98,6 @@ online-accounts = Cuntais Ar Líne
 activate = Gníomhachtaigh
 confirm = Deimhnigh
 enable = Cumasaigh
-
 bluetooth = Bluetooth
     .desc = Bainistigh gléasanna Bluetooth
     .status = Tá an córas seo le feiceáil mar { $aliases } agus socruithe Bluetooth oscailte.
@@ -122,16 +111,12 @@ bluetooth = Bluetooth
     .disabled = Tá an tseirbhís bluetooth díchumasaithe
     .inactive = Níl an tseirbhís bluetooth gníomhach
     .unknown = Níorbh fhéidir an tseirbhís bluetooth a ghníomhachtú. An bhfuil bluez suiteáilte?
-
 bluetooth-paired = Gléasanna Ceangailte Roimhe Seo
     .connect = Ceangail
     .battery = { $percentage }% cadhnra
-
 bluetooth-confirm-pin = Deimhnigh PIN Bluetooth
     .description = Deimhnigh le do thoil go bhfuil an UAP seo a leanas ag teacht leis an gceann atá ar taispeáint { $device }
-
 bluetooth-available = Gléasanna in aice láimhe
-
 bluetooth-adapters = Cuibheoirí Bluetooth
 
 ## Accessibility
@@ -141,23 +126,25 @@ accessibility = Inrochtaineacht
     .on = Ar
     .off = As
     .unavailable = Níl ar fáil
+    .screen-reader = Léitheoir Scáileáin
     .high-contrast = Mód codarsnachta ard
     .invert-colors = Inbhéartaigh Dathanna
     .color-filters = Scagairí dathanna
-
 hearing = Éisteacht
-    .mono =Seinn fuaim steireo mar mhonó
-
+    .mono = Seinn fuaim steireo mar mhonó
 default = Réamhshocrú
 magnifier = Formhéadaitheoir
-    .controls = Nó bain úsáid as na haicearraí seo: { $zoom_in ->
-             [zero] {""}
-            *[other] {""}
-                {$zoom_in} chun súmáil isteach,
+    .controls =
+        Nó bain úsáid as na haicearraí seo: { $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_in } chun súmáil isteach,
         }{ $zoom_out ->
-             [zero] {""}
-            *[other] {""}
-                {$zoom_out} chun súmáil amach,
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_out } chun súmáil amach,
         }
         Super + scrollaigh le do luch
     .scroll_controls = Cumasaigh súmáil luiche nó tadhaill le Super + Scrollaigh
@@ -191,7 +178,6 @@ wallpaper = Cúlbhrat
     .plural = Cúlbhrat
     .same = Cúlbhrat céanna ar gach taispeáint
     .slide = Taispeántas sleamhnán
-
 add-color = Cuir dath leis
 add-image = Cuir íomhá leis
 all-displays = Gach Taispeáint
@@ -201,19 +187,22 @@ fill = Líon
 fit-to-screen = Oiriúnach don Scáileán
 open-new-folder = Oscail fillteán nua
 recent-folders = Fillteáin le Déanaí
-
-x-minutes = { $number } nóiméad
-x-hours = { $number ->
-    [1] 1 uair
-    *[other] { $number } uair an chloig
-}
+x-minutes =
+    { $number } { $number ->
+        [one] nóiméad
+       *[other] nóiméad
+    }
+x-hours =
+    { $number ->
+        [1] 1 uair
+       *[other] { $number } uair an chloig
+    }
 never = Riamh
 
 ## Desktop: Appearance
 
 appearance = Dealramh
     .desc = Dathanna béime agus téamaí.
-
 accent-color = Dath béime
 app-background = Feidhmchlár nó cúlra fuinneoige
 auto = Uath
@@ -232,43 +221,33 @@ reset-to-default = Athshocraigh go réamhshocrú
 rgb = RGB
 window-hint-accent = Dath leid fuinneoige gníomhach
 window-hint-accent-toggle = Úsáid dath accent téama mar leid fuinneoige gníomhach
-
 auto-switch = Athraigh go huathoibríoch idir modhanna Solas agus Dorcha
     .sunrise = Aistríonn sé go mód Solais ag éirí gréine
     .sunset = Aistríonn sé go mód Dorcha ag luí na gréine
     .next-sunrise = Aistríonn sé go mód an tSolais ag an gcéad éirí gréine eile
     .next-sunset = Aistríonn sé go mód Dorcha ag luí na gréine seo chugainn
-
 container-background = Cúlra coimeádán
     .desc-detail = Úsáidtear dath cúlra an choimeádáin le haghaidh barra taoibh nascleanúna, tarraiceán taoibh, dialóga agus giuirléidí dá samhail. De réir réamhshocraithe, díorthaítear go huathoibríoch é ó chúlra Feidhmchláir nó fuinneoige.
     .reset = Athshocraigh go huathoibríoch
     .desc = Úsáidtear dath coimeádán príomhúil le haghaidh barra taoibh nascleanúna, tarraiceán taoibh, dialóga agus giuirléidí dá samhail.
-
 control-tint = Dath scáth comhpháirt rialaithe
     .desc = Úsáidtear é le haghaidh cúlra de chnaipí caighdeánacha, ionchuir chuardaigh, ionchuir téacs, agus comhpháirteanna comhchosúla.
-
 frosted = Éifeacht gloine reatha ar chóras an úsáideora
     .desc = Cuireann sé blur cúlra i bhfeidhm ar an bpainéal, an doca, na haipléid, an túsghabháil, agus an leabharlann aip.
-
 enable-export = Cuir an téama seo i bhfeidhm ar aipí GNOME.
     .desc = Ní thacaíonn gach uirlis le féin-athrú. D'fhéadfadh go mbeidh gá le athosclaí a dhéanamh ar aipí neamh-COSMIC tar éis athrú téama.
-
 icon-theme = Téama Deilbhín
     .desc = Cuireann sé sraith éagsúil deilbhíní i bhfeidhm ar fheidhmchláir.
-
 text-tint = Tint téacs comhéadan
     .desc = Dath a úsáidtear chun dathanna téacs comhéadain a bhfuil codarsnacht leordhóthanach acu ar dhromchlaí éagsúla a dhíorthú.
-
 style = Stíl
     .round = Ciorclach
     .slightly-round = Ciorclach beagán
     .square = Cearnógach
-
 interface-density = Dlús Comhéadan
     .comfortable = Compordach
     .compact = Dlúth
     .spacious = Leathnaithe
-
 window-management-appearance = Bainistíocht Fuinneoga
     .active-hint = Méid leideanna fuinneoga gníomhacha
     .gaps = Bearnaí timpeall na bhfuinneoganna tíleáilte
@@ -289,7 +268,6 @@ notifications = Fógraí
 
 panel = Panel
     .desc = Barr uachtarach le rialuithe deasc agus comhéadan.
-
 add = Cuir
 add-applet = Cuir Feidhmchláirín leis
 all = Gach
@@ -306,18 +284,15 @@ panel-top = Barr
 search-applets = Cuardach feidhmchláiríní...
 small = Beaga
 start-segment = Tosaigh Deighleog
-
 panel-appearance = Dealramh
     .match = Meaitseáil deasc
     .light = Solas
     .dark = Dorcha
-
 panel-behavior-and-position = Iompar agus Seasaimh
     .autohide = Folaigh an painéal go huathoibríoch
     .dock-autohide = Folaigh duga go huathoibríoch
     .position = An suíomh ar an scáileán
     .display = Taispeáin ar taispeáint
-
 panel-style = Stíl
     .anchor-gap = Bearna idir imill an phainéil agus imill an scáileáin
     .dock-anchor-gap = Bearna idir imill an duga agus imill an scáileáin
@@ -326,11 +301,9 @@ panel-style = Stíl
     .appearance = Dealramh
     .size = Méid
     .background-opacity = Doimhneacht cúlra
-
 panel-applets = Cumraíocht
     .dock-desc = Cumraigh feidhmchláiríní duga
     .desc = Cumraigh feidhmchláiríní painéil
-
 panel-missing = Tá Cumraíocht an Phainéil ar Iarraidh
     .desc = Tá comhad cumraíochta an phainéil in easnamh mar gheall ar chumraíocht shaincheaptha a úsáid nó go bhfuil sé truaillithe.
     .fix = Athshocraigh go réamhshocrú
@@ -344,20 +317,16 @@ dock = Duga
 
 window-management = Bainistíocht fuinneoige
     .desc = Sárghníomhaíocht eochair, roghanna rialaithe fuinneoige, agus roghanna breise tíliú fuinneoige.
-
 super-key = Gníomh na heochrach Super
     .launcher = Oscail Tosaitheoir
     .workspaces = Oscail spásanna oibre
     .applications = Oscail Feidhmchláir
     .disable = Díchumasaigh
-
 edge-gravity = Imíonn fuinneoga snámhacha go dtí imill in aice láimhe
-
 window-controls = Rialuithe Fuinneog
     .maximize = Taispeáin an cnaipe uasmhéadú
     .minimize = Taispeáin cnaipe íoslaghdú
     .active-window-hint = Taispeáin leid fuinneoige gníomhach
-
 focus-navigation = Nascleanúint Fócas
     .focus-follows-cursor = Leanann an fócas cúrsóir
     .focus-follows-cursor-delay = Leanann fócas moill cúrsóra in ms
@@ -367,38 +336,31 @@ focus-navigation = Nascleanúint Fócas
 
 workspaces = Spásanna oibre
     .desc = Treoshuíomh agus iompar spás oibre.
-
 workspaces-behavior = Iompar Spás Oibre
     .dynamic = Spásanna oibre dinimiciúla
     .dynamic-desc = Baintear spásanna oibre folamha go huathoibríoch.
     .fixed = Líon Seasta Spásanna Oibre
     .fixed-desc = Cuir leis nó bain spásanna oibre san fhorbhreathnú.
-
 workspaces-multi-behavior = Iompar Il-mhonatóireachta
     .span = Taispeántais Réise Spásanna Oibre
     .separate = Bíodh Spásanna Oibre ar Leith ag Taispeántais
-
 workspaces-overview-thumbnails = Mionsamhlacha Forbhreathnú Spás Oibre
     .show-number = Taispeáin Uimhir Spás Oibre
     .show-name = Taispeáin Ainm Spás Oibre
-
 workspaces-orientation = Treoshuíomh Spásanna Oibre
     .vertical = Ingearach
     .horizontal = Cothrománach
-
 hot-corner = Cúinne Te
     .top-left-corner = Cumasaigh cúinne te barr-chlé do Spásanna Oibre
 
 ## Displays
 
 -requires-restart = Teastaíonn atosú
-
 color = Dath
     .depth = Doimhneacht datha
     .profile = Próifíl datha
     .sidebar = Próifílí dathanna
     .temperature = Teocht datha
-
 display = Taispeántais
     .desc = Bainistigh taispeántais, aistriú grafaicí, agus solas oíche
     .arrangement = Socrú Taispeána
@@ -411,39 +373,35 @@ display = Taispeántais
     .resolution = Taifeach
     .scale = Scáil
     .additional-scale-options = Roghanna scála breise
-
 mirroring = Scáthánú
     .id = Scáthánú { $id }
     .dont = Ná scáthán
     .mirror = Scáthán { $display }
-    .project = Caith chuig { $display ->
-        [all] gach taispeáint
-        *[other] { $display }
-    }
-    .project-count = Ag caith chuig { $count} eile { $count ->
-        [1] taispeáint
-        *[other] taispeántais
-    }
-
+    .project =
+        Caith chuig { $display ->
+            [all] gach taispeáint
+           *[other] { $display }
+        }
+    .project-count =
+        Ag caith chuig { $count } eile { $count ->
+            [1] taispeáint
+           *[other] taispeántais
+        }
 night-light = Solas Oíche
     .auto = Uathoibríoch (ó luí na gréine go éirí gréine)
     .desc = Laghdaigh solas gorm le dathanna níos teo.
-
 orientation = Treoshuíomh
     .standard = Caighdeán
     .rotate-90 = Rothlaigh 90
     .rotate-180 = Rothlaigh 180
     .rotate-270 = Rothlaigh 270
-
 vrr = Ráta athnuachana athraitheach
     .enabled = Cumasaithe
     .force = I gcónaí
     .auto = Uathoibríoch
     .disabled = Díchumasaithe
-
 scheduling = Sceidealú
     .manual = Sceideal láimhe
-
 dialog = Dialóg
     .title = Coinnigh na Socruithe Taispeána seo?
     .keep-changes = Coinnigh Athruithe
@@ -454,7 +412,6 @@ dialog = Dialóg
 
 sound = Fuaim
     .desc = N/A
-
 sound-output = Aschur
     .volume = Toirt aschuir
     .device = Gléas aschuir
@@ -463,49 +420,46 @@ sound-output = Aschur
     .balance = Iarmhéid
     .left = Ar chlé
     .right = Ar dheis
-
 sound-input = Ionchur
     .volume = Toirt ionchuir
     .device = Gléas ionchuir
     .level = Leibhéal ionchuir
-
 sound-alerts = Foláirimh
     .volume = Toirt foláirimh
     .sound = Fuaime foláirimh
-
 sound-applications = Feidhmchláir
     .desc = Toirt agus socruithe feidhmchlár
-
 profile = Próifíl
 
 ## Power
 
 power = Cumhacht & Cadhnra
     .desc = Bainistigh socruithe cumhachta
-
 battery = Ceallraí
-  .minute = { $value } { $value ->
-        [one] nóiméad
-       *[other] nóiméad
-  }
-  .hour = { $value } { $value ->
-        [one] uair
-       *[other] uair an chloig
-  }
-  .day = { $value } { $value ->
-        [one] lá
-       *[other] laethanta
-  }
-  .less-than-minute = Níos lú ná nóiméad
-  .and = agus
-  .remaining-time = { $time } go dtí { $action ->
-        [full] lán
-       *[other] folamh
-   }
-
+    .minute =
+        { $value } { $value ->
+            [one] nóiméad
+           *[other] nóiméad
+        }
+    .hour =
+        { $value } { $value ->
+            [one] uair
+           *[other] uair an chloig
+        }
+    .day =
+        { $value } { $value ->
+            [one] lá
+           *[other] laethanta
+        }
+    .less-than-minute = Níos lú ná nóiméad
+    .and = agus
+    .remaining-time =
+        { $time } go dtí { $action ->
+            [full] lán
+           *[other] folamh
+        }
 connected-devices = Gléasanna Nasctha
-  .unknown = Gléasanna Nasctha
-
+    .unknown = Gléasanna Nasctha
 power-mode = Mód Cumhachta
     .battery = Saol ceallraí leathnaithe
     .battery-desc = Úsáid cumhachta laghdaithe agus feidhmíocht chiúin.
@@ -514,7 +468,6 @@ power-mode = Mód Cumhachta
     .performance = Feidhmíocht ard
     .performance-desc = Feidhmíocht buaic agus úsáid ard chumhachta.
     .no-backend = Níor aimsíodh an cúlra. Suiteáil system76-power nó power-profiles-daemon.
-
 power-saving = Roghanna Sábháil Cumhachta
     .turn-off-screen-after = Tiontaigh an scáileán off tar éis
     .auto-suspend = Cosc uathoibríoch
@@ -524,17 +477,13 @@ power-saving = Roghanna Sábháil Cumhachta
 ## Input
 
 acceleration-desc = Coigeartaíonn sé go huathoibríoch íogaireacht rianaithe bunaithe ar luas.
-
 disable-while-typing = Díchumasaigh agus tú ag clóscríobh
-
 input-devices = Gléasanna Ionchuir
     .desc = Gléasanna Ionchuir
-
 primary-button = Cnaipe príomhúil
     .desc = Socraíonn sé ord na gcnaipí fisiciúla.
     .left = Ar chlé
     .right = Ar dheis
-
 scrolling = Scrollaigh
     .two-finger = Scrollaigh le dhá mhéar
     .edge = Scrollaigh feadh an imeall le méar amháin
@@ -550,7 +499,6 @@ short = Gearr
 long = Fada
 keyboard = Méarchlár
     .desc = Foinsí ionchuir, aistriú, iontráil carachtar speisialta, aicearraí.
-
 keyboard-sources = Foinsí Ionchuir
     .desc = Is féidir foinsí ionchuir a athrú trí úsáid a bhaint as teaglaim eochair Super+Spás. Is féidir é seo a shaincheapadh sna socruithe aicearra méarchláir.
     .move-up = Bog suas
@@ -559,23 +507,19 @@ keyboard-sources = Foinsí Ionchuir
     .view-layout = Féach ar leagan amach an mhéarchláir
     .remove = Bain
     .add = Cuir foinse ionchuir leis
-
 keyboard-special-char = Iontráil Carachtair Speisialta
     .alternate = Eochair charachtair mhalartacha
     .compose = Cum eochair
     .caps = Caps Lock eochair
-
 keyboard-typing-assist = Ag clóscríobh
     .repeat-rate = Ráta athuair
     .repeat-delay = Moill athrá
-
 keyboard-numlock-boot = GlasUimhir
     .boot-state = Stát ar tosaithe
     .last-boot = An tosaithe deireanach
     .on = Ar
     .off = As
     .set = Socraigh staid tosaithe glas uimhir
-
 added = Curtha leis
 type-to-search = Clóscríobh le cuardach...
 show-extended-input-sources = Taispeáin foinsí ionchuir sínte
@@ -584,7 +528,6 @@ show-extended-input-sources = Taispeáin foinsí ionchuir sínte
 
 keyboard-shortcuts = Aicearra Méarchláir
     .desc = Féach ar agus saincheapaigh aicearraí
-
 add-keybinding = Cuir eochaircheangal leis
 cancel = Cealaigh
 command = Ordú
@@ -594,12 +537,13 @@ disabled = Díchumasaithe
 input-source-switch = Athraigh foinse ionchuir teanga an mhéarchláir
 migrate-workspace-prev = Aistrigh spás oibre go dtí an t-aschur roimhe seo
 migrate-workspace-next = Aistrigh spás oibre go dtí an chéad aschur eile
-migrate-workspace = Aistrigh spás oibre go dtí an t-aschur { $direction ->
-    *[down] síos
-    [left] ar chlé
-    [right] ar dheis
-    [up] suas
-}
+migrate-workspace =
+    Aistrigh spás oibre go dtí an t-aschur { $direction ->
+       *[down] síos
+        [left] ar chlé
+        [right] ar dheis
+        [up] suas
+    }
 navigate = Nascleanúint
 replace = Ionadaigh
 shortcut-name = Ainm aicearra
@@ -607,63 +551,64 @@ system-controls = Rialuithe córais
 terminate = Foirceann
 toggle-stacking = Scoránaigh cruachta fuinneoige
 type-key-combination = Cineál teaglaim eochair
-
 custom-shortcuts = Aicearraí Saincheaptha
     .add = Cuir aicearra leis
     .context = Cuir Aicearra Saincheaptha leis
     .none = Gan aicearraí saincheaptha
-
 modified = { $count } modhnaithe
-
 nav-shortcuts = Nascleanúint
     .prev-output = Fócas ar aschur roimhe seo
     .next-output = Fócas ar an gcéad aschur eile
     .last-workspace = Fócas ar an spás oibre deireanach
     .prev-workspace = Fócas ar spás oibre roimhe seo
     .next-workspace = Fócas ar an gcéad spás oibre eile
-    .focus = Fuinneog fócais { $direction ->
-        *[down] síos
-        [in] isteach
-        [left] ar chlé
-        [out] amach
-        [right] ar dheis
-        [up] suas
-    }
-    .output = Athraigh chuig aschur { $direction ->
-        *[down] síos
-        [left] ar chlé
-        [right] ar dheis
-        [up] suas
-    }
+    .focus =
+        Fuinneog fócais { $direction ->
+           *[down] síos
+            [in] isteach
+            [left] ar chlé
+            [out] amach
+            [right] ar dheis
+            [up] suas
+        }
+    .output =
+        Athraigh chuig aschur { $direction ->
+           *[down] síos
+            [left] ar chlé
+            [right] ar dheis
+            [up] suas
+        }
     .workspace = Téigh go spás oibre { $num }
-
 manage-windows = Bainistigh fuinneoga
     .close = Dún an fhuinneog
     .maximize = Uasmhéadaigh an fhuinneog
+    .fullscreen = Fuinneog lánscáileáin
     .minimize = Íoslaghdaigh an fhuinneog
     .resize-inwards = Athraigh méid na fuinneoige isteach
     .resize-outwards = Athraigh méid na fuinneoige amach
     .toggle-sticky = Scoránaigh an fhuinneog greamaitheach
-
 move-windows = Bog Fuinneoga
-    .direction = Bog Fuinneog { $direction ->
-        *[down] síos
-        [left] ar chlé
-        [right] ar dheis
-        [up] suas
-    }
-    .display = Bog fhuinneog amháin monatóir { $direction ->
-        *[down] síos
-        [left] ar chlé
-        [right] ar dheis
-        [up] suas
-    }
-    .workspace = Bog fuinneog amháin spás oibre { $direction ->
-        *[below] thíos
-        [left] ar chlé
-        [right] ar dheis
-        [above] thuas
-    }
+    .direction =
+        Bog Fuinneog { $direction ->
+           *[down] síos
+            [left] ar chlé
+            [right] ar dheis
+            [up] suas
+        }
+    .display =
+        Bog fhuinneog amháin monatóir { $direction ->
+           *[down] síos
+            [left] ar chlé
+            [right] ar dheis
+            [up] suas
+        }
+    .workspace =
+        Bog fuinneog amháin spás oibre { $direction ->
+           *[below] thíos
+            [left] ar chlé
+            [right] ar dheis
+            [above] thuas
+        }
     .workspace-num = Bog an fhuinneog go spás oibre { $num }
     .prev-workspace = Bog an fhuinneog go dtí an spás oibre roimhe seo
     .next-workspace = Bog an fhuinneog go dtí an chéad spás oibre eile
@@ -672,7 +617,6 @@ move-windows = Bog Fuinneoga
     .prev-display = Bog an fhuinneog go dtí an taispeáint roimhe seo
     .send-to-prev-workspace = Bog an fhuinneog go dtí an spás oibre roimhe seo
     .send-to-next-workspace = Bog an fhuinneog go dtí an chéad spás oibre eile
-
 system-shortcut = Córas
     .app-library = Oscail an leabharlann aip
     .brightness-down = Laghdú gile taispeáint
@@ -688,15 +632,16 @@ system-shortcut = Córas
     .play-pause = Seinn/Sos
     .play-next = An chéad rian eile
     .play-prev = Rian roimhe seo
+    .poweroff = Múch
     .screenshot = Tóg seat scáileáin
     .terminal = Oscail teirminéal
+    .touchpad-toggle = Scoránaigh an ceap tadhaill
     .volume-lower = Laghdú ar an méid aschuir fuaime
     .volume-raise = Méadú ar an aschur fuaime
     .web-browser = Osclaíonn sé brabhsálaí gréasáin
     .window-switcher = Athraigh idir fuinneoga oscailte
     .window-switcher-previous = Athraigh idir fuinneoga oscailte cúlaithe
     .workspace-overview = Oscail an forbhreathnú spás oibre
-
 window-tiling = Tíleáil fuinneoige
     .horizontal = Socraigh treoshuíomh cothrománach
     .vertical = Socraigh treoshuíomh ingearach
@@ -705,10 +650,8 @@ window-tiling = Tíleáil fuinneoige
     .toggle-stacking = Athraigh cruacháil fuinneoige
     .toggle-floating = Athraigh snámh fuinneoige
     .toggle-orientation = Athraigh treoshuíomh
-
 replace-shortcut-dialog = Ionadaigh Aicearra?
     .desc = { $shortcut } in úsáid ag { $name }. Má tá tú in ionad é, { $name } beidh sé faoi mhíchumas.
-
 zoom-in = Súmáil Isteach
 zoom-out = Súmáil Amach
 
@@ -724,13 +667,10 @@ mouse = Luch
 click-behavior = Cliceáil iompar
     .click-finger = Cliceáil dhúchais le dhá mhéara agus cliceáil lár le trí mhéara
     .button-areas = Cliceáil dhúchais sa chúinne íochtarach dheis agus cliceáil lár sa lár íochtarach
-
 pinch-to-zoom = Piorraigh chun aonaid
     .desc = Úsáid dhá mhéar chun an ábhar a mhéadú, le haghaidh aipeanna a tacaíonn le méadóireacht.
-
 tap-to-click = Cliceáil le bualadh
     .desc = Cumas tapáil le méar amháin chun cliceáil príomhúil, tapáil le dhá mhéar chun cliceáil dhúchais, agus tapáil le trí mhéar chun cliceáil lár.
-
 touchpad = Clár láimhe
     .acceleration = Cum luasghéarú clár láimhe
     .desc = Luas clár láimhe, roghanna cliceáil, giotaí.
@@ -744,11 +684,9 @@ gestures = Giotaí
     .four-finger-right = Sciob ceithre mhéara ar dheis
     .four-finger-up = Sciob ceithre mhéara suas
     .three-finger-any = Sciob trí mhéara i dtreo ar bith
-
 switch-workspaces = Athraigh spásanna oibre
     .horizontal = Sciob ceithre mhéara ar chlé/deis
     .vertical = Sciob ceithre mhéara suas/anuas
-
 switch-between-windows = Athraigh idir fuinneoga
 open-application-library = Oscail Leabharlann Feidhmchlár
 open-workspaces-view = Oscail Radharc Spásanna Oibre
@@ -757,16 +695,13 @@ open-workspaces-view = Oscail Radharc Spásanna Oibre
 
 time = Am & Teanga
     .desc = N/A
-
 time-date = Dáta & Am
     .desc = Crios ama, socruithe clog uathoibríoch, agus roinnt formáidiú ama.
     .auto = Socraigh go huathoibríoch
     .auto-ntp = Déanfar dáta agus am a nuashonrú go huathoibríoch nuair a bheidh an crios ama socraithe.
-
 time-zone = Crios Ama
     .auto = Crios ama uathoibríoch
     .auto-info = Teastaíonn seirbhísí suímh agus rochtain idirlín
-
 time-format = Formáid Dáta & Am
     .twenty-four = Am 24-uair
     .show-seconds = Taispeáin soicindí
@@ -776,10 +711,8 @@ time-format = Formáid Dáta & Am
     .saturday = Satharn
     .sunday = Domhnach
     .monday = Luan
-
 time-region = Réigiún & Teanga
-    .desc = Formáid dátaí, ama, agus uimhreacha bunaithe ar do réigiún
-
+    .desc = Formáidigh dátaí, amanna agus uimhreacha bunaithe ar do réigiún.
 formatting = Formáidiú
     .dates = Dátaí
     .time = Am
@@ -787,10 +720,8 @@ formatting = Formáidiú
     .numbers = Uimhreacha
     .measurement = Tomhas
     .paper = Páipéar
-
 preferred-languages = Teangacha Rogha
     .desc = Cinneann ord na dteangacha cén teanga a úsáidtear chun an deasc a aistriú. Tagann athruithe i bhfeidhm ar an gcéad logáil isteach eile.
-
 add-language = Cuir teanga leis
     .context = Cuir teanga leis
 install-additional-languages = Suiteáil teangacha breise
@@ -821,7 +752,7 @@ startup-apps = Feidhmchláir Tosaithe
     .desc = Cumraigh feidhmchláir a ritheann ar logáil isteach.
     .add = Cuir feidhmchlár leis
     .user = Feidhmchláir shonracha don úsáideoir
-    .user-description = Seoltar na feidhmchláir seo nuair a logálann tú isteach i d’úsáideoir reatha.
+    .none = Níor cuireadh aon fheidhmchláir tosaithe leis
     .remove-dialog-title = Bain { $name }?
     .remove-dialog-description = An bhfuil tú cinnte gur mian leat é seo a bhaint mar fheidhmchlár tosaithe?
     .search-for-application = Cuardaigh feidhmchlár
@@ -830,7 +761,6 @@ startup-apps = Feidhmchláir Tosaithe
 
 legacy-applications = Comhoiriúnacht Feidhmchláir X11
     .desc = Scálú feidhmchlár córais fuinneoige X11 agus aicearraí domhanda.
-
 legacy-app-global-shortcuts = Aicearraí Domhanda in Feidhmchláir X11
     .desc = Le haicearraí domhanda, is féidir le feidhmchláir eile aitheantas a thabhairt do bhuillí eochracha agus d’imeachtaí cnaipe luiche a dhéantar in aipeanna le haghaidh gnéithe cosúil le brúigh-chun-caint nó brúigh-chun-balbhú. De réir réamhshocraithe, tá sé seo díchumasaithe in aipeanna X11 lena chinntiú nach féidir le feidhmchláir eile monatóireacht a dhéanamh ar imeachtaí méarchláir agus luiche ina bhfuil faisnéis íogair.
     .none = Gan eochracha
@@ -838,7 +768,6 @@ legacy-app-global-shortcuts = Aicearraí Domhanda in Feidhmchláir X11
     .combination = Gach eochair agus na modhnóirí Super, Control nó Alt á mbrú
     .all = Gach eochair
     .mouse = Imeachtaí cnaipe luiche in fheidhmchláir X11
-
 legacy-app-scaling = Scálú Feidhmchláir Chóras Fuinneoige X11
     .scaled-gaming = Optamaigh le haghaidh cearrbhachais agus feidhmchláir lánscáileáin
     .gaming-description = D’fhéadfadh feidhmchláir X11 a bheith beagán níos mó/níos lú i gcomparáid le feidhmchláir Wayland.
@@ -857,23 +786,19 @@ system = Córas & Cuntais
 
 about = Maidir
     .desc = Ainm gléis, faisnéis crua-earraí, mainneachtainí an chórais oibriúcháin.
-
 about-device = Ainm an ghléis
     .desc = Feictear an t-ainm seo ar ghléasanna líonra nó bluetooth eile.
-
 about-hardware = Crua-earraí
     .model = Múnla crua-earraí
     .memory = Cuimhne
     .processor = Próiseálaí
     .graphics = Grafaicí
     .disk-capacity = Toilleadh Diosca
-
 about-os = Córas Oibriúcháin
     .os = Córas Oibriúcháin
     .os-architecture = Ailtireacht an chóras oibriúcháin
     .desktop-environment = Timpeallacht an deasc
     .windowing-system = Córas fuinneoige
-
 about-related = Socruithe Gaolmhara
     .support = Faigh tacaíocht
 
@@ -889,14 +814,15 @@ users = Úsáideoirí
     .admin = Riarachán
     .standard = Caighdeán
     .profile-add = Roghnaigh íomhá phróifíl
-
 administrator = Riarthóir
     .desc = Is féidir le riarthóirí socruithe do gach úsáideoir a athrú, úsáideoirí eile a chur leis agus iad a bhaint.
-
 add-user = Cuir úsáideoir leis
-change-password = Change password
+change-password = Athraigh pasfhocal
 remove-user = Bain úsáideoir
 full-name = Ainm iomlán
 invalid-username = Ainm úsáideora neamhbhailí.
 password-mismatch = Ní mór don phasfhocal agus don dearbhú a bheith mar a chéile.
 save = Sábháil
+amplification = Aimpliú
+    .desc = Ceadaíonn sé seo an toirt a ardú go 150%.
+add-another-keybinding = Cuir ceangal eochrach eile leis
