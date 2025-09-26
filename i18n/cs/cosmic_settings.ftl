@@ -90,7 +90,7 @@ wallpaper = Pozadí
     .slide = Prezentace
 all-displays = Všechny displeje
 colors = Barvy
-fit-to-screen = Přizpůsobit se obrazovce
+fit-to-screen = Přizpůsobit obrazovce
 x-minutes =
     { $number } { $number ->
         [one] minuta
@@ -134,7 +134,7 @@ online-accounts = Online účty
 
 ## Time & Language
 
-time = Čas a Jazyk
+time = Čas a jazyk
     .desc = N/A
 time-date = Datum a čas
     .desc = Časová zóna, auomatické nastavení času a formátování času.
@@ -285,7 +285,7 @@ username = Uživatelské jméno
 visible-networks = Viditelné sítě
 identity = Identita
 dark = Tmavé
-light = Světlý
+light = Světlé
 wireguard-dialog = Přidat zařízení WireGuard
     .description = Vyberte název zařízení pro nastavení WireGuard.
 activate = Aktivovat
@@ -477,7 +477,7 @@ magnifier = Lupa
     .increment = Krok přiblížení
     .signin = Spustit lupu při přihlášení
     .applet = Lupu lze přepnout v appletu na panelu
-    .movement = Pohyb přiblíženého pohledu
+    .movement = Pohyb přiblíženého zobrazení
     .continuous = Neustále s ukazatelem
     .onedge = Když ukazatel dosáhne kraje
     .centered = Udržovat ukazatele ve středu obrazovky
