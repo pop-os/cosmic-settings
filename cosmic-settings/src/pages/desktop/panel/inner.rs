@@ -491,6 +491,7 @@ impl PageInner {
                             wait_time: 1000,
                             transition_time: 200,
                             handle_size: 4,
+                            unhide_delay: 200,
                         }),
                     );
                 } else {
