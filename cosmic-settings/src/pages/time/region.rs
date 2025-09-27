@@ -235,9 +235,11 @@ impl Page {
                     let region = region.lang_code.clone();
 
                     return cosmic::task::future(async move {
-                        _ = set_locale(lang, region.clone()).await;
-
-                        update_time_settings_after_region_change(region);
+                        if let Ok(exit_status) = set_locale(lang, region.clone()).await {
+                            if exit_status.success() {
+                                update_time_settings_after_region_change(region);
+                            }
+                        }
 
                         Message::Refresh(Arc::new(page_reload().await))
                     });
@@ -882,9 +884,12 @@ fn popover_menu_row(
         .map(move |()| Message::SourceContext(message(id)))
 }
 
-pub async fn set_locale(lang: String, region: String) {
+pub async fn set_locale(
+    lang: String,
+    region: String,
+) -> Result<std::process::ExitStatus, std::io::Error> {
     eprintln!("setting locale lang={lang}, region={region}");
-    _ = tokio::process::Command::new("localectl")
+    tokio::process::Command::new("localectl")
         .arg("set-locale")
         .args(&[
             ["LANG=", &lang].concat(),
@@ -899,7 +904,7 @@ pub async fn set_locale(lang: String, region: String) {
             ["LC_TIME=", &region].concat(),
         ])
         .status()
-        .await;
+        .await
 }
 
 fn parse_locale(locale: &str) -> Option<Locale> {
