@@ -269,11 +269,11 @@ notifications = Notificações
 panel = Painel
     .desc = Barra superior com controles e menus da área de trabalho.
 add = Adicionar
-add-applet = Adicionar Miniaplicativo
+add-applet = Adicionar miniaplicativo
 all = Todos
 applets = Miniaplicativos
 center-segment = Segmento central
-drop-here = Solte os miniaplicativos aqui
+drop-here = Soltar os miniaplicativos aqui
 end-segment = Segmento final
 large = Grande
 no-applets-found = Nenhum miniaplicativo encontrado...
@@ -311,7 +311,7 @@ panel-missing = Configuração do painel está ausente
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Um painel opcional com aplicativos fixados e miniaplicativos.
+    .desc = Um painel opcional com aplicativos e miniaplicativos.
 
 ## Desktop: Window management
 
@@ -637,6 +637,7 @@ system-shortcut = Sistema
     .poweroff = Desligar
     .screenshot = Fazer uma captura de tela
     .terminal = Abrir o terminal
+    .touchpad-toggle = Ativar/desativar o touchpad
     .volume-lower = Reduzir o volume da saída de áudio
     .volume-raise = Aumentar o volume da saída de áudio
     .web-browser = Abrir o navegador web
@@ -713,7 +714,7 @@ time-format = Formato de Data e Hora
     .sunday = Domingo
     .monday = Segunda-feira
 time-region = Região e Idioma
-    .desc = Formatar datas, horas e números com base na sua região
+    .desc = Formatar datas, horas e números com base na sua região.
 formatting = Formatação
     .dates = Datas
     .time = Horas
@@ -749,14 +750,14 @@ default-apps = Aplicativos Padrão
 
 ## Applications: Startup Applications
 
-startup-apps = Aplicativos de Inicialização
+startup-apps = Aplicativos de inicialização
     .desc = Configurar aplicativos que são iniciados automaticamente ao fazer login no sistema.
     .add = Adicionar aplicativo
-    .user = Aplicativos específicos de usuário
-    .user-description = Esses aplicativos são iniciados quando você efetua login com seu usuário atual.
+    .user = Aplicativos que serão iniciados ao fazer login no sistema
+    .none = Não há aplicativos de inicialização adicionados
     .remove-dialog-title = Remover { $name }?
-    .remove-dialog-description = Tem certeza de que deseja remover isso como um aplicativo de inicialização?
-    .search-for-application = Procurar por aplicativo
+    .remove-dialog-description = Tem certeza de que deseja remover esse aplicativo de inicialização?
+    .search-for-application = Procurar aplicativo
 
 ## Applications: Legacy Applications
 
@@ -821,7 +822,7 @@ add-user = Adicionar usuário
 change-password = Alterar senha
 remove-user = Remover usuário
 full-name = Nome completo
-invalid-username = Nome de usuário inválido
+invalid-username = Nome de usuário inválido.
 password-mismatch = A senha e a confirmação devem ser iguais.
 save = Salvar
 add-another-keybinding = Adicionar outra tecla de atalho
