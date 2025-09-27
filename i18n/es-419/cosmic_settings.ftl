@@ -28,7 +28,7 @@ network-and-wireless = Red e inalámbrico
 no-networks = No se han encontrado redes.
 no-vpn = No hay conexiones VPN disponibles.
 password = Contraseña
-remove = Quitar
+remove = Eliminar
 settings = Configuración
 username = Nombre de usuario
 visible-networks = Redes visibles
@@ -178,13 +178,13 @@ auto-switch = Cambia automáticamente entre los modos claro y oscuro
     .next-sunrise = Cambia a modo claro en el próximo amanecer
     .next-sunset = Cambia a modo oscuro en el próximo atardecer
 container-background = Fondo del contenedor
-    .desc-detail = El color de fondo del contenedor se utiliza para la barra lateral de navegación, el cajón lateral, los diálogos y «widgets» similares. Por defecto, se deriva automáticamente del fondo de la aplicación o ventana.
+    .desc-detail = El color de fondo del contenedor se utiliza para la barra lateral de navegación, el cajón lateral, los diálogos y widgets similares. Por omisión, se deriva automáticamente del fondo de la aplicación o ventana.
     .reset = Restablecer a automático
-    .desc = El color principal del contenedor se utiliza para la barra lateral de navegación, el cajón lateral, los diálogos y «widgets» similares.
+    .desc = El color principal del contenedor se utiliza para la barra lateral de navegación, el cajón lateral, los diálogos y widgets similares.
 control-tint = Tono del componente de control
     .desc = Se utiliza para los fondos de los botones estándar, entradas de búsqueda, entradas de texto y componentes similares.
 frosted = Efecto de cristal translúcido en la interfaz del sistema
-    .desc = Aplica desenfoque de fondo a paneles, «docks», «applets», lanzador y biblioteca de aplicaciones.
+    .desc = Aplica desenfoque de fondo al panel, el dock, las miniaplicaciones, el lanzador y la biblioteca de aplicaciones.
 enable-export = Aplicar este tema a aplicaciones GNOME.
     .desc = No todas las herramientas admiten el cambio automático. Es posible que las aplicaciones que no son de COSMIC necesiten reiniciarse después de un cambio de tema.
 icon-theme = Tema de iconos
@@ -220,11 +220,11 @@ notifications = Notifications
 panel = Panel
     .desc = Barra superior con controles y miniaplicaciones.
 add = Añadir
-add-applet = Añadir «applet»
+add-applet = Añadir miniaplicación
 all = Todos
 applets = Miniaplicaciones
 center-segment = Segmento central
-drop-here = Soltar «applets» aquí
+drop-here = Soltar las miniaplicaciones aquí
 end-segment = Segmento final
 large = Grande
 no-applets-found = No se encontraron miniaplicaciones...
@@ -232,7 +232,7 @@ panel-bottom = Abajo
 panel-left = Izquierda
 panel-right = Derecha
 panel-top = Arriba
-search-applets = Buscar «applets»...
+search-applets = Buscar miniaplicaciones...
 small = Pequeño
 start-segment = Segmento inicial
 panel-appearance = Apariencia
@@ -241,14 +241,14 @@ panel-appearance = Apariencia
     .dark = Oscuro
 panel-behavior-and-position = Comportamiento y posiciones
     .autohide = Ocultar panel automáticamente
-    .dock-autohide = Ocultar «dock» automáticamente
+    .dock-autohide = Ocultar el dock automáticamente
     .position = Posición en la pantalla
     .display = Mostrar en pantalla
 panel-style = Estilo
     .anchor-gap = Espacio entre el panel y los bordes de la pantalla
-    .dock-anchor-gap = Espacio entre el «dock» y los bordes de la pantalla
+    .dock-anchor-gap = Espacio entre el dock y los bordes de la pantalla
     .extend = Extender panel hasta los bordes de la pantalla
-    .dock-extend = Extender «dock» hasta los bordes de la pantalla
+    .dock-extend = Extender el dock hasta los bordes de la pantalla
     .appearance = Apariencia
     .size = Tamaño
     .background-opacity = Opacidad del fondo
@@ -261,14 +261,14 @@ panel-missing = Falta la configuración del panel
 
 ## Desktop: Dock
 
-dock = «Dock»
-    .desc = Panel con aplicaciones fijadas.
+dock = Dock
+    .desc = Un panel opcional con aplicaciones y miniaplicaciones.
 
 ## Desktop: Window management
 
 window-management = Gestión de ventanas
     .desc = Acción de la tecla Super, opciones de control de ventanas y opciones adicionales de mosaico de ventanas.
-super-key = Tecla Súper
+super-key = Acción de la tecla Súper
     .launcher = Abrir lanzador
     .workspaces = Abrir espacios de trabajo
     .applications = Abrir aplicaciones
@@ -353,10 +353,14 @@ dialog = Diálogo
     .change-prompt = Los cambios en la configuración se revertirán automáticamente en { $time } segundos.
     .revert-settings = Revertir configuraciones
 legacy-app-scaling = Escalado de aplicaciones del sistema de ventanas X11
-    .scaled-by-system = Escalar todas las aplicaciones X11
-    .system-description = Las aplicaciones X11 aparecerán borrosas en pantallas HiDPI.
-    .scaled-natively = Renderizar aplicaciones X11 a resolución nativa
-    .native-description = Las aplicaciones X11 que no soportan escalado serán pequeñas cuando se utilicen pantallas HiDPI. Habilitar para que los juegos utilicen la resolución completa del monitor.
+    .scaled-gaming = Optimizar para juegos y aplicaciones en pantalla completa
+    .gaming-description = Puede que las aplicaciones X11 parezcan un poco más grandes o pequeñas comparadas a las aplicaciones Wayland.
+    .scaled-applications = Optimizar para las aplicaciones
+    .applications-description = Puede que los juegos y las aplicaciones X11 en pantalla completa no coincidan con la resolución de tu pantalla
+    .scaled-compatibility = Modo de compatibilidad máxima
+    .compatibility-description = Puede que las aplicaciones X11 parezcan borrosas en pantallas HiDPI.
+    .preferred-display = Pantalla preferida para juegos y aplicaciones X11 en pantalla completa
+    .no-display = Ninguna
 
 ## Sound
 
@@ -460,7 +464,7 @@ keyboard-typing-assist = Escritura
     .repeat-rate = Tasa de repetición
     .repeat-delay = Retraso de repetición
 added = Añadido
-type-to-search = Escriba para buscar...
+type-to-search = Escribir para buscar...
 show-extended-input-sources = Mostrar fuentes de entrada extendidas
 
 ## Input: Keyboard: Shortcuts
@@ -648,7 +652,7 @@ time-format = Formato de Fecha y Hora
     .sunday = Domingo
     .monday = Lunes
 time-region = Región e idioma
-    .desc = Formato de fechas, horas y números según tu región
+    .desc = Formato de fechas, horas y números según tu región.
 
 ## System
 
@@ -682,7 +686,10 @@ firmware = Firmware
 ## System: Users
 
 users = Usuarios
-    .desc = Autenticación e inicio de sesión, pantalla de bloqueo.
+    .desc = Autenticación y cuentas de usuarios
+    .admin = Administrador
+    .standard = Estándar
+    .profile-add = Elegir imagen de perfil
 password-confirm = Confirme la contraseña
 identity = Identidad
 activate = Activar
@@ -710,10 +717,10 @@ magnifier = Ampliación de pantalla
             [zero] { "" }
            *[other]
                 { "" }
-                { $zoom_out } para reducir,
+                { $zoom_out } para disminuir,
         }
         Súper + rueda del ratón
-    .scroll_controls = Habilitar la ampliación con el mouse or el panel táctil con la tecla súper + la rueda del mouse
+    .scroll_controls = Habilitar la ampliación con el mouse or el panel táctil con la tecla Súper + la rueda del mouse
     .show_overlay = Mostrar las opciones superpuestas de la ampliación de pantalla
     .increment = Incremento de ampliación
     .signin = Habilitar la ampliación al iniciar sesión
@@ -752,3 +759,55 @@ input-source-switch = Cambiar la fuente de entrada del idioma del teclado
 add-another-keybinding = Añadir otro atajo
 zoom-in = Ampliar
 zoom-out = Disminuir
+formatting = Formato
+    .dates = Fechas
+    .time = Hora
+    .date-and-time = Fecha y hora
+    .numbers = Números
+    .measurement = Medidas
+    .paper = Papel
+preferred-languages = Idiomas preferidos
+    .desc = El orden determina en qué idioma se mostrará la interfaz de usuario. Los cambios se aplicarán en el próximo inicio de sesión.
+add-language = Añadir idioma
+    .context = Añadir idioma
+install-additional-languages = Instalar idiomas adicionales
+region = Región
+applications = Aplicaciones
+default-apps = Aplicaciones predeterminadas
+    .desc = Establecer las aplicaciones predeterminadas para el navegador web, el cliente de correo, el gestor de archivos y otras aplicaciones
+    .web-browser = Navegador web
+    .file-manager = Gestor de archivos
+    .mail-client = Cliente de correo
+    .music = Música
+    .video = Video
+    .photos = Fotos
+    .calendar = Calendario
+    .terminal = Terminal
+    .other-associations = Otras asociaciones
+    .text-editor = Editor de texto
+startup-apps = Aplicaciones de inicio
+    .desc = Configurar aplicaciones lanzadas al iniciar sesión.
+    .add = Añadir aplicación
+    .user = Aplicaciones lanzadas al iniciar sesión
+    .none = No hay aplicaciones de inicio añadidas
+    .remove-dialog-title = Quitar { $name }?
+    .remove-dialog-description = ¿Estás seguro de que quieres quitar esta aplicación de inicio?
+    .search-for-application = Buscar aplicación
+legacy-applications = Compatibilidad con aplicaciones X11
+    .desc = Escalado de aplicaciones y atajos globales para el sistema de ventanas X11.
+legacy-app-global-shortcuts = Atajos globales en aplicaciones X11
+    .desc = Los atajos globales permiten que las aplicaciones reconozcan las pulsaciones de teclas y eventos de botones de mouse cuando estos se realizan en otras aplicaciones para propósitos de funcionalidades como pulsar para hablar o pulsar para silenciar. Por omisión, esta característica está deshabilitada en las aplicaciones X11 para asegurar que otras aplicaciones no puedan monitorear los eventos de teclado y mouse que contengan información sensible.
+    .none = Ninguna tecla
+    .modifiers = Teclas modificadoras (Súper, Mayús, Control, Alt)
+    .combination = Todas las teclas mientras se pulse una de las teclas modificadoras: Súper, Control o Alt
+    .all = Todas las teclas
+    .mouse = Eventos de mouse en las aplicaciones
+administrator = Administrador
+    .desc = Los administradores pueden cambiar las configuraciones para todos los usuarios, y pueden añadir o eliminar otros usuarios.
+add-user = Añadir usuario
+change-password = Cambiar la contraseña
+remove-user = Eliminar usuario
+full-name = Nombre completo
+invalid-username = Nombre de usuario inválido.
+password-mismatch = Las contraseñas no coinciden.
+save = Guardar
