@@ -529,16 +529,25 @@ impl Model {
                             let old =
                                 std::mem::replace(&mut shortcut.pending.modifiers, cfg_modifiers);
 
-                            if shortcut.pending.keycode.is_none()
-                                && modifiers.is_empty()
-                                && (old.alt || old.ctrl || old.shift || old.logo)
-                            {
-                                self.editing = None;
-                                shortcut.reset();
-                                return Task::batch(vec![
-                                    cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
-                                    iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
-                                ]);
+                            if shortcut.pending.keycode.is_none() && modifiers.is_empty() {
+                                if old.logo {
+                                    shortcut.pending.modifiers = old;
+                                    shortcut.input = shortcut.pending.to_string();
+                                    // XX for now avoid applying the keycode
+                                    shortcut.binding.keycode = None;
+                                    return Task::batch(vec![
+                                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                                        self.submit_binding(id),
+                                        cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
+                                    ]);
+                                } else if old.alt || old.ctrl || old.shift {
+                                    self.editing = None;
+                                    shortcut.reset();
+                                    return Task::batch(vec![
+                                        cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
+                                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
+                                    ]);
+                                }
                             }
                             shortcut.input = shortcut.pending.to_string();
                         }
