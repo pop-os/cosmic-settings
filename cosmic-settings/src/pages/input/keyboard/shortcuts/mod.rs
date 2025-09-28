@@ -158,6 +158,16 @@ impl page::Page<crate::pages::Message> for Page {
         self.clear();
         Task::none()
     }
+
+    #[cfg(feature = "wayland")]
+    fn subscription(
+        &self,
+        core: &cosmic::Core,
+    ) -> cosmic::iced::Subscription<crate::pages::Message> {
+        self.search_model
+            .subscription(core)
+            .map(|m| crate::pages::Message::KeyboardShortcuts(Message::SearchShortcut(m)))
+    }
 }
 
 impl Page {

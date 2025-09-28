@@ -248,16 +248,47 @@ impl Page {
                     let old =
                         std::mem::replace(&mut self.add_shortcut.binding.modifiers, cfg_modifiers);
 
-                    if self.add_shortcut.binding.keycode.is_none()
-                        && modifiers.is_empty()
-                        && (old.alt || old.ctrl || old.shift || old.logo)
-                    {
-                        self.add_shortcut = Default::default();
-                        _ = self.model.on_enter();
+                    if self.add_shortcut.binding.keycode.is_none() && modifiers.is_empty() {
+                        if old.logo {
+                            // XX for now avoid applying the keycode
+                            let binding = Binding {
+                                modifiers: self.add_shortcut.binding.modifiers.clone(),
+                                key: self.add_shortcut.binding.key,
+                                keycode: None,
+                                description: None,
+                            };
+                            let Some(k) = self
+                                .add_shortcut
+                                .keys
+                                .get_mut(self.add_shortcut.editing.unwrap())
+                            else {
+                                return iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard();
+                            };
+                            k.0 = binding.to_string();
 
-                        return Task::batch(vec![
-                            iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
-                        ]);
+                            if self.add_shortcut.name.trim().is_empty()
+                                || self.add_shortcut.task.trim().is_empty()
+                            {
+                                return Task::batch(vec![
+                                    widget::text_input::focus(widget::Id::unique()),
+                                    iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                                ]);
+                            }
+                            self.add_shortcut(binding);
+                            _ = self.model.on_enter();
+
+                            return Task::batch(vec![
+                                widget::text_input::focus(widget::Id::unique()),
+                                iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                            ]);
+                        } else if (old.alt || old.ctrl || old.shift) {
+                            self.add_shortcut = Default::default();
+                            _ = self.model.on_enter();
+
+                            return Task::batch(vec![
+                                iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
+                            ]);
+                        }
                     }
                     if let Some(k) = self
                         .add_shortcut
