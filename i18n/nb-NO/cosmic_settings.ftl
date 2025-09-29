@@ -17,7 +17,7 @@ import = Importer
 cable-unplugged = Kabel frakoblet
 connect = Koble til
 connected = Tilkoblet
-connecting = Tilkobler…
+connecting = Kobler til…
 connections-and-profiles =
     { $variant ->
         [wired] Kablet
@@ -79,3 +79,59 @@ network-device-state =
 replace = Erstatt
 bluetooth-available = Enheter i nærheten
 bluetooth-adapters = Bluetooth-adaptere
+add-image = Legg til bilde
+auth-dialog = Autentisering kreves
+    .vpn-description = Skriv inn brukernavn og passord som kreves av VPN-tjenesten.
+    .wifi-description = Skriv inn passord eller krypteringsnøkkel. Du kan også koble til ved å trykke på «WPS»-knappen på ruteren.
+remove-connection-dialog = Fjern tilkoblingsprofil?
+    .vpn-description = Du må skrive inn passordet på nytt for å bruke dette nettverket senere.
+    .wired-description = Du må opprette profilen på nytt for å bruke den senere.
+vpn = VPN
+    .connections = VPN-tilkoblinger
+    .error = Klarte ikke å legge til VPN-konfigurasjon
+    .remove = Fjern tilkoblingsprofil
+    .select-file = Velg en VPN-konfigurasjonsfil
+wired = Kablet
+    .adapter = Kablet adapter { $id }
+    .connections = Kablede tilkoblinger
+    .devices = Kablede enheter
+    .remove = Fjern tilkoblingsprofil
+wifi = Wi-Fi
+    .adapter = Wi-Fi-adapter { $id }
+    .forget = Glem dette nettverket
+default = Standard
+applets = Applets
+add-color = Legg til farge
+all-displays = Alle skjermer
+colors = Farger
+dialog-add = Legg til
+fill = Fyll
+region = Region
+applications = Applikasjoner
+recent-folders = Nylige mapper
+accent-color = Aksentfarge
+color-picker = Fargevelger
+recent-colors = Nylige farger
+experimental-settings = Ekspirimentelle innstillinger
+interface-font = Standard skrifttype
+monospace-font = Fast bredde-skrift
+center-segment = Midtsegment
+wireguard-dialog = Legg til WireGuard enhet
+    .description = Velg ett enhetsnavn for WireGuard-konfigurasjon.
+bluetooth-paired = Tidligere tilkoblede enheter
+    .connect = Koble til
+    .battery = { $percentage }% batteri
+fit-to-screen = Tilpass til skjerm
+open-new-folder = Åpne ny mappe
+x-minutes =
+    { $number } { $number ->
+        [one] minutt
+       *[other] minutter
+    }
+x-hours =
+    { $number } { $number ->
+        [one] time
+       *[other] timer
+    }
+never = Aldri
+auto = Auto
