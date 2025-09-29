@@ -183,6 +183,7 @@ pub fn processor_name(bump: &Bump, name: &mut String) {
             if let Some(info) = line.strip_prefix("model name") {
                 if let Some(info) = info.trim_start().strip_prefix(':') {
                     name.push_str(info.trim());
+                    return;
                 }
 
                 break;
