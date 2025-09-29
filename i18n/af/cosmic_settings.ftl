@@ -38,5 +38,5 @@ disconnect = Diskonnekteer
 no-vpn = Geen VPN-konneksies beskikbaar nie.
 username = Gebruikersnaam
 import = Voer in
-export = Uitvoer
+export = Voer uit
 profile = Profiel
