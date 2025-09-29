@@ -123,7 +123,7 @@ bluetooth = Bluetooth
     .inactive = Служба Bluetooth неактыўная
     .unknown = Не ўдалося актываваць службу Bluetooth. Ці ўсталяваны BlueZ?
 
-bluetooth-paired = Раней падлучаныя прылады
+bluetooth-paired = Раней падключаныя прылады
     .connect = Падключыцца
     .battery = { $percentage }% батарэі
 
@@ -241,7 +241,7 @@ window-hint-accent-toggle = Выкарыстоўваць дамінуючы ко
 
 auto-switch = Аўтаматычна пераключацца з Светлага на Цёмны рэжым
     .sunrise = Пераключаецца на Светлы рэжым на ўсходзе
-    .sunset = Пераключаецца на Цёмны рэжым на захадзе
+    .sunset = Пераключаецца на Цёмны рэжым на захадзе сонца
     .next-sunrise = Пераключаецца на Светлы рэжым на наступным усходзе
     .next-sunset = Пераключаецца на Цёмны рэжым на наступным захадзе
 
@@ -283,7 +283,7 @@ window-management-appearance = Кіраванне вокнамі
 
 experimental-settings = Эксперыментальныя налады
 icons-and-toolkit = Тэмы значкоў і набору інструментаў
-interface-font = Сістмны шрыфт
+interface-font = Сістэмны шрыфт
 monospace-font = Манашырынны шрыфт
 
 ## Desktop: Notifications
@@ -339,7 +339,7 @@ panel-applets = Налады
 
 panel-missing = Налады панэлі адсутнічаюць
     .desc = Файл налад панэлі адсутнічае з-за выкарыстання карыстальніцкай канфігурацыі або ён пашкоджаны.
-    .fix = Скід да стандартных налад
+    .fix = Скінуць да стандартных налад
 
 ## Desktop: Dock
 
@@ -366,7 +366,7 @@ window-controls = Кіраванне вокнамі
 
 focus-navigation = Кіраванне фокусам
     .focus-follows-cursor = Фокус ідзе за курсорам
-    .focus-follows-cursor-delay = Затрымка фокусу пасля курсору ў мс.
+    .focus-follows-cursor-delay = Затрымка фокусу пасля курсору (мс.)
     .cursor-follows-focus = Курсор ідзе за фокусам
 
 ## Desktop: Workspaces
@@ -475,6 +475,9 @@ sound-input = Уваход
     .device = Уваходная прылада
     .level = Уваходны ўзровень
 
+amplification = Узмацненне
+    .desc = Дазваляе павялічыць гучнасць да 150%
+
 sound-alerts = Абвесткі
     .volume = Гучнасць абвестак
     .sound = Гук абвестак
@@ -576,7 +579,7 @@ keyboard-special-char = Увод спецыяльных сімвалаў
 
 keyboard-typing-assist = Увод
     .repeat-rate = Хуткасць паўтарэння
-    .repeat-delay = Затрымка паўтору
+    .repeat-delay = Затрымка паўтарэння
 
 keyboard-numlock-boot = Numlock
     .boot-state = Стан пры загрузцы
