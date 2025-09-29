@@ -1,20 +1,18 @@
 app = Налады COSMIC
-
 dbus-connection-error = Не атрымалася падключыцца да DBus
 ok = OK
 unknown = Невядома
-
 number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles = { $variant ->
-    [wired] Правадныя
-    [wifi] Wi-Fi
-    [vpn] VPN
-    *[other] Невядомыя
-} злучэнні і профілі злучэнняў.
-
+connections-and-profiles =
+    { $variant ->
+        [wired] Правадныя
+        [wifi] Wi-Fi
+        [vpn] VPN
+       *[other] Невядомыя
+    } злучэнні і профілі злучэнняў.
 add-network = Дадаць сетку
     .profile = Дадаць профіль
 add-vpn = Дадаць VPN
@@ -36,14 +34,11 @@ settings = Налады
 username = Імя карыстальніка
 visible-networks = Бачныя сеткі
 identity = Ідэнтыфікатар
-
 auth-dialog = Патрабуецца аўтэнтыфікацыя
     .vpn-description = Увядзіце імя карыстальніка і пароль, неабходныя для службы VPN.
     .wifi-description = Увядзіце пароль або ключ шыфравання. Вы таксама можаце падключыцца, націснуўшы кнопку «WPS» на маршрутызатары.
-
 forget-dialog = Забыць гэтую сетку Wi-Fi?
     .description = Вам трэба будзе зноў увесці пароль, каб выкарыстоўваць гэтую сетку Wi-Fi у будучыні.
-
 network-device-state =
     .activated = Падключана да сеткі
     .config = Падключэнне да сеткі
@@ -59,17 +54,14 @@ network-device-state =
     .unknown = Невядомы стан
     .unmanaged = Некіруемы
     .unplugged = Кабель адключаны
-
 remove-connection-dialog = Выдаліць профіль злучэння?
     .vpn-description = Вам трэба будзе ўвесці пароль яшчэ раз, каб выкарыстоўваць гэтую сетку ў будучыні.
     .wired-description = Вам трэба будзе аднавіць гэты профіль, каб выкарыстоўваць яго ў будучыні.
-
 vpn = VPN
     .connections = VPN-падключэнні
     .error = Не атрымалася дадаць канфігурацыю VPN
     .remove = Выдалісь профіль падключэння
     .select-file = Выберыца файл канфігураыі VPN
-
 vpn-error = Памылка VPN
     .config = Не ўдалося дадаць канфігурацыю VPN
     .connect = Не ўдалося падключэння да VPN
@@ -79,22 +71,20 @@ vpn-error = Памылка VPN
     .wireguard-config-path = Недапушчальны шлях да файла канфігурацыі WireGuard
     .wireguard-config-path-desc = Выбраны файл мусіць знаходзіцца ў лакальнай файлавай сістэме.
     .wireguard-device = Не ўдалося стварыць прыладу WireGuard
-    .with-password = Не ўдалося задаць { $field ->
-        *[username] імя карыстальніка
-        [password] пароль
-        [password-flags] пазнакі пароля
-    } VPN праз nmcli
-
+    .with-password =
+        Не ўдалося задаць { $field ->
+           *[username] імя карыстальніка
+            [password] пароль
+            [password-flags] пазнакі пароля
+        } VPN праз nmcli
 wired = Правадная
     .adapter = Правадны адаптар { $id }
     .connections = Правадныя злучэнні
     .devices = Правадныя прылады
     .remove = Выдаліць профіль злучэння
-
 wifi = Wi-Fi
     .adapter = Wi-Fi адаптар { $id }
     .forget = Забыць гэтую сетку
-
 wireguard-dialog = Дадаць WireGuard прыладу
     .description = Выберыце імя прылады для канфігурацыі WireGuard.
 
@@ -108,7 +98,6 @@ online-accounts = Анлайн акаўнты
 activate = Актываваць
 confirm = Пацвердзіць
 enable = Уключыць
-
 bluetooth = Bluetooth
     .desc = Кіраваць прыладамі Bluetooth
     .status = Гэтая сістэма бачная як { $aliases } калі налады Bluetooth адкрытыя.
@@ -122,16 +111,12 @@ bluetooth = Bluetooth
     .disabled = Служба Bluetooth адключана
     .inactive = Служба Bluetooth неактыўная
     .unknown = Не ўдалося актываваць службу Bluetooth. Ці ўсталяваны BlueZ?
-
-bluetooth-paired = Раней падлучаныя прылады
+bluetooth-paired = Раней падключаныя прылады
     .connect = Падключыцца
     .battery = { $percentage }% батарэі
-
 bluetooth-confirm-pin = Пацвердзіць PIN-код Bluetooth
     .description = Пацвердзіце, што наступны PIN-код супадае з тым, што адлюстроўваецца на прыладзе { $device }
-
 bluetooth-available = Прылады паблізу
-
 bluetooth-adapters = Bluetooth Адаптары
 
 ## Accessibility
@@ -145,20 +130,21 @@ accessibility = Спецыяльныя магчымасці
     .high-contrast = Рэжым высокай кантраснасці
     .invert-colors = Інвертаваць колеры
     .color-filters = Колеравыя фільтры
-
 hearing = Слых
     .mono = Прайграваць стэрэа-аўдыё як мона
-
 default = Па змаўчанні
 magnifier = Лупа
-    .controls = Ці выкарыстоўвайце гэтыя спалучэнні: { $zoom_in ->
-             [zero] {""}
-            *[other] {""}
-                {$zoom_in} для павялічэння,
+    .controls =
+        Ці выкарыстоўвайце гэтыя спалучэнні: { $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_in } для павялічэння,
         }{ $zoom_out ->
-             [zero] {""}
-            *[other] {""}
-                {$zoom_out} для памяншэння,
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_out } для памяншэння,
         }
         Super + пракрутка мышкай
     .scroll_controls = Уключыць маштабаванне мышкай ці тачпадам праз Super + Пракрутка
@@ -192,7 +178,6 @@ wallpaper = Шпалеры
     .plural = Шпалеры
     .same = Адны і тыя ж шпалеры на ўсіх дысплэях
     .slide = Слайд-шоў
-
 add-color = Дадаць колер
 add-image = Дадаць малюнак
 all-displays = Усе дысплэі
@@ -202,24 +187,24 @@ fill = Запоўніць
 fit-to-screen = Падганяць да экрана
 open-new-folder = Адкрыць новую папку
 recent-folders = Апошнія папкі
-
-x-minutes = { $number } { $number ->
-    [one] мінута
-    [few] мінуты
-    *[other] мінут
-}
-x-hours = { $number ->
-    [1] 1 гадзіну
-    [few] { $number } гадзіны
-    *[other] { $number } гадзін
-}
+x-minutes =
+    { $number } { $number ->
+        [one] мінута
+        [few] мінуты
+       *[other] мінут
+    }
+x-hours =
+    { $number ->
+        [1] 1 гадзіну
+        [few] { $number } гадзіны
+       *[other] { $number } гадзін
+    }
 never = Ніколі
 
 ## Desktop: Appearance
 
 appearance = Выгляд
     .desc = Дамінуючыя колеры і тэмы COSMIC.
-
 accent-color = Дамінуючы колер
 app-background = Фон праграмы ці акна
 auto = Аўтаматычна
@@ -234,47 +219,37 @@ import = Імпарт
 light = Светлы
 mode-and-colors = Рэжым і колеры
 recent-colors = Апошнія колеры
-reset-to-default = Скід да стандартных налад
+reset-to-default = Скінуць да стандартных налад
 rgb = RGB
 window-hint-accent = Колер падказкі актыўнага акна
 window-hint-accent-toggle = Выкарыстоўваць дамінуючы колер тэмы як колер падказкі актыўнага акна
-
 auto-switch = Аўтаматычна пераключацца з Светлага на Цёмны рэжым
     .sunrise = Пераключаецца на Светлы рэжым на ўсходзе
     .sunset = Пераключаецца на Цёмны рэжым на захадзе
     .next-sunrise = Пераключаецца на Светлы рэжым на наступным усходзе
     .next-sunset = Пераключаецца на Цёмны рэжым на наступным захадзе
-
 container-background = Фон кантэйнера
     .desc-detail = Колер фону кантэйнера выкарыстоўваецца для навігацыйных панэляў, бакавых скрынь, дыялогаў і падобных элементаў. Па змаўчанні, ён аўтаматычна вызначаецца з фону праграмы ці акна.
     .reset = Скід да аўтаматычнага рэжыму
     .desc = Асноўны колер кантэйнера выкарыстоўваецца для навігацыйных панэляў, бакавых скрынь, дыялогаў і падобных элементаў.
-
 control-tint = Афарбоўка кампанентаў кіравання
     .desc = Выкарыстоўваецца для фонаў стандартных кнопак, палёў пошуку, палёў уводу тэксту і падобных кампанентаў.
-
 frosted = Эфект замарожанага шкла ў сістэмным інтэрфейсе
     .desc = Прымяняе размыццё фону да панэлі, дока, віджэтаў, праграмы запуску і бібліятэкі праграм.
-
 enable-export = Прымяніць гэтую тэму да праграм GNOME.
     .desc = Не ўсе інструменты падтрымліваюць аўтаматычнае пераключэнне. Для праграм, якія не належаць да COSMIC, можа спатрэбіцца перазапуск пасля змены тэмы.
-
 icon-theme = Тэма значкоў
     .desc = Прымяняе іншы набор значкоў да праграм.
-
 text-tint = Афарбоўка тэксту інтэрфейсу
     .desc = Колер, які выкарыстоўваецца для вызначэння колераў тэксту інтэрфейсу, што мае дастатковы кантраст на розных паверхнях.
-
 style = Стыль
     .round = Круглы
     .slightly-round = Злёгку круглы
     .square = Квадратны
-
 interface-density = Шчыльнасць інтэрфейсу
     .comfortable = Зручна
     .compact = Кампактна
     .spacious = Прасторна
-
 window-management-appearance = Кіраванне вокнамі
     .active-hint = Памер падказкі актыўнага акна
     .gaps = Прамежкі вакол вакон, размешчаных у сетцы
@@ -283,7 +258,7 @@ window-management-appearance = Кіраванне вокнамі
 
 experimental-settings = Эксперыментальныя налады
 icons-and-toolkit = Тэмы значкоў і набору інструментаў
-interface-font = Сістмны шрыфт
+interface-font = Сістэмны шрыфт
 monospace-font = Манашырынны шрыфт
 
 ## Desktop: Notifications
@@ -295,7 +270,6 @@ notifications = Апавяшчэнні
 
 panel = Панэль
     .desc = Верхняя панэль з элементамі кіравання і меню.
-
 add = Дадаць
 add-applet = Дадаць віджэт
 all = Усе
@@ -312,18 +286,15 @@ panel-top = Зверху
 search-applets = Пошук віджэтаў...
 small = Маленькі
 start-segment = Пачатковы сегмент
-
 panel-appearance = Выгляд
     .match = Як у сістэме
     .light = Светлая
     .dark = Цёмная
-
 panel-behavior-and-position = Паводзіны і пазіцыі
     .autohide = Аўтаматычна хаваць панэль
     .dock-autohide = Аўтаматычна хаваць док
     .position = Пазіцыя на экране
     .display = Паказаць на дысплэі
-
 panel-style = Стыль
     .anchor-gap = Прамежак паміж панэллю і краямі экрана
     .dock-anchor-gap = Прамежак паміж докам і краямі экрана
@@ -332,11 +303,9 @@ panel-style = Стыль
     .appearance = Выгляд
     .size = Памер
     .background-opacity = Непразрыстасць фону
-
 panel-applets = Налады
     .dock-desc = Налады віджэтаў дока.
     .desc = Налады віджэтаў панэлі.
-
 panel-missing = Налады панэлі адсутнічаюць
     .desc = Файл налад панэлі адсутнічае з-за выкарыстання карыстальніцкай канфігурацыі або ён пашкоджаны.
     .fix = Скід да стандартных налад
@@ -350,61 +319,50 @@ dock = Док
 
 window-management = Кіраванне вокнамі
     .desc = Дзеянне клавішы Super, параметры кіравання вокнамі і дадатковыя налады размяшчэння вокнаў.
-
 super-key = Дзеянне клавішы Super
     .launcher = Адкрыць праграму запуску
     .workspaces = Адкрыць працоўныя прасторы
     .applications = Адкрыць праграмы
     .disable = Адключыць
-
 edge-gravity = Плаваючыя вокны прыцягваюцца да бліжэйшых краёў
-
 window-controls = Кіраванне вокнамі
     .minimize = Паказаць кнопку згортвання
     .maximize = Паказаць кнопку разгортвання
     .active-window-hint = Паказваць падказку актыўнага акна
-
 focus-navigation = Кіраванне фокусам
     .focus-follows-cursor = Фокус ідзе за курсорам
-    .focus-follows-cursor-delay = Затрымка фокусу пасля курсору ў мс.
+    .focus-follows-cursor-delay = Затрымка фокусу пасля курсору (мс.)
     .cursor-follows-focus = Курсор ідзе за фокусам
 
 ## Desktop: Workspaces
 
 workspaces = Працоўныя прасторы
     .desc = Усталяванне колькасці працоўных прастораў, іх паводзіны і размяшчэнне.
-
 workspaces-behavior = Паводзіны працоўных прастораў
     .dynamic = Дынамічныя працоўныя прасторы
     .dynamic-desc = Аўтаматычна выдаляе пустыя працоўныя прасторы.
     .fixed = Фіксаваная колькасць працоўных прастораў
     .fixed-desc = Дадаваць або выдаляць працоўныя прасторы ў аглядзе.
-
 workspaces-multi-behavior = Паводзіны на некалькіх маніторах
     .span = Працоўныя прасторы ахопліваюць усе дысплэі
     .separate = Кожны дысплэй мае свае працоўныя прасторы
-
 workspaces-overview-thumbnails = Мініяцюры агляду працоўных прастораў
     .show-number = Паказваць нумар працоўнай прасторы
     .show-name = Паказваць назву працоўнай прасторы
-
 workspaces-orientation = Арыентацыя працоўных прастораў
     .vertical = Вертыкальная
     .horizontal = Гарызантальная
-
 hot-corner = Гарачы кут
     .top-left-corner = Уключыць верхні левы гарачы кут для працоўных прастораў
 
 ## Displays
 
 -requires-restart = Патрабуецца перазапуск
-
 color = Колер
     .depth = Глыбіня колеру
     .profile = Профіль колеру
     .sidebar = Профілі колераў
     .temperature = Тэмпература колеру
-
 display = Дысплэі
     .desc = Кіраванне дысплэямі, пераключэнне графікі і начное святло
     .arrangement = Размяшчэнне дысплэяў
@@ -417,39 +375,35 @@ display = Дысплэі
     .resolution = Раздзяляльнасць
     .scale = Масштаб
     .additional-scale-options = Дадатковыя параметры маштабавання
-
 mirroring = Адлюстраванне
     .id = Адлюстраванне { $id }
     .dont = Не люстраваць
     .mirror = Люстраваць { $display }
-    .project = Праекцыя на { $display ->
-        [all] усе дысплэі
-        *[other] { $display }
-    }
-    .project-count = Праецыюецца на { $count} іншыя { $count ->
-        [1] дысплэй
-        *[other] дысплэі
-    }
-
+    .project =
+        Праекцыя на { $display ->
+            [all] усе дысплэі
+           *[other] { $display }
+        }
+    .project-count =
+        Праецыюецца на { $count } іншыя { $count ->
+            [1] дысплэй
+           *[other] дысплэі
+        }
 night-light = Начное святло
     .auto = Аўтаматычна (з заходу да ўсходу)
     .desc = Паменшыць сіняе святло, выкарыстоўваць больш цёплыя колеры.
-
 orientation = Арыентацыя
     .standard = Стандартная
     .rotate-90 = Павярнуць на 90
     .rotate-180 = Павярнуць на 180
     .rotate-270 = Павярнуць на 270
-
 vrr = Пераменная частата абнаўлення
     .enabled = Уключана
     .force = Заўсёды
     .auto = Аўтаматычна
     .disabled = Адключана
-
 scheduling = Планаванне
     .manual = Ручное планаванне
-
 dialog = Дыялог
     .title = Захаваць гэтыя налады адлюстравання?
     .keep-changes = Захаваць змены
@@ -460,7 +414,6 @@ dialog = Дыялог
 
 sound = Гук
     .desc = N/A
-
 sound-output = Выхад
     .volume = Выхадная гучнасць
     .device = Выхадная прылада
@@ -469,52 +422,49 @@ sound-output = Выхад
     .balance = Баланс
     .left = Лева
     .right = Права
-
 sound-input = Уваход
     .volume = Уваходная гучнасць
     .device = Уваходная прылада
     .level = Уваходны ўзровень
-
 sound-alerts = Абвесткі
     .volume = Гучнасць абвестак
     .sound = Гук абвестак
-
 sound-applications = Праграмы
     .desc = Гучнасць праграмы і налады
-
 profile = Профіль
 
 ## Power
 
 power = Сілкаванне і батарэя
     .desc = Кіраванне наладамі сілкавання
-
 battery = Батарэя
-  .minute = { $value } { $value ->
-        [one] мінута
-        [few] мінуты
-       *[other] мінут
-  }
-  .hour = { $value } { $value ->
-        [one] гадзіна
-        [few] гадзіны
-       *[other] гадзін
-  }
-  .day = { $value } { $value ->
-        [one] дзень
-        [few] дні
-       *[other] дзён
-  }
-  .less-than-minute = Менш за мінуту
-  .and = і
-  .remaining-time = { $time } да { $action ->
-        [full] запаўнення
-       *[other] разрадкі
-   }
-
+    .minute =
+        { $value } { $value ->
+            [one] мінута
+            [few] мінуты
+           *[other] мінут
+        }
+    .hour =
+        { $value } { $value ->
+            [one] гадзіна
+            [few] гадзіны
+           *[other] гадзін
+        }
+    .day =
+        { $value } { $value ->
+            [one] дзень
+            [few] дні
+           *[other] дзён
+        }
+    .less-than-minute = Менш за мінуту
+    .and = і
+    .remaining-time =
+        { $time } да { $action ->
+            [full] запаўнення
+           *[other] разрадкі
+        }
 connected-devices = Падключаныя прылады
-  .unknown = Невядомая прылада
-
+    .unknown = Невядомая прылада
 power-mode = Рэжым сілкавання
     .battery = Павялічаны тэрмін службы батарэі
     .battery-desc = Зніжэнне спажывання энергіі і бясшумная праца.
@@ -523,7 +473,6 @@ power-mode = Рэжым сілкавання
     .performance = Высокая прадукцыйнасць
     .performance-desc = Пікавая прадукцыйнасць і энергаспажыванне.
     .no-backend = Бэкенд не знойдзены. Усталюйце system76-power або power-profiles-daemon.
-
 power-saving = Параметры эканоміі энергіі
     .turn-off-screen-after = Выключыць экран праз
     .auto-suspend = Аўтаматычнае прыпыненне
@@ -533,17 +482,13 @@ power-saving = Параметры эканоміі энергіі
 ## Input
 
 acceleration-desc = Аўтаматычна рэгулюе адчувальнасць адсочвання ў залежнасці ад хуткасці.
-
 disable-while-typing = Адключаць падчас набора тэксту
-
 input-devices = Прылады ўводу
     .desc = Прылады ўводу
-
 primary-button = Асноўная кнопка
     .desc = Задае парадак фізічных кнопак.
     .left = Левая
     .right = Правая
-
 scrolling = Прагортка
     .two-finger = Прагортка двума пальцамі
     .edge = Прагортка ўздоўж краю адным пальцам
@@ -559,7 +504,6 @@ short = Коратка
 long = Доўга
 keyboard = Клавіятура
     .desc = Крыніцы ўводу, пераключэнне, увод спецыяльных сімвалаў, спалучэнні клавіш.
-
 keyboard-sources = Крыніцы ўводу
     .desc = Крыніцы ўводу могуць пераключацца з дапамогай камбінацыі клавіш Super+Space. Гэта можа быць наладжана ў наладах клавішавых спалучэнняў.
     .move-up = Перасунуць уверх
@@ -568,23 +512,19 @@ keyboard-sources = Крыніцы ўводу
     .view-layout = Паказаць раскладку клавіятуры
     .remove = Выдаліць
     .add = Дадаць крыніцу ўводу
-
 keyboard-special-char = Увод спецыяльных сімвалаў
     .alternate = Клавіша альтэрнатыўных сімвалаў
     .compose = Клавіша састаўлення
     .caps = Клавіша Caps Lock
-
 keyboard-typing-assist = Увод
     .repeat-rate = Хуткасць паўтарэння
-    .repeat-delay = Затрымка паўтору
-
+    .repeat-delay = Затрымка паўтарэння
 keyboard-numlock-boot = Numlock
     .boot-state = Стан пры загрузцы
     .last-boot = Апошняя загрузка
     .on = Уключаны
     .off = Выключаны
     .set = Задаць стан NumLock пры загрузцы
-
 added = Дададзена
 type-to-search = Набярыце для пошуку...
 show-extended-input-sources = Паказаць пашыраныя крыніцу ўводу
@@ -593,7 +533,6 @@ show-extended-input-sources = Паказаць пашыраныя крыніцу
 
 keyboard-shortcuts = Спалучэнні клавіш
     .desc = Паказаць і наладзіць спалучэнні
-
 add-keybinding = Дадаць спалучэнне клавіш
 cancel = Скасаваць
 command = Каманда
@@ -603,12 +542,13 @@ disabled = Адключана
 input-source-switch = Пераключыць крыніцу ўводу мовы клавіятуры
 migrate-workspace-prev = Перанесці працоўную прастору на папярэдні вывад
 migrate-workspace-next = Перанесці працоўную прастору на наступны вывад
-migrate-workspace = Перанесці працоўную прастору на вывад { $direction ->
-    *[down] знізу
-    [left] злева
-    [right] справа
-    [up] зверху
-}
+migrate-workspace =
+    Перанесці працоўную прастору на вывад { $direction ->
+       *[down] знізу
+        [left] злева
+        [right] справа
+        [up] зверху
+    }
 navigate = Перайсці
 replace = Замяніць
 shortcut-name = Назва спалучэння
@@ -616,36 +556,34 @@ system-controls = Элементы кантроля сістэмай
 terminate = Скончыць
 toggle-stacking = Пераключыць стасаванне акна
 type-key-combination = Увядзіце камбінацыю клавіш
-
 custom-shortcuts = Карыстальніцкія спалучэнні
     .add = Дадаць спалучэнне
     .context = Дадаць карыстальніцкае спалучэнне
     .none = Няма карыстальніцкіх спалучэнняў
-
 modified = { $count } зменена
-
 nav-shortcuts = Навігацыя
     .prev-output = Фокус на папярэдні вывад
     .next-output = Фокус на наступны вывад
     .last-workspace = Фокус на апошнюю працоўную прастору
     .prev-workspace = Фокус на папярэднюю працоўную прастору
     .next-workspace = Фокус на наступную працоўную прастору
-    .focus = Фокус на акно { $direction ->
-        *[down] знізу
-        [in] ўнутры
-        [left] злева
-        [out] вонку
-        [right] справа
-        [up] зверху
-    }
-    .output = Фокус на вывад { $direction ->
-        *[down] знізу
-        [left] злева
-        [right] справа
-        [up] зверху
-    }
+    .focus =
+        Фокус на акно { $direction ->
+           *[down] знізу
+            [in] ўнутры
+            [left] злева
+            [out] вонку
+            [right] справа
+            [up] зверху
+        }
+    .output =
+        Фокус на вывад { $direction ->
+           *[down] знізу
+            [left] злева
+            [right] справа
+            [up] зверху
+        }
     .workspace = Перайсці на працоўную прастору { $num }
-
 manage-windows = Кіраванне вокнамі
     .close = Закрыць акно
     .maximize = Разгарнуць акно
@@ -654,26 +592,28 @@ manage-windows = Кіраванне вокнамі
     .resize-inwards = Змяніць памер акна ўнутр
     .resize-outwards = Змяніць памер акна вонкі
     .toggle-sticky = Пераключыць ліпкае акно
-
 move-windows = Перамяшчэнне вакон
-    .direction = Перамясціць акно { $direction ->
-        *[down] ўніз
-        [left] ўлева
-        [right] ўправа
-        [up] ўверх
-    }
-    .display = Перамясціць акно на адзін манітор { $direction ->
-        *[down] ніжэй
-        [left] лявей
-        [right] правей
-        [up] вышэй
-    }
-    .workspace = Перамясіць акно на адну працоўную прастору { $direction ->
-        *[below] ніжэй
-        [left] лявей
-        [right] правей
-        [above] вышэй
-    }
+    .direction =
+        Перамясціць акно { $direction ->
+           *[down] ўніз
+            [left] ўлева
+            [right] ўправа
+            [up] ўверх
+        }
+    .display =
+        Перамясціць акно на адзін манітор { $direction ->
+           *[down] ніжэй
+            [left] лявей
+            [right] правей
+            [up] вышэй
+        }
+    .workspace =
+        Перамясіць акно на адну працоўную прастору { $direction ->
+           *[below] ніжэй
+            [left] лявей
+            [right] правей
+            [above] вышэй
+        }
     .workspace-num = Перамясціць акно на працоўную прастору { $num }
     .prev-workspace = Перамясціць акно на папярэднюю працоўную прастору
     .next-workspace = Перамясціць акно на наступную працоўную прастору
@@ -682,7 +622,6 @@ move-windows = Перамяшчэнне вакон
     .prev-display = Перамясціць акно на папярэдні дысплэй
     .send-to-prev-workspace = Перамясціць акно на папярэднюю працоўную прастору
     .send-to-next-workspace = Перамясціць акно на наступную працоўную прастору
-
 system-shortcut = Сістэма
     .app-library = Адкрыць бібліятэку праграм
     .brightness-down = Зменшыць яркасць дэсплэя
@@ -706,7 +645,6 @@ system-shortcut = Сістэма
     .window-switcher = Пераключыцца паміж адкрытымі вокнамі
     .window-switcher-previous = Пераключыцца паміж адкрытымі вокнамі ў зваротным парадку
     .workspace-overview = Адкрыць агляд працоўнай прасторы
-
 window-tiling = Укладанне вокнаў
     .horizontal = Задаць гарызантальную арыентацыю
     .vertical = Задаць вертыкальную арыентацыю
@@ -715,10 +653,8 @@ window-tiling = Укладанне вокнаў
     .toggle-stacking = Пераключыць стасаванне акна
     .toggle-floating = Пераключыць плавучасць акна
     .toggle-orientation = Пераключыць арыентацыю
-
 replace-shortcut-dialog = Замянць спалучэнне?
     .desc = { $shortcut } выкарыстоўваецца для { $name }. Калі вы заменіце яго, { $name } будзе адаключана.
-
 zoom-in = Павялічыць
 zoom-out = Паменшыць
 
@@ -734,13 +670,10 @@ mouse = Мыш
 click-behavior = Паводзіны пры націску
     .click-finger = Другасны клік актывуецца двума пальцамі, а сярэдні клік — трыма пальцамі
     .button-areas = Другасны клік актывуецца ў ніжнім правым вугле, а сярэдні клік — у ніжнім цэнтры
-
 pinch-to-zoom = Шчыпок для маштабавання
     .desc = Выкарыстоўвайце два пальцы для маштабавання змесціва праграм, якія падтрымліваюць маштабаванне.
-
 tap-to-click = Націск для кліку
     .desc = Уключае націск адным пальцам для асноўнага кліку, двума пальцамі — для другаснага кліку і трыма пальцамі — для сярэдняга кліку.
-
 touchpad = Сэнсарная панэль
     .acceleration = Уключыць паскарэнне сэнсарнай панэлі
     .desc = Хуткасць сэнсарнай панэлі, параметры націскаў, жэсты.
@@ -754,11 +687,9 @@ gestures = Жэсты
     .four-finger-right = Правядзенне чатырох пальцаў управа
     .four-finger-up = Правядзенне чатырох пальцаў уверх
     .three-finger-any = Правядзенне трох пальцаў у любым напрамку
-
 switch-workspaces = Пераключыць працоўныя прасторы
     .horizontal = Правядзіце чатырма пальцамі ўлева/ўправа
     .vertical = Правядзіце чатырма пальцамі ўверх/ўніз
-
 switch-between-windows = Пераключэнне паміж вокнамі
 open-application-library = Адкрыць бібліятэку праграм
 open-workspaces-view = Адкрыць агляд працоўных прастораў
@@ -767,16 +698,13 @@ open-workspaces-view = Адкрыць агляд працоўных прасто
 
 time = Час і мова
     .desc = N/A
-
 time-date = Дата і час
     .desc = Часавы пояс, аўтаматычныя налады гадзінніка і фарматаванне часу.
     .auto = Задаваць аўтаматычна
     .auto-ntp = Дата і час будуць абнаўляцца аўтаматычка, калі заданы часавы пояс.
-
 time-zone = Часовы пояс
     .auto = Аўтаматычны часовы пояс
     .auto-info = Патрабуецца доступ да месцазнаходжання і інтэрнэту
-
 time-format = Фармат даты і часу
     .twenty-four = 24-гадзінны фармат
     .show-seconds = Паказваць секунды
@@ -786,10 +714,8 @@ time-format = Фармат даты і часу
     .saturday = Субота
     .sunday = Нядзеля
     .monday = Панядзелак
-
 time-region = Рэгіён і мова
     .desc = Фарматаванне дат, часу і лічбаў у залежнасці ад рэгіёну
-
 formatting = Фарматаванне
     .dates = Даты
     .time = Час
@@ -797,10 +723,8 @@ formatting = Фарматаванне
     .numbers = Лічбы
     .measurement = Адзінкі вымярэння
     .paper = Папера
-
 preferred-languages = Выбраныя мовы
     .desc = Парадак моў вызначае, якая мова будзе выкарыстоўвацца для перакладу асяроддзя працоўнага стала. Змены ўступяць у сілу пасля наступнага ўваходу.
-
 add-language = Дадаць мову
     .context = Дадаць Мову
 install-additional-languages = Усталяваць дадатковыя мовы
@@ -840,7 +764,6 @@ startup-apps = Праграмы пры запуску
 
 legacy-applications = Сумяшчальнасць праграм X11
     .desc = Маштабаванне праграм аконнай сістэмы X11 і глабальныя спалучэнні клавіш.
-
 legacy-app-global-shortcuts = Глабальныя спалучэнні клавіш у праграмах X11
     .desc = Глабальныя спалучэнні клавіш дазваляюць распазнаваць націсканні клавіш і падзеі кнопак мышы ў праграмах іншымі праграмамі для такіх функцый, як "націсні і кажы" або "націсні і адключы гук". Па змаўчанні гэта адключана ў праграмах X11, каб іншыя праграмы не маглі маніторыць падзеі клавіятуры і мышы, якія змяшчаюць канфідэнцыйную інфармацыю.
     .none = Без клавіш
@@ -848,7 +771,6 @@ legacy-app-global-shortcuts = Глабальныя спалучэнні клав
     .combination = Усе клавішы, пакуль націснутыя мадыфікатары Super, Control або Alt
     .all = Усе клавішы
     .mouse = Падзеі кнопак мышы ў праграмах X11
-
 legacy-app-scaling = Маштабаванне праграм аконнай сістэмы X11
     .scaled-gaming = Аптымізаваць для гульняў і поўнаэкранных праграм
     .gaming-description = Праграмы X11 могуць выглядаць крыху большымі/меншымі ў параўнанні з праграмамі Wayland.
@@ -867,23 +789,19 @@ system = Сістэма і акаўнты
 
 about = Пра сістэму
     .desc = Назва прылады, інфармацыя аб абсталяванні, стандартныя налады аперацыйнай сістэмы.
-
 about-device = Назва прылады
     .desc = Гэтая назва адлюстроўваецца іншым сеткавым або блютуз прыладам.
-
 about-hardware = Абсталяванне
     .model = Мадэль абсталявання
     .memory = Памяць
     .processor = Працэсар
     .graphics = Графіка
     .disk-capacity = Ёмістасць дыску
-
 about-os = Аперацыйная сістэма
     .os = Аперацыйная сістэма
     .os-architecture = Архітэктура аперацыйнай сістэмы
     .desktop-environment = Асяроддзе працоўнага стала
     .windowing-system = Сістэма вокнаў
-
 about-related = Спадарожныя налады
     .support = Атрымаць падтрымку
 
@@ -899,10 +817,8 @@ users = Карыстальнікі
     .admin = Адміністратар
     .standard = Звычайны
     .profile-add = Выбраць выяву профілю
-
 administrator = Адміністратар
     .desc = Адміністратары могуць змяняць налады для ўсіх карыстальнікаў, дадаваць і выдаляць іншых карыстальнікаў.
-
 add-user = Дадаць карыстальніка
 change-password = Змяніць пароль
 remove-user = Выдаліць карыстальніка
@@ -910,3 +826,5 @@ full-name = Поўнае імя
 invalid-username = Недапушчальнае імя карыстальніка
 password-mismatch = Пароль і пацвярджэнне мусяць супадаць.
 save = Захаваць
+amplification = Узмацненне
+    .desc = Дазваляе павялічыць гучнасць да 150%
