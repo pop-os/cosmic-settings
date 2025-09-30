@@ -54,8 +54,7 @@ style = Стиль
     .square = Прямой
 # interface density left out for now
 window-management = Управление окнами
-    .active-hint = Размер подсветки активного окна
-    .gaps = Зазоры вокруг размещённых окон
+    .desc = Действие клавиши Super, элементы управления, дополнительные настройки размещения.
 
 ## Desktop: Display
 
@@ -65,17 +64,18 @@ color = Цвет
     .profile = Цветовой профиль
     .sidebar = Цветовые профили
     .temperature = Цветовая температура
-display = Мониторы
-    .desc = Управление мониторами, переключением графики и ночной подсветкой
-    .arrangement = Расположение мониторов
-    .arrangement-desc = Перетаскивайте мониторы, чтобы изменить их расположение.
-    .enable = Включить монитор
-    .external = Внешний монитор { $size } { $output }
+display = Экраны
+    .desc = Управление экранами и ночной подсветкой
+    .arrangement = Расположение экранов
+    .arrangement-desc = Перетаскивайте экраны, чтобы изменить их расположение.
+    .enable = Включить экран
+    .external = Внешний экран { $size } { $output }
     .laptop = Экран ноутбука { $size }
-    .options = Параметры монитора
+    .options = Параметры экрана
     .refresh-rate = Частота обновления
     .resolution = Разрешение
-    .scale = Масштабирование
+    .scale = Масштаб
+    .additional-scale-options = Дополнительная настройка масштаба
 mirroring = Зеркальное отображение
     .id = Зеркальное отображение { $id }
     .dont = Не зеркалить
@@ -95,9 +95,9 @@ night-light = Ночной свет
     .desc = Уменьшите синий свет, используя более тёплые цвета.
 orientation = Ориентация
     .standard = Стандартная
-    .rotate-90 = Поворот на 90
-    .rotate-180 = Поворот на 180
-    .rotate-270 = Поворот на 270
+    .rotate-90 = Поворот на 90°
+    .rotate-180 = Поворот на 180°
+    .rotate-270 = Поворот на 270°
 scheduling = Расписание
     .manual = Ручное расписание
 dialog = Диалог
@@ -124,12 +124,14 @@ super-key = Клавиша Super
     .launcher = Открывает панель запуска
     .workspaces = Открывает рабочие места
     .applications = Открывает приложения
+    .disable = Отключена
 top-panel = Верхняя панель
     .workspaces = Отображать кнопку «Рабочие места»
     .applications = Отображать кнопку «Приложения»
-window-controls = Кнопки управления окнами
+window-controls = Элементы управления окнами
     .minimize = Отображать кнопку «Свернуть»
     .maximize = Отображать кнопку «Развернуть»
+    .active-window-hint = Отображать обводку активного окна
 
 ## Desktop: Panel
 
@@ -143,12 +145,12 @@ center-segment = Центральный сегмент
 drop-here = Поместите апплеты сюда
 end-segment = Конечный сегмент
 large = Крупный
-no-applets-found = Апплеты не найдены...
+no-applets-found = Апплеты не найдены…
 panel-bottom = Внизу
 panel-left = Слева
 panel-right = Справа
 panel-top = Вверху
-search-applets = Поиск апплетов...
+search-applets = Поиск апплетов…
 small = Малый
 start-segment = Начальный сегмент
 panel-appearance = Внешний вид
@@ -169,8 +171,8 @@ panel-style = Оформление
     .size = Размер
     .background-opacity = Непрозрачность фона
 panel-applets = Конфигурация
-    .dock-desc = Настройка апплетов дока.
-    .desc = Настройка апплетов панели.
+    .dock-desc = Настройка апплетов дока
+    .desc = Настройка апплетов панели
 panel-missing = Отсутствует конфигурация панели
     .desc = Файл конфигурации панели повреждён или отсутствует в связи с использованием нестандартной конфигурации.
     .fix = Восстановить конфигурацию по умолчанию
@@ -195,11 +197,15 @@ fill = Заполнить
 fit-to-screen = Подгонять под экран
 open-new-folder = Открыть новую папку
 recent-folders = Недавние папки
-x-minutes = { $number } мин.
+x-minutes =
+    { $number ->
+        [one] 1 минута
+       *[other] { $number } мин.
+    }
 x-hours =
     { $number ->
-        [1] 1 час
-       *[other] { $number } ч.
+        [one] 1 час
+       *[other] { $number } ч.
     }
 
 ## Desktop: Workspaces
@@ -224,7 +230,10 @@ workspaces-orientation = Ориентация рабочих мест
 ## Networking: Wired
 
 wired = Проводная сеть
-    .desc = Проводное подключение, профили подключения
+    .adapter = Проводной адаптер { $id }
+    .connections = Проводные соединения
+    .devices = Проводные устройства
+    .remove = Удалить профиль соединения
 
 ## Networking: Online Accounts
 
@@ -238,19 +247,21 @@ time = Время и язык
 time-date = Дата и время
     .desc = Часовой пояс, параметры автоматической настройки и форматирования времени.
     .auto = Устанавливать автоматически
+    .auto-ntp = Дата и время будут автоматически обновлены после установки часового пояса.
 time-zone = Часовой пояс
     .auto = Устанавливать автоматически
     .auto-info = Требуются службы определения местоположения и доступ в Интернет
 time-format = Формат даты и времени
     .twenty-four = 24-часовой формат
+    .show-seconds = Отображать секунды
     .first = Первый день недели
-    .show-date = Отображать дату на верхней панели
+    .show-date = Отображать дату в апплете времени
     .friday = Пятница
     .saturday = Суббота
     .sunday = Воскресенье
     .monday = Понедельник
 time-region = Регион и язык
-    .desc = Форматирование даты, времени и чисел в зависимости от региона
+    .desc = Форматирование даты, времени и чисел в зависимости от региона.
 
 ## Sound
 
@@ -262,6 +273,8 @@ sound-output = Выход
     .level = Выходной уровень
     .config = Конфигурация
     .balance = Баланс
+    .left = Лево
+    .right = Право
 sound-input = Вход
     .volume = Входная громкость
     .device = Входное устройство
@@ -305,14 +318,18 @@ firmware = Прошивка
 
 users = Пользователи
     .desc = Аутентификация и вход в систему, экран блокировки.
+    .admin = Администратор
+    .standard = Обычный
+    .profile-add = Выберите изображение профиля
 
 ## Input
 
 acceleration-desc = Автоматически регулирует чувствительность панели в зависимости от скорости.
-disable-while-typing = Отключение при наборе текста
+disable-while-typing = Отключать при наборе текста
 input-devices = Устройства ввода
     .desc = Устройства ввода
 primary-button = Основная кнопка
+    .desc = Настраивает порядок физических кнопок.
     .left = Левая
     .right = Правая
 scrolling = Прокрутка
@@ -329,7 +346,7 @@ fast = Быстро
 short = Короткая
 long = Длинная
 keyboard = Клавиатура
-    .desc = Ввод с клавиатуры
+    .desc = Источники ввода, переключение, специальные символы и сочетания клавиш.
 keyboard-sources = Источники ввода
     .desc = Источники ввода можно переключать по комбинации клавиш Super+Space. Это поведение можно изменить в настройках сочетаний клавиш.
     .move-up = Переместить вверх
@@ -341,11 +358,12 @@ keyboard-sources = Источники ввода
 keyboard-special-char = Ввод специальных символов
     .alternate = Клавиша альтернативных символов
     .compose = Клавиша Compose
+    .caps = Клавиша Caps Lock
 keyboard-typing-assist = Ввод текста
     .repeat-rate = Скорость повторения
     .repeat-delay = Задержка повторения
 added = Добавлено
-type-to-search = Введите для поиска...
+type-to-search = Введите для поиска…
 
 ## Input: Keyboard: Shortcuts
 
@@ -404,6 +422,7 @@ nav-shortcuts = Навигация
 manage-windows = Управление окнами
     .close = Закрыть окно
     .maximize = Развернуть окно
+    .fullscreen = Окно во весь экран
     .minimize = Свернуть окно
     .resize-inwards = Изменить размер изнутри
     .resize-outwards = Изменить размер снаружи
@@ -446,15 +465,22 @@ system-shortcut = Системные
     .keyboard-brightness-down = Уменьшить яркость клавиатуры
     .keyboard-brightness-up = Увеличить яркость клавиатуры
     .launcher = Открыть панель запуска
+    .log-out = Выход из системы
     .lock-screen = Заблокировать экран
     .mute = Приглушить аудиовыход
     .mute-mic = Приглушить аудиовход микрофона
+    .play-pause = Воспроизвести/Приостановить
+    .play-next = Следующий трек
+    .play-prev = Предыдущий трек
+    .poweroff = Завершение работы
     .screenshot = Сделать снимок экрана
     .terminal = Открыть терминал
+    .touchpad-toggle = Переключить сенсорную панель
     .volume-lower = Уменьшить громкость аудиовыхода
     .volume-raise = Увеличить громкость аудиовыхода
     .web-browser = Открыть веб-браузер
     .window-switcher = Переключение между открытыми окнами
+    .window-switcher-previous = Переключение между откр. окнами в обр. порядке
     .workspace-overview = Открыть обзор рабочих мест
 window-tiling = Размещение окон
     .horizontal = Установить горизонтальную ориентацию
@@ -504,7 +530,7 @@ open-workspaces-view = Открыть обзор рабочих мест
 
 ## Power
 
-power = Питание
+power = Питание и батарея
     .desc = Управление настройками электропитания
 power-mode = Режим питания
     .performance = Высокая производительность
@@ -519,3 +545,269 @@ save = Сохранить
 connect = Подключиться
 dbus-connection-error = Не удалось подключиться к DBus
 ok = ОК
+connections-and-profiles =
+    { $variant ->
+        [wired] Проводные подключения
+        [wifi] Подключения по Wi-Fi
+        [vpn] Подключения через VPN
+       *[other] Другие подключения
+    } и профили соединений.
+add-network = Добавить сеть
+    .profile = Добавить профиль
+add-vpn = Добавить VPN
+airplane-on = Включён режим полёта.
+cable-unplugged = Кабель не подключён
+connected = Подключено
+connecting = Подключение…
+disconnect = Отключить
+forget = Забыть
+known-networks = Известные сети
+network-and-wireless = Проводные и беспроводные подключения
+no-networks = Сети не обнаружены.
+no-vpn = Нет доступных VPN-соединений.
+password = Пароль
+password-confirm = Подтвердите пароль
+settings = Параметры
+username = Имя пользователя
+visible-networks = Видимые сети
+identity = Идентификатор
+auth-dialog = Требуется авторизация
+    .vpn-description = Введите требуемые сервисом VPN имя пользователя и пароль.
+    .wifi-description = Введите пароль или ключ шифрования. Вы также можете подключиться, нажав кнопку «WPS» на роутере.
+forget-dialog = Забыть эту сеть Wi-Fi?
+    .description = Чтобы использовать эту сеть в дальнейшем, вам снова потребуется ввести пароль.
+network-device-state =
+    .activated = Подключено
+    .config = Подключение
+    .deactivating = Отключение
+    .disconnected = Отключено
+    .failed = Не удалось подключиться
+    .ip-check = Проверка подключения
+    .ip-config = Получение IP и маршрутов
+    .need-auth = Требуется авторизация
+    .prepare = Подготовка к подключению
+    .secondaries = Ожидание вторичного подключения
+    .unavailable = Недоступно
+    .unknown = Состояние неизвестно
+    .unmanaged = Не управляется
+    .unplugged = Кабель отключён
+remove-connection-dialog = Удалить профиль подключения?
+    .vpn-description = Чтобы использовать эту сеть в дальнейшем, вам снова потребуется ввести пароль.
+    .wired-description = Чтобы использовать эту сеть в дальнейшем, вам потребуется пересоздать этот профиль.
+vpn = VPN
+    .connections = VPN-соединения
+    .error = Не удалось добавить конфигурацию VPN
+    .remove = Удалить профиль соединения
+    .select-file = Выберите файл конфигурации VPN
+vpn-error = Ошибка VPN
+    .config = Не удалось добавить конфигурацию VPN
+    .connect = Не удалось подключиться к VPN
+    .connection-editor = Сбой редактора соединений
+    .connection-settings = Не удалось получить настройки активных подключений
+    .updating-state = Не удалось обновить состояние сетевого менеджера
+    .wireguard-config-path = Некорректный путь до файла конфигурации WireGuard
+    .wireguard-config-path-desc = Выбранный файл должен находиться на локальной файловой системе.
+    .wireguard-device = Не удалось создать устройство WireGuard
+    .with-password =
+        Не удалось настроить { $field ->
+           *[username] имя пользователя
+            [password] пароль
+            [password-flags] флаги пароля
+        } VPN через nmcli
+wifi = Wi-Fi
+    .adapter = Wi-Fi-адаптер { $id }
+    .forget = Забыть эту сеть
+wireguard-dialog = Добавить устройство WireGuard
+    .description = Выберите имя устройства для конфигурации WireGuard.
+activate = Активировать
+confirm = Подтвердить
+enable = Включить
+bluetooth = Bluetooth
+    .desc = Управление Bluetooth-устройствами
+    .status = Эта система доступна как { $aliases }, пока открыты настройки Bluetooth.
+    .connected = Подключено
+    .connecting = Подключение
+    .disconnecting = Отключение
+    .connect = Подключиться
+    .disconnect = Отключиться
+    .forget = Забыть
+    .dbus-error = Произошла ошибка во время взаимодействия с DBus: { $why }
+    .disabled = Служба Bluetooth отключена
+    .inactive = Служба Bluetooth не активна
+    .unknown = Не удаётся активировать службу Bluetooth. Установлен ли BlueZ?
+bluetooth-paired = Ранее подключённые устройства
+    .connect = Подключиться
+    .battery = { $percentage } % заряда
+bluetooth-confirm-pin = Подтверждение PIN-кода Bluetooth
+    .description = Подтвердите, что следующий PIN-код совпадает с отображаемым на { $device }
+bluetooth-available = Устройства поблизости
+bluetooth-adapters = Bluetooth-адаптеры
+accessibility = Специальные возможности
+    .vision = Зрение
+    .on = Вкл
+    .off = Выкл
+    .unavailable = Недоступно
+    .screen-reader = Экранный диктор
+    .high-contrast = Режим высокой контрастности
+    .invert-colors = Инвертирование цвета
+    .color-filters = Цветовые фильтры
+hearing = Слух
+    .mono = Проигрывать стереозвук как монозвук
+default = По умолчанию
+magnifier = Экранная лупа
+    .controls =
+        Либо используйте сочетания клавиш: { $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_in } для приближения,
+        }{ $zoom_out ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_out } для отдаления,
+        }
+        Super + прокрутка мышью
+    .scroll_controls = Включить масштабирование по Super + прокрутка мышью или сенсорной панелью
+    .show_overlay = Показывать всплывающее окно экранной лупы
+    .increment = Шаг масштабирования
+    .signin = Запускать экранную лупу при входе в систему
+    .applet = Вы можете переключать экранную лупу через апплет на панели
+    .movement = Перемещение приближения
+    .continuous = Последовательно за курсором
+    .onedge = Когда курсор достигает края
+    .centered = Обеспечение положения курсора по центру
+color-filter = Тип цветового фильтра
+    .unknown = Неизвестный фильтр
+    .greyscale = Оттенки серого
+    .deuteranopia = Зелёный/Красный (невосприимчивость зелёного, дейтеранопия)
+    .protanopia = Красный/Зелёный (невосприимчивость красного, протанопия)
+    .tritanopia = Синий/Жёлтый (невосприимчивость синего, тританопия)
+never = Никогда
+interface-density = Плотность интерфейса
+    .comfortable = Комфортная
+    .compact = Компактная
+    .spacious = Просторная
+window-management-appearance = Управление окнами
+    .active-hint = Толщина обводки активного окна
+    .gaps = Отступы между размещёнными окнами
+icons-and-toolkit = Стилизация значков и графики
+interface-font = Системный шрифт
+monospace-font = Моноширинный шрифт
+edge-gravity = Плавающие окна притягиваются к ближайшим краям
+focus-navigation = Управление фокусировкой
+    .focus-follows-cursor = Фокусировка следует за курсором
+    .focus-follows-cursor-delay = Задержка фокусировки вслед за курсором, мс
+    .cursor-follows-focus = Курсор следует за фокусировкой
+vrr = Динамическая частота обновления
+    .enabled = Включена
+    .force = Всегда
+    .auto = Автоматически
+    .disabled = Отключена
+profile = Профиль
+battery = Батарея
+    .minute =
+        { $value } { $value ->
+            [one] минута
+           *[other] мин.
+        }
+    .hour =
+        { $value } { $value ->
+            [one] час
+           *[other] ч.
+        }
+    .day =
+        { $value } { $value ->
+            [one] день
+           *[other] д.
+        }
+    .less-than-minute = меньше минуты
+    .and = и
+    .remaining-time =
+        { $time } до полной { $action ->
+            [full] зарядки
+           *[other] разрядки
+        }
+connected-devices = Подключённые устройства
+    .unknown = Неизвестное устройство
+amplification = Усиление звука
+    .desc = Разрешить увеличение звука до 150%.
+power-saving = Настройки энергосбережения
+    .turn-off-screen-after = Выключать экран через
+    .auto-suspend = Переход в режим ожидания
+    .auto-suspend-ac = Переход в режим ожидания при питании от сети
+    .auto-suspend-battery = Переход в режим ожидания при питании от батареи
+keyboard-numlock-boot = Num Lock
+    .boot-state = Состояние при загрузке
+    .last-boot = По последней загрузке
+    .on = Вкл
+    .off = Выкл
+    .set = Настройка состояния Num Lock по загрузке системы
+show-extended-input-sources = Показать дополнительные источники ввода
+add-another-keybinding = Добавить сочетание клавиш
+input-source-switch = Переключение источника ввода клавиатуры
+zoom-in = Приблизить
+zoom-out = Отдалить
+switch-workspaces = Переключение рабочих мест
+    .horizontal = Проведение четырьмя пальцами влево-вправо
+    .vertical = Проведение четырьмя пальцами вверх-вниз
+formatting = Форматирование
+    .dates = Даты
+    .time = Время
+    .date-and-time = Дата и время
+    .numbers = Числа
+    .measurement = Система мер
+    .paper = Бумажный формат
+preferred-languages = Предпочитаемые языки
+    .desc = Порядок языков определяет, какой язык будет использоваться в интерфейсе. Для применения изменений требуется перезайти в систему.
+add-language = Добавить язык
+    .context = Добавить язык
+install-additional-languages = Установить дополнительные языки
+region = Регион
+applications = Приложения
+default-apps = Приложения по умолчанию
+    .desc = Стандартные веб-браузер, почтовый клиент, файловый менеджер и другие приложения.
+    .web-browser = Веб-браузер
+    .file-manager = Файловый менеджер
+    .mail-client = Почтовый клиент
+    .music = Музыка
+    .video = Видео
+    .photos = Фотографии
+    .calendar = Календарь
+    .terminal = Терминал
+    .other-associations = Прочие ассоциации
+    .text-editor = Текстовый редактор
+startup-apps = Автозапуск приложений
+    .desc = Настройка приложений, которые запускаются при входе.
+    .add = Добавить приложение
+    .user = Приложения, которые запускаются при входе в систему
+    .none = Нет автозапускаемых приложений
+    .remove-dialog-title = Убрать { $name }?
+    .remove-dialog-description = Вы уверены, что хотите убрать это приложение из автозапуска?
+    .search-for-application = Поиск приложений
+legacy-applications = Совместимость с приложениями для X11
+    .desc = Настройка глобальных сочетаний клавиш и масштабирования для приложений оконной системы X11.
+legacy-app-global-shortcuts = Глобальные сочетания клавиш в приложениях для X11
+    .desc = Глобальные сочетания клавиш позволяют нажатиям клавиатуры и мыши, выполненных в одних приложениях, распознаваться другими приложениями для таких функций, как push-to-talk и push-to-mute. По умолчанию они отключены для приложений X11, чтобы другие приложения не могли перехватывать события клавиатуры и мыши, содержащие конфиденциальную информацию.
+    .none = Отключены
+    .modifiers = Клавиши-модификаторы (Super, Shift, Control, Alt)
+    .combination = Все клавиши, когда клавиши-модификаторы Super, Control или Alt нажаты
+    .all = Все клавиши
+    .mouse = События кнопок мыши в приложениях для X11
+legacy-app-scaling = Масштабирование приложений для оконной системы X11
+    .scaled-gaming = Оптимизировать для игр и полноэкранных приложений
+    .gaming-description = Приложения для X11 могут выглядеть чуть больше или меньше по сравнению с приложениями для Wayland.
+    .scaled-applications = Оптимизировать для приложений
+    .applications-description = Игры и полноэкранные приложения для X11 могут не совпадать с разрешением вашего экрана.
+    .scaled-compatibility = Режим максимальной совместимости
+    .compatibility-description = Приложения для X11 могут выглядеть размытыми на экранах с высоким разрешением.
+    .preferred-display = Предпочитаемый экран для игр и полноэкранных приложений для X11
+    .no-display = Нет
+administrator = Администратор
+    .desc = Администраторы могут изменять настройки для всех пользователей, добавлять и удалять другие учётные записи.
+add-user = Добавить пользователя
+change-password = Изменить пароль
+remove-user = Удалить пользователя
+full-name = Полное имя
+invalid-username = Некорректное имя пользователя.
+password-mismatch = Пароль и подтверждение пароля должны совпадать.
