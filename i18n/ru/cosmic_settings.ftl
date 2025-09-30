@@ -517,3 +517,5 @@ power-mode = Режим питания
 remove = Убрать
 save = Сохранить
 connect = Подключиться
+dbus-connection-error = Не удалось подключиться к DBus
+ok = ОК
