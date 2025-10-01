@@ -36,3 +36,33 @@ never = Mitte kunagi
 rgb = RGB
 all = Kõik
 large = Suur
+password-confirm = Korda salasõna
+add-vpn = Lisa VPN
+airplane-on = Lennukirežiim on sees.
+cable-unplugged = Kaabel on lahti ühendatud
+no-vpn = VPN-ühendusi pole saadaval.
+visible-networks = Nähtavad võrgud
+dbus-connection-error = DBus-i liidestusega ühendamine ei õnnestunud
+add-color = Lisa värv
+add-image = Lisa pilt
+all-displays = Kõik ekraanid
+fit-to-screen = Sobita ekraanile
+open-new-folder = Ava uus kaust
+recent-folders = Hiljutised kaustad
+x-minutes =
+    { $number } { $number ->
+        [one] minut
+       *[other] minutit
+    }
+x-hours =
+    { $number } { $number ->
+        [one] tund
+       *[other] tundi
+    }
+appearance = Välimus
+    .desc = Aktsentvärvid ja kujundus.
+accent-color = Aktsentvärv
+app-background = Rakenduse või akna taust
+auto = Automaatne
+power = Toitehaldus ja aku
+    .desc = Halda toiteseadistusi
