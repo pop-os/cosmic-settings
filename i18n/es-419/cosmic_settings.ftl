@@ -387,7 +387,7 @@ profile = Perfil
 
 ## Power
 
-power = Energía y Batería
+power = Energía y batería
     .desc = Administrar configuraciones de energía
 battery = Batería
     .minute =
