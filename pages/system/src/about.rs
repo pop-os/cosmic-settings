@@ -195,7 +195,7 @@ pub fn processor_name(bump: &Bump, name: &mut String) {
     let s = sysinfo::System::new_with_specifics(
         sysinfo::RefreshKind::nothing().with_cpu(sysinfo::CpuRefreshKind::everything()),
     );
-    name.push_str(s.cpus().into_iter().nth(0).unwrap().brand());
+    name.push_str(s.cpus().iter().next().unwrap().brand());
 }
 
 pub fn read_to_string<'a, P: AsRef<OsStr>>(

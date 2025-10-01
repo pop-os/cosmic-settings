@@ -63,9 +63,9 @@ enum Context {
     AddApplication(DirectoryType),
 }
 
-impl Into<Vec<PathBuf>> for DirectoryType {
-    fn into(self) -> Vec<PathBuf> {
-        match self {
+impl From<DirectoryType> for Vec<PathBuf> {
+    fn from(val: DirectoryType) -> Self {
+        match val {
             DirectoryType::User => vec![
                 dirs::config_dir()
                     .expect("config dir not found")
@@ -121,7 +121,7 @@ impl page::Page<crate::pages::Message> for Page {
                 Some(
                     cosmic::app::context_drawer(
                         self.add_application_context_view(directory_type.clone()),
-                        crate::pages::Message::CloseContextDrawer.into(),
+                        crate::pages::Message::CloseContextDrawer,
                     )
                     .title(fl!("startup-apps", "search-for-application"))
                     .header(search),
@@ -224,7 +224,7 @@ impl Page {
                 let directories: Vec<PathBuf> = directory_type.clone().into();
 
                 let directory_to_target =
-                    directories.get(0).expect("Always at least one directory");
+                    directories.first().expect("Always at least one directory");
 
                 _ = std::fs::create_dir_all(directory_to_target.as_path());
 
@@ -271,7 +271,7 @@ impl Page {
                     let directories: Vec<PathBuf> = directory_type.clone().into();
 
                     let directory_to_target =
-                        directories.get(0).expect("Always at least one directory");
+                        directories.first().expect("Always at least one directory");
                     if let Ok(exists) = std::fs::exists(directory_to_target.join(file_name.clone()))
                     {
                         if exists {

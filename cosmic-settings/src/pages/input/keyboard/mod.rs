@@ -223,7 +223,6 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
                 color: background.component.divider.into(),
                 width: 1.0,
                 radius: cosmic.corner_radii.radius_s.into(),
-                ..Border::default()
             },
             shadow: Default::default(),
         }

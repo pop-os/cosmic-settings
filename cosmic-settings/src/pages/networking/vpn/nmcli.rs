@@ -6,7 +6,7 @@ use std::process::Stdio;
 
 pub async fn set_username(connection_name: &str, username: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
-        .args(&["con", "mod", connection_name, "vpn.user-name", username])
+        .args(["con", "mod", connection_name, "vpn.user-name", username])
         .stderr(Stdio::piped())
         .output()
         .await
@@ -60,7 +60,7 @@ pub async fn set_password(connection_name: &str, password: &str) -> Result<(), S
 
 pub async fn connect(connection_name: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
-        .args(&["con", "up", &connection_name])
+        .args(["con", "up", connection_name])
         .stderr(Stdio::piped())
         .output()
         .await

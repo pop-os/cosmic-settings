@@ -106,7 +106,7 @@ fn mouse() -> Section<crate::pages::Message> {
                                 .input_default
                                 .acceleration
                                 .as_ref()
-                                .map_or(true, |x| x.profile == Some(AccelProfile::Adaptive)),
+                                .is_none_or(|x| x.profile == Some(AccelProfile::Adaptive)),
                             |x| Message::SetAcceleration(x, false),
                         ),
                 )

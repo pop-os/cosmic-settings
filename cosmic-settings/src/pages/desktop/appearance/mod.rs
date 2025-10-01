@@ -302,7 +302,7 @@ impl Page {
                 theme_staged = self
                     .theme_manager
                     .selected_customizer_mut()
-                    .set_accent(Some(c).map(Srgb::from));
+                    .set_accent(Some(Srgb::from(c)));
             }
 
             Message::Reset => {

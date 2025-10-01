@@ -68,7 +68,7 @@ impl Page {
             }
             Message::Inner(inner) => {
                 if let inner::Message::Surface(a) = inner {
-                    return cosmic::task::message(crate::app::Message::Surface(a));
+                    cosmic::task::message(crate::app::Message::Surface(a))
                 } else {
                     self.inner
                         .update(inner)

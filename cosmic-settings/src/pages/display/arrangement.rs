@@ -79,7 +79,7 @@ impl<'a, Message> Arrangement<'a, Message> {
     }
 }
 
-impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'a, Message> {
+impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_, Message> {
     fn tag(&self) -> tree::Tag {
         tree::Tag::of::<State>()
     }
@@ -119,7 +119,7 @@ impl<'a, Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangemen
                 continue;
             };
 
-            let (mut width, mut height) = if output.transform.map_or(true, is_landscape) {
+            let (mut width, mut height) = if output.transform.is_none_or(is_landscape) {
                 (mode.size.0, mode.size.1)
             } else {
                 (mode.size.1, mode.size.0)
@@ -420,7 +420,7 @@ fn display_regions<'a>(
                 (mode.size.1 as f32 / output.scale as f32) / UNIT_PIXELS,
             );
 
-            (width, height) = if output.transform.map_or(true, is_landscape) {
+            (width, height) = if output.transform.is_none_or(is_landscape) {
                 (width, height)
             } else {
                 (height, width)

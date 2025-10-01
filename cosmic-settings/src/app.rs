@@ -996,7 +996,7 @@ impl SettingsApp {
             if section
                 .show_while
                 .as_ref()
-                .map_or(true, |func| func(model.as_ref()))
+                .is_none_or(|func| func(model.as_ref()))
             {
                 sections_column.push(
                     (section.view_fn)(&self.pages, model.as_ref(), section)
@@ -1108,7 +1108,7 @@ impl SettingsApp {
             if section
                 .show_while
                 .as_ref()
-                .map_or(true, |func| func(model.as_ref()))
+                .is_none_or(|func| func(model.as_ref()))
             {
                 let section = (section.view_fn)(&self.pages, model.as_ref(), section)
                     .map(Message::PageMessage)

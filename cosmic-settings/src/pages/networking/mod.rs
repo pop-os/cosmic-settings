@@ -227,7 +227,7 @@ impl page::Page<crate::pages::Message> for Page {
                     .context("failed to create system dbus connection")
                     .map_or_else(
                         |why| Message::Error(why.to_string()),
-                        |conn| Message::NetworkManagerConnect(conn),
+                        Message::NetworkManagerConnect,
                     )
                     .apply(crate::pages::Message::Networking)
             });

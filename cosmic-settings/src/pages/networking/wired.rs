@@ -504,7 +504,7 @@ impl Page {
                     let view_more: Option<Element<_>> = if self
                         .view_more_popup
                         .as_deref()
-                        .map_or(false, |id| id == connection.uuid.as_ref())
+                        .is_some_and(|id| id == connection.uuid.as_ref())
                     {
                         widget::popover(view_more_button.on_press(Message::ViewMore(None)))
                             .position(widget::popover::Position::Bottom)

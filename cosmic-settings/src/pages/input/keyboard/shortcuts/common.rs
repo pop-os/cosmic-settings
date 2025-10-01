@@ -253,7 +253,7 @@ impl Model {
         self.shortcut_context = None;
         self.editing = None;
 
-        return Task::none();
+        Task::none()
     }
 
     pub(super) fn on_context_drawer_close(&mut self) {
@@ -637,9 +637,7 @@ impl Model {
                     if matches!(
                         key,
                         Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
-                    ) {
-                        return None;
-                    } else if matches!((&key, modifiers), (Key::Named(Named::Tab), modifiers) if modifiers.is_empty() || modifiers == Modifiers::SHIFT)
+                    ) || matches!((&key, modifiers), (Key::Named(Named::Tab), modifiers) if modifiers.is_empty() || modifiers == Modifiers::SHIFT)
                     {
                         return None;
                     }

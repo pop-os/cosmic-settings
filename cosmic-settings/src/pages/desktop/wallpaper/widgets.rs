@@ -118,11 +118,7 @@ pub fn color_select_options(
             })
             .chain(wallpaper::DEFAULT_COLORS.iter().map(|color| (color, false)))
             .map(|(color, removable)| {
-                color_button(
-                    color.clone(),
-                    removable,
-                    selected.map_or(false, |selection| selection == color),
-                )
+                color_button(color.clone(), removable, selected == Some(color))
             })
             .collect::<Vec<_>>(),
     )
@@ -146,7 +142,7 @@ pub fn wallpaper_select_options(
                 handle,
                 *id,
                 true,
-                selected.map_or(false, |selection| id == &selection),
+                selected.is_some_and(|selection| id == &selection),
             ));
         }
     }
@@ -157,12 +153,7 @@ pub fn wallpaper_select_options(
             continue;
         }
 
-        vec.push(wallpaper_button(
-            handle,
-            id,
-            false,
-            selected.map_or(false, |selection| id == selection),
-        ));
+        vec.push(wallpaper_button(handle, id, false, selected == Some(id)));
     }
 
     flex_select_row(vec)

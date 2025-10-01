@@ -14,7 +14,7 @@ const CURRENT_FOLDER: &str = "current-folder";
 const CUSTOM_COLORS: &str = "custom-colors";
 const CUSTOM_IMAGES: &str = "custom-images";
 const RECENT_FOLDERS: &str = "recent-folders";
-const BACKGROUNDS_DIR: &'static str = "backgrounds";
+const BACKGROUNDS_DIR: &str = "backgrounds";
 
 #[derive(Debug, Default)]
 pub struct Config {

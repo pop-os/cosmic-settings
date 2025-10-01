@@ -24,7 +24,7 @@ pub struct Message(pub inner::Message);
 impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         if let inner::Message::Surface(a) = message.0 {
-            return cosmic::task::message(crate::app::Message::Surface(a));
+            cosmic::task::message(crate::app::Message::Surface(a))
         } else {
             self.inner
                 .update(message.0)

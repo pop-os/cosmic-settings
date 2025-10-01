@@ -85,7 +85,7 @@ impl From<(Option<Config>, Option<Config>, Option<Vec<Srgba>>)> for ThemeCustomi
             custom_window_hint: None,
         };
 
-        if let None = customizer.accent_palette {
+        if customizer.accent_palette.is_none() {
             let palette = customizer.builder.0.palette.as_ref();
             customizer.accent_palette = Some(vec![
                 palette.accent_blue,
@@ -159,7 +159,7 @@ impl Default for Manager {
 }
 
 impl Manager {
-    pub fn build_theme<'a>(&mut self, stage: ThemeStaged) -> Task<app::Message> {
+    pub fn build_theme(&mut self, stage: ThemeStaged) -> Task<app::Message> {
         macro_rules! theme_transaction {
             ($config:ident, $current_theme:ident, $new_theme:ident, { $($name:ident;)+ }) => {
                 let tx = $config.transaction();
@@ -194,10 +194,10 @@ impl Manager {
             None
         };
 
-        let mut data = std::iter::once(current).chain(other.into_iter());
+        let mut data = std::iter::once(current).chain(other);
 
         cosmic::task::future(async move {
-            while let Some((builder, config)) = data.next() {
+            for (builder, config) in data.by_ref() {
                 if let Some(config) = config {
                     let current_theme = match Theme::get_entry(&config) {
                         Ok(theme) => theme,
@@ -277,7 +277,7 @@ impl Manager {
 
     #[inline]
     pub fn custom_window_hint(&self) -> &Option<Srgb> {
-        &self.selected_customizer().custom_window_hint()
+        self.selected_customizer().custom_window_hint()
     }
 
     #[inline]

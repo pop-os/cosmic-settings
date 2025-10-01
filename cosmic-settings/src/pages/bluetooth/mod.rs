@@ -830,7 +830,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         .model
                         .popup_device
                         .as_deref()
-                        .map_or(false, |p| path.as_str() == p.as_str())
+                        .is_some_and(|p| path.as_str() == p.as_str())
                     {
                         widget::popover(
                             widget::button::icon(widget::icon::from_name("view-more-symbolic"))
@@ -1012,21 +1012,21 @@ mod systemd {
 
     pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
         tokio::process::Command::new("pkexec")
-            .args(&["systemctl", "start", "bluetooth"])
+            .args(["systemctl", "start", "bluetooth"])
             .status()
             .map(|_| ())
     }
 
     pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
         tokio::process::Command::new("pkexec")
-            .args(&["systemctl", "enable", "--now", "bluetooth"])
+            .args(["systemctl", "enable", "--now", "bluetooth"])
             .status()
             .map(|_| ())
     }
 
     pub fn is_bluetooth_enabled() -> bool {
         std::process::Command::new("systemctl")
-            .args(&["is-enabled", "bluetooth"])
+            .args(["is-enabled", "bluetooth"])
             .status()
             .map(|status| status.success())
             .unwrap_or(true)
@@ -1034,7 +1034,7 @@ mod systemd {
 
     pub fn is_bluetooth_active() -> bool {
         std::process::Command::new("systemctl")
-            .args(&["is-active", "bluetooth"])
+            .args(["is-active", "bluetooth"])
             .status()
             .map(|status| status.success())
             .unwrap_or(true)

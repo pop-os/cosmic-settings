@@ -281,7 +281,7 @@ impl Page {
                                 widget::text_input::focus(widget::Id::unique()),
                                 iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                             ]);
-                        } else if (old.alt || old.ctrl || old.shift) {
+                        } else if old.alt || old.ctrl || old.shift {
                             self.add_shortcut = Default::default();
                             _ = self.model.on_enter();
 
@@ -564,7 +564,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        _ = self.model.on_clear();
+        self.model.on_clear();
         iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(
             false,
         )
@@ -595,9 +595,7 @@ impl page::Page<crate::pages::Message> for Page {
                         if matches!(
                             key,
                             Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
-                        ) {
-                            return None;
-                        } else if matches!((&key, modifiers), (Key::Named(Named::Tab), modifiers) if modifiers.is_empty() || modifiers == Modifiers::SHIFT)
+                        ) || matches!((&key, modifiers), (Key::Named(Named::Tab), modifiers) if modifiers.is_empty() || modifiers == Modifiers::SHIFT)
                         {
                             return None;
                         }

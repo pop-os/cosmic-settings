@@ -133,7 +133,7 @@ impl VpnConnectionSettings {
     fn password_flag(&self) -> Option<PasswordFlag> {
         self.connection_type
             .as_ref()
-            .map_or(false, |ct| match ct {
+            .is_some_and(|ct| match ct {
                 ConnectionType::Password => true,
             })
             .then_some(self.password_flag)
@@ -878,7 +878,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                         let view_more: Option<Element<_>> = if page
                             .view_more_popup
                             .as_deref()
-                            .map_or(false, |id| id == uuid.as_ref())
+                            .is_some_and(|id| id == uuid.as_ref())
                         {
                             widget::popover(view_more_button.on_press(Message::ViewMore(None)))
                                 .position(widget::popover::Position::Bottom)
@@ -1018,12 +1018,8 @@ fn add_network() -> Task<crate::app::Message> {
                         Err(why) => Message::Error(ErrorKind::Config, why.to_string()),
                     }
                 }
-                Err(cosmic::dialog::file_chooser::Error::Cancelled) => {
-                    return Message::CancelDialog;
-                }
-                Err(why) => {
-                    return Message::Error(ErrorKind::Config, why.to_string());
-                }
+                Err(cosmic::dialog::file_chooser::Error::Cancelled) => Message::CancelDialog,
+                Err(why) => Message::Error(ErrorKind::Config, why.to_string()),
             }
         })
         .apply(cosmic::task::future)

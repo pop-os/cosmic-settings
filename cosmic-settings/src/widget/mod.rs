@@ -23,7 +23,7 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
     let theme = theme::active();
     let spacing = &theme.cosmic().spacing;
 
-    let description = description.map(|description| text::caption(description));
+    let description = description.map(text::caption);
 
     let color_picker = model
         .builder(on_update)

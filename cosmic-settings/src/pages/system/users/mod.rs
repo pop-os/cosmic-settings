@@ -216,8 +216,8 @@ impl page::Page<crate::pages::Message> for Page {
                     validation_msg = fl!("invalid-username");
                     None
                 } else if user.password != user.password_confirm
-                    && user.password != ""
-                    && user.password_confirm != ""
+                    && !user.password.is_empty()
+                    && !user.password_confirm.is_empty()
                 {
                     validation_msg = fl!("password-mismatch");
                     None
@@ -309,8 +309,8 @@ impl page::Page<crate::pages::Message> for Page {
                 // validation
                 let mut validation_msg = String::new();
                 let complete_maybe = if user.password != user.password_confirm
-                    && user.password != ""
-                    && user.password_confirm != ""
+                    && !user.password.is_empty()
+                    && !user.password_confirm.is_empty()
                 {
                     validation_msg = fl!("password-mismatch");
                     None
@@ -393,9 +393,7 @@ impl Page {
                 is_admin: match user_proxy.account_type().await {
                     Ok(1) => true,
                     Ok(_) => false,
-                    Err(_) => {
-                        admin_group.map_or(false, |group| group.users.contains(&user.username))
-                    }
+                    Err(_) => admin_group.is_some_and(|group| group.users.contains(&user.username)),
                 },
                 username: String::from(user.username),
                 full_name: String::from(user.full_name),
@@ -578,16 +576,12 @@ impl Page {
                         return;
                     };
 
-                    match request_permission_on_denial(&conn, || {
+                    if let Err(why) = request_permission_on_denial(&conn, || {
                         user.set_password(&password_hashed, "")
                     })
                     .await
                     {
-                        Err(why) => {
-                            tracing::error!(?why, "failed to set password");
-                        }
-
-                        Ok(_) => (),
+                        tracing::error!(?why, "failed to set password");
                     }
                 })
                 .discard();
@@ -757,7 +751,7 @@ fn user_list() -> Section<crate::pages::Message> {
                     .on_submit(move |_| Message::ApplyEdit(idx, EditorField::FullName))
                     .on_unfocus(Message::ApplyEdit(idx, EditorField::FullName));
 
-                    let fullname_text = text::body(if user.full_name != "" {
+                    let fullname_text = text::body(if !user.full_name.is_empty() {
                         &user.full_name
                     } else {
                         &user.username
@@ -945,14 +939,7 @@ where
 }
 
 fn permission_was_denied(result: &zbus::Error) -> bool {
-    match result {
-        zbus::Error::MethodError(name, _, _)
-            if name.as_str() == "org.freedesktop.Accounts.Error.PermissionDenied" =>
-        {
-            true
-        }
-        _ => false,
-    }
+    matches!(result, zbus::Error::MethodError(name, _, _) if name.as_str() == "org.freedesktop.Accounts.Error.PermissionDenied")
 }
 
 // TODO: Should we allow deprecated methods?
@@ -977,14 +964,12 @@ fn get_encrypt_method() -> String {
     };
     let reader = BufReader::new(login_defs);
 
-    for line in reader.lines() {
-        if let Ok(line) = line {
-            if !line.trim().is_empty() {
-                if let Some(index) = line.find(|c: char| c.is_whitespace()) {
-                    let key = line[0..index].trim();
-                    if key == "ENCRYPT_METHOD" {
-                        value = line[(index + 1)..].trim().to_string();
-                    }
+    for line in reader.lines().map_while(Result::ok) {
+        if !line.trim().is_empty() {
+            if let Some(index) = line.find(|c: char| c.is_whitespace()) {
+                let key = line[0..index].trim();
+                if key == "ENCRYPT_METHOD" {
+                    value = line[(index + 1)..].trim().to_string();
                 }
             }
         }
