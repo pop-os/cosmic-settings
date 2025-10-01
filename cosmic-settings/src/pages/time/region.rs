@@ -346,9 +346,8 @@ impl Page {
 
         let search_input = &self.add_language_search.trim().to_lowercase();
 
-        let svg_accent = Rc::new(|theme: &cosmic::Theme| {
-            let color = theme.cosmic().accent_text_color().into();
-            cosmic::widget::svg::Style { color: Some(color) }
+        let svg_accent = Rc::new(|theme: &cosmic::Theme| cosmic::widget::svg::Style {
+            color: Some(theme.cosmic().accent_text_color().into()),
         });
 
         for (id, available_language) in &self.available_languages {

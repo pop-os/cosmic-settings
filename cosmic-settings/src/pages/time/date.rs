@@ -22,6 +22,7 @@ use icu::{
 };
 use slab::Slab;
 use slotmap::{Key, SlotMap};
+use std::rc::Rc;
 pub use timedate_zbus::TimeDateProxy;
 use tracing::error;
 
@@ -345,12 +346,36 @@ impl Page {
     }
 
     fn timezone_context_item<'a>(&self, id: usize, timezone: &'a str) -> Element<'a, Message> {
-        widget::button::custom(widget::settings::item_row(vec![
-            widget::text::body(timezone).wrapping(Wrapping::Word).into(),
-            widget::horizontal_space().into(),
-        ]))
+        let svg_accent = Rc::new(|theme: &cosmic::Theme| cosmic::widget::svg::Style {
+            color: Some(theme.cosmic().accent_text_color().into()),
+        });
+        let selected = Some(id) == self.timezone;
+
+        widget::settings::item_row(vec![
+            widget::text::body(timezone)
+                .class(if selected {
+                    cosmic::theme::Text::Accent
+                } else {
+                    cosmic::theme::Text::Default
+                })
+                .wrapping(Wrapping::Word)
+                .width(cosmic::iced::Length::Fill)
+                .into(),
+            if selected {
+                widget::icon::from_name("object-select-symbolic")
+                    .size(16)
+                    .icon()
+                    .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
+                    .into()
+            } else {
+                widget::horizontal_space().width(16).into()
+            },
+        ])
+        .apply(widget::container)
+        .class(cosmic::theme::Container::List)
+        .apply(widget::button::custom)
+        .class(cosmic::theme::Button::Transparent)
         .on_press(Message::Timezone(id))
-        .class(cosmic::theme::Button::Icon)
         .into()
     }
 
