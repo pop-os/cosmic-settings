@@ -434,7 +434,7 @@ profile = Profilok
 ## Power
 
 power = Energia és akkumulátor
-    .desc = Energia beállítások kezelése
+    .desc = Energiabeállítások kezelése
 battery = Akkumulátor
     .minute =
         { $value } { $value ->
