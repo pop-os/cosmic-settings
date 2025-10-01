@@ -187,16 +187,13 @@ impl Page {
                             .iter()
                             .map(|m| m.essence_str())
                             .filter(|m| m.starts_with("audio"))
-                            .chain(
-                                [
-                                    "application/ogg",
-                                    "application/x-cue",
-                                    "application/x-ogg",
-                                    "audio/mp3",
-                                    "x-content/audio-cdda",
-                                ]
-                                .into_iter(),
-                            )
+                            .chain([
+                                "application/ogg",
+                                "application/x-cue",
+                                "application/x-ogg",
+                                "audio/mp3",
+                                "x-content/audio-cdda",
+                            ])
                             .collect();
                         &mime_types
                     }),
@@ -528,7 +525,7 @@ async fn load_defaults(assocs: &BTreeMap<Arc<str>, Arc<App>>, for_mimes: &[&str]
 
 async fn xdg_mime_query_default(mime_type: &str) -> Option<String> {
     let output = tokio::process::Command::new("xdg-mime")
-        .args(&["query", "default", mime_type])
+        .args(["query", "default", mime_type])
         .output()
         .await
         .ok()?;

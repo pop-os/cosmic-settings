@@ -124,7 +124,7 @@ fn touchpad() -> Section<crate::pages::Message> {
                                 .input_touchpad
                                 .acceleration
                                 .as_ref()
-                                .map_or(true, |x| x.profile == Some(AccelProfile::Adaptive)),
+                                .is_none_or(|x| x.profile == Some(AccelProfile::Adaptive)),
                             |x| Message::SetAcceleration(x, true),
                         ),
                 )
@@ -193,7 +193,7 @@ fn click_behavior() -> Section<crate::pages::Message> {
                         page.input_touchpad
                             .tap_config
                             .as_ref()
-                            .map_or(false, |x| x.enabled),
+                            .is_some_and(|x| x.enabled),
                         Message::TapToClick,
                     ),
                 )
@@ -288,7 +288,7 @@ fn scrolling() -> Section<crate::pages::Message> {
                             page.input_touchpad
                                 .scroll_config
                                 .as_ref()
-                                .map_or(false, |conf| conf.natural_scroll.unwrap_or(false)),
+                                .is_some_and(|conf| conf.natural_scroll.unwrap_or(false)),
                             |enabled| Message::SetNaturalScroll(enabled, true),
                         ),
                 )

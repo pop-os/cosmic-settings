@@ -26,13 +26,13 @@ pub fn section() -> Section<crate::pages::Message> {
 
             let mut section = settings::section()
                 .title(&section.title)
-                .add(theme_mode(&page, section, &label_keys))
-                .add(auto_switch(&page, section, &label_keys))
-                .add(accent_color_palette(&page, section, &label_keys))
-                .add(application_background(&page, section, &label_keys))
-                .add(container_background(&page, section, &label_keys))
-                .add(interface_text(&page, section, &label_keys))
-                .add(control_tint(&page, section, &label_keys))
+                .add(theme_mode(page, section, &label_keys))
+                .add(auto_switch(page, section, &label_keys))
+                .add(accent_color_palette(page, section, &label_keys))
+                .add(application_background(page, section, &label_keys))
+                .add(container_background(page, section, &label_keys))
+                .add(interface_text(page, section, &label_keys))
+                .add(control_tint(page, section, &label_keys))
                 .add(
                     settings::item::builder(&descriptions[label_keys["window_hint_toggle"]])
                         .toggler(
@@ -196,16 +196,13 @@ fn accent_color_palette<'a>(
     let mut accent_palette_row = Vec::with_capacity(accent.len());
 
     for &color in accent {
-        accent_palette_row.push(
-            color_button(
-                Some(Message::PaletteAccent(color.into())),
-                color.into(),
-                cur_accent == color,
-                48,
-                48,
-            )
-            .into(),
-        );
+        accent_palette_row.push(color_button(
+            Some(Message::PaletteAccent(color.into())),
+            color.into(),
+            cur_accent == color,
+            48,
+            48,
+        ));
     }
 
     accent_palette_row.push(

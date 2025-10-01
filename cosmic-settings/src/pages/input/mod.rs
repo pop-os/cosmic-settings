@@ -219,6 +219,6 @@ fn system_has_touchpad() -> bool {
     devices.any(|device| {
         device
             .property_value("ID_INPUT_TOUCHPAD")
-            .map_or(false, |value| value == "1")
+            .is_some_and(|value| value == "1")
     })
 }

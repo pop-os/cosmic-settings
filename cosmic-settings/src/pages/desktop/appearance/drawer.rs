@@ -129,7 +129,7 @@ impl Content {
     ) -> Task<app::Message> {
         match message {
             FontMessage::FontLoaded(interface, mono) => {
-                return self.font_config.font_loaded(mono, interface);
+                self.font_config.font_loaded(mono, interface)
             }
             FontMessage::Search(input) => match context_view {
                 None => Task::none(),
@@ -141,7 +141,7 @@ impl Content {
                         return task;
                     }
                 }
-                return Task::none();
+                Task::none()
             }
         }
     }

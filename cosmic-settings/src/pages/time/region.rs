@@ -81,7 +81,7 @@ impl Ord for SystemLocale {
 
 impl PartialOrd for SystemLocale {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.display_name.partial_cmp(&other.display_name)
+        Some(self.cmp(other))
     }
 }
 
@@ -315,7 +315,7 @@ impl Page {
 
                     _ = config.set("system_locales", &locales);
 
-                    if let Some(language_code) = locales.get(0) {
+                    if let Some(language_code) = locales.first() {
                         if let Some(language) = self
                             .available_languages
                             .values()
@@ -358,9 +358,10 @@ impl Page {
                     .to_lowercase()
                     .contains(search_input)
             {
-                let is_installed = self.config.as_ref().map_or(false, |(_, locales)| {
-                    locales.contains(&available_language.lang_code)
-                });
+                let is_installed = self
+                    .config
+                    .as_ref()
+                    .is_some_and(|(_, locales)| locales.contains(&available_language.lang_code));
 
                 let button = widget::settings::item_row(vec![
                     widget::text::body(&available_language.display_name)
@@ -488,7 +489,7 @@ impl Page {
                 let is_selected = self
                     .region
                     .as_ref()
-                    .map_or(false, |l| l.lang_code == locale.lang_code);
+                    .is_some_and(|l| l.lang_code == locale.lang_code);
 
                 let button = widget::settings::item_row(vec![
                     widget::text::body(&locale.region_name)

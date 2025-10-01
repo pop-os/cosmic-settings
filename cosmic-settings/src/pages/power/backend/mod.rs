@@ -516,15 +516,11 @@ impl ConnectedDevice {
         let proxy = enumerate_devices().await;
 
         if let Ok(devices) = proxy {
-            return join_all(
-                devices
-                    .into_iter()
-                    .map(|device| Self::from_device_maybe(device)),
-            )
-            .await
-            .into_iter()
-            .flatten()
-            .collect();
+            return join_all(devices.into_iter().map(Self::from_device_maybe))
+                .await
+                .into_iter()
+                .flatten()
+                .collect();
         }
 
         vec![]

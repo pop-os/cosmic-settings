@@ -34,7 +34,7 @@ static SUSPEND_TIMES: &[Duration] = &[
     Duration::from_secs(25 * 60),
     Duration::from_secs(30 * 60),
     Duration::from_secs(45 * 60),
-    Duration::from_secs(1 * 60 * 60),
+    Duration::from_secs(60 * 60),
     Duration::from_secs(80 * 60),
     Duration::from_secs(90 * 60),
     Duration::from_secs(100 * 60),

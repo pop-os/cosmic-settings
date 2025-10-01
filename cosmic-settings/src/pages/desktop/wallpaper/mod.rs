@@ -1213,7 +1213,7 @@ pub fn settings() -> Section<crate::pages::Message> {
             let mut slideshow_enabled = page
                 .config_output()
                 .and_then(|output| page.wallpaper_service_config.entry(output))
-                .map_or(false, |entry| {
+                .is_some_and(|entry| {
                     if let Source::Path(path) = &entry.source {
                         path.is_dir()
                     } else {

@@ -60,9 +60,9 @@ impl From<Message> for crate::Message {
     }
 }
 
-impl Into<Message> for subscription::Message {
-    fn into(self) -> Message {
-        Message::Subscription(self)
+impl From<subscription::Message> for Message {
+    fn from(val: subscription::Message) -> Self {
+        Message::Subscription(val)
     }
 }
 
@@ -110,7 +110,7 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         _core: &cosmic::Core,
     ) -> cosmic::iced::Subscription<crate::pages::Message> {
-        cosmic::iced::Subscription::run(|| subscription::watch())
+        cosmic::iced::Subscription::run(subscription::watch)
             .map(|message| Message::Subscription(message).into())
     }
 
@@ -269,7 +269,7 @@ fn input() -> Section<crate::pages::Message> {
                 Message::SourceChanged,
                 window::Id::RESERVED,
                 Message::Surface,
-                |a| crate::Message::from(a),
+                crate::Message::from,
             )
             .apply(Element::from)
             .map(crate::pages::Message::from);
@@ -289,7 +289,7 @@ fn input() -> Section<crate::pages::Message> {
                     Message::SourceProfileChanged,
                     window::Id::RESERVED,
                     Message::Surface,
-                    |a| crate::Message::from(a),
+                    crate::Message::from,
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::from);
@@ -363,7 +363,7 @@ fn output() -> Section<crate::pages::Message> {
                 Message::SinkChanged,
                 window::Id::RESERVED,
                 Message::Surface,
-                |a| crate::Message::from(a),
+                crate::Message::from,
             )
             .apply(Element::from)
             .map(crate::pages::Message::from);
@@ -383,7 +383,7 @@ fn output() -> Section<crate::pages::Message> {
                     Message::SinkProfileChanged,
                     window::Id::RESERVED,
                     Message::Surface,
-                    |a| crate::Message::from(a),
+                    crate::Message::from,
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::from);

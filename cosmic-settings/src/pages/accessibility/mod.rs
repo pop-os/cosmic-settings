@@ -231,7 +231,7 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         text::body(status_text).wrapping(Wrapping::Word),
                         page.wayland_available
                             .is_some()
-                            .then_some(crate::pages::Message::Page(magnifier_entity).into()),
+                            .then_some(crate::pages::Message::Page(magnifier_entity)),
                     )
                 })
                 .add(
@@ -270,7 +270,7 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         Some(page.screen_filter_selection as usize),
                         move |idx| {
                             let filter = ColorFilter::from_usize(idx).unwrap_or_default();
-                            Message::SetScreenFilterSelection(filter).into()
+                            Message::SetScreenFilterSelection(filter)
                         },
                         cosmic::iced::window::Id::RESERVED,
                         Message::Surface,

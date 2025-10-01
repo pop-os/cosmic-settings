@@ -19,6 +19,12 @@ pub struct Config {
     state: cosmic_config::Config,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Config {
     pub fn new() -> Self {
         let config = match cosmic_config::Config::new(NAME, 1) {
