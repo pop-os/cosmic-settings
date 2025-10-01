@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Startup applications
 Name[ar]=تطبيقات بدء التشغيل
+Name[sv]=Uppstartsprogram
 Comment=Configure applications which run on login.
 Comment[ar]=اضبط التطبيقات التي تعمل عند الولوج.
+Comment[sv]=Konfigurera program som körs vid inloggning.
 Type=Settings
 Exec=cosmic-settings startup-apps
 Terminal=false
