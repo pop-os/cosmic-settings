@@ -13,7 +13,7 @@ desktop = Skrivbord
 appearance = Utseende
     .desc = Accentfärger och COSMIC tema.
 accent-color = Accentfärg
-app-background = Applikation- eller fönsterbakgrund
+app-background = Program- eller fönsterbakgrund
 auto = Automatisk
 close = Stäng
 color-picker = Färgväljare
@@ -36,7 +36,7 @@ auto-switch = Växla automatiskt från ljust till mörkt läge
     .next-sunrise = Växlar till ljust läge vid nästa soluppgång
     .next-sunset = Växlar till mörkt läge vid nästa solnedgång
 container-background = Behållarbakgrund
-    .desc-detail = Behållarens bakgrundsfärg används för navigeringssidofält, sidolåda, dialogrutor och liknande widgets. Som standard härleds den automatiskt från applikationens eller fönstrets bakgrund.
+    .desc-detail = Behållarens bakgrundsfärg används för navigeringssidofält, sidolåda, dialogrutor och liknande widgets. Som standard härleds den automatiskt från programmets eller fönstrets bakgrund.
     .reset = Återställ till automatiskt
     .desc = Primär behållarfärg används för navigeringssidofält, sidolåda, dialogrutor och liknande widgets.
 control-tint = Kontrollkomponentens nyans
@@ -68,7 +68,7 @@ window-management-appearance = Fönsterhantering
 super-key = Åtgärd för Super-tangent
     .launcher = Öppna programstartare
     .workspaces = Öppna arbetsytor
-    .applications = Öppna applikationer
+    .applications = Öppna program
     .disable = Inaktivera
 edge-gravity = Flytande fönster dras till närliggande kanter
 
@@ -173,7 +173,7 @@ color-filter = Färgfilter typ
 ## Skrivbord: Aviseringar
 
 notifications = Aviseringar
-    .desc = Stör ej, aviseringar på låsskärmen och inställningar per applikation.
+    .desc = Stör ej, aviseringar på låsskärmen och inställningar per program.
 
 ## Skrivbord: Alternativ
 
@@ -438,8 +438,8 @@ sound-input = Ingång
 sound-alerts = Larm
     .volume = Larmvolym
     .sound = Larmljud
-sound-applications = Applikationer
-    .desc = Applikationvolym och inställningar
+sound-applications = Program
+    .desc = Programvolym och inställningar
 profile = Profil
 
 ## System
@@ -741,7 +741,7 @@ switch-workspaces = Ändra arbetsyta
     .horizontal = Fyra fingrar svep vänster/höger
     .vertical = Fyra fingrar svep upp/ned
 switch-between-windows = Ändra mellan fönster
-open-application-library = Öppna Applikationsbibliotek
+open-application-library = Öppna programbibliotek
 open-workspaces-view = Öppna Översikt över arbetsytor
 
 ## Program
@@ -806,7 +806,7 @@ input-source-switch = Växla tangentbordsspråkets inmatningskälla
 zoom-in = Zooma in
 zoom-out = Zooma ut
 pinch-to-zoom = Nyp för att zooma
-    .desc = Använd två fingrar för att zooma in i innehåll, för applikationer som stödjer zoom.
+    .desc = Använd två fingrar för att zooma in i innehåll, för program som stödjer zoom.
 formatting = Formattering
     .dates = Datum
     .time = Tid
