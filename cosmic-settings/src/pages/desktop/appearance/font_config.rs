@@ -175,7 +175,7 @@ impl Model {
         callback: impl Fn(Arc<str>) -> super::Message,
     ) -> Element<'_, super::Message> {
         let svg_accent = Rc::new(|theme: &cosmic::Theme| svg::Style {
-            color: Some(theme.cosmic().accent_color().into()),
+            color: Some(theme.cosmic().accent_text_color().into()),
         });
 
         let (mut families, current_font) = match *context_view {
@@ -195,6 +195,11 @@ impl Model {
             list.add(
                 settings::item_row(vec![
                     widget::text::body(&**family)
+                        .class(if selected {
+                            cosmic::theme::Text::Accent
+                        } else {
+                            cosmic::theme::Text::Default
+                        })
                         .wrapping(Wrapping::Word)
                         .width(cosmic::iced::Length::Fill)
                         .into(),
