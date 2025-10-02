@@ -14,7 +14,7 @@ appearance = Vzhled
 ## Desktop: Notifications
 
 notifications = Oznámení
-    .desc = Nerušit, oznámení na zamykací obrazovce, a nastavení pro specifické aplikace.
+    .desc = Nerušit, oznámení na zamykací obrazovce a nastavení pro specifické aplikace.
 
 ## Desktop: Options
 
@@ -109,7 +109,7 @@ x-hours =
 ## Desktop: Workspaces
 
 workspaces = Pracovní plochy
-    .desc = Nastavit počet pracovních ploch, chování a jejich pozici.
+    .desc = Chování a orientace pracovních ploch.
 workspaces-behavior = Chování pracovních ploch
     .dynamic = Dynamické pracovní plochy
     .dynamic-desc = Automaticky odstraní prázdné pracovní plochy..
@@ -137,7 +137,7 @@ online-accounts = Online účty
 time = Čas a jazyk
     .desc = N/A
 time-date = Datum a čas
-    .desc = Časová zóna, auomatické nastavení času a formátování času.
+    .desc = Časová zóna, automatické nastavení času a formátování času.
     .auto = Nastavit automaticky
     .auto-ntp = Datum a čas se bude aktualizovat automaticky, pokud nastavíte časovou zónu.
 time-zone = Časová zóna
@@ -153,7 +153,7 @@ time-format = Formát data a času
     .sunday = Neděle
     .monday = Pondělí
 time-region = Region a jazyk
-    .desc = Formátujte datumy, časy a čísla dle vašeho regionu.
+    .desc = Formátujte datumy, časy a čísla podle vašeho regionu.
 
 ## Sound
 
@@ -292,7 +292,7 @@ activate = Aktivovat
 confirm = Potvrdit
 enable = Povolit
 bluetooth = Bluetooth
-    .desc = Spravovat Bluetooth zařízení
+    .desc = Správa Bluetooth zařízení.
     .status = Tento systém je viditelný jako { $aliases }, dokud jsou otevřena nastavení Bluetooth.
     .connected = Připojeno
     .connecting = Připojování
