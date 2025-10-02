@@ -528,7 +528,6 @@ show-extended-input-sources = Taispeáin foinsí ionchuir sínte
 
 keyboard-shortcuts = Aicearra Méarchláir
     .desc = Féach ar agus saincheapaigh aicearraí
-add-keybinding = Cuir eochaircheangal leis
 cancel = Cealaigh
 command = Ordú
 custom = Saincheaptha

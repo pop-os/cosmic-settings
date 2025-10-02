@@ -330,7 +330,6 @@ type-to-search = Пишіть для пошуку...
 
 keyboard-shortcuts = Клавіатурні скорочення
     .desc = Перегляд і налаштування скорочень
-add-keybinding = Додати привʼязку клавіш
 cancel = Скасувати
 command = Команда
 custom = Користувацькі
@@ -484,8 +483,6 @@ gestures = Жести
     .four-finger-up = Проведення чотирма пальцями вгору
     .three-finger-any = Проведення трьома пальцями в будь-якому напрямку
 switch-between-windows = Перемикання вікон
-switch-to-next-workspace = Перейти до наступного робочого простору
-switch-to-prev-workspace = Перейти до попереднього робочого простору
 open-application-library = Відкрити бібліотеку застосунків
 open-workspaces-view = Відкрити огляд робочих просторів
 

@@ -528,7 +528,6 @@ show-extended-input-sources = Genişletilmiş giriş kaynaklarını göster
 
 keyboard-shortcuts = Klavye Kısayolları
     .desc = Kısayolları görüntüle ve kişileştir
-add-keybinding = Tuş ataması ekle
 cancel = Vazgeç
 command = Komut
 custom = Özel

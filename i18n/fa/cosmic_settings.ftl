@@ -1,7 +1,5 @@
 app = تنظیمات COSMIC
-
 unknown = نامشخص
-
 number = { $number }
 
 ## Desktop
@@ -16,26 +14,15 @@ appearance = ظاهر
 ## Desktop: Notifications
 
 notifications = اعلانات
-    .desc =  حالت بدون مزاحم، اعلان‌های صفحه‌ی قفل و تنظیمات جداگانه هر برنامه
+    .desc = حالت بدون مزاحم، اعلان‌های صفحه‌ی قفل و تنظیمات جداگانه هر برنامه
 
 ## Desktop: Options
 
-desktop-panel-options = تنظیمات پنل میزکار
-    .desc = عملکرد کلید سوپر، گوشه‌های داغ، گزینه‌های کنترل پنجره.
-
 hot-corner = گوشه‌داغ
     .top-left-corner = فعال سازی گوشه‌داغ بالا چپ برای فضاهای کاری
-
-top-panel = پنل بالا
-    .workspaces = نمایش دکمه فضاهای کاری
-    .applications = نمایش دکمه برنامه‌ها
-
 window-controls = کنترل پنجره
     .minimize = نمایش دکمه کوچک کردن پنجره
     .maximize = نمایش دکمه بزرگ کردن پنجره
-
-desktop-panels-and-applets = پنل‌های میزکار و اپلت‌ها
-
 dock = داک
     .desc = پنل با برنامه‌های سنجاق شده.
 
@@ -43,50 +30,40 @@ dock = داک
 
 panel = پنل
     .desc = نوار بالایی با کنترل‌ها و منوهای میزکار.
-
 panel-behavior-and-position = رفتار و موقعیت‌ها
     .autohide = پنل را به طور خودکار پنهان کنید
     .position = موقعیت در صفحه‌نمایش
     .display = نمایش در صفحه
-
 panel-top = بالا
 panel-bottom = پایین
 panel-left = چپ
 panel-right = راست
-
 panel-appearance = ظاهر
     .match = مطابق با میزکار
     .light = روشن
     .dark = تاریک
-
 panel-style = سبک
     .anchor-gap = فاصله بین پنل و لبه‌های صفحه‌نمایش
     .extend = گسترش پنل تا لبه‌های صفحه‌نمایش
     .appearance = ظاهر
     .size = اندازه
     .background-opacity = شفافیت پس‌زمینه
-
 small = کوچک
 large = بزرگ
-
 panel-applets = تنظیمات
     .desc = تنظیمات اپلت‌های پنل.
-
 panel-missing = تنظیمات پنل وجود ندارد
     .desc = فایل تنظیمات پنل به دلیل استفاده از تنظیمات سفارشی یا فایل خراب‌شده قابل استفاده نیست.
     .fix = بازنشانی به حالت پیش‌فرض
-
 applets = اپلت‌ها
 start-segment = بخش شروع
 center-segment = بخش مرکزی
 end-segment = بخش پایانی
-
 add = افزودن
 add-applet = افزودن اپلت
 search-applets = جستجوی اپلت‌ها...
 no-applets-found = هیچ اپلتی یافت نشد...
 all = همه
-
 drop-here = اپلت را اینجا رها کنید
 
 ## Desktop: Wallpaper
@@ -97,24 +74,17 @@ wallpaper = تصویر پس زمینه
     .fit = متناسب
     .slide = نمایش اسلاید
     .change = تغییر تصویر در هر
-
 fit-to-screen = متناسب با صفحه نمایش
-stretch = کشیده شده
-zoom = بزرگ‌نمایی
-
 x-minutes = { $number } دقیقه
-
 x-hours = { $number } ساعت
 
 ## Desktop: Workspaces
 
 workspaces = فضاهای کاری
     .desc = تعداد فضاهای کاری، رفتار و محل آنها را تنظیم کنید.
-
 workspaces-behavior = رفتار فضاهای کاری
     .dynamic = فضاهای کاری پویا
     .fixed = فضاهای کاری ثابت
-
 workspaces-multi-behavior = رفتار چند نمایشگر
     .span = فضاهای کاری بر روی نمایشگرها پخش می شوند
     .separate = هر نمایشگر فضای کاری جداگانه دارد
@@ -133,19 +103,15 @@ online-accounts = حساب‌های آنلاین
 
 time = زمان و زبان
     .desc = ندارد
-
 time-date = تاریخ و زمان
     .desc = منطقه زمانی، تنظیمات ساعت خودکار و برخی قالب‌بندی‌های زمانی.
     .auto = تنظیم خودکار
-
 time-zone = منطقه زمانی
     .auto = منطقه‌زمانی خودکار
     .auto-info = نیاز به سرویس‌های موقعیت مکانی و دسترسی به اینترنت دارد
-
 time-format = قالب زمان و تاریخ
     .twenty-four = نمایش ساعت ۲۴ ساعته
     .first = روز اول هفته
-
 time-region = منطقه و زبان
     .desc = قالب بندی تاریخ، زمان و اعداد بر اساس منطقه شما
 
@@ -153,23 +119,19 @@ time-region = منطقه و زبان
 
 sound = صدا
     .desc = ندارد
-
 sound-output = خروجی
     .volume = میزان صدای خروجی
     .device = دستگاه خروجی
     .level = سطح خروجی
     .config = تنظیمات
     .balance = تعادل
-
 sound-input = ورودی
     .volume = میزان صدای ورودی
     .device = دستگاه ورودی
     .level = سطح ورودی
-
 sound-alerts = هشدارها
     .volume = میزان صدای هشدارها
     .sound = صدای هشدارها
-
 sound-applications = برنامه‌ها
     .desc = میزان صدای برنامه‌ها و تنظیمات آن‌ها
 
@@ -181,23 +143,19 @@ system = سیستم و حساب‌ها
 
 about = درباره
     .desc = نام دستگاه، اطلاعات سخت‌افزاری، پیش‌فرض‌های سیستم‌عامل.
-
 about-device = نام دستگاه
     .desc = این نام به دیگر دستگاه‌های بلوتوث یا شبکه نشان داده می شود.
-
 about-hardware = سخت‌افزار
     .model = مدل سخت‌افزار
     .memory = حافظه
     .processor = پردازنده
     .graphics = گرافیک
     .disk-capacity = ظرفیت دیسک
-
 about-os = سیستم‌عامل
     .os = سیستم‌عامل
     .os-architecture = معماری سیستم‌عامل
     .desktop-environment = محیط میزکار
     .windowing-system = سیستم پنجره‌بندی
-
 about-related = تنظیمات مرتبط
     .support = دریافت پشتیبانی
 

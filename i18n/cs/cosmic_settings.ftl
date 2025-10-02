@@ -18,18 +18,12 @@ notifications = Oznámení
 
 ## Desktop: Options
 
-desktop-panel-options = Plocha a Panel
-    .desc = Činnost super klávesy, roh obrazovky, nastavení ovládání oken.
 hot-corner = Rohy
     .top-left-corner = Povolit použití levého horního rohu pro otevření pracovních ploch
-top-panel = Horní panel
-    .workspaces = Tlačítko pro zobrazení pracovních ploch
-    .applications = Tlačítko pro zobrazení aplikací
 window-controls = Ovládání oken
     .maximize = Zobrazit tlačítko pro maximalizaci
     .minimize = Zobrazit tlačítko pro minimalizaci
     .active-window-hint = Zobrazit zvýraznění aktivního okna
-desktop-panels-and-applets = Panely na ploše a applety
 dock = Dok
     .desc = Volitelná lišta pro aplikace a applety.
 

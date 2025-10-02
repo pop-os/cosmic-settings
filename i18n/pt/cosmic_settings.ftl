@@ -345,7 +345,6 @@ type-to-search = Escreva para procurar...
 
 keyboard-shortcuts = Teclas de atalho
     .desc = Ver e personalizar atalhos
-add-keybinding = Adicionar atalho
 cancel = Cancelar
 command = Comando
 custom = Personalizado

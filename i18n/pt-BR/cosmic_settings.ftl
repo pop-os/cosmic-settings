@@ -530,7 +530,6 @@ show-extended-input-sources = Exibir fontes de entrada estendidas
 
 keyboard-shortcuts = Atalhos do Teclado
     .desc = Ver e personalizar atalhos
-add-keybinding = Adicionar atalho
 cancel = Cancelar
 command = Comando
 custom = Personalizado

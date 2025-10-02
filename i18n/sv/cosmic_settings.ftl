@@ -177,14 +177,8 @@ notifications = Aviseringar
 
 ## Skrivbord: Alternativ
 
-desktop-panel-options = Skrivbord och Panel
-    .desc = Supertangentåtgärd, varma hörn, fönsterkontrollalternativ.
-desktop-panels-and-applets = Skrivbordspaneler och applets
 dock = Docka
     .desc = En valfri stapel för program och applets.
-top-panel = Övre Panel
-    .workspaces = Visa knappen arbetsytor
-    .applications = Visa knappen applikationer
 window-controls = Fönsterkontroller
     .minimize = Visa minimera knapp
     .maximize = Visa maximera knapp
@@ -585,7 +579,6 @@ show-extended-input-sources = Visa utökade ingångskällor
 
 keyboard-shortcuts = Tangentbordsgenvägar
     .desc = Visa och anpassa genvägar
-add-keybinding = Lägg till tangentbindning
 add-another-keybinding = Lägg till ytterligare en tangentbindning
 cancel = Avbryt
 command = Kommando
