@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Panel
 Name[ar]=اللوحة
+Name[cs]=Panel
 Name[zh_CN]=面板
 Name[pl]=Panel
 Name[hu]=Panel
@@ -10,6 +11,7 @@ Name[sv]=Panel
 Name[es]=Barra
 Comment=Primary system bar for menus and applets.
 Comment[ar]=شريط النظام الأساسي للقوائم والبريمجات.
+Comment[cs]=Hlavní systémová lišta pro menu a applety.
 Comment[zh_CN]=主系统栏，用于菜单和小部件。
 Comment[hu]=Fő rendszersáv menükhöz és kisalkalmazásokhoz.
 Comment[pt]=Barra superior com controles e menus.

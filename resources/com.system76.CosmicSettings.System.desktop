@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=System & Accounts
 Name[ar]=النظام والحسابات
+Name[cs]=Systém a účty
 Name[sk]=Systém & Účty
 Name[sv]=System & konton
 Name[zh_CN]=系统和账户
@@ -10,6 +11,7 @@ Name[pt]=Sistema e Contas
 Name[nl]=Systeem en gebruikersaccount
 Name[es]=Sistema y cuentas
 Comment=
+Comment[cs]=Systémové informace, uživatelé a firmware
 Comment[nl]=Systeeminformatie, gebruikers en firmware
 Comment[sk]=Systémové informácie, používatelia a firmware
 Comment[es]=Información del sistema, cuentas y firmware

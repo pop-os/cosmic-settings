@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Users
 Name[ar]=المستخدمين
+Name[cs]=Uživatelé
 Name[zh_CN]=用户
 Name[pl]=Użytkownicy
 Name[hu]=Felhasználók
@@ -11,6 +12,7 @@ Name[sv]=Användare
 Name[es]=Usuarios
 Comment=Authentication and user accounts.
 Comment[ar]=الاستيثاق وحسابات المستخدمين.
+Comment[cs]=Ověření a uživatelské účty.
 Comment[zh_CN]=身份验证和用户账户
 Comment[pl]=Uwierzytelnianie i konta użytkowników.
 Comment[hu]=Hitelesítés és felhasználói fiókok.

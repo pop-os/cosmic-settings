@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Applications
 Name[ar]=التطبيقات
+Name[cs]=Aplikace
 Name[zh_CN]=应用程序
 Name[hu]=Alkalmazások
 Name[pt]=Aplicativos
@@ -11,6 +12,7 @@ Name[sv]=Program
 Name[es]=Aplicaciones
 Comment=Manage application settings.
 Comment[ar]=أدر إعدادات التطبيق.
+Comment[cs]=Správa nastavení aplikací.
 Comment[zh_CN]=管理应用程序设置
 Comment[hu]=Alkalmazásbeállítások kezelése.
 Comment[pt]=Gerenciar configurações de aplicativos.

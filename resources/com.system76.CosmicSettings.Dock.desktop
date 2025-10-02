@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Dock
 Name[ar]=الإرساء
+Name[cs]=Dok
 Name[zh_CN]=程序坞
 Name[pl]=Dok
 Name[hu]=Dokk
@@ -10,6 +11,7 @@ Name[sv]=Docka
 Name[es]=Panel
 Comment=An optional bar for apps and applets.
 Comment[ar]=شريط اختياري للتطبيقات والبريمجات.
+Comment[cs]=Volitelná lišta pro aplikace a applety.
 Comment[zh_CN]=可选的应用程序和小部件的工具栏
 Comment[pl]=Panel z przypiętymi aplikacjami w zasobniku i innymi apletami.
 Comment[hu]=Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz.

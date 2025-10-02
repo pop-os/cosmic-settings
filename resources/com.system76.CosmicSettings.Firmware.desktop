@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Firmware
 Name[ar]=البرامج الثابتة
+Name[cs]=Firmware
 Name[zh_CN]=固件
 Name[pl]=Oprogramowanie sprzętowe
 Name[hu]=Firmware
@@ -10,6 +11,7 @@ Name[sv]=Fast programvara
 Name[es]=Firmware
 Comment=View and update firmware.
 Comment[ar]=عرض وتحديث البرامج الثابتة.
+Comment[cs]=Zobrazit a aktualizovat firmware.
 Comment[zh_CN]=查看和更新固件
 Comment[pl]=Zobacz i aktualizuj oprogramowanie sprzętowe.
 Comment[hu]=Firmware megtekintése és frissítése.

@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Wi-Fi
 Name[ar]=واي فاي
+Name[cs]=Wi-Fi
 Name[zh_CN]=Wi-Fi
 Name[pl]=Wi-Fi
 Name[hu]=Wi-Fi
@@ -11,6 +12,7 @@ Name[sv]=Wi-Fi
 Name[es]=Wi-Fi
 Comment=Wi-Fi connections and connection profiles.
 Comment[ar]=اتصالات واي فاي وملفات تعريف الاتصال.
+Comment[cs]=Wi-Fi připojení a profily.
 Comment[zh_CN]=Wi-Fi连接和配置文件
 Comment[hu]=Wi-Fi kapcsolatok és kapcsolódási profilok.
 Comment[pl]=Połączenia Wi-Fi i profile połączeń.
