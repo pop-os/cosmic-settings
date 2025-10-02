@@ -471,7 +471,6 @@ show-extended-input-sources = विस्तारित इनपुट स्
 
 keyboard-shortcuts = कीबोर्ड शॉर्टकट
     .desc = शॉर्टकट देखें और कस्टमाइज़ करें
-add-keybinding = कीबाइंडिंग जोड़ें
 cancel = रद्द करें
 command = कमांड
 custom = कस्टम

@@ -113,9 +113,6 @@ notifications = Уведомления
 
 ## Desktop: Options
 
-desktop-panel-options = Рабочий стол и панель
-    .desc = Действие кнопки Super, активные углы, настройки управления окнами.
-desktop-panels-and-applets = Панели рабочего стола и апплеты
 dock = Док
     .desc = Панель с закреплёнными приложениями.
 hot-corner = Активные углы
@@ -125,9 +122,6 @@ super-key = Клавиша Super
     .workspaces = Открывает рабочие места
     .applications = Открывает приложения
     .disable = Отключена
-top-panel = Верхняя панель
-    .workspaces = Отображать кнопку «Рабочие места»
-    .applications = Отображать кнопку «Приложения»
 window-controls = Элементы управления окнами
     .minimize = Отображать кнопку «Свернуть»
     .maximize = Отображать кнопку «Развернуть»
@@ -369,7 +363,6 @@ type-to-search = Введите для поиска…
 
 keyboard-shortcuts = Сочетания клавиш
     .desc = Просмотр и настройка сочетаний клавиш
-add-keybinding = Добавить привязку клавиш
 cancel = Отменить
 command = Команда
 custom = Пользовательские
@@ -523,8 +516,6 @@ gestures = Жесты
     .four-finger-up = Проведение четырьмя пальцами вверх
     .three-finger-any = Проведение тремя пальцами в любом направлении
 switch-between-windows = Переключение между окнами
-switch-to-next-workspace = Переход к следующему рабочему месту
-switch-to-prev-workspace = Переход к предыдущему рабочему месту
 open-application-library = Открыть библиотеку приложений
 open-workspaces-view = Открыть обзор рабочих мест
 

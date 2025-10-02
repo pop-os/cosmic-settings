@@ -523,7 +523,6 @@ show-extended-input-sources = Toon uitgebreide invoermethodes
 
 keyboard-shortcuts = Sneltoetsen
     .desc = Sneltoetsen bekijken en aanpassen
-add-keybinding = Sneltoets toevoegen
 cancel = Annuleren
 command = Commando
 custom = Aangepast

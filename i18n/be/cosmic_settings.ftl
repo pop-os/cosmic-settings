@@ -533,7 +533,6 @@ show-extended-input-sources = Паказаць пашыраныя крыніцу
 
 keyboard-shortcuts = Спалучэнні клавіш
     .desc = Паказаць і наладзіць спалучэнні
-add-keybinding = Дадаць спалучэнне клавіш
 cancel = Скасаваць
 command = Каманда
 custom = Карыстальніцкія

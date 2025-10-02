@@ -678,12 +678,6 @@ touchpad = Panel táctil
 
 ## Input: Gestures
 
-swiping = Deslizar
-    .four-finger-down = Deslizar con cuatro dedos hacia abajo
-    .four-finger-left = Deslizar con cuatro dedos hacia la izquierda
-    .four-finger-right = Deslizar con cuatro dedos hacia la derecha
-    .four-finger-up = Deslizar con cuatro dedos hacia arriba
-    .three-finger-any = Deslizar con tres dedos en cualquier dirección
 switch-workspaces = Cambiar espacios de trabajo
     .horizontal = Deslizar cuatro dedos a la izquierda/derecha
     .vertical = Deslizar cuatro dedos hacia arriba/abajo
