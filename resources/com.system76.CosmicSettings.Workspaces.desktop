@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Workspaces
 Name[ar]=مساحات العمل
+Name[cs]=Pracovní plochy
 Name[zh_CN]=工作区
 Name[pl]=Obszary robocze
 Name[hu]=Munkaterületek
@@ -10,6 +11,7 @@ Name[sv]=Arbetsytor
 Name[es]=Espacios de trabajo
 Comment=Workspace orientation and behavior.
 Comment[ar]=اتجاه وسلوك مساحة العمل.
+Comment[cs]=Chování a orientace pracovních ploch.
 Comment[zh_CN]=工作区方向和行为
 Comment[pl]=Kierunek i zachowanie obszarów roboczych.
 Comment[hu]=Munkaterületek tájolása és viselkedése.

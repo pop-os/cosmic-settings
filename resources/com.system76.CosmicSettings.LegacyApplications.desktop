@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=X11 Applications Compatibility
 Name[ar]=توافق تطبيقات اكس11
+Name[cs]=Kompatibilita X11 aplikací
 Name[zh_CN]=X11应用程序兼容性
 Name[hu]=X11 alkalmazások támogatása
 Name[pt]=Compatibilidade com aplicativos X11.
@@ -10,6 +11,7 @@ Name[sv]=X11 program kompatibilitet
 Name[es]=Compatibilidad para aplicaciones X11
 Comment=X11 Window system application scaling and Global shortcuts.
 Comment[ar]=توسيع نطاق تطبيق نظام النوافذ اكس11 والاختصارات العامة.
+Comment[cs]=Škálování a globální klávesové zkratky aplikací využívajících okenní systém X11.
 Comment[zh_CN]=X11窗口系统应用程序缩放和全局快捷键
 Comment[hu]=X11 ablakkezelő rendszer alkalmazásméretezés és globális billentyűparancsok.
 Comment[pt]=Dimensionamento de aplicativos com sistema de janelas X11 e atalhos globais.

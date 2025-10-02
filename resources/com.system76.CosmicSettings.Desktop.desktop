@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Desktop
 Name[ar]=سطح المكتب
+Name[cs]=Plocha
 Name[zh_CN]=桌面
 Name[pl]=Pulpit
 Name[hu]=Asztal
@@ -10,6 +11,7 @@ Name[sk]=Pracovná plocha
 Name[sv]=Skrivbord
 Name[es]=Escritorio
 Comment=
+Comment[cs]=Nastavení pracovní plochy, vzhledu a chování oken.
 Comment[sk]=Nastavenia pracovnej plochy, vzhľadu a správania okien
 Type=Settings
 Exec=cosmic-settings desktop

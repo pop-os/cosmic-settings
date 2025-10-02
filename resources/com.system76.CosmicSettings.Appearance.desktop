@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Appearance
 Name[ar]=المظهر
+Name[cs]=Vzhled
 Name[zh_CN]=外观
 Name[pl]=Wygląd
 Name[hu]=Megjelenés
@@ -12,6 +13,7 @@ Name[sv]=Utseende
 Name[es]=Apariencia
 Comment=Accent colors and theming.
 Comment[ar]=ألوان التمييز والسمات.
+Comment[cs]=Doplňkové barvy a témata.
 Comment[zh_CN]=强调色和个性化
 Comment[pl]=Kolory akcentów i styl.
 Comment[hu]=Kiemelő színek és téma.

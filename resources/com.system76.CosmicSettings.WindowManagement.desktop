@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Window management
 Name[ar]=إدارة النوافذ
+Name[cs]=Správa oken
 Name[zh_CN]=窗口管理
 Name[pl]=Zarządzanie oknami
 Name[hu]=Ablakkezelés
@@ -11,6 +12,7 @@ Name[sv]=Fönsterhantering
 Name[es]=Gestión de ventanas
 Comment=Super key action, window control options, and additional window tiling options.
 Comment[ar]=إجراء مفتاح Super، وخيارات التحكم في النوافذ، وخيارات تبليط نوافذ إضافية.
+Comment[cs]=Akce klávesy Super, možnosti ovládání oken a další možnosti dlaždicového režimu oken.
 Comment[zh_CN]=Super键操作、窗口控制选项和额外的窗口平铺选项
 Comment[pl]=Działanie klawisza Super, opcje kontroli oknami i dodatkowe ustawienia kafelkowania okien.
 Comment[hu]=Super billentyű funkció, ablakkezelési és csempézési beállítások.

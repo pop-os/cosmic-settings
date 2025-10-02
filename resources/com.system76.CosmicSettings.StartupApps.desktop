@@ -1,9 +1,11 @@
 [Desktop Entry]
 Name=Startup applications
 Name[ar]=تطبيقات بدء التشغيل
+Name[cs]=Automatické spouštění aplikací
 Name[sv]=Uppstartsprogram
 Comment=Configure applications which run on login.
 Comment[ar]=اضبط التطبيقات التي تعمل عند الولوج.
+Comment[cs]=Nastavte aplikace, které se spustí při přihlášení.
 Comment[sv]=Konfigurera program som körs vid inloggning.
 Type=Settings
 Exec=cosmic-settings startup-apps

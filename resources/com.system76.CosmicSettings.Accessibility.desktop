@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Accessibility
 Name[ar]=الإتاحة
+Name[cs]=Přístupnost
 Name[zh_CN]=辅助功能
 Name[hu]=Akadálymentesség
 Name[pt]=Acessibilidade
@@ -11,6 +12,7 @@ Name[sv]=Tillgänglighet
 Name[es]=Accesibilidad
 Comment=Accessibility settings.
 Comment[ar]=إعدادات الإتاحة
+Comment[cs]=Nastavení přístupnosti.
 Comment[zh_CN]=辅助功能设置
 Comment[hu]=Akadálymentességi beállítások.
 Comment[pt]=Configurações de acessibilidade.

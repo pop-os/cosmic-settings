@@ -9,11 +9,13 @@
 
   <action id="com.system76.CosmicSettings.Users.Admin">
     <description>Manage user accounts</description>
+    <description xml:lang="cs">Správa uživatelských účtů</description>
     <description xml:lang="pt_BR">Gerenciar contas de usuário</description>
     <description xml:lang="pt">Gerenciar contas de usuário</description>
     <description xml:lang="nl">Gebruikersaccount bewerken</description>
     <description xml:lang="af">Bestuur die gebruikersrekening</description>
     <message>Authentication is required to change user data</message>
+    <message xml:lang="cs">Je vyžadováno ověření pro změnu uživatelských dat</message>
     <message xml:lang="nl">Authenticatie is vereist om gebruikersgegevens te wijzigen</message>
     <message xml:lang="af">Verifikasie is nodig om gebruikersdata te verander</message>
     <message xml:lang="pt_BR">Autenticação é necessária para alterar dados de usuário</message>

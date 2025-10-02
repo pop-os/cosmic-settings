@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Network & Wireless
 Name[ar]=الشبكة والاتصالات اللاسلكية 
+Name[cs]=Síť a Wi-Fi
 Name[zh_CN]=网络和无线
 Name[pl]=Sieć i połączenia bezprzewodowe
 Name[hu]=Hálózat és Wi-Fi
@@ -11,6 +12,7 @@ Name[sv]=Nätverk & Wi-Fi
 Name[es]=Red e inalámbrico
 Comment=Manage network connections
 Comment[ar]=أدر اتصالات الشبكة
+Comment[cs]=Správa síťových připojení.
 Comment[zh_CN]=管理网络连接
 Comment[pl]=Zarządzaj połączeniami sieciowymi
 Comment[hu]=Hálózati kapcsolatok kezelése

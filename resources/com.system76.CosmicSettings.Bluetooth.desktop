@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Bluetooth
 Name[ar]=البلوتوث
+Name[cs]=Bluetooth
 Name[zh_CN]=蓝牙
 Name[pl]=Bluetooth
 Name[hu]=Bluetooth
@@ -10,6 +11,7 @@ Name[sv]=Bluetooth
 Name[es]=Bluetooth
 Comment=Manage Bluetooth devices
 Comment[ar]=أدر أجهزة البلوتوث
+Comment[cs]=Správa Bluetooth zařízení.
 Comment[zh_CN]=管理蓝牙设备
 Comment[pl]=Zarządzaj urządzeniami Bluetooth
 Comment[hu]=Bluetooth-eszközök kezelése
