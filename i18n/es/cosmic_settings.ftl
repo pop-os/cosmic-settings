@@ -476,7 +476,7 @@ power-saving = Opciones de ahorro de energía
 
 ## Input
 
-acceleration-desc = Ajusta automáticamente la sensibilidad según la velocidad
+acceleration-desc = Ajusta automáticamente la sensibilidad según la velocidad.
 disable-while-typing = Desactivar mientras se escribe
 input-devices = Dispositivos de entrada
     .desc = Dispositivos de entrada
@@ -582,6 +582,7 @@ nav-shortcuts = Navegación
 manage-windows = Gestionar ventanas
     .close = Cerrar ventana
     .maximize = Maximizar ventana
+    .fullscreen = Mostrar ventana en pantalla completa
     .minimize = Minimizar ventana
     .resize-inwards = Redimensionar ventana hacia adentro
     .resize-outwards = Redimensionar ventana hacia afuera
@@ -631,8 +632,10 @@ system-shortcut = Sistema
     .play-pause = Reproducir/Pausar
     .play-next = Siguiente pista
     .play-prev = Pista anterior
+    .poweroff = Apagar
     .screenshot = Tomar una captura de pantalla
     .terminal = Abrir la terminal
+    .touchpad-toggle = Habilitar/deshabilitar panel táctil
     .volume-lower = Disminuir el volumen de la salida de audio
     .volume-raise = Aumentar el volumen de la salida de audio
     .web-browser = Abrir el navegador web
@@ -665,9 +668,9 @@ click-behavior = Comportamiento del Clic
     .click-finger = Clic secundario con dos dedos y clic medio con tres dedos
     .button-areas = Clic secundario en la esquina inferior derecha y clic medio en el centro inferior
 pinch-to-zoom = Pellizcar para ampliar
-    .desc = Usar dos dedos para ampliar el contenido, para aplicaciones que soportan zoom
+    .desc = Usar dos dedos para ampliar el contenido, para aplicaciones que soportan zoom.
 tap-to-click = Tocar para hacer clic
-    .desc = Habilita el toque con un solo dedo para el clic primario, el toque con dos dedos para el clic secundario y el toque con tres dedos para el clic medio
+    .desc = Habilita el toque con un solo dedo para el clic primario, el toque con dos dedos para el clic secundario y el toque con tres dedos para el clic medio.
 touchpad = Panel táctil
     .acceleration = Habilitar aceleración del panel táctil
     .desc = Velocidad del panel táctil, opciones de clic, gestos.
@@ -708,8 +711,8 @@ time-format = Formato de fecha y hora
     .saturday = Sábado
     .sunday = Domingo
     .monday = Lunes
-time-region = Región e Idioma
-    .desc = Cambiar formato de fechas, horas y números según tu región
+time-region = Región e idioma
+    .desc = Cambiar formato de fechas, horas y números según tu región.
 formatting = Formato
     .dates = Fechas
     .time = Horarios
@@ -749,7 +752,6 @@ startup-apps = Aplicaciones de inicio
     .desc = Configure aplicaciones que se ejecutan al iniciar sesión.
     .add = Añadir aplicación
     .user = Aplicaciones específicas del usuario
-    .user-description = Estas aplicaciones se ejecutarán cuando inicies sesión con tu usuario actual.
     .none = No se han añadido aplicaciones de inicio
     .remove-dialog-title = Eliminar { $name }?
     .remove-dialog-description = ¿Estás seguro que quieres eliminarla como aplicación de inicio?
@@ -803,7 +805,7 @@ about-related = Configuraciones relacionadas
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Detalles del firmware
+    .desc = Detalles del firmware.
 
 ## System: Users
 
@@ -818,6 +820,6 @@ add-user = Añadir usuario
 change-password = Cambiar la contraseña
 remove-user = Eliminar usuario
 full-name = Nombre completo
-invalid-username = Nombre de usuario inválido
+invalid-username = Nombre de usuario inválido.
 password-mismatch = Las contraseñas no coinciden.
 save = Guardar
