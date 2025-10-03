@@ -685,6 +685,7 @@ system-shortcut = System
     .app-library = Open the app library
     .brightness-down = Decrease display brightness
     .brightness-up = Increase display brightness
+    .display-toggle = Toggle internal display
     .home-folder = Open home folder
     .keyboard-brightness-down = Decrease keyboard brightness
     .keyboard-brightness-up = Increase keyboard brightness

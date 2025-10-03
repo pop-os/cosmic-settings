@@ -564,6 +564,7 @@ fn all_system_actions() -> &'static [Action] {
         Action::System(SystemAction::AppLibrary),
         Action::System(SystemAction::BrightnessDown),
         Action::System(SystemAction::BrightnessUp),
+        Action::System(SystemAction::DisplayToggle),
         Action::System(SystemAction::HomeFolder),
         Action::System(SystemAction::KeyboardBrightnessDown),
         Action::System(SystemAction::KeyboardBrightnessUp),
@@ -722,6 +723,7 @@ fn localize_action(action: &Action) -> String {
                 fl!("system-shortcut", "window-switcher-previous")
             }
             SystemAction::WorkspaceOverview => fl!("system-shortcut", "workspace-overview"),
+            SystemAction::DisplayToggle => fl!("system-shortcut", "display-toggle"),
         },
 
         Action::ZoomIn => fl!("zoom-in"),

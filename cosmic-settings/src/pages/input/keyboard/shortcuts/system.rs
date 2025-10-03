@@ -93,6 +93,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 pub const fn actions() -> &'static [Action] {
     &[
         Action::System(SystemAction::AppLibrary),
+        Action::System(SystemAction::DisplayToggle),
         Action::System(SystemAction::Launcher),
         Action::System(SystemAction::WorkspaceOverview),
         Action::System(SystemAction::WindowSwitcher),
