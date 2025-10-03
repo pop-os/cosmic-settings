@@ -484,7 +484,7 @@ save = Spara
 
 ## Ström
 
-power = Ström & Batteri
+power = Ström & batteri
     .desc = Hantera ströminställningar
 battery = Batteri
     .minute =
