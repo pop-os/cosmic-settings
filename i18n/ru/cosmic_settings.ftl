@@ -521,7 +521,7 @@ open-workspaces-view = Открыть обзор рабочих мест
 
 ## Power
 
-power = Питание и батарея
+power = Питание и аккумулятор
     .desc = Управление настройками электропитания
 power-mode = Режим питания
     .performance = Высокая производительность
@@ -553,7 +553,7 @@ connecting = Подключение…
 disconnect = Отключить
 forget = Забыть
 known-networks = Известные сети
-network-and-wireless = Проводные и беспроводные подключения
+network-and-wireless = Сеть и Wi-Fi
 no-networks = Сети не обнаружены.
 no-vpn = Нет доступных VPN-соединений.
 password = Пароль
@@ -561,7 +561,7 @@ password-confirm = Подтвердите пароль
 settings = Параметры
 username = Имя пользователя
 visible-networks = Видимые сети
-identity = Идентификатор
+identity = Сетевая идентичность
 auth-dialog = Требуется авторизация
     .vpn-description = Введите требуемые сервисом VPN имя пользователя и пароль.
     .wifi-description = Введите пароль или ключ шифрования. Вы также можете подключиться, нажав кнопку «WPS» на роутере.
