@@ -171,15 +171,19 @@ display = ディスプレイ
     .scale = スケーリング
     .additional-scale-options = 追加のスケーリングオプション
 mirroring = ミラーリング
-    .id = { $id }をミラーリングしています
+    .id = ミラーリング { $id }
     .dont = ミラーリングしない
-    .mirror = { $display }をミラーリングする
+    .mirror = { $display }をミラーリング
     .project =
         { $display ->
-            [all] 全てのディスプレイ
-           *[other] { $display }
-        }に投影する
-    .project-count = 他の{ $count }つのディスプレイに投影しています
+            [all] すべてのディスプレイに投影
+           *[other] { $display }に投影
+        }
+    .project-count =
+        { $count }台の{ $count ->
+            [1] ディスプレイ
+           *[other] ディスプレイ
+        }に投影中
 night-light = ナイトライト
     .auto = 自動的（日の入りから日の出まで）
     .desc = 暖色で青い光を減らします。
@@ -195,11 +199,15 @@ dialog = ダイヤログ
     .keep-changes = 保存
     .change-prompt = { $time }秒後に設定は自動的に元に戻ります。
     .revert-settings = 元に戻す
-legacy-app-scaling = X11アプリケーションのスケーリング
-    .scaled-by-system = X11アプリを全てスケーリングする
-    .system-description = HiDPI画面はX11アプリケーションがボケに見えます。
-    .scaled-natively = X11アプリをネーティブの解像度で表現する
-    .native-description = スケーリングをサポートしていないX11アプリケーションはHiDPI画面に小さく見えます。ゲームが完全に解像度を使用できるように有効にして下さい。
+legacy-app-scaling = X11 ウィンドウシステム アプリケーションのスケーリング
+    .scaled-gaming = ゲームとフルスクリーンアプリに最適化
+    .gaming-description = X11 アプリケーションは、Wayland アプリと比較してわずかに大きく/小さく表示される場合があります。
+    .scaled-applications = 一般的なアプリケーションに最適化
+    .applications-description = ゲームやフルスクリーン X11 アプリは、ディスプレイ解像度に一致しない場合があります。
+    .scaled-compatibility = 最大限の互換性モード
+    .compatibility-description = X11 アプリケーションは、HiDPI 画面でぼやけて表示される場合があります。
+    .preferred-display = ゲームとフルスクリーン X11 アプリケーションの優先ディスプレイ
+    .no-display = なし
 
 ## Desktop: Notifications
 
@@ -473,16 +481,29 @@ open-workspaces-view = ワークスペースのか概要を開く
 
 power = 電源とバッテリー
     .desc = 電源設定を管理
-battery = Battery
-    .minute = { $value }分
-    .hour = { $value }時間
-    .day = { $value }日
-    .less-than-minute = 一分以下
+battery = バッテリー
+    .minute =
+        { $value } { $value ->
+            [one] 分
+           *[other] 分
+        }
+    .hour =
+        { $value } { $value ->
+            [one] 分
+           *[other] 分
+        }
+    .day =
+        { $value } { $value ->
+            [one] 日
+           *[other] 日
+        }
+    .less-than-minute = 1分未満
+    .and = と
     .remaining-time =
-        { $action ->
+        { $time }まで{ $action ->
             [full] 充電完了
            *[other] 電池切れ
-        }まで{ $time }
+        }
 connected-devices = 接続されたデバイス
     .unknown = 不明なデバイス
 power-mode = 電源モード
@@ -562,3 +583,224 @@ add-language = 言語の追加
     .context = 言語の追加
 administrator = 管理者
     .desc = 管理者は全てのユーザー設定を変更でき、ユーザーの追加と削除が出来ます。
+vpn-error = VPNエラー
+    .config = VPN設定の追加に失敗しました
+    .connect = VPNへの接続に失敗しました
+    .connection-editor = 接続エディタに失敗しました
+    .connection-settings = アクティブな接続の設定取得に失敗しました
+    .updating-state = ネットワークマネージャの状態更新に失敗しました
+    .wireguard-config-path = WireGuard設定ファイルのパスが無効です
+    .wireguard-config-path-desc = 選択したファイルはローカルファイルシステム上にある必要があります。
+    .wireguard-device = WireGuardデバイスの作成に失敗しました
+    .with-password =
+        nmcliによるVPNの{ $field ->
+           *[username] ユーザー名
+            [password] パスワード
+            [password-flags] パスワードフラグ
+        }設定に失敗しました
+bluetooth-confirm-pin = Bluetooth PINの確認
+    .description = { $device }に表示されているPINと一致していることを確認してください
+magnifier = 拡大鏡
+    .controls =
+        または、次のショートカットを使用します: { $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_in }で拡大、
+        }{ $zoom_out ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_out }で縮小、
+        }
+        マウスでSuper + スクロール
+    .scroll_controls = マウスまたはタッチパッドでSuper + スクロールを有効にする
+    .show_overlay = 拡大鏡オーバーレイを表示
+    .increment = ズームの増加量
+    .signin = サインイン時に拡大鏡を開始
+    .applet = パネルのアプレットで拡大鏡のオン/オフを切り替えます
+    .movement = 拡大表示の移動
+    .continuous = ポインターに合わせて継続的に
+    .onedge = ポインターが端に達したとき
+    .centered = ポインターを中心に保つ
+color-filter = カラーフィルターのタイプ
+    .unknown = 不明なフィルターがアクティブです
+    .greyscale = グレースケール
+    .deuteranopia = 緑/赤（緑色弱、Deuteranopia）
+    .protanopia = 赤/緑（赤色弱、Protanopia）
+    .tritanopia = 青/黄（青色弱、Tritanopia）
+never = しない
+window-management-appearance = ウィンドウ管理
+    .active-hint = アクティブウィンドウのヒントのサイズ
+    .gaps = タイル化されたウィンドウの周囲の隙間
+icons-and-toolkit = アイコンとツールキットのテーマ設定
+edge-gravity = フローティングウィンドウが近くの端に引き寄せられる
+focus-navigation = フォーカスナビゲーション
+    .focus-follows-cursor = フォーカスがカーソルに追従
+    .focus-follows-cursor-delay = カーソル追従の遅延（ミリ秒）
+    .cursor-follows-focus = カーソルがフォーカスに追従
+keyboard-numlock-boot = Numlock
+    .boot-state = 起動時の状態
+    .last-boot = 最終起動
+    .on = オン
+    .off = オフ
+    .set = Numlockの起動時の状態を設定
+input-source-switch = キーボードの言語入力ソースを切り替えます
+migrate-workspace-prev = ワークスペースを前の出力に移動
+migrate-workspace-next = ワークスペースを次の出力に移動
+migrate-workspace =
+    ワークスペースを{ $direction ->
+       *[down] 下
+        [left] 左
+        [right] 右
+        [up] 上
+    }の出力に移動
+system-controls = システム操作
+type-key-combination = キーの組み合わせを入力
+custom-shortcuts = スタムショートカット
+    .add = ショートカットを追加
+    .context = カスタムショートカットを追加
+    .none = カスタムショートカットはありません
+nav-shortcuts = ナビゲーション
+    .prev-output = 前の出力にフォーカス
+    .next-output = 次の出力にフォーカス
+    .last-workspace = 最後のワークスペースにフォーカス
+    .prev-workspace = 前のワークスペースにフォーカス
+    .next-workspace = 次のワークスペースにフォーカス
+    .focus =
+        ウィンドウにフォーカスを{ $direction ->
+           *[down] 下
+            [in] 内側
+            [left] 左
+            [out] 外側
+            [right] 右
+            [up] 上
+        }に移動
+    .output =
+        出力を{ $direction ->
+           *[down] 下
+            [left] 左
+            [right] 右
+            [up] 上
+        }に切り替え
+    .workspace = ワークスペース { $num }に切り替え
+manage-windows = ウィンドウの管理
+    .close = ウィンドウを閉じる
+    .maximize = ウィンドウを最大化
+    .fullscreen = ウィンドウを全画面表示
+    .minimize = ウィンドウを最小化
+    .resize-inwards = ウィンドウを内側にリサイズ
+    .resize-outwards = ウィンドウを外側にリサイズ
+    .toggle-sticky = ウィンドウをスティッキーに切り替え
+move-windows = ウィンドウの移動
+    .direction =
+        ウィンドウを{ $direction ->
+           *[down] 下
+            [left] 左
+            [right] 右
+            [up] 上
+        }に移動
+    .display =
+        ウィンドウをモニター{ $direction ->
+           *[down] 下
+            [left] 左
+            [right] 右
+            [up] 上
+        }に移動
+    .workspace =
+        ウィンドウをワークスペース{ $direction ->
+           *[below] 下
+            [left] 左
+            [right] 右
+            [above] 上
+        }に移動
+    .workspace-num = ウィンドウをワークスペース { $num }へ移動
+    .prev-workspace = ウィンドウを前のワークスペースへ移動
+    .next-workspace = ウィンドウを次のワークスペースへ移動
+    .last-workspace = ウィンドウを最後のワークスペースへ移動
+    .next-display = ウィンドウを次のディスプレイへ移動
+    .prev-display = ウィンドウを前のディスプレイへ移動
+    .send-to-prev-workspace = ウィンドウを前のワークスペースへ移動
+    .send-to-next-workspace = ウィンドウを次のワークスペースへ移動
+system-shortcut = システム
+    .app-library = アプリケーションライブラリを開く
+    .brightness-down = ディスプレイの輝度を下げる
+    .brightness-up = ディスプレイの輝度を上げる
+    .home-folder = ホームフォルダを開く
+    .keyboard-brightness-down = キーボードの輝度を下げる
+    .keyboard-brightness-up = キーボードの輝度を上げる
+    .launcher = ランチャーを開く
+    .log-out = ログアウト
+    .lock-screen = 画面をロック
+    .mute = 音声出力をミュート
+    .mute-mic = マイク入力をミュート
+    .play-pause = 再生/一時停止
+    .play-next = 次のトラック
+    .play-prev = 前のトラック
+    .poweroff = 電源オフ
+    .screenshot = スクリーンショットを撮る
+    .terminal = ターミナルを開く
+    .touchpad-toggle = タッチパッドを切り替え
+    .volume-lower = 音声出力の音量を下げる
+    .volume-raise = 音声出力の音量を上げる
+    .web-browser = ウェブブラウザを開く
+    .window-switcher = 開いているウィンドウ間を切り替える
+    .window-switcher-previous = 開いているウィンドウ間を逆順に切り替える
+    .workspace-overview = ワークスペースの概要を開く
+window-tiling = ウィンドウタイリング
+    .horizontal = 水平方向を設定
+    .vertical = 垂直方向を設定
+    .swap-window = ウィンドウを入れ替える
+    .toggle-tiling = ウィンドウタイリングを切り替える
+    .toggle-stacking = ウィンドウスタッキングを切り替える
+    .toggle-floating = ウィンドウフローティングを切り替える
+    .toggle-orientation = 方向を切り替える
+replace-shortcut-dialog = ショートカットを置き換えますか？
+    .desc = { $shortcut }は{ $name }によって使用されています。置き換えた場合、{ $name }は無効になります。
+gestures = ジェスチャー
+    .four-finger-down = 4本指で下にスワイプ
+    .four-finger-left = 4本指で左にスワイプ
+    .four-finger-right = 4本指で右にスワイプ
+    .four-finger-up = 4本指で上にスワイプ
+    .three-finger-any = 3本指で任意の方向にスワイプ
+switch-workspaces = ワークスペースを切り替え
+    .horizontal = 4本指で左/右にスワイプ
+    .vertical = 4本指で上/下にスワイプ
+formatting = 書式設定
+    .dates = 日付
+    .time = 時刻
+    .date-and-time = 日付と時刻
+    .numbers = 数値
+    .measurement = 測定単位
+    .paper = 用紙
+preferred-languages = 優先する言語
+    .desc = 言語の順序によってユーザーインターフェースで使用される言語が決まります。変更は次回のログイン時に適用されます。
+default-apps = 標準アプリケーション
+    .desc = 標準のウェブブラウザ、メールクライアント、ファイルマネージャ、その他のアプリケーション。
+    .web-browser = ウェブブラウザ
+    .file-manager = ファイルマネージャ
+    .mail-client = メールクライアント
+    .music = 音楽
+    .video = ビデオ
+    .photos = 写真
+    .calendar = カレンダー
+    .terminal = ターミナル
+    .other-associations = その他の関連付け
+    .text-editor = テキストエディタ
+startup-apps = スタートアップアプリケーション
+    .desc = ログイン時に実行されるアプリケーションを設定します。
+    .add = アプリを追加
+    .user = ログイン時に起動されるアプリケーション
+    .none = スタートアップアプリケーションは追加されていません
+    .remove-dialog-title = { $name }を削除しますか？
+    .remove-dialog-description = このスタートアップアプリケーションを削除してもよろしいですか？
+    .search-for-application = アプリケーションを検索
+legacy-applications = X11アプリケーション互換性
+    .desc = X11ウィンドウシステムのアプリケーションスケーリングとグローバルショートカット。
+legacy-app-global-shortcuts = X11アプリケーションでのグローバルショートカット
+    .desc = グローバルショートカットにより、アプリケーション内で実行されたキーストロークやマウスボタンイベントを、プッシュツートークやプッシュツーミュートなどの機能のために、他のアプリケーションが認識できるようになります。デフォルトでは、機密情報を含むキーボードおよびマウスイベントを他のアプリケーションが監視できないようにするため、X11アプリケーションではこの機能は無効になっています。
+    .none = キーなし
+    .modifiers = 修飾キー (Super、Shift、Control、Alt)
+    .combination = 修飾キー（Super、Control、Alt）が押されている間のすべてのキー
+    .all = すべてのキー
+    .mouse = X11アプリケーションでのマウスボタンイベント
