@@ -32,7 +32,7 @@ use std::{borrow::Cow, fmt::Debug, mem, sync::LazyLock};
 use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, Section, section};
-use freedesktop_desktop_entry::DesktopEntry;
+use freedesktop_desktop_entry::{unicase::UniCase, DesktopEntry};
 use slotmap::{Key, SlotMap};
 use tracing::error;
 
@@ -553,11 +553,11 @@ pub struct Applet<'a> {
 impl Applet<'_> {
     #[must_use]
     pub fn matches(&self, query: &str) -> bool {
-        let query = &query.to_lowercase();
+        let query = query.to_ascii_lowercase();
 
-        self.name.as_ref().to_lowercase().contains(query)
-            || self.description.as_ref().to_lowercase().contains(query)
-            || self.id.as_ref().to_lowercase().contains(query)
+        [self.name.as_ref(), self.description.as_ref(), self.id.as_ref()]
+            .iter()
+            .any(|field| field.to_ascii_lowercase().contains(&query))
     }
 }
 
