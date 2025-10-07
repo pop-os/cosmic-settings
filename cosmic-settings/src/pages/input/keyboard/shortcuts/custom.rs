@@ -311,6 +311,9 @@ impl Page {
                         .is_some_and(|k| k == keycode)
                     && self.add_shortcut.binding.modifiers
                         != cosmic_settings_config::shortcuts::Modifiers::new()
+                    || self.add_shortcut.binding.key.is_some_and(|key| {
+                        key.is_misc_function_key() || matches!(key.raw(), 0x10080001..=0x1008FFFF)
+                    })
                 {
                     // XX for now avoid applying the keycode
                     let binding = Binding {

@@ -1756,7 +1756,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-daemon#8616c40d235164779cd3f2ceec1fe9b2b4aceb40"
+source = "git+https://github.com/pop-os/cosmic-settings-daemon?branch=lowercase#e76a492d37d10da380f7054c2c30fc3f2528c532"
 dependencies = [
  "cosmic-config",
  "ron 0.11.0",
@@ -1777,7 +1777,7 @@ dependencies = [
 [[package]]
 name = "cosmic-settings-daemon-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-daemon#8616c40d235164779cd3f2ceec1fe9b2b4aceb40"
+source = "git+https://github.com/pop-os/cosmic-settings-daemon?branch=lowercase#e76a492d37d10da380f7054c2c30fc3f2528c532"
 dependencies = [
  "cosmic-config",
  "serde",
