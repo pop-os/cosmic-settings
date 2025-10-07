@@ -564,6 +564,10 @@ impl Model {
                             {
                                 if shortcut.pending.modifiers
                                     != cosmic_settings_config::shortcuts::Modifiers::new()
+                                    || shortcut.pending.key.is_some_and(|key| {
+                                        key.is_misc_function_key()
+                                            || matches!(key.raw(), 0x10080001..=0x1008FFFF)
+                                    })
                                 {
                                     shortcut.input = shortcut.pending.to_string();
                                     // XX for now avoid applying the keycode
