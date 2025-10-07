@@ -18,7 +18,7 @@ add-network = أضِف شبكة
 add-vpn = أضِف شبكة خاصة افتراضية
 airplane-on = وضع الطائرة مفعَّل.
 cable-unplugged = الكبل مفصول
-connect = اتصل
+connect = توصيل
 connected = متَّصل
 connecting = يتَّصل…
 disconnect = اقطع الاتِّصال
@@ -188,22 +188,14 @@ fit-to-screen = ملائمة للشاشة
 open-new-folder = افتح مجلدًا جديدًا
 recent-folders = المجلدات الأخيرة
 x-minutes =
-    { $number ->
-        [0] أقل من دقيقة
-        [1] دقيقة واحدة
-        [2] دقيقتان
-        [few] { $number } دقائق
-        [many] { $number } دقيقة
-       *[other] { $number } دقيقة
+    { $number } { $number ->
+        [one] دقيقة
+       *[other] دقائق
     }
 x-hours =
-    { $number ->
-        [0] أقل من دقيقة
-        [1] دقيقة واحدة
-        [2] دقيقتان
-        [few] { $number } دقائق
-        [many] { $number } دقيقة
-       *[other] { $number } دقيقة
+    { $number } { $number ->
+        [one] ساعة
+       *[other] ساعات
     }
 
 ## Desktop: Appearance
@@ -380,23 +372,19 @@ display = الشاشات
     .resolution = الميز
     .scale = المقياس
     .additional-scale-options = خيارات مقياس إضافية
-mirroring = المرآوية
-    .id = يعكس { $id }
-    .dont = لا تعكس
-    .mirror = اعكس { $display }
+mirroring = النسخ المتطابق
+    .id = النسخ المتطابق { $id }
+    .dont = عدم النسخ المتطابق
+    .mirror = النسخ المتطابق { $display }
     .project =
-        اعرض إلى { $display ->
-            [all] كل الشاشات
+        مشروع إلى { $display ->
+            [all] جميع الشاشات
            *[other] { $display }
         }
     .project-count =
-        يعرض إلى { $count ->
-            [0] لا شاشات
-            [1] شاشة واحدة أخرى
-            [2] شاشتين أخرتين
-            [few] { $count } شاشات أخرى
-            [many] { $count } شاشة أخرى
-           *[other] { $count } شاشة أخرى
+        مشروع إلى { $count } آخر { $count ->
+            [1] شاشة
+           *[other] شاشات
         }
 night-light = الإضاءة الليلية
     .auto = آلي (من شروق الشمس إلى مغربها)
@@ -413,19 +401,11 @@ vrr = معدّل التحديث المتغير
     .disabled = معطَّل
 scheduling = الجدولة
     .manual = جدولة يدوية
-dialog = الحواري
-    .title = أبقي هذه الإعدادات؟
-    .keep-changes = أبقِ الإعدادات
-    .change-prompt =
-        سترتد الإعدادات خلال { $time ->
-            [0] أقل من ثانية
-            [1] ثانية واحدة
-            [2] ثانيتين
-            [few] { $time } ثواني
-            [many] { $time } ثانية
-           *[other] { $time } ثانية
-        }.
-    .revert-settings = استرد الإعدادات
+dialog = حوار
+    .title = هل تريد الاحتفاظ بإعدادات العرض هذه؟
+    .keep-changes = الاحتفاظ بالتغييرات
+    .change-prompt = سيتم التراجع عن تغييرات الإعدادات تلقائيًا في غضون { $time } ثانية.
+    .revert-settings = التراجع عن الإعدادات
 
 ## Sound
 
@@ -455,41 +435,29 @@ profile = ملف التعريف
 ## Power
 
 power = الطاقة والبطارية
-    .desc = أدر إعدادات الطاقة
+    .desc = إدارة إعدادات الطاقة
 battery = البطارية
     .minute =
-        { $value ->
-            [zero] أقل من دقيقة
-            [one] دقيقة واحدة
-            [two] دقيقتان
-            [few] { $value } دقائق
-            [many] { $value } دقيقة
-           *[other] { $value } دقيقة
+        { $value } { $value ->
+            [one] minute
+           *[other] minutes
         }
     .hour =
-        { $value ->
-            [zero] أقل من ساعة
-            [one] ساعة واحدة
-            [two] ساعتان
-            [few] { $value } ساعات
-            [many] { $value } ساعة
-           *[other] { $value } ساعة
+        { $value } { $value ->
+            [one] hour
+           *[other] hours
         }
     .day =
-        { $value ->
-            [zero] أقل من يوم
-            [one] يوم واحد
-            [two] يومان
-            [few] { $value } أيام
-            [many] { $value } يومًا
-           *[other] { $value } يوم
+        { $value } { $value ->
+            [one] day
+           *[other] days
         }
     .less-than-minute = أقل من دقيقة
     .and = و
     .remaining-time =
         { $time } حتى { $action ->
-            [full] تمتلئ
-           *[other] تفرغ
+            [full] ممتلئة
+           *[other] فارغة
         }
 connected-devices = الأجهزة المتَّصلة
     .unknown = جهاز مجهول

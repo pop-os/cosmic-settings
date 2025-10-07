@@ -636,7 +636,7 @@ manage-windows = Hantera fönster
     .minimize = Minimera fönster
     .resize-inwards = Ändra storlek på fönstret inåt
     .resize-outwards = Ändra storlek på fönstret utåt
-    .toggle-sticky = Växla klibbigt fönster
+    .toggle-sticky = Växla klistrigt fönster
 move-windows = Flytta fönster
     .direction =
         Flytta fönster { $direction ->
