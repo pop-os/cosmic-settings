@@ -717,6 +717,7 @@ system-shortcut = Systém
     .app-library = Otevřít knihovnu aplikací
     .brightness-down = Snížit jas displeje
     .brightness-up = Zvýšit jas displeje
+    .display-toggle = Přepnout interní displej
     .home-folder = Otevřít domovskou složku
     .keyboard-brightness-down = Snížit jas klávesnice
     .keyboard-brightness-up = Zvýšit jas klávesnice

@@ -454,6 +454,7 @@ system-shortcut = Системные
     .app-library = Открыть библиотеку приложений
     .brightness-down = Уменьшить яркость экрана
     .brightness-up = Увеличить яркость экрана
+    .display-toggle = Внутренний экран
     .home-folder = Открыть домашнюю папку
     .keyboard-brightness-down = Уменьшить яркость клавиатуры
     .keyboard-brightness-up = Увеличить яркость клавиатуры

@@ -436,6 +436,7 @@ system-shortcut = Sistema
     .app-library = Abrir a biblioteca de aplicações
     .brightness-down = Diminuir o brilho do ecrã
     .brightness-up = Aumentar o brilho do ecrã
+    .display-toggle = Ativar o ecrã interno
     .home-folder = Abrir pasta pessoal
     .keyboard-brightness-down = Diminuir o brilho do teclado
     .keyboard-brightness-up = Aumentar o brilho do teclado

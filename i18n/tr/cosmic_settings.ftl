@@ -620,6 +620,7 @@ system-shortcut = Sistem
     .app-library = Uygulama kütüphanesini aç
     .brightness-down = Ekran parlaklığını azalt
     .brightness-up = Ekran parlaklığını arttır
+    .display-toggle = Dahili ekranı aç/kapat
     .home-folder = Ev dizinini aç
     .keyboard-brightness-down = Klavye parlaklığını azalt
     .keyboard-brightness-up = Klavye parlaklığını arttır
