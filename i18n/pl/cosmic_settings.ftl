@@ -636,6 +636,7 @@ system-shortcut = System
     .app-library = Otwórz bibliotekę aplikacji
     .brightness-down = Zmniejsz jasność wyświetlacza
     .brightness-up = Zwiększ jasność wyświetlacza
+    .display-toggle = Przełącznik wewnętrznego wyświetlacza
     .home-folder = Otwórz katalog domowy
     .keyboard-brightness-down = Zmniejsz jasność klawiatury
     .keyboard-brightness-up = Zwiększ jasność klawiatury

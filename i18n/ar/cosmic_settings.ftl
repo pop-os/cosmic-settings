@@ -648,6 +648,7 @@ system-shortcut = النظام
     .app-library = فتح مكتبة التطبيقات
     .brightness-down = تقليل سطوع الشاشة
     .brightness-up = زيادة سطوع الشاشة
+    .display-toggle = بدّل العرض الداخلي
     .home-folder = فتح مجلد المنزل
     .keyboard-brightness-down = تقليل سطوع لوحة المفاتيح
     .keyboard-brightness-up = زيادة سطوع لوح المفاتيح

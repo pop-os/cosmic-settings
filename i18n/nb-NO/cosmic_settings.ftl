@@ -206,3 +206,66 @@ about = Om
 system = System og Kontoer
 window-management = Vinduhåndtering
     .desc = Handling for Super-tasten, vinduskontroll og ekstra alternativer for vinduorganisering.
+power = Strøm og batteri
+    .desc = Administrer strøminnstillinger
+bluetooth = Bluetooth
+    .desc = Administrer Bluetooth-enheter
+    .status = Dette systemet er synlig som { $aliases } mens Bluetooth-innstillingene er åpne.
+    .connected = Tilkoblet
+    .connecting = Kobler til
+    .disconnecting = Kobler fra
+    .connect = Koble til
+    .disconnect = Koble fra
+    .forget = Glem
+    .dbus-error = Det oppsto en feil under kommunikasjon med DBus: { $why }
+    .disabled = Bluetooth-tjenesten er deaktivert
+    .inactive = Bluetooth-tjenesten er ikke aktiv
+    .unknown = Bluetooth-tjenesten kunne ikke aktiveres. Er BlueZ installert?
+magnifier = Forstørrelsesglass
+    .controls =
+        Eller bruk disse snarveiene: { $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_in } for å zoome inn,
+        }{ $zoom_out ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_out } for å zoome ut,
+        }
+        Super + rull med musen
+    .scroll_controls = Aktiver zoom med mus eller styreflate ved å holde Super + rulle
+    .show_overlay = Vis forstørrelsesglass-overlegg
+    .increment = Zoomsteg
+    .signin = Start forstørrelsesglass ved innlogging
+    .applet = Slå forstørrelsesglass av/på fra panelprogram
+    .movement = Bevegelse i forstørret visning
+    .continuous = Kontinuerlig med markøren
+    .onedge = Når markøren når kanten
+    .centered = For å holde markøren i midten
+color-filter = Fargefiltertype
+    .unknown = Ukjent filter aktivt
+    .greyscale = Gråtoner
+    .deuteranopia = Grønn/rød (grønnsvakhet, deuteranopi)
+    .protanopia = Rød/grønn (rødsvakhet, protanopi)
+    .tritanopia = Blå/gul (blåsvakhet, tritanopi)
+wallpaper = Bakgrunnsbilde
+    .change = Bytt bilde hver
+    .desc = Bakgrunnsbilder, farger og lysbildefremvisningsalternativer.
+    .fit = Tilpass bakgrunnsbilde
+    .folder-dialog = Velg mappe med bakgrunnsbilder
+    .image-dialog = Velg bakgrunnsbilde
+    .plural = Bakgrunnsbilder
+    .same = Samme bakgrunnsbilde på alle skjermer
+    .slide = Lysbildefremvisning
+appearance = Utseende
+    .desc = Aksentfarger og tema.
+app-background = App eller vindubakgrunn
+copied-to-clipboard = Kopiert til utklippstavlen
+copy-to-clipboard = Kopier til utklippstavlen
+mode-and-colors = Stil og Farger
+reset-to-default = Tilbakestill til standard
+rgb = RGB
+window-hint-accent = Farge for markering av aktivt vindu
+window-hint-accent-toggle = Bruk aksentfarge for å markere aktivt vindu

@@ -671,6 +671,7 @@ system-shortcut = System
     .app-library = Öppna app bibliotek
     .brightness-down = Minska skärmens ljusstyrka
     .brightness-up = Öka skärmens ljusstyrka
+    .display-toggle = Växla inbyggd skärm
     .home-folder = Öppna personlig mapp
     .keyboard-brightness-down = Minska tangentbordets ljusstyrka
     .keyboard-brightness-up = Öka tangentbordets ljusstyrka
@@ -708,7 +709,7 @@ replace-shortcut-dialog = Byt ut genväg?
 mouse = Mus
     .desc = Mushastighet, acceleration, naturlig rullning.
     .speed = Mushastighet
-    .acceleration = Aktivera mus acceleration
+    .acceleration = Aktivera musacceleration
 
 ## Input: Touchpad
 
@@ -720,7 +721,7 @@ tap-to-click = Tryck för att klicka
 touchpad = Pekplatta
     .desc = Pekplattans hastighet, klickalternativ, gester.
     .speed = Pekplattans hastighet
-    .acceleration = Aktivera pekplattans acceleration
+    .acceleration = Aktivera acceleration för pekplatta
 
 ## Input: Gester
 

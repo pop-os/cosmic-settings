@@ -620,6 +620,7 @@ system-shortcut = Córas
     .app-library = Oscail an leabharlann aip
     .brightness-down = Laghdú gile taispeáint
     .brightness-up = Méadú gile taispeáint
+    .display-toggle = Athraigh an taispeáint inmheánach
     .home-folder = Oscail fillteán baile
     .keyboard-brightness-down = Laghdú ar ghile an mhéarchláir
     .keyboard-brightness-up = Méadú ar ghile an mhéarchláir

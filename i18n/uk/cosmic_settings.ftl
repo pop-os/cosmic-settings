@@ -421,6 +421,7 @@ system-shortcut = Система
     .app-library = Відкрити бібліотеку застосунків
     .brightness-down = Зменшити яскравість дисплея
     .brightness-up = Збільшити яскравість дисплея
+    .display-toggle = Перемкнути вбудований дисплей
     .home-folder = Відкрити домашню теку
     .keyboard-brightness-down = Зменшити яскравість клавіатури
     .keyboard-brightness-up = Збільшити яскравість клавіатури

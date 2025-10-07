@@ -1,6 +1,5 @@
 app = COSMIC設定
 unknown = 不明
-number = { $number }
 
 ## Network & Wireless
 
@@ -726,6 +725,7 @@ system-shortcut = システム
     .app-library = アプリケーションライブラリを開く
     .brightness-down = ディスプレイの輝度を下げる
     .brightness-up = ディスプレイの輝度を上げる
+    .display-toggle = 内蔵ディスプレイを切り替え
     .home-folder = ホームフォルダを開く
     .keyboard-brightness-down = キーボードの輝度を下げる
     .keyboard-brightness-up = キーボードの輝度を上げる
