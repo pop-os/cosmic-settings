@@ -1,22 +1,4 @@
-import "common.just"
-
 cargo-target-dir := env('CARGO_TARGET_DIR', 'target')
-
-# Use mold linker if clang and mold exists.
-clang-path := `which clang || true`
-mold-path := `which mold || true`
-
-linker-arg := if clang-path != '' {
-    if mold-path != '' {
-        '-C linker=' + clang-path + ' -C link-arg=--ld-path=' + mold-path + ' '
-    } else {
-        ''
-    }
-} else {
-    ''
-}
-
-export RUSTFLAGS := linker-arg + env_var_or_default('RUSTFLAGS', '')
 
 # Compile with debug profile
 build-debug *args:
