@@ -21,6 +21,10 @@ import 'cargo.just'
 [private]
 default: build-release
 
+# Build a debian package locally without a schroot or vendoring
+build-deb:
+    dpkg-buildpackage -d -nc
+
 # Install everything
 install:
     install -Dm0644 {{'resources' / appid + '.metainfo.xml'}} {{metainfo-dst}}
