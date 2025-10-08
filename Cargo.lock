@@ -461,16 +461,6 @@ dependencies = [
 
 [[package]]
 name = "async-fn-stream"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e71711442f1016c768c259bec59300a10efe753bc3e686ec19e2c6a54a97c29b"
-dependencies = [
- "futures-util",
- "pin-project-lite",
-]
-
-[[package]]
-name = "async-fn-stream"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a06a4a3a4901f9e66e0d3cb56a55d88063af953150a2c7645db581b2a2a18b5c"
@@ -1684,7 +1674,7 @@ dependencies = [
  "accounts-zbus",
  "anyhow",
  "ashpd 0.12.0",
- "async-fn-stream 0.3.1",
+ "async-fn-stream",
  "bluez-zbus",
  "chrono",
  "clap",
@@ -1699,11 +1689,17 @@ dependencies = [
  "cosmic-protocols",
  "cosmic-randr",
  "cosmic-randr-shell",
+ "cosmic-settings-a11y-manager-subscription",
+ "cosmic-settings-accessibility-subscription",
+ "cosmic-settings-airplane-mode-subscription",
+ "cosmic-settings-bluetooth-subscription",
  "cosmic-settings-config",
  "cosmic-settings-daemon-config",
+ "cosmic-settings-network-manager-subscription",
  "cosmic-settings-page",
- "cosmic-settings-subscriptions",
+ "cosmic-settings-sound-subscription",
  "cosmic-settings-system",
+ "cosmic-settings-upower-subscription",
  "cosmic-settings-wallpaper",
  "derive_setters",
  "dirs 6.0.0",
@@ -1754,6 +1750,54 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmic-settings-a11y-manager-subscription"
+version = "0.1.0"
+dependencies = [
+ "cosmic-protocols",
+ "iced_futures",
+ "num-derive",
+ "num-traits",
+ "smithay-client-toolkit 0.20.0",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "cosmic-settings-accessibility-subscription"
+version = "0.1.0"
+dependencies = [
+ "cosmic-dbus-a11y",
+ "futures",
+ "iced_futures",
+ "tokio",
+ "tracing",
+ "zbus 5.11.0",
+]
+
+[[package]]
+name = "cosmic-settings-airplane-mode-subscription"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "iced_futures",
+ "log",
+ "rustix 1.1.2",
+ "tokio",
+]
+
+[[package]]
+name = "cosmic-settings-bluetooth-subscription"
+version = "0.1.0"
+dependencies = [
+ "bluez-zbus",
+ "futures",
+ "iced_futures",
+ "tokio",
+ "tracing",
+ "zbus 5.11.0",
+]
+
+[[package]]
 name = "cosmic-settings-config"
 version = "0.1.0"
 source = "git+https://github.com/pop-os/cosmic-settings-daemon#68331387e4336c37ce2300bea8638257feab449a"
@@ -1784,6 +1828,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmic-settings-daemon-subscription"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "iced_futures",
+ "log",
+ "tokio",
+ "tokio-stream",
+ "zbus 5.11.0",
+]
+
+[[package]]
+name = "cosmic-settings-network-manager-subscription"
+version = "0.1.0"
+dependencies = [
+ "cosmic-dbus-networkmanager",
+ "futures",
+ "iced_futures",
+ "itertools 0.14.0",
+ "secure-string",
+ "thiserror 2.0.17",
+ "tokio",
+ "tracing",
+ "zbus 5.11.0",
+]
+
+[[package]]
 name = "cosmic-settings-page"
 version = "0.1.0"
 dependencies = [
@@ -1797,33 +1868,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "cosmic-settings-subscriptions"
-version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-settings-subscriptions#f858ca0b6416a2b75d5f7fa513bc6fc43647d3f8"
+name = "cosmic-settings-sound-subscription"
+version = "1.0.0-beta1"
 dependencies = [
- "async-fn-stream 0.2.2",
- "bluez-zbus",
- "cosmic-dbus-a11y",
- "cosmic-dbus-networkmanager",
- "cosmic-protocols",
+ "async-fn-stream",
  "futures",
- "iced_futures",
  "indexmap 2.11.4",
- "itertools 0.14.0",
  "libcosmic",
  "libpulse-binding",
  "log",
- "num-derive",
- "num-traits",
  "pipewire",
  "rustix 1.1.2",
- "secure-string",
- "smithay-client-toolkit 0.20.0",
- "thiserror 2.0.17",
  "tokio",
- "tokio-stream",
  "tracing",
- "zbus 5.11.0",
 ]
 
 [[package]]
@@ -1836,6 +1893,19 @@ dependencies = [
  "const_format",
  "memchr",
  "sysinfo",
+]
+
+[[package]]
+name = "cosmic-settings-upower-subscription"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "iced_futures",
+ "log",
+ "tokio",
+ "tokio-stream",
+ "upower_dbus",
+ "zbus 5.11.0",
 ]
 
 [[package]]

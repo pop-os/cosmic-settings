@@ -13,10 +13,10 @@ use cosmic::{
     iced_core::text::Wrapping,
     widget::{self, icon},
 };
-use cosmic_settings_page::{self as page, Section, section};
-use cosmic_settings_subscriptions::network_manager::{
-    self, NetworkManagerState, UUID, current_networks::ActiveConnectionInfo,
+use cosmic_settings_network_manager_subscription::{
+    self as network_manager, NetworkManagerState, UUID, current_networks::ActiveConnectionInfo,
 };
+use cosmic_settings_page::{self as page, Section, section};
 use futures::{FutureExt, StreamExt};
 use indexmap::IndexMap;
 use secure_string::SecureString;
@@ -219,7 +219,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(devices_view())])
     }
 
-    fn dialog(&self) -> Option<Element<crate::pages::Message>> {
+    fn dialog(&'_ self) -> Option<Element<'_, crate::pages::Message>> {
         self.dialog.as_ref().map(|dialog| match dialog {
             VpnDialog::Error(error_kind, message) => {
                 let reason = widget::text::body(message.as_str()).wrapping(Wrapping::Word);

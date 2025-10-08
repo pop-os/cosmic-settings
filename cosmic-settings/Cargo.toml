@@ -3,6 +3,7 @@ name = "cosmic-settings"
 version = "0.1.0"
 edition = "2024"
 license = "GPL-3.0-only"
+publish = false
 
 [dependencies]
 accounts-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
@@ -24,7 +25,13 @@ cosmic-randr-shell.workspace = true
 cosmic-randr = { workspace = true, optional = true }
 cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 cosmic-settings-page = { path = "../page" }
-cosmic-settings-subscriptions = { workspace = true, optional = true }
+cosmic-settings-accessibility-subscription = { path = "../subscriptions/accessibility", optional = true }
+cosmic-settings-a11y-manager-subscription = { path = "../subscriptions/a11y-manager", optional = true }
+cosmic-settings-airplane-mode-subscription = { path = "../subscriptions/airplane-mode", optional = true }
+cosmic-settings-bluetooth-subscription = { path = "../subscriptions/bluetooth", optional = true }
+cosmic-settings-network-manager-subscription = { path = "../subscriptions/network-manager", optional = true }
+cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
+cosmic-settings-sound-subscription = { path = "../subscriptions/sound", optional = true }
 cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
@@ -131,12 +138,12 @@ page-accessibility = [
     "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",
     "dep:cosmic-settings-daemon-config",
-    "cosmic-settings-subscriptions/accessibility",
-    "cosmic-settings-subscriptions/cosmic_a11y_manager",
+    "dep:cosmic-settings-accessibility-subscription",
+    "dep:cosmic-settings-a11y-manager-subscription",
 ]
 page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
 page-bluetooth = [
-    "cosmic-settings-subscriptions/bluetooth",
+    "dep:cosmic-settings-bluetooth-subscription",
     "dep:zbus",
     "dep:bluez-zbus",
 ]
@@ -153,14 +160,14 @@ page-input = [
 ]
 page-legacy-applications = ["dep:cosmic-comp-config"]
 page-networking = [
-    "cosmic-settings-subscriptions/network_manager",
+    "dep:cosmic-settings-network-manager-subscription",
     "xdg-portal",
     "dep:cosmic-dbus-networkmanager",
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = ["gettext", "dep:locales-rs", "dep:locale1", "dep:zbus"]
-page-sound = ["cosmic-settings-subscriptions/sound"]
+page-sound = ["dep:cosmic-settings-sound-subscription"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
 page-window-management = ["dep:cosmic-settings-config"]
 page-workspaces = ["dep:cosmic-comp-config"]
