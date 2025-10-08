@@ -626,6 +626,7 @@ system-shortcut = Система
     .app-library = Отваряне на библиотеката с програми
     .brightness-down = Намаляване на яркостта на екрана
     .brightness-up = Увеличаване на яркостта на екрана
+    .display-toggle = Превключване на вградения екран
     .home-folder = Отваряне на домашната папка
     .keyboard-brightness-down = Намаляване на яркостта на клавиатурата
     .keyboard-brightness-up = Увеличаване на яркостта на клавиатурата

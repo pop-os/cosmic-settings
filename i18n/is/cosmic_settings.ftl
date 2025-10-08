@@ -1,0 +1,70 @@
+app = COSMIC stillingar
+cancel = Hætta við
+confirm = Staðfesta
+export = Flytja út
+import = Flytja inn
+settings = Stillingar
+dark = Dökkt
+light = Ljóst
+profile = Notandasnið
+identity = Auðkenni
+password = Lykilorð
+password-confirm = Staðfesta lykilorð
+connected = Tengt
+save = Vista
+replace = Skipta út
+remove = Fjarlægja
+connect = Tengjast
+username = Notandanafn
+close = Loka
+dbus-connection-error = Náði ekki að tengjast DBus
+ok = Í lagi
+unknown = Óþekkt
+number = { $number }
+connections-and-profiles =
+    { $variant ->
+        [wired] Kapaltengdar
+        [wifi] Wi-Fi
+        [vpn] VPN
+       *[other] óþekktar
+    } tengingar og tengisnið.
+add-network = Add network
+    .profile = Bæta við notandasniði
+add-vpn = Bæta við VPN
+airplane-on = Kveikt á flugstillingu.
+cable-unplugged = Snúra ótengd
+connecting = Tengist…
+disconnect = Aftengjast
+forget = Gleyma
+known-networks = Þekkt net
+network-and-wireless = Net og þráðlausar tengingar
+no-networks = Engin net fundust.
+no-vpn = Engar VPN-tengingar í boði.
+visible-networks = Sýnileg net
+auth-dialog = Auðkenningar krafist
+    .vpn-description = Sláðu inn notandanafn og lykilorð sem VPN-þjónustan krefst.
+    .wifi-description = Sláðu inn lykilorð eða dulkóðunarlykil. Þú getur einni tengst með því að ýta á „WPS“-takkann á ráternum.
+forget-dialog = Gleyma þessu Wi-Fi neti?
+    .description = Þú þarft þá að slá aftur inn lykilorð ef þú vilt nota þetta Wi-Fi net í framtíðinni.
+activate = Virkja
+add-color = Bæta við lit
+add-image = Bæta við mynd
+all-displays = Allir skjáir
+colors = Litir
+dialog-add = Bæta við
+fill = Fylla
+fit-to-screen = Passa á skjá
+open-new-folder = Opna nýja möppu
+recent-folders = Nýlegar möppur
+never = Aldrei
+accent-color = Áherslulitur
+appearance = Útlit
+    .desc = Áherslulitir og þemu.
+app-background = Bakgrunnur forrits eða glugga
+auto = Sjálfvirkt
+color-picker = Litaplokkari
+copied-to-clipboard = Afritað á klippiborðið
+copy-to-clipboard = Afrita á klippiborð
+mode-and-colors = Snið og litir
+recent-colors = Nýlegir litir
+reset-to-default = Endurstilla á sjálfgildi
