@@ -8,15 +8,15 @@ use cosmic::{
 };
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;
+use cosmic_settings_a11y_manager_subscription as cosmic_a11y_manager;
+use cosmic_settings_accessibility_subscription::{
+    DBusRequest, DBusUpdate, subscription as a11y_subscription,
+};
 use cosmic_settings_daemon_config::CosmicSettingsDaemonConfig;
 use cosmic_settings_page::{
     self as page, Insert,
     section::{self, Section},
 };
-use cosmic_settings_subscriptions::accessibility::{
-    DBusRequest, DBusUpdate, subscription as a11y_subscription,
-};
-use cosmic_settings_subscriptions::cosmic_a11y_manager;
 use num_traits::FromPrimitive;
 use slotmap::SlotMap;
 

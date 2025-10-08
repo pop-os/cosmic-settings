@@ -12,7 +12,7 @@ use cosmic_settings_page::{self as page, Section, section};
 use slab::Slab;
 use slotmap::SlotMap;
 
-use cosmic_settings_subscriptions::sound as subscription;
+use cosmic_settings_sound_subscription as subscription;
 
 const AUDIO_CONFIG: &str = "com.system76.CosmicAudio";
 const AMPLIFICATION_SINK: &str = "amplification_sink";

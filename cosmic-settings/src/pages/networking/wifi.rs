@@ -14,13 +14,13 @@ use cosmic::{
     iced_widget::focus_next,
     widget::{self, column, icon},
 };
-use cosmic_settings_page::{self as page, Section, section};
-use cosmic_settings_subscriptions::network_manager::{
-    self, NetworkManagerState,
+use cosmic_settings_network_manager_subscription::{
+    self as network_manager, NetworkManagerState,
     available_wifi::{AccessPoint, NetworkType},
     current_networks::ActiveConnectionInfo,
     hw_address::HwAddress,
 };
+use cosmic_settings_page::{self as page, Section, section};
 use futures::StreamExt;
 use secure_string::SecureString;
 
@@ -141,7 +141,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(devices_view())])
     }
 
-    fn dialog(&self) -> Option<Element<crate::pages::Message>> {
+    fn dialog(&'_ self) -> Option<Element<'_, crate::pages::Message>> {
         self.dialog.as_ref().map(|dialog| match dialog {
             WiFiDialog::Password {
                 password,

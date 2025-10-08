@@ -13,8 +13,8 @@ use cosmic_dbus_networkmanager::{
     interface::enums::{DeviceState, DeviceType},
     nm::NetworkManager,
 };
+use cosmic_settings_network_manager_subscription as network_manager;
 use cosmic_settings_page::{self as page, Section, section};
-use cosmic_settings_subscriptions::network_manager;
 use futures::StreamExt;
 use slotmap::SlotMap;
 
