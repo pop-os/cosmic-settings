@@ -3,7 +3,7 @@ appid := 'com.system76.CosmicSettings'
 rootdir := ''
 prefix := '/usr'
 
-usrdir := clean(rootdir / prefix)
+usrdir := absolute_path(clean(rootdir / prefix))
 appdir := usrdir / 'share' / 'applications'
 default-schema-target := usrdir / 'share' / 'cosmic'
 iconsdir := usrdir / 'share' / 'icons' / 'hicolor'
