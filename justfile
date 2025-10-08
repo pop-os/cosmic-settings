@@ -106,8 +106,8 @@ install-desktop-entries:
 
 # Install everything
 install: install-desktop-entries (install-bin bin-src bin-dest) (install-file metainfo-src metainfo-dst) install-polkit-files
-    find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'default_schema'/{} {{default-schema-target}}/{}
-    find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
+    find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -I {} install -Dm0644 'resources'/'default_schema'/{} {{default-schema-target}}/{}
+    find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -I {} install -Dm0644 'resources'/'icons'/{} {{iconsdir}}/{}
 
 install-polkit-files: (install-file polkit-rules-src polkit-rules-dst) (install-file policy-users-src policy-users-dst)
 
@@ -157,8 +157,8 @@ uninstall:
         '{{appdir}}/{{entry-wired}}' \
         '{{appdir}}/{{entry-wireless}}' \
         '{{appdir}}/{{entry-workspaces}}'
-    find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm -rf {{default-schema-target}}/{}
-    find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -d '\n' -I {} rm {{iconsdir}}/{}
+    find 'resources'/'default_schema' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -I {} rm -rf {{default-schema-target}}/{}
+    find 'resources'/'icons' -type f -exec echo {} \; | rev | cut -d'/' -f-3 | rev | xargs -I {} rm {{iconsdir}}/{}
 
 heaptrack *args:
     #!/usr/bin/env bash
