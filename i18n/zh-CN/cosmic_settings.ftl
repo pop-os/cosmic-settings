@@ -621,6 +621,7 @@ system-shortcut = 系统快捷键
     .app-library = 打开应用程序库
     .brightness-down = 降低显示器亮度
     .brightness-up = 提高显示器亮度
+    .display-toggle = 切换内部显示
     .home-folder = 打开主目录
     .keyboard-brightness-down = 降低键盘背光亮度
     .keyboard-brightness-up = 提高键盘背光亮度

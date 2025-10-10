@@ -40,3 +40,5 @@ username = Gebruikersnaam
 import = Voer in
 export = Voer uit
 profile = Profiel
+replace = Vervang
+save = Stoor
