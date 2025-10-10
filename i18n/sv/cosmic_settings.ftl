@@ -178,7 +178,7 @@ notifications = Aviseringar
 ## Skrivbord: Alternativ
 
 dock = Docka
-    .desc = En valfri stapel för program och applets.
+    .desc = En valfri list för program och applets.
 window-controls = Fönsterkontroller
     .minimize = Visa minimera knapp
     .maximize = Visa maximera knapp
@@ -191,7 +191,7 @@ focus-navigation = Fokusnavigering
 ## Skrivbord: Panel
 
 panel = Panel
-    .desc = Primärt systemfält för menyer och applets.
+    .desc = Primär systemlist för menyer och applets.
 add = Lägg till
 add-applet = Lägg till Applet
 all = Alla
@@ -332,11 +332,11 @@ identity = Identitet
 
 connections-and-profiles =
     { $variant ->
-        [wired] Trådbundna
-        [wifi] Trådlösa
-        [vpn] VPN
-       *[other] Okända
-    } anslutningar och anslutningsprofiler.
+        [wired] Trådbundna anslutningar
+        [wifi] Trådlösa anslutningar
+        [vpn] VPN-anslutningar
+       *[other] Okända anslutningar
+    } och anslutningsprofiler.
 
 ## Virtuellt privat nätverk (VPN)
 

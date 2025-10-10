@@ -244,11 +244,11 @@ style = Estilo
     .round = Arredondado
     .slightly-round = Levemente arredondado
     .square = Quadrado
-interface-density = Densidade da Interface
+interface-density = Densidade da interface
     .comfortable = Confortável
-    .compact = Compacto
-    .spacious = Espaçoso
-window-management-appearance = Gerenciamento de Janelas
+    .compact = Compacta
+    .spacious = Espaçosa
+window-management-appearance = Gerenciamento de janelas
     .active-hint = Tamanho da borda de destaque da janela ativa
     .gaps = Espaçamento ao redor de janelas organizadas lado a lado
 
@@ -315,8 +315,8 @@ dock = Dock
 
 ## Desktop: Window management
 
-window-management = Gerenciamento de Janelas
-    .desc = Ação da tecla Super, opções de controle e organização de janelas.
+window-management = Gerenciamento de janelas
+    .desc = Ação da tecla Super, opções de controle de janelas e opções adicionais de janelas lado a lado.
 super-key = Ação da tecla Super (Windows)
     .launcher = Abrir o lançador
     .workspaces = Abrir a visão geral das áreas de trabalho
@@ -644,14 +644,14 @@ system-shortcut = Sistema
     .window-switcher = Alternar entre as janelas abertas
     .window-switcher-previous = Alternar entre as janelas abertas invertidas
     .workspace-overview = Abrir a visão geral das áreas de trabalho
-window-tiling = Janelas lado a lado (Tiling)
+window-tiling = Janelas lado a lado
     .horizontal = Definir orientação horizontal
     .vertical = Definir orientação vertical
-    .swap-window = Troca de janelas
-    .toggle-tiling = Ativar/Desativar janelas lado a lado
-    .toggle-stacking = Ativas/Desativar janelas empilháveis
-    .toggle-floating = Ativar/Desativar janelas flutuantes
-    .toggle-orientation = Ativar/Desativar orientação
+    .swap-window = Trocar de janelas
+    .toggle-tiling = Ativar/desativar janelas lado a lado
+    .toggle-stacking = Ativas/desativar janelas empilháveis
+    .toggle-floating = Ativar/desativar janelas flutuantes
+    .toggle-orientation = Ativar/desativar orientação
 replace-shortcut-dialog = Substituir atalho?
     .desc = { $shortcut } está sendo usado por { $name }. se você substituí-lo, { $name } será desativado.
 zoom-in = Aumentar o zoom

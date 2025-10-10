@@ -195,13 +195,13 @@ style = Estilo
     .round = Redondeado
     .slightly-round = Ligeramente redondeado
     .square = Cuadrado
-interface-density = Densidad de la Interfaz
+interface-density = Densidad de la interfaz
     .comfortable = Cómoda
     .compact = Compacta
     .spacious = Espaciosa
-window-management-appearance = Gestión de Ventanas
-    .active-hint = Tamaño del indicador de ventana activa
-    .gaps = Espacios alrededor de las ventanas ajustadas
+window-management-appearance = Gestión de ventanas
+    .active-hint = Tamaño del indicador de la ventana activa
+    .gaps = Espacios alrededor de las ventanas en mosaico
 
 ### Experimental
 
@@ -267,7 +267,7 @@ dock = Dock
 ## Desktop: Window management
 
 window-management = Gestión de ventanas
-    .desc = Acción de la tecla Super, opciones de control de ventanas y opciones adicionales de mosaico de ventanas.
+    .desc = Acción de la tecla Súper, opciones de control de ventanas y opciones adicionales de ventanas en mosaico.
 super-key = Acción de la tecla Súper
     .launcher = Abrir lanzador
     .workspaces = Abrir espacios de trabajo
@@ -588,7 +588,7 @@ window-tiling = Organización de ventanas
     .horizontal = Establecer orientación horizontal
     .vertical = Establecer orientación vertical
     .swap-window = Intercambiar ventana
-    .toggle-tiling = Ordenar ventanas
+    .toggle-tiling = Organizar ventanas en mosaico
     .toggle-stacking = Cambiar a ventanas apiladas
     .toggle-floating = Cambiar a ventanas flotantes
     .toggle-orientation = Activar orientación

@@ -20,12 +20,12 @@ airplane-on = Vliegtuigmodus staat aan.
 cable-unplugged = Kabel losgekoppeld
 connect = Verbind
 connected = Verbonden
-connecting = Wordt verbonden…
+connecting = Maakt verbinding…
 disconnect = Verbreek verbinding
 forget = Vergeet
 known-networks = Bekende netwerken
 network-and-wireless = Netwerk en wifi
-no-networks = Geen netwerken gevonden.
+no-networks = Er zijn geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
 password-confirm = Bevestig wachtwoord
@@ -34,14 +34,14 @@ settings = Instellingen
 username = Gebruikersnaam
 visible-networks = Zichtbare netwerken
 identity = Identiteit
-auth-dialog = Authenticatie vereist
-    .vpn-description = Voer de gebruikersnaam en het wachtwoord van de VPN-dienst in.
+auth-dialog = Verificatie vereist
+    .vpn-description = Voer de gebruikersnaam en het wachtwoord in die de VPN-dienst vereist.
     .wifi-description = Voer het wachtwoord of de encryptiesleutel in. U kunt ook verbinden door op de “WPS”-knop op de router te drukken.
-forget-dialog = Dit wifi-netwerk vergeten?
-    .description = U zal dan opnieuw een wachtwoord moeten invoeren om dit wifi-netwerk in de toekomst te gebruiken.
+forget-dialog = Wilt u dit wifi-netwerk vergeten?
+    .description = U moet in de toekomst opnieuw een wachtwoord invoeren om dit wifi-netwerk te kunnen gebruiken.
 network-device-state =
     .activated = Verbonden
-    .config = Verbindt…
+    .config = Maakt verbinding…
     .deactivating = Verbreekt verbinding…
     .disconnected = Verbinding verbroken
     .failed = Verbinding mislukt
@@ -54,50 +54,50 @@ network-device-state =
     .unknown = Status onbekend
     .unmanaged = Onbeheerd
     .unplugged = Kabel losgekoppeld
-remove-connection-dialog = Verbindingsprofiel verwijderen?
-    .vpn-description = U zal opnieuw een wachtwoord moeten invoeren als u dit netwerk in de toekomst gaat gebruiken.
-    .wired-description = U zal dit profiel opnieuw moeten aanmaken om het in de toekomst te kunnen gebruiken.
+remove-connection-dialog = Wilt u dit verbindingsprofiel verwijderen?
+    .vpn-description = U moet opnieuw een wachtwoord invoeren om dit netwerk in de toekomst te kunnen gebruiken.
+    .wired-description = U moet dit profiel opnieuw aanmaken om het in de toekomst te kunnen gebruiken.
 vpn = VPN
     .connections = VPN-verbindingen
-    .error = Kon VPN-configuratie niet toevoegen
-    .remove = Verbindingsprofiel verwijderen
+    .error = Toevoegen VPN-configuratie mislukt
+    .remove = Verwijder verbindingsprofiel
     .select-file = Selecteer een VPN-configuratiebestand
 vpn-error = VPN-fout
     .config = Kon VPN-configuratie niet toevoegen
-    .connect = VPN-verbinding mislukt
-    .connection-editor = Verbindingseditor mislukt
-    .connection-settings = Het ophalen van instellingen voor actieve verbindingen is mislukt
-    .updating-state = Kan status van netwerkbeheerder niet bijwerken
-    .wireguard-config-path = Ongeldig bestandspad voor de WireGuard-configuratie
+    .connect = Kon niet met VPN verbinden
+    .connection-editor = Fout met de verbindingseditor
+    .connection-settings = Kon de instellingen voor actieve verbindingen niet ophalen
+    .updating-state = Kon netwerkbeheerstatus niet bijwerken
+    .wireguard-config-path = Ongeldig bestandspad voor WireGuard-configuratie
     .wireguard-config-path-desc = Het gekozen bestand moet op een lokaal bestandssysteem staan.
     .wireguard-device = Kon WireGuard-apparaat niet aanmaken
     .with-password =
         Kon { $field ->
-           *[username] de VPN-gebruikersnaam
-            [password] het VPN-wachtwoord
-            [password-flags] de VPN-wachtwoordvlaggen
-        } niet met nmcli toevoegen
-wired = Bedraad
-    .adapter = Bedrade adapter { $id }
-    .connections = Bedrade verbindingen
-    .devices = Bedrade apparaten
-    .remove = Verbindingsprofielen verwijderen
+           *[username] VPN-gebruikersnaam
+            [password] VPN-wachtwoord
+            [password-flags] VPN-wachtwoordvlaggen
+        } niet met nmcli instellen
+wired = Kabelverbindingen
+    .adapter = Kabeladapter { $id }
+    .connections = Kabelverbindingen
+    .devices = Kabelapparaten
+    .remove = Verwijder verbindingsprofielen
 wifi = Wifi
     .adapter = Wifi-adapter { $id }
-    .forget = Dit netwerk vergeten
+    .forget = Vergeet dit netwerk
 wireguard-dialog = WireGuard-apparaat toevoegen
     .description = Kies een apparaatnaam voor de WireGuard-configuratie.
 
 ## Networking: Online Accounts
 
 online-accounts = Online accounts
-    .desc = Accounts toevoegen, IMAP en SMTP, bedrijfslogins
+    .desc = Online accounts, IMAP en SMTP, bedrijfslogins
 
 # Bluetooth
 
-activate = Activeren
-confirm = Bevestigen
-enable = Inschakelen
+activate = Activeer
+confirm = Bevestig
+enable = Schakel in
 bluetooth = Bluetooth
     .desc = Bluetooth-apparaten bewerken
     .status = Dit systeem is zichtbaar als { $aliases } zolang de bluetooth-instellingen open staan.
@@ -112,7 +112,7 @@ bluetooth = Bluetooth
     .inactive = De bluetooth-service is niet actief
     .unknown = De bluetooth-service kon niet worden geactiveerd. Is BlueZ geïnstalleerd?
 bluetooth-paired = Eerder verbonden apparaten
-    .connect = Verbinden
+    .connect = Verbind
     .battery = { $percentage }% batterij
 bluetooth-confirm-pin = Bluetooth-pincode bevestigen
     .description = Controleer of de volgende pincode overeenkomt met de pincode die op { $device } wordt weergegeven
@@ -523,7 +523,7 @@ show-extended-input-sources = Toon uitgebreide invoermethodes
 
 keyboard-shortcuts = Sneltoetsen
     .desc = Sneltoetsen bekijken en aanpassen
-cancel = Annuleren
+cancel = Annuleer
 command = Commando
 custom = Aangepast
 debug = Fouten opsporen
@@ -539,7 +539,7 @@ migrate-workspace =
         [up] hierboven
     }
 navigate = Navigeren
-replace = Vervangen
+replace = Vervang
 shortcut-name = Sneltoetsnaam
 system-controls = Systeemaansturing
 terminate = Beëindigen
@@ -815,4 +815,4 @@ remove-user = Gebruiker verwijderen
 full-name = Volledige naam
 invalid-username = Ongeldige gebruikersnaam.
 password-mismatch = De wachtwoorden komen niet overeen, probeer het opnieuw.
-save = Opslaan
+save = Sla op
