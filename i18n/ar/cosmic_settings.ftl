@@ -113,7 +113,7 @@ bluetooth = بلوتوث
     .unknown = تعذر تفعيل خدمة البلوتوث. هل BlueZ مثبت؟
 bluetooth-paired = الأجهزة المتصلة سابقًا
     .connect = اتصال
-    .battery = { $percentage }٪ بطارية
+    .battery = { $percentage }٪ مُدَّخرة
 bluetooth-confirm-pin = تأكيد رقم التعريف الشخصي للبلوتوث
     .description = يرجى التأكد من أن رقم التعريف الشخصي التالي يطابق الرقم المعروض على { $device }
 bluetooth-available = الأجهزة القريبة
@@ -434,9 +434,9 @@ profile = ملف التعريف
 
 ## Power
 
-power = الطاقة والبطارية
+power = الطاقة ومُدَّخرتُها
     .desc = إدارة إعدادات الطاقة
-battery = البطارية
+battery = المُدَّخرة
     .minute =
         { $value } { $value ->
             [one] minute
@@ -462,18 +462,18 @@ battery = البطارية
 connected-devices = الأجهزة المتصلة
     .unknown = جهاز غير معروف
 power-mode = وضع الطاقة
-    .battery = عمر بطارية طويل
+    .battery = عمر مُدَّخرة طويل
     .battery-desc = استهلاك طاقة منخفض وأداء صامت.
     .balanced = متوازن
     .balanced-desc = أداء واستهلاك طاقة معتدل.
     .performance = أداء عالي
     .performance-desc = أداء واستهلاك طاقة مرتفع.
-    .no-backend = لم يتم العثور على الخلفية. قم بتثبيت system76-power أو power-profiles-daemon.
+    .no-backend = لم يتم العثور على الخلفية. ثَبِّت system76-power أو power-profiles-daemon.
 power-saving = خيارات توفير الطاقة
     .turn-off-screen-after = إيقاف تشغيل الشاشة بعد
     .auto-suspend = التعليق التلقائي
     .auto-suspend-ac = التعليق التلقائي عند التوصيل بالكهرباء
-    .auto-suspend-battery = التعليق التلقائي عند تشغيل البطارية
+    .auto-suspend-battery = التعليق التلقائي عند استخدام المُدَّخرة
 
 ## Input
 
