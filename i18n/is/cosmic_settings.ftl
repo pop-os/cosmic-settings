@@ -1,4 +1,4 @@
-app = COSMIC stillingar
+app = COSMIC Stillingar
 cancel = Hætta við
 confirm = Staðfesta
 export = Flytja út
@@ -98,3 +98,41 @@ add = Bæta við
 add-applet = Bæta við smáforriti
 all = Allt
 applets = Smáforrit
+network-device-state =
+    .activated = Tengt
+    .config = Tengist
+    .deactivating = Aftengst
+    .disconnected = Aftengt
+    .failed = Náði ekki að tengjast
+    .ip-check = Athuga tengingu
+    .ip-config = Bið um IP-tölu og leiðarupplýsingar
+    .need-auth = Krefst auðkenningar
+    .prepare = Bý undir að tengjast
+    .secondaries = Bíð eftir varatengingu
+    .unavailable = Ekki tiltækt
+    .unknown = Óþekkt staða
+    .unmanaged = Ekki stýrt
+    .unplugged = Netkapall ekki í sambandi
+remove-connection-dialog = Fjarlægja tengisnið?
+    .vpn-description = Þú þarft að slá aftur inn lykilorð til að nota þetta net í framtíðinni.
+    .wired-description = Þú þarft að útbúa aftur þetta notandasnið til að nota það í framtíðinni.
+vpn = VPN
+    .connections = VPN-tengingar
+    .error = Mistókst að bæta við VPN-grunnstillingu
+    .remove = Fjarlægja tengisnið
+    .select-file = Velja VPN-grunnstillingaskrá
+vpn-error = VPN-villa
+    .config = Mistókst að bæta við VPN-grunnstillingu
+    .connect = Mistókst að tengjast við VPN
+    .connection-editor = Tengiritillinn brást
+    .connection-settings = Mistókst að sækja stillingar fyrir virkar tengingar
+    .updating-state = Mistókst að uppfæra stöðu netstjóra
+    .wireguard-config-path = Ógild skráarslóð fyrir WireGuard-grunnstillingu
+    .wireguard-config-path-desc = Skráin sem er valin verður að vera í staðbundnu skráakerfi.
+    .wireguard-device = Mistókst að útbúa WireGuard-tæki
+    .with-password =
+        Mistókst að stilla VPN { $field ->
+           *[username] notandanafn
+            [password] lykilorð
+            [password-flags] lykilorðaflögg
+        } með nmcli
