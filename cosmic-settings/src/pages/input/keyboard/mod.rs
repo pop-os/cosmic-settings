@@ -52,8 +52,6 @@ static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
     ("Control", "caps:ctrl_modifier"),
 ];
 
-const STR_ORDER: &str = "`str` is always comparable";
-
 #[derive(Clone, Debug)]
 pub enum Message {
     ExpandInputSourcePopover(Option<DefaultKey>),
@@ -360,10 +358,7 @@ impl page::Page<crate::pages::Message> for Page {
                         (_, "custom") => cmp::Ordering::Less,
                         // Compare everything else by description because it looks nicer (e.g. all
                         // English grouped together)
-                        _ => a
-                            .description()
-                            .partial_cmp(b.description())
-                            .expect(STR_ORDER),
+                        _ => a.description().cmp(b.description()),
                     }
                 });
 
@@ -387,7 +382,7 @@ impl page::Page<crate::pages::Message> for Page {
                     }) {
                         let mut variants: Vec<_> = variants.collect();
                         variants.sort_unstable_by(|(_, _, desc_a, _), (_, _, desc_b, _)| {
-                            desc_a.partial_cmp(desc_b).expect(STR_ORDER)
+                            desc_a.cmp(desc_b)
                         });
 
                         for (layout_name, name, description, source) in variants {
