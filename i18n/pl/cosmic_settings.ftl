@@ -1,5 +1,5 @@
 app = Ustawienia COSMIC
-dbus-connection-error = Nieudane połączenie do DBus
+dbus-connection-error = Nieudane połączenie z DBus
 ok = OK
 unknown = Nieznane
 number = { $number }
@@ -38,7 +38,7 @@ auth-dialog = Konieczne uwierzytelnienie
     .vpn-description = Wprowadź nazwę użytkownika i hasło wymagane przez usługę VPN.
     .wifi-description = Wprowadź hasło lub klucz szyfrowania. Możesz też połączyć się, używając przycisku „WPS” na routerze.
 forget-dialog = Chcesz zapomnieć o tej sieci Wi-Fi?
-    .description = Będziesz musiał(a) wprowadzić hasło jeszcze raz, aby ponownie użyć tej sieci Wi-Fi.
+    .description = By znów używać tej sieci Wi-Fi będzie konieczne ponowne wprowadzenie hasła.
 network-device-state =
     .activated = Połączono
     .config = Łączenie
@@ -55,8 +55,8 @@ network-device-state =
     .unmanaged = Niezarządzane
     .unplugged = Odłączono kabel
 remove-connection-dialog = Usunąć profil połączenia?
-    .vpn-description = Będziesz musiał(a) wprowadzić hasło jeszcze raz, aby ponownie użyć tej sieci.
-    .wired-description = Będziesz musiał(a) utworzyć profil jeszcze raz, aby ponownie użyć tej sieci Wi-Fi.
+    .vpn-description = By znów używać tej sieci konieczne będzie ponowne wprowadzenie hasła..
+    .wired-description = Będzie konieczne ponowne stworzenie profilu by go w przyszłości używać.
 vpn = VPN
     .connections = Połączenia VPN
     .error = Nie udało się dodać konfiguracji VPN
@@ -110,13 +110,13 @@ bluetooth = Bluetooth
     .dbus-error = Błąd interakcji z DBus: { $why }
     .disabled = Usługa bluetooth jest wyłączona
     .inactive = Usługa bluetooth nie jest aktywna
-    .unknown = Nie można aktywować usługi bluetooth. Czy bluez jest zainstalowany?
+    .unknown = Nie można aktywować usługi Bluetooth. Czy BlueZ jest zainstalowany?
 bluetooth-paired = Wcześniej połączone urządzenia
     .connect = Połącz
     .battery = { $percentage }% baterii
 bluetooth-confirm-pin = Potwierdź PIN Bluetooth
-    .description = Potwierdź, że następujący PIN zgadza się z wyświetlanym na { $device }
-bluetooth-available = Urządzenia w pobliżu
+    .description = Potwierdź, że ten kod PIN i wyświetlany na { $device } są jednakowe
+bluetooth-available = Pobliskie Urządzenia
 bluetooth-adapters = Adaptery Bluetooth
 
 ## Accessibility
@@ -139,7 +139,7 @@ magnifier = Lupa
             [zero] { "" }
            *[other]
                 { "" }
-                { $zoom_in } aby przybliżyć,
+                { $zoom_in } aby zbliżyć,
         }{ $zoom_out ->
             [zero] { "" }
            *[other]
@@ -147,11 +147,11 @@ magnifier = Lupa
                 { $zoom_out } aby oddalić,
         }
         Super+Scroll
-    .scroll_controls = Aktywuj przybliżanie myszą lub touchpadem za pomocą Super + Scroll
+    .scroll_controls = Aktywuj zbliżanie myszą lub touchpadem za pomocą Super + Scroll
     .show_overlay = Pokaż Nakładkę Lupy
     .increment = Inkrementacja przybliżenia
     .signin = Uruchom lupę przy logowaniu
-    .applet = Włączanie/wyłączanie lupy w aplecie na panelu
+    .applet = Przełącznik lupy w aplecie na panelu
     .movement = Widok powiększenia porusza się
     .continuous = Stale ze wskaźnikiem
     .onedge = Gdy wskaźnik osiągnie krawędź
@@ -387,11 +387,11 @@ mirroring = Lustrzane Odbicie
     .project-count =
         Rzutuj na { $count } { $count ->
             [1] inny
-            [Few] inne
+            [few] inne
            *[other] innych
         } { $count ->
             [1] wyświetlacz
-            [Few] wyświetlacze
+            [few] wyświetlacze
            *[other] wyświetlaczy
         }
 night-light = Nocne Światło
@@ -479,7 +479,7 @@ connected-devices = Podłączone urządzenia
 power-mode = Profil zasilania
     .battery = Tryb oszczędzania energii
     .battery-desc = Zmniejszone zużycie energii i ciche działanie.
-    .balanced = Tryb zbalansowany
+    .balanced = Tryb zrównoważony
     .balanced-desc = Wysoka wydajność i średnie zużycie baterii.
     .performance = Tryb wysokiej wydajności
     .performance-desc = Najwyższa wydajność i zwiększone zużycie energii.
@@ -537,7 +537,7 @@ keyboard-numlock-boot = Numlock
     .off = Wyłącz
     .set = Ustaw stan Numlocka podczas uruchamiania
 added = Dodano
-type-to-search = Naciśnij by wyszukać…
+type-to-search = Zacznij pisać by wyszukać…
 show-extended-input-sources = Pokaż rozszerzone źródła wprowadzania
 
 ## Input: Keyboard: Shortcuts
@@ -668,7 +668,7 @@ window-tiling = Kafelkowanie okien
     .toggle-orientation = Przełącz orientację
 replace-shortcut-dialog = Zamienić skrót?
     .desc = { $shortcut } jest używany przez { $name }. Jeśli go zamienisz, skrót do { $name } będzie wyłączony.
-zoom-in = Przybliż
+zoom-in = Zbliż
 zoom-out = Oddal
 
 ## Input: Mouse
@@ -704,13 +704,13 @@ switch-workspaces = Przełączenie pomiędzy obszarami roboczymi
     .horizontal = Przesunięcie czterema palcami w lewo/prawo
     .vertical = Przesunięcie czterema palcami w górę/dół
 switch-between-windows = Przełączenie pomiędzy oknami
-open-application-library = Otwarcie biblioteki aplikacji
+open-application-library = Otwarcie Biblioteki Aplikacji
 open-workspaces-view = Otwarcie podglądu obszarów roboczych
 
 ## Time & Language
 
 time = Czas i język
-    .desc = N/A
+    .desc = Nie dostępne
 time-date = Data i godzina
     .desc = Strefa czasowa, automatyczne ustawienia zegara oraz formatowanie czasu.
     .auto = Ustaw automatycznie
@@ -750,10 +750,10 @@ applications = Aplikacje
 ## Applications: Default Applications
 
 default-apps = Domyślne Aplikacje
-    .desc = Domyślna przeglądarka, klient email, przeglądarka plików i inne aplikacje.
+    .desc = Domyślna przeglądarka, klient e-mail, przeglądarka plików i inne aplikacje.
     .web-browser = Przeglądarka
     .file-manager = Przeglądarka plików
-    .mail-client = Klient email
+    .mail-client = Klient e-mail
     .music = Muzyka
     .video = Wideo
     .photos = Obrazy
@@ -837,6 +837,6 @@ change-password = Zmień hasło
 remove-user = Usuń użytkownika
 full-name = Pełna nazwa
 invalid-username = Nieprawidłowa nazwa użytkownika.
-password-mismatch = Hasło i potwierdzenie hasła muszą się zgadzać.
+password-mismatch = Hasło i jego potwierdzenie muszą być jednakowe.
 save = Zapisz
 modified = Zmodyfikowano { $count }
