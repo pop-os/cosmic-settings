@@ -45,6 +45,7 @@ static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
 ];
 
 static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
+    ("Disabled", "caps:none"),
     ("Escape", "caps:escape"),
     ("Swap with Escape", "caps:swapescape"),
     ("Backspace", "caps:backspace"),
