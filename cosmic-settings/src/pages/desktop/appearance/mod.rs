@@ -585,6 +585,8 @@ impl Page {
 
     #[cfg(feature = "wayland")]
     fn update_panel_spacing(density: Density) {
+        let spacing: cosmic::cosmic_theme::Spacing = density.into();
+        let space_none = spacing.space_none;
         let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
         let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
         let mut panel_config = panel_config_helper.as_ref().and_then(|config_helper| {
@@ -599,11 +601,7 @@ impl Page {
         if let Some(panel_config_helper) = panel_config_helper.as_ref()
             && let Some(panel_config) = panel_config.as_mut()
         {
-            let spacing = match density {
-                Density::Compact => 0,
-                _ => 4,
-            };
-            let update = panel_config.set_spacing(panel_config_helper, spacing);
+            let update = panel_config.set_spacing(panel_config_helper, space_none as u32);
             if let Err(err) = update {
                 tracing::error!(?err, "Error updating panel spacing");
             }
@@ -612,11 +610,7 @@ impl Page {
         if let Some(dock_config_helper) = dock_config_helper.as_ref()
             && let Some(dock_config) = dock_config.as_mut()
         {
-            let spacing = match density {
-                Density::Compact => 0,
-                _ => 4,
-            };
-            let update = dock_config.set_spacing(dock_config_helper, spacing);
+            let update = dock_config.set_spacing(dock_config_helper, space_none as u32);
             if let Err(err) = update {
                 tracing::error!(?err, "Error updating dock spacing");
             }
