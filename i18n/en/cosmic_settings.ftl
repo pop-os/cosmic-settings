@@ -483,10 +483,11 @@ sound-alerts = Alerts
 sound-applications = Applications
     .desc = Application volumes and settings
 
-profile = Profile
+# Profiles for sound card devices
+sound-device-profiles = Device Profiles
+    .button = Device profiles
 
-## Power
-
+# Power & Battery settings page
 power = Power & Battery
     .desc = Manage power settings
 

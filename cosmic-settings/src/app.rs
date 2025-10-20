@@ -550,6 +550,13 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-sound")]
+                crate::pages::Message::SoundDeviceProfiles(message) => {
+                    if let Some(page) = self.pages.page_mut::<sound::device_profiles::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 crate::pages::Message::StartupApps(message) => {
                     if let Some(page) = self.pages.page_mut::<applications::startup_apps::Page>() {
                         return page.update(message).map(Into::into);

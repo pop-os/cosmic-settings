@@ -1,6 +1,8 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+pub mod device_profiles;
+
 use cosmic::{
     Apply, Element, Task,
     iced::{Alignment, Length, window},
@@ -9,10 +11,9 @@ use cosmic::{
 };
 use cosmic_config::{Config, ConfigGet, ConfigSet};
 use cosmic_settings_page::{self as page, Section, section};
+use cosmic_settings_sound_subscription as subscription;
 use slab::Slab;
 use slotmap::SlotMap;
-
-use cosmic_settings_sound_subscription as subscription;
 
 const AUDIO_CONFIG: &str = "com.system76.CosmicAudio";
 const AMPLIFICATION_SINK: &str = "amplification_sink";
@@ -20,14 +21,14 @@ const AMPLIFICATION_SOURCE: &str = "amplification_source";
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    /// Set the profile of a sound device.
+    SetProfile(u32, usize),
     /// Change the balance of the active sink.
     SinkBalanceChanged(u32),
     /// Change the default output.
     SinkChanged(usize),
     /// Toggle the mute status of the output.
     SinkMuteToggle,
-    /// Change the active profile for an output.
-    SinkProfileChanged(usize),
     /// Request to change the default output volume.
     SinkVolumeChanged(u32),
     /// Toggle amplification for sink
@@ -36,8 +37,6 @@ pub enum Message {
     SourceChanged(usize),
     /// Toggle the mute status of the input output.
     SourceMuteToggle,
-    /// Change the active profile for an output.
-    SourceProfileChanged(usize),
     /// Request to change the input volume.
     SourceVolumeChanged(u32),
     /// Toggle amplification for sink
@@ -69,7 +68,8 @@ impl From<subscription::Message> for Message {
 #[derive(Default)]
 pub struct Page {
     entity: page::Entity,
-    model: subscription::Model,
+    device_profiles: page::Entity,
+    pub(self) model: subscription::Model,
     sound_config: Option<Config>,
     amplification_sink: bool,
     amplification_source: bool,
@@ -97,13 +97,21 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(output()), sections.insert(input())])
+        Some(vec![
+            sections.insert(output()),
+            sections.insert(input()),
+            sections.insert(device_profiles()),
+        ])
     }
 
     fn info(&self) -> page::Info {
         page::Info::new("sound", "preferences-sound-symbolic")
             .title(fl!("sound"))
             .description(fl!("sound", "desc"))
+    }
+
+    fn set_id(&mut self, entity: page::Entity) {
+        self.entity = entity;
     }
 
     fn subscription(
@@ -119,6 +127,7 @@ impl page::Page<crate::pages::Message> for Page {
 
         *self = Page {
             entity: self.entity,
+            device_profiles: self.device_profiles,
             ..Page::default()
         };
 
@@ -126,17 +135,36 @@ impl page::Page<crate::pages::Message> for Page {
     }
 }
 
-impl page::AutoBind<crate::pages::Message> for Page {}
+impl page::AutoBind<crate::pages::Message> for Page {
+    fn sub_pages(
+        mut page: page::Insert<crate::pages::Message>,
+    ) -> page::Insert<crate::pages::Message> {
+        let id = page.sub_page_with_id::<device_profiles::Page>();
+        let model = page.model.page_mut::<Page>().unwrap();
+        model.device_profiles = id;
+        page
+    }
+}
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
+            Message::Surface(a) => return cosmic::task::message(crate::app::Message::Surface(a)),
+
+            Message::Subscription(message) => {
+                return self
+                    .model
+                    .update(message)
+                    .map(|message| Message::Subscription(message).into());
+            }
+
             Message::SinkBalanceChanged(balance) => {
                 return self
                     .model
                     .sink_balance_changed(balance)
                     .map(|message| Message::Subscription(message).into());
             }
+
             Message::SinkChanged(pos) => {
                 return self
                     .model
@@ -144,19 +172,28 @@ impl Page {
                     .map(|message| Message::Subscription(message).into());
             }
 
-            Message::SinkMuteToggle => self.model.sink_mute_toggle(),
-
-            Message::SinkProfileChanged(profile) => {
+            Message::SourceChanged(pos) => {
                 return self
                     .model
-                    .sink_profile_changed(profile)
+                    .source_changed(pos)
                     .map(|message| Message::Subscription(message).into());
             }
+
+            Message::SinkMuteToggle => self.model.sink_mute_toggle(),
+
+            Message::SourceMuteToggle => self.model.source_mute_toggle(),
 
             Message::SinkVolumeChanged(volume) => {
                 return self
                     .model
                     .sink_volume_changed(volume)
+                    .map(|message| Message::Subscription(message).into());
+            }
+
+            Message::SourceVolumeChanged(volume) => {
+                return self
+                    .model
+                    .source_volume_changed(volume)
                     .map(|message| Message::Subscription(message).into());
             }
 
@@ -170,29 +207,6 @@ impl Page {
                 }
             }
 
-            Message::SourceChanged(pos) => {
-                return self
-                    .model
-                    .source_changed(pos)
-                    .map(|message| Message::Subscription(message).into());
-            }
-
-            Message::SourceMuteToggle => self.model.source_mute_toggle(),
-
-            Message::SourceProfileChanged(profile) => {
-                return self
-                    .model
-                    .source_profile_changed(profile)
-                    .map(|message| Message::Subscription(message).into());
-            }
-
-            Message::SourceVolumeChanged(volume) => {
-                return self
-                    .model
-                    .source_volume_changed(volume)
-                    .map(|message| Message::Subscription(message).into());
-            }
-
             Message::ToggleOverAmplificationSource(enabled) => {
                 self.amplification_source = enabled;
 
@@ -203,14 +217,9 @@ impl Page {
                 }
             }
 
-            Message::Subscription(message) => {
-                return self
-                    .model
-                    .update(message)
-                    .map(|message| Message::Subscription(message).into());
+            Message::SetProfile(object_id, index) => {
+                self.model.set_profile(object_id, index);
             }
-
-            Message::Surface(a) => return cosmic::task::message(crate::app::Message::Surface(a)),
         }
 
         Task::none()
@@ -223,7 +232,6 @@ fn input() -> Section<crate::pages::Message> {
     let volume = descriptions.insert(fl!("sound-input", "volume"));
     let device = descriptions.insert(fl!("sound-input", "device"));
     let _level = descriptions.insert(fl!("sound-input", "level"));
-    let profile = descriptions.insert(fl!("profile"));
     let amplification = descriptions.insert(fl!("amplification"));
     let amplification_desc = descriptions.insert(fl!("amplification", "desc"));
 
@@ -282,21 +290,6 @@ fn input() -> Section<crate::pages::Message> {
                 ))
                 .add(settings::item(&*section.descriptions[device], devices));
 
-            if !page.model.source_profiles().is_empty() {
-                let dropdown = widget::dropdown::popup_dropdown(
-                    page.model.source_profiles(),
-                    page.model.active_source_profile(),
-                    Message::SourceProfileChanged,
-                    window::Id::RESERVED,
-                    Message::Surface,
-                    crate::Message::from,
-                )
-                .apply(Element::from)
-                .map(crate::pages::Message::from);
-
-                controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
-            }
-
             controls = controls.add(
                 settings::item::builder(&*section.descriptions[amplification])
                     .description(&*section.descriptions[amplification_desc])
@@ -316,7 +309,6 @@ fn output() -> Section<crate::pages::Message> {
     let volume = descriptions.insert(fl!("sound-output", "volume"));
     let device = descriptions.insert(fl!("sound-output", "device"));
     let _level = descriptions.insert(fl!("sound-output", "level"));
-    let profile = descriptions.insert(fl!("profile"));
     let balance = descriptions.insert(fl!("sound-output", "balance"));
     let left = descriptions.insert(fl!("sound-output", "left"));
     let right = descriptions.insert(fl!("sound-output", "right"));
@@ -376,20 +368,6 @@ fn output() -> Section<crate::pages::Message> {
                 ))
                 .add(settings::item(&*section.descriptions[device], devices));
 
-            if !page.model.sink_profiles().is_empty() {
-                let dropdown = widget::dropdown::popup_dropdown(
-                    page.model.sink_profiles(),
-                    page.model.active_sink_profile(),
-                    Message::SinkProfileChanged,
-                    window::Id::RESERVED,
-                    Message::Surface,
-                    crate::Message::from,
-                )
-                .apply(Element::from)
-                .map(crate::pages::Message::from);
-
-                controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
-            }
             if let Some(sink_balance) = page.model.sink_balance {
                 controls = controls.add(settings::item(
                     &*section.descriptions[balance],
@@ -428,6 +406,34 @@ fn output() -> Section<crate::pages::Message> {
             );
 
             Element::from(controls)
+        })
+}
+
+/// A section for opening the device profiles sub-page.
+fn device_profiles() -> Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        button_txt = fl!("sound-device-profiles", "button");
+    });
+
+    Section::default()
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+            let button = widget::row::with_children(vec![
+                widget::horizontal_space().into(),
+                widget::icon::from_name("go-next-symbolic").size(16).into(),
+            ]);
+
+            let device_profiles = settings::item::builder(&*descriptions[button_txt])
+                .control(button)
+                .spacing(16)
+                .apply(widget::container)
+                .class(cosmic::theme::Container::List)
+                .apply(widget::button::custom)
+                .class(cosmic::theme::Button::Transparent)
+                .on_press(crate::pages::Message::Page(page.device_profiles));
+
+            settings::section().add(device_profiles).into()
         })
 }
 
