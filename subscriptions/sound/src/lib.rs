@@ -362,22 +362,22 @@ impl Model {
                                     continue;
                                 }
 
-                                if let Some(id) = self.device_id_from_name(&node_name) {
+                                if let Some(id) = self.node_id_from_name(&node_name) {
                                     self.set_default_sink_id(id);
-                                } else {
-                                    self.default_sink = node_name;
                                 }
+
+                                self.default_sink = node_name;
                             }
                             pulse::Event::DefaultSource(node_name) => {
                                 if self.default_source == node_name {
                                     continue;
                                 }
 
-                                if let Some(id) = self.device_id_from_name(&node_name) {
+                                if let Some(id) = self.node_id_from_name(&node_name) {
                                     self.set_default_source_id(id);
-                                } else {
-                                    self.default_source = node_name;
                                 }
+
+                                self.default_source = node_name;
                             }
                             pulse::Event::SinkMute(mute) => {
                                 self.sink_mute = mute;
@@ -450,16 +450,18 @@ impl Model {
                                         .insert(object_id, device.description);
                                 }
 
-                                if self.active_sink_device == device.device_id {
-                                    self.set_default_sink_id(object_id);
-                                    tokio::task::spawn(async move {
-                                        wpctl::set_default(object_id).await;
-                                    });
-                                } else if self.active_source_device == device.device_id {
-                                    self.set_default_source_id(object_id);
-                                    tokio::task::spawn(async move {
-                                        wpctl::set_default(object_id).await;
-                                    });
+                                if device.device_id.is_some() {
+                                    if self.active_sink_device == device.device_id {
+                                        self.set_default_sink_id(object_id);
+                                        tokio::task::spawn(async move {
+                                            wpctl::set_default(object_id).await;
+                                        });
+                                    } else if self.active_source_device == device.device_id {
+                                        self.set_default_source_id(object_id);
+                                        tokio::task::spawn(async move {
+                                            wpctl::set_default(object_id).await;
+                                        });
+                                    }
                                 }
                             }
 
@@ -506,7 +508,7 @@ impl Model {
         Task::none()
     }
 
-    fn device_id_from_name(&self, name: &str) -> Option<u32> {
+    fn node_id_from_name(&self, name: &str) -> Option<u32> {
         self.device_names
             .iter()
             .find(|&(_, n)| *n == name)
