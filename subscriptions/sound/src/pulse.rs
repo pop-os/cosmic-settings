@@ -11,10 +11,10 @@ use libpulse_binding::{
     channelmap::Map,
     context::{
         Context, FlagSet, State,
-        introspect::{CardInfo, CardProfileInfo, Introspector, ServerInfo, SinkInfo, SourceInfo},
+        introspect::{Introspector, ServerInfo, SinkInfo, SourceInfo},
         subscribe::{Facility, InterestMaskSet, Operation},
     },
-    def::{PortAvailable, Retval},
+    def::Retval,
     mainloop::{
         api::MainloopApi,
         events::io::IoEventInternal,
@@ -23,18 +23,17 @@ use libpulse_binding::{
     volume::{ChannelVolumes, Volume},
 };
 use std::{
-    borrow::Cow,
     cell::{Cell, RefCell},
-    convert::Infallible,
     io::{Read, Write},
     os::{
         fd::{FromRawFd, IntoRawFd, RawFd},
         raw::c_void,
     },
     rc::Rc,
-    str::FromStr,
     sync::mpsc,
 };
+
+use crate::pipewire::Availability;
 
 pub fn subscription() -> iced_futures::Subscription<Event> {
     Subscription::run_with_id(
@@ -62,8 +61,10 @@ pub fn thread(sender: futures::channel::mpsc::Sender<Event>) {
             _inner: Rc::clone(&main_loop._inner),
         }),
         introspector: context.introspect(),
+        sink_port: RefCell::new(None),
         sink_volume: Cell::new(None),
         sink_mute: Cell::new(None),
+        source_port: RefCell::new(None),
         source_volume: Cell::new(None),
         source_mute: Cell::new(None),
         default_sink_name: RefCell::new(None),
@@ -98,16 +99,6 @@ pub fn thread(sender: futures::channel::mpsc::Sender<Event>) {
         }
     }
 
-    // Inspect all available cards on startup
-    data.introspector.get_card_info_list({
-        let data_weak = Rc::downgrade(&data);
-        move |card_info_res| {
-            if let Some(data) = data_weak.upgrade() {
-                data.card_info_cb(card_info_res)
-            }
-        }
-    });
-
     data.get_server_info();
     context.subscribe(
         InterestMaskSet::SERVER | InterestMaskSet::SINK | InterestMaskSet::SOURCE,
@@ -122,14 +113,15 @@ pub fn thread(sender: futures::channel::mpsc::Sender<Event>) {
 #[derive(Clone, Debug)]
 pub enum Event {
     Balance(Option<f32>),
-    CardInfo(Card),
+    Channels(PulseChannels),
     DefaultSink(String),
     DefaultSource(String),
-    SinkVolume(u32),
-    Channels(PulseChannels),
+    SinkPortChange(String, Availability),
     SinkMute(bool),
-    SourceVolume(u32),
+    SinkVolume(u32),
+    SourcePortChange(String, Availability),
     SourceMute(bool),
+    SourceVolume(u32),
 }
 
 enum Request {
@@ -315,101 +307,14 @@ impl PulseChannels {
     }
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
-pub struct Card {
-    pub object_id: u32,
-    pub name: String,
-    pub product_name: String,
-    pub variant: DeviceVariant,
-    pub ports: Vec<CardPort>,
-    pub profiles: Vec<CardProfile>,
-    pub active_profile: Option<CardProfile>,
-}
-
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
-pub struct CardPort {
-    pub name: String,
-    pub description: String,
-    pub direction: Direction,
-    pub port_type: PortType,
-    pub profile_port: u32,
-    pub priority: u32,
-    pub profiles: Vec<CardProfile>,
-    pub availability: Availability,
-}
-
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-pub enum Availability {
-    Unknown,
-    No,
-    Yes,
-}
-
-impl From<PortAvailable> for Availability {
-    fn from(pa: PortAvailable) -> Self {
-        match pa {
-            PortAvailable::Unknown => Availability::Unknown,
-            PortAvailable::No => Availability::No,
-            PortAvailable::Yes => Availability::Yes,
-        }
-    }
-}
-
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
-pub struct CardProfile {
-    pub name: String,
-    pub description: String,
-    pub available: bool,
-    pub n_sinks: u32,
-    pub n_sources: u32,
-    pub priority: u32,
-}
-
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
-pub enum DeviceVariant {
-    Alsa { alsa_card: u32 },
-    Bluez5 { address: String },
-}
-
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
-pub enum Direction {
-    Input,
-    Output,
-    Both,
-}
-
-#[derive(Default, Clone, Debug, Hash, Eq, PartialEq)]
-pub enum PortType {
-    Mic,
-    Speaker,
-    Headphones,
-    Headset,
-    Digital,
-    #[default]
-    Unknown,
-}
-
-impl FromStr for PortType {
-    type Err = Infallible;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "mic" => Ok(PortType::Mic),
-            "speaker" => Ok(PortType::Speaker),
-            "headphones" => Ok(PortType::Headphones),
-            "headset" => Ok(PortType::Headset),
-            "digital" => Ok(PortType::Digital),
-            _ => Ok(PortType::Unknown),
-        }
-    }
-}
-
 struct Data {
     main_loop: RefCell<Mainloop>,
     default_sink_name: RefCell<Option<String>>,
     default_source_name: RefCell<Option<String>>,
+    sink_port: RefCell<Option<String>>,
     sink_volume: Cell<Option<u32>>,
     sink_mute: Cell<Option<bool>>,
+    source_port: RefCell<Option<String>>,
     source_volume: Cell<Option<u32>>,
     source_mute: Cell<Option<bool>>,
     introspector: Introspector,
@@ -417,85 +322,6 @@ struct Data {
 }
 
 impl Data {
-    fn card_info_cb(self: &Rc<Self>, card_info: ListResult<&CardInfo>) {
-        if let ListResult::Item(card_info) = card_info {
-            let Some(object_id) = card_info
-                .proplist
-                .get_str("object.id")
-                .and_then(|v| v.parse::<u32>().ok())
-            else {
-                return;
-            };
-
-            let variant = if let Some(alsa_card) = card_info
-                .proplist
-                .get_str("alsa.card")
-                .and_then(|v| v.parse::<u32>().ok())
-            {
-                DeviceVariant::Alsa { alsa_card }
-            } else if let Some(address) = card_info.proplist.get_str("api.bluez5.address") {
-                DeviceVariant::Bluez5 { address }
-            } else {
-                return;
-            };
-
-            let card = Card {
-                name: card_info
-                    .name
-                    .as_ref()
-                    .map(Cow::to_string)
-                    .unwrap_or_default(),
-                product_name: card_info
-                    .proplist
-                    .get_str("device.product.name")
-                    .unwrap_or_default(),
-                object_id,
-                variant,
-                ports: card_info
-                    .ports
-                    .iter()
-                    .map(|port| CardPort {
-                        name: port.name.as_ref().map(Cow::to_string).unwrap_or_default(),
-                        description: port
-                            .description
-                            .as_ref()
-                            .map(Cow::to_string)
-                            .unwrap_or_default(),
-                        direction: match port.direction.bits() {
-                            x if x == libpulse_binding::direction::FlagSet::INPUT.bits() => {
-                                Direction::Input
-                            }
-                            x if x == libpulse_binding::direction::FlagSet::OUTPUT.bits() => {
-                                Direction::Output
-                            }
-                            _ => Direction::Both,
-                        },
-                        port_type: port
-                            .proplist
-                            .get_str("port.type")
-                            .as_deref()
-                            .map(|s| PortType::from_str(s).unwrap())
-                            .unwrap_or_default(),
-                        profile_port: port
-                            .proplist
-                            .get_str("card.profile.port")
-                            .and_then(|v| v.parse::<u32>().ok())
-                            .unwrap_or(0),
-                        priority: port.priority,
-                        profiles: collect_profiles(&port.profiles),
-                        availability: port.available.into(),
-                    })
-                    .collect(),
-                profiles: collect_profiles(&card_info.profiles),
-                active_profile: card_info.active_profile.as_deref().map(CardProfile::from),
-            };
-
-            if block_on(self.sender.borrow_mut().send(Event::CardInfo(card))).is_err() {
-                self.main_loop.borrow_mut().quit(Retval(0));
-            }
-        }
-    }
-
     fn server_info_cb(self: &Rc<Self>, server_info: &ServerInfo) {
         let new_default_sink_name = server_info
             .default_sink_name
@@ -543,6 +369,28 @@ impl Data {
             if sink_info.name.as_deref() != self.default_sink_name.borrow().as_deref() {
                 return;
             }
+
+            if let Some(port) = sink_info.active_port.as_deref() {
+                let port_name = port.name.as_deref();
+                if self.sink_port.borrow().as_deref() != port_name {
+                    *self.sink_port.borrow_mut() = port_name.map(str::to_owned);
+                    if let Some(name) = port_name {
+                        if block_on(self.sender.borrow_mut().send(Event::SinkPortChange(
+                            name.to_owned(),
+                            match port.available {
+                                libpulse_binding::def::PortAvailable::No => Availability::No,
+                                libpulse_binding::def::PortAvailable::Yes => Availability::Yes,
+                                _ => Availability::Unknown,
+                            },
+                        )))
+                        .is_err()
+                        {
+                            self.main_loop.borrow_mut().quit(Retval(0));
+                        }
+                    }
+                }
+            }
+
             let balance = (sink_info.channel_map.can_balance()
                 && sink_info.base_volume.is_normal())
             .then(|| sink_info.volume.get_balance(&sink_info.channel_map));
@@ -594,6 +442,28 @@ impl Data {
             if source_info.name.as_deref() != self.default_source_name.borrow().as_deref() {
                 return;
             }
+
+            if let Some(port) = source_info.active_port.as_deref() {
+                let port_name = port.name.as_deref();
+                if self.source_port.borrow().as_deref() != port_name {
+                    *self.source_port.borrow_mut() = port_name.map(str::to_owned);
+                    if let Some(name) = port_name {
+                        if block_on(self.sender.borrow_mut().send(Event::SourcePortChange(
+                            name.to_owned(),
+                            match port.available {
+                                libpulse_binding::def::PortAvailable::No => Availability::No,
+                                libpulse_binding::def::PortAvailable::Yes => Availability::Yes,
+                                _ => Availability::Unknown,
+                            },
+                        )))
+                        .is_err()
+                        {
+                            self.main_loop.borrow_mut().quit(Retval(0));
+                        }
+                    }
+                }
+            }
+
             let volume = source_info.volume.max().0 / (Volume::NORMAL.0 / 100);
             if self.source_mute.get() != Some(source_info.mute) {
                 self.source_mute.set(Some(source_info.mute));
@@ -616,30 +486,11 @@ impl Data {
         }
     }
 
-    fn get_card_info_by_index(self: &Rc<Self>, index: u32) {
-        let data = self.clone();
-        self.introspector
-            .get_card_info_by_index(index, move |card_info_res| {
-                data.card_info_cb(card_info_res);
-            });
-    }
-
     fn get_sink_info_by_index(self: &Rc<Self>, index: u32) {
         let data = self.clone();
         self.introspector.get_sink_info_by_index(
             index,
             move |sink_info_res: ListResult<&SinkInfo<'_>>| {
-                if let ListResult::Item(ref info) = sink_info_res {
-                    if let Some(card_index) = info.card {
-                        let data_clone = data.clone();
-                        data.introspector.get_card_info_by_index(
-                            card_index,
-                            move |card_info_res| {
-                                data_clone.card_info_cb(card_info_res);
-                            },
-                        );
-                    }
-                }
                 data.sink_info_cb(sink_info_res);
             },
         );
@@ -649,17 +500,6 @@ impl Data {
         let data = self.clone();
         self.introspector
             .get_sink_info_by_name(name, move |sink_info_res| {
-                if let ListResult::Item(ref info) = sink_info_res {
-                    if let Some(card_index) = info.card {
-                        let data_clone = data.clone();
-                        data.introspector.get_card_info_by_index(
-                            card_index,
-                            move |card_info_res| {
-                                data_clone.card_info_cb(card_info_res);
-                            },
-                        );
-                    }
-                }
                 data.sink_info_cb(sink_info_res);
             });
     }
@@ -668,17 +508,6 @@ impl Data {
         let data = self.clone();
         self.introspector
             .get_source_info_by_index(index, move |source_info_res| {
-                if let ListResult::Item(ref info) = source_info_res {
-                    if let Some(card_index) = info.card {
-                        let data_clone = data.clone();
-                        data.introspector.get_card_info_by_index(
-                            card_index,
-                            move |card_info_res| {
-                                data_clone.card_info_cb(card_info_res);
-                            },
-                        );
-                    }
-                }
                 data.source_info_cb(source_info_res);
             });
     }
@@ -687,17 +516,6 @@ impl Data {
         let data = self.clone();
         self.introspector
             .get_source_info_by_name(name, move |source_info_res| {
-                if let ListResult::Item(ref info) = source_info_res {
-                    if let Some(card_index) = info.card {
-                        let data_clone = data.clone();
-                        data.introspector.get_card_info_by_index(
-                            card_index,
-                            move |card_info_res| {
-                                data_clone.card_info_cb(card_info_res);
-                            },
-                        );
-                    }
-                }
                 data.source_info_cb(source_info_res);
             });
     }
@@ -718,35 +536,7 @@ impl Data {
             Facility::Source => {
                 self.get_source_info_by_index(index);
             }
-            Facility::Card => {
-                self.get_card_info_by_index(index);
-            }
             _ => {}
-        }
-    }
-}
-
-fn collect_profiles(profiles: &[CardProfileInfo]) -> Vec<CardProfile> {
-    profiles.iter().map(CardProfile::from).collect()
-}
-
-impl From<&CardProfileInfo<'_>> for CardProfile {
-    fn from(profile: &CardProfileInfo) -> Self {
-        CardProfile {
-            name: profile
-                .name
-                .as_ref()
-                .map(Cow::to_string)
-                .unwrap_or_default(),
-            description: profile
-                .description
-                .as_ref()
-                .map(Cow::to_string)
-                .unwrap_or_default(),
-            available: profile.available,
-            n_sinks: profile.n_sinks,
-            n_sources: profile.n_sources,
-            priority: profile.priority,
         }
     }
 }
