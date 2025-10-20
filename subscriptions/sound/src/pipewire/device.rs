@@ -8,7 +8,7 @@ use pipewire::node::{NodeInfoRef, NodeState};
 #[derive(Clone, Debug)]
 pub struct Device {
     pub object_id: u32,
-    pub device_id: u32,
+    pub device_id: Option<u32>,
     pub audio_channels: u32,
     pub audio_position: String,
     pub icon_name: String,
@@ -51,11 +51,11 @@ impl Device {
 
         for (entry, value) in props.iter() {
             match entry {
-                "device.id" => device_id = Some(value.parse::<u32>().ok()?),
+                "device.id" => device_id = value.parse::<u32>().ok(),
                 "object.id" => object_id = Some(value.parse::<u32>().ok()?),
 
                 // 2
-                "audio.channels" => audio_channels = value.parse::<u32>().ok()?,
+                "audio.channels" => audio_channels = value.parse::<u32>().unwrap_or(1),
 
                 // FL,FR
                 "audio.position" => audio_position = value.to_owned(),
@@ -88,7 +88,7 @@ impl Device {
 
         let device = Device {
             object_id: object_id?,
-            device_id: device_id?,
+            device_id,
             media_class: media_class?,
             description: node_description
                 .strip_suffix(profile_description)

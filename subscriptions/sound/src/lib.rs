@@ -441,18 +441,21 @@ impl Model {
                                         }
                                     }
 
-                                    self.device_ids.insert(object_id, device.device_id);
+                                    if let Some(device_id) = device.device_id {
+                                        self.device_ids.insert(object_id, device_id);
+                                    }
+
                                     self.device_names.insert(object_id, device.node_name);
                                     self.device_descriptions
                                         .insert(object_id, device.description);
                                 }
 
-                                if self.active_sink_device == Some(device.device_id) {
+                                if self.active_sink_device == device.device_id {
                                     self.set_default_sink_id(object_id);
                                     tokio::task::spawn(async move {
                                         wpctl::set_default(object_id).await;
                                     });
-                                } else if self.active_source_device == Some(device.device_id) {
+                                } else if self.active_source_device == device.device_id {
                                     self.set_default_source_id(object_id);
                                     tokio::task::spawn(async move {
                                         wpctl::set_default(object_id).await;

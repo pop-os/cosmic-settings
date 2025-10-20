@@ -120,7 +120,9 @@ pub fn devices_from_socket(
         move |main_loop, event| match event {
             NodeEvent::NodeInfo(pw_id, info) => {
                 if let Some(device) = Device::from_node(info) {
-                    _ = device_enum_tx.send(device.device_id).unwrap();
+                    if let Some(device_id) = device.device_id {
+                        _ = device_enum_tx.send(device_id);
+                    }
                     if managed
                         .insert(pw_id, (device.object_id, device.device_id))
                         .is_none()
@@ -135,7 +137,7 @@ pub fn devices_from_socket(
             NodeEvent::Profile(device_id, profile) => {
                 let Some(object_id) = managed
                     .values()
-                    .find(|(_, dev_id)| device_id == *dev_id)
+                    .find(|(_, dev_id)| Some(device_id) == *dev_id)
                     .map(|(obj_id, _)| *obj_id)
                 else {
                     return;
@@ -149,7 +151,7 @@ pub fn devices_from_socket(
             NodeEvent::ActiveProfile(device_id, profile) => {
                 let Some(object_id) = managed
                     .values()
-                    .find(|(_, dev_id)| device_id == *dev_id)
+                    .find(|(_, dev_id)| Some(device_id) == *dev_id)
                     .map(|(obj_id, _)| *obj_id)
                 else {
                     return;
