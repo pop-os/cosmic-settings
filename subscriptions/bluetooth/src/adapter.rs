@@ -4,7 +4,9 @@
 use crate::{Active, Event};
 use std::{
     collections::HashMap,
+    convert::Infallible,
     hash::{Hash, Hasher},
+    path::PathBuf,
     time::Duration,
 };
 use zbus::zvariant::OwnedObjectPath;
@@ -217,24 +219,64 @@ pub async fn stop_discovery(connection: zbus::Connection, adapter_path: OwnedObj
     Event::Ok
 }
 
+// In some distros, rfkill is only in sbin, which isn't normally in PATH
+// TODO: Directly access `/dev/rfkill`
+pub fn rfkill_path_var() -> std::ffi::OsString {
+    let mut path = std::env::var_os("PATH").unwrap_or_default();
+    path.push(":/usr/sbin");
+    path
+}
+
 pub async fn change_adapter_status(
     connection: zbus::Connection,
     adapter_path: OwnedObjectPath,
     active: bool,
 ) -> Event {
+    // rfkill will be persisted after reboot
+    let adapter = bluez_zbus::get_adapter(&connection, adapter_path.clone())
+        .await
+        .map_err(|err| Ok::<_, Infallible>(Event::DBusError(err)))
+        .unwrap();
+
+    let path = PathBuf::from(adapter_path.to_string());
+    let name = path.file_name().unwrap();
+
+    let mut cmd = tokio::process::Command::new("rfkill");
+    cmd.env("PATH", rfkill_path_var())
+        .arg("--noheadings")
+        .arg("--output")
+        .arg("ID,DEVICE");
+
+    let rfkill_list = cmd.output().await.ok();
+
+    if let Some(id) = rfkill_list.and_then(|o| {
+        let lines = String::from_utf8(o.stdout).ok()?;
+        lines.split('\n').into_iter().find_map(|row| {
+            let (id, cname) = row.trim().split_once(' ')?;
+            (name == cname).then_some(id.to_string())
+        })
+    }) {
+        if let Err(err) = tokio::process::Command::new("rfkill")
+            .env("PATH", rfkill_path_var())
+            .arg(if active { "unblock" } else { "block" })
+            .arg(id)
+            .output()
+            .await
+        {
+            tracing::error!("Failed to set bluetooth state using rfkill. {err:?}");
+        }
+        if !active {
+            return Event::Ok;
+        }
+    } else {
+        tracing::error!("Failed to find rfkill ID for bluetooth adapter {name:?}");
+    }
+
     let mut result: zbus::Result<()> = Ok(());
     for attempt in 1..5 {
         result = async {
-            let adapter = bluez_zbus::get_adapter(&connection, adapter_path.clone()).await?;
-            if active {
-                adapter.set_powered(true).await?;
-                adapter.set_discoverable(true).await
-            } else {
-                if let Err(why) = adapter.set_discoverable(false).await {
-                    tracing::warn!("Unable to change discoverability: {why}");
-                }
-                adapter.set_powered(false).await
-            }
+            adapter.set_powered(true).await?;
+            adapter.set_discoverable(true).await
         }
         .await;
         if let Err(why) = &result {
