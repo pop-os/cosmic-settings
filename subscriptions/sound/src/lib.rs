@@ -199,7 +199,6 @@ impl Model {
     ///
     /// Requires using the device ID rather than a node ID.
     pub fn set_profile(&mut self, device_id: DeviceId, index: u32) {
-        eprintln!("set profile {device_id} {index}");
         if let Some(profiles) = self.device_profiles.get(device_id) {
             for profile in profiles {
                 if profile.index as u32 == index {
