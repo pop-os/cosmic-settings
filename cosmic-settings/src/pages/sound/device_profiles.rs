@@ -1,17 +1,14 @@
 // Copyright 2025 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::widget;
+use cosmic::{Apply, widget};
 use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_sound_subscription::{self as subscription, pipewire};
 use itertools::Itertools;
 use slotmap::SlotMap;
 
 #[derive(Clone, Debug)]
-pub enum Message {
-    /// Messages handled by the sound module in cosmic-settings-subscriptions
-    Subscription(subscription::Message),
-}
+pub enum Message {}
 
 impl From<Message> for crate::pages::Message {
     fn from(message: Message) -> Self {
@@ -75,15 +72,15 @@ pub fn view() -> Section<crate::pages::Message> {
             .model
             .device_profiles
             .iter()
-            .filter_map(|(object_id, profiles)| {
-                let name = sound_page.model.device_names.get(object_id)?.as_str();
+            .filter_map(|(device_id, profiles)| {
+                let name = sound_page.model.device_names.get(device_id)?.as_str();
 
                 // TODO: cache
                 let active_profile =
                     sound_page
                         .model
                         .active_profiles
-                        .get(object_id)
+                        .get(device_id)
                         .and_then(|profile| {
                             profiles
                                 .iter()
@@ -103,10 +100,17 @@ pub fn view() -> Section<crate::pages::Message> {
                     })
                     .map(|p| p.description.clone());
 
-                let dropdown =
-                    widget::dropdown(Vec::from_iter(profiles), active_profile, move |pos| {
-                        super::Message::SetProfile(object_id, pos).into()
-                    });
+                let dropdown = widget::dropdown::popup_dropdown(
+                    Vec::from_iter(profiles),
+                    active_profile,
+                    move |id| super::Message::SetProfile(device_id, id),
+                    cosmic::iced::window::Id::RESERVED,
+                    super::Message::Surface,
+                    crate::Message::from,
+                )
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::from);
+
                 Some((
                     name,
                     widget::settings::item::builder(name).control(dropdown),
