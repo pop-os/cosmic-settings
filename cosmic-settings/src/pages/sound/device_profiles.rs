@@ -84,13 +84,20 @@ pub fn view() -> Section<crate::pages::Message> {
                         .and_then(|profile| {
                             profiles
                                 .iter()
+                                .filter(|p| {
+                                    matches!(
+                                        p.available,
+                                        pipewire::Availability::Yes
+                                            | pipewire::Availability::Unknown
+                                    )
+                                })
                                 .enumerate()
                                 .find(|(_, p)| p.index == profile.index)
                                 .map(|(pos, _)| pos)
                         });
 
                 // TODO: cache
-                let profiles = profiles
+                let (indexes, profiles): (Vec<_>, Vec<_>) = profiles
                     .iter()
                     .filter(|p| {
                         matches!(
@@ -98,12 +105,13 @@ pub fn view() -> Section<crate::pages::Message> {
                             pipewire::Availability::Yes | pipewire::Availability::Unknown
                         )
                     })
-                    .map(|p| p.description.clone());
+                    .map(|p| (p.index as u32, p.description.clone()))
+                    .collect();
 
                 let dropdown = widget::dropdown::popup_dropdown(
                     Vec::from_iter(profiles),
                     active_profile,
-                    move |id| super::Message::SetProfile(device_id, id),
+                    move |id| super::Message::SetProfile(device_id, indexes[id]),
                     cosmic::iced::window::Id::RESERVED,
                     super::Message::Surface,
                     crate::Message::from,

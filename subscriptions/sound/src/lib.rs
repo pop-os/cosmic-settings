@@ -134,8 +134,6 @@ pub struct Model {
     active_sink_device: Option<u32>,
     /// Index of active sink device.
     active_sink: Option<usize>,
-    /// Card profile index of active sink device.
-    active_sink_profile: Option<usize>,
 
     /** Source devices */
 
@@ -147,8 +145,6 @@ pub struct Model {
     active_source_device: Option<u32>,
     /// Index of active source device.
     active_source: Option<usize>,
-    /// Card profile index of active source device.
-    active_source_profile: Option<usize>,
 
     /// Device identifier of the default sink.
     default_sink: String,
@@ -176,16 +172,8 @@ impl Model {
         self.active_sink
     }
 
-    pub fn active_sink_profile(&self) -> Option<usize> {
-        self.active_sink_profile
-    }
-
     pub fn active_source(&self) -> Option<usize> {
         self.active_source
-    }
-
-    pub fn active_source_profile(&self) -> Option<usize> {
-        self.active_source_profile
     }
 
     pub fn sinks(&self) -> &[String] {
@@ -210,20 +198,16 @@ impl Model {
     /// Sets and applies a profile to a device with wpctl.
     ///
     /// Requires using the device ID rather than a node ID.
-    pub fn set_profile(&mut self, device_id: DeviceId, pos: usize) {
+    pub fn set_profile(&mut self, device_id: DeviceId, index: u32) {
+        eprintln!("set profile {device_id} {index}");
         if let Some(profiles) = self.device_profiles.get(device_id) {
-            if let Some(profile) = profiles.get(pos) {
-                let index = profile.index as u32;
-                tokio::spawn(async move {
-                    wpctl::set_profile(device_id, index).await;
-                });
+            for profile in profiles {
+                if profile.index as u32 == index {
+                    tokio::spawn(async move {
+                        wpctl::set_profile(device_id, index).await;
+                    });
 
-                self.active_profiles.insert(device_id, profile.clone());
-
-                if self.active_sink_device == Some(device_id) {
-                    self.active_sink_profile = Some(pos)
-                } else if self.active_source_device == Some(device_id) {
-                    self.active_source_profile = Some(pos);
+                    self.active_profiles.insert(device_id, profile.clone());
                 }
             }
         }

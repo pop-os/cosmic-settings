@@ -22,7 +22,7 @@ const AMPLIFICATION_SOURCE: &str = "amplification_source";
 #[derive(Clone, Debug)]
 pub enum Message {
     /// Set the profile of a sound device.
-    SetProfile(u32, usize),
+    SetProfile(u32, u32),
     /// Change the balance of the active sink.
     SinkBalanceChanged(u32),
     /// Change the default output.
