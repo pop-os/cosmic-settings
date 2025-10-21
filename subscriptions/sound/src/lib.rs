@@ -11,6 +11,7 @@ use futures::{Stream, StreamExt};
 use intmap::IntMap;
 use std::{sync::Arc, time::Duration};
 
+pub type DeviceId = u32;
 pub type NodeId = u32;
 pub type ProfileId = u32;
 
@@ -45,7 +46,7 @@ pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
 
         enum Variant {
             Pulse(pulse::Event),
-            Pipewire(pipewire::DeviceEvent),
+            Pipewire(pipewire::Event),
         }
 
         let mut stream =
@@ -116,11 +117,12 @@ pub struct Model {
     subscription_handle: Option<SubscriptionHandle>,
     sink_channels: Option<pulse::PulseChannels>,
 
-    device_ids: IntMap<u32, u32>,
-    pub device_names: IntMap<u32, String>,
-    pub device_descriptions: IntMap<u32, String>,
-    pub device_profiles: IntMap<u32, Vec<pipewire::Profile>>,
-    pub active_profiles: IntMap<u32, pipewire::Profile>,
+    device_ids: IntMap<NodeId, DeviceId>,
+    pub node_names: IntMap<NodeId, String>,
+    pub node_descriptions: IntMap<NodeId, String>,
+    pub device_names: IntMap<DeviceId, String>,
+    pub device_profiles: IntMap<DeviceId, Vec<pipewire::Profile>>,
+    pub active_profiles: IntMap<DeviceId, pipewire::Profile>,
 
     /** Sink devices */
 
@@ -208,23 +210,19 @@ impl Model {
     /// Sets and applies a profile to a device with wpctl.
     ///
     /// Requires using the device ID rather than a node ID.
-    pub fn set_profile(&mut self, object_id: u32, pos: usize) {
-        if let Some((profiles, &device_id)) = self
-            .device_profiles
-            .get(object_id)
-            .zip(self.device_ids.get(object_id))
-        {
+    pub fn set_profile(&mut self, device_id: DeviceId, pos: usize) {
+        if let Some(profiles) = self.device_profiles.get(device_id) {
             if let Some(profile) = profiles.get(pos) {
                 let index = profile.index as u32;
                 tokio::spawn(async move {
                     wpctl::set_profile(device_id, index).await;
                 });
 
-                self.active_profiles.insert(object_id, profile.clone());
+                self.active_profiles.insert(device_id, profile.clone());
 
-                if self.active_sink_device == Some(object_id) {
+                if self.active_sink_device == Some(device_id) {
                     self.active_sink_profile = Some(pos)
-                } else if self.active_source_device == Some(object_id) {
+                } else if self.active_source_device == Some(device_id) {
                     self.active_source_profile = Some(pos);
                 }
             }
@@ -395,11 +393,11 @@ impl Model {
                         },
 
                         Server::Pipewire(event) => match event {
-                            pipewire::DeviceEvent::ActiveProfile(id, profile) => {
+                            pipewire::Event::ActiveProfile(id, profile) => {
                                 self.active_profiles.insert(id, profile);
                             }
 
-                            pipewire::DeviceEvent::AddProfile(id, profile) => {
+                            pipewire::Event::AddProfile(id, profile) => {
                                 let profiles = self.device_profiles.entry(id).or_default();
                                 for p in profiles.iter_mut() {
                                     if p.index == profile.index {
@@ -411,52 +409,55 @@ impl Model {
                                 profiles.push(profile);
                             }
 
-                            pipewire::DeviceEvent::Add(device) => {
-                                let object_id = device.object_id;
-                                if !self.device_names.contains_key(object_id) {
-                                    match device.media_class {
+                            pipewire::Event::AddDevice(device) => {
+                                self.device_names.insert(device.id, device.name);
+                            }
+
+                            pipewire::Event::AddNode(node) => {
+                                let object_id = node.object_id;
+                                if !self.node_names.contains_key(object_id) {
+                                    match node.media_class {
                                         pipewire::MediaClass::Sink => {
-                                            self.sinks.push(device.description.clone());
-                                            self.sink_pw_ids.push(device.object_id);
+                                            self.sinks.push(node.description.clone());
+                                            self.sink_pw_ids.push(node.object_id);
 
                                             sort_devices(&mut self.sinks, &mut self.sink_pw_ids);
 
-                                            if self.default_sink == device.node_name {
-                                                self.set_default_sink_id(device.object_id);
+                                            if self.default_sink == node.node_name {
+                                                self.set_default_sink_id(node.object_id);
                                             }
                                         }
 
                                         pipewire::MediaClass::Source => {
-                                            self.sources.push(device.description.clone());
-                                            self.source_pw_ids.push(device.object_id);
+                                            self.sources.push(node.description.clone());
+                                            self.source_pw_ids.push(node.object_id);
 
                                             sort_devices(
                                                 &mut self.sources,
                                                 &mut self.source_pw_ids,
                                             );
 
-                                            if self.default_source == device.node_name {
+                                            if self.default_source == node.node_name {
                                                 self.set_default_source_id(object_id);
                                             }
                                         }
                                     }
 
-                                    if let Some(device_id) = device.device_id {
+                                    if let Some(device_id) = node.device_id {
                                         self.device_ids.insert(object_id, device_id);
                                     }
 
-                                    self.device_names.insert(object_id, device.node_name);
-                                    self.device_descriptions
-                                        .insert(object_id, device.description);
+                                    self.node_names.insert(object_id, node.node_name);
+                                    self.node_descriptions.insert(object_id, node.description);
                                 }
 
-                                if device.device_id.is_some() {
-                                    if self.active_sink_device == device.device_id {
+                                if node.device_id.is_some() {
+                                    if self.active_sink_device == node.device_id {
                                         self.set_default_sink_id(object_id);
                                         tokio::task::spawn(async move {
                                             wpctl::set_default(object_id).await;
                                         });
-                                    } else if self.active_source_device == device.device_id {
+                                    } else if self.active_source_device == node.device_id {
                                         self.set_default_source_id(object_id);
                                         tokio::task::spawn(async move {
                                             wpctl::set_default(object_id).await;
@@ -465,9 +466,8 @@ impl Model {
                                 }
                             }
 
-                            pipewire::DeviceEvent::Remove(object_id) => {
-                                self.remove_node(object_id);
-                            }
+                            pipewire::Event::RemoveDevice(id) => self.remove_device(id),
+                            pipewire::Event::RemoveNode(id) => self.remove_node(id),
                         },
                     }
                 }
@@ -509,68 +509,56 @@ impl Model {
     }
 
     fn node_id_from_name(&self, name: &str) -> Option<u32> {
-        self.device_names
+        self.node_names
             .iter()
             .find(|&(_, n)| *n == name)
             .map(|(id, _)| id)
     }
 
-    fn remove_node(&mut self, object_id: u32) {
-        if let Some(pos) = self
-            .sink_pw_ids
-            .iter()
-            .position(|&node_id| node_id == object_id)
-        {
+    fn remove_device(&mut self, id: DeviceId) {
+        _ = self.device_names.remove(id);
+        _ = self.device_profiles.remove(id);
+        _ = self.active_profiles.remove(id);
+    }
+
+    fn remove_node(&mut self, id: NodeId) {
+        if let Some(pos) = self.sink_pw_ids.iter().position(|&node_id| node_id == id) {
             self.sink_pw_ids.remove(pos);
             self.sinks.remove(pos);
-            if self.active_sink_device == Some(object_id) {
+            if self.active_sink_device == Some(id) {
                 self.active_sink = None;
-                self.active_sink_device = self.device_ids.get(object_id).cloned();
+                self.active_sink_device = self.device_ids.get(id).cloned();
             } else if let Some(id) = self.active_sink_device {
                 self.set_default_sink_id(id);
             }
-        } else if let Some(pos) = self
-            .source_pw_ids
-            .iter()
-            .position(|&node_id| node_id == object_id)
-        {
+        } else if let Some(pos) = self.source_pw_ids.iter().position(|&node_id| node_id == id) {
             self.source_pw_ids.remove(pos);
             self.sources.remove(pos);
-            if self.active_source_device == Some(object_id) {
+            if self.active_source_device == Some(id) {
                 self.active_source = None;
-                self.active_source_device = self.device_ids.get(object_id).cloned();
+                self.active_source_device = self.device_ids.get(id).cloned();
             } else if let Some(id) = self.active_source_device {
                 self.set_default_source_id(id);
             }
         }
 
-        _ = self.device_ids.remove(object_id);
-        _ = self.device_names.remove(object_id);
-        _ = self.device_descriptions.remove(object_id);
-        _ = self.device_profiles.remove(object_id);
-        _ = self.active_profiles.remove(object_id);
+        _ = self.device_ids.remove(id);
+        _ = self.node_names.remove(id);
+        _ = self.node_descriptions.remove(id);
     }
 
     /// Set the default sink device by its the node ID.
     fn set_default_sink_id(&mut self, object_id: u32) {
         self.active_sink = self.sink_pw_ids.iter().position(|&id| id == object_id);
         self.active_sink_device = Some(object_id);
-        self.default_sink = self
-            .device_names
-            .get(object_id)
-            .cloned()
-            .unwrap_or_default();
+        self.default_sink = self.node_names.get(object_id).cloned().unwrap_or_default();
     }
 
     /// Set the default source device by its the node ID.
     fn set_default_source_id(&mut self, object_id: u32) {
         self.active_source = self.source_pw_ids.iter().position(|&id| id == object_id);
         self.active_source_device = Some(object_id);
-        self.default_source = self
-            .device_names
-            .get(object_id)
-            .cloned()
-            .unwrap_or_default();
+        self.default_source = self.node_names.get(object_id).cloned().unwrap_or_default();
     }
 }
 
@@ -593,7 +581,7 @@ pub enum Server {
     /// Get default sinks/sources and their volumes/mute status.
     Pulse(pulse::Event),
     /// Get ALSA cards and their profiles.
-    Pipewire(pipewire::DeviceEvent),
+    Pipewire(pipewire::Event),
 }
 
 pub struct SubscriptionHandle {

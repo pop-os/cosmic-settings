@@ -76,11 +76,7 @@ pub fn view() -> Section<crate::pages::Message> {
             .device_profiles
             .iter()
             .filter_map(|(object_id, profiles)| {
-                let name = sound_page
-                    .model
-                    .device_descriptions
-                    .get(object_id)?
-                    .as_str();
+                let name = sound_page.model.device_names.get(object_id)?.as_str();
 
                 // TODO: cache
                 let active_profile =
@@ -89,10 +85,7 @@ pub fn view() -> Section<crate::pages::Message> {
                         .active_profiles
                         .get(object_id)
                         .and_then(|profile| {
-                            sound_page
-                                .model
-                                .device_profiles
-                                .get(object_id)?
+                            profiles
                                 .iter()
                                 .enumerate()
                                 .find(|(_, p)| p.index == profile.index)

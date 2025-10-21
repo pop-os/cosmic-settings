@@ -4,7 +4,10 @@
 // #![deny(missing_docs)]
 
 pub mod device;
-pub use device::{Device, MediaClass};
+pub use device::Device;
+
+pub mod node;
+pub use node::{MediaClass, Node};
 
 // mod port;
 // pub use port::Port;
@@ -23,7 +26,7 @@ use futures::{SinkExt, executor::block_on};
 use pipewire::{
     device::DeviceListener,
     main_loop::MainLoop as PwMainLoop,
-    node::{Node, NodeInfoRef, NodeListener},
+    node::{NodeInfoRef, NodeListener},
     proxy::{ProxyListener, ProxyT},
     types::ObjectType,
 };
@@ -37,30 +40,40 @@ use std::{
     u32,
 };
 
+use crate::{DeviceId, NodeId};
+
 /// Node event`
 #[derive(Debug)]
-pub enum NodeEvent<'a> {
+pub enum PipewireEvent<'a> {
     /// Sets the active profile for a device
-    ActiveProfile(u32, Profile),
+    ActiveProfile(DeviceId, Profile),
+    /// Device info
+    DeviceInfo(Device),
     /// Node info
-    NodeInfo(u32, &'a NodeInfoRef),
+    NodeInfo(NodeId, &'a NodeInfoRef),
     /// A profile parameter was enumerated
-    Profile(u32, Profile),
+    Profile(DeviceId, Profile),
+    /// Device removal
+    RemoveDevice(DeviceId),
     /// Node removal
-    Remove(u32),
+    RemoveNode(NodeId),
 }
 
 /// Device event
 #[derive(Clone, Debug)]
-pub enum DeviceEvent {
+pub enum Event {
     /// Set the active profile for a device
-    ActiveProfile(u32, Profile),
+    ActiveProfile(DeviceId, Profile),
     /// A new device was detected.
-    Add(Device),
+    AddDevice(Device),
+    /// A new node was detected.
+    AddNode(Node),
     /// A profile was enumerated
-    AddProfile(u32, Profile),
-    /// A device with the given object_id was removed.
-    Remove(u32),
+    AddProfile(DeviceId, Profile),
+    /// A device with the given device_id was removed.
+    RemoveDevice(DeviceId),
+    /// A node with the given object_id was removed.
+    RemoveNode(NodeId),
 }
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
@@ -81,9 +94,9 @@ struct Proxies {
     nodes: HashMap<u32, (pipewire::node::Node, NodeListener, ProxyListener)>,
 }
 
-pub fn subscription() -> iced_futures::Subscription<DeviceEvent> {
+pub fn subscription() -> iced_futures::Subscription<Event> {
     Subscription::run_with_id(
-        TypeId::of::<DeviceEvent>(),
+        TypeId::of::<Event>(),
         stream::channel(1, |sender| async {
             _ = thread(sender);
 
@@ -93,7 +106,7 @@ pub fn subscription() -> iced_futures::Subscription<DeviceEvent> {
 }
 
 pub fn thread(
-    on_event: futures::channel::mpsc::Sender<DeviceEvent>,
+    on_event: futures::channel::mpsc::Sender<Event>,
 ) -> (JoinHandle<()>, pipewire::channel::Sender<()>) {
     let (pw_tx, pw_rx) = pipewire::channel::channel();
 
@@ -109,7 +122,7 @@ pub fn thread(
 /// ``PipeWire`` sockets are found in `/run/user/{{UID}}/pipewire-0`.
 pub fn devices_from_socket(
     pw_cancel: pipewire::channel::Receiver<()>,
-    mut on_event: futures::channel::mpsc::Sender<DeviceEvent>,
+    mut on_event: futures::channel::mpsc::Sender<Event>,
 ) {
     let mut managed = BTreeMap::new();
     let (device_enum_tx, device_enum_rx) = pipewire::channel::channel();
@@ -118,54 +131,47 @@ pub fn devices_from_socket(
         pw_cancel,
         device_enum_rx,
         move |main_loop, event| match event {
-            NodeEvent::NodeInfo(pw_id, info) => {
-                if let Some(device) = Device::from_node(info) {
-                    if let Some(device_id) = device.device_id {
-                        _ = device_enum_tx.send(device_id);
-                    }
+            PipewireEvent::NodeInfo(pw_id, info) => {
+                if let Some(node) = Node::from_node(info) {
                     if managed
-                        .insert(pw_id, (device.object_id, device.device_id))
+                        .insert(pw_id, (node.object_id, node.device_id))
                         .is_none()
                     {
-                        if block_on(on_event.send(DeviceEvent::Add(device))).is_err() {
+                        if block_on(on_event.send(Event::AddNode(node))).is_err() {
                             main_loop.quit();
                         }
                     }
                 }
             }
 
-            NodeEvent::Profile(device_id, profile) => {
-                let Some(object_id) = managed
-                    .values()
-                    .find(|(_, dev_id)| Some(device_id) == *dev_id)
-                    .map(|(obj_id, _)| *obj_id)
-                else {
-                    return;
-                };
-
-                if block_on(on_event.send(DeviceEvent::AddProfile(object_id, profile))).is_err() {
+            PipewireEvent::DeviceInfo(device) => {
+                _ = device_enum_tx.send(device.id);
+                if block_on(on_event.send(Event::AddDevice(device))).is_err() {
                     main_loop.quit();
                 }
             }
 
-            NodeEvent::ActiveProfile(device_id, profile) => {
-                let Some(object_id) = managed
-                    .values()
-                    .find(|(_, dev_id)| Some(device_id) == *dev_id)
-                    .map(|(obj_id, _)| *obj_id)
-                else {
-                    return;
-                };
-
-                if block_on(on_event.send(DeviceEvent::ActiveProfile(object_id, profile))).is_err()
-                {
+            PipewireEvent::Profile(device_id, profile) => {
+                if block_on(on_event.send(Event::AddProfile(device_id, profile))).is_err() {
                     main_loop.quit();
                 }
             }
 
-            NodeEvent::Remove(pw_id) => {
+            PipewireEvent::ActiveProfile(device_id, profile) => {
+                if block_on(on_event.send(Event::ActiveProfile(device_id, profile))).is_err() {
+                    main_loop.quit();
+                }
+            }
+
+            PipewireEvent::RemoveDevice(id) => {
+                if block_on(on_event.send(Event::RemoveDevice(id))).is_err() {
+                    main_loop.quit();
+                }
+            }
+
+            PipewireEvent::RemoveNode(pw_id) => {
                 if let Some((object_id, _)) = managed.remove(&pw_id) {
-                    if block_on(on_event.send(DeviceEvent::Remove(object_id))).is_err() {
+                    if block_on(on_event.send(Event::RemoveNode(object_id))).is_err() {
                         main_loop.quit();
                     }
                 }
@@ -182,7 +188,7 @@ pub fn devices_from_socket(
 pub fn nodes_from_socket(
     pw_cancel: pipewire::channel::Receiver<()>,
     pw_enum_device: pipewire::channel::Receiver<u32>,
-    on_event: impl FnMut(&PwMainLoop, NodeEvent) + 'static,
+    on_event: impl FnMut(&PwMainLoop, PipewireEvent) + 'static,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let main_loop = pipewire::main_loop::MainLoopRc::new(None)?;
     let context = pipewire::context::ContextRc::new(&main_loop, None)?;
@@ -251,24 +257,31 @@ pub fn nodes_from_socket(
                         .add_listener_local()
                         .info({
                             let proxies = Rc::downgrade(&proxies);
+                            let main_loop_weak = main_loop.downgrade();
+                            let on_event_weak = Rc::downgrade(&on_event);
                             move |info| {
-                                let Some(props) = info.props() else {
-                                    return;
-                                };
-
                                 let Some(proxies) = proxies.upgrade() else {
                                     return;
                                 };
 
-                                // Map the device's pipewire ID to
-                                if let Some(Ok(object_id)) =
-                                    props.get("object.id").map(str::parse::<u32>)
-                                {
-                                    if let Some(entry) =
-                                        proxies.borrow_mut().devices.get_mut(&pw_id)
-                                    {
-                                        entry.0 = object_id;
-                                    }
+                                let Some(device) = Device::from_device(info) else {
+                                    return;
+                                };
+
+                                // Map the device's pipewire ID to its device ID
+                                if let Some(entry) = proxies.borrow_mut().devices.get_mut(&pw_id) {
+                                    entry.0 = device.id;
+                                }
+
+                                let Some(main_loop) = main_loop_weak.upgrade() else {
+                                    return;
+                                };
+
+                                if let Some(on_event) = on_event_weak.upgrade() {
+                                    on_event.borrow_mut()(
+                                        &main_loop,
+                                        PipewireEvent::DeviceInfo(device),
+                                    );
                                 }
                             }
                         })
@@ -304,7 +317,7 @@ pub fn nodes_from_socket(
                                         if let Some(profile) = Profile::from_pod(pod) {
                                             on_event.borrow_mut()(
                                                 &main_loop,
-                                                NodeEvent::Profile(device_id, profile),
+                                                PipewireEvent::Profile(device_id, profile),
                                             );
                                         }
                                     }
@@ -312,7 +325,7 @@ pub fn nodes_from_socket(
                                         if let Some(profile) = Profile::from_pod(pod) {
                                             on_event.borrow_mut()(
                                                 &main_loop,
-                                                NodeEvent::ActiveProfile(device_id, profile),
+                                                PipewireEvent::ActiveProfile(device_id, profile),
                                             );
                                         }
                                     }
@@ -329,9 +342,21 @@ pub fn nodes_from_socket(
                         .add_listener_local()
                         .removed({
                             let proxies_weak = Rc::downgrade(&proxies);
+                            let on_event_weak = Rc::downgrade(&on_event);
                             move || {
                                 if let Some(proxies) = proxies_weak.upgrade() {
-                                    proxies.borrow_mut().devices.remove(&pw_id);
+                                    let Some((id, ..)) =
+                                        proxies.borrow_mut().devices.remove(&pw_id)
+                                    else {
+                                        return;
+                                    };
+
+                                    if let Some(on_event) = on_event_weak.upgrade() {
+                                        on_event.borrow_mut()(
+                                            &main_loop,
+                                            PipewireEvent::RemoveDevice(id),
+                                        );
+                                    }
                                 }
                             }
                         })
@@ -344,7 +369,7 @@ pub fn nodes_from_socket(
                 }
 
                 ObjectType::Node => {
-                    let Ok(node) = registry.bind::<Node, _>(obj) else {
+                    let Ok(node) = registry.bind::<pipewire::node::Node, _>(obj) else {
                         return;
                     };
 
@@ -363,7 +388,7 @@ pub fn nodes_from_socket(
                                 if let Some(on_event) = on_event_weak.upgrade() {
                                     on_event.borrow_mut()(
                                         &main_loop,
-                                        NodeEvent::NodeInfo(id, info),
+                                        PipewireEvent::NodeInfo(id, info),
                                     );
                                 }
                             }
@@ -383,7 +408,10 @@ pub fn nodes_from_socket(
                                 };
 
                                 if let Some(on_event) = on_event_weak.upgrade() {
-                                    on_event.borrow_mut()(&main_loop, NodeEvent::Remove(id));
+                                    on_event.borrow_mut()(
+                                        &main_loop,
+                                        PipewireEvent::RemoveNode(id),
+                                    );
                                 }
 
                                 if let Some(proxies) = proxies_weak.upgrade() {
