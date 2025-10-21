@@ -111,7 +111,7 @@ impl Device {
                     }
                 }
                 DeviceUpdate::Paired(paired) => {
-                    self.enabled = Active::Disabling;
+                    self.enabled = Active::Enabling;
                     self.paired = paired;
                 }
                 DeviceUpdate::Icon(icon) => self.icon = icon,
@@ -254,7 +254,6 @@ pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObje
             return Event::Ok;
         }
     }
-
     Event::DeviceFailed(device_path)
 }
 
