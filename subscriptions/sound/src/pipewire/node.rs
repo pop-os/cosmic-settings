@@ -90,11 +90,15 @@ impl Node {
             object_id: object_id?,
             device_id,
             media_class: media_class?,
-            description: node_description
-                .strip_suffix(profile_description)
-                .unwrap_or(node_description)
-                .trim_ascii_end()
-                .to_owned(),
+            description: if profile_description.is_empty() {
+                node_description.to_owned()
+            } else {
+                let device_name = node_description
+                    .strip_suffix(profile_description)
+                    .unwrap_or(node_description)
+                    .trim_ascii_end();
+                [profile_description, " - ", device_name].concat()
+            },
             icon_name,
             audio_channels,
             audio_position,
