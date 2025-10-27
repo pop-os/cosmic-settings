@@ -468,10 +468,10 @@ impl PageInner {
                 }
             }
             Message::FullReset => {
-                if let Some(container) = self.system_container.as_ref() {
-                    if let Err(err) = container.write_entries() {
-                        tracing::error!(?err, "Error fully resetting the panel config.");
-                    }
+                if let Some(container) = self.system_container.as_ref()
+                    && let Err(err) = container.write_entries()
+                {
+                    tracing::error!(?err, "Error fully resetting the panel config.");
                 }
             }
             _ => {}
@@ -571,10 +571,10 @@ impl PageInner {
                 return Task::none();
             }
             Message::OutputRemoved(output) => {
-                if let Some((name, _)) = self.outputs_map.remove(&output.id()) {
-                    if let Some(pos) = self.outputs.iter().position(|o| o == &name) {
-                        self.outputs.remove(pos);
-                    }
+                if let Some((name, _)) = self.outputs_map.remove(&output.id())
+                    && let Some(pos) = self.outputs.iter().position(|o| o == &name)
+                {
+                    self.outputs.remove(pos);
                 }
             }
             Message::PanelConfig(c) => {

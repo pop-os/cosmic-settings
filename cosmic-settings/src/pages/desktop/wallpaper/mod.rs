@@ -587,10 +587,10 @@ impl Page {
             }
 
             Category::RecentFolder(id) => {
-                if let Some(path) = self.config.recent_folders().get(id).cloned() {
-                    if let Err(why) = self.config.set_current_folder(Some(path.clone())) {
-                        tracing::error!(?path, ?why, "failed to set current folder");
-                    }
+                if let Some(path) = self.config.recent_folders().get(id).cloned()
+                    && let Err(why) = self.config.set_current_folder(Some(path.clone()))
+                {
+                    tracing::error!(?path, ?why, "failed to set current folder");
                 }
             }
 
@@ -815,10 +815,10 @@ impl Page {
             }
 
             Message::ImageRemove(image) => {
-                if let Some(path) = self.selection.remove_custom_image(image) {
-                    if let Err(why) = self.config.remove_custom_image(&path) {
-                        tracing::error!(?why, "could not remove custom image from config");
-                    }
+                if let Some(path) = self.selection.remove_custom_image(image)
+                    && let Err(why) = self.config.remove_custom_image(&path)
+                {
+                    tracing::error!(?why, "could not remove custom image from config");
                 }
             }
 
@@ -858,18 +858,14 @@ impl Page {
                     self.selection.active = Choice::Slideshow;
                     self.cache_display_image();
                 } else {
-                    if let Some(output) = self.config_output() {
-                        if let Some(Source::Path(path)) = self.config.current_image(output) {
-                            if let Some(entity) = self.wallpaper_id_from_path(&path) {
-                                if let Some(entry) =
-                                    self.config_wallpaper_entry(output.to_owned(), path)
-                                {
-                                    self.select_wallpaper(&entry, entity, false);
-                                    self.config_apply();
-                                    return Task::none();
-                                }
-                            }
-                        }
+                    if let Some(output) = self.config_output()
+                        && let Some(Source::Path(path)) = self.config.current_image(output)
+                        && let Some(entity) = self.wallpaper_id_from_path(&path)
+                        && let Some(entry) = self.config_wallpaper_entry(output.to_owned(), path)
+                    {
+                        self.select_wallpaper(&entry, entity, false);
+                        self.config_apply();
+                        return Task::none();
                     }
 
                     self.select_first_wallpaper();

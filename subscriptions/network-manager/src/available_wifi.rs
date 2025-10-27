@@ -22,13 +22,9 @@ pub async fn handle_wireless_device(
     let mut scan_changed = device.receive_last_scan_changed().await;
 
     if let Some(t) = scan_changed.next().await {
-        match t.get().await {
-            Ok(-1) => {
-                tracing::error!("wireless device scan errored");
-                return Ok(Default::default());
-            }
-
-            _ => (),
+        if let Ok(-1) = t.get().await {
+            tracing::error!("wireless device scan errored");
+            return Ok(Default::default());
         }
     }
 

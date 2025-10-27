@@ -16,19 +16,23 @@ impl HwAddress {
         }
         u64::from_str_radix(columnless_vec.join("").as_str(), 16)
             .ok()
-            .and_then(|address| Some(HwAddress { address }))
+            .map(|address| HwAddress { address })
     }
     pub fn from_string(arg: &String) -> Option<Self> {
         HwAddress::from_str(arg.as_str())
     }
-    pub fn to_string(&self) -> String {
-        format!("{:#x}", self.address)
+}
+
+impl std::fmt::Display for HwAddress {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let hex = format!("{:#x}", self.address)
             .trim_start_matches("0x")
             .chars()
             .collect::<Vec<_>>()
             .chunks(2)
             .map(|chunk| chunk.iter().cloned().collect::<String>())
             .collect::<Vec<String>>()
-            .join(":")
+            .join(":");
+        write!(f, "{}", hex)
     }
 }

@@ -36,8 +36,8 @@ pub struct KnownDeviceConnection {
     pub uuid: Arc<str>,
 }
 
-pub async fn list<'a>(
-    conn: &'a zbus::Connection,
+pub async fn list(
+    conn: &zbus::Connection,
     device_type_filter: fn(DeviceType) -> bool,
 ) -> zbus::Result<Vec<DeviceInfo>> {
     let nm = NetworkManager::new(conn).await?;

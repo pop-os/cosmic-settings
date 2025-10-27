@@ -337,11 +337,9 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
 
 fn super_key_active_config() -> Option<usize> {
     let super_binding = Binding::new(shortcuts::Modifiers::new().logo(), None);
-
     let config = shortcuts::context().ok()?;
-    let shortcuts = shortcuts::shortcuts(&config);
 
-    let new_id = shortcuts
+    shortcuts::shortcuts(&config)
         .iter()
         .find(|(binding, _action)| binding == &&super_binding)
         .and_then(|(_, action)| match action {
@@ -349,9 +347,7 @@ fn super_key_active_config() -> Option<usize> {
             Action::System(shortcuts::action::System::WorkspaceOverview) => Some(1),
             Action::System(shortcuts::action::System::AppLibrary) => Some(2),
             _ => None,
-        });
-
-    new_id
+        })
 }
 
 fn super_key_set(action: Option<shortcuts::action::System>) {

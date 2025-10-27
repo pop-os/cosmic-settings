@@ -33,7 +33,7 @@ static DPI_SCALE_LABELS: LazyLock<Vec<String>> =
 #[derive(Clone, Copy, Debug)]
 pub struct ColorDepth(usize);
 
-/// Identifies the content to display in the context drawer
+// /// Identifies the content to display in the context drawer
 // pub enum ContextDrawer {
 //     NightLight,
 // }
@@ -287,10 +287,10 @@ impl page::Page<crate::pages::Message> for Page {
             let (randr_task, randr_handle) =
                 Task::stream(async_fn_stream::fn_stream(|emitter| async move {
                     while let Ok(message) = rx.recv().await {
-                        if let cosmic_randr::Message::ManagerDone = message {
-                            if !refreshing_page.swap(true, Ordering::SeqCst) {
-                                _ = emitter.emit(on_enter().await).await;
-                            }
+                        if let cosmic_randr::Message::ManagerDone = message
+                            && !refreshing_page.swap(true, Ordering::SeqCst)
+                        {
+                            _ = emitter.emit(on_enter().await).await;
                         }
                     }
                 }))
@@ -931,14 +931,13 @@ impl Page {
             return Task::none();
         };
 
-        if let Some(ref resolution) = self.config.resolution {
-            if let Some(rates) = self.cache.modes.get(resolution) {
-                if let Some(&rate) = rates.get(option) {
-                    self.cache.refresh_rate_selected = Some(option);
-                    self.config.refresh_rate = Some(rate);
-                    return self.exec_randr(output, Randr::RefreshRate(rate));
-                }
-            }
+        if let Some(ref resolution) = self.config.resolution
+            && let Some(rates) = self.cache.modes.get(resolution)
+            && let Some(&rate) = rates.get(option)
+        {
+            self.cache.refresh_rate_selected = Some(option);
+            self.config.refresh_rate = Some(rate);
+            return self.exec_randr(output, Randr::RefreshRate(rate));
         }
 
         Task::none()
@@ -1329,7 +1328,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     .button_alignment(Alignment::Center)
                     .on_activate(Message::Display);
 
-                let mut display_enable = (page
+                let mut display_enable = if page
                     // Don't allow disabling display if it's the only active
                     .list
                     .outputs
@@ -1337,22 +1336,23 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                     .filter(|display| display.enabled)
                     .count()
                     > 1
-                    || !active_output.enabled)
-                    .then(|| {
-                        list_column()
-                            .add(widget::settings::item(
-                                &descriptions[enable_label],
-                                toggler(active_output.enabled).on_toggle(Message::DisplayToggle),
-                            ))
-                            .add(widget::settings::item(
-                                &descriptions[mirroring_label],
-                                widget::dropdown::multi::dropdown(
-                                    &page.mirror_menu,
-                                    Message::Mirroring,
-                                ),
-                            ))
-                    })
-                    .unwrap_or_else(list_column);
+                    || !active_output.enabled
+                {
+                    list_column()
+                        .add(widget::settings::item(
+                            &descriptions[enable_label],
+                            toggler(active_output.enabled).on_toggle(Message::DisplayToggle),
+                        ))
+                        .add(widget::settings::item(
+                            &descriptions[mirroring_label],
+                            widget::dropdown::multi::dropdown(
+                                &page.mirror_menu,
+                                Message::Mirroring,
+                            ),
+                        ))
+                } else {
+                    list_column()
+                };
 
                 if let Some(items) = display_options {
                     for item in items {

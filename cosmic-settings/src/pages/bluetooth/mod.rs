@@ -98,11 +98,12 @@ impl Model {
 
         self.update_status();
 
-        if let Some((path, existing)) = self.get_selected_adapter_mut() {
-            if existing.enabled == Active::Enabled && existing.scanning == Active::Disabled {
-                existing.scanning = Active::Enabling;
-                return Some(start_discovery(connection, path));
-            }
+        if let Some((path, existing)) = self.get_selected_adapter_mut()
+            && existing.enabled == Active::Enabled
+            && existing.scanning == Active::Disabled
+        {
+            existing.scanning = Active::Enabling;
+            return Some(start_discovery(connection, path));
         }
 
         None

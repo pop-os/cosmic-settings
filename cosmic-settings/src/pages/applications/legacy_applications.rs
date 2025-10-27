@@ -138,10 +138,10 @@ impl page::Page<crate::pages::Message> for Page {
         let (randr_task, randr_handle) =
             Task::stream(async_fn_stream::fn_stream(|emitter| async move {
                 while let Ok(message) = rx.recv().await {
-                    if let cosmic_randr::Message::ManagerDone = message {
-                        if !refresh_pending.swap(true, Ordering::SeqCst) {
-                            _ = emitter.emit(on_enter().await).await;
-                        }
+                    if let cosmic_randr::Message::ManagerDone = message
+                        && !refresh_pending.swap(true, Ordering::SeqCst)
+                    {
+                        _ = emitter.emit(on_enter().await).await;
                     }
                 }
             }))

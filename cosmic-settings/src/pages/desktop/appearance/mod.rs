@@ -247,12 +247,12 @@ impl Page {
             }
 
             Message::DrawerColor(u) => {
-                if let Some(context_view) = self.context_view.as_ref() {
-                    if self.drawer.update_color(&mut tasks, u, context_view) {
-                        theme_staged = self
-                            .theme_manager
-                            .set_color(self.drawer.current_color(context_view), context_view);
-                    }
+                if let Some(context_view) = self.context_view.as_ref()
+                    && self.drawer.update_color(&mut tasks, u, context_view)
+                {
+                    theme_staged = self
+                        .theme_manager
+                        .set_color(self.drawer.current_color(context_view), context_view);
                 }
             }
 
@@ -462,10 +462,10 @@ impl Page {
             Message::ImportSuccess(builder) => {
                 tracing::trace!("Import successful");
                 let new_is_dark = builder.palette.is_dark();
-                if new_is_dark != self.theme_manager.mode().is_dark {
-                    if let Err(err) = self.theme_manager.dark_mode(new_is_dark) {
-                        tracing::error!(?err, "Error setting dark mode");
-                    }
+                if new_is_dark != self.theme_manager.mode().is_dark
+                    && let Err(err) = self.theme_manager.dark_mode(new_is_dark)
+                {
+                    tracing::error!(?err, "Error setting dark mode");
                 }
 
                 self.theme_manager
@@ -552,33 +552,33 @@ impl Page {
             (panel_config.name == "Dock").then_some(panel_config)
         });
 
-        if let Some(panel_config_helper) = panel_config_helper.as_ref() {
-            if let Some(panel_config) = panel_config.as_mut() {
-                let radii = if panel_config.anchor_gap || !panel_config.expand_to_edges {
-                    let cornder_radii: CornerRadii = roundness.into();
-                    cornder_radii.radius_xl[0] as u32
-                } else {
-                    0
-                };
+        if let Some(panel_config_helper) = panel_config_helper.as_ref()
+            && let Some(panel_config) = panel_config.as_mut()
+        {
+            let radii = if panel_config.anchor_gap || !panel_config.expand_to_edges {
+                let cornder_radii: CornerRadii = roundness.into();
+                cornder_radii.radius_xl[0] as u32
+            } else {
+                0
+            };
 
-                if let Err(why) = panel_config.set_border_radius(panel_config_helper, radii) {
-                    tracing::error!(?why, "Error updating panel corner radii");
-                }
+            if let Err(why) = panel_config.set_border_radius(panel_config_helper, radii) {
+                tracing::error!(?why, "Error updating panel corner radii");
             }
         };
 
-        if let Some(dock_config_helper) = dock_config_helper.as_ref() {
-            if let Some(dock_config) = dock_config.as_mut() {
-                let radii = if dock_config.anchor_gap || !dock_config.expand_to_edges {
-                    let cornder_radii: CornerRadii = roundness.into();
-                    cornder_radii.radius_xl[0] as u32
-                } else {
-                    0
-                };
+        if let Some(dock_config_helper) = dock_config_helper.as_ref()
+            && let Some(dock_config) = dock_config.as_mut()
+        {
+            let radii = if dock_config.anchor_gap || !dock_config.expand_to_edges {
+                let cornder_radii: CornerRadii = roundness.into();
+                cornder_radii.radius_xl[0] as u32
+            } else {
+                0
+            };
 
-                if let Err(why) = dock_config.set_border_radius(dock_config_helper, radii) {
-                    tracing::error!(?why, "Error updating dock corner radii");
-                }
+            if let Err(why) = dock_config.set_border_radius(dock_config_helper, radii) {
+                tracing::error!(?why, "Error updating dock corner radii");
             }
         };
     }
@@ -596,29 +596,29 @@ impl Page {
             (panel_config.name == "Dock").then_some(panel_config)
         });
 
-        if let Some(panel_config_helper) = panel_config_helper.as_ref() {
-            if let Some(panel_config) = panel_config.as_mut() {
-                let spacing = match density {
-                    Density::Compact => 0,
-                    _ => 4,
-                };
-                let update = panel_config.set_spacing(panel_config_helper, spacing);
-                if let Err(err) = update {
-                    tracing::error!(?err, "Error updating panel spacing");
-                }
+        if let Some(panel_config_helper) = panel_config_helper.as_ref()
+            && let Some(panel_config) = panel_config.as_mut()
+        {
+            let spacing = match density {
+                Density::Compact => 0,
+                _ => 4,
+            };
+            let update = panel_config.set_spacing(panel_config_helper, spacing);
+            if let Err(err) = update {
+                tracing::error!(?err, "Error updating panel spacing");
             }
         };
 
-        if let Some(dock_config_helper) = dock_config_helper.as_ref() {
-            if let Some(dock_config) = dock_config.as_mut() {
-                let spacing = match density {
-                    Density::Compact => 0,
-                    _ => 4,
-                };
-                let update = dock_config.set_spacing(dock_config_helper, spacing);
-                if let Err(err) = update {
-                    tracing::error!(?err, "Error updating dock spacing");
-                }
+        if let Some(dock_config_helper) = dock_config_helper.as_ref()
+            && let Some(dock_config) = dock_config.as_mut()
+        {
+            let spacing = match density {
+                Density::Compact => 0,
+                _ => 4,
+            };
+            let update = dock_config.set_spacing(dock_config_helper, spacing);
+            if let Err(err) = update {
+                tracing::error!(?err, "Error updating dock spacing");
             }
         };
     }
