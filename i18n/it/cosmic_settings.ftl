@@ -273,7 +273,6 @@ add-applet = Aggiungi applet
 all = Tutti
 applets = Applet
 center-segment = Segmento centrale
-drop-here = Trascina gli applet quì
 end-segment = Segmento finale
 large = Grande
 no-applets-found = Nessun applet trovato...

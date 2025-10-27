@@ -273,7 +273,6 @@ add-applet = Kisalkalmazás hozzáadása
 all = Összes
 applets = Kisalkalmazások
 center-segment = Szegmens közepe
-drop-here = Húzd ide a kisalkalmazásokat
 end-segment = Szegmens vége
 large = Nagy
 no-applets-found = Nem található kisalkalmazás...

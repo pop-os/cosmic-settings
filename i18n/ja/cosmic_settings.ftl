@@ -233,7 +233,6 @@ add-applet = アプレットを追加
 all = すべて
 applets = アプレット
 center-segment = 中心の部分
-drop-here = ここにアプレットを入れてください
 end-segment = 最後の部分
 large = 大きい
 no-applets-found = アプレットは見つけられませんでした...

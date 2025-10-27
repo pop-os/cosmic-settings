@@ -64,7 +64,6 @@ add-applet = افزودن اپلت
 search-applets = جستجوی اپلت‌ها...
 no-applets-found = هیچ اپلتی یافت نشد...
 all = همه
-drop-here = اپلت را اینجا رها کنید
 
 ## Desktop: Wallpaper
 

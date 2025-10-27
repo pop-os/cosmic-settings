@@ -160,7 +160,7 @@ color-filter = Tip filtru de culoare
 
 desktop = Birou
 
-## Desktop: Wallpaper 
+## Desktop: Wallpaper
 
 wallpaper = Tapet
     .change = Schimbă imaginea la fiecare
@@ -253,7 +253,7 @@ monospace-font = Fontul monospace
 notifications = Notificări
     .desc = Nu deranja, notificări pe ecranul de blocare și setări pe aplicație.
 
-## Desktop: Panel 
+## Desktop: Panel
 
 panel = Panou
     .desc = Bară de sus cu controale pentru desktop și meniuri.
@@ -262,7 +262,6 @@ add-applet = Adaugă applet
 all = Toate
 applets = Applet-uri
 center-segment = Segment central
-drop-here = Lasă applet-urile aici
 end-segment = Segment final
 large = Mare
 no-applets-found = Niciun applet găsit...
@@ -342,7 +341,7 @@ workspaces-orientation = Orientarea spațiilor de lucru
 hot-corner = Colț activ
     .top-left-corner = Activează colțul activ stânga-sus pentru Spațiile de lucru
 
-## Displays 
+## Displays
 
 -requires-restart = Necesită o repornire
 color = Culoare

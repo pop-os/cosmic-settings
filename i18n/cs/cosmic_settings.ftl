@@ -69,7 +69,6 @@ add-applet = Přidat Applet
 search-applets = Vyhledat applety...
 no-applets-found = Žádné applety nenalezeny...
 all = Všechny
-drop-here = Přetáhněte applety sem
 
 ## Desktop: Tapeta
 

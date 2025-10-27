@@ -272,7 +272,6 @@ add-applet = Applet toevoegen
 all = Alle
 applets = Applets
 center-segment = Middenstuk
-drop-here = Applets hier plaatsen
 end-segment = Eindstuk
 large = Groot
 no-applets-found = Geen applets gevonden...

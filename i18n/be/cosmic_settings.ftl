@@ -275,7 +275,6 @@ add-applet = Дадаць віджэт
 all = Усе
 applets = Аплеты
 center-segment = Цэнтральны сегмент
-drop-here = Кіньце віджэты сюды
 end-segment = Канчатковы сегмент
 large = Вялікі
 no-applets-found = Віджэты не знойдзены...

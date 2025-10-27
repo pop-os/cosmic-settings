@@ -273,7 +273,6 @@ add-applet = 新增工具程式
 all = 全部
 applets = 工具程式
 center-segment = 中間位置
-drop-here = 將工具程式拖曳至此處
 end-segment = 末尾位置
 large = 大
 no-applets-found = 找不到工具程式...

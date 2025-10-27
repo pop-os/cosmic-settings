@@ -224,7 +224,6 @@ add-applet = ऐपलेट जोड़ें
 all = सभी
 applets = ऐपलेट्स
 center-segment = केंद्र खंड
-drop-here = ऐपलेट्स को यहाँ छोड़ें
 end-segment = अंतिम खंड
 large = बड़ा
 no-applets-found = कोई ऐपलेट्स नहीं मिले...

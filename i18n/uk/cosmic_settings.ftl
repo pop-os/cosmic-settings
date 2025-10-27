@@ -117,7 +117,6 @@ add-applet = Додати аплет
 all = На всіх
 applets = Аплети
 center-segment = Центральний сегмент
-drop-here = Скидайте аплети сюди
 end-segment = Кінцевий сегмент
 large = Великий
 no-applets-found = Аплетів не знайдено...

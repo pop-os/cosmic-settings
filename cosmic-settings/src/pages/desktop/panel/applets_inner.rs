@@ -1,6 +1,5 @@
 use cosmic::app::ContextDrawer;
 use cosmic::cosmic_theme::palette::WithAlpha;
-use cosmic::iced::Vector;
 use cosmic::iced::clipboard::dnd::{
     DndAction, DndDestinationRectangle, DndEvent, OfferEvent, SourceEvent,
 };
@@ -15,8 +14,8 @@ use cosmic::{
     Apply, Element,
     cosmic_config::{Config, CosmicConfigEntry},
     iced::{
-        Alignment, Color, Length, Point, Rectangle, Size, core::window, event, mouse, overlay,
-        touch,
+        Alignment, Border, Color, Length, Point, Rectangle, Size, Vector, core::window, event,
+        mouse, overlay, touch,
     },
     iced_runtime::{Task, core::id::Id},
     iced_widget::core::{
@@ -651,7 +650,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 let is_dragged = active_dnd.as_ref().is_some_and(|dnd| dnd.id == info.id);
 
                 let content = if is_dragged {
-                    row::with_capacity(0).height(Length::Fixed(32.0))
+                    row().height(Length::Fixed(32.0))
                 } else {
                     row::with_children(vec![
                         icon::from_name("grip-lines-symbolic")
@@ -709,24 +708,32 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
             on_reorder: Box::new(on_reorder),
             on_finish: Some(on_apply_reorder),
             on_cancel: Some(on_cancel),
-            inner: if active_dnd.is_some() && applet_buttons.is_empty() {
+            inner: if applet_buttons.is_empty() {
                 container(
-                    text::body(fl!("drop-here"))
+                    text::body(fl!("place-here"))
+                        .class(theme::Text::Color(
+                            theme::active()
+                                .cosmic()
+                                .on_bg_component_color()
+                                .with_alpha(0.75)
+                                .into(),
+                        ))
                         .width(Length::Fill)
                         .height(Length::Fill)
-                        .align_y(Alignment::Center)
-                        .align_x(Alignment::Center),
+                        .center(),
                 )
                 .width(Length::Fill)
                 .height(Length::Fixed(48.0))
                 .padding(8)
-                .class(theme::Container::Custom(Box::new(move |theme| {
-                    let mut style = container::Catalog::style(theme, &theme::Container::Primary);
-                    style.border.radius = theme.cosmic().radius_s().into();
-                    style.border.color = theme.cosmic().bg_divider().into();
-                    style.border.width = 2.0;
-                    style.background = Some(Color::TRANSPARENT.into());
-                    style
+                .class(theme::Container::Custom(Box::new(|theme| {
+                    container::Style {
+                        border: Border {
+                            radius: theme.cosmic().radius_s().into(),
+                            color: theme.cosmic().bg_divider().with_alpha(0.5).into(),
+                            width: 2.0,
+                        },
+                        ..Default::default()
+                    }
                 })))
                 .into()
             } else {

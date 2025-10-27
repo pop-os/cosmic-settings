@@ -273,7 +273,6 @@ add-applet = Añadir subprograma
 all = Todos
 applets = Subprogramas
 center-segment = Centrar segmento
-drop-here = Soltar los subprogramas aquí
 end-segment = Terminar segmento
 large = Grande
 no-applets-found = No se encontraron subprogramas...

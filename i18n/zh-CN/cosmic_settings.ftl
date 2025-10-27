@@ -273,7 +273,6 @@ add-applet = 添加小程序
 all = 全部
 applets = 小程序
 center-segment = 中间区段
-drop-here = 将小程序拖放至此
 end-segment = 结束区段
 large = 大
 no-applets-found = 未找到小程序...

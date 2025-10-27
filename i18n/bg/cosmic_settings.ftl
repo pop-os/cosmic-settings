@@ -273,7 +273,6 @@ add-applet = Добавяне на графичен обект
 all = Всички
 applets = Графични обекти
 center-segment = В средата
-drop-here = Пуснете графичните обекти тук
 end-segment = В края
 large = Голям
 no-applets-found = Няма намерени графични обекти...

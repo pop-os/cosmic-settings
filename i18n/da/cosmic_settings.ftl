@@ -270,7 +270,6 @@ add-applet = Tilføj Applet
 all = Alle
 applets = Appletter
 center-segment = Center segment
-drop-here = Slip appletter her
 end-segment = Slut segment
 large = Stor
 no-applets-found = Der blev ikke fundet nogen applets...

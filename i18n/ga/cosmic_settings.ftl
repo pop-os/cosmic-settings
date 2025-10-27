@@ -273,7 +273,6 @@ add-applet = Cuir Feidhmchláirín leis
 all = Gach
 applets = Feidhmchláiríní
 center-segment = Deighleog an Ionaid
-drop-here = Cuir feidhmchláiríní anseo
 end-segment = Deighleog Críoch
 large = Mór
 no-applets-found = Níor aimsíodh feidhmchláiríní...
