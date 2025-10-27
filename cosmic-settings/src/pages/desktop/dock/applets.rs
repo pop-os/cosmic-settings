@@ -99,7 +99,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(content)
     }
 
-    fn context_drawer(&self) -> Option<ContextDrawer<crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         Some(cosmic::app::context_drawer(
             match self.inner.context {
                 Some(ContextDrawerVariant::AddApplet) => self

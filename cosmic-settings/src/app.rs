@@ -246,7 +246,7 @@ impl cosmic::Application for SettingsApp {
         Some(&self.nav_model)
     }
 
-    fn header_start(&self) -> Vec<Element<Self::Message>> {
+    fn header_start(&self) -> Vec<Element<'_, Self::Message>> {
         let mut widgets = Vec::new();
 
         widgets.push(if self.search_active {
@@ -798,7 +798,7 @@ impl cosmic::Application for SettingsApp {
         .unwrap_or_else(Task::none)
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         let view = if self.search_active && !self.search_input.is_empty() {
             self.search_view()
         } else if let Some(content) = self.pages.content(self.active_page) {
@@ -813,11 +813,11 @@ impl cosmic::Application for SettingsApp {
     }
 
     #[allow(clippy::too_many_lines)]
-    fn view_window(&self, id: window::Id) -> Element<Message> {
+    fn view_window(&self, id: window::Id) -> Element<'_, Message> {
         panic!("unknown window ID: {id:?}");
     }
 
-    fn context_drawer(&self) -> Option<ContextDrawer<Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, Message>> {
         if self.core.window.show_context {
             self.active_context_page.and_then(|context_page| {
                 self.pages.context_drawer(context_page).map(|cd| {
@@ -836,7 +836,7 @@ impl cosmic::Application for SettingsApp {
         }
     }
 
-    fn dialog(&self) -> Option<Element<Self::Message>> {
+    fn dialog(&self) -> Option<Element<'_, Self::Message>> {
         self.pages
             .dialog(self.active_page)
             .map(|e| e.map(Message::PageMessage))
@@ -939,7 +939,7 @@ impl SettingsApp {
     /// Adds a main page to the settings application.
     fn insert_page<P: page::AutoBind<crate::pages::Message>>(
         &mut self,
-    ) -> page::Insert<crate::pages::Message> {
+    ) -> page::Insert<'_, crate::pages::Message> {
         let id = self.pages.register::<P>().id();
         self.navbar_insert(id);
 
@@ -949,7 +949,7 @@ impl SettingsApp {
         }
     }
 
-    fn navbar_insert(&mut self, id: page::Entity) -> segmented_button::SingleSelectEntityMut {
+    fn navbar_insert(&mut self, id: page::Entity) -> segmented_button::SingleSelectEntityMut<'_> {
         let page = &self.pages.info[id];
 
         self.nav_model
@@ -961,7 +961,7 @@ impl SettingsApp {
     }
 
     /// Displays the view of a page.
-    fn page_view(&self, content: &[section::Entity]) -> cosmic::Element<Message> {
+    fn page_view(&self, content: &[section::Entity]) -> cosmic::Element<'_, Message> {
         let page = &self.pages.page[self.active_page];
         let page_info = &self.pages.info[self.active_page];
         let mut sections_column = Vec::with_capacity(content.len());
@@ -1092,7 +1092,7 @@ impl SettingsApp {
     }
 
     /// Displays the search view.
-    fn search_view(&self) -> cosmic::Element<Message> {
+    fn search_view(&self) -> cosmic::Element<'_, Message> {
         let mut sections: Vec<cosmic::Element<Message>> = Vec::new();
 
         let mut current_page = page::Entity::default();
@@ -1125,7 +1125,7 @@ impl SettingsApp {
     }
 
     /// Displays the sub-pages view of a page.
-    fn sub_page_view(&self, sub_pages: &[page::Entity]) -> cosmic::Element<Message> {
+    fn sub_page_view(&self, sub_pages: &[page::Entity]) -> cosmic::Element<'_, Message> {
         let page_list = sub_pages
             .iter()
             .copied()

@@ -32,7 +32,7 @@ use std::{borrow::Cow, fmt::Debug, mem, sync::LazyLock};
 use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, Section, section};
-use freedesktop_desktop_entry::{DesktopEntry, unicase::UniCase};
+use freedesktop_desktop_entry::DesktopEntry;
 use slotmap::{Key, SlotMap};
 use tracing::error;
 
@@ -131,7 +131,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(content)
     }
 
-    fn context_drawer(&self) -> Option<ContextDrawer<pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, pages::Message>> {
         Some(match self.context {
             Some(ContextDrawerVariant::AddApplet) => {
                 let search_input = text_input::search_input(fl!("search-applets"), &self.search)
@@ -230,7 +230,7 @@ impl Page {
     pub fn add_applet_view<T: Fn(Message) -> crate::pages::Message + Copy + 'static>(
         &self,
         msg_map: T,
-    ) -> Element<crate::pages::Message> {
+    ) -> Element<'_, crate::pages::Message> {
         let cosmic::cosmic_theme::Spacing {
             space_xxxs,
             space_xs,

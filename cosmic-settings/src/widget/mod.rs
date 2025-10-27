@@ -52,7 +52,7 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
 pub fn search_header<Message>(
     pages: &page::Binder<Message>,
     page: page::Entity,
-) -> cosmic::Element<crate::Message> {
+) -> cosmic::Element<'_, crate::Message> {
     let page_meta = &pages.info[page];
 
     let mut column_children = Vec::with_capacity(4);
@@ -80,12 +80,12 @@ pub fn search_header<Message>(
     column::with_children(column_children).into()
 }
 
-pub fn search_page_link<Message: 'static>(title: &str) -> button::TextButton<Message> {
+pub fn search_page_link<Message: 'static>(title: &str) -> button::TextButton<'_, Message> {
     button::text(title).class(button::ButtonClass::Link)
 }
 
 #[must_use]
-pub fn page_title<Message: 'static>(page: &page::Info) -> Element<Message> {
+pub fn page_title<Message: 'static>(page: &page::Info) -> Element<'_, Message> {
     row::with_capacity(2)
         .push(text::title3(page.title.as_str()))
         .push(horizontal_space())

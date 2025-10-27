@@ -142,7 +142,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("users", "desc"))
     }
 
-    fn dialog(&self) -> Option<Element<pages::Message>> {
+    fn dialog(&self) -> Option<Element<'_, pages::Message>> {
         let dialog = self.dialog.as_ref()?;
 
         let dialog_element = match dialog {

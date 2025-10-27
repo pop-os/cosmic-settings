@@ -130,7 +130,7 @@ pub fn wallpaper_select_options(
     page: &super::Page,
     selected: Option<DefaultKey>,
     show_custom_images: bool,
-) -> Element<Message> {
+) -> Element<'_, Message> {
     let mut vec = Vec::with_capacity(page.selection.selection_handles.len());
 
     if show_custom_images {
@@ -159,7 +159,7 @@ pub fn wallpaper_select_options(
     flex_select_row(vec)
 }
 
-fn flex_select_row(elements: Vec<Element<Message>>) -> Element<Message> {
+fn flex_select_row(elements: Vec<Element<'_, Message>>) -> Element<'_, Message> {
     cosmic::widget::flex_row(elements)
         .column_spacing(COLUMN_SPACING)
         .row_spacing(ROW_SPACING)
@@ -173,7 +173,7 @@ fn wallpaper_button(
     id: DefaultKey,
     removable: bool,
     selected: bool,
-) -> Element<Message> {
+) -> Element<'_, Message> {
     cosmic::widget::button::image(handle.clone())
         .selected(selected)
         .on_press(Message::Select(id))

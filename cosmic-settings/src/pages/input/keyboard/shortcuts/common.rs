@@ -676,7 +676,7 @@ impl Model {
         }
     }
 
-    pub(super) fn view(&self) -> Element<ShortcutMessage> {
+    pub(super) fn view(&self) -> Element<'_, ShortcutMessage> {
         self.shortcut_models
             .iter()
             .map(|(id, shortcut)| shortcut_item(self.custom, id, shortcut))
@@ -855,7 +855,7 @@ fn context_drawer<'a>(
 }
 
 /// Display a shortcut as a list item
-fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<ShortcutMessage> {
+fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<'_, ShortcutMessage> {
     #[derive(Copy, Clone, Debug)]
     enum LocalMessage {
         Remove,

@@ -110,7 +110,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(apps())])
     }
 
-    fn context_drawer(&self) -> Option<ContextDrawer<crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         match &self.context {
             Some(Context::AddApplication(directory_type)) => {
                 let search = widget::search_input(fl!("type-to-search"), &self.application_search)

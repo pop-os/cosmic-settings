@@ -451,7 +451,7 @@ impl page::Page<crate::pages::Message> for Page {
     /// the Randr enum value which undos the current change. Makde sure the
     /// return value is returned with the `exec_value` return value within a batch
     /// Task.
-    fn dialog(&self) -> Option<Element<pages::Message>> {
+    fn dialog(&self) -> Option<Element<'_, pages::Message>> {
         self.dialog?;
         let element = widget::dialog()
             .title(fl!("dialog", "title"))
