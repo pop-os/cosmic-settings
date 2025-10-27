@@ -43,7 +43,7 @@ static SUSPEND_TIMES: &[Duration] = &[
 
 fn format_time(duration: Duration) -> String {
     let m = duration.as_secs() / 60;
-    if m % 60 == 0 {
+    if m.is_multiple_of(60) {
         fl!("x-hours", number = (m / 60))
     } else {
         fl!("x-minutes", number = m)

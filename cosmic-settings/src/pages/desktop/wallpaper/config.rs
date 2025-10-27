@@ -109,15 +109,15 @@ impl Config {
 
     #[must_use]
     pub fn default_folder() -> PathBuf {
-        if let Some(data_dirs) = env::var_os("XDG_DATA_DIRS") {
-            if let Some(data_dirs) = data_dirs.to_str() {
-                let data_dirs = data_dirs.split(":");
+        if let Some(data_dirs) = env::var_os("XDG_DATA_DIRS")
+            && let Some(data_dirs) = data_dirs.to_str()
+        {
+            let data_dirs = data_dirs.split(":");
 
-                for data_dir in data_dirs {
-                    let potential_path = PathBuf::from(data_dir).join(BACKGROUNDS_DIR);
-                    if let Ok(true) = &potential_path.try_exists() {
-                        return potential_path;
-                    }
+            for data_dir in data_dirs {
+                let potential_path = PathBuf::from(data_dir).join(BACKGROUNDS_DIR);
+                if let Ok(true) = &potential_path.try_exists() {
+                    return potential_path;
                 }
             }
         }

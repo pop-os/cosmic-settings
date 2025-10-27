@@ -157,36 +157,35 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn dialog(&self) -> Option<crate::pages::Element<'_>> {
-        if let Some(app_to_remove) = &self.app_to_remove {
-            if let Some(cached_startup_apps) = &self.cached_startup_apps {
-                if let Some(target_directory_type) = &self.target_directory_type {
-                    return Some(
-                        widget::dialog()
-                            .title(fl!(
-                                "startup-apps",
-                                "remove-dialog-title",
-                                name = app_to_remove.name(&cached_startup_apps.locales)
-                            ))
-                            .icon(icon::from_name("dialog-warning").size(64))
-                            .body(fl!("startup-apps", "remove-dialog-description"))
-                            .primary_action(
-                                button::suggested(fl!("remove")).on_press(
-                                    Message::RemoveStartupApplication(
-                                        target_directory_type.clone(),
-                                        app_to_remove.clone(),
-                                        true,
-                                    )
-                                    .into(),
-                                ),
+        if let Some(app_to_remove) = &self.app_to_remove
+            && let Some(cached_startup_apps) = &self.cached_startup_apps
+            && let Some(target_directory_type) = &self.target_directory_type
+        {
+            return Some(
+                widget::dialog()
+                    .title(fl!(
+                        "startup-apps",
+                        "remove-dialog-title",
+                        name = app_to_remove.name(&cached_startup_apps.locales)
+                    ))
+                    .icon(icon::from_name("dialog-warning").size(64))
+                    .body(fl!("startup-apps", "remove-dialog-description"))
+                    .primary_action(
+                        button::suggested(fl!("remove")).on_press(
+                            Message::RemoveStartupApplication(
+                                target_directory_type.clone(),
+                                app_to_remove.clone(),
+                                true,
                             )
-                            .secondary_action(
-                                button::standard(fl!("cancel"))
-                                    .on_press(Message::CancelRemoveStartupApplication.into()),
-                            )
-                            .apply(Element::from),
-                    );
-                }
-            }
+                            .into(),
+                        ),
+                    )
+                    .secondary_action(
+                        button::standard(fl!("cancel"))
+                            .on_press(Message::CancelRemoveStartupApplication.into()),
+                    )
+                    .apply(Element::from),
+            );
         }
         None
     }
@@ -228,32 +227,31 @@ impl Page {
 
                 _ = std::fs::create_dir_all(directory_to_target.as_path());
 
-                if let Ok(exists) = std::fs::exists(directory_to_target.join(file_name.clone())) {
-                    if !exists {
-                        // when adding an application, we want to symlink to be more user-friendly
-                        // this ensures that, as an application gets updated / removed, so does the
-                        // symlink
-                        match std::os::unix::fs::symlink(
-                            app.clone().path,
-                            directory_to_target.join(file_name),
-                        ) {
-                            Ok(_) => {
-                                if let Some(ref mut cached_startup_apps) = self.cached_startup_apps
-                                {
-                                    let target_apps = cached_startup_apps.apps.get(&directory_type);
-                                    if let Some(target_apps) = target_apps {
-                                        let mut new_apps = target_apps.clone();
-                                        new_apps.push(app.clone());
+                if let Ok(exists) = std::fs::exists(directory_to_target.join(file_name.clone()))
+                    && !exists
+                {
+                    // when adding an application, we want to symlink to be more user-friendly
+                    // this ensures that, as an application gets updated / removed, so does the
+                    // symlink
+                    match std::os::unix::fs::symlink(
+                        app.clone().path,
+                        directory_to_target.join(file_name),
+                    ) {
+                        Ok(_) => {
+                            if let Some(ref mut cached_startup_apps) = self.cached_startup_apps {
+                                let target_apps = cached_startup_apps.apps.get(&directory_type);
+                                if let Some(target_apps) = target_apps {
+                                    let mut new_apps = target_apps.clone();
+                                    new_apps.push(app.clone());
 
-                                        cached_startup_apps
-                                            .apps
-                                            .insert(directory_type.clone(), new_apps);
-                                    }
+                                    cached_startup_apps
+                                        .apps
+                                        .insert(directory_type.clone(), new_apps);
                                 }
                             }
-                            Err(e) => {
-                                error!(?e, "Failed to symlink");
-                            }
+                        }
+                        Err(e) => {
+                            error!(?e, "Failed to symlink");
                         }
                     }
                 }
@@ -273,33 +271,30 @@ impl Page {
                     let directory_to_target =
                         directories.first().expect("Always at least one directory");
                     if let Ok(exists) = std::fs::exists(directory_to_target.join(file_name.clone()))
+                        && exists
                     {
-                        if exists {
-                            // remove_file works for both regular files & symlinks
-                            match std::fs::remove_file(directory_to_target.join(file_name)) {
-                                Ok(_) => {
-                                    if let Some(ref mut cached_startup_apps) =
-                                        self.cached_startup_apps
-                                    {
-                                        let target_apps =
-                                            cached_startup_apps.apps.get(&directory_type);
-                                        if let Some(target_apps) = target_apps {
-                                            let mut new_apps = Vec::new();
-                                            for old_app in target_apps {
-                                                if old_app != &app {
-                                                    new_apps.push(old_app.clone());
-                                                }
+                        // remove_file works for both regular files & symlinks
+                        match std::fs::remove_file(directory_to_target.join(file_name)) {
+                            Ok(_) => {
+                                if let Some(ref mut cached_startup_apps) = self.cached_startup_apps
+                                {
+                                    let target_apps = cached_startup_apps.apps.get(&directory_type);
+                                    if let Some(target_apps) = target_apps {
+                                        let mut new_apps = Vec::new();
+                                        for old_app in target_apps {
+                                            if old_app != &app {
+                                                new_apps.push(old_app.clone());
                                             }
-
-                                            cached_startup_apps
-                                                .apps
-                                                .insert(directory_type.clone(), new_apps);
                                         }
+
+                                        cached_startup_apps
+                                            .apps
+                                            .insert(directory_type.clone(), new_apps);
                                     }
                                 }
-                                Err(e) => {
-                                    error!(?e, "Failed to remove file");
-                                }
+                            }
+                            Err(e) => {
+                                error!(?e, "Failed to remove file");
                             }
                         }
                     }
@@ -330,39 +325,30 @@ impl Page {
 
         if let Some(startup_apps) = &self.cached_startup_apps {
             for app in &startup_apps.all_apps {
-                if let Some(name) = app.name(&startup_apps.locales) {
-                    if let Some(exec) = app.exec() {
-                        if search_input.is_empty()
-                            || exec.to_lowercase().contains(search_input)
-                            || name.to_lowercase().contains(search_input)
-                        {
-                            let mut row = widget::row::with_capacity(3)
-                                .spacing(space_xs)
-                                .align_y(Alignment::Center);
+                if let Some(name) = app.name(&startup_apps.locales)
+                    && let Some(exec) = app.exec()
+                    && (search_input.is_empty()
+                        || exec.to_lowercase().contains(search_input)
+                        || name.to_lowercase().contains(search_input))
+                {
+                    let mut row = widget::row::with_capacity(3)
+                        .spacing(space_xs)
+                        .align_y(Alignment::Center);
 
-                            row = row.push(
-                                icon::from_name(app.icon().unwrap_or("application-default"))
-                                    .size(32),
-                            );
+                    row = row.push(
+                        icon::from_name(app.icon().unwrap_or("application-default")).size(32),
+                    );
 
-                            if let Some(name) = app.name(&startup_apps.locales) {
-                                row = row.push(text(name).width(Length::Fill));
-                            } else {
-                                row = row.push(text(&app.appid).width(Length::Fill));
-                            }
-                            row = row.push(
-                                widget::button::text(fl!("add")).on_press(
-                                    Message::AddStartupApplication(
-                                        directory_type.clone(),
-                                        app.clone(),
-                                    )
-                                    .into(),
-                                ),
-                            );
-
-                            list = list.add(row)
-                        }
+                    if let Some(name) = app.name(&startup_apps.locales) {
+                        row = row.push(text(name).width(Length::Fill));
+                    } else {
+                        row = row.push(text(&app.appid).width(Length::Fill));
                     }
+                    row = row.push(widget::button::text(fl!("add")).on_press(
+                        Message::AddStartupApplication(directory_type.clone(), app.clone()).into(),
+                    ));
+
+                    list = list.add(row)
                 }
             }
         }
@@ -467,16 +453,16 @@ fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
         }
 
         // skip if we can't run this in COSMIC
-        if let Some(only_show_in) = entry.only_show_in() {
-            if !only_show_in.contains(&"COSMIC") {
-                continue;
-            }
+        if let Some(only_show_in) = entry.only_show_in()
+            && !only_show_in.contains(&"COSMIC")
+        {
+            continue;
         }
 
-        if let Some(not_show_in) = entry.not_show_in() {
-            if not_show_in.contains(&"COSMIC") {
-                continue;
-            }
+        if let Some(not_show_in) = entry.not_show_in()
+            && not_show_in.contains(&"COSMIC")
+        {
+            continue;
         }
 
         result.push(entry.clone());

@@ -185,25 +185,25 @@ pub async fn fetch() -> Message {
                     if is_hidden.trim() == "true" {
                         continue 'icon_dir;
                     }
-                } else if name.is_none() {
-                    if let Some(value) = buffer.strip_prefix("Name=") {
-                        name = Some(value.trim().to_owned());
-                    }
+                } else if name.is_none()
+                    && let Some(value) = buffer.strip_prefix("Name=")
+                {
+                    name = Some(value.trim().to_owned());
                 }
 
-                if valid_dirs.is_empty() {
-                    if let Some(value) = buffer.strip_prefix("Inherits=") {
-                        valid_dirs.extend(value.trim().split(',').map(|fallback| {
-                            if let Some(path) = theme_paths.get(fallback) {
-                                path.iter()
-                                    .last()
-                                    .and_then(|os| os.to_str().map(ToOwned::to_owned))
-                                    .unwrap_or_else(|| fallback.to_owned())
-                            } else {
-                                fallback.to_owned()
-                            }
-                        }));
-                    }
+                if valid_dirs.is_empty()
+                    && let Some(value) = buffer.strip_prefix("Inherits=")
+                {
+                    valid_dirs.extend(value.trim().split(',').map(|fallback| {
+                        if let Some(path) = theme_paths.get(fallback) {
+                            path.iter()
+                                .next_back()
+                                .and_then(|os| os.to_str().map(ToOwned::to_owned))
+                                .unwrap_or_else(|| fallback.to_owned())
+                        } else {
+                            fallback.to_owned()
+                        }
+                    }));
                 }
 
                 buffer.clear();
@@ -213,7 +213,7 @@ pub async fn fetch() -> Message {
                 // Name of the directory theme was found in (e.g. Pop for Pop)
                 valid_dirs.push(
                     path.iter()
-                        .last()
+                        .next_back()
                         .and_then(|os| os.to_str().map(ToOwned::to_owned))
                         .unwrap_or_else(|| name.clone()),
                 );
@@ -288,7 +288,7 @@ fn preview_handles(theme: String, inherits: Vec<String>) -> [icon::Handle; ICON_
 fn icon_handle(icon_name: &str, alternate: &str, valid_dirs: &[String]) -> icon::Handle {
     ICON_TRY_SIZES
         .iter()
-        .zip(std::iter::repeat(icon_name).take(ICON_TRY_SIZES.len()))
+        .zip(std::iter::repeat_n(icon_name, ICON_TRY_SIZES.len()))
         // Try fallback icon name after the default
         .chain(
             ICON_TRY_SIZES
@@ -316,8 +316,10 @@ fn icon_handle(icon_name: &str, alternate: &str, valid_dirs: &[String]) -> icon:
                         theme_dir = parent;
                     }
 
-                    if let Some(dir_name) =
-                        theme_dir.iter().last().and_then(std::ffi::OsStr::to_str)
+                    if let Some(dir_name) = theme_dir
+                        .iter()
+                        .next_back()
+                        .and_then(std::ffi::OsStr::to_str)
                     {
                         valid_dirs
                             .iter()

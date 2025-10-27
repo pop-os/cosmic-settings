@@ -319,15 +319,15 @@ impl Battery {
                 && (percent - 100.0_f64).abs() < f64::EPSILON;
 
         if !is_charging {
-            if let Ok(time) = proxy.time_to_empty().await {
-                if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
-                    remaining_duration = dur;
-                }
-            }
-        } else if let Ok(time) = proxy.time_to_full().await {
-            if let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64)) {
+            if let Ok(time) = proxy.time_to_empty().await
+                && let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
+            {
                 remaining_duration = dur;
             }
+        } else if let Ok(time) = proxy.time_to_full().await
+            && let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
+        {
+            remaining_duration = dur;
         }
 
         let battery_percent = if percent > 95.0 {

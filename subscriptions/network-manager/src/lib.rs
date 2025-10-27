@@ -620,7 +620,7 @@ impl NetworkManagerState {
 
                     std::str::from_utf8(&output.stdout)
                         .ok()
-                        .map_or(false, |stdout| stdout.contains("Soft blocked: yes"))
+                        .is_some_and(|stdout| stdout.contains("Soft blocked: yes"))
                 }),
             network_manager
                 .wireless_enabled()
@@ -714,7 +714,7 @@ impl NetworkManagerState {
             .iter()
             .filter(|a| {
                 known_ssid.contains(&a.ssid)
-                    && !active_conns.iter().any(|ac| &ac.name() == a.ssid.as_ref())
+                    && !active_conns.iter().any(|ac| ac.name() == a.ssid.as_ref())
             })
             .cloned()
             .collect();
@@ -733,7 +733,7 @@ impl NetworkManagerState {
         self.wireless_access_points = Vec::new();
     }
 
-    async fn connect_wifi<'a>(
+    async fn connect_wifi(
         &self,
         conn: &zbus::Connection,
         ssid: &str,
@@ -844,8 +844,8 @@ impl NetworkManagerState {
                 let (_, active_conn) = nm
                     .add_and_activate_connection(conn_settings, device.inner().path(), &ap.path)
                     .await?;
-                let dummy = ActiveConnectionProxy::new(&conn, active_conn).await?;
-                let active = ActiveConnectionProxy::builder(&conn)
+                let dummy = ActiveConnectionProxy::new(conn, active_conn).await?;
+                let active = ActiveConnectionProxy::builder(conn)
                     .destination(dummy.inner().destination().to_owned())
                     .unwrap()
                     .interface(dummy.inner().interface().to_owned())
@@ -867,14 +867,13 @@ impl NetworkManagerState {
                 } else if let Ok(enums::ActiveConnectionState::Deactivated) = state {
                     return Err(Error::ConnectionActivate);
                 }
-                match tokio::time::timeout(Duration::from_secs(20), changes.next()).await {
-                    Ok(Some(s)) => {
-                        let state = s.get().await.unwrap_or_default().into();
-                        if matches!(state, enums::ActiveConnectionState::Activated) {
-                            return Ok(());
-                        }
+                if let Ok(Some(s)) =
+                    tokio::time::timeout(Duration::from_secs(20), changes.next()).await
+                {
+                    let state = s.get().await.unwrap_or_default().into();
+                    if matches!(state, enums::ActiveConnectionState::Activated) {
+                        return Ok(());
                     }
-                    _ => {}
                 };
 
                 count -= 1;

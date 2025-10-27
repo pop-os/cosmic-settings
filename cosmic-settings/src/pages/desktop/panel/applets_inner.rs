@@ -244,21 +244,20 @@ impl Page {
             .filter(|a| a.matches(&self.search))
         {
             if let Some(config) = self.current_config.as_ref() {
-                if let Some(center) = config.plugins_center.as_ref() {
-                    if center.iter().any(|a| a.as_str() == info.id.as_ref()) {
-                        continue;
-                    }
+                if let Some(center) = config.plugins_center.as_ref()
+                    && center.iter().any(|a| a.as_str() == info.id.as_ref())
+                {
+                    continue;
                 }
 
-                if let Some(wings) = config.plugins_wings.as_ref() {
-                    if wings
+                if let Some(wings) = config.plugins_wings.as_ref()
+                    && wings
                         .0
                         .iter()
                         .chain(wings.1.iter())
                         .any(|a| a.as_str() == info.id.as_ref())
-                    {
-                        continue;
-                    }
+                {
+                    continue;
                 }
             }
             has_some = true;

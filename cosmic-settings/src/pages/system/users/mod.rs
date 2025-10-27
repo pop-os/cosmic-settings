@@ -965,12 +965,12 @@ fn get_encrypt_method() -> String {
     let reader = BufReader::new(login_defs);
 
     for line in reader.lines().map_while(Result::ok) {
-        if !line.trim().is_empty() {
-            if let Some(index) = line.find(|c: char| c.is_whitespace()) {
-                let key = line[0..index].trim();
-                if key == "ENCRYPT_METHOD" {
-                    value = line[(index + 1)..].trim().to_string();
-                }
+        if !line.trim().is_empty()
+            && let Some(index) = line.find(|c: char| c.is_whitespace())
+        {
+            let key = line[0..index].trim();
+            if key == "ENCRYPT_METHOD" {
+                value = line[(index + 1)..].trim().to_string();
             }
         }
     }

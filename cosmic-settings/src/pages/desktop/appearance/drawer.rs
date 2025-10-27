@@ -136,10 +136,10 @@ impl Content {
                 Some(c) => self.font_config.search(input.to_string(), c),
             },
             FontMessage::Select(font) => {
-                if let Some(context_view) = context_view {
-                    if let Some(task) = self.font_config.select(font.to_string(), context_view) {
-                        return task;
-                    }
+                if let Some(context_view) = context_view
+                    && let Some(task) = self.font_config.select(font.to_string(), context_view)
+                {
+                    return task;
                 }
                 Task::none()
             }

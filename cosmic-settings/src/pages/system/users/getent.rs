@@ -27,10 +27,11 @@ pub fn passwd(range: (u64, u64)) -> Vec<PasswdUser> {
                 _ => (),
             }
 
-            if let Ok(user) = line.trim().parse::<PasswdUser>() {
-                if user.uid >= range.0 && user.uid <= range.1 {
-                    users.push(user);
-                }
+            if let Ok(user) = line.trim().parse::<PasswdUser>()
+                && user.uid >= range.0
+                && user.uid <= range.1
+            {
+                users.push(user);
             }
         }
     }

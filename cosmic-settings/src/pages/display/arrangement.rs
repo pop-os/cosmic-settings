@@ -226,20 +226,20 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
             | core::Event::Touch(touch::Event::FingerLifted { .. }) => {
                 let state = tree.state.downcast_mut::<State>();
                 if let Some((output_key, region)) = state.dragging.take() {
-                    if let Some(position) = cursor.position() {
-                        if position.distance(state.drag_from) < 4.0 {
-                            if let Some(ref on_select) = self.on_select {
-                                for id in self.tab_model.iter() {
-                                    if let Some(&key) = self.tab_model.data::<OutputKey>(id) {
-                                        if key == output_key {
-                                            shell.publish(on_select(id));
-                                        }
-                                    }
+                    if let Some(position) = cursor.position()
+                        && position.distance(state.drag_from) < 4.0
+                    {
+                        if let Some(ref on_select) = self.on_select {
+                            for id in self.tab_model.iter() {
+                                if let Some(&key) = self.tab_model.data::<OutputKey>(id)
+                                    && key == output_key
+                                {
+                                    shell.publish(on_select(id));
                                 }
                             }
-
-                            return event::Status::Captured;
                         }
+
+                        return event::Status::Captured;
                     }
 
                     if let Some(ref on_placement) = self.on_placement {
@@ -309,10 +309,10 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
             display_regions(self.tab_model, self.list, &bounds, state.max_dimensions).enumerate()
         {
             // If the output is being dragged, show its dragged position instead.
-            if let Some((dragged_key, dragged_region)) = state.dragging {
-                if dragged_key == output_key {
-                    region = dragged_region;
-                }
+            if let Some((dragged_key, dragged_region)) = state.dragging
+                && dragged_key == output_key
+            {
+                region = dragged_region;
             }
 
             let (background, border_color) = if Some(&output_key) == active_key {

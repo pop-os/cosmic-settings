@@ -431,18 +431,17 @@ impl Page {
                     hw_address,
                     ..
                 } = dialog
+                    && let Some(nm) = self.nm_state.as_mut()
                 {
-                    if let Some(nm) = self.nm_state.as_mut() {
-                        self.connecting.insert(ssid.clone());
-                        _ = nm
-                            .sender
-                            .unbounded_send(network_manager::Request::Authenticate {
-                                ssid: ssid.to_string(),
-                                identity,
-                                hw_address,
-                                password,
-                            });
-                    }
+                    self.connecting.insert(ssid.clone());
+                    _ = nm
+                        .sender
+                        .unbounded_send(network_manager::Request::Authenticate {
+                            ssid: ssid.to_string(),
+                            identity,
+                            hw_address,
+                            password,
+                        });
                 }
             }
 
@@ -848,19 +847,16 @@ fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
             })
             // Reduce the settings list into a SSID->UUID map.
             .fold(BTreeMap::new(), |mut set, settings| async move {
-                if let Some(ref wifi) = settings.wifi {
-                    if let Some(ssid) = wifi
+                if let Some(ref wifi) = settings.wifi
+                    && let Some(ssid) = wifi
                         .ssid
                         .clone()
                         .and_then(|ssid| String::from_utf8(ssid).ok())
-                    {
-                        if let Some(ref connection) = settings.connection {
-                            if let Some(uuid) = connection.uuid.clone() {
-                                set.insert(ssid.into(), uuid.into());
-                                return set;
-                            }
-                        }
-                    }
+                    && let Some(ref connection) = settings.connection
+                    && let Some(uuid) = connection.uuid.clone()
+                {
+                    set.insert(ssid.into(), uuid.into());
+                    return set;
                 }
 
                 set

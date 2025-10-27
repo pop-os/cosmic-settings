@@ -455,22 +455,20 @@ impl Page {
                     SourceContext::MoveDown(id) => {
                         if let Some(pos) =
                             self.active_layouts.iter().position(|&active| active == id)
+                            && pos + 1 < self.active_layouts.len()
                         {
-                            if pos + 1 < self.active_layouts.len() {
-                                self.active_layouts.swap(pos, pos + 1);
-                                self.update_xkb_config();
-                            }
+                            self.active_layouts.swap(pos, pos + 1);
+                            self.update_xkb_config();
                         }
                     }
 
                     SourceContext::MoveUp(id) => {
                         if let Some(pos) =
                             self.active_layouts.iter().position(|&active| active == id)
+                            && pos > 0
                         {
-                            if pos > 0 {
-                                self.active_layouts.swap(pos, pos - 1);
-                                self.update_xkb_config();
-                            }
+                            self.active_layouts.swap(pos, pos - 1);
+                            self.update_xkb_config();
                         }
                     }
 

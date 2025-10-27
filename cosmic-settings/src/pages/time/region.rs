@@ -204,24 +204,22 @@ impl Page {
     pub fn update(&mut self, message: Message) -> cosmic::Task<crate::app::Message> {
         match message {
             Message::AddLanguage(id) => {
-                if let Some(language) = self.available_languages.get(id) {
-                    if let Some((config, locales)) = self.config.as_mut() {
-                        if !locales.contains(&language.lang_code) {
-                            locales.push(language.lang_code.clone());
-                            _ = config.set("system_locales", &locales);
-                        }
-                    }
+                if let Some(language) = self.available_languages.get(id)
+                    && let Some((config, locales)) = self.config.as_mut()
+                    && !locales.contains(&language.lang_code)
+                {
+                    locales.push(language.lang_code.clone());
+                    _ = config.set("system_locales", &locales);
                 }
             }
 
             Message::RemoveLanguage(id) => {
-                if let Some(language) = self.available_languages.remove(id) {
-                    if let Some((config, locales)) = self.config.as_mut() {
-                        if let Some(pos) = locales.iter().position(|l| l == &language.lang_code) {
-                            locales.remove(pos);
-                            _ = config.set("system_locales", &locales);
-                        }
-                    }
+                if let Some(language) = self.available_languages.remove(id)
+                    && let Some((config, locales)) = self.config.as_mut()
+                    && let Some(pos) = locales.iter().position(|l| l == &language.lang_code)
+                {
+                    locales.remove(pos);
+                    _ = config.set("system_locales", &locales);
                 }
             }
 
@@ -235,10 +233,10 @@ impl Page {
                     let region = region.lang_code.clone();
 
                     return cosmic::task::future(async move {
-                        if let Ok(exit_status) = set_locale(lang, region.clone()).await {
-                            if exit_status.success() {
-                                update_time_settings_after_region_change(region);
-                            }
+                        if let Ok(exit_status) = set_locale(lang, region.clone()).await
+                            && exit_status.success()
+                        {
+                            update_time_settings_after_region_change(region);
                         }
 
                         Message::Refresh(Arc::new(page_reload().await))
@@ -315,24 +313,23 @@ impl Page {
 
                     _ = config.set("system_locales", &locales);
 
-                    if let Some(language_code) = locales.first() {
-                        if let Some(language) = self
+                    if let Some(language_code) = locales.first()
+                        && let Some(language) = self
                             .available_languages
                             .values()
                             .find(|lang| &lang.lang_code == language_code)
-                        {
-                            let language = language.clone();
-                            self.language = Some(language.clone());
-                            let region = self.region.clone();
+                    {
+                        let language = language.clone();
+                        self.language = Some(language.clone());
+                        let region = self.region.clone();
 
-                            tokio::spawn(async move {
-                                _ = set_locale(
-                                    language.lang_code.clone(),
-                                    region.unwrap_or(language).lang_code.clone(),
-                                )
-                                .await;
-                            });
-                        }
+                        tokio::spawn(async move {
+                            _ = set_locale(
+                                language.lang_code.clone(),
+                                region.unwrap_or(language).lang_code.clone(),
+                            )
+                            .await;
+                        });
                     }
                 }
             }
