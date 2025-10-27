@@ -13,7 +13,8 @@ use std::{sync::Arc, time::Duration};
 
 pub type DeviceId = u32;
 pub type NodeId = u32;
-pub type ProfileId = u32;
+pub type ProfileId = i32;
+pub type RouteId = i32;
 
 pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
     async_fn_stream::fn_stream(|emitter| async move {
@@ -25,13 +26,19 @@ pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
         });
 
         let (tx, pw_rx) = futures::channel::mpsc::channel(1);
-        let (_pipewire_handle, pipewire_terminate) = pipewire::thread(tx);
+
+        let (request_tx, request_rx) = pipewire::channel();
+        std::thread::spawn(move || {
+            if let Err(why) = pipewire::run(request_rx, tx) {
+                tracing::error!(?why, "failed to run pipewire thread");
+            }
+        });
 
         emitter
             .emit(
                 Message::SubHandle(Arc::new(SubscriptionHandle {
                     cancel_tx,
-                    pipewire: pipewire_terminate,
+                    pipewire: request_tx,
                 }))
                 .into(),
             )
@@ -120,36 +127,38 @@ pub struct Model {
     device_ids: IntMap<NodeId, DeviceId>,
     pub node_names: IntMap<NodeId, String>,
     pub node_descriptions: IntMap<NodeId, String>,
+
     pub device_names: IntMap<DeviceId, String>,
     pub device_profiles: IntMap<DeviceId, Vec<pipewire::Profile>>,
     pub active_profiles: IntMap<DeviceId, pipewire::Profile>,
+    pub device_routes: IntMap<DeviceId, Vec<pipewire::Route>>,
+    pub active_routes: IntMap<DeviceId, pipewire::Route>,
 
     /** Sink devices */
 
-    /// Product names for source sink devices.
+    /// Description of a sink device and its port
     sinks: Vec<String>,
-    /// Pipewire object IDs for sink devices.
-    sink_pw_ids: Vec<NodeId>,
-    /// Device ID of active sink device.
-    active_sink_device: Option<u32>,
+    /// Node IDs for sinks
+    sink_node_ids: Vec<NodeId>,
     /// Index of active sink device.
     active_sink: Option<usize>,
+    /// Device ID of active sink device.
+    active_sink_node: Option<u32>,
+    /// Device identifier of the default sink.
+    active_sink_node_name: String,
 
     /** Source devices */
 
     /// Product names for source devices.
     sources: Vec<String>,
-    /// Pipewire object IDs for source devices.
-    source_pw_ids: Vec<NodeId>,
-    /// Device ID of active source device.
-    active_source_device: Option<u32>,
+    /// Node IDs for sources
+    source_node_ids: Vec<NodeId>,
     /// Index of active source device.
     active_source: Option<usize>,
-
-    /// Device identifier of the default sink.
-    default_sink: String,
+    /// Device ID of active source device.
+    active_source_node: Option<u32>,
     /// Device identifier of the default source.
-    default_source: String,
+    active_source_node_name: String,
 
     pub sink_volume_text: String,
     pub source_volume_text: String,
@@ -187,7 +196,7 @@ impl Model {
     pub fn clear(&mut self) {
         if let Some(handle) = self.subscription_handle.take() {
             _ = handle.cancel_tx.send(());
-            _ = handle.pipewire.send(());
+            _ = handle.pipewire.send(pipewire::Request::Quit);
         }
 
         if let Some(channel) = self.sink_channels.take() {
@@ -202,8 +211,27 @@ impl Model {
         if let Some(profiles) = self.device_profiles.get(device_id) {
             for profile in profiles {
                 if profile.index as u32 == index {
+                    // Pipewire will change the default device if the profile on that device is changed.
+                    // We can prevent this by re-setting the default after changing it.
+                    let current_default = self.device_ids.iter().find_map(|(node_id, &dev_id)| {
+                        if dev_id != device_id {
+                            return None;
+                        }
+
+                        if Some(node_id) == self.active_source_node
+                            || Some(node_id) == self.active_sink_node
+                        {
+                            Some(node_id)
+                        } else {
+                            None
+                        }
+                    });
+
                     tokio::spawn(async move {
                         wpctl::set_profile(device_id, index).await;
+                        if let Some(node_id) = current_default {
+                            wpctl::set_default(node_id).await;
+                        }
                     });
 
                     self.active_profiles.insert(device_id, profile.clone());
@@ -219,11 +247,7 @@ impl Model {
             return Task::none();
         }
 
-        if !self
-            .sink_pw_ids
-            .get(self.active_sink.unwrap_or(0))
-            .is_none()
-        {
+        if self.active_sink_node.is_some() {
             self.sink_balance_debounce = true;
             return cosmic::Task::future(async move {
                 tokio::time::sleep(Duration::from_millis(64)).await;
@@ -235,7 +259,7 @@ impl Model {
     }
 
     pub fn sink_changed(&mut self, pos: usize) -> Task<Message> {
-        if let Some(&object_id) = self.sink_pw_ids.get(pos) {
+        if let Some(&object_id) = self.sink_node_ids.get(pos) {
             self.set_default_sink_id(object_id);
             tokio::task::spawn(async move {
                 wpctl::set_default(object_id).await;
@@ -247,7 +271,7 @@ impl Model {
 
     pub fn sink_mute_toggle(&mut self) {
         self.sink_mute = !self.sink_mute;
-        if let Some(&node_id) = self.sink_pw_ids.get(self.active_sink.unwrap_or(0)) {
+        if let Some(node_id) = self.active_sink_node {
             let mute = self.sink_mute;
             tokio::task::spawn(async move {
                 wpctl::set_mute(node_id, mute).await;
@@ -262,7 +286,7 @@ impl Model {
             return Task::none();
         }
 
-        if let Some(&node_id) = self.sink_pw_ids.get(self.active_sink.unwrap_or(0)) {
+        if let Some(node_id) = self.active_sink_node {
             self.sink_volume_debounce = true;
             return cosmic::Task::future(async move {
                 tokio::time::sleep(Duration::from_millis(64)).await;
@@ -274,7 +298,7 @@ impl Model {
     }
 
     pub fn source_changed(&mut self, pos: usize) -> Task<Message> {
-        if let Some(&object_id) = self.source_pw_ids.get(pos) {
+        if let Some(&object_id) = self.source_node_ids.get(pos) {
             self.set_default_source_id(object_id);
             tokio::task::spawn(async move {
                 wpctl::set_default(object_id).await;
@@ -286,7 +310,7 @@ impl Model {
 
     pub fn source_mute_toggle(&mut self) {
         self.source_mute = !self.source_mute;
-        if let Some(&node_id) = self.source_pw_ids.get(self.active_source.unwrap_or(0)) {
+        if let Some(node_id) = self.active_source_node {
             let mute = self.source_mute;
             tokio::task::spawn(async move {
                 wpctl::set_mute(node_id, mute).await;
@@ -301,7 +325,7 @@ impl Model {
             return Task::none();
         }
 
-        if let Some(&node_id) = self.source_pw_ids.get(self.active_source.unwrap_or(0)) {
+        if let Some(node_id) = self.active_source_node {
             self.source_volume_debounce = true;
             return cosmic::Task::future(async move {
                 tokio::time::sleep(Duration::from_millis(64)).await;
@@ -319,7 +343,7 @@ impl Model {
                     match event {
                         Server::Pulse(event) => match event {
                             pulse::Event::SourceVolume(volume) => {
-                                if self.sink_volume_debounce {
+                                if self.source_volume_debounce {
                                     continue;
                                 }
 
@@ -339,7 +363,7 @@ impl Model {
                             }
 
                             pulse::Event::DefaultSink(node_name) => {
-                                if self.default_sink == node_name {
+                                if self.active_sink_node_name == node_name {
                                     continue;
                                 }
 
@@ -347,10 +371,10 @@ impl Model {
                                     self.set_default_sink_id(id);
                                 }
 
-                                self.default_sink = node_name;
+                                self.active_sink_node_name = node_name;
                             }
                             pulse::Event::DefaultSource(node_name) => {
-                                if self.default_source == node_name {
+                                if self.active_source_node_name == node_name {
                                     continue;
                                 }
 
@@ -358,7 +382,7 @@ impl Model {
                                     self.set_default_source_id(id);
                                 }
 
-                                self.default_source = node_name;
+                                self.active_source_node_name = node_name;
                             }
                             pulse::Event::SinkMute(mute) => {
                                 self.sink_mute = mute;
@@ -378,6 +402,53 @@ impl Model {
                         Server::Pipewire(event) => match event {
                             pipewire::Event::ActiveProfile(id, profile) => {
                                 self.active_profiles.insert(id, profile);
+
+                                for (node_id, &dev_id) in &self.device_ids {
+                                    if dev_id == id {
+                                        if let Some(node_name) = self.node_names.get(node_id) {
+                                            if self.sink_node_ids.contains(&node_id) {
+                                                if &self.active_sink_node_name == node_name {
+                                                    self.set_default_sink_id(node_id);
+                                                }
+                                            } else if self.source_node_ids.contains(&node_id) {
+                                                if &self.active_source_node_name == node_name {
+                                                    self.set_default_source_id(node_id);
+                                                }
+                                            }
+                                        }
+
+                                        break;
+                                    }
+                                }
+                            }
+
+                            pipewire::Event::ActiveRoute(id, route) => {
+                                for (node_id, &dev_id) in &self.device_ids {
+                                    if dev_id == id {
+                                        if let Some(device_name) = self.device_names.get(id) {
+                                            let name =
+                                                [&route.description, " - ", device_name].concat();
+
+                                            if let Some(pos) = self
+                                                .sink_node_ids
+                                                .iter()
+                                                .position(|&n| n == node_id)
+                                            {
+                                                self.sinks[pos] = name;
+                                            } else if let Some(pos) = self
+                                                .source_node_ids
+                                                .iter()
+                                                .position(|&n| n == node_id)
+                                            {
+                                                self.sources[pos] = name;
+                                            }
+                                        }
+
+                                        break;
+                                    }
+                                }
+
+                                self.active_routes.insert(id, route);
                             }
 
                             pipewire::Event::AddProfile(id, profile) => {
@@ -392,60 +463,51 @@ impl Model {
                                 profiles.push(profile);
                             }
 
+                            pipewire::Event::AddRoute(id, route) => {
+                                let routes = self.device_routes.entry(id).or_default();
+                                for p in routes.iter_mut() {
+                                    if p.index == route.index {
+                                        *p = route;
+                                        continue 'outer;
+                                    }
+                                }
+
+                                routes.push(route);
+                            }
+
                             pipewire::Event::AddDevice(device) => {
                                 self.device_names.insert(device.id, device.name);
                             }
 
                             pipewire::Event::AddNode(node) => {
-                                let object_id = node.object_id;
-                                if !self.node_names.contains_key(object_id) {
+                                if !self.node_names.contains_key(node.object_id) {
                                     match node.media_class {
                                         pipewire::MediaClass::Sink => {
                                             self.sinks.push(node.description.clone());
-                                            self.sink_pw_ids.push(node.object_id);
+                                            self.sink_node_ids.push(node.object_id);
 
-                                            sort_devices(&mut self.sinks, &mut self.sink_pw_ids);
-
-                                            if self.default_sink == node.node_name {
+                                            if self.active_sink_node_name == node.node_name {
                                                 self.set_default_sink_id(node.object_id);
                                             }
                                         }
 
                                         pipewire::MediaClass::Source => {
                                             self.sources.push(node.description.clone());
-                                            self.source_pw_ids.push(node.object_id);
+                                            self.source_node_ids.push(node.object_id);
 
-                                            sort_devices(
-                                                &mut self.sources,
-                                                &mut self.source_pw_ids,
-                                            );
-
-                                            if self.default_source == node.node_name {
-                                                self.set_default_source_id(object_id);
+                                            if self.active_source_node_name == node.node_name {
+                                                self.set_default_source_id(node.object_id);
                                             }
                                         }
                                     }
 
                                     if let Some(device_id) = node.device_id {
-                                        self.device_ids.insert(object_id, device_id);
+                                        self.device_ids.insert(node.object_id, device_id);
                                     }
 
-                                    self.node_names.insert(object_id, node.node_name);
-                                    self.node_descriptions.insert(object_id, node.description);
-                                }
-
-                                if node.device_id.is_some() {
-                                    if self.active_sink_device == node.device_id {
-                                        self.set_default_sink_id(object_id);
-                                        tokio::task::spawn(async move {
-                                            wpctl::set_default(object_id).await;
-                                        });
-                                    } else if self.active_source_device == node.device_id {
-                                        self.set_default_source_id(object_id);
-                                        tokio::task::spawn(async move {
-                                            wpctl::set_default(object_id).await;
-                                        });
-                                    }
+                                    self.node_names.insert(node.object_id, node.node_name);
+                                    self.node_descriptions
+                                        .insert(node.object_id, node.description);
                                 }
                             }
 
@@ -502,26 +564,26 @@ impl Model {
         _ = self.device_names.remove(id);
         _ = self.device_profiles.remove(id);
         _ = self.active_profiles.remove(id);
+        _ = self.device_routes.remove(id);
+        _ = self.active_routes.remove(id);
     }
 
     fn remove_node(&mut self, id: NodeId) {
-        if let Some(pos) = self.sink_pw_ids.iter().position(|&node_id| node_id == id) {
-            self.sink_pw_ids.remove(pos);
+        if let Some(pos) = self.sink_node_ids.iter().position(|&node_id| node_id == id) {
+            self.sink_node_ids.remove(pos);
             self.sinks.remove(pos);
-            if self.active_sink_device == Some(id) {
-                self.active_sink = None;
-                self.active_sink_device = self.device_ids.get(id).cloned();
-            } else if let Some(id) = self.active_sink_device {
-                self.set_default_sink_id(id);
+            if let Some(node_id) = self.active_sink_node {
+                self.set_default_sink_id(node_id);
             }
-        } else if let Some(pos) = self.source_pw_ids.iter().position(|&node_id| node_id == id) {
-            self.source_pw_ids.remove(pos);
+        } else if let Some(pos) = self
+            .source_node_ids
+            .iter()
+            .position(|&node_id| node_id == id)
+        {
+            self.source_node_ids.remove(pos);
             self.sources.remove(pos);
-            if self.active_source_device == Some(id) {
-                self.active_source = None;
-                self.active_source_device = self.device_ids.get(id).cloned();
-            } else if let Some(id) = self.active_source_device {
-                self.set_default_source_id(id);
+            if let Some(node_id) = self.active_source_node {
+                self.set_default_source_id(node_id);
             }
         }
 
@@ -531,17 +593,17 @@ impl Model {
     }
 
     /// Set the default sink device by its the node ID.
-    fn set_default_sink_id(&mut self, object_id: u32) {
-        self.active_sink = self.sink_pw_ids.iter().position(|&id| id == object_id);
-        self.active_sink_device = Some(object_id);
-        self.default_sink = self.node_names.get(object_id).cloned().unwrap_or_default();
+    fn set_default_sink_id(&mut self, object_id: NodeId) {
+        self.active_sink = self.sink_node_ids.iter().position(|&id| id == object_id);
+        self.active_sink_node = Some(object_id);
+        self.active_sink_node_name = self.node_names.get(object_id).cloned().unwrap_or_default();
     }
 
     /// Set the default source device by its the node ID.
-    fn set_default_source_id(&mut self, object_id: u32) {
-        self.active_source = self.source_pw_ids.iter().position(|&id| id == object_id);
-        self.active_source_device = Some(object_id);
-        self.default_source = self.node_names.get(object_id).cloned().unwrap_or_default();
+    fn set_default_source_id(&mut self, object_id: NodeId) {
+        self.active_source = self.source_node_ids.iter().position(|&id| id == object_id);
+        self.active_source_node = Some(object_id);
+        self.active_source_node_name = self.node_names.get(object_id).cloned().unwrap_or_default();
     }
 }
 
@@ -569,22 +631,11 @@ pub enum Server {
 
 pub struct SubscriptionHandle {
     cancel_tx: futures::channel::oneshot::Sender<()>,
-    pipewire: pipewire::Sender<()>,
+    pipewire: pipewire::Sender<pipewire::Request>,
 }
 
 impl std::fmt::Debug for SubscriptionHandle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("SubscriptionHandle")
     }
-}
-
-fn sort_devices(descriptions: &mut Vec<String>, node_ids: &mut Vec<NodeId>) {
-    let mut tmp: Vec<(String, NodeId)> = std::mem::take(descriptions)
-        .into_iter()
-        .zip(std::mem::take(node_ids))
-        .collect();
-
-    tmp.sort_unstable_by(|(ak, _), (bk, _)| ak.cmp(bk));
-
-    (*descriptions, *node_ids) = tmp.into_iter().collect();
 }

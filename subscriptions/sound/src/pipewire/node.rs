@@ -97,7 +97,7 @@ impl Node {
                     .strip_suffix(profile_description)
                     .unwrap_or(node_description)
                     .trim_ascii_end();
-                [profile_description, " - ", device_name].concat()
+                device_name.to_owned()
             },
             icon_name,
             audio_channels,

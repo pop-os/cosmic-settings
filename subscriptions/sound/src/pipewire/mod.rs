@@ -7,73 +7,263 @@ pub mod device;
 pub use device::Device;
 
 pub mod node;
+use intmap::IntMap;
 pub use node::{MediaClass, Node};
-
-// mod port;
-// pub use port::Port;
 
 mod profile;
 pub use profile::Profile;
 
-// mod route;
-// pub use route::Route;
+mod route;
+pub use route::Route;
 
 use libspa::{param::ParamType, pod::Pod};
 pub use pipewire::channel::Sender;
 
 use cosmic::iced_futures::{self, Subscription, stream};
 use futures::{SinkExt, executor::block_on};
+pub use pipewire::channel::channel;
 use pipewire::{
     device::DeviceListener,
-    main_loop::MainLoop as PwMainLoop,
-    node::{NodeInfoRef, NodeListener},
+    main_loop::MainLoopWeak,
+    node::NodeListener,
     proxy::{ProxyListener, ProxyT},
     types::ObjectType,
 };
-use std::{
-    any::TypeId,
-    cell::RefCell,
-    collections::{BTreeMap, HashMap},
-    ffi::CStr,
-    rc::Rc,
-    thread::JoinHandle,
-    u32,
-};
+use std::{any::TypeId, cell::RefCell, ffi::CStr, rc::Rc, u32};
 
 use crate::{DeviceId, NodeId};
+pub type PipewireId = u32;
 
-/// Node event`
-#[derive(Debug)]
-pub enum PipewireEvent<'a> {
-    /// Sets the active profile for a device
-    ActiveProfile(DeviceId, Profile),
-    /// Device info
-    DeviceInfo(Device),
-    /// Node info
-    NodeInfo(NodeId, &'a NodeInfoRef),
-    /// A profile parameter was enumerated
-    Profile(DeviceId, Profile),
-    /// Device removal
-    RemoveDevice(DeviceId),
-    /// Node removal
-    RemoveNode(NodeId),
+pub fn subscription() -> iced_futures::Subscription<Event> {
+    Subscription::run_with_id(
+        TypeId::of::<Event>(),
+        stream::channel(1, |sender| async {
+            let (_tx, rx) = channel();
+            std::thread::spawn(move || run(rx, sender));
+
+            futures::future::pending().await
+        }),
+    )
 }
 
-/// Device event
+pub fn run(
+    rx: pipewire::channel::Receiver<Request>,
+    on_event: futures::channel::mpsc::Sender<Event>,
+) -> Result<(), pipewire::Error> {
+    let main_loop = pipewire::main_loop::MainLoopRc::new(None)?;
+    let context = pipewire::context::ContextRc::new(&main_loop, None)?;
+    let core = context.connect_rc(None)?;
+    let registry = core.get_registry_rc()?;
+
+    let state = Rc::new(RefCell::new(State {
+        nodes: IntMap::new(),
+        proxies: Proxies {
+            devices: IntMap::new(),
+            nodes: IntMap::new(),
+        },
+        main_loop: main_loop.downgrade(),
+        on_event,
+    }));
+
+    let _request_handler = rx.attach(main_loop.loop_(), {
+        let state = Rc::downgrade(&state);
+        move |request| {
+            match request {
+                // Receives device object IDs for enumerating its profiles.
+                Request::EnumerateDevice(id) => {
+                    if let Some(state) = state.upgrade() {
+                        state.borrow_mut().enumerate_device(id);
+                    }
+                }
+
+                // Exit main loop on receivering terminate message.
+                Request::Quit => {
+                    if let Some(state) = state.upgrade() {
+                        state.borrow_mut().quit();
+                    }
+                }
+            }
+        }
+    });
+
+    let registry_weak = registry.downgrade();
+
+    let _registry_listener = registry
+        .add_listener_local()
+        .global(move |obj| {
+            let Some(registry) = registry_weak.upgrade() else {
+                return;
+            };
+
+            match obj.type_ {
+                ObjectType::Device => {
+                    let Ok(device) = registry.bind::<pipewire::device::Device, _>(obj) else {
+                        return;
+                    };
+
+                    let pw_id = device.upcast_ref().id();
+
+                    let listener = device
+                        .add_listener_local()
+                        .info({
+                            let state = Rc::downgrade(&state);
+                            move |info| {
+                                if let Some(device) = Device::from_device(info) {
+                                    if let Some(state) = state.upgrade() {
+                                        state.borrow_mut().add_device(pw_id, device);
+                                    }
+                                }
+                            }
+                        })
+                        .param({
+                            let state = Rc::downgrade(&state);
+                            move |_seq, param_type, _index, _next, param| {
+                                let Some(pod) = param else {
+                                    return;
+                                };
+
+                                let Some(state) = state.upgrade() else {
+                                    return;
+                                };
+
+                                let Some(&(device_id, ..)) =
+                                    state.borrow().proxies.devices.get(pw_id)
+                                else {
+                                    return;
+                                };
+
+                                match param_type {
+                                    ParamType::EnumProfile => {
+                                        if let Some(profile) = Profile::from_pod(pod) {
+                                            state.borrow_mut().add_profile(device_id, profile);
+                                        }
+                                    }
+
+                                    ParamType::EnumRoute => {
+                                        if let Some(route) = Route::from_pod(pod) {
+                                            state.borrow_mut().add_route(device_id, route);
+                                        }
+                                    }
+
+                                    ParamType::Profile => {
+                                        if let Some(profile) = Profile::from_pod(pod) {
+                                            state.borrow_mut().active_profile(device_id, profile);
+                                        }
+                                    }
+
+                                    ParamType::Route => {
+                                        if let Some(route) = Route::from_pod(pod) {
+                                            state.borrow_mut().active_route(device_id, route);
+                                        }
+                                    }
+
+                                    _ => (),
+                                }
+                            }
+                        })
+                        .register();
+
+                    let proxy = device.upcast_ref();
+
+                    let remove_listener = proxy
+                        .add_listener_local()
+                        .removed({
+                            let state = Rc::downgrade(&state);
+                            move || {
+                                if let Some(state) = state.upgrade() {
+                                    let Some((id, ..)) =
+                                        state.borrow_mut().proxies.devices.remove(pw_id)
+                                    else {
+                                        return;
+                                    };
+
+                                    state.borrow_mut().remove_device(id);
+                                }
+                            }
+                        })
+                        .register();
+
+                    state
+                        .borrow_mut()
+                        .proxies
+                        .devices
+                        .insert(pw_id, (0, device, listener, remove_listener));
+                }
+
+                ObjectType::Node => {
+                    let Ok(node) = registry.bind::<pipewire::node::Node, _>(obj) else {
+                        return;
+                    };
+
+                    let id = node.upcast_ref().id();
+
+                    let listener = node
+                        .add_listener_local()
+                        .info({
+                            let state = Rc::downgrade(&state);
+                            move |info| {
+                                if let Some(node) = Node::from_node(info) {
+                                    if let Some(state) = state.upgrade() {
+                                        state.borrow_mut().add_node(id, node);
+                                    }
+                                }
+                            }
+                        })
+                        .register();
+
+                    let remove_listener = node
+                        .upcast_ref()
+                        .add_listener_local()
+                        .removed({
+                            let state = Rc::downgrade(&state);
+                            move || {
+                                if let Some(state) = state.upgrade() {
+                                    state.borrow_mut().remove_node(id);
+                                }
+                            }
+                        })
+                        .register();
+
+                    state
+                        .borrow_mut()
+                        .proxies
+                        .nodes
+                        .insert(id, (node, listener, remove_listener));
+                }
+                _ => {}
+            };
+        })
+        .register();
+
+    main_loop.run();
+    Ok(())
+}
+
+/// Response from pipewire
 #[derive(Clone, Debug)]
 pub enum Event {
     /// Set the active profile for a device
     ActiveProfile(DeviceId, Profile),
+    /// Set the active route for a device
+    ActiveRoute(DeviceId, Route),
     /// A new device was detected.
     AddDevice(Device),
     /// A new node was detected.
     AddNode(Node),
     /// A profile was enumerated
     AddProfile(DeviceId, Profile),
+    /// A route was enumerated
+    AddRoute(DeviceId, Route),
     /// A device with the given device_id was removed.
     RemoveDevice(DeviceId),
     /// A node with the given object_id was removed.
     RemoveNode(NodeId),
+}
+
+#[derive(Clone, Debug)]
+pub enum Request {
+    EnumerateDevice(DeviceId),
+    Quit,
 }
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
@@ -90,357 +280,114 @@ pub enum Direction {
 }
 
 struct Proxies {
-    devices: HashMap<u32, (u32, pipewire::device::Device, DeviceListener, ProxyListener)>,
-    nodes: HashMap<u32, (pipewire::node::Node, NodeListener, ProxyListener)>,
+    devices: IntMap<
+        PipewireId,
+        (
+            DeviceId,
+            pipewire::device::Device,
+            DeviceListener,
+            ProxyListener,
+        ),
+    >,
+    nodes: IntMap<PipewireId, (pipewire::node::Node, NodeListener, ProxyListener)>,
 }
 
-pub fn subscription() -> iced_futures::Subscription<Event> {
-    Subscription::run_with_id(
-        TypeId::of::<Event>(),
-        stream::channel(1, |sender| async {
-            _ = thread(sender);
-
-            futures::future::pending().await
-        }),
-    )
-}
-
-pub fn thread(
+struct State {
+    nodes: IntMap<PipewireId, (NodeId, Option<DeviceId>)>,
+    pub(self) proxies: Proxies,
+    main_loop: MainLoopWeak,
     on_event: futures::channel::mpsc::Sender<Event>,
-) -> (JoinHandle<()>, pipewire::channel::Sender<()>) {
-    let (pw_tx, pw_rx) = pipewire::channel::channel();
-
-    let handle = std::thread::spawn(move || {
-        devices_from_socket(pw_rx, on_event);
-    });
-
-    (handle, pw_tx)
 }
 
-/// Monitors devices from the system's ``PipeWire`` socket.
-///
-/// ``PipeWire`` sockets are found in `/run/user/{{UID}}/pipewire-0`.
-pub fn devices_from_socket(
-    pw_cancel: pipewire::channel::Receiver<()>,
-    mut on_event: futures::channel::mpsc::Sender<Event>,
-) {
-    let mut managed = BTreeMap::new();
-    let (device_enum_tx, device_enum_rx) = pipewire::channel::channel();
+impl State {
+    fn active_profile(&mut self, id: DeviceId, profile: Profile) {
+        self.on_event(Event::ActiveProfile(id, profile));
+    }
 
-    let _res = nodes_from_socket(
-        pw_cancel,
-        device_enum_rx,
-        move |main_loop, event| match event {
-            PipewireEvent::NodeInfo(pw_id, info) => {
-                if let Some(node) = Node::from_node(info) {
-                    if managed
-                        .insert(pw_id, (node.object_id, node.device_id))
-                        .is_none()
-                    {
-                        if block_on(on_event.send(Event::AddNode(node))).is_err() {
-                            main_loop.quit();
-                        }
-                    }
-                }
-            }
+    fn active_route(&mut self, id: DeviceId, route: Route) {
+        self.on_event(Event::ActiveRoute(id, route));
+    }
 
-            PipewireEvent::DeviceInfo(device) => {
-                _ = device_enum_tx.send(device.id);
-                if block_on(on_event.send(Event::AddDevice(device))).is_err() {
-                    main_loop.quit();
-                }
-            }
+    fn add_device(&mut self, id: PipewireId, device: Device) {
+        // Map the device's pipewire ID to its device ID
+        if let Some(entry) = self.proxies.devices.get_mut(id) {
+            entry.0 = device.id;
+        };
 
-            PipewireEvent::Profile(device_id, profile) => {
-                if block_on(on_event.send(Event::AddProfile(device_id, profile))).is_err() {
-                    main_loop.quit();
-                }
-            }
+        self.enumerate_device(device.id);
+        self.on_event(Event::AddDevice(device));
+    }
 
-            PipewireEvent::ActiveProfile(device_id, profile) => {
-                if block_on(on_event.send(Event::ActiveProfile(device_id, profile))).is_err() {
-                    main_loop.quit();
-                }
-            }
-
-            PipewireEvent::RemoveDevice(id) => {
-                if block_on(on_event.send(Event::RemoveDevice(id))).is_err() {
-                    main_loop.quit();
-                }
-            }
-
-            PipewireEvent::RemoveNode(pw_id) => {
-                if let Some((object_id, _)) = managed.remove(&pw_id) {
-                    if block_on(on_event.send(Event::RemoveNode(object_id))).is_err() {
-                        main_loop.quit();
-                    }
-                }
-            }
-        },
-    );
-}
-
-/// Listens to information about nodes, passing that info into a callback.
-///
-/// # Errors
-///
-/// Errors if the pipewire connection fails
-pub fn nodes_from_socket(
-    pw_cancel: pipewire::channel::Receiver<()>,
-    pw_enum_device: pipewire::channel::Receiver<u32>,
-    on_event: impl FnMut(&PwMainLoop, PipewireEvent) + 'static,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let main_loop = pipewire::main_loop::MainLoopRc::new(None)?;
-    let context = pipewire::context::ContextRc::new(&main_loop, None)?;
-    let core = context.connect_rc(None)?;
-    let registry = core.get_registry_rc()?;
-    let on_event = Rc::new(RefCell::new(on_event));
-
-    let proxies = Rc::new(RefCell::new(Proxies {
-        devices: HashMap::new(),
-        nodes: HashMap::new(),
-    }));
-
-    // Receives device object IDs for enumerating its profiles.
-    let _device_enum_rx = pw_enum_device.attach(main_loop.loop_(), {
-        let proxies_weak = Rc::downgrade(&proxies);
-        move |device_id| {
-            let Some(proxies) = proxies_weak.upgrade() else {
-                return;
-            };
-
-            if let Some((_, device, _, _)) = proxies
-                .borrow()
-                .devices
-                .values()
-                .find(|(id, ..)| *id == device_id)
-            {
-                device.enum_params(0, Some(ParamType::EnumProfile), 0, u32::MAX);
-                device.enum_params(2, Some(ParamType::Profile), 0, u32::MAX);
-            }
+    fn add_node(&mut self, id: PipewireId, node: Node) {
+        if self
+            .nodes
+            .insert(id, (node.object_id, node.device_id))
+            .is_none()
+        {
+            self.on_event(Event::AddNode(node));
         }
-    });
+    }
 
-    let registry_weak = registry.downgrade();
-    let main_loop_weak = main_loop.downgrade();
+    fn add_profile(&mut self, id: DeviceId, profile: Profile) {
+        self.on_event(Event::AddProfile(id, profile));
+    }
 
-    // Exit main loop on receivering terminate message.
-    let _cancel_rx = pw_cancel.attach(main_loop.loop_(), {
-        let main_loop = main_loop.downgrade();
-        move |_| {
-            if let Some(main_loop) = main_loop.upgrade() {
+    fn add_route(&mut self, id: DeviceId, route: Route) {
+        self.on_event(Event::AddRoute(id, route));
+    }
+
+    fn enumerate_device(&mut self, id: DeviceId) {
+        if let Some((_, device, _, _)) = self
+            .proxies
+            .devices
+            .values()
+            .find(|(device_id, ..)| id == *device_id)
+        {
+            device.enum_params(0, Some(ParamType::EnumProfile), 0, u32::MAX);
+            device.enum_params(1, Some(ParamType::EnumRoute), 0, u32::MAX);
+            device.enum_params(2, Some(ParamType::Profile), 0, u32::MAX);
+            device.enum_params(3, Some(ParamType::Route), 0, u32::MAX);
+        }
+    }
+
+    fn on_event(&mut self, event: Event) {
+        if block_on(self.on_event.send(event)).is_err() {
+            if let Some(main_loop) = self.main_loop.upgrade() {
                 main_loop.quit();
             }
         }
-    });
+    }
 
-    let _registry_listener = registry
-        .add_listener_local()
-        .global(move |obj| {
-            let Some(registry) = registry_weak.upgrade() else {
-                return;
-            };
+    fn quit(&mut self) {
+        if let Some(main_loop) = self.main_loop.upgrade() {
+            main_loop.quit();
+        }
+    }
 
-            let Some(main_loop) = main_loop_weak.upgrade() else {
-                return;
-            };
+    fn remove_device(&mut self, id: PipewireId) {
+        if let Some((device_id, ..)) = self.proxies.devices.remove(id) {
+            self.on_event(Event::RemoveDevice(device_id));
+        }
+    }
 
-            match obj.type_ {
-                ObjectType::Device => {
-                    let Ok(device) = registry.bind::<pipewire::device::Device, _>(obj) else {
-                        return;
-                    };
+    fn remove_node(&mut self, id: PipewireId) {
+        if let Some((node_id, _)) = self.nodes.remove(id) {
+            self.on_event(Event::RemoveNode(node_id));
+        }
 
-                    let pw_id = device.upcast_ref().id();
-
-                    let listener = device
-                        .add_listener_local()
-                        .info({
-                            let proxies = Rc::downgrade(&proxies);
-                            let main_loop_weak = main_loop.downgrade();
-                            let on_event_weak = Rc::downgrade(&on_event);
-                            move |info| {
-                                let Some(proxies) = proxies.upgrade() else {
-                                    return;
-                                };
-
-                                let Some(device) = Device::from_device(info) else {
-                                    return;
-                                };
-
-                                // Map the device's pipewire ID to its device ID
-                                if let Some(entry) = proxies.borrow_mut().devices.get_mut(&pw_id) {
-                                    entry.0 = device.id;
-                                }
-
-                                let Some(main_loop) = main_loop_weak.upgrade() else {
-                                    return;
-                                };
-
-                                if let Some(on_event) = on_event_weak.upgrade() {
-                                    on_event.borrow_mut()(
-                                        &main_loop,
-                                        PipewireEvent::DeviceInfo(device),
-                                    );
-                                }
-                            }
-                        })
-                        .param({
-                            let main_loop_weak = main_loop.downgrade();
-                            let on_event_weak = Rc::downgrade(&on_event);
-                            let proxies = Rc::downgrade(&proxies);
-
-                            move |_seq, param_type, _index, _next, param| {
-                                let Some(pod) = param else {
-                                    return;
-                                };
-
-                                let Some(main_loop) = main_loop_weak.upgrade() else {
-                                    return;
-                                };
-
-                                let Some(on_event) = on_event_weak.upgrade() else {
-                                    return;
-                                };
-
-                                let Some(proxies) = proxies.upgrade() else {
-                                    return;
-                                };
-
-                                let Some(&(device_id, ..)) = proxies.borrow().devices.get(&pw_id)
-                                else {
-                                    return;
-                                };
-
-                                match param_type {
-                                    ParamType::EnumProfile => {
-                                        if let Some(profile) = Profile::from_pod(pod) {
-                                            on_event.borrow_mut()(
-                                                &main_loop,
-                                                PipewireEvent::Profile(device_id, profile),
-                                            );
-                                        }
-                                    }
-                                    ParamType::Profile => {
-                                        if let Some(profile) = Profile::from_pod(pod) {
-                                            on_event.borrow_mut()(
-                                                &main_loop,
-                                                PipewireEvent::ActiveProfile(device_id, profile),
-                                            );
-                                        }
-                                    }
-
-                                    _ => (),
-                                }
-                            }
-                        })
-                        .register();
-
-                    let proxy = device.upcast_ref();
-
-                    let remove_listener = proxy
-                        .add_listener_local()
-                        .removed({
-                            let proxies_weak = Rc::downgrade(&proxies);
-                            let on_event_weak = Rc::downgrade(&on_event);
-                            move || {
-                                if let Some(proxies) = proxies_weak.upgrade() {
-                                    let Some((id, ..)) =
-                                        proxies.borrow_mut().devices.remove(&pw_id)
-                                    else {
-                                        return;
-                                    };
-
-                                    if let Some(on_event) = on_event_weak.upgrade() {
-                                        on_event.borrow_mut()(
-                                            &main_loop,
-                                            PipewireEvent::RemoveDevice(id),
-                                        );
-                                    }
-                                }
-                            }
-                        })
-                        .register();
-
-                    proxies
-                        .borrow_mut()
-                        .devices
-                        .insert(pw_id, (0, device, listener, remove_listener));
-                }
-
-                ObjectType::Node => {
-                    let Ok(node) = registry.bind::<pipewire::node::Node, _>(obj) else {
-                        return;
-                    };
-
-                    let id = node.upcast_ref().id();
-
-                    let listener = node
-                        .add_listener_local()
-                        .info({
-                            let main_loop_weak = main_loop.downgrade();
-                            let on_event_weak = Rc::downgrade(&on_event);
-                            move |info| {
-                                let Some(main_loop) = main_loop_weak.upgrade() else {
-                                    return;
-                                };
-
-                                if let Some(on_event) = on_event_weak.upgrade() {
-                                    on_event.borrow_mut()(
-                                        &main_loop,
-                                        PipewireEvent::NodeInfo(id, info),
-                                    );
-                                }
-                            }
-                        })
-                        .register();
-
-                    let remove_listener = node
-                        .upcast_ref()
-                        .add_listener_local()
-                        .removed({
-                            let main_loop_weak = main_loop.downgrade();
-                            let proxies_weak = Rc::downgrade(&proxies);
-                            let on_event_weak = Rc::downgrade(&on_event);
-                            move || {
-                                let Some(main_loop) = main_loop_weak.upgrade() else {
-                                    return;
-                                };
-
-                                if let Some(on_event) = on_event_weak.upgrade() {
-                                    on_event.borrow_mut()(
-                                        &main_loop,
-                                        PipewireEvent::RemoveNode(id),
-                                    );
-                                }
-
-                                if let Some(proxies) = proxies_weak.upgrade() {
-                                    proxies.borrow_mut().nodes.remove(&id);
-                                }
-                            }
-                        })
-                        .register();
-
-                    proxies
-                        .borrow_mut()
-                        .nodes
-                        .insert(id, (node, listener, remove_listener));
-                }
-                _ => {}
-            };
-        })
-        .register();
-
-    main_loop.run();
-    Ok(())
+        self.proxies.nodes.remove(id);
+    }
 }
 
 fn string_from_pod(pod: &Pod) -> Option<String> {
+    if !pod.is_string() {
+        return None;
+    }
+
     let mut cstr = std::ptr::null();
 
     unsafe {
-        // SAFETY: The reference to Pod should be valid if pipewire-rs is implemented correctly.
-        // libspa will set our null pointer to C string if the pod's value is a string.
+        // SAFETY: Pod is checked to be a string beforehand
         if libspa_sys::spa_pod_get_string(pod.as_raw_ptr(), &mut cstr) == 0 {
             if !cstr.is_null() {
                 return Some(String::from_utf8_lossy(CStr::from_ptr(cstr).to_bytes()).into_owned());
@@ -450,3 +397,23 @@ fn string_from_pod(pod: &Pod) -> Option<String> {
 
     None
 }
+
+// /// SAFETY: Must be absolutely certain that the array is an integer array.
+// unsafe fn int_array_from_pod(pod: &Pod) -> Option<Vec<i32>> {
+//     if !pod.is_array() {
+//         return None;
+//     }
+
+//     let mut len = 0;
+
+//     unsafe {
+//         let array: *mut std::ffi::c_int =
+//             libspa_sys::spa_pod_get_array(pod.as_raw_ptr(), &mut len).cast();
+
+//         if array.is_null() {
+//             return None;
+//         }
+
+//         Some(std::slice::from_raw_parts(array, len as usize).to_owned())
+//     }
+// }
