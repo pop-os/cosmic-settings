@@ -528,19 +528,29 @@ impl Model {
             }
 
             Message::SinkVolumeApply(node_id) => {
-                self.sink_volume_debounce = false;
                 let volume = self.sink_volume;
-                tokio::task::spawn(async move {
+                return cosmic::Task::future(async move {
                     wpctl::set_volume(node_id, volume).await;
+                    tokio::time::sleep(Duration::from_millis(64)).await;
+                    Message::SinkVolumeDebounce.into()
                 });
             }
 
+            Message::SinkVolumeDebounce => {
+                self.sink_volume_debounce = false;
+            }
+
             Message::SourceVolumeApply(node_id) => {
-                self.source_volume_debounce = false;
                 let volume = self.source_volume;
-                tokio::task::spawn(async move {
+                return cosmic::Task::future(async move {
                     wpctl::set_volume(node_id, volume).await;
+                    tokio::time::sleep(Duration::from_millis(64)).await;
+                    Message::SourceVolumeDebounce.into()
                 });
+            }
+
+            Message::SourceVolumeDebounce => {
+                self.source_volume_debounce = false;
             }
 
             Message::SubHandle(handle) => {
@@ -613,10 +623,14 @@ pub enum Message {
     Server(Arc<Vec<Server>>),
     /// Change the output volume.
     SinkVolumeApply(NodeId),
+    /// Unset the debounce
+    SinkVolumeDebounce,
     /// Change the output balance.
     SinkBalanceApply,
     /// Change the input volume.
     SourceVolumeApply(NodeId),
+    /// Unset the debounce.
+    SourceVolumeDebounce,
     /// On init of the subscription, channels for closing background threads are given to the app.
     SubHandle(Arc<SubscriptionHandle>),
 }
