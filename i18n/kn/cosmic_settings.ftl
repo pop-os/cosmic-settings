@@ -218,7 +218,6 @@ add-applet = ಅಪ್ಲೆಟ್ ಸೇರಿಸಿ
 all = ಎಲ್ಲ
 applets = ಅಪ್ಲೆಟ್‌ಗಳು
 center-segment = ಕೇಂದ್ರ ವಿಭಾಗ
-drop-here = ಅಪ್ಲೆಟ್‌ಗಳನ್ನು ಇಲ್ಲಿ ಬಿಡಿ
 end-segment = ಕೊನೆ ವಿಭಾಗ
 large = ದೊಡ್ಡ
 no-applets-found = ಯಾವುದೇ ಆಪ್ಲೆಟ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ...

@@ -273,7 +273,6 @@ add-applet = Adicionar miniaplicativo
 all = Todos
 applets = Miniaplicativos
 center-segment = Segmento central
-drop-here = Soltar os miniaplicativos aqui
 end-segment = Segmento final
 large = Grande
 no-applets-found = Nenhum miniaplicativo encontrado...

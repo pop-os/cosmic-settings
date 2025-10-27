@@ -265,7 +265,6 @@ add-applet = เพิ่มแอพเล็ต
 all = ทั้งหมด
 applets = แอพเล็ต
 center-segment = ส่วนตรงกลาง
-drop-here = วางแอพเล็ตที่นี่
 end-segment = สิ้นสุดส่วนนี้
 large = ใหญ่
 no-applets-found = ไม่พบแอพเล็ต...

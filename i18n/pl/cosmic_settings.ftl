@@ -275,7 +275,6 @@ add-applet = Dodaj aplet
 all = Wszystkie
 applets = Aplety
 center-segment = Człon środkowy
-drop-here = Tutaj upuść aplety
 end-segment = Człon końcowy
 large = Duży
 no-applets-found = Nie znaleziono apletów…

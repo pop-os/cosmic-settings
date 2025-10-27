@@ -273,7 +273,6 @@ add-applet = Kabuk Bileşeni ekle
 all = Tümü
 applets = Appletler
 center-segment = Orta Bölüm
-drop-here = Bileşenleri buraya bırakın
 end-segment = Son Bölüm
 large = Büyük
 no-applets-found = Kabuk bileşeni bulunamadı...

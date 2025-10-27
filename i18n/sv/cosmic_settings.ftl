@@ -197,7 +197,6 @@ add-applet = Lägg till miniprogram
 all = Alla
 applets = Miniprogram
 center-segment = Mittsegment
-drop-here = Släpp miniprogram här
 end-segment = Slutsegment
 large = Stor
 no-applets-found = Inga miniprogram hittades...

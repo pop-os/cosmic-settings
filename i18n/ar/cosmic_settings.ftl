@@ -272,7 +272,6 @@ add-applet = إضافة برنامج مصغر
 all = الكل
 applets = البرامج المصغرة
 center-segment = الجزء الأوسط
-drop-here = ضع البرامج المصغرة هنا
 end-segment = جزء النهاية
 large = كبير
 no-applets-found = لم يتم العثور على أي برامج مصغرة...
