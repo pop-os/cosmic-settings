@@ -320,13 +320,8 @@ impl State {
     }
 
     fn add_node(&mut self, id: PipewireId, node: Node) {
-        if self
-            .nodes
-            .insert(id, (node.object_id, node.device_id))
-            .is_none()
-        {
-            self.on_event(Event::AddNode(node));
-        }
+        self.nodes.insert(id, (node.object_id, node.device_id));
+        self.on_event(Event::AddNode(node));
     }
 
     fn add_profile(&mut self, id: DeviceId, profile: Profile) {
