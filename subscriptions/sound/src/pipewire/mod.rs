@@ -314,8 +314,9 @@ impl State {
             entry.0 = device.id;
         };
 
-        self.enumerate_device(device.id);
+        let device_id = device.id;
         self.on_event(Event::AddDevice(device));
+        self.enumerate_device(device_id);
     }
 
     fn add_node(&mut self, id: PipewireId, node: Node) {
