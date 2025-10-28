@@ -249,7 +249,7 @@ fn input_source(
     id: DefaultKey,
     description: &str,
     expanded_source_popover: Option<DefaultKey>,
-) -> cosmic::Element<Message> {
+) -> cosmic::Element<'_, Message> {
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
     settings::item(description, popover_button(id, expanded)).into()

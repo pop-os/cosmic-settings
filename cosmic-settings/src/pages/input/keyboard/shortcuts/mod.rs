@@ -475,7 +475,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
 }
 
 /// Display a category as a list item
-fn category_item(category: Category, name: &str, modified: u16) -> Element<Message> {
+fn category_item(category: Category, name: &str, modified: u16) -> Element<'_, Message> {
     let icon = icon::from_name("go-next-symbolic").size(16);
 
     let control = if modified == 0 {

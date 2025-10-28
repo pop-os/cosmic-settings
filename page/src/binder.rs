@@ -97,7 +97,7 @@ impl<Message: Clone + 'static> Binder<Message> {
     }
 
     /// Registers a new page in the settings panel.
-    pub fn register<P: AutoBind<Message>>(&mut self) -> crate::Insert<Message> {
+    pub fn register<P: AutoBind<Message>>(&mut self) -> crate::Insert<'_, Message> {
         let page = P::default();
 
         let id = self.register_page(page);

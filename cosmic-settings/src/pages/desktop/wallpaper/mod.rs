@@ -675,7 +675,7 @@ impl Page {
     }
 
     #[must_use]
-    pub fn display_image_view(&self) -> cosmic::Element<Message> {
+    pub fn display_image_view(&self) -> cosmic::Element<'_, Message> {
         match self.cached_display_handle {
             Some(ref handle) => cosmic::widget::image(handle.clone())
                 .width(Length::Fixed(SIMULATED_WIDTH as f32))

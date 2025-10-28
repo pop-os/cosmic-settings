@@ -173,7 +173,7 @@ impl page::Page<crate::pages::Message> for Page {
         .map(crate::pages::Message::DateAndTime)
     }
 
-    fn context_drawer(&self) -> Option<ContextDrawer<crate::pages::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         if self.timezone_context {
             let search = widget::search_input(fl!("type-to-search"), &self.timezone_search)
                 .on_input(Message::TimezoneSearch)
