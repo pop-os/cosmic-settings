@@ -480,7 +480,15 @@ impl Model {
                             }
 
                             pipewire::Event::AddNode(node) => {
-                                if !self.node_names.contains_key(node.object_id) {
+                                if let Some(device_id) = node.device_id {
+                                    self.device_ids.insert(node.object_id, device_id);
+                                }
+
+                                if self
+                                    .node_names
+                                    .insert(node.object_id, node.node_name.clone())
+                                    .is_none()
+                                {
                                     match node.media_class {
                                         pipewire::MediaClass::Sink => {
                                             self.sinks.push(node.description.clone());
@@ -500,15 +508,10 @@ impl Model {
                                             }
                                         }
                                     }
+                                };
 
-                                    if let Some(device_id) = node.device_id {
-                                        self.device_ids.insert(node.object_id, device_id);
-                                    }
-
-                                    self.node_names.insert(node.object_id, node.node_name);
-                                    self.node_descriptions
-                                        .insert(node.object_id, node.description);
-                                }
+                                self.node_descriptions
+                                    .insert(node.object_id, node.description);
                             }
 
                             pipewire::Event::RemoveDevice(id) => self.remove_device(id),
