@@ -11,10 +11,12 @@ use futures::{Stream, StreamExt};
 use intmap::IntMap;
 use std::{sync::Arc, time::Duration};
 
+use crate::pipewire::Availability;
+
 pub type DeviceId = u32;
 pub type NodeId = u32;
 pub type ProfileId = i32;
-pub type RouteId = i32;
+pub type RouteId = u32;
 
 pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
     async_fn_stream::fn_stream(|emitter| async move {
@@ -124,15 +126,21 @@ pub struct Model {
     subscription_handle: Option<SubscriptionHandle>,
     sink_channels: Option<pulse::PulseChannels>,
 
+    // Translated text
+    pub unplugged_text: String,
+    pub hd_audio_text: String,
+    pub usb_audio_text: String,
+
     device_ids: IntMap<NodeId, DeviceId>,
     pub node_names: IntMap<NodeId, String>,
     pub node_descriptions: IntMap<NodeId, String>,
+    card_profile_devices: IntMap<NodeId, u32>,
+    node_route_plugged: IntMap<NodeId, ()>,
 
     pub device_names: IntMap<DeviceId, String>,
     pub device_profiles: IntMap<DeviceId, Vec<pipewire::Profile>>,
     pub active_profiles: IntMap<DeviceId, pipewire::Profile>,
     pub device_routes: IntMap<DeviceId, Vec<pipewire::Route>>,
-    pub active_routes: IntMap<DeviceId, pipewire::Route>,
 
     /** Sink devices */
 
@@ -339,7 +347,7 @@ impl Model {
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::Server(events) => {
-                'outer: for event in Arc::into_inner(events).into_iter().flatten() {
+                for event in Arc::into_inner(events).into_iter().flatten() {
                     match event {
                         Server::Pulse(event) => match event {
                             pulse::Event::SourceVolume(volume) => {
@@ -399,124 +407,7 @@ impl Model {
                             }
                         },
 
-                        Server::Pipewire(event) => match event {
-                            pipewire::Event::ActiveProfile(id, profile) => {
-                                self.active_profiles.insert(id, profile);
-
-                                for (node_id, &dev_id) in &self.device_ids {
-                                    if dev_id == id {
-                                        if let Some(node_name) = self.node_names.get(node_id) {
-                                            if self.sink_node_ids.contains(&node_id) {
-                                                if &self.active_sink_node_name == node_name {
-                                                    self.set_default_sink_id(node_id);
-                                                }
-                                            } else if self.source_node_ids.contains(&node_id) {
-                                                if &self.active_source_node_name == node_name {
-                                                    self.set_default_source_id(node_id);
-                                                }
-                                            }
-                                        }
-
-                                        break;
-                                    }
-                                }
-                            }
-
-                            pipewire::Event::ActiveRoute(id, route) => {
-                                for (node_id, &dev_id) in &self.device_ids {
-                                    if dev_id == id {
-                                        if let Some(device_name) = self.device_names.get(id) {
-                                            let name =
-                                                [&route.description, " - ", device_name].concat();
-
-                                            if let Some(pos) = self
-                                                .sink_node_ids
-                                                .iter()
-                                                .position(|&n| n == node_id)
-                                            {
-                                                self.sinks[pos] = name;
-                                            } else if let Some(pos) = self
-                                                .source_node_ids
-                                                .iter()
-                                                .position(|&n| n == node_id)
-                                            {
-                                                self.sources[pos] = name;
-                                            }
-                                        }
-
-                                        break;
-                                    }
-                                }
-
-                                self.active_routes.insert(id, route);
-                            }
-
-                            pipewire::Event::AddProfile(id, profile) => {
-                                let profiles = self.device_profiles.entry(id).or_default();
-                                for p in profiles.iter_mut() {
-                                    if p.index == profile.index {
-                                        *p = profile;
-                                        continue 'outer;
-                                    }
-                                }
-
-                                profiles.push(profile);
-                            }
-
-                            pipewire::Event::AddRoute(id, route) => {
-                                let routes = self.device_routes.entry(id).or_default();
-                                for p in routes.iter_mut() {
-                                    if p.index == route.index {
-                                        *p = route;
-                                        continue 'outer;
-                                    }
-                                }
-
-                                routes.push(route);
-                            }
-
-                            pipewire::Event::AddDevice(device) => {
-                                self.device_names.insert(device.id, device.name);
-                            }
-
-                            pipewire::Event::AddNode(node) => {
-                                if let Some(device_id) = node.device_id {
-                                    self.device_ids.insert(node.object_id, device_id);
-                                }
-
-                                if self
-                                    .node_names
-                                    .insert(node.object_id, node.node_name.clone())
-                                    .is_none()
-                                {
-                                    match node.media_class {
-                                        pipewire::MediaClass::Sink => {
-                                            self.sinks.push(node.description.clone());
-                                            self.sink_node_ids.push(node.object_id);
-
-                                            if self.active_sink_node_name == node.node_name {
-                                                self.set_default_sink_id(node.object_id);
-                                            }
-                                        }
-
-                                        pipewire::MediaClass::Source => {
-                                            self.sources.push(node.description.clone());
-                                            self.source_node_ids.push(node.object_id);
-
-                                            if self.active_source_node_name == node.node_name {
-                                                self.set_default_source_id(node.object_id);
-                                            }
-                                        }
-                                    }
-                                };
-
-                                self.node_descriptions
-                                    .insert(node.object_id, node.description);
-                            }
-
-                            pipewire::Event::RemoveDevice(id) => self.remove_device(id),
-                            pipewire::Event::RemoveNode(id) => self.remove_node(id),
-                        },
+                        Server::Pipewire(event) => self.pipewire_update(event),
                     }
                 }
             }
@@ -566,6 +457,125 @@ impl Model {
         Task::none()
     }
 
+    fn pipewire_update(&mut self, event: pipewire::Event) {
+        match event {
+            pipewire::Event::ActiveProfile(id, profile) => {
+                self.active_profiles.insert(id, profile);
+            }
+
+            pipewire::Event::ActiveRoute(_id, _index, _route) => {}
+
+            pipewire::Event::AddProfile(id, profile) => {
+                let profiles = self.device_profiles.entry(id).or_default();
+                for p in profiles.iter_mut() {
+                    if p.index == profile.index {
+                        *p = profile;
+                        return;
+                    }
+                }
+
+                profiles.push(profile);
+            }
+
+            pipewire::Event::AddRoute(id, index, route) => {
+                match route.direction {
+                    pipewire::Direction::Output => {
+                        for (pos, &node) in self.sink_node_ids.iter().enumerate() {
+                            let Some(&device) = self.device_ids.get(node) else {
+                                continue;
+                            };
+
+                            if device != id {
+                                continue;
+                            }
+
+                            if let Some(node_name) = self.route_plug_check(node, device, &route) {
+                                self.sinks[pos] = node_name;
+                            }
+
+                            break;
+                        }
+                    }
+
+                    pipewire::Direction::Input => {
+                        for (pos, &node) in self.source_node_ids.iter().enumerate() {
+                            let Some(&device) = self.device_ids.get(node) else {
+                                continue;
+                            };
+
+                            if device != id {
+                                continue;
+                            }
+
+                            if let Some(node_name) = self.route_plug_check(node, device, &route) {
+                                self.sources[pos] = node_name;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                let routes = self.device_routes.entry(id).or_default();
+                if routes.len() < index as usize + 1 {
+                    let additional = (index as usize + 1) - routes.capacity();
+                    routes.reserve_exact(additional);
+                    routes.extend(std::iter::repeat(pipewire::Route::default()).take(additional));
+                }
+                routes[index as usize] = route;
+            }
+
+            pipewire::Event::AddDevice(device) => {
+                self.device_names
+                    .insert(device.id, self.translate_device_name(&device.name));
+            }
+
+            pipewire::Event::AddNode(node) => {
+                if let Some(device_id) = node.device_id {
+                    self.device_ids.insert(node.object_id, device_id);
+
+                    if let Some(card_profile_device) = node.card_profile_device {
+                        self.card_profile_devices
+                            .insert(node.object_id, card_profile_device);
+                    }
+                }
+
+                let description = self.translate_device_name(&node.description);
+
+                if self
+                    .node_names
+                    .insert(node.object_id, node.node_name.clone())
+                    .is_none()
+                {
+                    match node.media_class {
+                        pipewire::MediaClass::Sink => {
+                            self.sinks.push(description.clone());
+                            self.sink_node_ids.push(node.object_id);
+
+                            if self.active_sink_node_name == node.node_name {
+                                self.set_default_sink_id(node.object_id);
+                            }
+                        }
+
+                        pipewire::MediaClass::Source => {
+                            self.sources.push(description.clone());
+                            self.source_node_ids.push(node.object_id);
+
+                            if self.active_source_node_name == node.node_name {
+                                self.set_default_source_id(node.object_id);
+                            }
+                        }
+                    }
+                };
+
+                self.node_descriptions.insert(node.object_id, description);
+            }
+
+            pipewire::Event::RemoveDevice(id) => self.remove_device(id),
+            pipewire::Event::RemoveNode(id) => self.remove_node(id),
+        }
+    }
+
     fn node_id_from_name(&self, name: &str) -> Option<u32> {
         self.node_names
             .iter()
@@ -578,7 +588,6 @@ impl Model {
         _ = self.device_profiles.remove(id);
         _ = self.active_profiles.remove(id);
         _ = self.device_routes.remove(id);
-        _ = self.active_routes.remove(id);
     }
 
     fn remove_node(&mut self, id: NodeId) {
@@ -603,20 +612,61 @@ impl Model {
         _ = self.device_ids.remove(id);
         _ = self.node_names.remove(id);
         _ = self.node_descriptions.remove(id);
+        _ = self.node_route_plugged.remove(id);
+        _ = self.card_profile_devices.remove(id);
     }
 
     /// Set the default sink device by its the node ID.
-    fn set_default_sink_id(&mut self, object_id: NodeId) {
-        self.active_sink = self.sink_node_ids.iter().position(|&id| id == object_id);
-        self.active_sink_node = Some(object_id);
-        self.active_sink_node_name = self.node_names.get(object_id).cloned().unwrap_or_default();
+    fn set_default_sink_id(&mut self, node_id: NodeId) {
+        self.active_sink = self.sink_node_ids.iter().position(|&id| id == node_id);
+        self.active_sink_node = Some(node_id);
+        self.active_sink_node_name = self.node_names.get(node_id).cloned().unwrap_or_default();
     }
 
     /// Set the default source device by its the node ID.
-    fn set_default_source_id(&mut self, object_id: NodeId) {
-        self.active_source = self.source_node_ids.iter().position(|&id| id == object_id);
-        self.active_source_node = Some(object_id);
-        self.active_source_node_name = self.node_names.get(object_id).cloned().unwrap_or_default();
+    fn set_default_source_id(&mut self, node_id: NodeId) {
+        self.active_source = self.source_node_ids.iter().position(|&id| id == node_id);
+        self.active_source_node = Some(node_id);
+        self.active_source_node_name = self.node_names.get(node_id).cloned().unwrap_or_default();
+    }
+
+    /// Check if a node has had its route appended to the name, and return a name if we should update it.
+    fn route_plug_check(
+        &mut self,
+        node: NodeId,
+        device: DeviceId,
+        route: &pipewire::Route,
+    ) -> Option<String> {
+        if self.node_route_plugged.get(node).is_some() {
+            return None;
+        }
+
+        let Some(&card_profile_device) = self.card_profile_devices.get(node) else {
+            return None;
+        };
+
+        if !route.devices.contains(&(card_profile_device as i32)) {
+            return None;
+        }
+
+        let device_name = self.device_names.get(device)?;
+
+        let port_name = if matches!(route.available, Availability::No) {
+            &self.unplugged_text
+        } else {
+            self.node_route_plugged.insert(node, ());
+            &route.description
+        };
+
+        Some([&port_name, " - ", device_name].concat())
+    }
+
+    fn translate_device_name(&self, input: &str) -> String {
+        input
+            .replace(" Controller", "")
+            .replace("High Definition Audio", &self.hd_audio_text)
+            .replace("HD Audio", &self.hd_audio_text)
+            .replace("USB Audio Device", &self.usb_audio_text)
     }
 }
 

@@ -6,7 +6,7 @@
 use crate::pipewire::{Availability, Direction, string_from_pod};
 use libspa::pod::Pod;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Route {
     pub index: i32,
     pub priority: i32,
@@ -15,7 +15,7 @@ pub struct Route {
     pub direction: Direction,
     pub name: String,
     pub description: String,
-    // pub profiles: Vec<i32>,
+    pub devices: Vec<i32>,
 }
 
 impl Route {
@@ -27,7 +27,7 @@ impl Route {
         let mut direction = Direction::Output;
         let mut name = String::new();
         let mut description = String::new();
-        // let mut profiles = Vec::new();
+        let mut devices = Vec::new();
 
         let profile = pod.as_object().ok()?;
 
@@ -53,11 +53,11 @@ impl Route {
                         _ => Direction::Input,
                     }
                 }
-                // libspa_sys::SPA_PARAM_ROUTE_profiles => {
-                //     if let Some(data) = unsafe { super::int_array_from_pod(prop.value()) } {
-                //         profiles = data;
-                //     }
-                // }
+                libspa_sys::SPA_PARAM_ROUTE_devices => {
+                    if let Some(data) = unsafe { super::int_array_from_pod(prop.value()) } {
+                        devices = data;
+                    }
+                }
                 _ => (),
             }
         }
@@ -70,7 +70,7 @@ impl Route {
             direction,
             name,
             description,
-            // profiles,
+            devices,
         })
     }
 }

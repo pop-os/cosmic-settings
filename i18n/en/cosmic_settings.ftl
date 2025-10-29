@@ -483,6 +483,11 @@ sound-alerts = Alerts
 sound-applications = Applications
     .desc = Application volumes and settings
 
+# No speaker, headphones, or microphone plugged into sound card port
+sound-device-port-unplugged = Unplugged
+sound-hd-audio = HD Audio
+sound-usb-audio = USB Audio
+
 # Profiles for sound card devices
 sound-device-profiles = Device Profiles
     .button = Device profiles

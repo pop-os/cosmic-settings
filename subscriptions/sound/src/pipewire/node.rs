@@ -9,6 +9,7 @@ use pipewire::node::{NodeInfoRef, NodeState};
 pub struct Node {
     pub object_id: u32,
     pub device_id: Option<u32>,
+    pub card_profile_device: Option<u32>,
     pub audio_channels: u32,
     pub audio_position: String,
     pub icon_name: String,
@@ -41,6 +42,7 @@ impl Node {
 
         let mut object_id = None;
         let mut device_id = None;
+        let mut card_profile_device = None;
         let mut node_description: &str = "";
         let mut profile_description: &str = "";
         let mut icon_name = String::new();
@@ -59,6 +61,9 @@ impl Node {
 
                 // FL,FR
                 "audio.position" => audio_position = value.to_owned(),
+
+                // 0
+                "card.profile.device" => card_profile_device = Some(value.parse::<u32>().ok()?),
 
                 // Analog Stereo (ALSA only)
                 "device.profile.description" => {
@@ -89,6 +94,7 @@ impl Node {
         let device = Node {
             object_id: object_id?,
             device_id,
+            card_profile_device,
             media_class: media_class?,
             description: if profile_description.is_empty() {
                 node_description.to_owned()

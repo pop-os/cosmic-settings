@@ -117,7 +117,7 @@ pub fn run(
                         })
                         .param({
                             let state = Rc::downgrade(&state);
-                            move |_seq, param_type, _index, _next, param| {
+                            move |_seq, param_type, index, _next, param| {
                                 let Some(pod) = param else {
                                     return;
                                 };
@@ -141,7 +141,7 @@ pub fn run(
 
                                     ParamType::EnumRoute => {
                                         if let Some(route) = Route::from_pod(pod) {
-                                            state.borrow_mut().add_route(device_id, route);
+                                            state.borrow_mut().add_route(device_id, index, route);
                                         }
                                     }
 
@@ -153,7 +153,9 @@ pub fn run(
 
                                     ParamType::Route => {
                                         if let Some(route) = Route::from_pod(pod) {
-                                            state.borrow_mut().active_route(device_id, route);
+                                            state
+                                                .borrow_mut()
+                                                .active_route(device_id, index, route);
                                         }
                                     }
 
@@ -245,7 +247,7 @@ pub enum Event {
     /// Set the active profile for a device
     ActiveProfile(DeviceId, Profile),
     /// Set the active route for a device
-    ActiveRoute(DeviceId, Route),
+    ActiveRoute(DeviceId, u32, Route),
     /// A new device was detected.
     AddDevice(Device),
     /// A new node was detected.
@@ -253,7 +255,7 @@ pub enum Event {
     /// A profile was enumerated
     AddProfile(DeviceId, Profile),
     /// A route was enumerated
-    AddRoute(DeviceId, Route),
+    AddRoute(DeviceId, u32, Route),
     /// A device with the given device_id was removed.
     RemoveDevice(DeviceId),
     /// A node with the given object_id was removed.
@@ -266,16 +268,18 @@ pub enum Request {
     Quit,
 }
 
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub enum Availability {
+    #[default]
     Unknown,
     No,
     Yes,
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub enum Direction {
     Input,
+    #[default]
     Output,
 }
 
@@ -304,8 +308,8 @@ impl State {
         self.on_event(Event::ActiveProfile(id, profile));
     }
 
-    fn active_route(&mut self, id: DeviceId, route: Route) {
-        self.on_event(Event::ActiveRoute(id, route));
+    fn active_route(&mut self, id: DeviceId, index: u32, route: Route) {
+        self.on_event(Event::ActiveRoute(id, index, route));
     }
 
     fn add_device(&mut self, id: PipewireId, device: Device) {
@@ -328,8 +332,8 @@ impl State {
         self.on_event(Event::AddProfile(id, profile));
     }
 
-    fn add_route(&mut self, id: DeviceId, route: Route) {
-        self.on_event(Event::AddRoute(id, route));
+    fn add_route(&mut self, id: DeviceId, index: u32, route: Route) {
+        self.on_event(Event::AddRoute(id, index, route));
     }
 
     fn enumerate_device(&mut self, id: DeviceId) {
@@ -394,22 +398,22 @@ fn string_from_pod(pod: &Pod) -> Option<String> {
     None
 }
 
-// /// SAFETY: Must be absolutely certain that the array is an integer array.
-// unsafe fn int_array_from_pod(pod: &Pod) -> Option<Vec<i32>> {
-//     if !pod.is_array() {
-//         return None;
-//     }
+/// SAFETY: Must be absolutely certain that the array is an integer array.
+unsafe fn int_array_from_pod(pod: &Pod) -> Option<Vec<i32>> {
+    if !pod.is_array() {
+        return None;
+    }
 
-//     let mut len = 0;
+    let mut len = 0;
 
-//     unsafe {
-//         let array: *mut std::ffi::c_int =
-//             libspa_sys::spa_pod_get_array(pod.as_raw_ptr(), &mut len).cast();
+    unsafe {
+        let array: *mut std::ffi::c_int =
+            libspa_sys::spa_pod_get_array(pod.as_raw_ptr(), &mut len).cast();
 
-//         if array.is_null() {
-//             return None;
-//         }
+        if array.is_null() {
+            return None;
+        }
 
-//         Some(std::slice::from_raw_parts(array, len as usize).to_owned())
-//     }
-// }
+        Some(std::slice::from_raw_parts(array, len as usize).to_owned())
+    }
+}

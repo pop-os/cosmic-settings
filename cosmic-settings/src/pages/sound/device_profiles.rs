@@ -42,6 +42,10 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(view())])
     }
 
+    fn on_leave(&mut self) -> cosmic::Task<crate::pages::Message> {
+        cosmic::Task::done(crate::pages::Message::Sound(super::Message::Reload))
+    }
+
     fn set_id(&mut self, entity: cosmic_settings_page::Entity) {
         self.entity = entity;
     }
@@ -84,13 +88,7 @@ pub fn view() -> Section<crate::pages::Message> {
                         .and_then(|profile| {
                             profiles
                                 .iter()
-                                .filter(|p| {
-                                    matches!(
-                                        p.available,
-                                        pipewire::Availability::Yes
-                                            | pipewire::Availability::Unknown
-                                    )
-                                })
+                                .filter(|p| !matches!(p.available, pipewire::Availability::No))
                                 .enumerate()
                                 .find(|(_, p)| p.index == profile.index)
                                 .map(|(pos, _)| pos)
@@ -99,12 +97,7 @@ pub fn view() -> Section<crate::pages::Message> {
                 // TODO: cache
                 let (indexes, profiles): (Vec<_>, Vec<_>) = profiles
                     .iter()
-                    .filter(|p| {
-                        matches!(
-                            p.available,
-                            pipewire::Availability::Yes | pipewire::Availability::Unknown
-                        )
-                    })
+                    .filter(|p| !matches!(p.available, pipewire::Availability::No))
                     .map(|p| (p.index as u32, p.description.clone()))
                     .collect();
 

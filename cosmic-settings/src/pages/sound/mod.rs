@@ -21,6 +21,8 @@ const AMPLIFICATION_SOURCE: &str = "amplification_source";
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    /// Reload the model
+    Reload,
     /// Set the profile of a sound device.
     SetProfile(u32, u32),
     /// Change the balance of the active sink.
@@ -65,7 +67,6 @@ impl From<subscription::Message> for Message {
     }
 }
 
-#[derive(Default)]
 pub struct Page {
     entity: page::Entity,
     device_profiles: page::Entity,
@@ -73,6 +74,23 @@ pub struct Page {
     sound_config: Option<Config>,
     amplification_sink: bool,
     amplification_source: bool,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        let mut model = subscription::Model::default();
+        model.unplugged_text = fl!("sound-device-port-unplugged");
+        model.hd_audio_text = fl!("sound-hd-audio");
+        model.usb_audio_text = fl!("sound-usb-audio");
+        Self {
+            entity: page::Entity::default(),
+            device_profiles: page::Entity::default(),
+            model,
+            sound_config: None,
+            amplification_sink: false,
+            amplification_source: false,
+        }
+    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -123,8 +141,6 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        self.model.clear();
-
         *self = Page {
             entity: self.entity,
             device_profiles: self.device_profiles,
@@ -219,6 +235,14 @@ impl Page {
 
             Message::SetProfile(object_id, index) => {
                 self.model.set_profile(object_id, index);
+            }
+
+            Message::Reload => {
+                let mut model = subscription::Model::default();
+                model.hd_audio_text = std::mem::take(&mut self.model.hd_audio_text);
+                model.unplugged_text = std::mem::take(&mut self.model.unplugged_text);
+                model.usb_audio_text = std::mem::take(&mut self.model.usb_audio_text);
+                self.model = model;
             }
         }
 
