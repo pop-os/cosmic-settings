@@ -551,14 +551,14 @@ connect = Під'єднати
 password = Пароль
 username = Ім'я користувача
 settings = Налаштування
-ok = ОК
+ok = Гаразд
 connections-and-profiles =
-    Керування { $variant ->
-        [wired] дротовими з'єднаннями
-        [wifi] бездротовими з'єднаннями
-        [vpn] профілями VPN-з'єднань
-       *[other] невідомими з'єднаннями
-    }.
+    { $variant ->
+        [wired] Дровоте
+        [wifi] Wi-Fi
+        [vpn] VPN
+       *[other] Невідоме
+    } з'єднання та профілі мережевих з'єднань.
 add-network = Додати мережу
     .profile = Додати профіль
 add-vpn = Додати VPN
@@ -569,16 +569,16 @@ connecting = З'єднання…
 disconnect = Від'єднатися
 forget = Забути
 known-networks = Відомі мережі
-network-and-wireless = Мережа й бездротовий зв'язок
-no-networks = Ніяких мережей не було знайдено.
-no-vpn = Немає доступних VPN з'єднань.
+network-and-wireless = Мережа та бездротовий зв’язок
+no-networks = Мереж не знайдено.
+no-vpn = Немає доступних VPN-з'єднань.
 password-confirm = Повторіть пароль
 visible-networks = Знайдені мережі
-auth-dialog = Потрібна авторизація
-    .vpn-description = Введіть ваш логін та пароль від мережі VPN.
+auth-dialog = Авторизація обов'язкова
+    .vpn-description = Введіть логін та пароль, які необхідні для VPN-сервісу.
     .wifi-description = Введіть пароль або ключ шифрування. Також ви можете з'єднатися, натиснувши кнопку "WPS" на маршрутизаторі.
-forget-dialog = Забути цю бездротову мережу?
-    .description = Вам потрібно буде знову ввести пароль для того, щоб використати цю мережу у майбутньому.
+forget-dialog = Забути цю Wi-Fi мережу?
+    .description = Вам потрібно буде знову ввести пароль, щоб використовувати цю мережу в майбутньому.
 network-device-state =
     .activated = З'єднано
     .config = З'єднання
