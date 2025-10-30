@@ -443,7 +443,7 @@ system = System & konton
 ## System: Om
 
 about = Om
-    .desc = Enhetsnamn, hårvaruinformation, operativsystemstandarder.
+    .desc = Enhetsnamn, hårdvaruinformation, operativsystemstandarder.
 about-device = Enhetsnamn
     .desc = Detta namn visas för andra nätverks eller bluetooth-enheter.
 about-hardware = Hårdvara
@@ -745,7 +745,7 @@ applications = Program
 ## System: Standardprogram
 
 default-apps = Standardprogram
-    .desc = Standardwebbläsare, -e-postklient, filhanteringsprogram och andra program.
+    .desc = Standardwebbläsare, e-postklient, filhanteringsprogram och andra program.
     .web-browser = Webbläsare
     .file-manager = Filhanteringsprogram
     .mail-client = E-postklient
