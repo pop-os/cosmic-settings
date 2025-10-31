@@ -278,6 +278,7 @@ impl Page {
                 #[cfg(feature = "wayland")]
                 tokio::task::spawn(async move {
                     Self::update_panel_radii(r);
+                    Self::update_dock_padding(r);
                 });
             }
 
@@ -538,7 +539,7 @@ impl Page {
 
     // TODO: cache panel and dock configs so that they needn't be re-read
     #[cfg(feature = "wayland")]
-    fn update_panel_radii(roundness: Roundness) {
+    pub fn update_panel_radii(roundness: Roundness) {
         let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
         let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
 
@@ -583,8 +584,32 @@ impl Page {
         };
     }
 
+    pub fn update_dock_padding(roundness: Roundness) {
+        let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
+
+        let mut dock_config = dock_config_helper.as_ref().and_then(|config_helper| {
+            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
+            (panel_config.name == "Dock").then_some(panel_config)
+        });
+
+        if let Some(dock_config_helper) = dock_config_helper.as_ref() {
+            if let Some(dock_config) = dock_config.as_mut() {
+                let padding = match roundness {
+                    Roundness::Round => 4,
+                    Roundness::SlightlyRound => 4,
+                    Roundness::Square => 0,
+                };
+
+                if let Err(why) = dock_config.set_padding(dock_config_helper, padding) {
+                    tracing::error!(?why, "Error updating dock padding");
+                }
+            }
+        }
+    }
+
+    // TODO: cache panel and dock configs so that they needn't be re-read
     #[cfg(feature = "wayland")]
-    fn update_panel_spacing(density: Density) {
+    pub fn update_panel_spacing(density: Density) {
         let spacing: cosmic::cosmic_theme::Spacing = density.into();
         let space_none = spacing.space_none;
         let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
