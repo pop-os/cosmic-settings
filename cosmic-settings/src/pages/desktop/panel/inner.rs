@@ -2,6 +2,7 @@ use cosmic::{
     Element, Task,
     cctk::sctk::reexports::client::{Proxy, backend::ObjectId, protocol::wl_output::WlOutput},
     cosmic_config::{self, CosmicConfigEntry},
+    cosmic_theme::Density,
     iced::{Alignment, Length},
     surface, theme,
     widget::{
@@ -19,6 +20,7 @@ use cosmic_settings_page::{self as page, Section};
 use slab::Slab;
 use std::{collections::HashMap, time::Duration};
 
+use crate::pages::desktop::appearance::Roundness;
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
     pub(crate) panel_config: Option<CosmicPanelConfig>,
@@ -473,6 +475,23 @@ impl PageInner {
                 {
                     tracing::error!(?err, "Error fully resetting the panel config.");
                 }
+                // update the padding and spacing based on appearance
+                tokio::task::spawn(async move {
+                    let theme = cosmic::theme::system_preference();
+                    let theme = theme.cosmic();
+
+                    let radius = theme.corner_radii;
+                    let roundness: Roundness = radius.into();
+                    crate::pages::desktop::appearance::Page::update_panel_radii(roundness);
+
+                    let spacing = theme.spacing;
+                    let density = Density::from(spacing);
+                    crate::pages::desktop::appearance::Page::update_panel_spacing(density);
+
+                    let radius = theme.corner_radii;
+                    let roundness: Roundness = radius.into();
+                    crate::pages::desktop::appearance::Page::update_dock_padding(roundness);
+                });
             }
             _ => {}
         };
