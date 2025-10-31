@@ -142,6 +142,8 @@ pub struct Model {
     pub active_profiles: IntMap<DeviceId, pipewire::Profile>,
     pub device_routes: IntMap<DeviceId, Vec<pipewire::Route>>,
 
+    prev_profile_node: Option<(DeviceId, NodeId)>,
+
     /** Sink devices */
 
     /// Description of a sink device and its port
@@ -221,28 +223,26 @@ impl Model {
                 if profile.index as u32 == index {
                     // Pipewire will change the default device if the profile on that device is changed.
                     // We can prevent this by re-setting the default after changing it.
-                    let current_default = self.device_ids.iter().find_map(|(node_id, &dev_id)| {
-                        if dev_id != device_id {
-                            return None;
-                        }
+                    self.prev_profile_node =
+                        self.device_ids.iter().find_map(|(node_id, &dev_id)| {
+                            if dev_id != device_id {
+                                return None;
+                            }
 
-                        if Some(node_id) == self.active_source_node
-                            || Some(node_id) == self.active_sink_node
-                        {
-                            Some(node_id)
-                        } else {
-                            None
-                        }
-                    });
+                            if Some(node_id) == self.active_source_node
+                                || Some(node_id) == self.active_sink_node
+                            {
+                                Some((dev_id, node_id))
+                            } else {
+                                None
+                            }
+                        });
+
+                    self.active_profiles.insert(device_id, profile.clone());
 
                     tokio::spawn(async move {
                         wpctl::set_profile(device_id, index).await;
-                        if let Some(node_id) = current_default {
-                            wpctl::set_default(node_id).await;
-                        }
                     });
-
-                    self.active_profiles.insert(device_id, profile.clone());
                 }
             }
         }
@@ -569,6 +569,15 @@ impl Model {
                 };
 
                 self.node_descriptions.insert(node.object_id, description);
+
+                if let Some((device_id, node_id)) = self.prev_profile_node {
+                    if Some(device_id) == node.device_id && node.object_id == node_id {
+                        self.prev_profile_node = None;
+                        tokio::task::spawn(async move {
+                            wpctl::set_default(node_id).await;
+                        });
+                    }
+                }
             }
 
             pipewire::Event::RemoveDevice(id) => self.remove_device(id),
