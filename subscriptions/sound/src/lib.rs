@@ -268,10 +268,12 @@ impl Model {
 
     pub fn sink_changed(&mut self, pos: usize) -> Task<Message> {
         if let Some(&object_id) = self.sink_node_ids.get(pos) {
-            self.set_default_sink_id(object_id);
-            tokio::task::spawn(async move {
-                wpctl::set_default(object_id).await;
-            });
+            if let Some(node_name) = self.node_names.get(object_id).cloned() {
+                self.set_default_sink_id(object_id);
+                tokio::task::spawn(async move {
+                    wpctl::set_default(object_id, &node_name, true).await;
+                });
+            }
         }
 
         Task::none()
@@ -307,10 +309,12 @@ impl Model {
 
     pub fn source_changed(&mut self, pos: usize) -> Task<Message> {
         if let Some(&object_id) = self.source_node_ids.get(pos) {
-            self.set_default_source_id(object_id);
-            tokio::task::spawn(async move {
-                wpctl::set_default(object_id).await;
-            });
+            if let Some(node_name) = self.node_names.get(object_id).cloned() {
+                self.set_default_source_id(object_id);
+                tokio::task::spawn(async move {
+                    wpctl::set_default(object_id, &node_name, false).await;
+                });
+            }
         }
 
         Task::none()
@@ -573,8 +577,9 @@ impl Model {
                 if let Some((device_id, node_id)) = self.prev_profile_node {
                     if Some(device_id) == node.device_id && node.object_id == node_id {
                         self.prev_profile_node = None;
+                        let is_sink = matches!(node.media_class, pipewire::MediaClass::Sink);
                         tokio::task::spawn(async move {
-                            wpctl::set_default(node_id).await;
+                            wpctl::set_default(node_id, &node.node_name, is_sink).await;
                         });
                     }
                 }
