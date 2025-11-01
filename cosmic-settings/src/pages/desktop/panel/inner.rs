@@ -151,6 +151,36 @@ pub(crate) fn behavior_and_position<
         })
 }
 
+pub(crate) fn enable<P: page::Page<crate::pages::Message> + PanelPage>(
+    p: &P,
+) -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let dock = descriptions.insert(fl!("dock"));
+
+    Section::default()
+        .descriptions(descriptions)
+        .view::<P>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+            let Some(container_config) = page.inner().container_config.as_ref() else {
+                return Element::from(text::body(fl!("unknown")));
+            };
+            settings::section()
+                .title(&section.title)
+                .add(settings::item(
+                    &descriptions[dock],
+                    toggler(
+                        container_config
+                            .config_list
+                            .iter()
+                            .any(|e| e.name.as_str() == "Dock"),
+                    ),
+                ))
+                .apply(Element::from)
+                .map(crate::pages::Message::Dock)
+        })
+}
+
 pub(crate) fn style<
     P: page::Page<crate::pages::Message> + PanelPage,
     T: Fn(Message) -> crate::pages::Message + Copy + Send + Sync + 'static,

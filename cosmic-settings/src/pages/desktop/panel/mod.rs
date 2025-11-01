@@ -6,7 +6,7 @@ use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 
 use crate::pages::desktop::panel::inner::{
-    add_panel, behavior_and_position, configuration, reset_button, style,
+    add_panel, behavior_and_position, configuration, enable, reset_button, style,
 };
 
 use self::inner::{PageInner, PanelPage};
@@ -116,6 +116,7 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(if self.inner.panel_config.is_some() {
             vec![
+                sections.insert(enable::<Page>(self)),
                 sections.insert(behavior_and_position::<Page, _>(self, |m| {
                     crate::pages::Message::Panel(Message(m))
                 })),

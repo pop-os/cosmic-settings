@@ -1,19 +1,16 @@
 use std::collections::HashMap;
 
-use cosmic::Apply;
 use cosmic::{
-    Element, Task,
+    Task,
     cosmic_config::{ConfigSet, CosmicConfigEntry},
-    widget::{settings, text, toggler},
 };
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, Section, section};
-use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
 use crate::pages::desktop::panel::inner::{
-    add_panel, behavior_and_position, configuration, reset_button, style,
+    add_panel, behavior_and_position, configuration, enable, reset_button, style,
 };
 
 use super::panel::inner::{self, PageInner, PanelPage};
@@ -157,34 +154,6 @@ impl Default for Page {
     }
 }
 
-pub(crate) fn enable() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let dock = descriptions.insert(fl!("dock"));
-
-    Section::default()
-        .descriptions(descriptions)
-        .view::<Page>(move |_binder, page, section| {
-            let descriptions = &section.descriptions;
-            let Some(container_config) = page.inner.container_config.as_ref() else {
-                return Element::from(text::body(fl!("unknown")));
-            };
-            settings::section()
-                .title(&section.title)
-                .add(settings::item(
-                    &descriptions[dock],
-                    toggler(
-                        container_config
-                            .config_list
-                            .iter()
-                            .any(|e| e.name.as_str() == "Dock"),
-                    )
-                    .on_toggle(Message::EnableDock),
-                ))
-                .apply(Element::from)
-                .map(crate::pages::Message::Dock)
-        })
-}
 // TODO cleanup
 impl page::Page<crate::pages::Message> for Page {
     #[allow(clippy::too_many_lines)]
@@ -194,7 +163,7 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(if self.inner.panel_config.is_some() {
             vec![
-                sections.insert(enable()),
+                sections.insert(enable::<Page>(self)),
                 sections.insert(behavior_and_position::<Page, _>(self, |m| {
                     crate::pages::Message::Dock(Message::Inner(m))
                 })),
