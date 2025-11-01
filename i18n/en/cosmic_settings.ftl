@@ -783,6 +783,7 @@ time-format = Date & time format
     .show-seconds = Show seconds
     .first = First day of week
     .show-date = Show date in the time applet
+    .format-strftime = Format date and time with strftime
     .friday = Friday
     .saturday = Saturday
     .sunday = Sunday
