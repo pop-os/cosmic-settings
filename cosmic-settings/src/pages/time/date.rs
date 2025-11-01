@@ -45,6 +45,7 @@ pub struct Page {
     show_seconds: bool,
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
+    format_strftime: String,
     timezone_context: bool,
     local_time: Option<DateTime<Gregorian>>,
     timezone: Option<usize>,
@@ -102,6 +103,15 @@ impl Default for Page {
                 true
             });
 
+        let format_strftime = cosmic_applet_config
+            .get("format_strftime")
+            .inspect_err(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'format_strftime'");
+                }
+            })
+            .unwrap_or_default();
+
         Self {
             entity: page::Entity::null(),
             cosmic_applet_config,
@@ -112,6 +122,7 @@ impl Default for Page {
             show_seconds,
             ntp_enabled: false,
             show_date_in_top_panel,
+            format_strftime,
             timezone: None,
             timezone_context: false,
             timezone_list: Vec::new(),
@@ -239,6 +250,17 @@ impl Page {
                     .set("show_date_in_top_panel", enable)
                 {
                     error!(?err, "Failed to set config 'show_date_in_top_panel'");
+                }
+            }
+
+            Message::Strftime(format) => {
+                self.format_strftime = format;
+
+                if let Err(err) = self
+                    .cosmic_applet_config
+                    .set("format_strftime", &self.format_strftime)
+                {
+                    error!(?err, "Failed to set config 'format_strftime'");
                 }
             }
 
@@ -398,6 +420,7 @@ pub enum Message {
     FirstDayOfWeek(usize),
     Refresh(Info),
     ShowDate(bool),
+    Strftime(String),
     Timezone(usize),
     TimezoneContext,
     TimezoneSearch(String),
@@ -435,6 +458,7 @@ fn format() -> Section<crate::pages::Message> {
     let show_seconds = descriptions.insert(fl!("time-format", "show-seconds"));
     let first = descriptions.insert(fl!("time-format", "first"));
     let show_date = descriptions.insert(fl!("time-format", "show-date"));
+    let format_strftime = descriptions.insert(fl!("time-format", "format-strftime"));
 
     Section::default()
         .title(fl!("time-format"))
@@ -485,6 +509,12 @@ fn format() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&section.descriptions[show_date])
                         .toggler(page.show_date_in_top_panel, Message::ShowDate),
+                )
+                // Format with strftime
+                .add(
+                    settings::item::builder(&section.descriptions[format_strftime]).control(
+                        widget::text_input("", &page.format_strftime).on_submit(Message::Strftime),
+                    ),
                 )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)
