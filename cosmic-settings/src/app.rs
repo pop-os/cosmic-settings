@@ -663,7 +663,7 @@ impl cosmic::Application for SettingsApp {
 
                 if let Some(page) = self.pages.page_mut::<dock::Page>() {
                     commands.push(
-                        page.update(dock::Message::Inner(_panel::Message::OutputAdded(
+                        page.update(dock::Message(_panel::Message::OutputAdded(
                             info.name.unwrap_or_default(),
                             output,
                         )))
@@ -687,7 +687,7 @@ impl cosmic::Application for SettingsApp {
 
                 if let Some(page) = self.pages.page_mut::<dock::Page>() {
                     commands.push(
-                        page.update(dock::Message::Inner(_panel::Message::OutputRemoved(output)))
+                        page.update(dock::Message(_panel::Message::OutputRemoved(output)))
                             .map(Into::into),
                     );
                 }
@@ -721,7 +721,7 @@ impl cosmic::Application for SettingsApp {
 
                 if let Some(page) = self.pages.page_mut::<dock::Page>() {
                     tasks.push(
-                        page.update(dock::Message::Inner(_panel::Message::PanelConfig(
+                        page.update(dock::Message(_panel::Message::PanelConfig(
                             config.clone(),
                         )))
                         .map(Into::into),

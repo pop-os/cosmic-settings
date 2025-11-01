@@ -22,58 +22,18 @@ pub struct Page {
 }
 
 #[derive(Clone, Debug)]
-pub enum Message {
-    EnableDock(bool),
-    Inner(inner::Message),
-}
+pub struct Message(pub inner::Message);
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
-        match message {
-            Message::EnableDock(enabled) => {
-                let Some(container_config) = self.inner.container_config.as_mut() else {
-                    return Task::none();
-                };
-
-                let Some(panel_config) = self.inner.panel_config.as_ref() else {
-                    return Task::none();
-                };
-
-                let Ok(helper) = CosmicPanelContainerConfig::cosmic_config() else {
-                    return Task::none();
-                };
-
-                if enabled {
-                    container_config.config_list.push(panel_config.clone());
-                } else {
-                    container_config
-                        .config_list
-                        .retain(|c| c.name.as_str() != "Dock");
-                }
-
-                let entry_names = container_config
-                    .config_list
-                    .iter()
-                    .map(|c| c.name.clone())
-                    .collect::<Vec<_>>();
-
-                if let Err(err) = helper.set("entries", entry_names) {
-                    error!("{:?}", err);
-                }
-
-                Task::none()
-            }
-            Message::Inner(inner) => {
-                if let inner::Message::Surface(a) = inner {
-                    cosmic::task::message(crate::app::Message::Surface(a))
-                } else {
-                    self.inner
-                        .update(inner)
-                        .map(Message::Inner)
-                        .map(crate::pages::Message::Dock)
-                        .map(crate::app::Message::PageMessage)
-                }
-            }
+        if let inner::Message::Surface(a) = message.0 {
+            cosmic::task::message(crate::app::Message::Surface(a))
+        } else {
+            self.inner
+                .update(message.0)
+                .map(Message)
+                .map(crate::pages::Message::Dock)
+                .map(crate::app::Message::PageMessage)
         }
     }
 }
@@ -171,21 +131,23 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(if self.inner.panel_config.is_some() {
             vec![
-                sections.insert(enable::<Page>(self)),
+                sections.insert(enable::<Page, _>(self, |m| {
+                    crate::pages::Message::Dock(Message(m))
+                })),
                 sections.insert(behavior_and_position::<Page, _>(self, |m| {
-                    crate::pages::Message::Dock(Message::Inner(m))
+                    crate::pages::Message::Dock(Message(m))
                 })),
                 sections.insert(style::<Page, _>(self, |m| {
-                    crate::pages::Message::Dock(Message::Inner(m))
+                    crate::pages::Message::Dock(Message(m))
                 })),
                 sections.insert(configuration::<Page>(self)),
                 sections.insert(reset_button::<Page, _>(|m| {
-                    crate::pages::Message::Dock(Message::Inner(m))
+                    crate::pages::Message::Dock(Message(m))
                 })),
             ]
         } else {
             vec![sections.insert(add_panel::<Page, _>(|m| {
-                crate::pages::Message::Dock(Message::Inner(m))
+                crate::pages::Message::Dock(Message(m))
             }))]
         })
     }

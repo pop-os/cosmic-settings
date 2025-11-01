@@ -124,7 +124,9 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(if self.inner.panel_config.is_some() {
             vec![
-                sections.insert(enable::<Page>(self)),
+                sections.insert(enable::<Page, _>(self, |m| {
+                    crate::pages::Message::Panel(Message(m))
+                })),
                 sections.insert(behavior_and_position::<Page, _>(self, |m| {
                     crate::pages::Message::Panel(Message(m))
                 })),

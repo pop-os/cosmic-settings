@@ -155,8 +155,12 @@ pub(crate) fn behavior_and_position<
         })
 }
 
-pub(crate) fn enable<P: page::Page<crate::pages::Message> + PanelPage>(
+pub(crate) fn enable<
+    P: page::Page<crate::pages::Message> + PanelPage,
+    T: Fn(Message) -> crate::pages::Message + Copy + Send + Sync + 'static,
+>(
     p: &P,
+    msg_map: T,
 ) -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
@@ -178,10 +182,11 @@ pub(crate) fn enable<P: page::Page<crate::pages::Message> + PanelPage>(
                             .config_list
                             .iter()
                             .any(|e| e.name.as_str() == page.page_id()),
-                    ),
+                    )
+                    .on_toggle(Message::Enable),
                 ))
                 .apply(Element::from)
-                .map(crate::pages::Message::Dock)
+                .map(msg_map)
         })
 }
 
@@ -467,6 +472,7 @@ pub enum Message {
     PanelConfig(CosmicPanelConfig),
     ResetPanel,
     FullReset,
+    Enable(bool),
     Surface(surface::Action),
 }
 
@@ -613,6 +619,35 @@ impl PageInner {
             }
             Message::PanelConfig(c) => {
                 self.panel_config = Some(c);
+                return Task::none();
+            }
+            Message::Enable(enabled) => {
+                let Ok(container_helper) = CosmicPanelContainerConfig::cosmic_config() else {
+                    return Task::none();
+                };
+
+                let Some(container_config) = self.container_config.as_mut() else {
+                    return Task::none();
+                };
+
+                if enabled {
+                    container_config.config_list.push(panel_config.clone());
+                } else {
+                    container_config
+                        .config_list
+                        .retain(|c| c.name != panel_config.name);
+                }
+
+                let entry_names = container_config
+                    .config_list
+                    .iter()
+                    .map(|c| c.name.clone())
+                    .collect::<Vec<_>>();
+
+                if let Err(err) = container_helper.set("entries", entry_names) {
+                    tracing::error!("{:?}", err);
+                }
+
                 return Task::none();
             }
             Message::ResetPanel | Message::FullReset => {}
