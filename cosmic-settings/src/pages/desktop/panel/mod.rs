@@ -66,6 +66,14 @@ impl PanelPage for Page {
         fl!("panel-applets", "desc")
     }
 
+    fn enable_label(&self) -> String {
+        fl!("panel")
+    }
+
+    fn page_id(&self) -> &'static str {
+        "Panel"
+    }
+
     fn applets_page_id(&self) -> &'static str {
         "panel_applets"
     }

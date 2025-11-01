@@ -109,6 +109,14 @@ impl PanelPage for Page {
         fl!("panel-applets", "dock-desc")
     }
 
+    fn enable_label(&self) -> String {
+        fl!("dock")
+    }
+
+    fn page_id(&self) -> &'static str {
+        "Dock"
+    }
+
     fn applets_page_id(&self) -> &'static str {
         "dock_applets"
     }

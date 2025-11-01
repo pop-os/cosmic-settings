@@ -87,6 +87,10 @@ pub trait PanelPage {
 
     fn extend_label(&self) -> String;
 
+    fn enable_label(&self) -> String;
+
+    fn page_id(&self) -> &'static str;
+
     fn configure_applets_label(&self) -> String;
 
     fn applets_page_id(&self) -> &'static str;
@@ -156,7 +160,7 @@ pub(crate) fn enable<P: page::Page<crate::pages::Message> + PanelPage>(
 ) -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let dock = descriptions.insert(fl!("dock"));
+    let enable_label = descriptions.insert(p.enable_label());
 
     Section::default()
         .descriptions(descriptions)
@@ -168,12 +172,12 @@ pub(crate) fn enable<P: page::Page<crate::pages::Message> + PanelPage>(
             settings::section()
                 .title(&section.title)
                 .add(settings::item(
-                    &descriptions[dock],
+                    &descriptions[enable_label],
                     toggler(
                         container_config
                             .config_list
                             .iter()
-                            .any(|e| e.name.as_str() == "Dock"),
+                            .any(|e| e.name.as_str() == page.page_id()),
                     ),
                 ))
                 .apply(Element::from)
