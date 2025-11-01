@@ -626,8 +626,12 @@ impl PageInner {
                     return Task::none();
                 };
 
-                let Some(container_config) = self.container_config.as_mut() else {
-                    return Task::none();
+                let mut container_config = match CosmicPanelContainerConfig::load() {
+                    Ok(config) => config,
+                    Err(err) => {
+                        tracing::error!(?err, "Failed to load container config");
+                        return Task::none();
+                    }
                 };
 
                 if enabled {
@@ -647,6 +651,8 @@ impl PageInner {
                 if let Err(err) = container_helper.set("entries", entry_names) {
                     tracing::error!("{:?}", err);
                 }
+
+                self.container_config = Some(container_config);
 
                 return Task::none();
             }
