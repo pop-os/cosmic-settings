@@ -804,3 +804,4 @@ legacy-app-scaling = Škálování aplikací v okenním systému X11
     .compatibility-description = Aplikace X11 mohou na HiDPI obrazovkách vypadat rozmazaně.
     .preferred-display = Preferovaný displej pro hry a aplikace X11 na celé obrazovce
     .no-display = Žádný
+place-here = Sem umístěte applety
