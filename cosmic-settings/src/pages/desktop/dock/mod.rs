@@ -1,13 +1,9 @@
 use std::collections::HashMap;
 
-use cosmic::{
-    Task,
-    cosmic_config::{ConfigSet, CosmicConfigEntry},
-};
+use cosmic::{Task, cosmic_config::CosmicConfigEntry};
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
-use tracing::error;
 
 use crate::pages::desktop::panel::inner::{
     add_panel, behavior_and_position, configuration, enable, reset_button, style,
