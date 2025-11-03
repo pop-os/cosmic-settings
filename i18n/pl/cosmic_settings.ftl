@@ -839,3 +839,4 @@ invalid-username = Nieprawidłowa nazwa użytkownika.
 password-mismatch = Hasło i jego potwierdzenie muszą być jednakowe.
 save = Zapisz
 modified = Zmodyfikowano { $count }
+place-here = Umieść tu applety
