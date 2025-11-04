@@ -123,7 +123,7 @@ impl page::Page<crate::pages::Message> for Page {
                         self.add_application_context_view(directory_type.clone()),
                         crate::pages::Message::CloseContextDrawer,
                     )
-                    .title(fl!("startup-apps", "search-for-application"))
+                    .title(fl!("startup-apps", "add-startup-app"))
                     .header(search),
                 )
             }

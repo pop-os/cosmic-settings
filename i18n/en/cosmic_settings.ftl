@@ -835,7 +835,7 @@ startup-apps = Startup Applications
     .none = No startup applications added
     .remove-dialog-title = Remove { $name }?
     .remove-dialog-description = Are you sure you want to remove this startup application?
-    .search-for-application = Search for application
+    .add-startup-app = Add startup application
 
 ## Applications: Legacy Applications
 
