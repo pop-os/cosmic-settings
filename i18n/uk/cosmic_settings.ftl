@@ -55,7 +55,7 @@ x-hours =
 ## Desktop: Appearance
 
 appearance = Зовнішній вигляд
-    .desc = Кольори акценту та теми.
+    .desc = Кольори акценту та стилізація.
 accent-color = Колір акценту
 app-background = Тло застосунку чи вікна
 auto = Автоматичне
@@ -553,7 +553,7 @@ settings = Налаштування
 ok = Гаразд
 connections-and-profiles =
     { $variant ->
-        [wired] Дровоте
+        [wired] Дротове
         [wifi] Wi-Fi
         [vpn] VPN
        *[other] Невідоме
