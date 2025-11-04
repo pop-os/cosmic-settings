@@ -12,7 +12,7 @@ ashpd = { version = "0.12", default-features = false, features = [
     "tokio",
 ], optional = true }
 chrono = "0.4.42"
-clap = { version = "4.5.47", features = ["derive"] }
+clap = { version = "4.5.51", features = ["derive"] }
 color-eyre = "0.6.5"
 cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
@@ -38,7 +38,7 @@ cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settin
 derive_setters = "0.1.8"
 dirs = "6.0.0"
 eyre = "0.6.12"
-freedesktop-desktop-entry = "0.7.14"
+freedesktop-desktop-entry = "0.7.19"
 futures = "0.3.31"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
@@ -50,7 +50,7 @@ image = { version = "0.25", default-features = false, features = [
     "webp",
     "hdr",
 ] }
-indexmap = "2.11.1"
+indexmap = "2.12.0"
 itertools = "0.14.0"
 itoa = "1.0.15"
 libcosmic.workspace = true
@@ -58,12 +58,12 @@ locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional =
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", optional = true }
 # TODO: updating notify beyond this hangs the app
 notify = "6.1.1"
-regex = "1.11.2"
+regex = "1.12.2"
 ron = "0.11"
-rust-embed = "8.7.2"
+rust-embed = "8.9.0"
 sctk = { workspace = true, optional = true }
 secure-string = "0.3.0"
-serde = { version = "1.0.219", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive"] }
 slab = "0.4.11"
 slotmap = "1.0.7"
 static_init = "1.0.4"
@@ -78,15 +78,15 @@ upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings", option
 bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 url = "2.5.7"
 xkb-data = "0.2.1"
-xkeysym = { version = "0.2.0", optional = true }
-zbus = { version = "5.11.0", default-features = false, features = [
+xkeysym = { version = "0.2.1", optional = true }
+zbus = { version = "5.12.0", default-features = false, features = [
     "tokio",
 ], optional = true }
 zbus_polkit = { version = "5.0.0", optional = true }
 fontdb = "0.23.0"
 mime = "0.3.17"
 rustix = { version = "1.1.2", features = ["process"] }
-gettext-rs = { version = "0.7.2", features = [
+gettext-rs = { version = "0.7.7", features = [
     "gettext-system",
 ], optional = true }
 async-fn-stream = "0.3"
@@ -94,7 +94,7 @@ num-traits = "0.2"
 pwhash = "1"
 
 [dependencies.icu]
-version = "2.0.0"
+version = "2.1.1"
 features = ["compiled_data"]
 
 [dependencies.i18n-embed]
