@@ -757,7 +757,7 @@ startup-apps = Aplikacije pri pokretanju
     .none = Nisu dodate aplikacije za pokretanje
     .remove-dialog-title = Ukloni { $name }?
     .remove-dialog-description = Da li ste sigurni da želite da uklonite ovu aplikaciju za pokretanje?
-    .search-for-application = Pretraži aplikaciju
+    .add-startup-app = Dodaj aplikaciju za pokretanje
 
 ## Applications: Legacy Applications
 
