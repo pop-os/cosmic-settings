@@ -13,6 +13,6 @@ iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 itertools = "0.14.0"
 secure-string = "0.3.0"
 thiserror = "2.0.17"
-tokio = "1.47.1"
+tokio = "1.48.0"
 tracing = "0.1.41"
-zbus = "5.11.0"
+zbus = "5.12.0"

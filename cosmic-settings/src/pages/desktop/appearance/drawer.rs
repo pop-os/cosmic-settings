@@ -332,7 +332,7 @@ impl Content {
                 .map(crate::pages::Message::Appearance),
                 crate::pages::Message::CloseContextDrawer,
             )
-            .title(fl!("window-hint-accent")),
+            .header(text::title4(fl!("window-hint-accent"))),
 
             ContextView::ApplicationBackground => context_drawer(
                 color_picker_context_view(
@@ -344,7 +344,7 @@ impl Content {
                 .map(crate::pages::Message::Appearance),
                 crate::pages::Message::CloseContextDrawer,
             )
-            .title(fl!("app-background")),
+            .header(text::title4(fl!("app-background"))),
 
             ContextView::ContainerBackground => context_drawer(
                 color_picker_context_view(
@@ -356,7 +356,7 @@ impl Content {
                 .map(crate::pages::Message::Appearance),
                 crate::pages::Message::CloseContextDrawer,
             )
-            .title(fl!("container-background")),
+            .header(text::title4(fl!("container-background"))),
 
             ContextView::ControlComponent => context_drawer(
                 color_picker_context_view(
@@ -368,7 +368,7 @@ impl Content {
                 .map(crate::pages::Message::Appearance),
                 crate::pages::Message::CloseContextDrawer,
             )
-            .title(fl!("control-tint")),
+            .header(text::title4(fl!("control-tint"))),
 
             ContextView::CustomAccent => context_drawer(
                 color_picker_context_view(
@@ -380,7 +380,7 @@ impl Content {
                 .map(crate::pages::Message::Appearance),
                 crate::pages::Message::CloseContextDrawer,
             )
-            .title(fl!("accent-color")),
+            .header(text::title4(fl!("accent-color"))),
 
             ContextView::InterfaceText => context_drawer(
                 color_picker_context_view(
@@ -392,7 +392,7 @@ impl Content {
                 .map(crate::pages::Message::Appearance),
                 crate::pages::Message::CloseContextDrawer,
             )
-            .title(fl!("text-tint")),
+            .header(text::title4(fl!("text-tint"))),
 
             ContextView::SystemFont => context_drawer(
                 self.font_config

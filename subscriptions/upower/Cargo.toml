@@ -10,7 +10,7 @@ publish = true
 futures = "0.3.31"
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 log = "0.4.28"
-tokio = "1.47.1"
+tokio = "1.48.0"
 tokio-stream = "0.1.17"
 upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
-zbus = "5.11.0"
+zbus = "5.12.0"

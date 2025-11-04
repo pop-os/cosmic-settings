@@ -9,10 +9,10 @@ rust-version.workspace = true
 
 [dependencies]
 byte-unit = "5.1.6"
-const_format = "0.2.34"
+const_format = "0.2.35"
 concat-in-place = "1.1.0"
 sysinfo = "0.36.1"
-memchr = "2.7.5"
+memchr = "2.7.6"
 
 [dependencies.bumpalo]
 version = "3.19.0"

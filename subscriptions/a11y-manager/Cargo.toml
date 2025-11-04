@@ -12,5 +12,5 @@ iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 num-derive = "0.4.2"
 num-traits = "0.2.19"
 sctk = { git = "https://github.com/smithay/client-toolkit/", package = "smithay-client-toolkit" }
-tokio = "1.47.1"
+tokio = "1.48.0"
 tracing = "0.1.41"

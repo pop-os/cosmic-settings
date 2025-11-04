@@ -11,4 +11,4 @@ futures = "0.3.31"
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 log = "0.4.28"
 rustix = "1.1.2"
-tokio = "1.47.1"
+tokio = "1.48.0"
