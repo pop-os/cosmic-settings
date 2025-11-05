@@ -141,11 +141,11 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
         let state = tree.state.downcast_mut::<State>();
 
         state.max_dimensions = (
-            max_dimensions.0 as f32 / UNIT_PIXELS,
+            max_dimensions.0 as f32 / UNIT_PIXELS / 2.0,
             total_height as f32 / UNIT_PIXELS,
         );
 
-        let width = ((max_dimensions.0 as f32 * 2.0) as i32 + display_area.0) as f32 / UNIT_PIXELS;
+        let width = (max_dimensions.0 as f32 + display_area.0 as f32) / UNIT_PIXELS;
         let height = total_height as f32 * VERTICAL_OVERHEAD / UNIT_PIXELS;
 
         let limits = limits
