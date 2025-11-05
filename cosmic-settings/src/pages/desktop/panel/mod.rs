@@ -139,4 +139,10 @@ impl page::Page<crate::pages::Message> for Page {
             .title(fl!("panel"))
             .description(fl!("panel", "desc"))
     }
+
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+        self.inner.update_defaults();
+
+        Task::none()
+    }
 }

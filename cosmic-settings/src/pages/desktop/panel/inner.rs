@@ -21,6 +21,7 @@ use slab::Slab;
 use std::{collections::HashMap, time::Duration};
 
 use crate::pages::desktop::appearance::Roundness;
+
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
     pub(crate) panel_config: Option<CosmicPanelConfig>,
@@ -439,6 +440,41 @@ pub enum Message {
 }
 
 impl PageInner {
+    pub(crate) fn update_defaults(&mut self) {
+        let theme = cosmic::theme::system_preference();
+        let theme = theme.cosmic();
+
+        let Some(default) = self.system_default.as_mut() else {
+            return;
+        };
+
+        if default.anchor_gap || !default.expand_to_edges {
+            let radii = theme.corner_radii.radius_xl[0] as u32;
+            default.border_radius = radii;
+        } else {
+            default.border_radius = 0;
+        }
+
+        let spacing = theme.spacing;
+        let density = Density::from(spacing);
+        default.spacing = match density {
+            Density::Compact => 0,
+            Density::Standard => 0,
+            Density::Spacious => 4,
+        };
+
+        let radius = theme.corner_radii;
+        if self.panel_config.as_ref().is_some_and(|c| c.name == "Dock") {
+            let roundness: Roundness = radius.into();
+
+            default.padding = match roundness {
+                Roundness::Round => 4,
+                Roundness::SlightlyRound => 4,
+                Roundness::Square => 0,
+            };
+        }
+    }
+
     #[allow(clippy::too_many_lines)]
     pub fn update(&mut self, message: Message) -> Task<Message> {
         let Some(helper) = self.config_helper.as_ref() else {
@@ -452,18 +488,20 @@ impl PageInner {
                     .as_mut()
                     .zip(self.config_helper.as_ref())
                 {
+                    let theme = cosmic::theme::system_preference();
+                    let theme = theme.cosmic();
+
                     if default.anchor_gap || !default.expand_to_edges {
-                        let radii = cosmic::theme::system_preference()
-                            .cosmic()
-                            .corner_radii
-                            .radius_xl[0] as u32;
+                        let radii = theme.corner_radii.radius_xl[0] as u32;
                         default.border_radius = radii;
                     } else {
                         default.border_radius = 0;
                     }
+
                     if let Err(err) = default.write_entry(config) {
                         tracing::error!(?err, "Error resetting panel config.");
                     }
+                    self.system_default = Some(default.clone());
                     self.panel_config.clone_from(&self.system_default);
                 } else {
                     tracing::error!("Panel config default is missing.");
