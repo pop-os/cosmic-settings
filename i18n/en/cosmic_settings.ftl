@@ -574,6 +574,7 @@ keyboard-sources = Input Sources
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
     .compose = Compose key
+    .compose-desc = The compose key allows a wide variety of characters to be entered. To use it, press compose and then a sequence of characters. For example, compose key followed by C and o will enter ©, while compose key followed by a and ‘ will enter á.
     .caps = Caps Lock key
 
 keyboard-typing-assist = Typing
