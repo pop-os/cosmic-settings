@@ -556,9 +556,11 @@ impl Page {
         if let Some(panel_config_helper) = panel_config_helper.as_ref()
             && let Some(panel_config) = panel_config.as_mut()
         {
-            let radii = if panel_config.anchor_gap || !panel_config.expand_to_edges {
+            let radii = if panel_config.anchor_gap {
                 let cornder_radii: CornerRadii = roundness.into();
                 cornder_radii.radius_xl[0] as u32
+            } else if matches!(roundness, Roundness::Round) && !panel_config.expand_to_edges {
+                12
             } else {
                 0
             };
@@ -566,14 +568,16 @@ impl Page {
             if let Err(why) = panel_config.set_border_radius(panel_config_helper, radii) {
                 tracing::error!(?why, "Error updating panel corner radii");
             }
-        };
+        }
 
         if let Some(dock_config_helper) = dock_config_helper.as_ref()
             && let Some(dock_config) = dock_config.as_mut()
         {
-            let radii = if dock_config.anchor_gap || !dock_config.expand_to_edges {
+            let radii = if dock_config.anchor_gap {
                 let cornder_radii: CornerRadii = roundness.into();
                 cornder_radii.radius_xl[0] as u32
+            } else if matches!(roundness, Roundness::Round) && !dock_config.expand_to_edges {
+                12
             } else {
                 0
             };
@@ -581,7 +585,7 @@ impl Page {
             if let Err(why) = dock_config.set_border_radius(dock_config_helper, radii) {
                 tracing::error!(?why, "Error updating dock corner radii");
             }
-        };
+        }
     }
 
     pub fn update_dock_padding(roundness: Roundness) {
