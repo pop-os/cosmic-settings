@@ -16,6 +16,7 @@ use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
 };
 use cosmic_settings_page::{self as page, Section, section};
+use indexmap::Equivalent;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -548,7 +549,25 @@ impl Page {
             Message::DisplayToggle(enable) => return self.toggle_display(enable),
 
             Message::Mirroring(mirroring) => match mirroring {
-                Mirroring::Disable => return self.toggle_display(true),
+                Mirroring::Disable => {
+                    for k in self.mirror_map.keys() {
+                        if k.equivalent(&self.active_display) {
+                            return self.toggle_display(true);
+                        }
+
+                        if let Some(v) = self.mirror_map.get(k) {
+                            if v.equivalent(&self.active_display) {
+                                if let Some(output) = self.list.outputs.get(k) {
+                                    return self.exec_randr(output, Randr::Toggle(true));
+                                } else {
+                                    return Task::none();
+                                }
+                            }
+                        }
+                    }
+
+                    return Task::none();
+                }
 
                 Mirroring::Mirror(from_display) => {
                     let Some(output) = self.list.outputs.get(self.active_display) else {
