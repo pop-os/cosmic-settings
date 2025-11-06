@@ -25,19 +25,19 @@ connected = Connected
 connecting = Connecting…
 disconnect = Disconnect
 forget = Forget
-known-networks = Known Networks
-network-and-wireless = Network & Wireless
+known-networks = Known networks
+network-and-wireless = Network & wireless
 no-networks = No networks have been found.
 no-vpn = No VPN connections available.
 password = Password
-password-confirm = Confirm Password
+password-confirm = Confirm password
 remove = Remove
 settings = Settings
 username = Username
-visible-networks = Visible Networks
+visible-networks = Visible networks
 identity = Identity
 
-auth-dialog = Authentication Required
+auth-dialog = Authentication required
     .vpn-description = Enter the username and password required by the VPN service.
     .wifi-description = Enter the password or encryption key. You can also connect by pressing the “WPS” button on the router.
 
@@ -60,12 +60,12 @@ network-device-state =
     .unmanaged = Unmanaged
     .unplugged = Cable unplugged
 
-remove-connection-dialog = Remove Connection Profile?
+remove-connection-dialog = Remove connection profile?
     .vpn-description = You'll need to enter a password again to use this network in the future.
     .wired-description = You'll need to recreate this profile to use it in the future.
 
 vpn = VPN
-    .connections = VPN Connections
+    .connections = VPN connections
     .error = Failed to add VPN config
     .remove = Remove connection profile
     .select-file = Select a VPN configuration file
@@ -87,8 +87,8 @@ vpn-error = VPN Error
 
 wired = Wired
     .adapter = Wired adapter { $id }
-    .connections = Wired Connections
-    .devices = Wired Devices
+    .connections = Wired connections
+    .devices = Wired devices
     .remove = Remove connection profile
 
 wifi = Wi-Fi
@@ -98,9 +98,9 @@ wifi = Wi-Fi
 wireguard-dialog = Add WireGuard device
     .description = Choose a device name for the WireGuard config.
 
-## Networking: Online Accounts
+## Networking: Online accounts
 
-online-accounts = Online Accounts
+online-accounts = Online accounts
     .desc = Add accounts, IMAP and SMTP, enterprise logins
 
 # Bluetooth
@@ -123,16 +123,16 @@ bluetooth = Bluetooth
     .inactive = The Bluetooth service is not active
     .unknown = The Bluetooth service could not be activated. Is BlueZ installed?
 
-bluetooth-paired = Previously Connected Devices
+bluetooth-paired = Previously connected devices
     .connect = Connect
     .battery = { $percentage }% battery
 
 bluetooth-confirm-pin = Confirm Bluetooth PIN
     .description = Please confirm that the following PIN matches the one displayed on { $device }
 
-bluetooth-available = Nearby Devices
+bluetooth-available = Nearby devices
 
-bluetooth-adapters = Bluetooth Adapters
+bluetooth-adapters = Bluetooth adapters
 
 ## Accessibility
 
@@ -143,7 +143,7 @@ accessibility = Accessibility
     .unavailable = Unavailable
     .screen-reader = Screen reader
     .high-contrast = High contrast mode
-    .invert-colors = Invert Colors
+    .invert-colors = Invert colors
     .color-filters = Color filters
 
 hearing = Hearing
@@ -161,8 +161,8 @@ magnifier = Magnifier
                 {$zoom_out} to zoom out,
         }
         Super + scroll with your mouse
-    .scroll_controls = Enable mouse or touchpad zoom with Super + Scroll
-    .show_overlay = Show the Magnifier Overlay
+    .scroll_controls = Enable mouse or touchpad zoom with Super + scroll
+    .show_overlay = Show the magnifier overlay
     .increment = Zoom increment
     .signin = Start magnifier on sign in
     .applet = Toggle magnifier on/off in applet on the panel
@@ -171,7 +171,7 @@ magnifier = Magnifier
     .onedge = When pointer reaches edge
     .centered = To keep pointer centered
 color-filter = Color filter type
-    .unknown = Unknown Filter active
+    .unknown = Unknown filter active
     .greyscale = Greyscale
     .deuteranopia = Green/Red (green weakness, Deuteranopia)
     .protanopia = Red/Green (red weakness, Protanopia)
@@ -185,7 +185,7 @@ desktop = Desktop
 
 wallpaper = Wallpaper
     .change = Change image every
-    .desc = Wallpaper images, colors, and slideshow options.
+    .desc = Wallpaper images, colors, and slideshow options
     .fit = Wallpaper fit
     .folder-dialog = Choose wallpaper folder
     .image-dialog = Choose wallpaper image
@@ -195,13 +195,13 @@ wallpaper = Wallpaper
 
 add-color = Add color
 add-image = Add image
-all-displays = All Displays
+all-displays = All displays
 colors = Colors
 dialog-add = Add
 fill = Fill
-fit-to-screen = Fit to Screen
+fit-to-screen = Fit to screen
 open-new-folder = Open new folder
-recent-folders = Recent Folders
+recent-folders = Recent folders
 
 x-minutes = { $number } { $number ->
     [one] minute
@@ -216,13 +216,13 @@ never = Never
 ## Desktop: Appearance
 
 appearance = Appearance
-    .desc = Accent colors and theming.
+    .desc = Accent colors and theming
 
 accent-color = Accent color
-app-background = Application or window background
+app-background = Window background
 auto = Auto
 close = Close
-color-picker = Color Picker
+color-picker = Color picker
 copied-to-clipboard = Copied to clipboard
 copy-to-clipboard = Copy to clipboard
 dark = Dark
@@ -230,56 +230,56 @@ export = Export
 hex = Hex
 import = Import
 light = Light
-mode-and-colors = Mode and Colors
+mode-and-colors = Mode and colors
 recent-colors = Recent colors
 reset-to-default = Reset to default
 rgb = RGB
 window-hint-accent = Active window hint color
 window-hint-accent-toggle = Use theme accent color as active window hint
 
-auto-switch = Automatically switch between Light and Dark modes
-    .sunrise = Switches to Light mode at sunrise
-    .sunset = Switches to Dark mode at sunset
-    .next-sunrise = Switches to Light mode at next sunrise
-    .next-sunset = Switches to Dark mode at next sunset
+auto-switch = Automatically switch between light and dark modes
+    .sunrise = Switches to light mode at sunrise
+    .sunset = Switches to dark mode at sunset
+    .next-sunrise = Switches to light mode at next sunrise
+    .next-sunset = Switches to dark mode at next sunset
 
 container-background = Container background
-    .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, it is automatically derived from the Application or window background.
+    .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, container background color is automatically derived from the window background.
     .reset = Reset to auto
-    .desc = Primary container color is used for navigation sidebar, side drawer, dialogs and similar widgets.
+    .desc = Used for navigation sidebar, side drawer, dialogs and similar widgets
 
 control-tint = Control component tint
-    .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components.
+    .desc = Used for backgrounds of standard buttons, search inputs, text inputs, and similar components
 
 frosted = Frosted glass effect on system interface
-    .desc = Applies background blur to panel, dock, applets, launcher, and application library.
+    .desc = Applies background blur to panel, dock, applets, launcher, and application library
 
-enable-export = Apply this theme to GNOME apps.
+enable-export = Apply current theme to GNOME apps
     .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
 
-icon-theme = Icon Theme
-    .desc = Applies a different set of icons to applications.
+icon-theme = Icon theme
+    .desc = Applies a different set of icons to applications
 
 text-tint = Interface text tint
-    .desc = Color used to derive interface text colors that have sufficient contrast on various surfaces.
+    .desc = Used to derive interface text colors that have sufficient contrast on various surfaces
 
 style = Style
     .round = Round
     .slightly-round = Slightly round
     .square = Square
 
-interface-density = Interface Density
+interface-density = Interface density
     .comfortable = Comfortable
     .compact = Compact
     .spacious = Spacious
 
-window-management-appearance = Window Management
+window-management-appearance = Window management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
 
 ### Experimental
 
-experimental-settings = Experimental Settings
+experimental-settings = Experimental settings
 icons-and-toolkit = Icons and toolkit theming
 interface-font = System font
 monospace-font = Monospace font
@@ -287,20 +287,20 @@ monospace-font = Monospace font
 ## Desktop: Notifications
 
 notifications = Notifications
-    .desc = Do Not Disturb, lockscreen notifications, and per-application settings.
+    .desc = Do Not Disturb, lockscreen notifications, and per-application settings
 
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Primary system bar for menus and applets.
+    .desc = Primary system bar for menus and applets
 
 add = Add
-add-applet = Add Applet
+add-applet = Add applet
 all = All
 applets = Applets
-center-segment = Center Segment
+center-segment = Center segment
 place-here = Place applets here
-end-segment = End Segment
+end-segment = End segment
 large = Large
 no-applets-found = No applets found...
 panel-bottom = Bottom
@@ -309,14 +309,14 @@ panel-right = Right
 panel-top = Top
 search-applets = Search applets...
 small = Small
-start-segment = Start Segment
+start-segment = Start segment
 
 panel-appearance = Appearance
     .match = Match desktop
     .light = Light
     .dark = Dark
 
-panel-behavior-and-position = Behavior and Positions
+panel-behavior-and-position = Behavior and positions
     .autohide = Automatically hide panel
     .dock-autohide = Automatically hide dock
     .position = Position on screen
@@ -335,19 +335,19 @@ panel-applets = Configuration
     .dock-desc = Configure dock applets
     .desc = Configure panel applets
 
-panel-missing = Panel Configuration is Missing
+panel-missing = Panel configuration is missing
     .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
     .fix = Reset to default
 
 ## Desktop: Dock
 
 dock = Dock
-    .desc = An optional bar for apps and applets.
+    .desc = An optional bar for apps and applets
 
 ## Desktop: Window management
 
 window-management = Window management
-    .desc = Super key action, window control options, and additional window tiling options.
+    .desc = Super key action, window control options, and additional window tiling options
 
 super-key = Super key action
     .launcher = Open Launcher
@@ -357,12 +357,12 @@ super-key = Super key action
 
 edge-gravity = Floating windows gravitate to nearby edges
 
-window-controls = Window Controls
+window-controls = Window controls
     .maximize = Show maximize button
     .minimize = Show minimize button
     .active-window-hint = Show active window hint
 
-focus-navigation = Focus Navigation
+focus-navigation = Focus navigation
     .focus-follows-cursor = Focus follows cursor
     .focus-follows-cursor-delay = Focus follows cursor delay in ms
     .cursor-follows-focus = Cursor follows focus
@@ -370,23 +370,23 @@ focus-navigation = Focus Navigation
 ## Desktop: Workspaces
 
 workspaces = Workspaces
-    .desc = Workspace orientation and behavior.
+    .desc = Workspace orientation and behavior
 
-workspaces-behavior = Workspace Behavior
+workspaces-behavior = Workspace behavior
     .dynamic = Dynamic workspaces
     .dynamic-desc = Automatically removes empty workspaces.
-    .fixed = Fixed Number of Workspaces
+    .fixed = Fixed number of Workspaces
     .fixed-desc = Add or remove workspaces in the overview.
 
-workspaces-multi-behavior = Multi-monitor Behavior
-    .span = Workspaces Span Displays
-    .separate = Displays Have Separate Workspaces
+workspaces-multi-behavior = Multi-monitor behavior
+    .span = Workspaces span displays
+    .separate = Displays have separate workspaces
 
-workspaces-overview-thumbnails = Workspace Overview Thumbnails
-    .show-number = Show Workspace Number
-    .show-name = Show Workspace Name
+workspaces-overview-thumbnails = Workspace overview thumbnails
+    .show-number = Show workspace number
+    .show-name = Show workspace name
 
-workspaces-orientation = Workspaces Orientation
+workspaces-orientation = Workspaces orientation
     .vertical = Vertical
     .horizontal = Horizontal
 
@@ -405,12 +405,12 @@ color = Color
 
 display = Displays
     .desc = Manage displays and night light
-    .arrangement = Display Arrangement
-    .arrangement-desc = Drag displays to rearrange them.
+    .arrangement = Display arrangement
+    .arrangement-desc = Drag displays to rearrange them
     .enable = Enable display
-    .external = { $size } { $output } External Display
-    .laptop = { $size } Laptop Display
-    .options = Display Options
+    .external = { $size } { $output } external display
+    .laptop = { $size } laptop display
+    .options = Display options
     .refresh-rate = Refresh rate
     .resolution = Resolution
     .scale = Scale
@@ -429,9 +429,9 @@ mirroring = Mirroring
         *[other] displays
     }
 
-night-light = Night Light
+night-light = Night light
     .auto = Automatic (sunset to sunrise)
-    .desc = Reduce blue light with warmer colors.
+    .desc = Reduce blue light with warmer colors
 
 orientation = Orientation
     .standard = Standard
@@ -449,10 +449,10 @@ scheduling = Scheduling
     .manual = Manual schedule
 
 dialog = Dialog
-    .title = Keep These Display Settings?
-    .keep-changes = Keep Changes
+    .title = Keep these display settings?
+    .keep-changes = Keep changes
     .change-prompt = Settings changes will automatically revert in { $time } seconds.
-    .revert-settings = Revert Settings
+    .revert-settings = Revert settings
 
 ## Sound
 
@@ -474,7 +474,7 @@ sound-input = Input
     .level = Input level
 
 amplification = Amplification
-    .desc = Allows raising the volume to 150%.
+    .desc = Allows raising the volume to 150%
 
 sound-alerts = Alerts
     .volume = Alerts volume
@@ -487,7 +487,7 @@ profile = Profile
 
 ## Power
 
-power = Power & Battery
+power = Power & battery
     .desc = Manage power settings
 
 battery = Battery
@@ -510,19 +510,19 @@ battery = Battery
        *[other] empty
    }
 
-connected-devices = Connected Devices
+connected-devices = Connected devices
   .unknown = Unknown device
 
-power-mode = Power Mode
+power-mode = Power mode
     .battery = Extended battery life
-    .battery-desc = Reduced power usage and silent performance.
+    .battery-desc = Reduced power usage and silent performance
     .balanced = Balanced
-    .balanced-desc = Quiet performance and moderate power usage.
+    .balanced-desc = Quiet performance and moderate power usage
     .performance = High performance
-    .performance-desc = Peak performance and power usage.
+    .performance-desc = Peak performance and power usage
     .no-backend = Backend not found. Install system76-power or power-profiles-daemon.
 
-power-saving = Power Saving Options
+power-saving = Power saving options
     .turn-off-screen-after = Turn off the screen after
     .auto-suspend = Automatic suspend
     .auto-suspend-ac = Automatic suspend when plugged in
@@ -530,15 +530,15 @@ power-saving = Power Saving Options
 
 ## Input
 
-acceleration-desc = Automatically adjusts tracking sensitivity based on speed.
+acceleration-desc = Automatically adjusts tracking sensitivity based on speed
 
 disable-while-typing = Disable while typing
 
-input-devices = Input Devices
-    .desc = Input Devices
+input-devices = Input devices
+    .desc = Input devices
 
 primary-button = Primary button
-    .desc = Sets the order of physical buttons.
+    .desc = Sets the order of physical buttons
     .left = Left
     .right = Right
 
@@ -556,7 +556,7 @@ fast = Fast
 short = Short
 long = Long
 keyboard = Keyboard
-    .desc = Input sources, switching, special character entry, shortcuts.
+    .desc = Input sources, switching, special character entry, shortcuts
 
 keyboard-sources = Input Sources
     .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
@@ -589,7 +589,7 @@ show-extended-input-sources = Show extended input sources
 
 ## Input: Keyboard: Shortcuts
 
-keyboard-shortcuts = Keyboard Shortcuts
+keyboard-shortcuts = Keyboard shortcuts
     .desc = View and customize shortcuts
 
 add-another-keybinding = Add another keybinding
@@ -615,9 +615,9 @@ terminate = Terminate
 toggle-stacking = Toggle window stacking
 type-key-combination = Type key combination
 
-custom-shortcuts = Custom Shortcuts
+custom-shortcuts = Custom shortcuts
     .add = Add shortcut
-    .context = Add Custom Shortcut
+    .context = Add custom shortcut
     .none = No custom shortcuts
 
 modified = { $count } modified
@@ -653,7 +653,7 @@ manage-windows = Manage windows
     .resize-outwards = Resize window outwards
     .toggle-sticky = Toggle sticky window
 
-move-windows = Move Windows
+move-windows = Move windows
     .direction = Move window { $direction ->
         *[down] down
         [left] left
@@ -689,12 +689,12 @@ system-shortcut = System
     .home-folder = Open home folder
     .keyboard-brightness-down = Decrease keyboard brightness
     .keyboard-brightness-up = Increase keyboard brightness
-    .launcher = Open the launcher
+    .launcher = Open the Launcher
     .log-out = Log Out
     .lock-screen = Lock the screen
     .mute = Mute audio output
     .mute-mic = Mutes microphone input
-    .play-pause = Play/Pause
+    .play-pause = Play/pause
     .play-next = Next track
     .play-prev = Previous track
     .poweroff = Power off
@@ -717,7 +717,7 @@ window-tiling = Window tiling
     .toggle-floating = Toggle window floating
     .toggle-orientation = Toggle orientation
 
-replace-shortcut-dialog = Replace Shortcut?
+replace-shortcut-dialog = Replace shortcut?
     .desc = { $shortcut } is used by { $name }. If you replace it, { $name } will be disabled.
 
 zoom-in = Zoom In
@@ -726,7 +726,7 @@ zoom-out = Zoom Out
 ## Input: Mouse
 
 mouse = Mouse
-    .desc = Mouse speed, acceleration, natural scrolling.
+    .desc = Mouse speed, acceleration, natural scrolling
     .speed = Mouse speed
     .acceleration = Enable mouse acceleration
 
@@ -737,14 +737,14 @@ click-behavior = Click Behavior
     .button-areas = Secondary click in bottom right corner and middle-click in bottom center
 
 pinch-to-zoom = Pinch to zoom
-    .desc = Use two fingers to zoom into content, for applications that support zoom.
+    .desc = Use two fingers to zoom into content, for applications that support zoom
 
 tap-to-click = Tap to click
-    .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click.
+    .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click
 
 touchpad = Touchpad
     .acceleration = Enable touchpad acceleration
-    .desc = Touchpad speed, click options, gestures.
+    .desc = Touchpad speed, click options, gestures
     .speed = Touchpad speed
 
 ## Input: Gestures
@@ -764,21 +764,21 @@ switch-between-windows = Switch between windows
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
 
-## Time & Language
+## Time & language
 
-time = Time & Language
+time = Time & language
     .desc = N/A
 
-time-date = Date & Time
-    .desc = Time zone, automatic clock settings, and some time formatting.
+time-date = Date & time
+    .desc = Time zone, automatic clock settings, and time formatting
     .auto = Set automatically
-    .auto-ntp = Date & time will update automatically when the time zone is set.
+    .auto-ntp = Date & time will update automatically when the time zone is set
 
-time-zone = Time Zone
+time-zone = Time zone
     .auto = Automatic time zone
     .auto-info = Requires location services and internet access
 
-time-format = Date & Time Format
+time-format = Date & time format
     .twenty-four = 24-hour time
     .show-seconds = Show seconds
     .first = First day of week
@@ -788,18 +788,18 @@ time-format = Date & Time Format
     .sunday = Sunday
     .monday = Monday
 
-time-region = Region & Language
-    .desc = Format dates, times, and numbers based on your region.
+time-region = Region & language
+    .desc = Format dates, times, and numbers based on your region
 
 formatting = Formatting
     .dates = Dates
     .time = Time
-    .date-and-time = Date & Time
+    .date-and-time = Date & time
     .numbers = Numbers
     .measurement = Measurement
     .paper = Paper
 
-preferred-languages = Preferred Languages
+preferred-languages = Preferred languages
     .desc = The order of languages determines which language is used for the user interface. Changes take effect on next login.
 
 add-language = Add language
@@ -811,10 +811,10 @@ region = Region
 
 applications = Applications
 
-## Applications: Default Applications
+## Applications: Default applications
 
 default-apps = Default Applications
-    .desc = Default web browser, mail client, file browser, and other applications.
+    .desc = Default web browser, mail client, file browser, and other applications
     .web-browser = Web browser
     .file-manager = File manager
     .mail-client = Mail client
@@ -823,63 +823,63 @@ default-apps = Default Applications
     .photos = Photos
     .calendar = Calendar
     .terminal = Terminal
-    .other-associations = Other Associations
+    .other-associations = Other associations
     .text-editor = Text Editor
 
-## Applications: Startup Applications
+## Applications: Startup applications
 
-startup-apps = Startup Applications
-    .desc = Configure applications which run on login.
+startup-apps = Startup applications
+    .desc = Configure applications which run on login
     .add = Add app
     .user = Applications launched when you log in
     .none = No startup applications added
     .remove-dialog-title = Remove { $name }?
-    .remove-dialog-description = Are you sure you want to remove this startup application?
+    .remove-dialog-description = Remove this startup application?
     .add-startup-app = Add startup application
 
-## Applications: Legacy Applications
+## Applications: Legacy applications
 
-legacy-applications = X11 Applications Compatibility
-    .desc = X11 Window system application scaling and Global shortcuts.
+legacy-applications = X11 applications compatibility
+    .desc = X11 Window system application scaling and Global shortcuts
 
-legacy-app-global-shortcuts = Global Shortcuts in X11 Applications
-    .desc = Global shortcuts allows keystrokes and mouse button events performed in applications to be recognized by other applications for features like push-to-talk or push-to-mute. By default, this is disabled in X11 applications to ensure other applications can’t monitor for keyboard and mouse events containing sensitive information.
+legacy-app-global-shortcuts = Global shortcuts in X11 applications
+    .desc = Global shortcuts allows keystrokes and mouse button events performed in applications to be recognized by other applications for features like push-to-talk or push-to-mute. By default, Global shortcuts is disabled in X11 applications to ensure other applications can’t monitor for keyboard and mouse events containing sensitive information.
     .none = No keys
     .modifiers = Modifiers (Super, Shift, Control, Alt)
     .combination = All keys while modifiers Super, Control or Alt are being pressed
     .all = All keys
     .mouse = Mouse button events in X11 applications
 
-legacy-app-scaling = X11 Window System Application Scaling
+legacy-app-scaling = X11 window system application scaling
     .scaled-gaming = Optimize for gaming and full-screen apps
-    .gaming-description = X11 applications may appear slightly larger/smaller compared to Wayland apps.
+    .gaming-description = X11 applications may appear slightly larger/smaller compared to Wayland apps
     .scaled-applications = Optimize for applications
-    .applications-description = Games and full-screen X11 apps may not match your display resolution.
+    .applications-description = Games and full-screen X11 apps may not match your display resolution
     .scaled-compatibility = Maximum compatibility mode
-    .compatibility-description = X11 applications may appear blurry on HiDPI screens.
+    .compatibility-description = X11 applications may appear blurry on HiDPI screens
     .preferred-display = Preferred display for games and full screen X11 applications
     .no-display = None
 
 ## System
 
-system = System & Accounts
+system = System & accounts
 
 ## System: About
 
 about = About
-    .desc = Device name, hardware information, operating system defaults.
+    .desc = Device name, hardware information, operating system defaults
 
 about-device = Device name
-    .desc = This name appears to other network or Bluetooth devices.
+    .desc = This name appears to other network or Bluetooth devices
 
 about-hardware = Hardware
     .model = Hardware model
     .memory = Memory
     .processor = Processor
     .graphics = Graphics
-    .disk-capacity = Disk Capacity
+    .disk-capacity = Disk capacity
 
-about-os = Operating System
+about-os = Operating system
     .os = Operating system
     .os-architecture = Operating system architecture
     .kernel = Kernel version
@@ -892,23 +892,23 @@ about-related = Related settings
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmware details.
+    .desc = Firmware details
 
 ## System: Users
 
 users = Users
-    .desc = Authentication and user accounts.
+    .desc = Authentication and user accounts
     .admin = Admin
     .standard = Standard
     .profile-add = Choose profile image
 
 administrator = Administrator
-    .desc = Administrators can change settings for all users, add and remove other users.
+    .desc = Administrators can change settings for all users, add and remove other users
 
 add-user = Add user
 change-password = Change password
 remove-user = Remove user
 full-name = Full name
-invalid-username = Invalid username.
-password-mismatch = Password and confirmation must match.
+invalid-username = Invalid username
+password-mismatch = Password and confirmation must match
 save = Save

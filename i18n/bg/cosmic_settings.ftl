@@ -549,7 +549,7 @@ migrate-workspace =
         [up] нагоре
     }
 navigate = Навигиране
-replace = Замяна
+replace = Заменяне
 shortcut-name = Име на клавишната комбинация
 system-controls = Контроли на системата
 terminate = Прекратяване
