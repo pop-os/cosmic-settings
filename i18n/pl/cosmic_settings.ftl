@@ -23,8 +23,8 @@ connected = Połączono
 connecting = Łączenie…
 disconnect = Rozłącz
 forget = Zapomnij
-known-networks = Znane sieci
-network-and-wireless = Połączenia sieciowe
+known-networks = Znane Sieci
+network-and-wireless = Połączenia Sieciowe
 no-networks = Nie odnaleziono sieci.
 no-vpn = Brak dostępnych połączeń VPN.
 password = Hasło
@@ -770,7 +770,7 @@ startup-apps = Aplikacje Startowe
     .none = Brak dodanych aplikacji startowych
     .remove-dialog-title = Czy usunąć { $name }?
     .remove-dialog-description = Czy jesteś pewien, że chcesz usunąć tę aplikację startową?
-    .search-for-application = Wyszukaj aplikację
+    .add-startup-app = Dodaj aplikację startową
 
 ## Applications: Legacy Applications
 

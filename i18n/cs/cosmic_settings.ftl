@@ -88,14 +88,12 @@ x-minutes =
     { $number } { $number ->
         [one] minuta
         [few] minuty
-        [many] minut
        *[other] minut
     }
 x-hours =
     { $number } { $number ->
         [one] hodina
         [few] hodiny
-        [many] hodin
        *[other] hodin
     }
 
@@ -209,17 +207,17 @@ users = Uživatelé
 
 ## Input
 
-acceleration-desc = Automaticky upravuje citlivost snímání podle rychlosti pohybu.
+acceleration-desc = Automaticky upravuje citlivost snímání podle rychlosti.
 primary-button = Hlavní tlačítko
     .desc = Nastavuje pořadí fyzických tlačítek.
     .left = Levé
     .right = Pravé
-scrolling = Posouvání
-    .two-finger = Posouvejte dvěma prsty
-    .edge = Posouvejte jedním prstem podél kraje
-    .speed = Rychlost posouvání
-    .natural = Přirozené posouvání
-    .natural-desc = Převrátí směr posouvání
+scrolling = Rolování
+    .two-finger = Rolovat dvěma prsty
+    .edge = Rolovat jedním prstem podél kraje
+    .speed = Rychlost rolování
+    .natural = Přirozené rolování
+    .natural-desc = Roluje obsah místo zobrazení
 
 ## Input: Keyboard
 
@@ -246,16 +244,16 @@ keyboard-shortcuts = Klávesové zkratky
 ## Input: Mouse
 
 mouse = Myš
-    .desc = Citlivost myši, akcelerace, přirozené posouvání.
-    .speed = Citlivost myši
-    .acceleration = Povolit akceleraci myši
+    .desc = Rychlost myši, zrychlení, přirozené rolování.
+    .speed = Rychlost myši
+    .acceleration = Povolit zrychlení myši
 
 ## Input: Touchpad
 
 touchpad = Touchpad
-    .acceleration = Povolit akceleraci touchpadu
-    .desc = Citlivost touchpadu, nastavení klikání, gesta.
-    .speed = Citlivost touchpadu
+    .acceleration = Povolit zrychlení touchpadu
+    .desc = Rychlost touchpadu, nastavení klikání, gesta.
+    .speed = Rychlost touchpadu
 dbus-connection-error = Selhalo připojení k DBus
 ok = OK
 add-vpn = Přidat VPN
@@ -464,8 +462,8 @@ magnifier = Lupa
                 { "" }
                 { $zoom_out } pro oddálení,
         }
-        Super + posun s myší
-    .scroll_controls = Povolit přiblížení s myší nebo touchpadem pomocí Super + Posun
+        Super + rolování kolečkem myši
+    .scroll_controls = Povolit přiblížení s myší nebo touchpadem pomocí Super + Rolování
     .show_overlay = Zobrazit překrytí lupy
     .increment = Krok přiblížení
     .signin = Spustit lupu při přihlášení
@@ -519,7 +517,6 @@ mirroring = Zrcadlení
         Vysílání na { $count } { $count ->
             [one] další displej
             [few] další displeje
-            [many] dalších displejů
            *[other] dalších displejů
         }
 night-light = Noční světlo
@@ -552,21 +549,18 @@ battery = Baterie
         { $value } { $value ->
             [one] minuta
             [few] minuty
-            [many] minut
            *[other] minut
         }
     .hour =
         { $value } { $value ->
             [one] hodina
             [few] hodiny
-            [many] hodin
            *[other] hodin
         }
     .day =
         { $value } { $value ->
             [one] den
             [few] dny
-            [many] dní
            *[other] dní
         }
     .less-than-minute = Méně než minuta
@@ -785,7 +779,7 @@ startup-apps = Automatické spouštění aplikací
     .none = Nejsou přidány žádné aplikace pro automatické spouštění
     .remove-dialog-title = Odstranit { $name }?
     .remove-dialog-description = Opravdu chcete odstranit tuto aplikaci z automatického spouštění?
-    .search-for-application = Hledat aplikaci
+    .add-startup-app = Přidat aplikaci pro spouštění
 legacy-applications = Kompatibilita X11 aplikací
     .desc = Škálování a globální klávesové zkratky aplikací využívajících okenní systém X11.
 legacy-app-global-shortcuts = Globální klávesové zkratky X11 aplikací
