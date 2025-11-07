@@ -785,6 +785,7 @@ about-hardware = Hardware
 about-os = Betriebssystem
     .os = Betriebssystem
     .os-architecture = Betriebssystemarchitektur
+    .kernel = Kernel Version
     .desktop-environment = Desktopumgebung
     .windowing-system = Fenstersystem
 about-related = Zugehörige Einstellungen
