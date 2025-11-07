@@ -6,18 +6,16 @@ use cosmic::{
     Apply, Element, Task,
     app::ContextDrawer,
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::{self, Subscription},
     iced_core::text::Wrapping,
     surface,
-    widget::{self, dropdown, settings},
+    widget::{self, settings},
 };
 use cosmic_settings_page::{self as page, Section, section};
 use icu::{
-    calendar::{Gregorian, types::Weekday, week},
+    calendar::{Gregorian},
     datetime::{
         DateTimeFormatter, DateTimeFormatterPreferences, fieldsets,
         input::{Date, DateTime, Time},
-        options::TimePrecision,
     },
     locale::{Locale, preferences::extensions::unicode::keywords::HourCycle},
 };
@@ -41,7 +39,6 @@ pub struct Info {
 pub struct Page {
     entity: page::Entity,
     cosmic_applet_config: cosmic_config::Config,
-    first_day_of_week: usize,
     military_time: bool,
     ntp_enabled: bool,
     timezone_context: bool,
@@ -69,22 +66,9 @@ impl Default for Page {
                 default
             });
 
-        let first_day_of_week = cosmic_applet_config
-            .get("first_day_of_week")
-            .unwrap_or_else(|err| {
-                if err.is_err() {
-                    error!(?err, "Failed to read config 'first_day_of_week'");
-                }
-
-                let default = get_locale_default_first_day();
-                let _ = cosmic_applet_config.set("first_day_of_week", default);
-                default
-            });
-
         Self {
             entity: page::Entity::null(),
             cosmic_applet_config,
-            first_day_of_week,
             formatted_date: String::new(),
             local_time: None,
             military_time,
@@ -107,7 +91,6 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
-            sections.insert(date()),
             sections.insert(timezone()),
             sections.insert(format()),
         ])
@@ -147,7 +130,7 @@ impl page::Page<crate::pages::Message> for Page {
                 timezone_list,
             })
         })
-        .map(crate::pages::Message::DateAndTime)
+            .map(crate::pages::Message::DateTime)
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
@@ -156,7 +139,7 @@ impl page::Page<crate::pages::Message> for Page {
                 .on_input(Message::TimezoneSearch)
                 .on_clear(Message::TimezoneSearch(String::new()))
                 .apply(Element::from)
-                .map(crate::pages::Message::DateAndTime);
+                .map(crate::pages::Message::DateTime);
 
             return Some(
                 cosmic::app::context_drawer(
@@ -164,17 +147,12 @@ impl page::Page<crate::pages::Message> for Page {
                         .map(crate::pages::Message::from),
                     crate::pages::Message::CloseContextDrawer,
                 )
-                .title(fl!("time-zone"))
-                .header(search),
+                    .title(fl!("time-zone"))
+                    .header(search),
             );
         }
 
         None
-    }
-
-    fn subscription(&self, _: &cosmic::Core) -> Subscription<crate::pages::Message> {
-        iced::time::every(std::time::Duration::from_secs(1))
-            .map(|_| crate::pages::Message::DateAndTime(Message::Tick))
     }
 }
 
@@ -193,14 +171,6 @@ impl Page {
 
                 if let Err(err) = self.cosmic_applet_config.set("military_time", enable) {
                     error!(?err, "Failed to set config 'military_time'");
-                }
-            }
-
-            Message::FirstDayOfWeek(weekday) => {
-                self.first_day_of_week = weekday;
-
-                if let Err(err) = self.cosmic_applet_config.set("first_day_of_week", weekday) {
-                    error!(?err, "Failed to set config 'first_day_of_week'");
                 }
             }
 
@@ -232,8 +202,8 @@ impl Page {
                             Err(why) => Message::Error(why.to_string()),
                         }
                     })
-                    .map(crate::pages::Message::DateAndTime)
-                    .map(crate::Message::PageMessage);
+                        .map(crate::pages::Message::DateTime)
+                        .map(crate::Message::PageMessage);
                 }
             }
 
@@ -260,10 +230,6 @@ impl Page {
 
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
-            }
-
-            Message::Tick => {
-                self.update_local_time();
             }
 
             Message::None => (),
@@ -308,7 +274,7 @@ impl Page {
         }
 
         list.apply(Element::from)
-            .map(crate::pages::Message::DateAndTime)
+            .map(crate::pages::Message::DateTime)
     }
 
     fn timezone_context_item<'a>(&self, id: usize, timezone: &'a str) -> Element<'a, Message> {
@@ -337,12 +303,12 @@ impl Page {
                 widget::horizontal_space().width(16).into()
             },
         ])
-        .apply(widget::container)
-        .class(cosmic::theme::Container::List)
-        .apply(widget::button::custom)
-        .class(cosmic::theme::Button::Transparent)
-        .on_press(Message::Timezone(id))
-        .into()
+            .apply(widget::container)
+            .class(cosmic::theme::Container::List)
+            .apply(widget::button::custom)
+            .class(cosmic::theme::Button::Transparent)
+            .on_press(Message::Timezone(id))
+            .into()
     }
 
     fn update_local_time(&mut self) {
@@ -360,9 +326,7 @@ pub enum Message {
     Error(String),
     MilitaryTime(bool),
     None,
-    FirstDayOfWeek(usize),
     Refresh(Info),
-    Tick,
     Timezone(usize),
     TimezoneContext,
     TimezoneSearch(String),
@@ -372,32 +336,10 @@ pub enum Message {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-fn date() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let title = descriptions.insert(fl!("time-date"));
-
-    Section::default()
-        .title(fl!("time-date"))
-        .descriptions(descriptions)
-        .view::<Page>(move |_binder, page, section| {
-            settings::section()
-                .title(&section.title)
-                .add(
-                    settings::item::builder(&*section.descriptions[title])
-                        .description(fl!("time-date", "auto-ntp"))
-                        .control(widget::text::body(&page.formatted_date)),
-                )
-                .apply(cosmic::Element::from)
-                .map(crate::pages::Message::DateAndTime)
-        })
-}
-
 fn format() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
     let military = descriptions.insert(fl!("time-format", "twenty-four"));
-    let first = descriptions.insert(fl!("time-format", "first"));
 
     Section::default()
         .title(fl!("time-format"))
@@ -410,37 +352,8 @@ fn format() -> Section<crate::pages::Message> {
                     settings::item::builder(&section.descriptions[military])
                         .toggler(page.military_time, Message::MilitaryTime),
                 )
-                // First day of week
-                .add(
-                    settings::item::builder(&section.descriptions[first]).control(
-                        dropdown::popup_dropdown(
-                            &*WEEKDAYS,
-                            match page.first_day_of_week {
-                                4 => Some(0), // friday
-                                5 => Some(1), // saturday
-                                0 => Some(3), // monday
-                                _ => Some(2), // sunday
-                            },
-                            |v| {
-                                match v {
-                                    0 => Message::FirstDayOfWeek(4), // friday
-                                    1 => Message::FirstDayOfWeek(5), // saturday
-                                    3 => Message::FirstDayOfWeek(0), // monday
-                                    _ => Message::FirstDayOfWeek(6), // sunday
-                                }
-                            },
-                            cosmic::iced::window::Id::RESERVED,
-                            Message::Surface,
-                            |a| {
-                                crate::app::Message::PageMessage(
-                                    crate::pages::Message::DateAndTime(a),
-                                )
-                            },
-                        ),
-                    ),
-                )
                 .apply(cosmic::Element::from)
-                .map(crate::pages::Message::DateAndTime)
+                .map(crate::pages::Message::DateTime)
         })
 }
 
@@ -461,7 +374,7 @@ fn timezone() -> Section<crate::pages::Message> {
                             .map(|id| &*page.timezone_list[id])
                             .unwrap_or_default(),
                     )
-                    .wrapping(Wrapping::Word),
+                        .wrapping(Wrapping::Word),
                 )
                 .push(widget::icon::from_name("go-next-symbolic").size(16).icon())
                 .apply(widget::container)
@@ -478,7 +391,7 @@ fn timezone() -> Section<crate::pages::Message> {
                         .control(timezone_context_button),
                 )
                 .apply(cosmic::Element::from)
-                .map(crate::pages::Message::DateAndTime)
+                .map(crate::pages::Message::DateTime)
         })
 }
 
@@ -506,7 +419,7 @@ fn format_date(date: &DateTime<Gregorian>, military: bool) -> String {
         HourCycle::H12
     });
 
-    let mut fs = fieldsets::YMDT::long();
+    let fs = fieldsets::YMDT::long();
 
     let dtf = DateTimeFormatter::try_new(prefs, fs).unwrap();
 
@@ -540,21 +453,4 @@ fn get_locale_default_24h() -> bool {
     // If we see "13" in the output, it's 24-hour format
     // If we see "1" (but not "13"), it's 12-hour format
     formatted.contains("13")
-}
-
-fn get_locale_default_first_day() -> usize {
-    let Ok(locale) = locale() else { return 6 };
-    let Ok(week_info) = week::WeekInformation::try_new(week::WeekPreferences::from(&locale)) else {
-        return 6;
-    };
-
-    match week_info.first_weekday {
-        Weekday::Monday => 0,
-        Weekday::Tuesday => 1,
-        Weekday::Wednesday => 2,
-        Weekday::Thursday => 3,
-        Weekday::Friday => 4,
-        Weekday::Saturday => 5,
-        Weekday::Sunday => 6,
-    }
 }

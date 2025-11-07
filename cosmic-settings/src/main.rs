@@ -57,6 +57,8 @@ pub enum PageCommands {
     /// Date & Time settings page
     #[cfg(feature = "page-date")]
     DateTime,
+    /// Language & Region settings page
+    LanguageRegion,
     /// Default application associations
     #[cfg(feature = "page-default-apps")]
     DefaultApps,

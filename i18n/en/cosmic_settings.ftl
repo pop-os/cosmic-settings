@@ -780,7 +780,7 @@ time-zone = Time zone
     .auto = Automatic time zone
     .auto-info = Requires location services and internet access
 
-time-format = Date & time format
+time-format = Time format
     .twenty-four = 24-hour time
     .show-seconds = Show seconds
     .first = First day of week
@@ -790,7 +790,7 @@ time-format = Date & time format
     .sunday = Sunday
     .monday = Monday
 
-time-region = Region & language
+time-region = Language & region
     .desc = Format dates, times, and numbers based on your region
 
 formatting = Formatting
@@ -800,6 +800,8 @@ formatting = Formatting
     .numbers = Numbers
     .measurement = Measurement
     .paper = Paper
+
+formatting-preview = Formatting preview
 
 preferred-languages = Preferred languages
     .desc = The order of languages determines which language is used for the user interface. Changes take effect on next login.

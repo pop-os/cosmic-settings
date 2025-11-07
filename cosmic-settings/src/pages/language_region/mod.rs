@@ -5,11 +5,12 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::rc::Rc;
 use std::sync::Arc;
 
+use chrono::{Datelike, Timelike};
 use cosmic::app::{ContextDrawer, context_drawer};
 use cosmic::iced::{Alignment, Border, Color, Length};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, button, container};
-use cosmic::{Apply, Element, theme};
+use cosmic::{Apply, Element, theme, surface};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -26,29 +27,36 @@ use icu::{
 use locales_rs as locale;
 use slotmap::{DefaultKey, SlotMap};
 
+crate::cache_dynamic_lazy! {
+    static WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
+}
+
 #[derive(Clone, Debug)]
 pub enum Message {
     AddLanguage(DefaultKey),
     AddLanguageContext,
     AddLanguageSearch(String),
     ExpandLanguagePopover(Option<usize>),
+    FirstDayOfWeek(usize),
     InstallAdditionalLanguages,
     SelectRegion(DefaultKey),
     SourceContext(SourceContext),
     Refresh(Arc<eyre::Result<PageRefresh>>),
     RegionContext,
     RemoveLanguage(DefaultKey),
+    Surface(surface::Action),
+    Tick(cosmic::iced::time::Instant),
 }
 
 impl From<Message> for crate::app::Message {
     fn from(message: Message) -> Self {
-        crate::pages::Message::Region(message).into()
+        crate::pages::Message::LanguageRegion(message).into()
     }
 }
 
 impl From<Message> for crate::pages::Message {
     fn from(message: Message) -> Self {
-        crate::pages::Message::Region(message)
+        crate::pages::Message::LanguageRegion(message)
     }
 }
 
@@ -117,6 +125,8 @@ pub struct Page {
     numeric_locale: Option<Locale>,
     /// Cached LC_TIME locale in icu locale format.
     time_locale: Option<Locale>,
+    first_day_of_week: usize,
+    cosmic_applet_config: Option<cosmic_config::Config>,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -131,6 +141,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![
             sections.insert(preferred_languages::section()),
             sections.insert(formatting::section()),
+            sections.insert(formatting_preview::section()),
         ])
     }
 
@@ -157,6 +168,12 @@ impl page::Page<crate::pages::Message> for Page {
         cosmic::Task::none()
     }
 
+    fn subscription(&self, _core: &cosmic::Core) -> cosmic::iced::Subscription<crate::pages::Message> {
+        cosmic::iced::time::every(std::time::Duration::from_secs(1))
+            .map(Message::Tick)
+            .map(crate::pages::Message::LanguageRegion)
+    }
+
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         Some(match self.context.as_ref()? {
             ContextView::AddLanguage => {
@@ -178,9 +195,9 @@ impl page::Page<crate::pages::Message> for Page {
                     self.add_language_view().map(crate::pages::Message::from),
                     crate::pages::Message::CloseContextDrawer,
                 )
-                .title(fl!("add-language", "context"))
-                .header(search)
-                .footer(install_additional_button)
+                    .title(fl!("add-language", "context"))
+                    .header(search)
+                    .footer(install_additional_button)
             }
             ContextView::Region => {
                 let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
@@ -193,8 +210,8 @@ impl page::Page<crate::pages::Message> for Page {
                     self.region_view().map(crate::pages::Message::from),
                     crate::pages::Message::CloseContextDrawer,
                 )
-                .title(fl!("region"))
-                .header(search)
+                    .title(fl!("region"))
+                    .header(search)
             }
         })
     }
@@ -257,6 +274,16 @@ impl Page {
                 self.expanded_source_popover = id;
             }
 
+            Message::FirstDayOfWeek(weekday) => {
+                self.first_day_of_week = weekday;
+
+                if let Some(ref cosmic_applet_config) = self.cosmic_applet_config {
+                    if let Err(err) = cosmic_applet_config.set("first_day_of_week", weekday) {
+                        tracing::error!(?err, "Failed to set config 'first_day_of_week'");
+                    }
+                }
+            }
+
             Message::InstallAdditionalLanguages => {
                 return cosmic::task::future(async move {
                     _ = tokio::process::Command::new("gnome-language-selector")
@@ -277,6 +304,26 @@ impl Page {
                     self.registry = Some(page_refresh.registry.0);
                     self.numeric_locale = self.icu_locale_from_env("LC_NUMERIC");
                     self.time_locale = self.icu_locale_from_env("LC_TIME");
+
+                    // Load first_day_of_week from cosmic applet config
+                    if let Ok(cosmic_applet_config) = cosmic_config::Config::new("com.system76.CosmicAppletTime", 1) {
+                        self.cosmic_applet_config = Some(cosmic_applet_config.clone());
+                        self.first_day_of_week = cosmic_applet_config
+                            .get("first_day_of_week")
+                            .unwrap_or_else(|err| {
+                                if err.is_err() {
+                                    tracing::error!(?err, "Failed to read config 'first_day_of_week'");
+                                }
+
+                                // Get default from current locale
+                                let default = self.region
+                                    .as_ref()
+                                    .map(|r| get_default_first_day(&r.lang_code))
+                                    .unwrap_or(6); // Default to Sunday
+                                let _ = cosmic_applet_config.set("first_day_of_week", default);
+                                default
+                            });
+                    }
                 }
 
                 Err(why) => {
@@ -315,9 +362,9 @@ impl Page {
 
                     if let Some(language_code) = locales.first()
                         && let Some(language) = self
-                            .available_languages
-                            .values()
-                            .find(|lang| &lang.lang_code == language_code)
+                        .available_languages
+                        .values()
+                        .find(|lang| &lang.lang_code == language_code)
                     {
                         let language = language.clone();
                         self.language = Some(language.clone());
@@ -328,11 +375,17 @@ impl Page {
                                 language.lang_code.clone(),
                                 region.unwrap_or(language).lang_code.clone(),
                             )
-                            .await;
+                                .await;
                         });
                     }
                 }
             }
+
+            Message::Surface(action) => {
+                return cosmic::task::message(crate::app::Message::Surface(action));
+            }
+
+            Message::Tick(_) => {}
         }
 
         cosmic::Task::none()
@@ -350,9 +403,9 @@ impl Page {
         for (id, available_language) in &self.available_languages {
             if search_input.is_empty()
                 || available_language
-                    .display_name
-                    .to_lowercase()
-                    .contains(search_input)
+                .display_name
+                .to_lowercase()
+                .contains(search_input)
             {
                 let is_installed = self
                     .config
@@ -379,21 +432,21 @@ impl Page {
                         widget::horizontal_space().width(16).into()
                     },
                 ])
-                .apply(widget::container)
-                .class(cosmic::theme::Container::List)
-                .apply(widget::button::custom)
-                .class(cosmic::theme::Button::Transparent)
-                .on_press(if is_installed {
-                    Message::RemoveLanguage(id)
-                } else {
-                    Message::AddLanguage(id)
-                });
+                    .apply(widget::container)
+                    .class(cosmic::theme::Container::List)
+                    .apply(widget::button::custom)
+                    .class(cosmic::theme::Button::Transparent)
+                    .on_press(if is_installed {
+                        Message::RemoveLanguage(id)
+                    } else {
+                        Message::AddLanguage(id)
+                    });
 
                 list = list.add(button)
             }
         }
 
-        list.apply(Element::from).map(crate::pages::Message::Region)
+        list.apply(Element::from).map(crate::pages::Message::LanguageRegion)
     }
 
     fn icu_locale_from_env(&self, key: &'static str) -> Option<Locale> {
@@ -417,9 +470,10 @@ impl Page {
         let prefs = DateTimeFormatterPreferences::from(locale);
         let dtf = DateTimeFormatter::try_new(prefs, fieldsets::YMD::medium()).unwrap();
 
+        let now = chrono::Local::now();
         let datetime = DateTime {
-            date: Date::try_new_gregorian(1776, 7, 4).unwrap(),
-            time: Time::try_new(12, 0, 0, 0).unwrap(),
+            date: Date::try_new_gregorian(now.year(), now.month() as u8, now.day() as u8).unwrap(),
+            time: Time::try_new(now.hour() as u8, now.minute() as u8, now.second() as u8, 0).unwrap(),
         };
 
         dtf.format(&datetime).to_string()
@@ -433,9 +487,10 @@ impl Page {
         let prefs = DateTimeFormatterPreferences::from(locale);
         let dtf = DateTimeFormatter::try_new(prefs, fieldsets::YMDT::long()).unwrap();
 
+        let now = chrono::Local::now();
         let datetime = DateTime {
-            date: Date::try_new_gregorian(1776, 7, 4).unwrap(),
-            time: Time::try_new(13, 0, 0, 0).unwrap(),
+            date: Date::try_new_gregorian(now.year(), now.month() as u8, now.day() as u8).unwrap(),
+            time: Time::try_new(now.hour() as u8, now.minute() as u8, now.second() as u8, 0).unwrap(),
         };
 
         dtf.format(&datetime).to_string()
@@ -449,9 +504,10 @@ impl Page {
         let prefs = DateTimeFormatterPreferences::from(locale);
         let dtf = DateTimeFormatter::try_new(prefs, fieldsets::T::medium()).unwrap();
 
+        let now = chrono::Local::now();
         let datetime = DateTime {
-            date: Date::try_new_gregorian(1776, 7, 4).unwrap(),
-            time: Time::try_new(13, 0, 0, 0).unwrap(),
+            date: Date::try_new_gregorian(now.year(), now.month() as u8, now.day() as u8).unwrap(),
+            time: Time::try_new(now.hour() as u8, now.minute() as u8, now.second() as u8, 0).unwrap(),
         };
 
         dtf.format(&datetime).to_string()
@@ -507,28 +563,28 @@ impl Page {
                         widget::horizontal_space().width(16).into()
                     },
                 ])
-                .apply(widget::container)
-                .class(cosmic::theme::Container::List)
-                .apply(widget::button::custom)
-                .class(cosmic::theme::Button::Transparent)
-                .on_press_maybe(if is_selected {
-                    None
-                } else {
-                    Some(Message::SelectRegion(id))
-                });
+                    .apply(widget::container)
+                    .class(cosmic::theme::Container::List)
+                    .apply(widget::button::custom)
+                    .class(cosmic::theme::Button::Transparent)
+                    .on_press_maybe(if is_selected {
+                        None
+                    } else {
+                        Some(Message::SelectRegion(id))
+                    });
 
                 list = list.add(button)
             }
         }
 
-        list.apply(Element::from).map(crate::pages::Message::Region)
+        list.apply(Element::from).map(crate::pages::Message::LanguageRegion)
     }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 mod preferred_languages {
-    use crate::pages::time::region::localized_iso_codes;
+    use crate::pages::language_region::localized_iso_codes;
 
     use super::Message;
     use cosmic::{
@@ -590,18 +646,15 @@ mod preferred_languages {
 }
 
 mod formatting {
-    use super::Message;
+    use super::{Message, WEEKDAYS};
     use cosmic::{Apply, widget};
     use cosmic_settings_page::Section;
 
     pub fn section() -> Section<crate::pages::Message> {
         crate::slab!(descriptions {
             formatting_txt = fl!("formatting");
-            dates_txt = [&fl!("formatting", "dates"), ":"].concat();
-            time_txt = [&fl!("formatting", "time"), ":"].concat();
-            date_and_time_txt = [&fl!("formatting", "date-and-time"), ":"].concat();
-            numbers_txt = [&fl!("formatting", "numbers"), ":"].concat();
             region_txt = fl!("region");
+            first_txt = fl!("time-format", "first");
         });
 
         Section::default()
@@ -610,17 +663,82 @@ mod formatting {
             .view::<super::Page>(move |_binder, page, section| {
                 let desc = &section.descriptions;
 
-                let dates = widget::row::with_capacity(2)
+                let region = page
+                    .region
+                    .as_ref()
+                    .map(|locale| locale.region_name.as_str())
+                    .unwrap_or("");
+
+                let select_region = crate::widget::go_next_with_item(
+                    &desc[region_txt],
+                    widget::text::body(region),
+                    Message::RegionContext,
+                );
+
+                // First day of week dropdown
+                let first_day = widget::settings::item::builder(&desc[first_txt]).control(
+                    widget::dropdown::popup_dropdown(
+                        &*WEEKDAYS,
+                        match page.first_day_of_week {
+                            4 => Some(0), // friday
+                            5 => Some(1), // saturday
+                            0 => Some(3), // monday
+                            _ => Some(2), // sunday
+                        },
+                        |v| {
+                            match v {
+                                0 => Message::FirstDayOfWeek(4), // friday
+                                1 => Message::FirstDayOfWeek(5), // saturday
+                                3 => Message::FirstDayOfWeek(0), // monday
+                                _ => Message::FirstDayOfWeek(6), // sunday
+                            }
+                        },
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        |a| -> crate::app::Message { crate::pages::Message::LanguageRegion(a).into() },
+                    ),
+                );
+
+                widget::settings::section()
+                    .title(&desc[formatting_txt])
+                    .add(select_region)
+                    .add(first_day)
+                    .apply(cosmic::Element::from)
+                    .map(crate::pages::Message::from)
+            })
+    }
+}
+
+mod formatting_preview {
+    use cosmic::{Apply, widget};
+    use cosmic_settings_page::Section;
+
+    pub fn section() -> Section<crate::pages::Message> {
+        crate::slab!(descriptions {
+            formatting_preview_txt = fl!("formatting-preview");
+            dates_txt = [&fl!("formatting", "dates"), ":"].concat();
+            time_txt = [&fl!("formatting", "time"), ":"].concat();
+            date_and_time_txt = [&fl!("formatting", "date-and-time"), ":"].concat();
+            numbers_txt = [&fl!("formatting", "numbers"), ":"].concat();
+        });
+
+        Section::default()
+            .title(fl!("formatting-preview"))
+            .descriptions(descriptions)
+            .view::<super::Page>(move |_binder, page, section| {
+                let desc = &section.descriptions;
+
+                let dates = widget::row::with_capacity::<crate::pages::Message>(2)
                     .push(widget::text::body(&desc[dates_txt]))
                     .push(widget::text::body(page.formatted_date()).font(cosmic::font::bold()))
                     .spacing(4);
 
-                let time = widget::row::with_capacity(2)
+                let time = widget::row::with_capacity::<crate::pages::Message>(2)
                     .push(widget::text::body(&desc[time_txt]))
                     .push(widget::text::body(page.formatted_time()).font(cosmic::font::bold()))
                     .spacing(4);
 
-                let dates_and_times = widget::row::with_capacity(2)
+                let dates_and_times = widget::row::with_capacity::<crate::pages::Message>(2)
                     .push(widget::text::body(&desc[date_and_time_txt]))
                     .push(
                         widget::text::body(page.formatted_dates_and_times())
@@ -628,7 +746,7 @@ mod formatting {
                     )
                     .spacing(4);
 
-                let numbers = widget::row::with_capacity(2)
+                let numbers = widget::row::with_capacity::<crate::pages::Message>(2)
                     .push(widget::text::body(&desc[numbers_txt]))
                     .push(widget::text::body(page.formatted_numbers()).font(cosmic::font::bold()))
                     .spacing(4);
@@ -645,7 +763,7 @@ mod formatting {
                 //     .push(widget::text::body("").font(cosmic::font::bold()))
                 //     .spacing(4);
 
-                let formatted_demo = widget::column::with_capacity(6)
+                let formatted_demo = widget::column::with_capacity::<crate::pages::Message>(6)
                     .push(dates)
                     .push(time)
                     .push(dates_and_times)
@@ -656,24 +774,11 @@ mod formatting {
                     .padding(5.0)
                     .apply(|column| widget::settings::item_row(vec![column.into()]));
 
-                let region = page
-                    .region
-                    .as_ref()
-                    .map(|locale| locale.region_name.as_str())
-                    .unwrap_or("");
-
-                let select_region = crate::widget::go_next_with_item(
-                    &desc[region_txt],
-                    widget::text::body(region),
-                    Message::RegionContext,
-                );
-
                 widget::settings::section()
-                    .title(&desc[formatting_txt])
+                    .title(&desc[formatting_preview_txt])
                     .add(formatted_demo)
-                    .add(select_region)
                     .apply(cosmic::Element::from)
-                    .map(Into::into)
+                    .map(crate::pages::Message::from)
             })
     }
 }
@@ -841,24 +946,24 @@ fn popover_menu(id: usize) -> Element<'static, Message> {
         cosmic::widget::divider::horizontal::default().into(),
         popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
-    .padding(8)
-    .width(Length::Shrink)
-    .height(Length::Shrink)
-    .apply(cosmic::widget::container)
-    .class(cosmic::theme::Container::custom(|theme| {
-        let cosmic = theme.cosmic();
-        container::Style {
-            icon_color: Some(theme.cosmic().background.on.into()),
-            text_color: Some(theme.cosmic().background.on.into()),
-            background: Some(Color::from(theme.cosmic().background.base).into()),
-            border: Border {
-                radius: cosmic.corner_radii.radius_m.into(),
-                ..Default::default()
-            },
-            shadow: Default::default(),
-        }
-    }))
-    .into()
+        .padding(8)
+        .width(Length::Shrink)
+        .height(Length::Shrink)
+        .apply(cosmic::widget::container)
+        .class(cosmic::theme::Container::custom(|theme| {
+            let cosmic = theme.cosmic();
+            container::Style {
+                icon_color: Some(theme.cosmic().background.on.into()),
+                text_color: Some(theme.cosmic().background.on.into()),
+                background: Some(Color::from(theme.cosmic().background.base).into()),
+                border: Border {
+                    radius: cosmic.corner_radii.radius_m.into(),
+                    ..Default::default()
+                },
+                shadow: Default::default(),
+            }
+        }))
+        .into()
 }
 
 fn popover_menu_row(
