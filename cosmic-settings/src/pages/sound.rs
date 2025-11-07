@@ -231,10 +231,6 @@ fn input() -> Section<crate::pages::Message> {
         .title(fl!("sound-input"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            if page.model.sources().is_empty() {
-                return widget::row().into();
-            }
-
             let slider = if page.amplification_source {
                 widget::slider(0..=150, page.model.source_volume, |change| {
                     Message::SourceVolumeChanged(change).into()
@@ -282,20 +278,18 @@ fn input() -> Section<crate::pages::Message> {
                 ))
                 .add(settings::item(&*section.descriptions[device], devices));
 
-            if !page.model.source_profiles().is_empty() {
-                let dropdown = widget::dropdown::popup_dropdown(
-                    page.model.source_profiles(),
-                    page.model.active_source_profile(),
-                    Message::SourceProfileChanged,
-                    window::Id::RESERVED,
-                    Message::Surface,
-                    crate::Message::from,
-                )
+            let dropdown = widget::dropdown::popup_dropdown(
+                page.model.source_profiles(),
+                Some(page.model.active_source_profile().unwrap_or(0)),
+                Message::SourceProfileChanged,
+                window::Id::RESERVED,
+                Message::Surface,
+                crate::Message::from,
+            )
                 .apply(Element::from)
                 .map(crate::pages::Message::from);
 
-                controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
-            }
+            controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
 
             controls = controls.add(
                 settings::item::builder(&*section.descriptions[amplification])
@@ -376,20 +370,19 @@ fn output() -> Section<crate::pages::Message> {
                 ))
                 .add(settings::item(&*section.descriptions[device], devices));
 
-            if !page.model.sink_profiles().is_empty() {
-                let dropdown = widget::dropdown::popup_dropdown(
-                    page.model.sink_profiles(),
-                    page.model.active_sink_profile(),
-                    Message::SinkProfileChanged,
-                    window::Id::RESERVED,
-                    Message::Surface,
-                    crate::Message::from,
-                )
+            let dropdown = widget::dropdown::popup_dropdown(
+                page.model.sink_profiles(),
+                Some(page.model.active_sink_profile().unwrap_or(0)),
+                Message::SinkProfileChanged,
+                window::Id::RESERVED,
+                Message::Surface,
+                crate::Message::from,
+            )
                 .apply(Element::from)
                 .map(crate::pages::Message::from);
 
-                controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
-            }
+            controls = controls.add(settings::item(&*section.descriptions[profile], dropdown));
+
             if let Some(sink_balance) = page.model.sink_balance {
                 controls = controls.add(settings::item(
                     &*section.descriptions[balance],
