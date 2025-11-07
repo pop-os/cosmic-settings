@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use cosmic::{Task, cosmic_config::CosmicConfigEntry};
+use cosmic::{Task, cosmic_config::{self, CosmicConfigEntry, ConfigGet}};
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 
 use crate::pages::desktop::panel::inner::{
-    add_panel, behavior_and_position, configuration, reset_button, style,
+    add_panel, behavior_and_position, configuration, reset_button, style, time_applet,
 };
 
 use self::inner::{PageInner, PanelPage};
@@ -120,6 +120,9 @@ impl page::Page<crate::pages::Message> for Page {
                     crate::pages::Message::Panel(Message(m))
                 })),
                 sections.insert(style::<Page, _>(self, |m| {
+                    crate::pages::Message::Panel(Message(m))
+                })),
+                sections.insert(time_applet::<Page, _>(|m| {
                     crate::pages::Message::Panel(Message(m))
                 })),
                 sections.insert(configuration::<Page>(self)),

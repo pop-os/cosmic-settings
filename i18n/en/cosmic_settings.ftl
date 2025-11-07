@@ -335,6 +335,8 @@ panel-applets = Configuration
     .dock-desc = Configure dock applets
     .desc = Configure panel applets
 
+time-applet = Time Applet
+
 panel-missing = Panel configuration is missing
     .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
     .fix = Reset to default
