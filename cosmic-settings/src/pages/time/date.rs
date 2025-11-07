@@ -6,6 +6,7 @@ use cosmic::{
     Apply, Element, Task,
     app::ContextDrawer,
     cosmic_config::{self, ConfigGet, ConfigSet},
+    iced::{self, Subscription},
     iced_core::text::Wrapping,
     surface,
     widget::{self, dropdown, settings},
@@ -194,6 +195,11 @@ impl page::Page<crate::pages::Message> for Page {
 
         None
     }
+
+    fn subscription(&self, _: &cosmic::Core) -> Subscription<crate::pages::Message> {
+        iced::time::every(std::time::Duration::from_secs(1))
+            .map(|_| crate::pages::Message::DateAndTime(Message::Tick))
+    }
 }
 
 impl Page {
@@ -300,6 +306,10 @@ impl Page {
                 return cosmic::task::message(crate::app::Message::Surface(a));
             }
 
+            Message::Tick => {
+                self.update_local_time();
+            }
+
             Message::None => (),
         }
 
@@ -398,6 +408,7 @@ pub enum Message {
     FirstDayOfWeek(usize),
     Refresh(Info),
     ShowDate(bool),
+    Tick,
     Timezone(usize),
     TimezoneContext,
     TimezoneSearch(String),
