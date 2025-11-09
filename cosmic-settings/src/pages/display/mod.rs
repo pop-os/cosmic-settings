@@ -78,6 +78,8 @@ pub enum Message {
     DialogCountdown,
     /// Toggles display on or off.
     DisplayToggle(bool),
+    /// Show numbers on physical displays for identification.
+    IdentifyDisplays,
     /// Configures mirroring status of a display.
     Mirroring(Mirroring),
     /// Handle night light preferences.
@@ -544,6 +546,31 @@ impl Page {
             Message::ColorProfile(profile) => return self.set_color_profile(profile),
 
             Message::DisplayToggle(enable) => return self.toggle_display(enable),
+
+            Message::IdentifyDisplays => {
+                return Task::perform(
+                    async {
+                        match tokio::process::Command::new("cosmic-osd")
+                            .arg("identify-displays")
+                            .output()
+                            .await
+                        {
+                            Ok(output) => {
+                                if !output.status.success() {
+                                    tracing::error!(
+                                        stderr = String::from_utf8_lossy(&output.stderr).as_ref(),
+                                        "cosmic-osd identify-displays failed"
+                                    );
+                                }
+                            }
+                            Err(e) => {
+                                tracing::error!(why = e.to_string(), "Failed to launch cosmic-osd");
+                            }
+                        }
+                    },
+                    |_| app::Message::None,
+                );
+            }
 
             Message::Mirroring(mirroring) => match mirroring {
                 Mirroring::Disable => return self.toggle_display(true),
@@ -1180,17 +1207,36 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                         .padding([space_xxs, space_m]),
                 )
                 .push({
-                    Arrangement::new(&page.list, &page.display_tabs)
-                        .on_select(|id| pages::Message::Displays(Message::Display(id)))
-                        .on_pan(|pan| pages::Message::Displays(Message::Pan(pan)))
-                        .on_placement(|id, x, y| {
-                            pages::Message::Displays(Message::Position(id, x, y))
-                        })
-                        .apply(widget::scrollable::horizontal)
-                        .id(page.display_arrangement_scrollable.clone())
-                        .width(Length::Shrink)
-                        .apply(container)
-                        .center_x(Length::Fill)
+                    use cosmic::iced::widget::stack;
+                    use cosmic::iced_core::Padding;
+
+                    stack![
+                        // Bottom layer: arrangement scrollable
+                        Arrangement::new(&page.list, &page.display_tabs)
+                            .on_select(|id| pages::Message::Displays(Message::Display(id)))
+                            .on_pan(|pan| pages::Message::Displays(Message::Pan(pan)))
+                            .on_placement(|id, x, y| {
+                                pages::Message::Displays(Message::Position(id, x, y))
+                            })
+                            .apply(widget::scrollable::horizontal)
+                            .id(page.display_arrangement_scrollable.clone())
+                            .width(Length::Shrink)
+                            .apply(container)
+                            .center_x(Length::Fill)
+                            .width(Length::Fill)
+                            .align_y(cosmic::iced_core::alignment::Vertical::Top),
+
+                        // Top layer: identify button positioned at bottom right
+                        widget::button::standard(fl!("display", "identify"))
+                            .on_press(pages::Message::Displays(Message::IdentifyDisplays))
+                            .apply(container)
+                            .width(Length::Fill)
+                            .height(Length::Fill)
+                            .padding(Padding::from([0, space_m, space_m, 0]))
+                            .align_x(cosmic::iced_core::alignment::Horizontal::Right)
+                            .align_y(cosmic::iced_core::alignment::Vertical::Bottom)
+                    ]
+                    .width(Length::Fill)
                 })
                 .apply(container)
                 .class(cosmic::theme::Container::List)
