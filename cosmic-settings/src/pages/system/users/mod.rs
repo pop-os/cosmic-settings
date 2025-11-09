@@ -144,7 +144,10 @@ fn prepare_icon_file(path: &Path) -> Result<PathBuf, Box<dyn std::error::Error>>
         return Ok(path.to_path_buf());
     }
 
-    tracing::info!("Icon file is {} bytes, resizing to fit under 1MB limit", file_size);
+    tracing::info!(
+        "Icon file is {} bytes, resizing to fit under 1MB limit",
+        file_size
+    );
 
     let img = image::open(path)?;
     let (width, height) = img.dimensions();
