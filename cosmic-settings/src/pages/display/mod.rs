@@ -1225,7 +1225,6 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                             .center_x(Length::Fill)
                             .width(Length::Fill)
                             .align_y(cosmic::iced_core::alignment::Vertical::Top),
-
                         // Top layer: identify button positioned at bottom right
                         widget::button::standard(fl!("display", "identify"))
                             .on_press(pages::Message::Displays(Message::IdentifyDisplays))
