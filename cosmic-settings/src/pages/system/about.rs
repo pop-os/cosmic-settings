@@ -244,6 +244,7 @@ fn os() -> Section<crate::pages::Message> {
 
     let os = descriptions.insert(fl!("about-os", "os"));
     let os_arch = descriptions.insert(fl!("about-os", "os-architecture"));
+    let kernel = descriptions.insert(fl!("about-os", "kernel"));
     let desktop = descriptions.insert(fl!("about-os", "desktop-environment"));
     let windowing_system = descriptions.insert(fl!("about-os", "windowing-system"));
 
@@ -261,6 +262,10 @@ fn os() -> Section<crate::pages::Message> {
                 .add(settings::flex_item(
                     &*desc[os_arch],
                     text::body(&page.info.os_architecture),
+                ))
+                .add(settings::flex_item(
+                    &*desc[kernel],
+                    text::body(&page.info.kernel_version),
                 ))
                 .add(settings::flex_item(
                     &*desc[desktop],

@@ -203,8 +203,6 @@ impl Content {
                     if let Some(ref config) = self.tk_config {
                         _ = config.set::<String>("icon_theme", theme.id);
                     }
-
-                    tokio::spawn(icon_themes::set_gnome_icon_theme(theme.name));
                 }
             }
             IconMessage::ApplyThemeGlobal(enabled) => {

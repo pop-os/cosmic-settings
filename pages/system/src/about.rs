@@ -25,6 +25,7 @@ pub struct Info {
     pub memory: String,
     pub operating_system: String,
     pub os_architecture: String,
+    pub kernel_version: String,
     pub processor: String,
     pub windowing_system: String,
 }
@@ -35,6 +36,9 @@ impl Info {
         let mut bump = Bump::with_capacity(8 * 1024);
 
         architecture(&bump, &mut info.os_architecture);
+        bump.reset();
+
+        kernel_version(&bump, &mut info.kernel_version);
         bump.reset();
 
         hardware_model(&bump, &mut info.hardware_model);
@@ -113,6 +117,15 @@ pub fn architecture(bump: &Bump, arch: &mut String) {
     let buffer = &mut bumpalo::collections::Vec::new_in(bump);
     if let Some(value) = read_to_string("/proc/sys/kernel/arch", buffer) {
         arch.push_str(value.trim());
+    }
+}
+
+pub fn kernel_version(bump: &Bump, kernel: &mut String) {
+    let buffer = &mut bumpalo::collections::Vec::new_in(bump);
+    if let Some(value) = read_to_string("/proc/version", buffer) {
+        if let Some(version) = value.split_whitespace().nth(2) {
+            kernel.push_str(version.trim());
+        }
     }
 }
 

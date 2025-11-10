@@ -237,19 +237,6 @@ pub async fn fetch() -> Message {
     ))
 }
 
-/// Set the preferred icon theme for GNOME/GTK applications.
-pub async fn set_gnome_icon_theme(theme: String) {
-    let _res = tokio::process::Command::new("gsettings")
-        .args([
-            "set",
-            "org.gnome.desktop.interface",
-            "icon-theme",
-            theme.as_str(),
-        ])
-        .status()
-        .await;
-}
-
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct IconTheme {
     // COSMIC uses the file name of the folder containing the theme
