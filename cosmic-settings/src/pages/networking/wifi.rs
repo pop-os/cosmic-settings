@@ -9,6 +9,7 @@ use std::{
 use anyhow::Context;
 use cosmic::{
     Apply, Element, Task,
+    app::ContextDrawer,
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
     iced_widget::focus_next,
@@ -54,7 +55,7 @@ pub enum Message {
     PasswordRequest(network_manager::SSID),
     /// Update the password from the dialog
     PasswordUpdate(SecureString),
-    /// Request QR code dialog for sharing WiFi credentials
+    /// Request QR code drawer for sharing WiFi credentials
     QRCodeRequest(network_manager::SSID),
     /// Selects a device to display connections from
     SelectDevice(Arc<network_manager::devices::DeviceInfo>),
@@ -96,11 +97,14 @@ enum WiFiDialog {
         password: SecureString,
         password_hidden: bool,
     },
-    QRCode {
-        ssid: network_manager::SSID,
-        password: Option<String>,
-        security_type: NetworkType,
-    },
+}
+
+/// QR code sharing context drawer state
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct QRCodeDrawer {
+    ssid: network_manager::SSID,
+    password: Option<String>,
+    security_type: NetworkType,
 }
 
 #[derive(Debug, Default)]
@@ -118,8 +122,10 @@ pub struct Page {
     withheld_devices: Option<Vec<network_manager::devices::DeviceInfo>>,
     /// Withhold state update if the view more popup is shown.
     withheld_state: Option<NetworkManagerState>,
-    /// QR code data for WiFi sharing dialog
+    /// QR code data for WiFi sharing drawer
     qr_code_data: Option<widget::qr_code::Data>,
+    /// QR code context drawer state
+    qr_drawer: Option<QRCodeDrawer>,
 }
 
 #[derive(Debug)]
@@ -214,53 +220,51 @@ impl page::Page<crate::pages::Message> for Page {
                     .apply(Element::from)
                     .map(crate::pages::Message::WiFi)
             }
-
-            WiFiDialog::QRCode {
-                ssid,
-                password,
-                security_type: _,
-            } => {
-                let theme = cosmic::theme::active();
-                let spacing = &theme.cosmic().spacing;
-
-                let title_section = widget::text::title3(fl!("scan-to-connect"))
-                    .apply(widget::container)
-                    .center_x(Length::Fill);
-
-                let qr_section = if let Some(ref qr_data) = self.qr_code_data {
-                    widget::container(widget::qr_code(qr_data).cell_size(5)).center_x(Length::Fill)
-                } else {
-                    widget::container(widget::text::body(fl!("qr-code-unavailable")))
-                };
-
-                let mut info_items = widget::list_column();
-
-                info_items =
-                    info_items.add(widget::settings::item(fl!("network-name"), ssid.as_ref()));
-
-                if let Some(pass) = password {
-                    info_items =
-                        info_items.add(widget::settings::item(fl!("password"), pass.as_str()));
-                }
-
-                let close_button = widget::button::standard(fl!("close"))
-                    .on_press(Message::CancelDialog)
-                    .apply(widget::container)
-                    .center_x(Length::Fill);
-
-                let content = column::column()
-                    .spacing(spacing.space_s)
-                    .push(title_section)
-                    .push(qr_section)
-                    .push(info_items)
-                    .push(close_button);
-
-                widget::dialog()
-                    .control(content)
-                    .apply(Element::from)
-                    .map(crate::pages::Message::WiFi)
-            }
         })
+    }
+
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
+        let drawer = self.qr_drawer.as_ref()?;
+
+        let theme = cosmic::theme::active();
+        let spacing = &theme.cosmic().spacing;
+
+        let qr_section = if let Some(ref qr_data) = self.qr_code_data {
+            widget::container(widget::qr_code(qr_data).cell_size(5)).center_x(Length::Fill)
+        } else {
+            widget::container(widget::text::body(fl!("qr-code-unavailable")))
+        };
+
+        let description = widget::text::body(fl!("scan-to-connect-description"))
+            .apply(widget::container)
+            .center_x(Length::Fill);
+
+        let mut info_items = widget::list_column();
+
+        info_items = info_items.add(widget::settings::item(
+            fl!("network-name"),
+            drawer.ssid.as_ref(),
+        ));
+
+        if let Some(ref pass) = drawer.password {
+            info_items = info_items.add(widget::settings::item(fl!("password"), pass.as_str()));
+        }
+
+        let content = column::column()
+            .spacing(spacing.space_s)
+            .push(qr_section)
+            .push(description)
+            .push(info_items);
+
+        Some(
+            cosmic::app::context_drawer(
+                content
+                    .apply(Element::from)
+                    .map(crate::pages::Message::WiFi),
+                crate::pages::Message::CloseContextDrawer,
+            )
+            .title(fl!("share")),
+        )
     }
 
     fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
@@ -306,6 +310,12 @@ impl page::Page<crate::pages::Message> for Page {
             _ = cancel.send(());
         }
 
+        Task::none()
+    }
+
+    fn on_context_drawer_close(&mut self) -> Task<crate::pages::Message> {
+        self.qr_drawer = None;
+        self.qr_code_data = None;
         Task::none()
     }
 }
@@ -434,11 +444,14 @@ impl Page {
 
                 self.qr_code_data = widget::qr_code::Data::new(qr_string).ok();
 
-                self.dialog = Some(WiFiDialog::QRCode {
+                self.qr_drawer = Some(QRCodeDrawer {
                     ssid,
                     password,
                     security_type,
                 });
+
+                // Open the context drawer
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
             Message::AddNetwork => {
@@ -609,7 +622,6 @@ impl Page {
 
             Message::CancelDialog => {
                 self.dialog = None;
-                self.qr_code_data = None;
             }
 
             Message::Error(why) => {
