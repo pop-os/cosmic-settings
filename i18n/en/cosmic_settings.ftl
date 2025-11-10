@@ -883,6 +883,7 @@ about-hardware = Hardware
 about-os = Operating system
     .os = Operating system
     .os-architecture = Operating system architecture
+    .kernel = Kernel version
     .desktop-environment = Desktop environment
     .windowing-system = Windowing system
 
