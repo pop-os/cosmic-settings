@@ -475,20 +475,27 @@ async fn start_listening(
                             .and_then(|s| String::from_utf8(s).ok())
                         {
                             if saved_ssid == ssid.as_ref() {
-                                let password = c.get_secrets("802-11-wireless-security")
+                                let password = c
+                                    .get_secrets("802-11-wireless-security")
                                     .await
                                     .ok()
                                     .and_then(|secrets| {
                                         // Look for PSK password
-                                        secrets.get("802-11-wireless-security")
+                                        secrets
+                                            .get("802-11-wireless-security")
                                             .and_then(|sec| sec.get("psk"))
-                                            .and_then(|v| v.downcast_ref::<zbus::zvariant::Str>().ok())
+                                            .and_then(|v| {
+                                                v.downcast_ref::<zbus::zvariant::Str>().ok()
+                                            })
                                             .map(|s| s.to_string())
                                             .or_else(|| {
                                                 // Fallback to WEP key
-                                                secrets.get("802-11-wireless-security")
+                                                secrets
+                                                    .get("802-11-wireless-security")
                                                     .and_then(|sec| sec.get("wep-key0"))
-                                                    .and_then(|v| v.downcast_ref::<zbus::zvariant::Str>().ok())
+                                                    .and_then(|v| {
+                                                        v.downcast_ref::<zbus::zvariant::Str>().ok()
+                                                    })
                                                     .map(|s| s.to_string())
                                             })
                                     });
