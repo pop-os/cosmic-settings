@@ -451,6 +451,66 @@ async fn start_listening(
                         .await;
                 }
 
+                Some(Request::GetWiFiCredentials(ssid)) => {
+                    let s = match NetworkManagerSettings::new(&conn).await {
+                        Ok(s) => s,
+                        Err(why) => {
+                            tracing::error!(?why, "error getting network manager settings");
+                            return State::Waiting(conn, rx);
+                        }
+                    };
+
+                    // Determine network type - default to PSK for encrypted networks
+                    let mut security_type = NetworkType::PSK;
+
+                    let known_conns = s.list_connections().await.unwrap_or_default();
+                    for c in known_conns {
+                        let settings = c.get_settings().await.ok().unwrap_or_default();
+                        let settings_parsed = Settings::new(settings.clone());
+
+                        if let Some(saved_ssid) = settings_parsed
+                            .wifi
+                            .clone()
+                            .and_then(|w| w.ssid)
+                            .and_then(|s| String::from_utf8(s).ok())
+                        {
+                            if saved_ssid == ssid.as_ref() {
+                                let password = c.get_secrets("802-11-wireless-security")
+                                    .await
+                                    .ok()
+                                    .and_then(|secrets| {
+                                        // Look for PSK password
+                                        secrets.get("802-11-wireless-security")
+                                            .and_then(|sec| sec.get("psk"))
+                                            .and_then(|v| v.downcast_ref::<zbus::zvariant::Str>().ok())
+                                            .map(|s| s.to_string())
+                                            .or_else(|| {
+                                                // Fallback to WEP key
+                                                secrets.get("802-11-wireless-security")
+                                                    .and_then(|sec| sec.get("wep-key0"))
+                                                    .and_then(|v| v.downcast_ref::<zbus::zvariant::Str>().ok())
+                                                    .map(|s| s.to_string())
+                                            })
+                                    });
+
+                                // If no password found, might be open network
+                                if password.is_none() {
+                                    security_type = NetworkType::Open;
+                                }
+
+                                _ = output
+                                    .send(Event::WiFiCredentials {
+                                        ssid: ssid.clone(),
+                                        password,
+                                        security_type,
+                                    })
+                                    .await;
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 None => {
                     return State::Finished;
                 }
@@ -540,6 +600,8 @@ pub enum Request {
         password: SecureString,
         hw_address: HwAddress,
     },
+    /// Get WiFi credentials for a known access point.
+    GetWiFiCredentials(SSID),
     /// Signal to reload the service.
     Reload,
     /// Remove a connection profile.
@@ -568,6 +630,11 @@ pub enum Event {
     WiFiEnabled(bool),
     WirelessAccessPoints,
     ActiveConns,
+    WiFiCredentials {
+        ssid: SSID,
+        password: Option<String>,
+        security_type: NetworkType,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
