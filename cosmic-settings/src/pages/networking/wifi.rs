@@ -859,16 +859,16 @@ fn devices_view() -> Section<crate::pages::Message> {
                                                 &section.descriptions[disconnect_txt],
                                             )
                                         }))
+                                        .push(popup_button(
+                                            Message::Settings(network.ssid.clone()),
+                                            &section.descriptions[settings_txt],
+                                        ))
                                         .push_maybe(is_known.then(|| {
                                             popup_button(
                                                 Message::QRCodeRequest(network.ssid.clone()),
                                                 &section.descriptions[share_txt],
                                             )
                                         }))
-                                        .push(popup_button(
-                                            Message::Settings(network.ssid.clone()),
-                                            &section.descriptions[settings_txt],
-                                        ))
                                         .push_maybe(is_known.then(|| {
                                             popup_button(
                                                 Message::ForgetRequest(network.ssid.clone()),
