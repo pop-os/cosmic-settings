@@ -50,6 +50,12 @@ static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
     ("Backspace", "caps:backspace"),
     ("Super", "caps:super"),
     ("Control", "caps:ctrl_modifier"),
+    ("Toggle Shift Lock (affects all keys)", "caps:shiftlock"),
+    (
+        "Escape, Shift + Caps lock is regular Caps Lock",
+        "caps:escape_shifted_capslock",
+    ),
+    ("Disable", "caps:none"),
 ];
 
 #[derive(Clone, Debug)]
