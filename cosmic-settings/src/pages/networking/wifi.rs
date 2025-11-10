@@ -228,25 +228,19 @@ impl page::Page<crate::pages::Message> for Page {
                     .center_x(Length::Fill);
 
                 let qr_section = if let Some(ref qr_data) = self.qr_code_data {
-                    widget::container(
-                        widget::qr_code(qr_data)
-                            .cell_size(5)
-                    )
-                    .center_x(Length::Fill)
+                    widget::container(widget::qr_code(qr_data).cell_size(5)).center_x(Length::Fill)
                 } else {
                     widget::container(widget::text::body(fl!("qr-code-unavailable")))
                 };
 
                 let mut info_items = widget::list_column();
 
-                info_items = info_items.add(
-                    widget::settings::item(fl!("network-name"), ssid.as_ref())
-                );
+                info_items =
+                    info_items.add(widget::settings::item(fl!("network-name"), ssid.as_ref()));
 
                 if let Some(pass) = password {
-                    info_items = info_items.add(
-                        widget::settings::item(fl!("password"), pass.as_str())
-                    );
+                    info_items =
+                        info_items.add(widget::settings::item(fl!("password"), pass.as_str()));
                 }
 
                 let close_button = widget::button::standard(fl!("close"))
@@ -260,7 +254,6 @@ impl page::Page<crate::pages::Message> for Page {
                     .push(qr_section)
                     .push(info_items)
                     .push(close_button);
-
 
                 widget::dialog()
                     .control(content)
@@ -431,7 +424,10 @@ impl Page {
                         NetworkType::Open => "",
                     };
                     let escaped_password = escape_wifi_qr_string(pass);
-                    format!("WIFI:T:{};S:{};P:{};;", security, escaped_ssid, escaped_password)
+                    format!(
+                        "WIFI:T:{};S:{};P:{};;",
+                        security, escaped_ssid, escaped_password
+                    )
                 } else {
                     format!("WIFI:T:;S:{};;", escaped_ssid)
                 };
