@@ -20,7 +20,8 @@ pub mod power;
 #[cfg(feature = "page-sound")]
 pub mod sound;
 pub mod system;
-pub mod time;
+pub mod date_time;
+pub mod language_region;
 
 pub type Element<'a> = cosmic::Element<'a, Message>;
 
@@ -40,7 +41,7 @@ pub enum Message {
     #[cfg(feature = "page-input")]
     CustomShortcuts(input::keyboard::shortcuts::custom::Message),
     #[cfg(feature = "page-date")]
-    DateAndTime(time::date::Message),
+    DateTime(date_time::Message),
     #[cfg(feature = "page-default-apps")]
     DefaultApps(applications::default_apps::Message),
     Desktop(desktop::Message),
@@ -81,7 +82,7 @@ pub enum Message {
     #[cfg(feature = "page-power")]
     Power(power::Message),
     #[cfg(feature = "page-region")]
-    Region(time::region::Message),
+    LanguageRegion(language_region::Message),
     #[cfg(feature = "page-sound")]
     Sound(sound::Message),
     StartupApps(applications::startup_apps::Message),
@@ -102,6 +103,7 @@ pub enum Message {
 
     // Common page functionality
     CloseContextDrawer,
+    None,
 }
 
 impl From<Message> for crate::Message {

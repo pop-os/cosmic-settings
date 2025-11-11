@@ -339,6 +339,8 @@ panel-applets = Configuration
     .dock-desc = Configure dock applets
     .desc = Configure panel applets
 
+time-applet = Time Applet
+
 panel-missing = Panel configuration is missing
     .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
     .fix = Reset to default
@@ -782,7 +784,7 @@ time-zone = Time zone
     .auto = Automatic time zone
     .auto-info = Requires location services and internet access
 
-time-format = Date & time format
+time-format = Time format
     .twenty-four = 24-hour time
     .show-seconds = Show seconds
     .first = First day of week
@@ -792,7 +794,7 @@ time-format = Date & time format
     .sunday = Sunday
     .monday = Monday
 
-time-region = Region & language
+time-region = Language & region
     .desc = Format dates, times, and numbers based on your region
 
 formatting = Formatting
@@ -802,6 +804,8 @@ formatting = Formatting
     .numbers = Numbers
     .measurement = Measurement
     .paper = Paper
+
+formatting-preview = Formatting preview
 
 preferred-languages = Preferred languages
     .desc = The order of languages determines which language is used for the user interface. Changes take effect on next login.

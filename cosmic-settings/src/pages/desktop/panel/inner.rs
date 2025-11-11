@@ -1,7 +1,7 @@
 use cosmic::{
     Element, Task,
     cctk::sctk::reexports::client::{Proxy, backend::ObjectId, protocol::wl_output::WlOutput},
-    cosmic_config::{self, CosmicConfigEntry},
+    cosmic_config::{self, CosmicConfigEntry, ConfigGet, ConfigSet},
     iced::{Alignment, Length},
     surface, theme,
     widget::{
@@ -10,7 +10,6 @@ use cosmic::{
 };
 
 use cosmic::Apply;
-use cosmic_config::ConfigSet;
 use cosmic_panel_config::{
     AutoHide, CosmicPanelBackground, CosmicPanelConfig, CosmicPanelContainerConfig,
     CosmicPanelOuput, PanelAnchor, PanelSize,
@@ -18,6 +17,7 @@ use cosmic_panel_config::{
 use cosmic_settings_page::{self as page, Section};
 use slab::Slab;
 use std::{collections::HashMap, time::Duration};
+use tracing::error;
 
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
@@ -32,10 +32,23 @@ pub struct PageInner {
     pub(crate) outputs_map: HashMap<ObjectId, (String, WlOutput)>,
     pub(crate) system_default: Option<CosmicPanelConfig>,
     pub(crate) system_container: Option<CosmicPanelContainerConfig>,
+    pub(crate) cosmic_applet_config: Option<cosmic_config::Config>,
+    pub show_seconds: bool,
+    pub show_date_in_top_panel: bool,
 }
 
 impl Default for PageInner {
     fn default() -> Self {
+        let cosmic_applet_config = cosmic_config::Config::new("com.system76.CosmicAppletTime", 1).ok();
+
+        let show_seconds = cosmic_applet_config.as_ref()
+            .and_then(|config| config.get("show_seconds").ok())
+            .unwrap_or(false);
+
+        let show_date_in_top_panel = cosmic_applet_config.as_ref()
+            .and_then(|config| config.get("show_date_in_top_panel").ok())
+            .unwrap_or(true);
+
         Self {
             config_helper: Option::default(),
             panel_config: Option::default(),
@@ -72,6 +85,9 @@ impl Default for PageInner {
                 },
             )
             .ok(),
+            cosmic_applet_config,
+            show_seconds,
+            show_date_in_top_panel,
         }
     }
 }
@@ -264,6 +280,39 @@ pub(crate) fn style<
         })
 }
 
+pub(crate) fn time_applet<
+    P: page::Page<crate::pages::Message> + PanelPage,
+    T: Fn(Message) -> crate::pages::Message + Copy + Send + Sync + 'static,
+>(
+    msg_map: T,
+) -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+
+    let show_seconds = descriptions.insert(fl!("time-format", "show-seconds"));
+    let show_date = descriptions.insert(fl!("time-format", "show-date"));
+
+    Section::default()
+        .title(fl!("time-applet"))
+        .descriptions(descriptions)
+        .view::<P>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+            let inner = page.inner();
+
+            settings::section()
+                .title(&section.title)
+                .add(settings::item(
+                    &descriptions[show_seconds],
+                    toggler(inner.show_seconds).on_toggle(Message::ShowSeconds),
+                ))
+                .add(settings::item(
+                    &descriptions[show_date],
+                    toggler(inner.show_date_in_top_panel).on_toggle(Message::ShowDateInTopPanel),
+                ))
+                .apply(Element::from)
+                .map(msg_map)
+        })
+}
+
 pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
     p: &P,
 ) -> Section<crate::pages::Message> {
@@ -434,6 +483,8 @@ pub enum Message {
     ResetPanel,
     FullReset,
     Surface(surface::Action),
+    ShowSeconds(bool),
+    ShowDateInTopPanel(bool),
 }
 
 impl PageInner {
@@ -584,6 +635,24 @@ impl PageInner {
             Message::ResetPanel | Message::FullReset => {}
             Message::Surface(_) => {
                 unimplemented!()
+            }
+            Message::ShowSeconds(enable) => {
+                self.show_seconds = enable;
+                if let Some(config) = self.cosmic_applet_config.as_ref() {
+                    if let Err(err) = config.set("show_seconds", enable) {
+                        error!(?err, "Failed to set config 'show_seconds'");
+                    }
+                }
+                return Task::none();
+            }
+            Message::ShowDateInTopPanel(enable) => {
+                self.show_date_in_top_panel = enable;
+                if let Some(config) = self.cosmic_applet_config.as_ref() {
+                    if let Err(err) = config.set("show_date_in_top_panel", enable) {
+                        error!(?err, "Failed to set config 'show_date_in_top_panel'");
+                    }
+                }
+                return Task::none();
             }
         }
 

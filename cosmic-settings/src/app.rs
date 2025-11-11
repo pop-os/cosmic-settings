@@ -19,7 +19,7 @@ use crate::pages::networking;
 use crate::pages::power;
 #[cfg(feature = "page-sound")]
 use crate::pages::sound;
-use crate::pages::{self, system, time};
+use crate::pages::{self, system, date_time, language_region};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
 #[cfg(feature = "wayland")]
@@ -87,7 +87,7 @@ impl SettingsApp {
             #[cfg(feature = "page-bluetooth")]
             PageCommands::Bluetooth => self.pages.page_id::<bluetooth::Page>(),
             #[cfg(feature = "page-date")]
-            PageCommands::DateTime => self.pages.page_id::<time::date::Page>(),
+            PageCommands::DateTime => self.pages.page_id::<date_time::Page>(),
             #[cfg(feature = "page-default-apps")]
             PageCommands::DefaultApps => self.pages.page_id::<applications::default_apps::Page>(),
             PageCommands::Desktop => self.pages.page_id::<desktop::Page>(),
@@ -117,12 +117,11 @@ impl SettingsApp {
             #[cfg(feature = "page-power")]
             PageCommands::Power => self.pages.page_id::<power::Page>(),
             #[cfg(feature = "page-region")]
-            PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
+            PageCommands::LanguageRegion => self.pages.page_id::<language_region::Page>(),
             #[cfg(feature = "page-sound")]
             PageCommands::Sound => self.pages.page_id::<sound::Page>(),
             PageCommands::StartupApps => self.pages.page_id::<applications::startup_apps::Page>(),
             PageCommands::System => self.pages.page_id::<system::Page>(),
-            PageCommands::Time => self.pages.page_id::<time::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Touchpad => self.pages.page_id::<input::touchpad::Page>(),
             #[cfg(feature = "page-users")]
@@ -140,6 +139,7 @@ impl SettingsApp {
             PageCommands::Wireless => self.pages.page_id::<networking::wifi::Page>(),
             #[cfg(feature = "page-workspaces")]
             PageCommands::Workspaces => self.pages.page_id::<desktop::workspaces::Page>(),
+            &PageCommands::RegionLanguage | &PageCommands::Time => todo!(),
         }
     }
 
@@ -223,7 +223,8 @@ impl cosmic::Application for SettingsApp {
         #[cfg(feature = "page-input")]
         app.insert_page::<input::Page>();
         app.insert_page::<applications::Page>();
-        app.insert_page::<time::Page>();
+        app.insert_page::<date_time::Page>();
+        app.insert_page::<language_region::Page>();
         app.insert_page::<system::Page>();
 
         let active_id = match flags.sub_command {
@@ -378,6 +379,7 @@ impl cosmic::Application for SettingsApp {
 
             Message::PageMessage(message) => match message {
                 crate::pages::Message::CloseContextDrawer => return self.close_context_drawer(),
+                crate::pages::Message::None => (),
 
                 #[cfg(feature = "page-accessibility")]
                 crate::pages::Message::Accessibility(message) => {
@@ -416,8 +418,8 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 #[cfg(feature = "page-date")]
-                crate::pages::Message::DateAndTime(message) => {
-                    if let Some(page) = self.pages.page_mut::<time::date::Page>() {
+                crate::pages::Message::DateTime(message) => {
+                    if let Some(page) = self.pages.page_mut::<date_time::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
@@ -537,8 +539,8 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 #[cfg(feature = "page-region")]
-                crate::pages::Message::Region(message) => {
-                    if let Some(page) = self.pages.page_mut::<time::region::Page>() {
+                crate::pages::Message::LanguageRegion(message) => {
+                    if let Some(page) = self.pages.page_mut::<language_region::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
