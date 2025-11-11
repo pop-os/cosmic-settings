@@ -841,3 +841,7 @@ password-mismatch = Hasło i jego potwierdzenie muszą być jednakowe
 save = Zapisz
 modified = Zmodyfikowano { $count }
 place-here = Umieść tu applety
+qr-code-unavailable = Kod QR jest niedostępny
+network-name = Nazwa Sieci
+share = Udostępnij sieć
+scan-to-connect-description = Zeskanuj kod QR, aby połączyć się z tą siecią.
