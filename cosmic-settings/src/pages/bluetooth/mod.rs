@@ -783,14 +783,13 @@ fn status() -> Section<crate::pages::Message> {
 }
 
 fn popup_button(message: Option<Message>, text: &str) -> Element<'_, Message> {
-    let theme = theme::active();
-    let theme = theme.cosmic();
+    let spacing = cosmic::theme::spacing();
     widget::text::body(text)
         .align_y(Alignment::Center)
         .apply(widget::button::custom)
-        .padding([theme.space_xxxs(), theme.space_xs()])
+        .padding([spacing.space_xxxs, spacing.space_xs])
         .width(Length::Fill)
-        .class(theme::Button::MenuItem)
+        .class(cosmic::theme::Button::MenuItem)
         .on_press_maybe(message)
         .into()
 }
@@ -840,22 +839,21 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         .position(widget::popover::Position::Bottom)
                         .on_close(Message::PopupDevice(None))
                         .popup({
-                            widget::container(
-                                widget::column()
-                                    .push_maybe(device.is_connected().then(|| {
-                                        popup_button(
-                                            Some(Message::DisconnectDevice(path.clone())),
-                                            &descriptions[device_disconnect],
-                                        )
-                                    }))
-                                    .push(popup_button(
-                                        Some(Message::ForgetDevice(path.clone())),
-                                        &descriptions[device_forget],
-                                    )),
-                            )
-                            .width(Length::Fixed(200.0))
-                            .padding(theme::active().cosmic().space_xxxs())
-                            .class(theme::Container::Dialog)
+                            widget::column()
+                                .push_maybe(device.is_connected().then(|| {
+                                    popup_button(
+                                        Some(Message::DisconnectDevice(path.clone())),
+                                        &descriptions[device_disconnect],
+                                    )
+                                }))
+                                .push(popup_button(
+                                    Some(Message::ForgetDevice(path.clone())),
+                                    &descriptions[device_forget],
+                                ))
+                                .width(Length::Fixed(200.0))
+                                .apply(widget::container)
+                                .padding(1)
+                                .class(cosmic::style::Container::Dropdown)
                         })
                         .into()
                     } else {
