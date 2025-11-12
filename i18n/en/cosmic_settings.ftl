@@ -413,7 +413,6 @@ display = Displays
     .arrangement-desc = Drag displays to rearrange them
     .enable = Enable display
     .external = { $size } { $output } external display
-    .identify = Identify Displays
     .laptop = { $size } laptop display
     .options = Display options
     .refresh-rate = Refresh rate
