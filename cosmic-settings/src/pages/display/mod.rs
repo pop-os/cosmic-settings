@@ -199,6 +199,8 @@ struct ViewCache {
     vrr_selected: Option<usize>,
     resolution_selected: Option<usize>,
     scale_selected: Option<usize>,
+    /// Maps from displayed refresh rate index to actual index in modes
+    filtered_rate_indices: Vec<usize>,
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -787,7 +789,24 @@ impl Page {
                 .resolutions
                 .push(format!("{}x{}", resolution.0, resolution.1));
             if Some(resolution) == self.config.resolution {
-                cache_rates(&mut self.cache.refresh_rates, rates);
+                // Filter out fractional refresh rates when a non-fractional one exists within +/- 1 Hz
+                self.cache.filtered_rate_indices = filter_refresh_rates(rates);
+                let filtered_rates: Vec<u32> = self
+                    .cache
+                    .filtered_rate_indices
+                    .iter()
+                    .map(|&i| rates[i])
+                    .collect();
+                cache_rates(&mut self.cache.refresh_rates, &filtered_rates);
+
+                // Update the selected index to point to the filtered list
+                if let Some(current_rate) = self.config.refresh_rate {
+                    self.cache.refresh_rate_selected = self
+                        .cache
+                        .filtered_rate_indices
+                        .iter()
+                        .position(|&i| rates[i] == current_rate);
+                }
             }
         }
 
@@ -933,11 +952,20 @@ impl Page {
 
         if let Some(ref resolution) = self.config.resolution
             && let Some(rates) = self.cache.modes.get(resolution)
-            && let Some(&rate) = rates.get(option)
         {
-            self.cache.refresh_rate_selected = Some(option);
-            self.config.refresh_rate = Some(rate);
-            return self.exec_randr(output, Randr::RefreshRate(rate));
+            // Map from filtered index to actual index
+            let actual_index = self
+                .cache
+                .filtered_rate_indices
+                .get(option)
+                .copied()
+                .unwrap_or(option);
+
+            if let Some(&rate) = rates.get(actual_index) {
+                self.cache.refresh_rate_selected = Some(option);
+                self.config.refresh_rate = Some(rate);
+                return self.exec_randr(output, Randr::RefreshRate(rate));
+            }
         }
 
         Task::none()
@@ -982,9 +1010,18 @@ impl Page {
         };
 
         self.cache.refresh_rates.clear();
-        cache_rates(&mut self.cache.refresh_rates, rates);
 
-        let Some(&rate) = rates.first() else {
+        // Filter out fractional refresh rates when a non-fractional one exists within +/- 1 Hz
+        self.cache.filtered_rate_indices = filter_refresh_rates(rates);
+        let filtered_rates: Vec<u32> = self
+            .cache
+            .filtered_rate_indices
+            .iter()
+            .map(|&i| rates[i])
+            .collect();
+        cache_rates(&mut self.cache.refresh_rates, &filtered_rates);
+
+        let Some(&rate) = filtered_rates.first() else {
             return Task::none();
         };
 
@@ -1377,6 +1414,31 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
         })
 }
 
+/// Filters refresh rates to remove fractional rates when a non-fractional rate
+/// within +/- 1 Hz exists. Returns indices of rates to keep.
+fn filter_refresh_rates(rates: &[u32]) -> Vec<usize> {
+    let mut filtered_indices = Vec::new();
+
+    for (i, &rate) in rates.iter().enumerate() {
+        // Check if this rate is fractional (has non-zero decimal part)
+        if rate % 1000 != 0 {
+            // Check if there's a non-fractional rate within +/- 1000 millihertz (1 Hz)
+            let has_nearby_integer = rates.iter().any(|&other_rate| {
+                other_rate % 1000 == 0 && // other rate is non-fractional
+                other_rate.abs_diff(rate) <= 1000 // within 1 Hz
+            });
+
+            if has_nearby_integer {
+                continue; // Skip this fractional rate
+            }
+        }
+
+        filtered_indices.push(i);
+    }
+
+    filtered_indices
+}
+
 fn cache_rates(cached_rates: &mut Vec<String>, rates: &[u32]) {
     cached_rates.clear();
 
@@ -1440,4 +1502,37 @@ fn test_cache_rates() {
     cache_rates(&mut cached, rates);
 
     assert_eq!(cached, vec!["10 Hz", "11 Hz", "100.04 Hz", "100.05 Hz"])
+}
+
+#[test]
+fn test_filter_refresh_rates() {
+    // Test case 1: 60 Hz and 59.94 Hz - should keep only 60 Hz
+    let rates: &[u32] = &[59940, 60000];
+    let filtered = filter_refresh_rates(rates);
+    assert_eq!(filtered, vec![1]); // Only index 1 (60 Hz) should remain
+
+    // Test case 2: Only fractional rates - should keep all
+    let rates: &[u32] = &[59940, 29970];
+    let filtered = filter_refresh_rates(rates);
+    assert_eq!(filtered, vec![0, 1]); // Both should remain
+
+    // Test case 3: Multiple rates with 144 Hz and 143.856 Hz
+    let rates: &[u32] = &[143856, 144000];
+    let filtered = filter_refresh_rates(rates);
+    assert_eq!(filtered, vec![1]); // Only 144 Hz should remain
+
+    // Test case 4: Non-fractional rates only - should keep all
+    let rates: &[u32] = &[30000, 60000, 120000];
+    let filtered = filter_refresh_rates(rates);
+    assert_eq!(filtered, vec![0, 1, 2]); // All should remain
+
+    // Test case 5: Fractional rate more than 1 Hz away - should keep both
+    let rates: &[u32] = &[58000, 60000];
+    let filtered = filter_refresh_rates(rates);
+    assert_eq!(filtered, vec![0, 1]); // Both should remain (2 Hz difference)
+
+    // Test case 6: Fractional rate exactly 1 Hz away - should filter
+    let rates: &[u32] = &[59001, 60000];
+    let filtered = filter_refresh_rates(rates);
+    assert_eq!(filtered, vec![1]); // Only 60 Hz should remain (59.001 Hz filtered out)
 }
