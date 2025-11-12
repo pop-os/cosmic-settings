@@ -96,13 +96,39 @@ impl Info {
             info.desktop_environment = session;
         }
 
-        if let Ok(output) = std::process::Command::new("lspci").output() {
+        // Try glxinfo first for user-friendly GPU names
+        let mut found_gpus = false;
+        if let Ok(output) = std::process::Command::new("glxinfo").output() {
             if let Ok(stdout) = std::str::from_utf8(&output.stdout) {
                 for line in stdout.lines() {
-                    if let Some(pos) = memchr::memmem::find(line.as_bytes(), b"VGA") {
-                        let line = &line[pos + 3..];
-                        if let Some(pos) = memchr::memmem::find(line.as_bytes(), b": ") {
-                            info.graphics.push(String::from(&line[pos + 2..]));
+                    if let Some(renderer) = line.strip_prefix("OpenGL renderer string:") {
+                        let renderer = renderer.trim();
+                        // Extract the GPU name before any parentheses
+                        let gpu_name = if let Some(pos) = renderer.find('(') {
+                            renderer[..pos].trim()
+                        } else {
+                            renderer
+                        };
+
+                        if !gpu_name.is_empty() && !info.graphics.contains(&gpu_name.to_string()) {
+                            info.graphics.push(gpu_name.to_string());
+                            found_gpus = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fallback to lspci if glxinfo didn't find anything
+        if !found_gpus {
+            if let Ok(output) = std::process::Command::new("lspci").output() {
+                if let Ok(stdout) = std::str::from_utf8(&output.stdout) {
+                    for line in stdout.lines() {
+                        if let Some(pos) = memchr::memmem::find(line.as_bytes(), b"VGA") {
+                            let line = &line[pos + 3..];
+                            if let Some(pos) = memchr::memmem::find(line.as_bytes(), b": ") {
+                                info.graphics.push(String::from(&line[pos + 2..]));
+                            }
                         }
                     }
                 }
