@@ -602,10 +602,13 @@ impl Page {
     }
 
     fn special_character_key_view(&self, special_key: SpecialKey) -> cosmic::Element<'_, Message> {
-        let options = match special_key {
-            SpecialKey::Compose => COMPOSE_OPTIONS,
-            SpecialKey::AlternateCharacters => ALTERNATE_CHARACTER_OPTIONS,
-            SpecialKey::CapsLock => CAPS_LOCK_OPTIONS,
+        let (options, description) = match special_key {
+            SpecialKey::Compose => (
+                COMPOSE_OPTIONS,
+                Some(fl!("keyboard-special-char", "compose-desc")),
+            ),
+            SpecialKey::AlternateCharacters => (ALTERNATE_CHARACTER_OPTIONS, None),
+            SpecialKey::CapsLock => (CAPS_LOCK_OPTIONS, None),
         };
         let prefix = special_key.prefix();
         let current = self
@@ -615,7 +618,7 @@ impl Page {
             .flat_map(|x| x.split(','))
             .find(|x| x.starts_with(prefix));
 
-        // TODO description, layout default
+        // TODO layout default
 
         let mut list = cosmic::widget::list_column();
 
@@ -630,7 +633,11 @@ impl Page {
             .map(|(desc, id)| special_char_radio_row(desc, Some(id), current))
             .fold(list, ListColumn::add);
 
-        cosmic::widget::container(list).padding(24).into()
+        widget::column::with_capacity(2)
+            .spacing(theme::spacing().space_m)
+            .push_maybe(description.map(widget::text::body))
+            .push(list)
+            .into()
     }
 
     fn numlock_state_view(&self) -> cosmic::Element<'_, Message> {
@@ -658,7 +665,7 @@ impl Page {
             ]));
         }
 
-        cosmic::widget::container(list).padding(24).into()
+        list.into()
     }
 
     fn update_xkb_config(&mut self) {

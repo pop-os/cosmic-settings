@@ -9,6 +9,7 @@ use std::{
 use anyhow::Context;
 use cosmic::{
     Apply, Element, Task,
+    app::ContextDrawer,
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
     iced_widget::focus_next,
@@ -54,6 +55,8 @@ pub enum Message {
     PasswordRequest(network_manager::SSID),
     /// Update the password from the dialog
     PasswordUpdate(SecureString),
+    /// Request QR code drawer for sharing WiFi credentials
+    QRCodeRequest(network_manager::SSID),
     /// Selects a device to display connections from
     SelectDevice(Arc<network_manager::devices::DeviceInfo>),
     /// Opens settings page for the access point.
@@ -84,7 +87,7 @@ impl From<Message> for crate::pages::Message {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum WiFiDialog {
     Forget(network_manager::SSID),
     Password {
@@ -94,6 +97,14 @@ enum WiFiDialog {
         password: SecureString,
         password_hidden: bool,
     },
+}
+
+/// QR code sharing context drawer state
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct QRCodeDrawer {
+    ssid: network_manager::SSID,
+    password: Option<String>,
+    security_type: NetworkType,
 }
 
 #[derive(Debug, Default)]
@@ -111,6 +122,10 @@ pub struct Page {
     withheld_devices: Option<Vec<network_manager::devices::DeviceInfo>>,
     /// Withhold state update if the view more popup is shown.
     withheld_state: Option<NetworkManagerState>,
+    /// QR code data for WiFi sharing drawer
+    qr_code_data: Option<widget::qr_code::Data>,
+    /// QR code context drawer state
+    qr_drawer: Option<QRCodeDrawer>,
 }
 
 #[derive(Debug)]
@@ -208,6 +223,50 @@ impl page::Page<crate::pages::Message> for Page {
         })
     }
 
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
+        let drawer = self.qr_drawer.as_ref()?;
+
+        let theme = cosmic::theme::active();
+        let spacing = &theme.cosmic().spacing;
+
+        let qr_section = if let Some(ref qr_data) = self.qr_code_data {
+            widget::container(widget::qr_code(qr_data).cell_size(5)).center_x(Length::Fill)
+        } else {
+            widget::container(widget::text::body(fl!("qr-code-unavailable")))
+        };
+
+        let description = widget::text::body(fl!("scan-to-connect-description"))
+            .apply(widget::container)
+            .center_x(Length::Fill);
+
+        let mut info_items = widget::list_column();
+
+        info_items = info_items.add(widget::settings::item(
+            fl!("network-name"),
+            drawer.ssid.as_ref(),
+        ));
+
+        if let Some(ref pass) = drawer.password {
+            info_items = info_items.add(widget::settings::item(fl!("password"), pass.as_str()));
+        }
+
+        let content = column::column()
+            .spacing(spacing.space_s)
+            .push(qr_section)
+            .push(description)
+            .push(info_items);
+
+        Some(
+            cosmic::app::context_drawer(
+                content
+                    .apply(Element::from)
+                    .map(crate::pages::Message::WiFi),
+                crate::pages::Message::CloseContextDrawer,
+            )
+            .title(fl!("share")),
+        )
+    }
+
     fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
         Some(
             widget::button::standard(fl!("add-network"))
@@ -251,6 +310,12 @@ impl page::Page<crate::pages::Message> for Page {
             _ = cancel.send(());
         }
 
+        Task::none()
+    }
+
+    fn on_context_drawer_close(&mut self) -> Task<crate::pages::Message> {
+        self.qr_drawer = None;
+        self.qr_code_data = None;
         Task::none()
     }
 }
@@ -354,6 +419,41 @@ impl Page {
                 return update_devices(conn);
             }
 
+            Message::NetworkManager(network_manager::Event::WiFiCredentials {
+                ssid,
+                password,
+                security_type,
+            }) => {
+                // Generate QR code data in WiFi format: WIFI:T:<type>;S:<ssid>;P:<password>;;
+                // Special characters must be escaped according to WiFi QR code spec
+                let escaped_ssid = escape_wifi_qr_string(ssid.as_ref());
+                let qr_string = if let Some(ref pass) = password {
+                    let security = match security_type {
+                        NetworkType::PSK => "WPA",
+                        NetworkType::EAP => "WPA",
+                        NetworkType::Open => "",
+                    };
+                    let escaped_password = escape_wifi_qr_string(pass);
+                    format!(
+                        "WIFI:T:{};S:{};P:{};;",
+                        security, escaped_ssid, escaped_password
+                    )
+                } else {
+                    format!("WIFI:T:;S:{};;", escaped_ssid)
+                };
+
+                self.qr_code_data = widget::qr_code::Data::new(qr_string).ok();
+
+                self.qr_drawer = Some(QRCodeDrawer {
+                    ssid,
+                    password,
+                    security_type,
+                });
+
+                // Open the context drawer
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+            }
+
             Message::AddNetwork => {
                 tokio::task::spawn(super::nm_add_wifi());
             }
@@ -452,6 +552,15 @@ impl Page {
                 }) = self.dialog
                 {
                     *password_hidden = !*password_hidden;
+                }
+            }
+
+            Message::QRCodeRequest(ssid) => {
+                self.view_more_popup = None;
+                if let Some(nm) = self.nm_state.as_mut() {
+                    _ = nm
+                        .sender
+                        .unbounded_send(network_manager::Request::GetWiFiCredentials(ssid));
                 }
             }
 
@@ -606,6 +715,17 @@ impl Page {
     }
 }
 
+/// Escapes special characters in WiFi QR code strings according to the spec
+/// Special characters that need escaping: \ ; , : "
+/// https://github.com/zxing/zxing/wiki/Barcode-Contents#wi-fi-network-config-android-ios-11
+fn escape_wifi_qr_string(s: &str) -> String {
+    s.replace('\\', "\\\\")
+        .replace(';', "\\;")
+        .replace(',', "\\,")
+        .replace(':', "\\:")
+        .replace('"', "\\\"")
+}
+
 fn devices_view() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         airplane_mode_txt = fl!("airplane-on");
@@ -617,6 +737,7 @@ fn devices_view() -> Section<crate::pages::Message> {
         known_networks_txt = fl!("known-networks");
         no_networks_txt = fl!("no-networks");
         settings_txt = fl!("settings");
+        share_txt = fl!("share");
         visible_networks_txt = fl!("visible-networks");
         wifi_txt = fl!("wifi");
     });
@@ -742,6 +863,12 @@ fn devices_view() -> Section<crate::pages::Message> {
                                             Message::Settings(network.ssid.clone()),
                                             &section.descriptions[settings_txt],
                                         ))
+                                        .push_maybe(is_known.then(|| {
+                                            popup_button(
+                                                Message::QRCodeRequest(network.ssid.clone()),
+                                                &section.descriptions[share_txt],
+                                            )
+                                        }))
                                         .push_maybe(is_known.then(|| {
                                             popup_button(
                                                 Message::ForgetRequest(network.ssid.clone()),

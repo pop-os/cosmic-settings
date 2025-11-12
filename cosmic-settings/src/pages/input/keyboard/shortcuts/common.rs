@@ -481,9 +481,12 @@ impl Model {
                     crate::app::Message::OpenContextDrawer(self.entity),
                 )];
 
-                if let Some(model) = self.shortcut_models.get(0)
-                    && let Some(shortcut) = model.bindings.get(0)
+                if let Some(model) = self.shortcut_models.get_mut(id)
+                    && let Some(shortcut) = model.bindings.get_mut(0)
                 {
+                    shortcut.pending = shortcut.binding.clone();
+
+                    shortcut.input = shortcut.binding.to_string();
                     self.editing = Some(0);
                     tasks.push(widget::text_input::focus(shortcut.id.clone()));
                     tasks.push(widget::text_input::select_all(shortcut.id.clone()));
