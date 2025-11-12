@@ -441,7 +441,7 @@ impl Content {
                     })
             ),
             // Icon theme previews
-            widget::column::with_children(vec![
+            widget::column::with_children([
                 text::heading(&*ICON_THEME).into(),
                 flex_row(
                     self.icon_themes

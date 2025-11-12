@@ -225,9 +225,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         let drawer = self.qr_drawer.as_ref()?;
-
-        let theme = cosmic::theme::active();
-        let spacing = &theme.cosmic().spacing;
+        let spacing = cosmic::theme::spacing();
 
         let qr_section = if let Some(ref qr_data) = self.qr_code_data {
             widget::container(widget::qr_code(qr_data).cell_size(5)).center_x(Length::Fill)
@@ -749,8 +747,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                 return cosmic::widget::column().into();
             };
 
-            let theme = cosmic::theme::active();
-            let spacing = &theme.cosmic().spacing;
+            let spacing = cosmic::theme::spacing();
 
             let wifi_enable = widget::settings::item::builder(&section.descriptions[wifi_txt])
                 .control(widget::toggler(state.wifi_enabled).on_toggle(Message::WiFiEnable));
@@ -851,7 +848,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                             widget::popover(view_more_button.on_press(Message::ViewMore(None)))
                                 .position(widget::popover::Position::Bottom)
                                 .on_close(Message::ViewMore(None))
-                                .popup({
+                                .popup(
                                     widget::column()
                                         .push_maybe(is_connected.then(|| {
                                             popup_button(
@@ -875,10 +872,11 @@ fn devices_view() -> Section<crate::pages::Message> {
                                                 &section.descriptions[forget_txt],
                                             )
                                         }))
-                                        .width(Length::Fixed(170.0))
+                                        .width(Length::Fixed(200.0))
                                         .apply(widget::container)
-                                        .class(cosmic::style::Container::Dialog)
-                                })
+                                        .padding(cosmic::theme::spacing().space_xxs)
+                                        .class(cosmic::theme::Container::Dropdown),
+                                )
                                 .apply(|e| Some(Element::from(e)))
                         } else if is_known {
                             view_more_button
@@ -938,12 +936,11 @@ fn is_connected(state: &NetworkManagerState, network: &AccessPoint) -> bool {
 }
 
 fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
-    let theme = cosmic::theme::active();
-    let theme = theme.cosmic();
+    let spacing = cosmic::theme::spacing();
     widget::text::body(text)
         .align_y(Alignment::Center)
         .apply(widget::button::custom)
-        .padding([theme.space_xxxs(), theme.space_xs()])
+        .padding([spacing.space_xxxs, spacing.space_xs])
         .width(Length::Fill)
         .class(cosmic::theme::Button::MenuItem)
         .on_press(message)

@@ -16,13 +16,13 @@ pub mod tiling;
 use cosmic::app::ContextDrawer;
 use cosmic::iced::Length;
 use cosmic::widget::{self, icon, settings, text};
-use cosmic::{theme, Apply, Element, Task};
+use cosmic::{Apply, Element, Task, theme};
 use cosmic_config::ConfigGet;
+use cosmic_settings_config::Binding;
 use cosmic_settings_config::shortcuts::action::{
     Direction, FocusDirection, Orientation, ResizeDirection,
 };
 use cosmic_settings_config::shortcuts::{self, Action, Shortcuts};
-use cosmic_settings_config::Binding;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use itertools::Itertools;
