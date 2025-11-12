@@ -238,7 +238,7 @@ impl page::Page<crate::pages::Message> for Page {
                 let control = widget::column::with_capacity(2)
                     .push(description)
                     .push(pin)
-                    .spacing(theme::active().cosmic().space_xxs());
+                    .spacing(theme::spacing().space_xxs);
 
                 let confirm_button =
                     widget::button::suggested(fl!("confirm")).on_press(Message::PinConfirm);
@@ -783,12 +783,11 @@ fn status() -> Section<crate::pages::Message> {
 }
 
 fn popup_button(message: Option<Message>, text: &str) -> Element<'_, Message> {
-    let theme = theme::active();
-    let theme = theme.cosmic();
+    let spacing = theme::spacing();
     widget::text::body(text)
         .align_y(Alignment::Center)
         .apply(widget::button::custom)
-        .padding([theme.space_xxxs(), theme.space_xs()])
+        .padding([spacing.space_xxxs, spacing.space_xs])
         .width(Length::Fill)
         .class(theme::Button::MenuItem)
         .on_press_maybe(message)
@@ -839,24 +838,23 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         )
                         .position(widget::popover::Position::Bottom)
                         .on_close(Message::PopupDevice(None))
-                        .popup({
-                            widget::container(
-                                widget::column()
-                                    .push_maybe(device.is_connected().then(|| {
-                                        popup_button(
-                                            Some(Message::DisconnectDevice(path.clone())),
-                                            &descriptions[device_disconnect],
-                                        )
-                                    }))
-                                    .push(popup_button(
-                                        Some(Message::ForgetDevice(path.clone())),
-                                        &descriptions[device_forget],
-                                    )),
-                            )
-                            .width(Length::Fixed(200.0))
-                            .padding(theme::active().cosmic().space_xxxs())
-                            .class(theme::Container::Dialog)
-                        })
+                        .popup(
+                            widget::column()
+                                .push_maybe(device.is_connected().then(|| {
+                                    popup_button(
+                                        Some(Message::DisconnectDevice(path.clone())),
+                                        &descriptions[device_disconnect],
+                                    )
+                                }))
+                                .push(popup_button(
+                                    Some(Message::ForgetDevice(path.clone())),
+                                    &descriptions[device_forget],
+                                ))
+                                .width(Length::Fixed(200.0))
+                                .apply(widget::container)
+                                .padding(theme::spacing().space_xxs)
+                                .class(theme::Container::Dropdown),
+                        )
                         .into()
                     } else {
                         widget::button::icon(widget::icon::from_name("view-more-symbolic"))
@@ -983,7 +981,7 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
                             .size(20)
                             .into(),
                         widget::horizontal_space()
-                            .width(theme::active().cosmic().space_xxs())
+                            .width(theme::spacing().space_xxs)
                             .into(),
                         text(&adapter.alias).wrapping(Wrapping::Word).into(),
                         widget::horizontal_space().into(),

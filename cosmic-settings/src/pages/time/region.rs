@@ -6,10 +6,10 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use cosmic::app::{ContextDrawer, context_drawer};
-use cosmic::iced::{Alignment, Border, Color, Length};
+use cosmic::iced::{Alignment, Length};
 use cosmic::iced_core::text::Wrapping;
-use cosmic::widget::{self, button, container};
-use cosmic::{Apply, Element, theme};
+use cosmic::widget::{self, button};
+use cosmic::{Apply, Element};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
@@ -817,6 +817,7 @@ fn popover_button(id: usize, expanded: bool) -> Element<'static, Message> {
 
     if expanded {
         widget::popover(button)
+            .position(widget::popover::Position::Bottom)
             .popup(popover_menu(id))
             .on_close(Message::ExpandLanguagePopover(None))
             .into()
@@ -826,38 +827,31 @@ fn popover_button(id: usize, expanded: bool) -> Element<'static, Message> {
 }
 
 fn popover_menu(id: usize) -> Element<'static, Message> {
-    widget::column::with_children(vec![
+    widget::column::with_children([
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-up"),
             SourceContext::MoveUp,
         ),
-        cosmic::widget::divider::horizontal::default().into(),
+        widget::divider::horizontal::default()
+            .apply(widget::container)
+            .padding([0, 8])
+            .into(),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-down"),
             SourceContext::MoveDown,
         ),
-        cosmic::widget::divider::horizontal::default().into(),
+        widget::divider::horizontal::default()
+            .apply(widget::container)
+            .padding([0, 8])
+            .into(),
         popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
-    .padding(8)
-    .width(Length::Shrink)
-    .height(Length::Shrink)
-    .apply(cosmic::widget::container)
-    .class(cosmic::theme::Container::custom(|theme| {
-        let cosmic = theme.cosmic();
-        container::Style {
-            icon_color: Some(theme.cosmic().background.on.into()),
-            text_color: Some(theme.cosmic().background.on.into()),
-            background: Some(Color::from(theme.cosmic().background.base).into()),
-            border: Border {
-                radius: cosmic.corner_radii.radius_m.into(),
-                ..Default::default()
-            },
-            shadow: Default::default(),
-        }
-    }))
+    .width(Length::Fixed(200.0))
+    .apply(widget::container)
+    .padding(cosmic::theme::spacing().space_xxs)
+    .class(cosmic::theme::Container::Dropdown)
     .into()
 }
 
@@ -866,19 +860,15 @@ fn popover_menu_row(
     label: String,
     message: impl Fn(usize) -> SourceContext + 'static,
 ) -> cosmic::Element<'static, Message> {
+    let spacing = cosmic::theme::spacing();
     widget::text::body(label)
-        .apply(widget::container)
-        .class(cosmic::theme::Container::custom(|theme| {
-            widget::container::Style {
-                background: None,
-                ..widget::container::Catalog::style(theme, &cosmic::theme::Container::List)
-            }
-        }))
+        .align_y(Alignment::Center)
         .apply(button::custom)
-        .on_press(())
-        .class(theme::Button::Transparent)
+        .padding([spacing.space_xxxs, spacing.space_xs])
+        .width(Length::Fill)
+        .class(cosmic::theme::Button::MenuItem)
+        .on_press(Message::SourceContext(message(id)))
         .apply(Element::from)
-        .map(move |()| Message::SourceContext(message(id)))
 }
 
 pub async fn set_locale(

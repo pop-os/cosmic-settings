@@ -9,8 +9,7 @@ use cosmic::{
     Apply, Element, Task,
     app::{ContextDrawer, context_drawer},
     cosmic_config::{self, ConfigSet},
-    iced::{Alignment, Color, Length},
-    iced_core::Border,
+    iced::{Alignment, Length},
     theme,
     widget::{self, ListColumn, button, container, icon, radio, row, settings},
 };
@@ -166,23 +165,19 @@ fn popover_menu_row(
     label: String,
     message: impl Fn(DefaultKey) -> SourceContext + 'static,
 ) -> cosmic::Element<'static, Message> {
+    let spacing = theme::spacing();
     widget::text::body(label)
-        .apply(widget::container)
-        .class(cosmic::theme::Container::custom(|theme| {
-            widget::container::Style {
-                background: None,
-                ..container::Catalog::style(theme, &cosmic::theme::Container::List)
-            }
-        }))
+        .align_y(Alignment::Center)
         .apply(button::custom)
-        .on_press(())
-        .class(theme::Button::Transparent)
+        .padding([spacing.space_xxxs, spacing.space_xs])
+        .width(Length::Fill)
+        .class(theme::Button::MenuItem)
+        .on_press(Message::SourceContext(message(id)))
         .apply(Element::from)
-        .map(move |()| Message::SourceContext(message(id)))
 }
 
 fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
-    widget::column::with_children(vec![
+    widget::column::with_children([
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-up"),
@@ -193,7 +188,10 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
             fl!("keyboard-sources", "move-down"),
             SourceContext::MoveDown,
         ),
-        cosmic::widget::divider::horizontal::default().into(),
+        widget::divider::horizontal::default()
+            .apply(widget::container)
+            .padding(8)
+            .into(),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "settings"),
@@ -206,25 +204,10 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
         ),
         popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
-    .padding([2, 8])
-    .width(Length::Shrink)
-    .height(Length::Shrink)
-    .apply(cosmic::widget::container)
-    .class(cosmic::theme::Container::custom(|theme| {
-        let cosmic = theme.cosmic();
-        let background = &cosmic.background;
-        container::Style {
-            icon_color: Some(background.on.into()),
-            text_color: Some(background.on.into()),
-            background: Some(Color::from(background.base).into()),
-            border: Border {
-                color: background.component.divider.into(),
-                width: 1.0,
-                radius: cosmic.corner_radii.radius_s.into(),
-            },
-            shadow: Default::default(),
-        }
-    }))
+    .width(Length::Fixed(200.0))
+    .apply(widget::container)
+    .padding(theme::spacing().space_xxs)
+    .class(theme::Container::Dropdown)
     .into()
 }
 
@@ -236,7 +219,8 @@ fn popover_button(id: DefaultKey, expanded: bool) -> cosmic::Element<'static, Me
         .on_press(on_press);
 
     if expanded {
-        cosmic::widget::popover(button)
+        widget::popover(button)
+            .position(widget::popover::Position::Bottom)
             .popup(popover_menu(id))
             .on_close(Message::ExpandInputSourcePopover(None))
             .into()
@@ -713,7 +697,7 @@ fn input_sources() -> Section<crate::pages::Message> {
                 .on_press(Message::ShowInputSourcesContext);
 
             widget::column::with_capacity(2)
-                .spacing(cosmic::theme::spacing().space_xxs)
+                .spacing(theme::spacing().space_xxs)
                 .push(section)
                 .push(
                     widget::container(add_input_source)
@@ -816,7 +800,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
 
                     row::with_capacity(3)
                         .align_y(Alignment::Center)
-                        .spacing(cosmic::theme::spacing().space_s)
+                        .spacing(theme::spacing().space_s)
                         .push(widget::text::body(&descriptions[short]))
                         .push(delay_slider)
                         .push(widget::text::body(&descriptions[long]))
@@ -836,7 +820,7 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
 
                     row::with_capacity(3)
                         .align_y(Alignment::Center)
-                        .spacing(cosmic::theme::spacing().space_s)
+                        .spacing(theme::spacing().space_s)
                         .push(widget::text::body(&descriptions[slow]))
                         .push(rate_slider)
                         .push(widget::text::body(&descriptions[fast]))
