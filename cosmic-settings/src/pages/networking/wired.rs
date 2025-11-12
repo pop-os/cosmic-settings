@@ -449,7 +449,7 @@ impl Page {
 
     fn device_view<'a>(
         &'a self,
-        spacing: &cosmic::cosmic_theme::Spacing,
+        spacing: cosmic::cosmic_theme::Spacing,
         nm_state: &'a NmState,
         connect_txt: &'a str,
         connected_txt: &'a str,
@@ -507,7 +507,6 @@ impl Page {
                         .is_some_and(|id| id == connection.uuid.as_ref())
                     {
                         widget::popover(view_more_button.on_press(Message::ViewMore(None)))
-                            .position(widget::popover::Position::Bottom)
                             .on_close(Message::ViewMore(None))
                             .popup({
                                 widget::column()
@@ -528,9 +527,6 @@ impl Page {
                                         )
                                     }))
                                     .width(Length::Fixed(200.0))
-                                    .apply(widget::container)
-                                    .padding(spacing.space_xxxs)
-                                    .class(cosmic::style::Container::Dialog)
                             })
                             .apply(|e| Some(Element::from(e)))
                     } else {
@@ -576,8 +572,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                 return cosmic::widget::column().into();
             };
 
-            let theme = cosmic::theme::active();
-            let spacing = &theme.cosmic().spacing;
+            let spacing = cosmic::theme::spacing();
 
             let mut view = widget::column::with_capacity(4);
 
@@ -611,12 +606,11 @@ fn devices_view() -> Section<crate::pages::Message> {
 }
 
 fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
-    let theme = cosmic::theme::active();
-    let theme = theme.cosmic();
+    let spacing = cosmic::theme::spacing();
     widget::text::body(text)
         .align_y(Alignment::Center)
         .apply(widget::button::custom)
-        .padding([theme.space_xxxs(), theme.space_xs()])
+        .padding([spacing.space_xxxs, spacing.space_xs])
         .width(Length::Fill)
         .class(cosmic::theme::Button::MenuItem)
         .on_press(message)
