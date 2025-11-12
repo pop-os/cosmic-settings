@@ -78,8 +78,6 @@ pub enum Message {
     DialogCountdown,
     /// Toggles display on or off.
     DisplayToggle(bool),
-    /// Show numbers on physical displays for identification.
-    IdentifyDisplays,
     /// Configures mirroring status of a display.
     Mirroring(Mirroring),
     /// Handle night light preferences.
@@ -570,31 +568,6 @@ impl Page {
             Message::ColorProfile(profile) => return self.set_color_profile(profile),
 
             Message::DisplayToggle(enable) => return self.toggle_display(enable),
-
-            Message::IdentifyDisplays => {
-                return Task::perform(
-                    async {
-                        match tokio::process::Command::new("cosmic-osd")
-                            .arg("identify-displays")
-                            .output()
-                            .await
-                        {
-                            Ok(output) => {
-                                if !output.status.success() {
-                                    tracing::error!(
-                                        stderr = String::from_utf8_lossy(&output.stderr).as_ref(),
-                                        "cosmic-osd identify-displays failed"
-                                    );
-                                }
-                            }
-                            Err(e) => {
-                                tracing::error!(why = e.to_string(), "Failed to launch cosmic-osd");
-                            }
-                        }
-                    },
-                    |_| app::Message::None,
-                );
-            }
 
             Message::Mirroring(mirroring) => match mirroring {
                 Mirroring::Disable => return self.toggle_display(true),
