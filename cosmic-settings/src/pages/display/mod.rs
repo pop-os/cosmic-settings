@@ -381,6 +381,30 @@ impl page::Page<crate::pages::Message> for Page {
             handle.abort();
         }
 
+        // Dismiss display identifiers when leaving the page
+        tokio::spawn(async {
+            match tokio::process::Command::new("cosmic-osd")
+                .arg("dismiss-display-identifiers")
+                .output()
+                .await
+            {
+                Ok(output) => {
+                    if !output.status.success() {
+                        tracing::error!(
+                            "cosmic-osd dismiss-display-identifiers failed: {}",
+                            String::from_utf8_lossy(&output.stderr)
+                        );
+                    }
+                }
+                Err(why) => {
+                    tracing::error!(
+                        why = why.to_string(),
+                        "failed to execute cosmic-osd dismiss-display-identifiers"
+                    );
+                }
+            }
+        });
+
         Task::none()
     }
 
@@ -644,6 +668,38 @@ impl Page {
                 match Arc::into_inner(randr) {
                     Some(Ok(outputs)) => {
                         self.update_displays(outputs);
+
+                        // Show display identifiers if there are 2+ enabled displays
+                        let enabled_count =
+                            self.list.outputs.values().filter(|o| o.enabled).count();
+
+                        if enabled_count >= 2 {
+                            return Task::perform(
+                                async {
+                                    match tokio::process::Command::new("cosmic-osd")
+                                        .arg("identify-displays")
+                                        .output()
+                                        .await
+                                    {
+                                        Ok(output) => {
+                                            if !output.status.success() {
+                                                tracing::error!(
+                                                    "cosmic-osd identify-displays failed: {}",
+                                                    String::from_utf8_lossy(&output.stderr)
+                                                );
+                                            }
+                                        }
+                                        Err(why) => {
+                                            tracing::error!(
+                                                why = why.to_string(),
+                                                "failed to execute cosmic-osd identify-displays"
+                                            );
+                                        }
+                                    }
+                                },
+                                |_| app::Message::None,
+                            );
+                        }
                     }
 
                     Some(Err(why)) => {
@@ -1207,35 +1263,17 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                         .padding([space_xxs, space_m]),
                 )
                 .push({
-                    use cosmic::iced::widget::stack;
-                    use cosmic::iced_core::Padding;
-
-                    stack![
-                        // Bottom layer: arrangement scrollable
-                        Arrangement::new(&page.list, &page.display_tabs)
-                            .on_select(|id| pages::Message::Displays(Message::Display(id)))
-                            .on_pan(|pan| pages::Message::Displays(Message::Pan(pan)))
-                            .on_placement(|id, x, y| {
-                                pages::Message::Displays(Message::Position(id, x, y))
-                            })
-                            .apply(widget::scrollable::horizontal)
-                            .id(page.display_arrangement_scrollable.clone())
-                            .width(Length::Shrink)
-                            .apply(container)
-                            .center_x(Length::Fill)
-                            .width(Length::Fill)
-                            .align_y(cosmic::iced_core::alignment::Vertical::Top),
-                        // Top layer: identify button positioned at bottom right
-                        widget::button::standard(fl!("display", "identify"))
-                            .on_press(pages::Message::Displays(Message::IdentifyDisplays))
-                            .apply(container)
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .padding(Padding::from([0, space_m, space_m, 0]))
-                            .align_x(cosmic::iced_core::alignment::Horizontal::Right)
-                            .align_y(cosmic::iced_core::alignment::Vertical::Bottom)
-                    ]
-                    .width(Length::Fill)
+                    Arrangement::new(&page.list, &page.display_tabs)
+                        .on_select(|id| pages::Message::Displays(Message::Display(id)))
+                        .on_pan(|pan| pages::Message::Displays(Message::Pan(pan)))
+                        .on_placement(|id, x, y| {
+                            pages::Message::Displays(Message::Position(id, x, y))
+                        })
+                        .apply(widget::scrollable::horizontal)
+                        .id(page.display_arrangement_scrollable.clone())
+                        .width(Length::Shrink)
+                        .apply(container)
+                        .center_x(Length::Fill)
                 })
                 .apply(container)
                 .class(cosmic::theme::Container::List)
