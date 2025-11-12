@@ -9,7 +9,7 @@ desktop = Plocha
 ## Desktop: Appearance
 
 appearance = Vzhled
-    .desc = Doplňkové barvy a témata.
+    .desc = Doplňkové barvy a témata
 
 ## Desktop: Notifications
 
@@ -235,6 +235,7 @@ keyboard-sources = Metody zadávání
 keyboard-special-char = Zadávání speciálních znaků
     .alternate = Klávesa pro náhradní znaky
     .compose = Compose klávesa
+    .compose-desc = Klávesa Compose umožňuje zadávat širokou škálu znaků. Pro její použití stiskněte Compose a poté zadejte sekvenci znaků. Například [Compose, C, O] vloží znak „©“, zatímco [Compose, A, ‘] znak „á“.
     .caps = Caps Lock klávesa
 
 ## Input: Keyboard: Shortcuts
@@ -575,7 +576,7 @@ connected-devices = Připojená zařízení
     .unknown = Neznámé zařízení
 power-mode = Režim napájení
     .battery = Prodloužená výdrž baterie
-    .battery-desc = Nižší spotřeba energie a tichý provoz
+    .battery-desc = Velmi tichý provoz a snížená spotřeba energie
     .balanced = Vyvážený
     .balanced-desc = Tichý provoz a střední spotřeba energie
     .performance = Vysoký výkon
