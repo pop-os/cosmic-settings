@@ -28,6 +28,19 @@ static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 30
 static DPI_SCALE_LABELS: LazyLock<Vec<String>> =
     LazyLock::new(|| DPI_SCALES.iter().map(|scale| format!("{scale}%")).collect());
 
+/// Guard that ensures display identifiers are dismissed when dropped
+/// This handles the case where the app is killed and async cleanup doesn't complete
+struct DisplayIdentifierGuard;
+
+impl Drop for DisplayIdentifierGuard {
+    fn drop(&mut self) {
+        // Run synchronously to ensure it completes even if the process is being killed
+        let _ = std::process::Command::new("cosmic-osd")
+            .arg("dismiss-display-identifiers")
+            .output();
+    }
+}
+
 /// Display color depth options
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
@@ -138,6 +151,8 @@ pub struct Page {
     active_display: OutputKey,
     randr_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
     hotplug_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
+    display_identifier_handle: Option<(oneshot::Sender<()>, ())>,
+    display_identifier_guard: Option<DisplayIdentifierGuard>,
     config: Config,
     cache: ViewCache,
     // context: Option<ContextDrawer>,
@@ -163,6 +178,8 @@ impl Default for Page {
             active_display: OutputKey::default(),
             randr_handle: None,
             hotplug_handle: None,
+            display_identifier_handle: None,
+            display_identifier_guard: None,
             config: Config::default(),
             cache: ViewCache::default(),
             // context: None,
@@ -365,6 +382,56 @@ impl page::Page<crate::pages::Message> for Page {
         tasks.push(hotplug_task);
         self.hotplug_handle = Some((hotplug_cancel_tx, hotplug_handle));
 
+        // Start a periodic task to send identify displays message every 0.5 seconds
+        // This resets the 1-second auto-close timer in cosmic-osd
+        let (identifier_cancel_tx, identifier_cancel_rx) = oneshot::channel::<()>();
+        let identifier_task =
+            Task::stream(async_fn_stream::fn_stream(|_emitter| async move {
+                let identifier_loop = async {
+                    loop {
+                        match tokio::process::Command::new("cosmic-osd")
+                            .arg("identify-displays")
+                            .output()
+                            .await
+                        {
+                            Ok(output) => {
+                                if !output.status.success() {
+                                    tracing::error!(
+                                        "cosmic-osd identify-displays failed: {}",
+                                        String::from_utf8_lossy(&output.stderr)
+                                    );
+                                }
+                            }
+                            Err(why) => {
+                                tracing::error!(
+                                    why = why.to_string(),
+                                    "failed to execute cosmic-osd identify-displays"
+                                );
+                            }
+                        }
+
+                        tokio::time::sleep(Duration::from_millis(500)).await;
+                    }
+                };
+
+                tokio::select! {
+                    _ = identifier_cancel_rx => {
+                        let _ = tokio::process::Command::new("cosmic-osd")
+                            .arg("dismiss-display-identifiers")
+                            .output()
+                            .await;
+                    }
+                    _ = identifier_loop => {
+                        // Loop will never complete, but this branch is needed for tokio::select
+                    }
+                }
+            }));
+
+        tasks.push(identifier_task);
+        self.display_identifier_handle = Some((identifier_cancel_tx, ()));
+        // Create guard that will dismiss identifiers immediately if the app is killed
+        self.display_identifier_guard = Some(DisplayIdentifierGuard);
+
         cosmic::task::batch(tasks)
     }
 
@@ -379,29 +446,12 @@ impl page::Page<crate::pages::Message> for Page {
             handle.abort();
         }
 
-        // Dismiss display identifiers when leaving the page
-        tokio::spawn(async {
-            match tokio::process::Command::new("cosmic-osd")
-                .arg("dismiss-display-identifiers")
-                .output()
-                .await
-            {
-                Ok(output) => {
-                    if !output.status.success() {
-                        tracing::error!(
-                            "cosmic-osd dismiss-display-identifiers failed: {}",
-                            String::from_utf8_lossy(&output.stderr)
-                        );
-                    }
-                }
-                Err(why) => {
-                    tracing::error!(
-                        why = why.to_string(),
-                        "failed to execute cosmic-osd dismiss-display-identifiers"
-                    );
-                }
-            }
-        });
+        if let Some((canceller, ())) = self.display_identifier_handle.take() {
+            _ = canceller.send(());
+        }
+
+        // Remove the guard so it doesn't dismiss again after the async task completes
+        self.display_identifier_guard = None;
 
         Task::none()
     }
@@ -641,38 +691,6 @@ impl Page {
                 match Arc::into_inner(randr) {
                     Some(Ok(outputs)) => {
                         self.update_displays(outputs);
-
-                        // Show display identifiers if there are 2+ enabled displays
-                        let enabled_count =
-                            self.list.outputs.values().filter(|o| o.enabled).count();
-
-                        if enabled_count >= 2 {
-                            return Task::perform(
-                                async {
-                                    match tokio::process::Command::new("cosmic-osd")
-                                        .arg("identify-displays")
-                                        .output()
-                                        .await
-                                    {
-                                        Ok(output) => {
-                                            if !output.status.success() {
-                                                tracing::error!(
-                                                    "cosmic-osd identify-displays failed: {}",
-                                                    String::from_utf8_lossy(&output.stderr)
-                                                );
-                                            }
-                                        }
-                                        Err(why) => {
-                                            tracing::error!(
-                                                why = why.to_string(),
-                                                "failed to execute cosmic-osd identify-displays"
-                                            );
-                                        }
-                                    }
-                                },
-                                |_| app::Message::None,
-                            );
-                        }
                     }
 
                     Some(Err(why)) => {
