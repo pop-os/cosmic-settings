@@ -385,47 +385,46 @@ impl page::Page<crate::pages::Message> for Page {
         // Start a periodic task to send identify displays message every 0.5 seconds
         // This resets the 1-second auto-close timer in cosmic-osd
         let (identifier_cancel_tx, identifier_cancel_rx) = oneshot::channel::<()>();
-        let identifier_task =
-            Task::stream(async_fn_stream::fn_stream(|_emitter| async move {
-                let identifier_loop = async {
-                    loop {
-                        match tokio::process::Command::new("cosmic-osd")
-                            .arg("identify-displays")
-                            .output()
-                            .await
-                        {
-                            Ok(output) => {
-                                if !output.status.success() {
-                                    tracing::error!(
-                                        "cosmic-osd identify-displays failed: {}",
-                                        String::from_utf8_lossy(&output.stderr)
-                                    );
-                                }
-                            }
-                            Err(why) => {
+        let identifier_task = Task::stream(async_fn_stream::fn_stream(|_emitter| async move {
+            let identifier_loop = async {
+                loop {
+                    match tokio::process::Command::new("cosmic-osd")
+                        .arg("identify-displays")
+                        .output()
+                        .await
+                    {
+                        Ok(output) => {
+                            if !output.status.success() {
                                 tracing::error!(
-                                    why = why.to_string(),
-                                    "failed to execute cosmic-osd identify-displays"
+                                    "cosmic-osd identify-displays failed: {}",
+                                    String::from_utf8_lossy(&output.stderr)
                                 );
                             }
                         }
+                        Err(why) => {
+                            tracing::error!(
+                                why = why.to_string(),
+                                "failed to execute cosmic-osd identify-displays"
+                            );
+                        }
+                    }
 
-                        tokio::time::sleep(Duration::from_millis(500)).await;
-                    }
-                };
-
-                tokio::select! {
-                    _ = identifier_cancel_rx => {
-                        let _ = tokio::process::Command::new("cosmic-osd")
-                            .arg("dismiss-display-identifiers")
-                            .output()
-                            .await;
-                    }
-                    _ = identifier_loop => {
-                        // Loop will never complete, but this branch is needed for tokio::select
-                    }
+                    tokio::time::sleep(Duration::from_millis(500)).await;
                 }
-            }));
+            };
+
+            tokio::select! {
+                _ = identifier_cancel_rx => {
+                    let _ = tokio::process::Command::new("cosmic-osd")
+                        .arg("dismiss-display-identifiers")
+                        .output()
+                        .await;
+                }
+                _ = identifier_loop => {
+                    // Loop will never complete, but this branch is needed for tokio::select
+                }
+            }
+        }));
 
         tasks.push(identifier_task);
         self.display_identifier_handle = Some((identifier_cancel_tx, ()));
