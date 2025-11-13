@@ -525,6 +525,7 @@ keyboard-sources = Źródła wprowadzania danych
 keyboard-special-char = Wpis znaków specjalnych
     .alternate = Alternatywne klawisze znaków
     .compose = Klawisz komponujący
+    .compose-desc = Klawisz komponujący umożliwia wprowadzanie różnorodnych liter. By z niego skorzystać, naciśnij go a następnie kombinację znaków. Na przykład, po naciśnięciu klawisza komponującego a następnie C i o wyjdzie ©, lub klawisz komponujący a następnie a i ‘ wyjdzie á.
     .caps = Klawisz Caps Lock
 keyboard-typing-assist = Pisanie
     .repeat-rate = Tempo powtarzania

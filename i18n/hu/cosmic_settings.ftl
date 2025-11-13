@@ -18,8 +18,8 @@ add-network = Hálózat hozzáadása
 add-vpn = VPN hozzáadása
 airplane-on = A repülőgép üzemmód be van kapcsolva.
 cable-unplugged = Kábel kihúzva
-connect = Kapcsolódás
-connected = Kapcsolódva
+connect = Csatlakozás
+connected = Csatlakoztatva
 connecting = Kapcsolódás…
 disconnect = Szétkapcsolás
 forget = Elfelejtés
@@ -159,9 +159,9 @@ magnifier = Nagyító
 color-filter = Színszűrő típusa
     .unknown = Ismeretlen szűrő aktív
     .greyscale = Szürkeárnyalatos
-    .deuteranopia = Zöld/Piros (zöld színre vak, Deuteranopia)
-    .protanopia = Piros/Zöld (vörös színre vak, Protanopia)
-    .tritanopia = Kék/Sárga (kék színre vak, Tritanopia)
+    .deuteranopia = Zöld/Vörös (zöld színvakság, Deuteranópia)
+    .protanopia = Vörös/Zöld (vörös színvakság, Protanópia)
+    .tritanopia = Kék/Sárga (kék színvakság, Tritanópia)
 
 ## Desktop
 
@@ -171,7 +171,7 @@ desktop = Asztal
 
 wallpaper = Háttérkép
     .change = Háttérkép váltásának gyakorisága
-    .desc = Háttérképek, színek és diavetítési beállítások.
+    .desc = Háttérképek, színek és diavetítési beállítások
     .fit = Háttérkép illeszkedése
     .folder-dialog = Válassz háttérkép mappát
     .image-dialog = Válassz háttérkép képet
@@ -202,9 +202,9 @@ never = Soha
 ## Desktop: Appearance
 
 appearance = Megjelenés
-    .desc = Kiemelőszínek és COSMIC témák.
+    .desc = Kiemelőszínek és COSMIC témák
 accent-color = Kiemelőszín
-app-background = Alkalmazás- vagy ablakháttér
+app-background = Ablakháttér
 auto = Auto
 close = Bezárás
 color-picker = Színválasztó
@@ -227,24 +227,24 @@ auto-switch = Automatikus váltás a világos és sötét módok között
     .next-sunrise = Következő napfelkeltekor világos módra vált
     .next-sunset = Következő napnyugtakor sötét módra vált
 container-background = Konténerháttér
-    .desc-detail = A konténer háttérszínét a navigációs oldalsáv, az oldalsó fiók, a párbeszédpanelek és hasonló widgetek használják. Alapértelmezés szerint automatikusan az alkalmazás vagy ablak hátteréből származik.
+    .desc-detail = A konténer háttérszínét a navigációs oldalsáv, az oldalsó menü, a párbeszédablakok és hasonló widgetek használják. Alapértelmezés szerint a konténer háttérszíne automatikusan az ablak hátteréből származik.
     .reset = Visszaállítás automatikusra
-    .desc = Az elsődleges konténerszín a navigációs oldalsávhoz, az oldalsó fiókhoz, a párbeszédablakhoz és hasonló widgetekhez használatos.
+    .desc = Navigációs oldalsávhoz, oldalsó menühöz, párbeszédablakhoz és hasonló widgetekhez használatos
 control-tint = Vezérlőelemek színezése
-    .desc = Szabványos gombok hátterére, keresési bemenetekre, szövegbevitelre és hasonló összetevőkre használatos.
+    .desc = Szabványos gombok hátterére, keresési bemenetekre, szövegbevitelre és hasonló összetevőkre használatos
 frosted = Elmosódott üveg hatás a rendszerfelületen
-    .desc = A háttér elmosását alkalmazza a panelre, a dokkra, a kisalkalmazásokra, az indítóra és az alkalmazáskönyvtárra.
-enable-export = Téma alkalmazása a GNOME-alkalmazásokra.
-    .desc = Nem minden eszközkészlet támogatja az automatikus váltást. Előfordulhat, hogy a téma módosítása után újra kell indítanod a nem COSMIC-alapú alkalmazásokat.
+    .desc = A háttér elmosását alkalmazza a panelre, a dokkra, a kisalkalmazásokra, az indítóra és az alkalmazáskönyvtárra
+enable-export = Jelenlegi téma alkalmazása a GNOME-alkalmazásokra
+    .desc = Nem minden eszközkészlet támogatja az automatikus váltást. Előfordulhat, hogy a téma módosítása után újra kell indítani a nem COSMIC-alapú alkalmazásokat.
 icon-theme = Ikontéma
-    .desc = Más ikonkészletet alkalmaz az alkalmazásokra.
+    .desc = Más ikonkészletet alkalmaz az alkalmazásokra
 text-tint = Felületiszöveg-árnyalat
-    .desc = Olyan szín, amelyet a felület szövegszíneinek meghatározásához használnak, hogy azok megfelelő kontrasztot biztosítsanak különböző felületeken.
+    .desc = A felület szövegszíneinek meghatározására szolgál, hogy azok megfelelő kontrasztot biztosítsanak különböző felületeken
 style = Stílus
     .round = Lekerekített
     .slightly-round = Némileg lekerekített
     .square = Négyzetes
-interface-density = Felület sűrűsége
+interface-density = Felületsűrűség
     .comfortable = Kényelmes
     .compact = Kompakt
     .spacious = Tágas
@@ -262,12 +262,12 @@ monospace-font = Állandó szélességű betűtípus
 ## Desktop: Notifications
 
 notifications = Értesítések
-    .desc = Ne zavarjanak, zárolási képernyő értesítések és alkalmazásonkénti beállítások.
+    .desc = Ne zavarjanak, zárolási képernyő értesítések és alkalmazásonkénti beállítások
 
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Fő rendszersáv menükhöz és kisalkalmazásokhoz.
+    .desc = Fő rendszersáv menükhöz és kisalkalmazásokhoz
 add = Hozzáadás
 add-applet = Kisalkalmazás hozzáadása
 all = Összes
@@ -310,12 +310,12 @@ panel-missing = A panel konfigurációja hiányzik
 ## Desktop: Dock
 
 dock = Dokk
-    .desc = Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz.
+    .desc = Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz
 
 ## Desktop: Window management
 
 window-management = Ablakkezelés
-    .desc = Super billentyű funkció, ablakkezelési és csempézési beállítások.
+    .desc = Super billentyű funkció, ablakkezelési és csempézési beállítások
 super-key = Super billentyű
     .launcher = Indító megnyitása
     .workspaces = Munkaterületek megnyitása
@@ -334,7 +334,7 @@ focus-navigation = Fókusznavigáció
 ## Desktop: Workspaces
 
 workspaces = Munkaterületek
-    .desc = Munkaterületek tájolása és viselkedése.
+    .desc = Munkaterületek tájolása és viselkedése
 workspaces-behavior = Munkaterületek viselkedése
     .dynamic = Dinamikus munkaterületek
     .dynamic-desc = Az üres munkamenetek automatikus eltávolítása.
@@ -363,7 +363,7 @@ color = Szín
 display = Kijelzők
     .desc = Kijelzők kezelése és éjszakai fény.
     .arrangement = Kijelző elrendezése
-    .arrangement-desc = Húzd a kijelzőket az átrendezésükhöz.
+    .arrangement-desc = Húzd a kijelzőket az átrendezésükhöz
     .enable = Kijelző engedélyezése
     .external = { $size } { $output } külső kijelző
     .laptop = { $size } laptop kijelző
@@ -388,7 +388,7 @@ mirroring = Tükrözés
         }
 night-light = Éjszakai fény
     .auto = Automatikus (naplementétől napkeltéig)
-    .desc = Csökkentse a kék fényt melegebb színekkel.
+    .desc = Csökkentse a kék fényt melegebb színekkel
 orientation = Tájolás
     .standard = Normál
     .rotate-90 = 90 fokos elforgatás
@@ -428,7 +428,7 @@ sound-alerts = Figyelmeztetések
     .sound = Figyelmeztető hang
 sound-applications = Alkalmazások
     .desc = Alkalmazások hangerejei és beállításai
-profile = Profilok
+profile = Profil
 
 ## Power
 
@@ -461,11 +461,11 @@ connected-devices = Csatlakoztatott eszközök
     .unknown = Ismeretlen eszköz
 power-mode = Energiagazdálkodási mód
     .battery = Meghosszabbított akkumulátor-üzemidő
-    .battery-desc = Csökkentett energiafogyasztás és csendes teljesítmény.
+    .battery-desc = Csökkentett energiafogyasztás és csendes teljesítmény
     .balanced = Kiegyensúlyozott
-    .balanced-desc = Csendes teljesítmény és mérsékelt energiafogyasztás.
+    .balanced-desc = Csendes teljesítmény és mérsékelt energiafogyasztás
     .performance = Nagy teljesítmény
-    .performance-desc = Csúcsteljesítmény és energiafelhasználás.
+    .performance-desc = Csúcsteljesítmény és energiafelhasználás
     .no-backend = A háttérprogram nem található. Telepítsd a system76-power vagy a power-profiles-daemon csomagot.
 power-saving = Energiagazdálkodási beállítások
     .turn-off-screen-after = Képernyő kikapcsolása
@@ -475,12 +475,12 @@ power-saving = Energiagazdálkodási beállítások
 
 ## Input
 
-acceleration-desc = Automatikusan beállítja a követési érzékenységet a sebesség alapján.
+acceleration-desc = Automatikusan beállítja a követési érzékenységet a sebesség alapján
 disable-while-typing = Letiltás gépelés közben
 input-devices = Beviteli eszközök
     .desc = Beviteli eszközök
 primary-button = Elsődleges gomb
-    .desc = A gombok sorrendjének beállítása.
+    .desc = A gombok sorrendjének beállítása
     .left = Bal
     .right = Jobb
 scrolling = Görgetés
@@ -497,7 +497,7 @@ fast = Gyors
 short = Rövid
 long = Hosszú
 keyboard = Billentyűzet
-    .desc = Bemeneti források, váltásuk, speciális karakterek, billentyűparancsok.
+    .desc = Bemeneti források, váltásuk, speciális karakterek, billentyűparancsok
 keyboard-sources = Bemeneti források
     .desc = A bemeneti források a Super+Space billentyűkombinációval válthatók. Ez testreszabható a billentyűparancsok beállításaiban.
     .move-up = Mozgatás feljebb
@@ -509,6 +509,7 @@ keyboard-sources = Bemeneti források
 keyboard-special-char = Speciális karakter beírása
     .alternate = Alternatív karakterek billentyűje
     .compose = Kombináló billentyű
+    .compose-desc = A kombináló billentyű lehetővé teszi számos karakter bevitelét. Használatához nyomd meg a billentyűt, majd gépeld be a karakterek sorozatát. Például a kombináló billentyű, majd C és o lenyomásával a © jelet kapod, míg a és ‘ után á jelenik meg.
     .caps = Caps Lock billentyű
 keyboard-typing-assist = Gépelés
     .repeat-rate = Ismétlési sebesség
@@ -544,7 +545,7 @@ migrate-workspace =
         [up] a felső
     } kimenetre
 navigate = Navigálás
-replace = Lecserélés
+replace = Csere
 shortcut-name = Billentyűparancs neve
 system-controls = Rendszervezérlés
 terminate = Befejezés
@@ -658,7 +659,7 @@ zoom-out = Kicsinyítés
 ## Input: Mouse
 
 mouse = Egér
-    .desc = Egérsebesség, gyorsítás és természetes görgetés.
+    .desc = Egérsebesség, gyorsítás és természetes görgetés
     .speed = Egér sebessége
     .acceleration = Egérgyorsítás engedélyezése
 
@@ -668,12 +669,12 @@ click-behavior = Kattintási viselkedés
     .click-finger = Másodlagos kattintás két ujjal és középső kattintás három ujjal
     .button-areas = Másodlagos kattintás a jobb alsó sarokban, középső kattintás az alsó középső sarokban
 pinch-to-zoom = Csippentéses nagyítás
-    .desc = Két ujjal belenagyíthatsz a tartalomba azokban az alkalmazásokban, amik támogatják a nagyítást.
+    .desc = Két ujjal belenagyíthatsz a tartalomba azokban az alkalmazásokban, amik támogatják a nagyítást
 tap-to-click = Koppints a kattintáshoz
-    .desc = Engedélyezi az egyujjas koppintást az elsődleges kattintáshoz, a kétujjas koppintást a másodlagos kattintáshoz és a háromujjas érintést a középső kattintáshoz.
+    .desc = Engedélyezi az egyujjas koppintást az elsődleges kattintáshoz, a kétujjas koppintást a másodlagos kattintáshoz és a háromujjas érintést a középső kattintáshoz
 touchpad = Érintőpárna
     .acceleration = Az Érintőpárna gyorsításának engedélyezése
-    .desc = Érintőpárna sebessége, kattintási lehetőségek, gesztusok.
+    .desc = Érintőpárna sebessége, kattintási lehetőségek, gesztusok
     .speed = Érintőpárna sebessége
 
 ## Input: Gestures
@@ -696,9 +697,9 @@ open-workspaces-view = Munkaterületek áttekintésének megnyitása
 time = Idő és nyelv
     .desc = N/A
 time-date = Dátum és idő
-    .desc = Időzóna, automatikus órabeállítások és időformátum.
+    .desc = Időzóna, automatikus órabeállítások és időformátum
     .auto = Beállítás automatikusan
-    .auto-ntp = A dátum és idő automatikusan frissül, ha az időzóna be van állítva.
+    .auto-ntp = A dátum és idő automatikusan frissül, ha az időzóna be van állítva
 time-zone = Időzóna
     .auto = Automatikus időzóna
     .auto-info = Helymeghatározási szolgáltatások és internetkapcsolat szükséges
@@ -712,7 +713,7 @@ time-format = Dátum- és időformátum
     .sunday = Vasárnap
     .monday = Hétfő
 time-region = Régió és nyelv
-    .desc = Dátumok, időpontok és számok formázása a régió alapján.
+    .desc = Dátumok, időpontok és számok formázása a régió alapján
 formatting = Formátum
     .dates = Dátum
     .time = Idő
@@ -734,7 +735,7 @@ applications = Alkalmazások
 ## Applications: Default Applications
 
 default-apps = Alapértelmezett alkalmazások
-    .desc = Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások.
+    .desc = Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások
     .web-browser = Böngésző
     .file-manager = Fájlkezelő
     .mail-client = Levelezőprogram
@@ -749,20 +750,20 @@ default-apps = Alapértelmezett alkalmazások
 ## Applications: Startup Applications
 
 startup-apps = Indítási alkalmazások
-    .desc = Azoknak az alkalmazásoknak a beállítása, amelyek bejelentkezéskor elindulnak.
+    .desc = Azoknak az alkalmazásoknak a beállítása, amelyek bejelentkezéskor elindulnak
     .add = Alkalmazás hozzáadása
     .user = Bejelentkezéskor indított alkalmazások
     .none = Nincs indítási alkalmazás hozzáadva
     .remove-dialog-title = { $name } eltávolítása?
-    .remove-dialog-description = Biztosan el akarod távolítani ezt az indítási alkalmazást?
-    .search-for-application = Alkalmazás keresése
+    .remove-dialog-description = Eltávolítod ezt az indítási alkalmazást?
+    .add-startup-app = Indítási alkalmazás hozzáadása
 
 ## Applications: Legacy Applications
 
 legacy-applications = X11 alkalmazások támogatása
-    .desc = X11 ablakkezelő rendszer alkalmazásméretezés és globális billentyűparancsok.
+    .desc = X11 ablakkezelő rendszer alkalmazásméretezés és globális billentyűparancsok
 legacy-app-global-shortcuts = Globális billentyűparancsok X11 alkalmazásokban
-    .desc = A globális billentyűparancsok lehetővé teszik, hogy az alkalmazásokban a billentyűleütéseket és egérkattintásokat más alkalmazások is felismerjék, például a „push-to-talk” vagy a „push-to-mute” funkciókhoz. Alapértelmezés szerint ez az X11 alkalmazásokban le van tiltva, hogy más alkalmazások ne figyelhessék a billentyű- és egéreseményeket, amelyek érzékeny információkat tartalmazhatnak.
+    .desc = A globális billentyűparancsok lehetővé teszik, hogy az alkalmazásokban a billentyűleütéseket és egérkattintásokat más alkalmazások is felismerjék, például a „push-to-talk” vagy a „push-to-mute” funkciókhoz. Alapértelmezés szerint a globális billentyűparancsok az X11 alkalmazásokban le van tiltva, hogy más alkalmazások ne figyelhessék a billentyű- és egéreseményeket, amelyek érzékeny információkat tartalmazhatnak.
     .none = Nincs billentyű
     .modifiers = Módosítók (Super, Shift, Control, Alt)
     .combination = Minden billentyű, miközben a Super, Control vagy Alt módosítók lenyomva vannak
@@ -770,11 +771,11 @@ legacy-app-global-shortcuts = Globális billentyűparancsok X11 alkalmazásokban
     .mouse = Egérgomb-események X11 alkalmazásokban
 legacy-app-scaling = X11-ablakrendszer alkalmazásméretezés
     .scaled-gaming = Optimalizálás játékokra és teljes képernyős alkalmazásokra
-    .gaming-description = Az X11 alkalmazások kicsit nagyobbnak/kisebbnek tűnhetnek a Wayland alkalmazásokhoz képest.
+    .gaming-description = Az X11 alkalmazások kicsit nagyobbnak/kisebbnek tűnhetnek a Wayland alkalmazásokhoz képest
     .scaled-applications = Optimalizálás alkalmazásokra
-    .applications-description = A játékok és a teljes képernyős X11 alkalmazások felbontása eltérhet a kijelző natív felbontásától.
+    .applications-description = A játékok és a teljes képernyős X11 alkalmazások felbontása eltérhet a kijelző natív felbontásától
     .scaled-compatibility = Maximális kompatibilitási mód
-    .compatibility-description = Az X11 alkalmazások elmosódottan jelenhetnek meg HiDPI képernyőkön.
+    .compatibility-description = Az X11 alkalmazások elmosódottan jelenhetnek meg HiDPI képernyőkön
     .preferred-display = Preferált kijelző játékokhoz és teljes képernyős X11-alkalmazásokhoz
     .no-display = Nincs
 
@@ -785,9 +786,9 @@ system = Rendszer és fiókok
 ## System: About
 
 about = Rendszerinformáció
-    .desc = Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai.
+    .desc = Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai
 about-device = Eszköz neve
-    .desc = Ez a név más hálózati vagy Bluetooth-eszközök számára látható.
+    .desc = Ez a név más hálózati vagy Bluetooth-eszközök számára látható
 about-hardware = Hardver
     .model = Hardver modell
     .memory = Memória
@@ -797,6 +798,7 @@ about-hardware = Hardver
 about-os = Operációs rendszer
     .os = Operációs rendszer
     .os-architecture = Operációs rendszer architektúra
+    .kernel = Kernel verzió
     .desktop-environment = Asztali környezet
     .windowing-system = Ablakrendszer
 about-related = Kapcsolódó beállítások
@@ -805,23 +807,28 @@ about-related = Kapcsolódó beállítások
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmware részletei.
+    .desc = Firmware részletei
 
 ## System: Users
 
 users = Felhasználók
-    .desc = Hitelesítés és felhasználói fiókok.
+    .desc = Hitelesítés és felhasználói fiókok
     .admin = Rendszergazda
     .standard = Normál
     .profile-add = Profilkép kiválasztása
 administrator = Rendszergazda
-    .desc = A rendszergazdák megváltoztathatják az összes felhasználó beállításait, új felhasználókat adhatnak hozzá és távolíthatnak el.
+    .desc = A rendszergazdák megváltoztathatják az összes felhasználó beállításait, új felhasználókat adhatnak hozzá és távolíthatnak el
 add-user = Felhasználó hozzáadása
 change-password = Jelszó megváltoztatása
 remove-user = Felhasználó eltávolítása
 full-name = Teljes név
-invalid-username = Érvénytelen felhasználónév.
-password-mismatch = A jelszónak és a megerősítésének meg kell egyeznie.
+invalid-username = Érvénytelen felhasználónév
+password-mismatch = A jelszónak és a megerősítésének meg kell egyeznie
 save = Mentés
 amplification = Erősítés
-    .desc = Lehetővé teszi a hangerő 150%-ra emelését.
+    .desc = Lehetővé teszi a hangerő 150%-ra emelését
+qr-code-unavailable = QR-kód nem elérhető
+network-name = Hálózat neve
+share = Hálózat megosztása
+scan-to-connect-description = Olvasd be a QR-kódot a hálózathoz való csatlakozáshoz.
+place-here = Ide helyezd a kisalkalmazásokat
