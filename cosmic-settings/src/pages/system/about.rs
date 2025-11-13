@@ -3,9 +3,9 @@
 
 use cosmic_settings_page::{self as page, Section, section};
 
+use super::info::Info;
 use cosmic::widget::{editable_input, list_column, settings, text};
 use cosmic::{Apply, Task};
-use cosmic_settings_system::about::Info;
 use slab::Slab;
 use slotmap::SlotMap;
 
