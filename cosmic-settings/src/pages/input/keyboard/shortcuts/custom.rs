@@ -84,11 +84,14 @@ struct AddShortcut {
 }
 
 impl AddShortcut {
-    pub fn enable(&mut self) {
+    pub fn enable(&mut self, editing: Option<usize>) {
         self.active = true;
+        self.editing_action = editing;
+
+        // If we are getting ShowShortcut shortcut should probably exist.
+        // But if it doesn't we'll just skip filling.
         self.name.clear();
         self.task.clear();
-        self.editing_action = None;
 
         if self.keys.is_empty() {
             self.keys.insert((String::new(), widget::Id::unique()));
@@ -99,6 +102,29 @@ impl AddShortcut {
 
             self.keys[0].0.clear();
         }
+    }
+
+    pub fn populate(&mut self, shortcut_model: &ShortcutModel) {
+        // FIXME: Should Cow these to get rid of the clones
+        self.name = shortcut_model.description.clone();
+
+        if let Action::Spawn(task) = &shortcut_model.action {
+            self.task = task.clone();
+        }
+
+        self.keys.clear();
+        for (_, shortcut_binding) in &shortcut_model.bindings {
+            if shortcut_binding.binding.is_set() {
+                self.keys
+                    .insert((shortcut_binding.binding.to_string(), widget::Id::unique()));
+            }
+        }
+
+        if self.keys.is_empty() {
+            self.keys.insert((String::default(), widget::Id::unique()));
+        }
+
+        self.binding = Binding::default();
     }
 }
 
@@ -213,35 +239,12 @@ impl Page {
 
             Message::Shortcut(message) => {
                 if let ShortcutMessage::ShowShortcut(id, _description) = &message {
-                    self.add_shortcut.active = true;
-                    self.add_shortcut.editing_action = Some(*id);
+                    self.add_shortcut.enable(Some(*id));
+
                     // If we are getting ShowShortcut shortcut should probably exist.
                     // But if it doesn't we'll just skip filling.
                     if let Some(shortcut_model) = self.model.shortcut_models.get(*id) {
-                        // FIXME: Should Cow these to get rid of the clones
-                        self.add_shortcut.name = shortcut_model.description.clone();
-
-                        if let Action::Spawn(task) = &shortcut_model.action {
-                            self.add_shortcut.task = task.clone();
-                        }
-
-                        self.add_shortcut.keys.clear();
-                        for (_, shortcut_binding) in &shortcut_model.bindings {
-                            if shortcut_binding.binding.is_set() {
-                                self.add_shortcut.keys.insert((
-                                    shortcut_binding.binding.to_string(),
-                                    widget::Id::unique(),
-                                ));
-                            }
-                        }
-
-                        if self.add_shortcut.keys.is_empty() {
-                            self.add_shortcut
-                                .keys
-                                .insert((String::default(), widget::Id::unique()));
-                        }
-
-                        self.add_shortcut.binding = Binding::default();
+                        self.add_shortcut.populate(shortcut_model);
                     }
                 }
 
@@ -250,7 +253,7 @@ impl Page {
 
             Message::ShortcutContext => {
                 let name_id = self.name_id.clone();
-                self.add_shortcut.enable();
+                self.add_shortcut.enable(None);
                 return Task::batch(vec![
                     cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity)),
                     // XX hack: wait a bit before focusing the input to avoid it being ignored before it exists
