@@ -210,8 +210,36 @@ impl Page {
             }
 
             Message::Shortcut(message) => {
-                if let ShortcutMessage::ShowShortcut(..) = message {
-                    self.add_shortcut.active = false;
+                if let ShortcutMessage::ShowShortcut(id, _description) = &message {
+                    self.add_shortcut.active = true;
+                    // If we are getting ShowShortcut shortcut should probably exist.
+                    // But if it doesn't we'll just skip filling.
+                    if let Some(shortcut_model) = self.model.shortcut_models.get(*id) {
+                        // FIXME: Should Cow these to get rid of the clones
+                        self.add_shortcut.name = shortcut_model.description.clone();
+
+                        if let Action::Spawn(task) = &shortcut_model.action {
+                            self.add_shortcut.task = task.clone();
+                        }
+
+                        self.add_shortcut.keys.clear();
+                        for (_, shortcut_binding) in &shortcut_model.bindings {
+                            if shortcut_binding.binding.is_set() {
+                                self.add_shortcut.keys.insert((
+                                    shortcut_binding.binding.to_string(),
+                                    widget::Id::unique(),
+                                ));
+                            }
+                        }
+
+                        if self.add_shortcut.keys.is_empty() {
+                            self.add_shortcut
+                                .keys
+                                .insert((String::default(), widget::Id::unique()));
+                        }
+
+                        self.add_shortcut.binding = Binding::default();
+                    }
                 }
 
                 return self.model.update(message);
