@@ -512,6 +512,33 @@ impl Page {
             .into()
     }
 
+    /// Save all bindings for a custom shortcut when in edit mode
+    fn save_custom_shortcut(&mut self) {
+        if let Some(editing_id) = self.add_shortcut.editing_action {
+            if let Some(model) = self.model.shortcut_models.get(editing_id) {
+                // Throw away the old bindings.
+                for (_, old_binding) in &model.bindings {
+                    if old_binding.binding.is_set() {
+                        self.model.config_remove(&old_binding.binding);
+                    }
+                }
+
+                let new_action = Action::Spawn(self.add_shortcut.task.clone());
+                for (_, (binding_str, _)) in &self.add_shortcut.keys {
+                    if let Ok(mut new_binding) = Binding::from_str(binding_str) {
+                        if new_binding.is_set() {
+                            new_binding.description = Some(self.add_shortcut.name.clone());
+                            self.model.config_add(new_action.clone(), new_binding);
+                        }
+                    }
+                }
+
+                _ = self.model.on_enter();
+            }
+        }
+    }
+
+    /// Add a single binding to a custom shortcut (used in create mode during key capture)
     fn add_shortcut(&mut self, mut binding: Binding) {
         if let Some(action) = self.model.config_contains(&binding) {
             // NOTE: When not editing any action clearly the action is different
@@ -601,6 +628,12 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_context_drawer_close(&mut self) -> Task<crate::pages::Message> {
+        // This saves our various edits if applicable. Note that by contrast when creating our
+        // bindings are saved as they are created. 
+        if self.add_shortcut.editing_action.is_some() {
+            self.save_custom_shortcut();
+        }
+
         self.model.on_context_drawer_close();
         Task::none()
     }
