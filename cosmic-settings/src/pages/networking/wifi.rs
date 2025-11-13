@@ -875,9 +875,10 @@ fn devices_view() -> Section<crate::pages::Message> {
                                                 &section.descriptions[forget_txt],
                                             )
                                         }))
-                                        .width(Length::Fixed(170.0))
+                                        .width(Length::Fixed(200.0))
                                         .apply(widget::container)
-                                        .class(cosmic::style::Container::Dialog)
+                                        .padding(1)
+                                        .class(cosmic::style::Container::Dropdown)
                                 })
                                 .apply(|e| Some(Element::from(e)))
                         } else if is_known {
@@ -938,12 +939,11 @@ fn is_connected(state: &NetworkManagerState, network: &AccessPoint) -> bool {
 }
 
 fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
-    let theme = cosmic::theme::active();
-    let theme = theme.cosmic();
+    let spacing = cosmic::theme::spacing();
     widget::text::body(text)
         .align_y(Alignment::Center)
         .apply(widget::button::custom)
-        .padding([theme.space_xxxs(), theme.space_xs()])
+        .padding([spacing.space_xxxs, spacing.space_xs])
         .width(Length::Fill)
         .class(cosmic::theme::Button::MenuItem)
         .on_press(message)
