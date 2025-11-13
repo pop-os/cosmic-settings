@@ -75,7 +75,8 @@ pub enum Message {
 #[derive(Default)]
 struct AddShortcut {
     pub active: bool,
-    pub editing: Option<usize>,
+    pub editing_action: Option<usize>,
+    pub capturing_key: Option<usize>,
     pub name: String,
     pub task: String,
     pub keys: Slab<(String, widget::Id)>,
@@ -87,6 +88,7 @@ impl AddShortcut {
         self.active = true;
         self.name.clear();
         self.task.clear();
+        self.editing_action = None;
 
         if self.keys.is_empty() {
             self.keys.insert((String::new(), widget::Id::unique()));
@@ -111,10 +113,10 @@ impl Page {
 
             Message::KeyEditing(id, enable) => {
                 if enable {
-                    self.add_shortcut.editing = Some(id);
+                    self.add_shortcut.capturing_key = Some(id);
                     return iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard();
-                } else if self.add_shortcut.editing == Some(id) {
-                    self.add_shortcut.editing = None;
+                } else if self.add_shortcut.capturing_key == Some(id) {
+                    self.add_shortcut.capturing_key = None;
 
                     return Task::batch(vec![
                         widget::text_input::focus(widget::Id::unique()),
@@ -148,7 +150,7 @@ impl Page {
                 }
 
                 if let Some((index, binding)) = addable_bindings.first() {
-                    self.add_shortcut.editing = Some(*index);
+                    self.add_shortcut.capturing_key = Some(*index);
                     return Task::batch(vec![
                         widget::text_input::focus(binding.clone()),
                         iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
@@ -156,7 +158,7 @@ impl Page {
                 } else {
                     // make a new empty binding if none exist
                     let new_id = widget::Id::unique();
-                    self.add_shortcut.editing = Some(
+                    self.add_shortcut.capturing_key = Some(
                         self.add_shortcut
                             .keys
                             .insert((String::new(), new_id.clone())),
@@ -170,7 +172,7 @@ impl Page {
 
             Message::EditCombination => {
                 if let Some((slab_index, (_, id))) = self.add_shortcut.keys.iter().next() {
-                    self.add_shortcut.editing = Some(slab_index);
+                    self.add_shortcut.capturing_key = Some(slab_index);
                     return Task::batch(vec![
                         widget::text_input::focus(id.clone()),
                         widget::text_input::select_all(id.clone()),
@@ -212,6 +214,7 @@ impl Page {
             Message::Shortcut(message) => {
                 if let ShortcutMessage::ShowShortcut(id, _description) = &message {
                     self.add_shortcut.active = true;
+                    self.add_shortcut.editing_action = Some(*id);
                     // If we are getting ShowShortcut shortcut should probably exist.
                     // But if it doesn't we'll just skip filling.
                     if let Some(shortcut_model) = self.model.shortcut_models.get(*id) {
@@ -288,7 +291,7 @@ impl Page {
                             let Some(k) = self
                                 .add_shortcut
                                 .keys
-                                .get_mut(self.add_shortcut.editing.unwrap())
+                                .get_mut(self.add_shortcut.capturing_key.unwrap())
                             else {
                                 return iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard();
                             };
@@ -321,7 +324,7 @@ impl Page {
                     if let Some(k) = self
                         .add_shortcut
                         .keys
-                        .get_mut(self.add_shortcut.editing.unwrap())
+                        .get_mut(self.add_shortcut.capturing_key.unwrap())
                     {
                         k.0 = self.add_shortcut.binding.to_string();
                     }
@@ -329,7 +332,7 @@ impl Page {
             }
             Message::KeyReleased(keycode, _, _) => {
                 // if the currently selected shortcut matches, finish selecting shortcut
-                if self.add_shortcut.editing.is_some()
+                if self.add_shortcut.capturing_key.is_some()
                     && self.add_shortcut.active
                     && self.add_shortcut.binding.key.is_some()
                     && self
@@ -353,7 +356,7 @@ impl Page {
                     let Some(k) = self
                         .add_shortcut
                         .keys
-                        .get_mut(self.add_shortcut.editing.unwrap())
+                        .get_mut(self.add_shortcut.capturing_key.unwrap())
                     else {
                         return iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard();
                     };
@@ -378,7 +381,7 @@ impl Page {
             }
             Message::KeyPressed(keycode, unmodified_keysym, location, modifiers) => {
                 if unmodified_keysym == Key::Named(Named::Escape) && modifiers.is_empty() {
-                    self.add_shortcut.editing = None;
+                    self.add_shortcut.capturing_key = None;
                     return Task::batch(vec![
                         widget::text_input::focus(widget::Id::unique()),
                         iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
@@ -394,7 +397,7 @@ impl Page {
                     if let Some(k) = self
                         .add_shortcut
                         .keys
-                        .get_mut(self.add_shortcut.editing.unwrap())
+                        .get_mut(self.add_shortcut.capturing_key.unwrap())
                     {
                         k.0 = self.add_shortcut.binding.to_string();
                     }
@@ -424,7 +427,7 @@ impl Page {
         }
 
         let new_id = widget::Id::unique();
-        self.add_shortcut.editing = Some(
+        self.add_shortcut.capturing_key = Some(
             self.add_shortcut
                 .keys
                 .insert((String::new(), new_id.clone())),
@@ -475,7 +478,7 @@ impl Page {
                 let key_combination = widget::editable_input(
                     fl!("type-key-combination"),
                     text,
-                    self.add_shortcut.editing == Some(id),
+                    self.add_shortcut.capturing_key == Some(id),
                     move |enable| Message::KeyEditing(id, enable),
                 )
                 .on_focus(Message::KeyEditing(id, true))
@@ -508,9 +511,20 @@ impl Page {
 
     fn add_shortcut(&mut self, mut binding: Binding) {
         if let Some(action) = self.model.config_contains(&binding) {
-            let action_str = super::localize_action(&action);
-            self.replace_dialog.push((binding, action, action_str));
-            return;
+            // NOTE: When not editing any action clearly the action is different
+            // than the action we're editing.
+            if self
+                .add_shortcut
+                .editing_action
+                .as_ref()
+                .and_then(|idx| self.model.shortcut_models.get(*idx))
+                .map(|editing| editing.action != action)
+                .unwrap_or(true)
+            {
+                let action_str = super::localize_action(&action);
+                self.replace_dialog.push((binding, action, action_str));
+                return;
+            }
         }
         binding.description = Some(self.add_shortcut.name.clone());
         let new_action = Action::Spawn(self.add_shortcut.task.clone());
@@ -611,7 +625,7 @@ impl page::Page<crate::pages::Message> for Page {
 
         cosmic::iced::Subscription::batch(vec![
             if self.add_shortcut.active
-                && self.add_shortcut.editing.is_some()
+                && self.add_shortcut.capturing_key.is_some()
                 && self.replace_dialog.is_empty()
             {
                 listen_with(|event, _, _| match event {
