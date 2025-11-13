@@ -11,7 +11,7 @@ use cosmic::iced::keyboard::key::Named;
 use cosmic::iced::keyboard::{Key, Location, Modifiers};
 use cosmic::iced::{Alignment, Length};
 use cosmic::iced_winit;
-use cosmic::widget::{self, button, icon};
+use cosmic::widget::{self, button, icon, settings};
 use cosmic::{Apply, Element, Task};
 use cosmic_settings_config::Binding;
 use cosmic_settings_config::shortcuts::{Action, Shortcuts};
@@ -47,6 +47,8 @@ pub enum Message {
     AddKeybinding,
     /// Add a new custom shortcut to the config
     AddShortcut,
+    /// Delete a key binding
+    DeleteKeybinding(usize),
     /// Update the Task text input
     TaskInput(String),
     /// Toggle editing of the key text input
@@ -93,15 +95,9 @@ impl AddShortcut {
         self.name.clear();
         self.task.clear();
 
-        if self.keys.is_empty() {
-            self.keys.insert((String::new(), widget::Id::unique()));
-        } else {
-            while self.keys.len() > 1 {
-                self.keys.remove(self.keys.len() - 1);
-            }
-
-            self.keys[0].0.clear();
-        }
+        // Clear all keys and add one empty binding
+        self.keys.clear();
+        self.keys.insert((String::new(), widget::Id::unique()));
     }
 
     pub fn populate(&mut self, shortcut_model: &ShortcutModel) {
@@ -193,6 +189,17 @@ impl Page {
                         widget::text_input::focus(new_id.clone()),
                         iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
                     ]);
+                }
+            }
+
+            Message::DeleteKeybinding(id) => {
+                self.add_shortcut.keys.remove(id);
+
+                // Ensure at least one binding input exists
+                if self.add_shortcut.keys.is_empty() {
+                    self.add_shortcut
+                        .keys
+                        .insert((String::new(), widget::Id::unique()));
                 }
             }
 
@@ -489,11 +496,17 @@ impl Page {
                 .on_input(move |input| Message::KeyInput(id, input))
                 .on_submit(|_| Message::AddKeybinding)
                 .padding([0, 12])
-                .id(widget_id.clone())
-                .apply(widget::container)
-                .padding([8, 24]);
+                .id(widget_id.clone());
 
-                column.add(key_combination)
+                let delete_button = widget::button::icon(icon::from_name("edit-delete-symbolic"))
+                    .on_press(Message::DeleteKeybinding(id));
+
+                let row = settings::item_row(vec![key_combination.into(), delete_button.into()])
+                    .align_y(Alignment::Center)
+                    .apply(widget::container)
+                    .padding([8, 0]);
+
+                column.add(row)
             },
         );
 
@@ -629,7 +642,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_context_drawer_close(&mut self) -> Task<crate::pages::Message> {
         // This saves our various edits if applicable. Note that by contrast when creating our
-        // bindings are saved as they are created. 
+        // bindings are saved as they are created.
         if self.add_shortcut.editing_action.is_some() {
             self.save_custom_shortcut();
         }
