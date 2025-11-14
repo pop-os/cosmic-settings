@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Touchpad
-Name[ar]=لوحة اللمس 
+Name[ar]=لوحة اللمس
 Name[cs]=Touchpad
 Name[zh_CN]=触摸板
 Name[pl]=Gładzik
@@ -20,7 +20,7 @@ Comment[sk]=Rýchlosť touchpadu, možnosti kliknutia, gestá.
 Comment[sv]=Pekplattans hastighet, klickalternativ, gester.
 Comment[nl]=Touchpad muisversnelling, klikeigenschappen en veeggebaren.
 Comment[es]=Velocidad del panel táctil, opciones de clic, gestos.
-Type=Settings
+Type=Application
 Exec=cosmic-settings touchpad
 Terminal=false
 Categories=COSMIC
