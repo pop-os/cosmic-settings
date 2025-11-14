@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic::iced_wgpu::wgpu;
-use std::{collections::HashSet, ffi::OsStr};
+use std::{collections::HashMap, collections::HashSet, ffi::OsStr, process::Command};
 
 #[must_use]
 #[derive(Clone, Debug, Default)]
@@ -88,11 +88,22 @@ impl Info {
                 continue;
             }
 
-            let gpu_name = if let Some(pos) = adapter_info.name.find('(') {
+            let mut gpu_name = if let Some(pos) = adapter_info.name.find('(') {
                 adapter_info.name[..pos].trim().to_string()
             } else {
                 adapter_info.name
             };
+
+            // Intel GPU quirk: wgpu sometimes reports incomplete names (just "Intel").
+            // Use lspci as fallback to get proper full name like "Intel Corporation HD Graphics 500"
+            if gpu_name == "Intel" && adapter_info.device != 0 {
+                let lspci_gpus = get_lspci_gpu_names();
+                if let Some(lspci_name) = lspci_gpus.get(&adapter_info.device) {
+                    gpu_name = lspci_name.clone();
+                }
+                // If lspci lookup fails, keep "Intel"
+            }
+
             let device_key = (adapter_info.vendor, adapter_info.device);
             if adapter_info.device != 0 && seen_devices.contains(&device_key) {
                 continue;
@@ -221,4 +232,63 @@ fn format_size(bytes: u64) -> String {
     let value = bytes_f64 / FACTOR.powi(exp as i32);
 
     format!("{:.2} {}", value, UNITS[exp])
+}
+
+/// Get GPU names from lspci, mapping device ID to full GPU name.
+/// This is used as a quirk for Intel GPUs which often report incomplete names via their OpenGL and Vulkan drivers.
+/// https://www.intel.com/content/www/us/en/support/articles/000005520/graphics.html
+fn get_lspci_gpu_names() -> HashMap<u32, String> {
+    let mut gpu_map = HashMap::new();
+
+    let output = match Command::new("lspci").arg("-nn").output() {
+        Ok(output) => output,
+        Err(_) => return gpu_map,
+    };
+
+    let stdout = match std::str::from_utf8(&output.stdout) {
+        Ok(s) => s,
+        Err(_) => return gpu_map,
+    };
+
+    for line in stdout.lines() {
+        // Look for any line containing VGA, 3D controller, or Display controller
+        if !line.contains("VGA")
+            && !line.contains("3D controller")
+            && !line.contains("Display controller")
+        {
+            continue;
+        }
+
+        // Parse device ID from format: "00:02.0 VGA compatible controller [0300]: Intel Corporation HD Graphics 500 [8086:5a85] (rev 0b)"
+        // We want to extract the device ID (5a85) and the name (Intel Corporation HD Graphics 500)
+
+        if let Some(ids_start) = line.rfind('[') {
+            if let Some(ids_end) = line.rfind(']') {
+                let ids = &line[ids_start + 1..ids_end];
+
+                // Parse vendor:device format like "8086:5a85"
+                if let Some(colon_pos) = ids.find(':') {
+                    let device_id_str = &ids[colon_pos + 1..];
+                    if let Ok(device_id) = u32::from_str_radix(device_id_str, 16) {
+                        // Extract the GPU name between ": " and the last "["
+                        if let Some(name_start) = line.find(": ") {
+                            let name_part = &line[name_start + 2..ids_start].trim();
+                            // Remove any trailing parentheses with revision info
+                            let gpu_name = if let Some(paren_pos) = name_part.rfind(" [") {
+                                name_part[..paren_pos].trim()
+                            } else {
+                                name_part
+                            };
+
+                            if !gpu_name.is_empty() {
+                                gpu_map.insert(device_id, gpu_name.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    gpu_map
 }
