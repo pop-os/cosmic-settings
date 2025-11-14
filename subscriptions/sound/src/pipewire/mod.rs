@@ -835,7 +835,7 @@ pub mod volume {
         let right_volume = channels.last().cloned().unwrap_or_default();
 
         if (left_volume - right_volume).abs() < f32::EPSILON {
-            return (left_volume, None);
+            return (left_volume.powf(1.0 / 3.0), None);
         }
 
         let (volume, balance) = if left_volume >= right_volume {
@@ -844,9 +844,7 @@ pub mod volume {
             (right_volume, (2.0 - (left_volume / right_volume)))
         };
 
-        let volume = volume;
-
-        (volume, Some(balance))
+        (volume.powf(1.0 / 3.0), Some(balance))
     }
 
     /// Create a channel volumes array based on the provided volume, balance, and channel positions.
@@ -855,6 +853,7 @@ pub mod volume {
         volume: f32,
         balance: Option<f32>,
     ) -> Vec<f32> {
+        let volume = volume * volume * volume;
         if let Some(balance) = balance {
             let (left_volume, right_volume) = if balance >= 1.0 {
                 ((volume * (balance - 2.0).abs()), volume)
@@ -918,15 +917,15 @@ pub mod volume {
             // Test conversions to and from a channel
             let channel_map = &[Channel::FL, Channel::FR];
             let inputs = vec![
-                ((0.77, Some(0.32)), &[0.77, 0.24639998]),
-                ((0.77, Some(0.57)), &[0.77, 0.4389]),
-                ((0.77, Some(0.68)), &[0.77, 0.5236]),
-                ((0.77, Some(0.74)), &[0.77, 0.5698]),
-                ((0.77, Some(1.00)), &[0.77, 0.77]),
-                ((0.77, Some(1.32)), &[0.5235999, 0.77]),
-                ((0.77, Some(1.57)), &[0.33109996, 0.77]),
-                ((0.77, Some(1.68)), &[0.24640003, 0.77]),
-                ((0.77, Some(1.74)), &[0.20019999, 0.77]),
+                ((0.77, Some(0.32)), &[0.45653298, 0.14609055]),
+                ((0.77, Some(0.57)), &[0.45653298, 0.2602238]),
+                ((0.77, Some(0.68)), &[0.45653298, 0.31044245]),
+                ((0.77, Some(0.74)), &[0.45653298, 0.33783442]),
+                ((0.77, Some(1.00)), &[0.45653298, 0.45653298]),
+                ((0.77, Some(1.32)), &[0.31044242, 0.45653298]),
+                ((0.77, Some(1.57)), &[0.19630916, 0.45653298]),
+                ((0.77, Some(1.68)), &[0.14609058, 0.45653298]),
+                ((0.77, Some(1.74)), &[0.118698575, 0.45653298]),
             ];
 
             for ((volume, balance), channel_volumes) in inputs {
