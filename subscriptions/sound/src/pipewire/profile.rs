@@ -1,7 +1,7 @@
 // Copyright 2025 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-use crate::pipewire::{Availability, string_from_pod};
+use crate::pipewire::{Availability, spa_utils::string_from_pod};
 use libspa::pod::Pod;
 
 #[derive(Clone, Debug)]

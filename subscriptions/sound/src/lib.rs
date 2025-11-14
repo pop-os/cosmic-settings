@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: MPL-2.0
 
 pub mod pipewire;
-pub mod pulse;
-mod wpctl;
 
 use crate::pipewire::Availability;
 use cosmic::Task;
 use cosmic::iced_futures::MaybeSend;
-use futures::{Stream, StreamExt};
+use futures::{FutureExt, SinkExt, Stream, StreamExt};
 use intmap::IntMap;
-use std::{sync::Arc, time::Duration};
+use std::{process::Stdio, sync::Arc, time::Duration};
 
 pub type DeviceId = u32;
 pub type NodeId = u32;
@@ -18,16 +16,9 @@ pub type ProfileId = i32;
 pub type RouteId = u32;
 
 pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
-    async_fn_stream::fn_stream(|emitter| async move {
+    cosmic::iced_futures::stream::channel(8, |mut emitter| async move {
         let (cancel_tx, mut cancel_rx) = futures::channel::oneshot::channel::<()>();
-
-        let (tx, pulse_rx) = futures::channel::mpsc::channel(1);
-        let _pulse_handle = std::thread::spawn(move || {
-            pulse::thread(tx);
-        });
-
-        let (tx, pw_rx) = futures::channel::mpsc::channel(1);
-
+        let (tx, mut pw_rx) = futures::channel::mpsc::channel(1);
         let (request_tx, request_rx) = pipewire::channel();
         std::thread::spawn(move || {
             if let Err(why) = pipewire::run(request_rx, tx) {
@@ -35,8 +26,8 @@ pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
             }
         });
 
-        emitter
-            .emit(
+        _ = emitter
+            .send(
                 Message::SubHandle(Arc::new(SubscriptionHandle {
                     cancel_tx,
                     pipewire: request_tx,
@@ -45,68 +36,24 @@ pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
             )
             .await;
 
-        let mut pulse_channels = None;
-        let mut balance = None;
-        let mut source_volume = None;
-        let mut sink_volume = None;
         let mut events = Vec::new();
         let mut timer = tokio::time::interval(Duration::from_millis(64));
 
-        enum Variant {
-            Pulse(pulse::Event),
-            Pipewire(pipewire::Event),
-        }
-
-        let mut stream =
-            futures::stream::select(pulse_rx.map(Variant::Pulse), pw_rx.map(Variant::Pipewire));
-
         loop {
-            tokio::select! {
-                event = stream.next() => {
+            futures::select! {
+                event = pw_rx.next().fuse() => {
                     let Some(event) = event else {
                         break;
                     };
 
-
-                    match event {
-                        Variant::Pulse(event) => match event {
-                            pulse::Event::Channels(channels) => pulse_channels = Some(channels),
-                            pulse::Event::SinkVolume(volume) => sink_volume = Some(volume),
-                            pulse::Event::SourceVolume(volume) => source_volume = Some(volume),
-                            pulse::Event::Balance(value) => balance = Some(value),
-                            _ => {
-                                events.push(Server::Pulse(event));
-                                timer.reset();
-                            }
-                        }
-
-                        Variant::Pipewire(event) => {
-                            events.push(Server::Pipewire(event));
-                            timer.reset();
-                        }
-                    }
+                    events.push(event);
+                    timer.reset();
                 }
 
-                _ = timer.tick() => {
-                    if let Some(channels) = pulse_channels.take() {
-                        events.push(Server::Pulse(pulse::Event::Channels(channels)));
-                    }
-
-                    if let Some(volume) = sink_volume.take() {
-                        events.push(Server::Pulse(pulse::Event::SinkVolume(volume)));
-                    }
-
-                    if let Some(volume) = source_volume.take() {
-                        events.push(Server::Pulse(pulse::Event::SourceVolume(volume)));
-                    }
-
-                    if let Some(balance) = balance.take() {
-                        events.push(Server::Pulse(pulse::Event::Balance(balance)));
-                    }
-
+                _ = timer.tick().fuse() => {
                     if !events.is_empty() {
-                        emitter
-                            .emit(Message::Server(Arc::from(std::mem::take(&mut events))))
+                        _ = emitter
+                            .send(Message::Server(Arc::from(std::mem::take(&mut events))))
                             .await;
                     }
                 }
@@ -115,7 +62,6 @@ pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
             }
         }
 
-        drop(stream);
         futures::future::pending::<Message>().await;
     })
 }
@@ -123,7 +69,6 @@ pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
 #[derive(Default)]
 pub struct Model {
     subscription_handle: Option<SubscriptionHandle>,
-    sink_channels: Option<pulse::PulseChannels>,
 
     // Translated text
     pub unplugged_text: String,
@@ -133,7 +78,6 @@ pub struct Model {
     device_ids: IntMap<NodeId, DeviceId>,
     pub node_names: IntMap<NodeId, String>,
     card_profile_devices: IntMap<NodeId, u32>,
-    node_route_plugged: IntMap<NodeId, ()>,
 
     pub device_names: IntMap<DeviceId, String>,
     pub device_profiles: IntMap<DeviceId, Vec<pipewire::Profile>>,
@@ -170,8 +114,6 @@ pub struct Model {
 
     pub sink_volume_text: String,
     pub source_volume_text: String,
-
-    pub sink_balance_text: Option<String>,
     pub sink_balance: Option<f32>,
 
     pub sink_volume: u32,
@@ -179,7 +121,6 @@ pub struct Model {
 
     pub sink_mute: bool,
     sink_volume_debounce: bool,
-    sink_balance_debounce: bool,
     pub source_mute: bool,
     source_volume_debounce: bool,
 }
@@ -206,9 +147,11 @@ impl Model {
             _ = handle.cancel_tx.send(());
             _ = handle.pipewire.send(pipewire::Request::Quit);
         }
+    }
 
-        if let Some(channel) = self.sink_channels.take() {
-            channel.quit();
+    pub fn pipewire_send(&self, request: pipewire::Request) {
+        if let Some(handle) = self.subscription_handle.as_ref() {
+            _ = handle.pipewire.send(request);
         }
     }
 
@@ -237,27 +180,23 @@ impl Model {
                         });
 
                     self.active_profiles.insert(device_id, profile.clone());
-
-                    tokio::spawn(async move {
-                        wpctl::set_profile(device_id, index).await;
-                    });
+                    self.pipewire_send(pipewire::Request::SetProfile(device_id, index));
                 }
             }
         }
     }
 
     pub fn sink_balance_changed(&mut self, balance: u32) -> Task<Message> {
-        self.sink_balance = Some((balance as f32 - 100.) / 100.);
-        self.sink_balance_text = Some(format!("{balance:.2}"));
-        if self.sink_balance_debounce {
+        self.sink_balance = (balance != 100).then(|| balance as f32 / 100.);
+        if self.sink_volume_debounce {
             return Task::none();
         }
 
-        if self.active_sink_node.is_some() {
-            self.sink_balance_debounce = true;
+        if let Some(id) = self.active_sink_node {
+            self.sink_volume_debounce = true;
             return cosmic::Task::future(async move {
-                tokio::time::sleep(Duration::from_millis(64)).await;
-                Message::SinkBalanceApply.into()
+                tokio::time::sleep(Duration::from_millis(32)).await;
+                Message::SinkVolumeApply(id).into()
             });
         }
 
@@ -268,7 +207,7 @@ impl Model {
         if let Some(&object_id) = self.sink_node_ids.get(pos) {
             self.set_default_sink_id(object_id);
             tokio::task::spawn(async move {
-                wpctl::set_default(object_id).await;
+                set_default(object_id).await;
             });
         }
 
@@ -279,9 +218,11 @@ impl Model {
         self.sink_mute = !self.sink_mute;
         if let Some(node_id) = self.active_sink_node {
             let mute = self.sink_mute;
-            tokio::task::spawn(async move {
-                wpctl::set_mute(node_id, mute).await;
-            });
+            if let Some(handle) = self.subscription_handle.as_mut() {
+                _ = handle
+                    .pipewire
+                    .send(pipewire::Request::SetNodeMute(node_id, mute));
+            }
         }
     }
 
@@ -295,7 +236,7 @@ impl Model {
         if let Some(node_id) = self.active_sink_node {
             self.sink_volume_debounce = true;
             return cosmic::Task::future(async move {
-                tokio::time::sleep(Duration::from_millis(64)).await;
+                tokio::time::sleep(Duration::from_millis(32)).await;
                 Message::SinkVolumeApply(node_id).into()
             });
         }
@@ -307,7 +248,7 @@ impl Model {
         if let Some(&object_id) = self.source_node_ids.get(pos) {
             self.set_default_source_id(object_id);
             tokio::task::spawn(async move {
-                wpctl::set_default(object_id).await;
+                set_default(object_id).await;
             });
         }
 
@@ -318,9 +259,11 @@ impl Model {
         self.source_mute = !self.source_mute;
         if let Some(node_id) = self.active_source_node {
             let mute = self.source_mute;
-            tokio::task::spawn(async move {
-                wpctl::set_mute(node_id, mute).await;
-            });
+            if let Some(handle) = self.subscription_handle.as_mut() {
+                _ = handle
+                    .pipewire
+                    .send(pipewire::Request::SetNodeMute(node_id, mute));
+            }
         }
     }
 
@@ -344,179 +287,27 @@ impl Model {
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::Server(events) => {
-                for event in Arc::into_inner(events).into_iter().flatten() {
-                    match event {
-                        Server::Pulse(event) => match event {
-                            pulse::Event::SourceVolume(volume) => {
-                                if self.source_volume_debounce {
-                                    continue;
-                                }
-
-                                self.source_volume = volume;
-                                self.source_volume_text =
-                                    numtoa::BaseN::<10>::u32(volume).as_str().to_owned();
-                            }
-
-                            pulse::Event::SinkVolume(volume) => {
-                                if self.sink_volume_debounce {
-                                    continue;
-                                }
-
-                                self.sink_volume = volume;
-                                self.sink_volume_text =
-                                    numtoa::BaseN::<10>::u32(volume).as_str().to_owned();
-                            }
-
-                            pulse::Event::SourcePortChange(name, availability) => {
-                                let Some(node_id) = self.active_source_node else {
-                                    continue;
-                                };
-
-                                let Some(device_id) = self.device_ids.get(node_id).cloned() else {
-                                    continue;
-                                };
-
-                                let Some(routes) = self.device_routes.get_mut(device_id) else {
-                                    continue;
-                                };
-
-                                let mut description = None;
-
-                                for route in routes {
-                                    if route.name == name {
-                                        route.available = availability;
-                                        description = Some(route.description.clone());
-                                    }
-                                }
-
-                                if !matches!(availability, Availability::No) {
-                                    if let Some(description) = description {
-                                        if let Some((name, _)) = self.route_name_get(
-                                            &description,
-                                            availability,
-                                            device_id,
-                                        ) {
-                                            if let Some(pos) = self.active_source {
-                                                self.sources[pos] = name;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            pulse::Event::SinkPortChange(name, availability) => {
-                                let Some(node_id) = self.active_sink_node else {
-                                    continue;
-                                };
-
-                                let Some(device_id) = self.device_ids.get(node_id).cloned() else {
-                                    continue;
-                                };
-
-                                let Some(routes) = self.device_routes.get_mut(device_id) else {
-                                    continue;
-                                };
-
-                                let mut description = None;
-
-                                for route in routes {
-                                    if route.name == name {
-                                        route.available = availability;
-                                        description = Some(route.description.clone());
-                                    }
-                                }
-
-                                if !matches!(availability, Availability::No) {
-                                    if let Some(description) = description {
-                                        if let Some((name, _)) = self.route_name_get(
-                                            &description,
-                                            availability,
-                                            device_id,
-                                        ) {
-                                            if let Some(pos) = self.active_sink {
-                                                self.sinks[pos] = name;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            pulse::Event::DefaultSink(node_name) => {
-                                if self.active_sink_node_name == node_name {
-                                    continue;
-                                }
-
-                                if let Some(id) = self.node_id_from_name(&node_name) {
-                                    self.set_default_sink_id(id);
-                                }
-
-                                self.active_sink_node_name = node_name;
-                            }
-                            pulse::Event::DefaultSource(node_name) => {
-                                if self.active_source_node_name == node_name {
-                                    continue;
-                                }
-
-                                if let Some(id) = self.node_id_from_name(&node_name) {
-                                    self.set_default_source_id(id);
-                                }
-
-                                self.active_source_node_name = node_name;
-                            }
-                            pulse::Event::SinkMute(mute) => {
-                                self.sink_mute = mute;
-                            }
-                            pulse::Event::SourceMute(mute) => {
-                                self.source_mute = mute;
-                            }
-                            pulse::Event::Balance(balance) => {
-                                self.sink_balance = balance;
-                                self.sink_balance_text = balance.map(|b| format!("{b:.2}"));
-                            }
-                            pulse::Event::Channels(channels) => {
-                                self.sink_channels = Some(channels);
-                            }
-                        },
-
-                        Server::Pipewire(event) => self.pipewire_update(event),
-                    }
-                }
-            }
-
-            Message::SinkBalanceApply => {
-                self.sink_balance_debounce = false;
-                if let Some((balance, channels)) =
-                    self.sink_balance.zip(self.sink_channels.as_mut())
-                {
-                    channels.set_balance(balance);
-                }
-            }
+            Message::Server(events) => Arc::into_inner(events)
+                .into_iter()
+                .flatten()
+                .for_each(|event| self.pipewire_update(event)),
 
             Message::SinkVolumeApply(node_id) => {
-                let volume = self.sink_volume;
-                return cosmic::Task::future(async move {
-                    wpctl::set_volume(node_id, volume).await;
-                    tokio::time::sleep(Duration::from_millis(64)).await;
-                    Message::SinkVolumeDebounce.into()
-                });
-            }
-
-            Message::SinkVolumeDebounce => {
                 self.sink_volume_debounce = false;
+                self.pipewire_send(pipewire::Request::SetNodeVolume(
+                    node_id,
+                    self.sink_volume as f32 / 100.0,
+                    self.sink_balance,
+                ));
             }
 
             Message::SourceVolumeApply(node_id) => {
-                let volume = self.source_volume;
-                return cosmic::Task::future(async move {
-                    wpctl::set_volume(node_id, volume).await;
-                    tokio::time::sleep(Duration::from_millis(64)).await;
-                    Message::SourceVolumeDebounce.into()
-                });
-            }
-
-            Message::SourceVolumeDebounce => {
                 self.source_volume_debounce = false;
+                self.pipewire_send(pipewire::Request::SetNodeVolume(
+                    node_id,
+                    self.source_volume as f32 / 100.0,
+                    None,
+                ));
             }
 
             Message::SubHandle(handle) => {
@@ -531,16 +322,46 @@ impl Model {
 
     fn pipewire_update(&mut self, event: pipewire::Event) {
         match event {
+            pipewire::Event::NodeProperties(id, props) => {
+                if self.active_sink_node == Some(id) {
+                    if let Some(mute) = props.mute {
+                        self.sink_mute = mute;
+                    }
+
+                    if let Some(channel_volumes) = props.channel_volumes {
+                        let (volume, balance) =
+                            pipewire::volume::from_channel_volumes(&channel_volumes);
+
+                        self.sink_balance = balance;
+                        self.sink_volume = (volume * 100.0) as u32;
+                        self.sink_volume_text = numtoa::BaseN::<10>::u32(self.sink_volume)
+                            .as_str()
+                            .to_owned();
+                    }
+                } else if self.active_source_node == Some(id) {
+                    if let Some(mute) = props.monitor_mute {
+                        self.source_mute = mute;
+                    }
+
+                    if let Some(channel_volumes) = props.channel_volumes {
+                        let (volume, _balance) =
+                            pipewire::volume::from_channel_volumes(&channel_volumes);
+                        self.source_volume = (volume * 100.0) as u32;
+                        self.source_volume_text = numtoa::BaseN::<10>::u32(self.source_volume)
+                            .as_str()
+                            .to_owned();
+                    }
+                }
+            }
+
             pipewire::Event::ActiveProfile(id, profile) => {
                 let index = profile.index as u32;
                 self.active_profiles.insert(id, profile);
-                tokio::spawn(async move {
-                    wpctl::set_profile(id, index).await;
-                });
+                self.pipewire_send(pipewire::Request::SetProfile(id, index));
             }
 
-            pipewire::Event::ActiveRoute(id, _index, route) => {
-                self.update_device_route(&route, id);
+            pipewire::Event::ActiveRoute(id, index, route) => {
+                self.add_route(id, index, route);
             }
 
             pipewire::Event::AddProfile(id, profile) => {
@@ -555,16 +376,7 @@ impl Model {
                 profiles.push(profile);
             }
 
-            pipewire::Event::AddRoute(id, index, route) => {
-                self.update_device_route(&route, id);
-                let routes = self.device_routes.entry(id).or_default();
-                if routes.len() < index as usize + 1 {
-                    let additional = (index as usize + 1) - routes.capacity();
-                    routes.reserve_exact(additional);
-                    routes.extend(std::iter::repeat(pipewire::Route::default()).take(additional));
-                }
-                routes[index as usize] = route;
-            }
+            pipewire::Event::AddRoute(id, index, route) => self.add_route(id, index, route),
 
             pipewire::Event::AddDevice(device) => {
                 self.device_names
@@ -601,7 +413,7 @@ impl Model {
                             if self.active_sink_node_name == node.node_name {
                                 self.set_default_sink_id(node.object_id);
                                 tokio::task::spawn(async move {
-                                    wpctl::set_default(node.object_id).await;
+                                    set_default(node.object_id).await;
                                 });
                             }
                         }
@@ -613,7 +425,7 @@ impl Model {
                             if self.active_source_node_name == node.node_name {
                                 self.set_default_source_id(node.object_id);
                                 tokio::task::spawn(async move {
-                                    wpctl::set_default(node.object_id).await;
+                                    set_default(node.object_id).await;
                                 });
                             }
                         }
@@ -624,15 +436,50 @@ impl Model {
                     if Some(device_id) == node.device_id && node.object_id == node_id {
                         self.prev_profile_node = None;
                         tokio::task::spawn(async move {
-                            wpctl::set_default(node_id).await;
+                            set_default(node_id).await;
                         });
                     }
                 }
             }
 
+            pipewire::Event::DefaultSink(node_name) => {
+                if self.active_sink_node_name == node_name {
+                    return;
+                }
+
+                if let Some(id) = self.node_id_from_name(&node_name) {
+                    self.set_default_sink_id(id);
+                }
+
+                self.active_sink_node_name = node_name;
+            }
+
+            pipewire::Event::DefaultSource(node_name) => {
+                if self.active_source_node_name == node_name {
+                    return;
+                }
+
+                if let Some(id) = self.node_id_from_name(&node_name) {
+                    self.set_default_source_id(id);
+                }
+
+                self.active_source_node_name = node_name;
+            }
+
             pipewire::Event::RemoveDevice(id) => self.remove_device(id),
             pipewire::Event::RemoveNode(id) => self.remove_node(id),
         }
+    }
+
+    fn add_route(&mut self, id: DeviceId, index: u32, route: pipewire::Route) {
+        self.update_device_route(&route, id);
+        let routes = self.device_routes.entry(id).or_default();
+        if routes.len() < index as usize + 1 {
+            let additional = (index as usize + 1) - routes.capacity();
+            routes.reserve_exact(additional);
+            routes.extend(std::iter::repeat(pipewire::Route::default()).take(additional));
+        }
+        routes[index as usize] = route;
     }
 
     fn node_id_from_name(&self, name: &str) -> Option<u32> {
@@ -670,7 +517,6 @@ impl Model {
 
         _ = self.device_ids.remove(id);
         _ = self.node_names.remove(id);
-        _ = self.node_route_plugged.remove(id);
         _ = self.card_profile_devices.remove(id);
     }
 
@@ -695,10 +541,6 @@ impl Model {
         device: DeviceId,
         route: &pipewire::Route,
     ) -> Option<String> {
-        if self.node_route_plugged.get(node).is_some() {
-            return None;
-        }
-
         let profile = self.active_profiles.get(device)?;
 
         if !profile.name.starts_with("pro-audio") {
@@ -711,13 +553,7 @@ impl Model {
             }
         }
 
-        let (name, plugged) = self.route_name_get(&route.description, route.available, device)?;
-
-        if plugged {
-            self.node_route_plugged.insert(node, ());
-        }
-
-        Some(name)
+        self.route_name_get(&route.description, route.available, device)
     }
 
     fn route_name_get(
@@ -725,18 +561,16 @@ impl Model {
         route_description: &str,
         route_available: Availability,
         device: DeviceId,
-    ) -> Option<(String, bool)> {
+    ) -> Option<String> {
+        if matches!(route_available, Availability::No) {
+            return None;
+        }
+
         let Some(device_name) = self.device_names.get(device) else {
             return None;
         };
 
-        let (port_name, plugged) = if matches!(route_available, Availability::No) {
-            (self.unplugged_text.as_str(), false)
-        } else {
-            (route_description, true)
-        };
-
-        Some(([&port_name, " - ", device_name].concat(), plugged))
+        Some([&route_description, " - ", device_name].concat())
     }
 
     fn update_device_route(&mut self, route: &pipewire::Route, id: DeviceId) {
@@ -785,37 +619,23 @@ impl Model {
 
     fn translate_device_name(&self, input: &str) -> String {
         input
-            .replace(" Controller", "")
-            .replace("High Definition Audio", &self.hd_audio_text)
-            .replace("HD Audio", &self.hd_audio_text)
-            .replace("USB Audio Device", &self.usb_audio_text)
+            .replacen(" Controller", "", 1)
+            .replacen("High Definition Audio", &self.hd_audio_text, 1)
+            .replacen("HD Audio", &self.hd_audio_text, 1)
+            .replacen("USB Audio Device", &self.usb_audio_text, 1)
     }
 }
 
 #[derive(Clone, Debug)]
 pub enum Message {
     /// Handle messages from the sound server.
-    Server(Arc<Vec<Server>>),
+    Server(Arc<Vec<pipewire::Event>>),
     /// Change the output volume.
     SinkVolumeApply(NodeId),
-    /// Unset the debounce
-    SinkVolumeDebounce,
-    /// Change the output balance.
-    SinkBalanceApply,
     /// Change the input volume.
     SourceVolumeApply(NodeId),
-    /// Unset the debounce.
-    SourceVolumeDebounce,
     /// On init of the subscription, channels for closing background threads are given to the app.
     SubHandle(Arc<SubscriptionHandle>),
-}
-
-#[derive(Clone, Debug)]
-pub enum Server {
-    /// Get default sinks/sources and their volumes/mute status.
-    Pulse(pulse::Event),
-    /// Get ALSA cards and their profiles.
-    Pipewire(pipewire::Event),
 }
 
 pub struct SubscriptionHandle {
@@ -827,4 +647,15 @@ impl std::fmt::Debug for SubscriptionHandle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("SubscriptionHandle")
     }
+}
+
+// TODO: Use pipewire library
+pub async fn set_default(id: u32) {
+    let id = numtoa::BaseN::<10>::u32(id);
+    _ = tokio::process::Command::new("wpctl")
+        .args(["set-default", id.as_str()])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .await;
 }
