@@ -391,10 +391,8 @@ fn output() -> Section<crate::pages::Message> {
                     &*section.descriptions[volume],
                     volume_control,
                 ))
-                .add(settings::item(&*section.descriptions[device], devices));
-
-            if let Some(sink_balance) = page.model.sink_balance {
-                controls = controls.add(settings::item(
+                .add(settings::item(&*section.descriptions[device], devices))
+                .add(settings::item(
                     &*section.descriptions[balance],
                     widget::row::with_capacity(4)
                         .align_y(Alignment::Center)
@@ -407,7 +405,8 @@ fn output() -> Section<crate::pages::Message> {
                         .push(
                             widget::slider(
                                 0..=200,
-                                ((sink_balance + 1.).max(0.) * 100.).round() as u32,
+                                (page.model.sink_balance.unwrap_or(1.0).max(0.) * 100.).round()
+                                    as u32,
                                 |change| Message::SinkBalanceChanged(change).into(),
                             )
                             .breakpoints(&[100]),
@@ -419,7 +418,6 @@ fn output() -> Section<crate::pages::Message> {
                                 .align_x(Alignment::Center),
                         ),
                 ));
-            }
 
             controls = controls.add(
                 settings::item::builder(&*section.descriptions[amplification])

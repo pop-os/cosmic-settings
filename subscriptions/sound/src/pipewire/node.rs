@@ -1,7 +1,10 @@
 // Copyright 2025 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
+use crate::pipewire::{Channel, spa_utils::array_from_pod};
+use libspa::{pod::Pod, utils::Id};
 use pipewire::node::{NodeInfoRef, NodeState};
+use std::ffi::c_float;
 
 /// Node information
 #[must_use]
@@ -127,5 +130,61 @@ impl Node {
         };
 
         Some(device)
+    }
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct NodeProps {
+    pub mute: Option<bool>,
+    pub monitor_mute: Option<bool>,
+    pub channel_map: Option<Vec<Channel>>,
+    pub channel_volumes: Option<Vec<f32>>,
+}
+
+impl NodeProps {
+    pub fn from_pod(pod: &Pod) -> Option<Self> {
+        let props = pod.as_object().ok()?;
+        let props = NodeProps {
+            mute: props
+                .find_prop(Id(libspa_sys::SPA_PROP_mute))
+                .and_then(|prop| prop.value().get_bool().ok()),
+            monitor_mute: props
+                .find_prop(Id(libspa_sys::SPA_PROP_monitorMute))
+                .and_then(|prop| prop.value().get_bool().ok()),
+            channel_map: props
+                .find_prop(Id(libspa_sys::SPA_PROP_channelMap))
+                .and_then(|prop| unsafe { array_from_pod::<Channel>(prop.value()) }),
+            channel_volumes: props
+                .find_prop(Id(libspa_sys::SPA_PROP_channelVolumes))
+                .and_then(|prop| unsafe { array_from_pod::<c_float>(prop.value()) }),
+        };
+
+        if props.mute.is_none()
+            && props.monitor_mute.is_none()
+            && props.channel_map.is_none()
+            && props.channel_volumes.is_none()
+        {
+            None
+        } else {
+            Some(props)
+        }
+    }
+
+    pub fn merge(&mut self, other: NodeProps) {
+        if other.mute.is_some() {
+            self.mute = other.mute
+        }
+
+        if other.monitor_mute.is_some() {
+            self.monitor_mute = other.monitor_mute;
+        }
+
+        if other.channel_map.is_some() {
+            self.channel_map = other.channel_map;
+        }
+
+        if other.channel_volumes.is_some() {
+            self.channel_volumes = other.channel_volumes;
+        }
     }
 }

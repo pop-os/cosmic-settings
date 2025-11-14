@@ -8,28 +8,36 @@ pub use device::Device;
 
 pub mod node;
 use intmap::IntMap;
-pub use node::{MediaClass, Node};
+pub use node::{MediaClass, Node, NodeProps};
 
 mod profile;
 pub use profile::Profile;
 
 mod route;
-pub use route::Route;
+pub use route::{Route, RouteProps};
 
-use libspa::{param::ParamType, pod::Pod};
+mod spa_utils;
+pub use spa_utils::Channel;
+
+use libspa::{
+    param::{ParamType, format::FormatProperties},
+    pod::{self, Pod, serialize::PodSerializer},
+    utils::SpaTypes,
+};
 pub use pipewire::channel::Sender;
 
 use cosmic::iced_futures::{self, Subscription, stream};
 use futures::{SinkExt, executor::block_on};
 pub use pipewire::channel::channel;
 use pipewire::{
-    device::DeviceListener,
+    device::{DeviceChangeMask, DeviceListener},
     main_loop::MainLoopWeak,
+    metadata::MetadataListener,
     node::NodeListener,
     proxy::{ProxyListener, ProxyT},
     types::ObjectType,
 };
-use std::{any::TypeId, cell::RefCell, ffi::CStr, rc::Rc, u32};
+use std::{any::TypeId, cell::RefCell, rc::Rc, u32};
 
 use crate::{DeviceId, NodeId};
 pub type PipewireId = u32;
@@ -59,28 +67,46 @@ pub fn run(
         nodes: IntMap::new(),
         proxies: Proxies {
             devices: IntMap::new(),
+            metadata: IntMap::new(),
             nodes: IntMap::new(),
         },
+        active_routes: IntMap::new(),
+        node_devices: IntMap::new(),
+        node_props: IntMap::new(),
         main_loop: main_loop.downgrade(),
         on_event,
     }));
 
     let _request_handler = rx.attach(main_loop.loop_(), {
         let state = Rc::downgrade(&state);
-        move |request| {
-            match request {
-                // Receives device object IDs for enumerating its profiles.
-                Request::EnumerateDevice(id) => {
-                    if let Some(state) = state.upgrade() {
-                        state.borrow_mut().enumerate_device(id);
-                    }
+        move |request| match request {
+            Request::EnumerateDevice(id) => {
+                if let Some(state) = state.upgrade() {
+                    state.borrow_mut().enumerate_device(id);
                 }
+            }
 
-                // Exit main loop on receivering terminate message.
-                Request::Quit => {
-                    if let Some(state) = state.upgrade() {
-                        state.borrow_mut().quit();
-                    }
+            Request::SetNodeVolume(id, volume, balance) => {
+                if let Some(state) = state.upgrade() {
+                    state.borrow_mut().set_node_volume(id, volume, balance);
+                }
+            }
+
+            Request::SetNodeMute(id, mute) => {
+                if let Some(state) = state.upgrade() {
+                    state.borrow_mut().set_mute_node(id, mute);
+                }
+            }
+
+            Request::SetProfile(id, index) => {
+                if let Some(state) = state.upgrade() {
+                    state.borrow_mut().set_profile(id, index);
+                }
+            }
+
+            Request::Quit => {
+                if let Some(state) = state.upgrade() {
+                    state.borrow_mut().quit();
                 }
             }
         }
@@ -101,6 +127,13 @@ pub fn run(
                         return;
                     };
 
+                    device.subscribe_params(&[
+                        ParamType::EnumProfile,
+                        ParamType::EnumRoute,
+                        ParamType::Profile,
+                        ParamType::Route,
+                    ]);
+
                     let pw_id = device.upcast_ref().id();
 
                     let listener = device
@@ -108,6 +141,28 @@ pub fn run(
                         .info({
                             let state = Rc::downgrade(&state);
                             move |info| {
+                                let change_mask = info.change_mask();
+                                if change_mask == DeviceChangeMask::PARAMS {
+                                    if let Some(state) = state.upgrade() {
+                                        let state = state.borrow();
+                                        let Some((_device_id, device, ..)) =
+                                            state.proxies.devices.get(pw_id)
+                                        else {
+                                            return;
+                                        };
+
+                                        device.enum_params(
+                                            0,
+                                            Some(ParamType::Profile),
+                                            0,
+                                            u32::MAX,
+                                        );
+                                        device.enum_params(1, Some(ParamType::Route), 0, u32::MAX);
+                                    }
+
+                                    return;
+                                }
+
                                 if let Some(device) = Device::from_device(info) {
                                     if let Some(state) = state.upgrade() {
                                         state.borrow_mut().add_device(pw_id, device);
@@ -197,6 +252,9 @@ pub fn run(
                         return;
                     };
 
+                    node.subscribe_params(&[ParamType::Props]);
+                    node.enum_params(0, Some(ParamType::Props), 0, u32::MAX);
+
                     let id = node.upcast_ref().id();
 
                     let listener = node
@@ -208,6 +266,33 @@ pub fn run(
                                     if let Some(state) = state.upgrade() {
                                         state.borrow_mut().add_node(id, node);
                                     }
+                                }
+                            }
+                        })
+                        .param({
+                            let state = Rc::downgrade(&state);
+                            move |_seq, param_type, _index, _next, param| {
+                                let Some(pod) = param else {
+                                    return;
+                                };
+
+                                let Some(state) = state.upgrade() else {
+                                    return;
+                                };
+
+                                let Some(&(node_id, ..)) = state.borrow().proxies.nodes.get(id)
+                                else {
+                                    return;
+                                };
+
+                                match param_type {
+                                    ParamType::Props => {
+                                        if let Some(props) = NodeProps::from_pod(pod) {
+                                            state.borrow_mut().set_node_props(node_id, props);
+                                        }
+                                    }
+
+                                    _ => (),
                                 }
                             }
                         })
@@ -230,7 +315,76 @@ pub fn run(
                         .borrow_mut()
                         .proxies
                         .nodes
-                        .insert(id, (node, listener, remove_listener));
+                        .insert(id, (0, node, listener, remove_listener));
+                }
+
+                ObjectType::Metadata => {
+                    let Ok(metadata) = registry.bind::<pipewire::metadata::Metadata, _>(obj) else {
+                        return;
+                    };
+
+                    let id = metadata.upcast_ref().id();
+
+                    let listener = metadata
+                        .add_listener_local()
+                        .property({
+                            let state = Rc::downgrade(&state);
+                            move |_subject, key, _type, value| {
+                                let Some((key, value)) = key.zip(value) else {
+                                    return 0;
+                                };
+
+                                match key {
+                                    "default.audio.sink" => {
+                                        if let Ok(value) =
+                                            serde_json::de::from_str::<DefaultAudio>(value)
+                                        {
+                                            if let Some(state) = state.upgrade() {
+                                                state
+                                                    .borrow_mut()
+                                                    .default_sink(value.name.to_owned())
+                                            }
+                                        }
+                                    }
+
+                                    "default.audio.source" => {
+                                        if let Ok(value) =
+                                            serde_json::de::from_str::<DefaultAudio>(value)
+                                        {
+                                            if let Some(state) = state.upgrade() {
+                                                state
+                                                    .borrow_mut()
+                                                    .default_source(value.name.to_owned())
+                                            }
+                                        }
+                                    }
+
+                                    _ => (),
+                                }
+
+                                0
+                            }
+                        })
+                        .register();
+
+                    let remove_listener = metadata
+                        .upcast_ref()
+                        .add_listener_local()
+                        .removed({
+                            let state = Rc::downgrade(&state);
+                            move || {
+                                if let Some(state) = state.upgrade() {
+                                    state.borrow_mut().remove_metadata(id);
+                                }
+                            }
+                        })
+                        .register();
+
+                    state
+                        .borrow_mut()
+                        .proxies
+                        .metadata
+                        .insert(id, (metadata, listener, remove_listener));
                 }
                 _ => {}
             };
@@ -256,6 +410,12 @@ pub enum Event {
     AddProfile(DeviceId, Profile),
     /// A route was enumerated
     AddRoute(DeviceId, u32, Route),
+    /// The default sink was changed.
+    DefaultSink(String),
+    /// The default source was changed.
+    DefaultSource(String),
+    /// Emitted when the properties of a node has changed.
+    NodeProperties(NodeId, NodeProps),
     /// A device with the given device_id was removed.
     RemoveDevice(DeviceId),
     /// A node with the given object_id was removed.
@@ -264,8 +424,16 @@ pub enum Event {
 
 #[derive(Clone, Debug)]
 pub enum Request {
+    /// Receives device object IDs for enumerating its profiles.
     EnumerateDevice(DeviceId),
+    /// Mute a node ID
+    SetNodeMute(NodeId, bool),
+    /// Set a device profile
+    SetProfile(DeviceId, u32),
+    /// Stop the main loop and exit the thread.
     Quit,
+    /// Set a new volume
+    SetNodeVolume(DeviceId, f32, Option<f32>),
 }
 
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
@@ -276,11 +444,16 @@ pub enum Availability {
     Yes,
 }
 
-#[derive(Clone, Debug, Default, Hash, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub enum Direction {
     Input,
     #[default]
     Output,
+}
+
+#[derive(serde::Deserialize)]
+pub struct DefaultAudio<'a> {
+    name: &'a str,
 }
 
 struct Proxies {
@@ -293,12 +466,23 @@ struct Proxies {
             ProxyListener,
         ),
     >,
-    nodes: IntMap<PipewireId, (pipewire::node::Node, NodeListener, ProxyListener)>,
+    nodes: IntMap<PipewireId, (NodeId, pipewire::node::Node, NodeListener, ProxyListener)>,
+    metadata: IntMap<
+        PipewireId,
+        (
+            pipewire::metadata::Metadata,
+            MetadataListener,
+            ProxyListener,
+        ),
+    >,
 }
 
 struct State {
     nodes: IntMap<PipewireId, (NodeId, Option<DeviceId>)>,
     pub(self) proxies: Proxies,
+    active_routes: IntMap<DeviceId, Route>,
+    node_devices: IntMap<NodeId, DeviceId>,
+    node_props: IntMap<NodeId, NodeProps>,
     main_loop: MainLoopWeak,
     on_event: futures::channel::mpsc::Sender<Event>,
 }
@@ -309,6 +493,7 @@ impl State {
     }
 
     fn active_route(&mut self, id: DeviceId, index: u32, route: Route) {
+        self.active_routes.insert(id, route.clone());
         self.on_event(Event::ActiveRoute(id, index, route));
     }
 
@@ -324,7 +509,15 @@ impl State {
     }
 
     fn add_node(&mut self, id: PipewireId, node: Node) {
+        // Map the device's pipewire ID to its device ID
+        if let Some(entry) = self.proxies.nodes.get_mut(id) {
+            entry.0 = node.object_id;
+        };
         self.nodes.insert(id, (node.object_id, node.device_id));
+        if let Some(device_id) = node.device_id {
+            self.node_devices.insert(node.object_id, device_id);
+        }
+
         self.on_event(Event::AddNode(node));
     }
 
@@ -337,17 +530,22 @@ impl State {
     }
 
     fn enumerate_device(&mut self, id: DeviceId) {
-        if let Some((_, device, _, _)) = self
-            .proxies
-            .devices
-            .values()
-            .find(|(device_id, ..)| id == *device_id)
-        {
-            device.enum_params(0, Some(ParamType::EnumProfile), 0, u32::MAX);
-            device.enum_params(1, Some(ParamType::EnumRoute), 0, u32::MAX);
-            device.enum_params(2, Some(ParamType::Profile), 0, u32::MAX);
-            device.enum_params(3, Some(ParamType::Route), 0, u32::MAX);
-        }
+        let Some(device) = self.device(id) else {
+            return;
+        };
+
+        device.enum_params(0, Some(ParamType::EnumProfile), 0, u32::MAX);
+        device.enum_params(1, Some(ParamType::EnumRoute), 0, u32::MAX);
+        device.enum_params(2, Some(ParamType::Profile), 0, u32::MAX);
+        device.enum_params(3, Some(ParamType::Route), 0, u32::MAX);
+    }
+
+    fn default_sink(&mut self, name: String) {
+        self.on_event(Event::DefaultSink(name));
+    }
+
+    fn default_source(&mut self, name: String) {
+        self.on_event(Event::DefaultSource(name));
     }
 
     fn on_event(&mut self, event: Event) {
@@ -366,54 +564,386 @@ impl State {
 
     fn remove_device(&mut self, id: PipewireId) {
         if let Some((device_id, ..)) = self.proxies.devices.remove(id) {
+            self.active_routes.remove(device_id);
             self.on_event(Event::RemoveDevice(device_id));
         }
     }
 
+    fn remove_metadata(&mut self, id: PipewireId) {
+        self.proxies.metadata.remove(id);
+    }
+
     fn remove_node(&mut self, id: PipewireId) {
         if let Some((node_id, _)) = self.nodes.remove(id) {
+            self.node_devices.remove(node_id);
+            self.node_props.remove(node_id);
             self.on_event(Event::RemoveNode(node_id));
         }
 
         self.proxies.nodes.remove(id);
     }
-}
 
-fn string_from_pod(pod: &Pod) -> Option<String> {
-    if !pod.is_string() {
-        return None;
+    fn set_mute(&mut self, id: DeviceId, mute: bool) {
+        let Some(device) = self.device(id) else {
+            return;
+        };
+
+        let Some(route) = self.active_routes.get(id) else {
+            return;
+        };
+
+        let route_props = pod::object!(
+            SpaTypes::ObjectParamProps,
+            ParamType::Props,
+            pod::property!(FormatProperties(libspa_sys::SPA_PROP_mute), Bool, mute),
+        );
+
+        let buffer = std::io::Cursor::new(Vec::new());
+        let Ok(serialized) = PodSerializer::serialize(
+            buffer,
+            &pod::Value::Object(pod::object!(
+                SpaTypes::ObjectParamRoute,
+                ParamType::Route,
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_index),
+                    Int,
+                    route.index
+                ),
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_device),
+                    Int,
+                    route.device
+                ),
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_props),
+                    Object,
+                    route_props
+                ),
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_save),
+                    Bool,
+                    true
+                )
+            )),
+        )
+        .map(|(cursor, _)| cursor.into_inner()) else {
+            return;
+        };
+
+        if let Some(param) = Pod::from_bytes(&serialized) {
+            device.set_param(ParamType::Route, 0, param);
+        }
     }
 
-    let mut cstr = std::ptr::null();
+    fn set_mute_node(&mut self, id: NodeId, mute: bool) {
+        // Prefer to mute the device instead of the node.
+        // Muting a node will not emit a notification.
+        if let Some(&device_id) = self.node_devices.get(id) {
+            self.set_mute(device_id, mute);
+            return;
+        }
 
-    unsafe {
-        // SAFETY: Pod is checked to be a string beforehand
-        if libspa_sys::spa_pod_get_string(pod.as_raw_ptr(), &mut cstr) == 0 {
-            if !cstr.is_null() {
-                return Some(String::from_utf8_lossy(CStr::from_ptr(cstr).to_bytes()).into_owned());
+        let Some(node) = self.node(id) else {
+            return;
+        };
+
+        let buffer = std::io::Cursor::new(Vec::new());
+        let Ok(serialized) = PodSerializer::serialize(
+            buffer,
+            &pod::Value::Object(pod::object!(
+                SpaTypes::ObjectParamProps,
+                ParamType::Props,
+                pod::property!(FormatProperties(libspa_sys::SPA_PROP_mute), Bool, mute),
+            )),
+        )
+        .map(|(cursor, _)| cursor.into_inner()) else {
+            return;
+        };
+
+        if let Some(param) = Pod::from_bytes(&serialized) {
+            node.set_param(ParamType::Props, 0, param);
+        }
+    }
+
+    fn set_node_props(&mut self, id: NodeId, props: NodeProps) {
+        self.on_event(Event::NodeProperties(id, props.clone()));
+        self.node_props.entry(id).or_default();
+    }
+
+    fn set_node_volume(&mut self, id: NodeId, volume: f32, balance: Option<f32>) {
+        // Prefer to change the volume of the device instead of the node.
+        if let Some(&device_id) = self.node_devices.get(id) {
+            self.set_volume(device_id, volume, balance);
+            return;
+        }
+
+        let Some((node, props)) = self.node(id).zip(self.node_props.get(id)) else {
+            return;
+        };
+
+        let buffer = std::io::Cursor::new(Vec::new());
+        let Ok(serialized) = PodSerializer::serialize(
+            buffer,
+            &pod::Value::Object(pod::object!(
+                SpaTypes::ObjectParamProps,
+                ParamType::Props,
+                pod::property!(FormatProperties(libspa_sys::SPA_PROP_mute), Bool, false),
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PROP_channelVolumes),
+                    ValueArray,
+                    pod::ValueArray::Float(volume::to_channel_volumes(
+                        &props.channel_map.as_deref().unwrap_or_default(),
+                        volume,
+                        balance,
+                    ))
+                )
+            )),
+        )
+        .map(|(cursor, _)| cursor.into_inner()) else {
+            return;
+        };
+
+        if let Some(param) = Pod::from_bytes(&serialized) {
+            node.set_param(ParamType::Props, 0, param);
+        }
+    }
+
+    fn set_profile(&mut self, id: DeviceId, index: u32) {
+        let Some(device) = self.device(id) else {
+            return;
+        };
+
+        let buffer = std::io::Cursor::new(Vec::new());
+        let Ok(serialized) = PodSerializer::serialize(
+            buffer,
+            &pod::Value::Object(pod::object!(
+                SpaTypes::ObjectParamProfile,
+                ParamType::Profile,
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_PROFILE_index),
+                    Int,
+                    index as i32
+                ),
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_PROFILE_save),
+                    Bool,
+                    true
+                )
+            )),
+        )
+        .map(|(cursor, _)| cursor.into_inner()) else {
+            return;
+        };
+
+        if let Some(param) = Pod::from_bytes(&serialized) {
+            device.set_param(ParamType::Profile, 0, param);
+        }
+    }
+
+    fn set_volume(&mut self, id: DeviceId, volume: f32, balance: Option<f32>) {
+        let Some(device) = self.device(id) else {
+            return;
+        };
+
+        let Some(route) = self.active_routes.get(id) else {
+            return;
+        };
+
+        let Some(props) = route.props.as_ref() else {
+            return;
+        };
+
+        if props.channel_map.is_none() {
+            return;
+        }
+
+        let route_props = pod::object!(
+            SpaTypes::ObjectParamProps,
+            ParamType::Props,
+            pod::property!(FormatProperties(libspa_sys::SPA_PROP_mute), Bool, false),
+            pod::property!(
+                FormatProperties(libspa_sys::SPA_PROP_channelVolumes),
+                ValueArray,
+                pod::ValueArray::Float(volume::to_channel_volumes(
+                    &props.channel_map.as_deref().unwrap_or_default(),
+                    volume,
+                    balance,
+                ))
+            )
+        );
+
+        let buffer = std::io::Cursor::new(Vec::new());
+        let Ok(serialized) = PodSerializer::serialize(
+            buffer,
+            &pod::Value::Object(pod::object!(
+                SpaTypes::ObjectParamRoute,
+                ParamType::Route,
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_index),
+                    Int,
+                    route.index
+                ),
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_device),
+                    Int,
+                    route.device
+                ),
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_props),
+                    Object,
+                    route_props
+                ),
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_save),
+                    Bool,
+                    true
+                )
+            )),
+        )
+        .map(|(cursor, _)| cursor.into_inner()) else {
+            return;
+        };
+
+        if let Some(param) = Pod::from_bytes(&serialized) {
+            device.set_param(ParamType::Route, 0, param);
+        }
+    }
+
+    fn device(&self, id: DeviceId) -> Option<&pipewire::device::Device> {
+        self.proxies
+            .devices
+            .values()
+            .find(|(device_id, ..)| id == *device_id)
+            .map(|(_, device, ..)| device)
+    }
+
+    fn node(&self, id: NodeId) -> Option<&pipewire::node::Node> {
+        self.proxies
+            .nodes
+            .values()
+            .find(|(node_id, ..)| id == *node_id)
+            .map(|(_, node, ..)| node)
+    }
+}
+
+pub mod volume {
+    use crate::pipewire::Channel;
+
+    /// Get the configured volume and balance based on a provided channel volumes array.
+    pub fn from_channel_volumes(channels: &[f32]) -> (f32, Option<f32>) {
+        let left_volume = channels.first().cloned().unwrap_or_default();
+        let right_volume = channels.last().cloned().unwrap_or_default();
+
+        if (left_volume - right_volume).abs() < f32::EPSILON {
+            return (left_volume, None);
+        }
+
+        let (volume, balance) = if left_volume >= right_volume {
+            (left_volume, right_volume / left_volume)
+        } else {
+            (right_volume, (2.0 - (left_volume / right_volume)))
+        };
+
+        let volume = volume;
+
+        (volume, Some(balance))
+    }
+
+    /// Create a channel volumes array based on the provided volume, balance, and channel positions.
+    pub fn to_channel_volumes(
+        channel_map: &[Channel],
+        volume: f32,
+        balance: Option<f32>,
+    ) -> Vec<f32> {
+        if let Some(balance) = balance {
+            let (left_volume, right_volume) = if balance >= 1.0 {
+                ((volume * (balance - 2.0).abs()), volume)
+            } else {
+                (volume, volume * balance)
+            };
+
+            let center_volume = (left_volume + right_volume) / 2.0;
+            let mut channel_volumes = Vec::with_capacity(channel_map.len());
+
+            // Use channel identifiers to apply volume balance
+            for channel in channel_map {
+                channel_volumes.push(match channel {
+                    // Left channels
+                    Channel::FL
+                    | Channel::SL
+                    | Channel::FLC
+                    | Channel::RL
+                    | Channel::TFL
+                    | Channel::TFC
+                    | Channel::TRL
+                    | Channel::RLC
+                    | Channel::FLW
+                    | Channel::FLH
+                    | Channel::TFLC
+                    | Channel::TSL
+                    | Channel::LLFE
+                    | Channel::BLC => left_volume,
+                    // Right channels
+                    Channel::FR
+                    | Channel::SR
+                    | Channel::FRC
+                    | Channel::RR
+                    | Channel::TFR
+                    | Channel::TRC
+                    | Channel::TRR
+                    | Channel::RRC
+                    | Channel::FRW
+                    | Channel::FRH
+                    | Channel::TFRC
+                    | Channel::TSR
+                    | Channel::RLFE
+                    | Channel::BRC => right_volume,
+                    // Center/neutral channels
+                    _ => center_volume,
+                });
+            }
+
+            channel_volumes
+        } else {
+            vec![volume; channel_map.len()]
+        }
+    }
+
+    #[cfg(test)]
+    mod test {
+        use crate::pipewire::Channel;
+
+        #[test]
+        fn volume_balance_to_channel_volumes() {
+            // Test conversions to and from a channel
+            let channel_map = &[Channel::FL, Channel::FR];
+            let inputs = vec![
+                ((0.77, Some(0.32)), &[0.77, 0.24639998]),
+                ((0.77, Some(0.57)), &[0.77, 0.4389]),
+                ((0.77, Some(0.68)), &[0.77, 0.5236]),
+                ((0.77, Some(0.74)), &[0.77, 0.5698]),
+                ((0.77, Some(1.00)), &[0.77, 0.77]),
+                ((0.77, Some(1.32)), &[0.5235999, 0.77]),
+                ((0.77, Some(1.57)), &[0.33109996, 0.77]),
+                ((0.77, Some(1.68)), &[0.24640003, 0.77]),
+                ((0.77, Some(1.74)), &[0.20019999, 0.77]),
+            ];
+
+            for ((volume, balance), channel_volumes) in inputs {
+                let out = super::to_channel_volumes(channel_map, volume, balance);
+                assert_eq!(&out, channel_volumes);
+                let res = super::from_channel_volumes(&out);
+                assert!((volume - res.0).abs() < 0.01, "{} != {}", volume, res.0);
+                assert!(
+                    balance.map_or_else(
+                        || res.1 == Some(1.0),
+                        |b| res.1.map_or_else(|| b == 1.0, |r| (b - r).abs() < 0.01)
+                    ),
+                    "{:?} != {:?}",
+                    balance,
+                    res.1
+                );
             }
         }
-    }
-
-    None
-}
-
-/// SAFETY: Must be absolutely certain that the array is an integer array.
-unsafe fn int_array_from_pod(pod: &Pod) -> Option<Vec<i32>> {
-    if !pod.is_array() {
-        return None;
-    }
-
-    let mut len = 0;
-
-    unsafe {
-        let array: *mut std::ffi::c_int =
-            libspa_sys::spa_pod_get_array(pod.as_raw_ptr(), &mut len).cast();
-
-        if array.is_null() {
-            return None;
-        }
-
-        Some(std::slice::from_raw_parts(array, len as usize).to_owned())
     }
 }
