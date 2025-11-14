@@ -74,8 +74,12 @@ impl Info {
         let instance = wgpu::Instance::default();
         let adapters = instance.enumerate_adapters(wgpu::Backends::all());
 
-        // Track seen GPUs by vendor ID to avoid duplicates from different backends
-        let mut seen_vendors = HashSet::new();
+        // Track seen GPUs by (vendor, device) and by name to handle different scenarios:
+        // - Same GPU via different backends (Vulkan/OpenGL) -> deduplicate by device ID or name
+        // - Multiple identical GPUs -> show all (different device IDs or backend enumeration order)
+        // - Backends with invalid device IDs (0x0000) -> deduplicate by name
+        let mut seen_devices = HashSet::new();
+        let mut seen_names = HashSet::new();
 
         for adapter in adapters {
             let adapter_info = adapter.get_info();
@@ -84,20 +88,24 @@ impl Info {
                 continue;
             }
 
-            // Deduplicate by vendor ID. Same GPU can be exposed via multiple backends
-            if seen_vendors.contains(&adapter_info.vendor) {
-                continue;
-            }
-
-            seen_vendors.insert(adapter_info.vendor);
-
-            // Strip driver info in parentheses for cleaner display
             let gpu_name = if let Some(pos) = adapter_info.name.find('(') {
                 adapter_info.name[..pos].trim().to_string()
             } else {
                 adapter_info.name
             };
+            let device_key = (adapter_info.vendor, adapter_info.device);
+            if adapter_info.device != 0 && seen_devices.contains(&device_key) {
+                continue;
+            }
 
+            if adapter_info.device == 0 && seen_names.contains(&gpu_name) {
+                continue;
+            }
+
+            if adapter_info.device != 0 {
+                seen_devices.insert(device_key);
+            }
+            seen_names.insert(gpu_name.clone());
             info.graphics.push(gpu_name);
         }
 
