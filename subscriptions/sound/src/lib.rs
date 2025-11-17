@@ -183,6 +183,11 @@ impl Model {
                     self.pipewire_send(pipewire::Request::SetProfile(device_id, index));
                 }
             }
+
+            // Use pw-cli as a fallback in case it wasn't set correctly.
+            tokio::spawn(async move {
+                set_profile(device_id, index).await;
+            });
         }
     }
 
@@ -358,6 +363,10 @@ impl Model {
                 let index = profile.index as u32;
                 self.active_profiles.insert(id, profile);
                 self.pipewire_send(pipewire::Request::SetProfile(id, index));
+                // Use pw-cli as a fallback in case it wasn't set correctly.
+                tokio::spawn(async move {
+                    set_profile(id, index).await;
+                });
             }
 
             pipewire::Event::ActiveRoute(id, index, route) => {
@@ -654,6 +663,19 @@ pub async fn set_default(id: u32) {
     let id = numtoa::BaseN::<10>::u32(id);
     _ = tokio::process::Command::new("wpctl")
         .args(["set-default", id.as_str()])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .await;
+}
+
+// TODO: Use pipewire library
+pub async fn set_profile(id: u32, index: u32) {
+    let id = numtoa::BaseN::<10>::u32(id);
+    let index = numtoa::BaseN::<10>::u32(index);
+    let value = ["{ index: ", index.as_str(), ", save: true }"].concat();
+    _ = tokio::process::Command::new("pw-cli")
+        .args(["s", id.as_str(), "Profile", &value])
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()
