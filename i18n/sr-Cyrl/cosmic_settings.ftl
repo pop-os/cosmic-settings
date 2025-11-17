@@ -513,6 +513,7 @@ keyboard-sources = Језик уноса
 keyboard-special-char = Уношење специјалних знакова
     .alternate = Тастер за алтернативне знакове
     .compose = Compose тастер
+    .compose-desc = Compose тастер омогућава унос широког спектра знакова. Да бисте га користили, притисните Compose, а затим секвенцу знакова. На пример, Compose тастер праћен тастерима C и o уноси ©, док праћен тастерима а и ‘ уноси á.
     .caps = Caps Lock тастер
 keyboard-typing-assist = Куцање
     .repeat-rate = Стопа понављања

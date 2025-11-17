@@ -11,9 +11,9 @@ desktop = Skrivbord
 ## Skrivbord: Utseende
 
 appearance = Utseende
-    .desc = Accentfärger och COSMIC tema.
+    .desc = Accentfärger och COSMIC tema
 accent-color = Accentfärg
-app-background = Program- eller fönsterbakgrund
+app-background = Fönsterbakgrund
 auto = Automatisk
 close = Stäng
 color-picker = Färgväljare
@@ -38,17 +38,17 @@ auto-switch = Växla automatiskt från ljust till mörkt läge
 container-background = Behållarbakgrund
     .desc-detail = Behållarens bakgrundsfärg används för navigeringssidofält, sidolåda, dialogrutor och liknande widgets. Som standard härleds den automatiskt från programmets eller fönstrets bakgrund.
     .reset = Återställ till automatiskt
-    .desc = Primär behållarfärg används för navigeringssidofält, sidolåda, dialogrutor och liknande widgets.
-control-tint = Kontrollkomponentens nyans
-    .desc = Används för bakgrunder av standardknappar, sökinmatningar, textinmatningar och liknande komponenter.
+    .desc = Används för navigeringssidofält, sidolåda, dialogrutor och liknande widgets
+control-tint = Kontrollkomponentens färgton
+    .desc = Används för bakgrunder av standardknappar, sökinmatningar, textinmatningar och liknande komponenter
 frosted = Frostat glaseffekt på systemgränssnittet
-    .desc = Tillämpar bakgrundsoskärpa på panel, docka, miniprogram, programstartare och programbibliotek.
+    .desc = Tillämpar bakgrundsoskärpa på panel, docka, miniprogram, programstartare och programbibliotek
 enable-export = Använd detta tema för GNOME program.
     .desc = Alla verktygssatser har inte stöd för automatisk växling. Icke COSMIC program kan behöva startas om efter en temaändring.
 icon-theme = Ikontema
-    .desc = Tillämpar en annan uppsättning ikoner till program.
+    .desc = Tillämpar en annan uppsättning ikoner till program
 text-tint = Gränssnittstextton
-    .desc = Färg som används för att härleda gränssnittstextfärger som har tillräcklig kontrast på olika ytor.
+    .desc = Färg som används för att härleda gränssnittstextfärger som har tillräcklig kontrast på olika ytor
 style = Stil
     .round = Rund
     .slightly-round = Lite rund
@@ -61,7 +61,7 @@ interface-density = Gränssnittstäthet
 ## Gränssnittstäthet
 
 window-management = Fönsterhantering
-    .desc = Åtgärd för Super-tangent, fönsterkontroll alternativ, och ytterligare fönsterplacerings alternativ.
+    .desc = Åtgärd för Super-tangent, fönsterkontrollalternativ, och ytterligare fönsterplaceringsalternativ
 window-management-appearance = Fönsterhantering
     .active-hint = Storlek på aktivt fönster indikator
     .gaps = Springor runt kaklade fönster
@@ -74,7 +74,7 @@ edge-gravity = Flytande fönster dras till närliggande kanter
 
 ## Testinställningar
 
-experimental-settings = Testinställningar
+experimental-settings = Experimentella inställningar
 icons-and-toolkit = Utformning av ikoner och verktyg
 interface-font = Systemteckensnitt
 monospace-font = Teckensnitt med fast bredd
@@ -88,12 +88,12 @@ color = Färg
     .sidebar = Färgprofiler
     .temperature = Färgtemperatur
 display = Skärmar
-    .desc = Hantera skärmar, grafikväxling och nattljus
+    .desc = Hantera skärmar och nattljus
     .arrangement = Visningsarrangemang
     .arrangement-desc = Dra skärmar för att ordna om dem.
     .enable = Aktivera skärm
-    .external = { $size } { $output } Extern skärm
-    .laptop = { $size } Laptop-skärm
+    .external = { $size } { $output } extern skärm
+    .laptop = { $size } laptop-skärm
     .options = Skärmalternativ
     .refresh-rate = Uppdateringsfrekvens
     .resolution = Upplösning
@@ -115,7 +115,7 @@ mirroring = Spegling
         }
 night-light = Nattljus
     .auto = Automatiskt (solnedgång till soluppgång)
-    .desc = Reducera blått ljus med varmare färger.
+    .desc = Reducera blått ljus med varmare färger
 orientation = Orientering
     .standard = Standard
     .rotate-90 = Rotera 90°
@@ -156,7 +156,7 @@ magnifier = Förstoringsglas
         Super + scrolla med musen
     .scroll_controls = Aktivera mus eller pekplattazoom med Super + Scroll
     .show_overlay = Visa förstoringsglas överlägget
-    .increment = Zoom inkrement
+    .increment = Förstoring
     .signin = Starta förstoringsglaset vid inloggning
     .applet = Slå på/av förstoringsglaset i miniprogrammet på panelen
     .movement = Zoomad vy flyttas
@@ -166,23 +166,23 @@ magnifier = Förstoringsglas
 color-filter = Färgfilter typ
     .unknown = Okänt filter aktivt
     .greyscale = Gråskala
-    .deuteranopia = Grön/Röd (grön svaghet, Deuteranopia)
-    .protanopia = Röd/Grön (röd svaghet, Protanopia)
-    .tritanopia = Blå/Gul (blå svaghet, Tritanopia)
+    .deuteranopia = Grön/Röd (grön svaghet, Deuteranopi)
+    .protanopia = Röd/Grön (röd svaghet, Protanopi)
+    .tritanopia = Blå/Gul (blå svaghet, Tritanopi)
 
 ## Skrivbord: Aviseringar
 
 notifications = Aviseringar
-    .desc = Stör ej, aviseringar på låsskärmen och inställningar per program.
+    .desc = Stör ej, aviseringar på låsskärmen och inställningar per program
 
 ## Skrivbord: Alternativ
 
 dock = Docka
-    .desc = En valfri list för program och miniprogram.
+    .desc = En valfri list för program och miniprogram
 window-controls = Fönsterkontroller
     .minimize = Visa minimera knapp
     .maximize = Visa maximera knapp
-    .active-window-hint = Visa aktivt fönster-indikator
+    .active-window-hint = Visa indikation för aktivt fönster
 focus-navigation = Fokusnavigering
     .focus-follows-cursor = Fokus följer markören
     .focus-follows-cursor-delay = Fokus följer markören, fördröjning i ms
@@ -191,7 +191,7 @@ focus-navigation = Fokusnavigering
 ## Skrivbord: Panel
 
 panel = Panel
-    .desc = Primär systemlist för menyer och miniprogram.
+    .desc = Primär systemlist för menyer och miniprogram
 add = Lägg till
 add-applet = Lägg till miniprogram
 all = Alla
@@ -212,8 +212,8 @@ panel-appearance = Utseende
     .light = Ljust
     .dark = Mörkt
 panel-behavior-and-position = Beteende och positioner
-    .autohide = Automatiskt dölj panel
-    .dock-autohide = Automatiskt dölj docka
+    .autohide = Dölj panel automatiskt
+    .dock-autohide = Dölj docka automatiskt
     .position = Position på skärm
     .display = Visa på skärm
 panel-style = Stil
@@ -265,7 +265,7 @@ x-hours =
 ## Skrivbord: Arbetsytor
 
 workspaces = Arbetsytor
-    .desc = Ställ in antal arbetsytor, beteende och orientering.
+    .desc = Orientering och beteende för arbetsytor
 workspaces-behavior = Beteende för arbetsytor
     .dynamic = Dynamiska arbetsytor
     .dynamic-desc = Tar automatiskt bort tomma arbetsytor.
@@ -277,7 +277,7 @@ workspaces-multi-behavior = Beteende med flera skärmar
 workspaces-overview-thumbnails = Miniatyrer på arbetsyteöversikt
     .show-number = Visa arbetsytans nummer
     .show-name = Visa arbetsytans namn
-workspaces-orientation = Arbetsytor Orientering
+workspaces-orientation = Arbetsytors orientering
     .vertical = Vertikal
     .horizontal = Horisontell
 hot-corner = Heta hörn
@@ -341,15 +341,15 @@ connections-and-profiles =
 
 add-vpn = Lägg till VPN
 auth-dialog = Autentisering krävs
-    .vpn-description = Skriv användarnamn och lösenod som krävs av VPN-tjänsten.
-    .wifi-description = Skriv lösenord eller krypterad nyckel. Du kan även ansluta genom att trycka på "WPS"-knappen på routern.
-remove-connection-dialog = Ta bort ansluten profil?
-    .vpn-description = Du behöver i framtiden skriva ditt lösenord igen för att använda den här funktoinen.
-    .wired-description = Du behöver i framtiden återskapa den här profilen för att kunna använda den.
+    .vpn-description = Skriv användarnamn och lösenord som krävs av VPN-tjänsten.
+    .wifi-description = Skriv lösenord eller krypteringsnyckel. Du kan även ansluta genom att trycka på "WPS"-knappen på routern.
+remove-connection-dialog = Ta bort anslutningsprofil?
+    .vpn-description = Du kommer att behöva skriva ditt lösenord igen för att använda det här nätverket.
+    .wired-description = Du kommer att behöva återskapa den här profilen för att kunna använda den igen.
 vpn = VPN
     .connections = VPN-anslutningar
     .error = Misslyckades med att lägga till en VPN-konfiguration
-    .remove = Ta bort ansluten profil
+    .remove = Ta bort anslutningsprofil
     .select-file = Välj en VPN-konfigurationsfil
 
 ## Nätverk: Onlinekonton
@@ -381,16 +381,16 @@ bluetooth-paired = Tidigare anslutna enheter
 bluetooth-confirm-pin = Bekräfta Bluetooth PIN
     .description = Kontrollera att följande PIN-kod stämmer överens med den som visas på { $device }
 bluetooth-available = Enheter i närheten
-bluetooth-adapters = Bluetooth Adapters
+bluetooth-adapters = Bluetooth-adaptrar
 
 ## Datum, tid & språk
 
 time = Tid & språk
     .desc = N/A
 time-date = Datum & tid
-    .desc = Tidszon, automatiska klockinställningar och viss tidsformatering.
+    .desc = Tidszon, automatiska klockinställningar och viss tidsformatering
     .auto = Ställ in automatiskt
-    .auto-ntp = Datum och tid uppdateras automatisk när tidszon är satt.
+    .auto-ntp = Datum och tid uppdateras automatisk när tidszon är satt
 time-zone = Tidszon
     .auto = Automatisk tidszon
     .auto-info = Kräver platstjänster och internetåtkomst
@@ -404,7 +404,7 @@ time-format = Datum & tidsformat
     .sunday = Söndag
     .monday = Måndag
 time-region = Region & språk
-    .desc = Formatera datum, tider och siffror baserat på din region.
+    .desc = Formatera datum, tider och siffror baserat på din region
 preferred-languages = Föredragna språk
     .desc = Ordningen på språken avgör vilket språk som används för översättningen av skrivbordsmiljön. Ändringar träder i kraft vid nästa inloggning.
 add-language = Lägg till språk
@@ -442,9 +442,9 @@ system = System & konton
 ## System: Om
 
 about = Om
-    .desc = Enhetsnamn, hårdvaruinformation, operativsystemstandarder.
+    .desc = Enhetsnamn, hårdvaruinformation, operativsystemstandarder
 about-device = Enhetsnamn
-    .desc = Detta namn visas för andra nätverks eller bluetooth-enheter.
+    .desc = Detta namn visas för andra nätverk eller bluetooth-enheter
 about-hardware = Hårdvara
     .model = Hårdvarumodell
     .memory = Minne
@@ -454,6 +454,7 @@ about-hardware = Hårdvara
 about-os = Operativsystem
     .os = Operativsystem
     .os-architecture = Operativsystemarkitektur
+    .kernel = Kärnversion
     .desktop-environment = Skrivbordsmiljö
     .windowing-system = Fönstersystem
 about-related = Relaterade inställningar
@@ -462,23 +463,23 @@ about-related = Relaterade inställningar
 ## System: Fast programvara
 
 firmware = Fast programvara
-    .desc = Detaljer om fast programvara.
+    .desc = Detaljer om fast programvara
 
 ## System: Användare
 
 users = Användare
-    .desc = Autentisering och användarkonton.
+    .desc = Autentisering och användarkonton
     .admin = Administratör
     .standard = Standard
     .profile-add = Välj profilbild
 administrator = Administratör
-    .desc = Administratörer kan ändra inställningar för alla användare, lägga till och ta bort andra användare.
+    .desc = Administratörer kan ändra inställningar för alla användare, lägga till och ta bort andra användare
 add-user = Lägg till användare
 change-password = Ändra lösenord
 remove-user = Ta bort användare
 full-name = Fullständigt namn
-invalid-username = Ogiltigt användarnamn.
-password-mismatch = Lösenord och bekräftelse måste matcha.
+invalid-username = Ogiltigt användarnamn
+password-mismatch = Lösenord och bekräftelse måste överensstämma
 save = Spara
 
 ## Ström
@@ -508,16 +509,16 @@ battery = Batteri
             [full] fullt
            *[other] urladdat
         }
-connected-devices = Kopplade enheter
+connected-devices = Anslutna enheter
     .unknown = Okänd enhet
 power-mode = Strömalternativ
     .battery = Förläng batteriets livslängd
-    .battery-desc = Låg strömförbrukning och tyst prestanda.
+    .battery-desc = Minskad strömförbrukning och tyst prestanda
     .balanced = Balanserad
-    .balanced-desc = Lågmäld prestanda och måttlig strömförbrukning.
+    .balanced-desc = Lågmäld prestanda och måttlig strömförbrukning
     .performance = Hög prestanda
-    .performance-desc = Hög prestanda och strömförbrukning.
-    .no-backend = Basbearbetning ej funnen. Installera system76-power eller power-profiles-daemon.
+    .performance-desc = Hög prestanda och strömförbrukning
+    .no-backend = Bakända hittades inte. Installera system76-power eller power-profiles-daemon.
 power-saving = Energisparalternativ
     .turn-off-screen-after = Stäng av skärmen efter
     .auto-suspend = Automatiskt vänteläge
@@ -526,12 +527,12 @@ power-saving = Energisparalternativ
 
 ## Input
 
-acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet.
+acceleration-desc = Justerar automatiskt spårningskänsligheten baserat på hastighet
 disable-while-typing = Inaktivera medan du skriver
 input-devices = Inmatningsenheter
     .desc = Inmatningsenheter
 primary-button = Primär knapp
-    .desc = Ställer in ordningen på fysiska knappar.
+    .desc = Ställer in ordningen på fysiska knappar
     .left = Vänster
     .right = Höger
 scrolling = Rullning
@@ -548,7 +549,7 @@ fast = Snabb
 short = Kort
 long = Lång
 keyboard = Tangentbord
-    .desc = Ingångskällor, växling, inmatning av specialtecken, genvägar.
+    .desc = Ingångskällor, växling, inmatning av specialtecken, genvägar
 keyboard-sources = Inmatningskällor
     .desc = Ingångskällor kan växlas med tangentkombinationen Super+Mellanslag. Detta kan anpassas i inställningarna för kortkommandon.
     .move-up = Flytta upp
@@ -557,10 +558,11 @@ keyboard-sources = Inmatningskällor
     .view-layout = Visa tangentbordslayout
     .remove = Ta bort
     .add = Lägg till källa
-keyboard-special-char = Specialkaraktärsinmatning
-    .alternate = Knapp för alternativa tecken
-    .compose = Compose knapp
-    .caps = Caps Lock knapp
+keyboard-special-char = Specialteckeninmatning
+    .alternate = Tangent för alternativa tecken
+    .compose = Compose-tangent
+    .compose-desc = Compose-tangenten tillåter en stor mängd olika tecken att matas in. För att göra det, tryck compose och sedan en teckensekvens. Om du t.ex. trycker på compose-tangenten och sedan C och o kommer du att mata in ©, medan compose-tangenten och sedan a och ' kommer att mata in á.
+    .caps = Caps Lock-tangent
 keyboard-typing-assist = Tangenttrycksrespons
     .repeat-rate = Upprepningshastighet
     .repeat-delay = Upprepningsfördröjning
@@ -671,7 +673,7 @@ system-shortcut = System
     .brightness-down = Minska skärmens ljusstyrka
     .brightness-up = Öka skärmens ljusstyrka
     .display-toggle = Växla inbyggd skärm
-    .home-folder = Öppna personlig mapp
+    .home-folder = Öppna hem-mapp
     .keyboard-brightness-down = Minska tangentbordets ljusstyrka
     .keyboard-brightness-up = Öka tangentbordets ljusstyrka
     .launcher = Öppna programstartaren
@@ -701,12 +703,12 @@ window-tiling = Kaklad fönsterplacering
     .toggle-floating = Växla flytande fönster
     .toggle-orientation = Växla orientering
 replace-shortcut-dialog = Byt ut genväg?
-    .desc = { $shortcut } används av { $name }. Om du byter ut den så kommer, { $name } att inaktiveras.
+    .desc = { $shortcut } används av { $name }. Om du byter ut den så kommer { $name } att inaktiveras.
 
 ## Input: Mus
 
 mouse = Mus
-    .desc = Mushastighet, acceleration, naturlig rullning.
+    .desc = Mushastighet, acceleration, naturlig rullning
     .speed = Mushastighet
     .acceleration = Aktivera musacceleration
 
@@ -716,9 +718,9 @@ click-behavior = Klickbeteende
     .click-finger = Sekundärklicka med två fingrar och mellanklicka med tre fingrar
     .button-areas = Sekundärklicka i det nedre högra hörnet och mittenklicka längst ner i mitten
 tap-to-click = Tryck för att klicka
-    .desc = Aktiverar tryck med ett finger för primärt klick, tryck med två fingrar för sekundärt klick och tryck med tre fingrar för mittenklick.
+    .desc = Aktiverar tryck med ett finger för primärt klick, tryck med två fingrar för sekundärt klick och tryck med tre fingrar för mittenklick
 touchpad = Pekplatta
-    .desc = Pekplattans hastighet, klickalternativ, gester.
+    .desc = Pekplattans hastighet, klickalternativ, gester
     .speed = Pekplattans hastighet
     .acceleration = Aktivera acceleration för pekplatta
 
@@ -744,7 +746,7 @@ applications = Program
 ## System: Standardprogram
 
 default-apps = Standardprogram
-    .desc = Standardwebbläsare, e-postklient, filhanteringsprogram och andra program.
+    .desc = Standardwebbläsare, e-postklient, filhanteringsprogram och andra program
     .web-browser = Webbläsare
     .file-manager = Filhanteringsprogram
     .mail-client = E-postklient
@@ -758,34 +760,34 @@ default-apps = Standardprogram
 
 ## Program: Äldre program
 
-legacy-applications = X11 program kompatibilitet
-    .desc = X11 fönstersystemprogramsskalning och globala genvägar.
-legacy-app-global-shortcuts = Globala genvägar i X11 program
-    .desc = Globala genvägar gör att tangenttryckningar och musknappshändelser som utförs i program kan kännas igen av andra program för funktioner som tryck-för-att-tala eller tryck-för-att-tysta. Som standard är detta inaktiverat i X11-program för att säkerställa att andra program inte kan övervaka tangentbords och mushändelser som innehåller känslig information.
+legacy-applications = X11-programkompatibilitet
+    .desc = Programskalning för X11-fönstersystemet och globala genvägar
+legacy-app-global-shortcuts = Globala genvägar i X11-program
+    .desc = Globala genvägar gör att tangenttryckningar och musknappshändelser som utförs i program kan kännas igen av andra program för funktioner som tryck-för-att-tala eller tryck-för-att-tysta. Som standard är detta inaktiverat i X11-program för att säkerställa att andra program inte kan övervaka tangentbords- och mushändelser som innehåller känslig information.
     .none = Inga tangenter
     .modifiers = Modifierare (Super, Shift, Control, Alt)
     .combination = Alla tangenter medan modifierare Super, Control eller Alt håller på att tryckas ned
     .all = Alla tangenter
-    .mouse = Musknappshändelser i X11 program
-legacy-app-scaling = X11 fönstersystem programsskalning
+    .mouse = Musknappshändelser i X11-program
+legacy-app-scaling = Programskalning för X11-fönstersystemet
     .scaled-gaming = Optimera för spel och helskärmsprogram
     .gaming-description = X11-program kan verka något större/mindre jämfört med Wayland-program.
     .scaled-applications = Optimera för program
-    .applications-description = Spel och helskärms X11-program kanske inte matchar din skärmupplösning.
+    .applications-description = Spel och helskärmsprogram för X11 kanske inte matchar din skärmupplösning.
     .scaled-compatibility = Maximalt kompatibilitetsläge
-    .compatibility-description = X11 program kan se suddiga ut på HiDPI-skärmar.
-    .preferred-display = Föredragen skärm för spel och helskärms X11-program
+    .compatibility-description = X11-program kan se suddiga ut på HiDPI-skärmar.
+    .preferred-display = Föredragen skärm för spel och helskärmsprogram för X11
     .no-display = Ingen
 
 ## System: Uppstartsprogram
 
 startup-apps = Uppstartsprogram
-    .desc = Konfigurera program som körs vid inloggning.
+    .desc = Konfigurera program som körs vid inloggning
     .add = Lägg till program
     .user = Program som körs när du loggar in
     .none = Inga uppstartsprogram tillagda
     .remove-dialog-title = Ta bort { $name }?
-    .remove-dialog-description = Är du säker på att du vill ta bort detta uppstartsprogram?
+    .remove-dialog-description = Ta bort detta uppstartsprogram?
     .add-startup-app = Lägg till uppstartsprogram
 never = Aldrig
 vrr = Variabel uppdateringsfrekvens
@@ -794,13 +796,13 @@ vrr = Variabel uppdateringsfrekvens
     .auto = Automatisk
     .disabled = Av
 amplification = Ljudförstärkning
-    .desc = Tillåt att höja volymen till 150%.
+    .desc = Tillåt att höja volymen till 150%
 input-source-switch = Växla tangentbordsspråkets inmatningskälla
 zoom-in = Zooma in
 zoom-out = Zooma ut
 pinch-to-zoom = Nyp för att zooma
-    .desc = Använd två fingrar för att zooma in i innehåll, för program som stödjer zoom.
-formatting = Formattering
+    .desc = Använd två fingrar för att zooma in i innehåll, för program som stödjer zoom
+formatting = Formatering
     .dates = Datum
     .time = Tid
     .date-and-time = Datum & Tid
@@ -838,3 +840,7 @@ network-device-state =
     .unmanaged = Ohanterad
     .unplugged = Kabel frånkopplad
 place-here = Placera miniprogram här
+qr-code-unavailable = QR-kod ej tillgänglig
+network-name = Nätverkets namn
+share = Dela nätverk
+scan-to-connect-description = Skanna in QR-koden för att ansluta till detta nätverk.

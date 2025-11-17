@@ -11,6 +11,7 @@ use cosmic::{
     widget::{self, Space, column, icon, row, settings, text},
 };
 use cosmic_settings_page::{self as page, Section, section};
+use image::GenericImageView;
 use pwhash::{bcrypt, md5_crypt, sha256_crypt, sha512_crypt};
 use regex::Regex;
 use slab::Slab;
@@ -20,7 +21,7 @@ use std::{
     fs::File,
     future::Future,
     io::{BufRead, BufReader},
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::Arc,
 };
 use url::Url;
@@ -28,6 +29,14 @@ use zbus_polkit::policykit1::CheckAuthorizationFlags;
 
 const DEFAULT_ICON_FILE: &str = "/usr/share/pixmaps/faces/pop-robot.png";
 const USERS_ADMIN_POLKIT_POLICY_ID: &str = "com.system76.CosmicSettings.Users.Admin";
+
+// AccountsService has a hard limit of 1MB for icon files
+// https://gitlab.freedesktop.org/accountsservice/accountsservice/-/blob/main/src/user.c#L3131
+const MAX_ICON_SIZE_BYTES: u64 = 1_048_576;
+// Use a smaller threshold to ensure compressed images stay under the limit
+const ICON_SIZE_THRESHOLD: u64 = 900_000; // 900KB
+// Target dimensions for resized profile icons
+const TARGET_ICON_SIZE: u32 = 512;
 
 #[derive(Clone, Debug, Default)]
 pub struct User {
@@ -122,6 +131,58 @@ impl From<Message> for crate::pages::Message {
     fn from(message: Message) -> Self {
         crate::pages::Message::User(message)
     }
+}
+
+fn prepare_icon_file(path: &Path) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let metadata = std::fs::metadata(path)?;
+    let file_size = metadata.len();
+
+    tracing::debug!("Icon file size: {} bytes", file_size);
+
+    if file_size <= ICON_SIZE_THRESHOLD {
+        tracing::debug!("File size is acceptable, using original file");
+        return Ok(path.to_path_buf());
+    }
+
+    tracing::info!(
+        "Icon file is {} bytes, resizing to fit under 1MB limit",
+        file_size
+    );
+
+    let img = image::open(path)?;
+    let (width, height) = img.dimensions();
+
+    tracing::debug!("Original image dimensions: {}x{}", width, height);
+
+    let (new_width, new_height) = if width > height {
+        let ratio = TARGET_ICON_SIZE as f32 / width as f32;
+        (TARGET_ICON_SIZE, (height as f32 * ratio) as u32)
+    } else {
+        let ratio = TARGET_ICON_SIZE as f32 / height as f32;
+        ((width as f32 * ratio) as u32, TARGET_ICON_SIZE)
+    };
+
+    tracing::debug!("Resizing to {}x{}", new_width, new_height);
+
+    let resized = img.resize(new_width, new_height, image::imageops::FilterType::Lanczos3);
+
+    // Create a temporary file for the resized icon
+    let temp_dir = std::env::temp_dir();
+    let temp_filename = format!("cosmic-settings-icon-{}.png", std::process::id());
+    let temp_path = temp_dir.join(temp_filename);
+
+    tracing::debug!("Saving resized icon to: {:?}", temp_path);
+
+    resized.save(&temp_path)?;
+
+    let new_size = std::fs::metadata(&temp_path)?.len();
+    tracing::info!("Resized icon file size: {} bytes", new_size);
+
+    if new_size > MAX_ICON_SIZE_BYTES {
+        tracing::warn!("Resized file is still too large, but attempting anyway");
+    }
+
+    Ok(temp_path)
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -466,8 +527,17 @@ impl Page {
                         return Message::None;
                     };
 
+                    // Prepare the icon file, resizing if necessary to fit within accountsservice's 1MB limit
+                    let icon_path = match prepare_icon_file(&path) {
+                        Ok(p) => p,
+                        Err(why) => {
+                            tracing::error!(?why, "failed to prepare icon file");
+                            return Message::None;
+                        }
+                    };
+
                     let result = request_permission_on_denial(&conn, || {
-                        user.set_icon_file(path.to_str().unwrap())
+                        user.set_icon_file(icon_path.to_str().unwrap())
                     })
                     .await;
 
