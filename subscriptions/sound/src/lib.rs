@@ -374,10 +374,17 @@ impl Model {
             }
 
             pipewire::Event::AddProfile(id, profile) => {
+                if let Some(p) = self.active_profiles.get_mut(id) {
+                    if p.index == profile.index {
+                        *p = profile.clone();
+                    }
+                }
+
                 let profiles = self.device_profiles.entry(id).or_default();
                 for p in profiles.iter_mut() {
                     if p.index == profile.index {
                         *p = profile;
+
                         return;
                     }
                 }
