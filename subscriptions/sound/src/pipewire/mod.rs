@@ -154,6 +154,12 @@ pub fn run(
 
                                         device.enum_params(
                                             0,
+                                            Some(ParamType::EnumProfile),
+                                            0,
+                                            u32::MAX,
+                                        );
+                                        device.enum_params(
+                                            0,
                                             Some(ParamType::Profile),
                                             0,
                                             u32::MAX,
