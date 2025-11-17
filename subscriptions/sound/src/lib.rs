@@ -344,7 +344,7 @@ impl Model {
                             .to_owned();
                     }
                 } else if self.active_source_node == Some(id) {
-                    if let Some(mute) = props.monitor_mute {
+                    if let Some(mute) = props.mute {
                         self.source_mute = mute;
                     }
 
