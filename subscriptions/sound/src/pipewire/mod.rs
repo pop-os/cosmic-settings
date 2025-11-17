@@ -72,6 +72,7 @@ pub fn run(
         },
         active_routes: IntMap::new(),
         node_devices: IntMap::new(),
+        node_card_profile_device: IntMap::new(),
         node_props: IntMap::new(),
         main_loop: main_loop.downgrade(),
         on_event,
@@ -480,9 +481,10 @@ struct Proxies {
 struct State {
     nodes: IntMap<PipewireId, (NodeId, Option<DeviceId>)>,
     pub(self) proxies: Proxies,
-    active_routes: IntMap<DeviceId, Route>,
+    active_routes: IntMap<DeviceId, Vec<Route>>,
     node_devices: IntMap<NodeId, DeviceId>,
     node_props: IntMap<NodeId, NodeProps>,
+    node_card_profile_device: IntMap<NodeId, u32>,
     main_loop: MainLoopWeak,
     on_event: futures::channel::mpsc::Sender<Event>,
 }
@@ -493,7 +495,14 @@ impl State {
     }
 
     fn active_route(&mut self, id: DeviceId, index: u32, route: Route) {
-        self.active_routes.insert(id, route.clone());
+        let routes = self.active_routes.entry(id).or_default();
+        if routes.len() < index as usize + 1 {
+            let additional = (index as usize + 1) - routes.capacity();
+            routes.reserve_exact(additional);
+            routes.extend(std::iter::repeat(Route::default()).take(additional));
+        }
+        routes[index as usize] = route.clone();
+
         self.on_event(Event::ActiveRoute(id, index, route));
     }
 
@@ -514,6 +523,10 @@ impl State {
             entry.0 = node.object_id;
         };
         self.nodes.insert(id, (node.object_id, node.device_id));
+        if let Some(card_profile_device) = node.card_profile_device {
+            self.node_card_profile_device
+                .insert(node.object_id, card_profile_device);
+        }
         if let Some(device_id) = node.device_id {
             self.node_devices.insert(node.object_id, device_id);
         }
@@ -575,6 +588,7 @@ impl State {
 
     fn remove_node(&mut self, id: PipewireId) {
         if let Some((node_id, _)) = self.nodes.remove(id) {
+            self.node_card_profile_device.remove(node_id);
             self.node_devices.remove(node_id);
             self.node_props.remove(node_id);
             self.on_event(Event::RemoveNode(node_id));
@@ -583,12 +597,8 @@ impl State {
         self.proxies.nodes.remove(id);
     }
 
-    fn set_mute(&mut self, id: DeviceId, mute: bool) {
+    fn set_mute(&self, id: DeviceId, route: &Route, mute: bool) {
         let Some(device) = self.device(id) else {
-            return;
-        };
-
-        let Some(route) = self.active_routes.get(id) else {
             return;
         };
 
@@ -635,12 +645,14 @@ impl State {
         }
     }
 
-    fn set_mute_node(&mut self, id: NodeId, mute: bool) {
+    fn set_mute_node(&self, id: NodeId, mute: bool) {
         // Prefer to mute the device instead of the node.
         // Muting a node will not emit a notification.
         if let Some(&device_id) = self.node_devices.get(id) {
-            self.set_mute(device_id, mute);
-            return;
+            if let Some(route) = self.node_route(device_id, id) {
+                self.set_mute(device_id, route, mute);
+                return;
+            };
         }
 
         let Some(node) = self.node(id) else {
@@ -665,16 +677,26 @@ impl State {
         }
     }
 
+    fn node_route(&self, device_id: DeviceId, node_id: NodeId) -> Option<&Route> {
+        let route_device = *self.node_card_profile_device.get(node_id)?;
+        self.active_routes
+            .get(device_id)?
+            .iter()
+            .find(|r| r.device as u32 == route_device)
+    }
+
     fn set_node_props(&mut self, id: NodeId, props: NodeProps) {
         self.on_event(Event::NodeProperties(id, props.clone()));
         self.node_props.entry(id).or_default();
     }
 
-    fn set_node_volume(&mut self, id: NodeId, volume: f32, balance: Option<f32>) {
+    fn set_node_volume(&self, id: NodeId, volume: f32, balance: Option<f32>) {
         // Prefer to change the volume of the device instead of the node.
         if let Some(&device_id) = self.node_devices.get(id) {
-            self.set_volume(device_id, volume, balance);
-            return;
+            if let Some(route) = self.node_route(device_id, id) {
+                self.set_volume(device_id, route, volume, balance);
+                return;
+            };
         }
 
         let Some((node, props)) = self.node(id).zip(self.node_props.get(id)) else {
@@ -740,22 +762,14 @@ impl State {
         }
     }
 
-    fn set_volume(&mut self, id: DeviceId, volume: f32, balance: Option<f32>) {
+    fn set_volume(&self, id: DeviceId, route: &Route, volume: f32, balance: Option<f32>) {
         let Some(device) = self.device(id) else {
-            return;
-        };
-
-        let Some(route) = self.active_routes.get(id) else {
             return;
         };
 
         let Some(props) = route.props.as_ref() else {
             return;
         };
-
-        if props.channel_map.is_none() {
-            return;
-        }
 
         let route_props = pod::object!(
             SpaTypes::ObjectParamProps,
@@ -764,11 +778,15 @@ impl State {
             pod::property!(
                 FormatProperties(libspa_sys::SPA_PROP_channelVolumes),
                 ValueArray,
-                pod::ValueArray::Float(volume::to_channel_volumes(
-                    &props.channel_map.as_deref().unwrap_or_default(),
-                    volume,
-                    balance,
-                ))
+                pod::ValueArray::Float(if matches!(route.direction, Direction::Output) {
+                    volume::to_channel_volumes(
+                        &props.channel_map.as_deref().unwrap_or_default(),
+                        volume,
+                        balance,
+                    )
+                } else {
+                    vec![volume * volume * volume]
+                })
             )
         );
 
