@@ -4,8 +4,8 @@
 pub mod pipewire;
 
 use crate::pipewire::Availability;
+use cosmic::Task;
 use cosmic::iced_futures::MaybeSend;
-use cosmic::{Task, widget::dropdown};
 use futures::{FutureExt, SinkExt, Stream, StreamExt};
 use intmap::IntMap;
 use std::{process::Stdio, sync::Arc, time::Duration};
@@ -86,6 +86,7 @@ pub struct Model {
     active_profiles: IntMap<DeviceId, pipewire::Profile>,
     device_routes: IntMap<DeviceId, Vec<pipewire::Route>>,
 
+    last_set_profile: Option<(DeviceId, u32)>,
     prev_profile_node: Option<(DeviceId, NodeId)>,
 
     /** Sink devices */
@@ -161,6 +162,7 @@ impl Model {
     ///
     /// Requires using the device ID rather than a node ID.
     pub fn set_profile(&mut self, device_id: DeviceId, index: u32) {
+        self.last_set_profile = Some((device_id, index));
         if let Some(profiles) = self.device_profiles.get(device_id) {
             for profile in profiles {
                 if profile.index as u32 == index {
@@ -366,11 +368,15 @@ impl Model {
             pipewire::Event::ActiveProfile(id, profile) => {
                 let index = profile.index as u32;
                 self.active_profiles.insert(id, profile);
-                self.pipewire_send(pipewire::Request::SetProfile(id, index));
-                // Use pw-cli as a fallback in case it wasn't set correctly.
-                tokio::spawn(async move {
-                    set_profile(id, index).await;
-                });
+
+                // Use pw-cli to re-set profile if wireplumber has bad state.
+                if self.last_set_profile != Some((id, index)) {
+                    self.last_set_profile = None;
+                    // Use pw-cli as a fallback in case it wasn't set correctly.
+                    tokio::spawn(async move {
+                        set_profile(id, index).await;
+                    });
+                }
             }
 
             pipewire::Event::ActiveRoute(id, index, route) => {
