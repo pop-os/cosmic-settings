@@ -335,6 +335,10 @@ impl Model {
         match event {
             pipewire::Event::NodeProperties(id, props) => {
                 if self.active_sink_node == Some(id) {
+                    if self.sink_volume_debounce {
+                        return;
+                    }
+
                     if let Some(mute) = props.mute {
                         self.sink_mute = mute;
                     }
@@ -350,6 +354,10 @@ impl Model {
                             .to_owned();
                     }
                 } else if self.active_source_node == Some(id) {
+                    if self.source_volume_debounce {
+                        return;
+                    }
+
                     if let Some(mute) = props.mute {
                         self.source_mute = mute;
                     }
@@ -372,7 +380,6 @@ impl Model {
                 // Use pw-cli to re-set profile if wireplumber has bad state.
                 if self.last_set_profile != Some((id, index)) {
                     self.last_set_profile = None;
-                    // Use pw-cli as a fallback in case it wasn't set correctly.
                     tokio::spawn(async move {
                         set_profile(id, index).await;
                     });
