@@ -4,8 +4,8 @@
 pub mod pipewire;
 
 use crate::pipewire::Availability;
-use cosmic::Task;
 use cosmic::iced_futures::MaybeSend;
+use cosmic::{Task, widget::dropdown};
 use futures::{FutureExt, SinkExt, Stream, StreamExt};
 use intmap::IntMap;
 use std::{process::Stdio, sync::Arc, time::Duration};
@@ -70,19 +70,21 @@ pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
 pub struct Model {
     subscription_handle: Option<SubscriptionHandle>,
 
+    pub device_profile_dropdowns: Vec<(DeviceId, String, Option<usize>, Vec<u32>, Vec<String>)>,
+
     // Translated text
     pub unplugged_text: String,
     pub hd_audio_text: String,
     pub usb_audio_text: String,
 
     device_ids: IntMap<NodeId, DeviceId>,
-    pub node_names: IntMap<NodeId, String>,
+    node_names: IntMap<NodeId, String>,
     card_profile_devices: IntMap<NodeId, u32>,
 
-    pub device_names: IntMap<DeviceId, String>,
-    pub device_profiles: IntMap<DeviceId, Vec<pipewire::Profile>>,
-    pub active_profiles: IntMap<DeviceId, pipewire::Profile>,
-    pub device_routes: IntMap<DeviceId, Vec<pipewire::Route>>,
+    device_names: IntMap<DeviceId, String>,
+    device_profiles: IntMap<DeviceId, Vec<pipewire::Profile>>,
+    active_profiles: IntMap<DeviceId, pipewire::Profile>,
+    device_routes: IntMap<DeviceId, Vec<pipewire::Route>>,
 
     prev_profile_node: Option<(DeviceId, NodeId)>,
 
@@ -292,10 +294,12 @@ impl Model {
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::Server(events) => Arc::into_inner(events)
-                .into_iter()
-                .flatten()
-                .for_each(|event| self.pipewire_update(event)),
+            Message::Server(events) => {
+                Arc::into_inner(events)
+                    .into_iter()
+                    .flatten()
+                    .for_each(|event| self.pipewire_update(event));
+            }
 
             Message::SinkVolumeApply(node_id) => {
                 self.sink_volume_debounce = false;
@@ -385,11 +389,13 @@ impl Model {
                     if p.index == profile.index {
                         *p = profile;
 
+                        self.update_ui_profiles();
                         return;
                     }
                 }
 
                 profiles.push(profile);
+                self.update_ui_profiles();
             }
 
             pipewire::Event::AddRoute(id, index, route) => self.add_route(id, index, route),
@@ -631,6 +637,61 @@ impl Model {
                 }
             }
         }
+    }
+
+    // Update the cached profiles for the UI.
+    fn update_ui_profiles(&mut self) {
+        self.device_profile_dropdowns = self
+            .device_profiles
+            .iter()
+            .filter_map(|(device_id, profiles)| {
+                let name = self.device_names.get(device_id)?.as_str();
+                let (active_profile, indexes, descriptions) = self
+                    .active_profiles
+                    .get(device_id)
+                    .and_then(|profile| {
+                        let (indexes, descriptions): (Vec<_>, Vec<_>) = profiles
+                            .iter()
+                            .filter(|p| {
+                                p.index == profile.index
+                                    || !matches!(p.available, pipewire::Availability::No)
+                            })
+                            .map(|p| (p.index as u32, p.description.clone()))
+                            .collect();
+
+                        let pos = profiles
+                            .iter()
+                            .filter(|p| {
+                                p.index == profile.index
+                                    || !matches!(p.available, pipewire::Availability::No)
+                            })
+                            .enumerate()
+                            .find(|(_, p)| p.index == profile.index)
+                            .map(|(pos, _)| pos);
+
+                        Some((pos, indexes, descriptions))
+                    })
+                    .unwrap_or_else(|| {
+                        let (indexes, descriptions): (Vec<_>, Vec<_>) = profiles
+                            .iter()
+                            .filter(|p| !matches!(p.available, pipewire::Availability::No))
+                            .map(|p| (p.index as u32, p.description.clone()))
+                            .collect();
+
+                        (None, indexes, descriptions)
+                    });
+
+                Some((
+                    device_id,
+                    name.to_owned(),
+                    active_profile,
+                    indexes,
+                    descriptions,
+                ))
+            })
+            .collect::<Vec<_>>();
+
+        self.device_profile_dropdowns.sort_by(|a, b| a.1.cmp(&b.1));
     }
 
     fn translate_device_name(&self, input: &str) -> String {

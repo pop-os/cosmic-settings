@@ -3,8 +3,7 @@
 
 use cosmic::{Apply, widget};
 use cosmic_settings_page::{self as page, Section, section};
-use cosmic_settings_sound_subscription::{self as subscription, pipewire};
-use itertools::Itertools;
+use cosmic_settings_sound_subscription::{self as subscription};
 use slotmap::SlotMap;
 
 #[derive(Clone, Debug)]
@@ -74,40 +73,10 @@ pub fn view() -> Section<crate::pages::Message> {
 
         let devices = sound_page
             .model
-            .device_profiles
+            .device_profile_dropdowns
             .iter()
-            .filter_map(|(device_id, profiles)| {
-                let name = sound_page.model.device_names.get(device_id)?.as_str();
-
-                // TODO: cache
-                let (active_profile, indexes, descriptions) = sound_page
-                    .model
-                    .active_profiles
-                    .get(device_id)
-                    .and_then(|profile| {
-                        let (indexes, descriptions): (Vec<_>, Vec<_>) = profiles
-                            .iter()
-                            .filter(|p| {
-                                p.index == profile.index
-                                    || !matches!(p.available, pipewire::Availability::No)
-                            })
-                            .map(|p| (p.index as u32, p.description.clone()))
-                            .collect();
-
-                        let pos = profiles
-                            .iter()
-                            .filter(|p| {
-                                p.index == profile.index
-                                    || !matches!(p.available, pipewire::Availability::No)
-                            })
-                            .enumerate()
-                            .find(|(_, p)| p.index == profile.index)
-                            .map(|(pos, _)| pos);
-
-                        Some((pos, indexes, descriptions))
-                    })
-                    .unwrap_or_else(|| (None, Vec::new(), Vec::new()));
-
+            .cloned()
+            .map(|(device_id, name, active_profile, indexes, descriptions)| {
                 let dropdown = widget::dropdown::popup_dropdown(
                     descriptions,
                     active_profile,
@@ -119,13 +88,8 @@ pub fn view() -> Section<crate::pages::Message> {
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::from);
 
-                Some((
-                    name,
-                    widget::settings::item::builder(name).control(dropdown),
-                ))
-            })
-            .sorted_by(|a, b| a.0.cmp(b.0))
-            .map(|(_, element)| element);
+                widget::settings::item::builder(name).control(dropdown)
+            });
 
         widget::settings::section().extend(devices).into()
     })
