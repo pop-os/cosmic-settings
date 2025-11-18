@@ -80,29 +80,36 @@ pub fn view() -> Section<crate::pages::Message> {
                 let name = sound_page.model.device_names.get(device_id)?.as_str();
 
                 // TODO: cache
-                let active_profile =
-                    sound_page
-                        .model
-                        .active_profiles
-                        .get(device_id)
-                        .and_then(|profile| {
-                            profiles
-                                .iter()
-                                .filter(|p| !matches!(p.available, pipewire::Availability::No))
-                                .enumerate()
-                                .find(|(_, p)| p.index == profile.index)
-                                .map(|(pos, _)| pos)
-                        });
+                let (active_profile, indexes, descriptions) = sound_page
+                    .model
+                    .active_profiles
+                    .get(device_id)
+                    .and_then(|profile| {
+                        let (indexes, descriptions): (Vec<_>, Vec<_>) = profiles
+                            .iter()
+                            .filter(|p| {
+                                p.index == profile.index
+                                    || !matches!(p.available, pipewire::Availability::No)
+                            })
+                            .map(|p| (p.index as u32, p.description.clone()))
+                            .collect();
 
-                // TODO: cache
-                let (indexes, profiles): (Vec<_>, Vec<_>) = profiles
-                    .iter()
-                    .filter(|p| !matches!(p.available, pipewire::Availability::No))
-                    .map(|p| (p.index as u32, p.description.clone()))
-                    .collect();
+                        let pos = profiles
+                            .iter()
+                            .filter(|p| {
+                                p.index == profile.index
+                                    || !matches!(p.available, pipewire::Availability::No)
+                            })
+                            .enumerate()
+                            .find(|(_, p)| p.index == profile.index)
+                            .map(|(pos, _)| pos);
+
+                        Some((pos, indexes, descriptions))
+                    })
+                    .unwrap_or_else(|| (None, Vec::new(), Vec::new()));
 
                 let dropdown = widget::dropdown::popup_dropdown(
-                    Vec::from_iter(profiles),
+                    descriptions,
                     active_profile,
                     move |id| super::Message::SetProfile(device_id, indexes[id]),
                     cosmic::iced::window::Id::RESERVED,
