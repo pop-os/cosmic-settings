@@ -215,8 +215,22 @@ impl Model {
     pub fn sink_changed(&mut self, pos: usize) -> Task<Message> {
         if let Some(&object_id) = self.sink_node_ids.get(pos) {
             self.set_default_sink_id(object_id);
+
+            // Use pactl if the node is not a device node.
+            let virtual_sink_name: Option<String> = if self.device_ids.contains_key(object_id) {
+                None
+            } else if let Some(name) = self.node_names.get(object_id) {
+                Some(name.clone())
+            } else {
+                None
+            };
+
             tokio::task::spawn(async move {
-                set_default(object_id).await;
+                if let Some(node_name) = virtual_sink_name {
+                    pactl_set_default_sink(&node_name).await
+                } else {
+                    set_default(object_id).await
+                }
             });
         }
 
@@ -256,8 +270,22 @@ impl Model {
     pub fn source_changed(&mut self, pos: usize) -> Task<Message> {
         if let Some(&object_id) = self.source_node_ids.get(pos) {
             self.set_default_source_id(object_id);
+
+            // Use pactl if the node is not a device node.
+            let virtual_source_name: Option<String> = if self.device_ids.contains_key(object_id) {
+                None
+            } else if let Some(name) = self.node_names.get(object_id) {
+                Some(name.clone())
+            } else {
+                None
+            };
+
             tokio::task::spawn(async move {
-                set_default(object_id).await;
+                if let Some(node_name) = virtual_source_name {
+                    pactl_set_default_source(&node_name).await
+                } else {
+                    set_default(object_id).await
+                }
             });
         }
 
@@ -419,6 +447,8 @@ impl Model {
             }
 
             pipewire::Event::AddNode(node) => {
+                // Device nodes will have device and card profile device IDs.
+                // Virtual sinks/sources do not have these.
                 if let Some(device_id) = node.device_id {
                     self.device_ids.insert(node.object_id, device_id);
 
@@ -744,6 +774,28 @@ pub async fn set_default(id: u32) {
     let id = numtoa::BaseN::<10>::u32(id);
     _ = tokio::process::Command::new("wpctl")
         .args(["set-default", id.as_str()])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .await;
+}
+
+/// Use this to set a virtual sink as a default.
+/// TODO: We should be able to set this with pipewire-rs somehow.
+pub async fn pactl_set_default_sink(node_name: &str) {
+    _ = tokio::process::Command::new("pactl")
+        .args(["set-default-sink", node_name])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .await;
+}
+
+/// Use this to set a virtual sink as a default.
+/// TODO: We should be able to set this with pipewire-rs somehow.
+pub async fn pactl_set_default_source(node_name: &str) {
+    _ = tokio::process::Command::new("pactl")
+        .args(["set-default-source", node_name])
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status()
