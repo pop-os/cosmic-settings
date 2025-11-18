@@ -204,7 +204,7 @@ impl Model {
         if let Some(id) = self.active_sink_node {
             self.sink_volume_debounce = true;
             return cosmic::Task::future(async move {
-                tokio::time::sleep(Duration::from_millis(32)).await;
+                tokio::time::sleep(Duration::from_millis(128)).await;
                 Message::SinkVolumeApply(id).into()
             });
         }
@@ -245,7 +245,7 @@ impl Model {
         if let Some(node_id) = self.active_sink_node {
             self.sink_volume_debounce = true;
             return cosmic::Task::future(async move {
-                tokio::time::sleep(Duration::from_millis(32)).await;
+                tokio::time::sleep(Duration::from_millis(128)).await;
                 Message::SinkVolumeApply(node_id).into()
             });
         }
@@ -286,7 +286,7 @@ impl Model {
         if let Some(node_id) = self.active_source_node {
             self.source_volume_debounce = true;
             return cosmic::Task::future(async move {
-                tokio::time::sleep(Duration::from_millis(64)).await;
+                tokio::time::sleep(Duration::from_millis(128)).await;
                 Message::SourceVolumeApply(node_id).into()
             });
         }
