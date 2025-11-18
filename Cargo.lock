@@ -1628,6 +1628,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmic-pipewire"
+version = "1.0.0-beta6"
+dependencies = [
+ "intmap",
+ "libspa",
+ "libspa-sys",
+ "pipewire",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
 name = "cosmic-protocols"
 version = "0.1.0"
 source = "git+https://github.com/pop-os/cosmic-protocols//?rev=d0e95be#d0e95be25e423cfe523b11111a3666ed7aaf0dc4"
@@ -1670,7 +1683,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "accounts-zbus",
  "anyhow",
@@ -1752,7 +1765,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-a11y-manager-subscription"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "cosmic-protocols",
  "iced_futures",
@@ -1765,7 +1778,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-accessibility-subscription"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "cosmic-dbus-a11y",
  "futures",
@@ -1777,7 +1790,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-airplane-mode-subscription"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "futures",
  "iced_futures",
@@ -1788,7 +1801,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-bluetooth-subscription"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "bluez-zbus",
  "futures",
@@ -1830,7 +1843,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-daemon-subscription"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "futures",
  "iced_futures",
@@ -1842,7 +1855,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-network-manager-subscription"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "cosmic-dbus-networkmanager",
  "futures",
@@ -1857,7 +1870,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-page"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "derive_setters",
  "downcast-rs 2.0.2",
@@ -1870,26 +1883,23 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-sound-subscription"
-version = "1.0.0-beta1"
+version = "1.0.0-beta6"
 dependencies = [
+ "cosmic-pipewire",
+ "crossbeam-queue",
  "futures",
  "intmap",
  "libcosmic",
- "libspa",
- "libspa-sys",
  "log",
  "numtoa",
- "pipewire",
  "rustix 1.1.2",
- "serde",
- "serde_json",
  "tokio",
  "tracing",
 ]
 
 [[package]]
 name = "cosmic-settings-system"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "bumpalo",
  "byte-unit",
@@ -1901,7 +1911,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-upower-subscription"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "futures",
  "iced_futures",
@@ -1914,7 +1924,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-wallpaper"
-version = "0.1.0"
+version = "1.0.0-beta6"
 dependencies = [
  "cosmic-bg-config",
  "cosmic-randr-shell",
@@ -2012,6 +2022,15 @@ name = "crossbeam-epoch"
 version = "0.9.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b82ac4a3c2ca9c3460964f020e1402edd5753411d7737aa39c3714ad1b5420e"
+dependencies = [
+ "crossbeam-utils",
+]
+
+[[package]]
+name = "crossbeam-queue"
+version = "0.3.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f58bbc28f91df819d0aa2a2c00cd19754769c2fad90579b3592b1c9ba7a3115"
 dependencies = [
  "crossbeam-utils",
 ]

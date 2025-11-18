@@ -24,11 +24,6 @@ use libspa::{
     pod::{self, Pod, serialize::PodSerializer},
     utils::SpaTypes,
 };
-pub use pipewire::channel::Sender;
-
-use cosmic::iced_futures::{self, Subscription, stream};
-use futures::{SinkExt, executor::block_on};
-pub use pipewire::channel::channel;
 use pipewire::{
     device::{DeviceChangeMask, DeviceListener},
     main_loop::MainLoopWeak,
@@ -37,26 +32,30 @@ use pipewire::{
     proxy::{ProxyListener, ProxyT},
     types::ObjectType,
 };
-use std::{any::TypeId, cell::RefCell, rc::Rc, u32};
+use std::{cell::RefCell, rc::Rc, u32};
 
-use crate::{DeviceId, NodeId};
+pub type NodeId = u32;
+pub type RouteId = u32;
+pub type DeviceId = u32;
+pub type ProfileId = i32;
 pub type PipewireId = u32;
 
-pub fn subscription() -> iced_futures::Subscription<Event> {
-    Subscription::run_with_id(
-        TypeId::of::<Event>(),
-        stream::channel(1, |sender| async {
-            let (_tx, rx) = channel();
-            std::thread::spawn(move || run(rx, sender));
+pub fn run(on_event: impl FnMut(Event) + Send + 'static) -> Sender {
+    let (request_tx, request_rx) = pipewire::channel::channel();
 
-            futures::future::pending().await
-        }),
-    )
+    std::thread::spawn(move || {
+        if let Err(why) = run_service(request_rx, on_event) {
+            tracing::error!(?why, "failed to run pipewire thread");
+        }
+    });
+
+    Sender(request_tx)
 }
 
-pub fn run(
+/// Monitor pipewire activity and
+fn run_service(
     rx: pipewire::channel::Receiver<Request>,
-    on_event: futures::channel::mpsc::Sender<Event>,
+    on_event: impl FnMut(Event) + Send + 'static,
 ) -> Result<(), pipewire::Error> {
     let main_loop = pipewire::main_loop::MainLoopRc::new(None)?;
     let context = pipewire::context::ContextRc::new(&main_loop, None)?;
@@ -75,7 +74,7 @@ pub fn run(
         node_card_profile_device: IntMap::new(),
         node_props: IntMap::new(),
         main_loop: main_loop.downgrade(),
-        on_event,
+        on_event: Box::new(on_event),
     }));
 
     let _request_handler = rx.attach(main_loop.loop_(), {
@@ -430,16 +429,16 @@ pub enum Event {
 
 #[derive(Clone, Debug)]
 pub enum Request {
-    /// Receives device object IDs for enumerating its profiles.
+    /// Request a device's routes, profiles, active routes, and active profile.
     EnumerateDevice(DeviceId),
     /// Mute a node ID
     SetNodeMute(NodeId, bool),
-    /// Set a device profile
+    /// Set a device profile by profile index.
     SetProfile(DeviceId, u32),
-    /// Stop the main loop and exit the thread.
-    Quit,
     /// Set a new volume
     SetNodeVolume(DeviceId, f32, Option<f32>),
+    /// Stop the main loop and exit the thread.
+    Quit,
 }
 
 #[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
@@ -491,7 +490,8 @@ struct State {
     node_props: IntMap<NodeId, NodeProps>,
     node_card_profile_device: IntMap<NodeId, u32>,
     main_loop: MainLoopWeak,
-    on_event: futures::channel::mpsc::Sender<Event>,
+    /// Handle events and exit the loop when `true` is returned.
+    on_event: Box<dyn FnMut(Event)>,
 }
 
 impl State {
@@ -547,7 +547,7 @@ impl State {
 
     fn add_route(&mut self, id: DeviceId, index: u32, route: Route) {
         // Keep a record of routes attached to a device for setting properties.
-        // This will overwrite routes on updates.
+        // This will overwrite routes on updates to
         let routes = self.routes.entry(id).or_default();
         if routes.len() < index as usize + 1 {
             let additional = (index as usize + 1) - routes.capacity();
@@ -580,11 +580,7 @@ impl State {
     }
 
     fn on_event(&mut self, event: Event) {
-        if block_on(self.on_event.send(event)).is_err() {
-            if let Some(main_loop) = self.main_loop.upgrade() {
-                main_loop.quit();
-            }
-        }
+        (self.on_event)(event);
     }
 
     fn quit(&mut self) {
@@ -879,8 +875,22 @@ impl State {
     }
 }
 
+pub struct Sender(pipewire::channel::Sender<Request>);
+
+impl Sender {
+    pub fn send(&self, request: Request) -> Result<(), Request> {
+        self.0.send(request)
+    }
+}
+
+impl Drop for Sender {
+    fn drop(&mut self) {
+        _ = self.0.send(Request::Quit);
+    }
+}
+
 pub mod volume {
-    use crate::pipewire::Channel;
+    use crate::Channel;
 
     /// Get the configured volume and balance based on a provided channel volumes array.
     pub fn from_channel_volumes(channels: &[f32]) -> (f32, Option<f32>) {
@@ -963,7 +973,7 @@ pub mod volume {
 
     #[cfg(test)]
     mod test {
-        use crate::pipewire::Channel;
+        use crate::Channel;
 
         #[test]
         fn volume_balance_to_channel_volumes() {

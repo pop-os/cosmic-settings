@@ -1,13 +1,12 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-pub mod pipewire;
-
-use crate::pipewire::Availability;
 use cosmic::Task;
 use cosmic::iced_futures::MaybeSend;
-use futures::{FutureExt, SinkExt, Stream, StreamExt};
+use cosmic_pipewire as pipewire;
+use futures::{FutureExt, SinkExt, Stream};
 use intmap::IntMap;
+use pipewire::Availability;
 use std::{process::Stdio, sync::Arc, time::Duration};
 
 pub type DeviceId = u32;
@@ -16,44 +15,38 @@ pub type ProfileId = i32;
 pub type RouteId = u32;
 
 pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
-    cosmic::iced_futures::stream::channel(8, |mut emitter| async move {
+    cosmic::iced_futures::stream::channel(1, |mut emitter| async move {
         let (cancel_tx, mut cancel_rx) = futures::channel::oneshot::channel::<()>();
-        let (tx, mut pw_rx) = futures::channel::mpsc::channel(1);
-        let (request_tx, request_rx) = pipewire::channel();
-        std::thread::spawn(move || {
-            if let Err(why) = pipewire::run(request_rx, tx) {
-                tracing::error!(?why, "failed to run pipewire thread");
-            }
-        });
+        let events = Arc::new(crossbeam_queue::SegQueue::new());
 
         _ = emitter
             .send(
                 Message::SubHandle(Arc::new(SubscriptionHandle {
                     cancel_tx,
-                    pipewire: request_tx,
+                    pipewire: pipewire::run({
+                        let events = events.clone();
+                        move |event| {
+                            events.push(event);
+                        }
+                    }),
                 }))
                 .into(),
             )
             .await;
 
-        let mut events = Vec::new();
         let mut timer = tokio::time::interval(Duration::from_millis(64));
 
         loop {
             futures::select! {
-                event = pw_rx.next().fuse() => {
-                    let Some(event) = event else {
-                        break;
-                    };
-
-                    events.push(event);
-                    timer.reset();
-                }
-
                 _ = timer.tick().fuse() => {
                     if !events.is_empty() {
+                        let mut batched = Vec::with_capacity(events.len());
+                        while let Some(event) = events.pop() {
+                            batched.push(event);
+                        }
+
                         _ = emitter
-                            .send(Message::Server(Arc::from(std::mem::take(&mut events))))
+                            .send(Message::Server(Arc::from(batched)))
                             .await;
                     }
                 }
@@ -783,7 +776,7 @@ pub enum Message {
 
 pub struct SubscriptionHandle {
     cancel_tx: futures::channel::oneshot::Sender<()>,
-    pipewire: pipewire::Sender<pipewire::Request>,
+    pipewire: pipewire::Sender,
 }
 
 impl std::fmt::Debug for SubscriptionHandle {

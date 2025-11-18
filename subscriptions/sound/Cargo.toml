@@ -1,22 +1,19 @@
 [package]
 name = "cosmic-settings-sound-subscription"
-version = "1.0.0-beta1"
+version = "1.0.0-beta6"
 edition = "2024"
 rust-version.workspace = true
 license = "MPL-2.0"
 publish = true
 
 [dependencies]
+cosmic-pipewire = { path = "../../crates/cosmic-pipewire" }
+crossbeam-queue = "0.3.12"
 futures = "0.3.31"
 intmap = "3.1.2"
 libcosmic = { git = "https://github.com/pop-os/libcosmic" }
-libspa = "0.9.2"
-libspa-sys = "0.9.2"
 log = "0.4.28"
 numtoa = "1.0.0-alpha1"
-pipewire = "0.9"
 rustix = "1.0.8"
-serde = "1.0.228"
-serde_json = "1.0.145"
 tokio = { version = "1.47.1", features = ["process", "rt", "time"] }
 tracing = "0.1.41"

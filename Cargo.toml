@@ -1,5 +1,5 @@
 [workspace]
-members = ["cosmic-settings", "page", "pages/*", "subscriptions/*"]
+members = ["cosmic-settings", "crates/*", "page", "pages/*", "subscriptions/*"]
 default-members = ["cosmic-settings"]
 resolver = "3"
 

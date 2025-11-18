@@ -3,7 +3,7 @@
 
 use std::ffi::{c_float, c_int};
 
-use crate::pipewire::{
+use crate::{
     Availability, Channel, Direction,
     spa_utils::{array_from_pod, string_from_pod},
 };
