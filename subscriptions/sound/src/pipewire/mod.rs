@@ -70,7 +70,7 @@ pub fn run(
             metadata: IntMap::new(),
             nodes: IntMap::new(),
         },
-        active_routes: IntMap::new(),
+        routes: IntMap::new(),
         node_devices: IntMap::new(),
         node_card_profile_device: IntMap::new(),
         node_props: IntMap::new(),
@@ -260,7 +260,6 @@ pub fn run(
                     };
 
                     node.subscribe_params(&[ParamType::Props]);
-                    node.enum_params(0, Some(ParamType::Props), 0, u32::MAX);
 
                     let id = node.upcast_ref().id();
 
@@ -487,7 +486,7 @@ struct Proxies {
 struct State {
     nodes: IntMap<PipewireId, (NodeId, Option<DeviceId>)>,
     pub(self) proxies: Proxies,
-    active_routes: IntMap<DeviceId, Vec<Route>>,
+    routes: IntMap<DeviceId, Vec<Route>>,
     node_devices: IntMap<NodeId, DeviceId>,
     node_props: IntMap<NodeId, NodeProps>,
     node_card_profile_device: IntMap<NodeId, u32>,
@@ -501,14 +500,6 @@ impl State {
     }
 
     fn active_route(&mut self, id: DeviceId, index: u32, route: Route) {
-        let routes = self.active_routes.entry(id).or_default();
-        if routes.len() < index as usize + 1 {
-            let additional = (index as usize + 1) - routes.capacity();
-            routes.reserve_exact(additional);
-            routes.extend(std::iter::repeat(Route::default()).take(additional));
-        }
-        routes[index as usize] = route.clone();
-
         self.on_event(Event::ActiveRoute(id, index, route));
     }
 
@@ -527,6 +518,7 @@ impl State {
         // Map the device's pipewire ID to its device ID
         if let Some(entry) = self.proxies.nodes.get_mut(id) {
             entry.0 = node.object_id;
+            entry.1.enum_params(0, Some(ParamType::Props), 0, u32::MAX);
         };
         self.nodes.insert(id, (node.object_id, node.device_id));
         if let Some(card_profile_device) = node.card_profile_device {
@@ -545,6 +537,13 @@ impl State {
     }
 
     fn add_route(&mut self, id: DeviceId, index: u32, route: Route) {
+        let routes = self.routes.entry(id).or_default();
+        if routes.len() < index as usize + 1 {
+            let additional = (index as usize + 1) - routes.capacity();
+            routes.reserve_exact(additional);
+            routes.extend(std::iter::repeat(Route::default()).take(additional));
+        }
+        routes[index as usize] = route.clone();
         self.on_event(Event::AddRoute(id, index, route));
     }
 
@@ -583,7 +582,7 @@ impl State {
 
     fn remove_device(&mut self, id: PipewireId) {
         if let Some((device_id, ..)) = self.proxies.devices.remove(id) {
-            self.active_routes.remove(device_id);
+            self.routes.remove(device_id);
             self.on_event(Event::RemoveDevice(device_id));
         }
     }
@@ -603,7 +602,7 @@ impl State {
         self.proxies.nodes.remove(id);
     }
 
-    fn set_mute(&self, id: DeviceId, route: &Route, mute: bool) {
+    fn set_mute(&self, id: DeviceId, route_device: i32, route: &Route, mute: bool) {
         let Some(device) = self.device(id) else {
             return;
         };
@@ -628,7 +627,7 @@ impl State {
                 pod::property!(
                     FormatProperties(libspa_sys::SPA_PARAM_ROUTE_device),
                     Int,
-                    route.device
+                    route_device
                 ),
                 pod::property!(
                     FormatProperties(libspa_sys::SPA_PARAM_ROUTE_props),
@@ -654,9 +653,14 @@ impl State {
     fn set_mute_node(&self, id: NodeId, mute: bool) {
         // Prefer to mute the device instead of the node.
         // Muting a node will not emit a notification.
-        if let Some(&device_id) = self.node_devices.get(id) {
-            if let Some(route) = self.node_route(device_id, id) {
-                self.set_mute(device_id, route, mute);
+        if let Some((&device_id, &route_device)) = self
+            .node_devices
+            .get(id)
+            .zip(self.node_card_profile_device.get(id))
+        {
+            let route_device = route_device as i32;
+            if let Some(route) = self.node_route(device_id, route_device) {
+                self.set_mute(device_id, route_device, route, mute);
                 return;
             };
         }
@@ -683,29 +687,37 @@ impl State {
         }
     }
 
-    fn node_route(&self, device_id: DeviceId, node_id: NodeId) -> Option<&Route> {
-        let route_device = *self.node_card_profile_device.get(node_id)?;
-        self.active_routes
+    fn node_route(&self, device_id: DeviceId, route_device: i32) -> Option<&Route> {
+        self.routes
             .get(device_id)?
             .iter()
-            .find(|r| r.device as u32 == route_device)
+            .find(|r| r.devices.contains(&route_device))
     }
 
     fn set_node_props(&mut self, id: NodeId, props: NodeProps) {
         self.on_event(Event::NodeProperties(id, props.clone()));
-        self.node_props.entry(id).or_default();
+        *self.node_props.entry(id).or_default() = props;
     }
 
     fn set_node_volume(&self, id: NodeId, volume: f32, balance: Option<f32>) {
+        let Some(props) = self.node_props.get(id) else {
+            return;
+        };
+
         // Prefer to change the volume of the device instead of the node.
-        if let Some(&device_id) = self.node_devices.get(id) {
-            if let Some(route) = self.node_route(device_id, id) {
-                self.set_volume(device_id, route, volume, balance);
+        if let Some((&device_id, &route_device)) = self
+            .node_devices
+            .get(id)
+            .zip(self.node_card_profile_device.get(id))
+        {
+            let route_device = route_device as i32;
+            if let Some(route) = self.node_route(device_id, route_device) {
+                self.set_volume(device_id, props, route_device, route, volume, balance);
                 return;
             };
         }
 
-        let Some((node, props)) = self.node(id).zip(self.node_props.get(id)) else {
+        let Some(node) = self.node(id) else {
             return;
         };
 
@@ -768,12 +780,16 @@ impl State {
         }
     }
 
-    fn set_volume(&self, id: DeviceId, route: &Route, volume: f32, balance: Option<f32>) {
+    fn set_volume(
+        &self,
+        id: DeviceId,
+        props: &NodeProps,
+        route_device: i32,
+        route: &Route,
+        volume: f32,
+        balance: Option<f32>,
+    ) {
         let Some(device) = self.device(id) else {
-            return;
-        };
-
-        let Some(props) = route.props.as_ref() else {
             return;
         };
 
@@ -810,7 +826,7 @@ impl State {
                 pod::property!(
                     FormatProperties(libspa_sys::SPA_PARAM_ROUTE_device),
                     Int,
-                    route.device
+                    route_device
                 ),
                 pod::property!(
                     FormatProperties(libspa_sys::SPA_PARAM_ROUTE_props),
