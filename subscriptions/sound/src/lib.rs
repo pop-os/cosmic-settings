@@ -152,6 +152,7 @@ impl Model {
         }
     }
 
+    /// Send a message to the pipewire-rs thread.
     pub fn pipewire_send(&self, request: pipewire::Request) {
         if let Some(handle) = self.subscription_handle.as_ref() {
             _ = handle.pipewire.send(request);
@@ -195,7 +196,8 @@ impl Model {
         }
     }
 
-    pub fn sink_balance_changed(&mut self, balance: u32) -> Task<Message> {
+    /// Change the balance of channel volumes on the sink device.
+    pub fn set_sink_balance(&mut self, balance: u32) -> Task<Message> {
         self.sink_balance = (balance != 100).then(|| balance as f32 / 100.);
         if self.sink_volume_debounce {
             return Task::none();
@@ -212,7 +214,8 @@ impl Model {
         Task::none()
     }
 
-    pub fn sink_changed(&mut self, pos: usize) -> Task<Message> {
+    /// Change the default sink device
+    pub fn set_default_sink(&mut self, pos: usize) -> Task<Message> {
         if let Some(&object_id) = self.sink_node_ids.get(pos) {
             self.set_default_sink_id(object_id);
 
@@ -237,7 +240,8 @@ impl Model {
         Task::none()
     }
 
-    pub fn sink_mute_toggle(&mut self) {
+    /// Toggle the mute property of the sink device.
+    pub fn toggle_sink_mute(&mut self) {
         self.sink_mute = !self.sink_mute;
         if let Some(node_id) = self.active_sink_node {
             let mute = self.sink_mute;
@@ -249,13 +253,15 @@ impl Model {
         }
     }
 
-    pub fn sink_volume_changed(&mut self, volume: u32) -> Task<Message> {
+    /// Change the sink device's volume.
+    pub fn set_sink_volume(&mut self, volume: u32) -> Task<Message> {
         self.sink_volume = volume;
         self.sink_volume_text = numtoa::BaseN::<10>::u32(volume).as_str().to_owned();
         if self.sink_volume_debounce {
             return Task::none();
         }
 
+        // Wait for the debounce duration before applying the volume change.
         if let Some(node_id) = self.active_sink_node {
             self.sink_volume_debounce = true;
             return cosmic::Task::future(async move {
@@ -267,7 +273,8 @@ impl Model {
         Task::none()
     }
 
-    pub fn source_changed(&mut self, pos: usize) -> Task<Message> {
+    /// Change the default source device.
+    pub fn set_default_source(&mut self, pos: usize) -> Task<Message> {
         if let Some(&object_id) = self.source_node_ids.get(pos) {
             self.set_default_source_id(object_id);
 
@@ -292,7 +299,8 @@ impl Model {
         Task::none()
     }
 
-    pub fn source_mute_toggle(&mut self) {
+    /// Toggle the mute property of the source device.
+    pub fn toggle_source_mute(&mut self) {
         self.source_mute = !self.source_mute;
         if let Some(node_id) = self.active_source_node {
             let mute = self.source_mute;
@@ -304,13 +312,15 @@ impl Model {
         }
     }
 
-    pub fn source_volume_changed(&mut self, volume: u32) -> Task<Message> {
+    /// Change the source device's volume.
+    pub fn set_source_volume(&mut self, volume: u32) -> Task<Message> {
         self.source_volume = volume;
         self.source_volume_text = numtoa::BaseN::<10>::u32(volume).as_str().to_owned();
         if self.source_volume_debounce {
             return Task::none();
         }
 
+        // Wait for the debounce duration before applying the volume change.
         if let Some(node_id) = self.active_source_node {
             self.source_volume_debounce = true;
             return cosmic::Task::future(async move {
@@ -405,7 +415,8 @@ impl Model {
                 let index = profile.index as u32;
                 self.active_profiles.insert(id, profile);
 
-                // Use pw-cli to re-set profile if wireplumber has bad state.
+                // Use pw-cli to reset the profile in case wireplumber has invalid state.
+                // Profiles set by us do not need to use this.
                 if self.last_set_profile != Some((id, index)) {
                     self.last_set_profile = None;
                     tokio::spawn(async move {
@@ -452,6 +463,8 @@ impl Model {
                 if let Some(device_id) = node.device_id {
                     self.device_ids.insert(node.object_id, device_id);
 
+                    // This is the device number of the route. This is used with the
+                    // device ID to set properties for a route.
                     if let Some(card_profile_device) = node.card_profile_device {
                         self.card_profile_devices
                             .insert(node.object_id, card_profile_device);
@@ -460,21 +473,28 @@ impl Model {
 
                 let description = self.translate_device_name(&node.description);
 
+                // The default sink/source is defined by a node's name. We use this when setting
+                // virtual sink/source nodes with pactl; and when pipewire notifies us of a new
+                // default sink/source.
                 if self
                     .node_names
                     .insert(node.object_id, node.node_name.clone())
                     .is_none()
                 {
+                    // Use the device.profile.description as the route name by default for the UI.
                     let name = if node.device_profile_description.is_empty() {
                         description
                     } else {
                         [&node.device_profile_description, " - ", &description].concat()
                     };
+
+                    // Check if the node is a sink or a source, and append it to the relevant collections.
                     match node.media_class {
                         pipewire::MediaClass::Sink => {
                             self.sinks.push(name);
                             self.sink_node_ids.push(node.object_id);
 
+                            // Set the sink as the default if it matches the server.
                             if self.active_sink_node_name == node.node_name {
                                 self.set_default_sink_id(node.object_id);
                                 tokio::task::spawn(async move {
@@ -487,6 +507,7 @@ impl Model {
                             self.sources.push(name);
                             self.source_node_ids.push(node.object_id);
 
+                            // Set the source as the default if it matches the server.
                             if self.active_source_node_name == node.node_name {
                                 self.set_default_source_id(node.object_id);
                                 tokio::task::spawn(async move {
@@ -497,6 +518,8 @@ impl Model {
                     }
                 }
 
+                // When changing profiles, pipewire may change the default device. This
+                // will attempt to override that behavior and re-set the default back.
                 if let Some((device_id, node_id)) = self.prev_profile_node {
                     if Some(device_id) == node.device_id && node.object_id == node_id {
                         self.prev_profile_node = None;

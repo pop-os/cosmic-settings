@@ -511,6 +511,8 @@ impl State {
 
         let device_id = device.id;
         self.on_event(Event::AddDevice(device));
+
+        // Request the device's profiles and properties now that we've registered it.
         self.enumerate_device(device_id);
     }
 
@@ -518,13 +520,20 @@ impl State {
         // Map the device's pipewire ID to its device ID
         if let Some(entry) = self.proxies.nodes.get_mut(id) {
             entry.0 = node.object_id;
+            // Request properties for this node now that we've registered it.
             entry.1.enum_params(0, Some(ParamType::Props), 0, u32::MAX);
         };
+
+        // Track the node's node ID and device ID by its pipewire ID.
         self.nodes.insert(id, (node.object_id, node.device_id));
+
+        // And the associated route device that the node is derived from.
         if let Some(card_profile_device) = node.card_profile_device {
             self.node_card_profile_device
                 .insert(node.object_id, card_profile_device);
         }
+
+        // Track the node's device ID by its node ID.
         if let Some(device_id) = node.device_id {
             self.node_devices.insert(node.object_id, device_id);
         }
@@ -537,6 +546,8 @@ impl State {
     }
 
     fn add_route(&mut self, id: DeviceId, index: u32, route: Route) {
+        // Keep a record of routes attached to a device for setting properties.
+        // This will overwrite routes on updates.
         let routes = self.routes.entry(id).or_default();
         if routes.len() < index as usize + 1 {
             let additional = (index as usize + 1) - routes.capacity();
@@ -544,9 +555,11 @@ impl State {
             routes.extend(std::iter::repeat(Route::default()).take(additional));
         }
         routes[index as usize] = route.clone();
+
         self.on_event(Event::AddRoute(id, index, route));
     }
 
+    /// Request a device's profiles and routes.
     fn enumerate_device(&mut self, id: DeviceId) {
         let Some(device) = self.device(id) else {
             return;

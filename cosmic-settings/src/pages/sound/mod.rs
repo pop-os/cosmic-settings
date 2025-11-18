@@ -23,30 +23,30 @@ const AMPLIFICATION_SOURCE: &str = "amplification_source";
 pub enum Message {
     /// Reload the model
     Reload,
+    /// Change the default output.
+    SetDefaultSink(usize),
+    /// Change the default input output.
+    SetDefaultSource(usize),
     /// Set the profile of a sound device.
     SetProfile(u32, u32),
     /// Change the balance of the active sink.
-    SinkBalanceChanged(u32),
-    /// Change the default output.
-    SinkChanged(usize),
-    /// Toggle the mute status of the output.
-    SinkMuteToggle,
+    SetSinkBalance(u32),
     /// Request to change the default output volume.
-    SinkVolumeChanged(u32),
-    /// Toggle amplification for sink
-    ToggleOverAmplificationSink(bool),
-    /// Change the default input output.
-    SourceChanged(usize),
-    /// Toggle the mute status of the input output.
-    SourceMuteToggle,
+    SetSinkVolume(u32),
     /// Request to change the input volume.
-    SourceVolumeChanged(u32),
-    /// Toggle amplification for sink
-    ToggleOverAmplificationSource(bool),
+    SetSourceVolume(u32),
     /// Messages handled by the sound module in cosmic-settings-subscriptions
     Subscription(subscription::Message),
     /// Surface Action
     Surface(surface::Action),
+    /// Toggle the mute status of the output.
+    ToggleSinkMute,
+    /// Toggle the mute status of the input output.
+    ToggleSourceMute,
+    /// Toggle amplification for sink
+    ToggleOverAmplificationSink(bool),
+    /// Toggle amplification for sink
+    ToggleOverAmplificationSource(bool),
 }
 
 impl From<Message> for crate::pages::Message {
@@ -175,42 +175,42 @@ impl Page {
                     .map(|message| Message::Subscription(message).into());
             }
 
-            Message::SinkBalanceChanged(balance) => {
+            Message::SetSinkBalance(balance) => {
                 return self
                     .model
-                    .sink_balance_changed(balance)
+                    .set_sink_balance(balance)
                     .map(|message| Message::Subscription(message).into());
             }
 
-            Message::SinkChanged(pos) => {
+            Message::SetDefaultSink(pos) => {
                 return self
                     .model
-                    .sink_changed(pos)
+                    .set_default_sink(pos)
                     .map(|message| Message::Subscription(message).into());
             }
 
-            Message::SourceChanged(pos) => {
+            Message::SetDefaultSource(pos) => {
                 return self
                     .model
-                    .source_changed(pos)
+                    .set_default_source(pos)
                     .map(|message| Message::Subscription(message).into());
             }
 
-            Message::SinkMuteToggle => self.model.sink_mute_toggle(),
+            Message::ToggleSinkMute => self.model.toggle_sink_mute(),
 
-            Message::SourceMuteToggle => self.model.source_mute_toggle(),
+            Message::ToggleSourceMute => self.model.toggle_source_mute(),
 
-            Message::SinkVolumeChanged(volume) => {
+            Message::SetSinkVolume(volume) => {
                 return self
                     .model
-                    .sink_volume_changed(volume)
+                    .set_sink_volume(volume)
                     .map(|message| Message::Subscription(message).into());
             }
 
-            Message::SourceVolumeChanged(volume) => {
+            Message::SetSourceVolume(volume) => {
                 return self
                     .model
-                    .source_volume_changed(volume)
+                    .set_source_volume(volume)
                     .map(|message| Message::Subscription(message).into());
             }
 
@@ -270,12 +270,12 @@ fn input() -> Section<crate::pages::Message> {
 
             let slider = if page.amplification_source {
                 widget::slider(0..=150, page.model.source_volume, |change| {
-                    Message::SourceVolumeChanged(change).into()
+                    Message::SetSourceVolume(change).into()
                 })
                 .breakpoints(&[100])
             } else {
                 widget::slider(0..=100, page.model.source_volume, |change| {
-                    Message::SourceVolumeChanged(change).into()
+                    Message::SetSourceVolume(change).into()
                 })
             };
 
@@ -287,7 +287,7 @@ fn input() -> Section<crate::pages::Message> {
                     } else {
                         "audio-input-microphone-symbolic"
                     }))
-                    .on_press(Message::SourceMuteToggle.into()),
+                    .on_press(Message::ToggleSourceMute.into()),
                 )
                 .push(
                     widget::text::body(&page.model.source_volume_text)
@@ -299,7 +299,7 @@ fn input() -> Section<crate::pages::Message> {
             let devices = widget::dropdown::popup_dropdown(
                 page.model.sources(),
                 Some(page.model.active_source().unwrap_or(0)),
-                Message::SourceChanged,
+                Message::SetDefaultSource,
                 window::Id::RESERVED,
                 Message::Surface,
                 crate::Message::from,
@@ -347,12 +347,12 @@ fn output() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let slider = if page.amplification_sink {
                 widget::slider(0..=150, page.model.sink_volume, |change| {
-                    Message::SinkVolumeChanged(change).into()
+                    Message::SetSinkVolume(change).into()
                 })
                 .breakpoints(&[100])
             } else {
                 widget::slider(0..=100, page.model.sink_volume, |change| {
-                    Message::SinkVolumeChanged(change).into()
+                    Message::SetSinkVolume(change).into()
                 })
             };
 
@@ -364,7 +364,7 @@ fn output() -> Section<crate::pages::Message> {
                     } else {
                         widget::icon::from_name("audio-volume-high-symbolic")
                     })
-                    .on_press(Message::SinkMuteToggle.into()),
+                    .on_press(Message::ToggleSinkMute.into()),
                 )
                 .push(
                     widget::text::body(&page.model.sink_volume_text)
@@ -377,7 +377,7 @@ fn output() -> Section<crate::pages::Message> {
             let devices = widget::dropdown::popup_dropdown(
                 page.model.sinks(),
                 Some(page.model.active_sink().unwrap_or(0)),
-                Message::SinkChanged,
+                Message::SetDefaultSink,
                 window::Id::RESERVED,
                 Message::Surface,
                 crate::Message::from,
@@ -407,7 +407,7 @@ fn output() -> Section<crate::pages::Message> {
                                 0..=200,
                                 (page.model.sink_balance.unwrap_or(1.0).max(0.) * 100.).round()
                                     as u32,
-                                |change| Message::SinkBalanceChanged(change).into(),
+                                |change| Message::SetSinkBalance(change).into(),
                             )
                             .breakpoints(&[100]),
                         )
