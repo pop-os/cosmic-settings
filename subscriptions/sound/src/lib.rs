@@ -407,6 +407,7 @@ impl Model {
             pipewire::Event::ActiveProfile(id, profile) => {
                 let index = profile.index as u32;
                 self.active_profiles.insert(id, profile);
+                self.update_ui_profiles();
 
                 // Use pw-cli to reset the profile in case wireplumber has invalid state.
                 // Profiles set by us do not need to use this.
