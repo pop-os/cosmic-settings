@@ -928,11 +928,12 @@ impl Page {
             return false;
         };
 
-        let (moving_width, moving_height) = if moving_output.transform.is_none_or(Self::is_landscape) {
-            (mode.size.0, mode.size.1)
-        } else {
-            (mode.size.1, mode.size.0)
-        };
+        let (moving_width, moving_height) =
+            if moving_output.transform.is_none_or(Self::is_landscape) {
+                (mode.size.0, mode.size.1)
+            } else {
+                (mode.size.1, mode.size.0)
+            };
 
         let moving_width = (moving_width as f64 / moving_output.scale) as u32;
         let moving_height = (moving_height as f64 / moving_output.scale) as u32;
@@ -950,11 +951,12 @@ impl Page {
                 continue;
             };
 
-            let (other_width, other_height) = if other_output.transform.is_none_or(Self::is_landscape) {
-                (other_mode.size.0, other_mode.size.1)
-            } else {
-                (other_mode.size.1, other_mode.size.0)
-            };
+            let (other_width, other_height) =
+                if other_output.transform.is_none_or(Self::is_landscape) {
+                    (other_mode.size.0, other_mode.size.1)
+                } else {
+                    (other_mode.size.1, other_mode.size.0)
+                };
 
             let other_width = (other_width as f64 / other_output.scale) as u32;
             let other_height = (other_height as f64 / other_output.scale) as u32;

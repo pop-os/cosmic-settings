@@ -28,7 +28,6 @@ const SCALE_THRESHOLD: f32 = 0.05;
 const CENTER_THRESHOLD: f32 = 50.0;
 pub(super) const EDGE_TOLERANCE: f32 = 1.0;
 
-
 #[derive(Debug, Clone)]
 pub struct Camera2D {
     pub position: Point,
@@ -192,10 +191,7 @@ impl ArrangementState {
             list.outputs
                 .get(disp.output_key)
                 .map(|output| {
-                    let randr_pos = Point::new(
-                        output.position.0 as f32,
-                        output.position.1 as f32,
-                    );
+                    let randr_pos = Point::new(output.position.0 as f32, output.position.1 as f32);
                     randr_pos != disp.position
                 })
                 .unwrap_or(false)
@@ -287,7 +283,8 @@ impl ArrangementState {
 
     fn would_overlap_any(&self, dragged_key: OutputKey, position: Point, size: Size) -> bool {
         self.displays.borrow().iter().any(|other| {
-            other.output_key != dragged_key && Self::rectangles_overlap(position, size, other.bounds())
+            other.output_key != dragged_key
+                && Self::rectangles_overlap(position, size, other.bounds())
         })
     }
 
@@ -747,10 +744,7 @@ impl<'a, Message: Clone> Program<Message, Theme, Renderer> for ArrangementCanvas
                         let displays = state.displays.borrow();
                         if let Some(display) = displays.iter().find(|d| d.output_key == output_key)
                         {
-                            let new_pos = (
-                                display.position.x as i32,
-                                display.position.y as i32,
-                            );
+                            let new_pos = (display.position.x as i32, display.position.y as i32);
 
                             let old_pos = self
                                 .list
