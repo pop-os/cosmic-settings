@@ -420,6 +420,8 @@ display = Displays
     .scale = Scale
     .additional-scale-options = Additional scale options
 
+invalid-arrangement = Invalid arrangement. Restored previous valid state.
+
 mirroring = Mirroring
     .id = Mirroring { $id }
     .dont = Don't mirror
