@@ -418,9 +418,7 @@ impl Model {
                 }
             }
 
-            pipewire::Event::ActiveRoute(id, index, route) => {
-                self.add_route(id, index, route);
-            }
+            pipewire::Event::ActiveRoute(_id, _index, _route) => {}
 
             pipewire::Event::AddProfile(id, profile) => {
                 if let Some(p) = self.active_profiles.get_mut(id) {
