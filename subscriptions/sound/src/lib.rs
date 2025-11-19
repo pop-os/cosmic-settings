@@ -405,6 +405,23 @@ impl Model {
             }
 
             pipewire::Event::ActiveProfile(id, profile) => {
+                // If the profile was automatically set to Off, auto-select the first available profile.
+                if self.last_set_profile != Some((id, 0)) && profile.index == 0 {
+                    if let Some(profiles) = self.device_profiles.get(id) {
+                        for profile in profiles {
+                            if profile.index != 0
+                                && profile.name != "pro-audio"
+                                && !matches!(profile.available, Availability::No)
+                            {
+                                let index = profile.index as u32;
+                                tokio::spawn(async move {
+                                    set_profile(id, index).await;
+                                });
+                            }
+                        }
+                    }
+                }
+
                 let index = profile.index as u32;
                 self.active_profiles.insert(id, profile);
                 self.update_ui_profiles();
