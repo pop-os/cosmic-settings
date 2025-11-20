@@ -636,86 +636,46 @@ impl Model {
         self.active_source_node_name = self.node_names.get(node_id).cloned().unwrap_or_default();
     }
 
-    /// Check if a node has had its route appended to the name, and return a name if we should update it.
-    fn route_plug_check(
-        &mut self,
-        node: NodeId,
-        device: DeviceId,
-        route: &pipewire::Route,
-    ) -> Option<String> {
-        let profile = self.active_profiles.get(device)?;
-
-        if !profile.name.starts_with("pro-audio") {
-            let Some(&card_profile_device) = self.card_profile_devices.get(node) else {
-                return None;
-            };
-
-            if !route.devices.contains(&(card_profile_device as i32)) {
-                return None;
-            }
-        }
-
-        self.route_name_get(&route.description, route.available, device)
-    }
-
-    fn route_name_get(
-        &self,
-        route_description: &str,
-        route_available: Availability,
-        device: DeviceId,
-    ) -> Option<String> {
-        if matches!(route_available, Availability::No) {
-            return None;
-        }
-
-        let Some(device_name) = self.device_names.get(device) else {
-            return None;
-        };
-
-        Some([&route_description, " - ", device_name].concat())
-    }
-
     fn update_device_route(&mut self, route: &pipewire::Route, id: DeviceId) {
         if matches!(route.available, Availability::No) {
             return;
         }
 
-        match route.direction {
-            pipewire::Direction::Output => {
-                for (pos, &node) in self.sink_node_ids.iter().enumerate() {
-                    let Some(&device) = self.device_ids.get(node) else {
-                        continue;
-                    };
+        let (devices, node_ids) = match route.direction {
+            pipewire::Direction::Output => (&mut self.sinks, &self.sink_node_ids),
+            pipewire::Direction::Input => (&mut self.sources, &self.source_node_ids),
+        };
 
-                    if device != id {
-                        continue;
-                    }
+        for (pos, &node) in node_ids.iter().enumerate() {
+            let Some(&device) = self.device_ids.get(node) else {
+                continue;
+            };
 
-                    if let Some(node_name) = self.route_plug_check(node, device, &route) {
-                        self.sinks[pos] = node_name;
-                    }
+            if device != id {
+                continue;
+            }
 
-                    break;
+            let Some(profile) = self.active_profiles.get(id) else {
+                continue;
+            };
+
+            if !profile.name.starts_with("pro-audio") {
+                let Some(&card_profile_device) = self.card_profile_devices.get(node) else {
+                    continue;
+                };
+
+                if !route.devices.contains(&(card_profile_device as i32)) {
+                    continue;
                 }
             }
 
-            pipewire::Direction::Input => {
-                for (pos, &node) in self.source_node_ids.iter().enumerate() {
-                    let Some(&device) = self.device_ids.get(node) else {
-                        continue;
-                    };
+            let Some(device_name) = self.device_names.get(id) else {
+                continue;
+            };
 
-                    if device != id {
-                        continue;
-                    }
+            devices[pos] = [&route.description, " - ", device_name].concat();
 
-                    if let Some(node_name) = self.route_plug_check(node, device, &route) {
-                        self.sources[pos] = node_name;
-                    }
-
-                    break;
-                }
-            }
+            break;
         }
     }
 
