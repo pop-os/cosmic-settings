@@ -157,6 +157,7 @@ impl Model {
     ///
     /// Requires using the device ID rather than a node ID.
     pub fn set_profile(&mut self, device_id: DeviceId, index: u32) {
+        let mut update = false;
         self.last_set_profile = Some((device_id, index));
         if let Some(profiles) = self.device_profiles.get(device_id) {
             for profile in profiles {
@@ -180,7 +181,12 @@ impl Model {
 
                     self.active_profiles.insert(device_id, profile.clone());
                     self.pipewire_send(pipewire::Request::SetProfile(device_id, index));
+                    update = true;
                 }
+            }
+
+            if update {
+                self.update_ui_profiles();
             }
 
             // Use pw-cli as a fallback in case it wasn't set correctly.
@@ -406,20 +412,28 @@ impl Model {
             }
 
             pipewire::Event::ActiveProfile(id, profile) => {
-                if self.auto_select_profile {
-                    // If the profile was automatically set to Off, auto-select the first available profile.
-                    if self.last_set_profile != Some((id, 0)) && profile.index == 0 {
-                        if let Some(profiles) = self.device_profiles.get(id) {
-                            for profile in profiles {
-                                if profile.index != 0
-                                    && profile.name != "pro-audio"
-                                    && !matches!(profile.available, Availability::No)
-                                {
-                                    let index = profile.index as u32;
-                                    tokio::spawn(async move {
-                                        set_profile(id, index).await;
-                                    });
-                                }
+                // If the profile was automatically set to Off, auto-select the first available profile.
+                if self.auto_select_profile
+                    && profile.index == 0
+                    && self.last_set_profile != Some((id, 0))
+                {
+                    if let Some(profiles) = self.device_profiles.get(id) {
+                        for profile in profiles {
+                            if profile.index != 0
+                                && profile.name != "pro-audio"
+                                && !matches!(profile.available, Availability::No)
+                            {
+                                let index = profile.index as u32;
+
+                                tracing::debug!(
+                                    "Device {id}: auto-selecting profile {index} ({}): {}",
+                                    profile.name,
+                                    profile.description
+                                );
+
+                                tokio::spawn(async move {
+                                    set_profile(id, index).await;
+                                });
                             }
                         }
                     }
