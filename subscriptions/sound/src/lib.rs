@@ -439,7 +439,9 @@ impl Model {
                 }
             }
 
-            pipewire::Event::ActiveRoute(_id, _index, _route) => {}
+            pipewire::Event::ActiveRoute(id, _index, route) => {
+                self.update_device_route(&route, id);
+            }
 
             pipewire::Event::AddProfile(id, profile) => {
                 if let Some(p) = self.active_profiles.get_mut(id) {
