@@ -431,9 +431,8 @@ impl Model {
                                     profile.description
                                 );
 
-                                tokio::spawn(async move {
-                                    set_profile(id, index).await;
-                                });
+                                self.set_profile(id, index);
+                                return;
                             }
                         }
                     }
@@ -446,15 +445,12 @@ impl Model {
                 // Use pw-cli to reset the profile in case wireplumber has invalid state.
                 // Profiles set by us do not need to use this.
                 if self.last_set_profile != Some((id, index)) {
-                    self.last_set_profile = None;
-                    tokio::spawn(async move {
-                        set_profile(id, index).await;
-                    });
+                    self.set_profile(id, index);
                 }
             }
 
             pipewire::Event::ActiveRoute(id, _index, route) => {
-                self.update_device_route(&route, id);
+                self.update_device_route_name(&route, id);
             }
 
             pipewire::Event::AddProfile(id, profile) => {
@@ -587,7 +583,7 @@ impl Model {
     }
 
     fn add_route(&mut self, id: DeviceId, index: u32, route: pipewire::Route) {
-        self.update_device_route(&route, id);
+        self.update_device_route_name(&route, id);
         let routes = self.device_routes.entry(id).or_default();
         if routes.len() < index as usize + 1 {
             let additional = (index as usize + 1) - routes.capacity();
@@ -649,7 +645,7 @@ impl Model {
         self.active_source_node_name = self.node_names.get(node_id).cloned().unwrap_or_default();
     }
 
-    fn update_device_route(&mut self, route: &pipewire::Route, id: DeviceId) {
+    fn update_device_route_name(&mut self, route: &pipewire::Route, id: DeviceId) {
         if matches!(route.available, Availability::No) {
             return;
         }
