@@ -156,7 +156,7 @@ impl Model {
     /// Sets and applies a profile to a device with wpctl.
     ///
     /// Requires using the device ID rather than a node ID.
-    pub fn set_profile(&mut self, device_id: DeviceId, index: u32) {
+    pub fn set_profile(&mut self, device_id: DeviceId, index: u32, save: bool) {
         let mut update = false;
         self.last_set_profile = Some((device_id, index));
         if let Some(profiles) = self.device_profiles.get(device_id) {
@@ -180,7 +180,7 @@ impl Model {
                         });
 
                     self.active_profiles.insert(device_id, profile.clone());
-                    self.pipewire_send(pipewire::Request::SetProfile(device_id, index));
+                    self.pipewire_send(pipewire::Request::SetProfile(device_id, index, save));
                     update = true;
                 }
             }
@@ -191,7 +191,7 @@ impl Model {
 
             // Use pw-cli as a fallback in case it wasn't set correctly.
             tokio::spawn(async move {
-                set_profile(device_id, index).await;
+                set_profile(device_id, index, save).await;
             });
         }
     }
@@ -431,7 +431,7 @@ impl Model {
                                     profile.description
                                 );
 
-                                self.set_profile(id, index);
+                                self.set_profile(id, index, false);
                                 return;
                             }
                         }
@@ -445,7 +445,7 @@ impl Model {
                 // Use pw-cli to reset the profile in case wireplumber has invalid state.
                 // Profiles set by us do not need to use this.
                 if self.last_set_profile != Some((id, index)) {
-                    self.set_profile(id, index);
+                    self.set_profile(id, index, false);
                 }
             }
 
@@ -809,10 +809,20 @@ pub async fn pactl_set_default_source(node_name: &str) {
 }
 
 // TODO: Use pipewire library
-pub async fn set_profile(id: u32, index: u32) {
+pub async fn set_profile(id: u32, index: u32, save: bool) {
     let id = numtoa::BaseN::<10>::u32(id);
     let index = numtoa::BaseN::<10>::u32(index);
-    let value = ["{ index: ", index.as_str(), ", save: true }"].concat();
+    let value = [
+        "{ index: ",
+        index.as_str(),
+        if save {
+            ", save: true }"
+        } else {
+            ", save: false }"
+        },
+    ]
+    .concat();
+
     _ = tokio::process::Command::new("pw-cli")
         .args(["s", id.as_str(), "Profile", &value])
         .stdout(Stdio::null())

@@ -98,9 +98,9 @@ fn run_service(
                 }
             }
 
-            Request::SetProfile(id, index) => {
+            Request::SetProfile(id, index, save) => {
                 if let Some(state) = state.upgrade() {
-                    state.borrow_mut().set_profile(id, index);
+                    state.borrow_mut().set_profile(id, index, save);
                 }
             }
 
@@ -434,7 +434,7 @@ pub enum Request {
     /// Mute a node ID
     SetNodeMute(NodeId, bool),
     /// Set a device profile by profile index.
-    SetProfile(DeviceId, u32),
+    SetProfile(DeviceId, u32, bool),
     /// Set a new volume
     SetNodeVolume(DeviceId, f32, Option<f32>),
     /// Stop the main loop and exit the thread.
@@ -757,7 +757,7 @@ impl State {
         }
     }
 
-    fn set_profile(&mut self, id: DeviceId, index: u32) {
+    fn set_profile(&mut self, id: DeviceId, index: u32, save: bool) {
         let Some(device) = self.device(id) else {
             return;
         };
@@ -776,7 +776,7 @@ impl State {
                 pod::property!(
                     FormatProperties(libspa_sys::SPA_PARAM_PROFILE_save),
                     Bool,
-                    true
+                    save
                 )
             )),
         )

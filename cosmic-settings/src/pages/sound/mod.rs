@@ -236,7 +236,7 @@ impl Page {
             }
 
             Message::SetProfile(object_id, index) => {
-                self.model.set_profile(object_id, index);
+                self.model.set_profile(object_id, index, true);
             }
 
             Message::Reload => {
