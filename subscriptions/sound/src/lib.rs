@@ -516,6 +516,16 @@ impl Model {
                         [&node.device_profile_description, " - ", &description].concat()
                     };
 
+                    // When changing profiles, pipewire may change the default device. This
+                    // will attempt to override that behavior and re-set the default back.
+                    let mut reset_default = false;
+                    if let Some((device_id, node_id)) = self.prev_profile_node {
+                        if Some(device_id) == node.device_id && node.object_id == node_id {
+                            self.prev_profile_node = None;
+                            reset_default = true;
+                        }
+                    }
+
                     // Check if the node is a sink or a source, and append it to the relevant collections.
                     match node.media_class {
                         pipewire::MediaClass::Sink => {
@@ -523,7 +533,7 @@ impl Model {
                             self.sink_node_ids.push(node.object_id);
 
                             // Set the sink as the default if it matches the server.
-                            if self.active_sink_node_name == node.node_name {
+                            if reset_default || self.active_sink_node_name == node.node_name {
                                 self.set_default_sink_id(node.object_id);
                                 tokio::task::spawn(async move {
                                     set_default(node.object_id).await;
@@ -536,24 +546,13 @@ impl Model {
                             self.source_node_ids.push(node.object_id);
 
                             // Set the source as the default if it matches the server.
-                            if self.active_source_node_name == node.node_name {
+                            if reset_default || self.active_source_node_name == node.node_name {
                                 self.set_default_source_id(node.object_id);
                                 tokio::task::spawn(async move {
                                     set_default(node.object_id).await;
                                 });
                             }
                         }
-                    }
-                }
-
-                // When changing profiles, pipewire may change the default device. This
-                // will attempt to override that behavior and re-set the default back.
-                if let Some((device_id, node_id)) = self.prev_profile_node {
-                    if Some(device_id) == node.device_id && node.object_id == node_id {
-                        self.prev_profile_node = None;
-                        tokio::task::spawn(async move {
-                            set_default(node_id).await;
-                        });
                     }
                 }
             }
