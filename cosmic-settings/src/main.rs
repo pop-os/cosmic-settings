@@ -201,11 +201,6 @@ fn init_localizer() {
 }
 
 fn init_logger() {
-    let log_level = std::env::var("RUST_LOG")
-        .ok()
-        .and_then(|level| level.parse::<tracing::Level>().ok())
-        .unwrap_or(tracing::Level::INFO);
-
     let log_format = tracing_subscriber::fmt::format()
         .pretty()
         .without_time()
@@ -214,17 +209,14 @@ fn init_logger() {
         .with_target(false)
         .with_thread_names(true);
 
-    let log_filter = tracing_subscriber::fmt::Layer::default()
+    let log_layer = tracing_subscriber::fmt::Layer::default()
         .with_writer(std::io::stderr)
-        .event_format(log_format)
-        .with_filter(tracing_subscriber::filter::filter_fn(move |metadata| {
-            let target = metadata.target();
-            metadata.level() == &tracing::Level::ERROR
-                || ((target.starts_with("cosmic_settings") || target.starts_with("cosmic_bg"))
-                    && metadata.level() <= &log_level)
-        }));
+        .event_format(log_format);
 
-    tracing_subscriber::registry().with(log_filter).init();
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_env("RUST_LOG"))
+        .with(log_layer)
+        .init();
 }
 
 #[macro_export]
