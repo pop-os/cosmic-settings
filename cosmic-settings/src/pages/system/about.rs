@@ -119,44 +119,46 @@ impl Page {
             return Task::none();
         }
 
-        let hostname = &self.hostname_input;
-        if hostname_validator::is_valid(hostname) {
-            self.editing_device_name = false;
-            let hostname = hostname.clone();
-            return cosmic::Task::future(async move {
-                let connection = match zbus::Connection::system().await {
-                    Ok(conn) => conn,
-                    Err(why) => {
-                        tracing::error!(?why, "failed to establish connection to dbus");
-                        return Message::Error(String::from(
-                            "failed to establish connection to dbus",
-                        ));
-                    }
-                };
-
-                let hostname1 = match hostname1_zbus::Hostname1Proxy::new(&connection).await {
-                    Ok(proxy) => proxy,
-                    Err(why) => {
-                        tracing::error!(?why, "failed to connect to org.freedesktop.hostname1");
-                        return Message::Error(String::from(
-                            "failed to connect to org.freedesktop.hostname1",
-                        ));
-                    }
-                };
-
-                if let Err(why) = hostname1.set_static_hostname(&hostname, false).await {
-                    tracing::error!(?why, "failed to set static hostname");
-                    return Message::Error(String::from("failed to set static hostname"));
-                }
-
-                Message::HostnameSuccess(hostname)
-            })
-            .map(crate::app::Message::from)
-            .map(Into::into);
+        if !hostname_validator::is_valid(&self.hostname_input) {
+            return Task::none();
         }
 
-        Task::none()
+        self.editing_device_name = false;
+        let hostname = self.hostname_input.clone();
+
+        cosmic::Task::future(async move { set_hostname(hostname).await })
+            .map(crate::app::Message::from)
+            .map(Into::into)
     }
+}
+
+/// Sets the system hostname via D-Bus.
+async fn set_hostname(hostname: String) -> Message {
+    match set_hostname_impl(&hostname).await {
+        Ok(()) => Message::HostnameSuccess(hostname),
+        Err(err) => {
+            tracing::error!("failed to set hostname: {}", err);
+            Message::Error(err)
+        }
+    }
+}
+
+/// Implementation of hostname setting that uses Result for cleaner error handling.
+async fn set_hostname_impl(hostname: &str) -> Result<(), String> {
+    let connection = zbus::Connection::system()
+        .await
+        .map_err(|e| format!("failed to establish connection to dbus: {}", e))?;
+
+    let hostname1 = hostname1_zbus::Hostname1Proxy::new(&connection)
+        .await
+        .map_err(|e| format!("failed to connect to org.freedesktop.hostname1: {}", e))?;
+
+    hostname1
+        .set_static_hostname(hostname, false)
+        .await
+        .map_err(|e| format!("failed to set static hostname: {}", e))?;
+
+    Ok(())
 }
 
 fn device() -> Section<crate::pages::Message> {
@@ -207,7 +209,7 @@ fn hardware() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let desc = &section.descriptions;
 
-            let sections = settings::section()
+            let mut section_builder = settings::section()
                 .title(&section.title)
                 .add(settings::flex_item(
                     &*desc[model],
@@ -222,15 +224,14 @@ fn hardware() -> Section<crate::pages::Message> {
                     text::body(&page.info.processor),
                 ));
 
-            page.info
-                .graphics
-                .iter()
-                .fold(sections, |sections, card| {
-                    sections.add(settings::flex_item(
-                        &*desc[graphics],
-                        text::body(card.as_str()),
-                    ))
-                })
+            for card in &page.info.graphics {
+                section_builder = section_builder.add(settings::flex_item(
+                    &*desc[graphics],
+                    text::body(card.as_str()),
+                ));
+            }
+
+            section_builder
                 .add(settings::flex_item(
                     &*desc[disk_capacity],
                     text::body(&page.info.disk_capacity),
