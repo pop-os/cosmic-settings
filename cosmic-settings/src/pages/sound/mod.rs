@@ -80,7 +80,6 @@ impl Default for Page {
     fn default() -> Self {
         fix_wireplumber_stream_properties();
         let mut model = subscription::Model::default();
-        model.auto_select_profile = true;
         model.unplugged_text = fl!("sound-device-port-unplugged");
         model.hd_audio_text = fl!("sound-hd-audio");
         model.usb_audio_text = fl!("sound-usb-audio");
@@ -241,7 +240,6 @@ impl Page {
 
             Message::Reload => {
                 let mut model = subscription::Model::default();
-                model.auto_select_profile = true;
                 model.hd_audio_text = std::mem::take(&mut self.model.hd_audio_text);
                 model.unplugged_text = std::mem::take(&mut self.model.unplugged_text);
                 model.usb_audio_text = std::mem::take(&mut self.model.usb_audio_text);

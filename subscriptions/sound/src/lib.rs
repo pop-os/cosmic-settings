@@ -63,7 +63,6 @@ pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
 pub struct Model {
     subscription_handle: Option<SubscriptionHandle>,
 
-    pub auto_select_profile: bool,
     pub device_profile_dropdowns: Vec<(DeviceId, String, Option<usize>, Vec<u32>, Vec<String>)>,
 
     // Translated text
@@ -412,32 +411,6 @@ impl Model {
             }
 
             pipewire::Event::ActiveProfile(id, profile) => {
-                // If the profile was automatically set to Off, auto-select the first available profile.
-                if self.auto_select_profile
-                    && profile.index == 0
-                    && self.last_set_profile != Some((id, 0))
-                {
-                    if let Some(profiles) = self.device_profiles.get(id) {
-                        for profile in profiles {
-                            if profile.index != 0
-                                && profile.name != "pro-audio"
-                                && !matches!(profile.available, Availability::No)
-                            {
-                                let index = profile.index as u32;
-
-                                tracing::debug!(
-                                    "Device {id}: auto-selecting profile {index} ({}): {}",
-                                    profile.name,
-                                    profile.description
-                                );
-
-                                self.set_profile(id, index, false);
-                                return;
-                            }
-                        }
-                    }
-                }
-
                 let index = profile.index as u32;
                 self.active_profiles.insert(id, profile);
                 self.update_ui_profiles();
@@ -445,6 +418,10 @@ impl Model {
                 // Use pw-cli to reset the profile in case wireplumber has invalid state.
                 // Profiles set by us do not need to use this.
                 if self.last_set_profile != Some((id, index)) {
+                    tracing::debug!(
+                        "Device {id} changed: auto-selecting last-known-profile {index}"
+                    );
+
                     self.set_profile(id, index, false);
                 }
             }
@@ -516,6 +493,7 @@ impl Model {
                     // will attempt to override that behavior and re-set the default back.
                     let mut reset_default = false;
                     if let Some((device_id, node_id)) = self.prev_profile_node {
+                        eprintln!("reset default");
                         if Some(device_id) == node.device_id && node.object_id == node_id {
                             self.prev_profile_node = None;
                             reset_default = true;
