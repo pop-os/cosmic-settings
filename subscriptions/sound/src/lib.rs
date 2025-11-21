@@ -87,8 +87,10 @@ pub struct Model {
     sink_node_ids: Vec<NodeId>,
     /// Index of active sink device.
     active_sink: Option<usize>,
+    /// Node ID of active sink device.
+    active_sink_node: Option<NodeId>,
     /// Device ID of active sink device.
-    active_sink_node: Option<u32>,
+    active_sink_device: Option<DeviceId>,
     /// Device identifier of the default sink.
     active_sink_node_name: String,
 
@@ -101,7 +103,9 @@ pub struct Model {
     /// Index of active source device.
     active_source: Option<usize>,
     /// Node ID of active source device.
-    active_source_node: Option<u32>,
+    active_source_node: Option<NodeId>,
+    /// Device ID of active source device.
+    active_source_device: Option<DeviceId>,
     /// Node identifier of the default source.
     active_source_node_name: String,
 
@@ -470,6 +474,32 @@ impl Model {
                 );
 
                 self.update_device_route_name(&route, id);
+
+                let (active_device, node_ids, set_default_node): (
+                    Option<DeviceId>,
+                    &[NodeId],
+                    fn(&mut Self, NodeId),
+                ) = match route.direction {
+                    pipewire::Direction::Output => (
+                        self.active_sink_device.clone(),
+                        &self.sink_node_ids,
+                        Self::set_default_sink_node_id,
+                    ),
+                    pipewire::Direction::Input => (
+                        self.active_source_device.clone(),
+                        &self.source_node_ids,
+                        Self::set_default_source_node_id,
+                    ),
+                };
+
+                if active_device == Some(id) {
+                    for (node_id, &device) in &self.device_ids {
+                        if device == id && node_ids.contains(&node_id) {
+                            set_default_node(self, node_id);
+                            break;
+                        }
+                    }
+                }
             }
 
             pipewire::Event::AddProfile(id, profile) => {
@@ -684,6 +714,10 @@ impl Model {
         self.active_sink = self.sink_node_ids.iter().position(|&id| id == node_id);
         self.active_sink_node = Some(node_id);
         self.active_sink_node_name = self.node_names.get(node_id).cloned().unwrap_or_default();
+        self.active_sink_device = self
+            .device_ids
+            .iter()
+            .find_map(|(nid, did)| if nid == node_id { Some(*did) } else { None });
     }
 
     /// Set the default source device by its the node ID.
@@ -691,6 +725,10 @@ impl Model {
         self.active_source = self.source_node_ids.iter().position(|&id| id == node_id);
         self.active_source_node = Some(node_id);
         self.active_source_node_name = self.node_names.get(node_id).cloned().unwrap_or_default();
+        self.active_source_device = self
+            .device_ids
+            .iter()
+            .find_map(|(nid, did)| if nid == node_id { Some(*did) } else { None });
     }
 
     fn update_device_route_name(&mut self, route: &pipewire::Route, id: DeviceId) {
