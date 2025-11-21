@@ -105,6 +105,9 @@ pub struct Model {
     /// Node identifier of the default source.
     active_source_node_name: String,
 
+    changing_sink_device: Option<DeviceId>,
+    changing_source_device: Option<DeviceId>,
+
     pub sink_volume_text: String,
     pub source_volume_text: String,
     pub sink_balance: Option<f32>,
@@ -153,6 +156,32 @@ impl Model {
     ///
     /// Requires using the device ID rather than a node ID.
     pub fn set_profile(&mut self, device_id: DeviceId, index: u32, save: bool) {
+        if save {
+            self.changing_sink_device = self
+                .device_ids
+                .iter()
+                .find(|(node_id, _device)| self.active_sink_node == Some(*node_id))
+                .and_then(|(_node_id, &device)| {
+                    if device == device_id {
+                        Some(device_id)
+                    } else {
+                        None
+                    }
+                });
+
+            self.changing_source_device = self
+                .device_ids
+                .iter()
+                .find(|(node_id, _device)| self.active_source_node == Some(*node_id))
+                .and_then(|(_node_id, &device)| {
+                    if device == device_id {
+                        Some(device_id)
+                    } else {
+                        None
+                    }
+                });
+        }
+
         let mut update = false;
 
         if let Some(profiles) = self.device_profiles.get(device_id) {
@@ -195,29 +224,33 @@ impl Model {
 
     /// Change the default sink device
     pub fn set_default_sink(&mut self, pos: usize) -> Task<Message> {
-        if let Some(&object_id) = self.sink_node_ids.get(pos) {
-            tracing::debug!(target: "sound", "set default sink node {object_id}");
-            self.set_default_sink_id(object_id);
-
-            // Use pactl if the node is not a device node.
-            let virtual_sink_name: Option<String> = if self.device_ids.contains_key(object_id) {
-                None
-            } else if let Some(name) = self.node_names.get(object_id) {
-                Some(name.clone())
-            } else {
-                None
-            };
-
-            tokio::task::spawn(async move {
-                if let Some(node_name) = virtual_sink_name {
-                    pactl_set_default_sink(&node_name).await
-                } else {
-                    set_default(object_id).await
-                }
-            });
+        if let Some(&node_id) = self.sink_node_ids.get(pos) {
+            self.set_default_sink_node_id(node_id);
         }
 
         Task::none()
+    }
+
+    pub fn set_default_sink_node_id(&mut self, node_id: NodeId) {
+        tracing::debug!(target: "sound", "set default sink node {node_id}");
+        self.set_default_sink_id(node_id);
+
+        // Use pactl if the node is not a device node.
+        let virtual_sink_name: Option<String> = if self.device_ids.contains_key(node_id) {
+            None
+        } else if let Some(name) = self.node_names.get(node_id) {
+            Some(name.clone())
+        } else {
+            None
+        };
+
+        tokio::task::spawn(async move {
+            if let Some(node_name) = virtual_sink_name {
+                pactl_set_default_sink(&node_name).await
+            } else {
+                set_default(node_id).await
+            }
+        });
     }
 
     /// Toggle the mute property of the sink device.
@@ -255,29 +288,33 @@ impl Model {
 
     /// Change the default source device.
     pub fn set_default_source(&mut self, pos: usize) -> Task<Message> {
-        if let Some(&object_id) = self.source_node_ids.get(pos) {
-            tracing::debug!(target: "sound", "set default source node {object_id}");
-            self.set_default_source_id(object_id);
-
-            // Use pactl if the node is not a device node.
-            let virtual_source_name: Option<String> = if self.device_ids.contains_key(object_id) {
-                None
-            } else if let Some(name) = self.node_names.get(object_id) {
-                Some(name.clone())
-            } else {
-                None
-            };
-
-            tokio::task::spawn(async move {
-                if let Some(node_name) = virtual_source_name {
-                    pactl_set_default_source(&node_name).await
-                } else {
-                    set_default(object_id).await
-                }
-            });
+        if let Some(&node_id) = self.source_node_ids.get(pos) {
+            self.set_default_source_node_id(node_id);
         }
 
         Task::none()
+    }
+
+    pub fn set_default_source_node_id(&mut self, node_id: NodeId) {
+        tracing::debug!(target: "sound", "set default source node {node_id}");
+        self.set_default_source_id(node_id);
+
+        // Use pactl if the node is not a device node.
+        let virtual_source_name: Option<String> = if self.device_ids.contains_key(node_id) {
+            None
+        } else if let Some(name) = self.node_names.get(node_id) {
+            Some(name.clone())
+        } else {
+            None
+        };
+
+        tokio::task::spawn(async move {
+            if let Some(node_name) = virtual_source_name {
+                pactl_set_default_source(&node_name).await
+            } else {
+                set_default(node_id).await
+            }
+        });
     }
 
     /// Toggle the mute property of the source device.
@@ -510,10 +547,16 @@ impl Model {
                                     node.object_id,
                                     node.node_name
                                 );
-                                self.set_default_sink_id(node.object_id);
-                                tokio::task::spawn(async move {
-                                    set_default(node.object_id).await;
-                                });
+                                self.set_default_sink_node_id(node.object_id);
+                            } else if let Some(device_id) = self.changing_sink_device {
+                                for (node_id, &device) in &self.device_ids {
+                                    if device == device_id && self.sink_node_ids.contains(&node_id)
+                                    {
+                                        self.changing_sink_device = None;
+                                        self.set_default_sink_node_id(node_id);
+                                        return;
+                                    }
+                                }
                             }
                         }
 
@@ -529,10 +572,17 @@ impl Model {
                                     node.object_id,
                                     node.node_name
                                 );
-                                self.set_default_source_id(node.object_id);
-                                tokio::task::spawn(async move {
-                                    set_default(node.object_id).await;
-                                });
+                                self.set_default_source_node_id(node.object_id);
+                            } else if let Some(device_id) = self.changing_source_device {
+                                for (node_id, &device) in &self.device_ids {
+                                    if device == device_id
+                                        && self.source_node_ids.contains(&node_id)
+                                    {
+                                        self.changing_source_device = None;
+                                        self.set_default_source_node_id(node_id);
+                                        return;
+                                    }
+                                }
                             }
                         }
                     }
