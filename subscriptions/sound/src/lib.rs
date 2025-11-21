@@ -394,6 +394,7 @@ impl Model {
 
             pipewire::Event::ActiveProfile(id, profile) => {
                 tracing::debug!(
+                    target: "sound",
                     "Device {id} active profile changed to {}: {}",
                     profile.index,
                     profile.description
@@ -503,6 +504,12 @@ impl Model {
 
                             // Set the sink as the default if it matches the server.
                             if self.active_sink_node_name == node.node_name {
+                                tracing::debug!(
+                                    target: "sound",
+                                    "Node {} ({}) was the default sink",
+                                    node.object_id,
+                                    node.node_name
+                                );
                                 self.set_default_sink_id(node.object_id);
                                 tokio::task::spawn(async move {
                                     set_default(node.object_id).await;
@@ -516,6 +523,12 @@ impl Model {
 
                             // Set the source as the default if it matches the server.
                             if self.active_source_node_name == node.node_name {
+                                tracing::debug!(
+                                    target: "sound",
+                                    "Node {} ({}) was the default source",
+                                    node.object_id,
+                                    node.node_name
+                                );
                                 self.set_default_source_id(node.object_id);
                                 tokio::task::spawn(async move {
                                     set_default(node.object_id).await;
@@ -528,9 +541,12 @@ impl Model {
 
             pipewire::Event::DefaultSink(node_name) => {
                 tracing::debug!(target: "sound", "default sink node changed to {node_name}");
-
                 if self.active_sink_node_name == node_name {
                     return;
+                }
+
+                if let Some(id) = self.node_id_from_name(&node_name) {
+                    self.set_default_sink_id(id);
                 }
 
                 self.active_sink_node_name = node_name;
@@ -586,7 +602,11 @@ impl Model {
             self.sink_node_ids.remove(pos);
             self.sinks.remove(pos);
             if let Some(node_id) = self.active_sink_node {
-                self.set_default_sink_id(node_id);
+                if id == node_id {
+                    self.active_sink = None;
+                    self.active_sink_node = None;
+                    self.active_sink_node_name.clear();
+                }
             }
         } else if let Some(pos) = self
             .source_node_ids
@@ -596,7 +616,11 @@ impl Model {
             self.source_node_ids.remove(pos);
             self.sources.remove(pos);
             if let Some(node_id) = self.active_source_node {
-                self.set_default_source_id(node_id);
+                if id == node_id {
+                    self.active_source = None;
+                    self.active_source_node = None;
+                    self.active_source_node_name.clear();
+                }
             }
         }
 
