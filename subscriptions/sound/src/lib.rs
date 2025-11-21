@@ -79,9 +79,6 @@ pub struct Model {
     active_profiles: IntMap<DeviceId, pipewire::Profile>,
     device_routes: IntMap<DeviceId, Vec<pipewire::Route>>,
 
-    last_set_profile: Option<(DeviceId, u32)>,
-    prev_profile_node: Option<(DeviceId, NodeId)>,
-
     /** Sink devices */
 
     /// Description of a sink device and its port
@@ -157,27 +154,10 @@ impl Model {
     /// Requires using the device ID rather than a node ID.
     pub fn set_profile(&mut self, device_id: DeviceId, index: u32, save: bool) {
         let mut update = false;
-        self.last_set_profile = Some((device_id, index));
+
         if let Some(profiles) = self.device_profiles.get(device_id) {
             for profile in profiles {
                 if profile.index as u32 == index {
-                    // Pipewire will change the default device if the profile on that device is changed.
-                    // We can prevent this by re-setting the default after changing it.
-                    self.prev_profile_node =
-                        self.device_ids.iter().find_map(|(node_id, &dev_id)| {
-                            if dev_id != device_id {
-                                return None;
-                            }
-
-                            if Some(node_id) == self.active_source_node
-                                || Some(node_id) == self.active_sink_node
-                            {
-                                Some((dev_id, node_id))
-                            } else {
-                                None
-                            }
-                        });
-
                     self.active_profiles.insert(device_id, profile.clone());
                     self.pipewire_send(pipewire::Request::SetProfile(device_id, index, save));
                     update = true;
@@ -216,6 +196,7 @@ impl Model {
     /// Change the default sink device
     pub fn set_default_sink(&mut self, pos: usize) -> Task<Message> {
         if let Some(&object_id) = self.sink_node_ids.get(pos) {
+            tracing::debug!(target: "sound", "set default sink node {object_id}");
             self.set_default_sink_id(object_id);
 
             // Use pactl if the node is not a device node.
@@ -275,6 +256,7 @@ impl Model {
     /// Change the default source device.
     pub fn set_default_source(&mut self, pos: usize) -> Task<Message> {
         if let Some(&object_id) = self.source_node_ids.get(pos) {
+            tracing::debug!(target: "sound", "set default source node {object_id}");
             self.set_default_source_id(object_id);
 
             // Use pactl if the node is not a device node.
@@ -411,15 +393,30 @@ impl Model {
             }
 
             pipewire::Event::ActiveProfile(id, profile) => {
-                let index = profile.index as u32;
-                self.active_profiles.insert(id, profile);
-                self.update_ui_profiles();
+                tracing::debug!(
+                    "Device {id} active profile changed to {}: {}",
+                    profile.index,
+                    profile.description
+                );
 
-                // Use pw-cli to reset the profile in case wireplumber has invalid state.
-                // Profiles set by us do not need to use this.
-                if self.last_set_profile != Some((id, index)) {
+                let index = profile.index as u32;
+
+                if let Some(prev) = self.active_profiles.insert(id, profile.clone()) {
+                    if prev.index == profile.index {
+                        return;
+                    }
+
                     tracing::debug!(
-                        "Device {id} changed: auto-selecting last-known-profile {index}"
+                        target: "sound",
+                        "Device {id} profile changed from {} to {}: {}",
+                        prev.index, profile.index, profile.description
+                    );
+                } else {
+                    // Use pw-cli to reset the profile in case wireplumber has invalid state.
+                    // Profiles set by us do not need to use this.
+                    tracing::debug!(
+                        target: "sound",
+                        "Device {id} initialized with profile {}: {}", index, profile.description
                     );
 
                     self.set_profile(id, index, false);
@@ -427,6 +424,13 @@ impl Model {
             }
 
             pipewire::Event::ActiveRoute(id, _index, route) => {
+                tracing::debug!(
+                    target: "sound",
+                    "Device {id} active route changed to {}: {}",
+                    route.index,
+                    route.description
+                );
+
                 self.update_device_route_name(&route, id);
             }
 
@@ -454,11 +458,13 @@ impl Model {
             pipewire::Event::AddRoute(id, index, route) => self.add_route(id, index, route),
 
             pipewire::Event::AddDevice(device) => {
+                tracing::debug!(target: "sound", "Device {} added: {}", device.id, device.name);
                 self.device_names
                     .insert(device.id, self.translate_device_name(&device.name));
             }
 
             pipewire::Event::AddNode(node) => {
+                tracing::debug!(target: "sound", "Node {} added: {}", node.object_id, node.node_name);
                 // Device nodes will have device and card profile device IDs.
                 // Virtual sinks/sources do not have these.
                 if let Some(device_id) = node.device_id {
@@ -489,17 +495,6 @@ impl Model {
                         [&node.device_profile_description, " - ", &description].concat()
                     };
 
-                    // When changing profiles, pipewire may change the default device. This
-                    // will attempt to override that behavior and re-set the default back.
-                    let mut reset_default = false;
-                    if let Some((device_id, node_id)) = self.prev_profile_node {
-                        eprintln!("reset default");
-                        if Some(device_id) == node.device_id && node.object_id == node_id {
-                            self.prev_profile_node = None;
-                            reset_default = true;
-                        }
-                    }
-
                     // Check if the node is a sink or a source, and append it to the relevant collections.
                     match node.media_class {
                         pipewire::MediaClass::Sink => {
@@ -507,7 +502,7 @@ impl Model {
                             self.sink_node_ids.push(node.object_id);
 
                             // Set the sink as the default if it matches the server.
-                            if reset_default || self.active_sink_node_name == node.node_name {
+                            if self.active_sink_node_name == node.node_name {
                                 self.set_default_sink_id(node.object_id);
                                 tokio::task::spawn(async move {
                                     set_default(node.object_id).await;
@@ -520,7 +515,7 @@ impl Model {
                             self.source_node_ids.push(node.object_id);
 
                             // Set the source as the default if it matches the server.
-                            if reset_default || self.active_source_node_name == node.node_name {
+                            if self.active_source_node_name == node.node_name {
                                 self.set_default_source_id(node.object_id);
                                 tokio::task::spawn(async move {
                                     set_default(node.object_id).await;
@@ -532,18 +527,17 @@ impl Model {
             }
 
             pipewire::Event::DefaultSink(node_name) => {
+                tracing::debug!(target: "sound", "default sink node changed to {node_name}");
+
                 if self.active_sink_node_name == node_name {
                     return;
-                }
-
-                if let Some(id) = self.node_id_from_name(&node_name) {
-                    self.set_default_sink_id(id);
                 }
 
                 self.active_sink_node_name = node_name;
             }
 
             pipewire::Event::DefaultSource(node_name) => {
+                tracing::debug!(target: "sound", "default source node changed to {node_name}");
                 if self.active_source_node_name == node_name {
                     return;
                 }
@@ -579,6 +573,7 @@ impl Model {
     }
 
     fn remove_device(&mut self, id: DeviceId) {
+        tracing::debug!(target: "sound", "Device {id} removed");
         _ = self.device_names.remove(id);
         _ = self.device_profiles.remove(id);
         _ = self.active_profiles.remove(id);
@@ -586,6 +581,7 @@ impl Model {
     }
 
     fn remove_node(&mut self, id: NodeId) {
+        tracing::debug!(target: "sound", "Node {id} removed");
         if let Some(pos) = self.sink_node_ids.iter().position(|&node_id| node_id == id) {
             self.sink_node_ids.remove(pos);
             self.sinks.remove(pos);
@@ -755,6 +751,7 @@ impl std::fmt::Debug for SubscriptionHandle {
 
 // TODO: Use pipewire library
 pub async fn set_default(id: u32) {
+    tracing::debug!(target: "sound", "setting default node {id}");
     let id = numtoa::BaseN::<10>::u32(id);
     _ = tokio::process::Command::new("wpctl")
         .args(["set-default", id.as_str()])
@@ -767,6 +764,7 @@ pub async fn set_default(id: u32) {
 /// Use this to set a virtual sink as a default.
 /// TODO: We should be able to set this with pipewire-rs somehow.
 pub async fn pactl_set_default_sink(node_name: &str) {
+    tracing::debug!(target: "sound", "setting default virtual node {node_name}");
     _ = tokio::process::Command::new("pactl")
         .args(["set-default-sink", node_name])
         .stdout(Stdio::null())
