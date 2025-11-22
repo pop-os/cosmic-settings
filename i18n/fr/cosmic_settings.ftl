@@ -187,7 +187,7 @@ control-tint = Teinte des composants de contrôle
 frosted = Effet de verre sur l'interface système
     .desc = Applique un effet de flou d'arrière-plan au panneau, au dock, aux applets, au lanceur et à la bibliothèque d'applications
 enable-export = Appliquer ce thème aux applications GNOME
-    .desc = Certains toolkits ne supportent pas le changement automatique de thème. Les applications non-COSMIC peuvent nécessiter un redémarrage après un changement de thème.
+    .desc = Certaines boîtes à outils ne supportent pas le changement automatique de thème. Les applications non-COSMIC peuvent nécessiter un redémarrage après un changement de thème.
 icon-theme = Thème d'icônes
     .desc = Applique un set d'icônes différent aux applications
 text-tint = Teinte du texte de l'interface
@@ -387,7 +387,7 @@ profile = Profil
 
 ## Power
 
-power = Énergie et batterie
+power = Alimentation
     .desc = Gérer les paramètres d'alimentation
 battery = Batterie
     .minute =
@@ -674,9 +674,9 @@ system = Système et comptes
 ## System: About
 
 about = À propos
-    .desc = Nom de l'appareil, information sur le matériel, paramètres par défaut du système d'exploitation
+    .desc = Nom de l'appareil, informations sur le matériel et paramètres par défaut du système d'exploitation
 about-device = Nom de l'appareil
-    .desc = Ce nom apparaît aux autres périphériques réseau ou Bluetooth
+    .desc = Ce nom est visible par les autres appareils réseau ou Bluetooth
 about-hardware = Matériel
     .model = Modèle du matériel
     .memory = Mémoire vive
@@ -753,7 +753,7 @@ color-filter = Type de filtre de couleurs
     .tritanopia = Bleu/Jaune (faiblesse du bleu, Tritanopie)
 magnifier = Loupe
     .controls =
-        Ou utilisez ces raccourcis : { $zoom_in ->
+        Utilisez ces raccourcis : { $zoom_in ->
             [zero] { "" }
            *[other]
                 { "" }
@@ -785,12 +785,12 @@ amplification = Amplification
 edge-gravity = Les fenêtres flottantes se fixent aux bords proches
 add-another-keybinding = Ajouter un autre raccourci clavier
 password-mismatch = Le mot de passe et la confirmation doivent être identiques
-keyboard-numlock-boot = Verr Num
+keyboard-numlock-boot = Verrouillage numérique
     .boot-state = État au démarrage
     .last-boot = Dernier démarrage
     .on = Activé
     .off = Désactivé
-    .set = Définir l'état au démarrage du Verr Num
+    .set = Définir l'état du Verr Num au démarrage
 gestures = Gestes
     .four-finger-down = Glissement de quatre doigts vers le bas
     .four-finger-left = Glissement de quatre doigts vers la gauche
