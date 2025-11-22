@@ -155,7 +155,7 @@ magnifier = Förstoringsglas
         }
         Super + scrolla med musen
     .scroll_controls = Aktivera mus eller pekplattazoom med Super + Scroll
-    .show_overlay = Visa förstoringsglas överlägget
+    .show_overlay = Visa förstoringsöverlägget
     .increment = Förstoring
     .signin = Starta förstoringsglaset vid inloggning
     .applet = Slå på/av förstoringsglaset i miniprogrammet på panelen
@@ -294,7 +294,7 @@ wired = Trådbunden anslutning
 ## Nätverk: WiFi
 
 wifi = Wi-Fi
-    .adapter = WiFi adapter { $id }
+    .adapter = Wi-Fi adapter { $id }
     .forget = Glöm detta nätverket
 
 ## Nätverk: Wireguard
