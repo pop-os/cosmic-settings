@@ -442,8 +442,9 @@ impl Model {
                 );
 
                 let index = profile.index as u32;
-
-                if let Some(prev) = self.active_profiles.insert(id, profile.clone()) {
+                let prev = self.active_profiles.insert(id, profile.clone());
+                self.update_ui_profiles();
+                if let Some(prev) = prev {
                     if prev.index == profile.index {
                         return;
                     }
