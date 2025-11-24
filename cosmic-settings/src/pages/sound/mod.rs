@@ -78,7 +78,6 @@ pub struct Page {
 
 impl Default for Page {
     fn default() -> Self {
-        fix_wireplumber_stream_properties();
         let mut model = subscription::Model::default();
         model.unplugged_text = fl!("sound-device-port-unplugged");
         model.hd_audio_text = fl!("sound-hd-audio");
@@ -458,30 +457,6 @@ fn device_profiles() -> Section<crate::pages::Message> {
 
             settings::section().add(device_profiles).into()
         })
-}
-
-fn fix_wireplumber_stream_properties() {
-    let path = std::env::home_dir()
-        .expect("no home dir")
-        .join(".local/state/wireplumber/stream-properties");
-
-    let Ok(mut data) = std::fs::read_to_string(&path) else {
-        return;
-    };
-
-    let mut insert_pos = 0;
-    let mut lines = data.split('\n');
-    while let Some(line) = lines.next() {
-        if line.starts_with("Input/Audio:") {
-            return;
-        } else if line.starts_with("Output") {
-            break;
-        }
-
-        insert_pos += 1 + line.len();
-    }
-
-    data.insert_str(insert_pos, "\nInput/Audio:application.id:org.PulseAudio.pavucontrol={\"channelMap\":[\"MONO\"], \"mute\":false, \"volume\":1.000000, \"channelVolumes\":[1.000000]}\"");
 }
 
 // fn alerts() -> Section<crate::pages::Message> {
