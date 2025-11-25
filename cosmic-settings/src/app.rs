@@ -563,6 +563,61 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-storage")]
+                crate::pages::Message::Storage(message) => {
+                    if let Some(page) = self.pages.page_mut::<system::storage::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-storage")]
+                crate::pages::Message::StorageSystemCategory(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<system::storage::system_category::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-storage")]
+                crate::pages::Message::StorageHomeCategory(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<system::storage::home_category::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-storage")]
+                crate::pages::Message::StorageApplicationsCategory(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<system::storage::applications_category::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-storage")]
+                crate::pages::Message::StorageAppDetails(message) => {
+                    if let Some(page) = self.pages.page_mut::<system::storage::app_details::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-storage")]
+                crate::pages::Message::StorageOtherCategory(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<system::storage::other_category::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 #[cfg(feature = "page-users")]
                 crate::pages::Message::User(message) => {
                     if let Some(page) = self.pages.page_mut::<system::users::Page>() {

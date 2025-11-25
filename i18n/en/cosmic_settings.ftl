@@ -904,6 +904,47 @@ about-related = Related settings
 firmware = Firmware
     .desc = Firmware details
 
+## System: Storage
+
+storage = Storage
+    .desc = Device storage information and usage
+
+storage-overview = Storage Overview
+storage-categories = Storage by Category
+
+storage-category-system = System
+storage-category-home = Home
+storage-category-apps = Applications
+storage-category-other = Other
+
+storage-flatpak-apps = Flatpak Applications
+storage-flatpak-apps-none = No Flatpak applications installed
+storage-flatpak-apps-none-desc = Install Flatpak applications to see them here
+
+storage-app-installed = App Size
+storage-app-data = Data & Config
+storage-app-total = Total Size
+storage-app-details = App Details
+storage-app-size-details = Size Details
+storage-app-not-found = App not found
+
+## System Category Details
+storage-system-files = System Files & Libraries
+storage-system-package-cache = Package Cache
+storage-system-logs = System Logs
+storage-system-cache = System Cache
+storage-system-boot = Boot Files
+storage-system-flatpak-runtimes = Flatpak Runtimes
+
+## Home Category Details
+storage-home-documents = Documents
+storage-home-downloads = Downloads
+storage-home-pictures = Pictures
+storage-home-videos = Videos
+storage-home-music = Music
+storage-home-desktop = Desktop
+storage-home-other = Other
+
 ## System: Users
 
 users = Users

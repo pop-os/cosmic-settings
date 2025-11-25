@@ -87,6 +87,18 @@ pub enum Message {
     #[cfg(feature = "page-sound")]
     SoundDeviceProfiles(sound::device_profiles::Message),
     StartupApps(applications::startup_apps::Message),
+    #[cfg(feature = "page-storage")]
+    Storage(system::storage::Message),
+    #[cfg(feature = "page-storage")]
+    StorageSystemCategory(system::storage::system_category::Message),
+    #[cfg(feature = "page-storage")]
+    StorageHomeCategory(system::storage::home_category::Message),
+    #[cfg(feature = "page-storage")]
+    StorageApplicationsCategory(system::storage::applications_category::Message),
+    #[cfg(feature = "page-storage")]
+    StorageAppDetails(system::storage::app_details::Message),
+    #[cfg(feature = "page-storage")]
+    StorageOtherCategory(system::storage::other_category::Message),
     #[cfg(feature = "page-users")]
     User(system::users::Message),
     #[cfg(feature = "page-input")]
