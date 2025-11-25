@@ -13,7 +13,6 @@ Build-Depends:
     libfreetype-dev,
     libinput-dev,
     libpipewire-0.3-dev,
-    libpulse-dev,
     libudev-dev,
     libwayland-dev,
     libxkbcommon-dev,

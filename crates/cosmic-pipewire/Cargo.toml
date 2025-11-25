@@ -1,0 +1,16 @@
+[package]
+name = "cosmic-pipewire"
+version = "1.0.0-beta6"
+edition = "2024"
+rust-version.workspace = true
+license = "MPL-2.0"
+publish = true
+
+[dependencies]
+intmap = "3.1.2"
+libspa = "0.9.2"
+libspa-sys = "0.9.2"
+pipewire = "0.9"
+serde = { version = "1.0.228", features = ["derive"]}
+serde_json = "1.0.145"
+tracing = "0.1.41"

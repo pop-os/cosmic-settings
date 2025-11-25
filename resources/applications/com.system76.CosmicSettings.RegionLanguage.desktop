@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Region & Language
-Name[ar]=اللغة والمنطقة 
+Name[ar]=اللغة والمنطقة
 Name[cs]=Region a jazyk
 Name[zh_CN]=区域和语言
 Name[pl]=Region i język
@@ -21,7 +21,7 @@ Comment[nl]=Regionale datum-, tijd- en getalweergave.
 Comment[sk]=Formátovanie dátumov, časov a čísel podľa vášho regiónu.
 Comment[sv]=Formatera datum, tider och siffror baserat på din region.
 Comment[es]=Formato de fechas, horas y números según su región.
-Type=Settings
+Type=Application
 Exec=cosmic-settings region-language
 Terminal=false
 Categories=COSMIC

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Network & Wireless
-Name[ar]=الشبكة والاتصالات اللاسلكية 
+Name[ar]=الشبكة والاتصالات اللاسلكية
 Name[cs]=Síť a Wi-Fi
 Name[zh_CN]=网络和无线
 Name[pl]=Sieć i połączenia bezprzewodowe
@@ -21,7 +21,7 @@ Comment[nl]=Netwerkverbindingen beheren
 Comment[sk]=Spravovať sieťové pripojenia
 Comment[sv]=Hantera nätverksanslutningar
 Comment[es]=Gestionar conexiones de red
-Type=Settings
+Type=Application
 Exec=cosmic-settings network
 Terminal=false
 Categories=COSMIC

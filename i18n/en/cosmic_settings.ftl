@@ -487,10 +487,15 @@ sound-alerts = Alerts
 sound-applications = Applications
     .desc = Application volumes and settings
 
-profile = Profile
+# No speaker, headphones, or microphone plugged into sound card port
+sound-device-port-unplugged = Unplugged
+sound-hd-audio = HD Audio
+sound-usb-audio = USB Audio
 
-## Power
+# Profiles for sound card devices
+sound-device-profiles = Device profiles
 
+# Power & Battery settings page
 power = Power & battery
     .desc = Manage power settings
 
