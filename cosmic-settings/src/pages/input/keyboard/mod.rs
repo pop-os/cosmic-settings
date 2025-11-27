@@ -45,11 +45,33 @@ static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
 ];
 
 static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
+    ("Disable", "caps:none"),
     ("Escape", "caps:escape"),
     ("Swap with Escape", "caps:swapescape"),
     ("Backspace", "caps:backspace"),
     ("Super", "caps:super"),
+    ("Return key", "caps:return"),
+    ("Hyper", "caps:hyper"),
+    ("Menu key", "caps:menu"),
+    ("Num Lock", "caps:numlock"),
     ("Control", "caps:ctrl_modifier"),
+    (
+        "Control, Shift+Caps Lock is regular Caps Lock",
+        "caps:ctrl_shifted_capslock",
+    ),
+    (
+        "Escape, Shift+Caps lock is regular Caps Lock",
+        "caps:escape_shifted_capslock",
+    ),
+    ("Toggle Shift Lock (affects all keys)", "caps:shiftlock"),
+    (
+        "Shift with locking; Shift \"pauses\" Caps Lock",
+        "caps:shift",
+    ),
+    (
+        "Caps Lock acts as Shift with locking",
+        "caps:shift_nocancel",
+    ),
 ];
 
 #[derive(Clone, Debug)]
