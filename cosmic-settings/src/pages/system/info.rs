@@ -361,7 +361,8 @@ fn get_lspci_gpu_names() -> HashMap<u32, String> {
         }
 
         // Parse device ID from format: "00:02.0 VGA compatible controller [0300]: Intel Corporation HD Graphics 500 [8086:5a85] (rev 0b)"
-        // We want to extract the device ID (5a85) and the name (Intel Corporation HD Graphics 500)
+        // Or with marketing name: "00:02.0 VGA compatible controller: Intel Corporation Alder Lake-P GT2 [Iris Xe Graphics] [8086:46a6] (rev 0c)"
+        // We want to extract the device ID (5a85/46a6) and the name, preferring marketing name if available
 
         if let Some(ids_start) = line.rfind('[') {
             if let Some(ids_end) = line.rfind(']') {
@@ -373,16 +374,10 @@ fn get_lspci_gpu_names() -> HashMap<u32, String> {
                     if let Ok(device_id) = u32::from_str_radix(device_id_str, 16) {
                         // Extract the GPU name between ": " and the last "["
                         if let Some(name_start) = line.find(": ") {
-                            let name_part = &line[name_start + 2..ids_start].trim();
-                            // Remove any trailing parentheses with revision info
-                            let gpu_name = if let Some(paren_pos) = name_part.rfind(" [") {
-                                name_part[..paren_pos].trim()
-                            } else {
-                                name_part
-                            };
-
+                            let full_name = line[name_start + 2..ids_start].trim();
+                            let gpu_name = full_name.replace(" Corporation", "");
                             if !gpu_name.is_empty() {
-                                gpu_map.insert(device_id, gpu_name.to_string());
+                                gpu_map.insert(device_id, gpu_name);
                             }
                         }
                     }
