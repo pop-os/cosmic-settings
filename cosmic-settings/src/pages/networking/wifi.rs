@@ -73,6 +73,8 @@ pub enum Message {
     ViewMore(Option<network_manager::SSID>),
     /// Toggle WiFi access
     WiFiEnable(bool),
+    /// Update search query for filtering networks
+    SearchQuery(String),
 }
 
 impl From<Message> for crate::app::Message {
@@ -126,6 +128,8 @@ pub struct Page {
     qr_code_data: Option<widget::qr_code::Data>,
     /// QR code context drawer state
     qr_drawer: Option<QRCodeDrawer>,
+    /// Search query for filtering WiFi networks
+    search_query: String,
 }
 
 #[derive(Debug)]
@@ -633,6 +637,10 @@ impl Page {
                 self.active_device = Some(device);
             }
 
+            Message::SearchQuery(query) => {
+                self.search_query = query;
+            }
+
             Message::NetworkManagerConnect(conn) => {
                 return cosmic::task::batch(vec![
                     self.connect(conn.clone()),
@@ -767,6 +775,15 @@ fn devices_view() -> Section<crate::pages::Message> {
                         .center_x(Length::Fill)
                 }));
 
+            if !state.airplane_mode {
+                let search_input = widget::search_input(fl!("type-to-search"), &page.search_query)
+                    .on_input(Message::SearchQuery)
+                    .on_clear(Message::SearchQuery(String::new()))
+                    .apply(Element::from);
+
+                view = view.push(search_input);
+            }
+
             if !state.airplane_mode
                 && state.known_access_points.is_empty()
                 && state.wireless_access_points.is_empty()
@@ -780,8 +797,53 @@ fn devices_view() -> Section<crate::pages::Message> {
                 let mut has_known = false;
                 let mut has_visible = false;
 
+                // Filter networks based on search query
+                // Include both visible networks and known networks (even if not currently visible)
+                let search_query_lower = page.search_query.trim().to_lowercase();
+                let filtered_networks: Vec<_> = if search_query_lower.is_empty() {
+                    // When no search query, show all visible networks
+                    state.wireless_access_points.iter().collect()
+                } else {
+                    // When searching, include both visible and known networks that match
+                    use std::collections::BTreeSet;
+                    let mut seen_ssids = BTreeSet::new();
+                    let mut filtered = Vec::new();
+                    
+                    // First, add visible networks that match
+                    for network in &state.wireless_access_points {
+                        if network.ssid.as_ref().to_lowercase().contains(&search_query_lower) {
+                            seen_ssids.insert(network.ssid.as_ref());
+                            filtered.push(network);
+                        }
+                    }
+                    
+                    // Then, add known networks that match and aren't already included
+                    for network in &state.known_access_points {
+                        if !seen_ssids.contains(network.ssid.as_ref())
+                            && network.ssid.as_ref().to_lowercase().contains(&search_query_lower)
+                        {
+                            filtered.push(network);
+                        }
+                    }
+                    
+                    filtered
+                };
+
+                // Show "no networks found" if search returns no results
+                if !search_query_lower.is_empty() && filtered_networks.is_empty() {
+                    let no_networks_found = widget::container(
+                        widget::text::body(&section.descriptions[no_networks_txt])
+                    )
+                    .center_x(Length::Fill);
+                    view = view.push(no_networks_found);
+                    return view
+                        .spacing(spacing.space_l)
+                        .apply(Element::from)
+                        .map(crate::pages::Message::WiFi);
+                }
+
                 // Create separate sections for known and visible networks.
-                let (known_networks, visible_networks) = state.wireless_access_points.iter().fold(
+                let (known_networks, visible_networks) = filtered_networks.iter().fold(
                     (
                         widget::settings::section()
                             .title(&section.descriptions[known_networks_txt]),
