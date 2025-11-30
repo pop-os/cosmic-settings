@@ -432,7 +432,6 @@ sound-alerts = Упозорења
     .sound = Звук упозорења
 sound-applications = Апликације
     .desc = Јачина звука апликација и подешавања
-profile = Профил
 
 ## Power
 

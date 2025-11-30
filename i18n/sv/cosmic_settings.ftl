@@ -433,7 +433,6 @@ sound-alerts = Larm
     .sound = Larmljud
 sound-applications = Program
     .desc = Programvolym och inställningar
-profile = Profil
 
 ## System
 
@@ -844,3 +843,7 @@ qr-code-unavailable = QR-kod ej tillgänglig
 network-name = Nätverkets namn
 share = Dela nätverk
 scan-to-connect-description = Skanna in QR-koden för att ansluta till detta nätverk.
+sound-device-port-unplugged = Urkopplad
+sound-hd-audio = HD-ljud
+sound-usb-audio = USB-ljud
+sound-device-profiles = Enhetsprofiler

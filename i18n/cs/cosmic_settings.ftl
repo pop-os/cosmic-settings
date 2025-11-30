@@ -234,9 +234,9 @@ keyboard-sources = Metody zadávání
     .add = Přidat metodu zadávání
 keyboard-special-char = Zadávání speciálních znaků
     .alternate = Klávesa pro náhradní znaky
-    .compose = Compose klávesa
-    .compose-desc = Klávesa Compose umožňuje zadávat širokou škálu znaků. Pro její použití stiskněte Compose a poté zadejte sekvenci znaků. Například [Compose, C, O] vloží znak „©“, zatímco [Compose, A, '] znak „á“.
-    .caps = Caps Lock klávesa
+    .compose = Klávesa Compose
+    .compose-desc = Klávesa Compose umožňuje zadávat širokou škálu znaků. Pro její použití stiskněte Compose a poté zadejte sekvenci znaků. Například [Compose, C, O] vloží znak „©“, zatímco [Compose, A, ‘] znak „á“.
+    .caps = Klávesa Caps Lock
 
 ## Input: Keyboard: Shortcuts
 
@@ -543,7 +543,6 @@ dialog = Dialog
     .revert-settings = Obnovit nastavení
 amplification = Zesílení
     .desc = Umožňuje zesílit zvuk až na 150%
-profile = Profil
 power = Napájení a baterie
     .desc = Spravujte nastavení napájení
 battery = Baterie
@@ -805,3 +804,7 @@ network-name = Název sítě
 qr-code-unavailable = QR kód není dostupný
 scan-to-connect-description = Naskenujte QR kód pro připojení k této síti.
 share = Sdílet síť
+sound-device-port-unplugged = Odpojeno
+sound-device-profiles = Profily zařízení
+sound-hd-audio = HD Zvuk
+sound-usb-audio = USB Zvuk

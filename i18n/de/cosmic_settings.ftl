@@ -428,7 +428,6 @@ sound-alerts = Alarmsignale
     .sound = Alarmsignalklang.
 sound-applications = Anwendungen
     .desc = Lautstärken und Einstellungen von Anwendungen
-profile = Profil
 
 ## Energie
 

@@ -430,7 +430,6 @@ sound-alerts = Известия
     .sound = Звук на известията
 sound-applications = Програми
     .desc = Сила на звука на програмите и настройки
-profile = Профил
 
 ## Power
 
