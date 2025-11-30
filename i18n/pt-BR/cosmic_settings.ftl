@@ -481,8 +481,8 @@ amplification = Amplificação
     .desc = Permitir aumento do volume até 150%
 
 sound-alerts = Alertas
-    .volume = Alertas de volume
-    .sound = Alertas de som
+    .volume = Volume dos alertas
+    .sound = Som dos alertas
 
 sound-applications = Aplicativos
     .desc = Volume de aplicativos e ajustes
