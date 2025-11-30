@@ -428,7 +428,6 @@ sound-alerts = Uyarılar
     .sound = Uyarı sesi
 sound-applications = Uygulamalar
     .desc = Uygulama sesleri ve ayarları
-profile = Profil
 
 ## Power
 

@@ -382,7 +382,6 @@ sound-alerts = Alertas
     .sound = Sonido de alertas
 sound-applications = Aplicaciones
     .desc = Volúmen y configuración de audio de aplicaciones
-profile = Perfil
 
 ## Power
 

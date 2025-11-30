@@ -6,7 +6,6 @@ import = Flytja inn
 settings = Stillingar
 dark = Dökkt
 light = Ljóst
-profile = Notandasnið
 identity = Auðkenni
 password = Lykilorð
 password-confirm = Staðfesta lykilorð

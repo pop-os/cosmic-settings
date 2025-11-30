@@ -428,7 +428,6 @@ sound-alerts = 警告音
     .sound = 警告音效
 sound-applications = 应用程序
     .desc = 应用程序音量和设置
-profile = 配置文件
 
 ## Power
 

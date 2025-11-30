@@ -428,7 +428,6 @@ sound-alerts = Foláirimh
     .sound = Fuaime foláirimh
 sound-applications = Feidhmchláir
     .desc = Toirt agus socruithe feidhmchlár
-profile = Próifíl
 
 ## Power
 

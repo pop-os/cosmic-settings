@@ -442,7 +442,6 @@ sound-alerts = Alerty
     .sound = Dźwięk alertów
 sound-applications = Aplikacje
     .desc = Ustawienia i głośność aplikacji
-profile = Profil
 
 ## Power
 
@@ -846,3 +845,7 @@ qr-code-unavailable = Kod QR jest niedostępny
 network-name = Nazwa Sieci
 share = Udostępnij sieć
 scan-to-connect-description = Zeskanuj kod QR, aby połączyć się z tą siecią.
+sound-device-port-unplugged = Odłączone
+sound-hd-audio = Dźwięk HD
+sound-usb-audio = Dźwięk USB
+sound-device-profiles = Profile urządzeń

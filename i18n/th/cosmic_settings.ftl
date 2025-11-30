@@ -414,7 +414,6 @@ sound-alerts = การแจ้งเตือน
     .sound = เสียงการแจ้งเตือน
 sound-applications = แอพลิเคชั่น
     .desc = การตั้งค่าและระดับเสียงแอพลิเคชั่น
-profile = โปรไฟล์
 
 ## Power
 
