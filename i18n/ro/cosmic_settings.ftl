@@ -417,7 +417,6 @@ sound-alerts = Alerte
     .sound = Sunet alertă
 sound-applications = Aplicații
     .desc = Volum și setări pentru aplicații
-profile = Profil
 
 ## Power
 

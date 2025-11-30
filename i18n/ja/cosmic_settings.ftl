@@ -519,7 +519,6 @@ password-confirm = パスワードの確認
 default = デフォルト
 interface-font = システムフォント
 monospace-font = 等幅フォント
-profile = プロフィール
 command = コマンド
 custom = カスタム
 debug = デバッグ

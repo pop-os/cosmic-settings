@@ -428,7 +428,6 @@ sound-alerts = Figyelmeztetések
     .sound = Figyelmeztető hang
 sound-applications = Alkalmazások
     .desc = Alkalmazások hangerejei és beállításai
-profile = Profil
 
 ## Power
 
@@ -832,3 +831,7 @@ network-name = Hálózat neve
 share = Hálózat megosztása
 scan-to-connect-description = Olvasd be a QR-kódot a hálózathoz való csatlakozáshoz.
 place-here = Ide helyezd a kisalkalmazásokat
+sound-device-port-unplugged = Nincs csatlakoztatva
+sound-hd-audio = HD-hang
+sound-usb-audio = USB-hang
+sound-device-profiles = Eszközprofilok

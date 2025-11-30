@@ -428,7 +428,6 @@ sound-alerts = 警示音
     .sound = 警示聲音
 sound-applications = 程式音效
     .desc = 程式音效設定
-profile = 設定檔
 
 ## Power
 

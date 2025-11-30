@@ -707,7 +707,6 @@ vrr = Адаптивна синхронізація
     .disabled = Вимкнена
 amplification = Посилення звуку
     .desc = Дозволяє встановити гучність до 150%.
-profile = Профіль
 battery = Батарея
     .minute =
         { $value } { $value ->

@@ -382,7 +382,6 @@ sound-alerts = अलार्म
     .sound = अलार्म ध्वनि
 sound-applications = अनुप्रयोग
     .desc = अनुप्रयोग ध्वनियाँ और सेटिंग्स
-profile = प्रोफ़ाइल
 
 ## Power
 

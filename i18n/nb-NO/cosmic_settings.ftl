@@ -58,7 +58,6 @@ vpn-error = VPN-feil
             [password] passord
             [password-flags] passordflagg
         } med nmcli
-profile = Profil
 forget-dialog = Glem dette Wi-Fi-nettverket?
     .description = Du må skrive inn passordet på nytt for å bruke dette Wi-Fi-nettverket i fremtiden.
 network-device-state =

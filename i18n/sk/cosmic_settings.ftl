@@ -434,7 +434,6 @@ sound-alerts = Upozornenia
     .sound = Zvuk upozornení
 sound-applications = Aplikácie
     .desc = Hlasitosti a nastavenia aplikácií
-profile = Profil
 
 ## Napájanie
 

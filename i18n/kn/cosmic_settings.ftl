@@ -369,7 +369,6 @@ sound-alerts = ಎಚ್ಚರಿಕೆಗಳು
     .sound = ಎಚ್ಚರಿಕೆ ಶಬ್ದ
 sound-applications = ಅಪ್ಲಿಕೇಶನ್‌ಗಳು
     .desc = ಅಪ್ಲಿಕೇಶನ್ ಶಬ್ದಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು
-profile = ಪ್ರೊಫೈಲ್
 
 ## Power
 

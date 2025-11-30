@@ -427,7 +427,6 @@ sound-alerts = Waarschuwingsgeluid
     .sound = Type waarschuwingsgeluid
 sound-applications = Toepassingen
     .desc = Volume-instellingen per toepassing
-profile = Profiel
 
 ## Power
 
