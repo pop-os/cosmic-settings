@@ -68,6 +68,7 @@ check-features:
         "page-power" \
         "page-region" \
         "page-sound" \
+        "page-storage" \
         "page-users" \
         "page-window-management" \
         "page-workspaces"

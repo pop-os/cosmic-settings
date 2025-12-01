@@ -5,6 +5,8 @@
 pub mod about;
 
 pub mod firmware;
+#[cfg(feature = "page-storage")]
+pub mod storage;
 #[cfg(feature = "page-users")]
 pub mod users;
 
@@ -40,6 +42,11 @@ impl page::AutoBind<crate::pages::Message> for Page {
         }
 
         page = page.sub_page::<firmware::Page>();
+
+        #[cfg(feature = "page-storage")]
+        {
+            page = page.sub_page::<storage::Page>();
+        }
 
         page
     }

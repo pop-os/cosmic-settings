@@ -1731,6 +1731,7 @@ dependencies = [
  "indexmap 2.12.0",
  "itertools 0.14.0",
  "itoa",
+ "jwalk",
  "libcosmic",
  "locale1",
  "locales-rs",
@@ -1749,6 +1750,7 @@ dependencies = [
  "smithay-client-toolkit 0.20.0",
  "static_init",
  "sunrise",
+ "sysinfo 0.37.2",
  "tachyonix",
  "timedate-zbus",
  "tokio",
@@ -1906,7 +1908,7 @@ dependencies = [
  "concat-in-place",
  "const_format",
  "memchr",
- "sysinfo",
+ "sysinfo 0.36.1",
 ]
 
 [[package]]
@@ -1996,6 +1998,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9481c1c90cbf2ac953f07c8d4a58aa3945c425b7185c9154d67a65e4230da511"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "crossbeam"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1137cd7e7fc0fb5d3c5a8678be38ec56e819125d8d7907411fe24ccb943faca8"
+dependencies = [
+ "crossbeam-channel",
+ "crossbeam-deque",
+ "crossbeam-epoch",
+ "crossbeam-queue",
+ "crossbeam-utils",
 ]
 
 [[package]]
@@ -4371,6 +4386,16 @@ checksum = "b011eec8cc36da2aab2d5cff675ec18454fad408585853910a202391cf9f8e65"
 dependencies = [
  "once_cell",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "jwalk"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2735847566356cd2179a2a38264839308f7079fa96e6bd5a42d740460e003c56"
+dependencies = [
+ "crossbeam",
+ "rayon",
 ]
 
 [[package]]
@@ -7420,6 +7445,20 @@ name = "sysinfo"
 version = "0.36.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "252800745060e7b9ffb7b2badbd8b31cfa4aa2e61af879d0a3bf2a317c20217d"
+dependencies = [
+ "libc",
+ "memchr",
+ "ntapi",
+ "objc2-core-foundation",
+ "objc2-io-kit",
+ "windows 0.61.3",
+]
+
+[[package]]
+name = "sysinfo"
+version = "0.37.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16607d5caffd1c07ce073528f9ed972d88db15dd44023fa57142963be3feb11f"
 dependencies = [
  "libc",
  "memchr",
