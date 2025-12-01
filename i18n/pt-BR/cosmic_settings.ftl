@@ -277,7 +277,7 @@ interface-density = Densidade da interface
     .compact = Compacta
     .spacious = Espaçosa
 
-window-management-appearance = Gerenciamento de janelas
+window-management-appearance = Gerenciamento de Janelas
     .active-hint = Tamanho da borda de destaque da janela ativa
     .gaps = Espaçamento ao redor de janelas organizadas lado a lado
 
@@ -303,7 +303,7 @@ add-applet = Adicionar miniaplicativo
 all = Todos
 applets = Miniaplicativos
 center-segment = Segmento central
-place-here = Coloque os miniaplicativos aqui
+place-here = Coloque miniaplicativos aqui
 end-segment = Segmento final
 large = Grande
 no-applets-found = Nenhum miniaplicativo encontrado...
@@ -478,7 +478,7 @@ sound-input = Entrada
     .level = Nível de entrada
 
 amplification = Amplificação
-    .desc = Permitir aumento do volume até 150%
+    .desc = Permite aumentar o volume até 150%
 
 sound-alerts = Alertas
     .volume = Volume dos alertas
@@ -496,7 +496,7 @@ sound-usb-audio = Áudio USB
 sound-device-profiles = Perfis de dispositivo
 
 # Power & Battery settings page
-power = Energia e bateria
+power = Energia e Bateria
     .desc = Gerencie as configurações de energia
 
 battery = Bateria
@@ -523,12 +523,12 @@ connected-devices = Dispositivos Conectados
   .unknown = Dispositivo desconhecido
 
 power-mode = Modo de Energia
-    .battery = Economia de bateria
+    .battery = Economia de energia
     .battery-desc = Baixo consumo de energia e desempenho limitado.
     .balanced = Balanceado
     .balanced-desc = Desempenho padrão e consumo de energia moderado.
     .performance = Alto desempenho
-    .performance-desc = Desempenho e consumo de energia elevados.
+    .performance-desc = Máximo desempenho e consumo de energia elevado.
     .no-backend = Gestor de energia não encontrado. Instale o pacote "system76-power" ou "power-profiles-daemon".
 
 power-saving = Opções de Economia de Energia
@@ -560,7 +560,7 @@ scrolling = Rolagem
 
 ## Input: Keyboard
 
-slow = Devagar
+slow = Lento
 fast = Rápido
 short = Curto
 long = Longo
