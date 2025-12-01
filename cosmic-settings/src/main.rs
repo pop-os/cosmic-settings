@@ -71,8 +71,6 @@ pub enum PageCommands {
     /// Dock applets page
     #[cfg(feature = "wayland")]
     DockApplet,
-    /// Firmware settings page
-    Firmware,
     /// Input Devices settings page
     #[cfg(feature = "page-input")]
     Input,
