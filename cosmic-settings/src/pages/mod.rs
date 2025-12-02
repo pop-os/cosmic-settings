@@ -29,6 +29,8 @@ pub enum Message {
     // Page-specific messages
     #[cfg(feature = "page-accessibility")]
     Accessibility(accessibility::Message),
+    #[cfg(feature = "page-input")]
+    AccessibilityShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     #[cfg(feature = "page-accessibility")]
     AccessibilityMagnifier(accessibility::magnifier::Message),
     #[cfg(feature = "page-about")]
