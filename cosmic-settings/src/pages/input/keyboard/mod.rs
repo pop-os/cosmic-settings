@@ -60,7 +60,7 @@ static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
         "caps:ctrl_shifted_capslock",
     ),
     (
-        "Escape, Shift+Caps lock is regular Caps Lock",
+        "Escape, Shift+Caps Lock is regular Caps Lock",
         "caps:escape_shifted_capslock",
     ),
 ];
