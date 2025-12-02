@@ -63,15 +63,6 @@ static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
         "Escape, Shift+Caps lock is regular Caps Lock",
         "caps:escape_shifted_capslock",
     ),
-    ("Toggle Shift Lock (affects all keys)", "caps:shiftlock"),
-    (
-        "Shift with locking; Shift \"pauses\" Caps Lock",
-        "caps:shift",
-    ),
-    (
-        "Caps Lock acts as Shift with locking",
-        "caps:shift_nocancel",
-    ),
 ];
 
 #[derive(Clone, Debug)]
