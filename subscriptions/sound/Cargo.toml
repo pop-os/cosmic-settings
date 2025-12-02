@@ -11,9 +11,9 @@ cosmic-pipewire = { path = "../../crates/cosmic-pipewire" }
 crossbeam-queue = "0.3.12"
 futures = "0.3.31"
 intmap = "3.1.2"
-libcosmic = { git = "https://github.com/pop-os/libcosmic" }
+libcosmic = { git = "https://github.com/pop-os/libcosmic", no-default-features = true }
 log = "0.4.28"
 numtoa = "1.0.0-alpha1"
 rustix = "1.0.8"
 tokio = { version = "1.47.1", features = ["process", "rt", "time"] }
-tracing = "0.1.41"
+tracing = { version = "0.1.41", no-default-features = true }
