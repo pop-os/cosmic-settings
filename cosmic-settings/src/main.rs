@@ -36,11 +36,20 @@ use tracing_subscriber::prelude::*;
 pub struct Args {
     #[command(subcommand)]
     sub_command: Option<PageCommands>,
+}
 
-    /// Import a theme from a RON file and exit without starting the GUI
-    #[arg(long, value_name = "FILE")]
-    #[serde(skip)]
-    import_theme: Option<PathBuf>,
+#[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
+pub enum AppearanceCommands {
+    /// Import a theme from a RON file
+    Import {
+        /// Path to the theme file
+        path: PathBuf,
+    },
+    /// Export the current theme to a RON file
+    Export {
+        /// Path where the theme file will be saved
+        path: PathBuf,
+    },
 }
 
 #[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
@@ -55,7 +64,10 @@ pub enum PageCommands {
     #[cfg(feature = "page-about")]
     About,
     /// Appearance settings page
-    Appearance,
+    Appearance {
+        #[command(subcommand)]
+        command: Option<AppearanceCommands>,
+    },
     /// Applications settings page
     Applications,
     /// Bluetooth settings page
@@ -182,8 +194,11 @@ pub fn main() -> color_eyre::Result<()> {
 
     let args = Args::parse();
 
-    if let Some(theme_path) = &args.import_theme {
-        return import_theme_cli(theme_path);
+    if let Some(PageCommands::Appearance { command: Some(cmd) }) = &args.sub_command {
+        return match cmd {
+            AppearanceCommands::Import { path } => import_theme_cli(path),
+            AppearanceCommands::Export { path } => export_theme_cli(path),
+        };
     }
 
     let settings = cosmic::app::Settings::default()
@@ -267,6 +282,53 @@ fn import_theme_cli(path: &std::path::Path) -> color_eyre::Result<()> {
 
     println!(
         "Successfully imported {} theme from: {}",
+        mode_str,
+        path.display()
+    );
+
+    Ok(())
+}
+
+fn export_theme_cli(path: &std::path::Path) -> color_eyre::Result<()> {
+    use cosmic::cosmic_config::CosmicConfigEntry;
+    use cosmic::cosmic_theme::{ThemeBuilder, ThemeMode};
+
+    if path.extension().is_none_or(|ext| ext != "ron") {
+        return Err(color_eyre::eyre::eyre!(
+            "Theme file must have .ron extension: {}",
+            path.display()
+        ));
+    }
+
+    let mode_config = ThemeMode::config()
+        .map_err(|e| color_eyre::eyre::eyre!("Failed to get theme mode config: {:?}", e))?;
+
+    let mode = ThemeMode::get_entry(&mode_config).unwrap_or_default();
+    let is_dark = mode.is_dark;
+    let mode_str = if is_dark { "dark" } else { "light" };
+
+    let builder_config = if is_dark {
+        ThemeBuilder::dark_config()
+    } else {
+        ThemeBuilder::light_config()
+    }
+    .map_err(|e| {
+        color_eyre::eyre::eyre!("Failed to get {} theme builder config: {:?}", mode_str, e)
+    })?;
+
+    let builder = ThemeBuilder::get_entry(&builder_config).map_err(|e| {
+        color_eyre::eyre::eyre!("Failed to get {} theme builder: {:?}", mode_str, e)
+    })?;
+
+    let ron_string = ron::ser::to_string_pretty(&builder, Default::default())
+        .map_err(|e| color_eyre::eyre::eyre!("Failed to serialize theme to RON: {}", e))?;
+
+    std::fs::write(path, ron_string).map_err(|e| {
+        color_eyre::eyre::eyre!("Failed to write theme file '{}': {}", path.display(), e)
+    })?;
+
+    println!(
+        "Successfully exported {} theme to: {}",
         mode_str,
         path.display()
     );
