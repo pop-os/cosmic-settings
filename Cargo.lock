@@ -1890,7 +1890,6 @@ dependencies = [
  "futures",
  "intmap",
  "libcosmic",
- "log",
  "numtoa",
  "rustix 1.1.2",
  "tokio",
