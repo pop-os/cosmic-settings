@@ -276,7 +276,7 @@ fn get_all_lspci_gpus() -> Vec<(u32, u32, String)> {
     };
 
     for line in stdout.lines() {
-        if !line.contains("VGA")
+        if !line.contains("VGA compatible") // Avoid "Non-VGA unclassified"
             && !line.contains("3D controller")
             && !line.contains("Display controller")
         {
@@ -353,7 +353,7 @@ fn get_lspci_gpu_names() -> HashMap<u32, String> {
 
     for line in stdout.lines() {
         // Look for any line containing VGA, 3D controller, or Display controller
-        if !line.contains("VGA")
+        if !line.contains("VGA compatible") // Avoid "Non-VGA unclassified"
             && !line.contains("3D controller")
             && !line.contains("Display controller")
         {
@@ -375,7 +375,7 @@ fn get_lspci_gpu_names() -> HashMap<u32, String> {
                         // Extract the GPU name between ": " and the last "["
                         if let Some(name_start) = line.find(": ") {
                             let full_name = line[name_start + 2..ids_start].trim();
-                            let gpu_name = full_name.replace(" Corporation", "");
+                            let gpu_name = full_name.replace(" Corporation", "").replace(" [Intel Graphics]", "");
                             if !gpu_name.is_empty() {
                                 gpu_map.insert(device_id, gpu_name);
                             }
