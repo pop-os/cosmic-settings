@@ -3,9 +3,10 @@
 
 //! CLI commands for theme import and export.
 
-use cosmic::cosmic_config::CosmicConfigEntry;
-use cosmic::cosmic_theme::{Theme, ThemeBuilder, ThemeMode};
+use cosmic::cosmic_theme::ThemeBuilder;
 use std::path::Path;
+
+use super::theme_manager::Manager;
 
 /// Import a theme from a RON file and apply it.
 ///
@@ -38,41 +39,24 @@ pub fn import_theme(path: &Path) -> color_eyre::Result<()> {
     let is_dark = builder.palette.is_dark();
     let mode_str = if is_dark { "dark" } else { "light" };
 
-    if let Ok(mode_config) = ThemeMode::config() {
-        let mut mode = ThemeMode::get_entry(&mode_config).unwrap_or_default();
-        if mode.is_dark != is_dark {
-            let _ = mode.set_is_dark(&mode_config, is_dark);
+    let mut manager = Manager::default();
+
+    if manager.mode().is_dark != is_dark {
+        if let Err(err) = manager.dark_mode(is_dark) {
+            return Err(color_eyre::eyre::eyre!(
+                "Failed to set {} mode: {:?}",
+                mode_str,
+                err
+            ));
         }
     }
 
-    let (theme_config, builder_config) = if is_dark {
-        (Theme::dark_config(), ThemeBuilder::dark_config())
-    } else {
-        (Theme::light_config(), ThemeBuilder::light_config())
-    };
-
-    if let Ok(config) = builder_config {
-        builder.write_entry(&config).map_err(|e| {
-            color_eyre::eyre::eyre!("Failed to write theme builder config: {:?}", e)
-        })?;
-    } else {
-        return Err(color_eyre::eyre::eyre!(
-            "Failed to get {} theme builder config",
-            mode_str
-        ));
-    }
-
-    let theme = builder.build();
-    if let Ok(config) = theme_config {
-        theme
-            .write_entry(&config)
-            .map_err(|e| color_eyre::eyre::eyre!("Failed to write theme config: {:?}", e))?;
-    } else {
-        return Err(color_eyre::eyre::eyre!(
-            "Failed to get {} theme config",
-            mode_str
-        ));
-    }
+    manager
+        .selected_customizer_mut()
+        .set_builder(builder.clone())
+        .set_theme(builder.build())
+        .apply_builder()
+        .apply_theme();
 
     println!(
         "Successfully imported {} theme from: {}",
@@ -96,27 +80,13 @@ pub fn export_theme(path: &Path) -> color_eyre::Result<()> {
         ));
     }
 
-    let mode_config = ThemeMode::config()
-        .map_err(|e| color_eyre::eyre::eyre!("Failed to get theme mode config: {:?}", e))?;
-
-    let mode = ThemeMode::get_entry(&mode_config).unwrap_or_default();
-    let is_dark = mode.is_dark;
+    let manager = Manager::default();
+    let is_dark = manager.mode().is_dark;
     let mode_str = if is_dark { "dark" } else { "light" };
 
-    let builder_config = if is_dark {
-        ThemeBuilder::dark_config()
-    } else {
-        ThemeBuilder::light_config()
-    }
-    .map_err(|e| {
-        color_eyre::eyre::eyre!("Failed to get {} theme builder config: {:?}", mode_str, e)
-    })?;
+    let builder = manager.builder();
 
-    let builder = ThemeBuilder::get_entry(&builder_config).map_err(|e| {
-        color_eyre::eyre::eyre!("Failed to get {} theme builder: {:?}", mode_str, e)
-    })?;
-
-    let ron_string = ron::ser::to_string_pretty(&builder, Default::default())
+    let ron_string = ron::ser::to_string_pretty(builder, Default::default())
         .map_err(|e| color_eyre::eyre::eyre!("Failed to serialize theme to RON: {}", e))?;
 
     std::fs::write(path, ron_string).map_err(|e| {
