@@ -11,7 +11,6 @@ network-and-wireless = Traadiga ja traadita võrgud
 no-networks = Ühtegi võrku ei leidu.
 export = Ekspordi
 import = Impordi
-profile = Profiil
 cancel = Katkesta
 close = Sulge
 add = Lisa

@@ -424,7 +424,6 @@ sound-alerts = Advarsler
     .sound = Alarmer lyde
 sound-applications = Applikationer
     .desc = Applikation Lydstyrke og indstillinger
-profile = Profil
 
 ## Power
 

@@ -96,7 +96,6 @@ impl SettingsApp {
             #[cfg(feature = "wayland")]
             PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
             PageCommands::DockApplet => self.pages.page_id::<desktop::dock::applets::Page>(),
-            PageCommands::Firmware => self.pages.page_id::<system::firmware::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             #[cfg(feature = "page-input")]

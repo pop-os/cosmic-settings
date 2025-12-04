@@ -429,7 +429,6 @@ sound-alerts = التنبيهات
     .sound = صوت التنبيهات
 sound-applications = التطبيقات
     .desc = مستوى صوت التطبيقات والإعدادات
-profile = ملف التعريف
 
 ## Power
 
@@ -825,3 +824,7 @@ keyboard-numlock-boot = Numlock
     .on = تشغيل
     .off = إيقاف
     .set = تعيين حالة تشغيل Numlock
+sound-device-port-unplugged = مفصول
+sound-hd-audio = صوت عالي الدقة
+sound-usb-audio = صوت USB
+sound-device-profiles = ملفات تعريف الجهاز

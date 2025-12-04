@@ -383,7 +383,6 @@ sound-alerts = Alertes
     .sound = Alertes sonores
 sound-applications = Applications
     .desc = Volumes et paramètres d'application
-profile = Profil
 
 ## Power
 
@@ -820,3 +819,7 @@ zoom-in = Zoomer
 zoom-out = Dézoomer
 applications = Applications
 change-password = Modifier le mot de passe
+sound-device-port-unplugged = Débranché
+sound-hd-audio = Audio HD
+sound-usb-audio = Audio USB
+sound-device-profiles = Profils des périphériques

@@ -695,7 +695,6 @@ vrr = Динамическая частота обновления
     .force = Всегда
     .auto = Автоматически
     .disabled = Отключена
-profile = Профиль
 battery = Батарея
     .minute =
         { $value } { $value ->
