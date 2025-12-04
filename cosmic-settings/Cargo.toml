@@ -31,7 +31,7 @@ cosmic-settings-airplane-mode-subscription = { path = "../subscriptions/airplane
 cosmic-settings-bluetooth-subscription = { path = "../subscriptions/bluetooth", optional = true }
 cosmic-settings-network-manager-subscription = { path = "../subscriptions/network-manager", optional = true }
 cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
-cosmic-settings-sound-subscription = { path = "../subscriptions/sound", optional = true }
+cosmic-settings-sound-subscription = { path = "../subscriptions/sound", optional = true, features = ["auto-profile-init"] }
 cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
