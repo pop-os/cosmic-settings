@@ -31,6 +31,8 @@ pub enum Message {
     Accessibility(accessibility::Message),
     #[cfg(feature = "page-accessibility")]
     AccessibilityMagnifier(accessibility::magnifier::Message),
+    #[cfg(feature = "page-input")]
+    AccessibilityShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     #[cfg(feature = "page-about")]
     About(system::about::Message),
     Appearance(desktop::appearance::Message),

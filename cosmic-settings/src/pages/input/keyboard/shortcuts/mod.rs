@@ -5,6 +5,7 @@ mod common;
 
 pub use common::{Model, ShortcutBinding, ShortcutMessage, ShortcutModel};
 
+pub mod accessibility;
 pub mod custom;
 pub mod manage_windows;
 pub mod move_window;
@@ -42,6 +43,7 @@ pub struct Page {
 
 #[derive(Default)]
 struct Modified {
+    accessibility: u16,
     manage_windows: u16,
     move_windows: u16,
     nav: u16,
@@ -51,6 +53,7 @@ struct Modified {
 }
 
 struct SubPages {
+    accessibility: page::Entity,
     custom: page::Entity,
     manage_window: page::Entity,
     move_window: page::Entity,
@@ -77,6 +80,7 @@ pub enum Message {
 
 #[derive(Clone, Copy, Debug)]
 pub enum Category {
+    Accessibility,
     Custom,
     ManageWindow,
     MoveWindow,
@@ -94,6 +98,7 @@ impl Default for Page {
             search_model: Model::default(),
             shortcuts_context: None,
             sub_pages: SubPages {
+                accessibility: page::Entity::null(),
                 custom: page::Entity::null(),
                 manage_window: page::Entity::null(),
                 move_window: page::Entity::null(),
@@ -174,6 +179,10 @@ impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
             Message::Category(category) => match category {
+                Category::Accessibility => {
+                    cosmic::task::message(crate::app::Message::Page(self.sub_pages.accessibility))
+                }
+
                 Category::Custom => {
                     cosmic::task::message(crate::app::Message::Page(self.sub_pages.custom))
                 }
@@ -240,6 +249,7 @@ impl Page {
                 }
 
                 match action_category(custom_action) {
+                    Some(Category::Accessibility) => self.modified.accessibility += 1,
                     Some(Category::ManageWindow) => self.modified.manage_windows += 1,
                     Some(Category::MoveWindow) => self.modified.move_windows += 1,
                     Some(Category::Nav) => self.modified.nav += 1,
@@ -261,6 +271,7 @@ impl Page {
                 };
 
                 match action_category(action) {
+                    Some(Category::Accessibility) => self.modified.accessibility += 1,
                     Some(Category::ManageWindow) => self.modified.manage_windows += 1,
                     Some(Category::MoveWindow) => self.modified.move_windows += 1,
                     Some(Category::Nav) => self.modified.nav += 1,
@@ -297,6 +308,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(
         mut page: cosmic_settings_page::Insert<crate::pages::Message>,
     ) -> cosmic_settings_page::Insert<crate::pages::Message> {
+        let accessibility = page.sub_page_with_id::<accessibility::Page>();
         let custom = page.sub_page_with_id::<custom::Page>();
         let manage_window = page.sub_page_with_id::<manage_windows::Page>();
         let move_window = page.sub_page_with_id::<move_window::Page>();
@@ -305,6 +317,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
         let window_tiling = page.sub_page_with_id::<tiling::Page>();
 
         let model = page.model.page_mut::<Page>().unwrap();
+        model.sub_pages.accessibility = accessibility;
         model.sub_pages.custom = custom;
         model.sub_pages.manage_window = manage_window;
         model.sub_pages.move_window = move_window;
@@ -407,6 +420,7 @@ impl Search {
 fn shortcuts() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
+    let accessibility = descriptions.insert(fl!("accessibility"));
     let custom_label = descriptions.insert(fl!("custom"));
     let manage_window_label = descriptions.insert(fl!("manage-windows"));
     let move_window_label = descriptions.insert(fl!("move-windows"));
@@ -430,6 +444,11 @@ fn shortcuts() -> Section<crate::pages::Message> {
             // If the search input is not empty, show the category view, else the search results.
             let content = if page.search.input.is_empty() {
                 settings::section()
+                    .add(category_item(
+                        Category::Accessibility,
+                        &descriptions[accessibility],
+                        page.modified.accessibility,
+                    ))
                     .add(category_item(
                         Category::ManageWindow,
                         &descriptions[manage_window_label],
