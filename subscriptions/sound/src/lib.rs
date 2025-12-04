@@ -441,7 +441,6 @@ impl Model {
                     profile.description
                 );
 
-                let index = profile.index as u32;
                 let prev = self.active_profiles.insert(id, profile.clone());
                 self.update_ui_profiles();
                 if let Some(prev) = prev {
@@ -455,14 +454,17 @@ impl Model {
                         prev.index, profile.index, profile.description
                     );
                 } else {
-                    // Use pw-cli to reset the profile in case wireplumber has invalid state.
-                    // Profiles set by us do not need to use this.
-                    tracing::debug!(
-                        target: "sound",
-                        "Device {id} initialized with profile {}: {}", index, profile.description
-                    );
+                    #[cfg(feature = "auto-profile-init")]
+                    if profile.index != 0 {
+                        // Use pw-cli to re-set the profile in case wireplumber has invalid state.
+                        // Profiles set by us do not need to use this. Only sets if profile is not `Off`.
+                        tracing::debug!(
+                            target: "sound",
+                            "Device {id} initialized with profile {}: {}", profile.index, profile.description
+                        );
 
-                    self.set_profile(id, index, false);
+                        self.set_profile(id, profile.index as u32, false);
+                    }
                 }
             }
 
