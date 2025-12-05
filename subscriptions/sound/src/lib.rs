@@ -486,12 +486,12 @@ impl Model {
                     pipewire::Direction::Output => (
                         self.active_sink_device.clone(),
                         &self.sink_node_ids,
-                        Self::set_default_sink_node_id,
+                        Self::set_default_sink_id,
                     ),
                     pipewire::Direction::Input => (
                         self.active_source_device.clone(),
                         &self.source_node_ids,
-                        Self::set_default_source_node_id,
+                        Self::set_default_source_id,
                     ),
                 };
 
