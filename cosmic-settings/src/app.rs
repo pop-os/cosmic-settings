@@ -400,7 +400,7 @@ impl cosmic::Application for SettingsApp {
                 crate::pages::Message::AccessibilityShortcuts(message) => {
                     if let Some(page) = self
                         .pages
-                            .page_mut::<input::keyboard::shortcuts::accessibility::Page>()
+                        .page_mut::<input::keyboard::shortcuts::accessibility::Page>()
                     {
                         return page.update(message).map(Into::into);
                     }
