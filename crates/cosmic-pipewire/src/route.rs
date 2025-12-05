@@ -14,6 +14,8 @@ pub struct Route {
     pub index: i32,
     pub priority: i32,
     pub device: i32,
+    #[cfg(feature = "route-port-type")]
+    pub port_type: PortType,
     pub available: Availability,
     pub direction: Direction,
     pub name: String,
@@ -83,10 +85,84 @@ impl Route {
                             .and_then(|prop| unsafe { array_from_pod::<c_float>(prop.value()) }),
                     })
                 }
+                #[cfg(feature = "route-port-type")]
+                libspa_sys::SPA_PARAM_ROUTE_info => {
+                    if let Ok(prop) = prop.value().as_struct() {
+                        let mut fields = prop.fields().skip(1);
+                        while let Some((key, value)) = fields.next().zip(fields.next()) {
+                            if let Some("port.type") = string_from_pod(key).as_deref() {
+                                if let Some(value) = string_from_pod(value) {
+                                    this.port_type = PortType::from(value.as_str());
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
                 _ => (),
             }
         }
 
         Some(this)
+    }
+}
+
+#[cfg(feature = "route-port-type")]
+#[derive(Clone, Debug, Default)]
+pub enum PortType {
+    #[default]
+    Unknown = 0,
+    Aux = 1,
+    Speaker = 2,
+    Headphones = 3,
+    Line = 4,
+    Mic = 5,
+    Headset = 6,
+    Handset = 7,
+    Earpiece = 8,
+    SPDIF = 9,
+    HDMI = 10,
+    TV = 11,
+    Radio = 12,
+    Video = 13,
+    USB = 14,
+    Bluetooth = 15,
+    Portable = 16,
+    Handsfree = 17,
+    Car = 18,
+    HiFi = 19,
+    Phone = 20,
+    Network = 21,
+    Analog = 22,
+}
+
+#[cfg(feature = "route-port-type")]
+impl From<&str> for PortType {
+    fn from(value: &str) -> Self {
+        match value {
+            "analog" => Self::Analog,
+            "aux" => Self::Aux,
+            "speaker" => Self::Speaker,
+            "headphones" => Self::Headphones,
+            "line" => Self::Line,
+            "mic" => Self::Mic,
+            "headset" => Self::Headset,
+            "handset" => Self::Handset,
+            "earpiece" => Self::Earpiece,
+            "spidf" => Self::SPDIF,
+            "hdmi" => Self::HDMI,
+            "tv" => Self::TV,
+            "radio" => Self::Radio,
+            "video" => Self::Video,
+            "usb" => Self::USB,
+            "bluetooth" => Self::Bluetooth,
+            "portable" => Self::Portable,
+            "handsfree" => Self::Handsfree,
+            "car" => Self::Car,
+            "hifi" => Self::HiFi,
+            "phone" => Self::Phone,
+            "network" => Self::Network,
+            _ => Self::Unknown,
+        }
     }
 }

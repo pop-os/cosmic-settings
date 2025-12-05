@@ -14,6 +14,8 @@ mod profile;
 pub use profile::Profile;
 
 mod route;
+#[cfg(feature = "route-port-type")]
+pub use route::PortType;
 pub use route::{Route, RouteProps};
 
 mod spa_utils;
