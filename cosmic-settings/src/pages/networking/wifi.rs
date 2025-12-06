@@ -775,15 +775,6 @@ fn devices_view() -> Section<crate::pages::Message> {
                         .center_x(Length::Fill)
                 }));
 
-            if !state.airplane_mode {
-                let search_input = widget::search_input(fl!("type-to-search"), &page.search_query)
-                    .on_input(Message::SearchQuery)
-                    .on_clear(Message::SearchQuery(String::new()))
-                    .apply(Element::from);
-
-                view = view.push(search_input);
-            }
-
             if !state.airplane_mode
                 && state.known_access_points.is_empty()
                 && state.wireless_access_points.is_empty()
@@ -794,92 +785,40 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                 view = view.push(no_networks_found);
             } else {
+                // Collect known SSIDs for deduplication
+                let known_ssids: BTreeSet<&str> = state
+                    .known_access_points
+                    .iter()
+                    .map(|ap| ap.ssid.as_ref())
+                    .chain(state.active_conns.iter().filter_map(|active| {
+                        if let ActiveConnectionInfo::WiFi { name, .. } = active {
+                            Some(name.as_str())
+                        } else {
+                            None
+                        }
+                    }))
+                    .collect();
+
+                // Build Known Networks section (always unfiltered)
+                let mut known_networks = widget::settings::section()
+                    .title(&section.descriptions[known_networks_txt]);
                 let mut has_known = false;
-                let mut has_visible = false;
 
-                // Filter networks based on search query
-                // Include both visible networks and known networks (even if not currently visible)
-                let search_query_lower = page.search_query.trim().to_lowercase();
-                let filtered_networks: Vec<_> = if search_query_lower.is_empty() {
-                    // When no search query, show all visible networks
-                    state.wireless_access_points.iter().collect()
-                } else {
-                    // When searching, include both visible and known networks that match
-                    use std::collections::BTreeSet;
-                    let mut seen_ssids = BTreeSet::new();
-                    let mut filtered = Vec::new();
-                    
-                    // First, add visible networks that match
-                    for network in &state.wireless_access_points {
-                        if network.ssid.as_ref().to_lowercase().contains(&search_query_lower) {
-                            seen_ssids.insert(network.ssid.as_ref());
-                            filtered.push(network);
-                        }
-                    }
-                    
-                    // Then, add known networks that match and aren't already included
-                    for network in &state.known_access_points {
-                        if !seen_ssids.contains(network.ssid.as_ref())
-                            && network.ssid.as_ref().to_lowercase().contains(&search_query_lower)
-                        {
-                            filtered.push(network);
-                        }
-                    }
-                    
-                    filtered
-                };
-
-                // Show "no networks found" if search returns no results
-                if !search_query_lower.is_empty() && filtered_networks.is_empty() {
-                    let no_networks_found = widget::container(
-                        widget::text::body(&section.descriptions[no_networks_txt])
-                    )
-                    .center_x(Length::Fill);
-                    view = view.push(no_networks_found);
-                    return view
-                        .spacing(spacing.space_l)
-                        .apply(Element::from)
-                        .map(crate::pages::Message::WiFi);
-                }
-
-                // Create separate sections for known and visible networks.
-                let (known_networks, visible_networks) = filtered_networks.iter().fold(
-                    (
-                        widget::settings::section()
-                            .title(&section.descriptions[known_networks_txt]),
-                        widget::settings::section()
-                            .title(&section.descriptions[visible_networks_txt]),
-                    ),
-                    |(mut known_networks, mut visible_networks), network| {
+                // Add visible networks that are known
+                for network in &state.wireless_access_points {
+                    if known_ssids.contains(network.ssid.as_ref()) {
+                        has_known = true;
                         let is_connected = is_connected(state, network);
-
-                        let is_known = state
-                            .known_access_points
-                            .iter()
-                            .map(|known| known.ssid.as_ref())
-                            .chain(state.active_conns.iter().filter_map(|active| {
-                                if let ActiveConnectionInfo::WiFi { name, .. } = active {
-                                    Some(name.as_str())
-                                } else {
-                                    None
-                                }
-                            }))
-                            .any(|known| known == network.ssid.as_ref());
-
                         let is_encrypted = network.network_type != NetworkType::Open;
 
-                        let (connect_txt, connect_msg) = if is_connected {
+                        let (connect_label, connect_msg) = if is_connected {
                             (&section.descriptions[connected_txt], None)
                         } else if page.connecting.contains(&network.ssid) {
                             (&section.descriptions[connecting_txt], None)
                         } else {
                             (
                                 &section.descriptions[connect_txt],
-                                Some(if is_known || !is_encrypted {
-                                    Message::Connect(network.ssid.clone())
-                                } else {
-                                    Message::PasswordRequest(network.ssid.clone())
-                                }),
+                                Some(Message::Connect(network.ssid.clone())),
                             )
                         };
 
@@ -895,9 +834,9 @@ fn devices_view() -> Section<crate::pages::Message> {
                             .spacing(spacing.space_xxs);
 
                         let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
-                            widget::button::text(connect_txt).on_press(msg).into()
+                            widget::button::text(connect_label).on_press(msg).into()
                         } else {
-                            widget::text::body(connect_txt)
+                            widget::text::body(connect_label)
                                 .align_y(Alignment::Center)
                                 .into()
                         };
@@ -925,29 +864,23 @@ fn devices_view() -> Section<crate::pages::Message> {
                                             Message::Settings(network.ssid.clone()),
                                             &section.descriptions[settings_txt],
                                         ))
-                                        .push_maybe(is_known.then(|| {
-                                            popup_button(
-                                                Message::QRCodeRequest(network.ssid.clone()),
-                                                &section.descriptions[share_txt],
-                                            )
-                                        }))
-                                        .push_maybe(is_known.then(|| {
-                                            popup_button(
-                                                Message::ForgetRequest(network.ssid.clone()),
-                                                &section.descriptions[forget_txt],
-                                            )
-                                        }))
+                                        .push(popup_button(
+                                            Message::QRCodeRequest(network.ssid.clone()),
+                                            &section.descriptions[share_txt],
+                                        ))
+                                        .push(popup_button(
+                                            Message::ForgetRequest(network.ssid.clone()),
+                                            &section.descriptions[forget_txt],
+                                        ))
                                         .width(Length::Fixed(170.0))
                                         .apply(widget::container)
                                         .class(cosmic::style::Container::Dialog)
                                 })
                                 .apply(|e| Some(Element::from(e)))
-                        } else if is_known {
+                        } else {
                             view_more_button
                                 .on_press(Message::ViewMore(Some(network.ssid.clone())))
                                 .apply(|e| Some(Element::from(e)))
-                        } else {
-                            None
                         };
 
                         let controls = widget::row::with_capacity(2)
@@ -956,30 +889,228 @@ fn devices_view() -> Section<crate::pages::Message> {
                             .align_y(Alignment::Center)
                             .spacing(spacing.space_xxs);
 
-                        let widget = widget::settings::item_row(vec![
+                        let item = widget::settings::item_row(vec![
                             identifier.into(),
                             widget::horizontal_space().into(),
                             controls.into(),
                         ]);
 
-                        if is_known {
-                            has_known = true;
-                            known_networks = known_networks.add(widget);
-                        } else {
-                            has_visible = true;
-                            visible_networks = visible_networks.add(widget);
-                        }
+                        known_networks = known_networks.add(item);
+                    }
+                }
 
-                        (known_networks, visible_networks)
-                    },
-                );
+                // Also add known networks that are not currently visible
+                for network in &state.known_access_points {
+                    let already_added = state
+                        .wireless_access_points
+                        .iter()
+                        .any(|ap| ap.ssid == network.ssid);
+                    if !already_added {
+                        has_known = true;
+                        let is_connected = is_connected(state, network);
+                        let is_encrypted = network.network_type != NetworkType::Open;
+
+                        let (connect_label, connect_msg) = if is_connected {
+                            (&section.descriptions[connected_txt], None)
+                        } else if page.connecting.contains(&network.ssid) {
+                            (&section.descriptions[connecting_txt], None)
+                        } else {
+                            (
+                                &section.descriptions[connect_txt],
+                                Some(Message::Connect(network.ssid.clone())),
+                            )
+                        };
+
+                        let identifier = widget::row::with_capacity(3)
+                            .push(widget::icon::from_name(wifi_icon(network.strength)))
+                            .push_maybe(
+                                is_encrypted
+                                    .then(|| widget::icon::from_name("connection-secure-symbolic")),
+                            )
+                            .push(
+                                widget::text::body(network.ssid.as_ref()).wrapping(Wrapping::Glyph),
+                            )
+                            .spacing(spacing.space_xxs);
+
+                        let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
+                            widget::button::text(connect_label).on_press(msg).into()
+                        } else {
+                            widget::text::body(connect_label)
+                                .align_y(Alignment::Center)
+                                .into()
+                        };
+
+                        let view_more_button =
+                            widget::button::icon(widget::icon::from_name("view-more-symbolic"));
+
+                        let view_more: Element<_> = if page
+                            .view_more_popup
+                            .as_deref()
+                            .is_some_and(|id| id == network.ssid.as_ref())
+                        {
+                            widget::popover(view_more_button.on_press(Message::ViewMore(None)))
+                                .position(widget::popover::Position::Bottom)
+                                .on_close(Message::ViewMore(None))
+                                .popup({
+                                    widget::column()
+                                        .push_maybe(is_connected.then(|| {
+                                            popup_button(
+                                                Message::Disconnect(network.ssid.clone()),
+                                                &section.descriptions[disconnect_txt],
+                                            )
+                                        }))
+                                        .push(popup_button(
+                                            Message::Settings(network.ssid.clone()),
+                                            &section.descriptions[settings_txt],
+                                        ))
+                                        .push(popup_button(
+                                            Message::QRCodeRequest(network.ssid.clone()),
+                                            &section.descriptions[share_txt],
+                                        ))
+                                        .push(popup_button(
+                                            Message::ForgetRequest(network.ssid.clone()),
+                                            &section.descriptions[forget_txt],
+                                        ))
+                                        .width(Length::Fixed(170.0))
+                                        .apply(widget::container)
+                                        .class(cosmic::style::Container::Dialog)
+                                })
+                                .into()
+                        } else {
+                            view_more_button
+                                .on_press(Message::ViewMore(Some(network.ssid.clone())))
+                                .into()
+                        };
+
+                        let controls = widget::row::with_capacity(2)
+                            .push(connect)
+                            .push(view_more)
+                            .align_y(Alignment::Center)
+                            .spacing(spacing.space_xxs);
+
+                        let item = widget::settings::item_row(vec![
+                            identifier.into(),
+                            widget::horizontal_space().into(),
+                            controls.into(),
+                        ]);
+
+                        known_networks = known_networks.add(item);
+                    }
+                }
 
                 if has_known {
                     view = view.push(known_networks);
                 }
 
-                if has_visible {
-                    view = view.push(visible_networks);
+                // Build Visible Networks section (filtered when search active and 30+ networks)
+                let show_search = state.wireless_access_points.len() >= 30;
+                let search_query_lower = page.search_query.trim().to_lowercase();
+
+                // Filter visible networks (exclude known networks, apply search filter)
+                let filtered_visible: Vec<_> = state
+                    .wireless_access_points
+                    .iter()
+                    .filter(|network| !known_ssids.contains(network.ssid.as_ref()))
+                    .filter(|network| {
+                        if show_search && !search_query_lower.is_empty() {
+                            network
+                                .ssid
+                                .as_ref()
+                                .to_lowercase()
+                                .contains(&search_query_lower)
+                        } else {
+                            true
+                        }
+                    })
+                    .collect();
+
+                // Check if we have any visible (non-known) networks at all
+                let has_any_visible = state
+                    .wireless_access_points
+                    .iter()
+                    .any(|network| !known_ssids.contains(network.ssid.as_ref()));
+
+                // Only show visible networks section if there are non-known networks
+                if has_any_visible {
+                    // Build visible networks section with optional search
+                    let mut visible_section = widget::column::with_capacity(3);
+
+                    // Section title
+                    visible_section = visible_section.push(
+                        widget::text::title4(&section.descriptions[visible_networks_txt]),
+                    );
+
+                    // Search input (only shown when 30+ networks)
+                    if show_search {
+                        let search_input =
+                            widget::search_input(fl!("type-to-search"), &page.search_query)
+                                .on_input(Message::SearchQuery)
+                                .on_clear(Message::SearchQuery(String::new()));
+                        visible_section = visible_section.push(search_input);
+                    }
+
+                    // Network list or "no results" message
+                    if filtered_visible.is_empty() && show_search && !search_query_lower.is_empty()
+                    {
+                        // Show "no networks found" only when search is active and returns no results
+                        visible_section = visible_section.push(
+                            widget::container(
+                                widget::text::body(&section.descriptions[no_networks_txt]),
+                            )
+                            .center_x(Length::Fill),
+                        );
+                    } else if !filtered_visible.is_empty() {
+                        let mut visible_networks_list = widget::list_column();
+                        for network in filtered_visible {
+                            let is_encrypted = network.network_type != NetworkType::Open;
+
+                            let (connect_label, connect_msg) =
+                                if page.connecting.contains(&network.ssid) {
+                                    (&section.descriptions[connecting_txt], None)
+                                } else {
+                                    (
+                                        &section.descriptions[connect_txt],
+                                        Some(if is_encrypted {
+                                            Message::PasswordRequest(network.ssid.clone())
+                                        } else {
+                                            Message::Connect(network.ssid.clone())
+                                        }),
+                                    )
+                                };
+
+                            let identifier = widget::row::with_capacity(3)
+                                .push(widget::icon::from_name(wifi_icon(network.strength)))
+                                .push_maybe(
+                                    is_encrypted.then(|| {
+                                        widget::icon::from_name("connection-secure-symbolic")
+                                    }),
+                                )
+                                .push(
+                                    widget::text::body(network.ssid.as_ref())
+                                        .wrapping(Wrapping::Glyph),
+                                )
+                                .spacing(spacing.space_xxs);
+
+                            let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
+                                widget::button::text(connect_label).on_press(msg).into()
+                            } else {
+                                widget::text::body(connect_label)
+                                    .align_y(Alignment::Center)
+                                    .into()
+                            };
+
+                            let item = widget::settings::item_row(vec![
+                                identifier.into(),
+                                widget::horizontal_space().into(),
+                                connect,
+                            ]);
+
+                            visible_networks_list = visible_networks_list.add(item);
+                        }
+                        visible_section = visible_section.push(visible_networks_list);
+                    }
+
+                    view = view.push(visible_section.spacing(spacing.space_xs));
                 }
             };
 
