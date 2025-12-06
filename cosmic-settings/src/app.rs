@@ -384,19 +384,27 @@ impl cosmic::Application for SettingsApp {
                         return page.update(message).map(Into::into);
                     }
                 }
-                #[cfg(feature = "page-accessibility")]
-                crate::pages::Message::AccessibilityMagnifier(message) => {
-                    if let Some(page) = self.pages.page_mut::<accessibility::magnifier::Page>() {
-                        return page.update(self.active_page, message).map(Into::into);
-                    }
-                }
                 #[cfg(feature = "page-about")]
                 crate::pages::Message::About(message) => {
                     if let Some(page) = self.pages.page_mut::<system::about::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }
-
+                #[cfg(feature = "page-accessibility")]
+                crate::pages::Message::AccessibilityMagnifier(message) => {
+                    if let Some(page) = self.pages.page_mut::<accessibility::magnifier::Page>() {
+                        return page.update(self.active_page, message).map(Into::into);
+                    }
+                }
+                #[cfg(feature = "page-input")]
+                crate::pages::Message::AccessibilityShortcuts(message) => {
+                    if let Some(page) = self
+                        .pages
+                            .page_mut::<input::keyboard::shortcuts::accessibility::Page>()
+                    {
+                        return page.update(message).map(Into::into);
+                    }
+                }
                 crate::pages::Message::Appearance(message) => {
                     if let Some(page) = self.pages.page_mut::<appearance::Page>() {
                         return page.update(message).map(Into::into);

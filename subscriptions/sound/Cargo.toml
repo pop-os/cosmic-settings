@@ -16,3 +16,7 @@ numtoa = "1.0.0-alpha1"
 rustix = "1.0.8"
 tokio = { version = "1.47.1", features = ["process", "rt", "time"] }
 tracing = { version = "0.1.41", default-features = false }
+
+[features]
+# Set profile on first load
+auto-profile-init = []
