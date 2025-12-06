@@ -309,6 +309,7 @@ impl page::Page<crate::pages::Message> for Page {
         self.connecting.clear();
         self.withheld_state = None;
         self.withheld_devices = None;
+        self.search_query.clear();
 
         if let Some(cancel) = self.nm_task.take() {
             _ = cancel.send(());
@@ -800,8 +801,8 @@ fn devices_view() -> Section<crate::pages::Message> {
                     .collect();
 
                 // Build Known Networks section (always unfiltered)
-                let mut known_networks = widget::settings::section()
-                    .title(&section.descriptions[known_networks_txt]);
+                let mut known_networks =
+                    widget::settings::section().title(&section.descriptions[known_networks_txt]);
                 let mut has_known = false;
 
                 // Add visible networks that are known
@@ -1036,9 +1037,9 @@ fn devices_view() -> Section<crate::pages::Message> {
                     let mut visible_section = widget::column::with_capacity(3);
 
                     // Section title
-                    visible_section = visible_section.push(
-                        widget::text::title4(&section.descriptions[visible_networks_txt]),
-                    );
+                    visible_section = visible_section.push(widget::text::title4(
+                        &section.descriptions[visible_networks_txt],
+                    ));
 
                     // Search input (only shown when 30+ networks)
                     if show_search {
@@ -1054,9 +1055,9 @@ fn devices_view() -> Section<crate::pages::Message> {
                     {
                         // Show "no networks found" only when search is active and returns no results
                         visible_section = visible_section.push(
-                            widget::container(
-                                widget::text::body(&section.descriptions[no_networks_txt]),
-                            )
+                            widget::container(widget::text::body(
+                                &section.descriptions[no_networks_txt],
+                            ))
                             .center_x(Length::Fill),
                         );
                     } else if !filtered_visible.is_empty() {
@@ -1078,18 +1079,17 @@ fn devices_view() -> Section<crate::pages::Message> {
                                     )
                                 };
 
-                            let identifier = widget::row::with_capacity(3)
-                                .push(widget::icon::from_name(wifi_icon(network.strength)))
-                                .push_maybe(
-                                    is_encrypted.then(|| {
+                            let identifier =
+                                widget::row::with_capacity(3)
+                                    .push(widget::icon::from_name(wifi_icon(network.strength)))
+                                    .push_maybe(is_encrypted.then(|| {
                                         widget::icon::from_name("connection-secure-symbolic")
-                                    }),
-                                )
-                                .push(
-                                    widget::text::body(network.ssid.as_ref())
-                                        .wrapping(Wrapping::Glyph),
-                                )
-                                .spacing(spacing.space_xxs);
+                                    }))
+                                    .push(
+                                        widget::text::body(network.ssid.as_ref())
+                                            .wrapping(Wrapping::Glyph),
+                                    )
+                                    .spacing(spacing.space_xxs);
 
                             let connect: Element<'_, Message> = if let Some(msg) = connect_msg {
                                 widget::button::text(connect_label).on_press(msg).into()
