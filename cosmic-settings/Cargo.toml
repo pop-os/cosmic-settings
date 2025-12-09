@@ -68,7 +68,6 @@ slab = "0.4.11"
 slotmap = "1.0.7"
 static_init = "1.0.4"
 sunrise = "2.1.0"
-tachyonix = "0.3.1"
 timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 tokio = { workspace = true, features = ["fs", "io-util", "sync"] }
 tracing = "0.1.41"
