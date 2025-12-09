@@ -709,6 +709,7 @@ system-shortcut = System
     .play-prev = Previous track
     .poweroff = Power off
     .screenshot = Take a screenshot
+    .suspend = Suspend
     .terminal = Open a terminal
     .touchpad-toggle = Toggle touchpad
     .volume-lower = Decrease audio output volume

@@ -16,13 +16,13 @@ pub mod tiling;
 use cosmic::app::ContextDrawer;
 use cosmic::iced::Length;
 use cosmic::widget::{self, icon, settings, text};
-use cosmic::{Apply, Element, Task, theme};
+use cosmic::{theme, Apply, Element, Task};
 use cosmic_config::ConfigGet;
-use cosmic_settings_config::Binding;
 use cosmic_settings_config::shortcuts::action::{
     Direction, FocusDirection, Orientation, ResizeDirection,
 };
 use cosmic_settings_config::shortcuts::{self, Action, Shortcuts};
+use cosmic_settings_config::Binding;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use itertools::Itertools;
@@ -732,6 +732,7 @@ fn localize_action(action: &Action) -> String {
             SystemAction::PlayPrev => fl!("system-shortcut", "play-prev"),
             SystemAction::PowerOff => fl!("system-shortcut", "poweroff"),
             SystemAction::Screenshot => fl!("system-shortcut", "screenshot"),
+            SystemAction::Suspend => fl!("system-shortcut", "suspend"),
             SystemAction::Terminal => fl!("system-shortcut", "terminal"),
             SystemAction::TouchpadToggle => fl!("system-shortcut", "touchpad-toggle"),
             SystemAction::VolumeLower => fl!("system-shortcut", "volume-lower"),
