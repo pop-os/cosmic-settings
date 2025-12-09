@@ -204,7 +204,7 @@ users = Uživatelé
     .desc = Ověření a uživatelské účty
     .admin = Administrátor
     .standard = Standardní
-    .profile-add = Zvolte obrázek profilu
+    .profile-add = Vyberte obrázek profilu
 
 ## Input
 
