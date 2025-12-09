@@ -40,6 +40,7 @@ pub enum ContextView {
     ApplicationBackground,
     ContainerBackground,
     ControlComponent,
+    ShadowAndCorners,
     CustomAccent,
     IconsAndToolkit,
     InterfaceText,
@@ -124,6 +125,7 @@ pub enum Message {
 
     DrawerOpen(ContextView),
     DrawerColor(ColorPickerUpdate),
+    DrawerCorners(drawer::CornerMessage),
     DrawerFont(drawer::FontMessage),
     DrawerIcon(drawer::IconMessage),
 
@@ -259,6 +261,12 @@ impl Page {
             Message::DrawerIcon(message) => {
                 if let Some(context_view) = self.context_view.as_ref() {
                     tasks.push(self.drawer.update_icon(message, context_view));
+                }
+            }
+
+            Message::DrawerCorners(message) => {
+                if let Some(context_view) = self.context_view.as_ref() {
+                    tasks.push(self.drawer.update_shadow_and_corners(message, context_view));
                 }
             }
 
@@ -820,6 +828,7 @@ pub fn experimental() -> Section<crate::pages::Message> {
         interface_font_txt = fl!("interface-font");
         monospace_font_txt = fl!("monospace-font");
         icons_and_toolkit_txt = fl!("icons-and-toolkit");
+        shadow_and_corners_txt = fl!("shadow-and-corners");
     });
 
     Section::default()
@@ -845,11 +854,17 @@ pub fn experimental() -> Section<crate::pages::Message> {
                 Message::DrawerOpen(ContextView::IconsAndToolkit),
             );
 
+            let shadow_and_corners = crate::widget::go_next_item(
+                &descriptions[shadow_and_corners_txt],
+                Message::DrawerOpen(ContextView::ShadowAndCorners),
+            );
+
             settings::section()
                 .title(&*section.title)
                 .add(system_font)
                 .add(mono_font)
                 .add(icons_and_toolkit)
+                .add(shadow_and_corners)
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
