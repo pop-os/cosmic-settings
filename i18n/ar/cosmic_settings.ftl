@@ -16,16 +16,16 @@ connections-and-profiles =
 add-network = أضف شبكة
     .profile = أضف ملف تعريف
 add-vpn = إضافة VPN
-airplane-on = وضع الطائرة مفعل.
+airplane-on = وضع الطائرة مفعَّل.
 cable-unplugged = الكابل مفصول
 connect = توصيل
 connected = متصل
 connecting = جاري الاتصال…
-disconnect = قطع الاتصال
-forget = انسى
+disconnect = اقطع الاتصال
+forget = انسَ
 known-networks = الشبكات المعروفة
 network-and-wireless = الشبكة واللاسلكي
-no-networks = لم يتم العثور على أي شبكات.
+no-networks = لم يُعثر على أي شبكات.
 no-vpn = لا توجد اتصالات VPN متاحة.
 password = كلمة السر
 password-confirm = أكِّد كلمة السر
@@ -96,7 +96,7 @@ online-accounts = الحسابات عبر الإنترنت
 # Bluetooth
 
 activate = تفعيل
-confirm = تأكيد
+confirm = أكِّد
 enable = تمكين
 bluetooth = بلوتوث
     .desc = أدر أجهزة بلوتوث
@@ -349,7 +349,7 @@ workspaces-orientation = توجيه مساحات العمل
     .vertical = عمودي
     .horizontal = أفقي
 hot-corner = الزاوية الساخنة
-    .top-left-corner = تمكين الزاوية الساخنة العلوية اليسرى لمساحات العمل
+    .top-left-corner = فعِّل الزاوية الساخنة أعلى الشمال لمساحات العمل
 
 ## Displays
 
@@ -414,9 +414,9 @@ sound-output = الإخراج
     .volume = مستوي صوت الإخراج
     .device = جهاز الإخراج
     .level = مستوى الإخراج
-    .config = التكوين
+    .config = التضبيط
     .balance = التوازن
-    .left = اليسار
+    .left = الشمال
     .right = اليمين
 sound-input = الإدخال
     .volume = مستوي صوت الإدخال
@@ -476,7 +476,7 @@ power-saving = خيارات توفير الطاقة
 ## Input
 
 acceleration-desc = يضبط حساسية التتبع تلقائيًا بناءً على السرعة.
-disable-while-typing = تعطيل أثناء الكتابة
+disable-while-typing = عطِّل أثناء الكتابة
 input-devices = أجهزة الإدخال
     .desc = أجهزة الإدخال
 primary-button = الزر الأساسي
@@ -533,7 +533,7 @@ migrate-workspace-next = ترحيل مساحة العمل إلى الإخراج 
 migrate-workspace =
     ترحيل مساحة العمل إلى الإخراج { $direction ->
        *[down] الأسفل
-        [left] اليسار
+        [left] الشمال
         [right] اليمين
         [up] الأعلى
     }
@@ -559,7 +559,7 @@ nav-shortcuts = التنقل
         التركيز على النافذة { $direction ->
            *[down] أسفل
             [in] داخل
-            [left] يسار
+            [left] شمال
             [out] خارج
             [right] يمين
             [up] أعلى
@@ -567,7 +567,7 @@ nav-shortcuts = التنقل
     .output =
         التبديل إلى الإخراج { $direction ->
            *[down] أسفل
-            [left] يسار
+            [left] شمال
             [right] يمين
             [up] أعلى
         }
@@ -674,12 +674,12 @@ touchpad = لوحة اللمس
 
 gestures = الإيماءات
     .four-finger-down = تمرير بأربعة أصابع لأسفل
-    .four-finger-left = تمرير بأربعة أصابع لليسار
+    .four-finger-left = تمرير بأربعة أصابع للشمال
     .four-finger-right = تمرير بأربعة أصابع لليمين
     .four-finger-up = تمرير بأربعة أصابع لأعلى
     .three-finger-any = تمرير بثلاثة أصابع في أي اتجاه
 switch-workspaces = تبديل مساحات العمل
-    .horizontal = تمرير بأربعة أصابع إلى اليسار/اليمين
+    .horizontal = تمرير بأربعة أصابع إلى الشمال/اليمين
     .vertical = تمرير بأربعة أصابع إلى الأعلى/الأسفل
 switch-between-windows = التبديل بين النوافذ
 open-application-library = فتح مكتبة التطبيقات
