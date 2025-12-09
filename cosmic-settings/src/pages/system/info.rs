@@ -249,7 +249,10 @@ fn processor_name() -> String {
     if let Some(cpuinfo) = read_to_string("/proc/cpuinfo") {
         for line in cpuinfo.lines() {
             if let Some(info) = line.strip_prefix("model name") {
-                if let Some(info) = info.trim_start().strip_prefix(':') {
+                if let Some(mut info) = info.trim_start().strip_prefix(':') {
+                    if let Some(cpu_with) = info.find(" w/ ") {
+                        info = &info[..cpu_with];
+                    }
                     return info.trim().to_string();
                 }
                 break;
