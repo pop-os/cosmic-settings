@@ -116,6 +116,32 @@ impl Info {
                     continue;
                 }
             }
+            
+            // AMD parsing to append codename to specific name
+            let is_amd_gpu = gpu_name.starts_with("AMD");
+            
+            if is_amd_gpu {
+                if adapter_info.device != 0 {
+                    let lspci_gpus = get_lspci_gpu_names();
+                    // If we can't find an lspci name for a GPU, just keep its original name
+                    if let Some(lspci_name) = lspci_gpus.get(&adapter_info.device) {
+                        // Codename starts after first pair of brackets
+                        if let Some(bracket_end) = lspci_name.find(']') {
+                            let mut code_name = lspci_name[bracket_end + 1..].to_string();
+                            // After codename, there may be another pair of brackets.
+                            if let Some(bracket_start) = code_name.find('[') {
+                                code_name = code_name[..bracket_start].to_string();
+                            }
+                            if code_name.trim() != "Device" {
+                                gpu_name = format!("{} ({})", gpu_name, code_name.trim());
+                            }
+                        }
+                    }
+                } else {
+                    // Can't identify GPU
+                    continue;
+                }
+            }
 
             let device_key = (adapter_info.vendor, adapter_info.device);
             if adapter_info.device != 0 && seen_devices.contains(&device_key) {
