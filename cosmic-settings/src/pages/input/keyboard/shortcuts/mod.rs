@@ -596,6 +596,7 @@ fn all_system_actions() -> &'static [Action] {
         Action::System(SystemAction::PlayNext),
         Action::System(SystemAction::PlayPrev),
         Action::System(SystemAction::Screenshot),
+        Action::System(SystemAction::Suspend),
         Action::System(SystemAction::Terminal),
         Action::System(SystemAction::TouchpadToggle),
         Action::System(SystemAction::VolumeLower),
