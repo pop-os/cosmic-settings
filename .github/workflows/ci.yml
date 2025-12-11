@@ -1,5 +1,10 @@
 name: Continuous integration
 
+env:
+  # Stops the `debconf: unable to initialize frontend: {Dialog, Readline, Teletype}` errors
+  # See https://stackoverflow.com/a/34774096
+  DEBIAN_FRONTEND: noninteractive
+
 on:
   push:
     branches: [master]
