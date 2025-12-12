@@ -1463,7 +1463,7 @@ dependencies = [
 [[package]]
 name = "cosmic-comp-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-comp#141fa472efb33427fdac2f817ef85763b2fbc5d0"
+source = "git+https://github.com/pop-os/cosmic-comp?branch=clipping_noble#3e41d8fb122cd1dd22e10b6be8dad310b0a1e442"
 dependencies = [
  "cosmic-config",
  "input",
