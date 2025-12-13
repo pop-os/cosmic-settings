@@ -649,6 +649,7 @@ system-shortcut = System
     .play-prev = Poprzedni utwór
     .poweroff = Wyłącz
     .screenshot = Zrób zrzut ekranu
+    .suspend = Wstrzymaj
     .terminal = Otwórz terminal
     .touchpad-toggle = Włączanie/wyłączanie gładzika
     .volume-lower = Zmniejsz głośność wyjścia dźwięku

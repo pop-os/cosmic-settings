@@ -20,7 +20,7 @@ airplane-on = وضع الطائرة مفعَّل.
 cable-unplugged = الكابل مفصول
 connect = توصيل
 connected = متصل
-connecting = جاري الاتصال…
+connecting = يتصل…
 disconnect = اقطع الاتصال
 forget = انسَ
 known-networks = الشبكات المعروفة
@@ -97,7 +97,7 @@ online-accounts = الحسابات عبر الإنترنت
 
 activate = تفعيل
 confirm = أكِّد
-enable = تمكين
+enable = فعِّل
 bluetooth = بلوتوث
     .desc = أدر أجهزة بلوتوث
     .status = سيظهر النظام باسم { $aliases } حين تُفتح إعدادات بلوتوث.
@@ -131,8 +131,8 @@ accessibility = إمكانية الوصول
     .invert-colors = عكس الألوان
     .color-filters = مرشحات الألوان
 hearing = السمع
-    .mono = تشغيل الصوت الاستريو كصوت أحادي
-default = الافتراضي
+    .mono = شغَّل الصوت الاستريو كأحادي
+default = المبدئي
 magnifier = المكبر
     .controls =
         أو استخدم هذه الاختصارات: { $zoom_in ->
@@ -146,12 +146,12 @@ magnifier = المكبر
                 { "" }
                 { $zoom_out } للتصغير،
         }
-        Super + التمرير بالماوس
-    .scroll_controls = تمكين التكبير بالماوس أو لوحة اللمس باستخدام Super + Scroll
-    .show_overlay = إظهار تراكب المكبر
-    .increment = زيادة التكبير
+        Super + التمرير بالفأرة
+    .scroll_controls = فعِّل التكبير بالفأرة أو لوحة اللمس باستخدام Super + Scroll
+    .show_overlay = أظهر تراكب المكبر
+    .increment = زِد التكبير
     .signin = بدء تشغيل المكبر عند تسجيل الدخول
-    .applet = تشغيل/إيقاف تشغيل المكبر في التطبيق الصغير على اللوحة
+    .applet = تشغيل/إيقاف تشغيل المكبر في بريمج على اللوحة
     .movement = تحريك العرض المكبر
     .continuous = بشكل مستمر باستخدام المؤشر
     .onedge = عندما يصل المؤشر إلى الحافة
@@ -178,14 +178,14 @@ wallpaper = خلفية
     .plural = خلفيات
     .same = نفس الخلفية على جميع الشاشات
     .slide = عرض الشرائح
-add-color = إضافة لون
-add-image = إضافة صورة
+add-color = أضِف لون
+add-image = أضِف صورة
 all-displays = كل الشاشات
 colors = الألوان
-dialog-add = إضافة
+dialog-add = أضِف
 fill = ملء
 fit-to-screen = ملائمة للشاشة
-open-new-folder = فتح مجلد جديد
+open-new-folder = افتح مجلد جديد
 recent-folders = المجلدات الحديثة
 x-minutes =
     { $number } { $number ->
@@ -201,38 +201,38 @@ x-hours =
 ## Desktop: Appearance
 
 appearance = المظهر
-    .desc = ألوان التمييز والثيمات.
+    .desc = ألوان التمييز والنسق
 accent-color = لون التمييز
 app-background = خلفية النافذة
-auto = تلقائي
+auto = آلي
 close = أغلق
 color-picker = مُنتقي اللون
-copied-to-clipboard = تم النسخ إلى الحافظة
-copy-to-clipboard = نسخ إلى الحافظة
+copied-to-clipboard = نُسِخ إلى الحافظة
+copy-to-clipboard = انسخ إلى الحافظة
 dark = داكن
 export = تصدير
 hex = Hex
-import = استيراد
+import = استورد
 light = فاتح
 mode-and-colors = الوضع والألوان
 recent-colors = الألوان الحديثة
-reset-to-default = إعادة الضبط إلى الإعدادات الافتراضية
+reset-to-default = استعد المبدئيات
 rgb = RGB
 window-hint-accent = لون تبريز النافذة النشطة
-window-hint-accent-toggle = استخدام لون تمييز السمة كتبريز النافذة النشطة
-auto-switch = التبديل تلقائيًا بين الوضعين الفاتح والداكن
+window-hint-accent-toggle = استخدم لون تمييز النسق كتبريز النافذة النشطة
+auto-switch = التبديل الآلي بين الوضعين الفاتح والداكن
     .sunrise = يبدِّل إلى الوضع الفاتح عند شروق الشمس
     .sunset = يبدِّل إلى الوضع الداكن عند غروب الشمس
     .next-sunrise = يبدِّل إلى الوضع الفاتح عند شروق الشمس المقبل
     .next-sunset = يبدِّل إلى الوضع الداكن عند غروب الشمس المقبل
 container-background = خلفية الحاوية
-    .desc-detail = يستخدم لون خلفية الحاوية في شريط التنقل الجانبي، والدرج الجانبي، ومربعات الحوار، وعناصر واجهة المستخدم المماثلة. بشكل افتراضي، يتم اشتقاقه تلقائيًا من خلفية التطبيق أو النافذة.
-    .reset = إعادة الضبط إلى الوضع التلقائي
-    .desc = يستخدم لون الحاوية الأساسي في شريط التنقل الجانبي، والدرج الجانبي، ومربعات الحوار، وعناصر واجهة المستخدم المماثلة.
+    .desc-detail = يستخدم لون خلفية الحاوية في شريط التنقل الجانبي والدرج الجانبي ومربعات الحوار وعناصر واجهة المستخدم المماثلة. مبدئيًا، يُشتق خلفية الحاوية آليًا من خلفية النافذة.
+    .reset = صفِّر إلى الوضع الآلي
+    .desc = يُستخدم في شريط التنقل الجانبي والدرج الجانبي ومربعات الحوار وعناصر واجهة المستخدم المماثلة
 control-tint = تحكم في لون المكون
     .desc = يستخدم لخلفيات الأزرار القياسية ومدخلات البحث ومدخلات النص والمكونات المماثلة.
 frosted = تأثير الزجاج البلوري على واجهة النظام
-    .desc = يطبِّق تمويه الخلفية للوحة والمرسى والبُريمجات والمطلق ومكتبة التطبيقات.
+    .desc = يطبِّق تمويه الخلفية للوحة والمرسى والبريمجات والمطلق ومكتبة التطبيقات
 enable-export = قم بتطبيق هذا المظهر على تطبيقات GNOME.
     .desc = لا تدعم جميع مجموعات الأدوات التبديل التلقائي. قد تحتاج التطبيقات غير التابعة لـ COSMIC إلى إعادة التشغيل بعد تغيير المظهر.
 icon-theme = ثيم الأيقونات
@@ -254,7 +254,7 @@ window-management-appearance = إدارة النوافذ
 ### Experimental
 
 experimental-settings = الإعدادات التجريبية
-icons-and-toolkit = ثيم الأيقونات وعدد الأدوات المستخدمة
+icons-and-toolkit = نسق الأيقونات وعُدّة الأدوات المستخدمة
 interface-font = خط النظام
 monospace-font = خط أحادي المسافة
 
@@ -266,20 +266,20 @@ notifications = الإشعارات
 ## Desktop: Panel
 
 panel = اللوحة
-    .desc = شريط النظام الأساسي للقوائم والبُريمجات
-add = إضافة
-add-applet = إضافة برنامج مصغر
+    .desc = شريط النظام الأساسي للقوائم والبريمجات
+add = أضِف
+add-applet = أضِف بريمج
 all = الكل
-applets = البرامج المصغرة
+applets = البريمجات
 center-segment = الجزء الأوسط
 end-segment = جزء النهاية
 large = كبير
-no-applets-found = لم يتم العثور على أي برامج مصغرة...
+no-applets-found = لم يُعثر على بريمجات…
 panel-bottom = الأسفل
 panel-left = الشمال
 panel-right = اليمين
 panel-top = الأعلى
-search-applets = بحث عن البرامج المصغرة...
+search-applets = ابحث البريمجات…
 small = صغير
 start-segment = جزء البداية
 panel-appearance = المظهر
@@ -299,9 +299,9 @@ panel-style = الأسلوب
     .appearance = المظهر
     .size = الحجم
     .background-opacity = عتمة الخلفية
-panel-applets = الإعدادات
-    .dock-desc = إعداد تطبيقات الحامل المصغرة
-    .desc = إعداد تطبيقات شريط المهام المصغرة
+panel-applets = الضبط
+    .dock-desc = اضبط بريمجات المرسى
+    .desc = اضبط بريمجات اللوحة
 panel-missing = ضبط اللوحة مفقود
     .desc = فُقِد ضبط اللوحة لاستخدام ضبط مخصَّص أو لأنه معطوب.
     .fix = صفِّر إلى المبدئي
@@ -327,7 +327,7 @@ window-controls = تحكمات النوافذ
     .active-window-hint = أظهر تلميح النافذة النشطة
 focus-navigation = تنقُل التركيز
     .focus-follows-cursor = التركيز يتبع المؤشر
-    .focus-follows-cursor-delay = التركيز يتبع المؤشر بتأخير بالمللي ثانية
+    .focus-follows-cursor-delay = التركيز يتبع المؤشر بتأخير بالملي ثانية
     .cursor-follows-focus = المؤشر يتبع التركيز
 
 ## Desktop: Workspaces
@@ -386,18 +386,18 @@ mirroring = النسخ المتطابق
            *[other] شاشات
         }
 night-light = إضاءة ليلية
-    .auto = تلقائي (من غروب الشمس إلى شروقها)
-    .desc = تقليل الضوء الأزرق بألوان أكثر دفئًا.
+    .auto = آلي (من غروب الشمس إلى شروقها)
+    .desc = تقليل الضوء الأزرق بألوان أكثر دفئًا
 orientation = التوجيه
     .standard = قياسي
     .rotate-90 = تدوير 90 درجة
     .rotate-180 = تدوير 180 درجة
     .rotate-270 = تدوير 270 درجة
-vrr = معدل التحديث المتغير
-    .enabled = ممكّن
+vrr = معدّل التحديث المتغير
+    .enabled = مُفعَّل
     .force = دائمًا
-    .auto = تلقائي
-    .disabled = معطل
+    .auto = آلي
+    .disabled = معطّل
 scheduling = الجدولة
     .manual = جدولة يدوية
 dialog = حوار
@@ -475,7 +475,7 @@ power-saving = خيارات توفير الطاقة
 
 ## Input
 
-acceleration-desc = يضبط حساسية التتبع تلقائيًا بناءً على السرعة.
+acceleration-desc = يضبط حساسية التتبع آليًا بناءً على السرعة
 disable-while-typing = عطِّل أثناء الكتابة
 input-devices = أجهزة الإدخال
     .desc = أجهزة الإدخال
@@ -497,7 +497,7 @@ fast = سريع
 short = قصير
 long = طويل
 keyboard = لوحة المفاتيح
-    .desc = مصادر الإدخال، التبديل، إدخال الأحرف الخاصة، الاختصارات.
+    .desc = مصادر الإدخال والتبديل وإدخال الأحرف الخاصة والاختصارات
 keyboard-sources = مصادر الإدخال
     .desc = يمكن تبديل مصادر الإدخال باستعمال تركيبة مفتاحي Super+Space. يمكن أن يُخصّص هذا من خلال إعدادات اختصارات لوحة المفاتيح.
     .move-up = حرِك لأعلى
@@ -508,47 +508,48 @@ keyboard-sources = مصادر الإدخال
     .add = أضِف مصدر إدخال
 keyboard-special-char = إدخال أحرف خاصة
     .alternate = مفتاح الأحرف البديلة
-    .compose = مفتاح التكوين
+    .compose = مفتاح التركيب
+    .compose-desc = مفتاح التركيب يسمح بإدخال مجموعة واسعة من الأحرف. لاستخدامه، اضغط على مفتاح التركيب ثم اكتب تسلسلًا من الأحرف. على سبيل المثال، الضغط على مفتاح التركيب متبوعًا بـ C و o سيدخل الرمز ©، بينما الضغط على مفتاح التركيب متبوعًا بـ a و ‘ سيدخل الحرف á.
     .caps = مفتاح Caps Lock
 keyboard-typing-assist = الكتابة
     .repeat-rate = معدل التكرار
     .repeat-delay = تأخير التكرار
-added = مضاف
+added = مُضاف
 type-to-search = اكتب للبحث...
-show-extended-input-sources = إظهار مصادر الإدخال الممتدة
+show-extended-input-sources = أظهِر مصادر الإدخال الممتدة
 
 ## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = اختصارات لوحة المفاتيح
     .desc = اعرض وخصّص الاختصارات
-add-another-keybinding = إضافة إختصار مفتاح آخر
-cancel = إلغاء
+add-another-keybinding = أضِف اختصارًا آخر
+cancel = ألغِ
 command = الأمر
-custom = مخصص
-debug = تصحيح الأخطاء
-disabled = غير مفعل
-input-source-switch = تبديل مصدر إدخال لغة لوحة المفاتيح
-migrate-workspace-prev = ترحيل مساحة العمل إلى الإخراج السابق
-migrate-workspace-next = ترحيل مساحة العمل إلى الإخراج التالي
+custom = مخصّص
+debug = نقِّح
+disabled = معطَّل
+input-source-switch = بدِّل مصدر إدخال لغة لوحة المفاتيح
+migrate-workspace-prev = رحِّل مساحة العمل إلى الإخراج السابق
+migrate-workspace-next = رحِّل مساحة العمل إلى الإخراج التالي
 migrate-workspace =
-    ترحيل مساحة العمل إلى الإخراج { $direction ->
+    رحِّل مساحة العمل إلى الإخراج { $direction ->
        *[down] الأسفل
         [left] الشمال
         [right] اليمين
         [up] الأعلى
     }
 navigate = تنقل
-replace = استبدال
+replace = استبدل
 shortcut-name = اسم الاختصار
 system-controls = إعدادات النظام
-terminate = تدمير
-toggle-stacking = تفعيل تكديس النوافذ
+terminate = أنهِ
+toggle-stacking = بدِّل تكديس النوافذ
 type-key-combination = اكتب مجموعة المفاتيح
 custom-shortcuts = الاختصارات المخصَّصة
     .add = أضِف اختصارًا
     .context = أضِف اختصارًا مخصصًا
     .none = لا اختصارات مخصَّصة
-modified = تم تعديل { $count }
+modified = { $count } معدَّل
 nav-shortcuts = التنقل
     .prev-output = التركيز على الإخراج السابق
     .next-output = التركيز على الإخراج التالي
@@ -626,8 +627,9 @@ system-shortcut = النظام
     .play-pause = التشغيل/الإيقاف
     .play-next = المقطوعة التالية
     .play-prev = المقطوعة السابقة
-    .screenshot = التقاط لقطة شاشة
     .poweroff = أطفئ
+    .screenshot = التقاط لقطة شاشة
+    .suspend = علِّق
     .terminal = فتح طرفيَّة
     .touchpad-toggle = بدّل لوحة اللمس
     .volume-lower = تقليل مستوى صوت المخرج
@@ -636,23 +638,23 @@ system-shortcut = النظام
     .window-switcher = التبديل بين النوافذ
     .window-switcher-previous = تبديل بين النوافذ المفتوحة معكوسًا
     .workspace-overview = فتح منظور مساحة العمل العام
-window-tiling = تقسيم النوافذ
+window-tiling = تبليط النوافذ
     .horizontal = تعيين الاتجاه الأفقي
-    .vertical = تعيين الاتجاه الرأسي
-    .swap-window = تبديل النوافذ
-    .toggle-tiling = تفعيل وضع تقسيم النوافذ
-    .toggle-stacking = تفعيل وضع تكديس النوافذ
-    .toggle-floating = تفعيل وضع طفو النوافذ
+    .vertical = تعيين الاتجاه العمودي
+    .swap-window = تبديل النافذة
+    .toggle-tiling = تبديل تبليط النافذة
+    .toggle-stacking = تبديل تكديس النافذة
+    .toggle-floating = تبديل تعويم النافذة
     .toggle-orientation = تبديل الاتجاه
-replace-shortcut-dialog = بدل الاختصار؟
+replace-shortcut-dialog = استبدل الاختصار؟
     .desc = { $shortcut } مستخدم من قِبل { $name }. إذا استُبدِل، سيعطَّل { $name }.
-zoom-in = تقريب
-zoom-out = تقليص
+zoom-in = قرِّب
+zoom-out = بعِّد
 
 ## Input: Mouse
 
 mouse = الفأرة
-    .desc = سرعة الفأرة، والتسارع، والزلق الطبيعي.
+    .desc = سرعة الفأرة والتسارع والتمرير الطبيعي.
     .speed = سرعة الفأرة
     .acceleration = فعِّل تسارع الفأرة
 
@@ -664,7 +666,7 @@ click-behavior = سلوك النقر
 pinch-to-zoom = الضغط للتكبير
     .desc = استخدم إصبعين لتقريب المحتوى، في التطبيقات التي تدعم ذلك.
 tap-to-click = اضغط للنقر
-    .desc = يتيح النقر بإصبع واحد للنقر الأساسي، والنقر بإصبعين للنقر الثانوي، والنقر بثلاثة أصابع للنقر الأوسط.
+    .desc = يتيح الضغط بإصبع واحد للنقر الأساسي والضغط بإصبعين للنقر الثانوي والضغط بثلاثة أصابع للنقر الأوسط
 touchpad = لوحة اللمس
     .acceleration = فعِّل تسارع لوحة اللمس
     .desc = سرعة لوحة اللمس وخيارات النقر والإيماءات.
@@ -690,11 +692,11 @@ open-workspaces-view = نظرة عامة على مساحات العمل المف
 time = الوقت واللغة
     .desc = غير متوفر
 time-date = التاريخ والوقت
-    .desc = المنطقة الزمنية، إعدادات الساعة التلقائية، وبعض تنسيقات الوقت.
-    .auto = الضبط التلقائي
-    .auto-ntp = سيتم تحديث التاريخ والوقت تلقائيًا عند ضبط المنطقة الزمنية.
+    .desc = المنطقة الزمنية وإعدادات الساعة الآلية وبعض تنسيقات الوقت.
+    .auto = الضبط الآلي
+    .auto-ntp = سيحدَّث التاريخ والوقت الآلي عند ضبط المنطقة الزمنية
 time-zone = المنطقة الزمنية
-    .auto = المنطقة الزمنية التلقائية
+    .auto = المنطقة الزمنية الآلية
     .auto-info = يتطلب خدمات الموقع والوصول إلى الإنترنت
 time-format = تنسيق التاريخ والوقت
     .twenty-four = توقيت 24 ساعة
@@ -717,7 +719,7 @@ formatting = التنسيق
 preferred-languages = اللغات المفضلة
     .desc = يحدد ترتيب اللغات اللغة المستخدمة لواجهة المستخدم. تسري التغييرات عند الولوج التالي.
 add-language = إضافة لغة
-    .context = إضافة لغة
+    .context = أضف لغة
 install-additional-languages = نصِّب لغات إضافية
 region = المنطقة
 
@@ -753,8 +755,8 @@ startup-apps = تطبيقات بدء التشغيل
 
 ## Applications: Legacy Applications
 
-legacy-applications = توافق تطبيقات X11
-    .desc = تغيير حجم تطبيقات نظام النوافذ X11 والاختصارات العامة.
+legacy-applications = توافق تطبيقات اكس11
+    .desc = تغيير حجم تطبيقات نظام النوافذ اكس11 والاختصارات العامة
 legacy-app-global-shortcuts = ختصارات عامة في تطبيقات اكس11
     .desc = تسمح الاختصارات العامة بالتعرّف على ضغطات المفاتيح وأحداث زر الفأرة المُجراة في تطبيقٍ ما لتطبيقاتٍ أخرى — لميزات مثل «اضغط لتتحدث» أو «اضغط لكتم الصوت». مبدئيًا، يُعطّل هذا في تطبيقات اكس11 لضمان عدم تمكن التطبيقات الأخرى من مراقبة أحداث لوحة المفاتيح والفأرة التي تحتوي على معلومات حساسة.
     .none = لا مفاتيح
@@ -762,14 +764,14 @@ legacy-app-global-shortcuts = ختصارات عامة في تطبيقات اكس
     .combination = جميع المفاتيح أثناء الضغط على مفاتيح التعديل Super أو Control أو Alt
     .all = كل المفاتيح
     .mouse = أحداث زر الفأرة في تطبيقات اكس
-legacy-app-scaling = تحجيم تطبيقات نظام النوافذ X11
+legacy-app-scaling = تحجيم تطبيقات نظام النوافذ اكس11
     .scaled-gaming = تحسين الألعاب والتطبيقات التي تعمل بوضع ملء الشاشة
-    .gaming-description = قد تظهر تطبيقات X11 أكبر/أصغر قليلاً مقارنة بتطبيقات Wayland.
+    .gaming-description = قد تظهر تطبيقات اكس11 أكبر/أصغر قليلاً مقارنة بتطبيقات Wayland.
     .scaled-applications = تحسين التطبيقات
-    .applications-description = قد لا تتطابق الألعاب وتطبيقات X11 التي تعمل بوضع ملء الشاشة مع دقة الشاشة.
+    .applications-description = قد لا تتطابق الألعاب وتطبيقات اكس11 التي تعمل بوضع ملء الشاشة مع دقة الشاشة.
     .scaled-compatibility = وضع التوافق الأقصى
-    .compatibility-description = قد تظهر تطبيقات X11 ضبابية على شاشات HiDPI.
-    .preferred-display = الشاشة المفضلة للألعاب وتطبيقات X11 بملء الشاشة
+    .compatibility-description = قد تظهر تطبيقات اكس11 ضبابية على شاشات HiDPI.
+    .preferred-display = الشاشة المفضلة للألعاب وتطبيقات اكس11 بملء الشاشة
     .no-display = لا شيء
 
 ## System
@@ -778,8 +780,8 @@ system = النظام والحسابات
 
 ## System: About
 
-about = حول
-    .desc = اسم الجهاز، معلومات الهاردوير، إعدادات نظام التشغيل الافتراضية.
+about = عن
+    .desc = اسم الجهاز ومعلومات العتاد ومبدئيات نظام التشغيل
 about-device = اسم الجهاز
     .desc = هذا الاسم يظهر للشبكات الأخرى وأجهزة بلوتوث.
 about-hardware = العتاد
@@ -791,10 +793,11 @@ about-hardware = العتاد
 about-os = نظام التشغيل
     .os = نظام التشغيل
     .os-architecture = معمارية نظام التشغيل
+    .kernel = إصدارة النواة
     .desktop-environment = بيئة سطح المكتب
     .windowing-system = نظام النوافذ
 about-related = الإعدادات ذات الصلة
-    .support = الحصول على الدعم
+    .support = احصل على الدعم
 
 ## System: Firmware
 
@@ -810,14 +813,14 @@ users = المستخدمون
     .profile-add = اختر صورة ملف تعريف
 administrator = مدير
     .desc = يمكن للمديرين تغيير الإعدادات لجميع المستخدمين، وإضافة مستخدمين آخرين وإزالتهم.
-add-user = إضافة مستخدم
-change-password = تغيير كلمة السر
+add-user = أضِف مستخدم
+change-password = غيَّر كلمة السر
 remove-user = أزِل المستخدم
 full-name = الاسم الكامل
 invalid-username = اسم المستخدم غير صالح.
 password-mismatch = يجب أن تتطابق كلمة السر والتأكيد.
 save = حفظ
-never = أبداً
+never = أبدًا
 keyboard-numlock-boot = Numlock
     .boot-state = الحالة عند التشغيل
     .last-boot = آخر تشغيل
