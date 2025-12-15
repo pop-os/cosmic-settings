@@ -685,6 +685,7 @@ system-shortcut = System
     .play-prev = Föregående spår
     .poweroff = Stäng av
     .screenshot = Ta en skärmdump
+    .suspend = Vänteläge
     .terminal = Öppna en terminal
     .touchpad-toggle = Växla pekplatta
     .volume-lower = Sänk ljudvolymen
