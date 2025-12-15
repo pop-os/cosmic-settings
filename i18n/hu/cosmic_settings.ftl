@@ -634,6 +634,7 @@ system-shortcut = Rendszer
     .play-prev = Előző szám
     .poweroff = Leállítás
     .screenshot = Képernyőkép készítése
+    .suspend = Felfüggesztés
     .terminal = Terminál megnyitása
     .touchpad-toggle = Érintőpárna be- vagy kikapcsolása
     .volume-lower = Hangkimenet hangerejének csökkentése
