@@ -47,6 +47,10 @@ pub enum Message {
     ToggleOverAmplificationSink(bool),
     /// Toggle amplification for sink
     ToggleOverAmplificationSource(bool),
+    /// Toggle the mute status of notifications.
+    ToggleNotificationMute,
+    /// Set the volume of notifications.
+    SetNotificationVolume(u32),
 }
 
 impl From<Message> for crate::pages::Message {
@@ -116,6 +120,7 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
+            sections.insert(alerts()),
             sections.insert(output()),
             sections.insert(input()),
             sections.insert(device_profiles()),
@@ -199,6 +204,8 @@ impl Page {
 
             Message::ToggleSourceMute => self.model.toggle_source_mute(),
 
+            Message::ToggleNotificationMute => self.model.toggle_notification_mute(),
+
             Message::SetSinkVolume(volume) => {
                 return self
                     .model
@@ -210,6 +217,13 @@ impl Page {
                 return self
                     .model
                     .set_source_volume(volume)
+                    .map(|message| Message::Subscription(message).into());
+            }
+
+            Message::SetNotificationVolume(volume) => {
+                return self
+                    .model
+                    .set_notification_volume(volume)
                     .map(|message| Message::Subscription(message).into());
             }
 
@@ -459,21 +473,53 @@ fn device_profiles() -> Section<crate::pages::Message> {
         })
 }
 
-// fn alerts() -> Section<crate::pages::Message> {
-//     let mut descriptions = Slab::new();
-//     let volume = descriptions.insert(fl!("sound-alerts", "volume"));
-//     let sound = descriptions.insert(fl!("sound-alerts", "sound"));
+fn alerts() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+    let volume = descriptions.insert(fl!("sound-alerts", "volume"));
+    let sound = descriptions.insert(fl!("sound-alerts", "sound"));
 
-//     Section::default()
-//         .title(fl!("sound-alerts"))
-//         .descriptions(descriptions)
-//         .view::<Page>(move |_binder, _page, section| {
-//             settings::section().title(&section.title)
-//                 .add(settings::item(&section.descriptions[volume], text::body("TODO")))
-//                 .add(settings::item(&section.descriptions[sound], text::body("TODO")))
-//                 .into()
-//         })
-// }
+    Section::default()
+        .title(fl!("sound-alerts"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let slider = if page.amplification_sink {
+                widget::slider(0..=150, page.model.notification_volume, |change| {
+                    Message::SetNotificationVolume(change).into()
+                })
+                .breakpoints(&[100])
+            } else {
+                widget::slider(0..=100, page.model.notification_volume, |change| {
+                    Message::SetNotificationVolume(change).into()
+                })
+            };
+
+            let volume_control = widget::row::with_capacity(4)
+                .align_y(Alignment::Center)
+                .push(
+                    widget::button::icon(if page.model.notification_mute {
+                        widget::icon::from_name("audio-volume-muted-symbolic")
+                    } else {
+                        widget::icon::from_name("audio-volume-high-symbolic")
+                    })
+                    .on_press(Message::ToggleNotificationMute.into()),
+                )
+                .push(
+                    widget::text::body(&page.model.notification_volume_text)
+                        .width(Length::Fixed(22.0))
+                        .align_x(Alignment::Center),
+                )
+                .push(widget::horizontal_space().width(8))
+                .push(slider);
+
+            settings::section()
+                .title(&section.title)
+                .add(settings::flex_item(
+                    &*section.descriptions[volume],
+                    volume_control,
+                ))
+                .into()
+        })
+}
 
 // fn applications() -> Section<crate::pages::Message> {
 //     let mut descriptions = Slab::new();

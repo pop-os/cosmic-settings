@@ -114,15 +114,19 @@ pub struct Model {
 
     pub sink_volume_text: String,
     pub source_volume_text: String,
+    pub notification_volume_text: String,
     pub sink_balance: Option<f32>,
 
     pub sink_volume: u32,
     pub source_volume: u32,
+    pub notification_volume: u32,
 
     pub sink_mute: bool,
     sink_volume_debounce: bool,
     pub source_mute: bool,
     source_volume_debounce: bool,
+    pub notification_mute: bool,
+    notification_volume_debounce: bool,
 }
 
 impl Model {
@@ -354,6 +358,28 @@ impl Model {
         Task::none()
     }
 
+    pub fn set_notification_volume(&mut self, volume: u32) -> Task<Message> {
+        self.notification_volume = volume;
+        self.notification_volume_text = numtoa::BaseN::<10>::u32(volume).as_str().to_owned();
+        if self.notification_volume_debounce {
+            return Task::none();
+        }
+
+        self.notification_volume_debounce = true;
+        return cosmic::Task::future(async move {
+            tokio::time::sleep(Duration::from_millis(128)).await;
+            Message::NotificationVolumeApply().into()
+        });
+    }
+
+    pub fn toggle_notification_mute(&mut self) {
+        self.notification_mute = !self.notification_mute;
+        self.pipewire_send(pipewire::Request::SetNotification(
+            self.notification_volume as f32 / 100.0,
+            self.notification_mute,
+        ));
+    }
+
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::Server(events) => {
@@ -381,6 +407,15 @@ impl Model {
                 ));
             }
 
+            Message::NotificationVolumeApply() => {
+                self.notification_volume_debounce = false;
+                let new_volume = self.notification_volume as f32 / 100.0;
+                self.pipewire_send(pipewire::Request::SetNotification(
+                    new_volume,
+                    self.notification_mute,
+                ));
+            }
+
             Message::SubHandle(handle) => {
                 if let Some(handle) = Arc::into_inner(handle) {
                     self.subscription_handle = Some(handle);
@@ -393,6 +428,17 @@ impl Model {
 
     fn pipewire_update(&mut self, event: pipewire::Event) {
         match event {
+            pipewire::Event::NotificationVolume(volume, mute) => {
+                if self.notification_volume_debounce {
+                    return;
+                }
+
+                self.notification_mute = mute;
+                self.notification_volume = (volume * 100.0) as u32;
+                self.notification_volume_text = numtoa::BaseN::<10>::u32(self.notification_volume)
+                    .as_str()
+                    .to_owned();
+            }
             pipewire::Event::NodeProperties(id, props) => {
                 if self.active_sink_node == Some(id) {
                     if self.sink_volume_debounce {
@@ -849,6 +895,8 @@ pub enum Message {
     SinkVolumeApply(NodeId),
     /// Change the input volume.
     SourceVolumeApply(NodeId),
+    /// Change the notification volume.
+    NotificationVolumeApply(),
     /// On init of the subscription, channels for closing background threads are given to the app.
     SubHandle(Arc<SubscriptionHandle>),
 }
