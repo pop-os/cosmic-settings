@@ -79,8 +79,8 @@ vpn-error = Erro de VPN
         } da VPN com nmcli
 wired = Rede Cabeada
     .adapter = Adaptador de rede cabeada { $id }
-    .connections = Conexões de Rede Cabeada
-    .devices = Dispositivos de Rede Cabeada
+    .connections = Conexões de rede cabeada
+    .devices = Dispositivos de rede cabeada
     .remove = Remover perfil de conexão
 wifi = Wi-Fi
     .adapter = Adaptador Wi-Fi { $id }
