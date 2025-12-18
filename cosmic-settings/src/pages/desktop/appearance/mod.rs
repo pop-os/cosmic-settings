@@ -802,7 +802,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         page.theme_manager.builder().gaps.1.to_string(),
                         page.theme_manager.builder().gaps.1,
                         1,
-                        page.theme_manager.builder().active_hint,
+                        0,
                         500,
                         Message::GapSize,
                     )),
