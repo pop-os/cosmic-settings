@@ -16,7 +16,10 @@ use cosmic_dbus_networkmanager::{
 use cosmic_settings_network_manager_subscription as network_manager;
 use cosmic_settings_page::{self as page, Section, section};
 use futures::StreamExt;
+use secure_string::SecureString;
 use slotmap::SlotMap;
+
+pub type SecretSender = Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<SecureString>>>>;
 
 static NM_CONNECTION_EDITOR: &str = "nm-connection-editor";
 

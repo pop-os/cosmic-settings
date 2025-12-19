@@ -18,6 +18,7 @@ cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
 cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+nm-secret-agent-manager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 cosmic-idle-config.workspace = true
 cosmic-panel-config = { workspace = true, optional = true }
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
@@ -164,6 +165,7 @@ page-networking = [
     "dep:cosmic-settings-network-manager-subscription",
     "xdg-portal",
     "dep:cosmic-dbus-networkmanager",
+    "dep:nm-secret-agent-manager",
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]
