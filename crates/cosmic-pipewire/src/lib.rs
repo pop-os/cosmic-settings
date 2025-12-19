@@ -77,6 +77,7 @@ fn run_service(
         node_props: IntMap::new(),
         main_loop: main_loop.downgrade(),
         on_event: Box::new(on_event),
+        route_settings_metadata_id: None,
     }));
 
     let _request_handler = rx.attach(main_loop.loop_(), {
@@ -97,6 +98,12 @@ fn run_service(
             Request::SetNodeMute(id, mute) => {
                 if let Some(state) = state.upgrade() {
                     state.borrow_mut().set_mute_node(id, mute);
+                }
+            }
+
+            Request::SetNotification(volume, mute) => {
+                if let Some(state) = state.upgrade() {
+                    state.borrow_mut().set_notification_settings(volume, mute);
                 }
             }
 
@@ -332,6 +339,14 @@ fn run_service(
 
                     let id = metadata.upcast_ref().id();
 
+                    if obj
+                        .props
+                        .and_then(|props| props.get("metadata.name"))
+                        .is_some_and(|name| name == "route-settings")
+                    {
+                        state.borrow_mut().route_settings_metadata_id = Some(id);
+                    }
+
                     let listener = metadata
                         .add_listener_local()
                         .property({
@@ -362,6 +377,29 @@ fn run_service(
                                                 state
                                                     .borrow_mut()
                                                     .default_source(value.name.to_owned())
+                                            }
+                                        }
+                                    }
+
+                                    "restore.stream.Output/Audio.media.role:Notification" => {
+                                        if let Ok(metadata) =
+                                            serde_json::de::from_str::<
+                                                NotificationRouteSettingsMetadata,
+                                            >(value)
+                                        {
+                                            if let Some(state) = state.upgrade() {
+                                                let volume = metadata
+                                                    .volumes
+                                                    .first()
+                                                    .copied()
+                                                    .unwrap_or(1.0)
+                                                    .powf(1.0 / 3.0);
+                                                state.borrow_mut().on_event(
+                                                    Event::NotificationVolume(
+                                                        volume,
+                                                        metadata.mute,
+                                                    ),
+                                                );
                                             }
                                         }
                                     }
@@ -421,6 +459,8 @@ pub enum Event {
     DefaultSink(String),
     /// The default source was changed.
     DefaultSource(String),
+    /// The notification volume/mute state changed.
+    NotificationVolume(f32, bool),
     /// Emitted when the properties of a node has changed.
     NodeProperties(NodeId, NodeProps),
     /// A device with the given device_id was removed.
@@ -439,6 +479,8 @@ pub enum Request {
     SetProfile(DeviceId, u32, bool),
     /// Set a new volume
     SetNodeVolume(DeviceId, f32, Option<f32>),
+    /// Set the notification volume and mute state
+    SetNotification(f32, bool),
     /// Stop the main loop and exit the thread.
     Quit,
 }
@@ -461,6 +503,12 @@ pub enum Direction {
 #[derive(serde::Deserialize)]
 pub struct DefaultAudio<'a> {
     name: &'a str,
+}
+
+#[derive(serde::Deserialize)]
+struct NotificationRouteSettingsMetadata {
+    mute: bool,
+    volumes: Vec<f32>,
 }
 
 struct Proxies {
@@ -494,6 +542,7 @@ struct State {
     main_loop: MainLoopWeak,
     /// Handle events and exit the loop when `true` is returned.
     on_event: Box<dyn FnMut(Event)>,
+    route_settings_metadata_id: Option<u32>,
 }
 
 impl State {
@@ -857,6 +906,28 @@ impl State {
 
         if let Some(param) = Pod::from_bytes(&serialized) {
             device.set_param(ParamType::Route, 0, param);
+        }
+    }
+
+    fn set_notification_settings(&self, volume: f32, mute: bool) {
+        if let Some((metadata, ..)) = self
+            .route_settings_metadata_id
+            .map(|id| self.proxies.metadata.get(id))
+            .flatten()
+        {
+            metadata.set_property(
+                0,
+                "restore.stream.Output/Audio.media.role:Notification",
+                Some("Spa:String:JSON"),
+                Some(
+                    &serde_json::json!({
+                        "mute": mute,
+                        "volumes": [volume.powi(3)],
+                        "channels": ["MONO"]
+                    })
+                    .to_string(),
+                ),
+            );
         }
     }
 
