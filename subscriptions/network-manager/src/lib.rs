@@ -6,6 +6,7 @@ pub mod available_wifi;
 pub mod current_networks;
 pub mod devices;
 pub mod hw_address;
+pub mod nm_secret_agent;
 pub mod wireless_enabled;
 
 use std::{collections::HashMap, fmt::Debug, sync::Arc, time::Duration};
@@ -18,11 +19,11 @@ use cosmic_dbus_networkmanager::{
     active_connection::ActiveConnection,
     device::SpecificDevice,
     interface::{
-        active_connection::ActiveConnectionProxy,
         enums::{self, ActiveConnectionState, DeviceType, NmConnectivityState},
+        settings::connection::ConnectionSettingsProxy,
     },
     nm::NetworkManager,
-    settings::NetworkManagerSettings,
+    settings::{NetworkManagerSettings, connection::Connection},
 };
 use futures::{
     FutureExt, SinkExt, StreamExt,
@@ -54,6 +55,8 @@ pub enum Error {
     NoWiFiDevices,
     #[error("zbus error")]
     Zbus(#[from] zbus::Error),
+    #[error("missing connection field")]
+    MissingField(&'static str),
 }
 
 #[derive(Debug)]
@@ -297,8 +300,10 @@ async fn start_listening(
                     identity,
                     password,
                     hw_address,
+                    secret_tx,
                 }) => {
                     let nm_state = NetworkManagerState::new(&conn).await.unwrap_or_default();
+
                     let success = nm_state
                         .connect_wifi(
                             &conn,
@@ -306,6 +311,12 @@ async fn start_listening(
                             identity.as_deref(),
                             Some(password.unsecure()),
                             hw_address,
+                            secret_tx.clone(),
+                            if identity.is_some() {
+                                NetworkType::EAP
+                            } else {
+                                NetworkType::PSK
+                            },
                         )
                         .await
                         .is_ok();
@@ -317,6 +328,7 @@ async fn start_listening(
                                 identity: identity.clone(),
                                 password: password.clone(),
                                 hw_address,
+                                secret_tx: secret_tx.clone(),
                             },
                             success,
                             state: NetworkManagerState::new(&conn).await.unwrap_or_default(),
@@ -324,19 +336,35 @@ async fn start_listening(
                         .await;
                 }
 
-                Some(Request::SelectAccessPoint(ssid, hw_address, network_type)) => {
+                Some(Request::SelectAccessPoint(ssid, hw_address, network_type, secret_tx)) => {
                     if matches!(network_type, NetworkType::Open) {
-                        attempt_wifi_connection(&conn, ssid, hw_address, network_type, output)
-                            .await;
+                        attempt_wifi_connection(
+                            &conn,
+                            ssid,
+                            hw_address,
+                            network_type,
+                            output,
+                            None,
+                        )
+                        .await;
                     } else {
                         // For secured networks, check if we have saved credentials
-                        if !has_saved_wifi_credentials(&conn, &ssid).await {
+                        let has_saved = has_saved_wifi_credentials(&conn, &ssid).await;
+
+                        if !has_saved {
                             return State::Waiting(conn, rx);
                         }
 
                         // We have saved credentials, attempt connection
-                        attempt_wifi_connection(&conn, ssid, hw_address, network_type, output)
-                            .await;
+                        attempt_wifi_connection(
+                            &conn,
+                            ssid,
+                            hw_address,
+                            network_type,
+                            output,
+                            secret_tx,
+                        )
+                        .await;
                     }
                 }
 
@@ -451,7 +479,7 @@ async fn start_listening(
                         .await;
                 }
 
-                Some(Request::GetWiFiCredentials(ssid)) => {
+                Some(Request::GetWiFiCredentials(ssid, uuid, security_type, secret_tx)) => {
                     let s = match NetworkManagerSettings::new(&conn).await {
                         Ok(s) => s,
                         Err(why) => {
@@ -460,28 +488,77 @@ async fn start_listening(
                         }
                     };
 
-                    // Determine network type - default to PSK for encrypted networks
-                    let mut security_type = NetworkType::PSK;
+                    match security_type {
+                        NetworkType::Open => {
+                            _ = output
+                                .send(Event::WiFiCredentials {
+                                    ssid: ssid.clone(),
+                                    password: None,
+                                    security_type,
+                                })
+                                .await;
+                        }
+                        t => {
+                            let (tx, rx) = tokio::sync::oneshot::channel();
+                            let setting_name = if matches!(t, NetworkType::PSK) {
+                                "802-11-wireless-security"
+                            } else {
+                                "802-1x"
+                            };
+                            let pw_key = if matches!(t, NetworkType::PSK) {
+                                "psk"
+                            } else {
+                                "password"
+                            };
+                            if let Some(secret_tx) = secret_tx {
+                                let _ = secret_tx
+                                    .send(nm_secret_agent::Request::GetSecrets {
+                                        setting_name: setting_name.to_string(),
+                                        uuid: uuid.to_string(),
+                                        resp_tx: tx,
+                                    })
+                                    .await;
+                                let _ = tokio::time::timeout(Duration::from_secs(10), async move {
+                                    if let Some(password) =
+                                        rx.await.ok().and_then(|mut secrets| secrets.remove(pw_key))
+                                    {
+                                        _ = output
+                                            .send(Event::WiFiCredentials {
+                                                ssid: ssid.clone(),
+                                                password: Some(password),
+                                                security_type,
+                                            })
+                                            .await;
+                                    } else {
+                                        _ = output
+                                            .send(Event::WiFiCredentials {
+                                                ssid: ssid.clone(),
+                                                password: None,
+                                                security_type,
+                                            })
+                                            .await;
+                                    }
+                                });
+                            } else {
+                                let known_conns = s.list_connections().await.unwrap_or_default();
+                                for c in known_conns {
+                                    let settings = c.get_settings().await.ok().unwrap_or_default();
+                                    let settings_parsed = Settings::new(settings.clone());
 
-                    let known_conns = s.list_connections().await.unwrap_or_default();
-                    for c in known_conns {
-                        let settings = c.get_settings().await.ok().unwrap_or_default();
-                        let settings_parsed = Settings::new(settings.clone());
-
-                        if let Some(saved_ssid) = settings_parsed
-                            .wifi
-                            .clone()
-                            .and_then(|w| w.ssid)
-                            .and_then(|s| String::from_utf8(s).ok())
-                        {
-                            if saved_ssid == ssid.as_ref() {
-                                let password = c
-                                    .get_secrets("802-11-wireless-security")
-                                    .await
-                                    .ok()
-                                    .and_then(|secrets| {
-                                        // Look for PSK password
-                                        secrets
+                                    if let Some(saved_ssid) = settings_parsed
+                                        .wifi
+                                        .clone()
+                                        .and_then(|w| w.ssid)
+                                        .and_then(|s| String::from_utf8(s).ok())
+                                    {
+                                        if saved_ssid == ssid.as_ref() {
+                                            let password =
+                                                c.get_secrets("802-11-wireless-security")
+                                                    .await
+                                                    .ok()
+                                                    .and_then(|secrets| {
+                                                        // Look for PSK password
+                                                        secrets
                                             .get("802-11-wireless-security")
                                             .and_then(|sec| sec.get("psk"))
                                             .and_then(|v| {
@@ -498,21 +575,19 @@ async fn start_listening(
                                                     })
                                                     .map(|s| s.to_string())
                                             })
-                                    });
+                                                    });
 
-                                // If no password found, might be open network
-                                if password.is_none() {
-                                    security_type = NetworkType::Open;
+                                            _ = output
+                                                .send(Event::WiFiCredentials {
+                                                    ssid: ssid.clone(),
+                                                    password: password.map(SecureString::from),
+                                                    security_type,
+                                                })
+                                                .await;
+                                            break;
+                                        }
+                                    }
                                 }
-
-                                _ = output
-                                    .send(Event::WiFiCredentials {
-                                        ssid: ssid.clone(),
-                                        password,
-                                        security_type,
-                                    })
-                                    .await;
-                                break;
                             }
                         }
                     }
@@ -568,11 +643,19 @@ async fn attempt_wifi_connection(
     hw_address: HwAddress,
     network_type: NetworkType,
     output: &mut futures::channel::mpsc::Sender<Event>,
+    secret_tx: Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
 ) {
     let state = NetworkManagerState::new(conn).await.unwrap_or_default();
-
     let success = if let Err(err) = state
-        .connect_wifi(conn, ssid.as_ref(), None, None, hw_address)
+        .connect_wifi(
+            conn,
+            ssid.as_ref(),
+            None,
+            None,
+            hw_address,
+            secret_tx,
+            network_type,
+        )
         .await
     {
         tracing::error!("Failed to connect to access point: {:?}", err);
@@ -583,7 +666,7 @@ async fn attempt_wifi_connection(
 
     _ = request_response(
         conn,
-        Request::SelectAccessPoint(ssid, hw_address, network_type),
+        Request::SelectAccessPoint(ssid, hw_address, network_type, None),
         success,
     )
     .then(|event| output.send(event))
@@ -606,15 +689,26 @@ pub enum Request {
         identity: Option<String>,
         password: SecureString,
         hw_address: HwAddress,
+        secret_tx: Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
     },
     /// Get WiFi credentials for a known access point.
-    GetWiFiCredentials(SSID),
+    GetWiFiCredentials(
+        SSID,
+        UUID,
+        NetworkType,
+        Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
+    ),
     /// Signal to reload the service.
     Reload,
     /// Remove a connection profile.
     Remove(UUID),
     /// Connect to a known access point.
-    SelectAccessPoint(SSID, HwAddress, NetworkType),
+    SelectAccessPoint(
+        SSID,
+        HwAddress,
+        NetworkType,
+        Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
+    ),
     /// Toggle airplaine mode.
     SetAirplaneMode(bool),
     /// Toggle WiFi enablement.
@@ -639,7 +733,7 @@ pub enum Event {
     ActiveConns,
     WiFiCredentials {
         ssid: SSID,
-        password: Option<String>,
+        password: Option<SecureString>,
         security_type: NetworkType,
     },
 }
@@ -814,6 +908,8 @@ impl NetworkManagerState {
         identity: Option<&str>,
         password: Option<&str>,
         hw_address: HwAddress,
+        secret_tx: Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
+        network_type: NetworkType,
     ) -> Result<(), Error> {
         let nm = NetworkManager::new(conn).await?;
 
@@ -849,6 +945,7 @@ impl NetworkManagerState {
                 ]),
             ),
         ]);
+
         if let Some(identity) = identity {
             conn_settings.insert(
                 "802-1x",
@@ -858,9 +955,14 @@ impl NetworkManagerState {
                     ("eap", Value::Array(vec!["peap"].into())),
                     // most common default
                     ("phase2-auth", Value::Str("mschapv2".into())),
-                    ("password", Value::Str(password.unwrap_or("").into())),
                 ]),
             );
+            if secret_tx.is_none() {
+                conn_settings
+                    .get_mut("802-1x")
+                    .unwrap()
+                    .insert("password", Value::Str(password.unwrap_or("").into()));
+            }
             let wireless = conn_settings.get_mut("802-11-wireless").unwrap();
             wireless.insert("security", Value::Str("802-11-wireless-security".into()));
             wireless.insert("mode", Value::Str("infrastructure".into()));
@@ -869,13 +971,11 @@ impl NetworkManagerState {
                 HashMap::from([("key-mgmt", Value::Str("wpa-eap".into()))]),
             );
         } else if let Some(pass) = password {
-            conn_settings.insert(
-                "802-11-wireless-security",
-                HashMap::from([
-                    ("psk", Value::Str(pass.into())),
-                    ("key-mgmt", Value::Str("wpa-psk".into())),
-                ]),
-            );
+            let entry = conn_settings.entry("802-11-wireless-security").or_default();
+            _ = entry.insert("key-mgmt", Value::Str("wpa-psk".into()));
+            if secret_tx.is_none() {
+                _ = entry.insert("psk", Value::Str(pass.into()));
+            }
         }
 
         let devices = nm.devices().await?;
@@ -907,30 +1007,98 @@ impl NetworkManagerState {
                 }
             }
 
-            let active_conn = if let Some(known_conn) = known_conn.as_ref() {
-                // update settings if needed
-                if password.is_some() {
+            let known_conn = if let Some(known_conn) = known_conn {
+                if secret_tx.is_none() {
                     known_conn.update(conn_settings).await?;
                 }
-
-                nm.activate_connection(known_conn, &device).await?
+                known_conn
             } else {
-                let (_, active_conn) = nm
-                    .add_and_activate_connection(conn_settings, device.inner().path(), &ap.path)
-                    .await?;
-                let dummy = ActiveConnectionProxy::new(conn, active_conn).await?;
-                let active = ActiveConnectionProxy::builder(conn)
-                    .destination(dummy.inner().destination().to_owned())
-                    .unwrap()
-                    .interface(dummy.inner().interface().to_owned())
-                    .unwrap()
-                    .path(dummy.inner().path().to_owned())
-                    .unwrap()
-                    .build()
-                    .await
-                    .unwrap();
-                ActiveConnection::from(active)
+                let settings = nm.settings().await?;
+                let object_path = settings.add_connection(conn_settings).await?;
+                let known_connection = Connection::from(
+                    ConnectionSettingsProxy::builder(settings.inner().connection())
+                        .path(object_path)?
+                        .build()
+                        .await?,
+                );
+                let settings = known_connection.get_settings().await?;
+                let uuid = String::try_from(
+                    settings
+                        .get("connection")
+                        .ok_or_else(|| Error::MissingField("connection"))?
+                        .get("uuid")
+                        .ok_or_else(|| Error::MissingField("uuid"))?
+                        .clone(),
+                )
+                .map_err(|err| zbus::Error::Variant(err))?;
+
+                if let Some((pass, secret_tx)) = password.clone().zip(secret_tx.as_ref()) {
+                    let pass = SecureString::from(pass);
+                    let (applied_tx, applied_rx) = tokio::sync::oneshot::channel();
+
+                    let _ = secret_tx
+                        .send(nm_secret_agent::Request::SetSecrets {
+                            setting_name: if identity.is_some() {
+                                "802-1x".into()
+                            } else {
+                                "802-11-wireless-security".into()
+                            },
+                            uuid,
+                            secrets: if identity.is_some() {
+                                HashMap::from([("password".to_string(), pass)])
+                            } else {
+                                HashMap::from([("psk".to_string(), pass)])
+                            },
+                            applied_tx,
+                        })
+                        .await;
+                    if let Err(err) = applied_rx.await {
+                        tracing::error!("Failed to set secret. {err:?}");
+                    }
+                }
+
+                known_connection
             };
+
+            if let Some(pass) = password {
+                let pass = SecureString::from(pass);
+                if let Some(secret_tx) = secret_tx.as_ref() {
+                    let settings = known_conn.get_settings().await?;
+                    let uuid = String::try_from(
+                        settings
+                            .get("connection")
+                            .ok_or_else(|| Error::MissingField("connection"))?
+                            .get("uuid")
+                            .ok_or_else(|| Error::MissingField("uuid"))?
+                            .clone(),
+                    )
+                    .map_err(|err| zbus::Error::Variant(err))?;
+                    let (applied_tx, applied_rx) = tokio::sync::oneshot::channel();
+                    let setting_name: String = if identity.is_some() {
+                        "802-1x".into()
+                    } else {
+                        "802-11-wireless-security".into()
+                    };
+                    let _ = secret_tx
+                        .send(nm_secret_agent::Request::SetSecrets {
+                            setting_name,
+                            uuid,
+                            secrets: if identity.is_some() {
+                                HashMap::from([("password".to_string(), pass)])
+                            } else {
+                                HashMap::from([("psk".to_string(), pass)])
+                            },
+                            applied_tx,
+                        })
+                        .await;
+                    if let Err(err) = applied_rx.await {
+                        tracing::error!("Failed to set secret. {err:?}");
+                    }
+                }
+            }
+
+            let active_conn =
+                ActiveConnection::from(nm.activate_connection(&known_conn, &device).await?);
             let mut changes = active_conn.receive_state_changed().await;
             _ = tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
             let mut count = 5;
@@ -939,8 +1107,9 @@ impl NetworkManagerState {
                 if let Ok(enums::ActiveConnectionState::Activated) = state {
                     return Ok(());
                 } else if let Ok(enums::ActiveConnectionState::Deactivated) = state {
-                    return Err(Error::ConnectionActivate);
+                    break;
                 }
+
                 if let Ok(Some(s)) =
                     tokio::time::timeout(Duration::from_secs(20), changes.next()).await
                 {
@@ -952,9 +1121,47 @@ impl NetworkManagerState {
 
                 count -= 1;
                 if count <= 0 {
-                    return Err(Error::ConnectionActivate);
+                    break;
                 }
             }
+            if let Some(secret_tx) = secret_tx
+                && !matches!(network_type, NetworkType::Open)
+            {
+                let settings = known_conn.get_settings().await?;
+                let uuid = String::try_from(
+                    settings
+                        .get("connection")
+                        .ok_or_else(|| Error::MissingField("connection"))?
+                        .get("uuid")
+                        .ok_or_else(|| Error::MissingField("uuid"))?
+                        .clone(),
+                )
+                .map_err(|err| zbus::Error::Variant(err))?;
+                let (applied_tx, applied_rx) = tokio::sync::oneshot::channel();
+                let setting_name: String = if identity.is_some() {
+                    "802-1x".into()
+                } else {
+                    "802-11-wireless-security".into()
+                };
+                if let Err(err) = secret_tx
+                    .send(nm_secret_agent::Request::SetSecrets {
+                        setting_name,
+                        uuid,
+                        secrets: Default::default(),
+                        applied_tx,
+                    })
+                    .await
+                {
+                    tracing::error!(
+                        "Failed to reset access point secrets after failed activation: {err:?}"
+                    );
+                } else if let Err(err) = applied_rx.await {
+                    tracing::error!(
+                        "Failed to reset access point secrets after failed activation: {err:?}"
+                    );
+                }
+            }
+            return Err(Error::ConnectionActivate);
         }
 
         Err(Error::NoWiFiDevices)
