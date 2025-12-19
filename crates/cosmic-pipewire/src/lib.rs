@@ -383,9 +383,9 @@ fn run_service(
 
                                     "restore.stream.Output/Audio.media.role:Notification" => {
                                         if let Ok(metadata) =
-                                            serde_json::de::from_str::<NotificationRouteSettingsMetadata>(
-                                                value,
-                                            )
+                                            serde_json::de::from_str::<
+                                                NotificationRouteSettingsMetadata,
+                                            >(value)
                                         {
                                             if let Some(state) = state.upgrade() {
                                                 let volume = metadata
@@ -394,9 +394,12 @@ fn run_service(
                                                     .copied()
                                                     .unwrap_or(1.0)
                                                     .powf(1.0 / 3.0);
-                                                state.borrow_mut().on_event(Event::NotificationVolume(
-                                                    volume, metadata.mute,
-                                                ));
+                                                state.borrow_mut().on_event(
+                                                    Event::NotificationVolume(
+                                                        volume,
+                                                        metadata.mute,
+                                                    ),
+                                                );
                                             }
                                         }
                                     }

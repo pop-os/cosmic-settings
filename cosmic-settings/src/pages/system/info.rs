@@ -116,10 +116,10 @@ impl Info {
                     continue;
                 }
             }
-            
+
             // AMD parsing to append codename to specific name
             let is_amd_gpu = gpu_name.starts_with("AMD");
-            
+
             if is_amd_gpu {
                 if adapter_info.device != 0 {
                     let lspci_gpus = get_lspci_gpu_names();
@@ -404,7 +404,9 @@ fn get_lspci_gpu_names() -> HashMap<u32, String> {
                         // Extract the GPU name between ": " and the last "["
                         if let Some(name_start) = line.find(": ") {
                             let full_name = line[name_start + 2..ids_start].trim();
-                            let gpu_name = full_name.replace(" Corporation", "").replace(" [Intel Graphics]", "");
+                            let gpu_name = full_name
+                                .replace(" Corporation", "")
+                                .replace(" [Intel Graphics]", "");
                             if !gpu_name.is_empty() {
                                 gpu_map.insert(device_id, gpu_name);
                             }
