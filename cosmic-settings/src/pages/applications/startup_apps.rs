@@ -113,7 +113,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         match &self.context {
             Some(Context::AddApplication(directory_type)) => {
-                let search = widget::search_input(fl!("type-to-search"), &self.application_search)
+                let search = widget::search_input("", &self.application_search)
                     .on_input(|i| Message::ApplicationSearch(i).into())
                     .on_clear(Message::ApplicationSearch(String::new()).into())
                     .apply(Element::from);
