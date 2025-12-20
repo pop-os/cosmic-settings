@@ -160,7 +160,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         Some(match self.context.as_ref()? {
             ContextView::AddLanguage => {
-                let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
+                let search = widget::search_input("", &self.add_language_search)
                     .on_input(Message::AddLanguageSearch)
                     .on_clear(Message::AddLanguageSearch(String::new()))
                     .apply(Element::from)
@@ -183,7 +183,7 @@ impl page::Page<crate::pages::Message> for Page {
                 .footer(install_additional_button)
             }
             ContextView::Region => {
-                let search = widget::search_input(fl!("type-to-search"), &self.add_language_search)
+                let search = widget::search_input("", &self.add_language_search)
                     .on_input(Message::AddLanguageSearch)
                     .on_clear(Message::AddLanguageSearch(String::new()))
                     .apply(Element::from)

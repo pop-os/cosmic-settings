@@ -556,13 +556,14 @@ impl Page {
                         }
 
                         if let Some(v) = self.mirror_map.get(k)
-                            && v.equivalent(&self.active_display) {
-                                if let Some(output) = self.list.outputs.get(k) {
-                                    return self.exec_randr(output, Randr::Toggle(true));
-                                } else {
-                                    return Task::none();
-                                }
+                            && v.equivalent(&self.active_display)
+                        {
+                            if let Some(output) = self.list.outputs.get(k) {
+                                return self.exec_randr(output, Randr::Toggle(true));
+                            } else {
+                                return Task::none();
                             }
+                        }
                     }
 
                     return Task::none();

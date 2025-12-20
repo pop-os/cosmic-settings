@@ -217,18 +217,20 @@ impl Page {
                 self.amplification_sink = enabled;
 
                 if let Some(config) = &self.sound_config
-                    && let Err(why) = config.set(AMPLIFICATION_SINK, enabled) {
-                        tracing::error!(?why, "Failed to save over amplification setting");
-                    }
+                    && let Err(why) = config.set(AMPLIFICATION_SINK, enabled)
+                {
+                    tracing::error!(?why, "Failed to save over amplification setting");
+                }
             }
 
             Message::ToggleOverAmplificationSource(enabled) => {
                 self.amplification_source = enabled;
 
                 if let Some(config) = &self.sound_config
-                    && let Err(why) = config.set(AMPLIFICATION_SOURCE, enabled) {
-                        tracing::error!(?why, "Failed to save over amplification setting");
-                    }
+                    && let Err(why) = config.set(AMPLIFICATION_SOURCE, enabled)
+                {
+                    tracing::error!(?why, "Failed to save over amplification setting");
+                }
             }
 
             Message::SetProfile(object_id, index) => {
