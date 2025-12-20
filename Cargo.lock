@@ -1828,7 +1828,6 @@ name = "cosmic-settings-sound-subscription"
 version = "1.0.0-beta6"
 dependencies = [
  "cosmic-pipewire",
- "crossbeam-queue",
  "futures",
  "intmap",
  "libcosmic",

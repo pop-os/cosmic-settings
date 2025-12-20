@@ -530,10 +530,6 @@ impl State {
     }
 
     fn add_node(&mut self, id: PipewireId, node: Node) {
-        eprintln!(
-            "adding node {} with card.profile.device {:?}",
-            node.object_id, node.card_profile_device
-        );
         // Map the device's pipewire ID to its device ID
         if let Some(entry) = self.proxies.nodes.get_mut(id) {
             entry.0 = node.object_id;
@@ -573,7 +569,6 @@ impl State {
         }
         routes[index as usize] = route.clone();
 
-        eprintln!("add route on device {id}[{index}]: {}", route.name);
         self.on_event(Event::AddRoute(id, index, route));
     }
 
@@ -590,12 +585,10 @@ impl State {
     }
 
     fn default_sink(&mut self, name: String) {
-        eprintln!("default sink set to {name}");
         self.on_event(Event::DefaultSink(name));
     }
 
     fn default_source(&mut self, name: String) {
-        eprintln!("default source set to {name}");
         self.on_event(Event::DefaultSource(name));
     }
 
@@ -813,7 +806,6 @@ impl State {
     }
 
     fn set_profile(&mut self, id: DeviceId, index: u32, save: bool) {
-        eprintln!("set profile {id}[{index}]: {save}");
         let Some(device) = self.device(id) else {
             return;
         };
@@ -854,7 +846,6 @@ impl State {
         volume: f32,
         balance: Option<f32>,
     ) {
-        eprintln!("set volume on {id} route device {route_device}");
         let Some(device) = self.device(id) else {
             return;
         };
