@@ -8,7 +8,6 @@ publish = true
 
 [dependencies]
 cosmic-pipewire = { path = "../../crates/cosmic-pipewire" }
-crossbeam-queue = "0.3.12"
 futures = "0.3.31"
 intmap = "3.1.2"
 libcosmic = { git = "https://github.com/pop-os/libcosmic", default-features = false }
