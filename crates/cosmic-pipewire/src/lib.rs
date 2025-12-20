@@ -46,6 +46,7 @@ pub fn run(on_event: impl FnMut(Event) + Send + 'static) -> Sender {
     let (request_tx, request_rx) = pipewire::channel::channel();
 
     std::thread::spawn(move || {
+        let on_event = Box::new(on_event);
         if let Err(why) = run_service(request_rx, on_event) {
             tracing::error!(?why, "failed to run pipewire thread");
         }
@@ -57,7 +58,7 @@ pub fn run(on_event: impl FnMut(Event) + Send + 'static) -> Sender {
 /// Monitor pipewire activity and
 fn run_service(
     rx: pipewire::channel::Receiver<Request>,
-    on_event: impl FnMut(Event) + Send + 'static,
+    on_event: Box<dyn FnMut(Event)>,
 ) -> Result<(), pipewire::Error> {
     let main_loop = pipewire::main_loop::MainLoopRc::new(None)?;
     let context = pipewire::context::ContextRc::new(&main_loop, None)?;
@@ -76,7 +77,7 @@ fn run_service(
         node_card_profile_device: IntMap::new(),
         node_props: IntMap::new(),
         main_loop: main_loop.downgrade(),
-        on_event: Box::new(on_event),
+        on_event,
     }));
 
     let _request_handler = rx.attach(main_loop.loop_(), {
@@ -85,6 +86,14 @@ fn run_service(
             Request::EnumerateDevice(id) => {
                 if let Some(state) = state.upgrade() {
                     state.borrow_mut().enumerate_device(id);
+                }
+            }
+
+            Request::SetRoute(id, card_profile_device, route) => {
+                if let Some(state) = state.upgrade() {
+                    state
+                        .borrow_mut()
+                        .set_route(id, card_profile_device as i32, route as i32);
                 }
             }
 
@@ -439,6 +448,8 @@ pub enum Request {
     SetProfile(DeviceId, u32, bool),
     /// Set a new volume
     SetNodeVolume(DeviceId, f32, Option<f32>),
+    /// Change route of a device
+    SetRoute(DeviceId, u32, u32),
     /// Stop the main loop and exit the thread.
     Quit,
 }
@@ -519,6 +530,10 @@ impl State {
     }
 
     fn add_node(&mut self, id: PipewireId, node: Node) {
+        eprintln!(
+            "adding node {} with card.profile.device {:?}",
+            node.object_id, node.card_profile_device
+        );
         // Map the device's pipewire ID to its device ID
         if let Some(entry) = self.proxies.nodes.get_mut(id) {
             entry.0 = node.object_id;
@@ -558,6 +573,7 @@ impl State {
         }
         routes[index as usize] = route.clone();
 
+        eprintln!("add route on device {id}[{index}]: {}", route.name);
         self.on_event(Event::AddRoute(id, index, route));
     }
 
@@ -574,11 +590,20 @@ impl State {
     }
 
     fn default_sink(&mut self, name: String) {
+        eprintln!("default sink set to {name}");
         self.on_event(Event::DefaultSink(name));
     }
 
     fn default_source(&mut self, name: String) {
+        eprintln!("default source set to {name}");
         self.on_event(Event::DefaultSource(name));
+    }
+
+    fn node_route(&self, device_id: DeviceId, route_device: i32) -> Option<&Route> {
+        self.routes
+            .get(device_id)?
+            .iter()
+            .find(|r| r.devices.contains(&route_device))
     }
 
     fn on_event(&mut self, event: Event) {
@@ -698,11 +723,39 @@ impl State {
         }
     }
 
-    fn node_route(&self, device_id: DeviceId, route_device: i32) -> Option<&Route> {
-        self.routes
-            .get(device_id)?
-            .iter()
-            .find(|r| r.devices.contains(&route_device))
+    fn set_route(&self, device_id: DeviceId, card_profile_device: i32, route_index: i32) {
+        let Some(device) = self.device(device_id) else {
+            return;
+        };
+
+        tracing::debug!(target: "sound", "set_route device_id {device_id}, route_index {route_index}");
+
+        let buffer = std::io::Cursor::new(Vec::new());
+        let Ok(serialized) = PodSerializer::serialize(
+            buffer,
+            &pod::Value::Object(pod::object!(
+                SpaTypes::ObjectParamRoute,
+                ParamType::Route,
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_index),
+                    Int,
+                    route_index
+                ),
+                pod::property!(
+                    FormatProperties(libspa_sys::SPA_PARAM_ROUTE_device),
+                    Int,
+                    card_profile_device
+                ),
+            )),
+        )
+        .map(|(cursor, _)| cursor.into_inner()) else {
+            return;
+        };
+
+        if let Some(param) = Pod::from_bytes(&serialized) {
+            device.set_param(ParamType::Route, 0, param);
+        }
+        return;
     }
 
     fn set_node_props(&mut self, id: NodeId, props: NodeProps) {
@@ -760,6 +813,7 @@ impl State {
     }
 
     fn set_profile(&mut self, id: DeviceId, index: u32, save: bool) {
+        eprintln!("set profile {id}[{index}]: {save}");
         let Some(device) = self.device(id) else {
             return;
         };
@@ -800,6 +854,7 @@ impl State {
         volume: f32,
         balance: Option<f32>,
     ) {
+        eprintln!("set volume on {id} route device {route_device}");
         let Some(device) = self.device(id) else {
             return;
         };
