@@ -281,7 +281,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         self.context.as_ref().map(|context| match context {
             Context::ShowInputSourcesContext => {
-                let search = widget::search_input(fl!("type-to-search"), &self.input_source_search)
+                let search = widget::search_input("", &self.input_source_search)
                     .on_input(Message::InputSourceSearch)
                     .on_clear(Message::InputSourceSearch(String::new()))
                     .apply(Element::from)

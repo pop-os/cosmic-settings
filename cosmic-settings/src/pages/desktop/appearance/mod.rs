@@ -598,17 +598,18 @@ impl Page {
         });
 
         if let Some(dock_config_helper) = dock_config_helper.as_ref()
-            && let Some(dock_config) = dock_config.as_mut() {
-                let padding = match roundness {
-                    Roundness::Round => 4,
-                    Roundness::SlightlyRound => 4,
-                    Roundness::Square => 0,
-                };
+            && let Some(dock_config) = dock_config.as_mut()
+        {
+            let padding = match roundness {
+                Roundness::Round => 4,
+                Roundness::SlightlyRound => 4,
+                Roundness::Square => 0,
+            };
 
-                if let Err(why) = dock_config.set_padding(dock_config_helper, padding) {
-                    tracing::error!(?why, "Error updating dock padding");
-                }
+            if let Err(why) = dock_config.set_padding(dock_config_helper, padding) {
+                tracing::error!(?why, "Error updating dock padding");
             }
+        }
     }
 
     // TODO: cache panel and dock configs so that they needn't be re-read

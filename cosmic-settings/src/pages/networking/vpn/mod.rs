@@ -651,10 +651,7 @@ impl Page {
                                                         "username".to_string(),
                                                         username.clone().unwrap_or_default().into(),
                                                     ),
-                                                    (
-                                                        "password".to_string(),
-                                                        password.clone(),
-                                                    ),
+                                                    ("password".to_string(), password.clone()),
                                                 ]),
                                                 applied_tx,
                                             })
