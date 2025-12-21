@@ -8,6 +8,7 @@ use cosmic::{
     widget::{self, settings, toggler},
 };
 
+use cosmic_comp_config::CosmicCompConfig;
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{Action, Binding, Shortcuts, shortcuts};
 use cosmic_settings_page::Section;
@@ -19,6 +20,7 @@ use tracing::error;
 #[derive(Clone, Debug)]
 pub enum Message {
     SuperKey(usize),
+    CompConfigUpdate(CosmicCompConfig),
     SetFocusFollowsCursor(bool),
     SaveFocusFollowsCursorDelay(bool),
     SetFocusFollowsCursorDelay(String),
@@ -180,6 +182,11 @@ impl Page {
                 self.show_active_hint = value;
                 if let Err(err) = self.comp_config.set("active_hint", value) {
                     error!(?err, "Failed to set config 'active_hint'");
+                }
+            }
+            Message::CompConfigUpdate(comp_config) => {
+                if comp_config.active_hint != self.show_active_hint {
+                    self.show_active_hint = comp_config.active_hint;
                 }
             }
             Message::SetEdgeSnapThreshold(value) => {

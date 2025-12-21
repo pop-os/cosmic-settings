@@ -39,6 +39,8 @@ use cosmic::{
         settings, text_input,
     },
 };
+#[cfg(feature = "page-window-management")]
+use cosmic_comp_config::CosmicCompConfig;
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, section};
@@ -163,6 +165,8 @@ pub enum Message {
     PageMessage(crate::pages::Message),
     #[cfg(feature = "wayland")]
     PanelConfig(CosmicPanelConfig),
+    #[cfg(feature = "page-window-management")]
+    CompConfig(CosmicCompConfig),
     SearchActivate,
     SearchChanged(String),
     SearchClear,
@@ -343,6 +347,17 @@ impl cosmic::Application for SettingsApp {
                     Message::PanelConfig(update.config)
                 }),
             page.subscription(self.core()).map(Message::PageMessage),
+            // This is needed for the show active-hint state changes.
+            #[cfg(feature = "page-window-management")]
+            self.core()
+                .watch_config::<CosmicCompConfig>("com.system76.CosmicComp")
+                .map(|update| {
+                    for why in update.errors {
+                        tracing::error!(?why, "comp config load error");
+                    }
+
+                    Message::CompConfig(update.config)
+                }),
         ];
 
         Subscription::batch(subscriptions)
@@ -752,6 +767,23 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 return Task::batch(tasks);
+            }
+
+            #[cfg(feature = "page-window-management")]
+            Message::CompConfig(comp_config) => {
+                if let Some(page) = self
+                    .pages
+                    .page_mut::<crate::pages::desktop::window_management::Page>()
+                {
+                    return page
+                        .update(
+                            crate::pages::desktop::window_management::Message::CompConfigUpdate(
+                                comp_config,
+                            ),
+                        )
+                        .map(Into::into);
+                }
+                return Task::none();
             }
 
             #[cfg(feature = "wayland")]
