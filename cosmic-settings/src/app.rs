@@ -39,7 +39,7 @@ use cosmic::{
         settings, text_input,
     },
 };
-#[cfg(feature = "page-window-management")]
+#[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
 use cosmic_comp_config::CosmicCompConfig;
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
@@ -165,7 +165,7 @@ pub enum Message {
     PageMessage(crate::pages::Message),
     #[cfg(feature = "wayland")]
     PanelConfig(CosmicPanelConfig),
-    #[cfg(feature = "page-window-management")]
+    #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
     CompConfig(CosmicCompConfig),
     SearchActivate,
     SearchChanged(String),
@@ -347,8 +347,7 @@ impl cosmic::Application for SettingsApp {
                     Message::PanelConfig(update.config)
                 }),
             page.subscription(self.core()).map(Message::PageMessage),
-            // This is needed for the show active-hint state changes.
-            #[cfg(feature = "page-window-management")]
+            #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
             self.core()
                 .watch_config::<CosmicCompConfig>("com.system76.CosmicComp")
                 .map(|update| {
@@ -769,21 +768,39 @@ impl cosmic::Application for SettingsApp {
                 return Task::batch(tasks);
             }
 
-            #[cfg(feature = "page-window-management")]
+            #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
             Message::CompConfig(comp_config) => {
+                let mut tasks = Vec::new();
+
+                #[cfg(feature = "page-window-management")]
                 if let Some(page) = self
                     .pages
                     .page_mut::<crate::pages::desktop::window_management::Page>()
                 {
-                    return page
-                        .update(
+                    tasks.push(
+                        page.update(
                             crate::pages::desktop::window_management::Message::CompConfigUpdate(
-                                comp_config,
+                                comp_config.clone(),
                             ),
                         )
-                        .map(Into::into);
+                        .map(Into::into),
+                    );
                 }
-                return Task::none();
+
+                #[cfg(feature = "page-accessibility")]
+                if let Some(page) = self.pages.page_mut::<accessibility::magnifier::Page>() {
+                    tasks.push(
+                        page.update(
+                            self.active_page,
+                            crate::pages::accessibility::magnifier::Message::CompConfigUpdate(
+                                comp_config.clone(),
+                            ),
+                        )
+                        .map(Into::into),
+                    );
+                }
+
+                return Task::batch(tasks);
             }
 
             #[cfg(feature = "wayland")]
