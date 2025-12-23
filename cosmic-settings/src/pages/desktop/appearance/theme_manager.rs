@@ -548,7 +548,7 @@ impl ThemeCustomizer {
             let mut gaps = builder.gaps;
             gaps.1 = active_hint;
             if builder.set_gaps(config, gaps).unwrap_or_default() {
-                let _ = self.theme.0.set_active_hint(self.theme.1.as_ref()?, gaps.1);
+                let _ = self.theme.0.set_gaps(self.theme.1.as_ref()?, gaps);
             }
         }
 
