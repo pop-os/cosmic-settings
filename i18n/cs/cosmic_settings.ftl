@@ -67,7 +67,7 @@ end-segment = Konečný segment
 add = Přidat
 add-applet = Přidat applet
 search-applets = Vyhledat applety...
-no-applets-found = Žádné applety nenalezeny...
+no-applets-found = Nenalezeny žádné applety...
 all = Všechny
 
 ## Desktop: Tapeta
@@ -75,7 +75,7 @@ all = Všechny
 wallpaper = Pozadí
     .change = Měnit obrázek každých
     .desc = Obrázky pozadí, barvy a možnosti prezentace
-    .fit = Způsob zobrazení pozadí
+    .fit = Způsob umístění pozadí
     .folder-dialog = Vyberte složku s obrázky pozadí
     .image-dialog = Vyberte obrázek pozadí
     .plural = Pozadí
@@ -204,7 +204,7 @@ users = Uživatelé
     .desc = Ověření a uživatelské účty
     .admin = Administrátor
     .standard = Standardní
-    .profile-add = Zvolte obrázek profilu
+    .profile-add = Vyberte obrázek profilu
 
 ## Input
 
@@ -403,9 +403,9 @@ auto-switch = Automaticky přepínat mezi světlými a tmavými režimy
     .next-sunrise = Přepne na světlý režim při dalším východu slunce
     .next-sunset = Přepne na tmavý režim při dalším západu slunce
 container-background = Pozadí kontejneru
-    .desc-detail = Barva pozadí kontejneru se používá pro navigační postranní panel, boční panel, dialogy a podobné prvky. Ve výchozím nastavení je automaticky odvozena od pozadí okna.
+    .desc-detail = Barva pozadí kontejneru se používá pro navigační postranní panel, výsuvný panel, dialogy a podobné prvky. Ve výchozím nastavení je automaticky odvozena od pozadí okna.
     .reset = Obnovit na auto
-    .desc = Používá se pro navigační postranní panel, boční panel, dialogy a podobné prvky
+    .desc = Používá se pro navigační postranní panel, výsuvný panel, dialogy a podobné prvky
 control-tint = Odstín ovládacích prvků
     .desc = Používá se pro pozadí standardních tlačítek, vyhledávacích polí, textových vstupů a podobných komponent
 frosted = Efekt zmrazeného okna na systémovém rozhraní
@@ -725,6 +725,7 @@ system-shortcut = Systém
     .play-prev = Předchozí stopa
     .poweroff = Vypnout
     .screenshot = Pořídit snímek obrazovky
+    .suspend = Uspat
     .terminal = Otevřít terminál
     .touchpad-toggle = Přepnout touchpad
     .volume-lower = Snížit hlasitost zvukového výstupu

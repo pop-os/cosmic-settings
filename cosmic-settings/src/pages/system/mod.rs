@@ -4,6 +4,8 @@
 #[cfg(feature = "page-about")]
 pub mod about;
 
+#[cfg(feature = "page-about")]
+pub mod info;
 #[cfg(feature = "page-users")]
 pub mod users;
 

@@ -32,7 +32,6 @@ cosmic-settings-bluetooth-subscription = { path = "../subscriptions/bluetooth", 
 cosmic-settings-network-manager-subscription = { path = "../subscriptions/network-manager", optional = true }
 cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
 cosmic-settings-sound-subscription = { path = "../subscriptions/sound", optional = true, features = ["auto-profile-init"] }
-cosmic-settings-system = { path = "../pages/system", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 derive_setters = "0.1.8"
@@ -55,6 +54,7 @@ itertools = "0.14.0"
 itoa = "1.0.15"
 libcosmic.workspace = true
 locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+sysinfo = { version = "0.36.1", optional = true }
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", optional = true }
 # TODO: updating notify beyond this hangs the app
 notify = "6.1.1"
@@ -68,7 +68,6 @@ slab = "0.4.11"
 slotmap = "1.0.7"
 static_init = "1.0.4"
 sunrise = "2.1.0"
-tachyonix = "0.3.1"
 timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 tokio = { workspace = true, features = ["fs", "io-util", "sync"] }
 tracing = "0.1.41"
@@ -141,7 +140,7 @@ page-accessibility = [
     "dep:cosmic-settings-accessibility-subscription",
     "dep:cosmic-settings-a11y-manager-subscription",
 ]
-page-about = ["dep:cosmic-settings-system", "dep:hostname1-zbus", "dep:zbus"]
+page-about = ["dep:hostname1-zbus", "dep:sysinfo", "dep:zbus"]
 page-bluetooth = [
     "dep:cosmic-settings-bluetooth-subscription",
     "dep:zbus",

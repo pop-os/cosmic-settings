@@ -439,8 +439,8 @@ pub fn lists<
             return Element::from(text::body(fl!("unknown")));
         };
 
-        column::with_children(vec![
-            column::with_children(vec![
+        column::with_children([
+            column::with_children([
                 text::body(fl!("start-segment")).into(),
                 AppletReorderList::new(
                     config
@@ -471,7 +471,7 @@ pub fn lists<
             ])
             .spacing(space_xxs)
             .into(),
-            column::with_children(vec![
+            column::with_children([
                 text::body(fl!("center-segment")).into(),
                 AppletReorderList::new(
                     config
@@ -501,7 +501,7 @@ pub fn lists<
             ])
             .spacing(space_xxs)
             .into(),
-            column::with_children(vec![
+            column::with_children([
                 text::body(fl!("end-segment")).into(),
                 AppletReorderList::new(
                     config

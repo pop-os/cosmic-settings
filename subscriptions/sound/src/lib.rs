@@ -4,10 +4,14 @@
 use cosmic::Task;
 use cosmic::iced_futures::MaybeSend;
 use cosmic_pipewire as pipewire;
-use futures::{FutureExt, SinkExt, Stream};
+use futures::{SinkExt, Stream};
 use intmap::IntMap;
 use pipewire::Availability;
-use std::{process::Stdio, sync::Arc, time::Duration};
+use std::{
+    process::Stdio,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 
 pub type DeviceId = u32;
 pub type NodeId = u32;
@@ -16,46 +20,37 @@ pub type RouteId = u32;
 
 pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
     cosmic::iced_futures::stream::channel(1, |mut emitter| async move {
-        let (cancel_tx, mut cancel_rx) = futures::channel::oneshot::channel::<()>();
-        let events = Arc::new(crossbeam_queue::SegQueue::new());
-
-        _ = emitter
-            .send(
-                Message::SubHandle(Arc::new(SubscriptionHandle {
-                    cancel_tx,
-                    pipewire: pipewire::run({
-                        let events = events.clone();
-                        move |event| {
-                            events.push(event);
-                        }
-                    }),
-                }))
-                .into(),
-            )
-            .await;
-
-        let mut timer = tokio::time::interval(Duration::from_millis(64));
-
         loop {
-            futures::select! {
-                _ = timer.tick().fuse() => {
-                    if !events.is_empty() {
-                        let mut batched = Vec::with_capacity(events.len());
-                        while let Some(event) = events.pop() {
-                            batched.push(event);
-                        }
+            let (cancel_tx, cancel_rx) = futures::channel::oneshot::channel::<()>();
+            let sender = Arc::new((Mutex::new(Vec::new()), tokio::sync::Notify::const_new()));
+            let receiver = sender.clone();
 
-                        _ = emitter
-                            .send(Message::Server(Arc::from(batched)))
-                            .await;
+            _ = emitter
+                .send(
+                    Message::SubHandle(Arc::new(SubscriptionHandle {
+                        cancel_tx,
+                        pipewire: pipewire::run(move |event| {
+                            sender.0.lock().unwrap().push(event);
+                            sender.1.notify_one();
+                        }),
+                    }))
+                    .into(),
+                )
+                .await;
+
+            let forwarder = Box::pin(async {
+                loop {
+                    _ = receiver.1.notified().await;
+                    let events = std::mem::take(&mut *receiver.0.lock().unwrap());
+                    if !events.is_empty() {
+                        _ = emitter.send(Message::Server(Arc::from(events))).await;
+                        tokio::time::sleep(Duration::from_millis(64)).await;
                     }
                 }
+            });
 
-                _ = &mut cancel_rx => break,
-            }
+            futures::future::select(cancel_rx, forwarder).await;
         }
-
-        futures::future::pending::<Message>().await;
     })
 }
 
@@ -73,6 +68,7 @@ pub struct Model {
     device_ids: IntMap<NodeId, DeviceId>,
     node_names: IntMap<NodeId, String>,
     card_profile_devices: IntMap<NodeId, u32>,
+    node_route_indexes: IntMap<NodeId, i32>,
 
     device_names: IntMap<DeviceId, String>,
     device_profiles: IntMap<DeviceId, Vec<pipewire::Profile>>,
@@ -240,13 +236,28 @@ impl Model {
         self.set_default_sink_id(node_id);
 
         // Use pactl if the node is not a device node.
-        let virtual_sink_name: Option<String> = if self.device_ids.contains_key(node_id) {
-            None
-        } else if let Some(name) = self.node_names.get(node_id) {
-            Some(name.clone())
-        } else {
-            None
-        };
+        let virtual_sink_name: Option<String> =
+            if let Some(device) = self.device_ids.get(node_id).cloned() {
+                // Get route index of the selected node and apply it to the device.
+                if let Some((card_profile_device, route_index)) = self
+                    .card_profile_devices
+                    .get(node_id)
+                    .cloned()
+                    .zip(self.node_route_indexes.get(node_id).cloned())
+                {
+                    self.pipewire_send(pipewire::Request::SetRoute(
+                        device,
+                        card_profile_device,
+                        route_index as u32,
+                    ));
+                }
+
+                None
+            } else if let Some(name) = self.node_names.get(node_id) {
+                Some(name.clone())
+            } else {
+                None
+            };
 
         tokio::task::spawn(async move {
             if let Some(node_name) = virtual_sink_name {
@@ -304,13 +315,28 @@ impl Model {
         self.set_default_source_id(node_id);
 
         // Use pactl if the node is not a device node.
-        let virtual_source_name: Option<String> = if self.device_ids.contains_key(node_id) {
-            None
-        } else if let Some(name) = self.node_names.get(node_id) {
-            Some(name.clone())
-        } else {
-            None
-        };
+        let virtual_source_name: Option<String> =
+            if let Some(device) = self.device_ids.get(node_id).cloned() {
+                // Get route index of the selected node and apply it to the device.
+                if let Some((card_profile_device, route_index)) = self
+                    .card_profile_devices
+                    .get(node_id)
+                    .cloned()
+                    .zip(self.node_route_indexes.get(node_id).cloned())
+                {
+                    self.pipewire_send(pipewire::Request::SetRoute(
+                        device,
+                        card_profile_device,
+                        route_index as u32,
+                    ));
+                }
+
+                None
+            } else if let Some(name) = self.node_names.get(node_id) {
+                Some(name.clone())
+            } else {
+                None
+            };
 
         tokio::task::spawn(async move {
             if let Some(node_name) = virtual_source_name {
@@ -486,12 +512,12 @@ impl Model {
                     pipewire::Direction::Output => (
                         self.active_sink_device.clone(),
                         &self.sink_node_ids,
-                        Self::set_default_sink_node_id,
+                        Self::set_default_sink_id,
                     ),
                     pipewire::Direction::Input => (
                         self.active_source_device.clone(),
                         &self.source_node_ids,
-                        Self::set_default_source_node_id,
+                        Self::set_default_source_id,
                     ),
                 };
 
@@ -771,7 +797,9 @@ impl Model {
                 continue;
             };
 
+            tracing::debug!(target: "sound", "matched route {} on {}: {}", route.index, id, route.description);
             devices[pos] = [&route.description, " - ", device_name].concat();
+            self.node_route_indexes.insert(node, route.index);
 
             break;
         }

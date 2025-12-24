@@ -112,7 +112,7 @@ impl page::Page<crate::pages::Message> for Page {
         tasks.push(cosmic::task::future(on_enter()));
 
         let refresh_pending = self.refresh_pending.clone();
-        let (tx, mut rx) = tachyonix::channel(4);
+        let (tx, mut rx) = cosmic_randr::channel();
         let (canceller, cancelled) = oneshot::channel::<()>();
         let runtime = tokio::runtime::Handle::current();
 
@@ -137,7 +137,7 @@ impl page::Page<crate::pages::Message> for Page {
         // Forward messages from another thread to prevent the monitoring thread from blocking.
         let (randr_task, randr_handle) =
             Task::stream(async_fn_stream::fn_stream(|emitter| async move {
-                while let Ok(message) = rx.recv().await {
+                while let Some(message) = rx.recv().await {
                     if let cosmic_randr::Message::ManagerDone = message
                         && !refresh_pending.swap(true, Ordering::SeqCst)
                     {

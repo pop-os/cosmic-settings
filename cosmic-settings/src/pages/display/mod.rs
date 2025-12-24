@@ -16,6 +16,7 @@ use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
 };
 use cosmic_settings_page::{self as page, Section, section};
+use indexmap::Equivalent;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -261,7 +262,7 @@ impl page::Page<crate::pages::Message> for Page {
         #[cfg(feature = "wayland")]
         {
             let refreshing_page = self.refreshing_page.clone();
-            let (tx, mut rx) = tachyonix::channel(4);
+            let (tx, mut rx) = cosmic_randr::channel();
             let (canceller, cancelled) = oneshot::channel::<()>();
             let runtime = tokio::runtime::Handle::current();
 
@@ -286,7 +287,7 @@ impl page::Page<crate::pages::Message> for Page {
             // Forward messages from another thread to prevent the monitoring thread from blocking.
             let (randr_task, randr_handle) =
                 Task::stream(async_fn_stream::fn_stream(|emitter| async move {
-                    while let Ok(message) = rx.recv().await {
+                    while let Some(message) = rx.recv().await {
                         if let cosmic_randr::Message::ManagerDone = message
                             && !refreshing_page.swap(true, Ordering::SeqCst)
                         {
@@ -398,6 +399,7 @@ impl page::Page<crate::pages::Message> for Page {
                 enabled: true,
                 make: None,
                 model: "Test 1".into(),
+                serial_number: "Serial 1".into(),
                 mirroring: None,
                 physical: (1, 1),
                 position: (0, 0),
@@ -415,6 +417,7 @@ impl page::Page<crate::pages::Message> for Page {
                 enabled: true,
                 make: None,
                 model: "Test 1".into(),
+                serial_number: "Serial 2".into(),
                 mirroring: None,
                 physical: (1, 1),
                 position: (1920, 0),
@@ -546,7 +549,25 @@ impl Page {
             Message::DisplayToggle(enable) => return self.toggle_display(enable),
 
             Message::Mirroring(mirroring) => match mirroring {
-                Mirroring::Disable => return self.toggle_display(true),
+                Mirroring::Disable => {
+                    for k in self.mirror_map.keys() {
+                        if k.equivalent(&self.active_display) {
+                            return self.toggle_display(true);
+                        }
+
+                        if let Some(v) = self.mirror_map.get(k) {
+                            if v.equivalent(&self.active_display) {
+                                if let Some(output) = self.list.outputs.get(k) {
+                                    return self.exec_randr(output, Randr::Toggle(true));
+                                } else {
+                                    return Task::none();
+                                }
+                            }
+                        }
+                    }
+
+                    return Task::none();
+                }
 
                 Mirroring::Mirror(from_display) => {
                     let Some(output) = self.list.outputs.get(self.active_display) else {
