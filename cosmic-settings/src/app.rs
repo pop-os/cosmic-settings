@@ -84,7 +84,9 @@ impl SettingsApp {
             }
             #[cfg(feature = "page-about")]
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
-            PageCommands::Appearance => self.pages.page_id::<desktop::appearance::Page>(),
+            PageCommands::Appearance { command: _ } => {
+                self.pages.page_id::<desktop::appearance::Page>()
+            }
             PageCommands::Applications => self.pages.page_id::<applications::Page>(),
             #[cfg(feature = "page-bluetooth")]
             PageCommands::Bluetooth => self.pages.page_id::<bluetooth::Page>(),
