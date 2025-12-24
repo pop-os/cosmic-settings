@@ -38,6 +38,7 @@ pub struct Page {
 #[derive(Debug, Clone)]
 pub enum Message {
     Event(wayland::AccessibilityEvent),
+    CompConfigUpdate(cosmic_comp_config::CosmicCompConfig),
     ProtocolUnavailable,
     SetMagnifier(bool),
     SetMouseShortcuts(bool),
@@ -339,6 +340,23 @@ impl Page {
         message: Message,
     ) -> cosmic::iced::Task<crate::app::Message> {
         match message {
+            Message::CompConfigUpdate(comp_config) => {
+                if self.zoom_config.show_overlay != comp_config.accessibility_zoom.show_overlay {
+                    self.zoom_config.show_overlay = comp_config.accessibility_zoom.show_overlay;
+                }
+                if self.zoom_config.increment != comp_config.accessibility_zoom.increment {
+                    self.zoom_config.increment = comp_config.accessibility_zoom.increment;
+
+                    self.increment_idx = self.increment_values.iter().position(|s| {
+                        s.split('%').next().and_then(|val| str::parse(val).ok())
+                            == Some(self.zoom_config.increment)
+                    });
+                }
+
+                if self.zoom_config.view_moves != comp_config.accessibility_zoom.view_moves {
+                    self.zoom_config.view_moves = comp_config.accessibility_zoom.view_moves;
+                }
+            }
             Message::Event(AccessibilityEvent::Magnifier(value)) => {
                 self.magnifier_state = value;
             }
