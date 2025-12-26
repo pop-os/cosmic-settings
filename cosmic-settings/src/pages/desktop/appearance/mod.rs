@@ -314,6 +314,7 @@ impl Page {
                 } else {
                     ThemeBuilder::light()
                 };
+                self.theme_manager.set_active_hint(builder.active_hint);
 
                 self.theme_manager
                     .selected_customizer_mut()
