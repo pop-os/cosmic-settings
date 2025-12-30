@@ -1008,7 +1008,7 @@ impl NetworkManagerState {
             }
 
             let known_conn = if let Some(known_conn) = known_conn {
-                if secret_tx.is_none() {
+                if secret_tx.is_none() || identity.is_some() {
                     known_conn.update(conn_settings).await?;
                 }
                 known_conn
