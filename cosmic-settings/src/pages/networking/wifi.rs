@@ -378,7 +378,7 @@ impl Page {
                             self.connecting.remove(ssid.as_ref());
                         } else {
                             self.dialog = Some(WiFiDialog::Password {
-                                ssid: ssid.into(),
+                                ssid,
                                 identity: matches!(network_type, NetworkType::EAP)
                                     .then(String::new),
                                 hw_address,

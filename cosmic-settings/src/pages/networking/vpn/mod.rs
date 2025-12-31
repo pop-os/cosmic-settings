@@ -653,7 +653,7 @@ impl Page {
                                                     ),
                                                     (
                                                         "password".to_string(),
-                                                        password.clone().into(),
+                                                        password.clone(),
                                                     ),
                                                 ]),
                                                 applied_tx,
@@ -733,7 +733,7 @@ impl Page {
                                             secrets: HashMap::from_iter([
                                                 // username and password
                                                 ("username".to_string(), username.clone().into()),
-                                                ("password".to_string(), password.clone().into()),
+                                                ("password".to_string(), password.clone()),
                                             ]),
                                             applied_tx,
                                         })
@@ -793,7 +793,7 @@ impl Page {
                         id: name.clone(),
                         uuid: Arc::from(""),
                         username: None,
-                        description: description,
+                        description,
                         password: previous,
                         password_hidden: true,
                         tx,

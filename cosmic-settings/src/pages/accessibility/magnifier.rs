@@ -38,7 +38,7 @@ pub struct Page {
 #[derive(Debug, Clone)]
 pub enum Message {
     Event(wayland::AccessibilityEvent),
-    CompConfigUpdate(cosmic_comp_config::CosmicCompConfig),
+    CompConfigUpdate(Box<cosmic_comp_config::CosmicCompConfig>),
     ProtocolUnavailable,
     SetMagnifier(bool),
     SetMouseShortcuts(bool),
