@@ -433,7 +433,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            let search = widget::search_input(fl!("type-to-search"), &page.search.input)
+            let search = widget::search_input("", &page.search.input)
                 .width(314)
                 .on_clear(Message::Search(String::new()))
                 .on_input(Message::Search)

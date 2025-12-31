@@ -163,7 +163,7 @@ impl Model {
     }
 
     pub fn search_input(&self) -> Element<'_, crate::pages::Message> {
-        widget::search_input(fl!("type-to-search"), &self.font_search)
+        widget::search_input("", &self.font_search)
             .on_input(|input| Message::DrawerFont(drawer::FontMessage::Search(input)))
             .on_clear(Message::DrawerFont(drawer::FontMessage::Search(
                 String::new(),
