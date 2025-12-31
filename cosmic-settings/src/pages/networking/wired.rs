@@ -447,6 +447,7 @@ impl Page {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn device_view<'a>(
         &'a self,
         spacing: cosmic::cosmic_theme::Spacing,
