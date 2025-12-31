@@ -21,6 +21,8 @@ pub mod theme;
 pub mod utils;
 pub mod widget;
 
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 use cosmic::{app::CosmicFlags, iced::Limits};
 use i18n_embed::DesktopLanguageRequester;
@@ -37,6 +39,20 @@ pub struct Args {
 }
 
 #[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
+pub enum AppearanceCommands {
+    /// Import a theme from a RON file
+    Import {
+        /// Path to the theme file
+        path: PathBuf,
+    },
+    /// Export the current theme to a RON file
+    Export {
+        /// Path where the theme file will be saved
+        path: PathBuf,
+    },
+}
+
+#[derive(Subcommand, Debug, Serialize, Deserialize, Clone)]
 pub enum PageCommands {
     /// Accessibility settings page
     #[cfg(feature = "page-accessibility")]
@@ -48,7 +64,10 @@ pub enum PageCommands {
     #[cfg(feature = "page-about")]
     About,
     /// Appearance settings page
-    Appearance,
+    Appearance {
+        #[command(subcommand)]
+        command: Option<AppearanceCommands>,
+    },
     /// Applications settings page
     Applications,
     /// Bluetooth settings page
@@ -174,6 +193,17 @@ pub fn main() -> color_eyre::Result<()> {
     }
 
     let args = Args::parse();
+
+    if let Some(PageCommands::Appearance { command: Some(cmd) }) = &args.sub_command {
+        return match cmd {
+            AppearanceCommands::Import { path } => {
+                pages::desktop::appearance::commands::import_theme(path)
+            }
+            AppearanceCommands::Export { path } => {
+                pages::desktop::appearance::commands::export_theme(path)
+            }
+        };
+    }
 
     let settings = cosmic::app::Settings::default()
         .size_limits(Limits::NONE.min_width(360.0).min_height(300.0));
