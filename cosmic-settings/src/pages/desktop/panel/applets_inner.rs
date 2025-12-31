@@ -170,7 +170,7 @@ pub enum Message {
     ReorderCenter(Vec<Applet<'static>>),
     ReorderEnd(Vec<Applet<'static>>),
     Applets(Vec<Applet<'static>>),
-    PanelConfig(CosmicPanelConfig),
+    PanelConfig(Box<CosmicPanelConfig>),
     StartDnd(Applet<'static>),
     // DnDTask(Arc<Box<dyn Send + Sync + Fn() -> ActionInner>>),
     Search(String),
@@ -297,7 +297,7 @@ impl Page {
     pub fn update(&mut self, message: Message) -> Task<app::Message> {
         match message {
             Message::PanelConfig(c) => {
-                self.current_config = Some(c);
+                self.current_config = Some(*c);
             }
 
             Message::ReorderStart(start_list) => {
