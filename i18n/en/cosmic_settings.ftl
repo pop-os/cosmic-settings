@@ -247,6 +247,10 @@ auto-switch = Automatically switch between light and dark modes
     .next-sunrise = Switches to light mode at next sunrise
     .next-sunset = Switches to dark mode at next sunset
 
+clip-floating = Match all window corners for floating windows
+clip-tiled = Match all window corners for tiled windows
+shadow-tiled = Draw drop shadows for tiled windows
+
 container-background = Container background
     .desc-detail = Container background color is used for navigation sidebar, side drawer, dialogs and similar widgets. By default, container background color is automatically derived from the window background.
     .reset = Reset to auto
@@ -287,6 +291,7 @@ experimental-settings = Experimental settings
 icons-and-toolkit = Icons and toolkit theming
 interface-font = System font
 monospace-font = Monospace font
+shadow-and-corners = Window shadow and corners
 
 ## Desktop: Notifications
 
