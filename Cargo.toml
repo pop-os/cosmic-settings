@@ -70,10 +70,10 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
 # iced_futures = { path = "../libcosmic/iced/futures" }
 
-[patch.'https://github.com/pop-os/dbus-settings-bindings']
+# [patch.'https://github.com/pop-os/dbus-settings-bindings']
 # cosmic-dbus-networkmanager = { path = "../dbus-settings-bindings/networkmanager" }
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
-nm-secret-agent-manager = { git = "https://github.com/pop-os/dbus-settings-bindings//", branch = "nm-secret-agent" }
+# nm-secret-agent-manager = { git = "https://github.com/pop-os/dbus-settings-bindings//", branch = "nm-secret-agent" }
 
 [patch."https://github.com/smithay/client-toolkit.git"]
 sctk = { package = "smithay-client-toolkit", version = "0.20.0" }
