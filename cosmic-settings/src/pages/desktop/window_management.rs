@@ -20,7 +20,7 @@ use tracing::error;
 #[derive(Clone, Debug)]
 pub enum Message {
     SuperKey(usize),
-    CompConfigUpdate(CosmicCompConfig),
+    CompConfigUpdate(Box<CosmicCompConfig>),
     SetFocusFollowsCursor(bool),
     SaveFocusFollowsCursorDelay(bool),
     SetFocusFollowsCursorDelay(String),
