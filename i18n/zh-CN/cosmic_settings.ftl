@@ -91,7 +91,7 @@ wireguard-dialog = 添加 WireGuard 设备
 ## Networking: Online Accounts
 
 online-accounts = 在线账户
-    .desc = 添加账户、IMAP 和 SMTP、企业登录
+    .desc = 添加账户、IMAP与SMTP设置、企业登录
 
 # Bluetooth
 
@@ -221,11 +221,11 @@ reset-to-default = 重置为默认值
 rgb = RGB
 window-hint-accent = 活动窗口提示颜色
 window-hint-accent-toggle = 使用主题色作为活动窗口提示色
-auto-switch = 自动在亮色和深色模式之间切换
+auto-switch = 自动在亮色与暗色模式之间切换
     .sunrise = 日出时切换到亮色模式
-    .sunset = 日落时切换到深色模式
+    .sunset = 日落时切换到暗色模式
     .next-sunrise = 下次日出时切换到亮色模式
-    .next-sunset = 下次日落时切换到深色模式
+    .next-sunset = 下次日落时切换到暗色模式
 container-background = 容器背景
     .desc-detail = 容器背景色用于导航侧栏、侧边抽屉、对话框等小部件。默认情况下，它会自动从应用程序或窗口背景派生。
     .reset = 重置为自动
@@ -286,7 +286,7 @@ start-segment = 开始区段
 panel-appearance = 外观
     .match = 匹配桌面
     .light = 亮色
-    .dark = 深色
+    .dark = 暗色
 panel-behavior-and-position = 行为和位置
     .autohide = 自动隐藏面板
     .dock-autohide = 自动隐藏程序坞
@@ -820,7 +820,8 @@ change-password = 修改密码
 remove-user = 删除用户
 full-name = 全名
 invalid-username = 用户名无效。
-password-mismatch = 密码和确认密码必须匹配。
+password-mismatch = 密码与确认密码必须匹配
 save = 保存
 amplification = 音量增强
     .desc = 允许将音量提高到150%.
+network-name = 网络名称
