@@ -5,6 +5,7 @@ use super::{ShortcutMessage, ShortcutModel};
 use cosmic::app::ContextDrawer;
 use cosmic::{Element, Task};
 use cosmic_settings_config::shortcuts::Action;
+use cosmic_settings_config::shortcuts::action::System as SystemAction;
 use cosmic_settings_page::{self as page, Section, section};
 use slab::Slab;
 
@@ -92,7 +93,11 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 
 #[must_use]
 pub const fn actions() -> &'static [Action] {
-    &[Action::ZoomIn, Action::ZoomOut]
+    &[
+        Action::System(SystemAction::ScreenReader),
+        Action::ZoomIn,
+        Action::ZoomOut,
+    ]
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {
