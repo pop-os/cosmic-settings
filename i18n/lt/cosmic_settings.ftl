@@ -332,7 +332,7 @@ connections-and-profiles =
         [wifi] Wi-Fi
         [vpn] VPN
        *[other] Nežinomas
-    } Ryšių ir ryšio profiliai.
+    } Prisijungimų ir ryšio profiliai.
 identity = Tapatybė
 reset-to-default = Atstatyti į numatytas reikšmes
 disconnect = Atjungti
