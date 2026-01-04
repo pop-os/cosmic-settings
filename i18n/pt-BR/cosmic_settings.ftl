@@ -635,6 +635,7 @@ system-shortcut = Sistema
     .play-prev = Faixa anterior
     .poweroff = Desligar
     .screenshot = Fazer uma captura de tela
+    .suspend = Suspender
     .terminal = Abrir um terminal
     .touchpad-toggle = Ativar/desativar o touchpad
     .volume-lower = Reduzir o volume da saída de áudio
