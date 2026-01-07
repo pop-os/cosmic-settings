@@ -3,7 +3,7 @@
 
 use std::{
     collections::{BTreeMap, BTreeSet},
-    sync::Arc,
+    sync::{Arc, LazyLock},
 };
 
 use anyhow::Context;
@@ -13,7 +13,8 @@ use cosmic::{
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
     iced_widget::focus_next,
-    widget::{self, column, icon},
+    task,
+    widget::{self, column, icon, text_input::focus},
 };
 use cosmic_settings_network_manager_subscription::{
     self as network_manager, NetworkManagerState,
@@ -28,6 +29,8 @@ use secure_string::SecureString;
 use tokio::sync::Mutex;
 
 use crate::pages::networking::SecretSender;
+
+pub static SECURE_INPUT_WIFI: LazyLock<widget::Id> = LazyLock::new(widget::Id::unique);
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -47,6 +50,8 @@ pub enum Message {
     Error(String),
     /// Identity update from the dialog
     IdentityUpdate(String),
+    /// Focus the secure input
+    FocusSecureInput,
     /// Create a dialog to ask for confirmation on forgetting a connection.
     ForgetRequest(network_manager::SSID),
     /// Forget a known access point.
@@ -178,6 +183,7 @@ impl page::Page<crate::pages::Message> for Page {
                     Some(Message::TogglePasswordVisibility),
                     *password_hidden,
                 )
+                .id(SECURE_INPUT_WIFI.clone())
                 .on_input(|input| Message::PasswordUpdate(SecureString::from(input)))
                 .on_submit(|_| Message::ConnectWithPassword);
 
@@ -365,6 +371,7 @@ impl Page {
                                 password_hidden: true,
                                 tx: Arc::new(Mutex::new(None)),
                             });
+                            return task::message(Message::FocusSecureInput);
                         }
                     }
 
@@ -386,6 +393,7 @@ impl Page {
                                 password_hidden: true,
                                 tx: Arc::new(Mutex::new(None)),
                             });
+                            return task::message(Message::FocusSecureInput);
                         }
                     }
 
@@ -525,6 +533,7 @@ impl Page {
                         password_hidden: true,
                         tx: Arc::new(Mutex::new(None)),
                     });
+                    return task::message(Message::FocusSecureInput);
                 }
             }
             Message::PasswordUpdate(pass) => {
@@ -713,6 +722,7 @@ impl Page {
                         identity: matches!(ap.network_type, NetworkType::EAP).then(String::new),
                         tx,
                     });
+                    return task::message(Message::FocusSecureInput);
                 }
                 nm_secret_agent::Event::CancelGetSecrets { uuid: _, name: _ } => {
                     self.dialog = self
@@ -738,9 +748,27 @@ impl Page {
                             identity,
                             hw_address,
                         });
+                        return task::message(Message::FocusSecureInput);
                     }
                 }
             },
+            Message::FocusSecureInput => {
+                // retry until the widget is in the tree and focused or the dialog is removed.
+                if matches!(self.dialog, Some(WiFiDialog::Password { .. })) {
+                    return cosmic::iced_runtime::task::widget(
+                        cosmic::iced_core::widget::operation::focusable::find_focused(),
+                    )
+                    .collect()
+                    .then(|id| {
+                        if id.get(0).is_some_and(|id| *id == SECURE_INPUT_WIFI.clone()) {
+                            Task::none()
+                        } else {
+                            focus(SECURE_INPUT_WIFI.clone())
+                                .chain(task::message(Message::FocusSecureInput))
+                        }
+                    });
+                }
+            }
         }
 
         Task::none()
