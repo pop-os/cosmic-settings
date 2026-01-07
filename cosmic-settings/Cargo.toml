@@ -18,6 +18,7 @@ cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
 cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
+nm-secret-agent-manager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 cosmic-idle-config.workspace = true
 cosmic-panel-config = { workspace = true, optional = true }
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
@@ -31,7 +32,9 @@ cosmic-settings-airplane-mode-subscription = { path = "../subscriptions/airplane
 cosmic-settings-bluetooth-subscription = { path = "../subscriptions/bluetooth", optional = true }
 cosmic-settings-network-manager-subscription = { path = "../subscriptions/network-manager", optional = true }
 cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
-cosmic-settings-sound-subscription = { path = "../subscriptions/sound", optional = true, features = ["auto-profile-init"] }
+cosmic-settings-sound-subscription = { path = "../subscriptions/sound", optional = true, features = [
+    "auto-profile-init",
+] }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 derive_setters = "0.1.8"
@@ -162,6 +165,7 @@ page-networking = [
     "dep:cosmic-settings-network-manager-subscription",
     "xdg-portal",
     "dep:cosmic-dbus-networkmanager",
+    "dep:nm-secret-agent-manager",
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]

@@ -30,7 +30,7 @@ use cosmic::{
     iced::{
         self, Length, Subscription,
         event::{self, PlatformSpecific},
-        window,
+        keyboard, window,
     },
     prelude::*,
     surface,
@@ -164,10 +164,11 @@ pub enum Message {
     Page(page::Entity),
     PageMessage(crate::pages::Message),
     #[cfg(feature = "wayland")]
-    PanelConfig(CosmicPanelConfig),
+    PanelConfig(Box<CosmicPanelConfig>),
     #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
-    CompConfig(CosmicCompConfig),
+    CompConfig(Box<CosmicCompConfig>),
     SearchActivate,
+    SearchActivateWith(String),
     SearchChanged(String),
     SearchClear,
     SearchSubmit,
@@ -308,8 +309,7 @@ impl cosmic::Application for SettingsApp {
                     daytime,
                 )))
             }),
-            #[cfg(feature = "wayland")]
-            event::listen_with(|event, _, _id| match event {
+            event::listen_with(|event, status, _id| match event {
                 #[cfg(feature = "wayland")]
                 iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
                     wayland::Event::Output(wayland::OutputEvent::Created(Some(info)), o),
@@ -318,6 +318,13 @@ impl cosmic::Application for SettingsApp {
                 iced::Event::PlatformSpecific(PlatformSpecific::Wayland(
                     wayland::Event::Output(wayland::OutputEvent::Removed, o),
                 )) => Some(Message::OutputRemoved(o)),
+                iced::Event::Keyboard(keyboard::Event::KeyPressed {
+                    key: keyboard::Key::Character(c),
+                    modifiers: m,
+                    ..
+                }) if status == event::Status::Ignored && !m.control() && !m.alt() && !m.logo() => {
+                    Some(Message::SearchActivateWith(c.to_string()))
+                }
                 _ => None,
             }),
             #[cfg(feature = "wayland")]
@@ -333,7 +340,7 @@ impl cosmic::Application for SettingsApp {
                         tracing::error!(?why, "panel config load error");
                     }
 
-                    Message::PanelConfig(update.config)
+                    Message::PanelConfig(Box::new(update.config))
                 }),
             // TODO: This should only be active when the dock page is active.
             #[cfg(feature = "wayland")]
@@ -344,7 +351,7 @@ impl cosmic::Application for SettingsApp {
                         tracing::error!(?why, "dock config load error");
                     }
 
-                    Message::PanelConfig(update.config)
+                    Message::PanelConfig(Box::new(update.config))
                 }),
             page.subscription(self.core()).map(Message::PageMessage),
             #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
@@ -355,7 +362,7 @@ impl cosmic::Application for SettingsApp {
                         tracing::error!(?why, "comp config load error");
                     }
 
-                    Message::CompConfig(update.config)
+                    Message::CompConfig(Box::new(update.config))
                 }),
         ];
 
@@ -375,9 +382,10 @@ impl cosmic::Application for SettingsApp {
                 return self.search_changed(phrase);
             }
 
-            Message::SearchActivate => {
-                self.search_active = true;
-                return cosmic::widget::text_input::focus(self.search_id.clone());
+            Message::SearchActivate => return self.on_search(),
+
+            Message::SearchActivateWith(phrase) => {
+                return self.on_search().chain(self.search_changed(phrase));
             }
 
             Message::SearchClear => {

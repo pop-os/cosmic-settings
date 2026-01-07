@@ -314,6 +314,7 @@ impl Page {
                 } else {
                     ThemeBuilder::light()
                 };
+                self.theme_manager.set_active_hint(builder.active_hint);
 
                 self.theme_manager
                     .selected_customizer_mut()
@@ -596,17 +597,17 @@ impl Page {
             (panel_config.name == "Dock").then_some(panel_config)
         });
 
-        if let Some(dock_config_helper) = dock_config_helper.as_ref() {
-            if let Some(dock_config) = dock_config.as_mut() {
-                let padding = match roundness {
-                    Roundness::Round => 4,
-                    Roundness::SlightlyRound => 4,
-                    Roundness::Square => 0,
-                };
+        if let Some(dock_config_helper) = dock_config_helper.as_ref()
+            && let Some(dock_config) = dock_config.as_mut()
+        {
+            let padding = match roundness {
+                Roundness::Round => 4,
+                Roundness::SlightlyRound => 4,
+                Roundness::Square => 0,
+            };
 
-                if let Err(why) = dock_config.set_padding(dock_config_helper, padding) {
-                    tracing::error!(?why, "Error updating dock padding");
-                }
+            if let Err(why) = dock_config.set_padding(dock_config_helper, padding) {
+                tracing::error!(?why, "Error updating dock padding");
             }
         }
     }

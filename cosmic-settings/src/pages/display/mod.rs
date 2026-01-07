@@ -262,7 +262,7 @@ impl page::Page<crate::pages::Message> for Page {
         #[cfg(feature = "wayland")]
         {
             let refreshing_page = self.refreshing_page.clone();
-            let (tx, mut rx) = cosmic_randr::channel();
+            let (tx, rx) = cosmic_randr::channel();
             let (canceller, cancelled) = oneshot::channel::<()>();
             let runtime = tokio::runtime::Handle::current();
 
@@ -555,13 +555,13 @@ impl Page {
                             return self.toggle_display(true);
                         }
 
-                        if let Some(v) = self.mirror_map.get(k) {
-                            if v.equivalent(&self.active_display) {
-                                if let Some(output) = self.list.outputs.get(k) {
-                                    return self.exec_randr(output, Randr::Toggle(true));
-                                } else {
-                                    return Task::none();
-                                }
+                        if let Some(v) = self.mirror_map.get(k)
+                            && v.equivalent(&self.active_display)
+                        {
+                            if let Some(output) = self.list.outputs.get(k) {
+                                return self.exec_randr(output, Randr::Toggle(true));
+                            } else {
+                                return Task::none();
                             }
                         }
                     }

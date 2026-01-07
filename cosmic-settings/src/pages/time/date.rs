@@ -175,7 +175,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         if self.timezone_context {
-            let search = widget::search_input(fl!("type-to-search"), &self.timezone_search)
+            let search = widget::search_input("", &self.timezone_search)
                 .on_input(Message::TimezoneSearch)
                 .on_clear(Message::TimezoneSearch(String::new()))
                 .apply(Element::from)

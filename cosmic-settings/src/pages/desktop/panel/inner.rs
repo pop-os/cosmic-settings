@@ -433,7 +433,7 @@ pub enum Message {
     OpacityApply,
     OutputAdded(String, WlOutput),
     OutputRemoved(WlOutput),
-    PanelConfig(CosmicPanelConfig),
+    PanelConfig(Box<CosmicPanelConfig>),
     ResetPanel,
     FullReset,
     Surface(surface::Action),
@@ -668,7 +668,7 @@ impl PageInner {
                 }
             }
             Message::PanelConfig(c) => {
-                self.panel_config = Some(c);
+                self.panel_config = Some(*c);
                 return Task::none();
             }
             Message::ResetPanel | Message::FullReset => {}

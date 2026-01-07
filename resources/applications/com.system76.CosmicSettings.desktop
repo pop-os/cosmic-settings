@@ -12,6 +12,7 @@ Name[sv]=COSMIC Inställningar
 Name[sk]=Nastavenia COSMIC
 Name[es]=Configuración COSMIC
 Name[it]=Impostazioni di COSMIC
+Name[fr]=Paramètres COSMIC
 Type=Application
 Exec=cosmic-settings
 Terminal=false

@@ -433,7 +433,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            let search = widget::search_input(fl!("type-to-search"), &page.search.input)
+            let search = widget::search_input("", &page.search.input)
                 .width(314)
                 .on_clear(Message::Search(String::new()))
                 .on_input(Message::Search)
@@ -596,6 +596,7 @@ fn all_system_actions() -> &'static [Action] {
         Action::System(SystemAction::PlayPause),
         Action::System(SystemAction::PlayNext),
         Action::System(SystemAction::PlayPrev),
+        Action::System(SystemAction::ScreenReader),
         Action::System(SystemAction::Screenshot),
         Action::System(SystemAction::Suspend),
         Action::System(SystemAction::Terminal),
@@ -736,6 +737,7 @@ fn localize_action(action: &Action) -> String {
             SystemAction::PowerOff => fl!("system-shortcut", "poweroff"),
             SystemAction::Screenshot => fl!("system-shortcut", "screenshot"),
             SystemAction::Suspend => fl!("system-shortcut", "suspend"),
+            SystemAction::ScreenReader => fl!("accessibility", "screen-reader"),
             SystemAction::Terminal => fl!("system-shortcut", "terminal"),
             SystemAction::TouchpadToggle => fl!("system-shortcut", "touchpad-toggle"),
             SystemAction::VolumeLower => fl!("system-shortcut", "volume-lower"),

@@ -21,6 +21,7 @@ Comment[nl]=Wifiverbinding en verbindingsprofielen.
 Comment[sk]=Wi-Fi pripojenia a profily pripojení.
 Comment[sv]=Wi-Fi-anslutningar och anslutningsprofiler.
 Comment[es]=Conexiones Wi-Fi y perfiles de conexión.
+Comment[fr]=Connexions Wi-Fi et profils.
 Type=Application
 Exec=cosmic-settings wireless
 Terminal=false
