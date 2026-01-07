@@ -785,6 +785,7 @@ impl Page {
             }
             Message::VpnDialogError(vpn_dialog) => {
                 self.dialog = Some(vpn_dialog);
+                return task::message(Message::FocusSecureInput);
             }
             Message::SecretAgent(e) => match e {
                 nm_secret_agent::Event::RequestSecret {
