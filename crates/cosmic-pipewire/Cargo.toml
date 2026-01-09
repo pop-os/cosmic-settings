@@ -1,7 +1,8 @@
 [package]
 name = "cosmic-pipewire"
-version = "1.0.0-beta6"
+version = "1.0.0"
 edition = "2024"
+repository = "https://github.com/pop-os/cosmic-settings"
 rust-version.workspace = true
 license = "MPL-2.0"
 publish = true

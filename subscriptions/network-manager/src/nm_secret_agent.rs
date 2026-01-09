@@ -496,7 +496,7 @@ impl SettingsSecretAgent {
         setting_attributes.insert("uuid", &conn_uuid);
         setting_attributes.insert("setting_name", &setting_name);
 
-        let mut search_items = collection
+        let search_items = collection
             .search_items(setting_attributes.clone())
             .await
             .map_err(|e| Arc::new(e))?;

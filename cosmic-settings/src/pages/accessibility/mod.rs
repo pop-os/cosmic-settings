@@ -9,9 +9,7 @@ use cosmic::{
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;
 use cosmic_settings_a11y_manager_subscription as cosmic_a11y_manager;
-use cosmic_settings_accessibility_subscription::{
-    DBusRequest, DBusUpdate, subscription as a11y_subscription,
-};
+use cosmic_settings_accessibility_subscription as a11y_bus;
 use cosmic_settings_daemon_config::CosmicSettingsDaemonConfig;
 use cosmic_settings_page::{
     self as page, Insert,
@@ -39,7 +37,7 @@ pub struct Page {
     high_contrast: Option<bool>,
     daemon_config: CosmicSettingsDaemonConfig,
     daemon_helper: cosmic_config::Config,
-    dbus_sender: Option<UnboundedSender<DBusRequest>>,
+    dbus_sender: Option<UnboundedSender<a11y_bus::Request>>,
     reader_enabled: bool,
 }
 
@@ -76,18 +74,18 @@ impl Default for Page {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    A11yBus(a11y_bus::Response),
     Event(cosmic_a11y_manager::AccessibilityEvent),
+    HighContrast(bool),
     ProtocolUnavailable,
     Return,
-    HighContrast(bool),
-    SystemTheme(Box<cosmic::cosmic_theme::Theme>),
-    SetScreenInverted(bool),
+    ScreenReaderEnabled(bool),
     SetScreenFilterActive(bool),
     SetScreenFilterSelection(ColorFilter),
-    Surface(surface::Action),
+    SetScreenInverted(bool),
     SetSoundMono(bool),
-    DBusUpdate(DBusUpdate),
-    ScreenReaderEnabled(bool),
+    Surface(surface::Action),
+    SystemTheme(Box<cosmic::cosmic_theme::Theme>),
 }
 
 impl From<Message> for crate::pages::Message {
@@ -169,7 +167,7 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         _core: &cosmic::Core,
     ) -> cosmic::iced::Subscription<crate::pages::Message> {
-        a11y_subscription().map(|m| super::Message::Accessibility(Message::DBusUpdate(m)))
+        a11y_bus::subscription().map(|m| super::Message::Accessibility(Message::A11yBus(m)))
     }
 }
 
@@ -434,16 +432,17 @@ impl Page {
                     tracing::error!("{err:?}");
                 }
             }
-            Message::DBusUpdate(update) => match update {
-                DBusUpdate::Error(err) => {
+            Message::A11yBus(update) => match update {
+                a11y_bus::Response::Error(err) => {
                     tracing::error!("{err}");
                     let _ = self.dbus_sender.take();
                     self.reader_enabled = false;
                 }
-                DBusUpdate::Status(enabled) => {
+                a11y_bus::Response::ScreenReader(enabled) => {
                     self.reader_enabled = enabled;
                 }
-                DBusUpdate::Init(enabled, tx) => {
+                a11y_bus::Response::IsEnabled(_) => (),
+                a11y_bus::Response::Init(enabled, tx) => {
                     self.reader_enabled = enabled;
                     self.dbus_sender = Some(tx);
                 }
@@ -451,7 +450,7 @@ impl Page {
             Message::ScreenReaderEnabled(enabled) => {
                 if let Some(tx) = &self.dbus_sender {
                     self.reader_enabled = enabled;
-                    let _ = tx.send(DBusRequest::Status(enabled));
+                    let _ = tx.send(a11y_bus::Request::ScreenReader(enabled));
                 } else {
                     self.reader_enabled = false;
                 }
