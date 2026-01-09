@@ -1,6 +1,6 @@
 [package]
 name = "cosmic-settings-bluetooth-subscription"
-version = "1.0.0-beta6"
+version = "1.0.2"
 edition = "2024"
 license = "MPL-2.0"
 rust-version.workspace = true
