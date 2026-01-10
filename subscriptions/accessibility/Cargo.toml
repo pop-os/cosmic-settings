@@ -10,6 +10,6 @@ publish = true
 cosmic-dbus-a11y = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 futures = "0.3.31"
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
-tokio = { version = "1.48.0", features = ["sync", "time"] }
-tracing = "0.1.41"
-zbus = "5"
+tokio = { version = "1.49.0", features = ["sync", "time"] }
+tracing = "0.1.44"
+zbus = "5.12"

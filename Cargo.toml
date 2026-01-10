@@ -8,10 +8,10 @@ rust-version = "1.85"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
-tokio = { version = "1.48.0", features = ["macros"] }
+tokio = { version = "1.49.0", features = ["macros"] }
 
 [workspace.dependencies.libcosmic]
-features = ["dbus-config", "multi-window", "winit", "tokio", "qr_code"]
+features = ["dbus-config", "desktop", "multi-window", "winit", "tokio", "qr_code"]
 git = "https://github.com/pop-os/libcosmic"
 
 [workspace.dependencies.cosmic-config]
@@ -34,9 +34,8 @@ git = "https://github.com/pop-os/cosmic-panel"
 git = "https://github.com/pop-os/cosmic-randr"
 
 [workspace.dependencies.sctk]
-git = "https://github.com/smithay/client-toolkit/"
+version = "0.20"
 package = "smithay-client-toolkit"
-# rev = "c583de8"
 
 [profile.dev]
 opt-level = 3
@@ -52,13 +51,12 @@ inherits = "release"
 lto = "off"
 debug = true
 
-# Fix text rendering being cut off on the right
 # [patch.'https://github.com/pop-os/cosmic-text']
 # cosmic-text = { git = "https://github.com/pop-os/cosmic-text//", rev = "b017d7c" }
 
-[patch.'https://github.com/pop-os/cosmic-protocols']
-cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d0e95be" }
-cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d0e95be" }
+# [patch.'https://github.com/pop-os/cosmic-protocols']
+# cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d0e95be" }
+# cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d0e95be" }
 
 # [patch.'https://github.com/pop-os/cosmic-settings-daemon']
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
@@ -74,6 +72,3 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-dbus-networkmanager = { path = "../dbus-settings-bindings/networkmanager" }
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
 # nm-secret-agent-manager = { git = "https://github.com/pop-os/dbus-settings-bindings//", branch = "nm-secret-agent" }
-
-[patch."https://github.com/smithay/client-toolkit.git"]
-sctk = { package = "smithay-client-toolkit", version = "0.20.0" }
