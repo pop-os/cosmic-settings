@@ -791,6 +791,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
                 .add(settings::item::builder(&descriptions[active_hint]).control(
                     widget::spin_button(
                         page.theme_manager.builder().active_hint.to_string(),
+                        "active hint",
                         page.theme_manager.builder().active_hint,
                         1,
                         0,
@@ -801,6 +802,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&descriptions[gaps]).control(widget::spin_button(
                         page.theme_manager.builder().gaps.1.to_string(),
+                        "gaps",
                         page.theme_manager.builder().gaps.1,
                         1,
                         page.theme_manager.builder().active_hint,

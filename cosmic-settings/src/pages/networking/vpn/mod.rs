@@ -21,7 +21,7 @@ use cosmic_settings_network_manager_subscription::{
     self as network_manager, NetworkManagerState, UUID, current_networks::ActiveConnectionInfo,
 };
 use cosmic_settings_page::{self as page, Section, section};
-use futures::{FutureExt, StreamExt};
+use futures::{FutureExt, SinkExt, StreamExt};
 use indexmap::IndexMap;
 use secure_string::SecureString;
 use tokio::sync::Mutex;
@@ -900,27 +900,28 @@ impl Page {
 
     fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
-            let (canceller, task) = crate::utils::forward_event_loop(move |emitter| async move {
-                let (tx, mut rx) = futures::channel::mpsc::channel(1);
+            let (canceller, task) =
+                crate::utils::forward_event_loop(move |mut sender| async move {
+                    let (tx, mut rx) = futures::channel::mpsc::channel(1);
 
-                let watchers = std::pin::pin!(async move {
-                    futures::join!(
-                        network_manager::watch(conn.clone(), tx.clone()),
-                        network_manager::active_conns::watch(conn.clone(), tx.clone()),
-                        network_manager::devices::watch(conn, true, tx)
-                    )
+                    let watchers = std::pin::pin!(async move {
+                        futures::join!(
+                            network_manager::watch(conn.clone(), tx.clone()),
+                            network_manager::active_conns::watch(conn.clone(), tx.clone()),
+                            network_manager::devices::watch(conn, true, tx)
+                        )
+                    });
+
+                    let forwarder = std::pin::pin!(async move {
+                        while let Some(message) = rx.next().await {
+                            _ = sender
+                                .send(crate::pages::Message::Vpn(Message::NetworkManager(message)))
+                                .await;
+                        }
+                    });
+
+                    futures::future::select(watchers, forwarder).await;
                 });
-
-                let forwarder = std::pin::pin!(async move {
-                    while let Some(message) = rx.next().await {
-                        _ = emitter
-                            .emit(crate::pages::Message::Vpn(Message::NetworkManager(message)))
-                            .await;
-                    }
-                });
-
-                futures::future::select(watchers, forwarder).await;
-            });
 
             self.nm_task = Some(canceller);
 

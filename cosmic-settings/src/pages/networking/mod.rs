@@ -15,7 +15,7 @@ use cosmic_dbus_networkmanager::{
 };
 use cosmic_settings_network_manager_subscription as network_manager;
 use cosmic_settings_page::{self as page, Section, section};
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use secure_string::SecureString;
 use slotmap::SlotMap;
 
@@ -312,37 +312,38 @@ impl Page {
 
     fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
-            let (canceller, task) = crate::utils::forward_event_loop(move |emitter| async move {
-                let network_manager = match NetworkManager::new(&conn).await {
-                    Ok(n) => n,
-                    Err(why) => {
-                        tracing::error!(
-                            why = why.to_string(),
-                            "failed to connect to network_manager"
-                        );
+            let (canceller, task) =
+                crate::utils::forward_event_loop(move |mut sender| async move {
+                    let network_manager = match NetworkManager::new(&conn).await {
+                        Ok(n) => n,
+                        Err(why) => {
+                            tracing::error!(
+                                why = why.to_string(),
+                                "failed to connect to network_manager"
+                            );
 
-                        return futures::future::pending().await;
-                    }
-                };
-
-                let mut devices_changed =
-                    std::pin::pin!(network_manager.receive_devices_changed().await.then(
-                        |_| async {
-                            match network_manager::devices::list(&conn, |_| true).await {
-                                Ok(devices) => Message::UpdateDevices(
-                                    devices.into_iter().map(Arc::new).collect(),
-                                ),
-                                Err(why) => Message::Error(why.to_string()),
-                            }
+                            return futures::future::pending().await;
                         }
-                    ));
+                    };
 
-                while let Some(message) = devices_changed.next().await {
-                    _ = emitter
-                        .emit(crate::pages::Message::Networking(message))
-                        .await;
-                }
-            });
+                    let mut devices_changed =
+                        std::pin::pin!(network_manager.receive_devices_changed().await.then(
+                            |_| async {
+                                match network_manager::devices::list(&conn, |_| true).await {
+                                    Ok(devices) => Message::UpdateDevices(
+                                        devices.into_iter().map(Arc::new).collect(),
+                                    ),
+                                    Err(why) => Message::Error(why.to_string()),
+                                }
+                            }
+                        ));
+
+                    while let Some(message) = devices_changed.next().await {
+                        _ = sender
+                            .send(crate::pages::Message::Networking(message))
+                            .await;
+                    }
+                });
 
             self.nm_task = Some(canceller);
             return task.map(crate::app::Message::from);
