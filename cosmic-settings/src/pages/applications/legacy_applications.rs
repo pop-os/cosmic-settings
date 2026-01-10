@@ -20,6 +20,7 @@ use cosmic_comp_config::{EavesdroppingKeyboardMode, XwaylandDescaling, XwaylandE
 use cosmic_randr_shell::List;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
+use futures::SinkExt;
 use slab::Slab;
 use slotmap::SlotMap;
 use tokio::sync::oneshot;
@@ -135,17 +136,19 @@ impl page::Page<crate::pages::Message> for Page {
         });
 
         // Forward messages from another thread to prevent the monitoring thread from blocking.
-        let (randr_task, randr_handle) =
-            Task::stream(async_fn_stream::fn_stream(|emitter| async move {
+        let (randr_task, randr_handle) = Task::stream(cosmic::iced_futures::stream::channel(
+            1,
+            |mut sender| async move {
                 while let Some(message) = rx.recv().await {
                     if let cosmic_randr::Message::ManagerDone = message
                         && !refresh_pending.swap(true, Ordering::SeqCst)
                     {
-                        _ = emitter.emit(on_enter().await).await;
+                        _ = sender.send(on_enter().await).await;
                     }
                 }
-            }))
-            .abortable();
+            },
+        ))
+        .abortable();
 
         tasks.push(randr_task);
         self.randr_handle = Some((canceller, randr_handle));

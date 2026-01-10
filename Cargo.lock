@@ -468,17 +468,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-fn-stream"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4ba0c4baf81a0d8ab31618ffa3ae29ceeb970a6d0d82f76130753462e39d0ea"
-dependencies = [
- "futures-util",
- "pin-project-lite",
- "smallvec",
-]
-
-[[package]]
 name = "async-io"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1676,7 +1665,6 @@ dependencies = [
  "accounts-zbus",
  "anyhow",
  "ashpd 0.12.0",
- "async-fn-stream",
  "bluez-zbus",
  "chrono",
  "clap",

@@ -24,7 +24,7 @@ use cosmic_settings_network_manager_subscription::{
     nm_secret_agent,
 };
 use cosmic_settings_page::{self as page, Section, section};
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use secure_string::SecureString;
 use tokio::sync::Mutex;
 
@@ -776,30 +776,31 @@ impl Page {
 
     fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
-            let (canceller, task) = crate::utils::forward_event_loop(move |emitter| async move {
-                let (tx, mut rx) = futures::channel::mpsc::channel(1);
+            let (canceller, task) =
+                crate::utils::forward_event_loop(move |mut sender| async move {
+                    let (tx, mut rx) = futures::channel::mpsc::channel(1);
 
-                let watchers = std::pin::pin!(async move {
-                    futures::join!(
-                        network_manager::watch(conn.clone(), tx.clone()),
-                        network_manager::active_conns::watch(conn.clone(), tx.clone()),
-                        network_manager::wireless_enabled::watch(conn.clone(), tx.clone()),
-                        network_manager::watch_connections_changed(conn, tx)
-                    );
+                    let watchers = std::pin::pin!(async move {
+                        futures::join!(
+                            network_manager::watch(conn.clone(), tx.clone()),
+                            network_manager::active_conns::watch(conn.clone(), tx.clone()),
+                            network_manager::wireless_enabled::watch(conn.clone(), tx.clone()),
+                            network_manager::watch_connections_changed(conn, tx)
+                        );
+                    });
+
+                    let forwarder = std::pin::pin!(async move {
+                        while let Some(message) = rx.next().await {
+                            _ = sender
+                                .send(crate::pages::Message::WiFi(Message::NetworkManager(
+                                    message,
+                                )))
+                                .await;
+                        }
+                    });
+
+                    futures::future::select(watchers, forwarder).await;
                 });
-
-                let forwarder = std::pin::pin!(async move {
-                    while let Some(message) = rx.next().await {
-                        _ = emitter
-                            .emit(crate::pages::Message::WiFi(Message::NetworkManager(
-                                message,
-                            )))
-                            .await;
-                    }
-                });
-
-                futures::future::select(watchers, forwarder).await;
-            });
 
             self.nm_task = Some(canceller);
             return task.map(crate::app::Message::from);
