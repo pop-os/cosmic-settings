@@ -908,9 +908,10 @@ impl NetworkManagerState {
         identity: Option<&str>,
         password: Option<&str>,
         hw_address: HwAddress,
-        secret_tx: Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
+        mut secret_tx: Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
         network_type: NetworkType,
     ) -> Result<(), Error> {
+        secret_tx = secret_tx.filter(|tx| !tx.is_closed());
         let nm = NetworkManager::new(conn).await?;
 
         for c in nm.active_connections().await.unwrap_or_default() {
