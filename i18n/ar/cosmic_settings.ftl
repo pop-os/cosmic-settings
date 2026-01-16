@@ -121,15 +121,15 @@ bluetooth-adapters = محولات البلوتوث
 
 ## Accessibility
 
-accessibility = إمكانية الوصول
+accessibility = الإتاحة
     .vision = الرؤية
-    .on = تشغيل
-    .off = إيقاف
+    .on = شغِّل
+    .off = أوقف
     .unavailable = غير متوفر
     .screen-reader = قارئ الشاشة
-    .high-contrast = وضع التباين العالي
+    .high-contrast = وضع التباين العالٍ
     .invert-colors = عكس الألوان
-    .color-filters = مرشحات الألوان
+    .color-filters = تصفيات الألوان
 hearing = السمع
     .mono = شغَّل الصوت الاستريو كأحادي
 default = المبدئي
@@ -756,15 +756,15 @@ startup-apps = تطبيقات بدء التشغيل
 ## Applications: Legacy Applications
 
 legacy-applications = توافق تطبيقات اكس11
-    .desc = تغيير حجم تطبيقات نظام النوافذ اكس11 والاختصارات العامة
-legacy-app-global-shortcuts = ختصارات عامة في تطبيقات اكس11
+    .desc = تغيير مقياس تطبيقات نظام النوافذ اكس11 والاختصارات العامة
+legacy-app-global-shortcuts = اختصارات عامة في تطبيقات اكس11
     .desc = تسمح الاختصارات العامة بالتعرّف على ضغطات المفاتيح وأحداث زر الفأرة المُجراة في تطبيقٍ ما لتطبيقاتٍ أخرى — لميزات مثل «اضغط لتتحدث» أو «اضغط لكتم الصوت». مبدئيًا، يُعطّل هذا في تطبيقات اكس11 لضمان عدم تمكن التطبيقات الأخرى من مراقبة أحداث لوحة المفاتيح والفأرة التي تحتوي على معلومات حساسة.
     .none = لا مفاتيح
     .modifiers = مفاتيح التعديل (Super وShift وControl وAlt)
     .combination = جميع المفاتيح أثناء الضغط على مفاتيح التعديل Super أو Control أو Alt
     .all = كل المفاتيح
     .mouse = أحداث زر الفأرة في تطبيقات اكس
-legacy-app-scaling = تحجيم تطبيقات نظام النوافذ اكس11
+legacy-app-scaling = مقياس تطبيقات نظام النوافذ اكس11
     .scaled-gaming = تحسين الألعاب والتطبيقات التي تعمل بوضع ملء الشاشة
     .gaming-description = قد تظهر تطبيقات اكس11 أكبر/أصغر قليلاً مقارنة بتطبيقات Wayland.
     .scaled-applications = تحسين التطبيقات
@@ -831,3 +831,9 @@ sound-device-port-unplugged = مفصول
 sound-hd-audio = صوت عالي الدقة
 sound-usb-audio = صوت USB
 sound-device-profiles = ملفات تعريف الجهاز
+shadows-floating = النوافذ العائمة
+    .clip = مطابقة زوايا النظام وتطبيق الظلال
+shadows-tiling = النوافذ المبلطة
+    .clip = مطابقة زوايا النظام
+    .shadow = طبِّق الظلال
+shadow-and-corners = ظل النافذة وزواياها
