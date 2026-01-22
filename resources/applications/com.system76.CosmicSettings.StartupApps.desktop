@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Startup applications
 Name[ar]=تطبيقات بدء التشغيل
-Name[cs]=Automatické spouštění aplikací
+Name[cs]=Automaticky spouštěné aplikace
 Name[sv]=Uppstartsprogram
 Name[hu]=Indítási alkalmazások
 Name[pl]=Aplikacje startowe
@@ -9,7 +9,7 @@ Name[fr]=Applications de démarrage
 Name[zh_CN]=自动启动应用程序
 Comment=Configure applications which run on login.
 Comment[ar]=اضبط التطبيقات التي تعمل عند الولوج.
-Comment[cs]=Nastavte aplikace, které se spustí při přihlášení.
+Comment[cs]=Správa aplikací, které se spouštějí při přihlášení
 Comment[sv]=Konfigurera program som körs vid inloggning.
 Comment[hu]=Azoknak az alkalmazásoknak a beállítása, amelyek bejelentkezéskor elindulnak.
 Comment[pl]=Konfiguracja aplikacji uruchamianych po zalogowaniu.
