@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Displays
 Name[ar]=شاشات العرض
-Name[cs]=Displeje
+Name[cs]=Obrazovky
 Name[zh_CN]=显示器
 Name[pl]=Ekrany
 Name[hu]=Kijelzők
@@ -15,7 +15,7 @@ Name[fr]=Écrans
 Name[it]=Schermo
 Comment=Display options, graphics modes, and night light.
 Comment[ar]=خيارات العرض، وأنماط الرسوميات، والوضع الليلي.
-Comment[cs]=Možnosti displeje, grafické režimy a noční světlo.
+Comment[cs]=Možnosti obrazovek, grafické režimy a noční světlo
 Comment[zh_CN]=显示器选项、图形模式和夜间模式
 Comment[pl]=Ustawienia wyświetlania, opcje grafiki i podświetlanie nocne.
 Comment[hu]=Kijelzőbeállítások, grafikus módok és éjszakai fény.
