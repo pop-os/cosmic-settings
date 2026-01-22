@@ -262,6 +262,7 @@ impl Page {
                 if !confirm {
                     self.app_to_remove = Some(app);
                     self.target_directory_type = Some(directory_type);
+                    return cosmic::task::message(crate::app::Message::Page(self.entity));
                 } else {
                     let mut file_name = app.clone().appid;
                     file_name.push_str(".desktop");
