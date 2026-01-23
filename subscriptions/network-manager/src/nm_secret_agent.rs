@@ -162,6 +162,10 @@ async fn secret_agent_stream_impl(
     .await?;
 
     proxy.register_with_capabilities(identifier, 1).await?;
+    // fail early if we can't connect, closing the channel
+    let _ = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
+        .await
+        .map_err(|e| Arc::new(e))?;
 
     while let Some(request) = rx.recv().await {
         match request {
