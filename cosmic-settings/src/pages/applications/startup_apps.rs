@@ -132,6 +132,9 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
+        if self.app_to_remove.is_some() {
+            return Task::none();
+        }
         let (task, on_enter_handle) = Task::future(async move {
             let locales = freedesktop_desktop_entry::get_languages_from_env();
 
