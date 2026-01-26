@@ -9,12 +9,12 @@ desktop = Plocha
 ## Desktop: Appearance
 
 appearance = Vzhled
-    .desc = Doplňkové barvy a témata
+    .desc = Barvy zvýraznění a motivy
 
 ## Desktop: Notifications
 
 notifications = Oznámení
-    .desc = Nerušit, oznámení na zamykací obrazovce a nastavení pro specifické aplikace
+    .desc = Nerušit, oznámení na zamykací obrazovce a nastavení podle aplikace
 
 ## Desktop: Options
 
@@ -23,7 +23,7 @@ hot-corner = Aktivní roh
 window-controls = Ovládání oken
     .maximize = Zobrazit tlačítko pro maximalizaci
     .minimize = Zobrazit tlačítko pro minimalizaci
-    .active-window-hint = Zobrazit zvýraznění aktivního okna
+    .active-window-hint = Zobrazit ohraničení aktivního okna
 dock = Dok
     .desc = Volitelná lišta pro aplikace a applety
 
@@ -35,7 +35,7 @@ panel-behavior-and-position = Chování a pozice
     .autohide = Automaticky skrýt panel
     .dock-autohide = Automaticky skrýt dok
     .position = Pozice na obrazovce
-    .display = Zobrazit na displeji
+    .display = Zobrazit na obrazovce
 panel-top = Nahoře
 panel-bottom = Dole
 panel-left = Vlevo
@@ -72,16 +72,16 @@ all = Všechny
 
 ## Desktop: Tapeta
 
-wallpaper = Pozadí
+wallpaper = Tapeta
     .change = Měnit obrázek každých
-    .desc = Obrázky pozadí, barvy a možnosti prezentace
-    .fit = Způsob umístění pozadí
-    .folder-dialog = Vyberte složku s obrázky pozadí
-    .image-dialog = Vyberte obrázek pozadí
-    .plural = Pozadí
-    .same = Stejné pozadí na všech displejích
+    .desc = Obrázky tapet, barvy a možnosti prezentace
+    .fit = Způsob umístění tapety
+    .folder-dialog = Vyberte složku s tapetami
+    .image-dialog = Vyberte obrázek tapety
+    .plural = Tapety
+    .same = Stejná tapeta na všech obrazovkách
     .slide = Prezentace
-all-displays = Všechny displeje
+all-displays = Všechny obrazovky
 colors = Barvy
 fit-to-screen = Přizpůsobit obrazovce
 x-minutes =
@@ -107,8 +107,8 @@ workspaces-behavior = Chování pracovních ploch
     .fixed = Fixní množství pracovních ploch
     .fixed-desc = Přidat nebo odstranit pracovní plochy v přehledu.
 workspaces-multi-behavior = Chování při více monitorech
-    .span = Pracovní plochy obsadí více displejů
-    .separate = Každý displej má svou vlastní pracovní plochu
+    .span = Pracovní plochy obsadí více obrazovek
+    .separate = Každá obrazovka má svou vlastní pracovní plochu
 
 ## Networking: Wired
 
@@ -223,15 +223,15 @@ scrolling = Rolování
 ## Input: Keyboard
 
 keyboard = Klávesnice
-    .desc = Metody zadávání, přepínání, vkládání speciálních znaků, zkratky
-keyboard-sources = Metody zadávání
-    .desc = Metody zadávání se dají přepínat pomocí Super + Mezerník. Toto se dá změnit v nastavení klávesových zkratek.
+    .desc = Vstupní zdroje, přepínání, vkládání speciálních znaků, zkratky
+keyboard-sources = Vstupní zdroje
+    .desc = Vstupní zdroje lze přepínat pomocí Super + Mezerník. Toto se dá změnit v nastavení klávesových zkratek.
     .move-up = Posunout nahoru
     .move-down = Posunout dolů
     .settings = Nastavení
     .view-layout = Zobrazit rozložení klávesnice
     .remove = Odstranit
-    .add = Přidat metodu zadávání
+    .add = Přidat vstupní zdroj
 keyboard-special-char = Zadávání speciálních znaků
     .alternate = Klávesa pro náhradní znaky
     .compose = Klávesa Compose
@@ -277,8 +277,8 @@ settings = Nastavení
 username = Uživatelské jméno
 visible-networks = Viditelné sítě
 identity = Identita
-dark = Tmavé
-light = Světlé
+dark = Tmavý
+light = Světlý
 wireguard-dialog = Přidat zařízení WireGuard
     .description = Vyberte název zařízení pro nastavení WireGuard.
 activate = Aktivovat
@@ -324,7 +324,7 @@ fill = Vyplnit
 open-new-folder = Otevřít novou složku
 recent-folders = Nedávné složky
 never = Nikdy
-accent-color = Doplňková barva
+accent-color = Barva zvýraznění
 app-background = Pozadí okna
 auto = Auto
 close = Zavřít
@@ -339,7 +339,7 @@ mode-and-colors = Režim a barvy
 recent-colors = Nedávné barvy
 reset-to-default = Obnovit výchozí
 rgb = RGB
-window-hint-accent = Barva zvýraznění aktivního okna
+window-hint-accent = Barva ohraničení aktivního okna
 add-network = Přidat síť
     .profile = Přidat profil
 auth-dialog = Vyžadováno ověření
@@ -377,7 +377,7 @@ connections-and-profiles =
         [wifi] Wi-Fi
         [vpn] VPN
        *[other] Neznámé
-    } připojení a profily.
+    } připojení a profily
 vpn-error = Chyba VPN
     .config = Nepodařilo se přidat nastavení VPN
     .connect = Nepodařilo se připojit k VPN
@@ -396,7 +396,7 @@ vpn-error = Chyba VPN
 wifi = Wi-Fi
     .adapter = Adaptér Wi-Fi { $id }
     .forget = Zapomenout tuto síť
-window-hint-accent-toggle = Použít doplňkovou barvu pro zvýraznění aktivního okna
+window-hint-accent-toggle = Použít barvu zvýraznění pro ohraničení aktivního okna
 auto-switch = Automaticky přepínat mezi světlými a tmavými režimy
     .sunrise = Přepne na světlý režim při východu slunce
     .sunset = Přepne na tmavý režim při západu slunce
@@ -409,13 +409,13 @@ container-background = Pozadí kontejneru
 control-tint = Odstín ovládacích prvků
     .desc = Používá se pro pozadí standardních tlačítek, vyhledávacích polí, textových vstupů a podobných komponent
 frosted = Efekt zmrazeného okna na systémovém rozhraní
-    .desc = Aplikuje rozmazané pozadí na panel, dok, applety, spouštěč a knihovnu aplikací
-enable-export = Použít současné téma pro GNOME aplikace
-    .desc = Ne všechny toolkity podporují automatické přepínání. Aplikace, které nejsou postaveny na COSMIC toolkitu mohou vyžadovat restart po změně tématu.
+    .desc = Použije rozmazané pozadí pro panel, dok, applety, spouštěč a knihovnu aplikací
+enable-export = Použít aktuální motiv v aplikacích GNOME
+    .desc = Ne všechny toolkity podporují automatické přepínání. Aplikace, které nejsou postaveny na COSMIC toolkitu mohou vyžadovat restart po změně motivu.
 password-mismatch = Heslo a jeho potvrzení se musí shodovat
 invalid-username = Neplatné uživatelské jméno
-icon-theme = Téma ikon
-    .desc = Aplikuje jinou sadu ikon na aplikace
+icon-theme = Motiv ikon
+    .desc = Použije jinou sadu ikon pro aplikace
 monospace-font = Monospace písmo
 window-management = Správa oken
     .desc = Akce klávesy Super, možnosti ovládání oken a další možnosti dlaždicového režimu oken
@@ -427,7 +427,7 @@ window-tiling = Dlaždicový režim oken
     .toggle-stacking = Přepnout režim skládání oken
     .toggle-floating = Přepnout plovoucí okno
     .toggle-orientation = Přepnout orientaci
-icons-and-toolkit = Témata ikon a toolkitů
+icons-and-toolkit = Motivy ikon a toolkitů
 interface-font = Systémové písmo
 super-key = Akce klávesy Super
     .launcher = Otevřít spouštěč
@@ -483,18 +483,18 @@ color-filter = Typ barevného filtru
 text-tint = Odstín textu rozhraní
     .desc = Používá se k odvození barev textu rozhraní, které mají dostatečný kontrast na různých površích
 experimental-settings = Experimentální nastavení
-display = Displeje
-    .desc = Spravujte displeje a noční světlo
-    .arrangement = Uspořádání displejů
-    .arrangement-desc = Přetáhněte displeje pro jejich uspořádání
-    .enable = Povolit displej
-    .external = { $size } { $output } Externí displej
-    .laptop = { $size } Displej laptopu
-    .options = Možnosti displeje
+display = Obrazovky
+    .desc = Spravujte obrazovky a noční světlo
+    .arrangement = Uspořádání obrazovek
+    .arrangement-desc = Přetáhněte obrazovky pro jejich uspořádání
+    .enable = Povolit obrazovku
+    .external = { $size } { $output } externí obrazovka
+    .laptop = { $size } obrazovka notebooku
+    .options = Možnosti obrazovky
     .refresh-rate = Obnovovací frekvence
     .resolution = Rozlišení
-    .scale = Škálování
-    .additional-scale-options = Další možnosti škálování
+    .scale = Měřítko
+    .additional-scale-options = Další možnosti měřítka
 style = Styl
     .round = Kulatý
     .slightly-round = Lehce kulatý
@@ -504,7 +504,7 @@ interface-density = Hustota rozhraní
     .compact = Kompaktní
     .spacious = Prostorné
 window-management-appearance = Správa oken
-    .active-hint = Velikost zvýraznění aktivního okna
+    .active-hint = Velikost ohraničení aktivního okna
     .gaps = Mezery kolem oken v dlaždicovém režimu
 mirroring = Zrcadlení
     .id = Zrcadlení { $id }
@@ -512,14 +512,14 @@ mirroring = Zrcadlení
     .mirror = Zrcadlit { $display }
     .project =
         Vysílat na { $display ->
-            [all] všechny displeje
+            [all] všechny obrazovky
            *[other] { $display }
         }
     .project-count =
         Vysílání na { $count } { $count ->
-            [one] další displej
-            [few] další displeje
-           *[other] dalších displejů
+            [one] další obrazovku
+            [few] další obrazovky
+           *[other] dalších obrazovek
         }
 night-light = Noční světlo
     .auto = Automaticky (od západu do východu)
@@ -537,9 +537,15 @@ vrr = Variabilní obnovovací frekvence
 scheduling = Plánování
     .manual = Manuální plán
 dialog = Dialog
-    .title = Ponechat tato nastavení displeje?
+    .title = Ponechat tato nastavení obrazovky?
     .keep-changes = Ponechat změny
-    .change-prompt = Změny nastavení se automaticky zruší za { $time } sekund.
+    .change-prompt =
+        Změny nastavení se automaticky zruší { $time ->
+            [0] nyní.
+            [one] za 1 sekundu.
+            [few] za { $time } sekundy.
+           *[other] za { $time } sekund.
+        }
     .revert-settings = Obnovit nastavení
 amplification = Zesílení
     .desc = Umožňuje zesílit zvuk až na 150%
@@ -605,8 +611,8 @@ keyboard-numlock-boot = Numlock
     .set = Nastavit stav numlock při spuštění systému
 added = Přidáno
 type-to-search = Pište pro vyhledávání...
-show-extended-input-sources = Zobrazit rozšířené metody zadávání
-input-source-switch = Přepnout metodu zadávání klávesnice
+show-extended-input-sources = Zobrazit rozšířené vstupní zdroje
+input-source-switch = Přepnout vstupní zdroj klávesnice
 add-another-keybinding = Přidat další klávesovou zkratku
 command = Příkaz
 custom = Vlastní
@@ -703,15 +709,15 @@ move-windows = Přesouvání oken
     .prev-workspace = Přesunout okno na předchozí pracovní plochu
     .next-workspace = Přesunout okno na další pracovní plochu
     .last-workspace = Přesunout okno na poslední pracovní plochu
-    .next-display = Přesunout okno na další displej
-    .prev-display = Přesunout okno na předchozí displej
+    .next-display = Přesunout okno na další obrazovku
+    .prev-display = Přesunout okno na předchozí obrazovku
     .send-to-prev-workspace = Přesunout okno na předchozí pracovní plochu
     .send-to-next-workspace = Přesunout okno na další pracovní plochu
 system-shortcut = Systém
     .app-library = Otevřít knihovnu aplikací
-    .brightness-down = Snížit jas displeje
-    .brightness-up = Zvýšit jas displeje
-    .display-toggle = Přepnout interní displej
+    .brightness-down = Snížit jas obrazovky
+    .brightness-up = Zvýšit jas obrazovky
+    .display-toggle = Přepnout vestavěnou obrazovku
     .home-folder = Otevřít domovskou složku
     .keyboard-brightness-down = Snížit jas klávesnice
     .keyboard-brightness-up = Zvýšit jas klávesnice
@@ -774,32 +780,32 @@ default-apps = Výchozí aplikace
     .terminal = Terminál
     .other-associations = Ostatní asociace
     .text-editor = Textový editor
-startup-apps = Automatické spouštění aplikací
-    .desc = Nastavte aplikace, které se spustí při přihlášení
+startup-apps = Automaticky spouštěné aplikace
+    .desc = Správa aplikací, které se spouštějí při přihlášení
     .add = Přidat aplikaci
     .user = Aplikace spouštěné při přihlášení
     .none = Nejsou přidány žádné aplikace pro automatické spouštění
     .remove-dialog-title = Odstranit { $name }?
     .remove-dialog-description = Odstranit tuto aplikaci z automatického spouštění?
     .add-startup-app = Přidat aplikaci pro spouštění
-legacy-applications = Kompatibilita X11 aplikací
-    .desc = Škálování a globální klávesové zkratky aplikací využívajících okenní systém X11
-legacy-app-global-shortcuts = Globální klávesové zkratky X11 aplikací
+legacy-applications = Kompatibilita aplikací X11
+    .desc = Měřítko a globální klávesové zkratky aplikací využívajících okenní systém X11
+legacy-app-global-shortcuts = Globální klávesové zkratky aplikací X11
     .desc = Globální klávesové zkratky umožňují, aby stisky kláves a události tlačítek myši provedené v aplikacích byly rozpoznány i jinými aplikacemi, například pro funkce typu push-to-talk nebo push-to-mute. Ve výchozím nastavení jsou v aplikacích X11 zakázány, aby jiné aplikace nemohly sledovat stisky kláves a události myši obsahující citlivé informace.
     .none = Žádné klávesy
     .modifiers = Modifikátory (Super, Shift, Control, Alt)
     .combination = Všechny klávesy při stisku modifikátorů Super, Control nebo Alt
     .all = Všechny klávesy
-    .mouse = Události tlačítek myši v X11 aplikacích
-legacy-app-scaling = Škálování aplikací v okenním systému X11
+    .mouse = Události tlačítek myši v aplikacích X11
+legacy-app-scaling = Měřítko aplikací v okenním systému X11
     .scaled-gaming = Optimalizovat pro hry a aplikace na celé obrazovce
-    .gaming-description = Aplikace X11 se mohou zdát o něco větší/menší v porovnání s Wayland aplikacemi
+    .gaming-description = Aplikace X11 se mohou zdát o něco větší/menší v porovnání s aplikacemi Wayland
     .scaled-applications = Optimalizovat pro aplikace
-    .applications-description = Hry a aplikace X11 na celé obrazovce nemusí odpovídat rozlišení vašeho displeje
+    .applications-description = Hry a aplikace X11 na celé obrazovce nemusí odpovídat rozlišení vaší obrazovky
     .scaled-compatibility = Režim maximální kompatibility
     .compatibility-description = Aplikace X11 mohou na HiDPI obrazovkách vypadat rozmazaně
-    .preferred-display = Preferovaný displej pro hry a aplikace X11 na celé obrazovce
-    .no-display = Žádný
+    .preferred-display = Preferovaná obrazovka pro hry a aplikace X11 na celé obrazovce
+    .no-display = Žádná
 place-here = Sem umístěte applety
 network-name = Název sítě
 qr-code-unavailable = QR kód není dostupný
