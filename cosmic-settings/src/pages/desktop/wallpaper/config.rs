@@ -15,6 +15,7 @@ const CUSTOM_COLORS: &str = "custom-colors";
 const CUSTOM_IMAGES: &str = "custom-images";
 const RECENT_FOLDERS: &str = "recent-folders";
 const BACKGROUNDS_DIR: &str = "backgrounds";
+const ROTATION_FREQUENCY: &str = "rotation-frequency";
 
 #[derive(Debug, Default)]
 pub struct Config {
@@ -24,6 +25,7 @@ pub struct Config {
     custom_colors: Vec<wallpaper::Color>,
     custom_images: Vec<PathBuf>,
     recent_folders: VecDeque<PathBuf>,
+    pub rotation_frequency: u64,
 }
 
 impl Config {
@@ -92,6 +94,15 @@ impl Config {
             if update_config {
                 let _res = config.update_recent_folders();
             }
+        }
+
+        // Get rotation frequency from cosmic-config.
+        if let Ok(frequency) = context.get::<u64>(ROTATION_FREQUENCY) {
+            // Set rotation frequency if it exists.
+            config.rotation_frequency = frequency;
+        } else {
+            // Set default value if it does not exists.
+            config.rotation_frequency = 300;
         }
 
         config.context = Some(context);
@@ -251,6 +262,21 @@ impl Config {
         Ok(())
     }
 
+    /// Sets a new slideshow wallpaper rotation frequency
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the on-disk configuration could not be updated.
+    pub fn change_rotation_frequency(
+        &mut self,
+        frequency: u64,
+    ) -> Result<(), cosmic_config::Error> {
+        self.rotation_frequency = frequency;
+        self.update_rotation_frequency()?;
+
+        Ok(())
+    }
+
     fn update<V: serde::Serialize>(
         &self,
         key: &str,
@@ -273,5 +299,9 @@ impl Config {
 
     fn update_recent_folders(&self) -> Result<(), cosmic_config::Error> {
         self.update(RECENT_FOLDERS, &self.recent_folders)
+    }
+
+    fn update_rotation_frequency(&self) -> Result<(), cosmic_config::Error> {
+        self.update(ROTATION_FREQUENCY, &self.rotation_frequency)
     }
 }
