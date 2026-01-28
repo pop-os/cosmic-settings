@@ -267,7 +267,10 @@ impl Config {
     /// # Errors
     ///
     /// Returns an error if the on-disk configuration could not be updated.
-    pub fn change_rotation_frequency(&mut self, frequency: u64) -> Result<(), cosmic_config::Error> {
+    pub fn change_rotation_frequency(
+        &mut self,
+        frequency: u64,
+    ) -> Result<(), cosmic_config::Error> {
         self.rotation_frequency = frequency;
         self.update_rotation_frequency()?;
 

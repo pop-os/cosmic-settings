@@ -835,7 +835,7 @@ impl Page {
                 if let Err(err) = self.change_rotation_frequency(pos) {
                     tracing::warn!("Failed to save rotation frequency: {err}");
                 }
-            },
+            }
 
             Message::SameWallpaper(value) => {
                 self.wallpaper_service_config.same_on_all = value;
