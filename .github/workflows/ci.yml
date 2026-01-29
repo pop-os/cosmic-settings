@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: install system dependencies
-        run: sudo apt-get update && sudo apt-get install just
+        run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev just
       - uses: actions/checkout@v3
       - name: install toolchain
         run: rustup show
