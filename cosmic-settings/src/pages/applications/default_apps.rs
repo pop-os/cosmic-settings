@@ -285,143 +285,244 @@ fn apps() -> Section<crate::pages::Message> {
             return widget::row().into();
         };
 
+        // Avoid creating popup_dropdown for empty app lists.
+        // Empty categories are rendered as non-interactive text to prevent Wayland crashes.
         settings::section()
             .title(&section.title)
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_WEB_BROWSER];
-                settings::flex_item(
-                    fl!("default-apps", "web-browser"),
-                    dropdown::popup_dropdown(
-                        &meta.apps,
-                        meta.selected,
-                        |id| Message::SetDefault(Category::WebBrowser, id),
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                if meta.apps.is_empty() {
+                    settings::flex_item(
+                        fl!("default-apps", "web-browser"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
-                    .icons(Cow::Borrowed(&meta.icons)),
-                )
-                .min_item_width(300.0)
+                } else {
+                    settings::flex_item(
+                        fl!("default-apps", "web-browser"),
+                        dropdown::popup_dropdown(
+                            &meta.apps,
+                            meta.selected,
+                            |id| Message::SetDefault(Category::WebBrowser, id),
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DefaultApps(a),
+                                )
+                            },
+                        )
+                        .icons(Cow::Borrowed(&meta.icons)),
+                    )
+                    .min_item_width(300.0)
+                }
             })
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_FILE_MANAGER];
-                settings::flex_item(
-                    fl!("default-apps", "file-manager"),
-                    dropdown::popup_dropdown(
-                        &meta.apps,
-                        meta.selected,
-                        |id| Message::SetDefault(Category::FileManager, id),
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                if meta.apps.is_empty() {
+                    settings::flex_item(
+                        fl!("default-apps", "file-manager"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
-                    .icons(Cow::Borrowed(&meta.icons)),
-                )
+                } else {
+                    settings::flex_item(
+                        fl!("default-apps", "file-manager"),
+                        dropdown::popup_dropdown(
+                            &meta.apps,
+                            meta.selected,
+                            |id| Message::SetDefault(Category::FileManager, id),
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DefaultApps(a),
+                                )
+                            },
+                        )
+                        .icons(Cow::Borrowed(&meta.icons)),
+                    )
+                }
             })
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_MAIL];
-                settings::flex_item(
-                    fl!("default-apps", "mail-client"),
-                    dropdown::popup_dropdown(
-                        &meta.apps,
-                        meta.selected,
-                        |id| Message::SetDefault(Category::Mail, id),
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                if meta.apps.is_empty() {
+                    settings::flex_item(
+                        fl!("default-apps", "mail-client"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
-                    .icons(Cow::Borrowed(&meta.icons)),
-                )
+                } else {
+                    settings::flex_item(
+                        fl!("default-apps", "mail-client"),
+                        dropdown::popup_dropdown(
+                            &meta.apps,
+                            meta.selected,
+                            |id| Message::SetDefault(Category::Mail, id),
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DefaultApps(a),
+                                )
+                            },
+                        )
+                        .icons(Cow::Borrowed(&meta.icons)),
+                    )
+                }
             })
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_MUSIC];
-                settings::flex_item(
-                    fl!("default-apps", "music"),
-                    dropdown::popup_dropdown(
-                        &meta.apps,
-                        meta.selected,
-                        |id| Message::SetDefault(Category::Audio, id),
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                if meta.apps.is_empty() {
+                    settings::flex_item(
+                        fl!("default-apps", "music"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
-                    .icons(Cow::Borrowed(&meta.icons)),
-                )
+                } else {
+                    settings::flex_item(
+                        fl!("default-apps", "music"),
+                        dropdown::popup_dropdown(
+                            &meta.apps,
+                            meta.selected,
+                            |id| Message::SetDefault(Category::Audio, id),
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DefaultApps(a),
+                                )
+                            },
+                        )
+                        .icons(Cow::Borrowed(&meta.icons)),
+                    )
+                }
             })
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_VIDEO];
-                settings::flex_item(
-                    fl!("default-apps", "video"),
-                    dropdown::popup_dropdown(
-                        &meta.apps,
-                        meta.selected,
-                        |id| Message::SetDefault(Category::Video, id),
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                if meta.apps.is_empty() {
+                    settings::flex_item(
+                        fl!("default-apps", "video"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
-                    .icons(Cow::Borrowed(&meta.icons)),
-                )
+                } else {
+                    settings::flex_item(
+                        fl!("default-apps", "video"),
+                        dropdown::popup_dropdown(
+                            &meta.apps,
+                            meta.selected,
+                            |id| Message::SetDefault(Category::Video, id),
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DefaultApps(a),
+                                )
+                            },
+                        )
+                        .icons(Cow::Borrowed(&meta.icons)),
+                    )
+                }
             })
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_PHOTO];
-                settings::flex_item(
-                    fl!("default-apps", "photos"),
-                    dropdown::popup_dropdown(
-                        &meta.apps,
-                        meta.selected,
-                        |id| Message::SetDefault(Category::Image, id),
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                if meta.apps.is_empty() {
+                    settings::flex_item(
+                        fl!("default-apps", "photos"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
-                    .icons(Cow::Borrowed(&meta.icons)),
-                )
+                } else {
+                    settings::flex_item(
+                        fl!("default-apps", "photos"),
+                        dropdown::popup_dropdown(
+                            &meta.apps,
+                            meta.selected,
+                            |id| Message::SetDefault(Category::Image, id),
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DefaultApps(a),
+                                )
+                            },
+                        )
+                        .icons(Cow::Borrowed(&meta.icons)),
+                    )
+                }
             })
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_CALENDAR];
-                settings::flex_item(
-                    fl!("default-apps", "calendar"),
-                    dropdown::popup_dropdown(
-                        &meta.apps,
-                        meta.selected,
-                        |id| Message::SetDefault(Category::Calendar, id),
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                if meta.apps.is_empty() {
+                    settings::flex_item(
+                        fl!("default-apps", "calendar"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
-                    .icons(Cow::Borrowed(&meta.icons)),
-                )
+                } else {
+                    settings::flex_item(
+                        fl!("default-apps", "calendar"),
+                        dropdown::popup_dropdown(
+                            &meta.apps,
+                            meta.selected,
+                            |id| Message::SetDefault(Category::Calendar, id),
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DefaultApps(a),
+                                )
+                            },
+                        )
+                        .icons(Cow::Borrowed(&meta.icons)),
+                    )
+                }
             })
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_TERMINAL];
-                settings::flex_item(
-                    fl!("default-apps", "terminal"),
-                    dropdown::popup_dropdown(
-                        &meta.apps,
-                        meta.selected,
-                        |id| Message::SetDefault(Category::Terminal, id),
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                if meta.apps.is_empty() {
+                    settings::flex_item(
+                        fl!("default-apps", "terminal"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
-                    .icons(Cow::Borrowed(&meta.icons)),
-                )
+                } else {
+                    settings::flex_item(
+                        fl!("default-apps", "terminal"),
+                        dropdown::popup_dropdown(
+                            &meta.apps,
+                            meta.selected,
+                            |id| Message::SetDefault(Category::Terminal, id),
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DefaultApps(a),
+                                )
+                            },
+                        )
+                        .icons(Cow::Borrowed(&meta.icons)),
+                    )
+                }
             })
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_TEXT_EDITOR];
-                settings::flex_item(
-                    fl!("default-apps", "text-editor"),
-                    dropdown::popup_dropdown(
-                        &meta.apps,
-                        meta.selected,
-                        |id| Message::SetDefault(Category::TextEditor, id),
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        |a| crate::app::Message::PageMessage(crate::pages::Message::DefaultApps(a)),
+                if meta.apps.is_empty() {
+                    settings::flex_item(
+                        fl!("default-apps", "text-editor"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
-                    .icons(Cow::Borrowed(&meta.icons)),
-                )
+                } else {
+                    settings::flex_item(
+                        fl!("default-apps", "text-editor"),
+                        dropdown::popup_dropdown(
+                            &meta.apps,
+                            meta.selected,
+                            |id| Message::SetDefault(Category::TextEditor, id),
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::DefaultApps(a),
+                                )
+                            },
+                        )
+                        .icons(Cow::Borrowed(&meta.icons)),
+                    )
+                }
             })
             .apply(Element::from)
             .map(crate::pages::Message::DefaultApps)
