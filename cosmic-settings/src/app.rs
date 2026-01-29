@@ -39,7 +39,7 @@ use cosmic::{
         settings, text_input,
     },
 };
-#[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
+#[cfg(feature = "cosmic-comp-config")]
 use cosmic_comp_config::CosmicCompConfig;
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
@@ -169,7 +169,7 @@ pub enum Message {
     PageMessage(crate::pages::Message),
     #[cfg(feature = "wayland")]
     PanelConfig(Box<CosmicPanelConfig>),
-    #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
+    #[cfg(feature = "cosmic-comp-config")]
     CompConfig(Box<CosmicCompConfig>),
     SearchActivate,
     SearchActivateWith(String),
@@ -358,7 +358,7 @@ impl cosmic::Application for SettingsApp {
                     Message::PanelConfig(Box::new(update.config))
                 }),
             page.subscription(self.core()).map(Message::PageMessage),
-            #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
+            #[cfg(feature = "cosmic-comp-config")]
             self.core()
                 .watch_config::<CosmicCompConfig>("com.system76.CosmicComp")
                 .map(|update| {
@@ -780,7 +780,7 @@ impl cosmic::Application for SettingsApp {
                 return Task::batch(tasks);
             }
 
-            #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
+            #[cfg(feature = "cosmic-comp-config")]
             Message::CompConfig(comp_config) => {
                 let mut tasks = Vec::new();
 
