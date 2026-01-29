@@ -99,6 +99,7 @@ impl SettingsApp {
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             #[cfg(feature = "wayland")]
             PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
+            #[cfg(feature = "wayland")]
             PageCommands::DockApplet => self.pages.page_id::<desktop::dock::applets::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Input => self.pages.page_id::<input::Page>(),
@@ -114,6 +115,7 @@ impl SettingsApp {
             PageCommands::Network => self.pages.page_id::<networking::Page>(),
             #[cfg(feature = "wayland")]
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
+            #[cfg(feature = "wayland")]
             PageCommands::PanelApplet => {
                 self.pages.page_id::<desktop::panel::applets_inner::Page>()
             }
