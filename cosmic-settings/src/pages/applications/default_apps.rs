@@ -294,7 +294,7 @@ fn apps() -> Section<crate::pages::Message> {
                 if meta.apps.is_empty() {
                     settings::flex_item(
                         fl!("default-apps", "web-browser"),
-                        widget::text("Not Installed"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
                 } else {
                     settings::flex_item(
@@ -321,7 +321,7 @@ fn apps() -> Section<crate::pages::Message> {
                 if meta.apps.is_empty() {
                     settings::flex_item(
                         fl!("default-apps", "file-manager"),
-                        widget::text("Not Installed"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
                 } else {
                     settings::flex_item(
@@ -347,7 +347,7 @@ fn apps() -> Section<crate::pages::Message> {
                 if meta.apps.is_empty() {
                     settings::flex_item(
                         fl!("default-apps", "mail-client"),
-                        widget::text("Not Installed"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
                 } else {
                     settings::flex_item(
@@ -371,7 +371,10 @@ fn apps() -> Section<crate::pages::Message> {
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_MUSIC];
                 if meta.apps.is_empty() {
-                    settings::flex_item(fl!("default-apps", "music"), widget::text("Not Installed"))
+                    settings::flex_item(
+                        fl!("default-apps", "music"),
+                        widget::text(fl!("default-apps", "not-installed")),
+                    )
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "music"),
@@ -394,7 +397,10 @@ fn apps() -> Section<crate::pages::Message> {
             .add({
                 let meta = &mime_apps.apps[DROPDOWN_VIDEO];
                 if meta.apps.is_empty() {
-                    settings::flex_item(fl!("default-apps", "video"), widget::text("Not Installed"))
+                    settings::flex_item(
+                        fl!("default-apps", "video"),
+                        widget::text(fl!("default-apps", "not-installed")),
+                    )
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "video"),
@@ -419,7 +425,7 @@ fn apps() -> Section<crate::pages::Message> {
                 if meta.apps.is_empty() {
                     settings::flex_item(
                         fl!("default-apps", "photos"),
-                        widget::text("Not Installed"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
                 } else {
                     settings::flex_item(
@@ -445,7 +451,7 @@ fn apps() -> Section<crate::pages::Message> {
                 if meta.apps.is_empty() {
                     settings::flex_item(
                         fl!("default-apps", "calendar"),
-                        widget::text("Not Installed"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
                 } else {
                     settings::flex_item(
@@ -471,7 +477,7 @@ fn apps() -> Section<crate::pages::Message> {
                 if meta.apps.is_empty() {
                     settings::flex_item(
                         fl!("default-apps", "terminal"),
-                        widget::text("Not Installed"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
                 } else {
                     settings::flex_item(
@@ -497,7 +503,7 @@ fn apps() -> Section<crate::pages::Message> {
                 if meta.apps.is_empty() {
                     settings::flex_item(
                         fl!("default-apps", "text-editor"),
-                        widget::text("Not Installed"),
+                        widget::text(fl!("default-apps", "not-installed")),
                     )
                 } else {
                     settings::flex_item(

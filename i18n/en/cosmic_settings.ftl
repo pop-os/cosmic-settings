@@ -843,6 +843,8 @@ default-apps = Default Applications
     .terminal = Terminal
     .other-associations = Other associations
     .text-editor = Text Editor
+    .not-installed = Not installed
+
 
 ## Applications: Startup applications
 
