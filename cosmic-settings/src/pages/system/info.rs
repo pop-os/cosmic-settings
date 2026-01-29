@@ -1,6 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+#[cfg(feature = "wgpu")]
 use cosmic::iced_wgpu::wgpu;
 use std::{collections::HashMap, collections::HashSet, ffi::OsStr, process::Command};
 
@@ -21,55 +22,9 @@ pub struct Info {
 }
 
 impl Info {
-    pub fn load() -> Info {
-        let mut info = Info {
-            os_architecture: architecture(),
-            kernel_version: kernel_version(),
-            hardware_model: hardware_model(),
-            operating_system: operating_system(),
-            processor: processor_name(),
-            ..Default::default()
-        };
-
-        let mut sys = sysinfo::System::new();
-        let disks = sysinfo::Disks::new_with_refreshed_list();
-        sys.refresh_memory();
-
-        let mut total_capacity = 0;
-        let mut disk_set = HashSet::new();
-        for disk in disks.list() {
-            if disk_set.contains(disk.name()) {
-                continue;
-            }
-            disk_set.insert(disk.name());
-            total_capacity += disk.total_space();
-        }
-
-        info.disk_capacity = format_size(total_capacity);
-
-        if let Some(name) = sysinfo::System::host_name() {
-            info.device_name = name;
-        }
-
-        info.memory = format_size(sys.total_memory());
-
-        if let Ok(mut session) = std::env::var("XDG_SESSION_TYPE") {
-            if let Some(first) = session.get_mut(0..1) {
-                first.make_ascii_uppercase();
-            }
-            info.windowing_system = session;
-        }
-
-        // prefer XDG_SESSION_DESKTOP because the value is singular
-        if let Ok(mut session) = std::env::var("XDG_SESSION_DESKTOP")
-            .or_else(|_| std::env::var("XDG_CURRENT_DESKTOP"))
-            .or_else(|_| std::env::var("DESKTOP_SESSION"))
-        {
-            if let Some(first) = session.get_mut(0..1) {
-                first.make_ascii_uppercase();
-            }
-            info.desktop_environment = session;
-        }
+    #[cfg(feature = "wgpu")]
+    fn wgpu_graphics() -> Vec<String> {
+        let mut graphics = Vec::new();
 
         // Use wgpu to enumerate GPUs. Works cross-platform and doesn't require external tools
         let instance = wgpu::Instance::default();
@@ -157,7 +112,7 @@ impl Info {
                 seen_devices.insert(device_key);
             }
             seen_names.insert(gpu_name.clone());
-            info.graphics.push(gpu_name);
+            graphics.push(gpu_name);
         }
 
         // NVIDIA Optimus quirk: On laptops with NVIDIA Optimus (switchable graphics),
@@ -170,8 +125,66 @@ impl Info {
             let device_key = (vendor, device);
             if !seen_devices.contains(&device_key) {
                 seen_devices.insert(device_key);
-                info.graphics.push(name);
+                graphics.push(name);
             }
+        }
+
+        graphics
+    }
+
+    pub fn load() -> Info {
+        let mut info = Info {
+            os_architecture: architecture(),
+            kernel_version: kernel_version(),
+            hardware_model: hardware_model(),
+            operating_system: operating_system(),
+            processor: processor_name(),
+            ..Default::default()
+        };
+
+        let mut sys = sysinfo::System::new();
+        let disks = sysinfo::Disks::new_with_refreshed_list();
+        sys.refresh_memory();
+
+        let mut total_capacity = 0;
+        let mut disk_set = HashSet::new();
+        for disk in disks.list() {
+            if disk_set.contains(disk.name()) {
+                continue;
+            }
+            disk_set.insert(disk.name());
+            total_capacity += disk.total_space();
+        }
+
+        info.disk_capacity = format_size(total_capacity);
+
+        if let Some(name) = sysinfo::System::host_name() {
+            info.device_name = name;
+        }
+
+        info.memory = format_size(sys.total_memory());
+
+        if let Ok(mut session) = std::env::var("XDG_SESSION_TYPE") {
+            if let Some(first) = session.get_mut(0..1) {
+                first.make_ascii_uppercase();
+            }
+            info.windowing_system = session;
+        }
+
+        // prefer XDG_SESSION_DESKTOP because the value is singular
+        if let Ok(mut session) = std::env::var("XDG_SESSION_DESKTOP")
+            .or_else(|_| std::env::var("XDG_CURRENT_DESKTOP"))
+            .or_else(|_| std::env::var("DESKTOP_SESSION"))
+        {
+            if let Some(first) = session.get_mut(0..1) {
+                first.make_ascii_uppercase();
+            }
+            info.desktop_environment = session;
+        }
+
+        #[cfg(feature = "wgpu")]
+        {
+            info.graphics = Self::wgpu_graphics();
         }
 
         info
