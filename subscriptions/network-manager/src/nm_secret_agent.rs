@@ -147,6 +147,16 @@ async fn secret_agent_stream_impl(
     msg_tx: futures::channel::mpsc::Sender<Event>,
     mut rx: tokio::sync::mpsc::Receiver<Request>,
 ) -> Result<(), Error> {
+    // fail early if we can't connect, closing the channel
+    {
+        let ss = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
+            .await
+            .map_err(|e| Arc::new(e))?;
+        let collection = ss.get_default_collection().await.map_err(|e| Arc::new(e))?;
+        if collection.is_locked().await.map_err(|e| Arc::new(e))? {
+            _ = collection.unlock().await.map_err(|e| Arc::new(e))?;
+        }
+    }
     // register the secret agent with NetworkManager
     let proxy =
         nm_secret_agent_manager::AgentManagerProxy::builder(&zbus::Connection::system().await?)
@@ -162,10 +172,6 @@ async fn secret_agent_stream_impl(
     .await?;
 
     proxy.register_with_capabilities(identifier, 1).await?;
-    // fail early if we can't connect, closing the channel
-    let _ = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
-        .await
-        .map_err(|e| Arc::new(e))?;
 
     while let Some(request) = rx.recv().await {
         match request {
