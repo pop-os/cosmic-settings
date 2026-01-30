@@ -84,6 +84,7 @@ pub type Description = String;
 pub enum LayoutSource {
     Base,
     Extra,
+    Custom,
 }
 
 const KB_REPEAT_DELAY_DEFAULT: u32 = 600;
@@ -331,6 +332,22 @@ impl page::Page<crate::pages::Message> for Page {
                             .map(|layout| (layout, LayoutSource::Extra)),
                     )
                     .collect::<Vec<_>>();
+
+                // Add user-defined layouts if any are found
+                let user_layouts = xkb_data::user_keyboard_layouts();
+                match user_layouts {
+                    Ok(ref custom) => {
+                        sorted_layouts.extend(
+                            custom
+                                .layouts()
+                                .iter()
+                                .map(|layout| (layout, LayoutSource::Custom)),
+                        );
+                    }
+                    Err(why) => {
+                        tracing::error!(?why, "failed to get user keyboard layouts");
+                    }
+                }
 
                 sorted_layouts.sort_unstable_by(|(a, _), (b, _)| {
                     match (a.name(), b.name()) {
