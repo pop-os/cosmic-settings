@@ -7,8 +7,8 @@ use cosmic::widget::{self, settings, text};
 use cosmic::{Apply, Element, Task, theme};
 use cosmic_settings_bluetooth_subscription::*;
 use cosmic_settings_page::{self as page, Section, section};
-use futures::StreamExt;
 use futures::channel::oneshot;
+use futures::{SinkExt, StreamExt};
 use slab::Slab;
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
@@ -562,33 +562,34 @@ impl Page {
                 if self.subscription.is_none() {
                     let connection = connection.clone();
 
-                    let (cancellation, task) = crate::utils::forward_event_loop(move |emitter| {
-                        let connection = connection.clone();
+                    let (cancellation, task) =
+                        crate::utils::forward_event_loop(move |mut sender| {
+                            let connection = connection.clone();
 
-                        async move {
-                            let (tx, mut rx) = futures::channel::mpsc::channel(1);
+                            async move {
+                                let (tx, mut rx) = futures::channel::mpsc::channel(1);
 
-                            let watchers = std::pin::pin!(async move {
-                                _ = futures::future::join(
-                                    subscription::watch(connection.clone(), tx.clone()),
-                                    agent::watch(connection, tx),
-                                )
-                                .await;
-                            });
+                                let watchers = std::pin::pin!(async move {
+                                    _ = futures::future::join(
+                                        subscription::watch(connection.clone(), tx.clone()),
+                                        agent::watch(connection, tx),
+                                    )
+                                    .await;
+                                });
 
-                            let forwarder = std::pin::pin!(async move {
-                                while let Some(message) = rx.next().await {
-                                    _ = emitter
-                                        .emit(crate::pages::Message::Bluetooth(
-                                            Message::BluetoothEvent(message),
-                                        ))
-                                        .await;
-                                }
-                            });
+                                let forwarder = std::pin::pin!(async move {
+                                    while let Some(message) = rx.next().await {
+                                        _ = sender
+                                            .send(crate::pages::Message::Bluetooth(
+                                                Message::BluetoothEvent(message),
+                                            ))
+                                            .await;
+                                    }
+                                });
 
-                            futures::future::select(watchers, forwarder).await;
-                        }
-                    });
+                                futures::future::select(watchers, forwarder).await;
+                            }
+                        });
 
                     self.subscription = Some(cancellation);
                     return cosmic::task::batch(vec![cosmic::task::future(get_adapters_fut), task]);

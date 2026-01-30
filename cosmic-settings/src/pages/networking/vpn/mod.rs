@@ -4,10 +4,12 @@
 pub mod nmcli;
 
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use anyhow::Context;
 use cosmic::dialog::file_chooser::FileFilter;
+use cosmic::task;
+use cosmic::widget::text_input::focus;
 use cosmic::{
     Apply, Element, Task,
     iced::{Alignment, Length},
@@ -19,12 +21,14 @@ use cosmic_settings_network_manager_subscription::{
     self as network_manager, NetworkManagerState, UUID, current_networks::ActiveConnectionInfo,
 };
 use cosmic_settings_page::{self as page, Section, section};
-use futures::{FutureExt, StreamExt};
+use futures::{FutureExt, SinkExt, StreamExt};
 use indexmap::IndexMap;
 use secure_string::SecureString;
 use tokio::sync::Mutex;
 
 use crate::pages::networking::SecretSender;
+
+pub static SECURE_INPUT_VPN: LazyLock<widget::Id> = LazyLock::new(widget::Id::unique);
 
 pub type ConnectionId = Arc<str>;
 pub type InterfaceId = String;
@@ -47,6 +51,8 @@ pub enum Message {
     Deactivate(ConnectionId),
     /// An error occurred.
     Error(ErrorKind, String),
+    /// Focus the secure input
+    FocusSecureInput,
     /// VPN connection error.
     VpnDialogError(VpnDialog),
     /// Update the list of known connections.
@@ -252,6 +258,7 @@ impl page::Page<crate::pages::Message> for Page {
                     Some(Message::TogglePasswordVisibility),
                     *password_hidden,
                 )
+                .id(SECURE_INPUT_VPN.clone())
                 .on_input(|input| Message::PasswordUpdate(SecureString::from(input)))
                 .on_submit(|_| {
                     if error.is_some() {
@@ -518,6 +525,7 @@ impl Page {
                                 error: None,
                                 tx: Arc::new(Mutex::new(None)),
                             });
+                            return task::message(Message::FocusSecureInput);
                         }
                         _ => {
                             let connection_name = settings.id.clone();
@@ -777,6 +785,7 @@ impl Page {
             }
             Message::VpnDialogError(vpn_dialog) => {
                 self.dialog = Some(vpn_dialog);
+                return task::message(Message::FocusSecureInput);
             }
             Message::SecretAgent(e) => match e {
                 nm_secret_agent::Event::RequestSecret {
@@ -796,6 +805,7 @@ impl Page {
                         tx,
                         error: None,
                     });
+                    return task::message(Message::FocusSecureInput);
                 }
                 nm_secret_agent::Event::CancelGetSecrets { uuid: _, name: _ } => {
                     self.dialog = self
@@ -824,9 +834,27 @@ impl Page {
                             password_hidden: true,
                             tx: Arc::new(Mutex::new(None)),
                         });
+                        return task::message(Message::FocusSecureInput);
                     }
                 }
             },
+            Message::FocusSecureInput => {
+                // retry until the widget is in the tree and focused or the dialog is removed.
+                if matches!(self.dialog, Some(VpnDialog::Password { .. })) {
+                    return cosmic::iced_runtime::task::widget(
+                        cosmic::iced_core::widget::operation::focusable::find_focused(),
+                    )
+                    .collect()
+                    .then(|id| {
+                        if id.get(0).is_some_and(|id| *id == SECURE_INPUT_VPN.clone()) {
+                            Task::none()
+                        } else {
+                            focus(SECURE_INPUT_VPN.clone())
+                                .chain(task::message(Message::FocusSecureInput))
+                        }
+                    });
+                }
+            }
         }
 
         Task::none()
@@ -872,27 +900,28 @@ impl Page {
 
     fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
-            let (canceller, task) = crate::utils::forward_event_loop(move |emitter| async move {
-                let (tx, mut rx) = futures::channel::mpsc::channel(1);
+            let (canceller, task) =
+                crate::utils::forward_event_loop(move |mut sender| async move {
+                    let (tx, mut rx) = futures::channel::mpsc::channel(1);
 
-                let watchers = std::pin::pin!(async move {
-                    futures::join!(
-                        network_manager::watch(conn.clone(), tx.clone()),
-                        network_manager::active_conns::watch(conn.clone(), tx.clone()),
-                        network_manager::devices::watch(conn, true, tx)
-                    )
+                    let watchers = std::pin::pin!(async move {
+                        futures::join!(
+                            network_manager::watch(conn.clone(), tx.clone()),
+                            network_manager::active_conns::watch(conn.clone(), tx.clone()),
+                            network_manager::devices::watch(conn, true, tx)
+                        )
+                    });
+
+                    let forwarder = std::pin::pin!(async move {
+                        while let Some(message) = rx.next().await {
+                            _ = sender
+                                .send(crate::pages::Message::Vpn(Message::NetworkManager(message)))
+                                .await;
+                        }
+                    });
+
+                    futures::future::select(watchers, forwarder).await;
                 });
-
-                let forwarder = std::pin::pin!(async move {
-                    while let Some(message) = rx.next().await {
-                        _ = emitter
-                            .emit(crate::pages::Message::Vpn(Message::NetworkManager(message)))
-                            .await;
-                    }
-                });
-
-                futures::future::select(watchers, forwarder).await;
-            });
 
             self.nm_task = Some(canceller);
 

@@ -80,8 +80,6 @@ pub enum Message {
     CacheDisplayImage,
     /// Selects an option in the category dropdown menu.
     ChangeCategory(Category),
-    /// Changes the displayed images in the wallpaper view.
-    ChangeFolder(Context),
     /// Emits a wallpaper event.
     Event(WallpaperEvent),
     /// Handles messages from the color dialog.
@@ -181,9 +179,6 @@ pub struct Page {
 
     /// Model for selecting between display outputs.
     outputs: SingleSelectModel,
-
-    /// Current value of the slideshow rotation frequency.
-    rotation_frequency: u64,
 
     /// Model for available options for rotation frequencies.
     rotation_options: Vec<String>,
@@ -292,6 +287,9 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl Default for Page {
     fn default() -> Self {
+        let config = Config::new();
+        let selected_rotation = Self::get_selected_rotation(config.rotation_frequency);
+
         let mut page = Page {
             entity: page::Entity::null(),
             on_enter_handle: None,
@@ -328,10 +326,9 @@ impl Default for Page {
             },
             wallpaper_service_config: wallpaper::Config::default(),
             color_model: ColorPickerModel::new(fl!("hex"), fl!("rgb"), None, Some(Color::WHITE)),
-            config: Config::new(),
+            config,
             fit_options: vec![fl!("fill"), fl!("fit-to-screen")],
             outputs: SingleSelectModel::default(),
-            rotation_frequency: 300,
             rotation_options: vec![
                 // FIX: fluent is inserting extra unicode characters in formatting
                 fl!("x-minutes", number = 5)
@@ -354,7 +351,7 @@ impl Default for Page {
                     .replace('\u{2069}', ""),
             ],
             selected_fit: 0,
-            selected_rotation: 0,
+            selected_rotation,
             selection: Context::default(),
             update_config: None,
         };
@@ -366,6 +363,18 @@ impl Default for Page {
 }
 
 impl Page {
+    fn get_selected_rotation(rotation_frequency: u64) -> usize {
+        match rotation_frequency {
+            0..=300 => MINUTES_5,
+            301..=600 => MINUTES_10,
+            601..=900 => MINUTES_15,
+            901..=1800 => MINUTES_30,
+            1801..=3600 => HOUR_1,
+            3601..=7200 => HOUR_2,
+            _ => HOUR_2,
+        }
+    }
+
     fn add_recent_folder(&mut self, folder: PathBuf) {
         if let Err(why) = self.config.add_recent_folder(folder) {
             tracing::error!(?why, "cannot add recent folder to config");
@@ -629,10 +638,10 @@ impl Page {
     }
 
     /// Changes the slideshow wallpaper rotation frequency
-    pub fn change_rotation_frequency(&mut self, option: usize) {
+    pub fn change_rotation_frequency(&mut self, option: usize) -> Result<(), cosmic_config::Error> {
         self.selected_rotation = option;
 
-        self.rotation_frequency = match self.selected_rotation {
+        let rotation_frequency = match self.selected_rotation {
             MINUTES_5 => 300,
             MINUTES_10 => 600,
             MINUTES_15 => 900,
@@ -641,6 +650,8 @@ impl Page {
             HOUR_2 => 7200,
             _ => 10800,
         };
+        self.config.change_rotation_frequency(rotation_frequency)?;
+        Ok(())
     }
 
     /// Updates configuration for wallpaper image.
@@ -661,7 +672,7 @@ impl Page {
 
         let entry = Entry::new(output, wallpaper::Source::Path(path))
             .scaling_mode(scaling_mode)
-            .rotation_frequency(self.rotation_frequency);
+            .rotation_frequency(self.config.rotation_frequency);
 
         if let Some(old_entry) = old_entry {
             entry
@@ -695,27 +706,6 @@ impl Page {
             }
 
             Message::CacheDisplayImage => self.cache_display_image(),
-
-            Message::ChangeFolder(mut context) => {
-                // Reassign custom colors and images to the new context.
-                std::mem::swap(&mut context, &mut self.selection);
-
-                for color in context.custom_colors {
-                    self.selection.add_custom_color(color);
-                }
-
-                for image in context.custom_images {
-                    let path = context.paths.remove(image);
-                    let display = context.display_images.remove(image);
-                    let selection = context.selection_handles.remove(image);
-
-                    if let Some(((display, selection), path)) = display.zip(selection).zip(path) {
-                        self.selection.add_custom_image(path, display, selection);
-                    }
-                }
-
-                self.select_first_wallpaper();
-            }
 
             Message::ColorAdd(message) => {
                 match message {
@@ -841,7 +831,11 @@ impl Page {
                 return Task::none();
             }
 
-            Message::RotationFrequency(pos) => self.change_rotation_frequency(pos),
+            Message::RotationFrequency(pos) => {
+                if let Err(err) = self.change_rotation_frequency(pos) {
+                    tracing::warn!("Failed to save rotation frequency: {err}");
+                }
+            }
 
             Message::SameWallpaper(value) => {
                 self.wallpaper_service_config.same_on_all = value;
@@ -1112,7 +1106,7 @@ impl Page {
             _ => self.selected_rotation = MINUTES_5,
         }
 
-        self.rotation_frequency = entry.rotation_frequency;
+        self.config.rotation_frequency = entry.rotation_frequency;
 
         self.cache_display_image();
     }

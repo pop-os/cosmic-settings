@@ -3,7 +3,7 @@
 
 use std::{
     collections::{BTreeMap, BTreeSet},
-    sync::Arc,
+    sync::{Arc, LazyLock},
 };
 
 use anyhow::Context;
@@ -13,21 +13,23 @@ use cosmic::{
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
     iced_widget::focus_next,
-    widget::{self, column, icon},
+    task,
+    widget::{self, column, icon, text_input::focus},
 };
 use cosmic_settings_network_manager_subscription::{
     self as network_manager, NetworkManagerState,
     available_wifi::{AccessPoint, NetworkType},
     current_networks::ActiveConnectionInfo,
-    hw_address::HwAddress,
     nm_secret_agent,
 };
 use cosmic_settings_page::{self as page, Section, section};
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use secure_string::SecureString;
 use tokio::sync::Mutex;
 
 use crate::pages::networking::SecretSender;
+
+pub static SECURE_INPUT_WIFI: LazyLock<widget::Id> = LazyLock::new(widget::Id::unique);
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -47,6 +49,8 @@ pub enum Message {
     Error(String),
     /// Identity update from the dialog
     IdentityUpdate(String),
+    /// Focus the secure input
+    FocusSecureInput,
     /// Create a dialog to ask for confirmation on forgetting a connection.
     ForgetRequest(network_manager::SSID),
     /// Forget a known access point.
@@ -98,7 +102,6 @@ enum WiFiDialog {
     Forget(network_manager::SSID),
     Password {
         ssid: network_manager::SSID,
-        hw_address: HwAddress,
         identity: Option<String>,
         password: SecureString,
         password_hidden: bool,
@@ -178,6 +181,7 @@ impl page::Page<crate::pages::Message> for Page {
                     Some(Message::TogglePasswordVisibility),
                     *password_hidden,
                 )
+                .id(SECURE_INPUT_WIFI.clone())
                 .on_input(|input| Message::PasswordUpdate(SecureString::from(input)))
                 .on_submit(|_| Message::ConnectWithPassword);
 
@@ -347,12 +351,7 @@ impl Page {
                 }
 
                 match req {
-                    network_manager::Request::Authenticate {
-                        ssid,
-                        identity,
-                        hw_address,
-                        ..
-                    } => {
+                    network_manager::Request::Authenticate { ssid, identity, .. } => {
                         if success {
                             self.connecting.remove(ssid.as_str());
                         } else {
@@ -360,19 +359,19 @@ impl Page {
                             self.dialog = Some(WiFiDialog::Password {
                                 ssid: ssid.into(),
                                 identity,
-                                hw_address,
                                 password: SecureString::from(""),
                                 password_hidden: true,
                                 tx: Arc::new(Mutex::new(None)),
                             });
+                            return task::message(Message::FocusSecureInput);
                         }
                     }
 
                     network_manager::Request::SelectAccessPoint(
                         ssid,
-                        hw_address,
                         network_type,
                         _tx,
+                        interface,
                     ) => {
                         if success || matches!(network_type, NetworkType::Open) {
                             self.connecting.remove(ssid.as_ref());
@@ -381,11 +380,11 @@ impl Page {
                                 ssid,
                                 identity: matches!(network_type, NetworkType::EAP)
                                     .then(String::new),
-                                hw_address,
                                 password: SecureString::from(""),
                                 password_hidden: true,
                                 tx: Arc::new(Mutex::new(None)),
                             });
+                            return task::message(Message::FocusSecureInput);
                         }
                     }
 
@@ -491,9 +490,9 @@ impl Page {
                         .sender
                         .unbounded_send(network_manager::Request::SelectAccessPoint(
                             ssid,
-                            ap.hw_address,
                             ap.network_type,
                             self.secret_tx.clone(),
+                            self.active_device.as_ref().map(|d| d.interface.clone()),
                         ));
                 }
             }
@@ -520,11 +519,11 @@ impl Page {
                     self.dialog = Some(WiFiDialog::Password {
                         ssid,
                         identity: matches!(ap.network_type, NetworkType::EAP).then(String::new),
-                        hw_address: ap.hw_address,
                         password: SecureString::from(""),
                         password_hidden: true,
                         tx: Arc::new(Mutex::new(None)),
                     });
+                    return task::message(Message::FocusSecureInput);
                 }
             }
             Message::PasswordUpdate(pass) => {
@@ -544,7 +543,6 @@ impl Page {
                     ssid,
                     identity,
                     password,
-                    hw_address,
                     tx,
                     ..
                 } = dialog
@@ -553,6 +551,7 @@ impl Page {
                     self.connecting.insert(ssid.clone());
                     let nm_sender = nm.sender.clone();
                     let secret_tx = self.secret_tx.clone();
+                    let interface = self.active_device.as_ref().map(|d| d.interface.clone());
                     return Task::future(async move {
                         let mut guard = tx.lock().await;
                         if let Some(tx) = guard.take() {
@@ -561,9 +560,9 @@ impl Page {
                             _ = nm_sender.unbounded_send(network_manager::Request::Authenticate {
                                 ssid: ssid.to_string(),
                                 identity,
-                                hw_address,
                                 password,
                                 secret_tx,
+                                interface,
                             });
                         }
                     })
@@ -709,10 +708,10 @@ impl Page {
                         ssid,
                         password: previous,
                         password_hidden: true,
-                        hw_address: ap.hw_address,
                         identity: matches!(ap.network_type, NetworkType::EAP).then(String::new),
                         tx,
                     });
+                    return task::message(Message::FocusSecureInput);
                 }
                 nm_secret_agent::Event::CancelGetSecrets { uuid: _, name: _ } => {
                     self.dialog = self
@@ -726,7 +725,6 @@ impl Page {
                         ssid,
                         password,
                         identity,
-                        hw_address,
                         ..
                     }) = self.dialog.take()
                     {
@@ -736,11 +734,28 @@ impl Page {
                             tx: Arc::new(Mutex::new(None)),
                             ssid,
                             identity,
-                            hw_address,
                         });
+                        return task::message(Message::FocusSecureInput);
                     }
                 }
             },
+            Message::FocusSecureInput => {
+                // retry until the widget is in the tree and focused or the dialog is removed.
+                if matches!(self.dialog, Some(WiFiDialog::Password { .. })) {
+                    return cosmic::iced_runtime::task::widget(
+                        cosmic::iced_core::widget::operation::focusable::find_focused(),
+                    )
+                    .collect()
+                    .then(|id| {
+                        if id.get(0).is_some_and(|id| *id == SECURE_INPUT_WIFI.clone()) {
+                            Task::none()
+                        } else {
+                            focus(SECURE_INPUT_WIFI.clone())
+                                .chain(task::message(Message::FocusSecureInput))
+                        }
+                    });
+                }
+            }
         }
 
         Task::none()
@@ -748,30 +763,31 @@ impl Page {
 
     fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
-            let (canceller, task) = crate::utils::forward_event_loop(move |emitter| async move {
-                let (tx, mut rx) = futures::channel::mpsc::channel(1);
+            let (canceller, task) =
+                crate::utils::forward_event_loop(move |mut sender| async move {
+                    let (tx, mut rx) = futures::channel::mpsc::channel(1);
 
-                let watchers = std::pin::pin!(async move {
-                    futures::join!(
-                        network_manager::watch(conn.clone(), tx.clone()),
-                        network_manager::active_conns::watch(conn.clone(), tx.clone()),
-                        network_manager::wireless_enabled::watch(conn.clone(), tx.clone()),
-                        network_manager::watch_connections_changed(conn, tx)
-                    );
+                    let watchers = std::pin::pin!(async move {
+                        futures::join!(
+                            network_manager::watch(conn.clone(), tx.clone()),
+                            network_manager::active_conns::watch(conn.clone(), tx.clone()),
+                            network_manager::wireless_enabled::watch(conn.clone(), tx.clone()),
+                            network_manager::watch_connections_changed(conn, tx)
+                        );
+                    });
+
+                    let forwarder = std::pin::pin!(async move {
+                        while let Some(message) = rx.next().await {
+                            _ = sender
+                                .send(crate::pages::Message::WiFi(Message::NetworkManager(
+                                    message,
+                                )))
+                                .await;
+                        }
+                    });
+
+                    futures::future::select(watchers, forwarder).await;
                 });
-
-                let forwarder = std::pin::pin!(async move {
-                    while let Some(message) = rx.next().await {
-                        _ = emitter
-                            .emit(crate::pages::Message::WiFi(Message::NetworkManager(
-                                message,
-                            )))
-                            .await;
-                    }
-                });
-
-                futures::future::select(watchers, forwarder).await;
-            });
 
             self.nm_task = Some(canceller);
             return task.map(crate::app::Message::from);

@@ -147,6 +147,16 @@ async fn secret_agent_stream_impl(
     msg_tx: futures::channel::mpsc::Sender<Event>,
     mut rx: tokio::sync::mpsc::Receiver<Request>,
 ) -> Result<(), Error> {
+    // fail early if we can't connect, closing the channel
+    {
+        let ss = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
+            .await
+            .map_err(|e| Arc::new(e))?;
+        let collection = ss.get_default_collection().await.map_err(|e| Arc::new(e))?;
+        if collection.is_locked().await.map_err(|e| Arc::new(e))? {
+            _ = collection.unlock().await.map_err(|e| Arc::new(e))?;
+        }
+    }
     // register the secret agent with NetworkManager
     let proxy =
         nm_secret_agent_manager::AgentManagerProxy::builder(&zbus::Connection::system().await?)
@@ -496,7 +506,7 @@ impl SettingsSecretAgent {
         setting_attributes.insert("uuid", &conn_uuid);
         setting_attributes.insert("setting_name", &setting_name);
 
-        let mut search_items = collection
+        let search_items = collection
             .search_items(setting_attributes.clone())
             .await
             .map_err(|e| Arc::new(e))?;

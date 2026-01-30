@@ -146,8 +146,8 @@ magnifier = 放大镜
                 { "" }
                 按 { $zoom_out } 缩小，
         }
-        按超级键并滚动鼠标
-    .scroll_controls = 按超级键并使用鼠标或触摸板滚动来启用缩放
+        按 Super 并滚动鼠标
+    .scroll_controls = 按 Super 并使用鼠标或触摸板滚动来启用缩放
     .show_overlay = 显示放大镜叠加层
     .increment = 缩放增量
     .signin = 登录时启动放大镜
@@ -315,8 +315,8 @@ dock = 程序坞
 ## Desktop: Window management
 
 window-management = 窗口管理
-    .desc = 超级键动作、窗口控制选项和额外的窗口平铺选项
-super-key = 超级键动作
+    .desc = Super 键动作、窗口控制选项和额外的窗口平铺选项
+super-key = Super 键动作
     .launcher = 打开启动器
     .workspaces = 打开工作区
     .applications = 打开应用程序
@@ -498,7 +498,7 @@ long = 长
 keyboard = 键盘
     .desc = 输入源、切换方式、特殊字符输入和快捷键
 keyboard-sources = 输入源
-    .desc = 可以使用超级键+空格键组合切换输入源。可以在键盘快捷键设置中自定义。
+    .desc = 可以使用 Super + 空格键组合切换输入源。可以在键盘快捷键设置中自定义。
     .move-up = 上移
     .move-down = 下移
     .settings = 设置
@@ -836,3 +836,9 @@ sound-device-port-unplugged = 未插入
 sound-hd-audio = 高清音频
 sound-usb-audio = USB 音频
 sound-device-profiles = 设备配置文件
+shadows-floating = 悬浮窗口
+    .clip = 匹配系统角落并且应用阴影
+shadows-tiling = 平铺窗口
+    .clip = 匹配系统角落
+    .shadow = 应用阴影
+shadow-and-corners = 窗口阴影与角落

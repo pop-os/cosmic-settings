@@ -8,7 +8,9 @@ use cosmic::widget::{
 };
 use cosmic::{Apply, Task};
 use cosmic::{Element, widget};
+use cosmic_config::ConfigGet;
 use std::sync::Arc;
+use tracing::error;
 
 use crate::app;
 use crate::widget::color_picker_context_view;
@@ -38,7 +40,20 @@ pub struct Content {
     icon_themes: IconThemes,
     icon_handles: IconHandles,
     tk_config: Option<Config>,
+
+    comp_config: cosmic_config::Config,
+    #[cfg(feature = "cosmic-comp-config")]
+    appearance_conf: cosmic_comp_config::AppearanceConfig,
 }
+
+#[cfg(feature = "cosmic-comp-config")]
+#[derive(Debug, Clone)]
+pub enum CornerMessage {
+    ClipFloating(bool),
+    ClipTiled(bool),
+    ShadowTiled(bool),
+}
+
 #[derive(Debug, Clone)]
 pub enum FontMessage {
     FontLoaded(Vec<Arc<str>>, Vec<Arc<str>>),
@@ -63,6 +78,11 @@ crate::cache_dynamic_lazy! {
 impl From<&theme_manager::Manager> for Content {
     fn from(theme_manager: &theme_manager::Manager) -> Self {
         let theme = theme_manager.theme();
+        let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        #[cfg(feature = "cosmic-comp-config")]
+        let appearance_conf = comp_config
+            .get::<cosmic_comp_config::AppearanceConfig>("appearance_settings")
+            .unwrap_or_default();
         Self {
             context_view: None,
             custom_accent: ColorPickerModel::new(
@@ -109,6 +129,9 @@ impl From<&theme_manager::Manager> for Content {
             icon_themes: Vec::new(),
             icon_handles: Vec::new(),
             tk_config: CosmicTk::config().ok(),
+            comp_config,
+            #[cfg(feature = "cosmic-comp-config")]
+            appearance_conf,
         }
     }
 }
@@ -210,7 +233,7 @@ impl Content {
                     _ = config.set("apply_theme_global", enabled);
                     self.icon_global = enabled;
                 } else {
-                    tracing::error!(
+                    error!(
                         "Failed to apply theme to GNOME config because the CosmicTK config does not exist."
                     );
                 }
@@ -231,6 +254,34 @@ impl Content {
                 ));
             }
         }
+        Task::none()
+    }
+
+    #[cfg(feature = "cosmic-comp-config")]
+    pub fn update_shadow_and_corners(
+        &mut self,
+        message: CornerMessage,
+        _context_view: &ContextView,
+    ) -> Task<app::Message> {
+        match message {
+            CornerMessage::ClipFloating(enabled) => {
+                self.appearance_conf.clip_floating_windows = enabled;
+            }
+            CornerMessage::ClipTiled(enabled) => {
+                self.appearance_conf.clip_tiled_windows = enabled;
+            }
+            CornerMessage::ShadowTiled(enabled) => {
+                self.appearance_conf.shadow_tiled_windows = enabled;
+            }
+        }
+
+        if let Err(err) = self
+            .comp_config
+            .set("appearance_settings", self.appearance_conf)
+        {
+            error!(?err, "Failed to set config 'appearance_settings'");
+        }
+
         Task::none()
     }
 
@@ -418,6 +469,12 @@ impl Content {
                 self.icons_and_toolkit(),
                 crate::pages::Message::CloseContextDrawer,
             ),
+
+            #[cfg(feature = "cosmic-comp-config")]
+            ContextView::ShadowAndCorners => context_drawer(
+                self.shadow_and_corners(),
+                crate::pages::Message::CloseContextDrawer,
+            ),
         })
     }
 
@@ -463,6 +520,38 @@ impl Content {
                 .into()
             ])
             .spacing(space_xxs)
+        ]
+        .spacing(space_m)
+        .width(Length::Fill)
+        .apply(Element::from)
+        .map(crate::pages::Message::Appearance)
+    }
+
+    #[cfg(feature = "cosmic-comp-config")]
+    pub fn shadow_and_corners(&self) -> Element<'_, crate::pages::Message> {
+        let Spacing { space_m, .. } = cosmic::theme::spacing();
+
+        cosmic::iced::widget::column![
+            settings::section().title(fl!("shadows-floating")).add(
+                settings::item::builder(fl!("shadows-floating", "clip"))
+                    .toggler(self.appearance_conf.clip_floating_windows, |b| {
+                        Message::DrawerCorners(CornerMessage::ClipFloating(b))
+                    })
+            ),
+            settings::section()
+                .title(fl!("shadows-tiling"))
+                .add(
+                    settings::item::builder(fl!("shadows-tiling", "clip"))
+                        .toggler(self.appearance_conf.clip_tiled_windows, |b| {
+                            Message::DrawerCorners(CornerMessage::ClipTiled(b))
+                        })
+                )
+                .add(
+                    settings::item::builder(fl!("shadows-tiling", "shadow"))
+                        .toggler(self.appearance_conf.shadow_tiled_windows, |b| {
+                            Message::DrawerCorners(CornerMessage::ShadowTiled(b))
+                        })
+                )
         ]
         .spacing(space_m)
         .width(Length::Fill)

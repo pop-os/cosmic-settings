@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Filaire
+Name=Wired
 Name[ar]=سلكي
 Name[cs]=Drátové
 Name[zh_CN]=有线连接
@@ -10,9 +10,11 @@ Name[nl]=Kabelverbinding
 Name[sk]=Káblové
 Name[sv]=Tråndbunden anslutning
 Name[es]=Red cableada
+Name[fr]=Filaire
+Name[it]=Cablato
 Comment=Wired connections and connection profiles.
 Comment[ar]=الاتصالات السلكية وملفات تعريف الاتصال.
-Comment[cs]=Drátové připojení a profily.
+Comment[cs]=Drátové připojení a profily
 Comment[zh_CN]=有线连接和配置文件
 Comment[pl]=Połączenia przewodowe i profile połączeń.
 Comment[hu]=Vezetékes kapcsolatok és kapcsolódási profilok.
@@ -22,6 +24,7 @@ Comment[sk]=Káblové pripojenia a profily pripojení.
 Comment[sv]=Trådbundna anslutningar och anslutningsprofiler.
 Comment[es]=Conexiones cableadas y perfiles de conexión.
 Comment[fr]=Connexions filaires et profils.
+Comment[it]=Connessioni cablate e profili.
 Type=Application
 Exec=cosmic-settings wired
 Terminal=false

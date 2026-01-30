@@ -1,6 +1,6 @@
 [package]
 name = "cosmic-settings-bluetooth-subscription"
-version = "1.0.0-beta6"
+version = "1.0.2"
 edition = "2024"
 license = "MPL-2.0"
 rust-version.workspace = true
@@ -10,6 +10,6 @@ publish = true
 bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 futures = "0.3.31"
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
-tokio = "1.48.0"
-tracing = "0.1.41"
+tokio = "1.49.0"
+tracing = "0.1.44"
 zbus = "5.12.0"
