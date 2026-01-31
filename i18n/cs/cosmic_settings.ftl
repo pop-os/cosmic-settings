@@ -780,6 +780,7 @@ default-apps = Výchozí aplikace
     .terminal = Terminál
     .other-associations = Ostatní asociace
     .text-editor = Textový editor
+    .not-installed = Není nainstalováno
 startup-apps = Automaticky spouštěné aplikace
     .desc = Správa aplikací, které se spouštějí při přihlášení
     .add = Přidat aplikaci
