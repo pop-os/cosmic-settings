@@ -578,7 +578,11 @@ scheduling = Scheduling
 dialog = Dialog
     .title = Keep these display settings?
     .keep-changes = Keep changes
-    .change-prompt = Settings changes will automatically revert in { $time } seconds.
+    .change-prompt = Settings changes will automatically revert { $time ->
+        [0] now.
+        [one] in 1 second.
+        *[other] in {$time} seconds.
+    }
     .revert-settings = Revert settings
 
 ## Sound
