@@ -335,6 +335,11 @@ focus-navigation = Fokus-Navigation
 
 workspaces = Arbeitsflächen
     .desc = Anzahl, Verhalten und Platzierung der Arbeitsflächen festlegen.
+workspaces-overview = Arbeitsflächenübersicht
+    .action-on-typing = Reaktion auf Tippen
+    .none = Keine
+    .launcher = Starter öffnen
+    .applications = Anwendungen öffnen
 workspaces-behavior = Verhaltern der Arbeitsfläche
     .dynamic = Dynamische Arbeitsflächen
     .dynamic-desc = Entfernt automatisch leere Arbeitsflächen.

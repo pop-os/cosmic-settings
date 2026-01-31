@@ -335,6 +335,11 @@ focus-navigation = Navegación de enfoque
 
 workspaces = Espacios de trabajo
     .desc = Configurar el número de espacios de trabajo, comportamiento y ubicación.
+workspaces-overview = Vista general de espacios de trabajo
+    .action-on-typing = Acción al escribir
+    .none = Ninguna
+    .launcher = Abrir lanzador
+    .applications = Abrir aplicaciones
 workspaces-behavior = Comportamiento de los espacios de trabajo
     .dynamic = Espacios de trabajo dinámicos
     .dynamic-desc = Elimina automáticamente los espacios de trabajo vacíos.
