@@ -992,7 +992,7 @@ impl NetworkManagerState {
             }
 
             let known_conn = if let Some(known_conn) = known_conn {
-                if secret_tx.is_none() || identity.is_some() {
+                if (secret_tx.is_none() && password.is_some()) || identity.is_some() {
                     known_conn.update(conn_settings).await.unwrap();
                 }
                 known_conn
