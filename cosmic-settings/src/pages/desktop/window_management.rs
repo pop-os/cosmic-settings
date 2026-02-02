@@ -331,6 +331,7 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                     .select_on_focus(true)
                     .on_input(Message::SetFocusFollowsCursorDelay)
                     .on_submit(|_| Message::SaveFocusFollowsCursorDelay(true))
+                    .style(cosmic::theme::TextInput::Default)
                     .width(Length::Fixed(80.0)),
                 ))
                 .add(settings::item(
