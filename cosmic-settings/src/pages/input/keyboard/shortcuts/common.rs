@@ -48,6 +48,7 @@ pub struct ShortcutBinding {
 
 impl ShortcutBinding {
     pub fn reset(&mut self) {
+        self.pending = self.binding.clone();
         self.input = self.binding.to_string();
     }
 }
