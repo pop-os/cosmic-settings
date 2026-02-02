@@ -39,7 +39,7 @@ use cosmic::{
         settings, text_input,
     },
 };
-#[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
+#[cfg(feature = "cosmic-comp-config")]
 use cosmic_comp_config::CosmicCompConfig;
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
@@ -99,6 +99,7 @@ impl SettingsApp {
             PageCommands::Displays => self.pages.page_id::<display::Page>(),
             #[cfg(feature = "wayland")]
             PageCommands::Dock => self.pages.page_id::<desktop::dock::Page>(),
+            #[cfg(feature = "wayland")]
             PageCommands::DockApplet => self.pages.page_id::<desktop::dock::applets::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Input => self.pages.page_id::<input::Page>(),
@@ -114,6 +115,7 @@ impl SettingsApp {
             PageCommands::Network => self.pages.page_id::<networking::Page>(),
             #[cfg(feature = "wayland")]
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
+            #[cfg(feature = "wayland")]
             PageCommands::PanelApplet => {
                 self.pages.page_id::<desktop::panel::applets_inner::Page>()
             }
@@ -167,7 +169,7 @@ pub enum Message {
     PageMessage(crate::pages::Message),
     #[cfg(feature = "wayland")]
     PanelConfig(Box<CosmicPanelConfig>),
-    #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
+    #[cfg(feature = "cosmic-comp-config")]
     CompConfig(Box<CosmicCompConfig>),
     SearchActivate,
     SearchActivateWith(String),
@@ -356,7 +358,7 @@ impl cosmic::Application for SettingsApp {
                     Message::PanelConfig(Box::new(update.config))
                 }),
             page.subscription(self.core()).map(Message::PageMessage),
-            #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
+            #[cfg(feature = "cosmic-comp-config")]
             self.core()
                 .watch_config::<CosmicCompConfig>("com.system76.CosmicComp")
                 .map(|update| {
@@ -778,7 +780,7 @@ impl cosmic::Application for SettingsApp {
                 return Task::batch(tasks);
             }
 
-            #[cfg(any(feature = "page-window-management", feature = "page-accessibility"))]
+            #[cfg(feature = "cosmic-comp-config")]
             Message::CompConfig(comp_config) => {
                 let mut tasks = Vec::new();
 

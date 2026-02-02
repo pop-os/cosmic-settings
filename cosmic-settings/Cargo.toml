@@ -71,7 +71,7 @@ slotmap = "1.1.1"
 static_init = "1.0.4"
 sunrise = "2.1.0"
 timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-tokio = { workspace = true, features = ["fs", "io-util", "sync"] }
+tokio = { workspace = true, features = ["fs", "io-util", "process", "sync"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 udev = { version = "0.9.3", optional = true }
@@ -112,6 +112,7 @@ gettext = ["dep:gettext-rs"]
 
 # Default features for Linux
 linux = [
+    "cosmic-comp-config",
     "page-accessibility",
     "page-about",
     "page-bluetooth",
@@ -133,9 +134,9 @@ linux = [
 
 # Pages
 page-accessibility = [
+    "cosmic-comp-config",
     "dep:sctk",
     "dep:cosmic-protocols",
-    "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",
     "dep:cosmic-settings-daemon-config",
     "dep:cosmic-settings-accessibility-subscription",
@@ -151,14 +152,14 @@ page-date = ["dep:timedate-zbus", "dep:zbus"]
 page-default-apps = ["dep:cosmic-settings-config", "dep:mime-apps"]
 page-display = ["dep:udev"]
 page-input = [
+    "cosmic-comp-config",
     "gettext",
-    "dep:cosmic-comp-config",
     "dep:cosmic-settings-config",
     "dep:udev",
     "dep:xkeysym",
     "wayland",
 ]
-page-legacy-applications = ["dep:cosmic-comp-config"]
+page-legacy-applications = ["cosmic-comp-config", "dep:cosmic-randr"]
 page-networking = [
     "dep:cosmic-settings-network-manager-subscription",
     "xdg-portal",
@@ -170,15 +171,20 @@ page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = ["gettext", "dep:locales-rs", "dep:locale1", "dep:zbus"]
 page-sound = ["dep:cosmic-settings-sound-subscription"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
-page-window-management = ["dep:cosmic-settings-config"]
-page-workspaces = ["dep:cosmic-comp-config"]
+page-window-management = ["cosmic-comp-config", "dep:cosmic-settings-config"]
+page-workspaces = ["cosmic-comp-config"]
 
 # Other features
 a11y = ["libcosmic/a11y"]
 ashpd = ["dep:ashpd"]
+cosmic-comp-config = ["dep:cosmic-comp-config"]
 dbus-config = ["libcosmic/dbus-config", "cosmic-config/dbus"]
 single-instance = ["libcosmic/single-instance"]
 test = []
-wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr"]
+wayland = [
+    "libcosmic/wayland",
+    "dep:cosmic-panel-config",
+    "dep:cosmic-randr"
+]
 wgpu = ["libcosmic/wgpu"]
 xdg-portal = ["ashpd", "libcosmic/xdg-portal"]

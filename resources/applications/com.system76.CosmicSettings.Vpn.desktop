@@ -2,7 +2,7 @@
 Name=VPN
 Comment=VPN connections and connection profiles.
 Comment[ar]=اتصالات VPN وملفات تعريف الاتصال.
-Comment[cs]=VPN připojení a profily.
+Comment[cs]=VPN připojení a profily
 Comment[sk]=VPN pripojenia a profily pripojení.
 Comment[sv]=VPN-anslutningar och anslutningsprofiler.
 Comment[zh_CN]=VPN连接和配置文件
@@ -12,6 +12,7 @@ Comment[pt]=Conexões VPN e perfis de conexão.
 Comment[nl]=VPN-verbindingen en VPN-profielen.
 Comment[es]=Conexiones VPN y perfiles de conexión.
 Comment[fr]=Connexions VPN et profils de connexion.
+Comment[it]=Connessioni VPN e profili di connessione.
 Type=Application
 Exec=cosmic-settings vpn
 Terminal=false

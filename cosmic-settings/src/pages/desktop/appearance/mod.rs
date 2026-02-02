@@ -41,6 +41,7 @@ pub enum ContextView {
     ApplicationBackground,
     ContainerBackground,
     ControlComponent,
+    #[cfg(feature = "cosmic-comp-config")]
     ShadowAndCorners,
     CustomAccent,
     IconsAndToolkit,
@@ -126,6 +127,7 @@ pub enum Message {
 
     DrawerOpen(ContextView),
     DrawerColor(ColorPickerUpdate),
+    #[cfg(feature = "cosmic-comp-config")]
     DrawerCorners(drawer::CornerMessage),
     DrawerFont(drawer::FontMessage),
     DrawerIcon(drawer::IconMessage),
@@ -265,6 +267,7 @@ impl Page {
                 }
             }
 
+            #[cfg(feature = "cosmic-comp-config")]
             Message::DrawerCorners(message) => {
                 if let Some(context_view) = self.context_view.as_ref() {
                     tasks.push(self.drawer.update_shadow_and_corners(message, context_view));
@@ -598,6 +601,7 @@ impl Page {
         }
     }
 
+    #[cfg(feature = "wayland")]
     pub fn update_dock_padding(roundness: Roundness) {
         let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
 
@@ -855,17 +859,21 @@ pub fn experimental() -> Section<crate::pages::Message> {
                 Message::DrawerOpen(ContextView::IconsAndToolkit),
             );
 
-            let shadow_and_corners = crate::widget::go_next_item(
-                &descriptions[shadow_and_corners_txt],
-                Message::DrawerOpen(ContextView::ShadowAndCorners),
-            );
-
-            settings::section()
+            let mut section = settings::section()
                 .title(&*section.title)
                 .add(system_font)
                 .add(mono_font)
-                .add(icons_and_toolkit)
-                .add(shadow_and_corners)
+                .add(icons_and_toolkit);
+
+            #[cfg(feature = "cosmic-comp-config")]
+            {
+                section = section.add(crate::widget::go_next_item(
+                    &descriptions[shadow_and_corners_txt],
+                    Message::DrawerOpen(ContextView::ShadowAndCorners),
+                ));
+            }
+
+            section
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })

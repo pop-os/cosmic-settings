@@ -42,11 +42,11 @@ pub struct Content {
     tk_config: Option<Config>,
 
     comp_config: cosmic_config::Config,
-    clip_floating: bool,
-    clip_tiled: bool,
-    shadow_tiled: bool,
+    #[cfg(feature = "cosmic-comp-config")]
+    appearance_conf: cosmic_comp_config::AppearanceConfig,
 }
 
+#[cfg(feature = "cosmic-comp-config")]
 #[derive(Debug, Clone)]
 pub enum CornerMessage {
     ClipFloating(bool),
@@ -79,6 +79,7 @@ impl From<&theme_manager::Manager> for Content {
     fn from(theme_manager: &theme_manager::Manager) -> Self {
         let theme = theme_manager.theme();
         let comp_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        #[cfg(feature = "cosmic-comp-config")]
         let appearance_conf = comp_config
             .get::<cosmic_comp_config::AppearanceConfig>("appearance_settings")
             .unwrap_or_default();
@@ -129,9 +130,8 @@ impl From<&theme_manager::Manager> for Content {
             icon_handles: Vec::new(),
             tk_config: CosmicTk::config().ok(),
             comp_config,
-            clip_floating: appearance_conf.clip_floating_windows,
-            clip_tiled: appearance_conf.clip_tiled_windows,
-            shadow_tiled: appearance_conf.shadow_tiled_windows,
+            #[cfg(feature = "cosmic-comp-config")]
+            appearance_conf,
         }
     }
 }
@@ -257,6 +257,7 @@ impl Content {
         Task::none()
     }
 
+    #[cfg(feature = "cosmic-comp-config")]
     pub fn update_shadow_and_corners(
         &mut self,
         message: CornerMessage,
@@ -264,22 +265,20 @@ impl Content {
     ) -> Task<app::Message> {
         match message {
             CornerMessage::ClipFloating(enabled) => {
-                self.clip_floating = enabled;
+                self.appearance_conf.clip_floating_windows = enabled;
             }
             CornerMessage::ClipTiled(enabled) => {
-                self.clip_tiled = enabled;
+                self.appearance_conf.clip_tiled_windows = enabled;
             }
             CornerMessage::ShadowTiled(enabled) => {
-                self.shadow_tiled = enabled;
+                self.appearance_conf.shadow_tiled_windows = enabled;
             }
         }
 
-        let conf = cosmic_comp_config::AppearanceConfig {
-            clip_floating_windows: self.clip_floating,
-            clip_tiled_windows: self.clip_tiled,
-            shadow_tiled_windows: self.shadow_tiled,
-        };
-        if let Err(err) = self.comp_config.set("appearance_settings", conf) {
+        if let Err(err) = self
+            .comp_config
+            .set("appearance_settings", self.appearance_conf)
+        {
             error!(?err, "Failed to set config 'appearance_settings'");
         }
 
@@ -471,6 +470,7 @@ impl Content {
                 crate::pages::Message::CloseContextDrawer,
             ),
 
+            #[cfg(feature = "cosmic-comp-config")]
             ContextView::ShadowAndCorners => context_drawer(
                 self.shadow_and_corners(),
                 crate::pages::Message::CloseContextDrawer,
@@ -527,13 +527,14 @@ impl Content {
         .map(crate::pages::Message::Appearance)
     }
 
+    #[cfg(feature = "cosmic-comp-config")]
     pub fn shadow_and_corners(&self) -> Element<'_, crate::pages::Message> {
         let Spacing { space_m, .. } = cosmic::theme::spacing();
 
         cosmic::iced::widget::column![
             settings::section().title(fl!("shadows-floating")).add(
                 settings::item::builder(fl!("shadows-floating", "clip"))
-                    .toggler(self.clip_floating, |b| {
+                    .toggler(self.appearance_conf.clip_floating_windows, |b| {
                         Message::DrawerCorners(CornerMessage::ClipFloating(b))
                     })
             ),
@@ -541,13 +542,13 @@ impl Content {
                 .title(fl!("shadows-tiling"))
                 .add(
                     settings::item::builder(fl!("shadows-tiling", "clip"))
-                        .toggler(self.clip_tiled, |b| {
+                        .toggler(self.appearance_conf.clip_tiled_windows, |b| {
                             Message::DrawerCorners(CornerMessage::ClipTiled(b))
                         })
                 )
                 .add(
                     settings::item::builder(fl!("shadows-tiling", "shadow"))
-                        .toggler(self.shadow_tiled, |b| {
+                        .toggler(self.appearance_conf.shadow_tiled_windows, |b| {
                             Message::DrawerCorners(CornerMessage::ShadowTiled(b))
                         })
                 )
