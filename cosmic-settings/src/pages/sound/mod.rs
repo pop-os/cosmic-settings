@@ -175,9 +175,16 @@ impl Page {
             }
 
             Message::SetSinkBalance(balance) => {
+                // Apply snapping to center (100) within a threshold
+                let snapped_balance = if balance >= 95 && balance <= 105 {
+                    100
+                } else {
+                    balance
+                };
+
                 return self
                     .model
-                    .set_sink_balance(balance)
+                    .set_sink_balance(snapped_balance)
                     .map(|message| Message::Subscription(message).into());
             }
 
@@ -391,31 +398,58 @@ fn output() -> Section<crate::pages::Message> {
                     volume_control,
                 ))
                 .add(settings::item(&*section.descriptions[device], devices))
-                .add(settings::item(
+                .add(settings::flex_item(
                     &*section.descriptions[balance],
-                    widget::row::with_capacity(4)
-                        .align_y(Alignment::Center)
-                        .push(
-                            widget::text::body(&*section.descriptions[left])
-                                .width(Length::Fixed(22.0))
-                                .align_x(Alignment::Center),
-                        )
-                        .push(widget::horizontal_space().width(8))
-                        .push(
-                            widget::slider(
-                                0..=200,
-                                (page.model.sink_balance.unwrap_or(1.0).max(0.) * 100.).round()
-                                    as u32,
-                                |change| Message::SetSinkBalance(change).into(),
+                    {
+                        let balance_value = page.model.sink_balance.unwrap_or(1.0).max(0.);
+                        let balance_percent = (balance_value * 100.).round() as u32;
+                        let left_percent = if balance_percent <= 100 { 100 - balance_percent } else { 0 };
+                        let right_percent = if balance_percent >= 100 { balance_percent - 100 } else { 0 };
+
+                        widget::row::with_capacity(3)
+                            .align_y(Alignment::Center)
+                            .push(widget::horizontal_space())
+                            .push(
+                                widget::column::with_capacity(2)
+                                    .spacing(8)
+                                    .width(Length::Fixed(500.0))
+                                    .push(
+                                        widget::row::with_capacity(4)
+                                            .align_y(Alignment::Center)
+                                            .push(
+                                                widget::text::body(&*section.descriptions[left])
+                                                    .width(Length::Fixed(40.0))
+                                                    .align_x(Alignment::Start),
+                                            )
+                                            .push(
+                                                widget::text::body(format!("{}%", left_percent))
+                                                    .width(Length::Fixed(50.0))
+                                                    .align_x(Alignment::End),
+                                            )
+                                            .push(widget::horizontal_space())
+                                            .push(
+                                                widget::text::body(format!("{}%", right_percent))
+                                                    .width(Length::Fixed(50.0))
+                                                    .align_x(Alignment::Start),
+                                            )
+                                            .push(
+                                                widget::text::body(&*section.descriptions[right])
+                                                    .width(Length::Fixed(40.0))
+                                                    .align_x(Alignment::End),
+                                            )
+                                    )
+                                    .push(
+                                        widget::slider(
+                                            0..=200,
+                                            balance_percent,
+                                            |change| Message::SetSinkBalance(change).into(),
+                                        )
+                                        .breakpoints(&[100])
+                                        .step(1_u32)
+                                    )
                             )
-                            .breakpoints(&[100]),
-                        )
-                        .push(widget::horizontal_space().width(8))
-                        .push(
-                            widget::text::body(&*section.descriptions[right])
-                                .width(Length::Fixed(22.0))
-                                .align_x(Alignment::Center),
-                        ),
+                            .push(widget::horizontal_space())
+                    },
                 ));
 
             controls = controls.add(
