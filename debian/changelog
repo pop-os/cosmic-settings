@@ -1,3 +1,9 @@
+cosmic-settings (1.0.2) noble; urgency=medium
+
+  * Released version
+
+ -- Michael Murphy <michael@mmurphy.dev>  Fri, 09 Jan 2026 21:31:17 +0100
+
 cosmic-settings (0.1.0) jammy; urgency=medium
 
   * Project in development

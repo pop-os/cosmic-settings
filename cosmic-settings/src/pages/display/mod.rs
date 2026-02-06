@@ -16,6 +16,7 @@ use cosmic_randr_shell::{
     AdaptiveSyncAvailability, AdaptiveSyncState, List, Output, OutputKey, Transform,
 };
 use cosmic_settings_page::{self as page, Section, section};
+use futures::SinkExt;
 use indexmap::Equivalent;
 use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
@@ -262,7 +263,7 @@ impl page::Page<crate::pages::Message> for Page {
         #[cfg(feature = "wayland")]
         {
             let refreshing_page = self.refreshing_page.clone();
-            let (tx, mut rx) = cosmic_randr::channel();
+            let (tx, rx) = cosmic_randr::channel();
             let (canceller, cancelled) = oneshot::channel::<()>();
             let runtime = tokio::runtime::Handle::current();
 
@@ -285,17 +286,19 @@ impl page::Page<crate::pages::Message> for Page {
             });
 
             // Forward messages from another thread to prevent the monitoring thread from blocking.
-            let (randr_task, randr_handle) =
-                Task::stream(async_fn_stream::fn_stream(|emitter| async move {
+            let (randr_task, randr_handle) = Task::stream(cosmic::iced_futures::stream::channel(
+                1,
+                |mut emitter| async move {
                     while let Some(message) = rx.recv().await {
                         if let cosmic_randr::Message::ManagerDone = message
                             && !refreshing_page.swap(true, Ordering::SeqCst)
                         {
-                            _ = emitter.emit(on_enter().await).await;
+                            _ = emitter.send(on_enter().await).await;
                         }
                     }
-                }))
-                .abortable();
+                },
+            ))
+            .abortable();
 
             tasks.push(randr_task);
             self.randr_handle = Some((canceller, randr_handle));
@@ -355,13 +358,15 @@ impl page::Page<crate::pages::Message> for Page {
         });
 
         // Forward messages from the DRM hotplug thread.
-        let (hotplug_task, hotplug_handle) =
-            Task::stream(async_fn_stream::fn_stream(|emitter| async move {
+        let (hotplug_task, hotplug_handle) = Task::stream(cosmic::iced_futures::stream::channel(
+            1,
+            |mut emitter| async move {
                 while let Some(message) = rx.recv().await {
-                    _ = emitter.emit(message).await;
+                    _ = emitter.send(message).await;
                 }
-            }))
-            .abortable();
+            },
+        ))
+        .abortable();
 
         tasks.push(hotplug_task);
         self.hotplug_handle = Some((hotplug_cancel_tx, hotplug_handle));
@@ -555,13 +560,13 @@ impl Page {
                             return self.toggle_display(true);
                         }
 
-                        if let Some(v) = self.mirror_map.get(k) {
-                            if v.equivalent(&self.active_display) {
-                                if let Some(output) = self.list.outputs.get(k) {
-                                    return self.exec_randr(output, Randr::Toggle(true));
-                                } else {
-                                    return Task::none();
-                                }
+                        if let Some(v) = self.mirror_map.get(k)
+                            && v.equivalent(&self.active_display)
+                        {
+                            if let Some(output) = self.list.outputs.get(k) {
+                                return self.exec_randr(output, Randr::Toggle(true));
+                            } else {
+                                return Task::none();
                             }
                         }
                     }
@@ -1310,6 +1315,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                         &descriptions[additional_scale_options],
                         widget::spin_button(
                             format!("{}%", page.adjusted_scale),
+                            "additional display scale",
                             page.adjusted_scale,
                             5,
                             0,

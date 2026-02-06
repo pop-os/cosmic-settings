@@ -84,6 +84,7 @@ pub type Description = String;
 pub enum LayoutSource {
     Base,
     Extra,
+    Custom,
 }
 
 const KB_REPEAT_DELAY_DEFAULT: u32 = 600;
@@ -281,7 +282,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         self.context.as_ref().map(|context| match context {
             Context::ShowInputSourcesContext => {
-                let search = widget::search_input(fl!("type-to-search"), &self.input_source_search)
+                let search = widget::search_input("", &self.input_source_search)
                     .on_input(Message::InputSourceSearch)
                     .on_clear(Message::InputSourceSearch(String::new()))
                     .apply(Element::from)
@@ -331,6 +332,22 @@ impl page::Page<crate::pages::Message> for Page {
                             .map(|layout| (layout, LayoutSource::Extra)),
                     )
                     .collect::<Vec<_>>();
+
+                // Add user-defined layouts if any are found
+                let user_layouts = xkb_data::user_keyboard_layouts();
+                match user_layouts {
+                    Ok(ref custom) => {
+                        sorted_layouts.extend(
+                            custom
+                                .layouts()
+                                .iter()
+                                .map(|layout| (layout, LayoutSource::Custom)),
+                        );
+                    }
+                    Err(why) => {
+                        tracing::error!(?why, "failed to get user keyboard layouts");
+                    }
+                }
 
                 sorted_layouts.sort_unstable_by(|(a, _), (b, _)| {
                     match (a.name(), b.name()) {

@@ -26,16 +26,13 @@ pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
             let receiver = sender.clone();
 
             _ = emitter
-                .send(
-                    Message::SubHandle(Arc::new(SubscriptionHandle {
-                        cancel_tx,
-                        pipewire: pipewire::run(move |event| {
-                            sender.0.lock().unwrap().push(event);
-                            sender.1.notify_one();
-                        }),
-                    }))
-                    .into(),
-                )
+                .send(Message::SubHandle(Arc::new(SubscriptionHandle {
+                    cancel_tx,
+                    pipewire: pipewire::run(move |event| {
+                        sender.0.lock().unwrap().push(event);
+                        sender.1.notify_one();
+                    }),
+                })))
                 .await;
 
             let forwarder = Box::pin(async {
@@ -215,7 +212,7 @@ impl Model {
             self.sink_volume_debounce = true;
             return cosmic::Task::future(async move {
                 tokio::time::sleep(Duration::from_millis(128)).await;
-                Message::SinkVolumeApply(id).into()
+                Message::SinkVolumeApply(id)
             });
         }
 
@@ -253,10 +250,8 @@ impl Model {
                 }
 
                 None
-            } else if let Some(name) = self.node_names.get(node_id) {
-                Some(name.clone())
             } else {
-                None
+                self.node_names.get(node_id).map(|name| name.clone())
             };
 
         tokio::task::spawn(async move {
@@ -294,7 +289,7 @@ impl Model {
             self.sink_volume_debounce = true;
             return cosmic::Task::future(async move {
                 tokio::time::sleep(Duration::from_millis(128)).await;
-                Message::SinkVolumeApply(node_id).into()
+                Message::SinkVolumeApply(node_id)
             });
         }
 
@@ -373,7 +368,7 @@ impl Model {
             self.source_volume_debounce = true;
             return cosmic::Task::future(async move {
                 tokio::time::sleep(Duration::from_millis(128)).await;
-                Message::SourceVolumeApply(node_id).into()
+                Message::SourceVolumeApply(node_id)
             });
         }
 
@@ -510,12 +505,12 @@ impl Model {
                     fn(&mut Self, NodeId),
                 ) = match route.direction {
                     pipewire::Direction::Output => (
-                        self.active_sink_device.clone(),
+                        self.active_sink_device,
                         &self.sink_node_ids,
                         Self::set_default_sink_id,
                     ),
                     pipewire::Direction::Input => (
-                        self.active_source_device.clone(),
+                        self.active_source_device,
                         &self.source_node_ids,
                         Self::set_default_source_id,
                     ),
@@ -685,7 +680,7 @@ impl Model {
         if routes.len() < index as usize + 1 {
             let additional = (index as usize + 1) - routes.capacity();
             routes.reserve_exact(additional);
-            routes.extend(std::iter::repeat(pipewire::Route::default()).take(additional));
+            routes.extend(std::iter::repeat_n(pipewire::Route::default(), additional));
         }
         routes[index as usize] = route;
     }
@@ -815,7 +810,7 @@ impl Model {
                 let (active_profile, indexes, descriptions) = self
                     .active_profiles
                     .get(device_id)
-                    .and_then(|profile| {
+                    .map(|profile| {
                         let (indexes, descriptions): (Vec<_>, Vec<_>) = profiles
                             .iter()
                             .filter(|p| {
@@ -835,7 +830,7 @@ impl Model {
                             .find(|(_, p)| p.index == profile.index)
                             .map(|(pos, _)| pos);
 
-                        Some((pos, indexes, descriptions))
+                        (pos, indexes, descriptions)
                     })
                     .unwrap_or_else(|| {
                         let (indexes, descriptions): (Vec<_>, Vec<_>) = profiles

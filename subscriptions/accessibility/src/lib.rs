@@ -2,132 +2,154 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use cosmic_dbus_a11y::*;
-use futures::FutureExt;
-use futures::{self, SinkExt, StreamExt, select};
+use futures::{self, SinkExt, StreamExt};
 use iced_futures::{Subscription, stream};
 use std::fmt::Debug;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use zbus::Connection;
 
 #[derive(Debug, Clone)]
-pub enum DBusUpdate {
+pub enum Response {
     Error(String),
-    Status(bool),
-    Init(bool, UnboundedSender<DBusRequest>),
+    IsEnabled(bool),
+    ScreenReader(bool),
+    Init(bool, UnboundedSender<Request>),
 }
 
-pub enum DBusRequest {
-    Status(bool),
+pub enum Request {
+    /// Enable the org.a11y.Bus
+    Enable(bool),
+    /// Enable the screen reader feature of org.a11y.Bus
+    ScreenReader(bool),
 }
 
 #[derive(Debug)]
-pub enum State {
-    Ready,
-    Waiting(Connection, u8, bool, UnboundedReceiver<DBusRequest>),
-    Finished,
+pub struct State {
+    conn: Connection,
+    retry: u8,
+    enabled: bool,
+    rx: UnboundedReceiver<Request>,
 }
 
-pub fn subscription() -> Subscription<DBusUpdate> {
+pub fn subscription() -> Subscription<Response> {
     struct MyId;
 
     Subscription::run_with_id(
         std::any::TypeId::of::<MyId>(),
-        stream::channel(50, move |mut output| async move {
-            let mut state = State::Ready;
-
-            loop {
-                state = start_listening(state, &mut output).await;
+        stream::channel(1, move |mut output| async move {
+            if let Some(state) = State::new(&mut output).await {
+                state.listen(&mut output).await;
             }
+
+            futures::future::pending::<()>().await;
         }),
     )
 }
 
-async fn start_listening(
-    state: State,
-    output: &mut futures::channel::mpsc::Sender<DBusUpdate>,
-) -> State {
-    match state {
-        State::Ready => {
-            let conn = match Connection::session().await.map_err(|e| e.to_string()) {
-                Ok(conn) => conn,
-                Err(e) => {
-                    _ = output.send(DBusUpdate::Error(e)).await;
-                    return State::Finished;
-                }
-            };
-            let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
-            let mut enabled = false;
-            if let Ok(proxy) = StatusProxy::new(&conn).await {
-                if let Ok(status) = proxy.screen_reader_enabled().await {
-                    enabled = status;
-                }
+impl State {
+    pub async fn new(output: &mut futures::channel::mpsc::Sender<Response>) -> Option<Self> {
+        let conn = match Connection::session().await.map_err(|e| e.to_string()) {
+            Ok(conn) => conn,
+            Err(e) => {
+                _ = output.send(Response::Error(e)).await;
+                return None;
             }
-            _ = output.send(DBusUpdate::Init(enabled, tx)).await;
-            State::Waiting(conn, 20, enabled, rx)
-        }
-        State::Waiting(conn, mut retry, mut enabled, mut rx) => {
-            let Ok(proxy) = StatusProxy::new(&conn).await else {
-                if retry == 0 {
-                    tracing::error!("Accessibility Status is unavailable.");
-                    return State::Finished;
-                } else {
-                    _ = tokio::time::sleep(tokio::time::Duration::from_secs(
-                        2_u64.pow(retry as u32),
-                    ))
-                    .await;
-                    retry -= 1;
-                    return State::Waiting(conn, retry, enabled, rx);
-                }
-            };
-            retry = 20;
-
-            let mut watch_changes = proxy.receive_screen_reader_enabled_changed().await;
-
+        };
+        let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+        let mut enabled = false;
+        if let Ok(proxy) = StatusProxy::new(&conn).await {
             if let Ok(status) = proxy.screen_reader_enabled().await {
-                if enabled != status {
-                    _ = output.send(DBusUpdate::Status(enabled));
-                }
                 enabled = status;
             }
+        }
+        _ = output.send(Response::Init(enabled, tx)).await;
+        Some(State {
+            conn,
+            retry: 20,
+            enabled,
+            rx,
+        })
+    }
 
-            loop {
-                if let Ok(status) = proxy.screen_reader_enabled().await {
-                    if enabled != status {
-                        _ = output.send(DBusUpdate::Status(enabled));
-                    }
-                    enabled = status;
+    pub async fn listen(mut self, output: &mut futures::channel::mpsc::Sender<Response>) {
+        loop {
+            let Ok(proxy) = StatusProxy::new(&self.conn).await else {
+                if self.retry == 0 {
+                    tracing::error!("Accessibility Status is unavailable.");
+                    return;
+                } else {
+                    _ = tokio::time::sleep(tokio::time::Duration::from_secs(
+                        2_u64.pow(self.retry as u32),
+                    ))
+                    .await;
+                    self.retry -= 1;
+                    continue;
                 }
+            };
 
-                let mut next_change = Box::pin(watch_changes.next()).fuse();
-                let mut next_request = Box::pin(rx.recv()).fuse();
+            self.retry = 20;
 
-                select! {
-                    v = next_request => {
-                        match v {
-                            Some(DBusRequest::Status(is_enabled)) => {
-                                // Set status
-                                enabled = is_enabled;
-                                _ = proxy.set_is_enabled(is_enabled).await;
-                                _ = proxy.set_screen_reader_enabled(is_enabled).await;
-                            }
-                            None => return State::Finished,
-                        }
-                    }
-                    v = next_change => {
-                        match v {
-                            Some(f) => {
-                                if let Ok(enabled) = f.get().await {
-                                    _ = output.send(DBusUpdate::Status(enabled));
-                                }
-                            }
-                            None => break,
-                        };
-                    }
+            let Ok(properties_proxy) =
+                zbus::fdo::PropertiesProxy::new(&self.conn, "org.a11y.Bus", "/org/a11y/bus").await
+            else {
+                tracing::error!("org.a11y.Bus properties proxy failed");
+                return;
+            };
+
+            let Ok(mut properties_changed_stream) =
+                properties_proxy.receive_properties_changed().await
+            else {
+                tracing::error!("org.a11y.Bus receive properties changed failed");
+                return;
+            };
+
+            if let Ok(status) = proxy.screen_reader_enabled().await {
+                if self.enabled != status {
+                    _ = output.send(Response::ScreenReader(self.enabled)).await;
                 }
+                self.enabled = status;
             }
 
-            State::Waiting(conn, retry, enabled, rx)
+            let requests_fut = Box::pin(async {
+                while let Some(request) = self.rx.recv().await {
+                    match request {
+                        Request::ScreenReader(is_enabled) => {
+                            _ = proxy.set_is_enabled(is_enabled).await;
+                            _ = proxy.set_screen_reader_enabled(is_enabled).await;
+                        }
+
+                        Request::Enable(is_enabled) => {
+                            _ = proxy.set_is_enabled(is_enabled).await;
+                        }
+                    }
+                }
+            });
+
+            let properties_fut = Box::pin(async {
+                while let Some(signal) = properties_changed_stream.next().await {
+                    if let Ok(args) = signal.args() {
+                        for (name, value) in args.changed_properties().iter() {
+                            match *name {
+                                "IsEnabled" => {
+                                    if let Ok(status) = value.downcast_ref::<bool>() {
+                                        _ = output.send(Response::IsEnabled(status)).await;
+                                    }
+                                }
+
+                                "ScreenReaderEnabled" => {
+                                    if let Ok(status) = value.downcast_ref::<bool>() {
+                                        _ = output.send(Response::ScreenReader(status)).await;
+                                    }
+                                }
+
+                                _ => (),
+                            }
+                        }
+                    }
+                }
+            });
+
+            futures::future::select(properties_fut, requests_fut).await;
         }
-        State::Finished => futures::future::pending().await,
     }
 }

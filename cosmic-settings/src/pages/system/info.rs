@@ -1,6 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+#[cfg(feature = "wgpu")]
 use cosmic::iced_wgpu::wgpu;
 use std::{collections::HashMap, collections::HashSet, ffi::OsStr, process::Command};
 
@@ -21,54 +22,9 @@ pub struct Info {
 }
 
 impl Info {
-    pub fn load() -> Info {
-        let mut info = Info::default();
-
-        info.os_architecture = architecture();
-        info.kernel_version = kernel_version();
-        info.hardware_model = hardware_model();
-        info.operating_system = operating_system();
-        info.processor = processor_name();
-
-        let mut sys = sysinfo::System::new();
-        let disks = sysinfo::Disks::new_with_refreshed_list();
-        sys.refresh_memory();
-
-        let mut total_capacity = 0;
-        let mut disk_set = HashSet::new();
-        for disk in disks.list() {
-            if disk_set.contains(disk.name()) {
-                continue;
-            }
-            disk_set.insert(disk.name());
-            total_capacity += disk.total_space();
-        }
-
-        info.disk_capacity = format_size(total_capacity);
-
-        if let Some(name) = sysinfo::System::host_name() {
-            info.device_name = name;
-        }
-
-        info.memory = format_size(sys.total_memory());
-
-        if let Ok(mut session) = std::env::var("XDG_SESSION_TYPE") {
-            if let Some(first) = session.get_mut(0..1) {
-                first.make_ascii_uppercase();
-            }
-            info.windowing_system = session;
-        }
-
-        // prefer XDG_SESSION_DESKTOP because the value is singular
-        if let Ok(mut session) = std::env::var("XDG_SESSION_DESKTOP")
-            .or_else(|_| std::env::var("XDG_CURRENT_DESKTOP"))
-            .or_else(|_| std::env::var("DESKTOP_SESSION"))
-        {
-            if let Some(first) = session.get_mut(0..1) {
-                first.make_ascii_uppercase();
-            }
-            info.desktop_environment = session;
-        }
+    #[cfg(feature = "wgpu")]
+    fn wgpu_graphics() -> Vec<String> {
+        let mut graphics = Vec::new();
 
         // Use wgpu to enumerate GPUs. Works cross-platform and doesn't require external tools
         let instance = wgpu::Instance::default();
@@ -156,7 +112,7 @@ impl Info {
                 seen_devices.insert(device_key);
             }
             seen_names.insert(gpu_name.clone());
-            info.graphics.push(gpu_name);
+            graphics.push(gpu_name);
         }
 
         // NVIDIA Optimus quirk: On laptops with NVIDIA Optimus (switchable graphics),
@@ -169,8 +125,66 @@ impl Info {
             let device_key = (vendor, device);
             if !seen_devices.contains(&device_key) {
                 seen_devices.insert(device_key);
-                info.graphics.push(name);
+                graphics.push(name);
             }
+        }
+
+        graphics
+    }
+
+    pub fn load() -> Info {
+        let mut info = Info {
+            os_architecture: architecture(),
+            kernel_version: kernel_version(),
+            hardware_model: hardware_model(),
+            operating_system: operating_system(),
+            processor: processor_name(),
+            ..Default::default()
+        };
+
+        let mut sys = sysinfo::System::new();
+        let disks = sysinfo::Disks::new_with_refreshed_list();
+        sys.refresh_memory();
+
+        let mut total_capacity = 0;
+        let mut disk_set = HashSet::new();
+        for disk in disks.list() {
+            if disk_set.contains(disk.name()) {
+                continue;
+            }
+            disk_set.insert(disk.name());
+            total_capacity += disk.total_space();
+        }
+
+        info.disk_capacity = format_size(total_capacity);
+
+        if let Some(name) = sysinfo::System::host_name() {
+            info.device_name = name;
+        }
+
+        info.memory = format_size(sys.total_memory());
+
+        if let Ok(mut session) = std::env::var("XDG_SESSION_TYPE") {
+            if let Some(first) = session.get_mut(0..1) {
+                first.make_ascii_uppercase();
+            }
+            info.windowing_system = session;
+        }
+
+        // prefer XDG_SESSION_DESKTOP because the value is singular
+        if let Ok(mut session) = std::env::var("XDG_SESSION_DESKTOP")
+            .or_else(|_| std::env::var("XDG_CURRENT_DESKTOP"))
+            .or_else(|_| std::env::var("DESKTOP_SESSION"))
+        {
+            if let Some(first) = session.get_mut(0..1) {
+                first.make_ascii_uppercase();
+            }
+            info.desktop_environment = session;
+        }
+
+        #[cfg(feature = "wgpu")]
+        {
+            info.graphics = Self::wgpu_graphics();
         }
 
         info
@@ -194,7 +208,7 @@ fn hardware_model() -> String {
     const DMI_DIR: &str = "/sys/devices/virtual/dmi/id/";
     const VERSION_IGNORING_PRODUCTS: &[&str] = &["Dev One"];
 
-    let sys_vendor = read_to_string(&format!("{DMI_DIR}sys_vendor"))
+    let sys_vendor = read_to_string(format!("{DMI_DIR}sys_vendor"))
         .map(|s| s.trim().to_string())
         .unwrap_or_default();
 
@@ -206,25 +220,25 @@ fn hardware_model() -> String {
     let mut model = sys_vendor.clone();
 
     if let Some(mut name) =
-        read_to_string(&format!("{DMI_DIR}board_name")).map(|s| s.trim().to_string())
+        read_to_string(format!("{DMI_DIR}board_name")).map(|s| s.trim().to_string())
+        && !name.is_empty()
+        && name != sys_vendor
     {
-        if !name.is_empty() && name != sys_vendor {
-            // Ensure that the name does not contain the vendor
-            name = name
-                .strip_prefix(&sys_vendor)
-                .map(|s| s.trim().to_string())
-                .unwrap_or(name);
+        // Ensure that the name does not contain the vendor
+        name = name
+            .strip_prefix(&sys_vendor)
+            .map(|s| s.trim().to_string())
+            .unwrap_or(name);
 
-            model.push(' ');
-            model.push_str(&name);
+        model.push(' ');
+        model.push_str(&name);
 
-            if let Some(version) =
-                read_to_string(&format!("{DMI_DIR}board_version")).map(|s| s.trim().to_string())
-            {
-                if !version.is_empty() && !VERSION_IGNORING_PRODUCTS.contains(&name.as_str()) {
-                    model.push_str(&format!(" ({version})"));
-                }
-            }
+        if let Some(version) =
+            read_to_string(format!("{DMI_DIR}board_version")).map(|s| s.trim().to_string())
+            && !version.is_empty()
+            && !VERSION_IGNORING_PRODUCTS.contains(&name.as_str())
+        {
+            model.push_str(&format!(" ({version})"));
         }
     }
 
@@ -315,46 +329,42 @@ fn get_all_lspci_gpus() -> Vec<(u32, u32, String)> {
         // Parse device ID from format: "00:02.0 VGA compatible controller [0300]: Intel Corporation HD Graphics 500 [8086:5a85] (rev 0b)"
         // We want to extract vendor:device IDs (8086:5a85) and the name (Intel Corporation HD Graphics 500)
 
-        if let Some(ids_start) = line.rfind('[') {
-            if let Some(ids_end) = line.rfind(']') {
-                let ids = &line[ids_start + 1..ids_end];
+        if let Some(ids_start) = line.rfind('[')
+            && let Some(ids_end) = line.rfind(']')
+        {
+            let ids = &line[ids_start + 1..ids_end];
 
-                if let Some(colon_pos) = ids.find(':') {
-                    let vendor_id_str = &ids[..colon_pos];
-                    let device_id_str = &ids[colon_pos + 1..];
+            if let Some(colon_pos) = ids.find(':') {
+                let vendor_id_str = &ids[..colon_pos];
+                let device_id_str = &ids[colon_pos + 1..];
 
-                    if let (Ok(vendor_id), Ok(device_id)) = (
-                        u32::from_str_radix(vendor_id_str, 16),
-                        u32::from_str_radix(device_id_str, 16),
-                    ) {
-                        if let Some(name_start) = line.find(": ") {
-                            let full_name = line[name_start + 2..ids_start].trim();
+                if let (Ok(vendor_id), Ok(device_id)) = (
+                    u32::from_str_radix(vendor_id_str, 16),
+                    u32::from_str_radix(device_id_str, 16),
+                ) && let Some(name_start) = line.find(": ")
+                {
+                    let full_name = line[name_start + 2..ids_start].trim();
 
-                            // Look for marketing name in brackets like "GP108M [GeForce MX150]"
-                            // We prefer the marketing name over the chip code
-                            let gpu_name = if let Some(bracket_start) = full_name.find('[') {
-                                if let Some(bracket_end) = full_name.find(']') {
-                                    let vendor_part = full_name[..bracket_start].trim();
-                                    let marketing_name =
-                                        full_name[bracket_start + 1..bracket_end].trim();
+                    // Look for marketing name in brackets like "GP108M [GeForce MX150]"
+                    // We prefer the marketing name over the chip code
+                    let gpu_name = if let Some(bracket_start) = full_name.find('[') {
+                        if let Some(bracket_end) = full_name.find(']') {
+                            let vendor_part = full_name[..bracket_start].trim();
+                            let marketing_name = full_name[bracket_start + 1..bracket_end].trim();
 
-                                    let vendor = vendor_part
-                                        .split_whitespace()
-                                        .next()
-                                        .unwrap_or(vendor_part);
+                            let vendor =
+                                vendor_part.split_whitespace().next().unwrap_or(vendor_part);
 
-                                    format!("{} {}", vendor, marketing_name)
-                                } else {
-                                    full_name.to_string()
-                                }
-                            } else {
-                                full_name.to_string()
-                            };
-
-                            if !gpu_name.is_empty() {
-                                gpus.push((vendor_id, device_id, gpu_name));
-                            }
+                            format!("{} {}", vendor, marketing_name)
+                        } else {
+                            full_name.to_string()
                         }
+                    } else {
+                        full_name.to_string()
+                    };
+
+                    if !gpu_name.is_empty() {
+                        gpus.push((vendor_id, device_id, gpu_name));
                     }
                 }
             }
@@ -393,23 +403,23 @@ fn get_lspci_gpu_names() -> HashMap<u32, String> {
         // Or with marketing name: "00:02.0 VGA compatible controller: Intel Corporation Alder Lake-P GT2 [Iris Xe Graphics] [8086:46a6] (rev 0c)"
         // We want to extract the device ID (5a85/46a6) and the name, preferring marketing name if available
 
-        if let Some(ids_start) = line.rfind('[') {
-            if let Some(ids_end) = line.rfind(']') {
-                let ids = &line[ids_start + 1..ids_end];
+        if let Some(ids_start) = line.rfind('[')
+            && let Some(ids_end) = line.rfind(']')
+        {
+            let ids = &line[ids_start + 1..ids_end];
 
-                // Parse vendor:device format like "8086:5a85"
-                if let Some(colon_pos) = ids.find(':') {
-                    let device_id_str = &ids[colon_pos + 1..];
-                    if let Ok(device_id) = u32::from_str_radix(device_id_str, 16) {
-                        // Extract the GPU name between ": " and the last "["
-                        if let Some(name_start) = line.find(": ") {
-                            let full_name = line[name_start + 2..ids_start].trim();
-                            let gpu_name = full_name
-                                .replace(" Corporation", "")
-                                .replace(" [Intel Graphics]", "");
-                            if !gpu_name.is_empty() {
-                                gpu_map.insert(device_id, gpu_name);
-                            }
+            // Parse vendor:device format like "8086:5a85"
+            if let Some(colon_pos) = ids.find(':') {
+                let device_id_str = &ids[colon_pos + 1..];
+                if let Ok(device_id) = u32::from_str_radix(device_id_str, 16) {
+                    // Extract the GPU name between ": " and the last "["
+                    if let Some(name_start) = line.find(": ") {
+                        let full_name = line[name_start + 2..ids_start].trim();
+                        let gpu_name = full_name
+                            .replace(" Corporation", "")
+                            .replace(" [Intel Graphics]", "");
+                        if !gpu_name.is_empty() {
+                            gpu_map.insert(device_id, gpu_name);
                         }
                     }
                 }

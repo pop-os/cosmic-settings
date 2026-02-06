@@ -1,6 +1,6 @@
 [package]
 name = "cosmic-settings-a11y-manager-subscription"
-version = "1.0.0-beta6"
+version = "1.0.2"
 edition = "2024"
 license = "MPL-2.0"
 rust-version.workspace = true
@@ -11,6 +11,6 @@ cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols" }
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 num-derive = "0.4.2"
 num-traits = "0.2.19"
-sctk = { git = "https://github.com/smithay/client-toolkit/", package = "smithay-client-toolkit" }
-tokio = "1.48.0"
-tracing = "0.1.41"
+sctk.workspace = true
+tokio = "1.49.0"
+tracing = "0.1.44"

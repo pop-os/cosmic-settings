@@ -1,6 +1,6 @@
 [package]
 name = "cosmic-settings-upower-subscription"
-version = "1.0.0-beta6"
+version = "1.0.2"
 edition = "2024"
 license = "MPL-2.0"
 rust-version.workspace = true
@@ -9,8 +9,8 @@ publish = true
 [dependencies]
 futures = "0.3.31"
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
-log = "0.4.28"
-tokio = "1.48.0"
-tokio-stream = "0.1.17"
+log = "0.4.29"
+tokio = "1.49.0"
+tokio-stream = "0.1.18"
 upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 zbus = "5.12.0"

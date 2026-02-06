@@ -15,6 +15,7 @@ use cosmic_settings_page::{
     self as page, Entity,
     section::{self, Section},
 };
+use futures::SinkExt;
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -38,7 +39,7 @@ pub struct Page {
 #[derive(Debug, Clone)]
 pub enum Message {
     Event(wayland::AccessibilityEvent),
-    CompConfigUpdate(cosmic_comp_config::CosmicCompConfig),
+    CompConfigUpdate(Box<cosmic_comp_config::CosmicCompConfig>),
     ProtocolUnavailable,
     SetMagnifier(bool),
     SetMouseShortcuts(bool),
@@ -128,18 +129,19 @@ impl page::Page<crate::pages::Message> for Page {
                 Ok((tx, mut rx)) => {
                     self.wayland_thread = Some(tx);
 
-                    return cosmic::Task::stream(async_fn_stream::fn_stream(
-                        |emitter| async move {
+                    return cosmic::Task::stream(cosmic::iced_futures::stream::channel(
+                        1,
+                        |mut sender| async move {
                             while let Some(event) = rx.recv().await {
-                                let _ = emitter
-                                    .emit(crate::pages::Message::AccessibilityMagnifier(
+                                let _ = sender
+                                    .send(crate::pages::Message::AccessibilityMagnifier(
                                         Message::Event(event),
                                     ))
                                     .await;
                             }
 
-                            let _ = emitter
-                                .emit(crate::pages::Message::AccessibilityMagnifier(
+                            let _ = sender
+                                .send(crate::pages::Message::AccessibilityMagnifier(
                                     Message::ProtocolUnavailable,
                                 ))
                                 .await;

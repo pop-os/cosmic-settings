@@ -1,6 +1,6 @@
 [package]
 name = "cosmic-settings-sound-subscription"
-version = "1.0.0-beta6"
+version = "1.0.2"
 edition = "2024"
 rust-version.workspace = true
 license = "MPL-2.0"
@@ -9,12 +9,12 @@ publish = true
 [dependencies]
 cosmic-pipewire = { path = "../../crates/cosmic-pipewire" }
 futures = "0.3.31"
-intmap = "3.1.2"
+intmap = "3.1.3"
 libcosmic = { git = "https://github.com/pop-os/libcosmic", default-features = false }
 numtoa = "1.0.0-alpha1"
-rustix = "1.0.8"
-tokio = { version = "1.47.1", features = ["process", "rt", "time"] }
-tracing = { version = "0.1.41", default-features = false }
+rustix = "1.1.3"
+tokio = { version = "1.49.0", features = ["process", "rt", "time"] }
+tracing = { version = "0.1.44", default-features = false }
 
 [features]
 # Set profile on first load
