@@ -822,9 +822,9 @@ fn context_drawer<'a>(
             Some(ShortcutMessage::AddAnotherKeybinding)
         });
 
-    let button_container = widget::row::with_capacity(2)
-        .push_maybe(reset_keybinding_button)
+    let button_container = widget::column::with_capacity(2)
         .push(add_keybinding_button)
+        .push_maybe(reset_keybinding_button)
         .spacing(space_xs)
         .apply(widget::container)
         .width(Length::Fill)
