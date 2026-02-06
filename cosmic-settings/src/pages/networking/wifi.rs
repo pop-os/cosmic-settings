@@ -376,7 +376,7 @@ impl Page {
                         ssid,
                         network_type,
                         _tx,
-                        interface,
+                        _interface,
                     ) => {
                         if success || matches!(network_type, NetworkType::Open) {
                             self.connecting.remove(ssid.as_ref());
@@ -864,6 +864,7 @@ fn devices_view() -> Section<crate::pages::Message> {
         forget_txt = fl!("wifi", "forget");
         known_networks_txt = fl!("known-networks");
         no_networks_txt = fl!("no-networks");
+        no_search_results_txt = fl!("no-search-results");
         settings_txt = fl!("settings");
         share_txt = fl!("share");
         visible_networks_txt = fl!("visible-networks");
@@ -1133,7 +1134,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                     view = view.push(known_networks);
                 }
 
-                // Build Visible Networks section (filtered when search active and 30+ networks)
+                // Build Visible Networks section (searchable when 30+ networks, filtered when user types)
                 let show_search = state.wireless_access_points.len() >= 30;
                 let search_query_lower = page.search_query.trim().to_lowercase();
 
@@ -1183,10 +1184,10 @@ fn devices_view() -> Section<crate::pages::Message> {
                     // Network list or "no results" message
                     if filtered_visible.is_empty() && show_search && !search_query_lower.is_empty()
                     {
-                        // Show "no networks found" only when search is active and returns no results
+                        // Show "no search results" message only when search is active and returns no results
                         visible_section = visible_section.push(
                             widget::container(widget::text::body(
-                                &section.descriptions[no_networks_txt],
+                                &section.descriptions[no_search_results_txt],
                             ))
                             .center_x(Length::Fill),
                         );
