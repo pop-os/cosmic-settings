@@ -266,6 +266,11 @@ x-hours =
 
 workspaces = Arbetsytor
     .desc = Orientering och beteende för arbetsytor
+workspaces-overview = Arbetsyteöversikt
+    .action-on-typing = Åtgärd vid skrivning
+    .none = Ingen
+    .launcher = Öppna programstartare
+    .applications = Öppna applikationer
 workspaces-behavior = Beteende för arbetsytor
     .dynamic = Dynamiska arbetsytor
     .dynamic-desc = Tar automatiskt bort tomma arbetsytor.
