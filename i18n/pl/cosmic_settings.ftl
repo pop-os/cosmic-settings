@@ -761,6 +761,7 @@ default-apps = Domyślne Aplikacje
     .terminal = Konsola
     .other-associations = Inne powiązania
     .text-editor = Edytor tekstu
+    .not-installed = Nie zainstalowane
 
 ## Applications: Startup Applications
 

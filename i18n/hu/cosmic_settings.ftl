@@ -343,7 +343,7 @@ workspaces-behavior = Munkaterületek viselkedése
 workspaces-multi-behavior = Többmonitoros viselkedés
     .span = A munkaterületek kiterjednek a kijelzőkre
     .separate = A kijelzők külön munkaterülettel rendelkeznek
-workspaces-overview-thumbnails = Munkaterület-áttekintő bélyegképek
+workspaces-overview-thumbnails = Munkaterület-áttekintő előnézetek
     .show-number = Munkaterület számának megjelenítése
     .show-name = Munkaterület nevének megjelenítése
 workspaces-orientation = Munkaterületek tájolása
@@ -746,6 +746,7 @@ default-apps = Alapértelmezett alkalmazások
     .terminal = Terminál
     .other-associations = Egyéb társítások
     .text-editor = Szövegszerkesztő
+    .not-installed = Nincs telepítve
 
 ## Applications: Startup Applications
 

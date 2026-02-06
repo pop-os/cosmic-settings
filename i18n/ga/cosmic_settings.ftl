@@ -745,6 +745,7 @@ default-apps = Feidhmchláir réamhshocraithe
     .terminal = Teirminéal
     .other-associations = Cumainn eile
     .text-editor = Eagarthóir téacs
+    .not-installed = Gan suiteáil
 
 ## Applications: Startup Applications
 

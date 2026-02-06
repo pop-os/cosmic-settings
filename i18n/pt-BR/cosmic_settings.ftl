@@ -747,6 +747,7 @@ default-apps = Aplicativos Padrão
     .terminal = Terminal
     .other-associations = Outras associações
     .text-editor = Editor de texto
+    .not-installed = Não instalado
 
 ## Applications: Startup Applications
 
