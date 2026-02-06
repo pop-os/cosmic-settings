@@ -159,7 +159,7 @@ copy-to-clipboard = 클립보드에 복사
 monospace-font = 고정 폭 글꼴
 experimental-settings = 실험적 설정
 recent-folders = 최근 폴더
-color-filter = Color filter type = 색상 필터 유형
+color-filter = 색상 필터 유형
     .unknown = 알 수 없는 필터 활성화됨
     .greyscale = 회색조
     .deuteranopia = 녹색/빨간색 (녹색 색약, 제2색각 이상)
