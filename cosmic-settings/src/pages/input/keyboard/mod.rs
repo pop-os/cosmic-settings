@@ -44,6 +44,7 @@ static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
 ];
 
 static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
+    ("Disabled", "caps:none"),
     ("Escape", "caps:escape"),
     ("Swap with Escape", "caps:swapescape"),
     ("Backspace", "caps:backspace"),
@@ -623,11 +624,7 @@ impl Page {
 
         let mut list = cosmic::widget::list_column();
 
-        if matches!(special_key, SpecialKey::CapsLock) {
-            list = list.add(special_char_radio_row("Caps Lock", None, current));
-        } else {
-            list = list.add(special_char_radio_row("None", None, current));
-        }
+        list = list.add(special_char_radio_row("Default", None, current));
 
         list = options
             .iter()
