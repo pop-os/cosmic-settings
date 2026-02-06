@@ -62,6 +62,22 @@ impl PanelPage for Page {
         fl!("panel-style", "extend")
     }
 
+    fn custom_length_label(&self) -> String {
+        format!("{} Custom Width", fl!("panel"))
+    }
+
+    fn length_label(&self) -> String {
+        format!("{} Width", fl!("panel"))
+    }
+
+    fn position_label(&self) -> String {
+        format!("{} Position", fl!("panel"))
+    }
+
+    fn corner_radius_label(&self) -> String {
+        format!("{} Corner radius", fl!("panel"))
+    }
+
     fn configure_applets_label(&self) -> String {
         fl!("panel-applets", "desc")
     }
