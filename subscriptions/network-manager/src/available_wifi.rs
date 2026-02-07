@@ -56,9 +56,9 @@ pub async fn handle_wireless_device(
             };
             let network_type = if flags.intersects(ApSecurityFlags::KEY_MGMT_802_1X) {
                 NetworkType::EAP
-            } else if flags.intersects(ApSecurityFlags::KEY_MGMTPSK) {
-                NetworkType::PSK
-            } else if flags.is_empty() {
+            } else if flags.intersects(ApSecurityFlags::KEY_MGMTPSK | ApSecurityFlags::KEY_MGMT_SAE) {
+                NetworkType::PskOrSae
+            } else if flags.intersects(ApSecurityFlags::KEY_MGMT_OWE) || flags.is_empty() {
                 NetworkType::Open
             } else {
                 continue;
@@ -111,6 +111,6 @@ pub struct AccessPoint {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NetworkType {
     Open,
-    PSK,
+    PskOrSae,
     EAP,
 }
