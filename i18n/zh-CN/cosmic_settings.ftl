@@ -746,6 +746,7 @@ default-apps = 默认应用程序
     .terminal = 终端
     .other-associations = 其他关联
     .text-editor = 文本编辑器
+    .not-installed = 未安装
 
 ## Applications: Startup Applications
 

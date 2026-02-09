@@ -34,11 +34,11 @@ settings = الإعدادات
 username = اسم المستخدم
 visible-networks = الشبكات المرئية
 identity = الهوية
-auth-dialog = المصادقة مطلوبة
-    .vpn-description = أدخل اسم المستخدم وكلمة السر المطلوبين من قبل خدمة VPN.
-    .wifi-description = أدخل كلمة السر أو مفتاح التشفير. يمكنك أيضًا الاتصال بالضغط على زر ”WPS“ الموجود على الراوتر.
-forget-dialog = هل تريد نسيان شبكة الواي فاي هذه؟
-    .description = ستحتاج إلى إدخال كلمة السر مرة أخرى لاستخدام شبكة Wi-Fi هذه في المستقبل.
+auth-dialog = الاستيثاق مطلوب
+    .vpn-description = أدخل اسم المستخدم وكلمة السر المطلوبين من قِبل خدمة VPN.
+    .wifi-description = أدخل كلمة السر أو مفتاح التعمية. يمكنك أيضًا الاتصال بالضغط على زر "WPS" الموجود على جهاز التوجيه.
+forget-dialog = أنسَ شبكة واي فاي هذه؟
+    .description = سيتعين إدخال كلمة السر مجددًا لاستخدامها مستقبلًا.
 network-device-state =
     .activated = متصل
     .config = يتصل
@@ -47,7 +47,7 @@ network-device-state =
     .failed = فشل الاتصال
     .ip-check = يتحقق من الاتصال
     .ip-config = طلب معلومات IP والتوجيه
-    .need-auth = يحتاج إلى مصادقة
+    .need-auth = يحتاج إلى الاستيثاق
     .prepare = التحضير للاتصال
     .secondaries = انتظار الاتصال الثانوي
     .unavailable = غير متاح
@@ -261,7 +261,7 @@ monospace-font = خط أحادي المسافة
 ## Desktop: Notifications
 
 notifications = الإشعارات
-    .desc = لا تزعج وإشعارات شاشة القفل وإعدادات كل تطبيق على حدة.
+    .desc = لا تزعج وإشعارات شاشة القفل وإعدادات كل تطبيق على حدة
 
 ## Desktop: Panel
 
@@ -730,7 +730,7 @@ applications = التطبيقات
 ## Applications: Default Applications
 
 default-apps = التطبيقات المبدئية
-    .desc = متصفح الويب المبدئي وعميل البريد ومتصفح الملفات والتطبيقات الأخرى.
+    .desc = متصفح الوِب المبدئي وعميل البريد ومتصفح الملفات والتطبيقات الأخرى.
     .web-browser = متصفح الوِب
     .file-manager = مدير الملفات
     .mail-client = عميل البريد
@@ -741,6 +741,7 @@ default-apps = التطبيقات المبدئية
     .terminal = طرفية
     .other-associations = جمعيات أخرى
     .text-editor = محرِّر نصوص
+    .not-installed = غير مُنصَّب
 
 ## Applications: Startup Applications
 

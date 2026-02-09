@@ -757,6 +757,7 @@ default-apps = Standardprogram
     .terminal = Terminal
     .text-editor = Textredigerare
     .other-associations = Andra associeringar
+    .not-installed = Inte installerad
 
 ## Program: Äldre program
 
