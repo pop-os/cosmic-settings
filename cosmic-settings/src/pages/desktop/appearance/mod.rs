@@ -16,9 +16,10 @@ use cosmic::app::ContextDrawer;
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
-use cosmic::cosmic_theme::{CornerRadii, Density, ThemeBuilder};
+use cosmic::cosmic_theme::{CornerRadii, Density, ThemeBuilder, ThemeMode};
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
+use cosmic::iced::Subscription;
 use cosmic::iced_core::{Alignment, Length};
 use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, horizontal_space, radio, row, settings,
@@ -124,6 +125,7 @@ pub enum Message {
     Autoswitch(bool),
     DarkMode(bool),
     Density(Density),
+    ThemeModeUpdate(ThemeMode),
 
     DrawerOpen(ContextView),
     DrawerColor(ColorPickerUpdate),
@@ -532,6 +534,20 @@ impl Page {
             Message::Daytime(day_time) => {
                 self.day_time = day_time;
                 return Task::none();
+            },
+
+            Message::ThemeModeUpdate(mode) => {
+                let was_dark = self.theme_manager.mode().is_dark;
+                let was_auto = self.theme_manager.mode().auto_switch;
+
+                self.theme_manager.sync_mode(mode);
+
+                // If auto-switch flipped while the page is open, keep the UI in sync.
+                if was_dark != self.theme_manager.mode().is_dark
+                    || was_auto != self.theme_manager.mode().auto_switch
+                {
+                    self.drawer.reset(&self.theme_manager);
+                }
             }
         }
 
@@ -729,6 +745,17 @@ impl page::Page<crate::pages::Message> for Page {
         )));
 
         cosmic::task::batch(tasks)
+    }
+
+    fn subscription(&self, core: &cosmic::Core) -> Subscription<crate::pages::Message> {
+        // Keep the Appearance page in sync when the daemon auto-switches light/dark.
+        core.watch_config::<ThemeMode>("com.system76.CosmicTheme.Mode")
+            .map(|update| {
+                for why in update.errors {
+                    tracing::error!(?why, "theme mode config load error");
+                }
+                crate::pages::Message::Appearance(Message::ThemeModeUpdate(update.config))
+            })
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
