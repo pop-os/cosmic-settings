@@ -18,6 +18,7 @@
   <name xml:lang="sk">Nastavenia COSMIC</name>
   <name xml:lang="es">Configuración COSMIC</name>
   <name xml:lang="sv">COSMIC Inställningar</name>
+  <name xml:lang="uk">Налаштування COSMIC</name>
   <summary>Settings application for the COSMIC desktop</summary>
   <summary xml:lang="ar">تطبيق الإعدادات لسطح مكتب COSMIC</summary>
   <summary xml:lang="cs">Aplikace nastavení pro pracovní prostředí COSMIC</summary>
@@ -28,6 +29,7 @@
   <summary xml:lang="sk">Aplikácia nastavení pre pracovnú plochu COSMIC</summary>
   <summary xml:lang="es">Aplicación de configuración para escritorio COSMIC</summary>
   <summary xml:lang="sv">Inställningsprogram för skrivbordsmiljön COSMIC</summary>
+  <summary xml:lang="uk">Застосунок налаштувань для середовища COSMIC</summary>
   <description>
       <p>Settings application for the COSMIC desktop</p>
       <p xml:lang="ar">تطبيق الإعدادات لسطح مكتب COSMIC</p>
@@ -39,6 +41,7 @@
       <p xml:lang="sk">Aplikácia nastavení pre pracovnú plochu COSMIC</p>
       <p xml:lang="es">Aplicación de configuración para escritorio COSMIC</p>
       <p xml:lang="sv">Inställningsprogram för skrivbordsmiljön COSMIC</p>
+      <p xml:lang="uk">Застосунок налаштувань для середовища COSMIC</p>
   </description>
   <launchable type="desktop-id">com.system76.CosmicSettings.desktop</launchable>
   <icon type="remote" height="256" width="256">https://raw.githubusercontent.com/pop-os/cosmic-settings/master/resources/icons/256x256/apps/com.system76.CosmicSettings.svg</icon>
