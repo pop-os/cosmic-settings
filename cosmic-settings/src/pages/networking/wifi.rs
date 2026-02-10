@@ -939,11 +939,10 @@ fn devices_view() -> Section<crate::pages::Message> {
                         };
 
                         let identifier = widget::row::with_capacity(3)
-                            .push(widget::icon::from_name(wifi_icon(network.strength)))
-                            .push_maybe(
-                                is_encrypted
-                                    .then(|| widget::icon::from_name("connection-secure-symbolic")),
-                            )
+                            .push(widget::icon::from_name(wifi_icon(
+                                network.strength,
+                                is_encrypted,
+                            )))
                             .push(
                                 widget::text::body(network.ssid.as_ref()).wrapping(Wrapping::Glyph),
                             )
@@ -1142,7 +1141,27 @@ pub fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
     })
 }
 
-fn wifi_icon(strength: u8) -> &'static str {
+fn wifi_icon(strength: u8, is_encrypted: bool) -> &'static str {
+    if is_encrypted {
+        wifi_icon_secure(strength)
+    } else {
+        wifi_icon_open(strength)
+    }
+}
+
+fn wifi_icon_secure(strength: u8) -> &'static str {
+    if strength < 25 {
+        "network-wireless-secure-signal-weak-symbolic"
+    } else if strength < 50 {
+        "network-wireless-secure-signal-ok-symbolic"
+    } else if strength < 75 {
+        "network-wireless-secure-signal-good-symbolic"
+    } else {
+        "network-wireless-secure-signal-excellent-symbolic"
+    }
+}
+
+fn wifi_icon_open(strength: u8) -> &'static str {
     if strength < 25 {
         "network-wireless-signal-weak-symbolic"
     } else if strength < 50 {
