@@ -491,6 +491,8 @@ impl Page {
 
                 self.drawer.reset(&self.theme_manager);
 
+                self.can_reset = self.can_reset();
+
                 return cosmic::task::future(async move {
                     app::Message::SetTheme(cosmic::theme::system_preference())
                 });
@@ -541,11 +543,7 @@ impl Page {
             tasks = tasks.chain(self.theme_manager.build_theme(stage))
         }
 
-        self.can_reset = if self.theme_manager.mode().is_dark {
-            *self.theme_manager.builder() != ThemeBuilder::dark()
-        } else {
-            *self.theme_manager.builder() != ThemeBuilder::light()
-        };
+        self.can_reset = self.can_reset();
 
         tasks
     }
@@ -658,6 +656,14 @@ impl Page {
                 tracing::error!(?err, "Error updating dock spacing");
             }
         };
+    }
+
+    fn can_reset(&self) -> bool {
+        if self.theme_manager.mode().is_dark {
+            *self.theme_manager.builder() != ThemeBuilder::dark()
+        } else {
+            *self.theme_manager.builder() != ThemeBuilder::light()
+        }
     }
 }
 
