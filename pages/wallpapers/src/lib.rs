@@ -134,7 +134,7 @@ pub async fn load_each_from_path(
         })
         .buffered(4)
         .filter_map(|value| async { value.ok().flatten() })
-        .take(100);
+        .take(500);
 
     Box::pin(future)
 }
