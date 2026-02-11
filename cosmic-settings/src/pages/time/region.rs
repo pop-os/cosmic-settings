@@ -26,6 +26,8 @@ use icu::{
 use locales_rs as locale;
 use slotmap::{DefaultKey, SlotMap};
 
+static GNOME_LANGUAGE_SELECTOR: &str = "gnome-language-selector";
+
 #[derive(Clone, Debug)]
 pub enum Message {
     AddLanguage(DefaultKey),
@@ -99,6 +101,7 @@ pub struct PageRefresh {
     region: Option<SystemLocale>,
     available_languages: SlotMap<DefaultKey, SystemLocale>,
     system_locales: BTreeMap<String, SystemLocale>,
+    language_selector_available: bool,
 }
 
 #[derive(Default)]
@@ -113,6 +116,8 @@ pub struct Page {
     registry: Option<locale::Registry>,
     expanded_source_popover: Option<usize>,
     add_language_search: String,
+    /// Whether gnome-language-selector is in the path.
+    language_selector_available: bool,
     /// Cached LC_NUMERIC locale in icu locale format.
     numeric_locale: Option<Locale>,
     /// Cached LC_TIME locale in icu locale format.
@@ -165,22 +170,27 @@ impl page::Page<crate::pages::Message> for Page {
                     .on_clear(Message::AddLanguageSearch(String::new()))
                     .apply(Element::from)
                     .map(crate::pages::Message::from);
-                let install_additional_button =
-                    widget::button::standard(fl!("install-additional-languages"))
-                        .on_press(Message::InstallAdditionalLanguages)
-                        .apply(widget::container)
-                        .width(Length::Fill)
-                        .align_x(Alignment::End)
-                        .apply(Element::from)
-                        .map(crate::pages::Message::from);
-
-                context_drawer(
+                let drawer = context_drawer(
                     self.add_language_view().map(crate::pages::Message::from),
                     crate::pages::Message::CloseContextDrawer,
                 )
                 .title(fl!("add-language", "context"))
-                .header(search)
-                .footer(install_additional_button)
+                .header(search);
+
+                if self.language_selector_available {
+                    let install_additional_button =
+                        widget::button::standard(fl!("install-additional-languages"))
+                            .on_press(Message::InstallAdditionalLanguages)
+                            .apply(widget::container)
+                            .width(Length::Fill)
+                            .align_x(Alignment::End)
+                            .apply(Element::from)
+                            .map(crate::pages::Message::from);
+
+                    drawer.footer(install_additional_button)
+                } else {
+                    drawer
+                }
             }
             ContextView::Region => {
                 let search = widget::search_input("", &self.add_language_search)
@@ -259,7 +269,7 @@ impl Page {
 
             Message::InstallAdditionalLanguages => {
                 return cosmic::task::future(async move {
-                    _ = tokio::process::Command::new("gnome-language-selector")
+                    _ = tokio::process::Command::new(GNOME_LANGUAGE_SELECTOR)
                         .status()
                         .await;
 
@@ -275,6 +285,7 @@ impl Page {
                     self.language = page_refresh.language;
                     self.region = page_refresh.region;
                     self.registry = Some(page_refresh.registry.0);
+                    self.language_selector_available = page_refresh.language_selector_available;
                     self.numeric_locale = self.icu_locale_from_env("LC_NUMERIC");
                     self.time_locale = self.icu_locale_from_env("LC_TIME");
                 }
@@ -765,6 +776,8 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
         available_languages.insert(language);
     }
 
+    let language_selector_available = which::which(GNOME_LANGUAGE_SELECTOR).is_ok();
+
     Ok(PageRefresh {
         config,
         registry: Registry(registry),
@@ -772,6 +785,7 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
         region,
         available_languages,
         system_locales,
+        language_selector_available,
     })
 }
 
