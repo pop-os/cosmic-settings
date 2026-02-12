@@ -311,7 +311,7 @@ async fn start_listening(
                             if identity.is_some() {
                                 NetworkType::EAP
                             } else {
-                                NetworkType::PSK
+                                NetworkType::PskOrSae
                             },
                             interface.clone(),
                         )
@@ -490,12 +490,12 @@ async fn start_listening(
                         }
                         t => {
                             let (tx, rx) = tokio::sync::oneshot::channel();
-                            let setting_name = if matches!(t, NetworkType::PSK) {
+                            let setting_name = if matches!(t, NetworkType::PskOrSae) {
                                 "802-11-wireless-security"
                             } else {
                                 "802-1x"
                             };
-                            let pw_key = if matches!(t, NetworkType::PSK) {
+                            let pw_key = if matches!(t, NetworkType::PskOrSae) {
                                 "psk"
                             } else {
                                 "password"

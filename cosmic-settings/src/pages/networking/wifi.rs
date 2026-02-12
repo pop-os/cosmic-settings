@@ -447,7 +447,7 @@ impl Page {
                 let escaped_ssid = escape_wifi_qr_string(ssid.as_ref());
                 let qr_string = if let Some(ref pass) = password {
                     let security = match security_type {
-                        NetworkType::PSK => "WPA",
+                        NetworkType::PskOrSae => "WPA",
                         NetworkType::EAP => "WPA",
                         NetworkType::Open => "",
                     };
@@ -921,7 +921,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                             }))
                             .any(|known| known == network.ssid.as_ref());
 
-                        let is_encrypted = network.network_type != NetworkType::Open;
+                        let needs_password = network.network_type != NetworkType::Open;
 
                         let (connect_txt, connect_msg) = if is_connected {
                             (&section.descriptions[connected_txt], None)
@@ -930,7 +930,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                         } else {
                             (
                                 &section.descriptions[connect_txt],
-                                Some(if is_known || !is_encrypted {
+                                Some(if is_known || !needs_password {
                                     Message::Connect(network.ssid.clone())
                                 } else {
                                     Message::PasswordRequest(network.ssid.clone())
@@ -941,7 +941,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                         let identifier = widget::row::with_capacity(3)
                             .push(widget::icon::from_name(wifi_icon(network.strength)))
                             .push_maybe(
-                                is_encrypted
+                                needs_password
                                     .then(|| widget::icon::from_name("connection-secure-symbolic")),
                             )
                             .push(
