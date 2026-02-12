@@ -526,7 +526,7 @@ impl Model {
                 }
             }
 
-            pipewire::Event::AddProfile(id, profile) => {
+            pipewire::Event::AddProfile(id, index, profile) => {
                 if let Some(p) = self.active_profiles.get_mut(id) {
                     if p.index == profile.index {
                         *p = profile.clone();
@@ -534,16 +534,17 @@ impl Model {
                 }
 
                 let profiles = self.device_profiles.entry(id).or_default();
-                for p in profiles.iter_mut() {
-                    if p.index == profile.index {
-                        *p = profile;
-
-                        self.update_ui_profiles();
-                        return;
-                    }
+                if profiles.len() < index as usize + 1 {
+                    let additional = (index as usize + 1) - profiles.capacity();
+                    profiles.reserve_exact(additional);
+                    profiles.extend(std::iter::repeat_n(
+                        pipewire::Profile::default(),
+                        additional,
+                    ));
                 }
 
-                profiles.push(profile);
+                profiles[index as usize] = profile;
+
                 self.update_ui_profiles();
             }
 
@@ -676,12 +677,22 @@ impl Model {
 
     fn add_route(&mut self, id: DeviceId, index: u32, route: pipewire::Route) {
         self.update_device_route_name(&route, id);
+
+        tracing::debug!(target: "sound",
+            "Device {} added route {} ({:?}); {:?}",
+            id,
+            route.name,
+            route.direction,
+            route.available
+        );
+
         let routes = self.device_routes.entry(id).or_default();
         if routes.len() < index as usize + 1 {
             let additional = (index as usize + 1) - routes.capacity();
             routes.reserve_exact(additional);
             routes.extend(std::iter::repeat_n(pipewire::Route::default(), additional));
         }
+
         routes[index as usize] = route;
     }
 

@@ -686,6 +686,13 @@ impl cosmic::Application for SettingsApp {
                         return page.update(message).map(Into::into);
                     }
                 }
+
+                #[cfg(feature = "page-workspaces")]
+                crate::pages::Message::Workspaces(message) => {
+                    if let Some(page) = self.pages.page_mut::<desktop::workspaces::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
             },
 
             #[cfg(feature = "wayland")]
