@@ -641,6 +641,7 @@ fn localize_action(action: &Action) -> String {
         Action::Maximize => fl!("manage-windows", "maximize"),
         Action::Fullscreen => fl!("manage-windows", "fullscreen"),
         Action::Minimize => fl!("manage-windows", "minimize"),
+        Action::ShowDesktop => fl!("manage-windows", "show-desktop"),
         Action::Move(Direction::Down) => fl!("move-windows", "direction", direction = "down"),
         Action::Move(Direction::Right) => fl!("move-windows", "direction", direction = "right"),
         Action::Move(Direction::Left) => fl!("move-windows", "direction", direction = "left"),
@@ -681,6 +682,7 @@ fn localize_action(action: &Action) -> String {
         Action::PreviousWorkspace => fl!("nav-shortcuts", "prev-workspace"),
         Action::Resizing(ResizeDirection::Inwards) => fl!("manage-windows", "resize-inwards"),
         Action::Resizing(ResizeDirection::Outwards) => fl!("manage-windows", "resize-outwards"),
+
         Action::SwapWindow => fl!("window-tiling", "swap-window"),
         Action::SwitchOutput(Direction::Down) => fl!("nav-shortcuts", "output", direction = "down"),
         Action::SwitchOutput(Direction::Left) => fl!("nav-shortcuts", "output", direction = "left"),
