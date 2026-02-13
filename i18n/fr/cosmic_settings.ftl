@@ -724,6 +724,7 @@ default-apps = Applications par défaut
     .terminal = Terminal
     .other-associations = Autres associations
     .text-editor = Éditeur de texte
+    .not-installed = Non installé
 identity = Identité
 save = Enregistrer
 password-confirm = Confirmer le mot de passe

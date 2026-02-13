@@ -100,7 +100,7 @@ confirm = Confirmar
 enable = Habilitar
 bluetooth = Bluetooth
     .desc = Gerenciar dispositivos Bluetooth
-    .status = Este sistema está visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
+    .status = Este sistema estará visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
     .connected = Conectado
     .connecting = Conectando
     .disconnecting = Desconectando
@@ -747,6 +747,7 @@ default-apps = Aplicativos Padrão
     .terminal = Terminal
     .other-associations = Outras associações
     .text-editor = Editor de texto
+    .not-installed = Não instalado
 
 ## Applications: Startup Applications
 

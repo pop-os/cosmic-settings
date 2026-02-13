@@ -132,6 +132,9 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
+        if self.app_to_remove.is_some() {
+            return Task::none();
+        }
         let (task, on_enter_handle) = Task::future(async move {
             let locales = freedesktop_desktop_entry::get_languages_from_env();
 
@@ -262,6 +265,7 @@ impl Page {
                 if !confirm {
                     self.app_to_remove = Some(app);
                     self.target_directory_type = Some(directory_type);
+                    return cosmic::task::message(crate::app::Message::Page(self.entity));
                 } else {
                     let mut file_name = app.clone().appid;
                     file_name.push_str(".desktop");

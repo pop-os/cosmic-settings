@@ -29,7 +29,6 @@ use futures::{
     FutureExt, SinkExt, StreamExt,
     channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded},
 };
-use hw_address::HwAddress;
 use iced_futures::{Subscription, stream};
 use secure_string::SecureString;
 use tokio::process::Command;
@@ -45,8 +44,6 @@ pub type UUID = Arc<str>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("access point not found")]
-    AccessPointNotFound,
     #[error("failed to list bluetooth devices with rfkill")]
     BluetoothRfkillList(std::io::Error),
     #[error("failed to activate connection")]
@@ -299,8 +296,8 @@ async fn start_listening(
                     ssid,
                     identity,
                     password,
-                    hw_address,
                     secret_tx,
+                    interface,
                 }) => {
                     let nm_state = NetworkManagerState::new(&conn).await.unwrap_or_default();
 
@@ -310,13 +307,13 @@ async fn start_listening(
                             &ssid,
                             identity.as_deref(),
                             Some(password.unsecure()),
-                            hw_address,
                             secret_tx.clone(),
                             if identity.is_some() {
                                 NetworkType::EAP
                             } else {
-                                NetworkType::PSK
+                                NetworkType::PskOrSae
                             },
+                            interface.clone(),
                         )
                         .await
                         .is_ok();
@@ -327,8 +324,8 @@ async fn start_listening(
                                 ssid: ssid.clone(),
                                 identity: identity.clone(),
                                 password: password.clone(),
-                                hw_address,
                                 secret_tx: secret_tx.clone(),
+                                interface,
                             },
                             success,
                             state: NetworkManagerState::new(&conn).await.unwrap_or_default(),
@@ -336,17 +333,10 @@ async fn start_listening(
                         .await;
                 }
 
-                Some(Request::SelectAccessPoint(ssid, hw_address, network_type, secret_tx)) => {
+                Some(Request::SelectAccessPoint(ssid, network_type, secret_tx, interface)) => {
                     if matches!(network_type, NetworkType::Open) {
-                        attempt_wifi_connection(
-                            &conn,
-                            ssid,
-                            hw_address,
-                            network_type,
-                            output,
-                            None,
-                        )
-                        .await;
+                        attempt_wifi_connection(&conn, ssid, network_type, output, None, interface)
+                            .await;
                     } else {
                         // For secured networks, check if we have saved credentials
                         let has_saved = has_saved_wifi_credentials(&conn, &ssid).await;
@@ -359,10 +349,10 @@ async fn start_listening(
                         attempt_wifi_connection(
                             &conn,
                             ssid,
-                            hw_address,
                             network_type,
                             output,
                             secret_tx,
+                            interface,
                         )
                         .await;
                     }
@@ -500,12 +490,12 @@ async fn start_listening(
                         }
                         t => {
                             let (tx, rx) = tokio::sync::oneshot::channel();
-                            let setting_name = if matches!(t, NetworkType::PSK) {
+                            let setting_name = if matches!(t, NetworkType::PskOrSae) {
                                 "802-11-wireless-security"
                             } else {
                                 "802-1x"
                             };
-                            let pw_key = if matches!(t, NetworkType::PSK) {
+                            let pw_key = if matches!(t, NetworkType::PskOrSae) {
                                 "psk"
                             } else {
                                 "password"
@@ -640,10 +630,10 @@ async fn has_saved_wifi_credentials(conn: &zbus::Connection, ssid: &str) -> bool
 async fn attempt_wifi_connection(
     conn: &zbus::Connection,
     ssid: SSID,
-    hw_address: HwAddress,
     network_type: NetworkType,
     output: &mut futures::channel::mpsc::Sender<Event>,
     secret_tx: Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
+    interface: Option<String>,
 ) {
     let state = NetworkManagerState::new(conn).await.unwrap_or_default();
     let success = if let Err(err) = state
@@ -652,9 +642,9 @@ async fn attempt_wifi_connection(
             ssid.as_ref(),
             None,
             None,
-            hw_address,
             secret_tx,
             network_type,
+            interface.clone(),
         )
         .await
     {
@@ -666,7 +656,7 @@ async fn attempt_wifi_connection(
 
     _ = request_response(
         conn,
-        Request::SelectAccessPoint(ssid, hw_address, network_type, None),
+        Request::SelectAccessPoint(ssid, network_type, None, interface),
         success,
     )
     .then(|event| output.send(event))
@@ -688,8 +678,8 @@ pub enum Request {
         ssid: String,
         identity: Option<String>,
         password: SecureString,
-        hw_address: HwAddress,
         secret_tx: Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
+        interface: Option<String>,
     },
     /// Get WiFi credentials for a known access point.
     GetWiFiCredentials(
@@ -705,9 +695,9 @@ pub enum Request {
     /// Connect to a known access point.
     SelectAccessPoint(
         SSID,
-        HwAddress,
         NetworkType,
         Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
+        Option<String>,
     ),
     /// Toggle airplaine mode.
     SetAirplaneMode(bool),
@@ -907,9 +897,9 @@ impl NetworkManagerState {
         ssid: &str,
         identity: Option<&str>,
         password: Option<&str>,
-        hw_address: HwAddress,
         mut secret_tx: Option<tokio::sync::mpsc::Sender<nm_secret_agent::Request>>,
         network_type: NetworkType,
+        interface: Option<String>,
     ) -> Result<(), Error> {
         secret_tx = secret_tx.filter(|tx| !tx.is_closed());
         let nm = NetworkManager::new(conn).await?;
@@ -924,14 +914,6 @@ impl NetworkManagerState {
                 break;
             }
         }
-
-        let Some(ap) = self
-            .wireless_access_points
-            .iter()
-            .find(|ap| ap.ssid.as_ref() == ssid && ap.hw_address == hw_address)
-        else {
-            return Err(Error::AccessPointNotFound);
-        };
 
         let mut conn_settings: HashMap<&str, HashMap<&str, zvariant::Value>> = HashMap::from([
             (
@@ -984,7 +966,8 @@ impl NetworkManagerState {
             if !matches!(
                 device.device_type().await.unwrap_or(DeviceType::Other),
                 DeviceType::Wifi
-            ) {
+            ) || (interface.is_some() && interface != device.interface().await.ok())
+            {
                 continue;
             }
 
@@ -1009,8 +992,8 @@ impl NetworkManagerState {
             }
 
             let known_conn = if let Some(known_conn) = known_conn {
-                if secret_tx.is_none() || identity.is_some() {
-                    known_conn.update(conn_settings).await?;
+                if (secret_tx.is_none() && password.is_some()) || identity.is_some() {
+                    known_conn.update(conn_settings).await.unwrap();
                 }
                 known_conn
             } else {

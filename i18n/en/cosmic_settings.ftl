@@ -383,6 +383,12 @@ focus-navigation = Focus navigation
 workspaces = Workspaces
     .desc = Workspace orientation and behavior
 
+workspaces-overview = Workspaces overview
+    .action-on-typing = Action on typing
+    .none = None
+    .launcher = Open Launcher
+    .applications = Open Applications
+
 workspaces-behavior = Workspace behavior
     .dynamic = Dynamic workspaces
     .dynamic-desc = Automatically removes empty workspaces.
@@ -843,6 +849,8 @@ default-apps = Default Applications
     .terminal = Terminal
     .other-associations = Other associations
     .text-editor = Text Editor
+    .not-installed = Not installed
+
 
 ## Applications: Startup applications
 
