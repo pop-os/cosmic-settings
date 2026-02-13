@@ -951,6 +951,7 @@ default-apps = Default Applications
     .terminal = Terminal
     .other-associations = Other associations
     .text-editor = Text Editor
+    .archives = Archives
     .not-installed = Not installed
 
 
