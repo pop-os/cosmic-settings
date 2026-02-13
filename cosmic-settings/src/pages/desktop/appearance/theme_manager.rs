@@ -260,6 +260,13 @@ impl Manager {
         &self.mode.0
     }
 
+    /// Update the locally cached `ThemeMode` from an external source (daemon / config watcher).
+    ///
+    /// This must not write back to config, since the daemon is the source of truth.
+    pub fn sync_mode(&mut self, mode: ThemeMode) {
+        self.mode.0 = mode;
+    }
+
     #[inline]
     pub fn builder(&self) -> &ThemeBuilder {
         &self.selected_customizer().builder.0
