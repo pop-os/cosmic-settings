@@ -190,9 +190,7 @@ impl Page {
 
             Message::ReplaceApply => {
                 if let Some((mut binding, ..)) = self.replace_dialog.pop() {
-                    self.model.config_remove(&binding);
-                    binding.keycode = None;
-                    self.add_shortcut(binding);
+                    self.add_shortcut(binding, true);
 
                     if self.replace_dialog.is_empty() {
                         self.add_shortcut = Default::default();
@@ -274,7 +272,7 @@ impl Page {
                                     iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                                 ]);
                             }
-                            self.add_shortcut(binding);
+                            self.add_shortcut(binding, false);
                             _ = self.model.on_enter();
 
                             return Task::batch(vec![
@@ -339,7 +337,7 @@ impl Page {
                             iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                         ]);
                     }
-                    self.add_shortcut(binding);
+                    self.add_shortcut(binding, false);
                     _ = self.model.on_enter();
 
                     return Task::batch(vec![
@@ -478,12 +476,15 @@ impl Page {
             .into()
     }
 
-    fn add_shortcut(&mut self, mut binding: Binding) {
-        if let Some(action) = self.model.config_contains(&binding) {
+    fn add_shortcut(&mut self, mut binding: Binding, replace: bool) {
+        if replace {
+            self.model.config_remove(&binding);
+        } else if let Some(action) = self.model.config_contains(&binding) {
             let action_str = super::localize_action(&action);
             self.replace_dialog.push((binding, action, action_str));
             return;
         }
+        binding.keycode = None;
         binding.description = Some(self.add_shortcut.name.clone());
         let new_action = Action::Spawn(self.add_shortcut.task.clone());
         self.model.config_add(new_action, binding);
