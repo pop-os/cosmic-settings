@@ -324,6 +324,9 @@ impl Page {
 
                     _ = config.set("system_locales", &locales);
 
+                    // Build the LANGUAGE string for AccountsService (colon-separated locales)
+                    let language_list = build_language_list(locales);
+
                     if let Some(language_code) = locales.first()
                         && let Some(language) = self
                             .available_languages
@@ -340,6 +343,14 @@ impl Page {
                                 region.unwrap_or(language).lang_code.clone(),
                             )
                             .await;
+
+                            // Set the LANGUAGE variable via AccountsService
+                            if let Err(why) = set_user_language(language_list).await {
+                                tracing::error!(
+                                    ?why,
+                                    "failed to set user language via AccountsService"
+                                );
+                            }
                         });
                     }
                 }
@@ -908,6 +919,29 @@ pub async fn set_locale(
         .await
 }
 
+/// Sets the user's preferred language list via AccountsService D-Bus.
+/// This updates the LANGUAGE environment variable for gettext-based applications.
+/// The language_list should be a colon-separated string like "de_DE:de:en_US:en".
+pub async fn set_user_language(language_list: String) -> eyre::Result<()> {
+    let conn = zbus::Connection::system()
+        .await
+        .wrap_err("zbus system connection error")?;
+
+    let uid = rustix::process::getuid().as_raw() as u64;
+
+    let user_proxy = accounts_zbus::UserProxy::from_uid(&conn, uid)
+        .await
+        .wrap_err("failed to create AccountsService user proxy")?;
+
+    user_proxy
+        .set_language(&language_list)
+        .await
+        .wrap_err("failed to set language via AccountsService")?;
+
+    eprintln!("set user language via AccountsService: {language_list}");
+    Ok(())
+}
+
 fn parse_locale(locale: &str) -> Option<Locale> {
     locale
         .split('.')
@@ -986,4 +1020,54 @@ fn update_time_settings_after_region_change(region: String) {
             "Failed to update first_day_of_week after region change"
         );
     }
+}
+
+/// Builds a colon-separated language list for the LANGUAGE environment variable.
+/// Converts locales like ["de_DE.UTF-8", "en_US.UTF-8"] to "de_DE:de:en_US:en".
+///
+/// Important: The list stops at English locales since English is typically the
+/// source language and doesn't need translation files. This prevents fallback
+/// to other languages when English is selected.
+fn build_language_list(locales: &[String]) -> String {
+    let mut parts = Vec::new();
+
+    for locale in locales {
+        // Parse locale: language_TERRITORY[.CODESET][@MODIFIER]
+        // We want to extract "language_TERRITORY" without codeset or modifier
+        let base = strip_locale_suffix(locale);
+
+        // Get the language-only code (e.g., "de" from "de_DE")
+        let lang = base.split('_').next().unwrap_or(&base);
+
+        // Add the full locale code (e.g., "de_DE")
+        parts.push(base.clone());
+
+        // Add the language-only code as fallback if different
+        if lang != base {
+            parts.push(lang.to_string());
+        }
+
+        // Stop after English - it's the source language and needs no translation
+        // This matches gnome-language-selector's behavior
+        if lang == "en" {
+            break;
+        }
+    }
+
+    parts.join(":")
+}
+
+/// Strips the codeset (.UTF-8) and modifier (@latin) from a locale string.
+/// "de_DE.UTF-8" -> "de_DE"
+/// "sr_RS@latin" -> "sr_RS"
+/// "sr_RS.UTF-8@latin" -> "sr_RS"
+fn strip_locale_suffix(locale: &str) -> String {
+    // First strip the codeset (everything from '.' onwards)
+    let without_codeset = locale.split('.').next().unwrap_or(locale);
+    // Then strip the modifier (everything from '@' onwards)
+    without_codeset
+        .split('@')
+        .next()
+        .unwrap_or(without_codeset)
+        .to_string()
 }
