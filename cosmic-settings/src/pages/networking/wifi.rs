@@ -1134,8 +1134,8 @@ fn devices_view() -> Section<crate::pages::Message> {
                     view = view.push(known_networks);
                 }
 
-                // Build Visible Networks section (searchable when 30+ networks, filtered when user types)
-                let show_search = state.wireless_access_points.len() >= 30;
+                // Build Visible Networks section (searchable when 15+ networks, filtered when user types)
+                let show_search = state.wireless_access_points.len() >= 15;
                 let search_query_lower = page.search_query.trim().to_lowercase();
 
                 // Filter visible networks (exclude known networks, apply search filter)
@@ -1172,7 +1172,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                         &section.descriptions[visible_networks_txt],
                     ));
 
-                    // Search input (only shown when 30+ networks)
+                    // Search input (only shown when 15+ networks)
                     if show_search {
                         let search_input =
                             widget::search_input(fl!("type-to-search"), &page.search_query)
