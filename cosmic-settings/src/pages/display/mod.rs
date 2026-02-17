@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 pub mod arrangement;
-// pub mod night_light;
 
 use crate::{app, pages};
 use arrangement::Arrangement;
 use cosmic::iced::{Alignment, Length, time};
-use cosmic::iced_widget::scrollable::RelativeOffset;
 use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
 };
@@ -35,11 +33,6 @@ static DPI_SCALE_LABELS: LazyLock<Vec<String>> =
 #[derive(Clone, Copy, Debug)]
 pub struct ColorDepth(usize);
 
-// /// Identifies the content to display in the context drawer
-// pub enum ContextDrawer {
-//     NightLight,
-// }
-
 /// Display mirroring options
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Mirroring {
@@ -48,19 +41,6 @@ pub enum Mirroring {
     Project(OutputKey),
     Mirror(OutputKey),
 }
-
-/// Night light preferences
-// #[derive(Clone, Copy, Debug)]
-// pub enum NightLight {
-/// Toggles night light's automatic scheduling.
-//     AutoSchedule(bool),
-/// Sets the night light schedule.
-//     ManualSchedule,
-/// Changes the preferred night light temperature.
-//     Temperature(f32),
-/// Toggles night light mode
-//     Toggle(bool),
-// }
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -82,14 +62,8 @@ pub enum Message {
     DisplayToggle(bool),
     /// Configures mirroring status of a display.
     Mirroring(Mirroring),
-    /// Handle night light preferences.
-    // NightLight(NightLight),
-    /// Show the night light mode context drawer.
-    // NightLightContext,
     /// Set the orientation of a display.
     Orientation(Transform),
-    /// Pan the displays view
-    Pan(arrangement::Pan),
     /// Status of an applied display change.
     RandrResult(Arc<std::io::Result<ExitStatus>>),
     /// Set the refresh rate of a display.
@@ -108,6 +82,8 @@ pub enum Message {
         randr: Arc<Result<List, cosmic_randr_shell::Error>>,
     },
     Surface(surface::Action),
+    /// Clear the invalid arrangement error if generation matches
+    ClearInvalidArrangement(u64),
 }
 
 impl From<Message> for app::Message {
@@ -138,20 +114,29 @@ pub struct Page {
     mirror_map: SecondaryMap<OutputKey, OutputKey>,
     mirror_menu: widget::dropdown::multi::Model<String, Mirroring>,
     active_display: OutputKey,
+    /// Name of the active display (stable across updates, unlike OutputKey)
+    active_display_name: Option<String>,
     randr_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
     hotplug_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
     config: Config,
     cache: ViewCache,
-    // context: Option<ContextDrawer>,
-    display_arrangement_scrollable: widget::Id,
-    /// Tracks the last pan status.
-    last_pan: f32,
     /// The setting to revert to if the next dialog page is cancelled.
     dialog: Option<Randr>,
     /// the instant the setting was changed.
     dialog_countdown: usize,
     show_display_options: bool,
     adjusted_scale: u32,
+    /// Set when an invalid display arrangement is attempted.
+    /// Automatically cleared after 5 seconds or when a valid arrangement is applied.
+    invalid_arrangement: bool,
+    /// Generation counter for invalid arrangement errors.
+    /// Incremented on each validation failure to prevent race conditions where
+    /// an older timeout clears a newer error message.
+    invalid_arrangement_generation: u64,
+    /// Flag to force first display selection on next update.
+    /// Set to true when entering the page, ensures first display is always selected
+    /// even when multiple rapid updates occur.
+    force_first_display: bool,
 }
 
 impl Default for Page {
@@ -162,26 +147,25 @@ impl Default for Page {
             display_tabs: segmented_button::SingleSelectModel::default(),
             mirror_map: SecondaryMap::new(),
             mirror_menu: widget::dropdown::multi::model(),
-            active_display: OutputKey::default(),
+            active_display: OutputKey::null(),
+            active_display_name: None,
             randr_handle: None,
             hotplug_handle: None,
             config: Config::default(),
             cache: ViewCache::default(),
-            // context: None,
-            display_arrangement_scrollable: widget::Id::unique(),
-            last_pan: 0.5,
             dialog: None,
             dialog_countdown: 0,
             show_display_options: true,
             adjusted_scale: 0,
+            invalid_arrangement: false,
+            invalid_arrangement_generation: 0,
+            force_first_display: false,
         }
     }
 }
 
 #[derive(Default)]
 struct Config {
-    /// Whether night light is enabled.
-    // night_light_enabled: bool,
     refresh_rate: Option<u32>,
     vrr: Option<AdaptiveSyncState>,
     resolution: Option<(u32, u32)>,
@@ -211,17 +195,6 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
-            // Night light
-            // sections.insert(
-            //     Section::default()
-            //         .descriptions(vec![
-            //             text::NIGHT_LIGHT.as_str().into(),
-            //             text::NIGHT_LIGHT_AUTO.as_str().into(),
-            //             text::NIGHT_LIGHT_DESCRIPTION.as_str().into(),
-            //         ])
-            //         .view::<Page>(move |_binder, page, _section| page.night_light_view()),
-            // ),
-            // Display arrangement
             sections.insert(display_arrangement()),
             // Display configuration
             sections.insert(display_configuration()),
@@ -237,6 +210,10 @@ impl page::Page<crate::pages::Message> for Page {
     #[cfg(not(feature = "test"))]
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
         use std::time::Duration;
+
+        self.force_first_display = true;
+        self.active_display = OutputKey::null();
+        self.active_display_name = None;
 
         self.cache.orientations = [
             fl!("orientation", "standard"),
@@ -545,7 +522,9 @@ impl Page {
                 }
             }
 
-            Message::Display(display) => self.set_display(display),
+            Message::Display(display_entity) => {
+                self.set_display(display_entity);
+            }
 
             Message::ColorDepth(color_depth) => return self.set_color_depth(color_depth),
 
@@ -588,35 +567,14 @@ impl Page {
                     };
 
                     return self.exec_randr(output, Randr::Mirror(self.active_display));
-                } // Mirroring::ProjectToAll => (),
+                }
             },
 
-            // Message::NightLight(night_light) => {}
-            //
-            // Message::NightLightContext => {
-            //     self.context = Some(ContextDrawer::NightLight);
-            //     return cosmic::task::message(app::Message::OpenContextDrawer(
-            //         text::NIGHT_LIGHT.clone().into(),
-            //     ));
-            // }
             Message::Orientation(orientation) => return self.set_orientation(orientation),
 
-            Message::Pan(pan) => {
-                match pan {
-                    arrangement::Pan::Left => self.last_pan = 0.0f32.max(self.last_pan - 0.01),
-                    arrangement::Pan::Right => self.last_pan = 1.0f32.min(self.last_pan + 0.01),
-                }
-
-                return cosmic::iced::widget::scrollable::snap_to(
-                    self.display_arrangement_scrollable.clone(),
-                    RelativeOffset {
-                        x: self.last_pan,
-                        y: 0.0,
-                    },
-                );
+            Message::Position(output_key, x, y) => {
+                return self.set_position(output_key, x, y);
             }
-
-            Message::Position(display, x, y) => return self.set_position(display, x, y),
 
             Message::RefreshRate(rate) => return self.set_refresh_rate(rate),
 
@@ -649,7 +607,7 @@ impl Page {
                         tracing::error!(why = why.to_string(), "error fetching displays");
                     }
 
-                    None => (),
+                    None => {}
                 }
 
                 self.refreshing_page.store(false, Ordering::SeqCst);
@@ -658,29 +616,35 @@ impl Page {
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
             }
+
+            Message::ClearInvalidArrangement(generation) => {
+                // Only clear if this is still the current error generation (prevents race conditions)
+                if self.invalid_arrangement_generation == generation {
+                    self.invalid_arrangement = false;
+                    tracing::debug!(
+                        "Cleared invalid arrangement error (generation {})",
+                        generation
+                    );
+                }
+            }
         }
 
-        self.last_pan = 0.5;
-        cosmic::iced::widget::scrollable::snap_to(
-            self.display_arrangement_scrollable.clone(),
-            RelativeOffset { x: 0.5, y: 0.5 },
-        )
+        Task::none()
     }
 
-    // /// Displays the night light context drawer.
-    // pub fn night_light_context_view(&self) -> Element<pages::Message> {
-    //     column().into()
-    // }
-
-    /// Reloads the display list, and all information relevant to the active display.
     pub fn update_displays(&mut self, list: List) {
-        let active_display_name = self
-            .display_tabs
-            .text_remove(self.display_tabs.active())
-            .unwrap_or_default();
+        let force_first = self.force_first_display;
+        if force_first {
+            self.force_first_display = false;
+        }
+
+        let previous_active_name = self.active_display_name.clone();
+
         let mut active_tab_pos: u16 = 0;
+        let mut found_previous_active = false;
 
         self.active_display = OutputKey::null();
+        self.active_display_name = None;
         self.display_tabs = Default::default();
         self.mirror_map = SecondaryMap::new();
         self.list = list;
@@ -691,6 +655,8 @@ impl Page {
             .iter()
             .map(|(key, output)| (&*output.name, key))
             .collect::<BTreeMap<_, _>>();
+
+        let mut target_entity = None;
 
         for (pos, (_name, id)) in sorted_outputs.into_iter().enumerate() {
             let Some(output) = self.list.outputs.get(id) else {
@@ -708,17 +674,45 @@ impl Page {
 
             let text = crate::utils::display_name(&output.name, output.physical);
 
-            if text == active_display_name {
+            let is_previous_active = previous_active_name
+                .as_ref()
+                .map(|prev_name| &output.name == prev_name)
+                .unwrap_or(false);
+
+            if is_previous_active {
                 active_tab_pos = pos as u16;
+                found_previous_active = true;
             }
 
-            self.display_tabs.insert().text(text).data::<OutputKey>(id);
+            let entity = self
+                .display_tabs
+                .insert()
+                .text(text)
+                .data::<OutputKey>(id)
+                .id();
+
+            if is_previous_active {
+                target_entity = Some((entity, id, output.name.clone()));
+            }
         }
 
-        self.display_tabs.activate_position(active_tab_pos);
-
-        // Retrieve data for the first, activated display.
-        self.set_display(self.display_tabs.active());
+        if force_first {
+            self.display_tabs.activate_position(0);
+            let active_entity = self.display_tabs.active();
+            self.set_display(active_entity);
+        } else if !found_previous_active || previous_active_name.is_none() {
+            self.display_tabs.activate_position(active_tab_pos);
+            let active_entity = self.display_tabs.active();
+            self.set_display(active_entity);
+        } else if let Some((entity, output_key, display_name)) = target_entity {
+            self.display_tabs.activate(entity);
+            self.active_display = output_key;
+            self.active_display_name = Some(display_name.clone());
+        } else {
+            self.display_tabs.activate_position(active_tab_pos);
+            let active_entity = self.display_tabs.active();
+            self.set_display(active_entity);
+        }
     }
 
     /// Sets the dialog to be shown to the user. Will not show a dialog if the
@@ -745,9 +739,8 @@ impl Page {
         unimplemented!()
     }
 
-    /// Changes the active display, and regenerates available options for it.
-    pub fn set_display(&mut self, display: segmented_button::Entity) {
-        let Some(&output_id) = self.display_tabs.data::<OutputKey>(display) else {
+    pub fn set_display(&mut self, display_entity: segmented_button::Entity) {
+        let Some(&output_id) = self.display_tabs.data::<OutputKey>(display_entity) else {
             return;
         };
 
@@ -755,8 +748,11 @@ impl Page {
             return;
         };
 
-        self.display_tabs.activate(display);
+        if self.display_tabs.active() != display_entity {
+            self.display_tabs.activate(display_entity);
+        }
         self.active_display = output_id;
+        self.active_display_name = Some(output.name.clone());
         self.config.refresh_rate = None;
         self.config.resolution = None;
         self.config.vrr = output.adaptive_sync;
@@ -934,9 +930,217 @@ impl Page {
         Task::batch(tasks)
     }
 
-    /// Changes the position of the display.
-    pub fn set_position(&mut self, display: OutputKey, x: i32, y: i32) -> Task<app::Message> {
-        let Some(output) = self.list.outputs.get_mut(display) else {
+    fn is_landscape(transform: Transform) -> bool {
+        matches!(
+            transform,
+            Transform::Normal | Transform::Rotate180 | Transform::Flipped | Transform::Flipped180
+        )
+    }
+
+    fn validate_arrangement(&self, output_key: OutputKey, new_x: i32, new_y: i32) -> bool {
+        let Some(moving_output) = self.list.outputs.get(output_key) else {
+            return false;
+        };
+
+        // Only validate enabled displays
+        if !moving_output.enabled {
+            return true;
+        }
+
+        let Some(mode) = moving_output
+            .current
+            .and_then(|key| self.list.modes.get(key))
+        else {
+            return false;
+        };
+
+        let (moving_width, moving_height) =
+            if moving_output.transform.is_none_or(Self::is_landscape) {
+                (mode.size.0, mode.size.1)
+            } else {
+                (mode.size.1, mode.size.0)
+            };
+
+        let moving_width = (moving_width as f64 / moving_output.scale) as u32;
+        let moving_height = (moving_height as f64 / moving_output.scale) as u32;
+
+        // Check for overlaps with other displays
+        for (other_key, other_output) in &self.list.outputs {
+            if other_key == output_key || !other_output.enabled {
+                continue;
+            }
+
+            let Some(other_mode) = other_output
+                .current
+                .and_then(|key| self.list.modes.get(key))
+            else {
+                continue;
+            };
+
+            let (other_width, other_height) =
+                if other_output.transform.is_none_or(Self::is_landscape) {
+                    (other_mode.size.0, other_mode.size.1)
+                } else {
+                    (other_mode.size.1, other_mode.size.0)
+                };
+
+            let other_width = (other_width as f64 / other_output.scale) as u32;
+            let other_height = (other_height as f64 / other_output.scale) as u32;
+
+            // Check for rectangle overlap
+            let x_overlap = new_x < other_output.position.0 + other_width as i32
+                && new_x + moving_width as i32 > other_output.position.0;
+            let y_overlap = new_y < other_output.position.1 + other_height as i32
+                && new_y + moving_height as i32 > other_output.position.1;
+
+            if x_overlap && y_overlap {
+                return false;
+            }
+        }
+
+        self.validate_connectivity(output_key, new_x, new_y)
+    }
+
+    /// Check if two display rectangles are adjacent (sharing an edge).
+    fn are_displays_adjacent(
+        rect1: &(OutputKey, i32, i32, u32, u32),
+        rect2: &(OutputKey, i32, i32, u32, u32),
+    ) -> bool {
+        const EDGE_TOLERANCE: i32 = arrangement::EDGE_TOLERANCE as i32;
+
+        let (_, x1, y1, w1, h1) = *rect1;
+        let (_, x2, y2, w2, h2) = *rect2;
+
+        let right1 = x1 + w1 as i32;
+        let bottom1 = y1 + h1 as i32;
+        let right2 = x2 + w2 as i32;
+        let bottom2 = y2 + h2 as i32;
+
+        // Vertical adjacency (left-right touching)
+        let left_touches_right = (right1 - x2).abs() <= EDGE_TOLERANCE;
+        let right_touches_left = (right2 - x1).abs() <= EDGE_TOLERANCE;
+        let vertical_overlap = bottom1 > y2 && y1 < bottom2;
+
+        if (left_touches_right || right_touches_left) && vertical_overlap {
+            return true;
+        }
+
+        // Horizontal adjacency (top-bottom touching)
+        let bottom_touches_top = (bottom1 - y2).abs() <= EDGE_TOLERANCE;
+        let top_touches_bottom = (bottom2 - y1).abs() <= EDGE_TOLERANCE;
+        let horizontal_overlap = right1 > x2 && x1 < right2;
+
+        (bottom_touches_top || top_touches_bottom) && horizontal_overlap
+    }
+
+    fn validate_connectivity(
+        &self,
+        moved_output_key: OutputKey,
+        moved_x: i32,
+        moved_y: i32,
+    ) -> bool {
+        use std::collections::{HashMap, HashSet, VecDeque};
+
+        // Collect all enabled display rectangles
+        let display_rects: Vec<_> = self
+            .list
+            .outputs
+            .iter()
+            .filter(|(_, output)| output.enabled)
+            .filter_map(|(key, output)| {
+                let mode = self.list.modes.get(output.current?)?;
+                let (width, height) = if output.transform.is_none_or(Self::is_landscape) {
+                    (mode.size.0, mode.size.1)
+                } else {
+                    (mode.size.1, mode.size.0)
+                };
+
+                let scaled_width = (width as f64 / output.scale) as u32;
+                let scaled_height = (height as f64 / output.scale) as u32;
+
+                let (x, y) = if key == moved_output_key {
+                    (moved_x, moved_y)
+                } else {
+                    output.position
+                };
+
+                Some((key, x, y, scaled_width, scaled_height))
+            })
+            .collect();
+
+        // Single display is always connected
+        if display_rects.len() <= 1 {
+            return true;
+        }
+
+        // Build adjacency graph
+        let mut adjacency: HashMap<OutputKey, Vec<OutputKey>> = display_rects
+            .iter()
+            .map(|(key, ..)| (*key, Vec::new()))
+            .collect();
+
+        for i in 0..display_rects.len() {
+            for j in (i + 1)..display_rects.len() {
+                if Self::are_displays_adjacent(&display_rects[i], &display_rects[j]) {
+                    let key_i = display_rects[i].0;
+                    let key_j = display_rects[j].0;
+                    adjacency.get_mut(&key_i).unwrap().push(key_j);
+                    adjacency.get_mut(&key_j).unwrap().push(key_i);
+                }
+            }
+        }
+
+        // BFS to check connectivity
+        let mut visited = HashSet::new();
+        let mut queue = VecDeque::from([display_rects[0].0]);
+        visited.insert(display_rects[0].0);
+
+        while let Some(current) = queue.pop_front() {
+            if let Some(neighbors) = adjacency.get(&current) {
+                for &neighbor in neighbors {
+                    if visited.insert(neighbor) {
+                        queue.push_back(neighbor);
+                    }
+                }
+            }
+        }
+
+        let all_connected = visited.len() == display_rects.len();
+
+        if !all_connected {
+            tracing::debug!(
+                ?moved_output_key,
+                moved_x,
+                moved_y,
+                total_displays = display_rects.len(),
+                connected_displays = visited.len(),
+                "Display arrangement is disconnected"
+            );
+        }
+
+        all_connected
+    }
+
+    pub fn set_position(&mut self, output_key: OutputKey, x: i32, y: i32) -> Task<app::Message> {
+        if !self.list.outputs.contains_key(output_key) {
+            return Task::none();
+        }
+
+        if !self.validate_arrangement(output_key, x, y) {
+            self.invalid_arrangement = true;
+            self.invalid_arrangement_generation =
+                self.invalid_arrangement_generation.wrapping_add(1);
+            let generation = self.invalid_arrangement_generation;
+
+            return cosmic::task::future(async move {
+                tokio::time::sleep(cosmic::iced::time::Duration::from_secs(5)).await;
+                app::Message::from(Message::ClearInvalidArrangement(generation))
+            });
+        }
+
+        self.invalid_arrangement = false;
+
+        let Some(output) = self.list.outputs.get_mut(output_key) else {
             return Task::none();
         };
 
@@ -947,7 +1151,7 @@ impl Page {
             return Task::none();
         }
 
-        let output = &self.list.outputs[display];
+        let output = &self.list.outputs[output_key];
         self.exec_randr(output, Randr::Position(x, y))
     }
 
@@ -1201,23 +1405,41 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
 
             column()
                 .push(
-                    text::body(&descriptions[display_arrangement_desc])
-                        .apply(container)
-                        .padding([space_xxs, space_m]),
+                    // Header row with description on left and error message on right
+                    cosmic::iced::widget::row![
+                        text::body(&descriptions[display_arrangement_desc]),
+                        cosmic::iced::widget::horizontal_space(),
+                        if page.invalid_arrangement {
+                            text::body(fl!("invalid-arrangement"))
+                        } else {
+                            text::body("")
+                        }
+                    ]
+                    .align_y(Alignment::Center)
+                    .apply(container)
+                    .padding([space_xxs, space_m]),
                 )
-                .push({
+                .push(
                     Arrangement::new(&page.list, &page.display_tabs)
-                        .on_select(|id| pages::Message::Displays(Message::Display(id)))
-                        .on_pan(|pan| pages::Message::Displays(Message::Pan(pan)))
                         .on_placement(|id, x, y| {
                             pages::Message::Displays(Message::Position(id, x, y))
                         })
-                        .apply(widget::scrollable::horizontal)
-                        .id(page.display_arrangement_scrollable.clone())
-                        .width(Length::Shrink)
-                        .apply(container)
-                        .center_x(Length::Fill)
-                })
+                        .on_select(|output_key| {
+                            // Find the entity that corresponds to this OutputKey
+                            let entity = page
+                                .display_tabs
+                                .iter()
+                                .find(|&entity| {
+                                    page.display_tabs
+                                        .data::<OutputKey>(entity)
+                                        .map(|&key| key == output_key)
+                                        .unwrap_or(false)
+                                })
+                                .unwrap_or(page.display_tabs.active());
+                            pages::Message::Displays(Message::Display(entity))
+                        })
+                        .view(),
+                )
                 .apply(container)
                 .class(cosmic::theme::Container::List)
                 .width(Length::Fill)

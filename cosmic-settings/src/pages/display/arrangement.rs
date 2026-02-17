@@ -1,112 +1,410 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-use cosmic::Renderer;
-use cosmic::iced_core::renderer::Quad;
-use cosmic::iced_core::widget::{Tree, tree};
-use cosmic::iced_core::{
-    self as core, Border, Clipboard, Element, Layout, Length, Rectangle, Renderer as IcedRenderer,
-    Shell, Size, Widget,
+use std::cell::RefCell;
+
+use cosmic::iced::widget::canvas::{
+    Canvas, Frame, Geometry, Path, Program, Stroke, Text,
+    event::{self as canvas_event, Status},
 };
-use cosmic::iced_core::{Point, layout, mouse, renderer, touch};
-use cosmic::iced_core::{alignment, event, text};
-use cosmic::widget::segmented_button::{self, SingleSelectModel};
-use cosmic_randr_shell::{self as randr, OutputKey};
-use randr::Transform;
+use cosmic::iced::{Color, Point, Rectangle, Size, Vector, mouse};
+use cosmic::iced_widget::core::Length;
+use cosmic::widget::segmented_button::SingleSelectModel;
+use cosmic::{Element, Renderer, Theme};
+use cosmic_randr_shell as randr;
 
-const UNIT_PIXELS: f32 = 12.0;
-const VERTICAL_OVERHEAD: f32 = 1.5;
-const VERTICAL_DISPLAY_OVERHEAD: f32 = 4.0;
+use super::{OutputKey, Page};
 
-pub type OnPlacementFunc<Message> = Box<dyn Fn(OutputKey, i32, i32) -> Message>;
-pub type OnSelectFunc<Message> = Box<dyn Fn(segmented_button::Entity) -> Message>;
+const CAMERA_FIT_PADDING: f32 = 1.2;
+const HORIZONTAL_BIAS: f32 = 1.25;
+const MIN_OVERLAP_PIXELS: f32 = 50.0;
+const DISPLAY_CORNER_RADIUS: f32 = 4.0;
+const DISPLAY_BORDER_WIDTH: f32 = 3.0;
+const BADGE_WIDTH: f32 = 72.0;
+const BADGE_HEIGHT: f32 = 46.0;
+const BADGE_CORNER_RADIUS: f32 = 30.0;
+const BADGE_FONT_SIZE: f32 = 24.0;
+const SCALE_THRESHOLD: f32 = 0.05;
+const CENTER_THRESHOLD: f32 = 50.0;
+pub(super) const EDGE_TOLERANCE: f32 = 1.0;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum Pan {
+#[derive(Debug, Clone)]
+pub struct Camera2D {
+    pub position: Point,
+    pub scale: f32,
+}
+
+impl Default for Camera2D {
+    fn default() -> Self {
+        Self {
+            position: Point::ORIGIN,
+            scale: 1.0,
+        }
+    }
+}
+
+impl Camera2D {
+    fn screen_to_world(&self, screen_pos: Point, viewport_size: Size) -> Point {
+        Point {
+            x: (screen_pos.x - viewport_size.width / 2.0) / self.scale + self.position.x,
+            y: (screen_pos.y - viewport_size.height / 2.0) / self.scale + self.position.y,
+        }
+    }
+
+    fn world_to_screen(&self, world_pos: Point, viewport_size: Size) -> Point {
+        Point {
+            x: (world_pos.x - self.position.x) * self.scale + viewport_size.width / 2.0,
+            y: (world_pos.y - self.position.y) * self.scale + viewport_size.height / 2.0,
+        }
+    }
+
+    fn pan(&mut self, screen_delta: Vector) {
+        self.position.x -= screen_delta.x / self.scale;
+        self.position.y -= screen_delta.y / self.scale;
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct DisplayRect {
+    pub output_key: OutputKey,
+    pub position: Point,
+    pub size: Size,
+    pub name: String,
+}
+
+impl DisplayRect {
+    fn bounds(&self) -> Rectangle {
+        Rectangle {
+            x: self.position.x,
+            y: self.position.y,
+            width: self.size.width,
+            height: self.size.height,
+        }
+    }
+
+    fn contains(&self, point: Point) -> bool {
+        self.bounds().contains(point)
+    }
+
+    fn edge_center(&self, edge: Edge) -> Point {
+        let bounds = self.bounds();
+        match edge {
+            Edge::Left => Point::new(bounds.x, bounds.y + bounds.height / 2.0),
+            Edge::Right => Point::new(bounds.x + bounds.width, bounds.y + bounds.height / 2.0),
+            Edge::Top => Point::new(bounds.x + bounds.width / 2.0, bounds.y),
+            Edge::Bottom => Point::new(bounds.x + bounds.width / 2.0, bounds.y + bounds.height),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Edge {
     Left,
     Right,
+    Top,
+    Bottom,
 }
 
-#[must_use]
-#[derive(derive_setters::Setters)]
-pub struct Arrangement<'a, Message> {
-    #[setters(skip)]
-    list: &'a randr::List,
-    #[setters(skip)]
-    tab_model: &'a SingleSelectModel,
-    #[setters(skip)]
-    on_pan: Option<Box<dyn Fn(Pan) -> Message>>,
-    #[setters(skip)]
-    on_placement: Option<OnPlacementFunc<Message>>,
-    #[setters(skip)]
-    on_select: Option<OnSelectFunc<Message>>,
-    width: Length,
-    height: Length,
+impl Edge {
+    const ALL: [Edge; 4] = [Edge::Left, Edge::Right, Edge::Top, Edge::Bottom];
+
+    fn distance_bias(&self) -> f32 {
+        match self {
+            Edge::Left | Edge::Right => HORIZONTAL_BIAS,
+            Edge::Top | Edge::Bottom => 1.0,
+        }
+    }
+
+    fn snap_to(&self, target_bounds: Rectangle, dragged_pos: Point, dragged_size: Size) -> Point {
+        match self {
+            Edge::Left => Point::new(target_bounds.x - dragged_size.width, dragged_pos.y),
+            Edge::Right => Point::new(target_bounds.x + target_bounds.width, dragged_pos.y),
+            Edge::Top => Point::new(dragged_pos.x, target_bounds.y - dragged_size.height),
+            Edge::Bottom => Point::new(dragged_pos.x, target_bounds.y + target_bounds.height),
+        }
+    }
 }
 
-impl<'a, Message> Arrangement<'a, Message> {
-    pub fn new(list: &'a randr::List, tab_model: &'a SingleSelectModel) -> Self {
+#[derive(Debug, Clone)]
+pub enum Interaction {
+    None,
+    Dragging {
+        output_key: OutputKey,
+        offset: Vector,
+    },
+    Panning {
+        last_pos: Point,
+    },
+}
+
+#[inline]
+fn distance(a: Point, b: Point) -> f32 {
+    ((b.x - a.x).powi(2) + (b.y - a.y).powi(2)).sqrt()
+}
+
+#[derive(Debug)]
+pub struct ArrangementState {
+    pub camera: RefCell<Camera2D>,
+    pub interaction: Interaction,
+    pub displays: RefCell<Vec<DisplayRect>>,
+    pub needs_fit: RefCell<bool>,
+}
+
+impl Default for ArrangementState {
+    fn default() -> Self {
         Self {
-            list,
-            tab_model,
-            on_pan: None,
-            on_placement: None,
-            on_select: None,
-            width: Length::Shrink,
-            height: Length::Shrink,
+            camera: RefCell::new(Camera2D::default()),
+            interaction: Interaction::None,
+            displays: RefCell::new(Vec::new()),
+            needs_fit: RefCell::new(true),
         }
-    }
-
-    pub fn on_pan(mut self, on_pan: impl Fn(Pan) -> Message + 'static) -> Self {
-        self.on_pan = Some(Box::new(on_pan));
-        self
-    }
-
-    pub fn on_placement(
-        mut self,
-        on_placement: impl Fn(OutputKey, i32, i32) -> Message + 'static,
-    ) -> Self {
-        self.on_placement = Some(Box::new(on_placement));
-        self
-    }
-
-    pub fn on_select(
-        mut self,
-        on_select: impl Fn(segmented_button::Entity) -> Message + 'static,
-    ) -> Self {
-        self.on_select = Some(Box::new(on_select));
-        self
     }
 }
 
-impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_, Message> {
-    fn tag(&self) -> tree::Tag {
-        tree::Tag::of::<State>()
+impl ArrangementState {
+    fn find_display_at(&self, world_pos: Point) -> Option<usize> {
+        self.displays
+            .borrow()
+            .iter()
+            .position(|d| d.contains(world_pos))
     }
 
-    fn state(&self) -> tree::State {
-        tree::State::new(State::default())
+    fn needs_sync(&self, list: &randr::List, tab_model: &SingleSelectModel) -> bool {
+        let enabled_count = tab_model
+            .iter()
+            .filter_map(|id| tab_model.data::<OutputKey>(id))
+            .filter(|&&key| {
+                list.outputs
+                    .get(key)
+                    .map(|output| output.enabled)
+                    .unwrap_or(false)
+            })
+            .count();
+
+        let displays = self.displays.borrow();
+
+        if displays.len() != enabled_count {
+            return true;
+        }
+
+        displays.iter().any(|disp| {
+            list.outputs
+                .get(disp.output_key)
+                .map(|output| {
+                    let randr_pos = Point::new(output.position.0 as f32, output.position.1 as f32);
+                    randr_pos != disp.position
+                })
+                .unwrap_or(false)
+        })
     }
 
-    fn size(&self) -> Size<Length> {
-        Size {
-            width: self.width,
-            height: self.height,
+    fn calculate_bounding_box(&self) -> Option<Rectangle> {
+        let displays = self.displays.borrow();
+        if displays.is_empty() {
+            return None;
+        }
+
+        let (mut min_x, mut min_y) = (f32::MAX, f32::MAX);
+        let (mut max_x, mut max_y) = (f32::MIN, f32::MIN);
+
+        for disp in displays.iter() {
+            min_x = min_x.min(disp.position.x);
+            min_y = min_y.min(disp.position.y);
+            max_x = max_x.max(disp.position.x + disp.size.width);
+            max_y = max_y.max(disp.position.y + disp.size.height);
+        }
+
+        Some(Rectangle {
+            x: min_x,
+            y: min_y,
+            width: max_x - min_x,
+            height: max_y - min_y,
+        })
+    }
+
+    fn calculate_edge_overlap(
+        edge: Edge,
+        rect_pos: Point,
+        rect_size: Size,
+        target: Rectangle,
+    ) -> f32 {
+        let (overlap_start, overlap_end) = match edge {
+            Edge::Left | Edge::Right => (
+                rect_pos.y.max(target.y),
+                (rect_pos.y + rect_size.height).min(target.y + target.height),
+            ),
+            Edge::Top | Edge::Bottom => (
+                rect_pos.x.max(target.x),
+                (rect_pos.x + rect_size.width).min(target.x + target.width),
+            ),
+        };
+        (overlap_end - overlap_start).max(0.0)
+    }
+
+    fn rectangles_overlap(a_pos: Point, a_size: Size, b: Rectangle) -> bool {
+        a_pos.x < b.x + b.width
+            && a_pos.x + a_size.width > b.x
+            && a_pos.y < b.y + b.height
+            && a_pos.y + a_size.height > b.y
+    }
+
+    fn is_connected_to_any(&self, dragged_key: OutputKey, position: Point, size: Size) -> bool {
+        self.displays.borrow().iter().any(|other| {
+            if other.output_key == dragged_key {
+                return false;
+            }
+
+            Self::are_rectangles_adjacent(position, size, &other.bounds())
+        })
+    }
+
+    fn are_rectangles_adjacent(pos: Point, size: Size, other: &Rectangle) -> bool {
+        let right = pos.x + size.width;
+        let bottom = pos.y + size.height;
+        let other_right = other.x + other.width;
+        let other_bottom = other.y + other.height;
+
+        // Vertical adjacency (left-right touching)
+        let left_touches_right = (right - other.x).abs() <= EDGE_TOLERANCE;
+        let right_touches_left = (other_right - pos.x).abs() <= EDGE_TOLERANCE;
+        let has_vertical_overlap = bottom > other.y && pos.y < other_bottom;
+
+        if (left_touches_right || right_touches_left) && has_vertical_overlap {
+            return true;
+        }
+
+        // Horizontal adjacency (top-bottom touching)
+        let bottom_touches_top = (bottom - other.y).abs() <= EDGE_TOLERANCE;
+        let top_touches_bottom = (other_bottom - pos.y).abs() <= EDGE_TOLERANCE;
+        let has_horizontal_overlap = right > other.x && pos.x < other_right;
+
+        (bottom_touches_top || top_touches_bottom) && has_horizontal_overlap
+    }
+
+    fn would_overlap_any(&self, dragged_key: OutputKey, position: Point, size: Size) -> bool {
+        self.displays.borrow().iter().any(|other| {
+            other.output_key != dragged_key
+                && Self::rectangles_overlap(position, size, other.bounds())
+        })
+    }
+
+    fn fit_camera(&self, viewport_size: Size) {
+        let Some(bbox) = self.calculate_bounding_box() else {
+            return;
+        };
+
+        let center = Point::new(bbox.x + bbox.width / 2.0, bbox.y + bbox.height / 2.0);
+
+        let scale_x = viewport_size.width / (bbox.width * CAMERA_FIT_PADDING);
+        let scale_y = viewport_size.height / (bbox.height * CAMERA_FIT_PADDING);
+        let scale = scale_x.min(scale_y).min(1.0);
+
+        let mut camera = self.camera.borrow_mut();
+        camera.position = center;
+        camera.scale = scale;
+
+        *self.needs_fit.borrow_mut() = false;
+    }
+
+    fn find_best_snap_target(
+        &self,
+        dragged_key: OutputKey,
+        position: Point,
+        size: Size,
+    ) -> Option<(Edge, Rectangle, OutputKey)> {
+        let center = Point::new(
+            position.x + size.width / 2.0,
+            position.y + size.height / 2.0,
+        );
+
+        let mut best_distance = f32::MAX;
+        let mut best_edge = None;
+        let mut best_target = Rectangle::default();
+        let mut best_target_key = None;
+
+        for other in self.displays.borrow().iter() {
+            if other.output_key == dragged_key {
+                continue;
+            }
+
+            let other_bounds = other.bounds();
+
+            for edge in Edge::ALL {
+                let edge_center = other.edge_center(edge);
+                let dist = distance(edge_center, center) * edge.distance_bias();
+                let test_snap_pos = edge.snap_to(other_bounds, position, size);
+                let overlap = Self::calculate_edge_overlap(edge, test_snap_pos, size, other_bounds);
+
+                if overlap >= MIN_OVERLAP_PIXELS && dist < best_distance {
+                    best_distance = dist;
+                    best_edge = Some(edge);
+                    best_target = other_bounds;
+                    best_target_key = Some(other.output_key);
+                }
+            }
+        }
+
+        best_edge.map(|edge| (edge, best_target, best_target_key.unwrap()))
+    }
+
+    fn apply_snapping(
+        &self,
+        dragged_key: OutputKey,
+        position: Point,
+        size: Size,
+        current_position: Point,
+    ) -> Point {
+        // No snapping if this is the only display
+        let has_other_displays = self
+            .displays
+            .borrow()
+            .iter()
+            .any(|d| d.output_key != dragged_key);
+
+        if !has_other_displays {
+            return position;
+        }
+
+        let Some((edge, target, _target_key)) =
+            self.find_best_snap_target(dragged_key, position, size)
+        else {
+            return current_position;
+        };
+
+        let snapped_pos = edge.snap_to(target, position, size);
+
+        // Validate the snapped position
+        let overlap = Self::calculate_edge_overlap(edge, snapped_pos, size, target);
+        let is_valid = overlap >= MIN_OVERLAP_PIXELS
+            && self.is_connected_to_any(dragged_key, snapped_pos, size)
+            && !self.would_overlap_any(dragged_key, snapped_pos, size);
+
+        if is_valid {
+            snapped_pos
+        } else {
+            current_position
         }
     }
 
-    fn layout(
-        &self,
-        tree: &mut Tree,
-        _renderer: &Renderer,
-        limits: &layout::Limits,
-    ) -> layout::Node {
-        // Determine the max display dimensions, and the total display area utilized.
-        let mut total_height = 0;
-        let mut max_dimensions = (0, 0);
-        let mut display_area = (0, 0);
+    fn sync_displays(&self, list: &randr::List, tab_model: &SingleSelectModel) {
+        let mut displays = self.displays.borrow_mut();
+        let old_count = displays.len();
+        let old_positions: std::collections::HashMap<_, _> = displays
+            .iter()
+            .map(|d| (d.output_key, d.position))
+            .collect();
 
-        for output in self.list.outputs.values() {
+        displays.clear();
+
+        for id in tab_model.iter() {
+            let Some(&key) = tab_model.data::<OutputKey>(id) else {
+                continue;
+            };
+
+            let Some(output) = list.outputs.get(key) else {
+                continue;
+            };
+
             if !output.enabled {
                 continue;
             }
@@ -115,516 +413,370 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                 continue;
             };
 
-            let Some(mode) = self.list.modes.get(mode_key) else {
+            let Some(mode) = list.modes.get(mode_key) else {
                 continue;
             };
 
-            let (mut width, mut height) = if output.transform.is_none_or(is_landscape) {
-                (mode.size.0, mode.size.1)
+            let (width, height) = if output.transform.is_none_or(Page::is_landscape) {
+                (
+                    mode.size.0 as f32 / output.scale as f32,
+                    mode.size.1 as f32 / output.scale as f32,
+                )
             } else {
-                (mode.size.1, mode.size.0)
+                (
+                    mode.size.1 as f32 / output.scale as f32,
+                    mode.size.0 as f32 / output.scale as f32,
+                )
             };
 
-            // Scale dimensions of the display with the output scale.
-            width = (width as f64 / output.scale) as u32;
-            height = (height as f64 / output.scale) as u32;
-
-            max_dimensions.0 = max_dimensions.0.max(width);
-            max_dimensions.1 = max_dimensions.1.max(height);
-
-            display_area.0 = display_area.0.max(width as i32 + output.position.0);
-            display_area.1 = display_area.1.max(height as i32 + output.position.1);
-
-            total_height = total_height.max(height as i32 + output.position.1);
+            displays.push(DisplayRect {
+                output_key: key,
+                position: Point::new(output.position.0 as f32, output.position.1 as f32),
+                size: Size::new(width, height),
+                name: output.name.clone(),
+            });
         }
 
-        let state = tree.state.downcast_mut::<State>();
+        let positions_changed = displays.iter().any(|d| {
+            old_positions
+                .get(&d.output_key)
+                .map(|&old_pos| old_pos != d.position)
+                .unwrap_or(true)
+        });
 
-        state.max_dimensions = (
-            max_dimensions.0 as f32 / UNIT_PIXELS,
-            total_height as f32 / UNIT_PIXELS,
-        );
-
-        let width = ((max_dimensions.0 as f32 * 2.0) as i32 + display_area.0) as f32 / UNIT_PIXELS;
-        let height = total_height as f32 * VERTICAL_OVERHEAD / UNIT_PIXELS;
-
-        let limits = limits
-            .width(Length::Fixed(width))
-            .height(Length::Fixed(height));
-
-        let size = limits.resolve(width, height, Size::ZERO);
-
-        layout::Node::new(size)
-    }
-
-    fn on_event(
-        &mut self,
-        tree: &mut Tree,
-        event: cosmic::iced_core::Event,
-        layout: Layout<'_>,
-        cursor: mouse::Cursor,
-        _renderer: &Renderer,
-        _clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<'_, Message>,
-        viewport: &Rectangle,
-    ) -> event::Status {
-        let bounds = layout.bounds();
-
-        match event {
-            core::Event::Mouse(mouse::Event::CursorMoved { position, .. })
-            | core::Event::Touch(touch::Event::FingerMoved { position, .. }) => {
-                let state = tree.state.downcast_mut::<State>();
-
-                if let Some((output_key, region)) = state.dragging.as_mut() {
-                    if let Some(ref mut on_pan) = self.on_pan {
-                        if bounds.x + viewport.width - 150.0 < position.x {
-                            shell.publish(on_pan(Pan::Right));
-                        } else if bounds.x + 150.0 > position.x {
-                            shell.publish(on_pan(Pan::Left));
-                        }
-                    }
-
-                    if let Some(inner_position) = cursor.position() {
-                        update_dragged_region(
-                            self.tab_model,
-                            self.list,
-                            &bounds,
-                            *output_key,
-                            region,
-                            state.max_dimensions,
-                            (
-                                inner_position.x - state.offset.0,
-                                inner_position.y - state.offset.1,
-                            ),
-                        );
-
-                        return event::Status::Captured;
-                    }
-                }
-            }
-
-            core::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-            | core::Event::Touch(touch::Event::FingerPressed { .. }) => {
-                if let Some(position) = cursor.position() {
-                    let state = tree.state.downcast_mut::<State>();
-                    if let Some((output_key, output_region)) = display_region_hovers(
-                        self.tab_model,
-                        self.list,
-                        &bounds,
-                        state.max_dimensions,
-                        position,
-                    ) {
-                        state.drag_from = position;
-                        state.offset = (position.x - output_region.x, position.y - output_region.y);
-                        state.dragging = Some((output_key, output_region));
-                        return event::Status::Captured;
-                    }
-                }
-            }
-
-            core::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-            | core::Event::Touch(touch::Event::FingerLifted { .. }) => {
-                let state = tree.state.downcast_mut::<State>();
-                if let Some((output_key, region)) = state.dragging.take() {
-                    if let Some(position) = cursor.position()
-                        && position.distance(state.drag_from) < 4.0
-                    {
-                        if let Some(ref on_select) = self.on_select {
-                            for id in self.tab_model.iter() {
-                                if let Some(&key) = self.tab_model.data::<OutputKey>(id)
-                                    && key == output_key
-                                {
-                                    shell.publish(on_select(id));
-                                }
-                            }
-                        }
-
-                        return event::Status::Captured;
-                    }
-
-                    if let Some(ref on_placement) = self.on_placement {
-                        shell.publish(on_placement(
-                            output_key,
-                            ((region.x - state.max_dimensions.0 - bounds.x) * UNIT_PIXELS) as i32,
-                            ((region.y
-                                - (state.max_dimensions.1 / VERTICAL_DISPLAY_OVERHEAD)
-                                - bounds.y)
-                                * UNIT_PIXELS) as i32,
-                        ));
-                    }
-
-                    return event::Status::Captured;
-                }
-            }
-
-            _ => (),
+        if displays.len() != old_count || positions_changed {
+            *self.needs_fit.borrow_mut() = true;
         }
-
-        event::Status::Ignored
     }
 
-    fn mouse_interaction(
+    fn handle_drag_move(
         &self,
-        tree: &Tree,
-        layout: Layout<'_>,
-        cursor: mouse::Cursor,
-        _viewport: &Rectangle,
-        _renderer: &Renderer,
-    ) -> mouse::Interaction {
-        let state = tree.state.downcast_ref::<State>();
-        let bounds = layout.bounds();
+        output_key: OutputKey,
+        offset: Vector,
+        world_pos: Point,
+        bounds_size: Size,
+    ) {
+        let raw_pos = Point::new(world_pos.x - offset.x, world_pos.y - offset.y);
 
-        for (_output_key, region) in
-            display_regions(self.tab_model, self.list, &bounds, state.max_dimensions)
+        let (display_size, current_pos) = self
+            .displays
+            .borrow()
+            .iter()
+            .find(|d| d.output_key == output_key)
+            .map(|d| (d.size, d.position))
+            .unwrap_or_default();
+
+        let snapped_pos = self.apply_snapping(output_key, raw_pos, display_size, current_pos);
+
+        if let Some(disp) = self
+            .displays
+            .borrow_mut()
+            .iter_mut()
+            .find(|d| d.output_key == output_key)
         {
-            if cursor.is_over(region) {
-                return mouse::Interaction::Grab;
-            }
+            disp.position = snapped_pos;
         }
 
-        mouse::Interaction::Idle
+        self.check_refit_needed(bounds_size);
     }
+
+    fn check_refit_needed(&self, bounds_size: Size) {
+        let Some(bbox) = self.calculate_bounding_box() else {
+            return;
+        };
+
+        let camera = self.camera.borrow();
+
+        let required_scale_x = bounds_size.width / (bbox.width * CAMERA_FIT_PADDING);
+        let required_scale_y = bounds_size.height / (bbox.height * CAMERA_FIT_PADDING);
+        let required_scale = required_scale_x.min(required_scale_y).min(1.0);
+
+        let required_center_x = bbox.x + bbox.width / 2.0;
+        let required_center_y = bbox.y + bbox.height / 2.0;
+
+        let scale_diff = (camera.scale - required_scale).abs() / camera.scale;
+        let center_diff = ((camera.position.x - required_center_x).powi(2)
+            + (camera.position.y - required_center_y).powi(2))
+        .sqrt();
+
+        if scale_diff > SCALE_THRESHOLD || center_diff > CENTER_THRESHOLD {
+            *self.needs_fit.borrow_mut() = true;
+        }
+    }
+}
+
+pub struct ArrangementCanvas<'a, Message> {
+    list: &'a randr::List,
+    tab_model: &'a SingleSelectModel,
+    on_placement: Option<Box<dyn Fn(OutputKey, i32, i32) -> Message + 'a>>,
+    on_select: Option<Box<dyn Fn(OutputKey) -> Message + 'a>>,
+}
+
+impl<'a, Message: Clone + 'static> ArrangementCanvas<'a, Message> {
+    pub fn new(list: &'a randr::List, tab_model: &'a SingleSelectModel) -> Self {
+        Self {
+            list,
+            tab_model,
+            on_placement: None,
+            on_select: None,
+        }
+    }
+
+    pub fn on_placement(mut self, f: impl Fn(OutputKey, i32, i32) -> Message + 'a) -> Self {
+        self.on_placement = Some(Box::new(f));
+        self
+    }
+
+    pub fn on_select(mut self, f: impl Fn(OutputKey) -> Message + 'a) -> Self {
+        self.on_select = Some(Box::new(f));
+        self
+    }
+
+    pub fn view(self) -> Element<'a, Message>
+    where
+        Message: 'a,
+    {
+        Canvas::new(self)
+            .width(Length::Fill)
+            .height(Length::Fixed(400.0))
+            .into()
+    }
+}
+
+impl<'a, Message: Clone> Program<Message, Theme, Renderer> for ArrangementCanvas<'a, Message> {
+    type State = ArrangementState;
 
     fn draw(
         &self,
-        tree: &Tree,
-        renderer: &mut Renderer,
-        _theme: &cosmic::Theme,
-        _style: &renderer::Style,
-        layout: Layout<'_>,
+        state: &Self::State,
+        renderer: &Renderer,
+        theme: &Theme,
+        bounds: Rectangle,
         _cursor: mouse::Cursor,
-        viewport: &Rectangle,
-    ) {
-        let state = tree.state.downcast_ref::<State>();
+    ) -> Vec<Geometry> {
+        if !matches!(state.interaction, Interaction::Dragging { .. })
+            && state.needs_sync(self.list, self.tab_model)
+        {
+            state.sync_displays(self.list, self.tab_model);
+        }
 
-        let bounds = layout.bounds();
-        let theme = cosmic::theme::active();
+        let selected_output = self
+            .tab_model
+            .data::<OutputKey>(self.tab_model.active())
+            .copied();
+
+        if !matches!(state.interaction, Interaction::Dragging { .. })
+            && !state.displays.borrow().is_empty()
+        {
+            state.check_refit_needed(bounds.size());
+        }
+
+        if *state.needs_fit.borrow() && !state.displays.borrow().is_empty() {
+            state.fit_camera(bounds.size());
+        }
+
+        let mut frame = Frame::new(renderer, bounds.size());
         let cosmic_theme = theme.cosmic();
 
+        frame.fill(
+            &Path::rectangle(Point::ORIGIN, bounds.size()),
+            Color::from(cosmic_theme.background.component.base),
+        );
+
+        let camera = state.camera.borrow();
         let border_color = cosmic_theme.palette.neutral_7;
 
-        let active_key = self.tab_model.active_data::<OutputKey>();
+        for (index, disp) in state.displays.borrow().iter().enumerate() {
+            let world_rect = disp.bounds();
+            let screen_pos = camera.world_to_screen(world_rect.position(), bounds.size());
+            let screen_size = Size::new(
+                world_rect.width * camera.scale,
+                world_rect.height * camera.scale,
+            );
 
-        for (id, (output_key, mut region)) in
-            display_regions(self.tab_model, self.list, &bounds, state.max_dimensions).enumerate()
-        {
-            // If the output is being dragged, show its dragged position instead.
-            if let Some((dragged_key, dragged_region)) = state.dragging
-                && dragged_key == output_key
+            if screen_pos.x + screen_size.width < 0.0
+                || screen_pos.y + screen_size.height < 0.0
+                || screen_pos.x > bounds.width
+                || screen_pos.y > bounds.height
             {
-                region = dragged_region;
+                continue;
             }
 
-            let (background, border_color) = if Some(&output_key) == active_key {
-                let mut border_color = border_color;
-                border_color.alpha = 0.4;
+            let is_selected = selected_output == Some(disp.output_key);
 
-                (cosmic_theme.accent_color(), border_color)
+            let bg_color = if is_selected {
+                cosmic_theme.accent_color()
             } else {
-                (cosmic_theme.palette.neutral_4, border_color)
+                cosmic_theme.palette.neutral_4
             };
 
-            renderer.fill_quad(
-                Quad {
-                    bounds: region,
-                    border: Border {
-                        color: border_color.into(),
-                        radius: 4.0.into(),
-                        width: 3.0,
-                    },
-                    shadow: Default::default(),
-                },
-                core::Background::Color(background.into()),
+            frame.fill(
+                &Path::rounded_rectangle(screen_pos, screen_size, DISPLAY_CORNER_RADIUS.into()),
+                Color::from(bg_color),
             );
 
-            let id_bounds = Rectangle {
-                x: region.x + (region.width / 2.0 - 36.0),
-                y: region.y + (region.height / 2.0 - 23.0),
-                width: 72.0,
-                height: 46.0,
-            };
-
-            renderer.fill_quad(
-                Quad {
-                    bounds: id_bounds,
-                    border: Border {
-                        radius: 30.0.into(),
-                        ..Default::default()
-                    },
-                    shadow: Default::default(),
-                },
-                core::Background::Color(cosmic_theme.palette.neutral_1.into()),
+            frame.stroke(
+                &Path::rounded_rectangle(screen_pos, screen_size, DISPLAY_CORNER_RADIUS.into()),
+                Stroke::default()
+                    .with_width(DISPLAY_BORDER_WIDTH)
+                    .with_color(Color::from(border_color)),
             );
 
-            core::text::Renderer::fill_text(
-                renderer,
-                core::Text {
-                    content: itoa::Buffer::new().format(id + 1).to_string(),
-                    size: core::Pixels(24.0),
-                    line_height: core::text::LineHeight::Relative(1.2),
-                    font: cosmic::font::bold(),
-                    bounds: id_bounds.size(),
-                    horizontal_alignment: alignment::Horizontal::Center,
-                    vertical_alignment: alignment::Vertical::Center,
-                    shaping: text::Shaping::Basic,
-                    wrapping: text::Wrapping::Word,
-                },
-                core::Point {
-                    x: id_bounds.center_x(),
-                    y: id_bounds.center_y(),
-                },
-                cosmic_theme.palette.neutral_10.into(),
-                *viewport,
+            let badge_pos = Point::new(
+                screen_pos.x + (screen_size.width - BADGE_WIDTH) / 2.0,
+                screen_pos.y + (screen_size.height - BADGE_HEIGHT) / 2.0,
             );
+            let badge_size = Size::new(BADGE_WIDTH, BADGE_HEIGHT);
+
+            frame.fill(
+                &Path::rounded_rectangle(badge_pos, badge_size, BADGE_CORNER_RADIUS.into()),
+                Color::from(cosmic_theme.palette.neutral_1),
+            );
+
+            frame.fill_text(Text {
+                content: (index + 1).to_string(),
+                position: Point::new(
+                    badge_pos.x + BADGE_WIDTH / 2.0,
+                    badge_pos.y + BADGE_HEIGHT / 2.0,
+                ),
+                color: Color::from(cosmic_theme.palette.neutral_10),
+                size: BADGE_FONT_SIZE.into(),
+                font: cosmic::font::bold(),
+                horizontal_alignment: cosmic::iced::alignment::Horizontal::Center,
+                vertical_alignment: cosmic::iced::alignment::Vertical::Center,
+                ..Default::default()
+            });
         }
+
+        vec![frame.into_geometry()]
     }
-}
 
-impl<'a, Message: 'static + Clone> From<Arrangement<'a, Message>> for cosmic::Element<'a, Message> {
-    fn from(display_positioner: Arrangement<'a, Message>) -> Self {
-        Element::new(display_positioner)
-    }
-}
+    fn update(
+        &self,
+        state: &mut Self::State,
+        event: canvas_event::Event,
+        bounds: Rectangle,
+        cursor: mouse::Cursor,
+    ) -> (Status, Option<Message>) {
+        let has_active_interaction = !matches!(state.interaction, Interaction::None);
 
-#[derive(Default)]
-struct State {
-    drag_from: Point,
-    dragging: Option<(OutputKey, Rectangle)>,
-    offset: (f32, f32),
-    max_dimensions: (f32, f32),
-}
+        let cursor_pos = if has_active_interaction {
+            cursor
+                .position()
+                .map(|pos| Point::new(pos.x - bounds.x, pos.y - bounds.y))
+        } else {
+            cursor.position_in(bounds)
+        };
 
-/// Iteratively calculate display regions for each display output in the list.
-fn display_regions<'a>(
-    model: &'a SingleSelectModel,
-    list: &'a randr::List,
-    bounds: &'a Rectangle,
-    max_dimensions: (f32, f32),
-) -> impl Iterator<Item = (OutputKey, Rectangle)> + 'a {
-    model
-        .iter()
-        .filter_map(move |id| model.data::<OutputKey>(id))
-        .filter_map(move |&key| {
-            let output = list.outputs.get(key)?;
+        let Some(cursor_pos) = cursor_pos else {
+            return (Status::Ignored, None);
+        };
 
-            if !output.enabled {
-                return None;
+        match event {
+            canvas_event::Event::Mouse(mouse::Event::ButtonPressed(button)) => match button {
+                mouse::Button::Left => {
+                    let world_pos = state
+                        .camera
+                        .borrow()
+                        .screen_to_world(cursor_pos, bounds.size());
+                    if let Some(idx) = state.find_display_at(world_pos) {
+                        let displays = state.displays.borrow();
+                        let display = &displays[idx];
+                        let display_key = display.output_key;
+                        let display_position = display.position;
+                        drop(displays);
+
+                        state.interaction = Interaction::Dragging {
+                            output_key: display_key,
+                            offset: Vector::new(
+                                world_pos.x - display_position.x,
+                                world_pos.y - display_position.y,
+                            ),
+                        };
+
+                        if let Some(ref on_select) = self.on_select {
+                            return (Status::Captured, Some(on_select(display_key)));
+                        }
+                        return (Status::Captured, None);
+                    }
+                }
+                mouse::Button::Middle | mouse::Button::Right => {
+                    state.interaction = Interaction::Panning {
+                        last_pos: cursor_pos,
+                    };
+                    return (Status::Captured, None);
+                }
+                _ => {}
+            },
+
+            // Handle movement
+            canvas_event::Event::Mouse(mouse::Event::CursorMoved { .. }) => {
+                match &state.interaction {
+                    Interaction::Dragging { output_key, offset } => {
+                        let world_pos = state
+                            .camera
+                            .borrow()
+                            .screen_to_world(cursor_pos, bounds.size());
+                        state.handle_drag_move(*output_key, *offset, world_pos, bounds.size());
+                        return (Status::Captured, None);
+                    }
+                    Interaction::Panning { last_pos } => {
+                        let delta =
+                            Vector::new(cursor_pos.x - last_pos.x, cursor_pos.y - last_pos.y);
+                        state.camera.borrow_mut().pan(delta);
+                        state.interaction = Interaction::Panning {
+                            last_pos: cursor_pos,
+                        };
+                        return (Status::Captured, None);
+                    }
+                    Interaction::None => {}
+                }
             }
 
-            let mode_key = output.current?;
+            canvas_event::Event::Mouse(mouse::Event::ButtonReleased(button)) => {
+                if matches!(
+                    button,
+                    mouse::Button::Left | mouse::Button::Middle | mouse::Button::Right
+                ) {
+                    if let Interaction::Dragging { output_key, .. } = state.interaction {
+                        state.interaction = Interaction::None;
 
-            let mode = list.modes.get(mode_key)?;
+                        let displays = state.displays.borrow();
+                        if let Some(display) = displays.iter().find(|d| d.output_key == output_key)
+                        {
+                            let new_pos = (display.position.x as i32, display.position.y as i32);
 
-            let (mut width, mut height) = (
-                (mode.size.0 as f32 / output.scale as f32) / UNIT_PIXELS,
-                (mode.size.1 as f32 / output.scale as f32) / UNIT_PIXELS,
-            );
+                            let old_pos = self
+                                .list
+                                .outputs
+                                .get(output_key)
+                                .map(|output| output.position)
+                                .unwrap_or((0, 0));
 
-            (width, height) = if output.transform.is_none_or(is_landscape) {
-                (width, height)
-            } else {
-                (height, width)
-            };
+                            if old_pos != new_pos {
+                                *state.needs_fit.borrow_mut() = true;
 
-            Some((
-                key,
-                Rectangle {
-                    width,
-                    height,
-                    x: max_dimensions.0 + bounds.x + (output.position.0 as f32) / UNIT_PIXELS,
-                    y: (max_dimensions.1 / VERTICAL_DISPLAY_OVERHEAD)
-                        + bounds.y
-                        + (output.position.1 as f32) / UNIT_PIXELS,
-                },
-            ))
-        })
-}
+                                if let Some(ref on_placement) = self.on_placement {
+                                    return (
+                                        Status::Captured,
+                                        Some(on_placement(output_key, new_pos.0, new_pos.1)),
+                                    );
+                                }
+                            }
+                        }
+                        return (Status::Captured, None);
+                    }
 
-fn display_region_hovers(
-    model: &SingleSelectModel,
-    list: &randr::List,
-    bounds: &Rectangle,
-    max_dimensions: (f32, f32),
-    point: Point,
-) -> Option<(OutputKey, Rectangle)> {
-    for (output_key, region) in display_regions(model, list, bounds, max_dimensions) {
-        if region.contains(point) {
-            return Some((output_key, region));
-        }
-    }
+                    state.interaction = Interaction::None;
+                    return (Status::Captured, None);
+                }
+            }
 
-    None
-}
-
-/// Updates a display's region, preventing coordinates from overlapping with existing displays.
-fn update_dragged_region(
-    model: &SingleSelectModel,
-    list: &randr::List,
-    bounds: &Rectangle,
-    output: OutputKey,
-    region: &mut Rectangle,
-    max_dimensions: (f32, f32),
-    (x, y): (f32, f32),
-) {
-    let mut dragged_region = Rectangle { x, y, ..*region };
-
-    let mut nearest = f32::MAX;
-    let mut nearest_region = Rectangle::default();
-    let mut nearest_side = NearestSide::East;
-
-    // Find the nearest adjacent display to the dragged display.
-    for (other_output, other_region) in display_regions(model, list, bounds, max_dimensions) {
-        if other_output == output {
-            continue;
+            _ => {}
         }
 
-        let center = dragged_region.center();
-
-        let eastward = distance(east_point(&other_region), center) * 1.25;
-        let westward = distance(west_point(&other_region), center) * 1.25;
-        let northward = distance(north_point(&other_region), center);
-        let southward = distance(south_point(&other_region), center);
-
-        let mut nearer = false;
-
-        if nearest > eastward {
-            (nearest, nearest_side, nearer) = (eastward, NearestSide::East, true);
-        }
-
-        if nearest > westward {
-            (nearest, nearest_side, nearer) = (westward, NearestSide::West, true);
-        }
-
-        if nearest > northward {
-            (nearest, nearest_side, nearer) = (northward, NearestSide::North, true);
-        }
-
-        if nearest > southward {
-            (nearest, nearest_side, nearer) = (southward, NearestSide::South, true);
-        }
-
-        if nearer {
-            nearest_region = other_region;
-        }
-    }
-
-    // Attach dragged display to nearest adjacent display.
-    match nearest_side {
-        NearestSide::East => {
-            dragged_region.x = nearest_region.x - dragged_region.width;
-            dragged_region.y = dragged_region
-                .y
-                .max(nearest_region.y - dragged_region.height + 8.0)
-                .min(nearest_region.y + nearest_region.height - 8.0);
-        }
-
-        NearestSide::North => {
-            dragged_region.y = nearest_region.y - dragged_region.height;
-            dragged_region.x = dragged_region
-                .x
-                .max(nearest_region.x - dragged_region.width + 8.0)
-                .min(nearest_region.x + nearest_region.width - 8.0);
-        }
-
-        NearestSide::West => {
-            dragged_region.x = nearest_region.x + nearest_region.width;
-            dragged_region.y = dragged_region
-                .y
-                .max(nearest_region.y - dragged_region.height + 8.0)
-                .min(nearest_region.y + nearest_region.height - 8.0);
-        }
-
-        NearestSide::South => {
-            dragged_region.y = nearest_region.y + nearest_region.height;
-            dragged_region.x = dragged_region
-                .x
-                .max(nearest_region.x - dragged_region.width + 8.0)
-                .min(nearest_region.x + nearest_region.width - 8.0);
-        }
-    }
-
-    // Snap-align on x-axis when alignment is near.
-    if (dragged_region.x - nearest_region.x).abs() <= 8.0 {
-        dragged_region.x = nearest_region.x;
-    }
-
-    // Snap-align on x-axis when alignment is near bottom edge.
-    if ((dragged_region.x + dragged_region.width) - (nearest_region.x + nearest_region.width)).abs()
-        <= 8.0
-    {
-        dragged_region.x = nearest_region.x + nearest_region.width - dragged_region.width;
-    }
-
-    // Snap-align on y-axis when alignment is near.
-    if (dragged_region.y - nearest_region.y).abs() <= 8.0 {
-        dragged_region.y = nearest_region.y;
-    }
-
-    // Snap-align on y-axis when alignment is near bottom edge.
-    if ((dragged_region.y + dragged_region.height) - (nearest_region.y + nearest_region.height))
-        .abs()
-        <= 8.0
-    {
-        dragged_region.y = nearest_region.y + nearest_region.height - dragged_region.height;
-    }
-
-    // Prevent display from overlapping with other displays.
-    for (other_output, other_region) in display_regions(model, list, bounds, max_dimensions) {
-        if other_output == output {
-            continue;
-        }
-
-        if other_region.intersects(&dragged_region) {
-            return;
-        }
-    }
-
-    *region = dragged_region;
-}
-
-fn is_landscape(transform: Transform) -> bool {
-    matches!(
-        transform,
-        Transform::Normal | Transform::Rotate180 | Transform::Flipped | Transform::Flipped180
-    )
-}
-
-#[derive(Debug)]
-enum NearestSide {
-    East,
-    North,
-    South,
-    West,
-}
-
-fn distance(a: Point, b: Point) -> f32 {
-    ((b.x - a.x).powf(2.0) + (b.y - a.y).powf(2.0)).sqrt()
-}
-
-fn east_point(r: &Rectangle) -> Point {
-    Point {
-        x: r.x,
-        y: r.center_y(),
+        (Status::Ignored, None)
     }
 }
 
-fn north_point(r: &Rectangle) -> Point {
-    Point {
-        x: r.center_x(),
-        y: r.y,
-    }
-}
-
-fn west_point(r: &Rectangle) -> Point {
-    Point {
-        x: r.x + r.width,
-        y: r.center_y(),
-    }
-}
-
-fn south_point(r: &Rectangle) -> Point {
-    Point {
-        x: r.center_x(),
-        y: r.y + r.height,
-    }
-}
+pub type Arrangement<'a, Message> = ArrangementCanvas<'a, Message>;
