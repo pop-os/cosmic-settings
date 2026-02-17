@@ -452,7 +452,7 @@ impl Page {
                 let escaped_ssid = escape_wifi_qr_string(ssid.as_ref());
                 let qr_string = if let Some(ref pass) = password {
                     let security = match security_type {
-                        NetworkType::PSK => "WPA",
+                        NetworkType::PskOrSae => "WPA",
                         NetworkType::EAP => "WPA",
                         NetworkType::Open => "",
                     };
@@ -929,8 +929,8 @@ fn devices_view() -> Section<crate::pages::Message> {
                     if known_ssids.contains(network.ssid.as_ref()) {
                         has_known = true;
                         let is_connected = is_connected(state, network);
-                        let is_encrypted = network.network_type != NetworkType::Open;
                         let is_known = known_ssids.contains(network.ssid.as_ref());
+                        let needs_password = network.network_type != NetworkType::Open;
 
                         let (connect_label, connect_msg) = if is_connected {
                             (&section.descriptions[connected_txt], None)
@@ -946,7 +946,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                         let identifier = widget::row::with_capacity(3)
                             .push(widget::icon::from_name(wifi_icon(network.strength)))
                             .push_maybe(
-                                is_encrypted
+                                needs_password
                                     .then(|| widget::icon::from_name("connection-secure-symbolic")),
                             )
                             .push(

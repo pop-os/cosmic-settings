@@ -103,6 +103,8 @@ pub enum Message {
     WindowManagement(desktop::window_management::Message),
     #[cfg(feature = "page-networking")]
     Wired(networking::wired::Message),
+    #[cfg(feature = "page-workspaces")]
+    Workspaces(desktop::workspaces::Message),
 
     // Common page functionality
     CloseContextDrawer,
