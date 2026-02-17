@@ -521,7 +521,7 @@ show-extended-input-sources = Toon uitgebreide invoermethodes
 
 keyboard-shortcuts = Sneltoetsen
     .desc = Sneltoetsen bekijken en aanpassen
-cancel = Annuleer
+cancel = Annuleren
 command = Commando
 custom = Aangepast
 debug = Foutopsporing
