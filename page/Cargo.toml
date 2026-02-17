@@ -1,6 +1,6 @@
 [package]
 name = "cosmic-settings-page"
-version = "1.0.2"
+version = "1.0.7"
 edition = "2024"
 
 [dependencies]
