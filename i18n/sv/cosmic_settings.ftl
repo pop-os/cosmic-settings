@@ -11,7 +11,7 @@ desktop = Skrivbord
 ## Skrivbord: Utseende
 
 appearance = Utseende
-    .desc = Accentfärger och COSMIC tema
+    .desc = Accentfärger och tema
 accent-color = Accentfärg
 app-background = Fönsterbakgrund
 auto = Automatisk
@@ -270,7 +270,7 @@ workspaces-overview = Arbetsyteöversikt
     .action-on-typing = Åtgärd vid skrivning
     .none = Ingen
     .launcher = Öppna programstartare
-    .applications = Öppna applikationer
+    .applications = Öppna program
 workspaces-behavior = Beteende för arbetsytor
     .dynamic = Dynamiska arbetsytor
     .dynamic-desc = Tar automatiskt bort tomma arbetsytor.
