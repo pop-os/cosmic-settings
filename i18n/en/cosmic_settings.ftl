@@ -264,8 +264,8 @@ control-tint = Control component tint
 frosted = Frosted glass effect on system interface
     .desc = Applies background blur to panel, dock, applets, launcher, and application library
 
-enable-export = Apply current theme to GNOME apps
-    .desc = Not all toolkits support auto-switching. Non-COSMIC apps may need to be restarted after a theme change.
+enable-export = Apply current theme to non-COSMIC apps
+    .desc = Not all apps support auto-switching: non-COSMIC apps may need to be closed and reopened after a theme change.
 
 icon-theme = Icon theme
     .desc = Applies a different set of icons to applications
