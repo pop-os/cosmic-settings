@@ -3,7 +3,6 @@ mod backend;
 use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, ConnectedDevice, PowerProfile};
 
-use chrono::TimeDelta;
 use cosmic::iced::{self, Alignment, Length};
 use cosmic::iced_widget::{column, row};
 use cosmic::widget::{self, radio, settings, text};
@@ -423,7 +422,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         widget::icon::from_name(connected_device.battery.icon_name.clone());
 
                     let battery_percent_and_time = widget::text(
-                        if connected_device.battery.remaining_duration > TimeDelta::zero() {
+                        if connected_device.battery.remaining_duration.is_positive() {
                             format!(
                                 "{}% - {}",
                                 connected_device.battery.percent,

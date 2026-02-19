@@ -11,7 +11,8 @@ anyhow = "1.0"
 ashpd = { version = "0.12", default-features = false, features = [
     "tokio",
 ], optional = true }
-chrono = "0.4.42"
+chrono = "0.4"
+jiff = "0.2"
 clap = { version = "4.5.54", features = ["derive"] }
 color-eyre = "0.6.5"
 cosmic-bg-config.workspace = true
@@ -69,7 +70,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 slab = "0.4.11"
 slotmap = "1.1.1"
 static_init = "1.0.4"
-sunrise = "2.1.0"
+sunrise = "3.0.0"
 timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 tokio = { workspace = true, features = ["fs", "io-util", "process", "sync"] }
 tracing = "0.1.44"
