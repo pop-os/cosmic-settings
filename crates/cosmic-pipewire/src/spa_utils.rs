@@ -14,10 +14,8 @@ pub fn string_from_pod(pod: &Pod) -> Option<String> {
 
     unsafe {
         // SAFETY: Pod is checked to be a string beforehand
-        if libspa_sys::spa_pod_get_string(pod.as_raw_ptr(), &mut cstr) == 0 {
-            if !cstr.is_null() {
-                return Some(String::from_utf8_lossy(CStr::from_ptr(cstr).to_bytes()).into_owned());
-            }
+        if libspa_sys::spa_pod_get_string(pod.as_raw_ptr(), &mut cstr) == 0 && !cstr.is_null() {
+            return Some(String::from_utf8_lossy(CStr::from_ptr(cstr).to_bytes()).into_owned());
         }
     }
 

@@ -846,7 +846,7 @@ impl Page {
                     )
                     .collect()
                     .then(|id| {
-                        if id.get(0).is_some_and(|id| *id == SECURE_INPUT_VPN.clone()) {
+                        if id.first().is_some_and(|id| *id == SECURE_INPUT_VPN.clone()) {
                             Task::none()
                         } else {
                             focus(SECURE_INPUT_VPN.clone())

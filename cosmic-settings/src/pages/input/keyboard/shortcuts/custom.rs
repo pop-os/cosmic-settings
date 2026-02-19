@@ -189,7 +189,7 @@ impl Page {
             }
 
             Message::ReplaceApply => {
-                if let Some((mut binding, ..)) = self.replace_dialog.pop() {
+                if let Some((binding, ..)) = self.replace_dialog.pop() {
                     self.add_shortcut(binding, true);
 
                     if self.replace_dialog.is_empty() {

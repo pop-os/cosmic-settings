@@ -41,14 +41,14 @@ pub fn import_theme(path: &Path) -> color_eyre::Result<()> {
 
     let mut manager = Manager::default();
 
-    if manager.mode().is_dark != is_dark {
-        if let Err(err) = manager.dark_mode(is_dark) {
-            return Err(color_eyre::eyre::eyre!(
-                "Failed to set {} mode: {:?}",
-                mode_str,
-                err
-            ));
-        }
+    if manager.mode().is_dark != is_dark
+        && let Err(err) = manager.dark_mode(is_dark)
+    {
+        return Err(color_eyre::eyre::eyre!(
+            "Failed to set {} mode: {:?}",
+            mode_str,
+            err
+        ));
     }
 
     manager

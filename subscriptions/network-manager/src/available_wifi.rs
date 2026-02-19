@@ -21,11 +21,11 @@ pub async fn handle_wireless_device(
 
     let mut scan_changed = device.receive_last_scan_changed().await;
 
-    if let Some(t) = scan_changed.next().await {
-        if let Ok(-1) = t.get().await {
-            tracing::error!("wireless device scan errored");
-            return Ok(Default::default());
-        }
+    if let Some(t) = scan_changed.next().await
+        && let Ok(-1) = t.get().await
+    {
+        tracing::error!("wireless device scan errored");
+        return Ok(Default::default());
     }
 
     let access_points = device.get_access_points().await?;
@@ -45,10 +45,10 @@ pub async fn handle_wireless_device(
 
         if let Some((ssid, strength)) = ssid_res.ok().zip(strength_res.ok()) {
             let ssid = String::from_utf8_lossy(&ssid.clone()).into_owned();
-            if let Some(access_point) = aps.get(&ssid) {
-                if access_point.strength > strength {
-                    continue;
-                }
+            if let Some(access_point) = aps.get(&ssid)
+                && access_point.strength > strength
+            {
+                continue;
             }
 
             let Ok(flags) = ap.rsn_flags().await else {
@@ -56,7 +56,8 @@ pub async fn handle_wireless_device(
             };
             let network_type = if flags.intersects(ApSecurityFlags::KEY_MGMT_802_1X) {
                 NetworkType::EAP
-            } else if flags.intersects(ApSecurityFlags::KEY_MGMTPSK | ApSecurityFlags::KEY_MGMT_SAE) {
+            } else if flags.intersects(ApSecurityFlags::KEY_MGMTPSK | ApSecurityFlags::KEY_MGMT_SAE)
+            {
                 NetworkType::PskOrSae
             } else if flags.intersects(ApSecurityFlags::KEY_MGMT_OWE) || flags.is_empty() {
                 NetworkType::Open
