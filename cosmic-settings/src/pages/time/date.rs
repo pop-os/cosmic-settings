@@ -1,7 +1,6 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use chrono::{Datelike, Timelike};
 use cosmic::{
     Apply, Element, Task,
     app::ContextDrawer,
@@ -564,10 +563,11 @@ fn format_date(date: &DateTime<Gregorian>, military: bool, show_seconds: bool) -
 }
 
 fn update_local_time() -> DateTime<Gregorian> {
-    let now = chrono::Local::now();
+    let now = jiff::Zoned::now();
 
     DateTime {
-        date: Date::try_new_gregorian(now.year(), now.month() as u8, now.day() as u8).unwrap(),
+        date: Date::try_new_gregorian(now.year() as i32, now.month() as u8, now.day() as u8)
+            .unwrap(),
         time: Time::try_new(now.hour() as u8, now.minute() as u8, now.second() as u8, 0).unwrap(),
     }
 }

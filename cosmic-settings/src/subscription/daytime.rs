@@ -1,6 +1,7 @@
 use std::any::TypeId;
 
 use ashpd::desktop::location::{Location, LocationProxy};
+use chrono::NaiveDate;
 use cosmic::iced::{
     Subscription,
     futures::{SinkExt, StreamExt, channel::mpsc::Sender, future},
@@ -46,28 +47,49 @@ async fn inner(mut tx: Sender<bool>) -> anyhow::Result<()> {
         };
 
         let coord = Coordinates::new(loc.latitude(), loc.longitude()).unwrap();
-        let now = chrono::Local::now();
-        let date = now.date_naive();
-        let now_in_seconds = now.timestamp();
+        let now = jiff::Zoned::now();
+        let now_in_seconds = now.timestamp().as_second();
+        let northern_tilt = now.month() >= 3 && now.month() <= 9;
+        // TODO: remove chrono if sunrise adds support for jiff - https://github.com/nathan-osman/rust-sunrise/pull/20
+        let date = NaiveDate::from_ymd_opt(now.year() as i32, now.month() as u32, now.day() as u32)
+            .expect("jiff date is valid");
         let current_solar_day = SolarDay::new(coord, date);
         let sunrise = current_solar_day
             .event_time(SolarEvent::Sunrise)
-            .timestamp();
-        let sunset = current_solar_day.event_time(SolarEvent::Sunset).timestamp();
-        let daytime = now_in_seconds >= sunrise && now_in_seconds <= sunset;
+            .map(|s| s.timestamp());
+        let sunset = current_solar_day
+            .event_time(SolarEvent::Sunset)
+            .map(|s| s.timestamp());
+        let daytime = match (sunrise, sunset) {
+            (Some(sunrise), Some(sunset)) => now_in_seconds >= sunrise && now_in_seconds <= sunset,
+            // transition into polar day
+            (Some(sunrise), None) => now_in_seconds >= sunrise,
+            // transition out of polar day
+            (None, Some(sunset)) => now_in_seconds <= sunset,
+            // polar day
+            (None, None) => {
+                (coord.lat() > 0.0 && northern_tilt) || (coord.lat() < 0.0 && !northern_tilt)
+            }
+        };
         tx.send(daytime).await?;
 
-        let sleep = if daytime {
-            sunset - now_in_seconds
-        } else if now_in_seconds < sunset {
-            sunrise - now_in_seconds
+        let next_event = if daytime {
+            sunset
+        } else if now_in_seconds < sunrise.unwrap_or(0) {
+            sunrise
         } else {
-            let tmrw = now + chrono::Duration::days(1);
-            let tmrw_sunrise = SolarDay::new(coord, tmrw.date_naive())
+            let tmrw = now.checked_add(jiff::Span::new().days(1))?;
+            let tmrw_sunrise =
+                NaiveDate::from_ymd_opt(tmrw.year() as i32, tmrw.month() as u32, tmrw.day() as u32)
+                    .expect("jiff date is valid");
+
+            SolarDay::new(coord, tmrw_sunrise)
                 .event_time(SolarEvent::Sunrise)
-                .timestamp();
-            tmrw_sunrise - now_in_seconds
+                .map(|s| s.timestamp())
         };
+        let sleep = next_event
+            .map(|ts| (ts - now_in_seconds).max(60))
+            .unwrap_or(3600);
         next = select! {
             () = tokio::time::sleep(tokio::time::Duration::from_secs(sleep as u64)) => {
                 Some(Event::Daytime)
