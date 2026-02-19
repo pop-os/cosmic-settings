@@ -1592,7 +1592,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-pipewire"
-version = "1.0.0"
+version = "1.0.7"
 dependencies = [
  "intmap",
  "libspa",
@@ -1657,7 +1657,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "accounts-zbus",
  "anyhow",
@@ -1739,7 +1739,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-a11y-manager-subscription"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "cosmic-protocols 0.2.0",
  "iced_futures",
@@ -1752,7 +1752,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-accessibility-subscription"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "cosmic-dbus-a11y",
  "futures",
@@ -1764,7 +1764,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-airplane-mode-subscription"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "futures",
  "iced_futures",
@@ -1775,7 +1775,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-bluetooth-subscription"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "bluez-zbus",
  "futures",
@@ -1817,7 +1817,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-daemon-subscription"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "futures",
  "iced_futures",
@@ -1829,7 +1829,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-network-manager-subscription"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "bitflags 2.10.0",
  "cosmic-dbus-networkmanager",
@@ -1847,7 +1847,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-page"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "derive_setters",
  "downcast-rs 2.0.2",
@@ -1860,7 +1860,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-sound-subscription"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "cosmic-pipewire",
  "futures",
@@ -1874,7 +1874,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-upower-subscription"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "futures",
  "iced_futures",
@@ -1887,7 +1887,7 @@ dependencies = [
 
 [[package]]
 name = "cosmic-settings-wallpaper"
-version = "1.0.2"
+version = "1.0.7"
 dependencies = [
  "cosmic-bg-config",
  "cosmic-randr-shell",

@@ -812,3 +812,4 @@ administrator = Administrator
 add-user = Benutzer hinzufügen
 remove-user = Benutzer entfernen
 full-name = Vollständiger Name
+network-name = Netzwerkname

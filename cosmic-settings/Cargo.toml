@@ -1,6 +1,6 @@
 [package]
 name = "cosmic-settings"
-version = "1.0.2"
+version = "1.0.7"
 edition = "2024"
 license = "GPL-3.0-only"
 publish = false
@@ -169,7 +169,7 @@ page-networking = [
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]
-page-region = ["gettext", "dep:locales-rs", "dep:locale1", "dep:zbus"]
+page-region = ["gettext", "dep:locales-rs", "dep:locale1", "dep:zbus", "dep:accounts-zbus"]
 page-sound = ["dep:cosmic-settings-sound-subscription"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
 page-window-management = ["cosmic-comp-config", "dep:cosmic-settings-config"]
