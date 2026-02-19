@@ -11,11 +11,11 @@ cosmic-bg-config = { workspace = true }
 cosmic-randr-shell = { workspace = true }
 dirs = "6.0.0"
 eyre = "0.6.12"
-fast_image_resize = { version = "5", features = [
+fast_image_resize = { version = "6", features = [
     "image",
 ] }
 futures-lite = "2.6.1"
-futures-util = "0.3.31"
+futures-util = "0.3.32"
 image = "0.25.9"
 infer = "0.19.0"
 jxl-oxide = { version = "0.12.5", features = ["image"] }

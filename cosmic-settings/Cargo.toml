@@ -13,7 +13,7 @@ ashpd = { version = "0.12", default-features = false, features = [
 ], optional = true }
 chrono = "0.4"
 jiff = "0.2"
-clap = { version = "4.5.54", features = ["derive"] }
+clap = { version = "4.5.59", features = ["derive"] }
 color-eyre = "0.6.5"
 cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
@@ -38,11 +38,11 @@ cosmic-settings-sound-subscription = { path = "../subscriptions/sound", optional
 ] }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
-derive_setters = "0.1.8"
+derive_setters = "0.1.9"
 dirs = "6.0.0"
 eyre = "0.6.12"
 freedesktop-desktop-entry = "0.8.1"
-futures = "0.3.31"
+futures = "0.3.32"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 i18n-embed-fl = "0.10.0"
@@ -58,16 +58,16 @@ itertools = "0.14.0"
 itoa = "1.0.17"
 libcosmic.workspace = true
 locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-sysinfo = { version = "0.37.2", optional = true }
+sysinfo = { version = "0.38.2", optional = true }
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", optional = true }
 notify = "8.2.0"
-regex = "1.12.2"
+regex = "1.12.3"
 ron = "0.12"
-rust-embed = "8.9.0"
+rust-embed = "8.11.0"
 sctk = { workspace = true, optional = true }
 secure-string = "0.3.0"
 serde = { version = "1.0.228", features = ["derive"] }
-slab = "0.4.11"
+slab = "0.4.12"
 slotmap = "1.1.1"
 static_init = "1.0.4"
 sunrise = "3.0.0"
@@ -79,9 +79,9 @@ udev = { version = "0.9.3", optional = true }
 upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 url = "2.5.8"
-xkb-data = "0.2.1"
+xkb-data = "0.2.2"
 xkeysym = { version = "0.2.1", optional = true }
-zbus = { version = "5.13.1", default-features = false, features = [
+zbus = { version = "5.13.2", default-features = false, features = [
     "tokio",
 ], optional = true }
 zbus_polkit = { version = "5.0.0", optional = true }
