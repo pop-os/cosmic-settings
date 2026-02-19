@@ -30,6 +30,7 @@ Exec=cosmic-settings notifications
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC
+Keywords[uk]=COSMIC;КОСМІК;
 NoDisplay=true
 OnlyShowIn=COSMIC
 Icon=com.system76.CosmicSettings
