@@ -24,6 +24,7 @@ Comment[sv]=Wi-Fi-anslutningar och anslutningsprofiler.
 Comment[es]=Conexiones Wi-Fi y perfiles de conexión.
 Comment[fr]=Connexions Wi-Fi et profils.
 Comment[it]=Connessioni Wi-Fi e profili di connessione.
+Comment[uk]=Wi-Fi з'єднання і профілі підключення.
 Type=Application
 Exec=cosmic-settings wireless
 Terminal=false
