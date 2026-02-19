@@ -22,6 +22,7 @@ Exec=cosmic-settings system
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC
+Keywords[uk]=COSMIC;КОСМІК;
 NoDisplay=true
 OnlyShowIn=COSMIC
 Icon=preferences-system-and-accounts
