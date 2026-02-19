@@ -675,6 +675,8 @@ manage-windows = Manage windows
     .resize-inwards = Resize window inwards
     .resize-outwards = Resize window outwards
     .toggle-sticky = Toggle sticky window
+    .show-desktop = Show desktop
+
 
 move-windows = Move windows
     .direction = Move window { $direction ->
