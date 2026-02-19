@@ -49,7 +49,9 @@ async fn inner(mut tx: Sender<bool>) -> anyhow::Result<()> {
         let coord = Coordinates::new(loc.latitude(), loc.longitude()).unwrap();
         let now = jiff::Zoned::now();
         let now_in_seconds = now.timestamp().as_second();
-        let northern_tilt = now.month() >= 3 && now.month() <= 9;
+        // roughly matches the dates of the spring and autumn equinoxes
+        let northern_tilt = (79..=266).contains(&now.day_of_year());
+        let is_north = coord.lat() > 0.0;
         // TODO: remove chrono if sunrise adds support for jiff - https://github.com/nathan-osman/rust-sunrise/pull/20
         let date = NaiveDate::from_ymd_opt(now.year() as i32, now.month() as u32, now.day() as u32)
             .expect("jiff date is valid");
@@ -67,9 +69,7 @@ async fn inner(mut tx: Sender<bool>) -> anyhow::Result<()> {
             // transition out of polar day
             (None, Some(sunset)) => now_in_seconds <= sunset,
             // polar day
-            (None, None) => {
-                (coord.lat() > 0.0 && northern_tilt) || (coord.lat() < 0.0 && !northern_tilt)
-            }
+            (None, None) => is_north == northern_tilt,
         };
         tx.send(daytime).await?;
 
