@@ -20,6 +20,7 @@ Exec=cosmic-settings time
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC
+Keywords[uk]=COSMIC;КОСМІК;
 NoDisplay=true
 OnlyShowIn=COSMIC
 Icon=preferences-time-and-language
