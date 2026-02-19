@@ -57,10 +57,10 @@ impl State {
         };
         let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
         let mut enabled = false;
-        if let Ok(proxy) = StatusProxy::new(&conn).await {
-            if let Ok(status) = proxy.screen_reader_enabled().await {
-                enabled = status;
-            }
+        if let Ok(proxy) = StatusProxy::new(&conn).await
+            && let Ok(status) = proxy.screen_reader_enabled().await
+        {
+            enabled = status;
         }
         _ = output.send(Response::Init(enabled, tx)).await;
         Some(State {

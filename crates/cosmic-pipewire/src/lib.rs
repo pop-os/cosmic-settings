@@ -34,7 +34,7 @@ use pipewire::{
     proxy::{ProxyListener, ProxyT},
     types::ObjectType,
 };
-use std::{cell::RefCell, rc::Rc, u32};
+use std::{cell::RefCell, rc::Rc};
 
 pub type NodeId = u32;
 pub type RouteId = u32;
@@ -181,10 +181,10 @@ fn run_service(
                                     return;
                                 }
 
-                                if let Some(device) = Device::from_device(info) {
-                                    if let Some(state) = state.upgrade() {
-                                        state.borrow_mut().add_device(pw_id, device);
-                                    }
+                                if let Some(device) = Device::from_device(info)
+                                    && let Some(state) = state.upgrade()
+                                {
+                                    state.borrow_mut().add_device(pw_id, device);
                                 }
                             }
                         })
@@ -281,10 +281,10 @@ fn run_service(
                         .info({
                             let state = Rc::downgrade(&state);
                             move |info| {
-                                if let Some(node) = Node::from_node(info) {
-                                    if let Some(state) = state.upgrade() {
-                                        state.borrow_mut().add_node(id, node);
-                                    }
+                                if let Some(node) = Node::from_node(info)
+                                    && let Some(state) = state.upgrade()
+                                {
+                                    state.borrow_mut().add_node(id, node);
                                 }
                             }
                         })
@@ -357,24 +357,18 @@ fn run_service(
                                     "default.audio.sink" => {
                                         if let Ok(value) =
                                             serde_json::de::from_str::<DefaultAudio>(value)
+                                            && let Some(state) = state.upgrade()
                                         {
-                                            if let Some(state) = state.upgrade() {
-                                                state
-                                                    .borrow_mut()
-                                                    .default_sink(value.name.to_owned())
-                                            }
+                                            state.borrow_mut().default_sink(value.name.to_owned())
                                         }
                                     }
 
                                     "default.audio.source" => {
                                         if let Ok(value) =
                                             serde_json::de::from_str::<DefaultAudio>(value)
+                                            && let Some(state) = state.upgrade()
                                         {
-                                            if let Some(state) = state.upgrade() {
-                                                state
-                                                    .borrow_mut()
-                                                    .default_source(value.name.to_owned())
-                                            }
+                                            state.borrow_mut().default_source(value.name.to_owned())
                                         }
                                     }
 
@@ -530,7 +524,7 @@ impl State {
         if routes.len() < index as usize + 1 {
             let additional = (index as usize + 1) - routes.capacity();
             routes.reserve_exact(additional);
-            routes.extend(std::iter::repeat(Route::default()).take(additional));
+            routes.extend(std::iter::repeat_n(Route::default(), additional));
         }
         routes[index as usize] = route.clone();
 
@@ -586,7 +580,7 @@ impl State {
         if routes.len() < index as usize + 1 {
             let additional = (index as usize + 1) - routes.capacity();
             routes.reserve_exact(additional);
-            routes.extend(std::iter::repeat(Route::default()).take(additional));
+            routes.extend(std::iter::repeat_n(Route::default(), additional));
         }
         routes[index as usize] = route.clone();
 
@@ -769,7 +763,6 @@ impl State {
         if let Some(param) = Pod::from_bytes(&serialized) {
             device.set_param(ParamType::Route, 0, param);
         }
-        return;
     }
 
     fn set_node_props(&mut self, id: NodeId, props: NodeProps) {
@@ -817,7 +810,7 @@ impl State {
                     FormatProperties(libspa_sys::SPA_PROP_channelVolumes),
                     ValueArray,
                     pod::ValueArray::Float(volume::to_channel_volumes(
-                        &props.channel_map.as_deref().unwrap_or_default(),
+                        props.channel_map.as_deref().unwrap_or_default(),
                         volume,
                         balance,
                     ))
@@ -887,7 +880,7 @@ impl State {
                 ValueArray,
                 pod::ValueArray::Float(if matches!(route.direction, Direction::Output) {
                     volume::to_channel_volumes(
-                        &props.channel_map.as_deref().unwrap_or_default(),
+                        props.channel_map.as_deref().unwrap_or_default(),
                         volume,
                         balance,
                     )

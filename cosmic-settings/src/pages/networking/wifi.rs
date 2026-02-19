@@ -371,7 +371,7 @@ impl Page {
                         ssid,
                         network_type,
                         _tx,
-                        interface,
+                        _interface,
                     ) => {
                         if success || matches!(network_type, NetworkType::Open) {
                             self.connecting.remove(ssid.as_ref());
@@ -747,7 +747,10 @@ impl Page {
                     )
                     .collect()
                     .then(|id| {
-                        if id.get(0).is_some_and(|id| *id == SECURE_INPUT_WIFI.clone()) {
+                        if id
+                            .first()
+                            .is_some_and(|id| *id == SECURE_INPUT_WIFI.clone())
+                        {
                             Task::none()
                         } else {
                             focus(SECURE_INPUT_WIFI.clone())

@@ -16,7 +16,6 @@ pub use cosmic_dbus_networkmanager as dbus;
 pub use dbus::settings::connection::Settings;
 
 use cosmic_dbus_networkmanager::{
-    active_connection::ActiveConnection,
     device::SpecificDevice,
     interface::{
         enums::{self, ActiveConnectionState, DeviceType, NmConnectivityState},
@@ -185,12 +184,11 @@ async fn start_listening(
                                 let mut changed = c.receive_state_changed().await;
                                 _ = tokio::time::timeout(Duration::from_secs(5), async move {
                                     loop {
-                                        if let Some(next) = changed.next().await {
-                                            if let Ok(ActiveConnectionState::Deactivated) =
+                                        if let Some(next) = changed.next().await
+                                            && let Ok(ActiveConnectionState::Deactivated) =
                                                 next.get().await.map(ActiveConnectionState::from)
-                                            {
-                                                break;
-                                            }
+                                        {
+                                            break;
                                         }
                                     }
                                 })
@@ -222,12 +220,11 @@ async fn start_listening(
                                 let mut changed = c.receive_state_changed().await;
                                 _ = tokio::time::timeout(Duration::from_secs(5), async move {
                                     loop {
-                                        if let Some(next) = changed.next().await {
-                                            if let Ok(ActiveConnectionState::Deactivated) =
+                                        if let Some(next) = changed.next().await
+                                            && let Ok(ActiveConnectionState::Deactivated) =
                                                 next.get().await.map(ActiveConnectionState::from)
-                                            {
-                                                break;
-                                            }
+                                        {
+                                            break;
                                         }
                                     }
                                 })
@@ -528,7 +525,8 @@ async fn start_listening(
                                             })
                                             .await;
                                     }
-                                });
+                                })
+                                .await;
                             } else {
                                 let known_conns = s.list_connections().await.unwrap_or_default();
                                 for c in known_conns {
@@ -540,42 +538,41 @@ async fn start_listening(
                                         .clone()
                                         .and_then(|w| w.ssid)
                                         .and_then(|s| String::from_utf8(s).ok())
+                                        && saved_ssid == ssid.as_ref()
                                     {
-                                        if saved_ssid == ssid.as_ref() {
-                                            let password =
-                                                c.get_secrets("802-11-wireless-security")
-                                                    .await
-                                                    .ok()
-                                                    .and_then(|secrets| {
-                                                        // Look for PSK password
-                                                        secrets
-                                            .get("802-11-wireless-security")
-                                            .and_then(|sec| sec.get("psk"))
-                                            .and_then(|v| {
-                                                v.downcast_ref::<zbus::zvariant::Str>().ok()
-                                            })
-                                            .map(|s| s.to_string())
-                                            .or_else(|| {
-                                                // Fallback to WEP key
+                                        let password = c
+                                            .get_secrets("802-11-wireless-security")
+                                            .await
+                                            .ok()
+                                            .and_then(|secrets| {
+                                                // Look for PSK password
                                                 secrets
+                                                    .get("802-11-wireless-security")
+                                                    .and_then(|sec| sec.get("psk"))
+                                                    .and_then(|v| {
+                                                        v.downcast_ref::<zbus::zvariant::Str>().ok()
+                                                    })
+                                                    .map(|s| s.to_string())
+                                                    .or_else(|| {
+                                                        // Fallback to WEP key
+                                                        secrets
                                                     .get("802-11-wireless-security")
                                                     .and_then(|sec| sec.get("wep-key0"))
                                                     .and_then(|v| {
                                                         v.downcast_ref::<zbus::zvariant::Str>().ok()
                                                     })
                                                     .map(|s| s.to_string())
-                                            })
-                                                    });
+                                                    })
+                                            });
 
-                                            _ = output
-                                                .send(Event::WiFiCredentials {
-                                                    ssid: ssid.clone(),
-                                                    password: password.map(SecureString::from),
-                                                    security_type,
-                                                })
-                                                .await;
-                                            break;
-                                        }
+                                        _ = output
+                                            .send(Event::WiFiCredentials {
+                                                ssid: ssid.clone(),
+                                                password: password.map(SecureString::from),
+                                                security_type,
+                                            })
+                                            .await;
+                                        break;
                                     }
                                 }
                             }
@@ -616,10 +613,9 @@ async fn has_saved_wifi_credentials(conn: &zbus::Connection, ssid: &str) -> bool
                 .wifi
                 .and_then(|w| w.ssid)
                 .and_then(|ssid| String::from_utf8(ssid).ok())
+                && saved_ssid == ssid
             {
-                if saved_ssid == ssid {
-                    return true;
-                }
+                return true;
             }
         }
     }
@@ -983,11 +979,10 @@ impl NetworkManagerState {
                     .clone()
                     .and_then(|w| w.ssid)
                     .and_then(|ssid| String::from_utf8(ssid).ok())
+                    && cur_ssid == ssid
                 {
-                    if cur_ssid == ssid {
-                        known_conn = Some(c);
-                        break;
-                    }
+                    known_conn = Some(c);
+                    break;
                 }
             }
 
@@ -1014,9 +1009,9 @@ impl NetworkManagerState {
                         .ok_or_else(|| Error::MissingField("uuid"))?
                         .clone(),
                 )
-                .map_err(|err| zbus::Error::Variant(err))?;
+                .map_err(zbus::Error::Variant)?;
 
-                if let Some((pass, secret_tx)) = password.clone().zip(secret_tx.as_ref()) {
+                if let Some((pass, secret_tx)) = password.zip(secret_tx.as_ref()) {
                     let pass = SecureString::from(pass);
                     let (applied_tx, applied_rx) = tokio::sync::oneshot::channel();
 
@@ -1056,7 +1051,7 @@ impl NetworkManagerState {
                             .ok_or_else(|| Error::MissingField("uuid"))?
                             .clone(),
                     )
-                    .map_err(|err| zbus::Error::Variant(err))?;
+                    .map_err(zbus::Error::Variant)?;
                     let (applied_tx, applied_rx) = tokio::sync::oneshot::channel();
                     let setting_name: String = if identity.is_some() {
                         "802-1x".into()
@@ -1081,8 +1076,7 @@ impl NetworkManagerState {
                 }
             }
 
-            let active_conn =
-                ActiveConnection::from(nm.activate_connection(&known_conn, &device).await?);
+            let active_conn = nm.activate_connection(&known_conn, &device).await?;
             let mut changes = active_conn.receive_state_changed().await;
             _ = tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
             let mut count = 5;
@@ -1120,7 +1114,7 @@ impl NetworkManagerState {
                         .ok_or_else(|| Error::MissingField("uuid"))?
                         .clone(),
                 )
-                .map_err(|err| zbus::Error::Variant(err))?;
+                .map_err(zbus::Error::Variant)?;
                 let (applied_tx, applied_rx) = tokio::sync::oneshot::channel();
                 let setting_name: String = if identity.is_some() {
                     "802-1x".into()
