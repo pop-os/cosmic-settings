@@ -10,12 +10,12 @@ publish = true
 cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 secret-service = { version = "5.1.0", features = ["rt-tokio-crypto-rust"] }
 nm-secret-agent-manager = { git = "https://github.com/pop-os/dbus-settings-bindings" }
-futures = "0.3.31"
+futures = "0.3.32"
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 itertools = "0.14.0"
 secure-string = "0.3.0"
-thiserror = "2.0.17"
+thiserror = "2.0.18"
 tokio = "1.49.0"
 tracing = "0.1.44"
-zbus = { version = "5.12.0", features = ["tokio"] }
-bitflags = "2.10.0"
+zbus = { version = "5.13.2", features = ["tokio"] }
+bitflags = "2.11.0"
