@@ -13,6 +13,7 @@ Comment[nl]=VPN-verbindingen en VPN-profielen.
 Comment[es]=Conexiones VPN y perfiles de conexión.
 Comment[fr]=Connexions VPN et profils de connexion.
 Comment[it]=Connessioni VPN e profili di connessione.
+Comment[uk]=VPN з'єднання та профілі підключення.
 Type=Application
 Exec=cosmic-settings vpn
 Terminal=false
