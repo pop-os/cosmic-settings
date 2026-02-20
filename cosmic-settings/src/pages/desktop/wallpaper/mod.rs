@@ -1154,6 +1154,10 @@ impl Context {
     }
 
     fn add_custom_image(&mut self, path: PathBuf, display: Image, selection: ImageHandle) {
+        if self.paths.values().any(|p| p == &path) {
+            return;
+        }
+
         let key = self.paths.insert(path);
         self.is_custom.insert(key, ());
         self.display_images.insert(key, display);
