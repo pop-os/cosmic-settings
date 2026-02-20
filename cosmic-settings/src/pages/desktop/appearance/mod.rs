@@ -536,7 +536,7 @@ impl Page {
             Message::Daytime(day_time) => {
                 self.day_time = day_time;
                 return Task::none();
-            },
+            }
 
             Message::ThemeModeUpdate(mode) => {
                 let was_dark = self.theme_manager.mode().is_dark;

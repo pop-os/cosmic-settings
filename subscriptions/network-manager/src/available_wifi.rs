@@ -56,7 +56,8 @@ pub async fn handle_wireless_device(
             };
             let network_type = if flags.intersects(ApSecurityFlags::KEY_MGMT_802_1X) {
                 NetworkType::EAP
-            } else if flags.intersects(ApSecurityFlags::KEY_MGMTPSK | ApSecurityFlags::KEY_MGMT_SAE) {
+            } else if flags.intersects(ApSecurityFlags::KEY_MGMTPSK | ApSecurityFlags::KEY_MGMT_SAE)
+            {
                 NetworkType::PskOrSae
             } else if flags.intersects(ApSecurityFlags::KEY_MGMT_OWE) || flags.is_empty() {
                 NetworkType::Open
