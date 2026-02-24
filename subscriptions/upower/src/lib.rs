@@ -10,8 +10,7 @@ pub mod device {
     pub fn device_subscription<I: 'static + Hash + Copy + Send + Sync + Debug>(
         id: I,
     ) -> iced_futures::Subscription<DeviceDbusEvent> {
-        Subscription::run_with_id(
-            id,
+        Subscription::run_with(id, |_| {
             async move {
                 match events().await {
                     Ok(stream) => stream,
@@ -21,8 +20,8 @@ pub mod device {
                     }
                 }
             }
-            .flatten_stream(),
-        )
+            .flatten_stream()
+        })
     }
 
     async fn display_device() -> zbus::Result<(UPowerProxy<'static>, DeviceProxy<'static>)> {
@@ -106,8 +105,7 @@ pub mod kbdbacklight {
     pub fn kbd_backlight_subscription<I: 'static + Hash + Copy + Send + Sync + Debug>(
         id: I,
     ) -> iced_futures::Subscription<KeyboardBacklightUpdate> {
-        Subscription::run_with_id(
-            id,
+        Subscription::run_with(id, |_| {
             async move {
                 match events().await {
                     Ok(stream) => stream,
@@ -117,8 +115,8 @@ pub mod kbdbacklight {
                     }
                 }
             }
-            .flatten_stream(),
-        )
+            .flatten_stream()
+        })
     }
 
     enum Event {

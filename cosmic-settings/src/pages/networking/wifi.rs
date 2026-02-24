@@ -10,11 +10,10 @@ use anyhow::Context;
 use cosmic::{
     Apply, Element, Task,
     app::ContextDrawer,
-    iced::{Alignment, Length},
+    iced::{Alignment, Length, widget::operation::focus_next},
     iced_core::text::Wrapping,
-    iced_widget::focus_next,
     task,
-    widget::{self, column, icon, text_input::focus},
+    widget::{self, column, icon, space::horizontal as horizontal_space, text_input::focus},
 };
 use cosmic_settings_network_manager_subscription::{
     self as network_manager, NetworkManagerState,
@@ -1017,7 +1016,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                         let widget = widget::settings::item_row(vec![
                             identifier.into(),
-                            widget::horizontal_space().into(),
+                            horizontal_space().into(),
                             controls.into(),
                         ]);
 

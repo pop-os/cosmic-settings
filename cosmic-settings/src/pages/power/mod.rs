@@ -5,7 +5,7 @@ use backend::{Battery, ConnectedDevice, PowerProfile};
 
 use cosmic::iced::{self, Alignment, Length};
 use cosmic::iced_widget::{column, row};
-use cosmic::widget::{self, radio, settings, text};
+use cosmic::widget::{self, radio, settings, space::horizontal as horizontal_space, text};
 use cosmic::{Apply, surface};
 use cosmic::{Task, iced_futures};
 use cosmic_config::{Config, CosmicConfigEntry};
@@ -15,6 +15,7 @@ use futures::{SinkExt, StreamExt};
 use itertools::Itertools;
 use slab::Slab;
 use slotmap::SlotMap;
+use std::hash::Hash;
 use std::iter;
 use std::time::Duration;
 use upower_dbus::DeviceProxy;
@@ -153,24 +154,50 @@ impl page::Page<crate::pages::Message> for Page {
         });
 
         // Subscriptions for all connected device batteries.
-        let device_batteries = self
-            .connected_devices
-            .iter()
-            .filter_map(|device| {
-                device
-                    .proxy
-                    .clone()
-                    .map(|p| (device.device_path.clone(), p))
-            })
-            .map(|(path, proxy)| {
-                iced::Subscription::run_with_id(
-                    path.clone(),
-                    iced_futures::stream::channel(1, |sender| async move {
-                        receive_battery_changes(proxy, path, sender, Message::UpdateDeviceBattery)
-                            .await
-                    }),
-                )
-            });
+        let device_batteries =
+            self.connected_devices
+                .iter()
+                .filter_map(|device| {
+                    device
+                        .proxy
+                        .clone()
+                        .map(|p| (device.device_path.clone(), p))
+                })
+                .map(|(path, proxy)| {
+                    #[derive(Clone)]
+                    struct DeviceBatterySubscriptionData {
+                        proxy: DeviceProxy<'static>,
+                        path: String,
+                    }
+
+                    impl Hash for DeviceBatterySubscriptionData {
+                        fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+                            self.path.hash(state);
+                        }
+                    }
+
+                    iced::Subscription::run_with(
+                        DeviceBatterySubscriptionData { proxy, path },
+                        |DeviceBatterySubscriptionData { proxy, path }| {
+                            let path = path.clone();
+                            let proxy = proxy.clone();
+                            iced_futures::stream::channel(
+                                1,
+                                move |sender: futures::channel::mpsc::Sender<
+                                    crate::pages::Message,
+                                >| async move {
+                                    receive_battery_changes(
+                                        proxy,
+                                        path,
+                                        sender,
+                                        Message::UpdateDeviceBattery,
+                                    )
+                                    .await
+                                },
+                            )
+                        },
+                    )
+                });
 
         iced::Subscription::batch(std::iter::once(system_battery).chain(device_batteries))
     }
@@ -199,47 +226,56 @@ impl page::Page<crate::pages::Message> for Page {
                 }
             }),
             cosmic::Task::run(
-                iced_futures::stream::channel(1, |mut emitter| async move {
-                    let span = tracing::span!(tracing::Level::INFO, "power::device_stream task");
-                    let _span_handle = span.enter();
+                iced_futures::stream::channel(
+                    1,
+                    |mut emitter: futures::channel::mpsc::Sender<Message>| async move {
+                        let span =
+                            tracing::span!(tracing::Level::INFO, "power::device_stream task");
+                        let _span_handle = span.enter();
 
-                    let Ok(connection) = zbus::Connection::system().await else {
-                        tracing::error!("could not established zbus connection to system");
-                        return;
-                    };
+                        let Ok(connection) = zbus::Connection::system().await else {
+                            tracing::error!("could not established zbus connection to system");
+                            return;
+                        };
 
-                    let added_stream = ConnectedDevice::device_added_stream(&connection).await;
-                    let removed_stream = ConnectedDevice::device_removed_stream(&connection).await;
+                        let added_stream = ConnectedDevice::device_added_stream(&connection).await;
+                        let removed_stream =
+                            ConnectedDevice::device_removed_stream(&connection).await;
 
-                    let mut sender = emitter.clone();
-                    let added_future = std::pin::pin!(async {
-                        match added_stream {
-                            Ok(stream) => {
-                                let mut stream = std::pin::pin!(stream);
-                                while let Some(device) = stream.next().await {
-                                    tracing::debug!(device = device.model, "device added");
-                                    _ = sender.send(Message::DeviceConnect(device)).await;
+                        let mut sender = emitter.clone();
+                        let added_future = std::pin::pin!(async {
+                            match added_stream {
+                                Ok(stream) => {
+                                    let mut stream = std::pin::pin!(stream);
+                                    while let Some(device) = stream.next().await {
+                                        tracing::debug!(device = device.model, "device added");
+                                        _ = sender.send(Message::DeviceConnect(device)).await;
+                                    }
+                                }
+                                Err(err) => tracing::error!(?err, "cannot establish added stream"),
+                            }
+                        });
+
+                        let removed_future = std::pin::pin!(async {
+                            match removed_stream {
+                                Ok(stream) => {
+                                    let mut stream = std::pin::pin!(stream);
+                                    while let Some(device_path) = stream.next().await {
+                                        tracing::debug!(device_path, "device removed");
+                                        _ = emitter
+                                            .send(Message::DeviceDisconnect(device_path))
+                                            .await;
+                                    }
+                                }
+                                Err(err) => {
+                                    tracing::error!(?err, "cannot establish removed stream")
                                 }
                             }
-                            Err(err) => tracing::error!(?err, "cannot establish added stream"),
-                        }
-                    });
+                        });
 
-                    let removed_future = std::pin::pin!(async {
-                        match removed_stream {
-                            Ok(stream) => {
-                                let mut stream = std::pin::pin!(stream);
-                                while let Some(device_path) = stream.next().await {
-                                    tracing::debug!(device_path, "device removed");
-                                    _ = emitter.send(Message::DeviceDisconnect(device_path)).await;
-                                }
-                            }
-                            Err(err) => tracing::error!(?err, "cannot establish removed stream"),
-                        }
-                    });
-
-                    futures::future::select(added_future, removed_future).await;
-                }),
+                        futures::future::select(added_future, removed_future).await;
+                    },
+                ),
                 |msg| msg,
             ),
         ];
@@ -449,7 +485,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         .width(Length::Fill)
                         .height(Length::Fill),
                     )
-                    .height(64)
+                    .height(64.)
                     .class(cosmic::theme::Container::List)
                     .into()
                 })
@@ -469,14 +505,10 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                     cosmic::Element::from(
                                         row!(
                                             device_row.next().unwrap_or(
-                                                widget::horizontal_space()
-                                                    .width(Length::Fill)
-                                                    .into()
+                                                horizontal_space().width(Length::Fill).into()
                                             ),
                                             device_row.next().unwrap_or(
-                                                widget::horizontal_space()
-                                                    .width(Length::Fill)
-                                                    .into()
+                                                horizontal_space().width(Length::Fill).into()
                                             ),
                                         )
                                         .spacing(8),

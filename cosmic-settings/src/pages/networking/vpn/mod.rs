@@ -9,12 +9,11 @@ use std::sync::{Arc, LazyLock};
 use anyhow::Context;
 use cosmic::dialog::file_chooser::FileFilter;
 use cosmic::task;
-use cosmic::widget::text_input::focus;
 use cosmic::{
     Apply, Element, Task,
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
-    widget::{self, icon},
+    widget::{self, icon, space::horizontal as horizontal_space, text_input::focus},
 };
 use cosmic_settings_network_manager_subscription::nm_secret_agent::{self, PasswordFlag};
 use cosmic_settings_network_manager_subscription::{
@@ -1086,7 +1085,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                         let widget = widget::settings::item_row(vec![
                             identifier.into(),
-                            widget::horizontal_space().into(),
+                            horizontal_space().into(),
                             controls.into(),
                         ]);
 

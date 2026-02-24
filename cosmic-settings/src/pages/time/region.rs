@@ -8,7 +8,7 @@ use std::sync::Arc;
 use cosmic::app::{ContextDrawer, context_drawer};
 use cosmic::iced::{Alignment, Length};
 use cosmic::iced_core::text::Wrapping;
-use cosmic::widget::{self, button};
+use cosmic::widget::{self, button, space::horizontal as horizontal_space};
 use cosmic::{Apply, Element};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_page::Section;
@@ -398,7 +398,7 @@ impl Page {
                             .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
                             .into()
                     } else {
-                        widget::horizontal_space().width(16).into()
+                        horizontal_space().width(16.).into()
                     },
                 ])
                 .apply(widget::container)
@@ -526,7 +526,7 @@ impl Page {
                             .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
                             .into()
                     } else {
-                        widget::horizontal_space().width(16).into()
+                        horizontal_space().width(16.).into()
                     },
                 ])
                 .apply(widget::container)
