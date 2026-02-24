@@ -327,13 +327,6 @@ about-device = Įrenginio vardas
 no-vpn = VPN ryšys nėra prieinamas.
 start-segment = Pradžios segmentas
 desktop = Darbalaukis
-connections-and-profiles =
-    { $variant ->
-        [wired] Laidinis interneto ryšys
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Nežinomas
-    } Prisijungimų ir ryšio profiliai.
 identity = Tapatybė
 reset-to-default = Atstatyti į numatytas reikšmes
 disconnect = Atjungti

@@ -6,13 +6,6 @@ number = { $number }
 add-network = Tambahkan jaringan
     .profile = Tambahkan profil
 add-vpn = Tambahkan VPN
-connections-and-profiles =
-    Sambungan { $variant ->
-        [wired] berkabel
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] yang tidak diketahui
-    } dan profil sambungan.
 airplane-on = Mode pesawat nyala.
 connect = Sambungkan
 cable-unplugged = Kabel tercabut

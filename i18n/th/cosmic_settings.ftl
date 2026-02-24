@@ -6,13 +6,6 @@ number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles =
-    การเชื่อมต่อ{ $variant ->
-        [wired] แบบมีสาย
-        [wifi] ไวไฟ
-        [vpn] { " " }VPN
-       *[other] ที่ไม่รู้จัก
-    } และโปรไฟล์การเชื่อมต่อ
 add-network = เพิ่มเครือข่าย
     .profile = เพิ่มโปรไฟล์
 add-vpn = เพิ่ม VPN

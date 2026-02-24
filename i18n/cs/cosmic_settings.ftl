@@ -6,88 +6,58 @@ number = { $number }
 
 xdg-entry-about = O systému
 xdg-entry-about-comment = Název zařízení, informace o hardwaru, výchozí nastavení operačního systému
-
 xdg-entry-a11y = Přístupnost
 xdg-entry-a11y-comment = Nastavení přístupnosti
-
 xdg-entry-appearance = Vzhled
 xdg-entry-appearance-comment = Barvy zvýraznění a motivy
-
 xdg-entry-applications = Aplikace
-
 xdg-entry-bluetooth-comment = Správa Bluetooth zařízení
-
 xdg-entry-date-time = Datum a čas
 xdg-entry-date-time-comment = Časová zóna, automatické nastavení hodin a formátování času
-
 xdg-entry-default-apps = Výchozí aplikace
 xdg-entry-default-apps-comment = Výchozí webový prohlížeč, poštovní klient, prohlížeč souborů a další aplikace
-
 xdg-entry-desktop = Plocha
 xdg-entry-desktop-comment = Nastavení pracovní plochy, vzhledu a chování oken
-
 xdg-entry-displays = Obrazovky
 xdg-entry-displays-comment = Možnosti obrazovek, grafické režimy a noční světlo
-
 xdg-entry-dock = Dok
 xdg-entry-dock-comment = Volitelná lišta pro aplikace a applety
-
 xdg-entry-input = Vstupní zařízení
 xdg-entry-input-comment = Klávesnice, kurzor a další
-
 xdg-entry-keyboard = Klávesnice
 xdg-entry-keyboard-comment = Vstupní zdroje, přepínání, vkládání speciálních znaků, zkratky
-
 xdg-entry-mouse = Myš
 xdg-entry-mouse-comment = Rychlost myši, zrychlení, přirozené rolování
-
 xdg-entry-network = Síť a Wi-Fi
 xdg-entry-network-comment = Správa síťových připojení
-
 xdg-entry-notifications = Oznámení
 xdg-entry-notifications-comment = Nerušit, oznámení na zamykací obrazovce a nastavení podle aplikace
-
 xdg-entry-panel-comment = Hlavní systémová lišta pro menu a applety
-
 xdg-entry-power = Napájení a baterie
 xdg-entry-power-comment = Režimy napájení a možnosti úspory energie
-
 xdg-entry-region-language = Region a jazyk
 xdg-entry-region-language-comment = Formátujte datumy, časy a čísla podle vašeho regionu
-
 xdg-entry-sound = Zvuk
 xdg-entry-sound-comment = Nastavení zvuku pro zařízení, upozornění a aplikace
-
 xdg-entry-startup-apps = Automaticky spouštěné aplikace
 xdg-entry-startup-apps-comment = Správa aplikací, které se spouštějí při přihlášení
-
 xdg-entry-system = Systém a účty
 xdg-entry-system-comment = Informace o systému, uživatelé a firmware
-
 xdg-entry-time-language = Čas a jazyk
 xdg-entry-time-language-comment = Nastavení času a jazyka
-
 xdg-entry-touchpad-comment = Rychlost touchpadu, nastavení klikání, gesta
-
 xdg-entry-users = Uživatelé
 xdg-entry-users-comment = Ověření a uživatelské účty
-
 xdg-entry-vpn-comment = VPN připojení a profily
-
 xdg-entry-wallpaper = Tapeta
 xdg-entry-wallpaper-comment = Obrázky tapet, barvy a možnosti prezentace
-
 xdg-entry-window-management = Správa oken
 xdg-entry-window-management-comment = Akce klávesy Super, možnosti ovládání oken a další možnosti dlaždicového režimu oken
-
 xdg-entry-wired = Drátové
 xdg-entry-wired-comment = Drátové připojení a profily
-
 xdg-entry-wireless-comment = Wi-Fi připojení a profily
-
 xdg-entry-workspaces = Pracovní plochy
 xdg-entry-workspaces-comment = Chování a orientace pracovních ploch
-
 xdg-entry-x11-applications = Kompatibilita aplikací X11
 xdg-entry-x11-applications-comment = Měřítko a globální klávesové zkratky aplikací využívajících okenní systém X11
 
@@ -460,13 +430,6 @@ vpn = VPN
     .error = Nepodařilo se přidat nastavení VPN
     .remove = Odstranit profil připojení
     .select-file = Vybrat konfigurační soubor VPN
-connections-and-profiles =
-    { $variant ->
-        [wired] Drátové
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Neznámé
-    } připojení a profily
 vpn-error = Chyba VPN
     .config = Nepodařilo se přidat nastavení VPN
     .connect = Nepodařilo se připojit k VPN
