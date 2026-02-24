@@ -1,5 +1,3 @@
-app = COSMIC Settings
-
 dbus-connection-error = Failed to connect to DBus
 ok = OK
 unknown = Unknown
@@ -8,7 +6,8 @@ number = { $number }
 
 ## Freedesktop desktop entries
 
-xdg-entry-comment = Settings application for COSMIC.
+app = COSMIC Settings
+xdg-entry-comment = Settings application for the COSMIC Desktop
 xdg-entry-keywords = COSMIC;Settings;
 
 xdg-entry-about = About
