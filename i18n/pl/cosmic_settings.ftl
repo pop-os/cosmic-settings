@@ -7,89 +7,88 @@ number = { $number }
 ## Freedesktop desktop entries
 
 xdg-entry-about = O systemie
-xdg-entry-about-comment = Nazwa urządzenia, informacje o sprzęcie i systemie operacyjnym.
+xdg-entry-about-comment = Nazwa urządzenia, informacje o sprzęcie i systemie operacyjnym
 
 xdg-entry-a11y = Dostępność
-xdg-entry-a11y-comment = Ustawienia dostępności.
+xdg-entry-a11y-comment = Ustawienia dostępności
 
 xdg-entry-appearance = Wygląd
-xdg-entry-appearance-comment = Kolory akcentów i styl.
+xdg-entry-appearance-comment = Kolory akcentów i styl
 
 xdg-entry-applications = Aplikacje
 
 xdg-entry-bluetooth-comment = Zarządzaj urządzeniami Bluetooth
 
 xdg-entry-date-time = Data i godzina
-xdg-entry-date-time-comment = Strefy czasowe, automatyczna konfiguracja zegara i format wyświetlania czasu.
+xdg-entry-date-time-comment = Strefy czasowe, automatyczna konfiguracja zegara i format wyświetlania czasu
 
 xdg-entry-default-apps = Domyślne aplikacje
-xdg-entry-default-apps-comment = Domyślna przeglądarka, klient poczty e-mail, menedżer plików i inne aplikacje.
+xdg-entry-default-apps-comment = Domyślna przeglądarka, klient poczty e-mail, menedżer plików i inne aplikacje
 
 xdg-entry-desktop = Pulpit
 
 xdg-entry-displays = Ekrany
-xdg-entry-displays-comment = Ustawienia wyświetlania, opcje grafiki i podświetlanie nocne.
+xdg-entry-displays-comment = Ustawienia wyświetlania, opcje grafiki i podświetlanie nocne
 
 xdg-entry-dock = Dok
-xdg-entry-dock-comment = Panel z przypiętymi aplikacjami w zasobniku i innymi apletami.
+xdg-entry-dock-comment = Panel z przypiętymi aplikacjami w zasobniku i innymi apletami
 
 xdg-entry-input = Urządzenia wprowadzania danych
 
 xdg-entry-keyboard = Klawiatura
-xdg-entry-keyboard-comment = Źródła wprowadzania, przełączanie, specjalne klawisze, skróty.
+xdg-entry-keyboard-comment = Źródła wprowadzania, przełączanie, specjalne klawisze, skróty
 
 xdg-entry-mouse = Mysz
-xdg-entry-mouse-comment = Prędkość myszy, przyspieszenie i naturalne przewijanie.
+xdg-entry-mouse-comment = Prędkość myszy, przyspieszenie i naturalne przewijanie
 
 xdg-entry-network = Sieć i połączenia bezprzewodowe
 xdg-entry-network-comment = Zarządzaj połączeniami sieciowymi
 
 xdg-entry-notifications = Powiadomienia
-xdg-entry-notifications-comment = Tryb „nie przeszkadzać”, powiadomienia na ekranie blokady i ustawienia poszczególnych aplikacji.
+xdg-entry-notifications-comment = Tryb „nie przeszkadzać”, powiadomienia na ekranie blokady i ustawienia poszczególnych aplikacji
 
 xdg-entry-panel = Panel
-xdg-entry-panel-comment = COMMENT
 
 xdg-entry-power = Zasilanie i bateria
-xdg-entry-power-comment = Tryby zasilania i opcje oszczędzania energii.
+xdg-entry-power-comment = Tryby zasilania i opcje oszczędzania energii
 
 xdg-entry-region-language = Region i język
-xdg-entry-region-language-comment = Format wyświetlanych dat, godzin i liczb dopasowany do regionu.
+xdg-entry-region-language-comment = Format wyświetlanych dat, godzin i liczb dopasowany do regionu
 
 xdg-entry-sound = Dźwięk
-xdg-entry-sound-comment = Opcje dźwięku dla urządzeń, alertów i aplikacji.
+xdg-entry-sound-comment = Opcje dźwięku dla urządzeń, alertów i aplikacji
 
 xdg-entry-startup-apps = Aplikacje startowe
-xdg-entry-startup-apps-comment = Konfiguracja aplikacji uruchamianych po zalogowaniu.
+xdg-entry-startup-apps-comment = Konfiguracja aplikacji uruchamianych po zalogowaniu
 
 xdg-entry-system = System i konta
 
 xdg-entry-time-language = Czas i język
 
 xdg-entry-touchpad = Gładzik
-xdg-entry-touchpad-comment = Prędkość gładzika, opcje kliknięć, gesty.
+xdg-entry-touchpad-comment = Prędkość gładzika, opcje kliknięć, gesty
 
 xdg-entry-users = Użytkownicy
-xdg-entry-users-comment = Uwierzytelnianie i konta użytkowników.
+xdg-entry-users-comment = Uwierzytelnianie i konta użytkowników
 
-xdg-entry-vpn-comment = Połączenia VPN i profile połączeń.
+xdg-entry-vpn-comment = Połączenia VPN i profile połączeń
 
 xdg-entry-wallpaper = Tapeta
-xdg-entry-wallpaper-comment = Obraz tła, kolory i opcje pokazu slajdów.
+xdg-entry-wallpaper-comment = Obraz tła, kolory i opcje pokazu slajdów
 
 xdg-entry-window-management = Zarządzanie oknami
-xdg-entry-window-management-comment = Działanie klawisza Super, opcje kontroli oknami i dodatkowe ustawienia kafelkowania okien.
+xdg-entry-window-management-comment = Działanie klawisza Super, opcje kontroli oknami i dodatkowe ustawienia kafelkowania okien
 
 xdg-entry-wired = Połączenia przewodowe
-xdg-entry-wired-comment = Połączenia przewodowe i profile połączeń.
+xdg-entry-wired-comment = Połączenia przewodowe i profile połączeń
 
 xdg-entry-wireless-comment = Połączenia Wi-Fi i profile połączeń.
 
 xdg-entry-workspaces = Obszary robocze
-xdg-entry-workspaces-comment = Kierunek i zachowanie obszarów roboczych.
+xdg-entry-workspaces-comment = Kierunek i zachowanie obszarów roboczych
 
 xdg-entry-x11-applications = Kompatybilność aplikacji X11
-xdg-entry-x11-applications-comment = Skalowanie aplikacji systemu okien X11 i globalne skróty klawiszowe.
+xdg-entry-x11-applications-comment = Skalowanie aplikacji systemu okien X11 i globalne skróty klawiszowe
 
 ## Network & Wireless
 
