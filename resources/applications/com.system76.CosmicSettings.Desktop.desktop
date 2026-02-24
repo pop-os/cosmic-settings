@@ -1,25 +1,11 @@
 [Desktop Entry]
 Name=Desktop
-Name[ar]=سطح المكتب
-Name[cs]=Plocha
-Name[zh_CN]=桌面
-Name[pl]=Pulpit
-Name[hu]=Asztal
-Name[pt]=Área de Trabalho
-Name[nl]=Bureaublad
-Name[sk]=Pracovná plocha
-Name[sv]=Skrivbord
-Name[es]=Escritorio
-Name[fr]=Bureau
-Name[it]=Desktop
-Comment=
-Comment[cs]=Nastavení pracovní plochy, vzhledu a chování oken
-Comment[sk]=Nastavenia pracovnej plochy, vzhľadu a správania okien
+Comment=Wallpaper, appearance, panel, dock, window management and workspace settings.
 Type=Application
 Exec=cosmic-settings desktop
 Terminal=false
 Categories=COSMIC
-Keywords=COSMIC
+Keywords=COSMIC;Desktop;
 NoDisplay=true
 OnlyShowIn=COSMIC
 Icon=preferences-desktop

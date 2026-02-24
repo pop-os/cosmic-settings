@@ -6,6 +6,37 @@ unknown = Onbekend
 
 number = { $number }
 
+xdg-entry-about = Oor
+xdg-entry-about-comment = Toestelnaam, hardeware-inligtings, standaardinstellings van die bedryfstelsel.
+xdg-entry-about-keywords = COSMIC;Oor
+
+xdg-entry-a11y = Toeganklikhede
+xdg-entry-a11y-keywords = COSMIC;Toeganklikhede;A11y;Screen;Reader;Magnifier;Contrast;Color;
+
+xdg-entry-appearance = Weergawe
+xdg-entry-appearance-comment = Aksentkleure en temas.
+xdg-entry-appearance-keywords = COSMIC;Weergawe;Aksentkleure;Color;Icon;Font;Temas
+
+xdg-entry-applications = Toepassings
+
+xdg-entry-bluetooth-comment = Bestuur Bluetooth-toestelle
+
+xdg-entry-date-time = Datum en tyd
+xdg-entry-date-time-comment = Tydsone, outomatiese klokinstellings en tydformatering.
+
+xdg-entry-default-apps = Standaard toepassings
+xdg-entry-default-apps-comment = Default web browser, mail client, file browser, and other applications.
+
+xdg-entry-displays = Vertoonskerme
+xdg-entry-displays-comment = Vertoonopsies, grafiese modusse en naglig.
+xdg-entry-displays-keywords = COSMIC;Vertoonskerme;
+
+xdg-entry-dock = Dock
+xdg-entry-dock-comment = 'n Opsionele balk vir programme en applets.
+
+xdg-entry-input = Invoertoestelle
+xdg-entry-input-comment = Sleutelbord, muis, ens.
+
 ## Network & Wireless
 
 connections-and-profiles = { $variant ->
@@ -69,7 +100,7 @@ vpn = VPN
     .error = Kon nie VPN-konfigurasie byvoeg nie
     .remove = Verwyder verbindingsprofiel
     .select-file = Kies 'n VPN-konfigurasielêer
-    
+
 vpn-error = VPN-fout
     .config = Kon nie VPN-konfigurasie byvoeg nie
     .connect = Kon nie aan VPN koppel nie
@@ -84,17 +115,17 @@ vpn-error = VPN-fout
         [password] VPN-wagwoord
         [password-flags] VPN-wagwoordvlae
     } met nmcli stel nie
-    
+
 wired = Bedraad
     .adapter = Bedrade adapter { $id }
     .connections = Bedrade verbindings
     .devices = Bedrade toestelle
     .remove = Verwyder verbindingsprofiel
-    
+
 wifi = Wifi
     .adapter = Wifi-adapter { $id }
     .forget = Vergeet hierdie netwerk
-    
+
 wireguard-dialog = Voeg WireGuard-toestel toe
     .description = Kies 'n toestelnaam vir die WireGuard-konfigurasie.
 
@@ -111,7 +142,7 @@ enable = Skakel in
 
 bluetooth = Bluetooth
     .desc = Om bluetooth-apparate te bestuur
-    .status = Hierdie stelsel is sigbaar as { $aliases } wanneer u die bluetooth-instellings open hou. 
+    .status = Hierdie stelsel is sigbaar as { $aliases } wanneer u die bluetooth-instellings open hou.
     .connected = Gekoppel
     .connecting = Verbinding maak…
     .disconnecting = Verbinding beëindig…
@@ -176,5 +207,3 @@ color-filter = Kleurfiltertipe
     .deuteranopia = Groen/Rooi (groenswakheid, Deuteranopie)
     .protanopia = Rooi/Groen (rooiswakheid, Protanopie)
     .tritanopia = Blou/Geel (bluoswakheid, Tritanopie)
-
-

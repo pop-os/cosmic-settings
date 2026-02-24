@@ -5,6 +5,9 @@ edition = "2024"
 license = "GPL-3.0-only"
 publish = false
 
+[build-dependencies]
+xdgen = "0.1"
+
 [dependencies]
 accounts-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 anyhow = "1.0"

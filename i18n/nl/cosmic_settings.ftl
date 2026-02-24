@@ -4,6 +4,90 @@ ok = Oké
 unknown = Onbekend
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = Over
+xdg-entry-about-comment = Apparaatnaam, hardware-informatie, standaardinstellingen van het besturingssysteem.
+
+xdg-entry-a11y = Toegankelijkheden
+xdg-entry-a11y-comment = Toegankelijkheidsinstellingen.
+
+xdg-entry-appearance = Weergave
+xdg-entry-appearance-comment = Accentkleuren en thema's.
+
+xdg-entry-applications = Toepassingen
+xdg-entry-applications-comment = Instellingen voor toepassingen beheren.
+
+xdg-entry-bluetooth = Bluetooth-apparaten beheren
+
+xdg-entry-date-time = Datum en tijd
+xdg-entry-date-time-comment = Tijdszone, automatische klokinstellingen en tijdformatering.
+
+xdg-entry-default-apps = Standaard toepassingen
+xdg-entry-default-apps-comment = Standaard webbrowser, mailprogramma, bestandsbeheerder en andere apps.
+
+xdg-entry-desktop = Bureaublad
+
+xdg-entry-displays = Beeldschermen
+xdg-entry-displays-comment = Weergaveopties, grafische modi en nachtlicht.
+
+xdg-entry-dock = Dock
+xdg-entry-dock-comment = Een optionele balk voor apps en applets.
+
+xdg-entry-input = Invoerapparaten
+xdg-entry-input-comment = Toetsenbord, muis, enz.
+
+xdg-entry-keyboard = Toetsenbord
+xdg-entry-keyboard-comment = Invoermethodes, speciale tekens, en sneltoetsen.
+
+xdg-entry-mouse = Muis
+xdg-entry-mouse-comment = Muissnelheid en -versnelling, en 'natuurlijk' scrollen.
+
+xdg-entry-network = Netwerk en wifi
+xdg-entry-network-comment = Netwerkverbindingen beheren
+
+xdg-entry-notifications = Meldingsinstellingen
+xdg-entry-notifications-comment = "Niet storen", meldingen op het vergrendelingsscherm en meldingsinstellingen per app.
+
+xdg-entry-panel = Panel
+xdg-entry-panel-comment = De standaard systeembalk voor menu's en applets.
+
+xdg-entry-power = Energie en batterij
+xdg-entry-power-comment = Energieverbruik en -besparingsopties.
+
+xdg-entry-region-language = Taal en regio
+xdg-entry-region-language-comment = Regionale datum-, tijd- en getalweergave.
+
+xdg-entry-sound = Geluid
+xdg-entry-sound-comment = Geluidsinstellingen voor apparaten, alarmen en programma's.
+
+xdg-entry-system = Systeem en gebruikersaccount
+
+xdg-entry-time-language = Tijd- en taalinstellingen
+xdg-entry-time-language-comment = COMMENT
+
+xdg-entry-touchpad = Touchpad
+xdg-entry-touchpad-comment = Touchpad muisversnelling, klikeigenschappen en veeggebaren.
+
+xdg-entry-users = Gebruikers
+xdg-entry-users-comment = Authenticatie en gebruikersinstellingen.
+
+xdg-entry-vpn-comment = VPN-verbindingen en VPN-profielen.
+
+xdg-entry-wallpaper = Schermachtergrond
+xdg-entry-wallpaper-comment = Schermachtergrond: Afbeeldingen, kleuren en diavoorstellingen.
+
+xdg-entry-window-management = Vensterbeheer
+xdg-entry-window-management-comment = Opties voor de Supertoets, vensterbeheer en aanvullende opties voor het tegelen van vensters.
+
+xdg-entry-wired = Kabelverbinding
+xdg-entry-wired-comment = Kabelverbinding en verbindingsprofielen.
+
+xdg-entry-wireless-comment = Wifiverbinding en verbindingsprofielen.
+
+xdg-entry-x11-applications = Compatibiliteit met X11-toepassingen.
+xdg-entry-x11-applications-comment = X11-toepassingsvensters schalen, en globale sneltoetsen.
+
 ## Network & Wireless
 
 connections-and-profiles =

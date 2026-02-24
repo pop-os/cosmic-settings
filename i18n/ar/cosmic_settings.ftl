@@ -4,6 +4,105 @@ ok = حسنًا
 unknown = مجهول
 number = { $number }
 
+xdg-entry-about = عن
+xdg-entry-about-comment = اسم الجهاز، معلومات العتاد، إعدادات نظام التشغيل المبدئية.
+
+xdg-entry-a11y = الإتاحة
+xdg-entry-a11y-comment = إعدادات الإتاحة
+
+xdg-entry-appearance = المظهر
+xdg-entry-appearance-comment = ألوان التمييز والسمات.
+
+xdg-entry-applications = التطبيقات
+
+xdg-entry-bluetooth = البلوتوث
+xdg-entry-bluetooth-comment = أدر أجهزة البلوتوث
+
+xdg-entry-date-time = التاريخ والوقت
+xdg-entry-date-time-comment = المنطقة الزمنية وإعدادات الساعة التلقائية وتنسيق الوقت.
+
+xdg-entry-default-apps = التطبيقات المبدئية
+xdg-entry-default-apps-comment = متصفح الويب المبدئي، عميل البريد، متصفح الملفات، والتطبيقات الأخرى.
+
+xdg-entry-desktop = سطح المكتب
+xdg-entry-desktop-comment = Wallpaper, appearance, panel, dock, window management and workspace settings.
+
+xdg-entry-displays = شاشات العرض
+xdg-entry-displays-comment = خيارات العرض، وأنماط الرسوميات، والوضع الليلي.
+
+xdg-entry-dock = الإرساء
+xdg-entry-dock-comment = شريط اختياري للتطبيقات والبريمجات.
+
+xdg-entry-input = أجهزة الإدخال
+xdg-entry-input-comment = لوحة المفاتيح، المؤشر، إلخ.
+
+xdg-entry-keyboard = لوحة المفاتيح
+xdg-entry-keyboard-comment = مصادر الإدخال، التبديل، إدخال الأحرف الخاصة، الاختصارات.
+
+xdg-entry-mouse = الفأرة
+xdg-entry-mouse-comment = سرعة الفأرة، والتسارع، والتمرير الطبيعي.
+
+xdg-entry-network = الشبكة والاتصالات اللاسلكية
+xdg-entry-network-comment = أدر اتصالات الشبكة
+
+xdg-entry-notifications = الإشعارات
+xdg-entry-notifications-comment = عدم الإزعاج، إشعارات شاشة القفل، وإعدادات لكل تطبيق.
+
+xdg-entry-panel = اللوحة
+xdg-entry-panel-comment = شريط النظام الأساسي للقوائم والبريمجات.
+
+xdg-entry-power = الطاقة والبطارية
+xdg-entry-power-comment = أوضاع الطاقة وخيارات توفير الطاقة.
+
+xdg-entry-region-language = اللغة والمنطقة
+xdg-entry-region-language-comment = نسق التواريخ والأوقات والأرقام بناءً على منطقتك.
+
+xdg-entry-sound = الصوت
+xdg-entry-sound-comment = إعدادات الصوت للأجهزة والتنبيهات والتطبيقات.
+
+xdg-entry-startup-apps = تطبيقات بدء التشغيل
+xdg-entry-startup-apps-comment = اضبط التطبيقات التي تعمل عند الولوج.
+
+xdg-entry-system = النظام والحسابات
+xdg-entry-system-comment = System information, accounts, and firmware updates.
+
+xdg-entry-time-language = الوقت واللغة
+xdg-entry-time-language-comment = Manage system date, time, region, and language.
+
+xdg-entry-touchpad = لوحة اللمس
+xdg-entry-touchpad-comment = سرعة لوحة اللمس، خيارات النقر، الإيماءات.
+
+xdg-entry-users = المستخدمين
+xdg-entry-users-comment = الاستيثاق وحسابات المستخدمين.
+xdg-entry-users-keywords = COSMIC;User;Account;
+
+xdg-entry-vpn-comment = اتصالات VPN وملفات تعريف الاتصال.
+xdg-entry-vpn-keywords = COSMIC;VPN;Network;Connection;OpenVPN;OpenConnect;
+
+xdg-entry-wallpaper = Wallpaper
+xdg-entry-wallpaper-comment = Wallpaper images, colors, and slideshow options.
+xdg-entry-wallpaper-keywords = COSMIC;Wallpaper;Background;Slideshow;
+
+xdg-entry-window-management = Window management
+xdg-entry-window-management-comment = Super key action, window control options, and additional window tiling options.
+xdg-entry-window-management-keywords = COSMIC;Window;Management;Tiling;Super;Key;
+
+xdg-entry-wired = Wired
+xdg-entry-wired-comment = Wired connections and connection profiles.
+xdg-entry-wired-keywords = COSMIC;Wired;LAN;Network;Connection;
+
+xdg-entry-wireless = Wi-Fi
+xdg-entry-wireless-comment = Wi-Fi connections and connection profiles.
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Network;Connection;
+
+xdg-entry-workspaces = Workspaces
+xdg-entry-workspaces-comment = Workspace orientation, overview, and multi-monitor behavior.
+xdg-entry-workspaces-keywords = COSMIC;Workspace;Orientation;Overview;Monitor;
+
+xdg-entry-x11-applications = توافق تطبيقات اكس11
+xdg-entry-x11-applications-comment = توسيع نطاق تطبيق نظام النوافذ اكس11 والاختصارات العامة.
+xdg-entry-x11-applications-keywords = COSMIC;X11;Application;Compatibility;
+
 ## Network & Wireless
 
 connections-and-profiles =
