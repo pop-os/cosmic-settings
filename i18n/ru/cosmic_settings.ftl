@@ -383,7 +383,7 @@ replace = Заменить
 shortcut-name = Название сочетания клавиш
 system-controls = Системные элементы управления
 terminate = Завершить
-toggle-stacking = Переключить окна стопкой
+toggle-stacking = Собрать/распустить стопку окон
 type-key-combination = Введите комбинацию клавиш
 custom-shortcuts = Пользовательские сочетания клавиш
     .add = Добавить сочетание клавиш
@@ -420,7 +420,7 @@ manage-windows = Управление окнами
     .minimize = Свернуть окно
     .resize-inwards = Изменить размер изнутри
     .resize-outwards = Изменить размер снаружи
-    .toggle-sticky = Переключить прилипание окна
+    .toggle-sticky = Вкл./выкл закрепление окна
 move-windows = Перемещение окон
     .direction =
         Переместить окно { $direction ->
