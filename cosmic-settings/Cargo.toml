@@ -58,7 +58,7 @@ itertools = "0.14.0"
 itoa = "1.0.17"
 libcosmic.workspace = true
 locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-sysinfo = { version = "0.38.2", optional = true }
+sysinfo = { version = "=0.38.0", optional = true }
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", optional = true }
 notify = "8.2.0"
 regex = "1.12.3"
@@ -170,7 +170,13 @@ page-networking = [
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]
-page-region = ["gettext", "dep:locales-rs", "dep:locale1", "dep:zbus", "dep:accounts-zbus"]
+page-region = [
+    "gettext",
+    "dep:locales-rs",
+    "dep:locale1",
+    "dep:zbus",
+    "dep:accounts-zbus",
+]
 page-sound = ["dep:cosmic-settings-sound-subscription"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
 page-window-management = ["cosmic-comp-config", "dep:cosmic-settings-config"]
@@ -183,10 +189,6 @@ cosmic-comp-config = ["dep:cosmic-comp-config"]
 dbus-config = ["libcosmic/dbus-config", "cosmic-config/dbus"]
 single-instance = ["libcosmic/single-instance"]
 test = []
-wayland = [
-    "libcosmic/wayland",
-    "dep:cosmic-panel-config",
-    "dep:cosmic-randr"
-]
+wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr"]
 wgpu = ["libcosmic/wgpu"]
 xdg-portal = ["ashpd", "libcosmic/xdg-portal"]

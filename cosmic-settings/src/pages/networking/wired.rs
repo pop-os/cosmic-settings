@@ -8,7 +8,7 @@ use cosmic::{
     Apply, Element, Task,
     iced::{Alignment, Length},
     iced_core::text::Wrapping,
-    widget::{self, icon},
+    widget::{self, icon, space::horizontal as horizontal_space},
 };
 use cosmic_dbus_networkmanager::interface::enums::DeviceState;
 use cosmic_settings_network_manager_subscription::{
@@ -549,7 +549,7 @@ impl Page {
 
                     let widget = widget::settings::item_row(vec![
                         identifier.into(),
-                        widget::horizontal_space().into(),
+                        horizontal_space().into(),
                         controls.into(),
                     ]);
 

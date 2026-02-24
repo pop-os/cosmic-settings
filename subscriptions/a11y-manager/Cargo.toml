@@ -14,3 +14,8 @@ num-traits = "0.2.19"
 sctk.workspace = true
 tokio = "1.49.0"
 tracing = "0.1.44"
+
+
+[patch.'https://github.com/pop-os/libcosmic']
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }

@@ -434,7 +434,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
 
             let search = widget::search_input("", &page.search.input)
-                .width(314)
+                .width(314.)
                 .on_clear(Message::Search(String::new()))
                 .on_input(Message::Search)
                 .apply(widget::container)

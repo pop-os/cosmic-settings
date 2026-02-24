@@ -19,3 +19,8 @@ tokio = "1.49.0"
 tracing = "0.1.44"
 zbus = { version = "5.13.2", features = ["tokio"] }
 bitflags = "2.11.0"
+
+
+[patch.'https://github.com/pop-os/libcosmic']
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }

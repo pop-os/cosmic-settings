@@ -8,7 +8,7 @@ use cosmic::{
     Apply, Element, Task,
     config::{CosmicTk, FontConfig},
     iced_core::text::Wrapping,
-    widget::{self, settings, svg},
+    widget::{self, settings, space::horizontal as horizontal_space, svg},
 };
 use cosmic_config::ConfigSet;
 
@@ -213,7 +213,7 @@ impl Model {
                             .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
                             .into()
                     } else {
-                        widget::horizontal_space().width(16).into()
+                        horizontal_space().width(16.).into()
                     },
                 ])
                 .apply(widget::container)

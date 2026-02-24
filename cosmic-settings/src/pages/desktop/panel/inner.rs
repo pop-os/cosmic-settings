@@ -6,7 +6,8 @@ use cosmic::{
     iced::{Alignment, Length},
     surface, theme,
     widget::{
-        button, container, dropdown, horizontal_space, icon, row, settings, slider, text, toggler,
+        button, container, dropdown, icon, row, settings, slider,
+        space::horizontal as horizontal_space, text, toggler,
     },
 };
 
@@ -348,7 +349,7 @@ pub fn reset_button<
             let descriptions = &section.descriptions;
             let inner = page.inner();
             if inner.system_default == inner.panel_config {
-                Element::from(horizontal_space().width(1))
+                Element::from(horizontal_space().width(1.))
             } else {
                 button::standard(&descriptions[reset_to_default])
                     .on_press(Message::ResetPanel)

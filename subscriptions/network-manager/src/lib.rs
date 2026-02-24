@@ -9,7 +9,7 @@ pub mod hw_address;
 pub mod nm_secret_agent;
 pub mod wireless_enabled;
 
-use std::{collections::HashMap, fmt::Debug, sync::Arc, time::Duration};
+use std::{collections::HashMap, fmt::Debug, hash::Hash, sync::Arc, time::Duration};
 
 use available_wifi::NetworkType;
 pub use cosmic_dbus_networkmanager as dbus;
@@ -40,6 +40,17 @@ use self::{
 
 pub type SSID = Arc<str>;
 pub type UUID = Arc<str>;
+
+pub(crate) struct Wrapper<I> {
+    id: I,
+    conn: zbus::Connection,
+}
+
+impl<I: Hash> Hash for Wrapper<I> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -121,13 +132,25 @@ pub fn subscription<I: Copy + Debug + std::hash::Hash + 'static>(
     id: I,
     conn: zbus::Connection,
 ) -> iced_futures::Subscription<Event> {
-    Subscription::run_with_id(
-        id,
-        stream::channel(50, |output| async move {
-            watch(conn, output).await;
-            futures::future::pending().await
-        }),
-    )
+    struct Wrapper<I> {
+        id: I,
+        conn: zbus::Connection,
+    }
+    impl<I: Hash> Hash for Wrapper<I> {
+        fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+            self.id.hash(state);
+        }
+    }
+    Subscription::run_with(Wrapper { id, conn }, |Wrapper { id, conn }| {
+        let conn = conn.clone();
+        stream::channel(
+            50,
+            |output: futures::channel::mpsc::Sender<Event>| async move {
+                watch(conn, output).await;
+                futures::future::pending().await
+            },
+        )
+    })
 }
 
 pub async fn watch(conn: zbus::Connection, mut output: futures::channel::mpsc::Sender<Event>) {

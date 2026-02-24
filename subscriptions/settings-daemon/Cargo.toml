@@ -12,3 +12,7 @@ log = "0.4.29"
 tokio = "1.49.0"
 tokio-stream = "0.1.18"
 zbus = "5.13.2"
+
+[patch.'https://github.com/pop-os/libcosmic']
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
