@@ -4,6 +4,95 @@ ok = OK
 unknown = Neznáme
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = O systéme
+xdg-entry-about-comment = Názov zariadenia, hardvérové informácie, predvolené nastavenia systému.
+
+xdg-entry-a11y = Prístupnosť
+xdg-entry-a11y-comment = Nastavenia prístupnosti.
+
+xdg-entry-appearance = Vzhľad
+xdg-entry-appearance-comment = Akcentové farby a témy.
+
+xdg-entry-applications = Aplikácie
+xdg-entry-applications-comment = Spravovať nastavenia aplikácií.
+
+xdg-entry-bluetooth-comment = Spravovať Bluetooth zariadenia
+
+xdg-entry-date-time = Dátum a čas
+xdg-entry-date-time-comment = Časové pásmo, automatické nastavenie hodín a formátovanie času.
+
+xdg-entry-default-apps = Predvolené aplikácie
+xdg-entry-default-apps-comment = Predvolený webový prehliadač, e-mailový klient, správca súborov a ďalšie aplikácie.
+
+xdg-entry-desktop = Pracovná plocha
+xdg-entry-desktop-comment = Nastavenia pracovnej plochy, vzhľadu a správania okien
+
+xdg-entry-displays = Displeje
+xdg-entry-displays-comment = Možnosti displeja, grafické režimy a nočné svetlo.
+
+xdg-entry-dock = Dok
+xdg-entry-dock-comment = Voliteľný panel pre aplikácie a applety.
+
+xdg-entry-input = Vstupné zariadenia
+xdg-entry-input-comment = Klávesnica, kurzor a ďalšie.
+
+xdg-entry-keyboard = Klávesnica
+xdg-entry-keyboard-comment = Vstupné zdroje, prepínanie, zadávanie špeciálnych znakov, skratky.
+
+xdg-entry-mouse = Myš
+xdg-entry-mouse-comment = Rýchlosť myši, akcelerácia a prirodzené rolovanie.
+
+xdg-entry-network = Sieť & Bezdrôtové
+xdg-entry-network-comment = Spravovať sieťové pripojenia
+
+xdg-entry-notifications = Oznámenia
+xdg-entry-notifications-comment = Nerušiť, oznámenia na uzamknutej obrazovke a nastavenia pre aplikácie.
+
+xdg-entry-panel = Panel
+xdg-entry-panel-comment = Hlavný systémový panel pre menu a applety.
+
+xdg-entry-power = Napájanie & Batéria
+xdg-entry-power-comment = Režimy napájania a možnosti úspory energie.
+
+xdg-entry-region-language = Región & Jazyk
+xdg-entry-region-language-comment = Formátovanie dátumov, časov a čísel podľa vášho regiónu.
+
+xdg-entry-sound = Zvuk
+xdg-entry-sound-comment = Zvukové nastavenia pre zariadenia, upozornenia a aplikácie.s
+
+xdg-entry-system = Systém & Účty
+xdg-entry-system-comment = Systémové informácie, používatelia a firmware
+
+xdg-entry-time-language = Čas & Jazyk
+xdg-entry-time-language-comment = Nastavenia času a jazyka
+
+xdg-entry-touchpad = Touchpad
+xdg-entry-touchpad-comment = Rýchlosť touchpadu, možnosti kliknutia, gestá.
+
+xdg-entry-users = Používatelia
+xdg-entry-users-comment = Autentifikácia a používateľské účty.
+
+xdg-entry-vpn-comment = VPN pripojenia a profily pripojení.
+
+xdg-entry-wallpaper = Tapeta
+xdg-entry-wallpaper-comment = Obrázky tapiet, farby a možnosti prezentácie.
+
+xdg-entry-window-management = Správa okien
+xdg-entry-window-management-comment = Akcia klávesu Super, možnosti ovládania okien a ďalšie možnosti dlaždicovania okien.
+
+xdg-entry-wired = Káblové
+xdg-entry-wired-comment = Káblové pripojenia a profily pripojení.
+
+xdg-entry-wireless-comment = Wi-Fi pripojenia a profily pripojení.
+
+xdg-entry-workspaces = Pracovné priestory
+xdg-entry-workspaces-comment = Orientácia a správanie pracovných priestorov.
+
+xdg-entry-x11-applications = Kompatibilita X11 aplikácií
+xdg-entry-x11-applications-comment = Škálovanie X11 aplikácií a globálne skratky.
+
 ## Sieť & Bezdrôtové
 
 connections-and-profiles =

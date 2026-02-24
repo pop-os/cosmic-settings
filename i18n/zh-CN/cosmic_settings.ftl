@@ -4,6 +4,97 @@ ok = 确定
 unknown = 未知
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = 关于
+xdg-entry-about-comment = 设备名称、硬件信息、操作系统默认设置
+
+xdg-entry-a11y = 无障碍
+xdg-entry-a11y-comment = 无障碍设置
+
+xdg-entry-appearance = 外观
+xdg-entry-appearance-comment = 强调色和个性化
+
+xdg-entry-applications = 应用程序
+xdg-entry-applications-comment = 管理应用程序设置
+
+xdg-entry-bluetooth-comment = 管理蓝牙设备
+
+xdg-entry-date-time = 日期和时间
+xdg-entry-date-time-comment = 时区，自动时钟设置和时间格式
+
+xdg-entry-default-apps = 默认应用程序
+xdg-entry-default-apps-comment = 默认网络浏览器、邮件客户端、文件浏览器和其他应用程序
+
+xdg-entry-desktop = 桌面
+
+xdg-entry-displays = 显示器
+xdg-entry-displays-comment = 显示器选项、图形模式和夜间模式
+
+xdg-entry-dock = 程序坞
+xdg-entry-dock-comment = 可选的应用程序和小部件的工具栏
+
+xdg-entry-input = 输入设备
+xdg-entry-input-comment = 键盘、光标等
+
+xdg-entry-keyboard = 键盘
+xdg-entry-keyboard-comment = 输入源、切换、特殊字符输入、快捷键
+
+xdg-entry-mouse = 鼠标
+xdg-entry-mouse-comment = 鼠标速度、加速度和自然滚动
+
+xdg-entry-network = 网络和无线
+xdg-entry-network-comment = 管理网络连接
+
+xdg-entry-notifications = 通知
+xdg-entry-notifications-comment = 勿扰模式、锁屏通知和每个应用程序的设置
+
+xdg-entry-panel = 面板
+xdg-entry-panel-comment = 主系统栏，用于菜单和小部件。
+
+xdg-entry-power = 电源和电池
+xdg-entry-power-comment = 电源模式和节能选项
+
+xdg-entry-region-language = 区域和语言
+xdg-entry-region-language-comment = 根据您的区域格式化日期、时间和数字
+
+xdg-entry-sound = 声音
+xdg-entry-sound-comment = 设备、警报和应用程序的音频设置
+
+xdg-entry-startup-apps = 自动启动应用程序
+xdg-entry-startup-apps-comment = 配置登录时运行的应用程序。
+
+xdg-entry-system = 系统和账户
+xdg-entry-system-comment = 时间与语言
+
+xdg-entry-time-language = Time & Language
+xdg-entry-time-language-comment = COMMENT.
+
+xdg-entry-touchpad = 触摸板
+xdg-entry-touchpad-comment = 触摸板速度、点击选项和手势
+
+xdg-entry-users = 用户
+xdg-entry-users-comment = 身份验证和用户账户
+
+xdg-entry-vpn-comment = VPN连接和配置文件
+
+xdg-entry-wallpaper = 壁纸
+xdg-entry-wallpaper-comment = 壁纸图片、颜色和幻灯片选项
+
+xdg-entry-window-management = 窗口管理
+xdg-entry-window-management-comment = Super键操作、窗口控制选项和额外的窗口平铺选项
+
+xdg-entry-wired = 有线连接
+xdg-entry-wired-comment = 有线连接和配置文件
+
+xdg-entry-wireless-comment = Wi-Fi连接和配置文件
+
+xdg-entry-workspaces = 工作区
+xdg-entry-workspaces-comment = 工作区方向和行为
+
+xdg-entry-x11-applications = X11应用程序兼容性
+xdg-entry-x11-applications-comment = X11窗口系统应用程序缩放和全局快捷键
+
 ## Network & Wireless
 
 connections-and-profiles =

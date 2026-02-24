@@ -4,6 +4,93 @@ ok = OK
 unknown = Desconocido
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = A cerca de
+xdg-entry-about-comment = Nombre del dispositivo, información de hardware y valores del sistema operativo.
+
+xdg-entry-a11y = Accesibilidad
+xdg-entry-a11y-comment = Configuración de accesibilidad.
+
+xdg-entry-appearance = Apariencia
+xdg-entry-appearance-comment = Colores de énfasis y temas.
+
+xdg-entry-applications = Aplicaciones
+xdg-entry-applications-comment = Gestionar configuración de aplicaciones.
+
+xdg-entry-bluetooth-comment = Gestionar dispositivos Bluetooth
+
+xdg-entry-date-time = Fecha y Hora
+xdg-entry-date-time-comment = Zona horaria, configuración automática del reloj y formatos de hora.
+
+xdg-entry-default-apps = Aplicaciones predeterminadas
+xdg-entry-default-apps-comment = Navegador web predeterminado, cliente de correo, explorador de archivos y otras aplicaciones.
+
+xdg-entry-desktop = Escritorio
+
+xdg-entry-displays = Pantallas
+xdg-entry-displays-comment = Opciones de pantalla, modos gráficos y luz nocturna.
+
+xdg-entry-dock = Dock
+xdg-entry-dock-comment = Panel opcional para aplicaciones y otros applets.
+
+xdg-entry-input = Dispositivos de entrada
+xdg-entry-input-comment = Teclado, ratón, etc.
+
+xdg-entry-keyboard = Teclado
+xdg-entry-keyboard-comment = Entrada de teclado, conmutación, carácteres especiales, atajos.
+
+xdg-entry-mouse = Ratón
+xdg-entry-mouse-comment = Velocidad del ratón, aceleración y desplazamiento natural.
+
+xdg-entry-network = Red e inalámbrico
+xdg-entry-network-comment = Gestionar conexiones de red
+
+xdg-entry-notifications = Notificaciones
+xdg-entry-notifications-comment = No molestar, notificaciones de pantalla de bloqueo y ajustes de aplicación.
+
+xdg-entry-panel = Barra
+xdg-entry-panel-comment = Barra principal del sistema para menús y applets.
+
+xdg-entry-power = Energía y batería
+xdg-entry-power-comment = Modos de energía y opciones de ahorro de energía.
+
+xdg-entry-region-language = Región e Idioma
+xdg-entry-region-language-comment = Formato de fechas, horas y números según su región.
+
+xdg-entry-sound = Sonido
+xdg-entry-sound-comment = Configuraciones de audio para dispositivos, alertas y aplicaciones.
+
+xdg-entry-system = Sistema y cuentas
+xdg-entry-system-comment = Información del sistema, cuentas y firmware
+
+xdg-entry-time-language = Hora e Idioma
+
+xdg-entry-touchpad = Panel táctil
+xdg-entry-touchpad-comment = Velocidad del panel táctil, opciones de clic, gestos.
+
+xdg-entry-users = Usuarios
+xdg-entry-users-comment = Autenticación y cuentas de usuario.
+
+xdg-entry-vpn-comment = Conexiones VPN y perfiles de conexión.
+
+xdg-entry-wallpaper = Fondo de pantalla
+xdg-entry-wallpaper-comment = Imágenes de fondo, colores y opciones de carrusel de imágenes.
+
+xdg-entry-window-management = Gestión de ventanas
+xdg-entry-window-management-comment = Acción de la tecla Super, opciones de control de ventana y opciones adicionales de mosaico de ventana.
+
+xdg-entry-wired = Red cableada
+xdg-entry-wired-comment = Conexiones cableadas y perfiles de conexión.
+
+xdg-entry-wireless-comment = Conexiones Wi-Fi y perfiles de conexión.
+
+xdg-entry-workspaces = Espacios de trabajo
+xdg-entry-workspaces-comment = Orientación de los espacios de trabajo y comportamiento.
+
+xdg-entry-x11-applications = Compatibilidad para aplicaciones X11
+xdg-entry-x11-applications-comment = Escalado de aplicaciones del sistema de ventanas X11 y atajos globales.
+
 ## Network & Wireless
 
 connections-and-profiles =

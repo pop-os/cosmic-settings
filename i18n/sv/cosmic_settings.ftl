@@ -4,6 +4,95 @@ ok = OK
 unknown = Okänd
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = Om
+xdg-entry-about-comment = Enhetsnamn, hårdvaruinformation, standardinställningar för operativsystem.
+
+xdg-entry-a11y = Tillgänglighet
+xdg-entry-a11y-comment = Tillgänglighetsinställningar.
+
+xdg-entry-appearance = Utseende
+xdg-entry-appearance-comment = Accentfärger och teman.
+
+xdg-entry-applications = Program
+xdg-entry-applications-comment = Hantera programinställningar.
+
+xdg-entry-bluetooth-comment = Hantera Bluetooth-enheter
+
+xdg-entry-date-time = Datum & Tid
+xdg-entry-date-time-comment = Tidzon, automatiska klockinställningar, och tidsformat.
+
+xdg-entry-default-apps = Standardprogram
+xdg-entry-default-apps-comment = Standardwebläsare, e-postklient, filbläddrare, och andra program.
+
+xdg-entry-desktop = Skrivbord
+
+xdg-entry-displays = Skärmar
+xdg-entry-displays-comment = Skärmalternativ, grafiklägen, och nattljus.
+
+xdg-entry-dock = Docka
+xdg-entry-dock-comment = En valfri list för program och applets.
+
+xdg-entry-input = Inmatningsenheter
+xdg-entry-input-comment = Tangentbord, markör, etc.
+
+xdg-entry-keyboard = Tangentbord
+xdg-entry-keyboard-comment = Inmatningskällor, växling, specialtecken, genvägar.
+
+xdg-entry-mouse = Mus
+xdg-entry-mouse-comment = Mushastighet, acceleration, och naturlig rullning.
+
+xdg-entry-network = Nätverk & Wi-Fi
+xdg-entry-network-comment = Hantera nätverksanslutningar
+
+xdg-entry-notifications = Aviseringar
+xdg-entry-notifications-comment = Stör ej, aviseringar på låsskärm, och inställningar per program.
+
+xdg-entry-panel = Panel
+xdg-entry-panel-comment = Primär systemfält för menyer och applets.
+
+xdg-entry-power = Ström & Batteri
+xdg-entry-power-comment = Strömalternativ och energisparalternativ.
+
+xdg-entry-region-language = Region & språk
+xdg-entry-region-language-comment = Formatera datum, tider och siffror baserat på din region.
+
+xdg-entry-sound = Ljud
+xdg-entry-sound-comment = Ljudinställningar för enhter, larm och program.
+
+xdg-entry-startup-apps = Uppstartsprogram
+xdg-entry-startup-apps-comment = Konfigurera program som körs vid inloggning.
+
+xdg-entry-system = System & konton
+
+xdg-entry-time-language = Tid & språk
+
+xdg-entry-touchpad = Pekplatta
+xdg-entry-touchpad-comment = Pekplattans hastighet, klickalternativ, gester.
+
+xdg-entry-users = Användare
+xdg-entry-users-comment = Autentisering och användarkonton.
+
+xdg-entry-vpn-comment = VPN-anslutningar och anslutningsprofiler.
+
+xdg-entry-wallpaper = Bakgrundsbild
+xdg-entry-wallpaper-comment = Bakgrundsbilder, färger, och bildspelsalternativ.
+
+xdg-entry-window-management = Fönsterhantering
+xdg-entry-window-management-comment = Åtgärd för Super-tangent, fönsterkontroll alternativ, och ytterligare fönsterplacerings alternativ.
+
+xdg-entry-wired = Tråndbunden anslutning
+xdg-entry-wired-comment = Trådbundna anslutningar och anslutningsprofiler.
+
+xdg-entry-wireless-comment = Wi-Fi-anslutningar och anslutningsprofiler.
+
+xdg-entry-workspaces = Arbetsytor
+xdg-entry-workspaces-comment = Arbetsytors orientering och beteende.
+
+xdg-entry-x11-applications = X11 program kompatibilitet
+xdg-entry-x11-applications-comment = Applikationsskalning för X11 fönstersystem och globala genvägar.
+
 ## Skrivbord
 
 desktop = Skrivbord

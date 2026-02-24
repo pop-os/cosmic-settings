@@ -1,23 +1,11 @@
 [Desktop Entry]
 Name=COSMIC Settings
-Name[ar]=إعدادات COSMIC
-Name[cs]=Nastavení COSMIC
-Name[zh_CN]=COSMIC 设置
-Name[pl]=Ustawienia COSMIC
-Name[pt]=Configurações
-Name[ru]=Параметры
-Name[hu]=COSMIC Beállítások
-Name[pt_BR]=Configurações
-Name[sv]=COSMIC Inställningar
-Name[sk]=Nastavenia COSMIC
-Name[es]=Configuración COSMIC
-Name[it]=Impostazioni di COSMIC
-Name[fr]=Paramètres COSMIC
+Comment=Settings application for COSMIC.
 Type=Application
 Exec=cosmic-settings
 Terminal=false
 Categories=COSMIC
-Keywords=COSMIC
+Keywords=COSMIC;Settings;
 OnlyShowIn=COSMIC
 Icon=com.system76.CosmicSettings
 StartupNotify=true
