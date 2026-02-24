@@ -167,7 +167,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("bluetooth", "bluetooth-symbolic")
             .title(fl!("bluetooth"))
-            .description(fl!("bluetooth", "desc"))
+            .description(fl!("xdg-entry-bluetooth-comment"))
     }
 
     fn content(

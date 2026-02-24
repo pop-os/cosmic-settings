@@ -200,7 +200,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("users", "system-users-symbolic")
             .title(fl!("users"))
-            .description(fl!("users", "desc"))
+            .description(fl!("xdg-entry-users-comment"))
     }
 
     fn dialog(&self) -> Option<Element<'_, pages::Message>> {

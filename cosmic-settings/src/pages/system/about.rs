@@ -61,7 +61,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("about", "help-about-symbolic")
             .title(fl!("about"))
-            .description(fl!("about", "desc"))
+            .description(fl!("xdg-entry-about-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {

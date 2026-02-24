@@ -231,7 +231,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("display", "preferences-desktop-display-symbolic")
             .title(fl!("display"))
-            .description(fl!("display", "desc"))
+            .description(fl!("xdg-entry-displays-comment"))
     }
 
     #[cfg(not(feature = "test"))]

@@ -157,7 +157,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new("wifi", "preferences-wireless-symbolic")
             .title(fl!("wifi"))
-            .description(fl!("connections-and-profiles", variant = "wifi"))
+            .description(fl!("xdg-entry-wireless-comment"))
     }
 
     fn content(

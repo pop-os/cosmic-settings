@@ -720,7 +720,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("appearance", "preferences-appearance-symbolic")
             .title(fl!("appearance"))
-            .description(fl!("appearance", "desc"))
+            .description(fl!("xdg-entry-appearance-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {

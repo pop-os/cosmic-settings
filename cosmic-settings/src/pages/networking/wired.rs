@@ -108,7 +108,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new("wired", "preferences-wired-symbolic")
             .title(fl!("wired"))
-            .description(fl!("connections-and-profiles", variant = "wired"))
+            .description(fl!("xdg-entry-wired-comment"))
     }
 
     fn content(

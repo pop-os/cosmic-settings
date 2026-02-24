@@ -100,7 +100,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("power", "preferences-power-and-battery-symbolic")
             .title(fl!("power"))
-            .description(fl!("power", "desc"))
+            .description(fl!("xdg-entry-power-comment"))
     }
 
     fn content(
@@ -492,7 +492,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
 fn profiles() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
 
-    let _power_desc = descriptions.insert(fl!("power", "desc"));
+    let _power_desc = descriptions.insert(fl!("xdg-entry-power-comment"));
 
     Section::default()
         .title(fl!("power-mode"))
