@@ -13,3 +13,8 @@ iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 tokio = { version = "1.49.0", features = ["sync", "time"] }
 tracing = "0.1.44"
 zbus = "5.13"
+
+
+[patch.'https://github.com/pop-os/libcosmic']
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
