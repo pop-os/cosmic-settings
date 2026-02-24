@@ -7,14 +7,14 @@ unknown = Onbekend
 number = { $number }
 
 xdg-entry-about = Oor
-xdg-entry-about-comment = Toestelnaam, hardeware-inligtings, standaardinstellings van die bedryfstelsel.
+xdg-entry-about-comment = Toestelnaam, hardeware-inligtings, standaardinstellings van die bedryfstelsel
 xdg-entry-about-keywords = COSMIC;Oor
 
 xdg-entry-a11y = Toeganklikhede
 xdg-entry-a11y-keywords = COSMIC;Toeganklikhede;A11y;Screen;Reader;Magnifier;Contrast;Color;
 
 xdg-entry-appearance = Weergawe
-xdg-entry-appearance-comment = Aksentkleure en temas.
+xdg-entry-appearance-comment = Aksentkleure en temas
 xdg-entry-appearance-keywords = COSMIC;Weergawe;Aksentkleure;Color;Icon;Font;Temas
 
 xdg-entry-applications = Toepassings
@@ -22,20 +22,20 @@ xdg-entry-applications = Toepassings
 xdg-entry-bluetooth-comment = Bestuur Bluetooth-toestelle
 
 xdg-entry-date-time = Datum en tyd
-xdg-entry-date-time-comment = Tydsone, outomatiese klokinstellings en tydformatering.
+xdg-entry-date-time-comment = Tydsone, outomatiese klokinstellings en tydformatering
 
 xdg-entry-default-apps = Standaard toepassings
-xdg-entry-default-apps-comment = Default web browser, mail client, file browser, and other applications.
+xdg-entry-default-apps-comment = Default web browser, mail client, file browser, and other applications
 
 xdg-entry-displays = Vertoonskerme
-xdg-entry-displays-comment = Vertoonopsies, grafiese modusse en naglig.
+xdg-entry-displays-comment = Vertoonopsies, grafiese modusse en naglig
 xdg-entry-displays-keywords = COSMIC;Vertoonskerme;
 
 xdg-entry-dock = Dock
-xdg-entry-dock-comment = 'n Opsionele balk vir programme en applets.
+xdg-entry-dock-comment = 'n Opsionele balk vir programme en applets
 
 xdg-entry-input = Invoertoestelle
-xdg-entry-input-comment = Sleutelbord, muis, ens.
+xdg-entry-input-comment = Sleutelbord, muis, ens
 
 ## Network & Wireless
 

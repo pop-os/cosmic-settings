@@ -7,90 +7,90 @@ number = { $number }
 ## Freedesktop desktop entries
 
 xdg-entry-about = Rendszerinformáció
-xdg-entry-about-comment = Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai.
+xdg-entry-about-comment = Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai
 
 xdg-entry-a11y = Akadálymentesség
-xdg-entry-a11y-comment = Akadálymentességi beállítások.
+xdg-entry-a11y-comment = Akadálymentességi beállítások
 
 xdg-entry-appearance = Megjelenés
-xdg-entry-appearance-comment = Kiemelő színek és téma.
+xdg-entry-appearance-comment = Kiemelő színek és téma
 
 xdg-entry-applications = Alkalmazások
-xdg-entry-applications-comment = Alkalmazásbeállítások kezelése.
+xdg-entry-applications-comment = Alkalmazásbeállítások kezelése
 
 xdg-entry-bluetooth-comment = Bluetooth-eszközök kezelése
 
 xdg-entry-date-time = Dátum és idő
-xdg-entry-date-time-comment = Időzóna, automatikus órabeállítások és időformátum.
+xdg-entry-date-time-comment = Időzóna, automatikus órabeállítások és időformátum
 
 xdg-entry-default-apps = Alapértelmezett alkalmazások
-xdg-entry-default-apps-comment = Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások.
+xdg-entry-default-apps-comment = Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások
 
 xdg-entry-desktop = Asztal
 
 xdg-entry-displays = Kijelzők
-xdg-entry-displays-comment = Kijelzőbeállítások, grafikus módok és éjszakai fény.
+xdg-entry-displays-comment = Kijelzőbeállítások, grafikus módok és éjszakai fény
 
 xdg-entry-dock = Dokk
-xdg-entry-dock-comment = Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz.
+xdg-entry-dock-comment = Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz
 
 xdg-entry-input = Beviteli eszközök
 xdg-entry-input-comment = Billentyűzet, mutató, stb.
 
 xdg-entry-keyboard = Billentyűzet
-xdg-entry-keyboard-comment = Bemeneti források, váltásuk, speciális karakterek, billentyűparancsok.
+xdg-entry-keyboard-comment = Bemeneti források, váltásuk, speciális karakterek, billentyűparancsok
 
 xdg-entry-mouse = Egér
-xdg-entry-mouse-comment = Egérsebesség, gyorsítás és természetes görgetés.
+xdg-entry-mouse-comment = Egérsebesség, gyorsítás és természetes görgetés
 
 xdg-entry-network = Hálózat és Wi-Fi
 xdg-entry-network-comment = Hálózati kapcsolatok kezelése
 
 xdg-entry-notifications = Értesítések
-xdg-entry-notifications-comment = Ne zavarjanak, zárolási képernyő értesítések és alkalmazásonkénti beállítások.
+xdg-entry-notifications-comment = Ne zavarjanak, zárolási képernyő értesítések és alkalmazásonkénti beállítások
 
-xdg-entry-panel-comment = Fő rendszersáv menükhöz és kisalkalmazásokhoz.
+xdg-entry-panel-comment = Fő rendszersáv menükhöz és kisalkalmazásokhoz
 
 xdg-entry-power = Energia és akkumulátor
-xdg-entry-power-comment = Energiagazdálkodási módok és energiagazdálkodási beállítások.
+xdg-entry-power-comment = Energiagazdálkodási módok és energiagazdálkodási beállítások
 
 xdg-entry-region-language = Régió és nyelv
-xdg-entry-region-language-comment = Dátumok, időpontok és számok formázása a régió alapján.
+xdg-entry-region-language-comment = Dátumok, időpontok és számok formázása a régió alapján
 
 xdg-entry-sound = Hang
-xdg-entry-sound-comment = Hangbeállítások eszközökhöz, figyelmeztetésekhez és alkalmazásokhoz.
+xdg-entry-sound-comment = Hangbeállítások eszközökhöz, figyelmeztetésekhez és alkalmazásokhoz
 
 xdg-entry-startup-apps = Indítási alkalmazások
-xdg-entry-startup-apps-comment = Azoknak az alkalmazásoknak a beállítása, amelyek bejelentkezéskor elindulnak.
+xdg-entry-startup-apps-comment = Azoknak az alkalmazásoknak a beállítása, amelyek bejelentkezéskor elindulnak
 
 xdg-entry-system = Rendszer és fiókok
 
 xdg-entry-time-language = Idő és nyelv
 
 xdg-entry-touchpad = Érintőpárna
-xdg-entry-touchpad-comment = Érintőpárna sebessége, kattintási beállítások, gesztusok.
+xdg-entry-touchpad-comment = Érintőpárna sebessége, kattintási beállítások, gesztusok
 
 xdg-entry-users = Felhasználók
-xdg-entry-users-comment = Hitelesítés és felhasználói fiókok.
+xdg-entry-users-comment = Hitelesítés és felhasználói fiókok
 
-xdg-entry-vpn-comment = VPN-kapcsolatok és kapcsolódási profilok.
+xdg-entry-vpn-comment = VPN-kapcsolatok és kapcsolódási profilok
 
 xdg-entry-wallpaper = Háttérkép
-xdg-entry-wallpaper-comment = Háttérképek, színek és diavetítési beállítások.
+xdg-entry-wallpaper-comment = Háttérképek, színek és diavetítési beállítások
 
 xdg-entry-window-management = Ablakkezelés
-xdg-entry-window-management-comment = Super billentyű funkció, ablakkezelési és csempézési beállítások.
+xdg-entry-window-management-comment = Super billentyű funkció, ablakkezelési és csempézési beállítások
 
 xdg-entry-wired = Vezetékes kapcsolatok
-xdg-entry-wired-comment = Vezetékes kapcsolatok és kapcsolódási profilok.
+xdg-entry-wired-comment = Vezetékes kapcsolatok és kapcsolódási profilok
 
-xdg-entry-wireless-comment = Wi-Fi kapcsolatok és kapcsolódási profilok.
+xdg-entry-wireless-comment = Wi-Fi kapcsolatok és kapcsolódási profilok
 
 xdg-entry-workspaces = Munkaterületek
-xdg-entry-workspaces-comment = Munkaterületek tájolása és viselkedése.
+xdg-entry-workspaces-comment = Munkaterületek tájolása és viselkedése
 
 xdg-entry-x11-applications = X11 alkalmazások támogatása
-xdg-entry-x11-applications-comment = X11 ablakkezelő rendszer alkalmazásméretezés és globális billentyűparancsok.
+xdg-entry-x11-applications-comment = X11 ablakkezelő rendszer alkalmazásméretezés és globális billentyűparancsok
 
 ## Network & Wireless
 

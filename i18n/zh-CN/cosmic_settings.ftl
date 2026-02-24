@@ -68,7 +68,6 @@ xdg-entry-system = 系统和账户
 xdg-entry-system-comment = 时间与语言
 
 xdg-entry-time-language = Time & Language
-xdg-entry-time-language-comment = COMMENT.
 
 xdg-entry-touchpad = 触摸板
 xdg-entry-touchpad-comment = 触摸板速度、点击选项和手势
