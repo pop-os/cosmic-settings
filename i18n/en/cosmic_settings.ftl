@@ -135,14 +135,6 @@ xdg-entry-x11-applications-keywords = COSMIC;X11;Application;Game;Compatibility;
 
 ## Network & Wireless
 
-# TODO: Remove?
-connections-and-profiles = { $variant ->
-    [wired] Wired
-    [wifi] Wi-Fi
-    [vpn] VPN
-    *[other] Unknown
-} connections and connection profiles.
-
 add-network = Add network
     .profile = Add profile
 add-vpn = Add VPN
