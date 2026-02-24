@@ -549,13 +549,6 @@ password = Пароль
 username = Ім'я користувача
 settings = Налаштування
 ok = Гаразд
-connections-and-profiles =
-    { $variant ->
-        [wired] Дротове
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Невідоме
-    } з'єднання і профілі підключень.
 add-network = Додати мережу
     .profile = Додати профіль
 add-vpn = Додати VPN

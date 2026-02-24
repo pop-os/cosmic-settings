@@ -6,13 +6,6 @@ number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Sreangnasctha
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] anaithnid
-    } ceangail agus próifílí ceangailte.
 add-network = Cuir líonra leis
     .profile = Cuir próifíl leis
 add-vpn = Cuir VPN leis

@@ -539,13 +539,6 @@ save = Сохранить
 connect = Подключиться
 dbus-connection-error = Не удалось подключиться к DBus
 ok = ОК
-connections-and-profiles =
-    { $variant ->
-        [wired] Проводные подключения
-        [wifi] Подключения по Wi-Fi
-        [vpn] Подключения через VPN
-       *[other] Другие подключения
-    } и профили соединений.
 add-network = Добавить сеть
     .profile = Добавить профиль
 add-vpn = Добавить VPN

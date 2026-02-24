@@ -3,13 +3,6 @@ dbus-connection-error = DBus-қа қосылу сәтсіз аяқталды
 ok = ОК
 unknown = Белгісіз
 number = { $number }
-connections-and-profiles =
-    { $variant ->
-        [wired] Сымды
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Белгісіз
-    } байланыстар мен байланыс профильдері.
 add-network = Желіні қосу
     .profile = Профильді қосу
 add-vpn = VPN қосу
