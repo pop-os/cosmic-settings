@@ -8,7 +8,7 @@ publish = true
 
 [dependencies]
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols" }
-iced_futures = { git = "https://github.com/pop-os/libcosmic" }
+iced_futures = { git = "https://github.com/pop-os/libcosmic", branch = "iced-rebase" }
 num-derive = "0.4.2"
 num-traits = "0.2.19"
 sctk.workspace = true
