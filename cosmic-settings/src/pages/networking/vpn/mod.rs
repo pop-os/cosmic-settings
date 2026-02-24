@@ -211,7 +211,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new("vpn", "preferences-vpn-symbolic")
             .title(fl!("vpn"))
-            .description(fl!("connections-and-profiles", variant = "vpn"))
+            .description(fl!("xdg-entry-vpn-comment"))
     }
 
     fn content(

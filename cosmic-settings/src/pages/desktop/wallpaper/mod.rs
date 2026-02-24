@@ -211,7 +211,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("wallpaper", "preferences-desktop-wallpaper-symbolic")
             .title(fl!("wallpaper"))
-            .description(fl!("wallpaper", "desc"))
+            .description(fl!("xdg-entry-wallpaper-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {

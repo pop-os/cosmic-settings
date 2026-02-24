@@ -52,7 +52,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("touchpad", "input-touchpad-symbolic")
             .title(fl!("touchpad"))
-            .description(fl!("touchpad", "desc"))
+            .description(fl!("xdg-entry-touchpad-comment"))
     }
 }
 

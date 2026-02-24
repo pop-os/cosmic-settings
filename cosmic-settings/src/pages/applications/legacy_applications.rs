@@ -104,7 +104,7 @@ impl page::Page<crate::pages::Message> for Page {
             "preferences-X11-applications-symbolic",
         )
         .title(fl!("legacy-applications"))
-        .description(fl!("legacy-applications", "desc"))
+        .description(fl!("xdg-entry-x11-applications-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {

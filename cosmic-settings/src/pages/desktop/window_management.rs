@@ -222,7 +222,7 @@ impl page::Page<crate::pages::Message> for Page {
             "preferences-window-management-symbolic",
         )
         .title(fl!("window-management"))
-        .description(fl!("window-management", "desc"))
+        .description(fl!("xdg-entry-window-management-comment"))
     }
 }
 

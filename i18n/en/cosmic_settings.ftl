@@ -135,6 +135,7 @@ xdg-entry-x11-applications-keywords = COSMIC;X11;Application;Game;Compatibility;
 
 ## Network & Wireless
 
+# TODO: Remove?
 connections-and-profiles = { $variant ->
     [wired] Wired
     [wifi] Wi-Fi
@@ -241,7 +242,6 @@ confirm = Confirm
 enable = Enable
 
 bluetooth = Bluetooth
-    .desc = Manage Bluetooth devices
     .status = This system is visible as { $aliases } while Bluetooth settings are open.
     .connected = Connected
     .connecting = Connecting
@@ -316,7 +316,6 @@ desktop = Desktop
 
 wallpaper = Wallpaper
     .change = Change image every
-    .desc = Wallpaper images, colors, and slideshow options
     .fit = Wallpaper fit
     .folder-dialog = Choose wallpaper folder
     .image-dialog = Choose wallpaper image
@@ -347,7 +346,6 @@ never = Never
 ## Desktop: Appearance
 
 appearance = Appearance
-    .desc = Accent colors and theming
 
 accent-color = Accent color
 app-background = Window background
@@ -425,12 +423,10 @@ shadow-and-corners = Window shadow and corners
 ## Desktop: Notifications
 
 notifications = Notifications
-    .desc = Do Not Disturb, lockscreen notifications, and per-application settings
 
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Primary system bar for menus and applets
 
 add = Add
 add-applet = Add applet
@@ -480,12 +476,10 @@ panel-missing = Panel configuration is missing
 ## Desktop: Dock
 
 dock = Dock
-    .desc = An optional bar for apps and applets
 
 ## Desktop: Window management
 
 window-management = Window management
-    .desc = Super key action, window control options, and additional window tiling options
 
 super-key = Super key action
     .launcher = Open Launcher
@@ -508,7 +502,6 @@ focus-navigation = Focus navigation
 ## Desktop: Workspaces
 
 workspaces = Workspaces
-    .desc = Workspace orientation and behavior
 
 workspaces-overview = Workspaces overview
     .action-on-typing = Action on typing
@@ -548,7 +541,6 @@ color = Color
     .temperature = Color temperature
 
 display = Displays
-    .desc = Manage displays and night light
     .arrangement = Display arrangement
     .arrangement-desc = Drag displays to rearrange them
     .enable = Enable display
@@ -601,7 +593,6 @@ dialog = Dialog
 ## Sound
 
 sound = Sound
-    .desc = N/A
 
 sound-output = Output
     .volume = Output volume
@@ -637,7 +628,6 @@ sound-device-profiles = Device profiles
 
 # Power & Battery settings page
 power = Power & battery
-    .desc = Manage power settings
 
 battery = Battery
   .minute = { $value } { $value ->
@@ -684,7 +674,7 @@ acceleration-desc = Automatically adjusts tracking sensitivity based on speed
 disable-while-typing = Disable while typing
 
 input-devices = Input devices
-    .desc = Input devices
+
 
 primary-button = Primary button
     .desc = Sets the order of physical buttons
@@ -705,7 +695,6 @@ fast = Fast
 short = Short
 long = Long
 keyboard = Keyboard
-    .desc = Input sources, switching, special character entry, shortcuts
 
 keyboard-sources = Input Sources
     .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
@@ -877,7 +866,6 @@ zoom-out = Zoom Out
 ## Input: Mouse
 
 mouse = Mouse
-    .desc = Mouse speed, acceleration, natural scrolling
     .speed = Mouse speed
     .acceleration = Enable mouse acceleration
 
@@ -895,7 +883,6 @@ tap-to-click = Tap to click
 
 touchpad = Touchpad
     .acceleration = Enable touchpad acceleration
-    .desc = Touchpad speed, click options, gestures
     .speed = Touchpad speed
 
 ## Input: Gestures
@@ -918,10 +905,8 @@ open-workspaces-view = Open Workspaces Overview
 ## Time & language
 
 time = Time & language
-    .desc = N/A
 
 time-date = Date & time
-    .desc = Time zone, automatic clock settings, and time formatting
     .auto = Set automatically
     .auto-ntp = Date & time will update automatically when the time zone is set
 
@@ -940,7 +925,6 @@ time-format = Date & time format
     .monday = Monday
 
 time-region = Region & language
-    .desc = Format dates, times, and numbers based on your region
 
 formatting = Formatting
     .dates = Dates
@@ -965,7 +949,6 @@ applications = Applications
 ## Applications: Default applications
 
 default-apps = Default Applications
-    .desc = Default web browser, mail client, file browser, and other applications
     .web-browser = Web browser
     .file-manager = File manager
     .mail-client = Mail client
@@ -982,7 +965,6 @@ default-apps = Default Applications
 ## Applications: Startup applications
 
 startup-apps = Startup applications
-    .desc = Configure applications which run on login
     .add = Add app
     .user = Applications launched when you log in
     .none = No startup applications added
@@ -993,7 +975,6 @@ startup-apps = Startup applications
 ## Applications: Legacy applications
 
 legacy-applications = X11 applications compatibility
-    .desc = X11 Window system application scaling and Global shortcuts
 
 legacy-app-global-shortcuts = Global shortcuts in X11 applications
     .desc = Global shortcuts allows keystrokes and mouse button events performed in applications to be recognized by other applications for features like push-to-talk or push-to-mute. By default, Global shortcuts is disabled in X11 applications to ensure other applications can’t monitor for keyboard and mouse events containing sensitive information.
@@ -1020,7 +1001,6 @@ system = System & accounts
 ## System: About
 
 about = About
-    .desc = Device name, hardware information, operating system defaults
 
 about-device = Device name
     .desc = This name appears to other network or Bluetooth devices
@@ -1045,12 +1025,10 @@ about-related = Related settings
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmware details
 
 ## System: Users
 
 users = Users
-    .desc = Authentication and user accounts
     .admin = Admin
     .standard = Standard
     .profile-add = Choose profile image

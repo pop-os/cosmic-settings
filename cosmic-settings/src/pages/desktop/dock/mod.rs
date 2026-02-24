@@ -216,7 +216,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("dock", "preferences-dock-symbolic")
             .title(fl!("dock"))
-            .description(fl!("dock", "desc"))
+            .description(fl!("xdg-entry-dock-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {

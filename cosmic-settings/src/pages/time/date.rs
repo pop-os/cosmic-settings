@@ -138,7 +138,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("time-date", "preferences-system-time-symbolic")
             .title(fl!("time-date"))
-            .description(fl!("time-date", "desc"))
+            .description(fl!("xdg-entry-date-time-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {

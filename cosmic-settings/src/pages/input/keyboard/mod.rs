@@ -276,7 +276,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("keyboard", "input-keyboard-symbolic")
             .title(fl!("keyboard"))
-            .description(fl!("keyboard", "desc"))
+            .description(fl!("xdg-entry-keyboard-comment"))
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {

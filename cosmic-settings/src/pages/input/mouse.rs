@@ -41,7 +41,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("mouse", "input-mouse-symbolic")
             .title(fl!("mouse"))
-            .description(fl!("mouse", "desc"))
+            .description(fl!("xdg-entry-mouse-comment"))
     }
 }
 
