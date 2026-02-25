@@ -827,7 +827,7 @@ system-shortcut = System
     .log-out = Log Out
     .lock-screen = Lock the screen
     .mute = Mute audio output
-    .mute-mic = Mutes microphone input
+    .mute-mic = Mute microphone input
     .play-pause = Play/pause
     .play-next = Next track
     .play-prev = Previous track
@@ -943,7 +943,7 @@ applications = Applications
 
 ## Applications: Default applications
 
-default-apps = Default Applications
+default-apps = Default applications
     .web-browser = Web browser
     .file-manager = File manager
     .mail-client = Mail client
@@ -972,7 +972,7 @@ startup-apps = Startup applications
 legacy-applications = X11 applications compatibility
 
 legacy-app-global-shortcuts = Global shortcuts in X11 applications
-    .desc = Global shortcuts allows keystrokes and mouse button events performed in applications to be recognized by other applications for features like push-to-talk or push-to-mute. By default, Global shortcuts is disabled in X11 applications to ensure other applications can’t monitor for keyboard and mouse events containing sensitive information.
+    .desc = Global shortcuts allow keystrokes and mouse button events performed in applications to be recognized by other applications for features like push-to-talk or push-to-mute. By default, global shortcuts are disabled in X11 applications to ensure other applications can’t monitor for keyboard and mouse events containing sensitive information.
     .none = No keys
     .modifiers = Modifiers (Super, Shift, Control, Alt)
     .combination = All keys while modifiers Super, Control or Alt are being pressed
