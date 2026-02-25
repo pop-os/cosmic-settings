@@ -92,7 +92,6 @@ activate = Ativar
 confirm = Confirmar
 enable = Habilitar
 bluetooth = Bluetooth
-    .desc = Gerenciar dispositivos Bluetooth
     .status = Este sistema estará visível como { $aliases } enquanto a configuração do Bluetooth estiver aberta.
     .connected = Conectado
     .connecting = Conectando
@@ -164,7 +163,6 @@ desktop = Área de Trabalho
 
 wallpaper = Plano de fundo
     .change = Mudar imagem a cada
-    .desc = Imagens de plano de fundo, cores e opções de apresentação de slides
     .fit = Ajuste do plano de fundo
     .folder-dialog = Escolher pasta do plano de fundo
     .image-dialog = Escolher imagem do plano de fundo
@@ -195,7 +193,6 @@ never = Nunca
 ## Desktop: Appearance
 
 appearance = Aparência
-    .desc = Cores de destaque e temas
 accent-color = Cor de destaque
 app-background = Fundo de janela
 auto = Automático
@@ -255,12 +252,10 @@ monospace-font = Fonte monoespaçada
 ## Desktop: Notifications
 
 notifications = Notificações
-    .desc = Não Perturbe, notificações da tela de bloqueio e configurações por aplicação
 
 ## Desktop: Panel
 
 panel = Painel
-    .desc = Barra principal do sistema para menus e miniaplicativos
 add = Adicionar
 add-applet = Adicionar miniaplicativo
 all = Todos
@@ -303,12 +298,10 @@ panel-missing = Configuração do painel está ausente
 ## Desktop: Dock
 
 dock = Dock
-    .desc = Uma barra opcional com aplicativos e miniaplicativos
 
 ## Desktop: Window management
 
 window-management = Gerenciamento de janelas
-    .desc = Ação da tecla Super, opções de controle de janelas e opções adicionais de janelas lado a lado
 super-key = Ação da tecla Super (Windows)
     .launcher = Abrir o lançador
     .workspaces = Abrir a visão geral das áreas de trabalho
@@ -327,7 +320,6 @@ focus-navigation = Navegação de foco
 ## Desktop: Workspaces
 
 workspaces = Áreas de trabalho
-    .desc = Orientação e comportamento das áreas de trabalho
 workspaces-behavior = Comportamento das áreas de trabalho
     .dynamic = Áreas de trabalho dinâmicas
     .dynamic-desc = Remove automaticamente áreas de trabalho vazias.
@@ -354,7 +346,6 @@ color = Cor
     .sidebar = Perfis de cor
     .temperature = Temperatura de cor
 display = Telas
-    .desc = Gerenciar telas e luz noturna
     .arrangement = Organização de telas
     .arrangement-desc = Arraste as telas para rearranjá-las
     .enable = Ativar tela
@@ -403,7 +394,6 @@ dialog = Diálogo
 ## Sound
 
 sound = Som
-    .desc = N/D
 sound-output = Saída
     .volume = Volume de saída
     .device = Dispositivo de saída
@@ -427,7 +417,6 @@ sound-applications = Aplicações
 ## Power
 
 power = Energia e Bateria
-    .desc = Gerenciar as configurações de energia
 battery = Bateria
     .minute =
         { $value } { $value ->
@@ -472,7 +461,6 @@ power-saving = Opções de economia de energia
 acceleration-desc = Ajustar automaticamente a sensibilidade com base na velocidade
 disable-while-typing = Desabilitar enquanto digita
 input-devices = Dispositivos de entrada
-    .desc = Dispositivos de entrada
 primary-button = Botão Primário
     .desc = Define a ordem dos botões físicos.
     .left = Esquerda
@@ -491,7 +479,6 @@ fast = Rápido
 short = Curto
 long = Longo
 keyboard = Teclado
-    .desc = Layout, entrada de caracteres especiais, atalhos
 keyboard-sources = Fontes de Entrada
     .desc = As fontes de entrada podem ser alternadas usando a combinação de teclas Super+Espaço. Isso pode ser personalizado nas configurações de atalho de teclado.
     .move-up = Mover para cima
@@ -653,7 +640,6 @@ zoom-out = Diminuir o zoom
 ## Input: Mouse
 
 mouse = Mouse
-    .desc = Velocidade do mouse, aceleração e rolagem natural.
     .speed = Velocidade do mouse
     .acceleration = Ativar aceleração do mouse
 
@@ -668,7 +654,6 @@ tap-to-click = Toque para clicar
     .desc = Habilita o toque de um dedo para clique primário, toque de dois dedos para clique secundário e toque de três dedos para o clique do meio
 touchpad = Touchpad
     .acceleration = Habilitar aceleração do touchpad
-    .desc = Velocidade do touchpad, opções de clique e gestos.
     .speed = Velocidade do touchpad
 
 ## Input: Gestures
@@ -689,9 +674,7 @@ open-workspaces-view = Abrir a visão geral das áreas de trabalho
 ## Time & Language
 
 time = Hora e Idioma
-    .desc = N/D
 time-date = Data e Hora
-    .desc = Fuso horário, definições automáticas de relógio e algumas formatações de hora.
     .auto = Definir automaticamente
     .auto-ntp = A data e a hora serão atualizadas automaticamente quando o fuso horário for definido
 time-zone = Fuso Horário
@@ -707,7 +690,6 @@ time-format = Formato de Data e Hora
     .sunday = Domingo
     .monday = Segunda-feira
 time-region = Região e Idioma
-    .desc = Formatar datas, horas e números com base na sua região
 formatting = Formatação
     .dates = Datas
     .time = Horas
@@ -729,7 +711,6 @@ applications = Aplicativos
 ## Applications: Default Applications
 
 default-apps = Aplicativos Padrão
-    .desc = Estabelecer os aplicativos padrões para o navegador web, o cliente de correio eletrônico, o gestor de arquivos e outros aplicativos
     .web-browser = Navegador web
     .file-manager = Gestor de arquivos
     .mail-client = Cliente de e-mail
@@ -745,7 +726,6 @@ default-apps = Aplicativos Padrão
 ## Applications: Startup Applications
 
 startup-apps = Aplicativos de Inicialização
-    .desc = Configurar aplicativos que são iniciados automaticamente ao fazer login no sistema.
     .add = Adicionar aplicativo
     .user = Aplicativos que serão iniciados ao fazer login no sistema
     .none = Não há aplicativos de inicialização adicionados
@@ -755,8 +735,7 @@ startup-apps = Aplicativos de Inicialização
 
 ## Applications: Legacy Applications
 
-legacy-applications = Compatibilidade com Aplicativos X11
-    .desc = Dimensionamento de aplicativos de sistema de janelas X11 e atalhos globais
+legacy-applications = Compatibilidade com aplicativos X11
 legacy-app-global-shortcuts = Atalhos globais em aplicativos X11
     .desc = Atalhos globais permitem que pressionamentos de teclas e eventos de botão do mouse realizados em aplicativos sejam reconhecidos por outros aplicativos para recursos como push-to-talk ou push-to-mute. Por padrão, isso é desabilitado em aplicativos X11 para garantir que outros aplicativos não possam monitorar eventos de teclado e mouse contendo informações confidenciais.
     .none = Nenhuma tecla
@@ -781,7 +760,6 @@ system = Sistema e Contas
 ## System: About
 
 about = Sobre
-    .desc = Nome do dispositivo, informações de hardware, configurações padrão do sistema
 about-device = Nome do dispositivo
     .desc = Aparece para outros dispositivos de rede ou Bluetooth
 about-hardware = Hardware
@@ -802,12 +780,10 @@ about-related = Configurações relacionadas
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Detalhes do firmware
 
 ## System: Users
 
 users = Usuários
-    .desc = Autenticação e contas de usuário.
     .admin = Administrador
     .standard = Padrão
     .profile-add = Escolher uma imagem de perfil
@@ -841,3 +817,96 @@ workspaces-overview = Visão geral das áreas de trabalho
     .none = Nenhuma
     .launcher = Abrir Lançador
     .applications = Abrir Aplicativos
+xdg-entry-touchpad = Touchpad
+xdg-entry-wired = Rede Cabeada
+xdg-entry-startup-apps-comment = Configurar aplicativos que serão executados na inicialização do sistema
+xdg-entry-region-language = Região e Idioma
+xdg-entry-mouse-keywords = COSMIC;Mouse;Aceleração;Rolagem;
+xdg-entry-bluetooth-comment = Gerenciar dispositivos Bluetooth
+xdg-entry-notifications-keywords = COSMIC;Notificação;Bloqueio;
+xdg-entry-startup-apps-keywords = COSMIC;Iniciar;Inicialização;Aplicativo;
+xdg-entry-default-apps-comment = Navegador padrão, cliente de email, navegador de arquivos e outros aplicativos
+xdg-entry-keyboard-comment = Dispositivos de entrada, alternância, caracteres especiais, atalhos
+xdg-entry-wired-keywords = COSMIC;Wired;Cabeada;LAN;Rede;Conexão;
+xdg-entry-power = Energia e Bateria
+xdg-entry-appearance-keywords = COSMIC;Destaque;Accent;Cor;Ícone;Fonte;Tema
+xdg-entry-mouse = Mouse
+xdg-entry-dock-keywords = COSMIC;Dock;Painel;Applet;Miniaplicativo
+xdg-entry-mouse-comment = Velocidade do mouse, aceleração e rolagem natural
+xdg-entry-system = Sistema e Contas
+xdg-entry-panel-keywords = COSMIC;Painel;Applet;Miniaplicativo
+xdg-entry-window-management = Gerenciamento de Janelas
+xdg-entry-a11y = Acessibilidade
+xdg-entry-time-language-comment = Gerenciar data, hora, região e idioma do sistema
+xdg-entry-desktop-keywords = COSMIC;Desktop;Área de Trabalho;
+xdg-entry-x11-applications-keywords = COSMIC;X11;Aplicativo;Jogos;Compatibilidade;
+xdg-entry-displays-comment = Gerenciar configurações de tela
+xdg-entry-touchpad-keywords = COSMIC;Touchpad;Gestos;
+xdg-entry-time-language = Hora e Idioma
+xdg-entry-users = Usuários
+xdg-entry-system-keywords = COSMIC;Sistema;Info;Contas;Firmware;
+xdg-entry-default-apps = Aplicativos Padrão
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Rede;Conexão;
+xdg-entry-applications-comment = Aplicativos padrão, aplicativos de inicialização e configurações de compatibilidade com X11
+xdg-entry-about-keywords = COSMIC;Sobre
+xdg-entry-panel = Painel
+xdg-entry-notifications = Notificações
+xdg-entry-a11y-keywords = COSMIC;Acessibilidade;A11y;Tela;Leitor;Lupa;Ampliador;Contraste;Cor;
+xdg-entry-wireless-comment = Conexões Wi-Fi e perfis de conexão
+xdg-entry-desktop = Área de Trabalho
+xdg-entry-date-time-keywords = COSMIC;Hora;Fuso;
+xdg-entry-desktop-comment = Papel de parede, aparência, painel, dock, gerenciamento de janelas e outras configurações
+xdg-entry-wallpaper = Papel de parede
+xdg-entry-keyboard = Teclado
+xdg-entry-a11y-comment = Leitor de tela, lupa, alto contraste e filtros de cores
+xdg-entry-displays = Telas
+xdg-entry-network = Rede e Wireless
+xdg-entry-date-time = Data e Hora
+xdg-entry-users-comment = Autenticação e contas de usuário
+xdg-entry-input-comment = Configurações de teclado e mouse
+xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
+xdg-entry-dock-comment = Uma barra opcional para aplicativos e applets
+xdg-entry-network-keywords = COSMIC;Rede;Wireless;WiFi;VPN;
+xdg-entry-wallpaper-comment = Imagens de papel de parede, cores e opções de transição
+xdg-entry-dock = Dock
+xdg-entry-startup-apps = Aplicativos de Inicialização
+xdg-entry-wireless = Wi-Fi
+xdg-entry-workspaces-keywords = COSMIC;Área de Trabalho;Orientação;Visão geral;Monitor;
+xdg-entry-system-comment = Informações do sistema, contas e atualizações de firmware
+xdg-entry-x11-applications-comment = Escalonamento de aplicativos com sistema de janelas X11, tela primária e atalhos globais
+xdg-entry-region-language-comment = Formatação de datas, horas e números baseados em sua região
+xdg-entry-wallpaper-keywords = COSMIC;Wallpaper;Papel de parede;Background;Slideshow;
+xdg-entry-users-keywords = COSMIC;Usuário;Conta;
+xdg-entry-about-comment = Nome do dispositivo, informações de hardware, padrões do sistema operacional
+xdg-entry-vpn-keywords = COSMIC;VPN;Rede;Conexão;OpenVPN;OpenConnect;
+xdg-entry-appearance-comment = Cores de destaque e temas
+xdg-entry-time-language-keywords = COSMIC;Sistema;Hora;Data;Região;idioma;
+xdg-entry-input-keywords = COSMIC;Entrada;Teclado;Mouse;Mice;Touchpad;
+xdg-entry-comment = Aplicativo de configurações para o ambiente COSMIC
+xdg-entry-notifications-comment = Não Perturbe, notificações no bloqueio de tela e configurações por aplicativo
+xdg-entry-applications = Aplicativos
+xdg-entry-sound-keywords = COSMIC;Som;Audio;Alerta;Pipewire;
+xdg-entry-power-keywords = COSMIC;Energia;Bateria
+xdg-entry-default-apps-keywords = COSMIC;Padrão;Aplicativo
+xdg-entry-keywords = COSMIC;Configurações;
+xdg-entry-region-language-keywords = COSMIC;Região;Idioma;Data;Formato;Hora;Localização;
+xdg-entry-about = Sobre
+xdg-entry-input = Dispositivos de Entrada
+xdg-entry-applications-keywords = COSMIC;Padrão;Aplicativo;Inicialização;Iniciar;X11;Compatibilidade
+xdg-entry-sound-comment = Configurações de áudio para dispositivos, alertas e aplicativos
+xdg-entry-touchpad-comment = Velocidade do touchpad, opções do clique e gestos
+xdg-entry-keyboard-keywords = COSMIC;Teclado;Entrada;Fonte;Atalhos;
+xdg-entry-vpn-comment = Conexões VPN e perfis de conexão
+xdg-entry-appearance = Aparência
+xdg-entry-window-management-keywords = COSMIC;Janela;Gerenciamento;Tiling;Lado a lado;Super;Key;
+xdg-entry-workspaces-comment = Orientação da área de trabalho, visão geral e comportamento com monitores múltiplos
+xdg-entry-network-comment = Gerenciar conexões de rede
+xdg-entry-panel-comment = Barra de sistema primária para menus e miniaplicativos
+xdg-entry-sound = Som
+xdg-entry-power-comment = Modos de energia e opções de economia de energia
+xdg-entry-displays-keywords = COSMIC;Tela;Monitor;
+xdg-entry-workspaces = Áreas de Trabalho
+xdg-entry-date-time-comment = Fuso horário, configurações de relógio e formatação de hora
+xdg-entry-x11-applications = Compatibilidade com aplicativos X11
+xdg-entry-window-management-comment = Ação da tecla Super, opções de controle de janela e opções de janelas lado a lado (tiling)
+xdg-entry-wired-comment = Conexões de rede com fio e perfis de conexão

@@ -1,4 +1,4 @@
-app = Параметры COSMIC
+app = Параметры
 unknown = Неизвестно
 number = { $number }
 
@@ -9,7 +9,6 @@ desktop = Рабочий стол
 ## Desktop: Appearance
 
 appearance = Внешний вид
-    .desc = Акцентные цвета и оформление
 accent-color = Акцентный цвет
 app-background = Фон приложений или окон
 auto = Автоматически
@@ -54,7 +53,6 @@ style = Стиль
     .square = Прямой
 # interface density left out for now
 window-management = Управление окнами
-    .desc = Действие клавиши Super, элементы управления окнами и дополнительные настройки размещения
 
 ## Desktop: Display
 
@@ -65,7 +63,6 @@ color = Цвет
     .sidebar = Цветовые профили
     .temperature = Цветовая температура
 display = Экраны
-    .desc = Управление экранами и ночной подсветкой
     .arrangement = Расположение экранов
     .arrangement-desc = Перетаскивайте экраны, чтобы изменить их расположение.
     .enable = Включить экран
@@ -109,12 +106,10 @@ dialog = Диалог
 ## Desktop: Notifications
 
 notifications = Уведомления
-    .desc = Режим «Не беспокоить», уведомления на экране блокировки, настройка для приложений
 
 ## Desktop: Options
 
 dock = Док
-    .desc = Панель для закреплённых приложений и апплетов
 hot-corner = Активные углы
     .top-left-corner = Открывать рабочие столы при наведении в левый верхний угол
 super-key = Клавиша Super
@@ -130,7 +125,6 @@ window-controls = Элементы управления окнами
 ## Desktop: Panel
 
 panel = Панель
-    .desc = Основная системная панель для меню и апплетов
 add = Добавить
 add-applet = Добавить апплет
 all = Все
@@ -174,7 +168,6 @@ panel-missing = Отсутствует конфигурация панели
 
 wallpaper = Фон
     .change = Сменять изображение каждые
-    .desc = Фоновые изображения, цвета и параметры слайд-шоу.
     .fit = Подгонять фон
     .folder-dialog = Выбрать папку с изображениями
     .image-dialog = Выбрать изображение
@@ -204,7 +197,6 @@ x-hours =
 ## Desktop: Workspaces
 
 workspaces = Рабочие столы
-    .desc = Поведение и расположение рабочих столов
 workspaces-behavior = Поведение рабочих столов
     .dynamic = Динамические рабочие столы
     .dynamic-desc = Пустые рабочие столы удаляются автоматически.
@@ -236,9 +228,7 @@ online-accounts = Онлайн-аккаунты
 ## Time & Language
 
 time = Время и язык
-    .desc = Н/Д
 time-date = Дата и время
-    .desc = Часовой пояс, параметры автоматической настройки и форматирования времени
     .auto = Устанавливать автоматически
     .auto-ntp = Дата и время будут автоматически обновлены после установки часового пояса
 time-zone = Часовой пояс
@@ -254,12 +244,10 @@ time-format = Формат даты и времени
     .sunday = Воскресенье
     .monday = Понедельник
 time-region = Регион и язык
-    .desc = Форматирование даты, времени и чисел в зависимости от региона
 
 ## Sound
 
 sound = Звук
-    .desc = Н/Д
 sound-output = Выход
     .volume = Выходная громкость
     .device = Выходное устройство
@@ -285,7 +273,6 @@ system = Система и учётные записи
 ## System: About
 
 about = О системе
-    .desc = Имя устройства, информация об оборудовании, настройки ОС по умолчанию
 about-device = Имя устройства
     .desc = Это имя видно для других устройств по сети или Bluetooth
 about-hardware = Оборудование
@@ -306,12 +293,10 @@ about-related = Связанные настройки
 ## System: Firmware
 
 firmware = Прошивка
-    .desc = Сведения о прошивке
 
 ## System: Users
 
 users = Пользователи
-    .desc = Аутентификация и вход в систему, экран блокировки.
     .admin = Администратор
     .standard = Обычный
     .profile-add = Выберите изображение профиля
@@ -321,7 +306,6 @@ users = Пользователи
 acceleration-desc = Автоматически регулирует чувствительность панели в зависимости от скорости
 disable-while-typing = Отключать при наборе текста
 input-devices = Устройства ввода
-    .desc = Устройства ввода
 primary-button = Основная кнопка
     .desc = Настраивает порядок физических кнопок.
     .left = Левая
@@ -340,7 +324,6 @@ fast = Быстро
 short = Короткая
 long = Длинная
 keyboard = Клавиатура
-    .desc = Источники ввода, переключение, ввод специальных символов, сочетания клавиш
 keyboard-sources = Источники ввода
     .desc = Источники ввода можно переключать по комбинации клавиш Super+Space. Это поведение можно изменить в настройках сочетаний клавиш.
     .move-up = Переместить вверх
@@ -492,7 +475,6 @@ replace-shortcut-dialog = Заменить сочетание клавиш?
 ## Input: Mouse
 
 mouse = Мышь
-    .desc = Скорость и ускорение мыши, естественная прокрутка.
     .speed = Скорость мыши
     .acceleration = Включить ускорение мыши
 
@@ -507,7 +489,6 @@ tap-to-click = Касание для нажатия
     .desc = Включает касание одним пальцем для основного нажатия, двумя пальцами для вторичного и тремя пальцами для среднего
 touchpad = Сенсорная панель
     .acceleration = Включить ускорение сенсорной панели
-    .desc = Скорость сенсорной панели, параметры нажатия, жесты.
     .speed = Скорость сенсорной панели
 
 ## Input: Gestures
@@ -525,7 +506,6 @@ open-workspaces-view = Открыть обзор рабочих столов
 ## Power
 
 power = Питание и аккумулятор
-    .desc = Управление настройками электропитания
 power-mode = Режим питания
     .performance = Высокая производительность
     .balanced = Сбалансированный
@@ -610,7 +590,6 @@ activate = Активировать
 confirm = Подтвердить
 enable = Включить
 bluetooth = Bluetooth
-    .desc = Управление Bluetooth-устройствами
     .status = Эта система доступна как { $aliases }, пока открыты настройки Bluetooth.
     .connected = Подключено
     .connecting = Подключение
@@ -752,7 +731,6 @@ install-additional-languages = Установить дополнительные
 region = Регион
 applications = Приложения
 default-apps = Приложения по умолчанию
-    .desc = Стандартные веб-браузер, почтовый клиент, файловый менеджер и другие приложения.
     .web-browser = Веб-браузер
     .file-manager = Файловый менеджер
     .mail-client = Почтовый клиент
@@ -765,7 +743,6 @@ default-apps = Приложения по умолчанию
     .text-editor = Текстовый редактор
     .not-installed = Не установлено
 startup-apps = Автозапуск приложений
-    .desc = Настройка приложений, которые запускаются при входе
     .add = Добавить приложение
     .user = Приложения, которые запускаются при входе в систему
     .none = Нет автозапускаемых приложений
@@ -773,7 +750,6 @@ startup-apps = Автозапуск приложений
     .remove-dialog-description = Вы уверены, что хотите убрать это приложение из автозапуска?
     .add-startup-app = Добавить приложение в автозапуск
 legacy-applications = Совместимость с приложениями для X11
-    .desc = Настройка глобальных сочетаний клавиш и масштабирования для приложений оконной системы X11
 legacy-app-global-shortcuts = Глобальные сочетания клавиш в приложениях для X11
     .desc = Глобальные сочетания клавиш позволяют нажатиям клавиатуры и мыши, выполненных в одних приложениях, распознаваться другими приложениями для таких функций, как push-to-talk и push-to-mute. По умолчанию они отключены для приложений X11, чтобы другие приложения не могли перехватывать события клавиатуры и мыши, содержащие конфиденциальную информацию.
     .none = Отключены
@@ -818,3 +794,96 @@ workspaces-overview = Режим обзора рабочих столов
     .none = Ничего не делать
     .launcher = Открыть панель запуска
     .applications = Открыть приложения
+xdg-entry-touchpad = Сенсорная панель
+xdg-entry-wired = Проводная сеть
+xdg-entry-startup-apps-comment = Настройка приложений, запускаемых при входе в систему
+xdg-entry-region-language = Язык и регион
+xdg-entry-mouse-keywords = COSMIC;Мышь;Ускорение;Прокрутка;Скроллинг;
+xdg-entry-bluetooth-comment = Управление Bluetooth-устройствами
+xdg-entry-notifications-keywords = COSMIC;Уведомления;Блокировка;
+xdg-entry-startup-apps-keywords = COSMIC;Автозапуск;Автозагрузка;Приложение;
+xdg-entry-default-apps-comment = Веб-браузер, почтовый клиент, файловый менеджер и другие приложения, выбираемые по умолчанию
+xdg-entry-keyboard-comment = Источники ввода, переключение, ввод специальных символов, сочетания клавиш
+xdg-entry-wired-keywords = COSMIC;Проводная;LAN;Сеть;Подключение;Соединение;
+xdg-entry-power = Питание и аккумулятор
+xdg-entry-appearance-keywords = COSMIC;Акцентный;Цвет;Иконки;Значки;Шрифт;Тема;Оформление
+xdg-entry-mouse = Мышь
+xdg-entry-dock-keywords = COSMIC;Док;Панель;Апплет
+xdg-entry-mouse-comment = Скорость мыши, ускорение и естественная прокрутка
+xdg-entry-system = Система и учётные записи
+xdg-entry-panel-keywords = COSMIC;Панель;Апплет
+xdg-entry-window-management = Управление окнами
+xdg-entry-a11y = Специальные возможности
+xdg-entry-time-language-comment = Управление системной датой, временем, регионом и языком
+xdg-entry-desktop-keywords = COSMIC;Рабочий;Стол;
+xdg-entry-x11-applications-keywords = COSMIC;X11;Иксы;Приложение;Игра;Совместимость;
+xdg-entry-displays-comment = Управление параметрами конфигурации экранов
+xdg-entry-touchpad-keywords = COSMIC;Сенсорная;Панель;Тачпад;Жесты;
+xdg-entry-time-language = Время и язык
+xdg-entry-users = Пользователи
+xdg-entry-system-keywords = COSMIC;Система;Информация;Сведения;Учетные;Записи;Аккаунты;Прошивка;
+xdg-entry-default-apps = Приложения по умолчанию
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Вайфай;Сеть;Подключение;Соединение;
+xdg-entry-applications-comment = Приложения по умолчанию, автозагрузка и совместимость приложений для X11
+xdg-entry-about-keywords = COSMIC;О:Системе;Сведения
+xdg-entry-panel = Панель
+xdg-entry-notifications = Уведомления
+xdg-entry-a11y-keywords = COSMIC;Доступность;A11y;Экранный;Диктор;Лупа;Контраст;Цвет;Специальные;Возможности;
+xdg-entry-wireless-comment = Wi-Fi-соединения и профили
+xdg-entry-desktop = Рабочий стол
+xdg-entry-date-time-keywords = COSMIC;Время;Часовой;Пояс;Зона;
+xdg-entry-desktop-comment = Фон, оформление, панель, док, управление окнами и параметры рабочих столов
+xdg-entry-wallpaper = Фон
+xdg-entry-keyboard = Клавиатура
+xdg-entry-a11y-comment = Экранный диктор, лупа, высокая контрастность и цветовые фильтры
+xdg-entry-displays = Экраны
+xdg-entry-network = Сеть и Wi-Fi
+xdg-entry-date-time = Дата и время
+xdg-entry-users-comment = Аутентификация и уч. записи пользователей
+xdg-entry-input-comment = Параметры клавиатуры и мыши
+xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;Блютуз;
+xdg-entry-dock-comment = Дополнительная панель для приложений и апплетов
+xdg-entry-network-keywords = COSMIC;Сеть;Беспроводная;Связь;WiFi;VPN;Вайфай;ВПН;
+xdg-entry-wallpaper-comment = Фоновое изображение, цвета и параметры слайд-шоу
+xdg-entry-dock = Док
+xdg-entry-startup-apps = Автозапуск приложений
+xdg-entry-wireless = Wi-Fi
+xdg-entry-workspaces-keywords = COSMIC;Рабочий;Стол;Ориентация;Обзор;Монитор;
+xdg-entry-system-comment = Сведения о системе, учётные записи и обновления прошивки
+xdg-entry-x11-applications-comment = Масштабирование приложений X11, основной дисплей и глобальные сочетания клавиш
+xdg-entry-region-language-comment = Форматирование дат, времени и чисел в соответствии с вашим регионом
+xdg-entry-wallpaper-keywords = COSMIC;Обои;Фон;Слайд-шоу;
+xdg-entry-users-keywords = COSMIC;Пользователь;Учетная;Учётная;Запись;Аккаунт;
+xdg-entry-about-comment = Имя устройства, информация об оборудовании, параметры операционной системы по умолчанию
+xdg-entry-vpn-keywords = COSMIC;VPN;ВПН;Сеть;Подключение;OpenVPN;OpenConnect;
+xdg-entry-appearance-comment = Акцентные цвета и оформление
+xdg-entry-time-language-keywords = COSMIC;Система;Время;Дата;Регион;Язык;
+xdg-entry-input-keywords = COSMIC;Ввод;Клавиатура;Мышь;Мышка;
+xdg-entry-comment = Приложение параметров для рабочей среды COSMIC
+xdg-entry-notifications-comment = Режим «Не беспокоить», уведомления на экране блокировки и параметры по приложениям
+xdg-entry-applications = Приложения
+xdg-entry-sound-keywords = COSMIC;Звук;Аудио;Оповещение;Pipewire;
+xdg-entry-power-keywords = COSMIC;Питание;Аккумулятор;Батарея
+xdg-entry-default-apps-keywords = COSMIC;По;умолчанию;Приложения
+xdg-entry-keywords = COSMIC;Параметры;Настройки;
+xdg-entry-region-language-keywords = COSMIC;Регион;Язык;Дата;Формат;Время;Языковая;Локаль;Локализация;
+xdg-entry-about = Сведения
+xdg-entry-input = Устройства ввода
+xdg-entry-applications-keywords = COSMIC;По;умолчанию;Приложения;Запуск;X11;Иксы;Совместимость;Автозапуск;Автозагрузка
+xdg-entry-sound-comment = Настройки звука для устройств, оповещений и приложений
+xdg-entry-touchpad-comment = Скорость сенсорной панели, параметры нажатия и жесты
+xdg-entry-keyboard-keywords = COSMIC;Клавиатура;Ввод;Источник;Горячие;Клавиши;Клавиш;Сочетания;Раскладки;
+xdg-entry-vpn-comment = VPN-соединения и профили
+xdg-entry-appearance = Внешний вид
+xdg-entry-window-management-keywords = COSMIC;Окно;Управление;Размещение;Тайлинг;Супер;Super;Клавиша;
+xdg-entry-workspaces-comment = Ориентация рабочих столов, режим Обзора и поведение на нескольких мониторах
+xdg-entry-network-comment = Управление сетевыми подключениями
+xdg-entry-panel-comment = Основная системная панель для меню и апплетов
+xdg-entry-sound = Звук
+xdg-entry-power-comment = Режимы питания и параметры энергосбережения
+xdg-entry-displays-keywords = COSMIC;Экран;Монитор;Дисплей;
+xdg-entry-workspaces = Рабочие столы
+xdg-entry-date-time-comment = Часовой пояс, автонастройка часов и форматирование времени
+xdg-entry-x11-applications = Совместимость с приложениями для X11
+xdg-entry-window-management-comment = Действие кнопки Super, параметры размещения и управления окнами
+xdg-entry-wired-comment = Проводные соединения и профили

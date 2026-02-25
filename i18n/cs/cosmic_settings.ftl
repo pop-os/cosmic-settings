@@ -7,23 +7,23 @@ number = { $number }
 xdg-entry-about = O systému
 xdg-entry-about-comment = Název zařízení, informace o hardwaru, výchozí nastavení operačního systému
 xdg-entry-a11y = Přístupnost
-xdg-entry-a11y-comment = Nastavení přístupnosti
+xdg-entry-a11y-comment = Čtečka obrazovky, lupa, vysoký kontrast a barevné filtry
 xdg-entry-appearance = Vzhled
 xdg-entry-appearance-comment = Barvy zvýraznění a motivy
 xdg-entry-applications = Aplikace
 xdg-entry-bluetooth-comment = Správa Bluetooth zařízení
 xdg-entry-date-time = Datum a čas
-xdg-entry-date-time-comment = Časová zóna, automatické nastavení hodin a formátování času
+xdg-entry-date-time-comment = Časové pásmo, automatické nastavení hodin a formátování času
 xdg-entry-default-apps = Výchozí aplikace
 xdg-entry-default-apps-comment = Výchozí webový prohlížeč, poštovní klient, prohlížeč souborů a další aplikace
 xdg-entry-desktop = Plocha
-xdg-entry-desktop-comment = Nastavení pracovní plochy, vzhledu a chování oken
+xdg-entry-desktop-comment = Tapeta, vzhled, panel, dok, správa oken a nastavení pracovní plochy
 xdg-entry-displays = Obrazovky
-xdg-entry-displays-comment = Možnosti obrazovek, grafické režimy a noční světlo
+xdg-entry-displays-comment = Správa nastavení obrazovek
 xdg-entry-dock = Dok
 xdg-entry-dock-comment = Volitelná lišta pro aplikace a applety
 xdg-entry-input = Vstupní zařízení
-xdg-entry-input-comment = Klávesnice, kurzor a další
+xdg-entry-input-comment = Nastavení klávesnice a myši
 xdg-entry-keyboard = Klávesnice
 xdg-entry-keyboard-comment = Vstupní zdroje, přepínání, vkládání speciálních znaků, zkratky
 xdg-entry-mouse = Myš
@@ -36,16 +36,16 @@ xdg-entry-panel-comment = Hlavní systémová lišta pro menu a applety
 xdg-entry-power = Napájení a baterie
 xdg-entry-power-comment = Režimy napájení a možnosti úspory energie
 xdg-entry-region-language = Region a jazyk
-xdg-entry-region-language-comment = Formátujte datumy, časy a čísla podle vašeho regionu
+xdg-entry-region-language-comment = Formátování data, času a čísel podle vašeho regionu
 xdg-entry-sound = Zvuk
 xdg-entry-sound-comment = Nastavení zvuku pro zařízení, upozornění a aplikace
 xdg-entry-startup-apps = Automaticky spouštěné aplikace
 xdg-entry-startup-apps-comment = Správa aplikací, které se spouštějí při přihlášení
 xdg-entry-system = Systém a účty
-xdg-entry-system-comment = Informace o systému, uživatelé a firmware
+xdg-entry-system-comment = Informace o systému, účty a aktualizace firmwaru
 xdg-entry-time-language = Čas a jazyk
-xdg-entry-time-language-comment = Nastavení času a jazyka
-xdg-entry-touchpad-comment = Rychlost touchpadu, nastavení klikání, gesta
+xdg-entry-time-language-comment = Správa systémového data, času, regionu a jazyka
+xdg-entry-touchpad-comment = Rychlost touchpadu, možnosti klikání a gesta
 xdg-entry-users = Uživatelé
 xdg-entry-users-comment = Ověření a uživatelské účty
 xdg-entry-vpn-comment = VPN připojení a profily
@@ -57,9 +57,9 @@ xdg-entry-wired = Drátové
 xdg-entry-wired-comment = Drátové připojení a profily
 xdg-entry-wireless-comment = Wi-Fi připojení a profily
 xdg-entry-workspaces = Pracovní plochy
-xdg-entry-workspaces-comment = Chování a orientace pracovních ploch
+xdg-entry-workspaces-comment = Orientace pracovních ploch, přehled a chování při více monitorech
 xdg-entry-x11-applications = Kompatibilita aplikací X11
-xdg-entry-x11-applications-comment = Měřítko a globální klávesové zkratky aplikací využívajících okenní systém X11
+xdg-entry-x11-applications-comment = Měřítko aplikací využívajících okenní systém X11, hlavní displej a globální zkratky
 
 ## Desktop
 
@@ -68,12 +68,10 @@ desktop = Plocha
 ## Desktop: Appearance
 
 appearance = Vzhled
-    .desc = Barvy zvýraznění a motivy
 
 ## Desktop: Notifications
 
 notifications = Oznámení
-    .desc = Nerušit, oznámení na zamykací obrazovce a nastavení podle aplikace
 
 ## Desktop: Options
 
@@ -84,12 +82,10 @@ window-controls = Ovládání oken
     .minimize = Zobrazit tlačítko pro minimalizaci
     .active-window-hint = Zobrazit ohraničení aktivního okna
 dock = Dok
-    .desc = Volitelná lišta pro aplikace a applety
 
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Hlavní systémová lišta pro menu a applety
 panel-behavior-and-position = Chování a pozice
     .autohide = Automaticky skrýt panel
     .dock-autohide = Automaticky skrýt dok
@@ -133,7 +129,6 @@ all = Všechny
 
 wallpaper = Tapeta
     .change = Měnit obrázek každých
-    .desc = Obrázky tapet, barvy a možnosti prezentace
     .fit = Způsob umístění tapety
     .folder-dialog = Vyberte složku s tapetami
     .image-dialog = Vyberte obrázek tapety
@@ -159,7 +154,6 @@ x-hours =
 ## Desktop: Workspaces
 
 workspaces = Pracovní plochy
-    .desc = Chování a orientace pracovních ploch
 workspaces-behavior = Chování pracovních ploch
     .dynamic = Dynamické pracovní plochy
     .dynamic-desc = Automaticky odstraní prázdné pracovní plochy.
@@ -185,13 +179,11 @@ online-accounts = Online účty
 ## Time & Language
 
 time = Čas a jazyk
-    .desc = N/A
 time-date = Datum a čas
-    .desc = Časová zóna, automatické nastavení hodin a formátování času
     .auto = Nastavit automaticky
-    .auto-ntp = Pokud nastavíte časovou zónu, datum a čas se bude aktualizovat automaticky
-time-zone = Časová zóna
-    .auto = Automatická časová zóna
+    .auto-ntp = Pokud nastavíte časové pásmo, datum a čas se bude aktualizovat automaticky
+time-zone = Časové pásmo
+    .auto = Automatické časové pásmo
     .auto-info = Vyžaduje službu polohy a internet
 time-format = Formát data a času
     .twenty-four = 24 hodinový čas
@@ -203,12 +195,10 @@ time-format = Formát data a času
     .sunday = Neděle
     .monday = Pondělí
 time-region = Region a jazyk
-    .desc = Formátujte datumy, časy a čísla podle vašeho regionu
 
 ## Sound
 
 sound = Zvuk
-    .desc = N/A
 sound-output = Výstup
     .volume = Hlasitost výstupu
     .device = Výstupní zařízení
@@ -234,7 +224,6 @@ system = Systém a účty
 ## System: About
 
 about = O systému
-    .desc = Název zařízení, informace o hardwaru, výchozí nastavení operačního systému
 about-device = Název počítače
     .desc = Tento název se zobrazí ostatním síťovým a Bluetooth zařízením
 about-hardware = Hardware
@@ -255,12 +244,10 @@ about-related = Podobná nastavení
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Podrobnosti o firmwaru
 
 ## System: Users
 
 users = Uživatelé
-    .desc = Ověření a uživatelské účty
     .admin = Administrátor
     .standard = Standardní
     .profile-add = Vyberte obrázek profilu
@@ -282,7 +269,6 @@ scrolling = Rolování
 ## Input: Keyboard
 
 keyboard = Klávesnice
-    .desc = Vstupní zdroje, přepínání, vkládání speciálních znaků, zkratky
 keyboard-sources = Vstupní zdroje
     .desc = Vstupní zdroje lze přepínat pomocí Super + Mezerník. Toto se dá změnit v nastavení klávesových zkratek.
     .move-up = Posunout nahoru
@@ -300,12 +286,11 @@ keyboard-special-char = Zadávání speciálních znaků
 ## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = Klávesové zkratky
-    .desc = Zobrazit a změnit klávesové zkratky
+    .desc = Zobrazit a změnit zkratky
 
 ## Input: Mouse
 
 mouse = Myš
-    .desc = Rychlost myši, zrychlení, přirozené rolování
     .speed = Rychlost myši
     .acceleration = Povolit zrychlení myši
 
@@ -313,7 +298,6 @@ mouse = Myš
 
 touchpad = Touchpad
     .acceleration = Povolit zrychlení touchpadu
-    .desc = Rychlost touchpadu, nastavení klikání, gesta
     .speed = Rychlost touchpadu
 dbus-connection-error = Selhalo připojení k DBus
 ok = OK
@@ -344,7 +328,6 @@ activate = Aktivovat
 confirm = Potvrdit
 enable = Povolit
 bluetooth = Bluetooth
-    .desc = Správa Bluetooth zařízení.
     .status = Tento systém je viditelný jako { $aliases }, dokud jsou otevřena nastavení Bluetooth.
     .connected = Připojeno
     .connecting = Připojování
@@ -470,7 +453,6 @@ icon-theme = Motiv ikon
     .desc = Použije jinou sadu ikon pro aplikace
 monospace-font = Písmo s pevnou šířkou
 window-management = Správa oken
-    .desc = Akce klávesy Super, možnosti ovládání oken a další možnosti dlaždicového režimu oken
 window-tiling = Dlaždicový režim oken
     .horizontal = Nastavit horizontální orientaci
     .vertical = Nastavit vertikální orientaci
@@ -536,7 +518,6 @@ text-tint = Odstín textu rozhraní
     .desc = Používá se k odvození barev textu rozhraní, které mají dostatečný kontrast na různých površích
 experimental-settings = Experimentální nastavení
 display = Obrazovky
-    .desc = Spravujte obrazovky a noční světlo
     .arrangement = Uspořádání obrazovek
     .arrangement-desc = Přetáhněte obrazovky pro jejich uspořádání
     .enable = Povolit obrazovku
@@ -602,7 +583,6 @@ dialog = Dialog
 amplification = Zesílení
     .desc = Umožňuje zesílit zvuk až na 150%
 power = Napájení a baterie
-    .desc = Spravujte nastavení napájení
 battery = Baterie
     .minute =
         { $value } { $value ->
@@ -646,7 +626,6 @@ power-saving = Možnosti úspory energie
     .auto-suspend-battery = Automaticky uspávat při napájení pouze z baterie
 disable-while-typing = Zakázat při psaní
 input-devices = Vstupní zařízení
-    .desc = Vstupní zařízení
 modified = { $count } změněných
 slow = Pomalá
 fast = Rychlá
@@ -821,7 +800,6 @@ formatting = Formátování
     .measurement = Jednotky
     .paper = Papír
 default-apps = Výchozí aplikace
-    .desc = Výchozí webový prohlížeč, poštovní klient, prohlížeč souborů a další aplikace
     .web-browser = Webový prohlížeč
     .file-manager = Prohlížeč souborů
     .mail-client = Poštovní klient
@@ -834,7 +812,6 @@ default-apps = Výchozí aplikace
     .text-editor = Textový editor
     .not-installed = Není nainstalováno
 startup-apps = Automaticky spouštěné aplikace
-    .desc = Správa aplikací, které se spouštějí při přihlášení
     .add = Přidat aplikaci
     .user = Aplikace spouštěné při přihlášení
     .none = Nejsou přidány žádné aplikace pro automatické spouštění
@@ -842,9 +819,8 @@ startup-apps = Automaticky spouštěné aplikace
     .remove-dialog-description = Odstranit tuto aplikaci z automatického spouštění?
     .add-startup-app = Přidat aplikaci pro spouštění
 legacy-applications = Kompatibilita aplikací X11
-    .desc = Měřítko a globální klávesové zkratky aplikací využívajících okenní systém X11
-legacy-app-global-shortcuts = Globální klávesové zkratky aplikací X11
-    .desc = Globální klávesové zkratky umožňují, aby stisky kláves a události tlačítek myši provedené v aplikacích byly rozpoznány i jinými aplikacemi, například pro funkce typu push-to-talk nebo push-to-mute. Ve výchozím nastavení jsou v aplikacích X11 zakázány, aby jiné aplikace nemohly sledovat stisky kláves a události myši obsahující citlivé informace.
+legacy-app-global-shortcuts = Globální zkratky aplikací X11
+    .desc = Globální zkratky umožňují, aby stisky kláves a události tlačítek myši provedené v aplikacích byly rozpoznány i jinými aplikacemi, například pro funkce typu push-to-talk nebo push-to-mute. Ve výchozím nastavení jsou v aplikacích X11 zakázány, aby jiné aplikace nemohly sledovat stisky kláves a události myši obsahující citlivé informace.
     .none = Žádné klávesy
     .modifiers = Modifikátory (Super, Shift, Control, Alt)
     .combination = Všechny klávesy při stisku modifikátorů Super, Control nebo Alt
@@ -879,3 +855,40 @@ workspaces-overview = Přehled pracovních ploch
     .none = Žádná
     .launcher = Otevřít spouštěč
     .applications = Otevřít aplikace
+xdg-entry-notifications-keywords = COSMIC;Oznámení;Zámek;
+xdg-entry-touchpad = Touchpad
+xdg-entry-mouse-keywords = COSMIC;Myš;Zrychlení;Rolování;
+xdg-entry-startup-apps-keywords = COSMIC;Automatické;Spuštění;Spouštění;Aplikace;
+xdg-entry-wired-keywords = COSMIC;Drátové;LAN;Síť;Připojení;
+xdg-entry-appearance-keywords = COSMIC;Zvýraznění;Barva;Barvy;Akcent;Ikona;Ikony;Font;Písmo;Písma;Téma;Témata;Motiv;Motivy
+xdg-entry-dock-keywords = COSMIC;Dok;Panel;Applet
+xdg-entry-panel-keywords = COSMIC;Panel;Applet
+xdg-entry-desktop-keywords = COSMIC;Plocha;
+xdg-entry-touchpad-keywords = COSMIC;Touchpad;Gesta;
+xdg-entry-system-keywords = COSMIC;Systém;Informace;Účty;Firmware;
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Síť;Připojení;
+xdg-entry-applications-comment = Výchozí aplikace, automaticky spouštěné aplikace a nastavení kompatibility aplikací X11
+xdg-entry-about-keywords = COSMIC;O systému;
+xdg-entry-panel = Panel
+xdg-entry-a11y-keywords = COSMIC;Přístupnost;A11y;Obrazovka;Obrazovky;Čtečka;Lupa;Přiblížení;Kontrast;Barva;Barvy;
+xdg-entry-date-time-keywords = COSMIC;Čas;Pásmo;Zóna;
+xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
+xdg-entry-network-keywords = COSMIC;Síť;Bezdrátové;WiFi;VPN;
+xdg-entry-wireless = Wi-Fi
+xdg-entry-wallpaper-keywords = COSMIC;Tapeta;Tapety;Pozadí;Prezentace;
+xdg-entry-users-keywords = COSMIC;Uživatel;Uživatelé;Účet;Účty;
+xdg-entry-vpn-keywords = COSMIC;VPN;Síť;Připojení;OpenVPN;OpenConnect;
+xdg-entry-time-language-keywords = COSMIC;Systém;Čas;Datum;Region;Jazyk;
+xdg-entry-input-keywords = COSMIC;Vstup;Klávesnice;Myš;Myši;
+xdg-entry-comment = Aplikace nastavení pro prostředí COSMIC
+xdg-entry-sound-keywords = COSMIC;Zvuk;Audio;Upozornění;Pipewire;
+xdg-entry-power-keywords = COSMIC;Napájení;Baterie
+xdg-entry-default-apps-keywords = COSMIC;Výchozí;Aplikace
+xdg-entry-keywords = COSMIC;Nastavení;
+xdg-entry-region-language-keywords = COSMIC;Region;Oblast;Jazyk;Datum;Formát;Čas;Lokalizace;
+xdg-entry-applications-keywords = COSMIC;Výchozí;Aplikace;Spuštění;Spouštění;X11;Kompatibilita
+xdg-entry-keyboard-keywords = COSMIC;Klávesnice;Vstup;Zdroj;Zdroje;Metoda;Metody;Zkratky;
+xdg-entry-window-management-keywords = COSMIC;Okno;Okna;Správa;Dlaždicový režim;Super;Klávesa;
+xdg-entry-displays-keywords = COSMIC;Obrazovka;Obrazovky;Displej;Displeje;Monitor;Monitory;Zobrazení;
+xdg-entry-workspaces-keywords = COSMIC;Pracovní plocha;Pracovní plochy;Orientace;Přehled;Sledování;
+xdg-entry-x11-applications-keywords = COSMIC;X11;Aplikace;Hra;Hry;Kompatibilita;

@@ -23,7 +23,6 @@ desktop = Стільниця
 
 wallpaper = Тло
     .change = Змінювати зображення що
-    .desc = Відображення тла: зображення, колір або показ слайдів
     .fit = Припасувати зображення тла
     .folder-dialog = Виберіть теку із зображеннями
     .image-dialog = Виберіть зображення
@@ -55,7 +54,6 @@ x-hours =
 ## Desktop: Appearance
 
 appearance = Вигляд
-    .desc = Акцентні кольори та оформлення
 accent-color = Колір акценту
 app-background = Тло вікон
 auto = Автоматичне
@@ -106,12 +104,10 @@ window-management-appearance = Керування вікнами
 ## Desktop: Notifications
 
 notifications = Сповіщення
-    .desc = Не турбувати, сповіщення на екрані блокування, налаштування застосунків
 
 ## Desktop: Panel
 
 panel = Панель
-    .desc = Головна панель з елементами керування та віджетами
 add = Додати
 add-applet = Додати віджет
 all = Всі
@@ -154,12 +150,10 @@ panel-missing = Конфігурацію панелі не знайдено
 ## Desktop: Dock
 
 dock = Область завдань
-    .desc = Необов’язкова область для панелі застосунків і віджетів
 
 ## Desktop: Window management
 
 window-management = Керування вікнами
-    .desc = Дія клавіші Super, параметри керування вікнами та додаткові налаштування укладання вікон
 super-key = Клавіша Super
     .launcher = Відкриває запускач
     .workspaces = Відкриває меню робочих просторів
@@ -173,7 +167,6 @@ window-controls = Керування вікнами
 ## Desktop: Workspaces
 
 workspaces = Робочі простори
-    .desc = Орієнтація та поведінка робочих просторів
 workspaces-behavior = Поведінка робочих просторів
     .dynamic = Динамічні робочі простори
     .dynamic-desc = Порожні робочі простори автоматично вилучаються
@@ -200,7 +193,6 @@ color = Колір
     .sidebar = Профілі кольорів
     .temperature = Температура кольору
 display = Дисплеї
-    .desc = Керування дисплеями та нічним режимом
     .arrangement = Розташування дисплеїв
     .arrangement-desc = Перетягніть дисплеї, щоб змінити їх порядок
     .enable = Увімкнути дисплей
@@ -245,7 +237,6 @@ dialog = Діалог
 ## Sound
 
 sound = Звук
-    .desc = Н/Д
 sound-output = Виведення
     .volume = Гучність
     .device = Пристрій виведення
@@ -267,7 +258,6 @@ sound-applications = Застосунки
 ## Power
 
 power = Живлення та акумулятор
-    .desc = Керування енергоспоживанням
 power-mode = Режим живлення
     .battery = Подовжений час роботи акумулятора
     .battery-desc = Зменшене енергоспоживання та тиха робота
@@ -282,7 +272,6 @@ power-mode = Режим живлення
 acceleration-desc = Автоматично регулює чутливість відстеження руху залежно від швидкості
 disable-while-typing = Вимикати під час введення тексту
 input-devices = Пристрої введення
-    .desc = Пристрої введення
 primary-button = Основна кнопка
     .desc = Задає порядок фізичних кнопок
     .left = Ліва
@@ -301,7 +290,6 @@ fast = Швидка
 short = Коротка
 long = Довга
 keyboard = Клавіатура
-    .desc = Джерела введення, перемикання, введення спеціальних символів, скорочення
 keyboard-sources = Джерела введення
     .desc = Джерела введення можна перемикати за допомогою сполучення клавіш Super+Space. Це можна налаштувати в параметрах клавіатурних скорочень.
     .move-up = Перемістити вгору
@@ -453,7 +441,6 @@ replace-shortcut-dialog = Замінити сполучення?
 ## Input: Mouse
 
 mouse = Миша
-    .desc = Швидкість миші, прискорення, природне гортання
     .speed = Швидкість миші
     .acceleration = Увімкнути прискорення миші
 
@@ -468,7 +455,6 @@ tap-to-click = Натискання дотиком
     .desc = Дотик одним пальцем активує основне клацання, дотик двома пальцями — другорядне клацання, дотик трьома пальцями — клацання середньою кнопкою
 touchpad = Сенсорна панель
     .acceleration = Увімкнути прискорення сенсорної панелі
-    .desc = Швидкість сенсорної панелі, варіанти натискання, жести
     .speed = Швидкість сенсорної панелі
 
 ## Input: Gestures
@@ -486,9 +472,7 @@ open-workspaces-view = Відкрити огляд робочих простор
 ## Time & Language
 
 time = Час і мова
-    .desc = Н/Д
 time-date = Дата та час
-    .desc = Часовий пояс, автоматичне налаштування годинника та формат часу
     .auto = Встановлювати автоматично
     .auto-ntp = Дата та час будуть оновлюватися автоматично при встановленні часового поясу
 time-zone = Часовий пояс
@@ -504,7 +488,6 @@ time-format = Формат дати та часу
     .sunday = Неділя
     .monday = Понеділок
 time-region = Регіон та мова
-    .desc = Формат дати, часу та чисел на основі вашого регіону
 
 ## System
 
@@ -513,7 +496,6 @@ system = Система і обліковки
 ## System: About
 
 about = Про систему
-    .desc = Назва пристрою, відомості про обладнення і операційну систему
 about-device = Назва пристрою
     .desc = Назва, яку бачать інші мережі та пристрої Bluetooth
 about-hardware = Обладнання
@@ -534,12 +516,10 @@ about-related = Повʼязані налаштування
 ## System: Firmware
 
 firmware = Мікропрограма
-    .desc = Подробиці щодо мікропрограми
 
 ## System: Users
 
 users = Користувачі
-    .desc = Автентифікація та облікові записи користувачів
     .admin = Адміністратор
     .standard = Звичайний
     .profile-add = Вибрати зображення профілю
@@ -616,7 +596,6 @@ activate = Активувати
 confirm = Підтвердити
 enable = Увімкнути
 bluetooth = Bluetooth
-    .desc = Керувати Bluetooth пристроями
     .status = Ця система відображається як { $aliases }, поки відкриті налаштування Bluetooth.
     .connected = З'єднано
     .connecting = З'єднання
@@ -763,7 +742,6 @@ install-additional-languages = Встановити додаткові мови
 region = Регіон
 applications = Застосунки
 default-apps = Типові застосунки
-    .desc = Типовий вебпереглядач, поштовий клієнт, файли та інші застосунки
     .web-browser = Переглядач інтернету
     .file-manager = Керування файлами
     .mail-client = Поштовий клієнт
@@ -776,7 +754,6 @@ default-apps = Типові застосунки
     .text-editor = Текстовий редактор
     .not-installed = Не встановлено
 startup-apps = Автозапуск
-    .desc = Налаштування застосунків, які запускаються при вході у систему
     .add = Додати застосунок
     .user = Застосунки, які запускаються при вході у систему
     .none = В автозапуску немає ніяких застосунків
@@ -784,7 +761,6 @@ startup-apps = Автозапуск
     .remove-dialog-description = Вилучити цей застосунок з автозапуску?
     .add-startup-app = Додати застосунок до автозапуску
 legacy-applications = Сумісність із застосунками X11
-    .desc = Масштабування застосунків X11 і глобальні сполучення клавіш
 legacy-app-global-shortcuts = Глобальні сполучення клавіш у застосунках X11
     .desc = Глобальні сполучення дозволяють іншим застосункам реагувати на натискання клавіш і кнопок миші, навіть якщо вони виконані в іншому застосунку, наприклад для функцій активації або вимкнення голосу кнопкою. За замовчуванням ця функція вимкнена у застосунках X11, щоб уникнути перехоплення чутливої інформації.
     .none = Ніякі клавіші
@@ -830,3 +806,62 @@ workspaces-overview = Режим огляду робочих просторів
     .none = Не вибрано
     .launcher = Відкрити запускач
     .applications = Відкрити застосунки
+xdg-entry-touchpad = Сенсорна панель
+xdg-entry-wired = Дротове
+xdg-entry-startup-apps-comment = Налаштування застосунків, які запускаються при вході у систему
+xdg-entry-region-language = Регіон та мова
+xdg-entry-bluetooth-comment = Керувати Bluetooth пристроями
+xdg-entry-default-apps-comment = Типовий вебпереглядач, поштовий клієнт, файли та інші застосунки
+xdg-entry-keyboard-comment = Джерела введення, перемикання, введення спеціальних символів, сполучення
+xdg-entry-power = Живлення та акумулятор
+xdg-entry-mouse = Миша
+xdg-entry-mouse-comment = Швидкість миші, прискорення, природне гортання
+xdg-entry-system = Система і обліковки
+xdg-entry-window-management = Керування вікнами
+xdg-entry-a11y = Доступність
+xdg-entry-time-language-comment = Керування датою, часом, регіоном і мовою системи
+xdg-entry-displays-comment = Налаштування дисплея
+xdg-entry-time-language = Дата та час
+xdg-entry-users = Користувачі
+xdg-entry-default-apps = Типові застосунки
+xdg-entry-applications-comment = Типові застосунки, автозапуск і сумісність X11
+xdg-entry-panel = Панель
+xdg-entry-notifications = Сповіщення
+xdg-entry-wireless-comment = Wi-Fi з'єднання і профілі підключення
+xdg-entry-desktop = Стільниця
+xdg-entry-wallpaper = Тло
+xdg-entry-keyboard = Клавіатура
+xdg-entry-displays = Дисплеї
+xdg-entry-network = Мережа та Wi‑Fi
+xdg-entry-date-time = Дата та час
+xdg-entry-users-comment = Автентифікація та облікові записи користувачів
+xdg-entry-input-comment = Клавіатура, курсор тощо
+xdg-entry-dock-comment = Необов’язкова область для панелі застосунків і віджетів
+xdg-entry-wallpaper-comment = Відображення тла: зображення, колір або показ слайдів
+xdg-entry-dock = Область завдань
+xdg-entry-startup-apps = Автозапуск
+xdg-entry-wireless = Wi-Fi
+xdg-entry-system-comment = Система, облікові записи та оновлення мікропрограми
+xdg-entry-x11-applications-comment = Масштабування застосунків X11 і глобальні сполучення клавіш
+xdg-entry-region-language-comment = Формат дати, часу та чисел на основі вашого регіону
+xdg-entry-about-comment = Назва пристрою, відомості про обладнення і операційну систему
+xdg-entry-appearance-comment = Акцентні кольори та оформлення
+xdg-entry-comment = Застосунок налаштувань для середовища COSMIC
+xdg-entry-notifications-comment = Не турбувати, сповіщення на екрані блокування, налаштування застосунків
+xdg-entry-applications = Застосунки
+xdg-entry-about = Про систему
+xdg-entry-input = Пристрої введення
+xdg-entry-sound-comment = Налаштування звуку для пристроїв, сповіщень та застосунків
+xdg-entry-touchpad-comment = Швидкість сенсорної панелі, варіанти натискання, жести
+xdg-entry-vpn-comment = VPN з'єднання та профілі підключення
+xdg-entry-appearance = Вигляд
+xdg-entry-workspaces-comment = Орієнтація та поведінка робочих просторів
+xdg-entry-network-comment = Керуйте мережевими з’єднаннями
+xdg-entry-panel-comment = Головна панель з елементами керування та віджетами
+xdg-entry-sound = Звук
+xdg-entry-power-comment = Режими живлення та параметри заощадження енергії
+xdg-entry-workspaces = Робочі простори
+xdg-entry-date-time-comment = Часовий пояс, автоматичне налаштування годинника та формат часу
+xdg-entry-x11-applications = Сумісність із застосунками X11
+xdg-entry-window-management-comment = Дія клавіші Super, параметри керування вікнами та додаткові налаштування укладання вікон
+xdg-entry-wired-comment = Дротове з'єднання і профілі підключень

@@ -841,3 +841,4 @@ workspaces-overview = Forbhreathnú ar Spásanna Oibre
     .none = Dada
     .launcher = Oscail an Lainseálaí
     .applications = Oscail Feidhmchláir
+xdg-entry-wireless = Wi-Fi
