@@ -145,7 +145,6 @@ color = Färg
     .sidebar = Färgprofiler
     .temperature = Färgtemperatur
 display = Skärmar
-    .desc = Hantera skärmar och nattljus
     .arrangement = Visningsarrangemang
     .arrangement-desc = Dra skärmar för att ordna om dem.
     .enable = Aktivera skärm
