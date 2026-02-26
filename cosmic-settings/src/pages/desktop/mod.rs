@@ -4,6 +4,7 @@
 pub mod appearance;
 #[cfg(feature = "wayland")]
 pub mod dock;
+pub mod notifications;
 #[cfg(feature = "wayland")]
 pub mod panel;
 pub mod wallpaper;
@@ -37,6 +38,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
     ) -> page::Insert<crate::pages::Message> {
         page = page.sub_page::<wallpaper::Page>();
         page = page.sub_page::<appearance::Page>();
+        page = page.sub_page::<notifications::Page>();
 
         #[cfg(feature = "wayland")]
         {
