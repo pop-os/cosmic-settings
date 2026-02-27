@@ -715,6 +715,7 @@ keyboard-numlock-boot = Numlock
 
 added = Added
 type-to-search = Type to search...
+no-search-results = No networks match your search.
 show-extended-input-sources = Show extended input sources
 
 ## Input: Keyboard: Shortcuts
