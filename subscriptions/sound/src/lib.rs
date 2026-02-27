@@ -19,36 +19,39 @@ pub type ProfileId = i32;
 pub type RouteId = u32;
 
 pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
-    cosmic::iced_futures::stream::channel(1, |mut emitter| async move {
-        loop {
-            let (cancel_tx, cancel_rx) = futures::channel::oneshot::channel::<()>();
-            let sender = Arc::new((Mutex::new(Vec::new()), tokio::sync::Notify::const_new()));
-            let receiver = sender.clone();
+    cosmic::iced_futures::stream::channel(
+        1,
+        |mut emitter: futures::channel::mpsc::Sender<Message>| async move {
+            loop {
+                let (cancel_tx, cancel_rx) = futures::channel::oneshot::channel::<()>();
+                let sender = Arc::new((Mutex::new(Vec::new()), tokio::sync::Notify::const_new()));
+                let receiver = sender.clone();
 
-            _ = emitter
-                .send(Message::SubHandle(Arc::new(SubscriptionHandle {
-                    cancel_tx,
-                    pipewire: pipewire::run(move |event| {
-                        sender.0.lock().unwrap().push(event);
-                        sender.1.notify_one();
-                    }),
-                })))
-                .await;
+                _ = emitter
+                    .send(Message::SubHandle(Arc::new(SubscriptionHandle {
+                        cancel_tx,
+                        pipewire: pipewire::run(move |event| {
+                            sender.0.lock().unwrap().push(event);
+                            sender.1.notify_one();
+                        }),
+                    })))
+                    .await;
 
-            let forwarder = Box::pin(async {
-                loop {
-                    _ = receiver.1.notified().await;
-                    let events = std::mem::take(&mut *receiver.0.lock().unwrap());
-                    if !events.is_empty() {
-                        _ = emitter.send(Message::Server(Arc::from(events))).await;
-                        tokio::time::sleep(Duration::from_millis(64)).await;
+                let forwarder = Box::pin(async {
+                    loop {
+                        _ = receiver.1.notified().await;
+                        let events = std::mem::take(&mut *receiver.0.lock().unwrap());
+                        if !events.is_empty() {
+                            _ = emitter.send(Message::Server(Arc::from(events))).await;
+                            tokio::time::sleep(Duration::from_millis(64)).await;
+                        }
                     }
-                }
-            });
+                });
 
-            futures::future::select(cancel_rx, forwarder).await;
-        }
-    })
+                futures::future::select(cancel_rx, forwarder).await;
+            }
+        },
+    )
 }
 
 #[derive(Default)]

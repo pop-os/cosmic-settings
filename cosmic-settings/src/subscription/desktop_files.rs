@@ -15,45 +15,49 @@ pub enum Event {
 pub fn desktop_files<I: 'static + Hash + Copy + Send + Sync + Debug>(
     id: I,
 ) -> cosmic::iced::Subscription<Event> {
-    Subscription::run_with_id(
-        id,
-        stream::channel(1, move |mut output| async move {
-            let handle = tokio::runtime::Handle::current();
-            let (tx, mut rx) = mpsc::channel(4);
-            let mut last_update = std::time::Instant::now();
+    Subscription::run_with(id, |_| {
+        stream::channel(
+            1,
+            move |mut output: futures::channel::mpsc::Sender<Event>| async move {
+                let handle = tokio::runtime::Handle::current();
+                let (tx, mut rx) = mpsc::channel(4);
+                let mut last_update = std::time::Instant::now();
 
-            // Automatically select the best implementation for your platform.
-            // You can also access each implementation directly e.g. INotifyWatcher.
-            let watcher = RecommendedWatcher::new(
-                move |res: Result<notify::Event, notify::Error>| {
-                    if let Ok(event) = res {
-                        match event.kind {
-                            EventKind::Create(_) | EventKind::Modify(_) | EventKind::Remove(_) => {
-                                let now = std::time::Instant::now();
-                                if now.duration_since(last_update).as_secs() > 3 {
-                                    _ = handle.block_on(tx.send(()));
-                                    last_update = now;
+                // Automatically select the best implementation for your platform.
+                // You can also access each implementation directly e.g. INotifyWatcher.
+                let watcher = RecommendedWatcher::new(
+                    move |res: Result<notify::Event, notify::Error>| {
+                        if let Ok(event) = res {
+                            match event.kind {
+                                EventKind::Create(_)
+                                | EventKind::Modify(_)
+                                | EventKind::Remove(_) => {
+                                    let now = std::time::Instant::now();
+                                    if now.duration_since(last_update).as_secs() > 3 {
+                                        _ = handle.block_on(tx.send(()));
+                                        last_update = now;
+                                    }
                                 }
+
+                                _ => (),
                             }
-
-                            _ => (),
                         }
+                    },
+                    Config::default(),
+                );
+
+                if let Ok(mut watcher) = watcher {
+                    for path in cosmic::desktop::fde::default_paths() {
+                        let _ = watcher.watch(path.as_ref(), RecursiveMode::Recursive);
                     }
-                },
-                Config::default(),
-            );
 
-            if let Ok(mut watcher) = watcher {
-                for path in cosmic::desktop::fde::default_paths() {
-                    let _ = watcher.watch(path.as_ref(), RecursiveMode::Recursive);
+                    while rx.recv().await.is_some() {
+                        _ = output.send(Event::Changed).await;
+                    }
                 }
 
-                while rx.recv().await.is_some() {
-                    _ = output.send(Event::Changed).await;
-                }
-            }
-
-            futures::future::pending().await
-        }),
-    )
+                futures::future::pending().await
+            },
+        )
+    })
 }

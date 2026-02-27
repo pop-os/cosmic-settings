@@ -178,7 +178,7 @@ fn device() -> Section<crate::pages::Message> {
                 page.editing_device_name,
                 Message::HostnameEdit,
             )
-            .width(250)
+            .width(250.)
             .on_input(Message::HostnameInput)
             .on_unfocus(Message::HostnameSubmit)
             .on_submit(|_| Message::HostnameSubmit);

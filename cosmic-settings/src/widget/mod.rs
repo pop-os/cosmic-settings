@@ -8,8 +8,9 @@ use cosmic::iced::{Alignment, Length};
 use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::{
-    self, ColorPickerModel, button, column, container, divider, horizontal_space, icon, row,
-    settings, text, vertical_space,
+    self, ColorPickerModel, button, column, container, divider, icon, row, settings,
+    space::{horizontal as horizontal_space, vertical as vertical_space},
+    text,
 };
 use cosmic::{Apply, Element, theme};
 use cosmic_settings_page as page;
@@ -150,10 +151,12 @@ pub fn page_list_item<'a, Message: 'static + Clone>(
         .padding([space_s, space_m])
         .align_x(Alignment::Center)
         .class(theme::Container::List)
+        .width(Length::Fill)
         .apply(button::custom)
         .padding(0)
         .class(theme::Button::Transparent)
         .on_press(message)
+        .width(Length::Fill)
         .into()
 }
 

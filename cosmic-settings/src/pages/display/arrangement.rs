@@ -96,7 +96,7 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
     }
 
     fn layout(
-        &self,
+        &mut self,
         tree: &mut Tree,
         _renderer: &Renderer,
         limits: &layout::Limits,
@@ -157,17 +157,17 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
         layout::Node::new(size)
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
-        event: cosmic::iced_core::Event,
+        event: &cosmic::iced_core::Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         _renderer: &Renderer,
         _clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         let bounds = layout.bounds();
 
         match event {
@@ -198,7 +198,8 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                             ),
                         );
 
-                        return event::Status::Captured;
+                        shell.capture_event();
+                        return;
                     }
                 }
             }
@@ -217,7 +218,8 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                         state.drag_from = position;
                         state.offset = (position.x - output_region.x, position.y - output_region.y);
                         state.dragging = Some((output_key, output_region));
-                        return event::Status::Captured;
+                        shell.capture_event();
+                        return;
                     }
                 }
             }
@@ -239,7 +241,8 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                             }
                         }
 
-                        return event::Status::Captured;
+                        shell.capture_event();
+                        return;
                     }
 
                     if let Some(ref on_placement) = self.on_placement {
@@ -253,14 +256,13 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                         ));
                     }
 
-                    return event::Status::Captured;
+                    shell.capture_event();
+                    return;
                 }
             }
 
             _ => (),
         }
-
-        event::Status::Ignored
     }
 
     fn mouse_interaction(
@@ -333,6 +335,7 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                         width: 3.0,
                     },
                     shadow: Default::default(),
+                    snap: true,
                 },
                 core::Background::Color(background.into()),
             );
@@ -352,6 +355,7 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                         ..Default::default()
                     },
                     shadow: Default::default(),
+                    snap: true,
                 },
                 core::Background::Color(cosmic_theme.palette.neutral_1.into()),
             );
@@ -364,8 +368,8 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                     line_height: core::text::LineHeight::Relative(1.2),
                     font: cosmic::font::bold(),
                     bounds: id_bounds.size(),
-                    horizontal_alignment: alignment::Horizontal::Center,
-                    vertical_alignment: alignment::Vertical::Center,
+                    align_x: text::Alignment::Center,
+                    align_y: alignment::Vertical::Center,
                     shaping: text::Shaping::Basic,
                     wrapping: text::Wrapping::Word,
                     ellipsize: text::Ellipsize::None,

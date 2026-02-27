@@ -34,16 +34,18 @@ pub struct State {
 pub fn subscription() -> Subscription<Response> {
     struct MyId;
 
-    Subscription::run_with_id(
-        std::any::TypeId::of::<MyId>(),
-        stream::channel(1, move |mut output| async move {
-            if let Some(state) = State::new(&mut output).await {
-                state.listen(&mut output).await;
-            }
+    Subscription::run_with(std::any::TypeId::of::<MyId>(), |_| {
+        stream::channel(
+            1,
+            move |mut output: futures::channel::mpsc::Sender<Response>| async move {
+                if let Some(state) = State::new(&mut output).await {
+                    state.listen(&mut output).await;
+                }
 
-            futures::future::pending::<()>().await;
-        }),
-    )
+                futures::future::pending::<()>().await;
+            },
+        )
+    })
 }
 
 impl State {

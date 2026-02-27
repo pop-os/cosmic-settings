@@ -131,7 +131,7 @@ impl page::Page<crate::pages::Message> for Page {
 
                     return cosmic::Task::stream(cosmic::iced_futures::stream::channel(
                         1,
-                        |mut sender| async move {
+                        |mut sender: futures::channel::mpsc::Sender<crate::pages::Message>| async move {
                             while let Some(event) = rx.recv().await {
                                 let _ = sender
                                     .send(crate::pages::Message::AccessibilityMagnifier(

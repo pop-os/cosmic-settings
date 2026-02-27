@@ -7,7 +7,7 @@ use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced_core::text::Wrapping,
     surface,
-    widget::{self, dropdown, settings},
+    widget::{self, dropdown, settings, space::horizontal as horizontal_space},
 };
 use cosmic_settings_page::{self as page, Section, section};
 use icu::{
@@ -367,7 +367,7 @@ impl Page {
                     .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
                     .into()
             } else {
-                widget::horizontal_space().width(16).into()
+                horizontal_space().width(16.).into()
             },
         ])
         .apply(widget::container)

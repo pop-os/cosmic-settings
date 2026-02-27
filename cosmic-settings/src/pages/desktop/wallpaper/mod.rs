@@ -25,7 +25,9 @@ use cosmic::{
     widget::{
         button, dropdown, list_column, row,
         segmented_button::{self, SingleSelectModel},
-        settings, tab_bar, text, toggler,
+        settings,
+        space::horizontal as horizontal_space,
+        tab_bar, text, toggler,
     },
 };
 use cosmic::{
@@ -692,7 +694,10 @@ impl Page {
                 .width(Length::Fixed(SIMULATED_WIDTH as f32))
                 .into(),
 
-            None => cosmic::widget::Space::new(SIMULATED_WIDTH, SIMULATED_HEIGHT).into(),
+            None => cosmic::widget::Space::new()
+                .width(Length::Fixed(SIMULATED_WIDTH as f32))
+                .height(Length::Fixed(SIMULATED_HEIGHT as f32))
+                .into(),
         }
     }
 
@@ -1343,7 +1348,7 @@ pub fn settings() -> Section<crate::pages::Message> {
                         },
                     )
                     .push(category_selection)
-                    .push(cosmic::widget::horizontal_space())
+                    .push(horizontal_space())
                     .push_maybe(add_button)
                     .into(),
             );

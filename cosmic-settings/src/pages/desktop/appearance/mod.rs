@@ -22,8 +22,8 @@ use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced::Subscription;
 use cosmic::iced_core::{Alignment, Length};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, horizontal_space, radio, row, settings,
-    text,
+    button, color_picker::ColorPickerUpdate, container, radio, row, settings,
+    space::horizontal as horizontal_space, text,
 };
 use cosmic::{Apply, Element, Task, widget};
 #[cfg(feature = "wayland")]
@@ -927,7 +927,7 @@ pub fn reset_button() -> Section<crate::pages::Message> {
                     .on_press(Message::Reset)
                     .into()
             } else {
-                horizontal_space().width(1).apply(Element::from)
+                horizontal_space().width(1.).apply(Element::from)
             }
             .map(crate::pages::Message::Appearance)
         })
