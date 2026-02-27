@@ -16,18 +16,18 @@ connected = Bağlandı
 connecting = Bağlanılıyor…
 disconnect = Bağlantıyı kes
 forget = Unut
-known-networks = Bilinen Ağlar
-network-and-wireless = Ağ & Kablosuz
+known-networks = Bilinen ağlar
+network-and-wireless = Ağ & kablosuz
 no-networks = Herhangi bir ağ bulunamadı.
 no-vpn = Herhangi bir VPN bağlantısı bulunmamaktadır.
-password = Şifre
-password-confirm = Şifreyi Onayla
+password = Parola
+password-confirm = Parolayı onayla
 remove = Kaldır
 settings = Ayarlar
 username = Kullanıcı Adı
-visible-networks = Görünen Ağlar
+visible-networks = Görünen ağlar
 identity = Kimlik
-auth-dialog = Kimlik Doğrulama Gerekli
+auth-dialog = Kimlik Doğrulama gerekli
     .vpn-description = VPN hizmeti tarafından istenilen kullanıcı adı ve parolayı girin.
     .wifi-description = Parola veya şifreleme anahtarını girin. Yönlendiricinin "WPS" düğmesine basarak da bağlanabilirsiniz.
 forget-dialog = Bu Wi-Fi ağı unutulsun mu?
@@ -41,17 +41,17 @@ network-device-state =
     .ip-check = Bağlantı kontrol ediliyor
     .ip-config = IP ve yönlendirme bilgisi isteniyor
     .need-auth = Kimlik doğrulama gerekiyor
-    .prepare = Preparing to connect
+    .prepare = Bağlanmaya hazırlanıyor
     .secondaries = İkincil bağlantı bekleniyor
     .unavailable = Mevcut değil
     .unknown = Bilinmeyen durum
     .unmanaged = Yönetilmiyor
     .unplugged = Kablo bağlı değil
-remove-connection-dialog = Bağlantı profilini kaldır?
+remove-connection-dialog = Bağlantı profili silinsin mi?
     .vpn-description = Gelecekte bu ağı kullanabilmek için tekrardan parola girmeniz gerekecek.
     .wired-description = Gelecekte bu profili kullanabilmek için tekrardan oluşturmanız gerekecek.
 vpn = VPN
-    .connections = VPN Bağlantıları
+    .connections = VPN bağlantıları
     .error = VPN yapılandırması eklenemedi
     .remove = Bağlantı profilini kaldır
     .select-file = Bir VPN yapılandırma dosyası seçin
@@ -73,17 +73,17 @@ vpn-error = VPN Hatası
 wired = Kablolu
     .adapter = Kablolu adaptör { $id }
     .connections = Kablolu bağlantılar
-    .devices = Kablolu aygıtlar
-    .remove = Bağlantı profili kaldır
+    .devices = Kablolu cihazlar
+    .remove = Bağlantı profilini kaldır
 wifi = Kablosuz
     .adapter = Kablosuz adaptör { $id }
     .forget = Ağı unut
-wireguard-dialog = WireGuard aygıtı ekle
-    .description = WireGuard yapılandırması için aygıt adı belirleyin.
+wireguard-dialog = WireGuard cihazı ekle
+    .description = WireGuard yapılandırması için cihaz adı belirleyin.
 
 ## Networking: Online Accounts
 
-online-accounts = Çevrim İçi Hesaplar
+online-accounts = Çevrimiçi hesaplar
     .desc = Hesap, IMAP ve SMTP, kurumsal giriş ekleyin
 
 # Bluetooth
@@ -255,12 +255,10 @@ monospace-font = Tek aralıklı yazı tipi
 ## Desktop: Notifications
 
 notifications = Bildirimler
-    .desc = Rahatsız Etme, kilit ekranı bildirimleri, ve uygulama başına ayarlar.
 
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Masaüstü seçeneklerin ve menülerin bulunduğu üst panel.
 add = Ekle
 add-applet = Kabuk Bileşeni ekle
 all = Tümü
@@ -302,13 +300,11 @@ panel-missing = Panel Yapılandırması Eksik
 
 ## Desktop: Dock
 
-dock = Görev Çubuğu
-    .desc = Sabitlenmiş uygulamaların bulunduğu panel.
+dock = Dock
 
 ## Desktop: Window management
 
 window-management = Pencere yönetimi
-    .desc = Super tuşu davranışı, pencere kontrolü seçenekleri ve daha fazla pencere dizme seçenekleri.
 super-key = Super tuşu davranışı
     .launcher = Başlatıcıyı aç
     .workspaces = Çalışma Alanlarını aç
@@ -327,7 +323,6 @@ focus-navigation = Odak gezinimi
 ## Desktop: Workspaces
 
 workspaces = Çalışma Alanları
-    .desc = Çalışma alan sayısını, davranışını, ve yerini değiştir.
 workspaces-behavior = Çalışma Alanı Davranışı
     .dynamic = Dinamik çalışma alanları
     .dynamic-desc = Boş çalışma alanlarını otomatik olarak siler.
@@ -354,7 +349,6 @@ color = Renk
     .sidebar = Renk Profilleri
     .temperature = Renk sıcaklığı
 display = Ekranlar
-    .desc = Ekranları, harici ekran kartı kullanımı ve gece ışığını yönet
     .arrangement = Ekran Dizilimi
     .arrangement-desc = Ekranları yeniden dizmek için sürükleyin.
     .enable = Ekranı etkinleştir.
@@ -403,7 +397,6 @@ dialog = Diyalog
 ## Sound
 
 sound = Ses
-    .desc = N/A
 sound-output = Çıkış
     .volume = Çıkış sesi
     .device = Çıkış aygıtı
@@ -424,8 +417,7 @@ sound-applications = Uygulamalar
 
 ## Power
 
-power = Güç & Pil
-    .desc = Güç seçeneklerini yönet
+power = Güç & pil
 battery = Pil
     .minute =
         { $value } { $value ->
@@ -469,8 +461,7 @@ power-saving = Güç Tasarrufu Seçenekleri
 
 acceleration-desc = Otomatik olarak takip hassasiyetini hıza bağlı olarak düzenle.
 disable-while-typing = Yazarken devre dışı bırak
-input-devices = Giriş Aygıtları
-    .desc = Giriş Aygıtları
+input-devices = Giriş cihazları
 primary-button = Birincil buton
     .desc = Fiziksel butonların sırasını belirler.
     .left = Sol
@@ -489,7 +480,6 @@ fast = Hızlı
 short = Kısa
 long = Uzun
 keyboard = Klavye
-    .desc = Giriş kaynakları, aralarında geçiş, özel karakter girişi, kısayollar.
 keyboard-sources = Giriş Kaynakları
     .desc = Giriş kaynakları arasında Super+Space tuş kombinasyonu ile geçiş yapılabilir. Bu klavye kısayolları ayarlarından kişileştirilebilir.
     .move-up = Yukarı çıkar
@@ -649,7 +639,6 @@ zoom-out = Uzaklaştır
 ## Input: Mouse
 
 mouse = Fare
-    .desc = Fare hızı, ivmesi, doğal kaydırma.
     .speed = Fare hızı
     .acceleration = Fare ivmesini etkinleştir
 
@@ -664,7 +653,6 @@ tap-to-click = Tıklamak için dokun
     .desc = Tek parmak ile dokunuşta birincil, iki parmakla dokunuşta ikincil ve üç parmakla dokunuşta orta tıklamayı etkinleştir.
 touchpad = Dokunmatik yüzey
     .acceleration = Dokunmatik yüzey ivmesini etkinleştir
-    .desc = Dokunmatik yüzey hızı, tıklama seçenekleri ve hareketleri.
     .speed = Dokunmatik yüzey hızı
 
 ## Input: Gestures
@@ -684,12 +672,10 @@ open-workspaces-view = Çalışma Alanları Genel Görünümünü aç
 
 ## Time & Language
 
-time = Zaman & Dil
-    .desc = N/A
-time-date = Tarih & Saat
-    .desc = Saat dilimi, otomatik saat ayarları ve bazı zaman biçimleri.
+time = Zaman & dil
+time-date = Tarih & saat
     .auto = Otomatik ayarla
-    .auto-ntp = Tarih & saat, saat dilimi ayarlandığında otomatik olarak güncellenir.
+    .auto-ntp = Tarih & saat, saat dilimi ayarlandığında otomatik olarak güncellenir
 time-zone = Saat Dilimi
     .auto = Otomatik saat dilimi
     .auto-info = Konum hizmetlerine ve internet erişimine gereksim duyar
@@ -702,8 +688,7 @@ time-format = Tarih & Saat Biçimi
     .saturday = Cumartesi
     .sunday = Pazar
     .monday = Pazartesi
-time-region = Bölge & Dil
-    .desc = Tarihleri, saatleri ve sayıları bölgenize göre biçimlendirin.
+time-region = Bölge & dil
 formatting = Biçimlendirme
     .dates = Tarihler
     .time = Saat
@@ -725,8 +710,7 @@ applications = Uygulamalar
 ## Applications: Default Applications
 
 default-apps = Varsayılan Uygulamalar
-    .desc = Varsayılan web tarayıcısı, e-posta istemcisi, dosya gezgini ve diğer uygulamalar.
-    .web-browser = Web tarayıcısı
+    .web-browser = İnternet tarayıcısı
     .file-manager = Dosya gezgini
     .mail-client = E-posta istemcisi
     .music = Müzik
@@ -736,22 +720,21 @@ default-apps = Varsayılan Uygulamalar
     .terminal = Uçbirim
     .other-associations = Diğer ilişkiler
     .text-editor = Metin Düzenleyici
+    .not-installed = kurulu değil
 
 ## Applications: Startup Applications
 
-startup-apps = Başlangıç Uygulamaları
-    .desc = Girişte çalıştırılacak uygulamaları ayarlayın.
+startup-apps = Başlangıç uygulamaları
     .add = Uygulama ekle
-    .user = Kullanıcıya özgü uygulamalar
+    .user = Oturum açtığınızda başlatılan uygulamalar
     .none = Başlangıç uygulaması eklenmedi
-    .remove-dialog-title = { $name } ögesini kaldır?
-    .remove-dialog-description = Bunu başlangıç uygulamalarından kaldırmak istediğinize emin misiniz?
-    .search-for-application = Uygulama ara
+    .remove-dialog-title = { $name } ögesi kaldırılsın mı?
+    .remove-dialog-description = Bu başlangıç uygulamasını kaldırmak ister misiniz?
+    .add-startup-app = Başlangıç uygulaması ekle
 
 ## Applications: Legacy Applications
 
-legacy-applications = X11 Uygulamaları Uyumluluğu
-    .desc = X11 Pencere sistemi uygulama ölçeklemesi ve Genel kısayollar.
+legacy-applications = X11 uygulamaları uyumluluğu
 legacy-app-global-shortcuts = X11 Uygulamalarında Genel Kısayollar
     .desc = Genel kısayollar bir uygulamda gerçekleştirilen fare ve klavye olaylarının diğer uygulamalar tarafından bas-konuş ve bas-sustur gibi özellikler için algılanmasını sağlar. Varsayılan olarak bu X11 uygulamalarında diğer uygulamaların hassas bilgiler içerebilen klavye ve fare olaylarını gözetlemesini engellemek için devre dışıdır.
     .none = Hiçbir tuş
@@ -776,7 +759,6 @@ system = Sistem & Hesaplar
 ## System: About
 
 about = Hakkında
-    .desc = Aygıt adı, donanım bilgisi, işletim sistemi varsayılanları.
 about-device = Aygıt adı
     .desc = Bu isim, bluetooth aygıtlara ve ağdaki diğer aygıtlara gözükür.
 about-hardware = Donanım
@@ -795,13 +777,11 @@ about-related = İlgili ayarlar
 
 ## System: Firmware
 
-firmware = Bellenim
-    .desc = Bellenim detayları.
+firmware = Cihaz yazılımı
 
 ## System: Users
 
 users = Kullanıcılar
-    .desc = Kimlik doğrulama ve kullanıcı hesapları.
     .admin = Yönetici
     .standard = Standart
     .profile-add = Profil resmi seçin
@@ -817,3 +797,116 @@ save = Kaydet
 amplification = Amplifikasyon
     .desc = Sesi %150'ye kadar yükseltmeye olanak tanır.
 add-another-keybinding = Başka bir tuş ataması ekle
+xdg-entry-mouse-keywords = COSMIC;Fare; Hızlanma; Kaydırma;
+xdg-entry-bluetooth-comment = Bluetooth cihazlarını yönetin
+xdg-entry-notifications-keywords = COSMIC;Bildirim;Kilit;
+xdg-entry-default-apps-comment = Varsayılan web tarayıcısı, e-posta istemcisi, dosya yöneticisi ve diğer uygulamalar
+xdg-entry-keyboard-comment = Giriş kaynakları, geçiş, özel karakter girişi, kısayollar
+xdg-entry-power = Güç & Pil
+xdg-entry-appearance-keywords = COSMIC;Vurgu;Renk;Simge;Yazı Tipi;Tema
+xdg-entry-mouse = Fare
+xdg-entry-dock-keywords = COSMIC;Dock;Panel;Eklenti
+xdg-entry-mouse-comment = Fare hızı, ivme ve doğal kaydırma
+xdg-entry-panel-keywords = COSMIC;Panel;Eklenti
+xdg-entry-a11y = Erişilebilirlik
+xdg-entry-desktop-keywords = COSMIC;Masaüstü;
+xdg-entry-displays-comment = Ekran yapılandırma ayarlarını yönetin
+xdg-entry-default-apps = Varsayılan Uygulamalar
+xdg-entry-applications-comment = Varsayılan uygulamalar, başlangıç uygulamaları ve X11 uygulama uyumluluk ayarları
+xdg-entry-about-keywords = COSMIC;Hakkında
+xdg-entry-panel = Panel
+xdg-entry-notifications = Bildirimler
+xdg-entry-a11y-keywords = COSMIC;Erişilebilirlik;A11y;Ekran;Okuyucu;Büyüteç;Kontrast;Renk;
+xdg-entry-desktop = Masaüstü
+xdg-entry-date-time-keywords = COSMIC;Saat;Zaman Dilimi;
+xdg-entry-desktop-comment = Duvar kağıdı, görünüm, panel, dock, pencere yönetimi ve çalışma alanı ayarları
+xdg-entry-keyboard = Klavye
+xdg-entry-a11y-comment = Ekran okuyucu, büyüteç, yüksek kontrast ve renk filtreleri
+xdg-entry-displays = Ekranlar
+xdg-entry-network = Ağ & Kablosuz
+xdg-entry-date-time = Tarih & Saat
+xdg-entry-input-comment = Klavye ve fare ayarları
+xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
+xdg-entry-dock-comment = Uygulamalar ve eklentiler için isteğe bağlı bir çubuk
+xdg-entry-network-keywords = COSMIC;Ağ;Kablosuz;WiFi;VPN;
+xdg-entry-dock = Dock
+xdg-entry-about-comment = Cihaz adı, donanım bilgileri, işletim sistemi varsayılan ayarları
+xdg-entry-appearance-comment = Vurgu renkleri ve tema
+xdg-entry-input-keywords = COSMIC;Giriş;Klavye;Fare;Fareler;
+xdg-entry-comment = COSMIC masaüstü için ayarlar uygulaması
+xdg-entry-notifications-comment = Rahatsız Etme modu, kilit ekranı bildirimleri ve uygulama bazlı ayarlar
+xdg-entry-applications = Uygulamalar
+xdg-entry-default-apps-keywords = COSMIC;Varsayılan;Uygulama
+xdg-entry-keywords = COSMIC;Ayarlar;
+xdg-entry-about = Hakkında
+xdg-entry-input = Giriş Cihazları
+xdg-entry-applications-keywords = COSMIC;Varsayılan;Uygulama;Başlangıç;X11;Uyumluluk
+xdg-entry-keyboard-keywords = COSMIC;Klavye;Giriş;Kaynak;Kısayollar;
+xdg-entry-appearance = Görünüm
+xdg-entry-network-comment = Ağ bağlantılarını yönetin
+xdg-entry-panel-comment = Menüler ve eklentiler için birincil sistem çubuğu
+xdg-entry-power-comment = Güç modları ve güç tasarrufu seçenekleri
+xdg-entry-displays-keywords = COSMIC;Ekran;
+xdg-entry-date-time-comment = Saat dilimi, otomatik saat ayarları ve zaman biçimlendirme
+xdg-entry-touchpad = Dokunmatik yüzey
+xdg-entry-wired = Kablolu
+xdg-entry-startup-apps-comment = Oturum açıldığında çalışan uygulamaları yapılandırın
+xdg-entry-region-language = Bölge & Dil
+xdg-entry-startup-apps-keywords = COSMIC;Başlangıç;Uygulama;
+xdg-entry-wired-keywords = COSMIC;Kablolu; Yerel Ağ; Ağ; Bağlantı;
+xdg-entry-system = Sistem & Hesaplar
+xdg-entry-window-management = Pencere Yönetimi
+xdg-entry-time-language-comment = Sistem tarihini, saatini, bölgesini ve dilini yönetin
+xdg-entry-x11-applications-keywords = COSMIC;X11;Uygulama;Oyun;Uyumluluk;
+xdg-entry-touchpad-keywords = COSMIC;Dokunmatik yüzey; Hareket;
+xdg-entry-time-language = Zaman & Dil
+xdg-entry-users = Kullanıcılar
+xdg-entry-system-keywords = COSMIC;Sistem;Bilgi;Hesaplar;Cihaz Yazılımı;
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Ağ; Bağlantı;
+xdg-entry-wireless-comment = Wi-Fi bağlantıları ve bağlantı profilleri
+xdg-entry-wallpaper = Duvar Kağıdı
+xdg-entry-users-comment = Kimlik doğrulama ve kullanıcı hesapları
+xdg-entry-wallpaper-comment = Duvar kağıdı resimleri, renkleri ve slayt gösterisi seçenekleri
+xdg-entry-startup-apps = Başlangıç Uygulamaları
+xdg-entry-wireless = Wi-Fi
+xdg-entry-workspaces-keywords = COSMIC;Çalışma Alanı; Yönlendirme; Genel Bakış; Monitör;
+xdg-entry-system-comment = Sistem bilgileri, hesaplar ve cihaz yazılımı güncellemeleri
+xdg-entry-x11-applications-comment = X11 pencere sistemi uygulama ölçeklendirmesi, birincil ekran ve genel kısayollar
+xdg-entry-region-language-comment = Tarihleri, saatleri ve sayıları bölgenize göre biçimlendirin
+xdg-entry-wallpaper-keywords = COSMIC;Duvar kağıdı; Arka plan; Slayt gösterisi;
+xdg-entry-users-keywords = COSMIC;Kullanıcı;Hesap;
+xdg-entry-vpn-keywords = COSMIC;VPN;Ağ;Bağlantı;OpenVPN;OpenConnect;
+xdg-entry-time-language-keywords = COSMIC;Sistem;Saat;Tarih;Bölge;Dil;
+xdg-entry-sound-keywords = COSMIC;Ses;Sesli;Uyarı;Kablolu Sistem;
+xdg-entry-power-keywords = COSMIC;Güç;Pil
+xdg-entry-region-language-keywords = COSMIC;Bölge;Dil;Tarih;Biçim;Saat;Yerel Ayar;Yerelleştirme;
+xdg-entry-sound-comment = Cihazlar, uyarılar ve uygulamalar için ses ayarları
+xdg-entry-touchpad-comment = Dokunmatik yüzey hızı, tıklama seçenekleri ve hareketler
+xdg-entry-vpn-comment = VPN bağlantıları ve bağlantı profilleri
+xdg-entry-window-management-keywords = COSMIC;Pencere;Yönetim;Döşeme;Süper;Anahtar;
+xdg-entry-workspaces-comment = Çalışma alanı yönlendirmesi, genel bakış ve çoklu monitör davranışı
+xdg-entry-sound = Ses
+xdg-entry-workspaces = Çalışma Alanları
+xdg-entry-x11-applications = X11 Uygulamaları Uyumluluğu
+xdg-entry-window-management-comment = Süper tuş işlevi, pencere kontrol seçenekleri ve ek pencere döşeme seçenekleri
+xdg-entry-wired-comment = Kablolu bağlantılar ve bağlantı profilleri
+place-here = Eklentileri buraya yerleştir
+sound-usb-audio = USB Ses
+sound-device-profiles = Cihaz profilleri
+sound-hd-audio = HD Ses
+qr-code-unavailable = QR kodu mevcut değil.
+shadow-and-corners = Pencere gölgesi ve köşeler
+workspaces-overview = Çalışma alanlarına genel bakış
+    .action-on-typing = Yazma işlemi
+    .none = Hiçbiri
+    .launcher = Başlatıcıyı Aç
+    .applications = Uygulamaları Aç
+network-name = Ağ Adı
+shadows-tiling = Döşemeli pencereler
+    .clip = Sistem köşelerini eşleştir
+    .shadow = Gölgeler uygula
+shadows-floating = Kayan pencereler
+    .clip = Sistem köşelerini eşleştirin ve gölgeleri uygulayın
+share = Ağı paylaş
+sound-device-port-unplugged = Takılı değil
+scan-to-connect-description = Bu ağa bağlanmak için QR kodunu tarayın.
