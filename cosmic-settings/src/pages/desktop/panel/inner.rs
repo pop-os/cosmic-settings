@@ -1,7 +1,7 @@
 use cosmic::{
     Element, Task,
     cctk::sctk::reexports::client::{Proxy, backend::ObjectId, protocol::wl_output::WlOutput},
-    cosmic_config::{self, CosmicConfigEntry},
+    cosmic_config::{self, ConfigGet, CosmicConfigEntry},
     cosmic_theme::Density,
     iced::{Alignment, Length},
     surface, theme,
@@ -21,6 +21,13 @@ use slab::Slab;
 use std::{collections::HashMap, time::Duration};
 
 use crate::pages::desktop::appearance::Roundness;
+
+const LENGTH_PERCENT_MIN: i32 = 0;
+const LENGTH_PERCENT_MAX: i32 = 100;
+const POSITION_PERCENT_MIN: i32 = 0;
+const POSITION_PERCENT_MAX: i32 = 100;
+const CORNER_RADIUS_MIN: i32 = 0;
+const CORNER_RADIUS_MAX: i32 = 160;
 
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
@@ -89,6 +96,14 @@ pub trait PanelPage {
     fn gap_label(&self) -> String;
 
     fn extend_label(&self) -> String;
+
+    fn custom_length_label(&self) -> String;
+
+    fn length_label(&self) -> String;
+
+    fn position_label(&self) -> String;
+
+    fn corner_radius_label(&self) -> String;
 
     fn configure_applets_label(&self) -> String;
 
@@ -165,9 +180,13 @@ pub(crate) fn style<
 
     let gap_label = descriptions.insert(p.gap_label());
     let extend_label = descriptions.insert(p.extend_label());
+    let custom_length_label = descriptions.insert(p.custom_length_label());
     let appearance = descriptions.insert(fl!("panel-style", "appearance"));
     let background_opacity = descriptions.insert(fl!("panel-style", "background-opacity"));
     let size = descriptions.insert(fl!("panel-style", "size"));
+    let length_label = descriptions.insert(p.length_label());
+    let position_label = descriptions.insert(p.position_label());
+    let corner_radius_label = descriptions.insert(p.corner_radius_label());
 
     Section::default()
         .title(fl!("panel-style"))
@@ -178,6 +197,42 @@ pub(crate) fn style<
             let Some(panel_config) = inner.panel_config.as_ref() else {
                 return Element::from(text::body(fl!("unknown")));
             };
+            let custom_length_enabled = inner
+                .config_helper
+                .as_ref()
+                .and_then(|helper| helper.get::<bool>("dock_custom_length").ok())
+                .unwrap_or(false);
+            let extend_effective = panel_config.expand_to_edges && !custom_length_enabled;
+            let length_override = inner
+                .config_helper
+                .as_ref()
+                .and_then(|helper| helper.get::<Option<u16>>("dock_length_percent").ok())
+                .flatten();
+            let length_percent = length_override
+                .map(|value| value.clamp(0, 100))
+                .unwrap_or(0)
+                .clamp(LENGTH_PERCENT_MIN as u16, LENGTH_PERCENT_MAX as u16)
+                as i32;
+            let position_override = inner
+                .config_helper
+                .as_ref()
+                .and_then(|helper| helper.get::<Option<u16>>("dock_position_percent").ok())
+                .flatten();
+            let position_percent = position_override
+                .map(|value| value.clamp(0, 100))
+                .unwrap_or(50)
+                .clamp(POSITION_PERCENT_MIN as u16, POSITION_PERCENT_MAX as u16)
+                as i32;
+            let corner_radius_override = inner
+                .config_helper
+                .as_ref()
+                .and_then(|helper| helper.get::<Option<u16>>("dock_corner_radius").ok())
+                .flatten();
+            let corner_radius = corner_radius_override
+                .map(u32::from)
+                .unwrap_or(panel_config.border_radius)
+                .clamp(CORNER_RADIUS_MIN as u32, CORNER_RADIUS_MAX as u32)
+                as i32;
             settings::section()
                 .title(&section.title)
                 .add(settings::item(
@@ -186,7 +241,15 @@ pub(crate) fn style<
                 ))
                 .add(settings::item(
                     &descriptions[extend_label],
-                    toggler(panel_config.expand_to_edges).on_toggle(Message::ExtendToEdge),
+                    if custom_length_enabled {
+                        toggler(extend_effective)
+                    } else {
+                        toggler(extend_effective).on_toggle(Message::ExtendToEdge)
+                    },
+                ))
+                .add(settings::item(
+                    &descriptions[custom_length_label],
+                    toggler(custom_length_enabled).on_toggle(Message::CustomLength),
                 ))
                 .add(settings::item(
                     &descriptions[appearance],
@@ -235,6 +298,51 @@ pub(crate) fn style<
                         )
                         .into(),
                         text::body(fl!("large")).into(),
+                    ])
+                    .align_y(Alignment::Center)
+                    .spacing(8),
+                ))
+                .add(settings::flex_item(
+                    &descriptions[corner_radius_label],
+                    row::with_children(vec![
+                        text::body(fl!("style", "square")).into(),
+                        slider(
+                            CORNER_RADIUS_MIN..=CORNER_RADIUS_MAX,
+                            corner_radius,
+                            |v| Message::CornerRadius(v as u16),
+                        )
+                        .into(),
+                        text::body(fl!("style", "round")).into(),
+                    ])
+                    .align_y(Alignment::Center)
+                    .spacing(8),
+                ))
+                .add(settings::flex_item(
+                    &descriptions[length_label],
+                    row::with_children(vec![
+                        text::body(fl!("auto")).into(),
+                        slider(
+                            LENGTH_PERCENT_MIN..=LENGTH_PERCENT_MAX,
+                            length_percent,
+                            |v| Message::LengthPercent(v as u16),
+                        )
+                        .into(),
+                        text::body("100%").into(),
+                    ])
+                    .align_y(Alignment::Center)
+                    .spacing(8),
+                ))
+                .add(settings::flex_item(
+                    &descriptions[position_label],
+                    row::with_children(vec![
+                        text::body(fl!("panel-left")).into(),
+                        slider(
+                            POSITION_PERCENT_MIN..=POSITION_PERCENT_MAX,
+                            position_percent,
+                            |v| Message::PositionPercent(v as u16),
+                        )
+                        .into(),
+                        text::body(fl!("panel-right")).into(),
                     ])
                     .align_y(Alignment::Center)
                     .spacing(8),
@@ -429,6 +537,10 @@ pub enum Message {
     PanelSize(PanelSize),
     Appearance(usize),
     ExtendToEdge(bool),
+    CustomLength(bool),
+    LengthPercent(u16),
+    PositionPercent(u16),
+    CornerRadius(u16),
     OpacityRequest(f32),
     OpacityApply,
     OutputAdded(String, WlOutput),
@@ -593,11 +705,15 @@ impl PageInner {
                 let theme = theme.cosmic();
                 let radius = theme.corner_radii;
                 let roundness: Roundness = radius.into();
+                let custom_length_enabled = helper
+                    .get::<bool>("dock_custom_length")
+                    .unwrap_or(false);
+                let effective_expand = panel_config.expand_to_edges && !custom_length_enabled;
                 let new_radius;
                 if enabled {
                     let radii = theme.corner_radii.radius_xl[0] as u32;
                     new_radius = radii;
-                } else if matches!(roundness, Roundness::Round) && !panel_config.expand_to_edges {
+                } else if matches!(roundness, Roundness::Round) && !effective_expand {
                     new_radius = 12;
                 } else {
                     new_radius = 0;
@@ -619,6 +735,12 @@ impl PageInner {
                 }
             }
             Message::ExtendToEdge(enabled) => {
+                let custom_length_enabled = helper
+                    .get::<bool>("dock_custom_length")
+                    .unwrap_or(false);
+                if custom_length_enabled {
+                    return Task::none();
+                }
                 _ = panel_config.set_expand_to_edges(helper, enabled);
 
                 let theme = cosmic::theme::system_preference();
@@ -635,6 +757,52 @@ impl PageInner {
                     new_radius = 0;
                 }
                 _ = panel_config.set_border_radius(helper, new_radius).unwrap();
+            }
+            Message::CustomLength(enabled) => {
+                if enabled && panel_config.expand_to_edges {
+                    _ = panel_config.set_expand_to_edges(helper, false);
+                }
+                if let Err(err) = helper.set("dock_custom_length", enabled) {
+                    tracing::error!(?err, "Failed to update custom length.");
+                }
+
+                let theme = cosmic::theme::system_preference();
+                let theme = theme.cosmic();
+                let radius = theme.corner_radii;
+                let roundness: Roundness = radius.into();
+                let effective_expand = panel_config.expand_to_edges && !enabled;
+                let new_radius;
+                if panel_config.anchor_gap {
+                    let radii = theme.corner_radii.radius_xl[0] as u32;
+                    new_radius = radii;
+                } else if matches!(roundness, Roundness::Round) && !effective_expand {
+                    new_radius = 12;
+                } else {
+                    new_radius = 0;
+                }
+                _ = panel_config.set_border_radius(helper, new_radius).unwrap();
+            }
+            Message::LengthPercent(value) => {
+                let value =
+                    value.clamp(LENGTH_PERCENT_MIN as u16, LENGTH_PERCENT_MAX as u16);
+                let value = if value == 0 { None } else { Some(value) };
+                if let Err(err) = helper.set("dock_length_percent", value) {
+                    tracing::error!(?err, "Failed to update dock length percent.");
+                }
+            }
+            Message::PositionPercent(value) => {
+                let value = value
+                    .clamp(POSITION_PERCENT_MIN as u16, POSITION_PERCENT_MAX as u16);
+                if let Err(err) = helper.set("dock_position_percent", Some(value)) {
+                    tracing::error!(?err, "Failed to update dock position percent.");
+                }
+            }
+            Message::CornerRadius(value) => {
+                let value =
+                    value.clamp(CORNER_RADIUS_MIN as u16, CORNER_RADIUS_MAX as u16);
+                if let Err(err) = helper.set("dock_corner_radius", Some(value)) {
+                    tracing::error!(?err, "Failed to update corner radius.");
+                }
             }
             Message::OpacityRequest(opacity) => {
                 panel_config.opacity = opacity;

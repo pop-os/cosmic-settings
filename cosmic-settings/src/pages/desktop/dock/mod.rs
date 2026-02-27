@@ -108,6 +108,22 @@ impl PanelPage for Page {
         fl!("panel-style", "dock-extend")
     }
 
+    fn custom_length_label(&self) -> String {
+        format!("{} Custom Width", fl!("dock"))
+    }
+
+    fn length_label(&self) -> String {
+        format!("{} Width", fl!("dock"))
+    }
+
+    fn position_label(&self) -> String {
+        format!("{} Position", fl!("dock"))
+    }
+
+    fn corner_radius_label(&self) -> String {
+        format!("{} Corner radius", fl!("dock"))
+    }
+
     fn configure_applets_label(&self) -> String {
         fl!("panel-applets", "dock-desc")
     }
@@ -185,6 +201,7 @@ pub(crate) fn enable() -> Section<crate::pages::Message> {
                 .map(crate::pages::Message::Dock)
         })
 }
+
 // TODO cleanup
 impl page::Page<crate::pages::Message> for Page {
     #[allow(clippy::too_many_lines)]
