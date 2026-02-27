@@ -65,12 +65,12 @@ pub struct Model {
     device_ids: IntMap<NodeId, DeviceId>,
     node_names: IntMap<NodeId, String>,
     card_profile_devices: IntMap<NodeId, u32>,
-    node_route_indexes: IntMap<NodeId, i32>,
 
     device_names: IntMap<DeviceId, String>,
     device_profiles: IntMap<DeviceId, Vec<pipewire::Profile>>,
     active_profiles: IntMap<DeviceId, pipewire::Profile>,
-    device_routes: IntMap<DeviceId, Vec<pipewire::Route>>,
+    active_routes: IntMap<DeviceId, Vec<pipewire::Route>>,
+    routes: IntMap<DeviceId, Vec<pipewire::Route>>,
 
     /** Sink devices */
 
@@ -236,16 +236,17 @@ impl Model {
         let virtual_sink_name: Option<String> =
             if let Some(device) = self.device_ids.get(node_id).cloned() {
                 // Get route index of the selected node and apply it to the device.
-                if let Some((card_profile_device, route_index)) = self
-                    .card_profile_devices
-                    .get(node_id)
-                    .cloned()
-                    .zip(self.node_route_indexes.get(node_id).cloned())
+                if let Some(&card_profile_device) = self.card_profile_devices.get(node_id)
+                    && let Some(&device_id) = self.device_ids.get(node_id)
+                    && let Some(active_routes) = self.active_routes.get(device_id)
+                    && let Some(route) = active_routes
+                        .iter()
+                        .find(|r| r.device as u32 == card_profile_device)
                 {
                     self.pipewire_send(pipewire::Request::SetRoute(
                         device,
                         card_profile_device,
-                        route_index as u32,
+                        route.device as u32,
                     ));
                 }
 
@@ -313,16 +314,17 @@ impl Model {
         let virtual_source_name: Option<String> =
             if let Some(device) = self.device_ids.get(node_id).cloned() {
                 // Get route index of the selected node and apply it to the device.
-                if let Some((card_profile_device, route_index)) = self
-                    .card_profile_devices
-                    .get(node_id)
-                    .cloned()
-                    .zip(self.node_route_indexes.get(node_id).cloned())
+                if let Some(&card_profile_device) = self.card_profile_devices.get(node_id)
+                    && let Some(&device_id) = self.device_ids.get(node_id)
+                    && let Some(active_routes) = self.active_routes.get(device_id)
+                    && let Some(route) = active_routes
+                        .iter()
+                        .find(|r| r.device as u32 == card_profile_device)
                 {
                     self.pipewire_send(pipewire::Request::SetRoute(
                         device,
                         card_profile_device,
-                        route_index as u32,
+                        route.device as u32,
                     ));
                 }
 
@@ -487,7 +489,7 @@ impl Model {
                 }
             }
 
-            pipewire::Event::ActiveRoute(id, _index, route) => {
+            pipewire::Event::ActiveRoute(id, index, route) => {
                 tracing::debug!(
                     target: "sound",
                     "Device {id} active route changed to {}: {}",
@@ -496,6 +498,13 @@ impl Model {
                 );
 
                 self.update_device_route_name(&route, id);
+
+                let routes = self.active_routes.entry(id).or_default();
+                if routes.len() < index as usize + 1 {
+                    let additional = (index as usize + 1) - routes.capacity();
+                    routes.reserve_exact(additional);
+                    routes.extend(std::iter::repeat_n(pipewire::Route::default(), additional));
+                }
 
                 let (active_device, node_ids, set_default_node): (
                     Option<DeviceId>,
@@ -513,6 +522,8 @@ impl Model {
                         Self::set_default_source_id,
                     ),
                 };
+
+                routes[index as usize] = route;
 
                 if active_device == Some(id) {
                     for (node_id, &device) in &self.device_ids {
@@ -674,8 +685,6 @@ impl Model {
     }
 
     fn add_route(&mut self, id: DeviceId, index: u32, route: pipewire::Route) {
-        self.update_device_route_name(&route, id);
-
         tracing::debug!(target: "sound",
             "Device {} added route {} ({:?}); {:?}",
             id,
@@ -684,7 +693,7 @@ impl Model {
             route.available
         );
 
-        let routes = self.device_routes.entry(id).or_default();
+        let routes = self.routes.entry(id).or_default();
         if routes.len() < index as usize + 1 {
             let additional = (index as usize + 1) - routes.capacity();
             routes.reserve_exact(additional);
@@ -706,7 +715,8 @@ impl Model {
         _ = self.device_names.remove(id);
         _ = self.device_profiles.remove(id);
         _ = self.active_profiles.remove(id);
-        _ = self.device_routes.remove(id);
+        _ = self.routes.remove(id);
+        _ = self.active_routes.remove(id);
     }
 
     fn remove_node(&mut self, id: NodeId) {
@@ -775,37 +785,16 @@ impl Model {
         };
 
         for (pos, &node) in node_ids.iter().enumerate() {
-            let Some(&device) = self.device_ids.get(node) else {
-                continue;
-            };
-
-            if device != id {
-                continue;
+            if let Some(&device) = self.device_ids.get(node)
+                && device == id
+                && let Some(&card_profile_id) = self.card_profile_devices.get(node)
+                && card_profile_id == route.device as u32
+                && let Some(device_name) = self.device_names.get(id)
+            {
+                tracing::debug!(target: "sound", "matched route {} on {}: {}", route.index, id, route.description);
+                devices[pos] = [&route.description, " - ", device_name].concat();
+                break;
             }
-
-            let Some(profile) = self.active_profiles.get(id) else {
-                continue;
-            };
-
-            if !profile.name.starts_with("pro-audio") {
-                let Some(&card_profile_device) = self.card_profile_devices.get(node) else {
-                    continue;
-                };
-
-                if !route.devices.contains(&(card_profile_device as i32)) {
-                    continue;
-                }
-            }
-
-            let Some(device_name) = self.device_names.get(id) else {
-                continue;
-            };
-
-            tracing::debug!(target: "sound", "matched route {} on {}: {}", route.index, id, route.description);
-            devices[pos] = [&route.description, " - ", device_name].concat();
-            self.node_route_indexes.insert(node, route.index);
-
-            break;
         }
     }
 
