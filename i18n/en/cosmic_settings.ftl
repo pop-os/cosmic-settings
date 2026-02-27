@@ -414,6 +414,31 @@ shadow-and-corners = Window shadow and corners
 ## Desktop: Notifications
 
 notifications = Notifications
+    .desc = Do Not Disturb, lockscreen notifications, and per-application settings
+    .appearance = Appearance
+
+    .anchor = Anchor
+    .anchor-desc = Screen location to display notification
+    .anchor-top = Top
+    .anchor-bottom = Bottom
+    .anchor-right = Right
+    .anchor-left = Left
+    .anchor-top-left = Top left
+    .anchor-top-right = Top right
+    .anchor-bottom-left = Bottom left
+    .anchor-bottom-right = Bottom right
+
+    .timeout = Timeout
+    .max = Maximum notifications
+    .max-desc = Maximum number of notifications that can be displayed at once
+    .max-per-app = Maximum notifications per app
+    .max-per-app-desc = Maximum number of notifications that can be displayed per app if not urgent nor constrained by "maximum notifications"
+    .max-timeout-urgent = Maximum timeout (Urgent)
+    .max-timeout-urgent-desc = Max time in milliseconds that an urgent notification will be displayed
+    .max-timeout-normal = Maximum timeout (Normal)
+    .max-timeout-normal-desc = Max time in milliseconds that a normal notification will be displayed
+    .max-timeout-low = Maximum timeout (Low)
+    .max-timeout-low-desc = Max time in milliseconds that a low priority notification will be displayed
 
 ## Desktop: Panel
 
