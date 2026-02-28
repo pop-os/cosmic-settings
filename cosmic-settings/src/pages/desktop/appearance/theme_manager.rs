@@ -355,6 +355,10 @@ impl Manager {
     }
 
     pub fn set_gap_size(&mut self, gap: u32) -> Option<ThemeStaged> {
+        let active_hint = self.builder().active_hint;
+        if gap < active_hint {
+            self.set_active_hint(gap)?;
+        }
         self.dark.set_gap_size(gap)?;
         self.light.set_gap_size(gap)?;
         Some(ThemeStaged::Both)

@@ -851,7 +851,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         "gaps",
                         page.theme_manager.builder().gaps.1,
                         1,
-                        page.theme_manager.builder().active_hint,
+                        0,
                         500,
                         Message::GapSize,
                     )),
