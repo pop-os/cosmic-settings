@@ -23,6 +23,7 @@ pub enum Message {
     DisableWhileTyping(bool, bool),
     PrimaryButtonSelected(cosmic::widget::segmented_button::Entity, bool),
     SetAcceleration(bool, bool),
+    SetMiddleButtonEmulation(bool, bool),
     SetMouseSpeed(f64, bool),
     SetNaturalScroll(bool, bool),
     SetSecondaryClickBehavior(Option<ClickMethod>, bool),
@@ -122,6 +123,12 @@ impl Page {
                     conf.disable_while_typing = Some(disabled);
                 });
             }
+
+            Message::SetMiddleButtonEmulation(enabled, touchpad) => {
+                self.update_input(touchpad, |conf| {
+                    conf.middle_button_emulation = Some(enabled);
+                });
+            },
 
             Message::SetNaturalScroll(enabled, touchpad) => self.update_input(touchpad, |x| {
                 x.scroll_config
