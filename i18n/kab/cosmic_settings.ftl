@@ -1,0 +1,9 @@
+xdg-entry-a11y = Tuffart
+xdg-entry-about-keywords = COSMIC;Ɣef
+xdg-entry-a11y-keywords = Cosmic;Tuffart;A11y;Agdil;Ameɣri;Asemɣer;Agnil;Ini;
+xdg-entry-a11y-comment = Ameɣri n ugdil, asemɣer, agnil afellay, akked tistayin n yini
+xdg-entry-about-comment = Isem n yibenk, talɣut ɣef warrum akked iɣewwaṛen imezwar n unagraw n wammud
+xdg-entry-appearance-comment = Initen n uɣdebbu akked isental
+xdg-entry-keywords = COSMIC;Iɣewwaṛen;
+xdg-entry-about = Ɣef
+xdg-entry-appearance = Timeẓri
