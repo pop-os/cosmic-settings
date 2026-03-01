@@ -59,9 +59,9 @@ xdg-entry-wired = Tråndbunden anslutning
 xdg-entry-wired-comment = Trådbundna anslutningar och anslutningsprofiler
 xdg-entry-wireless-comment = Wi-Fi-anslutningar och anslutningsprofiler
 xdg-entry-workspaces = Arbetsytor
-xdg-entry-workspaces-comment = Arbetsytors orientering och beteende
+xdg-entry-workspaces-comment = Arbetsytors orientering, översikt, och beteende med flera skärmar
 xdg-entry-x11-applications = X11-programkompatibilitet
-xdg-entry-x11-applications-comment = Applikationsskalning för X11 fönstersystem och globala genvägar
+xdg-entry-x11-applications-comment = Applikationsskalning för fönstersystemet X11, primär bildskärm och globala genvägar
 
 ## Skrivbord
 
@@ -145,7 +145,7 @@ color = Färg
     .sidebar = Färgprofiler
     .temperature = Färgtemperatur
 display = Skärmar
-    .arrangement = Visningsarrangemang
+    .arrangement = Skärmplacering
     .arrangement-desc = Dra skärmar för att ordna om dem.
     .enable = Aktivera skärm
     .external = { $size } { $output } extern skärm
