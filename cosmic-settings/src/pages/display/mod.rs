@@ -18,7 +18,6 @@ use cosmic_randr_shell::{
 use cosmic_settings_page::{self as page, Section, section};
 use futures::SinkExt;
 use indexmap::Equivalent;
-use slab::Slab;
 use slotmap::{Key, SecondaryMap, SlotMap};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
@@ -1183,10 +1182,10 @@ impl Page {
 
 /// View for the display arrangement section.
 pub fn display_arrangement() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    _ = descriptions.insert(fl!("display", "arrangement"));
-    let display_arrangement_desc = descriptions.insert(fl!("display", "arrangement-desc"));
+    crate::slab!(descriptions {
+        _display_arrangement = fl!("display", "arrangement");
+        display_arrangement_desc = fl!("display", "arrangement-desc");
+    });
 
     Section::default()
         .title(fl!("display", "arrangement"))
@@ -1227,18 +1226,18 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
 
 /// View for the display configuration section.
 pub fn display_configuration() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let _display = descriptions.insert(fl!("display"));
-    let refresh_rate = descriptions.insert(fl!("display", "refresh-rate"));
-    let vrr = descriptions.insert(fl!("vrr"));
-    let resolution = descriptions.insert(fl!("display", "resolution"));
-    let scale = descriptions.insert(fl!("display", "scale"));
-    let additional_scale_options = descriptions.insert(fl!("display", "additional-scale-options"));
-    let orientation = descriptions.insert(fl!("orientation"));
-    let enable_label = descriptions.insert(fl!("display", "enable"));
-    let options_label = descriptions.insert(fl!("display", "options"));
-    let mirroring_label = descriptions.insert(fl!("mirroring"));
+    crate::slab!(descriptions {
+        _display = fl!("display");
+        refresh_rate = fl!("display", "refresh-rate");
+        vrr = fl!("vrr");
+        resolution = fl!("display", "resolution");
+        scale = fl!("display", "scale");
+        additional_scale_options = fl!("display", "additional-scale-options");
+        orientation = fl!("orientation");
+        enable_label = fl!("display", "enable");
+        options_label = fl!("display", "options");
+        mirroring_label = fl!("mirroring");
+    });
 
     Section::default()
         .descriptions(descriptions)

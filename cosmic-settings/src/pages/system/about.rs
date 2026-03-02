@@ -6,7 +6,6 @@ use cosmic_settings_page::{self as page, Section, section};
 use super::info::Info;
 use cosmic::widget::{editable_input, list_column, settings, text};
 use cosmic::{Apply, Task};
-use slab::Slab;
 use slotmap::SlotMap;
 
 #[derive(Clone, Debug)]
@@ -162,10 +161,10 @@ async fn set_hostname_impl(hostname: &str) -> Result<(), String> {
 }
 
 fn device() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let device = descriptions.insert(fl!("about-device"));
-    let device_desc = descriptions.insert(fl!("about-device", "desc"));
+    crate::slab!(descriptions {
+        device = fl!("about-device");
+        device_desc = fl!("about-device", "desc");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -195,13 +194,13 @@ fn device() -> Section<crate::pages::Message> {
 }
 
 fn hardware() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let model = descriptions.insert(fl!("about-hardware", "model"));
-    let memory = descriptions.insert(fl!("about-hardware", "memory"));
-    let processor = descriptions.insert(fl!("about-hardware", "processor"));
-    let graphics = descriptions.insert(fl!("about-hardware", "graphics"));
-    let disk_capacity = descriptions.insert(fl!("about-hardware", "disk-capacity"));
+    crate::slab!(descriptions {
+        model = fl!("about-hardware", "model");
+        memory = fl!("about-hardware", "memory");
+        processor = fl!("about-hardware", "processor");
+        graphics = fl!("about-hardware", "graphics");
+        disk_capacity = fl!("about-hardware", "disk-capacity");
+    });
 
     Section::default()
         .title(fl!("about-hardware"))
@@ -241,13 +240,13 @@ fn hardware() -> Section<crate::pages::Message> {
 }
 
 fn os() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let os = descriptions.insert(fl!("about-os", "os"));
-    let os_arch = descriptions.insert(fl!("about-os", "os-architecture"));
-    let kernel = descriptions.insert(fl!("about-os", "kernel"));
-    let desktop = descriptions.insert(fl!("about-os", "desktop-environment"));
-    let windowing_system = descriptions.insert(fl!("about-os", "windowing-system"));
+    crate::slab!(descriptions {
+        os = fl!("about-os", "os");
+        os_arch = fl!("about-os", "os-architecture");
+        kernel = fl!("about-os", "kernel");
+        desktop = fl!("about-os", "desktop-environment");
+        windowing_system = fl!("about-os", "windowing-system");
+    });
 
     Section::default()
         .title(fl!("about-os"))

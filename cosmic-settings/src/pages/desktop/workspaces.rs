@@ -13,7 +13,6 @@ use cosmic::{
 use cosmic_comp_config::workspace::{Action, WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
-use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -164,9 +163,9 @@ fn into_action(value: usize) -> Action {
 }
 
 pub fn action_on_typing() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let action_on_typing = descriptions.insert(fl!("workspaces-overview", "action-on-typing"));
+    crate::slab!(descriptions {
+        action_on_typing = fl!("workspaces-overview", "action-on-typing");
+    });
 
     Section::default()
         .title(fl!("workspaces-overview"))
@@ -198,10 +197,10 @@ pub fn action_on_typing() -> Section<crate::pages::Message> {
 }
 
 fn multi_behavior() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let span = descriptions.insert(fl!("workspaces-multi-behavior", "span"));
-    let separate = descriptions.insert(fl!("workspaces-multi-behavior", "separate"));
+    crate::slab!(descriptions {
+        span = fl!("workspaces-multi-behavior", "span");
+        separate = fl!("workspaces-multi-behavior", "separate");
+    });
 
     Section::default()
         .title(fl!("workspaces-multi-behavior"))
@@ -236,10 +235,10 @@ fn multi_behavior() -> Section<crate::pages::Message> {
 }
 
 fn workspace_orientation() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let vertical = descriptions.insert(fl!("workspaces-orientation", "vertical"));
-    let horizontal = descriptions.insert(fl!("workspaces-orientation", "horizontal"));
+    crate::slab!(descriptions {
+        vertical = fl!("workspaces-orientation", "vertical");
+        horizontal = fl!("workspaces-orientation", "horizontal");
+    });
 
     Section::default()
         .title(fl!("workspaces-orientation"))

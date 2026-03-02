@@ -14,7 +14,6 @@ use cosmic_settings_page::{self as page, Section, section};
 use image::GenericImageView;
 use pwhash::{bcrypt, md5_crypt, sha256_crypt, sha512_crypt};
 use regex::Regex;
-use slab::Slab;
 use slotmap::SlotMap;
 use std::{
     collections::HashMap,
@@ -777,10 +776,10 @@ impl Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn user_list() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let user_type_standard = descriptions.insert(fl!("users", "standard"));
-    let user_type_admin = descriptions.insert(fl!("users", "admin"));
+    crate::slab!(descriptions {
+        user_type_standard = fl!("users", "standard");
+        user_type_admin = fl!("users", "admin");
+    });
 
     Section::default()
         .descriptions(descriptions)
