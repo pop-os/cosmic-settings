@@ -889,6 +889,6 @@ xdg-entry-region-language-keywords = COSMIC;Region;Oblast;Jazyk;Datum;Formát;Č
 xdg-entry-applications-keywords = COSMIC;Výchozí;Aplikace;Automatické;Spuštění;Spouštění;X11;Kompatibilita;
 xdg-entry-keyboard-keywords = COSMIC;Klávesnice;Vstup;Zdroj;Zdroje;Metoda;Metody;Zkratky;
 xdg-entry-window-management-keywords = COSMIC;Okno;Okna;Správa;Dlaždicový režim;Super;Klávesa;
-xdg-entry-displays-keywords = COSMIC;Obrazovka;Obrazovky;Displej;Displeje;Monitor;Monitory;Zobrazení;Rozlišení;Měřítko;Škálování;Orientace;
+xdg-entry-displays-keywords = COSMIC;Obrazovka;Obrazovky;Displeje;Monitory;Zobrazení;Rozlišení;Měřítko;Škálování;Orientace;Obnovovací frekvence;Variabilní;VRR;
 xdg-entry-workspaces-keywords = COSMIC;Pracovní;Plocha;Plochy;Orientace;Přehled;Sledování;
 xdg-entry-x11-applications-keywords = COSMIC;X11;Aplikace;Hra;Hry;Kompatibilita;
