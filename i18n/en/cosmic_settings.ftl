@@ -43,7 +43,7 @@ xdg-entry-desktop-keywords = COSMIC;Desktop;
 
 xdg-entry-displays = Displays
 xdg-entry-displays-comment = Manage display configuration settings
-xdg-entry-displays-keywords = COSMIC;Display;
+xdg-entry-displays-keywords = COSMIC;Display;Screen;Monitor;Resolution;Scale;Scaling;Orientation;Refresh;Variable;VRR;
 
 xdg-entry-dock = Dock
 xdg-entry-dock-comment = An optional bar for apps and applets
