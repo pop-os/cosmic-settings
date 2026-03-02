@@ -16,7 +16,6 @@ use cosmic::{
 use cosmic_comp_config::{KeyboardConfig, NumlockState, XkbConfig};
 use cosmic_settings_page::{self as page, Section, section};
 use itertools::Itertools;
-use slab::Slab;
 use slotmap::{DefaultKey, Key, SlotMap};
 
 static COMPOSE_OPTIONS: &[(&str, &str)] = &[
@@ -727,11 +726,11 @@ fn input_sources() -> Section<crate::pages::Message> {
 }
 
 fn special_character_entry() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let alternate = descriptions.insert(fl!("keyboard-special-char", "alternate"));
-    let compose = descriptions.insert(fl!("keyboard-special-char", "compose"));
-    let caps = descriptions.insert(fl!("keyboard-special-char", "caps"));
+    crate::slab!(descriptions {
+        alternate = fl!("keyboard-special-char", "alternate");
+        compose = fl!("keyboard-special-char", "compose");
+        caps = fl!("keyboard-special-char", "caps");
+    });
 
     Section::default()
         .title(fl!("keyboard-special-char"))
@@ -759,9 +758,9 @@ fn special_character_entry() -> Section<crate::pages::Message> {
 }
 
 fn keyboard_shortcuts() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let shortcuts_desc = descriptions.insert(fl!("keyboard-shortcuts", "desc"));
+    crate::slab!(descriptions {
+        shortcuts_desc = fl!("keyboard-shortcuts", "desc");
+    });
 
     Section::default()
         .title(fl!("keyboard-shortcuts"))
@@ -785,14 +784,14 @@ fn keyboard_shortcuts() -> Section<crate::pages::Message> {
 }
 
 fn keyboard_typing_assist() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let repeat_delay = descriptions.insert(fl!("keyboard-typing-assist", "repeat-delay"));
-    let repeat_rate = descriptions.insert(fl!("keyboard-typing-assist", "repeat-rate"));
-    let short = descriptions.insert(fl!("short"));
-    let long = descriptions.insert(fl!("long"));
-    let slow = descriptions.insert(fl!("slow"));
-    let fast = descriptions.insert(fl!("fast"));
+    crate::slab!(descriptions {
+        repeat_delay = fl!("keyboard-typing-assist", "repeat-delay");
+        repeat_rate = fl!("keyboard-typing-assist", "repeat-rate");
+        short = fl!("short");
+        long = fl!("long");
+        slow = fl!("slow");
+        fast = fl!("fast");
+    });
 
     Section::default()
         .title(fl!("keyboard-typing-assist"))
@@ -848,9 +847,9 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
 }
 
 fn keyboard_num_lock() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let boot_state = descriptions.insert(fl!("keyboard-numlock-boot", "boot-state"));
+    crate::slab!(descriptions {
+        boot_state = fl!("keyboard-numlock-boot", "boot-state");
+    });
 
     Section::default()
         .title(fl!("keyboard-numlock-boot"))

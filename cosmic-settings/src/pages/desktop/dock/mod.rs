@@ -8,7 +8,6 @@ use cosmic::{
 };
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, Section, section};
-use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -158,9 +157,9 @@ impl Default for Page {
 }
 
 pub(crate) fn enable() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let dock = descriptions.insert(fl!("dock"));
+    crate::slab!(descriptions {
+        dock = fl!("dock");
+    });
 
     Section::default()
         .descriptions(descriptions)

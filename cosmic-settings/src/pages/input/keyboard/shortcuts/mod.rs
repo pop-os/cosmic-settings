@@ -405,28 +405,31 @@ impl Search {
                 self.localized[*id].to_lowercase().contains(&input)
                     || shortcut_search_actions.contains(action)
             })
-            .fold(Slab::new(), |mut slab, (_, action)| {
-                slab.insert(ShortcutModel::new(
-                    &self.defaults,
-                    &self.shortcuts,
-                    action.clone(),
-                ));
+            .fold(
+                Slab::with_capacity(self.actions.len()),
+                |mut slab, (_, action)| {
+                    slab.insert(ShortcutModel::new(
+                        &self.defaults,
+                        &self.shortcuts,
+                        action.clone(),
+                    ));
 
-                slab
-            })
+                    slab
+                },
+            )
     }
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let accessibility = descriptions.insert(fl!("accessibility"));
-    let custom_label = descriptions.insert(fl!("custom"));
-    let manage_window_label = descriptions.insert(fl!("manage-windows"));
-    let move_window_label = descriptions.insert(fl!("move-windows"));
-    let nav_label = descriptions.insert(fl!("nav-shortcuts"));
-    let system_label = descriptions.insert(fl!("system-shortcut"));
-    let window_tiling_label = descriptions.insert(fl!("window-tiling"));
+    crate::slab!(descriptions {
+        accessibility = fl!("accessibility");
+        custom_label = fl!("custom");
+        manage_window_label = fl!("manage-windows");
+        move_window_label = fl!("move-windows");
+        nav_label = fl!("nav-shortcuts");
+        system_label = fl!("system-shortcut");
+        window_tiling_label = fl!("window-tiling");
+    });
 
     Section::default()
         .descriptions(descriptions)

@@ -10,7 +10,6 @@ use cosmic_comp_config::input::{AccelProfile, ClickMethod, ScrollMethod};
 use cosmic_comp_config::workspace::{WorkspaceConfig, WorkspaceLayout};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
-use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -59,14 +58,14 @@ impl page::Page<crate::pages::Message> for Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn touchpad() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let primary_button = descriptions.insert(fl!("primary-button"));
-    let primary_button_desc = descriptions.insert(fl!("primary-button", "desc"));
-    let touchpad_speed = descriptions.insert(fl!("touchpad", "speed"));
-    let acceleration = descriptions.insert(fl!("touchpad", "acceleration"));
-    let acceleration_desc = descriptions.insert(fl!("acceleration-desc"));
-    let disable_while_typing = descriptions.insert(fl!("disable-while-typing"));
+    crate::slab!(descriptions {
+        primary_button = fl!("primary-button");
+        primary_button_desc = fl!("primary-button", "desc");
+        touchpad_speed = fl!("touchpad", "speed");
+        acceleration = fl!("touchpad", "acceleration");
+        acceleration_desc = fl!("acceleration-desc");
+        disable_while_typing = fl!("disable-while-typing");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -148,12 +147,12 @@ fn touchpad() -> Section<crate::pages::Message> {
 }
 
 fn click_behavior() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let click_finger = descriptions.insert(fl!("click-behavior", "click-finger"));
-    let button_areas = descriptions.insert(fl!("click-behavior", "button-areas"));
-    let tap_to_click = descriptions.insert(fl!("tap-to-click"));
-    let _tap_to_click_desc = descriptions.insert(fl!("tap-to-click", "desc"));
+    crate::slab!(descriptions {
+        click_finger = fl!("click-behavior", "click-finger");
+        button_areas = fl!("click-behavior", "button-areas");
+        tap_to_click = fl!("tap-to-click");
+        _tap_to_click_desc = fl!("tap-to-click", "desc");
+    });
 
     Section::default()
         .title(fl!("click-behavior"))
@@ -203,13 +202,13 @@ fn click_behavior() -> Section<crate::pages::Message> {
 }
 
 fn scrolling() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let edge = descriptions.insert(fl!("scrolling", "edge"));
-    let natural = descriptions.insert(fl!("scrolling", "natural"));
-    let natural_desc = descriptions.insert(fl!("scrolling", "natural-desc"));
-    let scroll_speed = descriptions.insert(fl!("scrolling", "speed"));
-    let two_finger = descriptions.insert(fl!("scrolling", "two-finger"));
+    crate::slab!(descriptions {
+        edge = fl!("scrolling", "edge");
+        natural = fl!("scrolling", "natural");
+        natural_desc = fl!("scrolling", "natural-desc");
+        scroll_speed = fl!("scrolling", "speed");
+        two_finger = fl!("scrolling", "two-finger");
+    });
 
     Section::default()
         .title(fl!("scrolling"))
@@ -298,7 +297,11 @@ fn scrolling() -> Section<crate::pages::Message> {
 }
 
 fn gestures() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
+    crate::slab!(descriptions {
+        switch_workspaces = fl!("switch-workspaces");
+        switch_workspaces_horizontal = fl!("switch-workspaces", "horizontal");
+        switch_workspaces_vertical = fl!("switch-workspaces", "vertical");
+    });
 
     // let four_finger_down = descriptions.insert(fl!("gestures", "four-finger-down"));
     // let four_finger_left = descriptions.insert(fl!("gestures", "four-finger-left"));
@@ -309,10 +312,6 @@ fn gestures() -> Section<crate::pages::Message> {
     // let open_application_library = descriptions.insert(fl!("open-application-library"));
     // let open_workspaces_view = descriptions.insert(fl!("open-workspaces-view"));
     // let switch_between_windows = descriptions.insert(fl!("switch-between-windows"));
-
-    let switch_workspaces = descriptions.insert(fl!("switch-workspaces"));
-    let switch_workspaces_horizontal = descriptions.insert(fl!("switch-workspaces", "horizontal"));
-    let switch_workspaces_vertical = descriptions.insert(fl!("switch-workspaces", "vertical"));
 
     Section::default()
         .title(fl!("gestures"))

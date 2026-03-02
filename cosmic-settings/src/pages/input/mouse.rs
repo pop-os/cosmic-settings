@@ -7,7 +7,6 @@ use cosmic::{Apply, Element};
 use cosmic_comp_config::input::AccelProfile;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
-use slab::Slab;
 use slotmap::SlotMap;
 
 use super::Message;
@@ -48,12 +47,12 @@ impl page::Page<crate::pages::Message> for Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn mouse() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let mouse_acceleration = descriptions.insert(fl!("mouse", "acceleration"));
-    let mouse_speed = descriptions.insert(fl!("mouse", "speed"));
-    let primary_button = descriptions.insert(fl!("primary-button"));
-    let acceleration_desc = descriptions.insert(fl!("acceleration-desc"));
+    crate::slab!(descriptions {
+        mouse_acceleration = fl!("mouse", "acceleration");
+        mouse_speed = fl!("mouse", "speed");
+        primary_button = fl!("primary-button");
+        acceleration_desc = fl!("acceleration-desc");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -116,11 +115,11 @@ fn mouse() -> Section<crate::pages::Message> {
 }
 
 fn scrolling() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let natural = descriptions.insert(fl!("scrolling", "natural"));
-    let natural_desc = descriptions.insert(fl!("scrolling", "natural-desc"));
-    let scroll_speed = descriptions.insert(fl!("scrolling", "speed"));
+    crate::slab!(descriptions {
+        natural = fl!("scrolling", "natural");
+        natural_desc = fl!("scrolling", "natural-desc");
+        scroll_speed = fl!("scrolling", "speed");
+    });
 
     Section::default()
         .title(fl!("scrolling"))
