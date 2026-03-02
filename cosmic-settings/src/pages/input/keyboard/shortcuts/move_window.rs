@@ -16,10 +16,13 @@ impl Default for Page {
     fn default() -> Self {
         Self {
             model: super::Model::default().actions(|defaults, keybindings| {
-                actions().iter().fold(Slab::new(), |mut slab, action| {
-                    slab.insert(ShortcutModel::new(defaults, keybindings, action.clone()));
-                    slab
-                })
+                actions().iter().cloned().fold(
+                    Slab::with_capacity(actions().len()),
+                    |mut slab, action| {
+                        slab.insert(ShortcutModel::new(defaults, keybindings, action));
+                        slab
+                    },
+                )
             }),
         }
     }
@@ -116,7 +119,7 @@ pub const fn actions() -> &'static [Action] {
 }
 
 fn shortcuts() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
+    let mut descriptions = Slab::with_capacity(actions().len());
 
     // Make these searchable in the global settings search.
     for action in actions() {

@@ -490,9 +490,9 @@ fn connected_devices() -> Section<crate::pages::Message> {
 }
 
 fn profiles() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let _power_desc = descriptions.insert(fl!("xdg-entry-power-comment"));
+    crate::slab!(descriptions {
+        _power_desc = fl!("xdg-entry-power-comment");
+    });
 
     Section::default()
         .title(fl!("power-mode"))

@@ -12,7 +12,6 @@ use cosmic::{
 use cosmic_config::{Config, ConfigGet, ConfigSet};
 use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_sound_subscription as subscription;
-use slab::Slab;
 use slotmap::SlotMap;
 
 const AUDIO_CONFIG: &str = "com.system76.CosmicAudio";
@@ -251,13 +250,13 @@ impl Page {
 }
 
 fn input() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let volume = descriptions.insert(fl!("sound-input", "volume"));
-    let device = descriptions.insert(fl!("sound-input", "device"));
-    let _level = descriptions.insert(fl!("sound-input", "level"));
-    let amplification = descriptions.insert(fl!("amplification"));
-    let amplification_desc = descriptions.insert(fl!("amplification", "desc"));
+    crate::slab!(descriptions {
+        volume = fl!("sound-input", "volume");
+        device = fl!("sound-input", "device");
+        _level = fl!("sound-input", "level");
+        amplification = fl!("amplification");
+        amplification_desc = fl!("amplification", "desc");
+    });
 
     Section::default()
         .title(fl!("sound-input"))
@@ -328,17 +327,16 @@ fn input() -> Section<crate::pages::Message> {
 }
 
 fn output() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let volume = descriptions.insert(fl!("sound-output", "volume"));
-    let device = descriptions.insert(fl!("sound-output", "device"));
-    let _level = descriptions.insert(fl!("sound-output", "level"));
-    let balance = descriptions.insert(fl!("sound-output", "balance"));
-    let left = descriptions.insert(fl!("sound-output", "left"));
-    let right = descriptions.insert(fl!("sound-output", "right"));
-    // let balance = descriptions.insert(fl!("sound-output", "balance"));
-    let amplification = descriptions.insert(fl!("amplification"));
-    let amplification_desc = descriptions.insert(fl!("amplification", "desc"));
+    crate::slab!(descriptions {
+        volume = fl!("sound-output", "volume");
+        device = fl!("sound-output", "device");
+        _level = fl!("sound-output", "level");
+        balance = fl!("sound-output", "balance");
+        left = fl!("sound-output", "left");
+        right = fl!("sound-output", "right");
+        amplification = fl!("amplification");
+        amplification_desc = fl!("amplification", "desc");
+    });
 
     Section::default()
         .title(fl!("sound-output"))

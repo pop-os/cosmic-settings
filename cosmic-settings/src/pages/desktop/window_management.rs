@@ -13,7 +13,6 @@ use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{Action, Binding, Shortcuts, shortcuts};
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
-use slab::Slab;
 use slotmap::SlotMap;
 use tracing::error;
 
@@ -229,15 +228,14 @@ impl page::Page<crate::pages::Message> for Page {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 pub fn window_management() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let super_key = descriptions.insert(fl!("super-key"));
-    let _launcher = descriptions.insert(fl!("super-key", "launcher"));
-    let _workspaces = descriptions.insert(fl!("super-key", "workspaces"));
-    let _applications = descriptions.insert(fl!("super-key", "applications"));
-    let _disable = descriptions.insert(fl!("super-key", "disable"));
-
-    let edge_gravity = descriptions.insert(fl!("edge-gravity"));
+    crate::slab!(descriptions {
+        super_key = fl!("super-key");
+        _launcher = fl!("super-key", "launcher");
+        _workspaces = fl!("super-key", "workspaces");
+        _applications = fl!("super-key", "applications");
+        _disable = fl!("super-key", "disable");
+        edge_gravity = fl!("edge-gravity");
+    });
 
     Section::default()
         .descriptions(descriptions)
@@ -272,11 +270,11 @@ pub fn window_management() -> Section<crate::pages::Message> {
 }
 
 pub fn window_controls() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let maximize = descriptions.insert(fl!("window-controls", "maximize"));
-    let minimize = descriptions.insert(fl!("window-controls", "minimize"));
-    let active_window_hint = descriptions.insert(fl!("window-controls", "active-window-hint"));
+    crate::slab!(descriptions {
+        maximize = fl!("window-controls", "maximize");
+        minimize = fl!("window-controls", "minimize");
+        active_window_hint = fl!("window-controls", "active-window-hint");
+    });
 
     Section::default()
         .title(fl!("window-controls"))
@@ -304,12 +302,11 @@ pub fn window_controls() -> Section<crate::pages::Message> {
 }
 
 pub fn focus_navigation() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let focus_follows_cursor = descriptions.insert(fl!("focus-navigation", "focus-follows-cursor"));
-    let focus_follows_cursor_delay =
-        descriptions.insert(fl!("focus-navigation", "focus-follows-cursor-delay"));
-    let cursor_follows_focus = descriptions.insert(fl!("focus-navigation", "cursor-follows-focus"));
+    crate::slab!(descriptions {
+        focus_follows_cursor = fl!("focus-navigation", "focus-follows-cursor");
+        focus_follows_cursor_delay = fl!("focus-navigation", "focus-follows-cursor-delay");
+        cursor_follows_focus = fl!("focus-navigation", "cursor-follows-focus");
+    });
 
     Section::default()
         .title(fl!("focus-navigation"))
