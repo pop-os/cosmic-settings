@@ -31,7 +31,7 @@ xdg-entry-mouse-comment = Rychlost myši, zrychlení, přirozené rolování
 xdg-entry-network = Síť a Wi-Fi
 xdg-entry-network-comment = Správa síťových připojení
 xdg-entry-notifications = Oznámení
-xdg-entry-notifications-comment = Nerušit, oznámení na zamykací obrazovce a nastavení jednotlivých aplikací
+xdg-entry-notifications-comment = Režim Nerušit, oznámení na zamykací obrazovce a nastavení jednotlivých aplikací
 xdg-entry-panel-comment = Hlavní systémová lišta pro menu a applety
 xdg-entry-power = Napájení a baterie
 xdg-entry-power-comment = Režimy napájení a možnosti úspory energie
@@ -570,16 +570,16 @@ vrr = Variabilní obnovovací frekvence
 scheduling = Plánování
     .manual = Manuální plán
 dialog = Dialog
-    .title = Ponechat tato nastavení obrazovky?
+    .title = Ponechat toto nastavení obrazovky?
     .keep-changes = Ponechat změny
     .change-prompt =
-        Změny nastavení se automaticky zruší { $time ->
+        Původní nastavení se automaticky obnoví { $time ->
             [0] nyní.
             [one] za 1 sekundu.
             [few] za { $time } sekundy.
            *[other] za { $time } sekund.
         }
-    .revert-settings = Obnovit nastavení
+    .revert-settings = Obnovit původní
 amplification = Zesílení
     .desc = Umožňuje zesílit zvuk až na 150%
 power = Napájení a baterie

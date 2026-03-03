@@ -558,7 +558,7 @@ keyboard-numlock-boot = Num Lock
     .off = Kikapcsolva
     .set = Num Lock rendszerindítási állapotának beállítása
 added = Hozzáadva
-type-to-search = Írj a kereséshez…
+type-to-search = Gépelj a kereséshez…
 show-extended-input-sources = Bővített bemeneti források megjelenítése
 
 ## Input: Keyboard: Shortcuts
