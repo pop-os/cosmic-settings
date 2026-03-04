@@ -25,15 +25,16 @@ pub enum WallpaperEvent {
 }
 
 pub fn wallpapers(current_dir: PathBuf) -> cosmic::iced::Subscription<WallpaperEvent> {
-    Subscription::run_with_id(
-        current_dir.clone(),
-        stream::channel(2, |tx| async {
+    Subscription::run_with(current_dir, |current_dir: &PathBuf| {
+        let current_dir = current_dir.clone();
+        stream::channel(2, move |tx: Sender<WallpaperEvent>| async move {
+            let current_dir = current_dir.clone();
             if let Err(err) = inner(tx, current_dir).await {
                 tracing::error!("Wallpapers subscription error: {:?}", err);
             }
             future::pending().await
-        }),
-    )
+        })
+    })
 }
 
 async fn inner(tx: Sender<WallpaperEvent>, current_dir: PathBuf) -> anyhow::Result<()> {

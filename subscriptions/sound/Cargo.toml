@@ -19,3 +19,9 @@ tracing = { version = "0.1.44", default-features = false }
 [features]
 # Set profile on first load
 auto-profile-init = []
+
+[patch.'https://github.com/pop-os/libcosmic']
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
+cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
+cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "iced-rebase" }
