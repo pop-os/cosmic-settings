@@ -48,7 +48,7 @@ impl Device {
         let (address, adapter, alias) = join!(
             proxy.device.address(),
             proxy.device.adapter(),
-            proxy.device.name()
+            proxy.device.alias()
         );
         let address = address?;
         if address.is_empty() {
