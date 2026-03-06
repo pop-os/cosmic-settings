@@ -287,6 +287,7 @@ magnifier = Magnifier
     .show_overlay = Show the magnifier overlay
     .increment = Zoom increment
     .signin = Start magnifier on sign in
+    .smooth_images = Smooth images when zoomed
     .applet = Toggle magnifier on/off in applet on the panel
     .movement = Zoomed view moves
     .continuous = Continuously with pointer
