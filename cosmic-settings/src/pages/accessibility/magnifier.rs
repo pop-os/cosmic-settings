@@ -47,6 +47,7 @@ pub enum Message {
     SetIncrement(usize),
     SetSignin(bool),
     SetMovement(ZoomMovement),
+    SetSmoothImages(bool),
     Surface(surface::Action),
 }
 
@@ -204,6 +205,7 @@ pub fn magnifier(
         controls = fl!("magnifier", "controls", zoom_in = zoom_in, zoom_out = zoom_out);
         scroll_controls = fl!("magnifier", "scroll_controls");
         show_overlay = fl!("magnifier", "show_overlay");
+        smooth_images = fl!("magnifier", "smooth_images");
         increment = fl!("magnifier", "increment");
         signin = fl!("magnifier", "signin");
     });
@@ -231,6 +233,11 @@ pub fn magnifier(
                 .add(settings::item(
                     &descriptions[show_overlay],
                     widget::toggler(page.zoom_config.show_overlay).on_toggle(Message::SetOverlay),
+                ))
+                .add(settings::item(
+                    &descriptions[smooth_images],
+                    widget::toggler(page.zoom_config.smooth_images)
+                        .on_toggle(Message::SetSmoothImages),
                 ))
                 .add(settings::item(
                     &descriptions[increment],
@@ -358,6 +365,9 @@ impl Page {
                 if self.zoom_config.view_moves != comp_config.accessibility_zoom.view_moves {
                     self.zoom_config.view_moves = comp_config.accessibility_zoom.view_moves;
                 }
+                if self.zoom_config.smooth_images != comp_config.accessibility_zoom.smooth_images {
+                    self.zoom_config.smooth_images = comp_config.accessibility_zoom.smooth_images;
+                }
             }
             Message::Event(AccessibilityEvent::Magnifier(value)) => {
                 self.magnifier_state = value;
@@ -382,6 +392,16 @@ impl Page {
             }
             Message::SetOverlay(value) => {
                 self.zoom_config.show_overlay = value;
+
+                if let Err(err) = self
+                    .accessibility_config
+                    .set("accessibility_zoom", self.zoom_config)
+                {
+                    error!(?err, "Failed to set config 'accessibility_zoom'");
+                }
+            }
+            Message::SetSmoothImages(value) => {
+                self.zoom_config.smooth_images = value;
 
                 if let Err(err) = self
                     .accessibility_config
