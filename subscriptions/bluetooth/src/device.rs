@@ -103,7 +103,9 @@ impl Device {
     pub fn update(&mut self, updates: Vec<DeviceUpdate>) {
         for udpate in updates {
             match udpate {
-                DeviceUpdate::Alias(alias) => self.alias = alias,
+                DeviceUpdate::Alias(alias) => {
+                    self.alias = alias.filter(|a| a.replace('-', ":") != self.address);
+                }
                 DeviceUpdate::Enabled(enabled) => {
                     self.enabled = match (self.enabled, enabled) {
                         (Active::Enabling, Active::Enabled) => Active::Enabled,
