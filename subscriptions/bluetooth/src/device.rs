@@ -48,7 +48,7 @@ impl Device {
         let (address, adapter, alias) = join!(
             proxy.device.address(),
             proxy.device.adapter(),
-            proxy.device.name()
+            proxy.device.alias()
         );
         let address = address?;
         if address.is_empty() {
@@ -58,7 +58,9 @@ impl Device {
         if adapter.is_empty() {
             return Err(zbus::Error::Failure("Device has no adapter".to_owned()));
         }
-        let alias = alias.ok();
+        let alias = alias
+            .ok()
+            .filter(|a| a.replace('-', ":") != address);
         let device_type: String = proxy.icon().await;
         let paired = proxy.device.paired().await.unwrap_or(false);
         let enabled = if proxy.device.connected().await.unwrap_or(false) && paired {
@@ -101,7 +103,9 @@ impl Device {
     pub fn update(&mut self, updates: Vec<DeviceUpdate>) {
         for udpate in updates {
             match udpate {
-                DeviceUpdate::Alias(alias) => self.alias = alias,
+                DeviceUpdate::Alias(alias) => {
+                    self.alias = alias.filter(|a| a.replace('-', ":") != self.address);
+                }
                 DeviceUpdate::Enabled(enabled) => {
                     self.enabled = match (self.enabled, enabled) {
                         (Active::Enabling, Active::Enabled) => Active::Enabled,
