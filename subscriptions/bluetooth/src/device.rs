@@ -58,7 +58,9 @@ impl Device {
         if adapter.is_empty() {
             return Err(zbus::Error::Failure("Device has no adapter".to_owned()));
         }
-        let alias = alias.ok();
+        let alias = alias
+            .ok()
+            .filter(|a| a.replace('-', ":") != address);
         let device_type: String = proxy.icon().await;
         let paired = proxy.device.paired().await.unwrap_or(false);
         let enabled = if proxy.device.connected().await.unwrap_or(false) && paired {
