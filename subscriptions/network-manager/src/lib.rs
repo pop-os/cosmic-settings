@@ -452,7 +452,7 @@ async fn start_listening(
                         if s.wifi
                             .clone()
                             .and_then(|w| w.ssid)
-                            .and_then(|ssid| String::from_utf8(ssid).ok())
+                            .map(|ssid| String::from_utf8_lossy(&ssid).into_owned())
                             .is_some_and(|s| s == ssid.as_ref())
                         {
                             _ = c.delete().await;
@@ -537,7 +537,7 @@ async fn start_listening(
                                         .wifi
                                         .clone()
                                         .and_then(|w| w.ssid)
-                                        .and_then(|s| String::from_utf8(s).ok())
+                                        .map(|s| String::from_utf8_lossy(&s).into_owned())
                                         && saved_ssid == ssid.as_ref()
                                     {
                                         let password = c
@@ -612,7 +612,7 @@ async fn has_saved_wifi_credentials(conn: &zbus::Connection, ssid: &str) -> bool
             if let Some(saved_ssid) = settings
                 .wifi
                 .and_then(|w| w.ssid)
-                .and_then(|ssid| String::from_utf8(ssid).ok())
+                .map(|ssid| String::from_utf8_lossy(&ssid).into_owned())
                 && saved_ssid == ssid
             {
                 return true;
@@ -855,7 +855,7 @@ impl NetworkManagerState {
                     .wifi
                     .clone()
                     .and_then(|w| w.ssid)
-                    .and_then(|ssid| String::from_utf8(ssid).ok())?;
+                    .map(|ssid| String::from_utf8_lossy(&ssid).into_owned())?;
 
                 Some(Arc::from(curr_ssid))
             }),
@@ -978,7 +978,7 @@ impl NetworkManagerState {
                     .wifi
                     .clone()
                     .and_then(|w| w.ssid)
-                    .and_then(|ssid| String::from_utf8(ssid).ok())
+                    .map(|ssid| String::from_utf8_lossy(&ssid).into_owned())
                     && cur_ssid == ssid
                 {
                     known_conn = Some(c);
