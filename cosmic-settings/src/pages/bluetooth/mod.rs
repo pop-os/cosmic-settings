@@ -903,6 +903,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
 
 fn available_devices() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
+        device_connect = fl!("bluetooth", "connect");
         device_connecting = fl!("bluetooth", "connecting");
     });
 
@@ -938,18 +939,15 @@ fn available_devices() -> Section<crate::pages::Message> {
                         widget::horizontal_space().into(),
                     ];
 
-                    if device.enabled == Active::Enabling {
-                        items.push(
-                            text(&descriptions[device_connecting])
-                                .class(theme::Text::Color(color!(128, 128, 128)))
-                                .into(),
-                        );
+                    if device.enabled == Active::Disabled {
+                        items.push(widget::button::text(&descriptions[device_connect]).on_press(Message::ConnectDevice(path.clone())).into(), )
                     }
-                    Some(
-                        widget::mouse_area(settings::item_row(items))
-                            .on_press(Message::ConnectDevice(path.clone()))
-                            .into(),
-                    )
+
+                    if device.enabled == Active::Enabling || device.enabled == Active::Enabled {
+                        items.push(text(&descriptions[device_connecting]).class(theme::Text::Color(color!(128, 128, 128))).into(), );
+                    }
+
+                    Some(widget::mouse_area(settings::item_row(items)).into(), )
                 })
                 .fold(section, settings::Section::add)
                 .apply(Element::from)
