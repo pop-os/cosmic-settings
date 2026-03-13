@@ -4,15 +4,62 @@ ok = Oké
 unknown = Onbekend
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = Over
+xdg-entry-about-comment = Apparaatnaam, hardware-informatie, standaardinstellingen van het besturingssysteem
+xdg-entry-a11y = Toegankelijkheden
+xdg-entry-a11y-comment = Toegankelijkheidsinstellingen
+xdg-entry-appearance = Weergave
+xdg-entry-appearance-comment = Accentkleuren en thema's
+xdg-entry-applications = Toepassingen
+xdg-entry-applications-comment = Instellingen voor toepassingen beheren
+xdg-entry-date-time = Datum en tijd
+xdg-entry-date-time-comment = Tijdszone, automatische klokinstellingen en tijdformatering
+xdg-entry-default-apps = Standaard toepassingen
+xdg-entry-default-apps-comment = Standaard webbrowser, mailprogramma, bestandsbeheerder en andere apps
+xdg-entry-desktop = Bureaublad
+xdg-entry-displays = Beeldschermen
+xdg-entry-displays-comment = Weergaveopties, grafische modi en nachtlicht
+xdg-entry-dock = Dock
+xdg-entry-dock-comment = Een optionele balk voor apps en applets
+xdg-entry-input = Invoerapparaten
+xdg-entry-input-comment = Toetsenbord, muis, enz.
+xdg-entry-keyboard = Toetsenbord
+xdg-entry-keyboard-comment = Invoermethodes, speciale tekens, en sneltoetsen
+xdg-entry-mouse = Muis
+xdg-entry-mouse-comment = Muissnelheid en -versnelling, en 'natuurlijk' scrollen
+xdg-entry-network = Netwerk en wifi
+xdg-entry-network-comment = Netwerkverbindingen beheren
+xdg-entry-notifications = Meldingsinstellingen
+xdg-entry-notifications-comment = "Niet storen", meldingen op het vergrendelingsscherm en meldingsinstellingen per app
+xdg-entry-panel = Panel
+xdg-entry-panel-comment = De standaard systeembalk voor menu's en applets
+xdg-entry-power = Energie en batterij
+xdg-entry-power-comment = Energieverbruik en -besparingsopties
+xdg-entry-region-language = Taal en regio
+xdg-entry-region-language-comment = Regionale datum-, tijd- en getalweergave
+xdg-entry-sound = Geluid
+xdg-entry-sound-comment = Geluidsinstellingen voor apparaten, alarmen en programma's
+xdg-entry-system = Systeem en gebruikersaccount
+xdg-entry-time-language = Tijd- en taalinstellingen
+xdg-entry-touchpad = Touchpad
+xdg-entry-touchpad-comment = Touchpad muisversnelling, klikeigenschappen en veeggebaren
+xdg-entry-users = Gebruikers
+xdg-entry-users-comment = Authenticatie en gebruikersinstellingen
+xdg-entry-vpn-comment = VPN-verbindingen en VPN-profielen
+xdg-entry-wallpaper = Schermachtergrond
+xdg-entry-wallpaper-comment = Schermachtergrond: Afbeeldingen, kleuren en diavoorstellingen
+xdg-entry-window-management = Vensterbeheer
+xdg-entry-window-management-comment = Opties voor de Supertoets, vensterbeheer en aanvullende opties voor het tegelen van vensters
+xdg-entry-wired = Kabelverbinding
+xdg-entry-wired-comment = Kabelverbinding en verbindingsprofielen
+xdg-entry-wireless-comment = Wifiverbinding en verbindingsprofielen
+xdg-entry-x11-applications = Compatibiliteit met X11-toepassingen.
+xdg-entry-x11-applications-comment = X11-toepassingsvensters schalen, en globale sneltoetsen
+
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Kabelverbindingen
-        [wifi] Wifi-verbindingen
-        [vpn] VPN-verbindingen
-       *[other] Onbekende verbindingen
-    } en verbindingsprofielen.
 add-network = Netwerk toevoegen
     .profile = Profiel toevoegen
 add-vpn = VPN toevoegen
@@ -34,9 +81,9 @@ settings = Instellingen
 username = Gebruikersnaam
 visible-networks = Zichtbare netwerken
 identity = Identiteit
-auth-dialog = Verificatie vereist
-    .vpn-description = Voer de gebruikersnaam en het wachtwoord in die de VPN-dienst vereist.
-    .wifi-description = Voer het wachtwoord of de encryptiesleutel in. U kunt ook verbinden door op de “WPS”-knop op de router te drukken.
+auth-dialog = Authenticatie vereist
+    .vpn-description = Voer de door de VPN-dienst vereiste gebruikersnaam en wachtwoord in.
+    .wifi-description = Voer het wachtwoord of de encryptiesleutel in. U kunt ook verbinding maken door op de “WPS”-knop op de router te drukken.
 forget-dialog = Dit wifi-netwerk vergeten?
     .description = U moet in de toekomst opnieuw een wachtwoord invoeren om dit wifi-netwerk te kunnen gebruiken.
 network-device-state =
@@ -47,7 +94,7 @@ network-device-state =
     .failed = Kon niet verbinden
     .ip-check = Verbinding controleren…
     .ip-config = IP- en routeringsinformatie opvragen…
-    .need-auth = Authenticatie vereist
+    .need-auth = Vereist authenticatie
     .prepare = Verbinding voorbereiden…
     .secondaries = Wachten op secundaire verbinding…
     .unavailable = Niet beschikbaar
@@ -274,7 +321,7 @@ applets = Applets
 center-segment = Middenstuk
 end-segment = Eindstuk
 large = Groot
-no-applets-found = Geen applets gevonden...
+no-applets-found = Geen applets gevonden…
 panel-bottom = Onder
 panel-left = Links
 panel-right = Rechts
@@ -788,8 +835,9 @@ about-hardware = Hardware
 about-os = Besturingssysteem
     .os = Besturingssysteem
     .os-architecture = Architectuur van het besturingssysteem
-    .desktop-environment = Bureaubladomgeving
-    .windowing-system = Vensterbeheerder
+    .kernel = Kernelversie
+    .desktop-environment = Desktopomgeving
+    .windowing-system = Venstersysteem
 about-related = Gerelateerde instellingen
     .support = Ondersteuning
 
@@ -801,10 +849,10 @@ firmware = Firmware
 ## System: Users
 
 users = Gebruikers
-    .desc = Authenticatie en gebruikersinstellingen.
-    .admin = Systeembeheerder
+    .desc = Authenticatie en gebruikersinstellingen
+    .admin = Beheerder
     .standard = Standaard
-    .profile-add = Kies een profielafbeelding
+    .profile-add = Profielafbeelding kiezen
 administrator = Systeembeheerder (root)
     .desc = Beheerders kunnen instellingen voor alle gebruikers wijzigen, en andere gebruikers toevoegen of verwijderen.
 add-user = Gebruiker toevoegen
@@ -820,3 +868,6 @@ share = Netwerk delen
 scan-to-connect-description = Scan de QR-code om met dit netwerk te verbinden.
 sound-usb-audio = USB-audio
 sound-hd-audio = HD-audio
+sound-device-profiles = Apparaatprofielen
+amplification = Verhoog maximum volume
+    .desc = Hiermee kan het volume tot 150% worden verhoogd

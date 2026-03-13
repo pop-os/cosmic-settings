@@ -1,7 +1,6 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use chrono::{Datelike, Timelike};
 use cosmic::{
     Apply, Element, Task,
     app::ContextDrawer,
@@ -20,7 +19,6 @@ use icu::{
     },
     locale::{Locale, preferences::extensions::unicode::keywords::HourCycle},
 };
-use slab::Slab;
 use slotmap::{Key, SlotMap};
 use std::rc::Rc;
 pub use timedate_zbus::TimeDateProxy;
@@ -139,7 +137,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("time-date", "preferences-system-time-symbolic")
             .title(fl!("time-date"))
-            .description(fl!("time-date", "desc"))
+            .description(fl!("xdg-entry-date-time-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
@@ -408,9 +406,9 @@ pub enum Message {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 fn date() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let title = descriptions.insert(fl!("time-date"));
+    crate::slab!(descriptions {
+        title = fl!("time-date");
+    });
 
     Section::default()
         .title(fl!("time-date"))
@@ -429,12 +427,12 @@ fn date() -> Section<crate::pages::Message> {
 }
 
 fn format() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let military = descriptions.insert(fl!("time-format", "twenty-four"));
-    let show_seconds = descriptions.insert(fl!("time-format", "show-seconds"));
-    let first = descriptions.insert(fl!("time-format", "first"));
-    let show_date = descriptions.insert(fl!("time-format", "show-date"));
+    crate::slab!(descriptions {
+        military = fl!("time-format", "twenty-four");
+        show_seconds = fl!("time-format", "show-seconds");
+        first = fl!("time-format", "first");
+        show_date = fl!("time-format", "show-date");
+    });
 
     Section::default()
         .title(fl!("time-format"))
@@ -492,9 +490,9 @@ fn format() -> Section<crate::pages::Message> {
 }
 
 fn timezone() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let time_zone = descriptions.insert(fl!("time-zone"));
+    crate::slab!(descriptions {
+        time_zone = fl!("time-zone");
+    });
 
     Section::default()
         .title(fl!("time-zone"))
@@ -564,10 +562,11 @@ fn format_date(date: &DateTime<Gregorian>, military: bool, show_seconds: bool) -
 }
 
 fn update_local_time() -> DateTime<Gregorian> {
-    let now = chrono::Local::now();
+    let now = jiff::Zoned::now();
 
     DateTime {
-        date: Date::try_new_gregorian(now.year(), now.month() as u8, now.day() as u8).unwrap(),
+        date: Date::try_new_gregorian(now.year() as i32, now.month() as u8, now.day() as u8)
+            .unwrap(),
         time: Time::try_new(now.hour() as u8, now.minute() as u8, now.second() as u8, 0).unwrap(),
     }
 }

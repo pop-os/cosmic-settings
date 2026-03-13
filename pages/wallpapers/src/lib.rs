@@ -210,29 +210,29 @@ fn load_thumbnail(
     cache_dir: Option<&Path>,
     path: &Path,
 ) -> Option<ImageOperation> {
-    if let Some(cache_dir) = cache_dir {
-        if let Ok(ctime) = path.metadata().and_then(|meta| meta.created()) {
-            // Search for thumbnail by a unique hash string.
-            let mut hasher = DefaultHasher::new();
-            path.hash(&mut hasher);
-            ctime.hash(&mut hasher);
-            let hash = hasher.finish();
+    if let Some(cache_dir) = cache_dir
+        && let Ok(ctime) = path.metadata().and_then(|meta| meta.created())
+    {
+        // Search for thumbnail by a unique hash string.
+        let mut hasher = DefaultHasher::new();
+        path.hash(&mut hasher);
+        ctime.hash(&mut hasher);
+        let hash = hasher.finish();
 
-            let thumbnail_path = cache_dir.join(format!("{hash:x}.png"));
+        let thumbnail_path = cache_dir.join(format!("{hash:x}.png"));
 
-            if thumbnail_path.exists() {
-                if let Some(image) = open_image(input_buffer, &thumbnail_path) {
-                    return Some(ImageOperation::Cached(image));
-                }
-
-                let _res = std::fs::remove_file(&thumbnail_path);
+        if thumbnail_path.exists() {
+            if let Some(image) = open_image(input_buffer, &thumbnail_path) {
+                return Some(ImageOperation::Cached(image));
             }
 
-            return Some(ImageOperation::GenerateThumbnail {
-                path: Some(thumbnail_path),
-                image: open_image(input_buffer, path)?,
-            });
+            let _res = std::fs::remove_file(&thumbnail_path);
         }
+
+        return Some(ImageOperation::GenerateThumbnail {
+            path: Some(thumbnail_path),
+            image: open_image(input_buffer, path)?,
+        });
     }
 
     if let Some(image) = open_image(input_buffer, path) {
@@ -396,7 +396,7 @@ fn border_radius(
                 p += (2 * x + 2) as i32;
             } else {
                 // draw when moving to next pixel in y-direction
-                if y % 16 == 0 {
+                if y.is_multiple_of(16) {
                     draw(img, alpha, x / 16, y / 16);
                     draw(img, alpha, y / 16, x / 16);
                     skip_draw = true;

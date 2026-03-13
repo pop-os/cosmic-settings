@@ -31,7 +31,6 @@ use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use ron::ser::PrettyConfig;
-use slab::Slab;
 use slotmap::{Key, SlotMap};
 
 use crate::app;
@@ -720,7 +719,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("appearance", "preferences-appearance-symbolic")
             .title(fl!("appearance"))
-            .description(fl!("appearance", "desc"))
+            .description(fl!("xdg-entry-appearance-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
@@ -821,10 +820,10 @@ pub fn interface_density() -> Section<crate::pages::Message> {
 
 #[allow(clippy::too_many_lines)]
 pub fn window_management() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let active_hint = descriptions.insert(fl!("window-management-appearance", "active-hint"));
-    let gaps = descriptions.insert(fl!("window-management-appearance", "gaps"));
+    crate::slab!(descriptions {
+        active_hint = fl!("window-management-appearance", "active-hint");
+        gaps = fl!("window-management-appearance", "gaps");
+    });
 
     Section::default()
         .title(fl!("window-management-appearance"))
@@ -914,9 +913,9 @@ pub fn experimental() -> Section<crate::pages::Message> {
 
 #[allow(clippy::too_many_lines)]
 pub fn reset_button() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let reset_to_default = descriptions.insert(fl!("reset-to-default"));
+    crate::slab!(descriptions {
+        reset_to_default = fl!("reset-to-default");
+    });
 
     Section::default()
         .descriptions(descriptions)

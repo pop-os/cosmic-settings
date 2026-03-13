@@ -188,7 +188,7 @@ impl page::Page<crate::pages::Message> for Page {
         // XXX icon?
         page::Info::new("input-devices", "preferences-input-devices-symbolic")
             .title(fl!("input-devices"))
-            .description(fl!("input-devices", "desc"))
+            .description(fl!("xdg-entry-input-comment"))
     }
 }
 

@@ -161,7 +161,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new("wifi", "preferences-wireless-symbolic")
             .title(fl!("wifi"))
-            .description(fl!("connections-and-profiles", variant = "wifi"))
+            .description(fl!("xdg-entry-wireless-comment"))
     }
 
     fn content(
@@ -757,7 +757,10 @@ impl Page {
                     )
                     .collect()
                     .then(|id| {
-                        if id.get(0).is_some_and(|id| *id == SECURE_INPUT_WIFI.clone()) {
+                        if id
+                            .first()
+                            .is_some_and(|id| *id == SECURE_INPUT_WIFI.clone())
+                        {
                             Task::none()
                         } else {
                             focus(SECURE_INPUT_WIFI.clone())

@@ -3,17 +3,16 @@ use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{button, container, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
-use slab::Slab;
 
 use super::{Message, Page, Roundness};
 
 #[allow(clippy::too_many_lines)]
 pub fn section() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let round = descriptions.insert(fl!("style", "round"));
-    let slightly_round = descriptions.insert(fl!("style", "slightly-round"));
-    let square = descriptions.insert(fl!("style", "square"));
+    crate::slab!(descriptions {
+        round = fl!("style", "round");
+        slightly_round = fl!("style", "slightly-round");
+        square = fl!("style", "square");
+    });
 
     let dark_round_style = from_name("illustration-appearance-dark-style-round").handle();
     let light_round_style = from_name("illustration-appearance-light-style-round").handle();

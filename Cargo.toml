@@ -4,7 +4,7 @@ default-members = ["cosmic-settings"]
 resolver = "3"
 
 [workspace.package]
-rust-version = "1.85"
+rust-version = "1.90"
 
 [workspace.dependencies]
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
@@ -22,7 +22,6 @@ git = "https://github.com/pop-os/cosmic-bg"
 
 [workspace.dependencies.cosmic-comp-config]
 git = "https://github.com/pop-os/cosmic-comp"
-branch = "action-on-typing"
 features = ["output"]
 
 [workspace.dependencies.cosmic-idle-config]

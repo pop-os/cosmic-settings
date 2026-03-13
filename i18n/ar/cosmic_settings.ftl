@@ -3,16 +3,56 @@ dbus-connection-error = تعذر الاتصال بـDBus
 ok = حسنًا
 unknown = مجهول
 number = { $number }
+xdg-entry-about = عن
+xdg-entry-about-comment = اسم الجهاز ومعلومات العتاد وإعدادات نظام التشغيل المبدئية
+xdg-entry-a11y = الإتاحة
+xdg-entry-a11y-comment = قارئ الشاشة والمكبر والتباين العالي وتصفيات الألوان
+xdg-entry-appearance = المظهر
+xdg-entry-appearance-comment = ألوان التمييز والسمات
+xdg-entry-applications = التطبيقات
+xdg-entry-bluetooth-comment = أدِر أجهزة البلوتوث
+xdg-entry-date-time = التاريخ والوقت
+xdg-entry-date-time-comment = المنطقة الزمنية وإعدادات الساعة التلقائية وتنسيق الوقت
+xdg-entry-default-apps = التطبيقات المبدئية
+xdg-entry-default-apps-comment = متصفح الويب المبدئي، عميل البريد، متصفح الملفات، والتطبيقات الأخرى
+xdg-entry-desktop = سطح المكتب
+xdg-entry-desktop-comment = إعدادات خلفية الشاشة والمظهر واللوحة والمنصة وإدارة النوافذ ومساحة العمل
+xdg-entry-displays = شاشات العرض
+xdg-entry-displays-comment = أدِر إعدادات تضبيط العرض
+xdg-entry-dock = الإرساء
+xdg-entry-dock-comment = شريط اختياري للتطبيقات والبريمجات
+xdg-entry-input = أجهزة الإدخال
+xdg-entry-input-comment = لوحة المفاتيح، المؤشر، إلخ
+xdg-entry-keyboard = لوحة المفاتيح
+xdg-entry-keyboard-comment = مصادر الإدخال، التبديل، إدخال الأحرف الخاصة، الاختصارات
+xdg-entry-mouse = الفأرة
+xdg-entry-mouse-comment = سرعة الفأرة، والتسارع، والتمرير الطبيعي
+xdg-entry-network = الشبكة والاتصالات اللاسلكية
+xdg-entry-network-comment = أدِر اتصالات الشبكة
+xdg-entry-notifications = الإشعارات
+xdg-entry-notifications-comment = عدم الإزعاج، إشعارات شاشة القفل، وإعدادات لكل تطبيق
+xdg-entry-panel = اللوحة
+xdg-entry-panel-comment = شريط النظام الأساسي للقوائم والبريمجات
+xdg-entry-power = الطاقة والمُدَّخرة
+xdg-entry-power-comment = أوضاع الطاقة وخيارات توفير الطاقة
+xdg-entry-region-language = اللغة والمنطقة
+xdg-entry-region-language-comment = نسق التواريخ والأوقات والأرقام بناءً على منطقتك
+xdg-entry-sound = الصوت
+xdg-entry-sound-comment = إعدادات الصوت للأجهزة والتنبيهات والتطبيقات
+xdg-entry-startup-apps = تطبيقات بدء التشغيل
+xdg-entry-startup-apps-comment = اضبط التطبيقات التي تعمل عند الولوج
+xdg-entry-system = النظام والحسابات
+xdg-entry-time-language = الوقت واللغة
+xdg-entry-touchpad = لوحة اللمس
+xdg-entry-touchpad-comment = سرعة لوحة اللمس، خيارات النقر، الإيماءات
+xdg-entry-users = المستخدمين
+xdg-entry-users-comment = الاستيثاق وحسابات المستخدمين
+xdg-entry-vpn-comment = اتصالات VPN وملفات تعريف الاتصال
+xdg-entry-x11-applications = توافق تطبيقات اكس11
+xdg-entry-x11-applications-comment = توسيع نطاق تطبيق نظام النوافذ اكس11 والاختصارات العامة
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] سلكي
-        [wifi] واي فاي
-        [vpn] VPN
-       *[other] غير معروف
-    } الاتصالات وملفات تعريف الاتصال.
 add-network = أضف شبكة
     .profile = أضف ملف تعريف
 add-vpn = أضف VPN
@@ -99,7 +139,6 @@ activate = تفعيل
 confirm = أكِّد
 enable = فعِّل
 bluetooth = بلوتوث
-    .desc = أدر أجهزة بلوتوث
     .status = سيظهر النظام باسم { $aliases } حين تُفتح إعدادات بلوتوث.
     .connected = متصل
     .connecting = يتصل
@@ -171,7 +210,6 @@ desktop = سطح المكتب
 
 wallpaper = خلفية
     .change = غيِّر الصورة كل
-    .desc = صور الخلفية والألوان وخيارات عرض الشرائح.
     .fit = ملاءمة الخلفية
     .folder-dialog = اختر مجلد الخلفية
     .image-dialog = اختر صورة الخلفية
@@ -201,7 +239,6 @@ x-hours =
 ## Desktop: Appearance
 
 appearance = المظهر
-    .desc = ألوان التمييز والنسق
 accent-color = لون التمييز
 app-background = خلفية النافذة
 auto = آلي
@@ -261,12 +298,10 @@ monospace-font = خط أحادي المسافة
 ## Desktop: Notifications
 
 notifications = الإشعارات
-    .desc = لا تزعج وإشعارات شاشة القفل وإعدادات كل تطبيق على حدة
 
 ## Desktop: Panel
 
 panel = اللوحة
-    .desc = شريط النظام الأساسي للقوائم والبريمجات
 add = أضِف
 add-applet = أضِف بريمج
 all = الكل
@@ -279,7 +314,7 @@ panel-bottom = الأسفل
 panel-left = الشمال
 panel-right = اليمين
 panel-top = الأعلى
-search-applets = ابحث البريمجات…
+search-applets = ابحث عن بريمجات…
 small = صغير
 start-segment = جزء البداية
 panel-appearance = المظهر
@@ -309,12 +344,10 @@ panel-missing = ضبط اللوحة مفقود
 ## Desktop: Dock
 
 dock = المرسى
-    .desc = حامل اختياري للتطبيقات والبريمجات
 
 ## Desktop: Window management
 
 window-management = إدارة النوافذ
-    .desc = إجراءات مفتاح Super وخيارات التحكم في النوافذ وخيارات إضافية لتبليط النوافذ
 super-key = إجراءات مفتاح Super
     .launcher = فتح مشغل التطبيقات
     .workspaces = فتح مساحات العمل
@@ -333,7 +366,6 @@ focus-navigation = تنقُل التركيز
 ## Desktop: Workspaces
 
 workspaces = مساحات العمل
-    .desc = توجه وسلوك مساحة العمل
 workspaces-behavior = سلوك مساحة العمل
     .dynamic = مساحات عمل حركيَّة
     .dynamic-desc = يُزيل مساحات العمل الفارغة آليًا.
@@ -360,7 +392,6 @@ color = اللون
     .sidebar = ملفات تعريف الألوان
     .temperature = درجة حرارة اللون
 display = الشاشات
-    .desc = أدر الشاشات والإضاءة الليلية
     .arrangement = ترتيب الشاشات
     .arrangement-desc = اسحب الشاشات لإعادة ترتيبها.
     .enable = فعِّل الشاشة
@@ -409,7 +440,6 @@ dialog = حوار
 ## Sound
 
 sound = الصوت
-    .desc = غير متوفر
 sound-output = الإخراج
     .volume = مستوي صوت الإخراج
     .device = جهاز الإخراج
@@ -433,7 +463,6 @@ sound-applications = التطبيقات
 ## Power
 
 power = الطاقة والمُدَّخرة
-    .desc = أدر إعدادات الطاقة
 battery = المُدَّخرة
     .minute =
         { $value } { $value ->
@@ -478,7 +507,6 @@ power-saving = خيارات توفير الطاقة
 acceleration-desc = يضبط حساسية التتبع آليًا بناءً على السرعة
 disable-while-typing = عطِّل أثناء الكتابة
 input-devices = أجهزة الإدخال
-    .desc = أجهزة الإدخال
 primary-button = الزر الأساسي
     .desc = يعيِّن ترتيب الأزرار الملموسة.
     .left = شمال
@@ -497,7 +525,6 @@ fast = سريع
 short = قصير
 long = طويل
 keyboard = لوحة المفاتيح
-    .desc = مصادر الإدخال والتبديل وإدخال الأحرف الخاصة والاختصارات
 keyboard-sources = مصادر الإدخال
     .desc = يمكن تبديل مصادر الإدخال باستعمال تركيبة مفتاحي Super+Space. يمكن أن يُخصّص هذا من خلال إعدادات اختصارات لوحة المفاتيح.
     .move-up = حرِك لأعلى
@@ -654,7 +681,6 @@ zoom-out = بعِّد
 ## Input: Mouse
 
 mouse = الفأرة
-    .desc = سرعة الفأرة والتسارع والتمرير الطبيعي.
     .speed = سرعة الفأرة
     .acceleration = فعِّل تسارع الفأرة
 
@@ -669,7 +695,6 @@ tap-to-click = اضغط للنقر
     .desc = يتيح الضغط بإصبع واحد للنقر الأساسي والضغط بإصبعين للنقر الثانوي والضغط بثلاثة أصابع للنقر الأوسط
 touchpad = لوحة اللمس
     .acceleration = فعِّل تسارع لوحة اللمس
-    .desc = سرعة لوحة اللمس وخيارات النقر والإيماءات.
     .speed = سرعة لوحة اللمس
 
 ## Input: Gestures
@@ -690,11 +715,9 @@ open-workspaces-view = نظرة عامة على مساحات العمل المف
 ## Time & Language
 
 time = الوقت واللغة
-    .desc = غير متوفر
 time-date = التاريخ والوقت
-    .desc = المنطقة الزمنية وإعدادات الساعة الآلية وبعض تنسيقات الوقت.
-    .auto = الضبط الآلي
-    .auto-ntp = سيحدَّث التاريخ والوقت الآلي عند ضبط المنطقة الزمنية
+    .auto = عيِّن آليًا
+    .auto-ntp = سيحدَّث التاريخ والوقت الآلي عند تعيين المنطقة الزمنية
 time-zone = المنطقة الزمنية
     .auto = المنطقة الزمنية الآلية
     .auto-info = يتطلب خدمات الموقع والوصول إلى الإنترنت
@@ -708,7 +731,6 @@ time-format = تنسيق التاريخ والوقت
     .sunday = الأحد
     .monday = الاثنين
 time-region = المنطقة واللغة
-    .desc = تنسيق التواريخ والأوقات والأرقام بناءً على منطقتك
 formatting = التنسيق
     .dates = التواريخ
     .time = الوقت
@@ -730,7 +752,6 @@ applications = التطبيقات
 ## Applications: Default Applications
 
 default-apps = التطبيقات المبدئية
-    .desc = متصفح الوِب المبدئي وعميل البريد ومتصفح الملفات والتطبيقات الأخرى.
     .web-browser = متصفح الوِب
     .file-manager = مدير الملفات
     .mail-client = عميل البريد
@@ -746,7 +767,6 @@ default-apps = التطبيقات المبدئية
 ## Applications: Startup Applications
 
 startup-apps = تطبيقات بدء التشغيل
-    .desc = اضبط التطبيقات التي تعمل عند الولوج.
     .add = أضِف تطبيق
     .user = التطبيقات التي تُشغّل عند الولوج
     .none = لم تُضاف تطبيقات بدء تشغيل
@@ -757,7 +777,6 @@ startup-apps = تطبيقات بدء التشغيل
 ## Applications: Legacy Applications
 
 legacy-applications = توافق تطبيقات اكس11
-    .desc = تغيير مقياس تطبيقات نظام النوافذ اكس11 والاختصارات العامة
 legacy-app-global-shortcuts = اختصارات عامة في تطبيقات اكس11
     .desc = تسمح الاختصارات العامة بالتعرّف على ضغطات المفاتيح وأحداث زر الفأرة المُجراة في تطبيقٍ ما لتطبيقاتٍ أخرى — لميزات مثل «اضغط لتتحدث» أو «اضغط لكتم الصوت». مبدئيًا، يُعطّل هذا في تطبيقات اكس11 لضمان عدم تمكن التطبيقات الأخرى من مراقبة أحداث لوحة المفاتيح والفأرة التي تحتوي على معلومات حساسة.
     .none = لا مفاتيح
@@ -782,7 +801,6 @@ system = النظام والحسابات
 ## System: About
 
 about = عن
-    .desc = اسم الجهاز ومعلومات العتاد ومبدئيات نظام التشغيل
 about-device = اسم الجهاز
     .desc = هذا الاسم يظهر للشبكات الأخرى وأجهزة بلوتوث
 about-hardware = العتاد
@@ -803,12 +821,10 @@ about-related = الإعدادات ذات الصلة
 ## System: Firmware
 
 firmware = البرمجيات الثابتة
-    .desc = تفاصيل البرمجيات الثابتة
 
 ## System: Users
 
 users = المستخدمون
-    .desc = الاستيثاق وحسابات المستخدمين.
     .admin = مدير
     .standard = عادي
     .profile-add = اختر صورة ملف تعريف
@@ -848,3 +864,49 @@ workspaces-overview = نظرة عامة على مساحات العمل
     .none = لا شيء
     .launcher = فتح المشغل
     .applications = فتح التطبيقات
+xdg-entry-wired = سلكي
+xdg-entry-about-keywords = COSMIC;عن;حول
+xdg-entry-comment = تطبيق الإعدادات لسطح مكتب COSMIC
+xdg-entry-keywords = COSMIC;إعدادات;
+xdg-entry-window-management-comment = إجراء مفتاح Super وخيارات التحكم في النوافذ وخيارات إضافية تبليط النوافذ
+xdg-entry-mouse-keywords = COSMIC;فأرة;تسارع;تمرير;
+xdg-entry-notifications-keywords = COSMIC;إشعار;قفل;
+xdg-entry-startup-apps-keywords = COSMIC;بدء التشغيل;تطبيق;
+xdg-entry-wired-keywords = COSMIC;سلكي;LAN;شبكة;اتصال;
+xdg-entry-appearance-keywords = COSMIC;تمييز;لون;أيقونة;خط;سمة;نسق
+xdg-entry-dock-keywords = COSMIC;مرسى;لوحة;بريمج
+xdg-entry-panel-keywords = COSMIC;لوحة;بريمج
+xdg-entry-window-management = إدارة النوافذ
+xdg-entry-time-language-comment = أدِر نظام التاريخ والتوقيت والمنطقة واللغة
+xdg-entry-desktop-keywords = COSMIC;سطح المكتب;
+xdg-entry-x11-applications-keywords = COSMIC;X11;تطبيق;لعبة;التوافق;
+xdg-entry-touchpad-keywords = COSMIC;لوحة اللمس;إيماءة;
+xdg-entry-system-keywords = COSMIC;النظام;المعلومات;الحسابات;البرمجيات الثابتة;
+xdg-entry-wireless-keywords = COSMIC;واي فاي;Wi-Fi;شبكة;اتصال;
+xdg-entry-applications-comment = التطبيقات المبدئية وتطبيقات بدء التشغيل وإعدادات توافق تطبيقات اكس11
+xdg-entry-a11y-keywords = COSMIC;الإتاحة;A11y;شاشة;قارئ;مكبر;تباين;لون;
+xdg-entry-wireless-comment = اتصالات الواي فاي وملفات تعريف الاتصال
+xdg-entry-date-time-keywords = COSMIC;الوقت;المنطقة;
+xdg-entry-wallpaper = الخلفية
+xdg-entry-bluetooth-keywords = COSMIC;بلوتوث;
+xdg-entry-network-keywords = COSMIC;شبكة;لاسلكي;واي فاي;VPN;ش‌خ‌ف;شبكة خاصة افتراضية;
+xdg-entry-wallpaper-comment = صور الخلفية والألوان وخيارات عرض الشرائح
+xdg-entry-wireless = واي فاي
+xdg-entry-workspaces-keywords = COSMIC;مساحة العمل;التوجيه;نظرة عامة;الشاشة;
+xdg-entry-system-comment = معلومات النظام والحسابات وتحديثات البرامج الثابتة
+xdg-entry-wallpaper-keywords = COSMIC;خلفية;خلفية الشاشة;عرض شرائح;
+xdg-entry-users-keywords = COSMIC;مستخدم;حساب;
+xdg-entry-vpn-keywords = COSMIC;VPN;شبكة;اتصال;OpenVPN;OpenConnect;
+xdg-entry-time-language-keywords = COSMIC;النظام;الوقت;التاريخ;المنطقة;اللغة;
+xdg-entry-input-keywords = COSMIC;إدخال;لوحة مفاتيح;ماوس;فأرة;
+xdg-entry-sound-keywords = COSMIC;صوت;صوتي;تنبيه;Pipewire;
+xdg-entry-power-keywords = COSMIC;طاقة;مدخرة;بطارية
+xdg-entry-default-apps-keywords = COSMIC;مبدئي;تطبيق
+xdg-entry-region-language-keywords = COSMIC;المنطقة;اللغة;التاريخ;التنسيق;الوقت;الإعدادات المحلية;التوطين;
+xdg-entry-applications-keywords = COSMIC;افتراضي;تطبيق;بدء التشغيل;X11;توافقية;مبدئي;اكس11
+xdg-entry-keyboard-keywords = COSMIC;لوحة المفاتيح;الإدخال;المصدر;الاختصارات;
+xdg-entry-window-management-keywords = COSMIC;إدارة;النوافذ;التبليط;مفتاح;Super;
+xdg-entry-workspaces-comment = اتجاه مساحة العمل ونظرة عامة وسلوك الشاشات المتعدّدة
+xdg-entry-displays-keywords = COSMIC;عرض;
+xdg-entry-workspaces = مساحات العمل
+xdg-entry-wired-comment = الاتصالات السلكية وملفات تعريف الاتصال

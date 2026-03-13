@@ -16,7 +16,7 @@ use zbus::{
 
 pub type SecretSender = Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<SecureString>>>>;
 
-pub const SECRET_ID: &'static str = "com.system76.CosmicSettings.NetworkManager";
+pub const SECRET_ID: &str = "com.system76.CosmicSettings.NetworkManager";
 pub const DBUS_PATH: &str = "/org/freedesktop/NetworkManager/SecretAgent";
 
 bitflags! {
@@ -151,10 +151,10 @@ async fn secret_agent_stream_impl(
     {
         let ss = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
             .await
-            .map_err(|e| Arc::new(e))?;
-        let collection = ss.get_default_collection().await.map_err(|e| Arc::new(e))?;
-        if collection.is_locked().await.map_err(|e| Arc::new(e))? {
-            _ = collection.unlock().await.map_err(|e| Arc::new(e))?;
+            .map_err(Arc::new)?;
+        let collection = ss.get_default_collection().await.map_err(Arc::new)?;
+        if collection.is_locked().await.map_err(Arc::new)? {
+            collection.unlock().await.map_err(Arc::new)?;
         }
     }
     // register the secret agent with NetworkManager
@@ -183,8 +183,8 @@ async fn secret_agent_stream_impl(
             } => {
                 let ss = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
                     .await
-                    .map_err(|e| Arc::new(e))?;
-                let collection = ss.get_default_collection().await.map_err(|e| Arc::new(e))?;
+                    .map_err(Arc::new)?;
+                let collection = ss.get_default_collection().await.map_err(Arc::new)?;
 
                 if secrets.is_empty() {
                     let mut attributes = std::collections::HashMap::new();
@@ -193,10 +193,10 @@ async fn secret_agent_stream_impl(
                     let search_items = collection
                         .search_items(attributes)
                         .await
-                        .map_err(|e| Arc::new(e))?;
+                        .map_err(Arc::new)?;
 
                     for item in &search_items {
-                        item.delete().await.map_err(|e| Arc::new(e))?;
+                        item.delete().await.map_err(Arc::new)?;
                     }
                     let _ = applied_tx.send(());
 
@@ -218,7 +218,7 @@ async fn secret_agent_stream_impl(
                             "text/plain",
                         )
                         .await
-                        .map_err(|e| Arc::new(e))?;
+                        .map_err(Arc::new)?;
                 }
                 let _ = applied_tx.send(());
             }
@@ -229,8 +229,8 @@ async fn secret_agent_stream_impl(
             } => {
                 let ss = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
                     .await
-                    .map_err(|e| Arc::new(e))?;
-                let collection = ss.get_default_collection().await.map_err(|e| Arc::new(e))?;
+                    .map_err(Arc::new)?;
+                let collection = ss.get_default_collection().await.map_err(Arc::new)?;
 
                 let mut attributes = std::collections::HashMap::new();
                 attributes.insert("application", SECRET_ID);
@@ -240,19 +240,19 @@ async fn secret_agent_stream_impl(
                 let search_items = collection
                     .search_items(attributes)
                     .await
-                    .map_err(|e| Arc::new(e))?;
+                    .map_err(Arc::new)?;
 
                 let mut secrets = HashMap::new();
                 for item in &search_items {
                     let name = item
                         .get_attributes()
                         .await
-                        .map_err(|e| Arc::new(e))?
+                        .map_err(Arc::new)?
                         .get("name")
                         .cloned()
                         .unwrap_or_else(|| "unknown".to_string());
-                    let secret = item.get_secret().await.map_err(|e| Arc::new(e))?;
-                    let secret: String = String::from_utf8(secret)?.into();
+                    let secret = item.get_secret().await.map_err(Arc::new)?;
+                    let secret: String = String::from_utf8(secret)?;
                     secrets.insert(name, SecureString::from(secret));
                 }
                 let _ = resp_tx.send(secrets);
@@ -382,7 +382,7 @@ impl SettingsSecretAgent {
         let conn = ConnectionSettingsProxy::builder(
             &zbus::Connection::system()
                 .await
-                .or_else(|_| Err(fdo::Error::Failed("failed to get uuid".to_string())))?,
+                .map_err(|_| fdo::Error::Failed("failed to get uuid".to_string()))?,
         )
         .path(connection_path)?
         .build()
@@ -437,13 +437,9 @@ impl SettingsSecretAgent {
         hints: Vec<String>,
         flags: u32,
     ) -> HashMap<String, HashMap<String, zbus::zvariant::OwnedValue>> {
-        match self
-            .get_secrets_inner(connection, connection_path, setting_name, hints, flags)
+        self.get_secrets_inner(connection, connection_path, setting_name, hints, flags)
             .await
-        {
-            Ok(result) => result,
-            Err(_) => HashMap::new(),
-        }
+            .unwrap_or_default()
     }
 
     /// SaveSecrets method
@@ -472,9 +468,9 @@ impl SettingsSecretAgent {
 
         let ss = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
             .await
-            .map_err(|e| Arc::new(e))?;
+            .map_err(Arc::new)?;
 
-        let collection = ss.get_default_collection().await.map_err(|e| Arc::new(e))?;
+        let collection = ss.get_default_collection().await.map_err(Arc::new)?;
 
         let conn_uuid = connection
             .get("connection")
@@ -484,10 +480,8 @@ impl SettingsSecretAgent {
             .to_string();
 
         let conn =
-            ConnectionSettingsProxy::builder(&zbus::Connection::system().await.or_else(|_| {
-                Err(Error::Zbus(
-                    fdo::Error::Failed("failed to get uuid".to_string()).into(),
-                ))
+            ConnectionSettingsProxy::builder(&zbus::Connection::system().await.map_err(|_| {
+                Error::Zbus(fdo::Error::Failed("failed to get uuid".to_string()).into())
             })?)
             .path(connection_path)?
             .build()
@@ -498,7 +492,7 @@ impl SettingsSecretAgent {
             .get("connection")
             .and_then(|m| m.get("type"))
             .and_then(|v| v.downcast_ref::<String>().ok())
-            .map_or(false, |t| t == "vpn");
+            .is_some_and(|t| t == "vpn");
         let is_always_ask = is_connection_always_ask(&settings);
 
         let mut setting_attributes = std::collections::HashMap::new();
@@ -509,7 +503,7 @@ impl SettingsSecretAgent {
         let search_items = collection
             .search_items(setting_attributes.clone())
             .await
-            .map_err(|e| Arc::new(e))?;
+            .map_err(Arc::new)?;
         let mut result = HashMap::new();
         let mut setting = HashMap::new();
 
@@ -518,16 +512,16 @@ impl SettingsSecretAgent {
                 let name = item
                     .get_attributes()
                     .await
-                    .map_err(|e| Arc::new(e))?
+                    .map_err(Arc::new)?
                     .get("name")
                     .cloned()
                     .unwrap_or_else(|| "unknown".to_string());
-                let secret = item.get_secret().await.map_err(|e| Arc::new(e))?;
-                let secret: String = String::from_utf8(secret)?.into();
+                let secret = item.get_secret().await.map_err(Arc::new)?;
+                let secret: String = String::from_utf8(secret)?;
                 setting.insert(name, zbus::zvariant::OwnedValue::from(Str::from(secret)));
             }
             result.insert(setting_name, setting);
-            return Ok(result);
+            Ok(result)
         } else {
             let hints = parse_hints(hints);
             let mut requested = HashSet::new();
@@ -563,49 +557,47 @@ impl SettingsSecretAgent {
                         && e.is_disconnected()
                     {
                         continue;
-                    } else {
-                        if let Ok(secret) = resp_rx.await {
-                            let mut named_attribute = setting_attributes.clone();
-                            named_attribute.insert("name", key);
-                            let _item = collection
-                                .create_item(
-                                    "NetworkManager Secret",
-                                    named_attribute,
-                                    secret.unsecure().as_bytes(),
-                                    true,
-                                    "text/plain",
-                                )
-                                .await
-                                .map_err(|e| Arc::new(e))?;
+                    } else if let Ok(secret) = resp_rx.await {
+                        let mut named_attribute = setting_attributes.clone();
+                        named_attribute.insert("name", key);
+                        let _item = collection
+                            .create_item(
+                                "NetworkManager Secret",
+                                named_attribute,
+                                secret.unsecure().as_bytes(),
+                                true,
+                                "text/plain",
+                            )
+                            .await
+                            .map_err(Arc::new)?;
 
-                            setting.insert(
-                                key.clone(),
-                                zbus::zvariant::OwnedValue::from(Str::from(secret.unsecure())),
-                            );
-                        }
+                        setting.insert(
+                            key.clone(),
+                            zbus::zvariant::OwnedValue::from(Str::from(secret.unsecure())),
+                        );
                     }
                 } else if !is_always_ask {
                     let mut pos = None;
                     let mut pos_with_message = None;
                     for item in &search_items {
-                        let attributes = item.get_attributes().await.map_err(|e| Arc::new(e))?;
-                        if let Some(value) = attributes.get("name") {
-                            if value == key {
-                                if let Some(saved_message) = attributes.get("message") {
-                                    if message.as_ref().is_some_and(|msg| msg == saved_message) {
-                                        pos_with_message = Some(item);
-                                    }
-                                    break;
-                                } else {
-                                    pos = Some(item);
+                        let attributes = item.get_attributes().await.map_err(Arc::new)?;
+                        if let Some(value) = attributes.get("name")
+                            && value == key
+                        {
+                            if let Some(saved_message) = attributes.get("message") {
+                                if message.as_ref().is_some_and(|msg| msg == saved_message) {
+                                    pos_with_message = Some(item);
                                 }
+                                break;
+                            } else {
+                                pos = Some(item);
                             }
                         }
                     }
 
                     if let Some(item) = pos_with_message.or(pos) {
-                        let secret = item.get_secret().await.map_err(|e| Arc::new(e))?;
-                        let secret: String = String::from_utf8(secret)?.into();
+                        let secret = item.get_secret().await.map_err(Arc::new)?;
+                        let secret: String = String::from_utf8(secret)?;
                         if is_vpn {
                             // ask anyway, but offer the previous one as a hint
                             let (resp_tx, resp_rx) = oneshot::channel();
@@ -628,28 +620,24 @@ impl SettingsSecretAgent {
                                 && e.is_disconnected()
                             {
                                 continue;
-                            } else {
-                                if let Ok(secret) = resp_rx.await {
-                                    let mut named_attribute = setting_attributes.clone();
-                                    named_attribute.insert("name", key);
-                                    let _item = collection
-                                        .create_item(
-                                            "NetworkManager Secret",
-                                            named_attribute,
-                                            secret.unsecure().as_bytes(),
-                                            true,
-                                            "text/plain",
-                                        )
-                                        .await
-                                        .map_err(|e| Arc::new(e))?;
+                            } else if let Ok(secret) = resp_rx.await {
+                                let mut named_attribute = setting_attributes.clone();
+                                named_attribute.insert("name", key);
+                                let _item = collection
+                                    .create_item(
+                                        "NetworkManager Secret",
+                                        named_attribute,
+                                        secret.unsecure().as_bytes(),
+                                        true,
+                                        "text/plain",
+                                    )
+                                    .await
+                                    .map_err(Arc::new)?;
 
-                                    setting.insert(
-                                        key.clone(),
-                                        zbus::zvariant::OwnedValue::from(Str::from(
-                                            secret.unsecure(),
-                                        )),
-                                    );
-                                }
+                                setting.insert(
+                                    key.clone(),
+                                    zbus::zvariant::OwnedValue::from(Str::from(secret.unsecure())),
+                                );
                             }
                         } else {
                             setting.insert(
@@ -664,7 +652,7 @@ impl SettingsSecretAgent {
                 }
             }
             result.insert(setting_name, setting);
-            return Ok(result);
+            Ok(result)
         }
     }
 
@@ -675,8 +663,8 @@ impl SettingsSecretAgent {
     ) -> Result<(), Error> {
         let ss = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
             .await
-            .map_err(|e| Arc::new(e))?;
-        let collection = ss.get_default_collection().await.map_err(|e| Arc::new(e))?;
+            .map_err(Arc::new)?;
+        let collection = ss.get_default_collection().await.map_err(Arc::new)?;
 
         let conn_uuid = connection
             .get("connection")
@@ -692,10 +680,10 @@ impl SettingsSecretAgent {
         let search_items = collection
             .search_items(attributes)
             .await
-            .map_err(|e| Arc::new(e))?;
+            .map_err(Arc::new)?;
 
         for item in &search_items {
-            item.delete().await.map_err(|e| Arc::new(e))?;
+            item.delete().await.map_err(Arc::new)?;
         }
         Ok(())
     }
@@ -706,8 +694,8 @@ impl SettingsSecretAgent {
     ) -> Result<(), Error> {
         let ss = secret_service::SecretService::connect(secret_service::EncryptionType::Dh)
             .await
-            .map_err(|e| Arc::new(e))?;
-        let collection = ss.get_default_collection().await.map_err(|e| Arc::new(e))?;
+            .map_err(Arc::new)?;
+        let collection = ss.get_default_collection().await.map_err(Arc::new)?;
         let conn_uuid = connection
             .get("connection")
             .and_then(|m| m.get("uuid"))
@@ -741,7 +729,7 @@ impl SettingsSecretAgent {
                     "text/plain",
                 )
                 .await
-                .map_err(|e| Arc::new(e))?;
+                .map_err(Arc::new)?;
             Ok(())
         } else {
             Err(Error::NoPasswordForIdentifier("unknown".to_string()))

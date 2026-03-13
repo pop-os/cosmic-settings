@@ -17,7 +17,6 @@ use cosmic_panel_config::{
     CosmicPanelOuput, PanelAnchor, PanelSize,
 };
 use cosmic_settings_page::{self as page, Section};
-use slab::Slab;
 use std::{collections::HashMap, time::Duration};
 
 use crate::pages::desktop::appearance::Roundness;
@@ -102,11 +101,11 @@ pub(crate) fn behavior_and_position<
     p: &P,
     msg_map: T,
 ) -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let autohide_label = descriptions.insert(p.autohide_label());
-    let position = descriptions.insert(fl!("panel-behavior-and-position", "position"));
-    let display = descriptions.insert(fl!("panel-behavior-and-position", "display"));
+    crate::slab!(descriptions {
+        autohide_label = p.autohide_label();
+        position = fl!("panel-behavior-and-position", "position");
+        display = fl!("panel-behavior-and-position", "display");
+    });
 
     Section::default()
         .title(fl!("panel-behavior-and-position"))
@@ -161,13 +160,13 @@ pub(crate) fn style<
     p: &P,
     msg_map: T,
 ) -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let gap_label = descriptions.insert(p.gap_label());
-    let extend_label = descriptions.insert(p.extend_label());
-    let appearance = descriptions.insert(fl!("panel-style", "appearance"));
-    let background_opacity = descriptions.insert(fl!("panel-style", "background-opacity"));
-    let size = descriptions.insert(fl!("panel-style", "size"));
+    crate::slab!(descriptions {
+        gap_label = p.gap_label();
+        extend_label = p.extend_label();
+        appearance = fl!("panel-style", "appearance");
+        background_opacity = fl!("panel-style", "background-opacity");
+        size = fl!("panel-style", "size");
+    });
 
     Section::default()
         .title(fl!("panel-style"))
@@ -270,9 +269,9 @@ pub(crate) fn style<
 pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
     p: &P,
 ) -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let applets_label = descriptions.insert(p.configure_applets_label());
+    crate::slab!(descriptions {
+        applets_label = p.configure_applets_label();
+    });
 
     Section::default()
         .title(fl!("panel-applets"))
@@ -315,9 +314,9 @@ pub(crate) fn add_panel<
 >(
     msg_map: T,
 ) -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let reset_to_default = descriptions.insert(fl!("reset-to-default"));
+    crate::slab!(descriptions {
+        reset_to_default = fl!("reset-to-default");
+    });
 
     Section::default()
         .title(fl!("panel-missing"))
@@ -338,9 +337,9 @@ pub fn reset_button<
 >(
     msg_map: T,
 ) -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let reset_to_default = descriptions.insert(fl!("reset-to-default"));
+    crate::slab!(descriptions {
+        reset_to_default = fl!("reset-to-default");
+    });
 
     Section::default()
         .descriptions(descriptions)

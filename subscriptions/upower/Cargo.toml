@@ -7,10 +7,10 @@ rust-version.workspace = true
 publish = true
 
 [dependencies]
-futures = "0.3.31"
+futures = "0.3.32"
 iced_futures = { git = "https://github.com/pop-os/libcosmic" }
 log = "0.4.29"
 tokio = "1.49.0"
 tokio-stream = "0.1.18"
 upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
-zbus = "5.12.0"
+zbus = "5.13.2"

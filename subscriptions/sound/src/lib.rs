@@ -251,7 +251,7 @@ impl Model {
 
                 None
             } else {
-                self.node_names.get(node_id).map(|name| name.clone())
+                self.node_names.get(node_id).cloned()
             };
 
         tokio::task::spawn(async move {
@@ -327,10 +327,8 @@ impl Model {
                 }
 
                 None
-            } else if let Some(name) = self.node_names.get(node_id) {
-                Some(name.clone())
             } else {
-                None
+                self.node_names.get(node_id).cloned()
             };
 
         tokio::task::spawn(async move {
@@ -527,10 +525,10 @@ impl Model {
             }
 
             pipewire::Event::AddProfile(id, index, profile) => {
-                if let Some(p) = self.active_profiles.get_mut(id) {
-                    if p.index == profile.index {
-                        *p = profile.clone();
-                    }
+                if let Some(p) = self.active_profiles.get_mut(id)
+                    && p.index == profile.index
+                {
+                    *p = profile.clone();
                 }
 
                 let profiles = self.device_profiles.entry(id).or_default();
@@ -716,12 +714,12 @@ impl Model {
         if let Some(pos) = self.sink_node_ids.iter().position(|&node_id| node_id == id) {
             self.sink_node_ids.remove(pos);
             self.sinks.remove(pos);
-            if let Some(node_id) = self.active_sink_node {
-                if id == node_id {
-                    self.active_sink = None;
-                    self.active_sink_node = None;
-                    self.active_sink_node_name.clear();
-                }
+            if let Some(node_id) = self.active_sink_node
+                && id == node_id
+            {
+                self.active_sink = None;
+                self.active_sink_node = None;
+                self.active_sink_node_name.clear();
             }
         } else if let Some(pos) = self
             .source_node_ids
@@ -730,12 +728,12 @@ impl Model {
         {
             self.source_node_ids.remove(pos);
             self.sources.remove(pos);
-            if let Some(node_id) = self.active_source_node {
-                if id == node_id {
-                    self.active_source = None;
-                    self.active_source_node = None;
-                    self.active_source_node_name.clear();
-                }
+            if let Some(node_id) = self.active_source_node
+                && id == node_id
+            {
+                self.active_source = None;
+                self.active_source_node = None;
+                self.active_source_node_name.clear();
             }
         }
 

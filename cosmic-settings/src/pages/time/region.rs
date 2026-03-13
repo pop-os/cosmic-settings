@@ -142,7 +142,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("time-region", "preferences-region-and-language-symbolic")
             .title(fl!("time-region"))
-            .description(fl!("time-region", "desc"))
+            .description(fl!("xdg-entry-region-language-comment"))
     }
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {

@@ -31,14 +31,14 @@ install:
     install -Dm0644 {{'resources' / 'polkit-1' / 'rules.d' / 'cosmic-settings.rules'}} {{polkit-rules-dst}}
     install -Dm0644 {{'resources' / 'polkit-1' / 'actions' / appid + '.Users.policy'}} {{policy-users-dst}}
     install -Dm0755 {{cargo-target-dir / 'release' / name}} {{bin-dst}}
-    cd resources/applications && find * -type f -exec install -Dm0644 '{}' '{{appdir}}/{}' \;
+    cd target/xdgen && find * -type f -exec install -Dm0644 '{}' '{{appdir}}/{}' \;
     cd resources/default_schema && find * -type f -exec install -Dm0644 '{}' '{{default-schema-target}}/{}' \;
     cd resources/icons && find * -type f -exec install -Dm0644 '{}' '{{iconsdir}}/{}' \;
 
 # Uninstalls everything (requires same arguments as given to install)
 uninstall:
     rm {{bin-dst}} {{metainfo-dst}} {{polkit-rules-dst}} {{policy-users-dst}}
-    cd resources/applications && find * -type f -exec rm '{{appdir}}/{}' \;
+    cd target/xdgen && find * -type f -exec rm '{{appdir}}/{}' \;
     cd resources/default_schema && find * -type f -exec rm '{{default-schema-target}}/{}' \;
     cd resources/icons && find * -type f -exec rm '{{iconsdir}}/{}' \;
 

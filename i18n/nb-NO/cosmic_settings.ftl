@@ -18,13 +18,6 @@ cable-unplugged = Kabel frakoblet
 connect = Koble til
 connected = Tilkoblet
 connecting = Kobler til…
-connections-and-profiles =
-    { $variant ->
-        [wired] Kablet
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Ukjent
-    } tilkoblinger og tilkoblingsprofiler.
 disconnect = Koble fra
 forget = Glem
 known-networks = Kjente nettverk

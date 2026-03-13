@@ -21,7 +21,6 @@ use cosmic_randr_shell::List;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use futures::SinkExt;
-use slab::Slab;
 use slotmap::SlotMap;
 use tokio::sync::oneshot;
 use tracing::error;
@@ -104,7 +103,7 @@ impl page::Page<crate::pages::Message> for Page {
             "preferences-X11-applications-symbolic",
         )
         .title(fl!("legacy-applications"))
-        .description(fl!("legacy-applications", "desc"))
+        .description(fl!("xdg-entry-x11-applications-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
@@ -265,14 +264,14 @@ impl Page {
 }
 
 pub fn legacy_application_global_shortcuts() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let desc = descriptions.insert(fl!("legacy-app-global-shortcuts", "desc"));
-    let none = descriptions.insert(fl!("legacy-app-global-shortcuts", "none"));
-    let modifiers = descriptions.insert(fl!("legacy-app-global-shortcuts", "modifiers"));
-    let combination = descriptions.insert(fl!("legacy-app-global-shortcuts", "combination"));
-    let all = descriptions.insert(fl!("legacy-app-global-shortcuts", "all"));
-    let mouse = descriptions.insert(fl!("legacy-app-global-shortcuts", "mouse"));
+    crate::slab!(descriptions {
+        desc = fl!("legacy-app-global-shortcuts", "desc");
+        none = fl!("legacy-app-global-shortcuts", "none");
+        modifiers = fl!("legacy-app-global-shortcuts", "modifiers");
+        combination = fl!("legacy-app-global-shortcuts", "combination");
+        all = fl!("legacy-app-global-shortcuts", "all");
+        mouse = fl!("legacy-app-global-shortcuts", "mouse");
+    });
 
     Section::default()
         .title(fl!("legacy-app-global-shortcuts"))
@@ -339,15 +338,16 @@ pub fn legacy_application_global_shortcuts() -> Section<crate::pages::Message> {
 }
 
 pub fn legacy_application_scaling() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
+    crate::slab!(descriptions {
+        gaming = fl!("legacy-app-scaling", "scaled-gaming");
+        gaming_desc = fl!("legacy-app-scaling", "gaming-description");
+        apps = fl!("legacy-app-scaling", "scaled-applications");
+        apps_desc = fl!("legacy-app-scaling", "applications-description");
+        compat = fl!("legacy-app-scaling", "scaled-compatibility");
+        compat_desc = fl!("legacy-app-scaling", "compatibility-description");
+        preferred_display = fl!("legacy-app-scaling", "preferred-display");
 
-    let gaming = descriptions.insert(fl!("legacy-app-scaling", "scaled-gaming"));
-    let gaming_desc = descriptions.insert(fl!("legacy-app-scaling", "gaming-description"));
-    let apps = descriptions.insert(fl!("legacy-app-scaling", "scaled-applications"));
-    let apps_desc = descriptions.insert(fl!("legacy-app-scaling", "applications-description"));
-    let compat = descriptions.insert(fl!("legacy-app-scaling", "scaled-compatibility"));
-    let compat_desc = descriptions.insert(fl!("legacy-app-scaling", "compatibility-description"));
-    let preferred_display = descriptions.insert(fl!("legacy-app-scaling", "preferred-display"));
+    });
 
     Section::default()
         .title(fl!("legacy-app-scaling"))

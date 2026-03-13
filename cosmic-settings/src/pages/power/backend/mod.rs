@@ -1,5 +1,5 @@
-use chrono::{Duration, TimeDelta};
 use futures::{FutureExt, Stream, StreamExt, future::join_all};
+use jiff::{Span, SpanRelativeTo, SpanRound, ToSpan, Unit};
 use upower_dbus::{BatteryState, BatteryType, DeviceProxy};
 use zbus::{Connection, zvariant::ObjectPath};
 
@@ -233,7 +233,7 @@ pub struct Battery {
     pub is_present: bool,
     pub percent: f64,
     pub is_charging: bool,
-    pub remaining_duration: Duration,
+    pub remaining_duration: Span,
 }
 
 #[derive(Default, Debug, Clone)]
@@ -302,7 +302,7 @@ async fn enumerate_devices<'a>() -> Result<Vec<upower_dbus::DeviceProxy<'a>>, zb
 
 impl Battery {
     pub async fn from_device(proxy: &DeviceProxy<'_>) -> Self {
-        let mut remaining_duration: Duration = Duration::default();
+        let mut remaining_duration = Span::default();
 
         let (is_present, percentage, battery_state) = futures::join!(
             proxy.is_present().map(Result::unwrap_or_default),
@@ -319,15 +319,11 @@ impl Battery {
                 && (percent - 100.0_f64).abs() < f64::EPSILON;
 
         if !is_charging {
-            if let Ok(time) = proxy.time_to_empty().await
-                && let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
-            {
-                remaining_duration = dur;
+            if let Ok(time) = proxy.time_to_empty().await {
+                remaining_duration = time.seconds();
             }
-        } else if let Ok(time) = proxy.time_to_full().await
-            && let Ok(dur) = Duration::from_std(std::time::Duration::from_secs(time as u64))
-        {
-            remaining_duration = dur;
+        } else if let Ok(time) = proxy.time_to_full().await {
+            remaining_duration = time.seconds();
         }
 
         let battery_percent = if percent > 95.0 {
@@ -378,15 +374,22 @@ impl Battery {
         Battery::default()
     }
     pub fn remaining_time(&self) -> String {
-        if self.remaining_duration <= TimeDelta::zero() {
+        if !self.remaining_duration.is_positive() {
             return String::new();
         }
 
-        let total_seconds = self.remaining_duration.num_seconds();
+        let balanced = self
+            .remaining_duration
+            .round(
+                SpanRound::new()
+                    .largest(Unit::Day)
+                    .relative(SpanRelativeTo::days_are_24_hours()),
+            )
+            .unwrap();
 
-        let days = total_seconds / 86400;
-        let hours = total_seconds % 86400 / 3600;
-        let minutes = (total_seconds % 3600) / 60;
+        let days = balanced.get_days();
+        let hours = balanced.get_hours();
+        let minutes = balanced.get_minutes();
 
         let mut time: Vec<String> = Vec::new();
         if days > 0 {
@@ -546,7 +549,7 @@ mod tests {
         for case in cases {
             let (actual, expected) = case;
             let battery = Battery {
-                remaining_duration: Duration::new(actual, 0).unwrap(),
+                remaining_duration: actual.seconds(),
                 is_charging: false,
                 ..Default::default()
             };

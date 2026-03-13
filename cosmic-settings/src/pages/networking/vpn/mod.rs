@@ -211,7 +211,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> cosmic_settings_page::Info {
         page::Info::new("vpn", "preferences-vpn-symbolic")
             .title(fl!("vpn"))
-            .description(fl!("connections-and-profiles", variant = "vpn"))
+            .description(fl!("xdg-entry-vpn-comment"))
     }
 
     fn content(
@@ -846,7 +846,7 @@ impl Page {
                     )
                     .collect()
                     .then(|id| {
-                        if id.get(0).is_some_and(|id| *id == SECURE_INPUT_VPN.clone()) {
+                        if id.first().is_some_and(|id| *id == SECURE_INPUT_VPN.clone()) {
                             Task::none()
                         } else {
                             focus(SECURE_INPUT_VPN.clone())

@@ -18,8 +18,8 @@ impl HwAddress {
             .ok()
             .map(|address| HwAddress { address })
     }
-    pub fn from_string(arg: &String) -> Option<Self> {
-        HwAddress::from_str(arg.as_str())
+    pub fn from_string(arg: &str) -> Option<Self> {
+        HwAddress::from_str(arg)
     }
 }
 

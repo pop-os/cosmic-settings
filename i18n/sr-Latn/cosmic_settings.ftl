@@ -6,13 +6,6 @@ number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Žičane
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Nepoznate
-    } konekcije i profili konekcija.
 add-network = Dodaj mrežu
     .profile = Dodaj profil
 add-vpn = Dodaj VPN

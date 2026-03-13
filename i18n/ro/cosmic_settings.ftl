@@ -6,13 +6,6 @@ number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Cablu
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Necunoscut
-    } conexiuni și profile de conexiune.
 add-network = Adaugă o rețea
     .profile = Adaugă un profil
 add-vpn = Adaugă un VPN

@@ -280,13 +280,6 @@ about-device = 장치 이름
     .desc = 이 이름은 네트워크 혹은 블루투스 장치에 표시됨
 no-vpn = 사용 가능한 VPN 연결이 없습니다.
 start-segment = 시작 영역
-connections-and-profiles =
-    { $variant ->
-        [wired] 유선
-        [wifi] Wi-FI
-        [vpn] VPN
-       *[other] 알 수 없음
-    } 연결 및 연결 프로필.
 identity = 식별자
 reset-to-default = 기본값으로 되돌리기
 disconnect = 연결 해제
