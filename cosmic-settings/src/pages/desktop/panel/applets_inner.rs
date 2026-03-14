@@ -899,30 +899,28 @@ where
     }
 
     fn layout(
-        &self,
+        &mut self,
         tree: &mut Tree,
         renderer: &cosmic::Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        let inner_layout = self
-            .inner
-            .as_widget()
-            .layout(&mut tree.children[0], renderer, limits);
+        let inner_layout =
+            self.inner
+                .as_widget_mut()
+                .layout(&mut tree.children[0], renderer, limits);
         layout::Node::with_children(inner_layout.size(), vec![inner_layout])
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: layout::Layout<'_>,
         renderer: &cosmic::Renderer,
         operation: &mut dyn Operation<()>,
     ) {
-        let state = tree.state.downcast_mut::<ReorderWidgetState>();
+        operation.container(Some(&self.id), layout.bounds());
 
-        operation.custom(state, Some(&self.id));
-
-        self.inner.as_widget().operate(
+        self.inner.as_widget_mut().operate(
             &mut tree.children[0],
             layout.children().next().unwrap(),
             renderer,
@@ -931,31 +929,31 @@ where
     }
 
     #[allow(clippy::too_many_lines, clippy::needless_match)]
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
-        event: event::Event,
+        event: &event::Event,
         layout: layout::Layout<'_>,
         cursor_position: mouse::Cursor,
         renderer: &cosmic::Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         let space_xxs = theme::spacing().space_xxs;
-        let mut ret = match self.inner.as_widget_mut().on_event(
+        self.inner.as_widget_mut().update(
             &mut tree.children[0],
-            event.clone(),
+            &event,
             layout.children().next().unwrap(),
             cursor_position,
             renderer,
             clipboard,
             shell,
             viewport,
-        ) {
-            event::Status::Captured => return event::Status::Captured,
-            event::Status::Ignored => event::Status::Ignored,
-        };
+        );
+        if shell.is_event_captured() {
+            return;
+        }
 
         let height = (layout.bounds().height
             - space_xxs as f32 * (self.info.len().saturating_sub(1)) as f32)
@@ -967,15 +965,14 @@ where
                 DraggingState::Dragging(applet) => match &event {
                     event::Event::Dnd(DndEvent::Source(source_event)) => match source_event {
                         SourceEvent::Cancelled => {
-                            ret = event::Status::Captured;
+                            shell.capture_event();
                             if let Some(on_cancel) = self.on_cancel.clone() {
                                 shell.publish(on_cancel);
                             }
                             DraggingState::None
                         }
                         SourceEvent::Finished => {
-                            ret = event::Status::Captured;
-
+                            shell.capture_event();
                             DraggingState::None
                         }
                         _ => DraggingState::Dragging(applet),
@@ -989,7 +986,7 @@ where
                         | event::Event::Touch(touch::Event::FingerPressed { .. })
                             if cursor_position.is_over(layout.bounds()) =>
                         {
-                            ret = event::Status::Captured;
+                            shell.capture_event();
 
                             DraggingState::Pressed(cursor_position.position().unwrap_or_default())
                         }
@@ -1040,7 +1037,8 @@ where
                                         Box::new(AppletString(p.clone())),
                                         DndAction::Move,
                                     );
-                                    ret = event::Status::Captured;
+                                    shell.capture_event();
+
                                     let reordered = self
                                         .info
                                         .iter()
@@ -1063,7 +1061,7 @@ where
                         | event::Event::Touch(
                             touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. },
                         ) => {
-                            ret = event::Status::Captured;
+                            shell.capture_event();
                             DraggingState::None
                         }
                         _ => DraggingState::Pressed(start),
@@ -1161,8 +1159,6 @@ where
                 _ => DndOfferState::HandlingOffer,
             },
         };
-
-        ret
     }
 
     fn draw(
@@ -1189,14 +1185,16 @@ where
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: layout::Layout<'_>,
+        layout: layout::Layout<'b>,
         renderer: &cosmic::Renderer,
+        viewport: &Rectangle,
         translation: Vector,
     ) -> Option<overlay::Element<'b, Message, cosmic::Theme, cosmic::Renderer>> {
         self.inner.as_widget_mut().overlay(
             &mut tree.children[0],
             layout.children().next().unwrap(),
             renderer,
+            viewport,
             translation,
         )
     }

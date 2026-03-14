@@ -6,6 +6,7 @@ pub use cosmic_dbus_networkmanager::interface::enums::{
     ActiveConnectionState, DeviceState, DeviceType,
 };
 
+use core::hash;
 use cosmic_dbus_networkmanager::nm::NetworkManager;
 use futures::{SinkExt, StreamExt};
 use iced_futures::{self, Subscription, stream};
@@ -166,12 +167,35 @@ pub fn subscription<I: 'static + Hash + Copy + Send + Sync + Debug>(
     has_popup: bool,
     conn: Connection,
 ) -> iced_futures::Subscription<Event> {
-    Subscription::run_with_id(
-        (id, has_popup),
-        stream::channel(50, move |output| async move {
-            watch(conn, has_popup, output).await;
-            futures::future::pending().await
-        }),
+    struct Wrapper<I> {
+        id: I,
+        has_popup: bool,
+        conn: Connection,
+    }
+    impl<I: Hash> Hash for Wrapper<I> {
+        fn hash<H: hash::Hasher>(&self, state: &mut H) {
+            self.id.hash(state);
+            self.has_popup.hash(state);
+        }
+    }
+    Subscription::run_with(
+        Wrapper {
+            id,
+            has_popup,
+            conn,
+        },
+        |Wrapper {
+             id,
+             has_popup,
+             conn,
+         }| {
+            let conn = conn.clone();
+            let has_popup = *has_popup;
+            stream::channel(50, move |output| async move {
+                watch(conn, has_popup, output).await;
+                futures::future::pending().await
+            })
+        },
     )
 }
 
