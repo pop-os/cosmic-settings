@@ -22,6 +22,12 @@ pub struct Info {
 }
 
 impl Info {
+    /// OpenGL backend reports GPU names with renderer suffixes like "/PCIe/SSE2".
+    /// We strip these to match against Vulkan backend's clean name.
+    fn normalize_gpu_name(name: &str) -> String {
+        name.split('/').next().unwrap_or(name).trim().to_string()
+    }
+
     #[cfg(feature = "wgpu")]
     fn wgpu_graphics() -> Vec<String> {
         let mut graphics = Vec::new();
@@ -104,14 +110,16 @@ impl Info {
                 continue;
             }
 
-            if adapter_info.device == 0 && seen_names.contains(&gpu_name) {
+            let normalized_gpu_name = Self::normalize_gpu_name(&gpu_name);
+
+            if adapter_info.device == 0 && seen_names.contains(&normalized_gpu_name) {
                 continue;
             }
 
             if adapter_info.device != 0 {
                 seen_devices.insert(device_key);
             }
-            seen_names.insert(gpu_name.clone());
+            seen_names.insert(normalized_gpu_name);
             graphics.push(gpu_name);
         }
 
