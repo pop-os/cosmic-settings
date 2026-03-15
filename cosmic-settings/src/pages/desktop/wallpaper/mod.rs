@@ -38,7 +38,6 @@ use cosmic_settings_page::{self as page, section};
 use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};
-use slab::Slab;
 use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
 
 use crate::subscription::WallpaperEvent;
@@ -211,7 +210,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("wallpaper", "preferences-desktop-wallpaper-symbolic")
             .title(fl!("wallpaper"))
-            .description(fl!("wallpaper", "desc"))
+            .description(fl!("xdg-entry-wallpaper-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
@@ -1189,12 +1188,12 @@ impl Context {
 
 #[allow(clippy::too_many_lines)]
 pub fn settings() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let same_label = descriptions.insert(fl!("wallpaper", "same"));
-    let fit_label = descriptions.insert(fl!("wallpaper", "fit"));
-    let slide_label = descriptions.insert(fl!("wallpaper", "slide"));
-    let change_label = descriptions.insert(fl!("wallpaper", "change"));
+    crate::slab!(descriptions {
+        same_label = fl!("wallpaper", "same");
+        fit_label = fl!("wallpaper", "fit");
+        slide_label = fl!("wallpaper", "slide");
+        change_label = fl!("wallpaper", "change");
+    });
 
     Section::default()
         .descriptions(descriptions)

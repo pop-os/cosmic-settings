@@ -4,15 +4,68 @@ ok = 确定
 unknown = 未知
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = 关于
+xdg-entry-about-comment = 设备名称、硬件信息、操作系统默认设置
+xdg-entry-a11y = 无障碍
+xdg-entry-a11y-comment = 屏幕阅读器、放大镜、高对比度以及色彩滤镜
+xdg-entry-appearance = 外观
+xdg-entry-appearance-comment = 主题色和个性化
+xdg-entry-applications = 应用程序
+xdg-entry-applications-comment = 默认应用程序、自动启动应用程序和 X11 应用程序兼容性设置
+xdg-entry-bluetooth-comment = 管理蓝牙设备
+xdg-entry-date-time = 日期和时间
+xdg-entry-date-time-comment = 时区、自动时钟设置和时间格式
+xdg-entry-default-apps = 默认应用程序
+xdg-entry-default-apps-comment = 默认网络浏览器、邮件客户端、文件管理器和其他应用程序
+xdg-entry-desktop = 桌面
+xdg-entry-displays = 显示器
+xdg-entry-displays-comment = 管理显示器设置
+xdg-entry-dock = 程序坞
+xdg-entry-dock-comment = 可选的应用程序和小部件的工具栏
+xdg-entry-input = 输入设备
+xdg-entry-input-comment = 键盘与光标设置
+xdg-entry-keyboard = 键盘
+xdg-entry-keyboard-comment = 输入源、切换、特殊字符输入、快捷键
+xdg-entry-mouse = 鼠标
+xdg-entry-mouse-comment = 鼠标速度、加速度和自然滚动
+xdg-entry-network = 网络和无线
+xdg-entry-network-comment = 管理网络连接
+xdg-entry-notifications = 通知
+xdg-entry-notifications-comment = 勿扰模式、锁屏通知和每个应用程序的设置
+xdg-entry-panel = 面板
+xdg-entry-panel-comment = 主系统栏，用于菜单和小部件
+xdg-entry-power = 电源和电池
+xdg-entry-power-comment = 电源模式和节能选项
+xdg-entry-region-language = 区域和语言
+xdg-entry-region-language-comment = 根据您的区域格式化日期、时间和数字
+xdg-entry-sound = 声音
+xdg-entry-sound-comment = 设备、警报和应用程序的音频设置
+xdg-entry-startup-apps = 自动启动应用程序
+xdg-entry-startup-apps-comment = 配置登录时运行的应用程序
+xdg-entry-system = 系统与账户
+xdg-entry-system-comment = 系统信息、账户和固件更新
+xdg-entry-time-language = 时间与语言
+xdg-entry-touchpad = 触摸板
+xdg-entry-touchpad-comment = 触摸板速度、点击选项和手势
+xdg-entry-users = 用户
+xdg-entry-users-comment = 身份验证和用户账户
+xdg-entry-vpn-comment = VPN 连接和配置文件
+xdg-entry-wallpaper = 壁纸
+xdg-entry-wallpaper-comment = 壁纸图片、颜色和幻灯片选项
+xdg-entry-window-management = 窗口管理
+xdg-entry-window-management-comment = Super 键操作、窗口控制选项和额外的窗口平铺选项
+xdg-entry-wired = 有线连接
+xdg-entry-wired-comment = 有线连接和配置文件
+xdg-entry-wireless-comment = Wi-Fi 连接和配置文件
+xdg-entry-workspaces = 工作区
+xdg-entry-workspaces-comment = 工作区方向、总预览和多显示屏行为
+xdg-entry-x11-applications = X11 应用程序兼容性
+xdg-entry-x11-applications-comment = X11 窗口系统应用程序缩放、主要显示器和全局快捷键
+
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] 有线
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] 未知
-    }连接和连接配置。
 add-network = 添加网络
     .profile = 添加配置
 add-vpn = 添加 VPN
@@ -99,7 +152,6 @@ activate = 激活
 confirm = 确认
 enable = 启用
 bluetooth = 蓝牙
-    .desc = 管理蓝牙设备
     .status = 当蓝牙设置打开时，此系统显示为 { $aliases }。
     .connected = 已连接
     .connecting = 正在连接
@@ -171,7 +223,6 @@ desktop = 桌面
 
 wallpaper = 壁纸
     .change = 图片更换间隙
-    .desc = 壁纸图片、颜色和幻灯片选项。
     .fit = 壁纸适应方式
     .folder-dialog = 选择壁纸文件夹
     .image-dialog = 选择壁纸图片
@@ -202,7 +253,6 @@ never = 从不
 ## Desktop: Appearance
 
 appearance = 外观
-    .desc = 主题色和主题设置
 accent-color = 主题色
 app-background = 窗口背景
 auto = 自动
@@ -262,12 +312,10 @@ monospace-font = 等宽字体
 ## Desktop: Notifications
 
 notifications = 通知
-    .desc = 勿扰模式、锁屏通知以及各应用程序的通知设置
 
 ## Desktop: Panel
 
 panel = 面板
-    .desc = 用于菜单和小部件的主系统栏
 add = 添加
 add-applet = 添加小部件
 all = 全部
@@ -310,12 +358,10 @@ panel-missing = 缺少面板配置
 ## Desktop: Dock
 
 dock = 程序坞
-    .desc = 用于应用程序和小部件的可选栏
 
 ## Desktop: Window management
 
 window-management = 窗口管理
-    .desc = Super 键动作、窗口控制选项和额外的窗口平铺选项
 super-key = Super 键动作
     .launcher = 打开启动器
     .workspaces = 打开工作区
@@ -334,7 +380,6 @@ focus-navigation = 焦点导航
 ## Desktop: Workspaces
 
 workspaces = 工作区
-    .desc = 工作区方向和行为
 workspaces-behavior = 工作区行为
     .dynamic = 动态工作区
     .dynamic-desc = 自动移除空的工作区
@@ -361,7 +406,6 @@ color = 颜色
     .sidebar = 颜色配置文件
     .temperature = 色温
 display = 显示
-    .desc = 管理显示器和夜灯
     .arrangement = 显示器排列
     .arrangement-desc = 拖动显示器来重新排列
     .enable = 启用显示器
@@ -410,7 +454,6 @@ dialog = 对话框
 ## Sound
 
 sound = 声音
-    .desc = 音频设置
 sound-output = 输出
     .volume = 输出音量
     .device = 输出设备
@@ -432,7 +475,6 @@ sound-applications = 应用程序
 ## Power
 
 power = 电源和电池
-    .desc = 管理电源设置
 battery = 电池
     .minute =
         { $value } { $value ->
@@ -477,7 +519,6 @@ power-saving = 节能选项
 acceleration-desc = 根据速度自动调整跟踪灵敏度
 disable-while-typing = 打字时禁用触摸板
 input-devices = 输入设备
-    .desc = 输入设备
 primary-button = 主按键
     .desc = 设置物理按键的顺序
     .left = 左
@@ -496,7 +537,6 @@ fast = 快
 short = 短
 long = 长
 keyboard = 键盘
-    .desc = 输入源、切换方式、特殊字符输入和快捷键
 keyboard-sources = 输入源
     .desc = 可以使用 Super + 空格键组合切换输入源。可以在键盘快捷键设置中自定义。
     .move-up = 上移
@@ -659,7 +699,6 @@ zoom-out = 缩小
 ## Input: Mouse
 
 mouse = 鼠标
-    .desc = 鼠标速度、加速度、自然滚动
     .speed = 鼠标速度
     .acceleration = 启用鼠标加速度
 
@@ -674,7 +713,6 @@ tap-to-click = 轻触点击
     .desc = 启用单指轻触进行主点击，双指轻触进行次点击，三指轻触进行中键点击
 touchpad = 触控板
     .acceleration = 启用触控板加速度
-    .desc = 触控板速度、点击选项、手势
     .speed = 触控板速度
 
 ## Input: Gestures
@@ -695,9 +733,7 @@ open-workspaces-view = 打开工作区总览
 ## Time & Language
 
 time = 时间和语言
-    .desc = 不可用
 time-date = 日期与时间
-    .desc = 时区、自动时钟设置与时间格式
     .auto = 自动设置
     .auto-ntp = 当时区设置好后，日期与时间将自动更新
 time-zone = 时区
@@ -713,7 +749,6 @@ time-format = 日期与时间格式
     .sunday = 星期日
     .monday = 星期一
 time-region = 区域与语言
-    .desc = 根据您所在的区域设置日期、时间和数字的格式
 formatting = 格式设置
     .dates = 日期
     .time = 时间
@@ -735,7 +770,6 @@ applications = 应用程序
 ## Applications: Default Applications
 
 default-apps = 默认应用程序
-    .desc = 默认网络浏览器、邮件客户端、文件浏览器和其他应用程序。
     .web-browser = 网络浏览器
     .file-manager = 文件管理器
     .mail-client = 邮件客户端
@@ -746,11 +780,11 @@ default-apps = 默认应用程序
     .terminal = 终端
     .other-associations = 其他关联
     .text-editor = 文本编辑器
+    .not-installed = 未安装
 
 ## Applications: Startup Applications
 
 startup-apps = 自动启动应用程序
-    .desc = 配置登录时运行的应用程序。
     .add = 添加应用程序
     .user = 登录时启动的应用程序
     .none = 未添加自动启动应用程序
@@ -761,7 +795,6 @@ startup-apps = 自动启动应用程序
 ## Applications: Legacy Applications
 
 legacy-applications = X11 应用程序兼容性
-    .desc = X11 窗口系统应用程序缩放与全局快捷键
 legacy-app-global-shortcuts = X11 应用程序中的全局快捷键
     .desc = 全局快捷键允许其他应用程序识别在应用程序中执行的击键和鼠标按钮事件，以实现按下通话或按下静音等功能。默认情况下，X11 应用程序中禁用全局快捷键，以确保其他应用程序无法监控包含敏感信息的键盘和鼠标事件。
     .none = 无按键
@@ -786,7 +819,6 @@ system = 系统与账户
 ## System: About
 
 about = 关于
-    .desc = 设备名称、硬件信息、操作系统默认设置
 about-device = 设备名称
     .desc = 此名称将显示给其他网络或蓝牙设备
 about-hardware = 硬件
@@ -807,12 +839,10 @@ about-related = 相关设置
 ## System: Firmware
 
 firmware = 固件
-    .desc = 固件详细信息
 
 ## System: Users
 
 users = 用户
-    .desc = 身份验证与用户账户
     .admin = 管理员
     .standard = 标准用户
     .profile-add = 选择个人资料图像
@@ -842,3 +872,44 @@ shadows-tiling = 平铺窗口
     .clip = 匹配系统角落
     .shadow = 应用阴影
 shadow-and-corners = 窗口阴影与角落
+workspaces-overview = 工作区总览
+    .action-on-typing = 输入操作
+    .none = 无
+    .launcher = 开启启动器
+    .applications = 打开应用程序
+xdg-entry-about-keywords = COSMIC;关于
+xdg-entry-wireless = Wi-Fi
+xdg-entry-comment = COSMIC 桌面的设置应用程序
+xdg-entry-mouse-keywords = COSMIC;鼠标;加速度;滚动;
+xdg-entry-notifications-keywords = COSMIC;通知;锁屏;
+xdg-entry-startup-apps-keywords = COSMIC;自动启动;应用程序;
+xdg-entry-wired-keywords = COSMIC;有线;LAN;网络;连接;
+xdg-entry-appearance-keywords = COSMIC;主题色;颜色;图标;字体;主题
+xdg-entry-dock-keywords = COSMIC;程序坞;面板;小部件
+xdg-entry-panel-keywords = COSMIC;面板;小部件
+xdg-entry-time-language-comment = 管理系统日期、时间、地区和语言
+xdg-entry-desktop-keywords = COSMIC;桌面;
+xdg-entry-x11-applications-keywords = COSMIC;X11;应用程序;游戏;兼容性;
+xdg-entry-touchpad-keywords = COSMIC;触摸板;手势;
+xdg-entry-system-keywords = COSMIC;系统;信息;账户;固件;
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;网络;连接;
+xdg-entry-a11y-keywords = COSMIC;无障碍;A11y;屏幕;阅读器;放大镜;对比;对比度;颜色;色彩;
+xdg-entry-date-time-keywords = COSMIC;时间;时区;
+xdg-entry-desktop-comment = 壁纸、外观、面板、程序坞、窗口管理和工作区设置
+xdg-entry-bluetooth-keywords = COSMIC;蓝牙;
+xdg-entry-network-keywords = COSMIC;网络;无线;WiFi;VPN;
+xdg-entry-workspaces-keywords = COSMIC;工作区;方向;总预览;显示屏;
+xdg-entry-wallpaper-keywords = COSMIC;壁纸;背景;幻灯片;
+xdg-entry-users-keywords = COSMIC;用户;账户;
+xdg-entry-vpn-keywords = COSMIC;VPN;网络;连接;OpenVPN;OpenConnect;
+xdg-entry-time-language-keywords = COSMIC;系统;时间;日期;地区;语言;
+xdg-entry-input-keywords = COSMIC;输入;键盘;鼠标;
+xdg-entry-sound-keywords = COSMIC;声音;音频;警报;Pipewire;
+xdg-entry-power-keywords = COSMIC;电源;电池
+xdg-entry-default-apps-keywords = COSMIC;默认;应用程序
+xdg-entry-keywords = COSMIC;设置;
+xdg-entry-region-language-keywords = COSMIC;地区;语言;日期;格式;时间;当地;本地化;
+xdg-entry-applications-keywords = COSMIC;默认;应用程序;自动启动;X11;兼容性
+xdg-entry-keyboard-keywords = COSMIC;键盘;输入;输入源;快捷键;
+xdg-entry-window-management-keywords = COSMIC;窗口;管理;平铺;Super;键;
+xdg-entry-displays-keywords = COSMIC;显示器;屏幕;

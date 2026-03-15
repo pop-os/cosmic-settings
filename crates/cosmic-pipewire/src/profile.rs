@@ -4,7 +4,7 @@
 use crate::{Availability, spa_utils::string_from_pod};
 use libspa::pod::Pod;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Profile {
     pub index: i32,
     pub priority: i32,

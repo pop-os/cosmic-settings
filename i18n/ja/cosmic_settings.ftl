@@ -3,13 +3,6 @@ unknown = 不明
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] 有線の
-        [wifi] Wi-Fiの
-        [vpn] VPNの
-       *[other] 不明な
-    }接続と接続プロファイル。
 add-network = ネットワークを追加
     .profile = プロファイルを追加
 add-vpn = VPNを追加

@@ -34,7 +34,7 @@ use pipewire::{
     proxy::{ProxyListener, ProxyT},
     types::ObjectType,
 };
-use std::{cell::RefCell, rc::Rc, u32};
+use std::{cell::RefCell, rc::Rc};
 
 pub type NodeId = u32;
 pub type RouteId = u32;
@@ -66,17 +66,18 @@ fn run_service(
     let registry = core.get_registry_rc()?;
 
     let state = Rc::new(RefCell::new(State {
-        nodes: IntMap::new(),
+        main_loop: main_loop.downgrade(),
         proxies: Proxies {
             devices: IntMap::new(),
             metadata: IntMap::new(),
             nodes: IntMap::new(),
         },
+        nodes: IntMap::new(),
+        active_routes: IntMap::new(),
         routes: IntMap::new(),
         node_devices: IntMap::new(),
         node_card_profile_device: IntMap::new(),
         node_props: IntMap::new(),
-        main_loop: main_loop.downgrade(),
         on_event,
     }));
 
@@ -180,10 +181,10 @@ fn run_service(
                                     return;
                                 }
 
-                                if let Some(device) = Device::from_device(info) {
-                                    if let Some(state) = state.upgrade() {
-                                        state.borrow_mut().add_device(pw_id, device);
-                                    }
+                                if let Some(device) = Device::from_device(info)
+                                    && let Some(state) = state.upgrade()
+                                {
+                                    state.borrow_mut().add_device(pw_id, device);
                                 }
                             }
                         })
@@ -207,7 +208,9 @@ fn run_service(
                                 match param_type {
                                     ParamType::EnumProfile => {
                                         if let Some(profile) = Profile::from_pod(pod) {
-                                            state.borrow_mut().add_profile(device_id, profile);
+                                            state
+                                                .borrow_mut()
+                                                .add_profile(device_id, index, profile);
                                         }
                                     }
 
@@ -278,10 +281,10 @@ fn run_service(
                         .info({
                             let state = Rc::downgrade(&state);
                             move |info| {
-                                if let Some(node) = Node::from_node(info) {
-                                    if let Some(state) = state.upgrade() {
-                                        state.borrow_mut().add_node(id, node);
-                                    }
+                                if let Some(node) = Node::from_node(info)
+                                    && let Some(state) = state.upgrade()
+                                {
+                                    state.borrow_mut().add_node(id, node);
                                 }
                             }
                         })
@@ -354,24 +357,18 @@ fn run_service(
                                     "default.audio.sink" => {
                                         if let Ok(value) =
                                             serde_json::de::from_str::<DefaultAudio>(value)
+                                            && let Some(state) = state.upgrade()
                                         {
-                                            if let Some(state) = state.upgrade() {
-                                                state
-                                                    .borrow_mut()
-                                                    .default_sink(value.name.to_owned())
-                                            }
+                                            state.borrow_mut().default_sink(value.name.to_owned())
                                         }
                                     }
 
                                     "default.audio.source" => {
                                         if let Ok(value) =
                                             serde_json::de::from_str::<DefaultAudio>(value)
+                                            && let Some(state) = state.upgrade()
                                         {
-                                            if let Some(state) = state.upgrade() {
-                                                state
-                                                    .borrow_mut()
-                                                    .default_source(value.name.to_owned())
-                                            }
+                                            state.borrow_mut().default_source(value.name.to_owned())
                                         }
                                     }
 
@@ -423,7 +420,7 @@ pub enum Event {
     /// A new node was detected.
     AddNode(Node),
     /// A profile was enumerated
-    AddProfile(DeviceId, Profile),
+    AddProfile(DeviceId, u32, Profile),
     /// A route was enumerated
     AddRoute(DeviceId, u32, Route),
     /// The default sink was changed.
@@ -496,13 +493,21 @@ struct Proxies {
 }
 
 struct State {
-    nodes: IntMap<PipewireId, (NodeId, Option<DeviceId>)>,
-    pub(self) proxies: Proxies,
-    routes: IntMap<DeviceId, Vec<Route>>,
-    node_devices: IntMap<NodeId, DeviceId>,
-    node_props: IntMap<NodeId, NodeProps>,
-    node_card_profile_device: IntMap<NodeId, u32>,
     main_loop: MainLoopWeak,
+    /// Stores pipewire objects that we are monitoring.
+    pub(self) proxies: Proxies,
+    /// Associates the pipewire ID of a node to its node and device IDs.
+    nodes: IntMap<PipewireId, (NodeId, Option<DeviceId>)>,
+    /// Routes which are currently in use by devices.
+    active_routes: IntMap<DeviceId, Vec<Route>>,
+    /// Routes which are supported by devices.
+    routes: IntMap<DeviceId, Vec<Route>>,
+    /// Associates node objects to their device objects.
+    node_devices: IntMap<NodeId, DeviceId>,
+    /// Additional properties of nodes for managing volume, mute, etc.
+    node_props: IntMap<NodeId, NodeProps>,
+    /// Associates a node with a card profile device for matching nodes to routes.
+    node_card_profile_device: IntMap<NodeId, u32>,
     /// Handle events and exit the loop when `true` is returned.
     on_event: Box<dyn FnMut(Event)>,
 }
@@ -513,6 +518,16 @@ impl State {
     }
 
     fn active_route(&mut self, id: DeviceId, index: u32, route: Route) {
+        // Keep a record of routes attached to a device for setting properties.
+        // This will overwrite routes on updates to
+        let routes = self.active_routes.entry(id).or_default();
+        if routes.len() < index as usize + 1 {
+            let additional = (index as usize + 1) - routes.capacity();
+            routes.reserve_exact(additional);
+            routes.extend(std::iter::repeat_n(Route::default(), additional));
+        }
+        routes[index as usize] = route.clone();
+
         self.on_event(Event::ActiveRoute(id, index, route));
     }
 
@@ -554,8 +569,8 @@ impl State {
         self.on_event(Event::AddNode(node));
     }
 
-    fn add_profile(&mut self, id: DeviceId, profile: Profile) {
-        self.on_event(Event::AddProfile(id, profile));
+    fn add_profile(&mut self, id: DeviceId, index: u32, profile: Profile) {
+        self.on_event(Event::AddProfile(id, index, profile));
     }
 
     fn add_route(&mut self, id: DeviceId, index: u32, route: Route) {
@@ -565,7 +580,7 @@ impl State {
         if routes.len() < index as usize + 1 {
             let additional = (index as usize + 1) - routes.capacity();
             routes.reserve_exact(additional);
-            routes.extend(std::iter::repeat(Route::default()).take(additional));
+            routes.extend(std::iter::repeat_n(Route::default(), additional));
         }
         routes[index as usize] = route.clone();
 
@@ -592,8 +607,8 @@ impl State {
         self.on_event(Event::DefaultSource(name));
     }
 
-    fn node_route(&self, device_id: DeviceId, route_device: i32) -> Option<&Route> {
-        self.routes
+    fn active_node_route(&self, device_id: DeviceId, route_device: i32) -> Option<&Route> {
+        self.active_routes
             .get(device_id)?
             .iter()
             .find(|r| r.devices.contains(&route_device))
@@ -682,14 +697,14 @@ impl State {
     fn set_mute_node(&self, id: NodeId, mute: bool) {
         // Prefer to mute the device instead of the node.
         // Muting a node will not emit a notification.
-        if let Some((&device_id, &route_device)) = self
+        if let Some((&device_id, &card_profile_device)) = self
             .node_devices
             .get(id)
             .zip(self.node_card_profile_device.get(id))
         {
-            let route_device = route_device as i32;
-            if let Some(route) = self.node_route(device_id, route_device) {
-                self.set_mute(device_id, route_device, route, mute);
+            let card_profile_device = card_profile_device as i32;
+            if let Some(route) = self.active_node_route(device_id, card_profile_device) {
+                self.set_mute(device_id, card_profile_device, route, mute);
                 return;
             };
         }
@@ -748,7 +763,6 @@ impl State {
         if let Some(param) = Pod::from_bytes(&serialized) {
             device.set_param(ParamType::Route, 0, param);
         }
-        return;
     }
 
     fn set_node_props(&mut self, id: NodeId, props: NodeProps) {
@@ -762,14 +776,21 @@ impl State {
         };
 
         // Prefer to change the volume of the device instead of the node.
-        if let Some((&device_id, &route_device)) = self
+        if let Some((&device_id, &card_profile_device)) = self
             .node_devices
             .get(id)
             .zip(self.node_card_profile_device.get(id))
         {
-            let route_device = route_device as i32;
-            if let Some(route) = self.node_route(device_id, route_device) {
-                self.set_volume(device_id, props, route_device, route, volume, balance);
+            let card_profile_device = card_profile_device as i32;
+            if let Some(route) = self.active_node_route(device_id, card_profile_device) {
+                self.set_volume(
+                    device_id,
+                    props,
+                    card_profile_device,
+                    route,
+                    volume,
+                    balance,
+                );
                 return;
             };
         }
@@ -789,7 +810,7 @@ impl State {
                     FormatProperties(libspa_sys::SPA_PROP_channelVolumes),
                     ValueArray,
                     pod::ValueArray::Float(volume::to_channel_volumes(
-                        &props.channel_map.as_deref().unwrap_or_default(),
+                        props.channel_map.as_deref().unwrap_or_default(),
                         volume,
                         balance,
                     ))
@@ -859,7 +880,7 @@ impl State {
                 ValueArray,
                 pod::ValueArray::Float(if matches!(route.direction, Direction::Output) {
                     volume::to_channel_volumes(
-                        &props.channel_map.as_deref().unwrap_or_default(),
+                        props.channel_map.as_deref().unwrap_or_default(),
                         volume,
                         balance,
                     )

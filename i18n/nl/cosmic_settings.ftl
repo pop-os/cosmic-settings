@@ -1,67 +1,114 @@
 app = COSMIC Instellingen
 dbus-connection-error = Kon niet met DBus verbinden
-ok = Ok
+ok = Oké
 unknown = Onbekend
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = Over
+xdg-entry-about-comment = Apparaatnaam, hardware-informatie, standaardinstellingen van het besturingssysteem
+xdg-entry-a11y = Toegankelijkheden
+xdg-entry-a11y-comment = Toegankelijkheidsinstellingen
+xdg-entry-appearance = Weergave
+xdg-entry-appearance-comment = Accentkleuren en thema's
+xdg-entry-applications = Toepassingen
+xdg-entry-applications-comment = Instellingen voor toepassingen beheren
+xdg-entry-date-time = Datum en tijd
+xdg-entry-date-time-comment = Tijdszone, automatische klokinstellingen en tijdformatering
+xdg-entry-default-apps = Standaard toepassingen
+xdg-entry-default-apps-comment = Standaard webbrowser, mailprogramma, bestandsbeheerder en andere apps
+xdg-entry-desktop = Bureaublad
+xdg-entry-displays = Beeldschermen
+xdg-entry-displays-comment = Weergaveopties, grafische modi en nachtlicht
+xdg-entry-dock = Dock
+xdg-entry-dock-comment = Een optionele balk voor apps en applets
+xdg-entry-input = Invoerapparaten
+xdg-entry-input-comment = Toetsenbord, muis, enz.
+xdg-entry-keyboard = Toetsenbord
+xdg-entry-keyboard-comment = Invoermethodes, speciale tekens, en sneltoetsen
+xdg-entry-mouse = Muis
+xdg-entry-mouse-comment = Muissnelheid en -versnelling, en 'natuurlijk' scrollen
+xdg-entry-network = Netwerk en wifi
+xdg-entry-network-comment = Netwerkverbindingen beheren
+xdg-entry-notifications = Meldingsinstellingen
+xdg-entry-notifications-comment = "Niet storen", meldingen op het vergrendelingsscherm en meldingsinstellingen per app
+xdg-entry-panel = Panel
+xdg-entry-panel-comment = De standaard systeembalk voor menu's en applets
+xdg-entry-power = Energie en batterij
+xdg-entry-power-comment = Energieverbruik en -besparingsopties
+xdg-entry-region-language = Taal en regio
+xdg-entry-region-language-comment = Regionale datum-, tijd- en getalweergave
+xdg-entry-sound = Geluid
+xdg-entry-sound-comment = Geluidsinstellingen voor apparaten, alarmen en programma's
+xdg-entry-system = Systeem en gebruikersaccount
+xdg-entry-time-language = Tijd- en taalinstellingen
+xdg-entry-touchpad = Touchpad
+xdg-entry-touchpad-comment = Touchpad muisversnelling, klikeigenschappen en veeggebaren
+xdg-entry-users = Gebruikers
+xdg-entry-users-comment = Authenticatie en gebruikersinstellingen
+xdg-entry-vpn-comment = VPN-verbindingen en VPN-profielen
+xdg-entry-wallpaper = Schermachtergrond
+xdg-entry-wallpaper-comment = Schermachtergrond: Afbeeldingen, kleuren en diavoorstellingen
+xdg-entry-window-management = Vensterbeheer
+xdg-entry-window-management-comment = Opties voor de Supertoets, vensterbeheer en aanvullende opties voor het tegelen van vensters
+xdg-entry-wired = Kabelverbinding
+xdg-entry-wired-comment = Kabelverbinding en verbindingsprofielen
+xdg-entry-wireless-comment = Wifiverbinding en verbindingsprofielen
+xdg-entry-x11-applications = Compatibiliteit met X11-toepassingen.
+xdg-entry-x11-applications-comment = X11-toepassingsvensters schalen, en globale sneltoetsen
+
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Kabelverbindingen
-        [wifi] Wifi-verbindingen
-        [vpn] VPN-verbindingen
-       *[other] Onbekende verbindingen
-    } en verbindingsprofielen.
-add-network = Voeg netwerk toe
-    .profile = Voeg profiel toe
-add-vpn = Voeg VPN toe
+add-network = Netwerk toevoegen
+    .profile = Profiel toevoegen
+add-vpn = VPN toevoegen
 airplane-on = Vliegtuigmodus staat aan.
-cable-unplugged = Kabel losgekoppeld
-connect = Verbind
+cable-unplugged = Kabel niet verbonden
+connect = Verbinden
 connected = Verbonden
 connecting = Verbinding maken…
-disconnect = Verbreek verbinding
-forget = Vergeet
+disconnect = Verbinding verbreken
+forget = Vergeten
 known-networks = Bekende netwerken
 network-and-wireless = Netwerk en wifi
 no-networks = Geen netwerken gevonden.
 no-vpn = Geen VPN-verbindingen beschikbaar.
 password = Wachtwoord
-password-confirm = Bevestig wachtwoord
-remove = Verwijder
+password-confirm = Wachtwoord bevestigen
+remove = Verwijderen
 settings = Instellingen
 username = Gebruikersnaam
 visible-networks = Zichtbare netwerken
 identity = Identiteit
-auth-dialog = Verificatie vereist
-    .vpn-description = Voer de gebruikersnaam en het wachtwoord in die de VPN-dienst vereist.
-    .wifi-description = Voer het wachtwoord of de encryptiesleutel in. U kunt ook verbinden door op de “WPS”-knop op de router te drukken.
-forget-dialog = Wilt u dit wifi-netwerk vergeten?
+auth-dialog = Authenticatie vereist
+    .vpn-description = Voer de door de VPN-dienst vereiste gebruikersnaam en wachtwoord in.
+    .wifi-description = Voer het wachtwoord of de encryptiesleutel in. U kunt ook verbinding maken door op de “WPS”-knop op de router te drukken.
+forget-dialog = Dit wifi-netwerk vergeten?
     .description = U moet in de toekomst opnieuw een wachtwoord invoeren om dit wifi-netwerk te kunnen gebruiken.
 network-device-state =
     .activated = Verbonden
-    .config = Maakt verbinding…
-    .deactivating = Verbreekt verbinding…
+    .config = Verbinding maken…
+    .deactivating = Verbinding verbreken…
     .disconnected = Verbinding verbroken
-    .failed = Verbinding mislukt
-    .ip-check = Controleert verbinding…
-    .ip-config = Vraagt IP- en routeringsinformatie op…
+    .failed = Kon niet verbinden
+    .ip-check = Verbinding controleren…
+    .ip-config = IP- en routeringsinformatie opvragen…
     .need-auth = Vereist authenticatie
-    .prepare = Bereidt verbinding voor…
-    .secondaries = Wacht op secundaire verbinding…
+    .prepare = Verbinding voorbereiden…
+    .secondaries = Wachten op secundaire verbinding…
     .unavailable = Niet beschikbaar
-    .unknown = Status onbekend
+    .unknown = Onbekende status
     .unmanaged = Onbeheerd
-    .unplugged = Kabel losgekoppeld
+    .unplugged = Kabel niet verbonden
 remove-connection-dialog = Wilt u dit verbindingsprofiel verwijderen?
     .vpn-description = U moet opnieuw een wachtwoord invoeren om dit netwerk in de toekomst te kunnen gebruiken.
     .wired-description = U moet dit profiel opnieuw aanmaken om het in de toekomst te kunnen gebruiken.
 vpn = VPN
     .connections = VPN-verbindingen
-    .error = Toevoegen VPN-configuratie mislukt
-    .remove = Verwijder verbindingsprofiel
-    .select-file = Selecteer een VPN-configuratiebestand
+    .error = Kon VPN-configuratie niet toevoegen
+    .remove = Verbindingsprofiel verwijderen
+    .select-file = VPN-configuratie selecteren
 vpn-error = VPN-fout
     .config = Kon VPN-configuratie niet toevoegen
     .connect = Kon niet met VPN verbinden
@@ -81,23 +128,23 @@ wired = Kabelverbindingen
     .adapter = Kabeladapter { $id }
     .connections = Kabelverbindingen
     .devices = Kabelapparaten
-    .remove = Verwijder verbindingsprofielen
+    .remove = Verbindingsprofiel verwijderen
 wifi = Wifi
     .adapter = Wifi-adapter { $id }
-    .forget = Vergeet dit netwerk
+    .forget = Dit netwerk vergeten
 wireguard-dialog = WireGuard-apparaat toevoegen
     .description = Kies een apparaatnaam voor de WireGuard-configuratie.
 
 ## Networking: Online Accounts
 
-online-accounts = Online accounts
-    .desc = Online accounts, IMAP en SMTP, bedrijfslogins
+online-accounts = Onlineaccounts
+    .desc = Onlineaccounts, IMAP en SMTP, zakelijke logins
 
 # Bluetooth
 
-activate = Activeer
-confirm = Bevestig
-enable = Schakel in
+activate = Activeren
+confirm = Bevestigen
+enable = Inschakelen
 bluetooth = Bluetooth
     .desc = Bluetooth-apparaten bewerken
     .status = Dit systeem is zichtbaar als { $aliases } zolang de bluetooth-instellingen open staan.
@@ -111,8 +158,8 @@ bluetooth = Bluetooth
     .disabled = De bluetooth-service is uitgeschakeld
     .inactive = De bluetooth-service is niet actief
     .unknown = De bluetooth-service kon niet worden geactiveerd. Is BlueZ geïnstalleerd?
-bluetooth-paired = Eerder verbonden apparaten
-    .connect = Verbind
+bluetooth-paired = Recent verbonden apparaten
+    .connect = Verbinden
     .battery = { $percentage }% batterij
 bluetooth-confirm-pin = Bluetooth-pincode bevestigen
     .description = Controleer of de volgende pincode overeenkomt met de pincode die op { $device } wordt weergegeven
@@ -126,10 +173,10 @@ accessibility = Toegankelijkheid
     .on = Aan
     .off = Uit
     .unavailable = Niet beschikbaar
-    .screen-reader = Schermverteller
-    .high-contrast = Verhoogde contrast modus
+    .screen-reader = Schermlezer
+    .high-contrast = Modus voor hoog contrast
     .invert-colors = Kleuren omkeren
-    .color-filters = Kleurfilters
+    .color-filters = Kleurenfilters
 hearing = Gehoor
     .mono = Stereo audio als mono afspelen
 default = Standaard
@@ -184,7 +231,7 @@ all-displays = Alle beeldschermen
 colors = Kleuren
 dialog-add = Toevoegen
 fill = Vullen
-fit-to-screen = Aan het scherm passend maken
+fit-to-screen = Schermvullend
 open-new-folder = Nieuwe map openen
 recent-folders = Recente mappen
 x-minutes =
@@ -200,19 +247,19 @@ never = Nooit
 
 ## Desktop: Appearance
 
-appearance = Kleuren en thema's
-    .desc = Bepaal hoe COSMIC eruit ziet.
+appearance = Uiterlijk
+    .desc = Accentkleuren en thema's
 accent-color = Accentkleur
-app-background = Toepassings- of vensterachtergrond
+app-background = Vensterachtergrond
 auto = Automatisch
 close = Sluiten
-color-picker = Kleurkiezer
+color-picker = Kleurenkiezer
 copied-to-clipboard = Naar klembord gekopieerd
 copy-to-clipboard = Naar klembord kopiëren
 dark = Donker
-export = Exporteer
+export = Exporteren
 hex = Hex
-import = Importeer
+import = Importeren
 light = Licht
 mode-and-colors = Kleuren en lichte/donkere modus
 recent-colors = Recente kleuren
@@ -255,7 +302,7 @@ window-management-appearance = Vensterbeheer
 
 experimental-settings = Experimentele instellingen
 icons-and-toolkit = Thema's voor pictogrammen en de toolkit
-interface-font = Standaardlettertype
+interface-font = Systeemlettertype
 monospace-font = Lettertype met gelijke letterbreedte
 
 ## Desktop: Notifications
@@ -269,17 +316,17 @@ panel = Paneel
     .desc = Bovenbalk met bureaubladapplets en menu's.
 add = Toevoegen
 add-applet = Applet toevoegen
-all = Alle
+all = Alles
 applets = Applets
 center-segment = Middenstuk
 end-segment = Eindstuk
 large = Groot
-no-applets-found = Geen applets gevonden...
+no-applets-found = Geen applets gevonden…
 panel-bottom = Onder
 panel-left = Links
 panel-right = Rechts
 panel-top = Boven
-search-applets = Applets zoeken...
+search-applets = Applets zoeken…
 small = Klein
 start-segment = Beginstuk
 panel-appearance = Uiterlijk
@@ -340,7 +387,7 @@ workspaces-behavior = Werking virtuele werkbladen
     .fixed = Vast aantal werkbladen
     .fixed-desc = Werkbladen aan het overzicht toevoegen of verwijderen.
 workspaces-multi-behavior = Werking over meerdere beeldschermen
-    .span = Virtuele werkbladen strekken zich uit over meerder beeldschermen
+    .span = Werkbladen strekken zich uit over meerder beeldschermen
     .separate = Beeldschermen hebben afzonderlijke werkbladen
 workspaces-overview-thumbnails = Miniatuurweergaven van het werkbladoverzicht
     .show-number = Toon het nummer van de werkbladen
@@ -387,7 +434,7 @@ mirroring = Scherm dupliceren
         } projecteren
 night-light = Nachtlichtbeheer
     .auto = Automatisch (van zonsondergang tot zonsopgang)
-    .desc = Blauw licht verminderen met warmere lichtkleuren.
+    .desc = Blauw licht verminderen met warmere lichtkleuren
 orientation = Oriëntatie
     .standard = Standaard
     .rotate-90 = 90° draaien
@@ -430,8 +477,8 @@ sound-applications = Toepassingen
 
 ## Power
 
-power = Enegrie en batterij
-    .desc = Energieverbruik beheren
+power = Energie en batterij
+    .desc = Energie-instellingen beheren
 battery = Batterij
     .minute =
         { $value } { $value ->
@@ -469,7 +516,7 @@ power-saving = Energiebesparingsopties
 
 ## Input
 
-acceleration-desc = De gevoeligheid wordt automatisch aangepast op basis van de snelheid.
+acceleration-desc = Past de volggevoeligheid automatisch aan op basis van de snelheid
 disable-while-typing = Uitschakelen tijdens het typen
 input-devices = Invoerapparaten
     .desc = Invoerapparaten
@@ -514,17 +561,17 @@ keyboard-numlock-boot = Numlock
     .off = Uitgeschakeld
     .set = Numlock bij het opstarten
 added = Toegevoegd
-type-to-search = Typ om te zoeken...
+type-to-search = Typ om te zoeken…
 show-extended-input-sources = Toon uitgebreide invoermethodes
 
 ## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = Sneltoetsen
     .desc = Sneltoetsen bekijken en aanpassen
-cancel = Annuleer
+cancel = Annuleren
 command = Commando
 custom = Aangepast
-debug = Fouten opsporen
+debug = Foutopsporing
 disabled = Uitgeschakeld
 input-source-switch = Tussen toetsenbordindeling wisselen
 migrate-workspace-prev = Werkblad naar vorige uitvoer verplaatsen
@@ -537,7 +584,7 @@ migrate-workspace =
         [up] hierboven
     }
 navigate = Navigeren
-replace = Vervang
+replace = Vervangen
 shortcut-name = Sneltoetsnaam
 system-controls = Systeemaansturing
 terminate = Beëindigen
@@ -546,7 +593,7 @@ type-key-combination = Toetsencombinatie invoeren
 custom-shortcuts = Aangepaste sneltoetsen
     .add = Sneltoets toevoegen
     .context = Aangepaste sneltoets toevoegen
-    .none = Gebruik geen aangepaste sneltoetsen
+    .none = Geen gebruiker-geconfigureerde sneltoetsen
 modified = { $count } aangepast
 nav-shortcuts = Navigatie
     .prev-output = Focus op vorige uitvoer
@@ -714,7 +761,7 @@ formatting = Opmaak
 preferred-languages = Taalvoorkeur
     .desc = De volgorde van de talen bepaalt welke door COSMIC wordt gebruikt. Wijzigingen worden doorgevoerd nadat u zich opnieuw heeft aangemeld.
 add-language = Taal toevoegen
-    .context = Voeg een taal toe
+    .context = Taal toevoegen
 install-additional-languages = Meer talen installeren
 region = Regio
 
@@ -771,14 +818,14 @@ legacy-app-scaling = Het schalen van vensters die het X11-venstersysteem gebruik
 
 ## System
 
-system = Systeem en gebruikersaccounts
+system = Systeem- en gebruikersaccounts
 
 ## System: About
 
 about = Over dit apparaat
     .desc = Apparaatnaam, informatie over de hardware, standaardinstellingen van het besturingssysteem.
 about-device = Apparaatnaam
-    .desc = Deze naam is zichtbaar voor andere bluetooth- en netwerkapparaten.
+    .desc = Deze naam is zichtbaar voor andere netwerk- en bluetoothapparaten
 about-hardware = Hardware
     .model = Hardwaremodel
     .memory = Geheugen
@@ -788,33 +835,39 @@ about-hardware = Hardware
 about-os = Besturingssysteem
     .os = Besturingssysteem
     .os-architecture = Architectuur van het besturingssysteem
-    .desktop-environment = Bureaubladomgeving
-    .windowing-system = Vensterbeheerder
+    .kernel = Kernelversie
+    .desktop-environment = Desktopomgeving
+    .windowing-system = Venstersysteem
 about-related = Gerelateerde instellingen
-    .support = Om hulp vragen
+    .support = Ondersteuning
 
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmwaredetails.
+    .desc = Firmwaredetails
 
 ## System: Users
 
 users = Gebruikers
-    .desc = Authenticatie en gebruikersinstellingen.
-    .admin = Systeembeheerder
+    .desc = Authenticatie en gebruikersinstellingen
+    .admin = Beheerder
     .standard = Standaard
-    .profile-add = Kies een profielafbeelding
+    .profile-add = Profielafbeelding kiezen
 administrator = Systeembeheerder (root)
     .desc = Beheerders kunnen instellingen voor alle gebruikers wijzigen, en andere gebruikers toevoegen of verwijderen.
 add-user = Gebruiker toevoegen
 change-password = Wachtwoord wijzigen
 remove-user = Gebruiker verwijderen
-full-name = Volledige naam
-invalid-username = Ongeldige gebruikersnaam.
+full-name = Eigennaam
+invalid-username = Ongeldige gebruikersnaam
 password-mismatch = De wachtwoorden komen niet overeen, probeer het opnieuw.
-save = Sla op
+save = Opslaan
 qr-code-unavailable = QR-code niet beschikbaar
 network-name = Netwerknaam
-share = Deel netwerk
+share = Netwerk delen
 scan-to-connect-description = Scan de QR-code om met dit netwerk te verbinden.
+sound-usb-audio = USB-audio
+sound-hd-audio = HD-audio
+sound-device-profiles = Apparaatprofielen
+amplification = Verhoog maximum volume
+    .desc = Hiermee kan het volume tot 150% worden verhoogd

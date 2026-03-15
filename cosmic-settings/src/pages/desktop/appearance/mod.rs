@@ -16,9 +16,10 @@ use cosmic::app::ContextDrawer;
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
-use cosmic::cosmic_theme::{CornerRadii, Density, ThemeBuilder};
+use cosmic::cosmic_theme::{CornerRadii, Density, ThemeBuilder, ThemeMode};
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
+use cosmic::iced::Subscription;
 use cosmic::iced_core::{Alignment, Length};
 use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, horizontal_space, radio, row, settings,
@@ -30,7 +31,6 @@ use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::Section;
 use cosmic_settings_page::{self as page, section};
 use ron::ser::PrettyConfig;
-use slab::Slab;
 use slotmap::{Key, SlotMap};
 
 use crate::app;
@@ -124,6 +124,7 @@ pub enum Message {
     Autoswitch(bool),
     DarkMode(bool),
     Density(Density),
+    ThemeModeUpdate(ThemeMode),
 
     DrawerOpen(ContextView),
     DrawerColor(ColorPickerUpdate),
@@ -499,6 +500,8 @@ impl Page {
 
                 self.drawer.reset(&self.theme_manager);
 
+                self.can_reset = self.can_reset();
+
                 return cosmic::task::future(async move {
                     app::Message::SetTheme(cosmic::theme::system_preference())
                 });
@@ -541,6 +544,20 @@ impl Page {
                 self.day_time = day_time;
                 return Task::none();
             }
+
+            Message::ThemeModeUpdate(mode) => {
+                let was_dark = self.theme_manager.mode().is_dark;
+                let was_auto = self.theme_manager.mode().auto_switch;
+
+                self.theme_manager.sync_mode(mode);
+
+                // If auto-switch flipped while the page is open, keep the UI in sync.
+                if was_dark != self.theme_manager.mode().is_dark
+                    || was_auto != self.theme_manager.mode().auto_switch
+                {
+                    self.drawer.reset(&self.theme_manager);
+                }
+            }
         }
 
         let mut tasks = cosmic::Task::batch(tasks);
@@ -549,11 +566,7 @@ impl Page {
             tasks = tasks.chain(self.theme_manager.build_theme(stage))
         }
 
-        self.can_reset = if self.theme_manager.mode().is_dark {
-            *self.theme_manager.builder() != ThemeBuilder::dark()
-        } else {
-            *self.theme_manager.builder() != ThemeBuilder::light()
-        };
+        self.can_reset = self.can_reset();
 
         tasks
     }
@@ -667,6 +680,14 @@ impl Page {
             }
         };
     }
+
+    fn can_reset(&self) -> bool {
+        if self.theme_manager.mode().is_dark {
+            *self.theme_manager.builder() != ThemeBuilder::dark()
+        } else {
+            *self.theme_manager.builder() != ThemeBuilder::light()
+        }
+    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -706,7 +727,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("appearance", "preferences-appearance-symbolic")
             .title(fl!("appearance"))
-            .description(fl!("appearance", "desc"))
+            .description(fl!("xdg-entry-appearance-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
@@ -737,6 +758,17 @@ impl page::Page<crate::pages::Message> for Page {
         )));
 
         cosmic::task::batch(tasks)
+    }
+
+    fn subscription(&self, core: &cosmic::Core) -> Subscription<crate::pages::Message> {
+        // Keep the Appearance page in sync when the daemon auto-switches light/dark.
+        core.watch_config::<ThemeMode>("com.system76.CosmicTheme.Mode")
+            .map(|update| {
+                for why in update.errors {
+                    tracing::error!(?why, "theme mode config load error");
+                }
+                crate::pages::Message::Appearance(Message::ThemeModeUpdate(update.config))
+            })
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
@@ -796,10 +828,10 @@ pub fn interface_density() -> Section<crate::pages::Message> {
 
 #[allow(clippy::too_many_lines)]
 pub fn window_management() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let active_hint = descriptions.insert(fl!("window-management-appearance", "active-hint"));
-    let gaps = descriptions.insert(fl!("window-management-appearance", "gaps"));
+    crate::slab!(descriptions {
+        active_hint = fl!("window-management-appearance", "active-hint");
+        gaps = fl!("window-management-appearance", "gaps");
+    });
 
     Section::default()
         .title(fl!("window-management-appearance"))
@@ -889,9 +921,9 @@ pub fn experimental() -> Section<crate::pages::Message> {
 
 #[allow(clippy::too_many_lines)]
 pub fn reset_button() -> Section<crate::pages::Message> {
-    let mut descriptions = Slab::new();
-
-    let reset_to_default = descriptions.insert(fl!("reset-to-default"));
+    crate::slab!(descriptions {
+        reset_to_default = fl!("reset-to-default");
+    });
 
     Section::default()
         .descriptions(descriptions)

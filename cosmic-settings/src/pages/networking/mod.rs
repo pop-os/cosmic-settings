@@ -84,9 +84,9 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         crate::slab!(descriptions {
-            wifi_desc = fl!("connections-and-profiles", variant = "wifi");
-            wired_desc = fl!("connections-and-profiles", variant = "wired");
-            vpn_desc = fl!("connections-and-profiles", variant = "vpn");
+            wifi_desc = fl!("xdg-entry-wireless-comment");
+            wired_desc = fl!("xdg-entry-wired-comment");
+            vpn_desc = fl!("xdg-entry-vpn-comment");
         });
 
         let device_list = Section::default().descriptions(descriptions).view::<Self>(

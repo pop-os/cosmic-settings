@@ -21,7 +21,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("time", "preferences-time-and-language-symbolic")
             .title(fl!("time"))
-            .description(fl!("time", "desc"))
+            .description(fl!("xdg-entry-time-language-comment"))
     }
 }
 

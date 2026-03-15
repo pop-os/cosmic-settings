@@ -137,7 +137,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
         page::Info::new("panel", "preferences-panel-symbolic")
             .title(fl!("panel"))
-            .description(fl!("panel", "desc"))
+            .description(fl!("xdg-entry-panel-comment"))
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {

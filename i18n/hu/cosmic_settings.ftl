@@ -4,15 +4,66 @@ ok = OK
 unknown = Ismeretlen
 number = { $number }
 
+## Freedesktop desktop entries
+
+xdg-entry-about = Rendszerinformáció
+xdg-entry-about-comment = Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai
+xdg-entry-a11y = Akadálymentesség
+xdg-entry-a11y-comment = Képernyőolvasó, nagyító, magas kontraszt és színszűrők
+xdg-entry-appearance = Megjelenés
+xdg-entry-appearance-comment = Kiemelőszínek és témázás
+xdg-entry-applications = Alkalmazások
+xdg-entry-applications-comment = Alapértelmezett alkalmazások, indítási alkalmazások és X11 alkalmazáskompatibilitási beállítások
+xdg-entry-bluetooth-comment = Bluetooth-eszközök kezelése
+xdg-entry-date-time = Dátum és idő
+xdg-entry-date-time-comment = Időzóna, automatikus órabeállítások és időformátum
+xdg-entry-default-apps = Alapértelmezett alkalmazások
+xdg-entry-default-apps-comment = Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások
+xdg-entry-desktop = Asztal
+xdg-entry-displays = Kijelzők
+xdg-entry-displays-comment = Kijelzőbeállítások kezelése
+xdg-entry-dock = Dokk
+xdg-entry-dock-comment = Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz
+xdg-entry-input = Beviteli eszközök
+xdg-entry-input-comment = Billentyűzet- és egérbeállítások
+xdg-entry-keyboard = Billentyűzet
+xdg-entry-keyboard-comment = Bemeneti források, speciális karakterek, gyorsbillentyűk
+xdg-entry-mouse = Egér
+xdg-entry-mouse-comment = Egérsebesség, gyorsítás és természetes görgetés
+xdg-entry-network = Hálózat és Wi-Fi
+xdg-entry-network-comment = Hálózati kapcsolatok kezelése
+xdg-entry-notifications = Értesítések
+xdg-entry-notifications-comment = Ne zavarjanak, zárolási képernyő értesítések és alkalmazásonkénti beállítások
+xdg-entry-panel-comment = Fő rendszersáv menükhöz és kisalkalmazásokhoz
+xdg-entry-power = Energia és akkumulátor
+xdg-entry-power-comment = Energiagazdálkodási módok és energiagazdálkodási beállítások
+xdg-entry-region-language = Régió és nyelv
+xdg-entry-region-language-comment = Dátumok, időpontok és számok formázása a régió alapján
+xdg-entry-sound = Hang
+xdg-entry-sound-comment = Hangbeállítások eszközökhöz, figyelmeztetésekhez és alkalmazásokhoz
+xdg-entry-startup-apps = Indítási alkalmazások
+xdg-entry-startup-apps-comment = Azoknak az alkalmazásoknak a beállítása, amelyek bejelentkezéskor elindulnak
+xdg-entry-system = Rendszer és fiókok
+xdg-entry-time-language = Idő és nyelv
+xdg-entry-touchpad = Érintőpárna
+xdg-entry-touchpad-comment = Érintőpárna sebessége, kattintási beállítások és gesztusok
+xdg-entry-users = Felhasználók
+xdg-entry-users-comment = Hitelesítés és felhasználói fiókok
+xdg-entry-vpn-comment = VPN-kapcsolatok és kapcsolódási profilok
+xdg-entry-wallpaper = Háttérkép
+xdg-entry-wallpaper-comment = Háttérképek, színek és diavetítési beállítások
+xdg-entry-window-management = Ablakkezelés
+xdg-entry-window-management-comment = Super billentyű funkció, ablakkezelési és csempézési beállítások
+xdg-entry-wired = Vezetékes kapcsolatok
+xdg-entry-wired-comment = Vezetékes kapcsolatok és kapcsolódási profilok
+xdg-entry-wireless-comment = Wi-Fi kapcsolatok és kapcsolódási profilok
+xdg-entry-workspaces = Munkaterületek
+xdg-entry-workspaces-comment = Munkaterület-tájolás, áttekintés és többképernyős viselkedés
+xdg-entry-x11-applications = X11 alkalmazások támogatása
+xdg-entry-x11-applications-comment = X11 ablakrendszer alkalmazásméretezés, elsődleges kijelző és globális gyorsbillentyűk
+
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Vezetékes
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Ismeretlen
-    } kapcsolatok és profilok
 add-network = Hálózat hozzáadása
     .profile = Profil hozzáadása
 add-vpn = VPN hozzáadása
@@ -25,7 +76,7 @@ disconnect = Leválasztás
 forget = Elfelejtés
 known-networks = Ismert hálózatok
 network-and-wireless = Hálózat és Wi-Fi
-no-networks = Nem található hálózat
+no-networks = Nem található hálózat.
 no-vpn = Nincs elérhető VPN-kapcsolat
 password = Jelszó
 password-confirm = Jelszó megerősítése
@@ -49,7 +100,7 @@ network-device-state =
     .ip-config = IP és router információk lekérése
     .need-auth = Azonosítás szükséges
     .prepare = Felkészülés a kapcsolódáshoz
-    .secondaries = Várakozás egy másodlagos kapcsolatra
+    .secondaries = Várakozás másodlagos kapcsolatra
     .unavailable = Nem elérhető
     .unknown = Ismeretlen állapot
     .unmanaged = Kezeletlen
@@ -99,7 +150,6 @@ activate = Aktiválás
 confirm = Megerősítés
 enable = Engedélyezés
 bluetooth = Bluetooth
-    .desc = Bluetooth-eszközök kezelése
     .status = Ez a rendszer { $aliases } néven látható, amíg a Bluetooth beállítások vannak megnyitva.
     .connected = Csatlakozva
     .connecting = Csatlakozás…
@@ -108,7 +158,7 @@ bluetooth = Bluetooth
     .disconnect = Leválasztás
     .forget = Elfelejtés
     .dbus-error = Hiba történt a DBus-szal való kommunikáció során: { $why }
-    .disabled = A Bluetooth szolgáltatás ki van kapcsolva
+    .disabled = A Bluetooth szolgáltatás le van tiltva
     .inactive = A Bluetooth szolgáltatás nem aktív
     .unknown = A Bluetooth szolgáltatást nem sikerült aktiválni. A BlueZ telepítve van?
 bluetooth-paired = Korábban párosított eszközök
@@ -171,7 +221,6 @@ desktop = Asztal
 
 wallpaper = Háttérkép
     .change = Háttérkép váltásának gyakorisága
-    .desc = Háttérképek, színek és diavetítési beállítások
     .fit = Háttérkép illeszkedése
     .folder-dialog = Válassz mappát a háttérképekhez
     .image-dialog = Válassz képet a háttérképnek
@@ -202,7 +251,6 @@ never = Soha
 ## Desktop: Appearance
 
 appearance = Megjelenés
-    .desc = Kiemelőszínek és COSMIC témák
 accent-color = Kiemelőszín
 app-background = Ablakháttér
 auto = Automatikus
@@ -262,12 +310,10 @@ monospace-font = Rögzített szélességű betűtípus
 ## Desktop: Notifications
 
 notifications = Értesítések
-    .desc = Ne zavarjanak, zárolási képernyő értesítések és alkalmazásonkénti beállítások
 
 ## Desktop: Panel
 
 panel = Panel
-    .desc = Fő rendszersáv menükhöz és kisalkalmazásokhoz
 add = Hozzáadás
 add-applet = Kisalkalmazás hozzáadása
 all = Összes
@@ -310,17 +356,15 @@ panel-missing = A panel konfigurációja hiányzik
 ## Desktop: Dock
 
 dock = Dokk
-    .desc = Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz
 
 ## Desktop: Window management
 
 window-management = Ablakkezelés
-    .desc = Super billentyű funkció, ablakkezelési és csempézési beállítások
-super-key = Super billentyű
+super-key = Super billentyű funkciója
     .launcher = Indító megnyitása
     .workspaces = Munkaterületek megnyitása
     .applications = Alkalmazások megnyitása
-    .disable = Kikapcsolás
+    .disable = Letiltás
 edge-gravity = A lebegő ablakok a közeli szélekhez igazodnak
 window-controls = Ablakvezérlés
     .maximize = Maximalizálás gomb megjelenítése
@@ -334,7 +378,6 @@ focus-navigation = Fókusznavigáció
 ## Desktop: Workspaces
 
 workspaces = Munkaterületek
-    .desc = Munkaterületek tájolása és viselkedése
 workspaces-behavior = Munkaterületek viselkedése
     .dynamic = Dinamikus munkaterületek
     .dynamic-desc = Üres munkaterületek automatikus eltávolítása
@@ -343,7 +386,7 @@ workspaces-behavior = Munkaterületek viselkedése
 workspaces-multi-behavior = Többmonitoros viselkedés
     .span = A munkaterületek kiterjednek a kijelzőkre
     .separate = A kijelzők külön munkaterülettel rendelkeznek
-workspaces-overview-thumbnails = Munkaterület-áttekintő bélyegképek
+workspaces-overview-thumbnails = Munkaterület-áttekintő előnézetek
     .show-number = Munkaterület számának megjelenítése
     .show-name = Munkaterület nevének megjelenítése
 workspaces-orientation = Munkaterületek tájolása
@@ -361,7 +404,6 @@ color = Szín
     .sidebar = Színprofilok
     .temperature = Színhőmérséklet
 display = Kijelzők
-    .desc = Kijelzők kezelése és éjszakai fény
     .arrangement = Kijelző elrendezése
     .arrangement-desc = Húzd a kijelzőket az átrendezésükhöz
     .enable = Kijelző engedélyezése
@@ -410,7 +452,6 @@ dialog = Párbeszédablak
 ## Sound
 
 sound = Hang
-    .desc = N/A
 sound-output = Kimenet
     .volume = Kimeneti hangerő
     .device = Kimeneti eszköz
@@ -432,7 +473,6 @@ sound-applications = Alkalmazások
 ## Power
 
 power = Energia és akkumulátor
-    .desc = Energiabeállítások kezelése
 battery = Akkumulátor
     .minute =
         { $value } { $value ->
@@ -477,7 +517,6 @@ power-saving = Energiagazdálkodási beállítások
 acceleration-desc = Követési érzékenység automatikus beállítása a sebesség alapján
 disable-while-typing = Letiltás gépeléskor
 input-devices = Beviteli eszközök
-    .desc = Beviteli eszközök
 primary-button = Elsődleges gomb
     .desc = Gombok sorrendjének beállítása
     .left = Bal
@@ -496,7 +535,6 @@ fast = Gyors
 short = Rövid
 long = Hosszú
 keyboard = Billentyűzet
-    .desc = Bemeneti források, speciális karakterek, gyorsbillentyűk
 keyboard-sources = Bemeneti források
     .desc = A bemeneti források a Super+Szóköz billentyűkombinációval válthatók. Ez testre szabható a gyorsbillentyűk beállításaiban.
     .move-up = Mozgatás feljebb
@@ -520,7 +558,7 @@ keyboard-numlock-boot = Num Lock
     .off = Kikapcsolva
     .set = Num Lock rendszerindítási állapotának beállítása
 added = Hozzáadva
-type-to-search = Írj a kereséshez…
+type-to-search = Gépelj a kereséshez…
 show-extended-input-sources = Bővített bemeneti források megjelenítése
 
 ## Input: Keyboard: Shortcuts
@@ -533,7 +571,7 @@ command = Parancs
 custom = Egyedi
 debug = Hibakeresés
 disabled = Letiltva
-input-source-switch = Billentyűzetkiosztás váltása
+input-source-switch = Beviteli forrás váltása
 migrate-workspace-prev = Munkaterület áthelyezése az előző kimenetre
 migrate-workspace-next = Munkaterület áthelyezése a következő kimenetre
 migrate-workspace =
@@ -659,7 +697,6 @@ zoom-out = Kicsinyítés
 ## Input: Mouse
 
 mouse = Egér
-    .desc = Egérsebesség, gyorsítás és természetes görgetés
     .speed = Egér sebessége
     .acceleration = Egérgyorsítás engedélyezése
 
@@ -674,7 +711,6 @@ tap-to-click = Koppintás a kattintáshoz
     .desc = Engedélyezi az egyujjas koppintást az elsődleges kattintáshoz, a kétujjas koppintást a másodlagos kattintáshoz és a háromujjas érintést a középső kattintáshoz
 touchpad = Érintőpárna
     .acceleration = Az Érintőpárna gyorsításának engedélyezése
-    .desc = Érintőpárna sebessége, kattintási lehetőségek, gesztusok
     .speed = Érintőpárna sebessége
 
 ## Input: Gestures
@@ -695,9 +731,7 @@ open-workspaces-view = Munkaterületek áttekintésének megnyitása
 ## Time & Language
 
 time = Idő és nyelv
-    .desc = N/A
 time-date = Dátum és idő
-    .desc = Időzóna, automatikus órabeállítások és időformátum
     .auto = Beállítás automatikusan
     .auto-ntp = A dátum és idő automatikusan frissül, ha az időzóna be van állítva
 time-zone = Időzóna
@@ -713,7 +747,6 @@ time-format = Dátum- és időformátum
     .sunday = Vasárnap
     .monday = Hétfő
 time-region = Régió és nyelv
-    .desc = Dátumok, időpontok és számok formázása a régió alapján
 formatting = Formátum
     .dates = Dátum
     .time = Idő
@@ -735,7 +768,6 @@ applications = Alkalmazások
 ## Applications: Default Applications
 
 default-apps = Alapértelmezett alkalmazások
-    .desc = Alapértelmezett böngésző, levelezőprogram, fájlkezelő és egyéb alkalmazások
     .web-browser = Böngésző
     .file-manager = Fájlkezelő
     .mail-client = Levelezőprogram
@@ -746,11 +778,11 @@ default-apps = Alapértelmezett alkalmazások
     .terminal = Terminál
     .other-associations = Egyéb társítások
     .text-editor = Szövegszerkesztő
+    .not-installed = Nincs telepítve
 
 ## Applications: Startup Applications
 
 startup-apps = Indítási alkalmazások
-    .desc = Azoknak az alkalmazásoknak a beállítása, amelyek bejelentkezéskor elindulnak
     .add = Alkalmazás hozzáadása
     .user = Bejelentkezéskor indított alkalmazások
     .none = Nincs indítási alkalmazás hozzáadva
@@ -761,7 +793,6 @@ startup-apps = Indítási alkalmazások
 ## Applications: Legacy Applications
 
 legacy-applications = X11 alkalmazások támogatása
-    .desc = X11 ablakkezelő rendszer alkalmazásméretezés és globális gyorsbillentyűk
 legacy-app-global-shortcuts = Globális gyorsbillentyűk X11 alkalmazásokban
     .desc = A globális gyorsbillentyűk lehetővé teszik, hogy az alkalmazásokban a billentyűleütéseket és egérkattintásokat más alkalmazások is felismerjék, például a „push-to-talk” vagy a „push-to-mute” funkciókhoz. Alapértelmezés szerint a globális gyorsbillentyűk az X11 alkalmazásokban le van tiltva, hogy más alkalmazások ne figyelhessék a billentyű- és egéreseményeket, amelyek érzékeny információkat tartalmazhatnak.
     .none = Nincs billentyű
@@ -786,7 +817,6 @@ system = Rendszer és fiókok
 ## System: About
 
 about = Rendszerinformáció
-    .desc = Eszköznév, hardverinformációk és az operációs rendszer alapértelmezett beállításai
 about-device = Eszköz neve
     .desc = Ez a név más hálózati vagy Bluetooth-eszközök számára látható
 about-hardware = Hardver
@@ -807,12 +837,10 @@ about-related = Kapcsolódó beállítások
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmware részletei
 
 ## System: Users
 
 users = Felhasználók
-    .desc = Hitelesítés és felhasználói fiókok
     .admin = Rendszergazda
     .standard = Normál
     .profile-add = Profilkép kiválasztása
@@ -842,3 +870,46 @@ shadows-tiling = Csempézett ablakok
     .clip = A rendszer sarkainak követése
     .shadow = Árnyék alkalmazása
 shadow-and-corners = Ablakok árnyéka és sarkai
+workspaces-overview = Munkaterületek áttekintése
+    .action-on-typing = Művelet gépeléskor
+    .none = Nincs
+    .launcher = Indító megnyitása
+    .applications = Alkalmazások megnyitása
+xdg-entry-mouse-keywords = COSMIC;Egér;Gyorsítás;Görgetés;
+xdg-entry-notifications-keywords = COSMIC;Értesítés;Zárolás;Ne zavarjanak;
+xdg-entry-startup-apps-keywords = COSMIC;Indítási;Alkalmazás;
+xdg-entry-appearance-keywords = COSMIC;Kiemelő;Szín;Ikon;Betűkészlet;Téma;
+xdg-entry-dock-keywords = COSMIC;Dokk;Panel;Kisalkalmazás;
+xdg-entry-panel-keywords = COSMIC;Panel;Kisalkalmazás;
+xdg-entry-time-language-comment = Rendszerdátum, idő, régió és a nyelv kezelése
+xdg-entry-desktop-keywords = COSMIC;Asztal;
+xdg-entry-system-keywords = COSMIC;Rendszer;Információk;Fiókok;Firmware;
+xdg-entry-about-keywords = COSMIC;Névjegy
+xdg-entry-panel = Panel
+xdg-entry-a11y-keywords = COSMIC;Akadálymentesség;Képernyő;Olvasó;Nagyító;Kontraszt;Szín;
+xdg-entry-date-time-keywords = COSMIC;Idő;Zóna;
+xdg-entry-desktop-comment = Háttérkép, megjelenés, panel, dokk, ablakkezelés és munkaterület-beállítások
+xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
+xdg-entry-network-keywords = COSMIC;Hálózat;Vezeték;Nélküli;WiFi;VPN;
+xdg-entry-system-comment = Rendszerinformációk, fiókok és firmware-frissítések
+xdg-entry-time-language-keywords = COSMIC;Rendszer;Idő;Dátum;Régió;Nyelv;
+xdg-entry-input-keywords = COSMIC;Bevitel;Billentyűzet;Egér;Egerek;
+xdg-entry-sound-keywords = COSMIC;Hang;Figyelmeztetés;PipeWire;
+xdg-entry-power-keywords = COSMIC;Energia;Akkumulátor;
+xdg-entry-default-apps-keywords = COSMIC;Alapértelmezett;Alkalmazások;
+xdg-entry-keywords = COSMIC;Beállítások;
+xdg-entry-region-language-keywords = COSMIC;Régió;Nyelv;Dátum;Formátum;Idő;Területi;Beállítások;
+xdg-entry-applications-keywords = COSMIC;Alapértelmezett;Alkalmazások;Indítás;X11;Támogatás;
+xdg-entry-keyboard-keywords = COSMIC;Billentyűzet;Beviteli;Forrás;Gyorsbillentyűk;
+xdg-entry-displays-keywords = COSMIC;Kijelző;
+xdg-entry-wired-keywords = COSMIC;Vezetékes;LAN;Hálózat;Kapcsolat;
+xdg-entry-x11-applications-keywords = COSMIC;X11;Alkalmazás;Játék;Támogatás;
+xdg-entry-touchpad-keywords = COSMIC;Érintőpárna;Mozdulat;
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Network;Kapcsolat;
+xdg-entry-wireless = Wi-Fi
+xdg-entry-workspaces-keywords = COSMIC;Munkaterület;Tájolás;Áttekintés;Monitor;
+xdg-entry-wallpaper-keywords = COSMIC;Háttérkép;Háttér;Diavetítés;
+xdg-entry-users-keywords = COSMIC;Felhasználó;Fiók;
+xdg-entry-vpn-keywords = COSMIC;VPN;Hálózat;Kapcsolat;OpenVPN;OpenConnect;
+xdg-entry-comment = Beállításalkalmazás a COSMIC asztalhoz
+xdg-entry-window-management-keywords = COSMIC;Ablak;Kezelés;Csempézés;Super;BIllentyű;

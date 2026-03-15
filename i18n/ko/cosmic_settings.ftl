@@ -159,7 +159,7 @@ copy-to-clipboard = 클립보드에 복사
 monospace-font = 고정 폭 글꼴
 experimental-settings = 실험적 설정
 recent-folders = 최근 폴더
-color-filter = Color filter type = 색상 필터 유형
+color-filter = 색상 필터 유형
     .unknown = 알 수 없는 필터 활성화됨
     .greyscale = 회색조
     .deuteranopia = 녹색/빨간색 (녹색 색약, 제2색각 이상)
@@ -280,13 +280,6 @@ about-device = 장치 이름
     .desc = 이 이름은 네트워크 혹은 블루투스 장치에 표시됨
 no-vpn = 사용 가능한 VPN 연결이 없습니다.
 start-segment = 시작 영역
-connections-and-profiles =
-    { $variant ->
-        [wired] 유선
-        [wifi] Wi-FI
-        [vpn] VPN
-       *[other] 알 수 없음
-    } 연결 및 연결 프로필.
 identity = 식별자
 reset-to-default = 기본값으로 되돌리기
 disconnect = 연결 해제

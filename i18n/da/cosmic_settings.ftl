@@ -6,13 +6,6 @@ number = { $number }
 
 ## Network & Wireless
 
-connections-and-profiles =
-    { $variant ->
-        [wired] Kablet
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Ukendt
-    } forbindelser og forbindelsesprofiler.
 add-network = Tilføj Netværk
     .profile = Tilføj profil
 add-vpn = Tilføj VPN

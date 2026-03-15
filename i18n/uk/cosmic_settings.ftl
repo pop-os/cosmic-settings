@@ -21,9 +21,8 @@ desktop = Стільниця
 
 ## Desktop: Wallpaper
 
-wallpaper = Зображення тла
+wallpaper = Тло
     .change = Змінювати зображення що
-    .desc = Налаштування для зображення тла, кольорів та показу слайдів.
     .fit = Припасувати зображення тла
     .folder-dialog = Виберіть теку із зображеннями
     .image-dialog = Виберіть зображення
@@ -36,7 +35,7 @@ all-displays = Всі дисплеї
 colors = Кольори
 dialog-add = Додати
 fill = Заповнити
-fit-to-screen = Припасувати до екрана
+fit-to-screen = Припасувати
 open-new-folder = Відкрити нову теку
 recent-folders = Нещодавні теки
 x-minutes =
@@ -54,8 +53,7 @@ x-hours =
 
 ## Desktop: Appearance
 
-appearance = Зовнішній вигляд
-    .desc = Акцентні кольори та оформлення
+appearance = Вигляд
 accent-color = Колір акценту
 app-background = Тло вікон
 auto = Автоматичне
@@ -72,8 +70,8 @@ mode-and-colors = Режим та кольори
 recent-colors = Останні кольори
 reset-to-default = Типові значення
 rgb = RGB
-window-hint-accent = Колір підказки щодо активного вікна
-window-hint-accent-toggle = Використовувати колір акценту з теми для підказки щодо активного вікна
+window-hint-accent = Колір підказки активного вікна
+window-hint-accent-toggle = Акцентний колір для активного вікна
 auto-switch = Автоматичне перемикання між світлим і темним режимами
     .sunrise = Перемикатися на світлий режим на світанку
     .sunset = Перемикатися на темний режим на смерканні
@@ -85,8 +83,8 @@ container-background = Тло контейнера
     .desc = Використовується для навігаційної бічної панелі, бокових панелей, діалогових вікон та подібних елементів
 control-tint = Відтінок елементів керування
     .desc = Використовується для тла стандартних кнопок, пошукових полів, текстових полів та подібних компонентів
-frosted = → Ефект матового скла для системного інтерфейсу
-    .desc = Застосовує розмиття тла до панелі, дока, аплетів, запускача та бібліотеки застосунків
+frosted = Ефект матового скла для системного інтерфейсу
+    .desc = Застосовує розмиття тла до панелі, області завдань, віджетів, запускача та бібліотеки застосунків
 experimental-settings = Експериментальні налаштування
 enable-export = Застосувати цю тему до застосунків GNOME
     .desc = Не всі інструментарії підтримують автоперемикання. Після зміни теми деякі застосунки може знадобитися перезапустити.
@@ -106,60 +104,56 @@ window-management-appearance = Керування вікнами
 ## Desktop: Notifications
 
 notifications = Сповіщення
-    .desc = Не турбувати, сповіщення на екрані блокування, налаштування програм
 
 ## Desktop: Panel
 
 panel = Панель
-    .desc = Головна панель з елементами керування та аплетами
 add = Додати
-add-applet = Додати аплет
-all = На всіх
-applets = Аплети
+add-applet = Додати віджет
+all = Всі
+applets = Віджети
 center-segment = Центральний сегмент
 end-segment = Кінцевий сегмент
 large = Великий
-no-applets-found = Аплетів не знайдено...
+no-applets-found = Віджетів не знайдено...
 panel-bottom = Внизу
 panel-left = Ліворуч
 panel-right = Праворуч
 panel-top = Вгорі
-search-applets = Шукати аплети...
+search-applets = Шукати віджети...
 small = Малий
 start-segment = Початковий сегмент
-panel-appearance = Зовнішній вигляд
+panel-appearance = Вигляд
     .match = Системний
     .light = Світлий
     .dark = Темний
 panel-behavior-and-position = Поведінка та положення
     .autohide = Автоматично приховувати панель
-    .dock-autohide = Автоматично приховувати док
+    .dock-autohide = Автоматично приховувати область завдань
     .position = Положення на екрані
     .display = Показувати на дисплеї
 panel-style = Стиль
     .anchor-gap = Відступ між панеллю та краями екрана
-    .dock-anchor-gap = Відступ між доком та краями екрана
+    .dock-anchor-gap = Відступ між областю завдань та краями екрана
     .extend = Розширити панель до країв екрана
-    .dock-extend = Розширити док до країв екрана
-    .appearance = Зовнішній вигляд
+    .dock-extend = Розширити область завдань до країв екрана
+    .appearance = Вигляд
     .size = Розмір
     .background-opacity = Непрозорість тла
 panel-applets = Налаштування
-    .dock-desc = Налаштуйте аплети в доці
-    .desc = Налаштуйте аплети на панелі
-panel-missing = Не знайдено налаштувань панелі
-    .desc = Не знайдено файлу конфігурації панелі через використання власних налаштувань або через його пошкодження.
+    .dock-desc = Конфігурація віджетів
+    .desc = Конфігурація віджетів
+panel-missing = Конфігурацію панелі не знайдено
+    .desc = Файл конфігурації відсутній через використання власних налаштувань або його пошкодження.
     .fix = Типові значення
 
 ## Desktop: Dock
 
-dock = Док
-    .desc = Панель з пришпиленими застосунками в лотку застосунків та іншими аплетами.
+dock = Область завдань
 
 ## Desktop: Window management
 
 window-management = Керування вікнами
-    .desc = Дія клавіші Super, параметри керування вікнами та додаткові налаштування укладання вікон
 super-key = Клавіша Super
     .launcher = Відкриває запускач
     .workspaces = Відкриває меню робочих просторів
@@ -173,14 +167,13 @@ window-controls = Керування вікнами
 ## Desktop: Workspaces
 
 workspaces = Робочі простори
-    .desc = Орієнтація та поведінка робочих просторів
 workspaces-behavior = Поведінка робочих просторів
     .dynamic = Динамічні робочі простори
     .dynamic-desc = Порожні робочі простори автоматично вилучаються
     .fixed = Фіксована кількість робочих просторів
     .fixed-desc = Додавайте або вилучайте робочі простори в режимі огляду.
-workspaces-multi-behavior = Поведінка за наявності декількох моніторів
-    .span = Робочий простір охоплює кілька дисплеїв
+workspaces-multi-behavior = Поведінка з кількома моніторами
+    .span = Робочі простори охоплюють кілька дисплеїв
     .separate = Окремий робочий простір для кожного дисплея
 workspaces-overview-thumbnails = Мініатюри в огляді робочих просторів
     .show-number = Показувати номер робочого простору
@@ -189,7 +182,7 @@ workspaces-orientation = Орієнтація робочих просторів
     .vertical = Вертикальна
     .horizontal = Горизонтальна
 hot-corner = Гарячий кут
-    .top-left-corner = Використати гарячий кут вгорі ліворуч для робочих просторів
+    .top-left-corner = Увімкнути гарячий кут у верхньому лівому положенні для робочих просторів
 
 ## Desktop: Display
 
@@ -200,12 +193,11 @@ color = Колір
     .sidebar = Профілі кольорів
     .temperature = Температура кольору
 display = Дисплеї
-    .desc = Керування дисплеями та нічним режимом
     .arrangement = Розташування дисплеїв
     .arrangement-desc = Перетягніть дисплеї, щоб змінити їх порядок
     .enable = Увімкнути дисплей
-    .external = { $size } { $output } Зовнішній дисплей
-    .laptop = { $size } Дисплей ноутбука
+    .external = { $size } { $output } зовнішній дисплей
+    .laptop = { $size } дисплей ноутбука
     .options = Параметри дисплея
     .refresh-rate = Частота оновлення
     .resolution = Роздільна здатність
@@ -216,41 +208,35 @@ mirroring = Віддзеркалення
     .dont = Не віддзеркалювати
     .mirror = Віддзеркалювати { $display }
     .project =
-        Проектувати на { $display ->
+        Проєктувати на { $display ->
             [all] всі дисплеї
            *[other] { $display }
         }
     .project-count =
-        Проектування на { $count } { $count ->
+        Проєктувати на { $count } { $count ->
             [one] дисплей
             [few] дисплеї
            *[other] дисплеїв
         }
 night-light = Нічне світло
     .auto = Автоматично (від смеркання до світання)
-    .desc = Приглушити синє світло теплими кольорами
+    .desc = Приглушує синє світло теплими кольорами
 orientation = Орієнтація
     .standard = Стандартна
     .rotate-90 = Обернути на 90°
     .rotate-180 = Обернути на 180°
     .rotate-270 = Обернути на 270°
 scheduling = Планування
-    .manual = Планування вручну
+    .manual = Власний розклад
 dialog = Діалог
     .title = Залишити ці налаштування дисплея?
     .keep-changes = Зберегти
-    .change-prompt =
-        Повернення до попередніх налаштувань буде виконано за { $time } { $time ->
-            [one] секунду
-            [few] секунди
-           *[other] секунд
-        }.
+    .change-prompt = Повернення до попередніх налаштувань через { $time } секунд.
     .revert-settings = Повернути
 
 ## Sound
 
 sound = Звук
-    .desc = Н/Д
 sound-output = Виведення
     .volume = Гучність
     .device = Пристрій виведення
@@ -272,7 +258,6 @@ sound-applications = Застосунки
 ## Power
 
 power = Живлення та акумулятор
-    .desc = Керування енергоспоживанням
 power-mode = Режим живлення
     .battery = Подовжений час роботи акумулятора
     .battery-desc = Зменшене енергоспоживання та тиха робота
@@ -287,9 +272,8 @@ power-mode = Режим живлення
 acceleration-desc = Автоматично регулює чутливість відстеження руху залежно від швидкості
 disable-while-typing = Вимикати під час введення тексту
 input-devices = Пристрої введення
-    .desc = Пристрої введення
 primary-button = Основна кнопка
-    .desc = Задає порядок фізичних кнопок.
+    .desc = Задає порядок фізичних кнопок
     .left = Ліва
     .right = Права
 scrolling = Гортання
@@ -306,7 +290,6 @@ fast = Швидка
 short = Коротка
 long = Довга
 keyboard = Клавіатура
-    .desc = Джерела введення, перемикання, введення спеціальних символів, скорочення
 keyboard-sources = Джерела введення
     .desc = Джерела введення можна перемикати за допомогою сполучення клавіш Super+Space. Це можна налаштувати в параметрах клавіатурних скорочень.
     .move-up = Перемістити вгору
@@ -318,6 +301,7 @@ keyboard-sources = Джерела введення
 keyboard-special-char = Введення спеціальних символів
     .alternate = Клавіша альтернативних символів
     .compose = Клавіша компонування
+    .compose-desc = Клавіша компонування дозволяє вводити широкий спектр символів. Щоб скористатися нею, натисніть Compose, а потім послідовність символів. Наприклад, клавіша Compose, а потім C і o введуть ©, а клавіша Compose, а потім a і ‘ введуть á.
     .caps = Клавіша Caps Lock
 keyboard-typing-assist = Введення
     .repeat-rate = Частота повторів
@@ -334,10 +318,10 @@ command = Команда
 custom = Власні
 debug = Зневадження
 disabled = Вимкнено
-migrate-workspace-prev = Перемістити робочий простір до попереднього джерела виведення
-migrate-workspace-next = Перемістити робочий простір до наступного джерела виведення
+migrate-workspace-prev = Перемістити робочий простір до попереднього виводу
+migrate-workspace-next = Перемістити робочий простір до наступного виводу
 migrate-workspace =
-    Перемістити робочий простір до джерела виведення { $direction ->
+    Перемістити робочий простір на вивід { $direction ->
        *[down] вниз
         [left] ліворуч
         [right] праворуч
@@ -349,39 +333,39 @@ shortcut-name = Назва скорочення
 system-controls = Керування системою
 terminate = Зупинити
 toggle-stacking = Перемкнути групування вікон
-type-key-combination = Введіть комбінацію клавіш
+type-key-combination = Натисніть комбінацію клавіш
 custom-shortcuts = Власні сполучення
     .add = Додати сполучення
     .context = Додати користувацькі сполучення
     .none = Немає користувацьких сполучень
 modified = { $count } змінено
 nav-shortcuts = Навігація
-    .prev-output = Фокус на попереднє джерело виведення
-    .next-output = Фокус на наступне джерело виведення
+    .prev-output = Фокус на попередній вивід
+    .next-output = Фокус на наступний вивід
     .last-workspace = Фокус на останній робочий простір
     .prev-workspace = Фокус на попередній робочий простір
     .next-workspace = Фокус на наступний робочий простір
     .focus =
         Фокус на вікно { $direction ->
-           *[down] нижче
+           *[down] вниз
             [in] всередині
             [left] ліворуч
             [out] зовні
             [right] праворуч
-            [up] вище
+            [up] вгору
         }
     .output =
-        Перейти до джерела виведення { $direction ->
-           *[down] нижче
+        Перейти до виводу { $direction ->
+           *[down] вниз
             [left] ліворуч
             [right] праворуч
-            [up] вище
+            [up] вгору
         }
     .workspace = Перейти до робочого простору { $num }
 manage-windows = Керування вікнами
     .close = Закрити вікно
     .maximize = Розгорнути вікно
-    .fullscreen = Розгорнути вікно на повний екран
+    .fullscreen = Повноекранний режим
     .minimize = Згорнути вікно
     .resize-inwards = Зміна розмірів вікна всередину
     .resize-outwards = Зміна розмірів вікна назовні
@@ -389,33 +373,33 @@ manage-windows = Керування вікнами
 move-windows = Переміщення вікон
     .direction =
         Перемістити вікно { $direction ->
-           *[down] нижче
+           *[down] вниз
             [left] ліворуч
             [right] праворуч
-            [up] вище
+            [up] вгору
         }
     .display =
-        Перемістити вікно на монітор { $direction ->
-           *[down] нижче
+        Перемістити вікно на екран { $direction ->
+           *[down] вниз
             [left] ліворуч
             [right] праворуч
-            [up] вище
+            [up] вгору
         }
     .workspace =
-        Перемістити вікно на робочий простір { $direction ->
+        Перемістити вікно до робочого простору { $direction ->
            *[below] нижче
             [left] ліворуч
             [right] праворуч
             [above] вище
         }
-    .workspace-num = Перемістити вікно на робочий простір { $num }
-    .prev-workspace = Перемістити вікно на попередній робочий простір
-    .next-workspace = Перемістити вікно на наступний робочий простір
-    .last-workspace = Перемістити вікно на останній робочий простір
+    .workspace-num = Перемістити вікно до робочого простору { $num }
+    .prev-workspace = Перемістити вікно до попереднього робочого простору
+    .next-workspace = Перемістити вікно до наступного робочого простору
+    .last-workspace = Перемістити вікно до останнього робочого простору
     .next-display = Перемістити вікно на наступний дисплей
     .prev-display = Перемістити вікно на попередній дисплей
-    .send-to-prev-workspace = Перемістити вікно на попередній робочий простір
-    .send-to-next-workspace = Перемістити вікно на наступний робочий простір
+    .send-to-prev-workspace = Перемістити вікно до попереднього робочого простору
+    .send-to-next-workspace = Перемістити вікно до наступного робочого простору
 system-shortcut = Система
     .app-library = Відкрити бібліотеку застосунків
     .brightness-down = Зменшити яскравість дисплея
@@ -427,21 +411,22 @@ system-shortcut = Система
     .launcher = Відкрити запускач
     .log-out = Вийти
     .lock-screen = Заблокувати екран
-    .mute = Вимкнути виведення звуку
+    .mute = Вимкнути звук
     .mute-mic = Вимкнути мікрофон
     .play-pause = Відтворення/Пауза
     .play-next = Наступна доріжка
     .play-prev = Попередня доріжка
     .poweroff = Вимкнути
     .screenshot = Зробити знімок екрана
+    .suspend = Призупинити
     .terminal = Відкрити термінал
-    .touchpad-toggle = Перемкнути тачпад
-    .volume-lower = Зменшити гучність виведення звуку
-    .volume-raise = Збільшити гучність виведення звуку
-    .web-browser = Відкрити браузер
+    .touchpad-toggle = Перемкнути сенсорну панель
+    .volume-lower = Зменшити гучність
+    .volume-raise = Збільшити гучність
+    .web-browser = Відкрити вебпереглядач
     .window-switcher = Перемикати відкриті вікна
     .window-switcher-previous = Перемикати відкриті вікна у зворотньому порядку
-    .workspace-overview = Відкрити огляд робочих просторів
+    .workspace-overview = Відкрити режим огляду робочих просторів
 window-tiling = Укладання вікон
     .horizontal = Встановити горизонтальну орієнтацію
     .vertical = Встановити вертикальну орієнтацію
@@ -450,28 +435,26 @@ window-tiling = Укладання вікон
     .toggle-stacking = Перемкнути групування вікон
     .toggle-floating = Перемкнути плавучість вікон
     .toggle-orientation = Перемкнути орієнтацію
-replace-shortcut-dialog = Замінити скорочення?
+replace-shortcut-dialog = Замінити сполучення?
     .desc = { $shortcut } вже використовується для { $name }. Якщо замінити його, { $name } буде вимкнено.
 
 ## Input: Mouse
 
 mouse = Миша
-    .desc = Швидкість миші, прискорення, природне гортання
     .speed = Швидкість миші
     .acceleration = Увімкнути прискорення миші
 
 ## Input: Touchpad
 
 click-behavior = Поведінка при натисканні
-    .click-finger = Другорядне клацання активується двома пальцями, а клацання середньою кнопкою — трьома пальцями
-    .button-areas = Другорядне клацання активується в нижньому правому куті, а клацання середньою кнопкою — внизу по центру
+    .click-finger = Клацання правою кнопкою двома пальцями, середнє клацання трьома пальцями
+    .button-areas = Клацання правою кнопкою в нижньому правому куті, середнє клацання внизу по центру
 pinch-to-zoom = Масштабування щипком
     .desc = У застосунках, які підтримують масштабування, використовуйте два пальці для збільшення вмісту
 tap-to-click = Натискання дотиком
     .desc = Дотик одним пальцем активує основне клацання, дотик двома пальцями — другорядне клацання, дотик трьома пальцями — клацання середньою кнопкою
 touchpad = Сенсорна панель
     .acceleration = Увімкнути прискорення сенсорної панелі
-    .desc = Швидкість сенсорної панелі, варіанти натискання, жести
     .speed = Швидкість сенсорної панелі
 
 ## Input: Gestures
@@ -489,9 +472,7 @@ open-workspaces-view = Відкрити огляд робочих простор
 ## Time & Language
 
 time = Час і мова
-    .desc = Н/Д
 time-date = Дата та час
-    .desc = Часовий пояс, автоматичне налаштування годинника та формат часу
     .auto = Встановлювати автоматично
     .auto-ntp = Дата та час будуть оновлюватися автоматично при встановленні часового поясу
 time-zone = Часовий пояс
@@ -507,7 +488,6 @@ time-format = Формат дати та часу
     .sunday = Неділя
     .monday = Понеділок
 time-region = Регіон та мова
-    .desc = Формат дати, часу та чисел на основі вашого регіону
 
 ## System
 
@@ -516,7 +496,6 @@ system = Система і обліковки
 ## System: About
 
 about = Про систему
-    .desc = Назва пристрою, інформація щодо обладнання, типові значення операційної системи
 about-device = Назва пристрою
     .desc = Назва, яку бачать інші мережі та пристрої Bluetooth
 about-hardware = Обладнання
@@ -537,34 +516,25 @@ about-related = Повʼязані налаштування
 ## System: Firmware
 
 firmware = Мікропрограма
-    .desc = Подробиці щодо мікропрограми
 
 ## System: Users
 
 users = Користувачі
-    .desc = Автентифікація та облікові записи користувачів
     .admin = Адміністратор
     .standard = Звичайний
     .profile-add = Вибрати зображення профілю
 remove = Вилучити
-connect = Під'єднати
+connect = З'єднати
 password = Пароль
 username = Ім'я користувача
 settings = Налаштування
 ok = Гаразд
-connections-and-profiles =
-    { $variant ->
-        [wired] Дротове
-        [wifi] Wi-Fi
-        [vpn] VPN
-       *[other] Невідоме
-    } з'єднання і профілі підключень.
 add-network = Додати мережу
     .profile = Додати профіль
 add-vpn = Додати VPN
 airplane-on = Увімкнено режим польоту.
 cable-unplugged = Дріт від'єднано
-connected = Підключено
+connected = З'єднано
 connecting = З'єднання…
 disconnect = Від'єднатися
 forget = Забути
@@ -603,19 +573,19 @@ vpn = VPN
     .remove = Видалити профіль з'єднання
     .select-file = Обрати файл налаштувань VPN
 vpn-error = Помилка VPN
-    .config = Не вдалося додати налаштування VPN
-    .connect = Не вдалося з'єднатися до VPN
-    .connection-editor = Помилка редактора з'єднань
-    .connection-settings = Не вдалося отримати налаштування активних з'єднань
+    .config = Не вдалося додати конфігурацію VPN
+    .connect = Не вдалося з'єднатися з VPN
+    .connection-editor = Помилка редактора з’єднань
+    .connection-settings = Не вдалося отримати налаштування активних з’єднань
     .updating-state = Не вдалося оновити стан мережевого менеджера
-    .wireguard-config-path = Неправильний шлях до профілю WireGuard
+    .wireguard-config-path = Недійсний шлях до профілю WireGuard
     .wireguard-config-path-desc = Обраний файл має бути локальним.
     .wireguard-device = Не вдалося створити пристрій WireGuard
     .with-password =
         nmcli не зміг встановити { $field ->
-           *[username] ім'я користувача
+           *[username] ім’я користувача
             [password] пароль
-            [password-flags] флаги читання паролю
+            [password-flags] прапорці читання паролю
         } для VPN
 wifi = Wi-Fi
     .adapter = Бездротовий адаптер { $id }
@@ -626,7 +596,6 @@ activate = Активувати
 confirm = Підтвердити
 enable = Увімкнути
 bluetooth = Bluetooth
-    .desc = Керувати Bluetooth пристроями
     .status = Ця система відображається як { $aliases }, поки відкриті налаштування Bluetooth.
     .connected = З'єднано
     .connecting = З'єднання
@@ -639,10 +608,10 @@ bluetooth = Bluetooth
     .inactive = Служба Bluetooth неактивна
     .unknown = Неможливо активувати службу Bluetooth. Можливо, у вас не встановлено пакет BlueZ?
 bluetooth-paired = З'єднані у минулому пристрої
-    .connect = Під'єднатися
+    .connect = З'єднати
     .battery = { $percentage }% заряду
 bluetooth-confirm-pin = Перевірка PIN-коду між Bluetooth-пристроями
-    .description = Будь ласка, підтвердіть, що цей PIN-код зівпадає з тим, який відображається на іншому пристрої: { $device }
+    .description = Будь ласка, підтвердіть, що цей PIN-код збігається із тим, який відображається на іншому пристрої: { $device }
 bluetooth-available = Пристрої поблизу
 bluetooth-adapters = Адаптери Bluetooth
 accessibility = Доступність
@@ -650,10 +619,10 @@ accessibility = Доступність
     .on = Увімкнено
     .off = Вимкнено
     .unavailable = Недоступно
-    .screen-reader = Засіб читання з екрану
-    .high-contrast = Режим високої контрастності
+    .screen-reader = Екранний читач
+    .high-contrast = Висока контрастність
     .invert-colors = Інвертація кольорів
-    .color-filters = Виправлення кольорової сліпоти
+    .color-filters = Фільтри кольорів
 hearing = Слух
     .mono = Відтворювати стерео звук у моно
 default = Типовий
@@ -661,7 +630,7 @@ dbus-connection-error = Не вдалося з'єднатися з DBus
 identity = Ідентичність
 magnifier = Лупа
     .controls =
-        Також можна використати: { $zoom_in ->
+        Або скористайтеся такими скороченнями: { $zoom_in ->
             [zero] { "" }
            *[other]
                 { "" }
@@ -677,13 +646,13 @@ magnifier = Лупа
     .show_overlay = Показувати накладання лупи
     .increment = Крок зміни масштабу
     .signin = Запускати лупу під час входу в систему
-    .applet = Ви можете увімкнути/вимкнути лупу за допомогою аплету на панелі
+    .applet = Ви можете увімкнути/вимкнути лупу за допомогою віджету
     .movement = Наближений вид рухається
-    .continuous = Слідувати за вказівником постійно
+    .continuous = Безперервно за вказівником
     .onedge = Коли вказівник торкається краю
     .centered = Тримати вказівник у центрі
-color-filter = Режим виправлення кольорової сліпоти
-    .unknown = Активовано невідомий режим
+color-filter = Фільтри кольорів
+    .unknown = Активовано невідомий фільтр
     .greyscale = Відтінки сірого
     .deuteranopia = Зелено-червоний (нечутливість до зеленого, Дейтеранопія)
     .protanopia = Червоно-зелений (нечутливість до червоного, Протанопія)
@@ -730,7 +699,7 @@ battery = Акумулятор
             [many] днів
            *[other] днів
         }
-    .less-than-minute = Менше ніж хвилина
+    .less-than-minute = Менше хвилини
     .and = і
     .remaining-time =
         { $time } до { $action ->
@@ -739,25 +708,25 @@ battery = Акумулятор
         }
 connected-devices = Під'єднані пристрої
     .unknown = Невідомний пристрій
-power-saving = Налаштування енергозбереження
+power-saving = Параметри заощадження енергії
     .turn-off-screen-after = Вимкнути екран через
     .auto-suspend = Автоматичне призупинення
     .auto-suspend-ac = Автоматичне призупинення під час роботи від мережі
     .auto-suspend-battery = Автоматичне призупинення під час роботи від акумулятора
 keyboard-numlock-boot = Numlock
     .boot-state = Стан при запуску
-    .last-boot = Зберігати стан минулого запуску
-    .on = Завжди увімкнений
-    .off = Завжди вимкнений
+    .last-boot = Стан минулого запуску
+    .on = Увімкнено
+    .off = Вимкнено
     .set = Задати стан Numlock при запуску системи
 show-extended-input-sources = Показувати розширені джерела введення
 add-another-keybinding = Додати сполучення
 input-source-switch = Змінити розкладку клавіатури
 zoom-in = Наблизити
 zoom-out = Віддалити
-switch-workspaces = Змінити робочі простори
-    .horizontal = Проведення чотрима пальцями вліво/вправо
-    .vertical = Проведення чотрима пальцями вгору/вниз
+switch-workspaces = Перемикання робочих просторів
+    .horizontal = Проведіть чотирма пальцями вліво/вправо
+    .vertical = Проведіть чотирма пальцями вгору/вниз
 formatting = Формати
     .dates = Дати
     .time = Час
@@ -773,9 +742,8 @@ install-additional-languages = Встановити додаткові мови
 region = Регіон
 applications = Застосунки
 default-apps = Типові застосунки
-    .desc = Типовий браузер, поштовий клієнт, файловий менеджер та інші застосунки
-    .web-browser = Браузер
-    .file-manager = Файловий менеджер
+    .web-browser = Переглядач інтернету
+    .file-manager = Керування файлами
     .mail-client = Поштовий клієнт
     .music = Музика
     .video = Відео
@@ -784,16 +752,15 @@ default-apps = Типові застосунки
     .terminal = Термінал
     .other-associations = Інші застосунки
     .text-editor = Текстовий редактор
+    .not-installed = Не встановлено
 startup-apps = Автозапуск
-    .desc = Налаштування застосунків, які запускаються при вході у систему
     .add = Додати застосунок
     .user = Застосунки, які запускаються при вході у систему
     .none = В автозапуску немає ніяких застосунків
     .remove-dialog-title = Вилучити { $name }?
     .remove-dialog-description = Вилучити цей застосунок з автозапуску?
     .add-startup-app = Додати застосунок до автозапуску
-legacy-applications = Сумісність застосунків X11
-    .desc = Масштабування застосунків X11 і глобальні сполучення клавіш віконного менеджера
+legacy-applications = Сумісність із застосунками X11
 legacy-app-global-shortcuts = Глобальні сполучення клавіш у застосунках X11
     .desc = Глобальні сполучення дозволяють іншим застосункам реагувати на натискання клавіш і кнопок миші, навіть якщо вони виконані в іншому застосунку, наприклад для функцій активації або вимкнення голосу кнопкою. За замовчуванням ця функція вимкнена у застосунках X11, щоб уникнути перехоплення чутливої інформації.
     .none = Ніякі клавіші
@@ -802,14 +769,14 @@ legacy-app-global-shortcuts = Глобальні сполучення клаві
     .all = Усі клавіші
     .mouse = Події натискання кнопок миші у застосунках X11
 legacy-app-scaling = Масштабування застосунків X11
-    .scaled-gaming = Оптимізовано для ігор та повноекранних застосунків
+    .scaled-gaming = Оптимізувати для ігор та повноекранних застосунків
     .gaming-description = Застосунки X11 можуть виглядати трохи більшими або меншими, ніж застосунки Wayland.
-    .scaled-applications = Оптимізовано для звичайних застосунків
-    .applications-description = Ігри та повноекранні застосунки X11 можуть не відповідати роздільній здатності вашого екрана.
+    .scaled-applications = Оптимізувати для застосунків
+    .applications-description = Ігри та повноекранні застосунки X11 можуть не відповідати роздільній здатності дисплея.
     .scaled-compatibility = Режим максимальної сумісності
-    .compatibility-description = Застосунки X11 можуть виглядати нечітко на HiDPI екранах.
-    .preferred-display = Надавати перевагу цьому дисплею для ігор та повноекранних застосунків X11
-    .no-display = Жодного
+    .compatibility-description = Застосунки X11 можуть виглядати нечітко на екранах HiDPI.
+    .preferred-display = Перевага дисплею для ігор та повноекранних X11-застосунків
+    .no-display = Не вибрано
 administrator = Адміністратор
     .desc = Адміністратори можуть змінювати налаштування для всіх користувачів, додавати та видаляти інших користувачів
 add-user = Додати користувача
@@ -833,3 +800,102 @@ shadows-tiling = Укладені вікна
     .shadow = Застосувати тіні
 shadow-and-corners = Тіні й кути вікон
 sound-device-port-unplugged = Відключено
+place-here = Розмістити тут віджети
+workspaces-overview = Режим огляду робочих просторів
+    .action-on-typing = Дія при введенні тексту
+    .none = Не вибрано
+    .launcher = Відкрити запускач
+    .applications = Відкрити застосунки
+xdg-entry-touchpad = Сенсорна панель
+xdg-entry-wired = Дротове
+xdg-entry-startup-apps-comment = Налаштування застосунків, які запускаються при вході у систему
+xdg-entry-region-language = Регіон та мова
+xdg-entry-bluetooth-comment = Керувати Bluetooth пристроями
+xdg-entry-default-apps-comment = Типовий вебпереглядач, поштовий клієнт, файли та інші застосунки
+xdg-entry-keyboard-comment = Джерела введення, перемикання, введення спеціальних символів, сполучення
+xdg-entry-power = Живлення та акумулятор
+xdg-entry-mouse = Миша
+xdg-entry-mouse-comment = Швидкість миші, прискорення, природне гортання
+xdg-entry-system = Система і обліковки
+xdg-entry-window-management = Керування вікнами
+xdg-entry-a11y = Доступність
+xdg-entry-time-language-comment = Керування датою, часом, регіоном і мовою системи
+xdg-entry-displays-comment = Налаштування дисплея
+xdg-entry-time-language = Дата та час
+xdg-entry-users = Користувачі
+xdg-entry-default-apps = Типові застосунки
+xdg-entry-applications-comment = Типові застосунки, автозапуск і сумісність X11
+xdg-entry-panel = Панель
+xdg-entry-notifications = Сповіщення
+xdg-entry-wireless-comment = Wi-Fi з'єднання і профілі підключення
+xdg-entry-desktop = Стільниця
+xdg-entry-wallpaper = Тло
+xdg-entry-keyboard = Клавіатура
+xdg-entry-displays = Дисплеї
+xdg-entry-network = Мережа та Wi‑Fi
+xdg-entry-date-time = Дата та час
+xdg-entry-users-comment = Автентифікація та облікові записи користувачів
+xdg-entry-input-comment = Клавіатура, курсор тощо
+xdg-entry-dock-comment = Необов’язкова область для панелі застосунків і віджетів
+xdg-entry-wallpaper-comment = Відображення тла: зображення, колір або показ слайдів
+xdg-entry-dock = Область завдань
+xdg-entry-startup-apps = Автозапуск
+xdg-entry-wireless = Wi-Fi
+xdg-entry-system-comment = Система, облікові записи та оновлення мікропрограми
+xdg-entry-x11-applications-comment = Масштабування застосунків X11 і глобальні сполучення клавіш
+xdg-entry-region-language-comment = Формат дати, часу та чисел на основі вашого регіону
+xdg-entry-about-comment = Назва пристрою, відомості про обладнення і операційну систему
+xdg-entry-appearance-comment = Акцентні кольори та оформлення
+xdg-entry-comment = Застосунок налаштувань для середовища COSMIC
+xdg-entry-notifications-comment = Не турбувати, сповіщення на екрані блокування, налаштування застосунків
+xdg-entry-applications = Застосунки
+xdg-entry-about = Про систему
+xdg-entry-input = Пристрої введення
+xdg-entry-sound-comment = Налаштування звуку для пристроїв, сповіщень та застосунків
+xdg-entry-touchpad-comment = Швидкість сенсорної панелі, варіанти натискання, жести
+xdg-entry-vpn-comment = VPN з'єднання та профілі підключення
+xdg-entry-appearance = Вигляд
+xdg-entry-workspaces-comment = Орієнтація та поведінка робочих просторів
+xdg-entry-network-comment = Керуйте мережевими з’єднаннями
+xdg-entry-panel-comment = Головна панель з елементами керування та віджетами
+xdg-entry-sound = Звук
+xdg-entry-power-comment = Режими живлення та параметри заощадження енергії
+xdg-entry-workspaces = Робочі простори
+xdg-entry-date-time-comment = Часовий пояс, автоматичне налаштування годинника та формат часу
+xdg-entry-x11-applications = Сумісність із застосунками X11
+xdg-entry-window-management-comment = Дія клавіші Super, параметри керування вікнами та додаткові налаштування укладання вікон
+xdg-entry-wired-comment = Дротове з'єднання і профілі підключень
+xdg-entry-desktop-comment = Тло, вигляд, панель, область завдань, керування вікнами та налаштування робочого простору
+xdg-entry-mouse-keywords = COSMIC;Миша;Прискорення;Прокручування;Гортання;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-notifications-keywords = COSMIC;Сповіщення;Блокування;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-startup-apps-keywords = COSMIC;Автозапуск;Запуск;Застосунок;Програма;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-wired-keywords = COSMIC;Дротове;LAN;Мережа;З'єднання;Підключення;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-appearance-keywords = COSMIC;Колір;Акценту;Піктограма;Іконка;Значок;Шрифт;Черенки;Тема;КОСМІК;КОСМОС;КОСМІЧНЕ
+xdg-entry-dock-keywords = COSMIC;Область;Завдань;Док;Панель;Віджет;КОСМІК;КОСМОС;КОСМІЧНЕ
+xdg-entry-panel-keywords = COSMIC;Панель;Віджет;КОСМІК;КОСМОС;КОСМІЧНЕ
+xdg-entry-desktop-keywords = COSMIC;Стільниця;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-x11-applications-keywords = COSMIC;X11;Застосунок;Програма;Гра;Сумісність;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-touchpad-keywords = COSMIC;Сенсорна;Панель;Тачпад;Жести;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-system-keywords = COSMIC;Про;Систему;Система;Інформація;Облікові;Записи;Обліковка;Мікропрограма;Прошивка;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Мережа;З'єднання;Підключення;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-about-keywords = COSMIC;Про;Систему;КОСМІК;КОСМОС;КОСМІЧНЕ
+xdg-entry-a11y-keywords = COSMIC;Доступність;Екран;Читач;Диктор;Лупа;Контраст;Колір;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-date-time-keywords = COSMIC;Час;Часовий;Пояс;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-network-keywords = COSMIC;Мережа;Бездротове;WiFi;VPN;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-workspaces-keywords = COSMIC;Робочий;Простір;Простори;Режим;Огляду;Огляд;Орієнтація;Монітор;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-wallpaper-keywords = COSMIC;Тло;Шпалери;Показ;Слайдів;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-users-keywords = COSMIC;Користувач;Обліковий;Запис;Обліковка;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-vpn-keywords = COSMIC;VPN;Мережа;З'єднання;Підключення;OpenVPN;OpenConnect;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-time-language-keywords = COSMIC;Система;Час;Дата;Регіон;Мова;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-input-keywords = COSMIC;Ввід;Клавіатура;Миша;Миші;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-sound-keywords = COSMIC;Звук;Аудіо;Сповіщення;Сигнал;Pipewire;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-power-keywords = COSMIC;Живлення;Акумулятор;КОСМІК;КОСМОС;КОСМІЧНЕ
+xdg-entry-default-apps-keywords = COSMIC;Типові;Застосунки;Програми;КОСМІК;КОСМОС;КОСМІЧНЕ
+xdg-entry-keywords = COSMIC;Налаштування;Настройки;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-region-language-keywords = COSMIC;Регіон;Мова;Дата;Формат;Час;Локалізація;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-applications-keywords = COSMIC;Автозапуск;X11;Типові;Застосунок;Програма;Запуск;Сумісність;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-keyboard-keywords = COSMIC;Клавіатура;Ввід;Джерело;Сполучення;Клавіш;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-window-management-keywords = COSMIC;Керувати;Вікнами;Укладання;Мозаїка;Tiling;Клавіша;Super;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-displays-keywords = COSMIC;Дисплей;Екран;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;Блютуз;Бездротове;З’єднання;КОСМІК;КОСМОС;КОСМІЧНЕ;
+xdg-entry-a11y-comment = Екранний читач, лупа, високий контраст і фільтри кольорів
