@@ -312,7 +312,8 @@ fn input() -> Section<crate::pages::Message> {
                 .title(&section.title)
                 .add(
                     settings::item::builder(&*section.descriptions[volume])
-                        .flex_control(volume_control),
+                        .flex_control(volume_control)
+                        .align_items(Alignment::Center),
                 )
                 .add(settings::item(&*section.descriptions[device], devices));
 
@@ -392,7 +393,8 @@ fn output() -> Section<crate::pages::Message> {
                 .title(&section.title)
                 .add(
                     settings::item::builder(&*section.descriptions[volume])
-                        .flex_control(volume_control),
+                        .flex_control(volume_control)
+                        .align_items(Alignment::Center),
                 )
                 .add(settings::item(&*section.descriptions[device], devices))
                 .add(settings::item(
@@ -454,10 +456,13 @@ fn device_profiles() -> Section<crate::pages::Message> {
                 .control(button)
                 .spacing(16)
                 .apply(widget::container)
+                .width(Length::Fill)
                 .class(cosmic::theme::Container::List)
                 .apply(widget::button::custom)
+                .width(Length::Fill)
                 .class(cosmic::theme::Button::Transparent)
-                .on_press(crate::pages::Message::Page(page.device_profiles));
+                .on_press(crate::pages::Message::Page(page.device_profiles))
+                .width(Length::Fill);
 
             settings::section().add(device_profiles).into()
         })
