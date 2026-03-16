@@ -9,7 +9,7 @@ use cosmic::iced_core::{
     Shell, Size, Widget,
 };
 use cosmic::iced_core::{Point, layout, mouse, renderer, touch};
-use cosmic::iced_core::{alignment, event, text};
+use cosmic::iced_core::{alignment, text};
 use cosmic::widget::segmented_button::{self, SingleSelectModel};
 use cosmic_randr_shell::{self as randr, OutputKey};
 use randr::Transform;
@@ -199,7 +199,6 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                         );
 
                         shell.capture_event();
-                        return;
                     }
                 }
             }
@@ -219,7 +218,6 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                         state.offset = (position.x - output_region.x, position.y - output_region.y);
                         state.dragging = Some((output_key, output_region));
                         shell.capture_event();
-                        return;
                     }
                 }
             }
@@ -257,7 +255,6 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                     }
 
                     shell.capture_event();
-                    return;
                 }
             }
 

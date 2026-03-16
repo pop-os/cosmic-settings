@@ -943,7 +943,7 @@ where
         let space_xxs = theme::spacing().space_xxs;
         self.inner.as_widget_mut().update(
             &mut tree.children[0],
-            &event,
+            event,
             layout.children().next().unwrap(),
             cursor_position,
             renderer,

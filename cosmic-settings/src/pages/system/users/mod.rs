@@ -8,9 +8,7 @@ use cosmic::{
     Apply, Element,
     dialog::file_chooser,
     iced::{Alignment, Length},
-    widget::{
-        self, Space, column, icon, row, settings, space::horizontal as horizontal_space, text,
-    },
+    widget::{self, column, icon, row, settings, space::horizontal as horizontal_space, text},
 };
 use cosmic_settings_page::{self as page, Section, section};
 use image::GenericImageView;
