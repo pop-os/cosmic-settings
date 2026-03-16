@@ -1124,7 +1124,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                         let item = widget::settings::item_row(vec![
                             identifier.into(),
-                            widget::horizontal_space().into(),
+                            horizontal_space().into(),
                             controls.into(),
                         ]);
 
@@ -1234,7 +1234,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                             let item = widget::settings::item_row(vec![
                                 identifier.into(),
-                                widget::horizontal_space().into(),
+                                horizontal_space().into(),
                                 connect,
                             ]);
 
