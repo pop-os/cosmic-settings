@@ -301,10 +301,13 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                     settings::item::builder(&*descriptions[applets_label])
                         .control(control)
                         .spacing(16)
+                        .width(Length::Fill)
                         .apply(container)
                         .class(theme::Container::List)
                         .apply(button::custom)
+                        .width(Length::Fill)
                         .class(theme::Button::Transparent)
+                        .width(Length::Fill)
                         .on_press(crate::pages::Message::Page(panel_applets_entity)),
                 )
             } else {

@@ -275,7 +275,10 @@ fn input() -> Section<crate::pages::Message> {
                 widget::slider(0..=100, page.model.source_volume, |change| {
                     Message::SetSourceVolume(change).into()
                 })
-            };
+            }
+            .width(Length::Fill)
+            .apply(widget::container)
+            .max_width(250.);
 
             let volume_control = widget::row::with_capacity(4)
                 .align_y(Alignment::Center)
@@ -307,10 +310,10 @@ fn input() -> Section<crate::pages::Message> {
 
             let mut controls = settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(
-                    &*section.descriptions[volume],
-                    volume_control,
-                ))
+                .add(
+                    settings::item::builder(&*section.descriptions[volume])
+                        .flex_control(volume_control),
+                )
                 .add(settings::item(&*section.descriptions[device], devices));
 
             controls = controls.add(
@@ -351,7 +354,10 @@ fn output() -> Section<crate::pages::Message> {
                 widget::slider(0..=100, page.model.sink_volume, |change| {
                     Message::SetSinkVolume(change).into()
                 })
-            };
+            }
+            .width(Length::Fill)
+            .apply(widget::container)
+            .max_width(250.);
 
             let volume_control = widget::row::with_capacity(4)
                 .align_y(Alignment::Center)
@@ -384,10 +390,10 @@ fn output() -> Section<crate::pages::Message> {
 
             let mut controls = settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(
-                    &*section.descriptions[volume],
-                    volume_control,
-                ))
+                .add(
+                    settings::item::builder(&*section.descriptions[volume])
+                        .flex_control(volume_control),
+                )
                 .add(settings::item(&*section.descriptions[device], devices))
                 .add(settings::item(
                     &*section.descriptions[balance],

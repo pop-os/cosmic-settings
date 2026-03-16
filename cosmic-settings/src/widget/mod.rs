@@ -193,9 +193,12 @@ pub fn go_next_item<Msg: Clone + 'static>(
         horizontal_space().into(),
         icon::from_name("go-next-symbolic").size(16).icon().into(),
     ])
+    .width(Length::Fill)
     .apply(widget::container)
     .class(cosmic::theme::Container::List)
+    .width(Length::Fill)
     .apply(button::custom)
+    .width(Length::Fill)
     .padding(0)
     .class(theme::Button::Transparent)
     .on_press_maybe(msg_opt.into())
@@ -217,10 +220,13 @@ pub fn go_next_with_item<'a, Msg: Clone + 'static>(
             .spacing(cosmic::theme::spacing().space_s)
             .into(),
     ])
+    .width(Length::Fill)
     .apply(widget::container)
     .class(cosmic::theme::Container::List)
+    .width(Length::Fill)
     .apply(button::custom)
     .padding(0)
+    .width(Length::Fill)
     .class(theme::Button::Transparent)
     .on_press_maybe(msg_opt.into())
     .into()
