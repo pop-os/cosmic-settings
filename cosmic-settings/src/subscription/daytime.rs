@@ -12,15 +12,14 @@ use tokio::select;
 
 pub fn daytime() -> cosmic::iced::Subscription<bool> {
     struct Sunset;
-    Subscription::run_with_id(
-        TypeId::of::<Sunset>(),
-        stream::channel(2, |tx| async {
+    Subscription::run_with(TypeId::of::<Sunset>(), |_| {
+        stream::channel(2, |tx: Sender<bool>| async {
             if let Err(err) = inner(tx).await {
                 tracing::error!("Sunset subscription error: {:?}", err);
             }
             future::pending().await
-        }),
-    )
+        })
+    })
 }
 
 enum Event {

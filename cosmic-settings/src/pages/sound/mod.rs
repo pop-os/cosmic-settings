@@ -7,7 +7,7 @@ use cosmic::{
     Apply, Element, Task,
     iced::{Alignment, Length, window},
     surface,
-    widget::{self, settings},
+    widget::{self, settings, space::horizontal as horizontal_space},
 };
 use cosmic_config::{Config, ConfigGet, ConfigSet};
 use cosmic_settings_page::{self as page, Section, section};
@@ -275,7 +275,10 @@ fn input() -> Section<crate::pages::Message> {
                 widget::slider(0..=100, page.model.source_volume, |change| {
                     Message::SetSourceVolume(change).into()
                 })
-            };
+            }
+            .width(Length::Fill)
+            .apply(widget::container)
+            .max_width(250.);
 
             let volume_control = widget::row::with_capacity(4)
                 .align_y(Alignment::Center)
@@ -292,7 +295,7 @@ fn input() -> Section<crate::pages::Message> {
                         .width(Length::Fixed(22.0))
                         .align_x(Alignment::Center),
                 )
-                .push(widget::horizontal_space().width(8))
+                .push(horizontal_space().width(8.))
                 .push(slider);
             let devices = widget::dropdown::popup_dropdown(
                 page.model.sources(),
@@ -307,10 +310,11 @@ fn input() -> Section<crate::pages::Message> {
 
             let mut controls = settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(
-                    &*section.descriptions[volume],
-                    volume_control,
-                ))
+                .add(
+                    settings::item::builder(&*section.descriptions[volume])
+                        .flex_control(volume_control)
+                        .align_items(Alignment::Center),
+                )
                 .add(settings::item(&*section.descriptions[device], devices));
 
             controls = controls.add(
@@ -351,7 +355,10 @@ fn output() -> Section<crate::pages::Message> {
                 widget::slider(0..=100, page.model.sink_volume, |change| {
                     Message::SetSinkVolume(change).into()
                 })
-            };
+            }
+            .width(Length::Fill)
+            .apply(widget::container)
+            .max_width(250.);
 
             let volume_control = widget::row::with_capacity(4)
                 .align_y(Alignment::Center)
@@ -368,7 +375,7 @@ fn output() -> Section<crate::pages::Message> {
                         .width(Length::Fixed(22.0))
                         .align_x(Alignment::Center),
                 )
-                .push(widget::horizontal_space().width(8))
+                .push(horizontal_space().width(8.))
                 .push(slider);
 
             let devices = widget::dropdown::popup_dropdown(
@@ -384,10 +391,11 @@ fn output() -> Section<crate::pages::Message> {
 
             let mut controls = settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(
-                    &*section.descriptions[volume],
-                    volume_control,
-                ))
+                .add(
+                    settings::item::builder(&*section.descriptions[volume])
+                        .flex_control(volume_control)
+                        .align_items(Alignment::Center),
+                )
                 .add(settings::item(&*section.descriptions[device], devices))
                 .add(settings::item(
                     &*section.descriptions[balance],
@@ -398,7 +406,7 @@ fn output() -> Section<crate::pages::Message> {
                                 .width(Length::Fixed(22.0))
                                 .align_x(Alignment::Center),
                         )
-                        .push(widget::horizontal_space().width(8))
+                        .push(horizontal_space().width(8.))
                         .push(
                             widget::slider(
                                 0..=200,
@@ -408,7 +416,7 @@ fn output() -> Section<crate::pages::Message> {
                             )
                             .breakpoints(&[100]),
                         )
-                        .push(widget::horizontal_space().width(8))
+                        .push(horizontal_space().width(8.))
                         .push(
                             widget::text::body(&*section.descriptions[right])
                                 .width(Length::Fixed(22.0))
@@ -440,7 +448,7 @@ fn device_profiles() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
             let button = widget::row::with_children(vec![
-                widget::horizontal_space().into(),
+                horizontal_space().into(),
                 widget::icon::from_name("go-next-symbolic").size(16).into(),
             ]);
 
@@ -448,10 +456,13 @@ fn device_profiles() -> Section<crate::pages::Message> {
                 .control(button)
                 .spacing(16)
                 .apply(widget::container)
+                .width(Length::Fill)
                 .class(cosmic::theme::Container::List)
                 .apply(widget::button::custom)
+                .width(Length::Fill)
                 .class(cosmic::theme::Button::Transparent)
-                .on_press(crate::pages::Message::Page(page.device_profiles));
+                .on_press(crate::pages::Message::Page(page.device_profiles))
+                .width(Length::Fill);
 
             settings::section().add(device_profiles).into()
         })

@@ -1,6 +1,8 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
+use crate::Wrapper;
+
 use super::Event;
 use cosmic_dbus_networkmanager::nm::NetworkManager;
 use futures::{SinkExt, StreamExt};
@@ -18,13 +20,13 @@ pub fn wireless_enabled_subscription<I: 'static + Hash + Copy + Send + Sync + De
     id: I,
     conn: Connection,
 ) -> iced_futures::Subscription<Event> {
-    Subscription::run_with_id(
-        id,
+    Subscription::run_with(Wrapper { id, conn: conn }, |Wrapper { id: _id, conn }| {
+        let conn = conn.clone();
         stream::channel(50, move |output| async move {
             watch(conn, output).await;
             futures::future::pending().await
-        }),
-    )
+        })
+    })
 }
 
 pub async fn watch(conn: zbus::Connection, mut output: futures::channel::mpsc::Sender<Event>) {

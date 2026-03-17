@@ -287,7 +287,7 @@ impl page::Page<crate::pages::Message> for Page {
             // Forward messages from another thread to prevent the monitoring thread from blocking.
             let (randr_task, randr_handle) = Task::stream(cosmic::iced_futures::stream::channel(
                 1,
-                |mut emitter| async move {
+                |mut emitter: futures::channel::mpsc::Sender<_>| async move {
                     while let Some(message) = rx.recv().await {
                         if let cosmic_randr::Message::ManagerDone = message
                             && !refreshing_page.swap(true, Ordering::SeqCst)
@@ -359,7 +359,7 @@ impl page::Page<crate::pages::Message> for Page {
         // Forward messages from the DRM hotplug thread.
         let (hotplug_task, hotplug_handle) = Task::stream(cosmic::iced_futures::stream::channel(
             1,
-            |mut emitter| async move {
+            |mut emitter: futures::channel::mpsc::Sender<pages::Message>| async move {
                 while let Some(message) = rx.recv().await {
                     _ = emitter.send(message).await;
                 }
@@ -609,8 +609,8 @@ impl Page {
                 return cosmic::iced::widget::scrollable::snap_to(
                     self.display_arrangement_scrollable.clone(),
                     RelativeOffset {
-                        x: self.last_pan,
-                        y: 0.0,
+                        x: Some(self.last_pan),
+                        y: None,
                     },
                 );
             }
@@ -662,7 +662,10 @@ impl Page {
         self.last_pan = 0.5;
         cosmic::iced::widget::scrollable::snap_to(
             self.display_arrangement_scrollable.clone(),
-            RelativeOffset { x: 0.5, y: 0.5 },
+            RelativeOffset {
+                x: Some(0.5),
+                y: Some(0.5),
+            },
         )
     }
 

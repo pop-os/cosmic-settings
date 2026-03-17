@@ -437,7 +437,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
 
             let search = widget::search_input("", &page.search.input)
-                .width(314)
+                .width(314.)
                 .on_clear(Message::Search(String::new()))
                 .on_input(Message::Search)
                 .apply(widget::container)
@@ -516,6 +516,7 @@ fn category_item(category: Category, name: &str, modified: u16) -> Element<'_, M
         .class(theme::Container::List)
         .apply(widget::button::custom)
         .class(theme::Button::Transparent)
+        .width(Length::Fill)
         .on_press(Message::Category(category))
         .into()
 }

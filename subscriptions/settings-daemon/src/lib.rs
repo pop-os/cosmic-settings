@@ -3,53 +3,76 @@
 
 // XXX error handling?
 
+use std::hash::Hash;
+
 use futures::{FutureExt, StreamExt};
 use iced_futures::Subscription;
 use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
 use tokio_stream::wrappers::UnboundedReceiverStream;
 
+pub(crate) struct Wrapper {
+    id: &'static str,
+    conn: zbus::Connection,
+}
+
+impl Hash for Wrapper {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
 pub fn subscription(connection: zbus::Connection) -> iced_futures::Subscription<Event> {
-    Subscription::run_with_id(
-        "settings-daemon",
-        async move {
-            let settings_daemon = match CosmicSettingsDaemonProxy::new(&connection).await {
-                Ok(value) => value,
-                Err(err) => {
-                    log::error!("Error connecting to settings daemon: {}", err);
-                    futures::future::pending().await
-                }
-            };
-
-            let (tx, rx) = unbounded_channel();
-
-            let max_brightness_stream = settings_daemon
-                .receive_max_display_brightness_changed()
-                .await;
-            let brightness_stream = settings_daemon.receive_display_brightness_changed().await;
-
-            let initial = futures::stream::iter([Event::Sender(tx)]);
-
-            initial.chain(futures::stream_select!(
-                Box::pin(UnboundedReceiverStream::new(rx).filter_map(move |request| {
-                    let settings_daemon = settings_daemon.clone();
-                    async move {
-                        match request {
-                            Request::SetDisplayBrightness(brightness) => {
-                                let _ = settings_daemon.set_display_brightness(brightness).await;
-                            }
-                        }
-                        None::<Event>
+    Subscription::run_with(
+        Wrapper {
+            id: "settings-daemon",
+            conn: connection,
+        },
+        |Wrapper {
+             id: _id,
+             conn: connection,
+         }| {
+            let connection = connection.clone();
+            async move {
+                let settings_daemon = match CosmicSettingsDaemonProxy::new(&connection).await {
+                    Ok(value) => value,
+                    Err(err) => {
+                        log::error!("Error connecting to settings daemon: {}", err);
+                        futures::future::pending().await
                     }
-                })),
-                Box::pin(max_brightness_stream.filter_map(|evt| async move {
-                    Some(Event::MaxDisplayBrightness(evt.get().await.ok()?))
-                })),
-                Box::pin(brightness_stream.filter_map(|evt| async move {
-                    Some(Event::DisplayBrightness(evt.get().await.ok()?))
-                }))
-            ))
-        }
-        .flatten_stream(),
+                };
+
+                let (tx, rx) = unbounded_channel();
+
+                let max_brightness_stream = settings_daemon
+                    .receive_max_display_brightness_changed()
+                    .await;
+                let brightness_stream = settings_daemon.receive_display_brightness_changed().await;
+
+                let initial = futures::stream::iter([Event::Sender(tx)]);
+
+                initial.chain(futures::stream_select!(
+                    Box::pin(UnboundedReceiverStream::new(rx).filter_map(move |request| {
+                        let settings_daemon = settings_daemon.clone();
+                        async move {
+                            match request {
+                                Request::SetDisplayBrightness(brightness) => {
+                                    let _ =
+                                        settings_daemon.set_display_brightness(brightness).await;
+                                }
+                            }
+                            None::<Event>
+                        }
+                    })),
+                    Box::pin(max_brightness_stream.filter_map(|evt| async move {
+                        Some(Event::MaxDisplayBrightness(evt.get().await.ok()?))
+                    })),
+                    Box::pin(brightness_stream.filter_map(|evt| async move {
+                        Some(Event::DisplayBrightness(evt.get().await.ok()?))
+                    }))
+                ))
+            }
+            .flatten_stream()
+        },
     )
 }
 
