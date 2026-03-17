@@ -801,46 +801,52 @@ fn keyboard_typing_assist() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(&descriptions[repeat_delay], {
-                    // Delay
-                    let delay_slider = cosmic::widget::slider(
-                        KB_REPEAT_DELAY_MIN..=KB_REPEAT_DELAY_MAX,
-                        page.xkb.repeat_delay,
-                        Message::SetRepeatKeysDelay,
-                    )
-                    .width(Length::Fill)
-                    .breakpoints(&[KB_REPEAT_DELAY_DEFAULT])
-                    .step(50_u32)
-                    .apply(widget::container)
-                    .max_width(250);
+                .add(
+                    settings::flex_item(&descriptions[repeat_delay], {
+                        // Delay
+                        let delay_slider = cosmic::widget::slider(
+                            KB_REPEAT_DELAY_MIN..=KB_REPEAT_DELAY_MAX,
+                            page.xkb.repeat_delay,
+                            Message::SetRepeatKeysDelay,
+                        )
+                        .width(Length::Fill)
+                        .breakpoints(&[KB_REPEAT_DELAY_DEFAULT])
+                        .step(50_u32)
+                        .apply(widget::container)
+                        .max_width(250);
 
-                    row::with_capacity(3)
-                        .align_y(Alignment::Center)
-                        .spacing(theme::spacing().space_s)
-                        .push(widget::text::body(&descriptions[short]))
-                        .push(delay_slider)
-                        .push(widget::text::body(&descriptions[long]))
-                }))
-                .add(settings::flex_item(&descriptions[repeat_rate], {
-                    // Repeat rate
-                    let rate_slider = cosmic::widget::slider(
-                        KB_REPEAT_RATE_MIN..=KB_REPEAT_RATE_MAX,
-                        page.xkb.repeat_rate,
-                        Message::SetRepeatKeysRate,
-                    )
-                    .width(Length::Fill)
-                    .breakpoints(&[KB_REPEAT_RATE_DEFAULT])
-                    .step(5_u32)
-                    .apply(widget::container)
-                    .max_width(250);
+                        row::with_capacity(3)
+                            .align_y(Alignment::Center)
+                            .spacing(theme::spacing().space_s)
+                            .push(widget::text::body(&descriptions[short]))
+                            .push(delay_slider)
+                            .push(widget::text::body(&descriptions[long]))
+                    })
+                    .align_items(Alignment::Center),
+                )
+                .add(
+                    settings::flex_item(&descriptions[repeat_rate], {
+                        // Repeat rate
+                        let rate_slider = cosmic::widget::slider(
+                            KB_REPEAT_RATE_MIN..=KB_REPEAT_RATE_MAX,
+                            page.xkb.repeat_rate,
+                            Message::SetRepeatKeysRate,
+                        )
+                        .width(Length::Fill)
+                        .breakpoints(&[KB_REPEAT_RATE_DEFAULT])
+                        .step(5_u32)
+                        .apply(widget::container)
+                        .max_width(250);
 
-                    row::with_capacity(3)
-                        .align_y(Alignment::Center)
-                        .spacing(theme::spacing().space_s)
-                        .push(widget::text::body(&descriptions[slow]))
-                        .push(rate_slider)
-                        .push(widget::text::body(&descriptions[fast]))
-                }))
+                        row::with_capacity(3)
+                            .align_y(Alignment::Center)
+                            .spacing(theme::spacing().space_s)
+                            .push(widget::text::body(&descriptions[slow]))
+                            .push(rate_slider)
+                            .push(widget::text::body(&descriptions[fast]))
+                    })
+                    .align_items(Alignment::Center),
+                )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Keyboard)
         })

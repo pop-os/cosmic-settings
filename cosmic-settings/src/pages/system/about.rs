@@ -1,6 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use cosmic::iced::Alignment;
 use cosmic_settings_page::{self as page, Section, section};
 
 use super::info::Info;
@@ -210,31 +211,34 @@ fn hardware() -> Section<crate::pages::Message> {
 
             let mut section_builder = settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(
-                    &*desc[model],
-                    text::body(&page.info.hardware_model),
-                ))
-                .add(settings::flex_item(
-                    &*desc[memory],
-                    text::body(&page.info.memory),
-                ))
-                .add(settings::flex_item(
-                    &*desc[processor],
-                    text::body(&page.info.processor),
-                ));
+                .add(
+                    settings::flex_item(&*desc[model], text::body(&page.info.hardware_model))
+                        .align_items(Alignment::Center),
+                )
+                .add(
+                    settings::flex_item(&*desc[memory], text::body(&page.info.memory))
+                        .align_items(Alignment::Center),
+                )
+                .add(
+                    settings::flex_item(&*desc[processor], text::body(&page.info.processor))
+                        .align_items(Alignment::Center),
+                );
 
             for card in &page.info.graphics {
-                section_builder = section_builder.add(settings::flex_item(
-                    &*desc[graphics],
-                    text::body(card.as_str()),
-                ));
+                section_builder = section_builder.add(
+                    settings::flex_item(&*desc[graphics], text::body(card.as_str()))
+                        .align_items(Alignment::Center),
+                );
             }
 
             section_builder
-                .add(settings::flex_item(
-                    &*desc[disk_capacity],
-                    text::body(&page.info.disk_capacity),
-                ))
+                .add(
+                    settings::flex_item(
+                        &*desc[disk_capacity],
+                        text::body(&page.info.disk_capacity),
+                    )
+                    .align_items(Alignment::Center),
+                )
                 .into()
         })
 }
@@ -255,26 +259,32 @@ fn os() -> Section<crate::pages::Message> {
             let desc = &section.descriptions;
             settings::section()
                 .title(&section.title)
-                .add(settings::flex_item(
-                    &*desc[os],
-                    text::body(&page.info.operating_system),
-                ))
-                .add(settings::flex_item(
-                    &*desc[os_arch],
-                    text::body(&page.info.os_architecture),
-                ))
-                .add(settings::flex_item(
-                    &*desc[kernel],
-                    text::body(&page.info.kernel_version),
-                ))
-                .add(settings::flex_item(
-                    &*desc[desktop],
-                    text::body(&page.info.desktop_environment),
-                ))
-                .add(settings::flex_item(
-                    &*desc[windowing_system],
-                    text::body(&page.info.windowing_system),
-                ))
+                .add(
+                    settings::flex_item(&*desc[os], text::body(&page.info.operating_system))
+                        .align_items(Alignment::Center),
+                )
+                .add(
+                    settings::flex_item(&*desc[os_arch], text::body(&page.info.os_architecture))
+                        .align_items(Alignment::Center),
+                )
+                .add(
+                    settings::flex_item(&*desc[kernel], text::body(&page.info.kernel_version))
+                        .align_items(Alignment::Center),
+                )
+                .add(
+                    settings::flex_item(
+                        &*desc[desktop],
+                        text::body(&page.info.desktop_environment),
+                    )
+                    .align_items(Alignment::Center),
+                )
+                .add(
+                    settings::flex_item(
+                        &*desc[windowing_system],
+                        text::body(&page.info.windowing_system),
+                    )
+                    .align_items(Alignment::Center),
+                )
                 .into()
         })
 }
