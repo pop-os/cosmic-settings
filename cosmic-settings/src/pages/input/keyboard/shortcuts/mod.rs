@@ -516,6 +516,7 @@ fn category_item(category: Category, name: &str, modified: u16) -> Element<'_, M
         .class(theme::Container::List)
         .apply(widget::button::custom)
         .class(theme::Button::Transparent)
+        .width(Length::Fill)
         .on_press(Message::Category(category))
         .into()
 }

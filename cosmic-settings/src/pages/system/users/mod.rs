@@ -901,6 +901,7 @@ fn user_list() -> Section<crate::pages::Message> {
                             .padding([space_xxs, space_m])
                             .on_press(Message::SelectUser(idx))
                             .class(cosmic::theme::Button::ListItem)
+                            .width(Length::Fill)
                             .selected(expanded)
                             .apply(Element::from),
                     );
