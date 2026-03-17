@@ -134,36 +134,37 @@ fn scrolling() -> Section<crate::pages::Message> {
             settings::section()
                 .title(&section.title)
                 .add(
-                    settings::flex_item(&descriptions[scroll_speed], {
-                        let value = input
-                            .input_default
-                            .scroll_config
-                            .as_ref()
-                            .and_then(|x| x.scroll_factor)
-                            .unwrap_or(1.)
-                            .log(2.)
-                            * 10.0
-                            + 50.0;
+                    settings::item::builder(&descriptions[scroll_speed])
+                        .flex_control({
+                            let value = input
+                                .input_default
+                                .scroll_config
+                                .as_ref()
+                                .and_then(|x| x.scroll_factor)
+                                .unwrap_or(1.)
+                                .log(2.)
+                                * 10.0
+                                + 50.0;
 
-                        let slider = widget::slider(1.0..=100.0, value, |value| {
-                            Message::SetScrollFactor(2f64.powf((value - 50.0) / 10.0), false)
+                            let slider = widget::slider(1.0..=100.0, value, |value| {
+                                Message::SetScrollFactor(2f64.powf((value - 50.0) / 10.0), false)
+                            })
+                            .width(Length::Fill)
+                            .breakpoints(&[50.0])
+                            .apply(widget::container)
+                            .max_width(250);
+
+                            row::with_capacity(2)
+                                .align_y(Alignment::Center)
+                                .spacing(8)
+                                .push(
+                                    text::body(format!("{:.0}", value.round()))
+                                        .width(Length::Fixed(22.0))
+                                        .align_x(Alignment::Center),
+                                )
+                                .push(slider)
                         })
-                        .width(Length::Fill)
-                        .breakpoints(&[50.0])
-                        .apply(widget::container)
-                        .max_width(250);
-
-                        row::with_capacity(2)
-                            .align_y(Alignment::Center)
-                            .spacing(8)
-                            .push(
-                                text::body(format!("{:.0}", value.round()))
-                                    .width(Length::Fixed(22.0))
-                                    .align_x(Alignment::Center),
-                            )
-                            .push(slider)
-                    })
-                    .align_items(Alignment::Center),
+                        .align_items(Alignment::Center),
                 )
                 .add(
                     settings::item::builder(&descriptions[natural])
