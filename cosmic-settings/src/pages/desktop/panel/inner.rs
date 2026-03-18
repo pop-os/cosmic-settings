@@ -6,7 +6,8 @@ use cosmic::{
     iced::{Alignment, Length},
     surface, theme,
     widget::{
-        button, container, dropdown, horizontal_space, icon, row, settings, slider, text, toggler,
+        button, container, dropdown, icon, row, settings, slider,
+        space::horizontal as horizontal_space, text, toggler,
     },
 };
 
@@ -203,8 +204,7 @@ pub(crate) fn style<
                         move |a| crate::app::Message::PageMessage(msg_map(a)),
                     ),
                 ))
-                .add(settings::flex_item(
-                    &descriptions[size],
+                .add(settings::item::builder(&descriptions[size]).flex_control({
                     // TODO custom discrete slider variant
                     row::with_children(vec![
                         text::body(fl!("small")).into(),
@@ -232,35 +232,43 @@ pub(crate) fn style<
                                 }
                             },
                         )
+                        .width(Length::Fill)
+                        .apply(cosmic::widget::container)
+                        .max_width(250)
                         .into(),
                         text::body(fl!("large")).into(),
                     ])
                     .align_y(Alignment::Center)
-                    .spacing(8),
-                ))
-                .add(settings::flex_item(
-                    &descriptions[background_opacity],
-                    row::with_capacity(2)
-                        .align_y(Alignment::Center)
-                        .spacing(8)
-                        .push(
-                            text::body(fl!(
-                                "number",
-                                HashMap::from_iter(vec![(
+                    .spacing(8)
+                    .width(Length::Fill)
+                }))
+                .add(
+                    settings::item::builder(&descriptions[background_opacity]).flex_control({
+                        row::with_capacity(2)
+                            .align_y(Alignment::Center)
+                            .spacing(8)
+                            .width(Length::Fill)
+                            .push(
+                                text::body(fl!(
                                     "number",
-                                    (panel_config.opacity * 100.0) as i32
-                                )])
-                            ))
-                            .width(Length::Fixed(22.0))
-                            .align_x(Alignment::Center),
-                        )
-                        .push(
-                            slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
-                                Message::OpacityRequest(v as f32 / 100.0)
-                            })
-                            .breakpoints(&[50]),
-                        ),
-                ))
+                                    HashMap::from_iter(vec![(
+                                        "number",
+                                        (panel_config.opacity * 100.0) as i32
+                                    )])
+                                ))
+                                .width(Length::Fixed(22.0))
+                                .align_x(Alignment::Center),
+                            )
+                            .push(
+                                slider(0..=100, (panel_config.opacity * 100.0) as i32, |v| {
+                                    Message::OpacityRequest(v as f32 / 100.0)
+                                })
+                                .width(Length::Fill)
+                                .apply(container)
+                                .max_width(250),
+                            )
+                    }),
+                )
                 .apply(Element::from)
                 .map(msg_map)
         })
@@ -293,10 +301,13 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                     settings::item::builder(&*descriptions[applets_label])
                         .control(control)
                         .spacing(16)
+                        .width(Length::Fill)
                         .apply(container)
                         .class(theme::Container::List)
                         .apply(button::custom)
+                        .width(Length::Fill)
                         .class(theme::Button::Transparent)
+                        .width(Length::Fill)
                         .on_press(crate::pages::Message::Page(panel_applets_entity)),
                 )
             } else {
@@ -347,7 +358,7 @@ pub fn reset_button<
             let descriptions = &section.descriptions;
             let inner = page.inner();
             if inner.system_default == inner.panel_config {
-                Element::from(horizontal_space().width(1))
+                Element::from(horizontal_space().width(1.))
             } else {
                 button::standard(&descriptions[reset_to_default])
                     .on_press(Message::ResetPanel)

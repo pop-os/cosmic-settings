@@ -8,7 +8,7 @@ use cosmic::{
     Apply, Element,
     dialog::file_chooser,
     iced::{Alignment, Length},
-    widget::{self, Space, column, icon, row, settings, text},
+    widget::{self, column, icon, row, settings, space::horizontal as horizontal_space, text},
 };
 use cosmic_settings_page::{self as page, Section, section};
 use image::GenericImageView;
@@ -322,7 +322,7 @@ impl page::Page<crate::pages::Message> for Page {
                                             )))
                                             .width(Length::Fill),
                                     )
-                                    .push(Space::new(5, 0))
+                                    .push(horizontal_space().width(5.))
                                     .push(admin_toggler)
                                     .align_y(Alignment::Center),
                             ),
@@ -843,7 +843,7 @@ fn user_list() -> Section<crate::pages::Message> {
                                     .push(text::caption(crate::fl!("administrator", "desc")))
                                     .width(Length::Fill)
                                     .into(),
-                                Space::new(5, 0).into(),
+                                horizontal_space().width(5.).into(),
                                 widget::toggler(user.is_admin)
                                     .on_toggle(|enabled| {
                                         Message::SelectedUserSetAdmin(user.id, enabled)
@@ -853,7 +853,7 @@ fn user_list() -> Section<crate::pages::Message> {
 
                         if page.users.len() > 1 {
                             details_list = details_list.add(settings::item_row(vec![
-                                widget::horizontal_space().width(Length::Fill).into(),
+                                horizontal_space().width(Length::Fill).into(),
                                 widget::button::destructive(crate::fl!("remove-user"))
                                     .on_press(Message::SelectedUserDelete(user.id))
                                     .into(),
@@ -885,7 +885,7 @@ fn user_list() -> Section<crate::pages::Message> {
                             .align_y(Alignment::Center)
                             .spacing(space_xxs)
                             .into(),
-                        widget::horizontal_space().width(Length::Fill).into(),
+                        horizontal_space().width(Length::Fill).into(),
                         icon::from_name(if expanded {
                             "go-up-symbolic"
                         } else {
@@ -901,6 +901,7 @@ fn user_list() -> Section<crate::pages::Message> {
                             .padding([space_xxs, space_m])
                             .on_press(Message::SelectUser(idx))
                             .class(cosmic::theme::Button::ListItem)
+                            .width(Length::Fill)
                             .selected(expanded)
                             .apply(Element::from),
                     );

@@ -47,11 +47,12 @@ pub fn color_image<'a, M: 'a>(
     height: u16,
     border_radius: Option<f32>,
 ) -> Element<'a, M> {
-    container(Space::new(width, height))
+    container(Space::new().width(width).height(height))
         .class(cosmic::theme::Container::custom(move |theme| {
             container::Style {
                 icon_color: None,
                 text_color: None,
+                snap: true,
                 background: Some(match &color {
                     wallpaper::Color::Single([r, g, b]) => {
                         Background::Color(Color::from_rgb(*r, *g, *b))

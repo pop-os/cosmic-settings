@@ -135,11 +135,15 @@ pub fn secret_agent_stream(
     identifier: impl AsRef<str>,
     rx: tokio::sync::mpsc::Receiver<Request>,
 ) -> impl Stream<Item = Event> {
-    iced_futures::stream::channel(4, move |mut msg_tx| async move {
-        if let Err(e) = secret_agent_stream_impl(identifier.as_ref(), msg_tx.clone(), rx).await {
-            let _ = msg_tx.send(Event::Failed(e)).await;
-        }
-    })
+    iced_futures::stream::channel(
+        4,
+        move |mut msg_tx: futures::channel::mpsc::Sender<Event>| async move {
+            if let Err(e) = secret_agent_stream_impl(identifier.as_ref(), msg_tx.clone(), rx).await
+            {
+                let _ = msg_tx.send(Event::Failed(e)).await;
+            }
+        },
+    )
 }
 
 async fn secret_agent_stream_impl(
