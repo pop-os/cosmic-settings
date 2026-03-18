@@ -241,6 +241,8 @@ pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObje
         let result = async {
             if proxy.device.connected().await? {
                 Ok(())
+            } else if !proxy.device.paired().await.unwrap_or(false) {
+                proxy.device.pair().await
             } else {
                 proxy.device.connect().await
             }
