@@ -811,7 +811,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
             page.model.selected_adapter.as_ref().map(|adapter| {
                 page.model
                     .devices_for_adapter(adapter)
-                    .any(|(_, device)| device.paired)
+                    .any(|(_, device)| device.paired || device.is_connected())
             }) == Some(true)
                 && page.model.active != Active::Disabled
         })
@@ -822,7 +822,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
             page.model
                 .devices_for_adapter(page.model.selected_adapter.as_ref().unwrap())
                 .filter_map(|(path, device)| {
-                    if !device.paired {
+                    if !(device.paired || device.is_connected()) {
                         return None;
                     }
 
@@ -846,10 +846,12 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                         &descriptions[device_disconnect],
                                     )
                                 }))
-                                .push(popup_button(
-                                    Some(Message::ForgetDevice(path.clone())),
-                                    &descriptions[device_forget],
-                                ))
+                                .push_maybe(device.paired.then(|| {
+                                    popup_button(
+                                        Some(Message::ForgetDevice(path.clone())),
+                                        &descriptions[device_forget],
+                                    )
+                                }))
                                 .width(Length::Fixed(200.0))
                                 .apply(widget::container)
                                 .padding(theme::spacing().space_xxs)
@@ -914,7 +916,7 @@ fn available_devices() -> Section<crate::pages::Message> {
             page.model.selected_adapter.as_ref().map(|adapter| {
                 page.model
                     .devices_for_adapter(adapter)
-                    .any(|(_, device)| !device.paired)
+                    .any(|(_, device)| !device.paired || !device.is_connected())
             }) == Some(true)
                 && page.model.active != Active::Disabled
         })
@@ -925,7 +927,7 @@ fn available_devices() -> Section<crate::pages::Message> {
             page.model
                 .devices_for_adapter(page.model.selected_adapter.as_ref().unwrap())
                 .filter_map(|(path, device)| {
-                    if device.paired {
+                    if device.paired || device.is_connected() {
                         return None::<Element<'_, Message>>;
                     }
 
