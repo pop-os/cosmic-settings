@@ -327,6 +327,10 @@ impl Page {
                 } else {
                     ThemeBuilder::light()
                 };
+
+                self.roundness = builder.corner_radii.into();
+                self.density = Density::Standard;
+
                 self.theme_manager.set_active_hint(builder.active_hint);
 
                 self.theme_manager
@@ -482,6 +486,9 @@ impl Page {
                 {
                     tracing::error!(?err, "Error setting dark mode");
                 }
+
+                self.roundness = builder.corner_radii.into();
+                self.density = Density::Standard;
 
                 self.theme_manager
                     .selected_customizer_mut()
