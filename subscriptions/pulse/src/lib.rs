@@ -77,12 +77,15 @@ pub fn thread(sender: futures::channel::mpsc::Sender<Event>) {
 
     let _ = context.connect(None, FlagSet::NOFAIL, None);
 
+    // Wait for the PulseAudio context to become ready.
+    // Use blocking iteration to avoid busy-spinning if the server
+    // is not yet available (e.g. pipewire-pulse starting concurrently).
     loop {
         if sender.is_closed() {
             return;
         }
 
-        match main_loop.iterate(false) {
+        match main_loop.iterate(true) {
             IterateResult::Success(_) => {}
             IterateResult::Err(_e) => {
                 return;
@@ -92,8 +95,13 @@ pub fn thread(sender: futures::channel::mpsc::Sender<Event>) {
             }
         }
 
-        if context.get_state() == State::Ready {
-            break;
+        match context.get_state() {
+            State::Ready => break,
+            State::Failed | State::Terminated => {
+                log::error!("PulseAudio context connection failed");
+                return;
+            }
+            _ => {} // Unconnected, Connecting, Authorizing, SettingName — keep waiting
         }
     }
 
