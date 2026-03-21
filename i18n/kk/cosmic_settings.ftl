@@ -817,3 +817,4 @@ xdg-entry-date-time-comment = Уақыт белдеуі, сағатты авто
 xdg-entry-x11-applications = X11 қолданбаларының үйлесімділігі
 xdg-entry-window-management-comment = Super пернесінің әрекеті, терезелерді басқару опциялары және терезелерді қатар қоюдың қосымша опциялары
 xdg-entry-wired-comment = Сымды қосылымдар және қосылымдар профильдері
+no-search-results = Сіздің іздеуіңізге ешбір желі сәйкес келмейді.

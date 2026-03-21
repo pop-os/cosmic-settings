@@ -817,3 +817,4 @@ xdg-entry-date-time-comment = Zona waktu, pengaturan jam otomatis, dan pemformat
 xdg-entry-x11-applications = Kompatibilitas Aplikasi X11
 xdg-entry-window-management-comment = Tindakan tombol Super, opsi kontrol jendela, dan pengubinan jendela tambahan
 xdg-entry-wired-comment = Sambungan berkabel dan profil sambungan
+no-search-results = Tidak ada jaringan yang sesuai pencarian anda.

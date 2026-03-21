@@ -927,3 +927,4 @@ xdg-entry-keyboard-keywords = COSMIC;Klawiatura;Wejście;Źródła;Skróty;
 xdg-entry-window-management-keywords = COSMIC;Okna;Zarządzanie;Kafelkowanie;Super;Klawisz;Przycisk;
 xdg-entry-panel-comment = Podstawowy panel z menu i apletami
 xdg-entry-displays-keywords = COSMIC;Wyświetlacz;Ekran;
+no-search-results = Żadna sieć nie odpowiada twojemu wyszukiwaniu.
