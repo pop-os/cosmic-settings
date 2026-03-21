@@ -899,3 +899,4 @@ xdg-entry-window-management-keywords = COSMIC;Керувати;Вікнами;У
 xdg-entry-displays-keywords = COSMIC;Дисплей;Екран;КОСМІК;КОСМОС;КОСМІЧНЕ;
 xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;Блютуз;Бездротове;З’єднання;КОСМІК;КОСМОС;КОСМІЧНЕ;
 xdg-entry-a11y-comment = Екранний читач, лупа, високий контраст і фільтри кольорів
+no-search-results = Пошук не дав результатів.

@@ -516,18 +516,18 @@ add-another-keybinding = Weitere Tastenkombination hinzufügen
 cancel = Abbrechen
 command = Befehl
 custom = Benutzerdefiniert
-debug = Debug
+debug = Fehlerbehebung
 disabled = Deaktiviert
 input-source-switch = Spracheingabequelle der Tastatur wechseln
-migrate-workspace-prev = Arbeitsfläche zur vorherigen Ausgabe migrieren
-migrate-workspace-next = Arbeitsfläche zur nächsten Ausgabe migrieren
+migrate-workspace-prev = Arbeitsfläche zur vorherigen Ausgabe verlagern
+migrate-workspace-next = Arbeitsfläche zur nächsten Ausgabe verlagern
 migrate-workspace =
     Arbeitsfläche zur { $direction ->
        *[down] unteren
         [left] linken
         [right] rechten
         [up] oberen
-    } Ausgabe migrieren
+    } Ausgabe verlagern
 navigate = Navigieren
 replace = Ersetzen
 shortcut-name = Name der Tastenkombination
@@ -566,7 +566,7 @@ nav-shortcuts = Navigation
 manage-windows = Fenster verwalten
     .close = Fenster schließen
     .maximize = Fenster maximieren
-    .fullscreen = Fenster zum Vollbild
+    .fullscreen = Vollbildfenster
     .minimize = Fenster minimieren
     .resize-inwards = Fenstergröße nach innen ändern
     .resize-outwards = Fenstergröße nach außen ändern
@@ -641,7 +641,6 @@ zoom-out = Herauszoomen
 ## Input: Mouse
 
 mouse = Maus
-    .desc = Mausgeschwindigkeit, -beschleunigung, natürliches Scrollen.
     .speed = Mausgeschwindigkeit
     .acceleration = Mausbeschleunigung aktivieren
 
@@ -649,11 +648,11 @@ mouse = Maus
 
 click-behavior = Klickverhalten
     .click-finger = Sekundärklick mit zwei Fingern und Mittelklick mit drei Fingern
-    .button-areas = Sekundärklick in der rechten unteren Ecke und Mittelklick in der unteren Mitte
+    .button-areas = Sekundärklick in der unteren rechten Ecke und Mittelklick in der unteren Mitte
 pinch-to-zoom = Zwei-Finger-Zoom
     .desc = Mit zwei Fingern in den Inhalt zoomen, wenn die Anwendung den Zoom unterstützt.
 tap-to-click = Tippen zum Klicken
-    .desc = Ermöglicht das Tippen mit einem Finger für den ersten Klick, mit zwei Fingern für den zweiten Klick und mit drei Fingern für den mittleren Klick.
+    .desc = Ermöglicht das Tippen mit einem Finger für den Primärklick, das Tippen mit zwei Fingern für den Sekundärklick und das Tippen mit drei Fingern für den Mittelklick
 touchpad = Touchpad
     .acceleration = Touchpad-Beschleunigung aktivieren
     .speed = Touchpad-Geschwindigkeit
@@ -752,9 +751,8 @@ system = System & Konten
 ## System: Über
 
 about = Über
-    .desc = Gerätename, Hardwareinfo, Voreinstellungen des Betriebssystems.
 about-device = Gerätename
-    .desc = Dieser Name erscheint bei anderen Netzwerk- oder Bluetooth-Geräten.
+    .desc = Dieser Name erscheint bei anderen Netzwerk- oder Bluetooth-Geräten
 about-hardware = Hardware
     .model = Hardwaremodell
     .memory = Speicher
@@ -764,7 +762,7 @@ about-hardware = Hardware
 about-os = Betriebssystem
     .os = Betriebssystem
     .os-architecture = Betriebssystemarchitektur
-    .kernel = Kernel Version
+    .kernel = Kernel-Version
     .desktop-environment = Desktopumgebung
     .windowing-system = Fenstersystem
 about-related = Zugehörige Einstellungen
@@ -773,17 +771,15 @@ about-related = Zugehörige Einstellungen
 ## System: Firmware
 
 firmware = Firmware
-    .desc = Firmwaredetails.
 
 ## System: Benutzer
 
 users = Benutzer
-    .desc = Authentifizierung und Benutzerkonten.
     .admin = Administrator
     .standard = Standard
     .profile-add = Profilbild auswählen
 administrator = Administrator
-    .desc = Administratoren können die Einstellungen für alle Benutzer ändern, andere Benutzer hinzufügen und entfernen.
+    .desc = Administratoren können die Einstellungen für alle Benutzer ändern, andere Benutzer hinzufügen und entfernen
 add-user = Benutzer hinzufügen
 remove-user = Benutzer entfernen
 full-name = Vollständiger Name
@@ -888,3 +884,13 @@ xdg-entry-bluetooth-comment = Bluetooth-Geräte verwalten
 xdg-entry-applications-comment = Standardanwendungen, Startanwendungen und Kompatibilitätseinstellungen für X11-Anwendungen
 xdg-entry-wallpaper-keywords = COSMIC;Hintergrundbild;Hintergrund;Slideshow;
 xdg-entry-wallpaper-comment = Hintergrundbilder, Farben und Slideshow-Optionen
+xdg-entry-network-comment = Netzwerkverbindungen verwalten
+xdg-entry-keyboard-comment = Eingabequellen, Umschalten, Eingabe von Sonderzeichen, Tastenkombinationen
+xdg-entry-default-apps-comment = Standard-Webbrowser, E-Mail-Client, Dateibrowser und andere Anwendungen
+xdg-entry-appearance-keywords = COSMIC;Akzent;Farbe;Symbol;Schriftart;Thema
+xdg-entry-appearance-comment = Akzentfarben und Themen
+password-mismatch = Passwort und Bestätigung müssen übereinstimmen
+invalid-username = Ungültiger Benutzername
+change-password = Passwort ändern
+xdg-entry-about-comment = Gerätename, Hardware-Informationen, Betriebssystem-Standardeinstellungen
+no-search-results = Es wurden keine Netzwerke gefunden, die deiner Suche entsprechen.

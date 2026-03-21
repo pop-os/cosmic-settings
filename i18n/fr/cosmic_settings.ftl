@@ -901,3 +901,4 @@ xdg-entry-applications-keywords = COSMIC;Défaut;Application;Démarrage;X11;Comp
 xdg-entry-keyboard-keywords = COSMIC;Clavier;Saisie;Source;Raccourcis;
 xdg-entry-window-management-keywords = COSMIC;Fenêtre;Gestion;Ajustement;Super;Touche;
 xdg-entry-displays-keywords = COSMIC;Écran;
+no-search-results = Aucun réseau ne correspond à votre recherche.
