@@ -1,6 +1,6 @@
-app = COSMIC 控制中心
+app = COSMIC 設定
 dbus-connection-error = 無法連線到 DBus
-ok = OK
+ok = 確定
 unknown = 未知
 number = { $number }
 
@@ -12,7 +12,7 @@ add-vpn = 新增 VPN
 airplane-on = 飛航模式已開啟。
 cable-unplugged = 網路線已拔除
 connect = 連線
-connected = 已連線
+connected = 已經連線
 connecting = 連線中…
 disconnect = 中斷連線
 forget = 忘記此網路
@@ -26,7 +26,7 @@ remove = 移除
 settings = 設定
 username = 使用者名稱
 visible-networks = 可見的網路
-identity = 身分
+identity = 身分識別
 auth-dialog = 需要驗證
     .vpn-description = 請輸入 VPN 服務所需的使用者名稱及密碼。
     .wifi-description = 請輸入密碼或加密金鑰。你也可以按下路由器上的「WPS」按鈕來連接。
@@ -195,7 +195,6 @@ never = 從不
 ## Desktop: Appearance
 
 appearance = 外觀
-    .desc = 介面主題與色調。
 accent-color = 強調色
 app-background = 應用程式背景
 auto = 自動
@@ -203,14 +202,14 @@ close = 關閉
 color-picker = 調色盤
 copied-to-clipboard = 已複製到剪貼簿
 copy-to-clipboard = 複製到剪貼簿
-dark = 夜色
+dark = 暗色
 export = 匯出
 hex = Hex
 import = 匯入
-light = 明亮色
+light = 亮色
 mode-and-colors = 色彩與模式
 recent-colors = 近似色
-reset-to-default = 重設至預設值
+reset-to-default = 重新設定至預設
 rgb = RGB
 window-hint-accent = 使用中視窗的提示色
 window-hint-accent-toggle = 使用主題強調色作為使用中視窗的提示色
@@ -260,8 +259,7 @@ notifications = 通知
 ## Desktop: Panel
 
 panel = 面板
-    .desc = 桌面控制項和選單的頂部欄。
-add = 新增
+add = 添增
 add-applet = 新增工具程式
 all = 全部
 applets = 工具程式
@@ -302,8 +300,7 @@ panel-missing = 面板配置遺失
 
 ## Desktop: Dock
 
-dock = 基座
-    .desc = 應用程式匣中釘選的應用程式面板和其他工具程式。
+dock = 程式塢
 
 ## Desktop: Window management
 
@@ -512,14 +509,14 @@ keyboard-numlock-boot = 鍵盤數字鎖定開機
     .off = 關
     .set = 設定數字鎖定鍵開機狀態
 added = 新增
-type-to-search = 輸入關鍵字以進行搜尋...
+type-to-search = 輸入進行搜尋...
 show-extended-input-sources = 顯示延伸輸入來源
 
 ## Input: Keyboard: Shortcuts
 
 keyboard-shortcuts = 鍵盤快捷鍵
     .desc = 顯示與修改快捷鍵
-add-another-keybinding = 新增其他按鍵綁定
+add-another-keybinding = 添加另一個按鍵組合
 cancel = 取消
 command = 命令
 custom = 自訂
@@ -814,3 +811,31 @@ full-name = 姓名
 invalid-username = 無效的使用者名稱。
 password-mismatch = 密碼與確認密碼必須相符。
 save = 儲存
+xdg-entry-dock-comment = 可選的應用程式和工具程式的工具欄
+xdg-entry-dock = 程式塢
+xdg-entry-displays-keywords = COSMIC;顯示器;熒幕;
+xdg-entry-displays-comment = 管理顯示器設定
+xdg-entry-displays = 顯示器
+xdg-entry-desktop-keywords = COSMIC;桌面;
+xdg-entry-desktop = 桌面
+xdg-entry-default-apps-keywords = COSMIC;預設;應用程式
+xdg-entry-default-apps = 預設應用程式
+xdg-entry-date-time-keywords = COSMIC;時間;時區;
+xdg-entry-date-time-comment = 時區、自動時鐘設定和時間格式
+xdg-entry-date-time = 日期與時間
+xdg-entry-bluetooth-keywords = COSMIC;藍牙;
+xdg-entry-bluetooth-comment = 管理藍牙裝置
+xdg-entry-applications-keywords = COSMIC;預設;應用程式;啟動;X11;兼容性
+xdg-entry-applications-comment = 預設應用程式、啟動應用程式和 X11 應用程式兼容性設定
+xdg-entry-appearance-keywords = COSMIC;強調色;颜色;圖示;字體;主題
+xdg-entry-appearance-comment = 強調色和主題
+xdg-entry-applications = 應用程式
+xdg-entry-appearance = 外觀
+xdg-entry-a11y-keywords = COSMIC;無障礙;A11y;螢幕;閱讀器;放大鏡;對比;對比度;颜色;色彩;
+xdg-entry-a11y-comment = 螢幕閱讀器、放大鏡、高對比以及濾色鏡
+xdg-entry-a11y = 無障礙
+xdg-entry-about-keywords = COSMIC;關於
+xdg-entry-about-comment = 裝置名稱、硬體資訊、作業系統預設
+xdg-entry-about = 關於
+xdg-entry-keywords = COSMIC;設定;
+xdg-entry-dock-keywords = COSMIC;程式塢;面板;工具程式

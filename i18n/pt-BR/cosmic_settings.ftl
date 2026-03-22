@@ -29,7 +29,7 @@ visible-networks = Redes visíveis
 identity = Identidade
 auth-dialog = Autenticação necessária
     .vpn-description = Digite o usuário e a senha exigidos pelo serviço de VPN.
-    .wifi-description = Digite a senha ou chave de criptografia. Você também pode conectar pressionando o botão “WPS” no roteador.
+    .wifi-description = Digite a senha ou chave de criptografia. Você também pode conectar pressionando o botão "WPS" no roteador.
 forget-dialog = Esquecer esta rede Wi-Fi?
     .description = Você precisará informar uma senha novamente para usar esta rede no futuro.
 network-device-state =
@@ -157,7 +157,7 @@ color-filter = Tipo de filtro de cores
 
 ## Desktop
 
-desktop = Área de Trabalho
+desktop = Área de trabalho
 
 ## Desktop: Wallpaper
 
@@ -324,7 +324,7 @@ workspaces-behavior = Comportamento das áreas de trabalho
     .dynamic = Áreas de trabalho dinâmicas
     .dynamic-desc = Remove automaticamente áreas de trabalho vazias.
     .fixed = Número fixo de áreas de trabalho
-    .fixed-desc = Adicione ou remova áreas de trabalho na visão geral.
+    .fixed-desc = Adicionar ou remover áreas de trabalho na visão geral.
 workspaces-multi-behavior = Comportamento de vários monitores
     .span = Áreas de trabalho se expandem a todas as telas
     .separate = Telas têm áreas de trabalho separadas
@@ -334,7 +334,7 @@ workspaces-overview-thumbnails = Miniaturas da visão geral das áreas de trabal
 workspaces-orientation = Orientação das áreas de trabalho
     .vertical = Vertical
     .horizontal = Horizontal
-hot-corner = Hot Corner
+hot-corner = Canto ativo
     .top-left-corner = Habilitar o canto superior esquerdo para exibir as áreas de trabalho
 
 ## Displays
@@ -487,10 +487,10 @@ keyboard-sources = Fontes de Entrada
     .view-layout = Ver layout do teclado
     .remove = Remover
     .add = Adicionar fonte de entrada
-keyboard-special-char = Entrada de Caracteres Especiais
+keyboard-special-char = Entrada de caracteres especiais
     .alternate = Tecla de caracteres especiais
     .compose = Tecla de composição
-    .compose-desc = A tecla de composição permite a inserção de uma grande variedade de caracteres. Para usá-la, pressione a composição seguida pela sequência de caracteres. Por exemplo, a tecla de composição seguida de "C" e "o" irá inserir "©", enquanto a tecla de composição seguida de "a" e "‘" irá inserir um "á".
+    .compose-desc = A tecla de composição permite a inserção de uma grande variedade de caracteres. Para usá-la, pressione a tecla de composição seguida pela sequência de caracteres. Por exemplo, a tecla de composição seguida das teclas C e O irá inserir "©", enquanto a tecla de composição seguida das teclas A e ' irá inserir um "á".
     .caps = Tecla Caps Lock
 keyboard-typing-assist = Digitação
     .repeat-rate = Taxa de repetição
@@ -567,7 +567,7 @@ manage-windows = Gerenciamento de Janelas
     .resize-inwards = Redimensionar janela para dentro
     .resize-outwards = Redimensionar janela para fora
     .toggle-sticky = Ativar/Desativar janelas fixadas
-move-windows = Mover Janelas
+move-windows = Mover janelas
     .direction =
         Mover janela { $direction ->
            *[down] para baixo
@@ -576,27 +576,27 @@ move-windows = Mover Janelas
             [up] para cima
         }
     .display =
-        Mover a janela um monitor { $direction ->
+        Mover janela um monitor { $direction ->
            *[down] abaixo
             [left] à esquerda
             [right] à direita
             [up] acima
         }
     .workspace =
-        Mover a janela uma área de trabalho { $direction ->
+        Mover janela uma área de trabalho { $direction ->
            *[below] abaixo
             [left] à esquerda
             [right] à direita
             [above] acima
         }
-    .workspace-num = Mover a janela para a área de trabalho { $num }
-    .prev-workspace = Mover a janela para a área de trabalho anterior
-    .next-workspace = Mover a janela para a próxima área de trabalho
-    .last-workspace = Mover a janela para a última área de trabalho
-    .next-display = Mover a janela para a próxima tela
-    .prev-display = Mover a janela para a tela anterior
-    .send-to-prev-workspace = Mover a janela para a área de trabalho anterior
-    .send-to-next-workspace = Mover a janela para a próxima área de trabalho
+    .workspace-num = Mover janela para a área de trabalho { $num }
+    .prev-workspace = Mover janela para a área de trabalho anterior
+    .next-workspace = Mover janela para a próxima área de trabalho
+    .last-workspace = Mover janela para a última área de trabalho
+    .next-display = Mover janela para a próxima tela
+    .prev-display = Mover janela para a tela anterior
+    .send-to-prev-workspace = Mover janela para a área de trabalho anterior
+    .send-to-next-workspace = Mover janela para a próxima área de trabalho
 system-shortcut = Sistema
     .app-library = Abrir a biblioteca de aplicativos
     .brightness-down = Reduzir o brilho da tela
@@ -725,7 +725,7 @@ default-apps = Aplicativos Padrão
 
 ## Applications: Startup Applications
 
-startup-apps = Aplicativos de Inicialização
+startup-apps = Aplicativos de inicialização
     .add = Adicionar aplicativo
     .user = Aplicativos que serão iniciados ao fazer login no sistema
     .none = Não há aplicativos de inicialização adicionados
@@ -815,8 +815,8 @@ shadow-and-corners = Cantos e sombras de janelas
 workspaces-overview = Visão geral das áreas de trabalho
     .action-on-typing = Ação ao digitar
     .none = Nenhuma
-    .launcher = Abrir Lançador
-    .applications = Abrir Aplicativos
+    .launcher = Abrir lançador
+    .applications = Abrir aplicativos
 xdg-entry-touchpad = Touchpad
 xdg-entry-wired = Rede Cabeada
 xdg-entry-startup-apps-comment = Configurar aplicativos que serão executados na inicialização do sistema
@@ -828,7 +828,7 @@ xdg-entry-startup-apps-keywords = COSMIC;Iniciar;Inicialização;Aplicativo;
 xdg-entry-default-apps-comment = Navegador padrão, cliente de email, navegador de arquivos e outros aplicativos
 xdg-entry-keyboard-comment = Dispositivos de entrada, alternância, entrada de caracteres especiais, atalhos
 xdg-entry-wired-keywords = COSMIC;Wired;Cabeada;LAN;Rede;Conexão;
-xdg-entry-power = Energia e Bateria
+xdg-entry-power = Energia e bateria
 xdg-entry-appearance-keywords = COSMIC;Destaque;Accent;Cor;Ícone;Fonte;Tema
 xdg-entry-mouse = Mouse
 xdg-entry-dock-keywords = COSMIC;Dock;Painel;Applet;Miniaplicativo
@@ -871,7 +871,7 @@ xdg-entry-wallpaper-comment = Imagens do plano de fundo, cores e opções de tra
 xdg-entry-dock = Dock
 xdg-entry-startup-apps = Aplicativos de Inicialização
 xdg-entry-wireless = Wi-Fi
-xdg-entry-workspaces-keywords = COSMIC;Área de Trabalho;Orientação;Visão geral;Monitor;
+xdg-entry-workspaces-keywords = COSMIC;Área;Espaço;Trabalho;Orientação;Visão;Geral;Monitor;Tela;
 xdg-entry-system-comment = Informações do sistema, contas e atualizações de firmware
 xdg-entry-x11-applications-comment = Escalonamento de aplicativos com sistema de janelas X11, tela primária e atalhos globais
 xdg-entry-region-language-comment = Formatação de datas, horas e números baseados em sua região
@@ -883,9 +883,9 @@ xdg-entry-appearance-comment = Cores de destaque e temas
 xdg-entry-time-language-keywords = COSMIC;Sistema;Hora;Data;Região;idioma;
 xdg-entry-input-keywords = COSMIC;Entrada;Teclado;Mouse;
 xdg-entry-comment = Aplicativo de configurações para o ambiente COSMIC
-xdg-entry-notifications-comment = Não Perturbe, notificações no bloqueio de tela e configurações por aplicativo
+xdg-entry-notifications-comment = Modo "Não perturbe", notificações no bloqueio de tela e configurações por aplicativo
 xdg-entry-applications = Aplicativos
-xdg-entry-sound-keywords = COSMIC;Som;Audio;Alerta;Pipewire;
+xdg-entry-sound-keywords = COSMIC;Som;Áudio;Alerta;Pipewire;
 xdg-entry-power-keywords = COSMIC;Energia;Bateria
 xdg-entry-default-apps-keywords = COSMIC;Padrão;Aplicativo
 xdg-entry-keywords = COSMIC;Configurações;
@@ -895,7 +895,7 @@ xdg-entry-input = Dispositivos de entrada
 xdg-entry-applications-keywords = COSMIC;Padrão;Aplicativo;Inicialização;Iniciar;X11;Compatibilidade
 xdg-entry-sound-comment = Configurações de áudio para dispositivos, alertas e aplicativos
 xdg-entry-touchpad-comment = Velocidade do touchpad, opções do clique e gestos
-xdg-entry-keyboard-keywords = COSMIC;Teclado;Entrada;Fonte;Atalhos;
+xdg-entry-keyboard-keywords = COSMIC;Teclado;Entrada;Dispositivos;Atalhos;
 xdg-entry-vpn-comment = Conexões VPN e perfis de conexão
 xdg-entry-appearance = Aparência
 xdg-entry-window-management-keywords = COSMIC;Janela;Gerenciamento;Tiling;Lado a lado;Super;Key;
@@ -910,3 +910,4 @@ xdg-entry-date-time-comment = Fuso horário, configurações de relógio e forma
 xdg-entry-x11-applications = Compatibilidade com aplicativos X11
 xdg-entry-window-management-comment = Ação da tecla Super, opções de controle de janela e opções de janelas lado a lado (tiling)
 xdg-entry-wired-comment = Conexões de rede com fio e perfis de conexão
+no-search-results = Nenhuma rede corresponde à sua pesquisa.
