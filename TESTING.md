@@ -10,6 +10,12 @@ This document provides a regression testing checklist for COSMIC Settings and th
 
 - [ ] Able to disconnect from and connect to a network.
 
+#### Bluetooth
+
+- [ ] Bluetooth device connects.
+- [ ] Paired device can be disconnected & reconnected.
+- [ ] Paired device can be forgotten & connecting again works.
+
 ### Desktop
 
 #### Wallpaper
