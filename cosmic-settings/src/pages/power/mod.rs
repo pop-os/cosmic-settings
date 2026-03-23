@@ -4,6 +4,7 @@ use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, ConnectedDevice, PowerProfile};
 
 use cosmic::iced::{self, Alignment, Length};
+use cosmic::iced_core::text::{Ellipsize, EllipsizeHeightLimit};
 use cosmic::iced_widget::{column, row};
 use cosmic::widget::{self, radio, settings, space::horizontal as horizontal_space, text};
 use cosmic::{Apply, surface};
@@ -472,7 +473,10 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         row!(
                             widget::icon::from_name(connected_device.device_icon).size(48),
                             column!(
-                                text::heading(&connected_device.model).height(20.0),
+                                text::heading(&connected_device.model)
+                                    .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(1)))
+                                    .height(20.0)
+                                    .width(Length::Fill),
                                 row!(battery_icon, battery_percent_and_time)
                                     .spacing(4)
                                     .align_y(Alignment::Center),
