@@ -7,6 +7,7 @@ pub mod arrangement;
 use crate::{app, pages};
 use arrangement::Arrangement;
 use cosmic::iced::{Alignment, Length, time};
+use cosmic::iced_core::text::{Ellipsize, EllipsizeHeightLimit};
 use cosmic::iced_widget::scrollable::RelativeOffset;
 use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
@@ -1355,6 +1356,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
             if page.list.outputs.len() > 1 {
                 let display_switcher = tab_bar::horizontal(&page.display_tabs)
                     .button_alignment(Alignment::Center)
+                    .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(1)))
                     .on_activate(Message::Display);
 
                 let mut display_enable = if page
