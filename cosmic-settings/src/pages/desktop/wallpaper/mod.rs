@@ -17,6 +17,7 @@ use std::{
 use cosmic::dialog::file_chooser;
 use cosmic::{
     Apply, Element, Task,
+    iced_core::text::{Ellipsize, EllipsizeHeightLimit},
     widget::{ColorPickerModel, color_picker::ColorPickerUpdate, icon},
 };
 use cosmic::{app::ContextDrawer, iced_runtime::core::image::Handle as ImageHandle};
@@ -1257,6 +1258,7 @@ pub fn settings() -> Section<crate::pages::Message> {
             } else if page.show_tab_bar {
                 let element = tab_bar::horizontal(&page.outputs)
                     .button_alignment(Alignment::Center)
+                    .ellipsize(Ellipsize::End(EllipsizeHeightLimit::Lines(1)))
                     .on_activate(Message::Output);
 
                 children.push(element.into());
