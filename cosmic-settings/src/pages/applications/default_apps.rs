@@ -10,7 +10,9 @@ use std::{
 };
 
 use cosmic::{
-    Apply, Element, Task, surface,
+    Apply, Element, Task,
+    iced::Alignment,
+    surface,
     widget::{self, dropdown, icon, settings},
 };
 use cosmic_config::{ConfigGet, ConfigSet};
@@ -296,6 +298,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "web-browser"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "web-browser"),
@@ -313,6 +316,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                     .min_item_width(300.0)
                 }
             })
@@ -323,6 +327,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "file-manager"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "file-manager"),
@@ -340,6 +345,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                 }
             })
             .add({
@@ -349,6 +355,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "mail-client"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "mail-client"),
@@ -366,6 +373,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                 }
             })
             .add({
@@ -375,6 +383,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "music"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "music"),
@@ -392,6 +401,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                 }
             })
             .add({
@@ -401,6 +411,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "video"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "video"),
@@ -418,6 +429,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                 }
             })
             .add({
@@ -427,6 +439,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "photos"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "photos"),
@@ -444,6 +457,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                 }
             })
             .add({
@@ -453,6 +467,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "calendar"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "calendar"),
@@ -470,6 +485,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                 }
             })
             .add({
@@ -479,6 +495,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "terminal"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "terminal"),
@@ -496,6 +513,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                 }
             })
             .add({
@@ -505,6 +523,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "text-editor"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "text-editor"),
@@ -522,6 +541,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                 }
             })
             .apply(Element::from)

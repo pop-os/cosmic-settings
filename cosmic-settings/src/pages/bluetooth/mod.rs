@@ -3,7 +3,7 @@
 
 use cosmic::iced::{Alignment, Length, color};
 use cosmic::iced_core::text::Wrapping;
-use cosmic::widget::{self, settings, text};
+use cosmic::widget::{self, settings, space::horizontal as horizontal_space, text};
 use cosmic::{Apply, Element, Task, theme};
 use cosmic_settings_bluetooth_subscription::*;
 use cosmic_settings_page::{self as page, Section, section};
@@ -811,7 +811,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
             page.model.selected_adapter.as_ref().map(|adapter| {
                 page.model
                     .devices_for_adapter(adapter)
-                    .any(|(_, device)| device.paired)
+                    .any(|(_, device)| device.paired || device.is_connected())
             }) == Some(true)
                 && page.model.active != Active::Disabled
         })
@@ -822,7 +822,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
             page.model
                 .devices_for_adapter(page.model.selected_adapter.as_ref().unwrap())
                 .filter_map(|(path, device)| {
-                    if !device.paired {
+                    if !(device.paired || device.is_connected()) {
                         return None;
                     }
 
@@ -846,10 +846,12 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                         &descriptions[device_disconnect],
                                     )
                                 }))
-                                .push(popup_button(
-                                    Some(Message::ForgetDevice(path.clone())),
-                                    &descriptions[device_forget],
-                                ))
+                                .push_maybe(device.paired.then(|| {
+                                    popup_button(
+                                        Some(Message::ForgetDevice(path.clone())),
+                                        &descriptions[device_forget],
+                                    )
+                                }))
                                 .width(Length::Fixed(200.0))
                                 .apply(widget::container)
                                 .padding(theme::spacing().space_xxs)
@@ -878,7 +880,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                                 .wrapping(Wrapping::Word)
                                 .into()
                         },
-                        widget::horizontal_space().into(),
+                        horizontal_space().into(),
                         match device.enabled {
                             Active::Enabled => widget::text(&descriptions[device_connected]).into(),
                             Active::Enabling => widget::text(&descriptions[device_connecting])
@@ -914,7 +916,7 @@ fn available_devices() -> Section<crate::pages::Message> {
             page.model.selected_adapter.as_ref().map(|adapter| {
                 page.model
                     .devices_for_adapter(adapter)
-                    .any(|(_, device)| !device.paired)
+                    .any(|(_, device)| !device.paired || !device.is_connected())
             }) == Some(true)
                 && page.model.active != Active::Disabled
         })
@@ -925,7 +927,7 @@ fn available_devices() -> Section<crate::pages::Message> {
             page.model
                 .devices_for_adapter(page.model.selected_adapter.as_ref().unwrap())
                 .filter_map(|(path, device)| {
-                    if device.paired {
+                    if device.paired || device.is_connected() {
                         return None::<Element<'_, Message>>;
                     }
 
@@ -936,18 +938,26 @@ fn available_devices() -> Section<crate::pages::Message> {
                     let mut items = vec![
                         widget::icon::from_name(device.icon).size(16).into(),
                         text(device.alias_or_addr()).wrapping(Wrapping::Word).into(),
-                        widget::horizontal_space().into(),
+                        horizontal_space().into(),
                     ];
 
                     if device.enabled == Active::Disabled {
-                        items.push(widget::button::text(&descriptions[device_connect]).on_press(Message::ConnectDevice(path.clone())).into(), )
+                        items.push(
+                            widget::button::text(&descriptions[device_connect])
+                                .on_press(Message::ConnectDevice(path.clone()))
+                                .into(),
+                        )
                     }
 
                     if device.enabled == Active::Enabling || device.enabled == Active::Enabled {
-                        items.push(text(&descriptions[device_connecting]).class(theme::Text::Color(color!(128, 128, 128))).into(), );
+                        items.push(
+                            text(&descriptions[device_connecting])
+                                .class(theme::Text::Color(color!(128, 128, 128)))
+                                .into(),
+                        );
                     }
 
-                    Some(widget::mouse_area(settings::item_row(items)).into(), )
+                    Some(widget::mouse_area(settings::item_row(items)).into())
                 })
                 .fold(section, settings::Section::add)
                 .apply(Element::from)
@@ -978,11 +988,9 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
                         widget::icon::from_name("bluetooth-symbolic")
                             .size(20)
                             .into(),
-                        widget::horizontal_space()
-                            .width(theme::spacing().space_xxs)
-                            .into(),
+                        horizontal_space().width(theme::spacing().space_xxs).into(),
                         text(&adapter.alias).wrapping(Wrapping::Word).into(),
-                        widget::horizontal_space().into(),
+                        horizontal_space().into(),
                         widget::icon::from_name("go-next-symbolic").into(),
                     ];
                     if page.model.adapter_connected(path) {

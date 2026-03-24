@@ -61,7 +61,7 @@ impl Device {
         let alias = alias.ok();
         let device_type: String = proxy.icon().await;
         let paired = proxy.device.paired().await.unwrap_or(false);
-        let enabled = if proxy.device.connected().await.unwrap_or(false) && paired {
+        let enabled = if proxy.device.connected().await.unwrap_or(false) {
             Active::Enabled
         } else {
             Active::Disabled
@@ -111,7 +111,6 @@ impl Device {
                     }
                 }
                 DeviceUpdate::Paired(paired) => {
-                    self.enabled = Active::Enabling;
                     self.paired = paired;
                 }
                 DeviceUpdate::Icon(icon) => self.icon = icon,
@@ -241,6 +240,9 @@ pub async fn connect_device(connection: zbus::Connection, device_path: OwnedObje
         let result = async {
             if proxy.device.connected().await? {
                 Ok(())
+            } else if !proxy.device.paired().await.unwrap_or(false) {
+                proxy.device.pair().await?;
+                proxy.device.connect().await
             } else {
                 proxy.device.connect().await
             }

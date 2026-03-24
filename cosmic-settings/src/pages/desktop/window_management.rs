@@ -3,7 +3,7 @@
 
 use cosmic::{
     Apply, Element,
-    iced::Length,
+    iced::{Alignment, Length},
     surface,
     widget::{self, settings, toggler},
 };
@@ -258,12 +258,15 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         },
                     ),
                 ))
-                .add(settings::flex_item(
-                    &descriptions[edge_gravity],
-                    toggler(page.edge_snap_threshold != 0).on_toggle(|is_enabled| {
-                        Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
-                    }),
-                ))
+                .add(
+                    settings::flex_item(
+                        &descriptions[edge_gravity],
+                        toggler(page.edge_snap_threshold != 0).on_toggle(|is_enabled| {
+                            Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
+                        }),
+                    )
+                    .align_items(Alignment::Center),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
         })

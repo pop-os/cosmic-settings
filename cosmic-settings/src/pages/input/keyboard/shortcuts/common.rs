@@ -882,6 +882,7 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<'_, S
 
     settings::item::builder(&data.description)
         .flex_control(control)
+        .align_items(Alignment::Center)
         .spacing(16)
         .apply(widget::container)
         .class(theme::Container::List)
