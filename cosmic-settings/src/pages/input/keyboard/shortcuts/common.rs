@@ -557,8 +557,7 @@ impl Model {
                         if shortcut.pending.modifiers
                             != cosmic_settings_config::shortcuts::Modifiers::new()
                             || shortcut.pending.key.is_some_and(|key| {
-                                key.is_misc_function_key()
-                                    || matches!(key.raw(), 0x10080001..=0x1008FFFF)
+                                !cosmic_settings_config::shortcuts::is_forbidden_unmodified_keysym(key)
                             })
                         {
                             shortcut.input = shortcut.pending.to_string();

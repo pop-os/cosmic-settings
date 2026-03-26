@@ -310,7 +310,7 @@ impl Page {
                     && self.add_shortcut.binding.modifiers
                         != cosmic_settings_config::shortcuts::Modifiers::new()
                     || self.add_shortcut.binding.key.is_some_and(|key| {
-                        key.is_misc_function_key() || matches!(key.raw(), 0x10080001..=0x1008FFFF)
+                        !cosmic_settings_config::shortcuts::is_forbidden_unmodified_keysym(key)
                     })
                 {
                     // XX for now avoid applying the keycode
