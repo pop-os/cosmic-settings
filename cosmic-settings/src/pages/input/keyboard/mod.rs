@@ -48,6 +48,7 @@ static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
     ("Backspace", "caps:backspace"),
     ("Super", "caps:super"),
     ("Control", "caps:ctrl_modifier"),
+    ("Swap with Control", "ctrl:swapcaps"),
 ];
 
 #[derive(Clone, Debug)]
@@ -151,11 +152,11 @@ impl SpecialKey {
         }
     }
 
-    pub fn prefix(self) -> &'static str {
+    pub fn prefixes(self) -> &'static [&'static str] {
         match self {
-            Self::Compose => "compose:",
-            Self::AlternateCharacters => "lv3:",
-            Self::CapsLock => "caps:",
+            Self::Compose => &["compose:"],
+            Self::AlternateCharacters => &["lv3:"],
+            Self::CapsLock => &["caps:", "ctrl:"],
         }
     }
 }
@@ -513,10 +514,10 @@ impl Page {
             Message::SpecialCharacterSelect(id) => {
                 if let Some(Context::SpecialCharacter(special_key)) = self.context {
                     let options = self.xkb.options.as_deref().unwrap_or_default();
-                    let prefix = special_key.prefix();
+                    let prefixes = special_key.prefixes();
                     let new_options = options
                         .split(',')
-                        .filter(|x| !x.starts_with(prefix))
+                        .filter(|x| !prefixes.iter().any(|prefix| x.starts_with(prefix)))
                         .chain(id)
                         .join(",");
 
@@ -610,13 +611,13 @@ impl Page {
             SpecialKey::AlternateCharacters => (ALTERNATE_CHARACTER_OPTIONS, None),
             SpecialKey::CapsLock => (CAPS_LOCK_OPTIONS, None),
         };
-        let prefix = special_key.prefix();
+        let prefixes = special_key.prefixes();
         let current = self
             .xkb
             .options
             .iter()
             .flat_map(|x| x.split(','))
-            .find(|x| x.starts_with(prefix));
+            .find(|x| prefixes.iter().any(|prefix| x.starts_with(prefix)));
 
         // TODO layout default
 
