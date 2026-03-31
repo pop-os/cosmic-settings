@@ -402,9 +402,13 @@ fn output() -> Section<crate::pages::Message> {
                     widget::row::with_capacity(4)
                         .align_y(Alignment::Center)
                         .push(
-                            widget::text::body(&*section.descriptions[left])
-                                .width(Length::Fixed(22.0))
-                                .align_x(Alignment::Center),
+                            widget::column::column()
+                                .align_x(Alignment::Center)
+                                .push(
+                                    widget::text::body(&*section.descriptions[left])
+                                        .align_x(Alignment::Center),
+                                )
+                                .push(horizontal_space().width(22.)),
                         )
                         .push(horizontal_space().width(8.))
                         .push(
@@ -418,9 +422,13 @@ fn output() -> Section<crate::pages::Message> {
                         )
                         .push(horizontal_space().width(8.))
                         .push(
-                            widget::text::body(&*section.descriptions[right])
-                                .width(Length::Fixed(22.0))
-                                .align_x(Alignment::Center),
+                            widget::column::column()
+                                .align_x(Alignment::Center)
+                                .push(
+                                    widget::text::body(&*section.descriptions[right])
+                                        .align_x(Alignment::Center),
+                                )
+                                .push(horizontal_space().width(22.0)),
                         ),
                 ));
 
