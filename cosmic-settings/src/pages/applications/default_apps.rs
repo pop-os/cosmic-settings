@@ -577,6 +577,7 @@ fn apps() -> Section<crate::pages::Message> {
                         fl!("default-apps", "archives"),
                         widget::text(fl!("default-apps", "not-installed")),
                     )
+                    .align_items(Alignment::Center)
                 } else {
                     settings::flex_item(
                         fl!("default-apps", "archives"),
@@ -594,6 +595,7 @@ fn apps() -> Section<crate::pages::Message> {
                         )
                         .icons(Cow::Borrowed(&meta.icons)),
                     )
+                    .align_items(Alignment::Center)
                 }
             })
             .apply(Element::from)
