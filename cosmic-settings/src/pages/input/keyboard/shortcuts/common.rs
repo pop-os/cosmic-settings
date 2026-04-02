@@ -29,6 +29,7 @@ pub enum ShortcutMessage {
     ResetBindings,
     ShowShortcut(usize, String),
     SubmitBinding(usize),
+    TabPressed,
     Inhibited(bool),
     ProtocolUnavailable,
     ModifiersChanged(Modifiers),
@@ -545,6 +546,23 @@ impl Model {
                     shortcut.input = shortcut.pending.to_string();
                 }
             }
+            // libcosmic requires we set on_tab() and manually process here
+            // otherwise it'll consume the tab key event for navigation
+            ShortcutMessage::TabPressed => {
+                if let Some((short_id, id)) = self.shortcut_context.zip(self.editing)
+                    && let Some(model) = self.shortcut_models.get_mut(short_id)
+                    && let Some(shortcut) = model.bindings.get_mut(id)
+                {
+                    shortcut.pending.key = Some(xkeysym::Keysym::Tab);
+                    shortcut.pending.keycode = None;
+                    shortcut.input = shortcut.pending.to_string();
+                    return Task::batch(vec![
+                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                        self.submit_binding(id),
+                        cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
+                    ]);
+                }
+            }
             ShortcutMessage::KeyReleased(keycode, _, _) => {
                 if let Some((short_id, id)) = self.shortcut_context.zip(self.editing)
                     && let Some(model) = self.shortcut_models.get_mut(short_id)
@@ -557,8 +575,9 @@ impl Model {
                         if shortcut.pending.modifiers
                             != cosmic_settings_config::shortcuts::Modifiers::new()
                             || shortcut.pending.key.is_some_and(|key| {
-                                key.is_misc_function_key()
-                                    || matches!(key.raw(), 0x10080001..=0x1008FFFF)
+                                !cosmic_settings_config::shortcuts::is_forbidden_unmodified_keysym(
+                                    key,
+                                )
                             })
                         {
                             shortcut.input = shortcut.pending.to_string();
@@ -629,8 +648,7 @@ impl Model {
                     if matches!(
                         key,
                         Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
-                    ) || matches!((&key, modifiers), (Key::Named(Named::Tab), modifiers) if modifiers.is_empty() || modifiers == Modifiers::SHIFT)
-                    {
+                    ) {
                         return None;
                     }
                     cosmic::iced_winit::conversion::physical_to_scancode(physical_key)
@@ -788,6 +806,7 @@ fn context_drawer<'a>(
             .on_input(move |text| ShortcutMessage::InputBinding(bind_id, text))
             .on_unfocus(ShortcutMessage::SubmitBinding(bind_id))
             .on_submit(move |_| ShortcutMessage::SubmitBinding(bind_id))
+            .on_tab(ShortcutMessage::TabPressed) // capture Tab to prevent focus navigation
             .padding([0, space_xs])
             .id(shortcut.id.clone())
             .into();

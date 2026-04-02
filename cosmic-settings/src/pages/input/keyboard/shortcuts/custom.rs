@@ -67,6 +67,7 @@ pub enum Message {
     Shortcut(ShortcutMessage),
     /// Open the add shortcut context drawer
     ShortcutContext,
+    TabPressed,
     ModifiersChanged(Modifiers),
     KeyReleased(u32, Key, Location),
     KeyPressed(u32, Key, Location, Modifiers),
@@ -297,6 +298,26 @@ impl Page {
                     }
                 }
             }
+            // libcosmic requires we set on_tab() and manually process here
+            // otherwise it'll consume the tab key event for navigation
+            Message::TabPressed => {
+                if self.add_shortcut.editing.is_some() && self.add_shortcut.active {
+                    self.add_shortcut.binding.key = Some(xkeysym::Keysym::Tab);
+                    self.add_shortcut.binding.keycode = Some(0);
+                    if let Some(k) = self
+                        .add_shortcut
+                        .keys
+                        .get_mut(self.add_shortcut.editing.unwrap())
+                    {
+                        k.0 = self.add_shortcut.binding.to_string();
+                    }
+                    return self.update(Message::KeyReleased(
+                        0,
+                        Key::Named(Named::Tab),
+                        Location::Standard,
+                    ));
+                }
+            }
             Message::KeyReleased(keycode, _, _) => {
                 // if the currently selected shortcut matches, finish selecting shortcut
                 if self.add_shortcut.editing.is_some()
@@ -310,7 +331,7 @@ impl Page {
                     && self.add_shortcut.binding.modifiers
                         != cosmic_settings_config::shortcuts::Modifiers::new()
                     || self.add_shortcut.binding.key.is_some_and(|key| {
-                        key.is_misc_function_key() || matches!(key.raw(), 0x10080001..=0x1008FFFF)
+                        !cosmic_settings_config::shortcuts::is_forbidden_unmodified_keysym(key)
                     })
                 {
                     // XX for now avoid applying the keycode
@@ -452,6 +473,7 @@ impl Page {
                 .select_on_focus(true)
                 .on_input(move |input| Message::KeyInput(id, input))
                 .on_submit(|_| Message::AddKeybinding)
+                .on_tab(Message::TabPressed) // capture Tab to prevent focus navigation
                 .padding([0, 12])
                 .id(widget_id.clone())
                 .apply(widget::container)
@@ -599,8 +621,7 @@ impl page::Page<crate::pages::Message> for Page {
                         if matches!(
                             key,
                             Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
-                        ) || matches!((&key, modifiers), (Key::Named(Named::Tab), modifiers) if modifiers.is_empty() || modifiers == Modifiers::SHIFT)
-                        {
+                        ) {
                             return None;
                         }
                         cosmic::iced_winit::conversion::physical_to_scancode(physical_key).map(
