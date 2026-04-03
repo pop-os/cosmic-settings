@@ -38,7 +38,7 @@ This document provides a regression testing checklist for COSMIC Settings and th
 #### Dock
 
 - [ ] Enable tiling. "Automatically hide dock" takes effect immediately.
-- [ ] Disable tiling; maximize a window. "Autommatically hide dock" takes effect immediately.
+- [ ] Disable tiling; maximize a window. "Automatically hide dock" takes effect immediately.
 - [ ] Changing position on screen works.
 - [ ] All Style settings take effect as expected.
 
@@ -69,13 +69,13 @@ TBD after devices/profiles are fixed.
 
 #### X11 Applications Compatibility
 
-- [ ] Global Shortcuts in X11 Applications works (in e.g. Discord).
+- [ ] Global Shortcuts in X11 Applications work (in e.g. Discord).
 
 ### Time & Language
 
 #### Date & Time
 
-- [ ] Changing time zome works.
+- [ ] Changing time zone works.
 - [ ] Toggling 24-hour time takes effect in Settings preview, on top panel, and on the lock screen.
 - [ ] Toggling seconds takes effect in Settings preview and on top panel.
 - [ ] Changing first day of week takes effect in Calendar applet.
