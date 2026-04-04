@@ -779,10 +779,7 @@ fn context_drawer<'a>(
     show_action: bool,
 ) -> Element<'a, ShortcutMessage> {
     let cosmic::cosmic_theme::Spacing {
-        space_xxs,
-        space_xs,
-        space_l,
-        ..
+        space_xs, space_l, ..
     } = theme::spacing();
 
     let model = &shortcuts[id];
@@ -798,7 +795,7 @@ fn context_drawer<'a>(
     });
 
     let bindings = model.bindings.iter().enumerate().fold(
-        widget::list_column().spacing(space_xxs),
+        widget::list_column(),
         |section, (_, (bind_id, shortcut))| {
             let editing = editing == Some(bind_id);
             let text: Cow<'_, str> = if !editing && shortcut.binding.is_set() {

@@ -4,7 +4,7 @@ use cosmic::cosmic_theme::palette::Srgba;
 use cosmic::iced::ContentFit;
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::icon::{from_name, icon};
-use cosmic::widget::{self, button, container, settings, text};
+use cosmic::widget::{self, button, container, list, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
 use cosmic_settings_wallpaper as wallpaper;
@@ -64,105 +64,117 @@ fn container_background<'a>(
     page: &Page,
     section: &'a Section<crate::pages::Message>,
     labels: &HashMap<String, usize>,
-) -> impl Into<Element<'a, Message>> {
+) -> list::ListButton<'a, Message> {
     let descriptions = &section.descriptions;
     let go_next_icon = from_name("go-next-symbolic").handle();
 
-    settings::item::builder(&descriptions[labels["container_bg"]])
-        .description(&descriptions[labels["container_bg_desc"]])
-        .control(
-            if page
-                .drawer
-                .container_background
-                .get_applied_color()
-                .is_some()
-            {
-                Element::from(
-                    page.drawer
-                        .container_background
-                        .picker_button(
-                            |_| Message::DrawerOpen(ContextView::ContainerBackground),
-                            Some(24),
-                        )
-                        .width(Length::Fixed(48.0))
-                        .height(Length::Fixed(24.0)),
-                )
-            } else {
-                container(
-                    button::text(&descriptions[labels["auto"]])
-                        .trailing_icon(go_next_icon.clone())
-                        .on_press(Message::DrawerOpen(ContextView::ContainerBackground)),
-                )
-                .into()
-            },
-        )
+    list::button(
+        settings::item::builder(&descriptions[labels["container_bg"]])
+            .description(&descriptions[labels["container_bg_desc"]])
+            .control(
+                if page
+                    .drawer
+                    .container_background
+                    .get_applied_color()
+                    .is_some()
+                {
+                    Element::from(
+                        page.drawer
+                            .container_background
+                            .picker_button(
+                                |_| Message::DrawerOpen(ContextView::ContainerBackground),
+                                Some(24),
+                            )
+                            .width(Length::Fixed(48.0))
+                            .height(Length::Fixed(24.0)),
+                    )
+                } else {
+                    container(
+                        button::text(&descriptions[labels["auto"]])
+                            .trailing_icon(go_next_icon.clone())
+                            .on_press(Message::DrawerOpen(ContextView::ContainerBackground)),
+                    )
+                    .into()
+                },
+            ),
+    )
+    .on_press(Message::DrawerOpen(ContextView::ContainerBackground))
 }
 
 fn application_background<'a>(
     page: &Page,
     section: &'a Section<crate::pages::Message>,
     labels: &HashMap<String, usize>,
-) -> impl Into<Element<'a, Message>> {
+) -> list::ListButton<'a, Message> {
     let descriptions = &section.descriptions;
 
-    settings::item::builder(&descriptions[labels["app_bg"]]).control(
-        page.drawer
-            .application_background
-            .picker_button(
-                |_| Message::DrawerOpen(ContextView::ApplicationBackground),
-                Some(24),
-            )
-            .width(Length::Fixed(48.0))
-            .height(Length::Fixed(24.0)),
+    list::button(
+        settings::item::builder(&descriptions[labels["app_bg"]]).control(
+            page.drawer
+                .application_background
+                .picker_button(
+                    |_| Message::DrawerOpen(ContextView::ApplicationBackground),
+                    Some(24),
+                )
+                .width(Length::Fixed(48.0))
+                .height(Length::Fixed(24.0)),
+        ),
     )
+    .on_press(Message::DrawerOpen(ContextView::ApplicationBackground))
 }
 
 fn control_tint<'a>(
     page: &Page,
     section: &'a Section<crate::pages::Message>,
     labels: &HashMap<String, usize>,
-) -> impl Into<Element<'a, Message>> {
+) -> list::ListButton<'a, Message> {
     let descriptions = &section.descriptions;
 
-    settings::item::builder(&descriptions[labels["control_tint"]])
-        .description(&descriptions[labels["control_tint_desc"]])
-        .control(
-            page.drawer
-                .control_component
-                .picker_button(
-                    |_| Message::DrawerOpen(ContextView::ControlComponent),
-                    Some(24),
-                )
-                .width(Length::Fixed(48.0))
-                .height(Length::Fixed(24.0)),
-        )
+    list::button(
+        settings::item::builder(&descriptions[labels["control_tint"]])
+            .description(&descriptions[labels["control_tint_desc"]])
+            .control(
+                page.drawer
+                    .control_component
+                    .picker_button(
+                        |_| Message::DrawerOpen(ContextView::ControlComponent),
+                        Some(24),
+                    )
+                    .width(Length::Fixed(48.0))
+                    .height(Length::Fixed(24.0)),
+            ),
+    )
+    .on_press(Message::DrawerOpen(ContextView::ControlComponent))
 }
 
 fn interface_text<'a>(
     page: &Page,
     section: &'a Section<crate::pages::Message>,
     labels: &HashMap<String, usize>,
-) -> impl Into<Element<'a, Message>> {
+) -> list::ListButton<'a, Message> {
     let descriptions = &section.descriptions;
 
-    settings::item::builder(&descriptions[labels["text_tint"]])
-        .description(&descriptions[labels["text_tint_desc"]])
-        .control(
-            page.drawer
-                .interface_text
-                .picker_button(
-                    |_| Message::DrawerOpen(ContextView::InterfaceText),
-                    Some(24),
-                )
-                .width(Length::Fixed(48.0))
-                .height(Length::Fixed(24.0)),
-        )
+    list::button(
+        settings::item::builder(&descriptions[labels["text_tint"]])
+            .description(&descriptions[labels["text_tint_desc"]])
+            .control(
+                page.drawer
+                    .interface_text
+                    .picker_button(
+                        |_| Message::DrawerOpen(ContextView::InterfaceText),
+                        Some(24),
+                    )
+                    .width(Length::Fixed(48.0))
+                    .height(Length::Fixed(24.0)),
+            ),
+    )
+    .on_press(Message::DrawerOpen(ContextView::InterfaceText))
 }
 fn auto_switch<'a>(
     page: &Page,
     section: &'a Section<crate::pages::Message>,
     labels: &HashMap<String, usize>,
-) -> impl Into<Element<'a, Message>> {
+) -> list::ListButton<'a, Message> {
     let descriptions = &section.descriptions;
 
     settings::item::builder(&descriptions[labels["auto_switch"]])

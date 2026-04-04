@@ -166,27 +166,17 @@ fn click_behavior() -> Section<crate::pages::Message> {
             settings::section()
                 .title(&*section.title)
                 // Secondary click via two fingers, and middle-click via three fingers
-                .add(settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[click_finger]),
-                        ClickMethod::Clickfinger,
-                        page.input_touchpad.click_method,
-                        |option| Message::SetSecondaryClickBehavior(Some(option), true),
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                .add(settings::item::builder(&descriptions[click_finger]).radio(
+                    ClickMethod::Clickfinger,
+                    page.input_touchpad.click_method,
+                    |option| Message::SetSecondaryClickBehavior(Some(option), true),
+                ))
                 // Secondary and middle-click via button areas.
-                .add(settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[button_areas]),
-                        ClickMethod::ButtonAreas,
-                        page.input_touchpad.click_method,
-                        |option| Message::SetSecondaryClickBehavior(Some(option), true),
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                .add(settings::item::builder(&descriptions[button_areas]).radio(
+                    ClickMethod::ButtonAreas,
+                    page.input_touchpad.click_method,
+                    |option| Message::SetSecondaryClickBehavior(Some(option), true),
+                ))
                 .add(
                     settings::item::builder(&descriptions[tap_to_click]).toggler(
                         page.input_touchpad
@@ -222,33 +212,27 @@ fn scrolling() -> Section<crate::pages::Message> {
             settings::section()
                 .title(&section.title)
                 // Two-finger scrolling toggle
-                .add(settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[two_finger]),
+                .add(
+                    settings::item::builder(&descriptions[two_finger]).radio(
                         ScrollMethod::TwoFinger,
                         page.input_touchpad
                             .scroll_config
                             .as_ref()
                             .and_then(|x| x.method),
                         |option| Message::SetScrollMethod(Some(option), true),
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                    ),
+                )
                 // Edge scrolling toggle
-                .add(settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[edge]),
+                .add(
+                    settings::item::builder(&descriptions[edge]).radio(
                         ScrollMethod::Edge,
                         page.input_touchpad
                             .scroll_config
                             .as_ref()
                             .and_then(|x| x.method),
                         |option| Message::SetScrollMethod(Some(option), true),
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                    ),
+                )
                 // Scroll speed slider
                 .add(settings::item(&descriptions[scroll_speed], {
                     let value = page

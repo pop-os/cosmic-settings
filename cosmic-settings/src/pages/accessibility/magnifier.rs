@@ -219,19 +219,18 @@ pub fn magnifier(
                 .add(
                     settings::item::builder(&descriptions[magnifier])
                         .description(&descriptions[controls])
-                        .control(
-                            widget::toggler(page.magnifier_state).on_toggle(Message::SetMagnifier),
-                        ),
+                        .toggler(page.magnifier_state, Message::SetMagnifier),
                 )
-                .add(settings::item(
-                    &descriptions[scroll_controls],
-                    widget::toggler(page.zoom_config.enable_mouse_zoom_shortcuts)
-                        .on_toggle(Message::SetMouseShortcuts),
-                ))
-                .add(settings::item(
-                    &descriptions[show_overlay],
-                    widget::toggler(page.zoom_config.show_overlay).on_toggle(Message::SetOverlay),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[scroll_controls]).toggler(
+                        page.zoom_config.enable_mouse_zoom_shortcuts,
+                        Message::SetMouseShortcuts,
+                    ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[show_overlay])
+                        .toggler(page.zoom_config.show_overlay, Message::SetOverlay),
+                )
                 .add(settings::item(
                     &descriptions[increment],
                     widget::dropdown::popup_dropdown(
@@ -247,10 +246,10 @@ pub fn magnifier(
                         },
                     ),
                 ))
-                .add(settings::item(
-                    &descriptions[signin],
-                    widget::toggler(page.zoom_config.start_on_login).on_toggle(Message::SetSignin),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[signin])
+                        .toggler(page.zoom_config.start_on_login, Message::SetSignin),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::AccessibilityMagnifier)
         })
@@ -300,36 +299,21 @@ pub fn view_movement() -> section::Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(widget::settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[continuous]),
-                        ZoomMovement::Continuously,
-                        Some(page.zoom_config.view_moves),
-                        Message::SetMovement,
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
-                .add(widget::settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[onedge]),
-                        ZoomMovement::OnEdge,
-                        Some(page.zoom_config.view_moves),
-                        Message::SetMovement,
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
-                .add(widget::settings::item_row(vec![
-                    widget::radio(
-                        text::body(&descriptions[centered]),
-                        ZoomMovement::Centered,
-                        Some(page.zoom_config.view_moves),
-                        Message::SetMovement,
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                .add(settings::item::builder(&descriptions[continuous]).radio(
+                    ZoomMovement::Continuously,
+                    Some(page.zoom_config.view_moves),
+                    Message::SetMovement,
+                ))
+                .add(settings::item::builder(&descriptions[onedge]).radio(
+                    ZoomMovement::OnEdge,
+                    Some(page.zoom_config.view_moves),
+                    Message::SetMovement,
+                ))
+                .add(settings::item::builder(&descriptions[centered]).radio(
+                    ZoomMovement::Centered,
+                    Some(page.zoom_config.view_moves),
+                    Message::SetMovement,
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::AccessibilityMagnifier)
         })

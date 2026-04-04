@@ -452,7 +452,7 @@ impl Page {
             .padding([16, 24]);
 
         let keys = self.add_shortcut.keys.iter().fold(
-            widget::list_column().spacing(0),
+            widget::list_column(),
             |column, (id, (text, widget_id))| {
                 let key_combination = widget::editable_input(
                     fl!("type-key-combination"),
@@ -474,7 +474,7 @@ impl Page {
             },
         );
 
-        let controls = widget::list_column().add(input_fields).add(keys).spacing(0);
+        let controls = widget::list_column().add(input_fields).add(keys);
 
         let add_keybinding_button = widget::button::standard(fl!("add-another-keybinding"))
             .on_press(Message::AddShortcut)

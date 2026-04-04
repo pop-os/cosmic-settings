@@ -75,11 +75,13 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
 # iced_futures = { path = "../libcosmic/iced/futures" }
-#
-#iced_futures = { git = "https://github.com/pop-os/libcosmic//" }
-#libcosmic = { git = "https://github.com/pop-os/libcosmic//" }
-#cosmic-config = { git = "https://github.com/pop-os/libcosmic//" }
-#cosmic-theme = { git = "https://github.com/pop-os/libcosmic//" }
+# iced_winit = { path = "../libcosmic/iced/winit" }
+
+# libcosmic = { git = "https://github.com/pop-os/libcosmic//" }
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic//" }
+# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//" }
+# iced_futures = { git = "https://github.com/pop-os/libcosmic//" }
+# iced_winit = { git = "https://github.com/pop-os/libcosmic//" }
 
 # [patch.'https://github.com/pop-os/dbus-settings-bindings']
 # cosmic-dbus-networkmanager = { path = "../dbus-settings-bindings/networkmanager" }
