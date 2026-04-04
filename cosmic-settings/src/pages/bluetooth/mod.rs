@@ -772,12 +772,10 @@ fn status() -> Section<crate::pages::Message> {
             }
 
             widget::list_column()
-                .add(
-                    bluetooth_toggle.control(
-                        widget::toggler(matches!(status, Active::Enabling | Active::Enabled))
-                            .on_toggle(|active| Message::SetActive(active).into()),
-                    ),
-                )
+                .add(bluetooth_toggle.toggler(
+                    matches!(status, Active::Enabling | Active::Enabled),
+                    |active| Message::SetActive(active).into(),
+                ))
                 .apply(Element::from)
         })
 }

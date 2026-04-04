@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::rc::Rc;
 use std::sync::Arc;
 
+use crate::widget::selection_context_item;
 use cosmic::app::{ContextDrawer, context_drawer};
-use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::{Alignment, Length};
-use cosmic::widget::{self, button, space::horizontal as horizontal_space};
+use cosmic::widget::{self, button, list};
 use cosmic::{Apply, Element};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_page::Section;
@@ -361,13 +360,8 @@ impl Page {
     }
 
     fn add_language_view(&self) -> cosmic::Element<'_, crate::pages::Message> {
-        let mut list = widget::list_column();
-
+        let mut list = widget::list_column::with_capacity(self.available_languages.len());
         let search_input = &self.add_language_search.trim().to_lowercase();
-
-        let svg_accent = Rc::new(|theme: &cosmic::Theme| cosmic::widget::svg::Style {
-            color: Some(theme.cosmic().accent_text_color().into()),
-        });
 
         for (id, available_language) in &self.available_languages {
             if search_input.is_empty()
@@ -381,37 +375,17 @@ impl Page {
                     .as_ref()
                     .is_some_and(|(_, locales)| locales.contains(&available_language.lang_code));
 
-                let button = widget::settings::item_row(vec![
-                    widget::text::body(&available_language.display_name)
-                        .class(if is_installed {
-                            cosmic::theme::Text::Accent
-                        } else {
-                            cosmic::theme::Text::Default
-                        })
-                        .wrapping(Wrapping::Word)
-                        .width(Length::Fill)
-                        .into(),
-                    if is_installed {
-                        widget::icon::from_name("object-select-symbolic")
-                            .size(16)
-                            .icon()
-                            .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
-                            .into()
+                list = list.add(
+                    list::button(selection_context_item(
+                        &available_language.display_name,
+                        is_installed,
+                    ))
+                    .on_press(if is_installed {
+                        Message::RemoveLanguage(id)
                     } else {
-                        horizontal_space().width(16.).into()
-                    },
-                ])
-                .apply(widget::container)
-                .class(cosmic::theme::Container::List)
-                .apply(widget::button::custom)
-                .class(cosmic::theme::Button::Transparent)
-                .on_press(if is_installed {
-                    Message::RemoveLanguage(id)
-                } else {
-                    Message::AddLanguage(id)
-                });
-
-                list = list.add(button)
+                        Message::AddLanguage(id)
+                    }),
+                )
             }
         }
 
@@ -492,12 +466,7 @@ impl Page {
     }
 
     fn region_view(&self) -> cosmic::Element<'_, crate::pages::Message> {
-        let svg_accent = Rc::new(|theme: &cosmic::Theme| {
-            let color = theme.cosmic().accent_text_color().into();
-            cosmic::widget::svg::Style { color: Some(color) }
-        });
-
-        let mut list = widget::list_column();
+        let mut list = widget::list_column::with_capacity(self.available_languages.len());
 
         let search_input = &self.add_language_search.trim().to_lowercase();
 
@@ -509,37 +478,14 @@ impl Page {
                     .as_ref()
                     .is_some_and(|l| l.lang_code == locale.lang_code);
 
-                let button = widget::settings::item_row(vec![
-                    widget::text::body(&locale.region_name)
-                        .class(if is_selected {
-                            cosmic::theme::Text::Accent
+                list = list.add(
+                    list::button(selection_context_item(&locale.region_name, is_selected))
+                        .on_press_maybe(if is_selected {
+                            None
                         } else {
-                            cosmic::theme::Text::Default
-                        })
-                        .wrapping(Wrapping::Word)
-                        .width(Length::Fill)
-                        .into(),
-                    if is_selected {
-                        widget::icon::from_name("object-select-symbolic")
-                            .size(16)
-                            .icon()
-                            .class(cosmic::theme::Svg::Custom(svg_accent.clone()))
-                            .into()
-                    } else {
-                        horizontal_space().width(16.).into()
-                    },
-                ])
-                .apply(widget::container)
-                .class(cosmic::theme::Container::List)
-                .apply(widget::button::custom)
-                .class(cosmic::theme::Button::Transparent)
-                .on_press_maybe(if is_selected {
-                    None
-                } else {
-                    Some(Message::SelectRegion(id))
-                });
-
-                list = list.add(button)
+                            Some(Message::SelectRegion(id))
+                        }),
+                )
             }
         }
 
