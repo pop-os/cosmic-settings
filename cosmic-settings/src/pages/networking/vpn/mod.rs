@@ -1050,7 +1050,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                                 .position(widget::popover::Position::Bottom)
                                 .on_close(Message::ViewMore(None))
                                 .popup(
-                                    widget::column([])
+                                    widget::column::with_capacity(3)
                                         .push_maybe(is_connected.then(|| {
                                             popup_button(
                                                 Message::Deactivate(uuid.clone()),
