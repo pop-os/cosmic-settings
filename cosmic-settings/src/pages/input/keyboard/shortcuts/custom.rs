@@ -739,7 +739,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
                 .width(Length::Fill)
                 .align_x(Alignment::End);
 
-            widget::column([])
+            widget::column::with_capacity(2)
                 .push(content)
                 .push(add_shortcut)
                 .spacing(24)
