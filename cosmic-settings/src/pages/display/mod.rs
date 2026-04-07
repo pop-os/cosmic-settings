@@ -1202,7 +1202,7 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                 space_xxs, space_m, ..
             } = cosmic::theme::spacing();
 
-            column()
+            column::with_capacity(2)
                 .push(
                     text::body(&descriptions[display_arrangement_desc])
                         .apply(container)
@@ -1249,7 +1249,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
 
             let Some(&active_id) = page.display_tabs.active_data::<OutputKey>() else {
-                return column().into();
+                return widget::space().into();
             };
 
             let active_output = &page.list.outputs[active_id];
@@ -1351,7 +1351,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                 items
             });
 
-            let mut content = column().spacing(cosmic::theme::spacing().space_xs);
+            let mut content = column::with_capacity(2).spacing(cosmic::theme::spacing().space_xs);
 
             if page.list.outputs.len() > 1 {
                 let display_switcher = tab_bar::horizontal(&page.display_tabs)

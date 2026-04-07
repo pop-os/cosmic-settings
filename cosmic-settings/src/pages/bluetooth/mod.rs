@@ -839,7 +839,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         .position(widget::popover::Position::Bottom)
                         .on_close(Message::PopupDevice(None))
                         .popup(
-                            widget::column()
+                            widget::column::with_capacity(2)
                                 .push_maybe(device.is_connected().then(|| {
                                     popup_button(
                                         Some(Message::DisconnectDevice(path.clone())),

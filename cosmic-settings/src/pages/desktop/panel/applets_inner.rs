@@ -650,7 +650,7 @@ impl<'a, Message: 'static + Clone> AppletReorderList<'a, Message> {
                 let is_dragged = active_dnd.as_ref().is_some_and(|dnd| dnd.id == info.id);
 
                 let content = if is_dragged {
-                    row().height(Length::Fixed(32.0))
+                    row([]).height(Length::Fixed(32.0))
                 } else {
                     row::with_children(vec![
                         icon::from_name("grip-lines-symbolic")
