@@ -284,7 +284,7 @@ impl Page {
 fn apps() -> Section<crate::pages::Message> {
     Section::default().view::<Page>(move |_binder, page, section| {
         let Some(mime_apps) = page.mime_apps.as_ref() else {
-            return widget::row().into();
+            return widget::space().into();
         };
 
         // Avoid creating popup_dropdown for empty app lists.

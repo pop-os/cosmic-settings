@@ -512,7 +512,7 @@ impl Page {
                             .position(widget::popover::Position::Bottom)
                             .on_close(Message::ViewMore(None))
                             .popup(
-                                widget::column()
+                                widget::column::with_capacity(3)
                                     .push_maybe(is_connected.then(|| {
                                         popup_button(
                                             Message::Deactivate(connection.uuid.clone()),
@@ -575,7 +575,7 @@ fn devices_view() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let Some(ref nm_state) = page.nm_state else {
-                return cosmic::widget::column().into();
+                return cosmic::widget::space().into();
             };
 
             let spacing = cosmic::theme::spacing();

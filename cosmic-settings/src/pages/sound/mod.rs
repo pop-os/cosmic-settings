@@ -263,7 +263,7 @@ fn input() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             if page.model.sources().is_empty() {
-                return widget::row().into();
+                return widget::space().into();
             }
 
             let slider = if page.amplification_source {
@@ -399,10 +399,10 @@ fn output() -> Section<crate::pages::Message> {
                 .add(settings::item(&*section.descriptions[device], devices))
                 .add(settings::item(
                     &*section.descriptions[balance],
-                    widget::row::with_capacity(4)
+                    widget::row::with_capacity(5)
                         .align_y(Alignment::Center)
                         .push(
-                            widget::column::column()
+                            widget::column::with_capacity(2)
                                 .align_x(Alignment::Center)
                                 .push(
                                     widget::text::body(&*section.descriptions[left])
@@ -422,7 +422,7 @@ fn output() -> Section<crate::pages::Message> {
                         )
                         .push(horizontal_space().width(8.))
                         .push(
-                            widget::column::column()
+                            widget::column::with_capacity(2)
                                 .align_x(Alignment::Center)
                                 .push(
                                     widget::text::body(&*section.descriptions[right])

@@ -569,7 +569,7 @@ impl Page {
             }
         }
 
-        widget::column()
+        widget::column::with_capacity(2)
             .spacing(space_l)
             .push(toggler)
             .push(list)

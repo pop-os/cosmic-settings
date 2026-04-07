@@ -503,7 +503,7 @@ fn category_item(category: Category, name: &str, modified: u16) -> Element<'_, M
     let control = if modified == 0 {
         Element::from(icon)
     } else {
-        widget::row()
+        widget::row::with_capacity(2)
             .push(text::body(fl!("modified", count = modified)))
             .push(icon)
             .into()

@@ -499,7 +499,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
                 .spacing(8)
                 .push(text::heading(&section.title))
                 .push(
-                    widget::column()
+                    widget::column::with_capacity(devices.len())
                         .extend(
                             devices
                                 .into_iter()
