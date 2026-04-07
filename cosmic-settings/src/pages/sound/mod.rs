@@ -399,7 +399,7 @@ fn output() -> Section<crate::pages::Message> {
                 .add(settings::item(&*section.descriptions[device], devices))
                 .add(settings::item(
                     &*section.descriptions[balance],
-                    widget::row::with_capacity(4)
+                    widget::row::with_capacity(5)
                         .align_y(Alignment::Center)
                         .push(
                             widget::column::with_capacity(2)
