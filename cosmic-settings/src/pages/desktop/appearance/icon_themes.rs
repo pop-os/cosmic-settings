@@ -32,7 +32,7 @@ pub fn button(
     let theme = theme.cosmic();
     let background = Background::Color(theme.palette.neutral_4.into());
 
-    cosmic::widget::column([])
+    cosmic::widget::column::with_capacity(2)
         .push(
             cosmic::widget::button::custom_image_button(
                 cosmic::widget::column::with_children([
