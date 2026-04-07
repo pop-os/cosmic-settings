@@ -263,7 +263,7 @@ impl page::Page<crate::pages::Message> for Page {
             info_items = info_items.add(widget::settings::item(fl!("password"), pass.unsecure()));
         }
 
-        let content = widget::Column::new()
+        let content = column::with_capacity(3)
             .spacing(spacing.space_s)
             .push(qr_section)
             .push(description)
