@@ -877,7 +877,7 @@ fn devices_view() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let Some(NmState { ref state, .. }) = page.nm_state else {
-                return cosmic::widget::column([]).into();
+                return cosmic::widget::space().into();
             };
 
             let spacing = cosmic::theme::spacing();
