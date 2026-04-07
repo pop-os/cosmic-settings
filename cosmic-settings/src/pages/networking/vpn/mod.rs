@@ -990,7 +990,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                 ref active_conns, ..
             }) = page.nm_state
             else {
-                return cosmic::widget::column([]).into();
+                return cosmic::widget::space().into();
             };
 
             let spacing = cosmic::theme::spacing();
