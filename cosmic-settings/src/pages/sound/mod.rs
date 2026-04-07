@@ -263,7 +263,7 @@ fn input() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             if page.model.sources().is_empty() {
-                return widget::row([]).into();
+                return widget::space().into();
             }
 
             let slider = if page.amplification_source {
