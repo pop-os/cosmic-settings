@@ -444,17 +444,17 @@ impl Page {
             .on_submit(|_| Message::EditCombination)
             .id(self.task_id.clone());
 
-        let name_control = widget::column()
+        let name_control = widget::column::with_capacity(2)
             .spacing(4)
             .push(widget::text::body(fl!("shortcut-name")))
             .push(name_input);
 
-        let command_control = widget::column()
+        let command_control = widget::column::with_capacity(2)
             .spacing(4)
             .push(widget::text::body(fl!("command")))
             .push(task_input);
 
-        let input_fields = widget::column()
+        let input_fields = widget::column::with_capacity(2)
             .spacing(12)
             .push(name_control)
             .push(command_control)
@@ -491,7 +491,7 @@ impl Page {
             .width(Length::Fill)
             .align_x(Alignment::End);
 
-        widget::column()
+        widget::column::with_capacity(2)
             .spacing(32)
             .push(controls)
             .push(add_keybinding_button)
@@ -739,7 +739,7 @@ fn shortcuts() -> Section<crate::pages::Message> {
                 .width(Length::Fill)
                 .align_x(Alignment::End);
 
-            widget::column()
+            widget::column([])
                 .push(content)
                 .push(add_shortcut)
                 .spacing(24)

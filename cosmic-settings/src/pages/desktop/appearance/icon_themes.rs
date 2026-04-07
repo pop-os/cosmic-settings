@@ -32,11 +32,11 @@ pub fn button(
     let theme = theme.cosmic();
     let background = Background::Color(theme.palette.neutral_4.into());
 
-    cosmic::widget::column()
+    cosmic::widget::column([])
         .push(
             cosmic::widget::button::custom_image_button(
                 cosmic::widget::column::with_children([
-                    cosmic::widget::row()
+                    cosmic::widget::row([])
                         .extend(
                             handles
                                 .iter()
@@ -47,7 +47,7 @@ pub fn button(
                         )
                         .spacing(theme.space_xxxs())
                         .into(),
-                    cosmic::widget::row()
+                    cosmic::widget::row([])
                         .extend(
                             handles
                                 .iter()

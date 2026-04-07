@@ -40,7 +40,7 @@ pub fn color_picker_context_view<'a, Message: Clone + 'static>(
         .apply(container)
         .center_x(Length::Fill);
 
-    cosmic::widget::column()
+    cosmic::widget::column([])
         .push_maybe(description)
         .push(color_picker)
         .align_x(Alignment::Center)

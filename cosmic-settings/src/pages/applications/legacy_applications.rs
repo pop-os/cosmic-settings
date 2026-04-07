@@ -358,7 +358,7 @@ pub fn legacy_application_scaling() -> Section<crate::pages::Message> {
                 .title(&section.title)
                 .add(widget::settings::item_row(vec![
                     widget::radio(
-                        widget::column()
+                        widget::column::with_capacity(2)
                             .push(text::body(&descriptions[gaming]))
                             .push(text::caption(&descriptions[gaming_desc])),
                         XwaylandDescaling::Fractional,
@@ -370,7 +370,7 @@ pub fn legacy_application_scaling() -> Section<crate::pages::Message> {
                 ]))
                 .add(widget::settings::item_row(vec![
                     widget::radio(
-                        widget::column()
+                        widget::column::with_capacity(2)
                             .push(text::body(&descriptions[apps]))
                             .push(text::caption(&descriptions[apps_desc])),
                         XwaylandDescaling::Enabled,
@@ -382,7 +382,7 @@ pub fn legacy_application_scaling() -> Section<crate::pages::Message> {
                 ]))
                 .add(widget::settings::item_row(vec![
                     widget::radio(
-                        widget::column()
+                        widget::column::with_capacity(2)
                             .push(text::body(&descriptions[compat]))
                             .push(text::caption(&descriptions[compat_desc])),
                         XwaylandDescaling::Disabled,

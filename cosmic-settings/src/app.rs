@@ -888,7 +888,7 @@ impl cosmic::Application for SettingsApp {
         } else if let Some(sub_pages) = self.pages.sub_pages(self.active_page) {
             self.sub_page_view(sub_pages)
         } else {
-            return self.page_container(row::row());
+            return self.page_container(cosmic::widget::row([]));
         };
 
         container(view).into()

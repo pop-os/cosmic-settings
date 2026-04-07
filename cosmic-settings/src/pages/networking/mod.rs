@@ -202,7 +202,7 @@ impl page::Page<crate::pages::Message> for Page {
 
                 let device_list = wifi_devices
                     .chain(wired_devices)
-                    .fold(widget::column(), |column, device| column.push(device))
+                    .fold(widget::column([]), |column, device| column.push(device))
                     .push(crate::widget::page_list_item(
                         fl!("vpn"),
                         &descs[vpn_desc],

@@ -195,7 +195,7 @@ impl page::Page<crate::pages::Message> for Page {
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
                 let control: Element<_> = if let Some(identity) = identity {
-                    column::column()
+                    widget::Column::new()
                         .spacing(8)
                         .push(
                             widget::text_input::text_input(fl!("identity"), identity)
@@ -263,7 +263,7 @@ impl page::Page<crate::pages::Message> for Page {
             info_items = info_items.add(widget::settings::item(fl!("password"), pass.unsecure()));
         }
 
-        let content = column::column()
+        let content = widget::Column::new()
             .spacing(spacing.space_s)
             .push(qr_section)
             .push(description)
@@ -877,7 +877,7 @@ fn devices_view() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let Some(NmState { ref state, .. }) = page.nm_state else {
-                return cosmic::widget::column().into();
+                return cosmic::widget::column([]).into();
             };
 
             let spacing = cosmic::theme::spacing();
@@ -976,7 +976,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                                 .position(widget::popover::Position::Bottom)
                                 .on_close(Message::ViewMore(None))
                                 .popup(
-                                    widget::column()
+                                    widget::column([])
                                         .push_maybe(is_connected.then(|| {
                                             popup_button(
                                                 Message::Disconnect(network.ssid.clone()),
@@ -1081,7 +1081,7 @@ fn devices_view() -> Section<crate::pages::Message> {
                                 .position(widget::popover::Position::Bottom)
                                 .on_close(Message::ViewMore(None))
                                 .popup(
-                                    widget::column()
+                                    widget::column([])
                                         .push_maybe(is_connected.then(|| {
                                             popup_button(
                                                 Message::Disconnect(network.ssid.clone()),
