@@ -1351,7 +1351,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
                 items
             });
 
-            let mut content = column([]).spacing(cosmic::theme::spacing().space_xs);
+            let mut content = column::with_capacity(2).spacing(cosmic::theme::spacing().space_xs);
 
             if page.list.outputs.len() > 1 {
                 let display_switcher = tab_bar::horizontal(&page.display_tabs)
