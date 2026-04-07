@@ -47,7 +47,7 @@ pub fn button(
                         )
                         .spacing(theme.space_xxxs())
                         .into(),
-                    cosmic::widget::row([])
+                    cosmic::widget::row::with_capacity(ICON_PREV_ROW)
                         .extend(
                             handles
                                 .iter()
