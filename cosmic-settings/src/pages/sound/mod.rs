@@ -402,7 +402,7 @@ fn output() -> Section<crate::pages::Message> {
                     widget::row::with_capacity(4)
                         .align_y(Alignment::Center)
                         .push(
-                            widget::Column::new()
+                            widget::column::with_capacity(2)
                                 .align_x(Alignment::Center)
                                 .push(
                                     widget::text::body(&*section.descriptions[left])
