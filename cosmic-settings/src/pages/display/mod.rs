@@ -1249,7 +1249,7 @@ pub fn display_configuration() -> Section<crate::pages::Message> {
             let descriptions = &section.descriptions;
 
             let Some(&active_id) = page.display_tabs.active_data::<OutputKey>() else {
-                return column([]).into();
+                return widget::space().into();
             };
 
             let active_output = &page.list.outputs[active_id];
