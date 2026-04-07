@@ -36,7 +36,7 @@ pub fn button(
         .push(
             cosmic::widget::button::custom_image_button(
                 cosmic::widget::column::with_children([
-                    cosmic::widget::row([])
+                    cosmic::widget::row::with_capacity(ICON_PREV_ROW)
                         .extend(
                             handles
                                 .iter()
