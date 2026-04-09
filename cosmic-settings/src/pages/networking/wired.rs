@@ -6,8 +6,8 @@ use std::{collections::BTreeSet, sync::Arc};
 use anyhow::Context;
 use cosmic::{
     Apply, Element, Task,
+    iced::core::text::Wrapping,
     iced::{Alignment, Length},
-    iced_core::text::Wrapping,
     widget::{self, icon, space::horizontal as horizontal_space},
 };
 use cosmic_dbus_networkmanager::interface::enums::DeviceState;

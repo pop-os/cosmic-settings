@@ -25,16 +25,13 @@ pub fn forward_event_loop<M: 'static + Send, T: Future<Output = ()> + Send + 'st
 ) -> (tokio::sync::oneshot::Sender<()>, cosmic::Task<M>) {
     let (cancel_tx, cancel_rx) = tokio::sync::oneshot::channel::<()>();
 
-    let task = cosmic::Task::stream(cosmic::iced_futures::stream::channel(
-        1,
-        |emitter| async move {
-            select(
-                std::pin::pin!(cancel_rx),
-                std::pin::pin!(event_loop(emitter)),
-            )
-            .await;
-        },
-    ));
+    let task = cosmic::Task::stream(cosmic::iced::stream::channel(1, |emitter| async move {
+        select(
+            std::pin::pin!(cancel_rx),
+            std::pin::pin!(event_loop(emitter)),
+        )
+        .await;
+    }));
 
     (cancel_tx, task)
 }

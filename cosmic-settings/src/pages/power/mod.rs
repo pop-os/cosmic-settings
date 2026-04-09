@@ -3,12 +3,12 @@ mod backend;
 use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, ConnectedDevice, PowerProfile};
 
-use cosmic::iced::{self, Alignment, Length};
-use cosmic::iced_core::text::{Ellipsize, EllipsizeHeightLimit};
-use cosmic::iced_widget::{column, row};
+use cosmic::Task;
+use cosmic::iced::core::text::{Ellipsize, EllipsizeHeightLimit};
+use cosmic::iced::widget::{column, row};
+use cosmic::iced::{self, Alignment, Length, stream};
 use cosmic::widget::{self, radio, settings, space::horizontal as horizontal_space, text};
 use cosmic::{Apply, surface};
-use cosmic::{Task, iced_futures};
 use cosmic_config::{Config, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, Section, section};
@@ -144,7 +144,7 @@ impl page::Page<crate::pages::Message> for Page {
 
         // A subscription for the system battery.
         let system_battery = iced::Subscription::run(|| {
-            iced_futures::stream::channel(1, |sender| async move {
+            stream::channel(1, |sender| async move {
                 if let Ok(proxy) = backend::get_device_proxy().await {
                     receive_battery_changes(proxy, String::new(), sender, |_, b| {
                         Message::UpdateBattery(b)
@@ -182,7 +182,7 @@ impl page::Page<crate::pages::Message> for Page {
                         |DeviceBatterySubscriptionData { proxy, path }| {
                             let path = path.clone();
                             let proxy = proxy.clone();
-                            iced_futures::stream::channel(
+                            stream::channel(
                                 1,
                                 move |sender: futures::channel::mpsc::Sender<
                                     crate::pages::Message,
@@ -227,7 +227,7 @@ impl page::Page<crate::pages::Message> for Page {
                 }
             }),
             cosmic::Task::run(
-                iced_futures::stream::channel(
+                stream::channel(
                     1,
                     |mut emitter: futures::channel::mpsc::Sender<Message>| async move {
                         let span =

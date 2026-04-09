@@ -1,7 +1,8 @@
 use cosmic::{
     Task,
     cosmic_theme::{CosmicPalette, ThemeBuilder},
-    iced_core::text::Wrapping,
+    iced::core::text::Wrapping,
+    iced::stream,
     surface,
     theme::CosmicTheme,
     widget::{dropdown, settings, text, toggler},
@@ -127,7 +128,7 @@ impl page::Page<crate::pages::Message> for Page {
                 Ok((tx, mut rx)) => {
                     self.wayland_thread = Some(tx);
 
-                    return cosmic::Task::stream(cosmic::iced_futures::stream::channel(
+                    return cosmic::Task::stream(stream::channel(
                         1,
                         |mut sender: futures::channel::mpsc::Sender<super::Message>| async move {
                             while let Some(event) = rx.recv().await {

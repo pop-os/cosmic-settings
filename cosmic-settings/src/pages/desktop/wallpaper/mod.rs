@@ -17,10 +17,10 @@ use std::{
 use cosmic::dialog::file_chooser;
 use cosmic::{
     Apply, Element, Task,
-    iced_core::text::{Ellipsize, EllipsizeHeightLimit},
+    iced::core::text::{Ellipsize, EllipsizeHeightLimit},
     widget::{ColorPickerModel, color_picker::ColorPickerUpdate, icon},
 };
-use cosmic::{app::ContextDrawer, iced_runtime::core::image::Handle as ImageHandle};
+use cosmic::{app::ContextDrawer, iced::runtime::core::image::Handle as ImageHandle};
 use cosmic::{
     iced::Subscription,
     widget::{

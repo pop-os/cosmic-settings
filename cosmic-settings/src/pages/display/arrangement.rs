@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use cosmic::Renderer;
-use cosmic::iced_core::renderer::Quad;
-use cosmic::iced_core::widget::{Tree, tree};
-use cosmic::iced_core::{
+use cosmic::iced::core::renderer::Quad;
+use cosmic::iced::core::widget::{Tree, tree};
+use cosmic::iced::core::{
     self as core, Border, Clipboard, Element, Layout, Length, Rectangle, Renderer as IcedRenderer,
     Shell, Size, Widget,
 };
-use cosmic::iced_core::{Point, layout, mouse, renderer, touch};
-use cosmic::iced_core::{alignment, text};
+use cosmic::iced::core::{Point, layout, mouse, renderer, touch};
+use cosmic::iced::core::{alignment, text};
 use cosmic::widget::segmented_button::{self, SingleSelectModel};
 use cosmic_randr_shell::{self as randr, OutputKey};
 use randr::Transform;
@@ -160,7 +160,7 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &cosmic::iced_core::Event,
+        event: &cosmic::iced::Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         _renderer: &Renderer,

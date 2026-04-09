@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use cosmic::Task;
-use cosmic::iced_futures::MaybeSend;
+use cosmic::iced::stream;
 use cosmic_pipewire as pipewire;
 use futures::{SinkExt, Stream};
 use intmap::IntMap;
@@ -18,8 +18,8 @@ pub type NodeId = u32;
 pub type ProfileId = i32;
 pub type RouteId = u32;
 
-pub fn watch() -> impl Stream<Item = Message> + MaybeSend + 'static {
-    cosmic::iced_futures::stream::channel(
+pub fn watch() -> impl Stream<Item = Message> + Send + 'static {
+    stream::channel(
         1,
         |mut emitter: futures::channel::mpsc::Sender<Message>| async move {
             loop {

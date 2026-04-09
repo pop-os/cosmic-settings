@@ -1,4 +1,4 @@
-use cosmic::iced_core::{Alignment, Length, text::Wrapping};
+use cosmic::iced::core::{Alignment, Length, text::Wrapping};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{button, container, settings, text};
 use cosmic::{Apply, Element};

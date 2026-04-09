@@ -6,8 +6,8 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use cosmic::app::{ContextDrawer, context_drawer};
+use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::{Alignment, Length};
-use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, button, space::horizontal as horizontal_space};
 use cosmic::{Apply, Element};
 use cosmic_config::{ConfigGet, ConfigSet};

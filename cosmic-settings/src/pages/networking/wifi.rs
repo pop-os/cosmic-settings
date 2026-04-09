@@ -10,8 +10,8 @@ use anyhow::Context;
 use cosmic::{
     Apply, Element, Task,
     app::ContextDrawer,
+    iced::core::text::Wrapping,
     iced::{Alignment, Length, widget::operation::focus_next},
-    iced_core::text::Wrapping,
     task,
     widget::{self, column, icon, space::horizontal as horizontal_space, text_input::focus},
 };
@@ -751,8 +751,8 @@ impl Page {
             Message::FocusSecureInput => {
                 // retry until the widget is in the tree and focused or the dialog is removed.
                 if matches!(self.dialog, Some(WiFiDialog::Password { .. })) {
-                    return cosmic::iced_runtime::task::widget(
-                        cosmic::iced_core::widget::operation::focusable::find_focused(),
+                    return cosmic::iced::runtime::task::widget(
+                        cosmic::iced::core::widget::operation::focusable::find_focused(),
                     )
                     .collect()
                     .then(|id| {

@@ -20,7 +20,7 @@ use cosmic::cosmic_theme::{CornerRadii, Density, ThemeBuilder, ThemeMode};
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced::Subscription;
-use cosmic::iced_core::{Alignment, Length};
+use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::{
     button, color_picker::ColorPickerUpdate, container, radio, row, settings,
     space::horizontal as horizontal_space, text,

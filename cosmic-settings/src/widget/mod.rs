@@ -4,8 +4,8 @@
 use std::borrow::Cow;
 
 use cosmic::cosmic_theme::Spacing;
+use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::{Alignment, Length};
-use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::{
     self, ColorPickerModel, button, column, container, divider, icon, row, settings,
