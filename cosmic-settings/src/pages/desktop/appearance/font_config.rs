@@ -7,7 +7,7 @@ use std::sync::Arc;
 use cosmic::{
     Apply, Element, Task,
     config::{CosmicTk, FontConfig},
-    iced_core::text::Wrapping,
+    iced::core::text::Wrapping,
     widget::{self, settings, space::horizontal as horizontal_space, svg},
 };
 use cosmic_config::ConfigSet;

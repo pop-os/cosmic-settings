@@ -2,7 +2,7 @@ use crate::pages::desktop::wallpaper::widgets::color_image;
 use cosmic::cosmic_theme::Spacing;
 use cosmic::cosmic_theme::palette::Srgba;
 use cosmic::iced::ContentFit;
-use cosmic::iced_core::{Alignment, Length};
+use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::icon::{from_name, icon};
 use cosmic::widget::{self, button, container, settings, text};
 use cosmic::{Apply, Element};

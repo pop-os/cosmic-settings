@@ -12,7 +12,7 @@ use std::{
 use cosmic::{
     Apply, Element, Task,
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::Length,
+    iced::{Length, stream},
     surface,
     widget::{self, dropdown, text},
 };
@@ -135,7 +135,7 @@ impl page::Page<crate::pages::Message> for Page {
         });
 
         // Forward messages from another thread to prevent the monitoring thread from blocking.
-        let (randr_task, randr_handle) = Task::stream(cosmic::iced_futures::stream::channel(
+        let (randr_task, randr_handle) = Task::stream(stream::channel(
             1,
             |mut sender: futures::channel::mpsc::Sender<_>| async move {
                 while let Some(message) = rx.recv().await {

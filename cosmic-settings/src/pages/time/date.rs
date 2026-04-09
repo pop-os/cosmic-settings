@@ -5,7 +5,7 @@ use cosmic::{
     Apply, Element, Task,
     app::ContextDrawer,
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced_core::text::Wrapping,
+    iced::core::text::Wrapping,
     surface,
     widget::{self, dropdown, settings, space::horizontal as horizontal_space},
 };

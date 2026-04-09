@@ -3,8 +3,8 @@ use std::fmt::Write;
 
 use cosmic::{
     Apply,
-    iced::{Element, Length},
-    iced_core::text::Wrapping,
+    iced::core::text::Wrapping,
+    iced::{Element, Length, stream},
     surface,
     widget::{self, icon, settings, svg, text},
 };
@@ -129,7 +129,7 @@ impl page::Page<crate::pages::Message> for Page {
                 Ok((tx, mut rx)) => {
                     self.wayland_thread = Some(tx);
 
-                    return cosmic::Task::stream(cosmic::iced_futures::stream::channel(
+                    return cosmic::Task::stream(stream::channel(
                         1,
                         |mut sender: futures::channel::mpsc::Sender<crate::pages::Message>| async move {
                             while let Some(event) = rx.recv().await {

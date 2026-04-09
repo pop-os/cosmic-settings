@@ -3,6 +3,7 @@
 
 use super::{ShortcutMessage, ShortcutModel};
 use cosmic::app::ContextDrawer;
+use cosmic::iced::platform_specific::shell::wayland::commands::keyboard_shortcuts_inhibit;
 use cosmic::{Element, Task};
 use cosmic_settings_config::shortcuts::Action;
 use cosmic_settings_config::shortcuts::action::System as SystemAction;
@@ -75,10 +76,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.model.on_clear();
-        cosmic::iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(
-            false,
-        )
-        .discard()
+        keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
     }
 
     #[cfg(feature = "wayland")]

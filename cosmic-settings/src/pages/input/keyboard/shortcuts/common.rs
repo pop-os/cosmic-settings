@@ -5,12 +5,15 @@ use cosmic::app::ContextDrawer;
 use cosmic::iced::event::listen_with;
 use cosmic::iced::keyboard::key::Named;
 use cosmic::iced::keyboard::{Key, Location, Modifiers};
+use cosmic::iced::platform_specific::shell::wayland::commands::keyboard_shortcuts_inhibit;
+use cosmic::iced::platform_specific::shell::wayland::keymap;
 use cosmic::iced::{self, Alignment, Length};
 use cosmic::widget::{self, button, icon, settings, text};
-use cosmic::{Apply, Element, Task, iced_winit, theme};
+use cosmic::{Apply, Element, Task, theme};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::shortcuts::{self, Action, Binding, Shortcuts};
 use cosmic_settings_page as page;
+use iced_winit::conversion;
 use slab::Slab;
 use slotmap::Key as SlotmapKey;
 use std::borrow::Cow;
@@ -325,10 +328,10 @@ impl Model {
                         shortcut.reset();
 
                         return Task::batch(vec![
-                                iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
-                                widget::text_input::focus(shortcut.id.clone()),
-                                widget::text_input::select_all(shortcut.id.clone())
-                            ]);
+                            keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
+                            widget::text_input::focus(shortcut.id.clone()),
+                            widget::text_input::select_all(shortcut.id.clone()),
+                        ]);
                     }
 
                     // Create a new input and focus it.
@@ -343,10 +346,10 @@ impl Model {
                     }));
 
                     return Task::batch(vec![
-                            iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
-                            widget::text_input::focus(id.clone()),
-                            widget::text_input::select_all(id)
-                        ]);
+                        keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
+                        widget::text_input::focus(id.clone()),
+                        widget::text_input::select_all(id),
+                    ]);
                 }
             }
             ShortcutMessage::ApplyReplace => {
@@ -430,7 +433,7 @@ impl Model {
                     }
                     return Task::batch(vec![
                         cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
-                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
+                        keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                     ]);
                 }
                 if let Some(short_id) = self.shortcut_context
@@ -441,12 +444,12 @@ impl Model {
                         self.editing = Some(id);
                         shortcut.input = shortcut.binding.to_string();
                         return Task::batch(vec![
-                                    iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
-                                    widget::text_input::select_all(shortcut.id.clone())
-                                ]);
+                            keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
+                            widget::text_input::select_all(shortcut.id.clone()),
+                        ]);
                     } else if self.editing == Some(id) {
                         self.editing = None;
-                        return iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard();
+                        return keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard();
                     }
                 }
             }
@@ -530,17 +533,21 @@ impl Model {
                             // XX for now avoid applying the keycode
                             shortcut.binding.keycode = None;
                             return Task::batch(vec![
-                                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
-                                        self.submit_binding(id),
-                                        cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
-                                    ]);
+                                keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                                self.submit_binding(id),
+                                cosmic::widget::text_input::focus(
+                                    self.add_keybindings_button_id.clone(),
+                                ),
+                            ]);
                         } else if old.alt || old.ctrl || old.shift {
                             self.editing = None;
                             shortcut.reset();
                             return Task::batch(vec![
-                                        cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
-                                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
-                                    ]);
+                                cosmic::widget::text_input::focus(
+                                    self.add_keybindings_button_id.clone(),
+                                ),
+                                keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                            ]);
                         }
                     }
                     shortcut.input = shortcut.pending.to_string();
@@ -557,7 +564,7 @@ impl Model {
                     shortcut.pending.keycode = None;
                     shortcut.input = shortcut.pending.to_string();
                     return Task::batch(vec![
-                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                        keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                         self.submit_binding(id),
                         cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
                     ]);
@@ -584,16 +591,20 @@ impl Model {
                             // XX for now avoid applying the keycode
                             shortcut.binding.keycode = None;
                             return Task::batch(vec![
-                                        iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
-                                        self.submit_binding(id),
-                                        cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
-                                    ]);
+                                keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                                self.submit_binding(id),
+                                cosmic::widget::text_input::focus(
+                                    self.add_keybindings_button_id.clone(),
+                                ),
+                            ]);
                         }
 
                         return Task::batch(vec![
-                                    cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
-                                    iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
-                                ]);
+                            cosmic::widget::text_input::focus(
+                                self.add_keybindings_button_id.clone(),
+                            ),
+                            keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                        ]);
                     }
                 }
             }
@@ -606,9 +617,11 @@ impl Model {
                         binding.reset();
                         self.editing = None;
                         return Task::batch(vec![
-                                    cosmic::widget::text_input::focus(self.add_keybindings_button_id.clone()),
-                                    iced_winit::platform_specific::commands::keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard()
-                                ]);
+                            cosmic::widget::text_input::focus(
+                                self.add_keybindings_button_id.clone(),
+                            ),
+                            keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
+                        ]);
                     }
                     return Task::none();
                 }
@@ -617,11 +630,7 @@ impl Model {
                     && let Some(shortcut) = model.bindings.get_mut(id)
                 {
                     shortcut.pending.keycode = Some(keycode);
-                    shortcut.pending.key =
-                        iced_winit::platform_specific::wayland::keymap::key_to_keysym(
-                            unmodified_keysym,
-                            location,
-                        );
+                    shortcut.pending.key = keymap::key_to_keysym(unmodified_keysym, location);
                 }
             }
         }
@@ -651,7 +660,7 @@ impl Model {
                     ) {
                         return None;
                     }
-                    cosmic::iced_winit::conversion::physical_to_scancode(physical_key)
+                    conversion::physical_to_scancode(physical_key)
                         .map(|code| ShortcutMessage::KeyPressed(code, key, location, modifiers))
                 }
                 iced::event::Event::Keyboard(iced::keyboard::Event::KeyReleased {
@@ -668,7 +677,7 @@ impl Model {
                     ) {
                         return None;
                     }
-                    cosmic::iced_winit::conversion::physical_to_scancode(physical_key)
+                    conversion::physical_to_scancode(physical_key)
                         .map(|code| ShortcutMessage::KeyReleased(code, key, location))
                 }
                 iced::event::Event::Keyboard(iced::keyboard::Event::ModifiersChanged(e)) => {

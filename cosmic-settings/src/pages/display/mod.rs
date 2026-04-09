@@ -6,9 +6,9 @@ pub mod arrangement;
 
 use crate::{app, pages};
 use arrangement::Arrangement;
-use cosmic::iced::{Alignment, Length, time};
-use cosmic::iced_core::text::{Ellipsize, EllipsizeHeightLimit};
-use cosmic::iced_widget::scrollable::RelativeOffset;
+use cosmic::iced::core::text::{Ellipsize, EllipsizeHeightLimit};
+use cosmic::iced::widget::scrollable::RelativeOffset;
+use cosmic::iced::{Alignment, Length, stream, time};
 use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text, toggler,
 };
@@ -286,7 +286,7 @@ impl page::Page<crate::pages::Message> for Page {
             });
 
             // Forward messages from another thread to prevent the monitoring thread from blocking.
-            let (randr_task, randr_handle) = Task::stream(cosmic::iced_futures::stream::channel(
+            let (randr_task, randr_handle) = Task::stream(stream::channel(
                 1,
                 |mut emitter: futures::channel::mpsc::Sender<_>| async move {
                     while let Some(message) = rx.recv().await {
@@ -358,7 +358,7 @@ impl page::Page<crate::pages::Message> for Page {
         });
 
         // Forward messages from the DRM hotplug thread.
-        let (hotplug_task, hotplug_handle) = Task::stream(cosmic::iced_futures::stream::channel(
+        let (hotplug_task, hotplug_handle) = Task::stream(stream::channel(
             1,
             |mut emitter: futures::channel::mpsc::Sender<pages::Message>| async move {
                 while let Some(message) = rx.recv().await {

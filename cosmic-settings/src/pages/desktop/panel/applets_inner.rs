@@ -6,21 +6,21 @@ use cosmic::iced::clipboard::dnd::{
 use cosmic::iced::clipboard::mime::AsMimeTypes;
 use cosmic::iced::id::Internal;
 
-use cosmic::iced_core;
-use cosmic::iced_core::clipboard::IconSurface;
+use cosmic::iced;
+use cosmic::iced::core::clipboard::IconSurface;
 use cosmic::widget::{Column, button, column, container, icon, list_column, row, text, text_input};
 
 use cosmic::{
     Apply, Element,
     cosmic_config::{Config, CosmicConfigEntry},
+    iced::core::{
+        Clipboard, Shell, Widget, layout, renderer,
+        widget::{Operation, Tree, tree},
+    },
+    iced::runtime::{Task, core::id::Id},
     iced::{
         Alignment, Border, Color, Length, Point, Rectangle, Size, Vector, core::window, event,
         mouse, overlay, touch,
-    },
-    iced_runtime::{Task, core::id::Id},
-    iced_widget::core::{
-        Clipboard, Shell, Widget, layout, renderer,
-        widget::{Operation, Tree, tree},
     },
     theme,
 };
@@ -1020,19 +1020,19 @@ where
                                     ));
 
                                     let p = applet.path.to_path_buf();
-                                    iced_core::clipboard::start_dnd::<
+                                    iced::core::clipboard::start_dnd::<
                                         cosmic::Theme,
                                         cosmic::Renderer,
                                     >(
                                         clipboard,
                                         false,
-                                        Some(iced_core::clipboard::DndSource::Widget(
+                                        Some(iced::core::clipboard::DndSource::Widget(
                                             self.id.clone(),
                                         )),
                                         Some(IconSurface::new(
                                             dnd_icon(applet.clone(), &layout).into(),
-                                            iced_core::widget::tree::State::new(state.clone()),
-                                            iced_core::Vector::new(0.0, 0.0),
+                                            iced::core::widget::tree::State::new(state.clone()),
+                                            iced::core::Vector::new(0.0, 0.0),
                                         )),
                                         Box::new(AppletString(p.clone())),
                                         DndAction::Move,
@@ -1241,7 +1241,7 @@ where
         _state: &Tree,
         layout: layout::Layout<'_>,
         _renderer: &cosmic::Renderer,
-        dnd_rectangles: &mut cosmic::iced_core::clipboard::DndDestinationRectangles,
+        dnd_rectangles: &mut cosmic::iced::core::clipboard::DndDestinationRectangles,
     ) {
         let Rectangle {
             x,
