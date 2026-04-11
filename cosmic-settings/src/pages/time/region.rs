@@ -1082,6 +1082,23 @@ fn parse_locale_output(output: &str) -> Vec<String> {
         .collect()
 }
 
+/// Builds the locale settings array for D-Bus SetLocale call.
+/// Sets LANG to the language parameter and all LC_* variables to the region parameter.
+fn build_locale_settings(lang: &str, region: &str) -> Vec<String> {
+    vec![
+        format!("LANG={}", lang),
+        format!("LC_ADDRESS={}", region),
+        format!("LC_IDENTIFICATION={}", region),
+        format!("LC_MEASUREMENT={}", region),
+        format!("LC_MONETARY={}", region),
+        format!("LC_NAME={}", region),
+        format!("LC_NUMERIC={}", region),
+        format!("LC_PAPER={}", region),
+        format!("LC_TELEPHONE={}", region),
+        format!("LC_TIME={}", region),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1107,5 +1124,36 @@ mod tests {
         let result = parse_locale_output(output);
         assert_eq!(result.len(), 3);
         assert!(result.contains(&"en_US.utf8".to_string()));
+    }
+
+    #[test]
+    fn test_build_locale_settings_includes_all_lc_variables() {
+        let lang = "en_US.UTF-8";
+        let region = "de_DE.UTF-8";
+        let settings = build_locale_settings(lang, region);
+
+        assert_eq!(settings.len(), 10);
+        assert!(settings.contains(&format!("LANG={}", lang)));
+        assert!(settings.contains(&format!("LC_ADDRESS={}", region)));
+        assert!(settings.contains(&format!("LC_IDENTIFICATION={}", region)));
+        assert!(settings.contains(&format!("LC_MEASUREMENT={}", region)));
+        assert!(settings.contains(&format!("LC_MONETARY={}", region)));
+        assert!(settings.contains(&format!("LC_NAME={}", region)));
+        assert!(settings.contains(&format!("LC_NUMERIC={}", region)));
+        assert!(settings.contains(&format!("LC_PAPER={}", region)));
+        assert!(settings.contains(&format!("LC_TELEPHONE={}", region)));
+        assert!(settings.contains(&format!("LC_TIME={}", region)));
+    }
+
+    #[test]
+    fn test_build_locale_settings_uses_correct_values() {
+        let lang = "fr_FR.UTF-8";
+        let region = "en_GB.UTF-8";
+        let settings = build_locale_settings(lang, region);
+
+        // LANG should use the lang parameter
+        assert!(settings.iter().any(|s| s == "LANG=fr_FR.UTF-8"));
+        // LC_* variables should use the region parameter
+        assert!(settings.iter().any(|s| s == "LC_TIME=en_GB.UTF-8"));
     }
 }
