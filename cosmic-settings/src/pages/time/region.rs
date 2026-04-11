@@ -1071,3 +1071,41 @@ fn strip_locale_suffix(locale: &str) -> String {
         .unwrap_or(without_codeset)
         .to_string()
 }
+
+/// Parses the output from `locale -a` command and returns a vector of locale strings.
+/// Filters out C.UTF-8 as it's not a real locale for language selection.
+fn parse_locale_output(output: &str) -> Vec<String> {
+    output
+        .lines()
+        .filter(|line| *line != "C.UTF-8")
+        .map(|line| line.to_string())
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_locale_output_filters_c_utf8() {
+        let output = "C.UTF-8\nen_US.utf8\nde_DE.utf8\n";
+        let result = parse_locale_output(output);
+        assert!(!result.contains(&"C.UTF-8".to_string()));
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_locale_output_handles_empty_input() {
+        let output = "";
+        let result = parse_locale_output(output);
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_parse_locale_output_preserves_locale_strings() {
+        let output = "en_US.utf8\nde_DE.utf8\nfr_FR.utf8\n";
+        let result = parse_locale_output(output);
+        assert_eq!(result.len(), 3);
+        assert!(result.contains(&"en_US.utf8".to_string()));
+    }
+}
