@@ -243,9 +243,7 @@ impl Page {
                     let region = region.lang_code.clone();
 
                     return cosmic::task::future(async move {
-                        if let Ok(exit_status) = set_locale(lang, region.clone()).await
-                            && exit_status.success()
-                        {
+                        if set_locale(lang, region.clone()).await.is_ok() {
                             update_time_settings_after_region_change(region);
                         }
 
@@ -905,27 +903,44 @@ fn popover_menu_row(
         .apply(Element::from)
 }
 
-pub async fn set_locale(
-    lang: String,
-    region: String,
-) -> Result<std::process::ExitStatus, std::io::Error> {
+/// Sets the system locale using the org.freedesktop.locale1 D-Bus interface.
+/// This works with both systemd-localed and openrc-settingsd, eliminating
+/// the dependency on the localectl command-line tool.
+///
+/// # Arguments
+/// * `lang` - The LANG environment variable value (e.g., "en_US.UTF-8")
+/// * `region` - The value for LC_* variables (e.g., "de_DE.UTF-8")
+///
+/// # Returns
+/// * `Ok(())` on success
+/// * `Err` with context on failure
+pub async fn set_locale(lang: String, region: String) -> eyre::Result<()> {
     eprintln!("setting locale lang={lang}, region={region}");
-    tokio::process::Command::new("localectl")
-        .arg("set-locale")
-        .args(&[
-            ["LANG=", &lang].concat(),
-            ["LC_ADDRESS=", &region].concat(),
-            ["LC_IDENTIFICATION=", &region].concat(),
-            ["LC_MEASUREMENT=", &region].concat(),
-            ["LC_MONETARY=", &region].concat(),
-            ["LC_NAME=", &region].concat(),
-            ["LC_NUMERIC=", &region].concat(),
-            ["LC_PAPER=", &region].concat(),
-            ["LC_TELEPHONE=", &region].concat(),
-            ["LC_TIME=", &region].concat(),
-        ])
-        .status()
+
+    // Create D-Bus connection
+    let conn = zbus::Connection::system()
         .await
+        .wrap_err("failed to connect to system D-Bus")?;
+
+    // Create locale1 proxy
+    let proxy = locale1::locale1Proxy::new(&conn)
+        .await
+        .wrap_err("failed to create locale1 D-Bus proxy")?;
+
+    // Build locale settings array
+    let locale_settings = build_locale_settings(&lang, &region);
+
+    // Convert to &str slice
+    let locale_strs: Vec<&str> = locale_settings.iter().map(|s| s.as_str()).collect();
+
+    // Call D-Bus method (interactive=true for polkit authentication)
+    proxy
+        .set_locale(&locale_strs, true)
+        .await
+        .wrap_err("failed to set locale via D-Bus")?;
+
+    eprintln!("successfully set locale via D-Bus");
+    Ok(())
 }
 
 /// Sets the user's preferred language list via AccountsService D-Bus.
