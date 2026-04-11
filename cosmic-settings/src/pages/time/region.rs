@@ -902,7 +902,7 @@ fn popover_menu_row(
 
 /// Sets the system locale using D-Bus instead of localectl for OpenRC compatibility.
 pub async fn set_locale(lang: String, region: String) -> eyre::Result<()> {
-    eprintln!("setting locale lang={lang}, region={region}");
+    tracing::debug!("setting locale lang={lang}, region={region}");
 
     let conn = zbus::Connection::system()
         .await
@@ -920,7 +920,7 @@ pub async fn set_locale(lang: String, region: String) -> eyre::Result<()> {
         .await
         .wrap_err("failed to set locale via D-Bus")?;
 
-    eprintln!("successfully set locale via D-Bus");
+    tracing::debug!("successfully set locale via D-Bus");
     Ok(())
 }
 
@@ -943,7 +943,7 @@ pub async fn set_user_language(language_list: String) -> eyre::Result<()> {
         .await
         .wrap_err("failed to set language via AccountsService")?;
 
-    eprintln!("set user language via AccountsService: {language_list}");
+    tracing::debug!("set user language via AccountsService: {language_list}");
     Ok(())
 }
 
