@@ -765,20 +765,29 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
 
     let mut available_languages_set = BTreeSet::new();
 
-    let output = tokio::process::Command::new("localectl")
-        .arg("list-locales")
+    // Use 'locale -a' instead of 'localectl list-locales' for better compatibility
+    // with non-systemd systems (e.g., OpenRC with openrc-settingsd).
+    // The 'locale' command is part of glibc and available on all Linux systems.
+    let output_result = tokio::process::Command::new("locale")
+        .arg("-a")
         .output()
-        .await
-        .expect("Failed to run localectl");
+        .await;
 
-    let output = String::from_utf8(output.stdout).unwrap_or_default();
-    for line in output.lines() {
-        if line == "C.UTF-8" {
-            continue;
+    let locale_list = match output_result {
+        Ok(output) => {
+            let output_str = String::from_utf8(output.stdout).unwrap_or_default();
+            parse_locale_output(&output_str)
         }
+        Err(why) => {
+            tracing::error!(?why, "failed to list available locales using 'locale -a'");
+            // Continue with empty locale list rather than panicking
+            Vec::new()
+        }
+    };
 
-        if let Some(locale) = registry.locale(line) {
-            available_languages_set.insert(localized_locale(&locale, line.to_owned()));
+    for line in locale_list {
+        if let Some(locale) = registry.locale(&line) {
+            available_languages_set.insert(localized_locale(&locale, line));
         }
     }
 
