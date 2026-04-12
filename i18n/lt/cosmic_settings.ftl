@@ -813,3 +813,4 @@ xdg-entry-workspaces = Darbo sritys
 xdg-entry-date-time-comment = Laiko juosta, automatiniai laikrodžio nustatymai ir laiko formatavimas
 xdg-entry-x11-applications = X11 Aplikacijų Suderinamumas
 xdg-entry-wired-comment = Laidiniai ryšiai ir ryšių profiliai
+no-search-results = Joks tinklas neatitinka jūsų paieškos.

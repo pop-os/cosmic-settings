@@ -54,7 +54,7 @@ xdg-entry-wired = Rede Cabeada
 xdg-entry-wired-comment = Conexões de rede cabeada e perfis de conexão
 xdg-entry-wireless-comment = Conexões de rede sem fio e perfis de conexão
 xdg-entry-workspaces = Áreas de Trabalho
-xdg-entry-workspaces-comment = Orientação e comportamento da área de trabalho
+xdg-entry-workspaces-comment = Orientação das áreas de trabalho, visão geral e comportamento com vários monitores
 xdg-entry-x11-applications = Compatibilidade com aplicativos X11.
 xdg-entry-x11-applications-comment = Dimensionamento de aplicativos com sistema de janelas X11 e atalhos globais
 
@@ -213,10 +213,10 @@ dock = Doca
 
 window-management = Gestão de Janelas
     .desc = Ação da tecla Super, opções de controlo de janelas, e opções adicionais de alinhamento de janelas.
-super-key = Tecla Super
-    .launcher = Abrir Lançador
-    .workspaces = Abrir Áreas de trabalho
-    .applications = Abrir Aplicações
+super-key = Ação da tecla Super
+    .launcher = Abrir lançador
+    .workspaces = Abrir áreas de trabalho
+    .applications = Abrir aplicações
     .disable = Desativar
 window-controls = Controlos de janela
     .maximize = Mostrar o botão de maximizar
@@ -226,23 +226,22 @@ window-controls = Controlos de janela
 ## Desktop: Workspaces
 
 workspaces = Áreas de trabalho
-    .desc = Definir número, comportamento e posição da área de trabalho.
-workspaces-behavior = Comportamento da área de trabalho
+workspaces-behavior = Comportamento das áreas de trabalho
     .dynamic = Áreas de trabalho dinâmicas
     .dynamic-desc = Remove automaticamente áreas de trabalho vazias.
     .fixed = Número fixo de áreas de trabalho
     .fixed-desc = Adiciona ou remove áreas de trabalho na visão geral.
 workspaces-multi-behavior = Comportamento de vários monitores
-    .span = Áreas de trabalho expandem os ecrãs
+    .span = Áreas de trabalho se expandem a todos os ecrãs
     .separate = Ecrãs têm áreas de trabalho separadas
-workspaces-overview-thumbnails = Miniaturas da visão geral da área de trabalho
-    .show-number = Mostrar número da área de trabalho
-    .show-name = Mostrar nome da área de trabalho
+workspaces-overview-thumbnails = Miniaturas da visão geral das áreas de trabalho
+    .show-number = Mostrar o número da área de trabalho
+    .show-name = Mostrar o nome da área de trabalho
 workspaces-orientation = Orientação das áreas de trabalho
     .vertical = Vertical
     .horizontal = Horizontal
 hot-corner = Canto ativo
-    .top-left-corner = Ativar o canto superior esquerdo para as áreas de trabalho
+    .top-left-corner = Ativar o canto superior esquerdo para exibir as áreas de trabalho
 
 ## Desktop: Display
 
@@ -456,7 +455,7 @@ manage-windows = Gerir janelas
     .resize-inwards = Redimensionar janela para dentro
     .resize-outwards = Redimensionar janela para fora
     .toggle-sticky = Tornar janela fixa
-move-windows = Mover Janelas
+move-windows = Mover janelas
     .direction =
         Mover janela { $direction ->
            *[down] para baixo
@@ -481,7 +480,7 @@ move-windows = Mover Janelas
     .workspace-num = Mover janela para a área de trabalho { $num }
     .prev-workspace = Mover janela para a área de trabalho anterior
     .next-workspace = Mover janela para a área de trabalho seguinte
-    .last-workspace = Mover janela para a última área de trabalho
+    .last-workspace = Mover janela para o última área de trabalho
     .next-display = Mover janela para o ecrã seguinte
     .prev-display = Mover janela para o ecrã anterior
     .send-to-prev-workspace = Mover janela para a área de trabalho anterior
@@ -504,8 +503,9 @@ system-shortcut = Sistema
     .play-prev = Faixa anterior
     .poweroff = Desligar
     .screenshot = Tirar uma captura de ecrã
+    .suspend = Suspender
     .terminal = Abrir o terminal
-    .touchpad-toggle = Ativar painel tátil
+    .touchpad-toggle = Ativar ou desativar o painel tátil
     .volume-lower = Diminuir o volume da saída do áudio
     .volume-raise = Aumentar o volume da saída do áudio
     .web-browser = Abrir um navegador de Internet
@@ -852,3 +852,10 @@ full-name = Nome completo
 invalid-username = Nome de utilizador inválido.
 password-mismatch = A palavra-passe e a confirmação devem ser iguais.
 save = Guardar
+xdg-entry-desktop-comment = Papel de parede, aparência, painel, doca, gestão de janelas e definições de áreas de trabalho
+xdg-entry-workspaces-keywords = COSMIC;Área;Trabalho;Orientação;Visão;Geral;Monitor;Ecrã;
+workspaces-overview = Visão geral das áreas de trabalho
+    .action-on-typing = Ação ao digitar
+    .none = Nenhuma
+    .launcher = Abrir lançador
+    .applications = Abrir aplicações

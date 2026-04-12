@@ -802,3 +802,6 @@ full-name = Nombre completo
 invalid-username = Nombre de usuario inválido.
 password-mismatch = Las contraseñas no coinciden.
 save = Guardar
+xdg-entry-applications = Aplicaciones
+xdg-entry-appearance = Apariencia
+xdg-entry-a11y = Accesibilidad
