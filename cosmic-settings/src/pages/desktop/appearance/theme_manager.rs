@@ -1,8 +1,8 @@
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{Srgb, Srgba};
 use cosmic::cosmic_theme::{
-    CornerRadii, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID, Spacing, Theme, ThemeBuilder,
-    ThemeMode,
+    BlurStrength, CornerRadii, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID, Spacing, Theme,
+    ThemeBuilder, ThemeMode,
 };
 use cosmic::iced::core::Color;
 
@@ -360,6 +360,12 @@ impl Manager {
         Some(ThemeStaged::Both)
     }
 
+    pub fn set_frosted(&mut self, frosted: Option<BlurStrength>) -> Option<ThemeStaged> {
+        self.dark.set_frosted(frosted)?;
+        self.light.set_frosted(frosted)?;
+        Some(ThemeStaged::Both)
+    }
+
     pub fn get_color(&self, context: &ContextView) -> Option<Color> {
         match *context {
             ContextView::CustomAccent => self.custom_accent().map(Color::from),
@@ -537,6 +543,18 @@ impl ThemeCustomizer {
         }
 
         self.theme.0.set_gaps(self.theme.1.as_ref()?, gaps).ok()?;
+        Some(ThemeStaged::Current)
+    }
+
+    pub fn set_frosted(&mut self, frosted: Option<BlurStrength>) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder.0.set_frosted(config, frosted).ok()?;
+        self.theme
+            .0
+            .set_frosted(self.theme.1.as_ref()?, frosted)
+            .ok()?;
+
         Some(ThemeStaged::Current)
     }
 
