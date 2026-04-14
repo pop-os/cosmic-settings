@@ -402,6 +402,8 @@ interface-density = Interface density
 window-management-appearance = Window management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
+    .blur = Blur strength & Transparency
+    .none = None
 
 ### Experimental
 

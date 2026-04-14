@@ -157,6 +157,7 @@ pub enum Message {
     UseDefaultWindowHint(bool),
     WindowHintSize(u32),
     Daytime(bool),
+    Blur(u8),
 }
 
 impl From<Message> for crate::app::Message {
@@ -556,6 +557,18 @@ impl Page {
                     self.drawer.reset(&self.theme_manager);
                 }
             }
+            Message::Blur(b) => {
+                let blur_strength = b.try_into().ok();
+                // TODO optimize and apply to both light and dark themes
+                theme_staged = self
+                    .theme_manager
+                    .selected_customizer_mut()
+                    .set_frosted(blur_strength)
+                    .map(|_| {
+                        self.drawer.reset(&self.theme_manager);
+                        theme_manager::ThemeStaged::Current
+                    })
+            }
         }
 
         let mut tasks = cosmic::Task::batch(tasks);
@@ -814,6 +827,8 @@ pub fn window_management() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         active_hint = fl!("window-management-appearance", "active-hint");
         gaps = fl!("window-management-appearance", "gaps");
+        blur = fl!("window-management-appearance", "blur");
+        none = fl!("window-management-appearance", "none");
     });
 
     Section::default()
@@ -846,6 +861,29 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         Message::GapSize,
                     )),
                 )
+                // blur slider
+                .add(settings::item::builder(&descriptions[blur]).flex_control({
+                    // TODO custom discrete slider variant
+                    row::with_children(vec![
+                        text::body(&descriptions[none]).into(),
+                        slider(
+                            0..=14,
+                            page.theme_manager
+                                .builder()
+                                .frosted
+                                .as_ref()
+                                .map_or(0, |f| *f as u8),
+                            Message::Blur,
+                        )
+                        .width(Length::Fill)
+                        .apply(cosmic::widget::container)
+                        .max_width(250)
+                        .into(),
+                    ])
+                    .align_y(Alignment::Center)
+                    .spacing(8)
+                    .width(Length::Fill)
+                }))
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
