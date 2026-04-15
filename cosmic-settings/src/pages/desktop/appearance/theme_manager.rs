@@ -360,7 +360,7 @@ impl Manager {
         Some(ThemeStaged::Both)
     }
 
-    pub fn set_frosted(&mut self, frosted: Option<BlurStrength>) -> Option<ThemeStaged> {
+    pub fn set_frosted(&mut self, frosted: BlurStrength) -> Option<ThemeStaged> {
         self.dark.set_frosted(frosted)?;
         self.light.set_frosted(frosted)?;
         Some(ThemeStaged::Both)
@@ -546,13 +546,40 @@ impl ThemeCustomizer {
         Some(ThemeStaged::Current)
     }
 
-    pub fn set_frosted(&mut self, frosted: Option<BlurStrength>) -> Option<ThemeStaged> {
+    pub fn set_frosted(&mut self, frosted: BlurStrength) -> Option<ThemeStaged> {
         let config = self.builder.1.as_ref()?;
 
         self.builder.0.set_frosted(config, frosted).ok()?;
         self.theme
             .0
             .set_frosted(self.theme.1.as_ref()?, frosted)
+            .ok()?;
+
+        Some(ThemeStaged::Current)
+    }
+
+    pub fn set_frosted_windows(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder.0.set_frosted_windows(config, enabled).ok()?;
+        self.theme
+            .0
+            .set_frosted_windows(self.theme.1.as_ref()?, enabled)
+            .ok()?;
+
+        Some(ThemeStaged::Current)
+    }
+
+    pub fn set_frosted_system_interface(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder
+            .0
+            .set_frosted_system_interface(config, enabled)
+            .ok()?;
+        self.theme
+            .0
+            .set_frosted_system_interface(self.theme.1.as_ref()?, enabled)
             .ok()?;
 
         Some(ThemeStaged::Current)

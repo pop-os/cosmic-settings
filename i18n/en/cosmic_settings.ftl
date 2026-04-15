@@ -393,7 +393,15 @@ style = Style
     .round = Round
     .slightly-round = Slightly round
     .square = Square
-
+    .frosted-glass = Frosted glass
+    .frosted-system-interface = System interface
+    .frosted-system-interface-desc = Applies background blur to Launcher, application library, workspace overview, on-screen controls
+    .frosted-windows = Windows
+    .frosted-windows-desc = Applies background blur to windows and dialogs
+    .frosted-thickness = Frost thickness
+    .frosted-less = less
+    .frosted-more = more
+    
 interface-density = Interface density
     .comfortable = Comfortable
     .compact = Compact
@@ -402,8 +410,6 @@ interface-density = Interface density
 window-management-appearance = Window management
     .active-hint = Active window hint size
     .gaps = Gaps around tiled windows
-    .blur = Blur strength & Transparency
-    .none = None
 
 ### Experimental
 

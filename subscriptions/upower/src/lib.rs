@@ -31,7 +31,7 @@ pub mod device {
         Ok((upower, device_path))
     }
 
-    async fn events() -> zbus::Result<impl Stream<Item = DeviceDbusEvent>> {
+    async fn events() -> zbus::Result<Box<dyn Stream<Item = DeviceDbusEvent> + Unpin + Send>> {
         let (upower, device) = display_device().await?;
         let devices = upower.enumerate_devices().await?;
         let mut has_battery = false;
@@ -50,11 +50,11 @@ pub mod device {
             }
         }
 
-        let initial = futures::stream::iter(if has_battery {
-            None
-        } else {
-            Some(DeviceDbusEvent::NoBattery)
-        });
+        if !has_battery {
+            return Ok(Box::new(futures::stream::iter(Some(
+                DeviceDbusEvent::NoBattery,
+            ))));
+        };
 
         let stream = futures::stream_select!(
             upower.receive_on_battery_changed().await.map(|_| ()),
@@ -62,7 +62,7 @@ pub mod device {
             device.receive_time_to_empty_changed().await.map(|_| ()),
         );
 
-        Ok(initial.chain(stream.map(move |_| {
+        Ok(Box::new(stream.map(move |_| {
             DeviceDbusEvent::Update {
                 on_battery: upower
                     .cached_on_battery()

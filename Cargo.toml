@@ -71,17 +71,18 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 
 # For development and testing purposes
 [patch.'https://github.com/pop-os/libcosmic']
-libcosmic = { path = "../libcosmic" }
-cosmic-config = { path = "../libcosmic/cosmic-config" }
-cosmic-theme = { path = "../libcosmic/cosmic-theme" }
-iced_futures = { path = "../libcosmic/iced/futures" }
-iced_winit = { path = "../libcosmic/iced/winit" }
+# libcosmic = { path = "../libcosmic" }
+# cosmic-config = { path = "../libcosmic/cosmic-config" }
+# cosmic-theme = { path = "../libcosmic/cosmic-theme" }
+# iced_futures = { path = "../libcosmic/iced/futures" }
+# iced_winit = { path = "../libcosmic/iced/winit" }
 
 #
-#iced_futures = { git = "https://github.com/pop-os/libcosmic//" }
-#libcosmic = { git = "https://github.com/pop-os/libcosmic//" }
-#cosmic-config = { git = "https://github.com/pop-os/libcosmic//" }
-#cosmic-theme = { git = "https://github.com/pop-os/libcosmic//" }
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
+cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
+cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
+iced_winit = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
 
 # [patch.'https://github.com/pop-os/dbus-settings-bindings']
 # cosmic-dbus-networkmanager = { path = "../dbus-settings-bindings/networkmanager" }
@@ -91,8 +92,3 @@ iced_winit = { path = "../libcosmic/iced/winit" }
 [patch.crates-io]
 atspi = { git = "https://github.com/wash2/atspi" }
 atspi-common = { git = "https://github.com/wash2/atspi" }
-
-
-[patch."https://github.com/pop-os/winit.git"]
-winit = { git = "https://github.com/pop-os/winit//", branch = "ext-background-effect" }
-winit-core = { git = "https://github.com/pop-os/winit//", branch = "ext-background-effect" }

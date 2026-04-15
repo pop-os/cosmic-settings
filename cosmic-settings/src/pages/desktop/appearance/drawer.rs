@@ -2,10 +2,12 @@ use cosmic::app::{ContextDrawer, context_drawer};
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet};
 use cosmic::cosmic_theme::Spacing;
+use cosmic::iced::Alignment;
 use cosmic::iced::core::{Color, Length};
 use cosmic::widget::{
     ColorPickerModel, color_picker::ColorPickerUpdate, container, flex_row, settings, text,
 };
+use cosmic::widget::{row, slider};
 use cosmic::{Apply, Task};
 use cosmic::{Element, widget};
 use cosmic_config::ConfigGet;
@@ -40,6 +42,9 @@ pub struct Content {
     icon_themes: IconThemes,
     icon_handles: IconHandles,
     tk_config: Option<Config>,
+    frosted: u8,
+    frosted_system_interface: bool,
+    frosted_windows: bool,
 
     comp_config: cosmic_config::Config,
     #[cfg(feature = "cosmic-comp-config")]
@@ -122,6 +127,9 @@ impl From<&theme_manager::Manager> for Content {
                 theme_manager.get_color(&ContextView::AccentWindowHint),
             ),
             font_config: font_config::Model::new(),
+            frosted: theme.frosted as u8,
+            frosted_system_interface: theme.frosted_system_interface,
+            frosted_windows: theme.frosted_windows,
             icons_fetched: false,
             icon_global: cosmic::config::apply_theme_global(),
             icon_fetch_handle: None,
@@ -280,6 +288,43 @@ impl Content {
             .set("appearance_settings", self.appearance_conf)
         {
             error!(?err, "Failed to set config 'appearance_settings'");
+        }
+
+        Task::none()
+    }
+
+    pub fn update_frosted_system_interface(
+        &mut self,
+        message: Message,
+        v: bool,
+    ) -> Task<app::Message> {
+        match message {
+            Message::FrostedSystemInterface(_) => {
+                self.frosted_system_interface = v;
+            }
+            _ => (),
+        }
+
+        Task::none()
+    }
+
+    pub fn update_frosted_windows(&mut self, message: Message, v: bool) -> Task<app::Message> {
+        match message {
+            Message::FrostedWindows(_) => {
+                self.frosted_windows = v;
+            }
+            _ => (),
+        }
+
+        Task::none()
+    }
+
+    pub fn update_blur(&mut self, message: Message, v: u8) -> Task<app::Message> {
+        match message {
+            Message::Blur(_) => {
+                self.frosted = v;
+            }
+            _ => (),
         }
 
         Task::none()
@@ -475,6 +520,10 @@ impl Content {
                 self.shadow_and_corners(),
                 crate::pages::Message::CloseContextDrawer,
             ),
+            ContextView::FrostedGlass => context_drawer(
+                self.frosted_glass(),
+                crate::pages::Message::CloseContextDrawer,
+            ),
         })
     }
 
@@ -557,5 +606,40 @@ impl Content {
         .width(Length::Fill)
         .apply(Element::from)
         .map(crate::pages::Message::Appearance)
+    }
+
+    pub fn frosted_glass(&self) -> Element<'_, crate::pages::Message> {
+        settings::section()
+            .add(
+                settings::item::builder(fl!("style", "frosted-system-interface"))
+                    .description(fl!("style", "frosted-system-interface-desc"))
+                    .toggler(
+                        self.frosted_system_interface,
+                        Message::FrostedSystemInterface,
+                    ),
+            )
+            .add(
+                settings::item::builder(fl!("style", "frosted-windows"))
+                    .description(fl!("style", "frosted-windows-desc"))
+                    .toggler(self.frosted_windows, Message::FrostedWindows),
+            )
+            .add(
+                settings::item::builder(fl!("style", "frosted-thickness")).flex_control({
+                    row::with_children(vec![
+                        text::body(fl!("style", "frosted-less")).into(),
+                        slider(0..=13, self.frosted, Message::Blur)
+                            .width(Length::Fill)
+                            .apply(cosmic::widget::container)
+                            .max_width(250)
+                            .into(),
+                        text::body(fl!("style", "frosted-more")).into(),
+                    ])
+                    .align_y(Alignment::Center)
+                    .spacing(8)
+                    .width(Length::Fill)
+                }),
+            )
+            .apply(Element::from)
+            .map(crate::pages::Message::Appearance)
     }
 }
