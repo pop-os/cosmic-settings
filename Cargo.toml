@@ -77,7 +77,7 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # iced_futures = { path = "../libcosmic/iced/futures" }
 # iced_winit = { path = "../libcosmic/iced/winit" }
 
-#
+
 iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
 libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
 cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }

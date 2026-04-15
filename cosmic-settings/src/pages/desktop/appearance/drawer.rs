@@ -99,7 +99,7 @@ impl From<&theme_manager::Manager> for Content {
             application_background: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
-                Some(theme.background.base.into()),
+                Some(theme.background(false).base.into()),
                 theme_manager.get_color(&ContextView::ApplicationBackground),
             ),
             container_background: ColorPickerModel::new(
@@ -111,7 +111,7 @@ impl From<&theme_manager::Manager> for Content {
             interface_text: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
-                Some(theme.background.on.into()),
+                Some(theme.background(false).on.into()),
                 theme_manager.get_color(&ContextView::InterfaceText),
             ),
             control_component: ColorPickerModel::new(
@@ -376,7 +376,7 @@ impl Content {
         self.application_background = ColorPickerModel::new(
             &*HEX,
             &*RGB,
-            Some(manager.theme().background.base.into()),
+            Some(manager.theme().background(false).base.into()),
             manager.get_color(&ContextView::ApplicationBackground),
         );
         self.custom_accent = ColorPickerModel::new(
@@ -394,7 +394,7 @@ impl Content {
         self.interface_text = ColorPickerModel::new(
             &*HEX,
             &*RGB,
-            Some(manager.theme().background.on.into()),
+            Some(manager.theme().background(false).on.into()),
             manager.get_color(&ContextView::InterfaceText),
         );
         self.control_component = ColorPickerModel::new(

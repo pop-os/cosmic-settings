@@ -74,7 +74,7 @@ impl From<(Option<Config>, Option<Config>, Option<Vec<Srgba>>)> for ThemeCustomi
             .success(theme.success.base.color)
             .warning(theme.warning.base.color)
             .neutral_tint(theme.palette.neutral_5.color)
-            .text_tint(theme.background.on.color);
+            .text_tint(theme.background(false).on.color);
 
         theme_builder.gaps = theme.gaps;
 
@@ -160,20 +160,6 @@ impl Default for Manager {
 
 impl Manager {
     pub fn build_theme(&mut self, stage: ThemeStaged) -> Task<app::Message> {
-        macro_rules! theme_transaction {
-            ($config:ident, $current_theme:ident, $new_theme:ident, { $($name:ident;)+ }) => {
-                let tx = $config.transaction();
-
-                $(
-                    if $current_theme.$name != $new_theme.$name {
-                        _ = tx.set(stringify!($name), $new_theme.$name.clone());
-                    }
-                )+
-
-                _ = tx.commit();
-            }
-        }
-
         let map_data_fn = |customizer: &ThemeCustomizer| {
             (customizer.builder.0.clone(), customizer.theme.1.clone())
         };
@@ -199,32 +185,80 @@ impl Manager {
         cosmic::task::future(async move {
             for (builder, config) in data.by_ref() {
                 if let Some(config) = config {
-                    let current_theme = match Theme::get_entry(&config) {
+                    let cur = match Theme::get_entry(&config) {
                         Ok(theme) => theme,
                         Err((_errs, theme)) => theme,
                     };
 
-                    let new_theme = builder.build();
-                    theme_transaction!(config, current_theme, new_theme, {
-                        accent;
-                        accent_button;
-                        background;
-                        button;
-                        destructive;
-                        destructive_button;
-                        link_button;
-                        icon_button;
-                        palette;
-                        primary;
-                        secondary;
-                        shade;
-                        success;
-                        text_button;
-                        warning;
-                        warning_button;
-                        window_hint;
-                        accent_text;
-                    });
+                    let new = builder.build();
+
+                    // do this without the macro
+                    let tx = config.transaction();
+
+                    if cur.accent != new.accent {
+                        _ = tx.set("accent", new.accent.clone());
+                    }
+                    if cur.accent_button != new.accent_button {
+                        _ = tx.set("accent_button", new.accent_button.clone());
+                    }
+                    if cur.background(false) != new.background(false) {
+                        _ = tx.set("background", new.background(false).clone());
+                    }
+                    if cur.background(true) != new.background(true) {
+                        _ = tx.set("transparent_background", new.background(true).clone());
+                    }
+                    if cur.button != new.button {
+                        _ = tx.set("button", new.button.clone());
+                    }
+                    if cur.destructive != new.destructive {
+                        _ = tx.set("destructive", new.destructive.clone());
+                    }
+                    if cur.destructive_button != new.destructive_button {
+                        _ = tx.set("destructive_button", new.destructive_button.clone());
+                    }
+                    if cur.link_button != new.link_button {
+                        _ = tx.set("link_button", new.link_button.clone());
+                    }
+                    if cur.icon_button != new.icon_button {
+                        _ = tx.set("icon_button", new.icon_button.clone());
+                    }
+                    if cur.palette != new.palette {
+                        _ = tx.set("palette", new.palette.clone());
+                    }
+                    if cur.primary(false) != new.primary(false) {
+                        _ = tx.set("primary", new.primary(false).clone());
+                    }
+                    if cur.secondary(false) != new.secondary(false) {
+                        _ = tx.set("secondary", new.secondary(false).clone());
+                    }
+                    if cur.primary(true) != new.primary(true) {
+                        _ = tx.set("transparent_primary", new.primary(true).clone());
+                    }
+                    if cur.secondary(true) != new.secondary(true) {
+                        _ = tx.set("transparent_secondary", new.secondary(true).clone());
+                    }
+                    if cur.shade != new.shade {
+                        _ = tx.set("shade", new.shade.clone());
+                    }
+                    if cur.success != new.success {
+                        _ = tx.set("success", new.success.clone());
+                    }
+                    if cur.text_button != new.text_button {
+                        _ = tx.set("text_button", new.text_button.clone());
+                    }
+                    if cur.warning != new.warning {
+                        _ = tx.set("warning", new.warning.clone());
+                    }
+                    if cur.warning_button != new.warning_button {
+                        _ = tx.set("warning_button", new.warning_button.clone());
+                    }
+                    if cur.window_hint != new.window_hint {
+                        _ = tx.set("window_hint", new.window_hint.clone());
+                    }
+                    if cur.accent_text != new.accent_text {
+                        _ = tx.set("accent_text", new.accent_text.clone());
+                    }
+                    _ = tx.commit();
                 }
             }
 
