@@ -12,7 +12,7 @@ xdg-entry-keywords = COSMIC;Settings;
 
 xdg-entry-about = About
 xdg-entry-about-comment = Device name, hardware information, operating system defaults
-xdg-entry-about-keywords = COSMIC;About
+xdg-entry-about-keywords = COSMIC;About;
 
 xdg-entry-a11y = Accessibility
 xdg-entry-a11y-comment = Screen reader, magnifier, high contrast, and color filters
@@ -20,11 +20,11 @@ xdg-entry-a11y-keywords = COSMIC;Accessibility;A11y;Screen;Reader;Magnifier;Cont
 
 xdg-entry-appearance = Appearance
 xdg-entry-appearance-comment = Accent colors and theming
-xdg-entry-appearance-keywords = COSMIC;Accent;Color;Icon;Font;Theme
+xdg-entry-appearance-keywords = COSMIC;Accent;Color;Icon;Font;Theme;
 
 xdg-entry-applications = Applications
 xdg-entry-applications-comment = Default applications, startup applications, and X11 application compatibility settings
-xdg-entry-applications-keywords = COSMIC;Default;Application;Startup;X11;Compatibility
+xdg-entry-applications-keywords = COSMIC;Default;Application;Startup;X11;Compatibility;
 
 xdg-entry-bluetooth-comment = Manage Bluetooth devices
 xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
@@ -35,7 +35,7 @@ xdg-entry-date-time-keywords = COSMIC;Time;Zone;
 
 xdg-entry-default-apps = Default Applications
 xdg-entry-default-apps-comment = Default web browser, mail client, file browser, and other applications
-xdg-entry-default-apps-keywords = COSMIC;Default;Application
+xdg-entry-default-apps-keywords = COSMIC;Default;Application;
 
 xdg-entry-desktop = Desktop
 xdg-entry-desktop-comment = Wallpaper, appearance, panel, dock, window management and workspace settings
@@ -43,11 +43,11 @@ xdg-entry-desktop-keywords = COSMIC;Desktop;
 
 xdg-entry-displays = Displays
 xdg-entry-displays-comment = Manage display configuration settings
-xdg-entry-displays-keywords = COSMIC;Display;
+xdg-entry-displays-keywords = COSMIC;Display;Screen;Monitor;Resolution;Scale;Scaling;Orientation;Refresh;Variable;VRR;
 
 xdg-entry-dock = Dock
 xdg-entry-dock-comment = An optional bar for apps and applets
-xdg-entry-dock-keywords = COSMIC;Dock;Panel;Applet
+xdg-entry-dock-keywords = COSMIC;Dock;Panel;Applet;
 
 xdg-entry-input = Input Devices
 xdg-entry-input-comment = Keyboard and mouse settings
@@ -71,11 +71,11 @@ xdg-entry-notifications-keywords = COSMIC;Notification;Lock;
 
 xdg-entry-panel = Panel
 xdg-entry-panel-comment = Primary system bar for menus and applets
-xdg-entry-panel-keywords = COSMIC;Panel;Applet
+xdg-entry-panel-keywords = COSMIC;Panel;Applet;
 
 xdg-entry-power = Power & Battery
 xdg-entry-power-comment = Power modes and power saving options
-xdg-entry-power-keywords = COSMIC;Power;Battery
+xdg-entry-power-keywords = COSMIC;Power;Battery;
 
 xdg-entry-region-language = Region & Language
 xdg-entry-region-language-comment = Format dates, times, and numbers based on your region
@@ -578,7 +578,11 @@ scheduling = Scheduling
 dialog = Dialog
     .title = Keep these display settings?
     .keep-changes = Keep changes
-    .change-prompt = Settings changes will automatically revert in { $time } seconds.
+    .change-prompt = Settings changes will automatically revert { $time ->
+        [0] now.
+        [one] in 1 second.
+        *[other] in {$time} seconds.
+    }
     .revert-settings = Revert settings
 
 ## Sound
@@ -688,7 +692,7 @@ long = Long
 keyboard = Keyboard
 
 keyboard-sources = Input Sources
-    .desc = Input sources can be switched using Super+Space key combination. This can be customized in the keyboard shortcut settings.
+    .desc = Input sources can be switched using Super + Space key combination. This can be customized in the keyboard shortcut settings.
     .move-up = Move up
     .move-down = Move down
     .settings = Settings
@@ -824,7 +828,7 @@ system-shortcut = System
     .log-out = Log Out
     .lock-screen = Lock the screen
     .mute = Mute audio output
-    .mute-mic = Mutes microphone input
+    .mute-mic = Mute microphone input
     .play-pause = Play/pause
     .play-next = Next track
     .play-prev = Previous track
@@ -940,7 +944,7 @@ applications = Applications
 
 ## Applications: Default applications
 
-default-apps = Default Applications
+default-apps = Default applications
     .web-browser = Web browser
     .file-manager = File manager
     .mail-client = Mail client
@@ -969,7 +973,7 @@ startup-apps = Startup applications
 legacy-applications = X11 applications compatibility
 
 legacy-app-global-shortcuts = Global shortcuts in X11 applications
-    .desc = Global shortcuts allows keystrokes and mouse button events performed in applications to be recognized by other applications for features like push-to-talk or push-to-mute. By default, Global shortcuts is disabled in X11 applications to ensure other applications can’t monitor for keyboard and mouse events containing sensitive information.
+    .desc = Global shortcuts allow keystrokes and mouse button events performed in applications to be recognized by other applications for features like push-to-talk or push-to-mute. By default, global shortcuts are disabled in X11 applications to ensure other applications can’t monitor for keyboard and mouse events containing sensitive information.
     .none = No keys
     .modifiers = Modifiers (Super, Shift, Control, Alt)
     .combination = All keys while modifiers Super, Control or Alt are being pressed
