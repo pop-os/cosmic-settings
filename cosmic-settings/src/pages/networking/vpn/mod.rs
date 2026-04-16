@@ -82,6 +82,8 @@ pub enum Message {
     UsernameUpdate(String),
     /// Display more options for an access point
     ViewMore(Option<ConnectionId>),
+    /// Toggle autoconnect for a VPN connection
+    ToggleAutoconnect(ConnectionId, String, bool),
     /// Create a new wireguard connection
     WireGuardConfig,
     /// Update the text input for the wireguard device name
@@ -132,7 +134,7 @@ impl From<Message> for crate::pages::Message {
 #[derive(Clone, Debug)]
 pub enum ConnectionSettings {
     Vpn(VpnConnectionSettings),
-    Wireguard { id: String },
+    Wireguard { id: String, autoconnect: bool },
 }
 
 #[derive(Clone, Debug, Default)]
@@ -141,6 +143,7 @@ pub struct VpnConnectionSettings {
     username: Option<String>,
     connection_type: Option<ConnectionType>,
     password_flag: Option<PasswordFlag>,
+    autoconnect: bool,
 }
 
 impl VpnConnectionSettings {
@@ -496,7 +499,7 @@ impl Page {
                 if let Some(settings) = self.known_connections.get(&uuid) {
                     let settings = match settings {
                         ConnectionSettings::Vpn(settings) => settings,
-                        ConnectionSettings::Wireguard { id } => {
+                        ConnectionSettings::Wireguard { id, .. } => {
                             let connection_name = id.clone();
                             return cosmic::task::future(async move {
                                 if let Err(why) = nmcli::connect(&connection_name).await {
@@ -562,6 +565,22 @@ impl Page {
             Message::RemoveProfileRequest(uuid) => {
                 self.view_more_popup = None;
                 self.dialog = Some(VpnDialog::RemoveProfile(uuid));
+            }
+            Message::ToggleAutoconnect(uuid, connection_name, enabled) => {
+                if let Some(settings) = self.known_connections.get_mut(&uuid) {
+                    match settings {
+                        ConnectionSettings::Vpn(vpn) => vpn.autoconnect = enabled,
+                        ConnectionSettings::Wireguard { autoconnect, .. } => {
+                            *autoconnect = enabled
+                        }
+                    }
+                }
+                return cosmic::task::future(async move {
+                    match nmcli::set_autoconnect(&connection_name, enabled).await {
+                        Ok(_) => Message::Refresh,
+                        Err(why) => Message::Error(ErrorKind::Config, why.to_string()),
+                    }
+                });
             }
             Message::RemoveProfile(uuid) => {
                 self.dialog = None;
@@ -977,6 +996,7 @@ fn devices_view() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         vpn_conns_txt = fl!("vpn", "connections");
         remove_txt = fl!("vpn", "remove");
+        autoconnect_txt = fl!("vpn", "autoconnect");
         connect_txt = fl!("connect");
         connected_txt = fl!("connected");
         settings_txt = fl!("settings");
@@ -1008,9 +1028,13 @@ fn devices_view() -> Section<crate::pages::Message> {
                 let known_networks = page.known_connections.iter().fold(
                     vpn_connections,
                     |networks, (uuid, connection)| {
-                        let id = match connection {
-                            ConnectionSettings::Vpn(connection) => connection.id.as_str(),
-                            ConnectionSettings::Wireguard { id } => id.as_str(),
+                        let (id, autoconnect) = match connection {
+                            ConnectionSettings::Vpn(connection) => {
+                                (connection.id.as_str(), connection.autoconnect)
+                            }
+                            ConnectionSettings::Wireguard { id, autoconnect } => {
+                                (id.as_str(), *autoconnect)
+                            }
                         };
 
                         let is_connected = active_conns.iter().any(|conn| match conn {
@@ -1061,11 +1085,42 @@ fn devices_view() -> Section<crate::pages::Message> {
                                             Message::Settings(uuid.clone()),
                                             &section.descriptions[settings_txt],
                                         ))
+                                        .push({
+                                            let uuid = uuid.clone();
+                                            let id_owned = id.to_owned();
+                                            widget::row::with_capacity(3)
+                                                .push(
+                                                    widget::text::body(
+                                                        &section.descriptions[autoconnect_txt],
+                                                    )
+                                                    .align_y(Alignment::Center),
+                                                )
+                                                .push(horizontal_space())
+                                                .push(
+                                                    widget::toggler(autoconnect).on_toggle(
+                                                        move |val| {
+                                                            Message::ToggleAutoconnect(
+                                                                uuid.clone(),
+                                                                id_owned.clone(),
+                                                                val,
+                                                            )
+                                                        },
+                                                    ),
+                                                )
+                                                .align_y(Alignment::Center)
+                                                .apply(widget::container)
+                                                .padding([
+                                                    spacing.space_xxxs,
+                                                    spacing.space_s,
+                                                    spacing.space_xxxs,
+                                                    spacing.space_xs,
+                                                ])
+                                        })
                                         .push(popup_button(
                                             Message::RemoveProfileRequest(uuid.clone()),
                                             &section.descriptions[remove_txt],
                                         ))
-                                        .width(Length::Fixed(200.0))
+                                        .width(Length::Fixed(260.0))
                                         .apply(widget::container)
                                         .padding(cosmic::theme::spacing().space_xxs)
                                         .class(cosmic::theme::Container::Dropdown),
@@ -1222,7 +1277,14 @@ fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
                     "wireguard" => {
                         let id = connection.get("id")?.downcast_ref::<String>().ok()?;
                         let uuid = connection.get("uuid")?.downcast_ref::<String>().ok()?;
-                        return Some((Arc::from(uuid), ConnectionSettings::Wireguard { id }));
+                        let autoconnect = connection
+                            .get("autoconnect")
+                            .and_then(|v| v.downcast_ref::<bool>().ok())
+                            .unwrap_or(true);
+                        return Some((
+                            Arc::from(uuid),
+                            ConnectionSettings::Wireguard { id, autoconnect },
+                        ));
                     }
 
                     _ => return None,
@@ -1268,6 +1330,11 @@ fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
                     })
                     .unwrap_or_default();
 
+                let autoconnect = connection
+                    .get("autoconnect")
+                    .and_then(|v| v.downcast_ref::<bool>().ok())
+                    .unwrap_or(true);
+
                 Some((
                     Arc::from(uuid),
                     ConnectionSettings::Vpn(VpnConnectionSettings {
@@ -1275,6 +1342,7 @@ fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
                         connection_type,
                         password_flag,
                         username,
+                        autoconnect,
                     }),
                 ))
             })
