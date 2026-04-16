@@ -242,9 +242,7 @@ impl Page {
                     let region = region.lang_code.clone();
 
                     return cosmic::task::future(async move {
-                        if let Ok(exit_status) = set_locale(lang, region.clone()).await
-                            && exit_status.success()
-                        {
+                        if set_locale(lang, region.clone()).await.is_ok() {
                             update_time_settings_after_region_change(region);
                         }
 
@@ -710,20 +708,26 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
 
     let mut available_languages_set = BTreeSet::new();
 
-    let output = tokio::process::Command::new("localectl")
-        .arg("list-locales")
+    // Use 'locale -a' instead of 'localectl list-locales' for OpenRC compatibility
+    let output_result = tokio::process::Command::new("locale")
+        .arg("-a")
         .output()
-        .await
-        .expect("Failed to run localectl");
+        .await;
 
-    let output = String::from_utf8(output.stdout).unwrap_or_default();
-    for line in output.lines() {
-        if line == "C.UTF-8" {
-            continue;
+    let locale_list = match output_result {
+        Ok(output) => {
+            let output_str = String::from_utf8(output.stdout).unwrap_or_default();
+            parse_locale_output(&output_str)
         }
+        Err(why) => {
+            tracing::error!(?why, "failed to list available locales using 'locale -a'");
+            Vec::new()
+        }
+    };
 
-        if let Some(locale) = registry.locale(line) {
-            available_languages_set.insert(localized_locale(&locale, line.to_owned()));
+    for line in locale_list {
+        if let Some(locale) = registry.locale(&line) {
+            available_languages_set.insert(localized_locale(&locale, line));
         }
     }
 
@@ -841,27 +845,28 @@ fn popover_menu_row(
         .apply(Element::from)
 }
 
-pub async fn set_locale(
-    lang: String,
-    region: String,
-) -> Result<std::process::ExitStatus, std::io::Error> {
-    eprintln!("setting locale lang={lang}, region={region}");
-    tokio::process::Command::new("localectl")
-        .arg("set-locale")
-        .args(&[
-            ["LANG=", &lang].concat(),
-            ["LC_ADDRESS=", &region].concat(),
-            ["LC_IDENTIFICATION=", &region].concat(),
-            ["LC_MEASUREMENT=", &region].concat(),
-            ["LC_MONETARY=", &region].concat(),
-            ["LC_NAME=", &region].concat(),
-            ["LC_NUMERIC=", &region].concat(),
-            ["LC_PAPER=", &region].concat(),
-            ["LC_TELEPHONE=", &region].concat(),
-            ["LC_TIME=", &region].concat(),
-        ])
-        .status()
+/// Sets the system locale using D-Bus instead of localectl for OpenRC compatibility.
+pub async fn set_locale(lang: String, region: String) -> eyre::Result<()> {
+    tracing::debug!("setting locale lang={lang}, region={region}");
+
+    let conn = zbus::Connection::system()
         .await
+        .wrap_err("failed to connect to system D-Bus")?;
+
+    let proxy = locale1::locale1Proxy::new(&conn)
+        .await
+        .wrap_err("failed to create locale1 D-Bus proxy")?;
+
+    let locale_settings = build_locale_settings(&lang, &region);
+    let locale_strs: Vec<&str> = locale_settings.iter().map(|s| s.as_str()).collect();
+
+    proxy
+        .set_locale(&locale_strs, true)
+        .await
+        .wrap_err("failed to set locale via D-Bus")?;
+
+    tracing::debug!("successfully set locale via D-Bus");
+    Ok(())
 }
 
 /// Sets the user's preferred language list via AccountsService D-Bus.
@@ -883,7 +888,7 @@ pub async fn set_user_language(language_list: String) -> eyre::Result<()> {
         .await
         .wrap_err("failed to set language via AccountsService")?;
 
-    eprintln!("set user language via AccountsService: {language_list}");
+    tracing::debug!("set user language via AccountsService: {language_list}");
     Ok(())
 }
 
@@ -1015,4 +1020,90 @@ fn strip_locale_suffix(locale: &str) -> String {
         .next()
         .unwrap_or(without_codeset)
         .to_string()
+}
+
+/// Parses the output from `locale -a` command and returns a vector of locale strings.
+/// Filters out C.UTF-8 as it's not a real locale for language selection.
+fn parse_locale_output(output: &str) -> Vec<String> {
+    output
+        .lines()
+        .filter(|line| *line != "C.UTF-8")
+        .map(|line| line.to_string())
+        .collect()
+}
+
+/// Builds the locale settings array for D-Bus SetLocale call.
+/// Sets LANG to the language parameter and all LC_* variables to the region parameter.
+fn build_locale_settings(lang: &str, region: &str) -> Vec<String> {
+    vec![
+        format!("LANG={}", lang),
+        format!("LC_ADDRESS={}", region),
+        format!("LC_IDENTIFICATION={}", region),
+        format!("LC_MEASUREMENT={}", region),
+        format!("LC_MONETARY={}", region),
+        format!("LC_NAME={}", region),
+        format!("LC_NUMERIC={}", region),
+        format!("LC_PAPER={}", region),
+        format!("LC_TELEPHONE={}", region),
+        format!("LC_TIME={}", region),
+    ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_locale_output_filters_c_utf8() {
+        let output = "C.UTF-8\nen_US.utf8\nde_DE.utf8\n";
+        let result = parse_locale_output(output);
+        assert!(!result.contains(&"C.UTF-8".to_string()));
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_locale_output_handles_empty_input() {
+        let output = "";
+        let result = parse_locale_output(output);
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_parse_locale_output_preserves_locale_strings() {
+        let output = "en_US.utf8\nde_DE.utf8\nfr_FR.utf8\n";
+        let result = parse_locale_output(output);
+        assert_eq!(result.len(), 3);
+        assert!(result.contains(&"en_US.utf8".to_string()));
+    }
+
+    #[test]
+    fn test_build_locale_settings_includes_all_lc_variables() {
+        let lang = "en_US.UTF-8";
+        let region = "de_DE.UTF-8";
+        let settings = build_locale_settings(lang, region);
+
+        assert_eq!(settings.len(), 10);
+        assert!(settings.contains(&format!("LANG={}", lang)));
+        assert!(settings.contains(&format!("LC_ADDRESS={}", region)));
+        assert!(settings.contains(&format!("LC_IDENTIFICATION={}", region)));
+        assert!(settings.contains(&format!("LC_MEASUREMENT={}", region)));
+        assert!(settings.contains(&format!("LC_MONETARY={}", region)));
+        assert!(settings.contains(&format!("LC_NAME={}", region)));
+        assert!(settings.contains(&format!("LC_NUMERIC={}", region)));
+        assert!(settings.contains(&format!("LC_PAPER={}", region)));
+        assert!(settings.contains(&format!("LC_TELEPHONE={}", region)));
+        assert!(settings.contains(&format!("LC_TIME={}", region)));
+    }
+
+    #[test]
+    fn test_build_locale_settings_uses_correct_values() {
+        let lang = "fr_FR.UTF-8";
+        let region = "en_GB.UTF-8";
+        let settings = build_locale_settings(lang, region);
+
+        // LANG should use the lang parameter
+        assert!(settings.iter().any(|s| s == "LANG=fr_FR.UTF-8"));
+        // LC_* variables should use the region parameter
+        assert!(settings.iter().any(|s| s == "LC_TIME=en_GB.UTF-8"));
+    }
 }
