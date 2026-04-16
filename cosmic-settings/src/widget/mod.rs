@@ -204,7 +204,7 @@ pub fn go_next_with_item<'a, Msg: 'static>(
     description: &'a str,
     item: impl Into<cosmic::Element<'a, Msg>>,
     msg_opt: impl Into<Option<Msg>>,
-) -> list::ListButton<'_, Msg> {
+) -> list::ListButton<'a, Msg> {
     settings::item_row(vec![
         text::body(description).wrapping(Wrapping::Word).into(),
         horizontal().into(),
@@ -217,13 +217,13 @@ pub fn go_next_with_item<'a, Msg: 'static>(
     ])
     .apply(list::button)
     .on_press_maybe(msg_opt.into())
-    .into()
 }
 
 pub fn selection_context_item<'a, Msg: 'static>(
     name: &'a str,
     selected: bool,
-) -> cosmic::Element<'a, Msg> {
+    msg_opt: impl Into<Option<Msg>>,
+) -> list::ListButton<'a, Msg> {
     let svg_accent = Rc::new(|theme: &cosmic::Theme| widget::svg::Style {
         color: Some(theme.cosmic().accent_text_color().into()),
     });
@@ -248,5 +248,6 @@ pub fn selection_context_item<'a, Msg: 'static>(
             horizontal().width(16.).into()
         },
     ])
-    .into()
+    .apply(list::button)
+    .on_press_maybe(msg_opt.into())
 }

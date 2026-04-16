@@ -4,7 +4,7 @@ use cosmic::cosmic_config::{Config, ConfigSet};
 use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::core::{Color, Length};
 use cosmic::widget::{
-    ColorPickerModel, color_picker::ColorPickerUpdate, container, flex_row, list, settings, text,
+    ColorPickerModel, color_picker::ColorPickerUpdate, container, flex_row, settings, text,
 };
 use cosmic::{Apply, Task};
 use cosmic::{Element, widget};

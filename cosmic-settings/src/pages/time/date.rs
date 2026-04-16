@@ -335,10 +335,11 @@ impl Page {
 
         for (id, timezone) in self.timezone_list.iter().enumerate() {
             if search_input.is_empty() || timezone.to_lowercase().contains(search_input) {
-                list = list.add(
-                    list::button(selection_context_item(timezone, Some(id) == self.timezone))
-                        .on_press(Message::Timezone(id)),
-                );
+                list = list.add(selection_context_item(
+                    timezone,
+                    Some(id) == self.timezone,
+                    Message::Timezone(id),
+                ));
             }
         }
 
@@ -471,7 +472,7 @@ fn timezone() -> Section<crate::pages::Message> {
                 .title(&section.title)
                 // Time zone select
                 .add(crate::widget::go_next_with_item(
-                    &*section.descriptions[time_zone],
+                    &section.descriptions[time_zone],
                     widget::text::body(
                         page.timezone
                             .map(|id| &*page.timezone_list[id])

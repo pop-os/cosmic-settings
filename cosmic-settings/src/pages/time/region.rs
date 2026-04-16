@@ -375,17 +375,15 @@ impl Page {
                     .as_ref()
                     .is_some_and(|(_, locales)| locales.contains(&available_language.lang_code));
 
-                list = list.add(
-                    list::button(selection_context_item(
-                        &available_language.display_name,
-                        is_installed,
-                    ))
-                    .on_press(if is_installed {
+                list = list.add(selection_context_item(
+                    &available_language.display_name,
+                    is_installed,
+                    if is_installed {
                         Message::RemoveLanguage(id)
                     } else {
                         Message::AddLanguage(id)
-                    }),
-                )
+                    },
+                ))
             }
         }
 
@@ -478,14 +476,15 @@ impl Page {
                     .as_ref()
                     .is_some_and(|l| l.lang_code == locale.lang_code);
 
-                list = list.add(
-                    list::button(selection_context_item(&locale.region_name, is_selected))
-                        .on_press_maybe(if is_selected {
-                            None
-                        } else {
-                            Some(Message::SelectRegion(id))
-                        }),
-                )
+                list = list.add(selection_context_item(
+                    &locale.region_name,
+                    is_selected,
+                    if is_selected {
+                        None
+                    } else {
+                        Some(Message::SelectRegion(id))
+                    },
+                ))
             }
         }
 
