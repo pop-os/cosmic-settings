@@ -6,6 +6,6 @@ Exec=cosmic-settings
 Terminal=false
 Categories=COSMIC
 Keywords=COSMIC;Settings;
-OnlyShowIn=COSMIC
+OnlyShowIn=COSMIC,FAKEDE
 Icon=com.system76.CosmicSettings
 StartupNotify=true
