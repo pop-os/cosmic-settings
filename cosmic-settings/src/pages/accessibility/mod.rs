@@ -5,7 +5,7 @@ use cosmic::{
     iced::stream,
     surface,
     theme::CosmicTheme,
-    widget::{dropdown, list, settings, text},
+    widget::{dropdown, settings, text},
 };
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;

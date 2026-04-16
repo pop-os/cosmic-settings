@@ -3,7 +3,7 @@
 
 use cosmic::{
     Apply, Element,
-    iced::{Alignment, Length},
+    iced::Length,
     surface,
     widget::{self, settings},
 };

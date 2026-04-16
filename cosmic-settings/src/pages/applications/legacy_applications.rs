@@ -12,7 +12,7 @@ use std::{
 use cosmic::{
     Apply, Element, Task,
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::{Length, stream},
+    iced::stream,
     surface,
     widget::{self, dropdown, settings, text},
 };

@@ -22,8 +22,7 @@ use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced::Subscription;
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, list, row, settings, space::horizontal,
-    text,
+    button, color_picker::ColorPickerUpdate, container, row, settings, space::horizontal, text,
 };
 use cosmic::{Apply, Element, Task, widget};
 #[cfg(feature = "wayland")]

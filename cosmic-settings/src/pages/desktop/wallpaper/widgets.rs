@@ -4,7 +4,7 @@
 use super::Message;
 use cosmic::iced::Radius;
 use cosmic::iced::core::Border;
-use cosmic::iced::core::{self, Background, Color, Degrees, Length, gradient::Linear};
+use cosmic::iced::core::{Background, Color, Degrees, Length, gradient::Linear};
 use cosmic::iced::runtime::core::image::Handle as ImageHandle;
 use cosmic::prelude::*;
 use cosmic::widget::{Space, button, container};
