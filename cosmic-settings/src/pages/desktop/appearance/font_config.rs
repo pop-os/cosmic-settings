@@ -6,8 +6,7 @@ use std::sync::Arc;
 use cosmic::{
     Apply, Element, Task,
     config::{CosmicTk, FontConfig},
-    iced::core::text::Wrapping,
-    widget::{self, settings, svg},
+    widget,
 };
 use cosmic_config::ConfigSet;
 
@@ -193,10 +192,11 @@ impl Model {
             widget::list_column::with_capacity(families.len()),
             |list, family| {
                 let selected = &**family == current_font;
-                list.add(
-                    widget::list::button(selection_context_item(&**family, selected))
-                        .on_press(callback(family.clone())),
-                )
+                list.add(selection_context_item(
+                    family,
+                    selected,
+                    callback(family.clone()),
+                ))
             },
         );
         list.into()

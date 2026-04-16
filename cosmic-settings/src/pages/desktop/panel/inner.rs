@@ -5,7 +5,7 @@ use cosmic::{
     cosmic_theme::Density,
     iced::{Alignment, Length},
     surface,
-    widget::{button, container, dropdown, list, row, settings, slider, space, text},
+    widget::{button, container, dropdown, row, settings, slider, space, text},
 };
 
 use cosmic::Apply;
@@ -290,7 +290,7 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                 .find(|(_, v)| v.id == page.applets_page_id())
             {
                 settings.add(crate::widget::go_next_item(
-                    &*descriptions[applets_label],
+                    &descriptions[applets_label],
                     crate::pages::Message::Page(panel_applets_entity),
                 ))
             } else {

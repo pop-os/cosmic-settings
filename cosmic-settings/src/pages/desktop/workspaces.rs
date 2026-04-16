@@ -6,9 +6,8 @@
 use cosmic::{
     Apply, Element,
     cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::Length,
     surface,
-    widget::{self, settings, text},
+    widget::{self, settings},
 };
 use cosmic_comp_config::workspace::{Action, WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
 use cosmic_settings_page::Section;
