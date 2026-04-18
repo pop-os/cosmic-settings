@@ -588,6 +588,7 @@ sound = Sound
 sound-output = Output
     .volume = Output volume
     .device = Output device
+    .test = Test
     .level = Output level
     .config = Configuration
     .balance = Balance
