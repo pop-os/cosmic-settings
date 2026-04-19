@@ -28,7 +28,7 @@ use cosmic::{
         segmented_button::{self, SingleSelectModel},
         settings,
         space::horizontal as horizontal_space,
-        tab_bar, text, toggler,
+        tab_bar, text,
     },
 };
 use cosmic::{
@@ -1275,18 +1275,17 @@ pub fn settings() -> Section<crate::pages::Message> {
 
             children.push({
                 let mut column = list_column()
-                    .add(settings::item(
-                        &descriptions[same_label],
-                        toggler(page.wallpaper_service_config.same_on_all)
-                            .on_toggle(Message::SameWallpaper),
+                    .add(settings::item::builder(&descriptions[same_label]).toggler(
+                        page.wallpaper_service_config.same_on_all,
+                        Message::SameWallpaper,
                     ))
                     .add(settings::item(&descriptions[fit_label], wallpaper_fit));
 
                 if show_slideshow_toggle {
-                    column = column.add(settings::item(
-                        &descriptions[slide_label],
-                        toggler(slideshow_enabled).on_toggle(Message::Slideshow),
-                    ));
+                    column = column.add(
+                        settings::item::builder(&descriptions[slide_label])
+                            .toggler(slideshow_enabled, Message::Slideshow),
+                    );
                 }
 
                 // The rotation frequency dropdown should only be shown when the slideshow is enabled.

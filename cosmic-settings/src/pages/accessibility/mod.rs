@@ -1,11 +1,11 @@
 use cosmic::{
-    Task,
+    Apply, Element, Task,
     cosmic_theme::{CosmicPalette, ThemeBuilder},
     iced::core::text::Wrapping,
     iced::stream,
     surface,
     theme::CosmicTheme,
-    widget::{dropdown, settings, text, toggler},
+    widget::{dropdown, settings, text},
 };
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;
@@ -200,6 +200,22 @@ pub fn vision() -> section::Section<crate::pages::Message> {
         .view::<Page>(move |binder, page, section| {
             let descriptions = &section.descriptions;
 
+            let (magnifier_entity, _magnifier_info) = binder
+                .info
+                .iter()
+                .find(|(_, v)| v.id == "accessibility_magnifier")
+                .expect("magnifier page not found");
+
+            let status_text = if page.wayland_available.is_some() {
+                if page.magnifier_state {
+                    &descriptions[on]
+                } else {
+                    &descriptions[off]
+                }
+            } else {
+                &descriptions[unavailable]
+            };
+
             settings::section()
                 .title(&section.title)
                 .add(
@@ -210,31 +226,13 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         },
                     ),
                 )
-                .add({
-                    let (magnifier_entity, _magnifier_info) = binder
-                        .info
-                        .iter()
-                        .find(|(_, v)| v.id == "accessibility_magnifier")
-                        .expect("magnifier page not found");
-
-                    let status_text = if page.wayland_available.is_some() {
-                        if page.magnifier_state {
-                            &descriptions[on]
-                        } else {
-                            &descriptions[off]
-                        }
-                    } else {
-                        &descriptions[unavailable]
-                    };
-
-                    crate::widget::go_next_with_item(
-                        &descriptions[magnifier],
-                        text::body(status_text).wrapping(Wrapping::Word),
-                        page.wayland_available
-                            .is_some()
-                            .then_some(crate::pages::Message::Page(magnifier_entity)),
-                    )
-                })
+                .add(crate::widget::go_next_with_item(
+                    &descriptions[magnifier],
+                    text::body(status_text).wrapping(Wrapping::Word),
+                    page.wayland_available
+                        .is_some()
+                        .then_some(crate::pages::Message::Page(magnifier_entity)),
+                ))
                 .add(
                     settings::item::builder(&descriptions[high_contrast])
                         .toggler(page.theme.is_high_contrast, |enable| {
@@ -242,21 +240,19 @@ pub fn vision() -> section::Section<crate::pages::Message> {
                         }),
                 )
                 .add(
-                    settings::item::builder(&descriptions[invert_colors]).control(
-                        toggler(page.screen_inverted).on_toggle_maybe(
-                            page.wayland_available
-                                .is_some_and(|ver| ver >= 2)
-                                .then_some(|set| Message::SetScreenInverted(set).into()),
-                        ),
+                    settings::item::builder(&descriptions[invert_colors]).toggler_maybe(
+                        page.screen_inverted,
+                        page.wayland_available
+                            .is_some_and(|ver| ver >= 2)
+                            .then_some(|set| Message::SetScreenInverted(set).into()),
                     ),
                 )
                 .add(
-                    settings::item::builder(&descriptions[color_filters]).control(
-                        toggler(page.screen_filter_active).on_toggle_maybe(
-                            page.wayland_available
-                                .is_some_and(|ver| ver >= 2)
-                                .then_some(|set| Message::SetScreenFilterActive(set).into()),
-                        ),
+                    settings::item::builder(&descriptions[color_filters]).toggler_maybe(
+                        page.screen_filter_active,
+                        page.wayland_available
+                            .is_some_and(|ver| ver >= 2)
+                            .then_some(|set| Message::SetScreenFilterActive(set).into()),
                     ),
                 )
                 .add({
@@ -304,13 +300,11 @@ pub fn hearing() -> section::Section<crate::pages::Message> {
             settings::section()
                 .title(&section.title)
                 .add(
-                    cosmic::Element::from(
-                        settings::item::builder(&descriptions[mono])
-                            .toggler(page.daemon_config.mono_sound, Message::SetSoundMono),
-                    )
-                    .map(crate::pages::Message::Accessibility),
+                    settings::item::builder(&descriptions[mono])
+                        .toggler(page.daemon_config.mono_sound, Message::SetSoundMono),
                 )
-                .into()
+                .apply(Element::from)
+                .map(crate::pages::Message::Accessibility)
         })
 }
 

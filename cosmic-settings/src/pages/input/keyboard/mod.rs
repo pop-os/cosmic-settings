@@ -11,7 +11,7 @@ use cosmic::{
     cosmic_config::{self, ConfigSet},
     iced::{Alignment, Length},
     theme,
-    widget::{self, ListColumn, button, container, icon, radio, row, settings},
+    widget::{self, ListColumn, button, container, icon, list, row, settings},
 };
 use cosmic_comp_config::{KeyboardConfig, NumlockState, XkbConfig};
 use cosmic_settings_page::{self as page, Section, section};
@@ -243,15 +243,10 @@ fn special_char_radio_row<'a>(
     desc: &'a str,
     value: Option<&'static str>,
     current_value: Option<&'a str>,
-) -> cosmic::Element<'a, Message> {
-    settings::item_row(vec![
-        radio(desc, value, Some(current_value), |_| {
-            Message::SpecialCharacterSelect(value)
-        })
-        .width(Length::Fill)
-        .into(),
-    ])
-    .into()
+) -> list::ListButton<'a, Message> {
+    settings::item::builder(desc).radio(value, Some(current_value), |_| {
+        Message::SpecialCharacterSelect(value)
+    })
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -552,9 +547,11 @@ impl Page {
     pub fn add_input_source_view(&self) -> Element<'_, crate::pages::Message> {
         let space_l = theme::spacing().space_l;
 
-        let toggler = settings::item::builder(fl!("show-extended-input-sources")).toggler(
-            self.show_extended_input_sources,
-            Message::SetShowExtendedInputSources,
+        let toggler = settings::section().add(
+            settings::item::builder(fl!("show-extended-input-sources")).toggler(
+                self.show_extended_input_sources,
+                Message::SetShowExtendedInputSources,
+            ),
         );
 
         let mut list = widget::list_column();
@@ -653,16 +650,11 @@ impl Page {
 
         let mut list = cosmic::widget::list_column();
         for (desc, state) in options {
-            list = list.add(settings::item_row(vec![
-                radio(
-                    cosmic::widget::text(desc),
-                    Some(state),
-                    Some(Some(current)),
-                    |_| Message::SetNumlockState(state),
-                )
-                .width(Length::Fill)
-                .into(),
-            ]));
+            list = list.add(settings::item::builder(desc).radio(
+                Some(state),
+                Some(Some(current)),
+                |_| Message::SetNumlockState(state),
+            ));
         }
 
         list.into()

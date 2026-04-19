@@ -22,8 +22,7 @@ use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced::Subscription;
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, radio, row, settings,
-    space::horizontal as horizontal_space, text,
+    button, color_picker::ColorPickerUpdate, container, row, settings, space::horizontal, text,
 };
 use cosmic::{Apply, Element, Task, widget};
 #[cfg(feature = "wayland")]
@@ -790,36 +789,21 @@ pub fn interface_density() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::item_row(vec![
-                    radio(
-                        text::body(&descriptions[compact]),
-                        Density::Compact,
-                        Some(page.density),
-                        Message::Density,
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
-                .add(settings::item_row(vec![
-                    radio(
-                        text::body(&descriptions[comfortable]),
-                        Density::Standard,
-                        Some(page.density),
-                        Message::Density,
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
-                .add(settings::item_row(vec![
-                    radio(
-                        text::body(&descriptions[spacious]),
-                        Density::Spacious,
-                        Some(page.density),
-                        Message::Density,
-                    )
-                    .width(Length::Fill)
-                    .into(),
-                ]))
+                .add(settings::item::builder(&descriptions[compact]).radio(
+                    Density::Compact,
+                    Some(page.density),
+                    Message::Density,
+                ))
+                .add(settings::item::builder(&descriptions[comfortable]).radio(
+                    Density::Standard,
+                    Some(page.density),
+                    Message::Density,
+                ))
+                .add(settings::item::builder(&descriptions[spacious]).radio(
+                    Density::Spacious,
+                    Some(page.density),
+                    Message::Density,
+                ))
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
@@ -933,7 +917,7 @@ pub fn reset_button() -> Section<crate::pages::Message> {
                     .on_press(Message::Reset)
                     .into()
             } else {
-                horizontal_space().width(1.).apply(Element::from)
+                horizontal().width(1.).apply(Element::from)
             }
             .map(crate::pages::Message::Appearance)
         })

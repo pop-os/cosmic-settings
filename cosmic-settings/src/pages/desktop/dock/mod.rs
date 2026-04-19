@@ -4,7 +4,7 @@ use cosmic::Apply;
 use cosmic::{
     Element, Task,
     cosmic_config::{ConfigSet, CosmicConfigEntry},
-    widget::{settings, text, toggler},
+    widget::{settings, text},
 };
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, Section, section};
@@ -170,16 +170,15 @@ pub(crate) fn enable() -> Section<crate::pages::Message> {
             };
             settings::section()
                 .title(&section.title)
-                .add(settings::item(
-                    &descriptions[dock],
-                    toggler(
+                .add(
+                    settings::item::builder(&descriptions[dock]).toggler(
                         container_config
                             .config_list
                             .iter()
                             .any(|e| e.name.as_str() == "Dock"),
-                    )
-                    .on_toggle(Message::EnableDock),
-                ))
+                        Message::EnableDock,
+                    ),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::Dock)
         })
