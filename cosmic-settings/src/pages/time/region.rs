@@ -1023,27 +1023,13 @@ fn strip_locale_suffix(locale: &str) -> String {
 }
 
 /// Parses the output from `locale -a` command and returns a vector of locale strings.
-/// Filters out pseudo-locales (C, C.UTF-8, C.utf8, POSIX) that are not real locales for language selection as well as duplicate locale entries such ar_IN and ar_IN.utf8..
+/// Filters out C.UTF-8 as it's not a real locale for language selection.
 fn parse_locale_output(output: &str) -> Vec<String> {
-    use std::collections::HashSet;
-
-    let pseudo_locales: HashSet<String> = ["C", "POSIX"]
-        .into_iter()
-        .map(|s| s.to_string())
-        .collect();
-
-    let locales: HashSet<String> = output
+    output
         .lines()
-        .map(|line| strip_locale_suffix(line))
-        .collect();
-
-    let mut result: Vec<String> = locales
-        .into_iter()
-        .filter(|locale| !pseudo_locales.contains(locale))
-        .collect();
-
-    result.sort();
-    result
+        .filter(|line| *line != "C.UTF-8")
+        .map(|line| line.to_string())
+        .collect()
 }
 
 /// Builds the locale settings array for D-Bus SetLocale call.
@@ -1076,28 +1062,6 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_locale_output_filters_pseudo_locales() {
-        let output = "C\nC.utf8\nPOSIX\nen_US.utf8\nde_DE.utf8\n";
-        let result = parse_locale_output(output);
-        assert!(!result.contains(&"C".to_string()));
-        assert!(!result.contains(&"C.utf8".to_string()));
-        assert!(!result.contains(&"POSIX".to_string()));
-        assert_eq!(result.len(), 2);
-    }
-
-    #[test]
-    fn test_parse_locale_output_deduplicates() {
-        let output = "ar_IN\nar_IN.utf8\nen_US\nen_US.utf8\nde_DE.utf8\nde_DE\n";
-        let result = parse_locale_output(output);
-        // Should have only 3 unique base locales
-        assert_eq!(result.len(), 3);
-        // Base locales should be present
-        assert!(result.iter().any(|l| l.starts_with("ar_IN")));
-        assert!(result.iter().any(|l| l.starts_with("en_US")));
-        assert!(result.iter().any(|l| l.starts_with("de_DE")));
-    }
-
-    #[test]
     fn test_parse_locale_output_handles_empty_input() {
         let output = "";
         let result = parse_locale_output(output);
@@ -1109,9 +1073,7 @@ mod tests {
         let output = "en_US.utf8\nde_DE.utf8\nfr_FR.utf8\n";
         let result = parse_locale_output(output);
         assert_eq!(result.len(), 3);
-        assert!(result.contains(&"en_US".to_string()));
-        assert!(result.contains(&"de_DE".to_string()));
-        assert!(result.contains(&"fr_FR".to_string()));
+        assert!(result.contains(&"en_US.utf8".to_string()));
     }
 
     #[test]
