@@ -1023,19 +1023,24 @@ fn strip_locale_suffix(locale: &str) -> String {
 }
 
 /// Parses the output from `locale -a` command and returns a vector of locale strings.
-/// Filters out pseudo-locales (C, POSIX) and accepts only UTF-8 encoded locales.
+/// Filters out pseudo-locales (C, POSIX) and accepts only allowed character encodings.
 fn parse_locale_output(output: &str) -> Vec<String> {
+    const ALLOWED_ENCODINGS: &[&str] = &["utf8", "utf-8"];
+    const PSEUDO_LOCALES: &[&str] = &["C", "C.utf8", "C.UTF-8", "POSIX"];
+    
     output
         .lines()
         .filter(|line| {
             let trimmed = line.trim();
+            
             // Filter out C and POSIX pseudo-locales and their variants
-            if trimmed == "C" || trimmed == "C.utf8" || trimmed == "C.UTF-8" || trimmed == "POSIX" {
+            if PSEUDO_LOCALES.contains(&trimmed) {
                 return false;
             }
-            // Accept only UTF-8 encoded locales
+            
+            // Accept only locales with allowed character encodings
             let lowercase = trimmed.to_lowercase();
-            lowercase.contains("utf")
+            ALLOWED_ENCODINGS.iter().any(|encoding| lowercase.contains(encoding))
         })
         .map(|line| line.to_string())
         .collect()
