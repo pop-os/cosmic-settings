@@ -23,6 +23,7 @@ use icu::{
     locale::Locale,
 };
 use locales_rs as locale;
+use regex::Regex;
 use slotmap::{DefaultKey, SlotMap};
 
 static GNOME_LANGUAGE_SELECTOR: &str = "gnome-language-selector";
@@ -1025,8 +1026,11 @@ fn strip_locale_suffix(locale: &str) -> String {
 /// Parses the output from `locale -a` command and returns a vector of locale strings.
 /// Filters out pseudo-locales (C, POSIX) and accepts only allowed character encodings.
 fn parse_locale_output(output: &str) -> Vec<String> {
-    const ALLOWED_ENCODINGS: &[&str] = &["utf8", "utf-8"];
-    const PSEUDO_LOCALE_PREFIXES: &[&str] = &["C", "POSIX"];
+    // Regex to match pseudo-locales: C or POSIX, optionally followed by .anything
+    let pseudo_locale_re = Regex::new(r"^(C|POSIX)(\.|$)").unwrap();
+    
+    // Regex to match UTF-8 encoded locales (case-insensitive)
+    let utf8_encoding_re = Regex::new(r"(?i)\.(utf-?8)$").unwrap();
     
     output
         .lines()
@@ -1034,15 +1038,12 @@ fn parse_locale_output(output: &str) -> Vec<String> {
             let trimmed = line.trim();
             
             // Filter out C and POSIX pseudo-locales (any variant, regardless of encoding)
-            for prefix in PSEUDO_LOCALE_PREFIXES {
-                if trimmed == *prefix || trimmed.starts_with(&format!("{}.", prefix)) {
-                    return false;
-                }
+            if pseudo_locale_re.is_match(trimmed) {
+                return false;
             }
             
-            // Accept only locales with allowed character encodings
-            let lowercase = trimmed.to_lowercase();
-            ALLOWED_ENCODINGS.iter().any(|encoding| lowercase.contains(encoding))
+            // Accept only locales with UTF-8 encoding
+            utf8_encoding_re.is_match(trimmed)
         })
         .map(|line| line.to_string())
         .collect()
