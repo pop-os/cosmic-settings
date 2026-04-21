@@ -1028,10 +1028,10 @@ fn strip_locale_suffix(locale: &str) -> String {
 fn parse_locale_output(output: &str) -> Vec<String> {
     // Regex to match pseudo-locales: C or POSIX, optionally followed by .anything
     let pseudo_locale_re = Regex::new(r"^(C|POSIX)(\.|$)").unwrap();
-    
+
     // Regex to match UTF-8 encoded locales (case-insensitive)
     let utf8_encoding_re = Regex::new(r"(?i)\.(utf-?8)$").unwrap();
-    
+
     output
         .lines()
         .map(|line| line.trim())
@@ -1120,13 +1120,13 @@ mod tests {
     fn test_parse_locale_output_filters_pseudo_locales() {
         let output = "C\nC.utf8\nC.UTF-8\nPOSIX\nen_US.utf8\nde_DE.UTF-8\n";
         let result = parse_locale_output(output);
-        
+
         // Should filter out all C and POSIX variants
         assert!(!result.contains(&"C".to_string()));
         assert!(!result.contains(&"C.utf8".to_string()));
         assert!(!result.contains(&"C.UTF-8".to_string()));
         assert!(!result.contains(&"POSIX".to_string()));
-        
+
         // Should keep actual locales
         assert!(result.contains(&"en_US.utf8".to_string()));
         assert!(result.contains(&"de_DE.UTF-8".to_string()));
@@ -1135,20 +1135,21 @@ mod tests {
 
     #[test]
     fn test_parse_locale_output_accepts_only_utf8_locales() {
-        let output = "en_US\nen_US.utf8\nen_US.UTF-8\nar_IN\nar_IN.utf8\nde_DE.iso88591\nfr_FR.UTF-8\n";
+        let output =
+            "en_US\nen_US.utf8\nen_US.UTF-8\nar_IN\nar_IN.utf8\nde_DE.iso88591\nfr_FR.UTF-8\n";
         let result = parse_locale_output(output);
-        
+
         // Should accept UTF-8 variants
         assert!(result.contains(&"en_US.utf8".to_string()));
         assert!(result.contains(&"en_US.UTF-8".to_string()));
         assert!(result.contains(&"ar_IN.utf8".to_string()));
         assert!(result.contains(&"fr_FR.UTF-8".to_string()));
-        
+
         // Should filter out non-UTF-8 encoded locales
         assert!(!result.contains(&"en_US".to_string()));
         assert!(!result.contains(&"ar_IN".to_string()));
         assert!(!result.contains(&"de_DE.iso88591".to_string()));
-        
+
         assert_eq!(result.len(), 4);
     }
 
@@ -1156,14 +1157,14 @@ mod tests {
     fn test_parse_locale_output_filters_any_c_posix_variant() {
         let output = "C\nC.iso88591\nC.anything\nPOSIX\nPOSIX.utf8\nen_US.utf8\n";
         let result = parse_locale_output(output);
-        
+
         // Should filter out any C or POSIX variant regardless of encoding
         assert!(!result.contains(&"C".to_string()));
         assert!(!result.contains(&"C.iso88591".to_string()));
         assert!(!result.contains(&"C.anything".to_string()));
         assert!(!result.contains(&"POSIX".to_string()));
         assert!(!result.contains(&"POSIX.utf8".to_string()));
-        
+
         // Should keep actual locales
         assert!(result.contains(&"en_US.utf8".to_string()));
         assert_eq!(result.len(), 1);
