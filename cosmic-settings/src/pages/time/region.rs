@@ -1034,17 +1034,9 @@ fn parse_locale_output(output: &str) -> Vec<String> {
     
     output
         .lines()
-        .filter(|line| {
-            let trimmed = line.trim();
-            
-            // Filter out C and POSIX pseudo-locales (any variant, regardless of encoding)
-            if pseudo_locale_re.is_match(trimmed) {
-                return false;
-            }
-            
-            // Accept only locales with UTF-8 encoding
-            utf8_encoding_re.is_match(trimmed)
-        })
+        .map(|line| line.trim())
+        .filter(|line| !pseudo_locale_re.is_match(line))
+        .filter(|line| utf8_encoding_re.is_match(line))
         .map(|line| line.to_string())
         .collect()
 }
