@@ -79,6 +79,7 @@ impl Default for Page {
             // If the config is not present, it will be created with the default values and the name will not match
             (panel_config.name == "Panel").then_some(panel_config)
         });
+        let size = panel_config.as_ref().map(|c| c.size.clone());
         let system_default = cosmic::cosmic_config::Config::system(
             &format!("{}.Panel", cosmic_panel_config::NAME),
             CosmicPanelConfig::VERSION,
@@ -98,6 +99,7 @@ impl Default for Page {
             inner: PageInner {
                 config_helper,
                 panel_config,
+                size,
                 container_config,
                 outputs_map: HashMap::new(),
                 system_default,

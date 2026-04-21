@@ -22,9 +22,9 @@ use crate::pages::desktop::appearance::Roundness;
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
     pub(crate) panel_config: Option<CosmicPanelConfig>,
+    pub size: Option<PanelSize>,
     pub opacity: f32,
     pub opacity_changing: bool,
-    pub size: PanelSize,
     pub outputs: Vec<String>,
     pub anchors: Vec<String>,
     pub backgrounds: Vec<String>,
@@ -40,9 +40,9 @@ impl Default for PageInner {
         Self {
             config_helper: Option::default(),
             panel_config: Option::default(),
+            size: Option::default(),
             opacity: 0.0,
             opacity_changing: false,
-            size: PanelSize::M,
             outputs: vec![fl!("all-displays")],
             anchors: vec![
                 Anchor(PanelAnchor::Left).to_string(),
@@ -209,7 +209,7 @@ pub(crate) fn style<
                         text::body(fl!("small")).into(),
                         slider(
                             0..=4,
-                            match inner.size {
+                            match inner.size.as_ref().expect("inner.size is None even though inner.panel_config is Some") {
                                 PanelSize::XS => 0,
                                 PanelSize::S => 1,
                                 PanelSize::M => 2,
@@ -504,7 +504,7 @@ impl PageInner {
                     if let Err(err) = default.write_entry(config) {
                         tracing::error!(?err, "Error resetting panel config.");
                     }
-                    self.size.clone_from(&default.size);
+                    self.size = Some(default.size.clone());
                     self.system_default = Some(default.clone());
                     self.panel_config.clone_from(&self.system_default);
                 } else {
@@ -603,10 +603,10 @@ impl PageInner {
                 _ = panel_config.set_border_radius(helper, new_radius).unwrap();
             }
             Message::PanelSize(size) => {
-                self.size = size;
+                self.size = Some(size);
             }
             Message::PanelSizeCommit => {
-                _ = panel_config.set_size(helper, self.size.clone());
+                _ = panel_config.set_size(helper, self.size.as_ref().expect("PageInner.size is None even though it should be Some").clone());
                 // Reset any size overrides the user might have set
                 _ = panel_config.set_size_center(helper, None);
                 _ = panel_config.set_size_wings(helper, None);
@@ -669,7 +669,7 @@ impl PageInner {
                 }
             }
             Message::PanelConfig(c) => {
-                self.size = c.size.clone();
+                self.size = Some(c.size.clone());
                 self.panel_config = Some(*c);
                 return Task::none();
             }
