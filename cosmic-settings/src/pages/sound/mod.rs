@@ -2,16 +2,20 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 pub mod device_profiles;
+pub mod model;
+
+use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use cosmic::{
     Apply, Element, Task,
-    iced::{Alignment, Length, window},
+    iced::{self, Alignment, Length, window},
     surface,
     widget::{self, settings, space::horizontal as horizontal_space},
 };
 use cosmic_config::{Config, ConfigGet, ConfigSet};
+use cosmic_settings_audio_client::{self as audio_client, CosmicAudioProxy};
 use cosmic_settings_page::{self as page, Section, section};
-use cosmic_settings_sound_subscription as subscription;
+use futures::{SinkExt, StreamExt, executor::block_on};
 use slotmap::SlotMap;
 
 const AUDIO_CONFIG: &str = "com.system76.CosmicAudio";
@@ -20,22 +24,20 @@ const AMPLIFICATION_SOURCE: &str = "amplification_source";
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    /// Reload the model
-    Reload,
+    /// Connection to `com.system76.CosmicSettings`.
+    Client(Arc<audio_client::Client>),
     /// Change the default output.
     SetDefaultSink(usize),
     /// Change the default input output.
     SetDefaultSource(usize),
-    /// Set the profile of a sound device.
-    SetProfile(u32, u32),
     /// Change the balance of the active sink.
-    SetSinkBalance(u32),
+    SetSinkBalance(f32),
     /// Request to change the default output volume.
     SetSinkVolume(u32),
     /// Request to change the input volume.
     SetSourceVolume(u32),
-    /// Messages handled by the sound module in cosmic-settings-subscriptions
-    Subscription(subscription::Message),
+    /// Messages from the varlink audio client,
+    Subscription(audio_client::Event),
     /// Surface Action
     Surface(surface::Action),
     /// Toggle the mute status of the output.
@@ -60,16 +62,11 @@ impl From<Message> for crate::Message {
     }
 }
 
-impl From<subscription::Message> for Message {
-    fn from(val: subscription::Message) -> Self {
-        Message::Subscription(val)
-    }
-}
-
 pub struct Page {
     entity: page::Entity,
     device_profiles: page::Entity,
-    pub(self) model: subscription::Model,
+    client: Option<Rc<RefCell<audio_client::Client>>>,
+    model: model::Model,
     sound_config: Option<Config>,
     amplification_sink: bool,
     amplification_source: bool,
@@ -77,14 +74,11 @@ pub struct Page {
 
 impl Default for Page {
     fn default() -> Self {
-        let mut model = subscription::Model::default();
-        model.unplugged_text = fl!("sound-device-port-unplugged");
-        model.hd_audio_text = fl!("sound-hd-audio");
-        model.usb_audio_text = fl!("sound-usb-audio");
         Self {
             entity: page::Entity::default(),
             device_profiles: page::Entity::default(),
-            model,
+            client: None,
+            model: model::Model::default(),
             sound_config: None,
             amplification_sink: false,
             amplification_source: false,
@@ -131,12 +125,53 @@ impl page::Page<crate::pages::Message> for Page {
         self.entity = entity;
     }
 
-    fn subscription(
-        &self,
-        _core: &cosmic::Core,
-    ) -> cosmic::iced::Subscription<crate::pages::Message> {
-        cosmic::iced::Subscription::run(subscription::watch)
-            .map(|message| Message::Subscription(message).into())
+    fn subscription(&self, _core: &cosmic::Core) -> iced::Subscription<crate::pages::Message> {
+        iced::Subscription::run(|| {
+            iced::stream::channel(
+                1,
+                move |mut emitter: futures::channel::mpsc::Sender<crate::pages::Message>| async move {
+                    loop {
+                        let mut client = match audio_client::connect().await {
+                            Ok(client) => client,
+                            Err(why) => {
+                                if let zlink::Error::Io(ref why) = why
+                                    && why.kind() == std::io::ErrorKind::NotFound
+                                {
+                                    tracing::error!(
+                                        "cosmic-settings-daemon varlink service not found. Restarting cosmic-settings-daemon"
+                                    );
+                                    _ = std::process::Command::new("killall")
+                                        .args(&["-2", "cosmic-settings-daemon"])
+                                        .status();
+                                } else {
+                                    tracing::error!(
+                                        ?why,
+                                        "failed to connect to cosmic-settings's varlink service"
+                                    );
+                                }
+
+                                tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+                                continue;
+                            }
+                        };
+
+                        if let Ok(Ok(mut stream)) = client.recv_events().await {
+                            _ = emitter.send(Message::Client(Arc::new(client)).into()).await;
+                            while let Some(message) = stream.next().await {
+                                match message {
+                                    Ok(event) => {
+                                        _ = emitter.send(Message::Subscription(event).into()).await;
+                                    }
+                                    Err(why) => {
+                                        tracing::error!(?why, "event error");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+            )
+        })
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
@@ -167,49 +202,74 @@ impl Page {
             Message::Surface(a) => return cosmic::task::message(crate::app::Message::Surface(a)),
 
             Message::Subscription(message) => {
-                return self
-                    .model
-                    .update(message)
-                    .map(|message| Message::Subscription(message).into());
-            }
-
-            Message::SetSinkBalance(balance) => {
-                return self
-                    .model
-                    .set_sink_balance(balance)
-                    .map(|message| Message::Subscription(message).into());
+                self.model.update(message);
             }
 
             Message::SetDefaultSink(pos) => {
-                return self
-                    .model
-                    .set_default_sink(pos)
-                    .map(|message| Message::Subscription(message).into());
+                if let Some(&node_id) = self.model.sinks.id.get(pos) {
+                    if let Some(client) = self.client.as_mut() {
+                        block_on(async {
+                            _ = client.borrow_mut().conn.set_default(node_id, true).await;
+                        });
+                    }
+                }
             }
 
             Message::SetDefaultSource(pos) => {
-                return self
-                    .model
-                    .set_default_source(pos)
-                    .map(|message| Message::Subscription(message).into());
+                if let Some(&node_id) = self.model.sources.id.get(pos) {
+                    if let Some(client) = self.client.as_mut() {
+                        block_on(async {
+                            _ = client.borrow_mut().conn.set_default(node_id, true).await;
+                        });
+                    }
+                }
             }
 
-            Message::ToggleSinkMute => self.model.toggle_sink_mute(),
+            Message::ToggleSinkMute => {
+                if let Some(ref mut client) = self.client {
+                    block_on(async {
+                        _ = client.borrow_mut().conn.sink_mute_toggle().await;
+                    });
+                }
+            }
 
-            Message::ToggleSourceMute => self.model.toggle_source_mute(),
+            Message::ToggleSourceMute => {
+                if let Some(ref mut client) = self.client {
+                    block_on(async {
+                        _ = client.borrow_mut().conn.source_mute_toggle().await;
+                    });
+                }
+            }
 
             Message::SetSinkVolume(volume) => {
-                return self
-                    .model
-                    .set_sink_volume(volume)
-                    .map(|message| Message::Subscription(message).into());
+                if let Some(ref mut client) = self.client {
+                    self.model.active_sink.volume = volume;
+                    self.model.active_sink.volume_text = volume.to_string();
+                    block_on(async {
+                        _ = client.borrow_mut().conn.set_sink_volume(volume).await;
+                    });
+                }
             }
 
             Message::SetSourceVolume(volume) => {
-                return self
-                    .model
-                    .set_source_volume(volume)
-                    .map(|message| Message::Subscription(message).into());
+                if let Some(ref mut client) = self.client {
+                    self.model.active_source.volume = volume;
+                    self.model.active_source.volume_text = volume.to_string();
+                    block_on(async {
+                        _ = client.borrow_mut().conn.set_source_volume(volume).await;
+                    });
+                }
+            }
+
+            Message::SetSinkBalance(balance) => {
+                if let Some((client, sink_id)) = self.client.as_ref().zip(self.model.default_sink) {
+                    block_on(async {
+                        _ = client
+                            .borrow_mut()
+                            .conn
+                            .set_node_volume_balance(sink_id, Some(balance));
+                    });
+                }
             }
 
             Message::ToggleOverAmplificationSink(enabled) => {
@@ -232,16 +292,11 @@ impl Page {
                 }
             }
 
-            Message::SetProfile(object_id, index) => {
-                self.model.set_profile(object_id, index, true);
-            }
-
-            Message::Reload => {
-                let mut model = subscription::Model::default();
-                model.hd_audio_text = std::mem::take(&mut self.model.hd_audio_text);
-                model.unplugged_text = std::mem::take(&mut self.model.unplugged_text);
-                model.usb_audio_text = std::mem::take(&mut self.model.usb_audio_text);
-                self.model = model;
+            Message::Client(client) => {
+                if let Some(client) = Arc::into_inner(client) {
+                    self.client = Some(Rc::new(RefCell::new(client)));
+                    self.model = model::Model::default();
+                }
             }
         }
 
@@ -262,17 +317,17 @@ fn input() -> Section<crate::pages::Message> {
         .title(fl!("sound-input"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            if page.model.sources().is_empty() {
+            if page.model.sources.id.is_empty() {
                 return widget::space().into();
             }
 
             let slider = if page.amplification_source {
-                widget::slider(0..=150, page.model.source_volume, |change| {
+                widget::slider(0..=150, page.model.active_source.volume, |change| {
                     Message::SetSourceVolume(change).into()
                 })
                 .breakpoints(&[100])
             } else {
-                widget::slider(0..=100, page.model.source_volume, |change| {
+                widget::slider(0..=100, page.model.active_source.volume, |change| {
                     Message::SetSourceVolume(change).into()
                 })
             }
@@ -283,23 +338,25 @@ fn input() -> Section<crate::pages::Message> {
             let volume_control = widget::row::with_capacity(4)
                 .align_y(Alignment::Center)
                 .push(
-                    widget::button::icon(widget::icon::from_name(if page.model.source_mute {
-                        "microphone-sensitivity-muted-symbolic"
-                    } else {
-                        "audio-input-microphone-symbolic"
-                    }))
+                    widget::button::icon(widget::icon::from_name(
+                        if page.model.active_source.mute {
+                            "microphone-sensitivity-muted-symbolic"
+                        } else {
+                            "audio-input-microphone-symbolic"
+                        },
+                    ))
                     .on_press(Message::ToggleSourceMute.into()),
                 )
                 .push(
-                    widget::text::body(&page.model.source_volume_text)
+                    widget::text::body(&page.model.active_source.volume_text)
                         .width(Length::Fixed(22.0))
                         .align_x(Alignment::Center),
                 )
                 .push(horizontal_space().width(8.))
                 .push(slider);
             let devices = widget::dropdown::popup_dropdown(
-                page.model.sources(),
-                Some(page.model.active_source().unwrap_or(0)),
+                &page.model.sources.description,
+                Some(page.model.sources.active.unwrap_or(0)),
                 Message::SetDefaultSource,
                 window::Id::RESERVED,
                 Message::Surface,
@@ -346,12 +403,12 @@ fn output() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let slider = if page.amplification_sink {
-                widget::slider(0..=150, page.model.sink_volume, |change| {
+                widget::slider(0..=150, page.model.active_sink.volume, |change| {
                     Message::SetSinkVolume(change).into()
                 })
                 .breakpoints(&[100])
             } else {
-                widget::slider(0..=100, page.model.sink_volume, |change| {
+                widget::slider(0..=100, page.model.active_sink.volume, |change| {
                     Message::SetSinkVolume(change).into()
                 })
             }
@@ -362,7 +419,7 @@ fn output() -> Section<crate::pages::Message> {
             let volume_control = widget::row::with_capacity(4)
                 .align_y(Alignment::Center)
                 .push(
-                    widget::button::icon(if page.model.sink_mute {
+                    widget::button::icon(if page.model.active_sink.mute {
                         widget::icon::from_name("audio-volume-muted-symbolic")
                     } else {
                         widget::icon::from_name("audio-volume-high-symbolic")
@@ -370,7 +427,7 @@ fn output() -> Section<crate::pages::Message> {
                     .on_press(Message::ToggleSinkMute.into()),
                 )
                 .push(
-                    widget::text::body(&page.model.sink_volume_text)
+                    widget::text::body(&page.model.active_sink.volume_text)
                         .width(Length::Fixed(22.0))
                         .align_x(Alignment::Center),
                 )
@@ -378,8 +435,8 @@ fn output() -> Section<crate::pages::Message> {
                 .push(slider);
 
             let devices = widget::dropdown::popup_dropdown(
-                page.model.sinks(),
-                Some(page.model.active_sink().unwrap_or(0)),
+                &page.model.sinks.description,
+                Some(page.model.sinks.active.unwrap_or(0)),
                 Message::SetDefaultSink,
                 window::Id::RESERVED,
                 Message::Surface,
@@ -412,12 +469,11 @@ fn output() -> Section<crate::pages::Message> {
                         .push(horizontal_space().width(8.))
                         .push(
                             widget::slider(
-                                0..=200,
-                                (page.model.sink_balance.unwrap_or(1.0).max(0.) * 100.).round()
-                                    as u32,
+                                0.0..=1.0,
+                                page.model.active_sink.balance.unwrap_or(0.5).min(1.),
                                 |change| Message::SetSinkBalance(change).into(),
                             )
-                            .breakpoints(&[100]),
+                            .breakpoints(&[0.5]),
                         )
                         .push(horizontal_space().width(8.))
                         .push(
