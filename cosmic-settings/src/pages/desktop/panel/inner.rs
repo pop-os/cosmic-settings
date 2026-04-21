@@ -209,7 +209,9 @@ pub(crate) fn style<
                         text::body(fl!("small")).into(),
                         slider(
                             0..=4,
-                            match inner.size.as_ref().expect("inner.size is None even though inner.panel_config is Some") {
+                            match inner.size.as_ref().expect(
+                                "PageInner.size is None even though PageInner.panel_config is Some",
+                            ) {
                                 PanelSize::XS => 0,
                                 PanelSize::S => 1,
                                 PanelSize::M => 2,
@@ -606,7 +608,13 @@ impl PageInner {
                 self.size = Some(size);
             }
             Message::PanelSizeCommit => {
-                _ = panel_config.set_size(helper, self.size.as_ref().expect("PageInner.size is None even though it should be Some").clone());
+                _ = panel_config.set_size(
+                    helper,
+                    self.size
+                        .as_ref()
+                        .expect("PageInner.size is None even though it should be Some, since PageInner.panel_config is Some")
+                        .clone()
+                );
                 // Reset any size overrides the user might have set
                 _ = panel_config.set_size_center(helper, None);
                 _ = panel_config.set_size_wings(helper, None);
