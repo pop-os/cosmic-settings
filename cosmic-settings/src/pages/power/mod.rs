@@ -9,7 +9,7 @@ use cosmic::iced::widget::{column, row};
 use cosmic::iced::{self, Alignment, Length, stream};
 use cosmic::widget::{self, settings, space, text};
 use cosmic::{Apply, surface};
-use cosmic_config::{Config, CosmicConfigEntry, ConfigGet, ConfigSet};
+use cosmic_config::{Config, ConfigGet, ConfigSet, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
@@ -19,8 +19,8 @@ use slotmap::SlotMap;
 use std::hash::Hash;
 use std::iter;
 use std::time::Duration;
-use upower_dbus::DeviceProxy;
 use tracing::error;
+use upower_dbus::DeviceProxy;
 
 static SCREEN_OFF_TIMES: &[Duration] = &[
     Duration::from_secs(2 * 60),
@@ -73,15 +73,16 @@ impl Default for Page {
         let idle_conf = CosmicIdleConfig::get_entry(&idle_config).unwrap_or_else(|(_, conf)| conf);
         let cosmic_applet_config =
             cosmic_config::Config::new("com.system76.CosmicAppletBattery", 1).unwrap();
-        let battery_show_percentage = cosmic_applet_config
-            .get("show_percentage")
-            .unwrap_or_else(|err| {
-                if err.is_err() {
-                    error!(?err, "Failed to read config 'show_percentage'");
-                }
+        let battery_show_percentage =
+            cosmic_applet_config
+                .get("show_percentage")
+                .unwrap_or_else(|err| {
+                    if err.is_err() {
+                        error!(?err, "Failed to read config 'show_percentage'");
+                    }
 
-                false
-            });
+                    false
+                });
 
         Self {
             entity: Default::default(),
@@ -465,17 +466,18 @@ fn battery_info() -> Section<crate::pages::Message> {
                         .align_y(Alignment::Center)
                         .spacing(cosmic::theme::active().cosmic().space_xxxs()),
                 )
-                .push(
-                    space::Space::new().height(cosmic::theme::active().cosmic().space_xxxs())
-                )
+                .push(space::Space::new().height(cosmic::theme::active().cosmic().space_xxxs()))
                 .push(
                     settings::section()
                         .add(
                             settings::item::builder(&section.descriptions[show_percentage])
-                                .toggler(page.battery_show_percentage, Message::BatteryShowPercentage)
+                                .toggler(
+                                    page.battery_show_percentage,
+                                    Message::BatteryShowPercentage,
+                                ),
                         )
                         .apply(cosmic::Element::from)
-                        .map(crate::pages::Message::Power)
+                        .map(crate::pages::Message::Power),
                 )
                 .into()
         })
