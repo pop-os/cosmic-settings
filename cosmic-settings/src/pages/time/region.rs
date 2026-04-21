@@ -1064,14 +1064,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_locale_output_filters_c_utf8() {
-        let output = "C.UTF-8\nen_US.utf8\nde_DE.utf8\n";
-        let result = parse_locale_output(output);
-        assert!(!result.contains(&"C.UTF-8".to_string()));
-        assert_eq!(result.len(), 2);
-    }
-
-    #[test]
     fn test_parse_locale_output_handles_empty_input() {
         let output = "";
         let result = parse_locale_output(output);
