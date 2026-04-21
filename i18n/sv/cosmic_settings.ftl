@@ -126,7 +126,7 @@ super-key = Åtgärd för Super-tangent
     .launcher = Öppna programstartare
     .workspaces = Öppna arbetsytor
     .applications = Öppna program
-    .disable = Inaktivera
+    .none = Ingen
 edge-gravity = Flytande fönster dras till närliggande kanter
 
 ## Testinställningar

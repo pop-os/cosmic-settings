@@ -95,7 +95,7 @@ impl Default for Page {
                 fl!("super-key", "launcher"),
                 fl!("super-key", "workspaces"),
                 fl!("super-key", "applications"),
-                fl!("super-key", "disable"),
+                fl!("super-key", "none"),
             ],
             super_key_active: super_key_active_config(),
             comp_config,
@@ -233,7 +233,7 @@ pub fn window_management() -> Section<crate::pages::Message> {
         _launcher = fl!("super-key", "launcher");
         _workspaces = fl!("super-key", "workspaces");
         _applications = fl!("super-key", "applications");
-        _disable = fl!("super-key", "disable");
+        _none = fl!("super-key", "none");
         edge_gravity = fl!("edge-gravity");
     });
 
