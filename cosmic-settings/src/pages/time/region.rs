@@ -1023,11 +1023,20 @@ fn strip_locale_suffix(locale: &str) -> String {
 }
 
 /// Parses the output from `locale -a` command and returns a vector of locale strings.
-/// Filters out C.UTF-8 as it's not a real locale for language selection.
+/// Filters out pseudo-locales (C, POSIX) and accepts only UTF-8 encoded locales.
 fn parse_locale_output(output: &str) -> Vec<String> {
     output
         .lines()
-        .filter(|line| *line != "C.UTF-8")
+        .filter(|line| {
+            let trimmed = line.trim();
+            // Filter out C and POSIX pseudo-locales and their variants
+            if trimmed == "C" || trimmed == "C.utf8" || trimmed == "C.UTF-8" || trimmed == "POSIX" {
+                return false;
+            }
+            // Accept only UTF-8 encoded locales
+            let lowercase = trimmed.to_lowercase();
+            lowercase.contains("utf")
+        })
         .map(|line| line.to_string())
         .collect()
 }
@@ -1105,5 +1114,41 @@ mod tests {
         assert!(settings.iter().any(|s| s == "LANG=fr_FR.UTF-8"));
         // LC_* variables should use the region parameter
         assert!(settings.iter().any(|s| s == "LC_TIME=en_GB.UTF-8"));
+    }
+
+    #[test]
+    fn test_parse_locale_output_filters_pseudo_locales() {
+        let output = "C\nC.utf8\nC.UTF-8\nPOSIX\nen_US.utf8\nde_DE.UTF-8\n";
+        let result = parse_locale_output(output);
+        
+        // Should filter out all C and POSIX variants
+        assert!(!result.contains(&"C".to_string()));
+        assert!(!result.contains(&"C.utf8".to_string()));
+        assert!(!result.contains(&"C.UTF-8".to_string()));
+        assert!(!result.contains(&"POSIX".to_string()));
+        
+        // Should keep actual locales
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"de_DE.UTF-8".to_string()));
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_locale_output_accepts_only_utf8_locales() {
+        let output = "en_US\nen_US.utf8\nen_US.UTF-8\nar_IN\nar_IN.utf8\nde_DE.iso88591\nfr_FR.UTF-8\n";
+        let result = parse_locale_output(output);
+        
+        // Should accept UTF-8 variants
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"en_US.UTF-8".to_string()));
+        assert!(result.contains(&"ar_IN.utf8".to_string()));
+        assert!(result.contains(&"fr_FR.UTF-8".to_string()));
+        
+        // Should filter out non-UTF-8 encoded locales
+        assert!(!result.contains(&"en_US".to_string()));
+        assert!(!result.contains(&"ar_IN".to_string()));
+        assert!(!result.contains(&"de_DE.iso88591".to_string()));
+        
+        assert_eq!(result.len(), 4);
     }
 }
