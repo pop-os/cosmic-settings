@@ -1026,16 +1026,18 @@ fn strip_locale_suffix(locale: &str) -> String {
 /// Filters out pseudo-locales (C, POSIX) and accepts only allowed character encodings.
 fn parse_locale_output(output: &str) -> Vec<String> {
     const ALLOWED_ENCODINGS: &[&str] = &["utf8", "utf-8"];
-    const PSEUDO_LOCALES: &[&str] = &["C", "C.utf8", "C.UTF-8", "POSIX"];
+    const PSEUDO_LOCALE_PREFIXES: &[&str] = &["C", "POSIX"];
     
     output
         .lines()
         .filter(|line| {
             let trimmed = line.trim();
             
-            // Filter out C and POSIX pseudo-locales and their variants
-            if PSEUDO_LOCALES.contains(&trimmed) {
-                return false;
+            // Filter out C and POSIX pseudo-locales (any variant, regardless of encoding)
+            for prefix in PSEUDO_LOCALE_PREFIXES {
+                if trimmed == *prefix || trimmed.starts_with(&format!("{}.", prefix)) {
+                    return false;
+                }
             }
             
             // Accept only locales with allowed character encodings
@@ -1155,5 +1157,22 @@ mod tests {
         assert!(!result.contains(&"de_DE.iso88591".to_string()));
         
         assert_eq!(result.len(), 4);
+    }
+
+    #[test]
+    fn test_parse_locale_output_filters_any_c_posix_variant() {
+        let output = "C\nC.iso88591\nC.anything\nPOSIX\nPOSIX.utf8\nen_US.utf8\n";
+        let result = parse_locale_output(output);
+        
+        // Should filter out any C or POSIX variant regardless of encoding
+        assert!(!result.contains(&"C".to_string()));
+        assert!(!result.contains(&"C.iso88591".to_string()));
+        assert!(!result.contains(&"C.anything".to_string()));
+        assert!(!result.contains(&"POSIX".to_string()));
+        assert!(!result.contains(&"POSIX.utf8".to_string()));
+        
+        // Should keep actual locales
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert_eq!(result.len(), 1);
     }
 }
