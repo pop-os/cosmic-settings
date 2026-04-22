@@ -188,6 +188,7 @@ remove-connection-dialog = Remove connection profile?
     .wired-description = You'll need to recreate this profile to use it in the future.
 
 vpn = VPN
+    .autoconnect = Connect automatically
     .connections = VPN connections
     .error = Failed to add VPN config
     .remove = Remove connection profile
