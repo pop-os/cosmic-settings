@@ -36,7 +36,7 @@ impl Info {
 
         // Use wgpu to enumerate GPUs. Works cross-platform and doesn't require external tools
         let instance = wgpu::Instance::default();
-        let adapters = instance.enumerate_adapters(wgpu::Backends::all()).await;
+        let adapters = instance.enumerate_adapters(wgpu::Backends::all());
 
         // Track seen GPUs by (vendor, device) and by name to handle different scenarios:
         // - Same GPU via different backends (Vulkan/OpenGL) -> deduplicate by device ID or name
@@ -45,7 +45,7 @@ impl Info {
         let mut seen_devices = HashSet::new();
         let mut seen_names = HashSet::new();
 
-        for adapter in adapters {
+        for adapter in adapters.await {
             let adapter_info = adapter.get_info();
 
             if adapter_info.device_type == wgpu::DeviceType::Cpu {

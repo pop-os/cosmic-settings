@@ -2,9 +2,10 @@ use cosmic::app::{ContextDrawer, context_drawer};
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet};
 use cosmic::cosmic_theme::Spacing;
+use cosmic::iced::Alignment;
 use cosmic::iced::core::{Color, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
-use cosmic::widget::{ColorPickerModel, container, flex_row, settings, text};
+use cosmic::widget::{ColorPickerModel, container, flex_row, row, settings, slider, text};
 use cosmic::{Apply, Element, Task, task, widget};
 use cosmic_config::ConfigGet;
 use std::sync::Arc;
@@ -35,6 +36,12 @@ pub struct Content {
     icon_themes: IconThemes,
     icon_handles: IconHandles,
     tk_config: Option<Config>,
+    frosted: u8,
+    glass: f32,
+    frosted_system_interface: bool,
+    frosted_windows: bool,
+    frosted_panel: bool,
+    frosted_applets: bool,
 
     comp_config: cosmic_config::Config,
     #[cfg(feature = "cosmic-comp-config")]
@@ -89,7 +96,7 @@ impl From<&theme_manager::Manager> for Content {
             application_background: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
-                Some(theme.background.base.into()),
+                Some(theme.background(false).base.into()),
                 theme_manager.get_color(&ContextView::ApplicationBackground),
             ),
             container_background: ColorPickerModel::new(
@@ -101,7 +108,7 @@ impl From<&theme_manager::Manager> for Content {
             interface_text: ColorPickerModel::new(
                 &*HEX,
                 &*RGB,
-                Some(theme.background.on.into()),
+                Some(theme.background(false).on.into()),
                 theme_manager.get_color(&ContextView::InterfaceText),
             ),
             control_component: ColorPickerModel::new(
@@ -117,6 +124,12 @@ impl From<&theme_manager::Manager> for Content {
                 theme_manager.get_color(&ContextView::AccentWindowHint),
             ),
             font_config: font_config::Model::new(),
+            frosted: theme.frosted as u8,
+            glass: theme.alpha_map.guess_offset(),
+            frosted_system_interface: theme.frosted_system_interface,
+            frosted_windows: theme.frosted_windows,
+            frosted_panel: theme.frosted_panel,
+            frosted_applets: theme.frosted_applets,
             icons_fetched: false,
             icon_global: cosmic::config::apply_theme_global(),
             icon_fetch_handle: None,
@@ -280,6 +293,40 @@ impl Content {
         Task::none()
     }
 
+    pub fn update_frosted_system_interface(&mut self, v: bool) -> Task<app::Message> {
+        self.frosted_system_interface = v;
+
+        Task::none()
+    }
+
+    pub fn update_frosted_windows(&mut self, v: bool) -> Task<app::Message> {
+        self.frosted_windows = v;
+
+        Task::none()
+    }
+
+    pub fn update_frosted_panel(&mut self, v: bool) -> Task<app::Message> {
+        self.frosted_panel = v;
+
+        Task::none()
+    }
+
+    pub fn update_frosted_applets(&mut self, v: bool) -> Task<app::Message> {
+        self.frosted_applets = v;
+
+        Task::none()
+    }
+
+    pub fn update_blur(&mut self, v: u8) -> Task<app::Message> {
+        self.frosted = v;
+        Task::none()
+    }
+
+    pub fn update_glass(&mut self, v: f32) -> Task<app::Message> {
+        self.glass = v;
+        Task::none()
+    }
+
     pub fn on_open(&mut self, context_view: &ContextView) -> Task<app::Message> {
         match *context_view {
             ContextView::IconsAndToolkit => {
@@ -327,7 +374,7 @@ impl Content {
         self.application_background = ColorPickerModel::new(
             &*HEX,
             &*RGB,
-            Some(manager.theme().background.base.into()),
+            Some(manager.theme().background(false).base.into()),
             manager.get_color(&ContextView::ApplicationBackground),
         );
         self.custom_accent = ColorPickerModel::new(
@@ -345,7 +392,7 @@ impl Content {
         self.interface_text = ColorPickerModel::new(
             &*HEX,
             &*RGB,
-            Some(manager.theme().background.on.into()),
+            Some(manager.theme().background(false).on.into()),
             manager.get_color(&ContextView::InterfaceText),
         );
         self.control_component = ColorPickerModel::new(
@@ -471,6 +518,10 @@ impl Content {
                 self.shadow_and_corners(),
                 crate::pages::Message::CloseContextDrawer,
             ),
+            ContextView::FrostedGlass => context_drawer(
+                self.frosted_glass(),
+                crate::pages::Message::CloseContextDrawer,
+            ),
         })
     }
 
@@ -553,5 +604,67 @@ impl Content {
         .width(Length::Fill)
         .apply(Element::from)
         .map(crate::pages::Message::Appearance)
+    }
+
+    pub fn frosted_glass(&self) -> Element<'_, crate::pages::Message> {
+        settings::section()
+            .add(
+                settings::item::builder(fl!("style", "frosted-panels"))
+                    .description(fl!("style", "frosted-panels-desc"))
+                    .toggler(self.frosted_panel, Message::FrostedPanel),
+            )
+            .add(
+                settings::item::builder(fl!("style", "frosted-applets"))
+                    .description(fl!("style", "frosted-applets-desc"))
+                    .toggler(self.frosted_applets, Message::FrostedApplets),
+            )
+            .add(
+                settings::item::builder(fl!("style", "frosted-system-interface"))
+                    .description(fl!("style", "frosted-system-interface-desc"))
+                    .toggler(
+                        self.frosted_system_interface,
+                        Message::FrostedSystemInterface,
+                    ),
+            )
+            .add(
+                settings::item::builder(fl!("style", "frosted-windows"))
+                    .description(fl!("style", "frosted-windows-desc"))
+                    .toggler(self.frosted_windows, Message::FrostedWindows),
+            )
+            .add(
+                settings::item::builder(fl!("style", "frosted-thickness")).flex_control({
+                    row::with_children(vec![
+                        text::body(fl!("style", "less")).into(),
+                        slider(0..=13, self.frosted, Message::Blur)
+                            .width(Length::Fill)
+                            .apply(cosmic::widget::container)
+                            .max_width(250)
+                            .into(),
+                        text::body(fl!("style", "more")).into(),
+                    ])
+                    .align_y(Alignment::Center)
+                    .spacing(8)
+                    .width(Length::Fill)
+                }),
+            )
+            .add(
+                settings::item::builder(fl!("style", "glass-opacity")).flex_control({
+                    row::with_children(vec![
+                        text::body(fl!("style", "less")).into(),
+                        slider(0.0..=1.0, self.glass, Message::Glass)
+                            .step(0.05)
+                            .width(Length::Fill)
+                            .apply(cosmic::widget::container)
+                            .max_width(250)
+                            .into(),
+                        text::body(fl!("style", "more")).into(),
+                    ])
+                    .align_y(Alignment::Center)
+                    .spacing(8)
+                    .width(Length::Fill)
+                }),
+            )
+            .apply(Element::from)
+            .map(crate::pages::Message::Appearance)
     }
 }
