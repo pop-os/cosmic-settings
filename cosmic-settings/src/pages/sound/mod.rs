@@ -355,7 +355,7 @@ fn input() -> Section<crate::pages::Message> {
                 .push(horizontal_space().width(8.))
                 .push(slider);
             let devices = widget::dropdown::popup_dropdown(
-                &page.model.sources.description,
+                &page.model.sources.display,
                 Some(page.model.sources.active.unwrap_or(0)),
                 Message::SetDefaultSource,
                 window::Id::RESERVED,
@@ -435,7 +435,7 @@ fn output() -> Section<crate::pages::Message> {
                 .push(slider);
 
             let devices = widget::dropdown::popup_dropdown(
-                &page.model.sinks.description,
+                &page.model.sinks.display,
                 Some(page.model.sinks.active.unwrap_or(0)),
                 Message::SetDefaultSink,
                 window::Id::RESERVED,
