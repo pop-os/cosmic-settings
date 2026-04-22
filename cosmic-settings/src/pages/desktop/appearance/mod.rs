@@ -40,6 +40,7 @@ pub enum ContextView {
     ApplicationBackground,
     ContainerBackground,
     ControlComponent,
+    FrostedGlass,
     #[cfg(feature = "cosmic-comp-config")]
     ShadowAndCorners,
     CustomAccent,
@@ -158,6 +159,10 @@ pub enum Message {
     WindowHintSize(u32),
     Daytime(bool),
     Blur(u8),
+    FrostedPanel(bool),
+    FrostedApplets(bool),
+    FrostedSystemInterface(bool),
+    FrostedWindows(bool),
 }
 
 impl From<Message> for crate::app::Message {
@@ -242,6 +247,7 @@ impl Page {
 
             Message::DrawerOpen(context_view) => {
                 self.context_view = Some(context_view);
+                self.drawer = drawer::Content::from(&self.theme_manager);
                 tasks.push(cosmic::task::message(
                     crate::app::Message::OpenContextDrawer(self.entity),
                 ));
@@ -558,7 +564,10 @@ impl Page {
                 }
             }
             Message::Blur(b) => {
-                let blur_strength = b.try_into().ok();
+                let Ok(blur_strength) = b.try_into() else {
+                    tracing::error!("Invalid blur strength: {b}");
+                    return Task::none();
+                };
                 // TODO optimize and apply to both light and dark themes
                 theme_staged = self
                     .theme_manager
@@ -567,7 +576,53 @@ impl Page {
                     .map(|_| {
                         self.drawer.reset(&self.theme_manager);
                         theme_manager::ThemeStaged::Current
-                    })
+                    });
+
+                tasks.push(self.drawer.update_blur(message, blur_strength as u8));
+            }
+            Message::FrostedSystemInterface(v) => {
+                theme_staged = self
+                    .theme_manager
+                    .selected_customizer_mut()
+                    .set_frosted_system_interface(v)
+                    .map(|_| {
+                        self.drawer.reset(&self.theme_manager);
+                        theme_manager::ThemeStaged::Current
+                    });
+                tasks.push(self.drawer.update_frosted_system_interface(message, v));
+            }
+            Message::FrostedWindows(v) => {
+                theme_staged = self
+                    .theme_manager
+                    .selected_customizer_mut()
+                    .set_frosted_windows(v)
+                    .map(|_| {
+                        self.drawer.reset(&self.theme_manager);
+                        theme_manager::ThemeStaged::Current
+                    });
+                tasks.push(self.drawer.update_frosted_windows(message, v));
+            }
+            Message::FrostedPanel(v) => {
+                theme_staged = self
+                    .theme_manager
+                    .selected_customizer_mut()
+                    .set_frosted_panel(v)
+                    .map(|_| {
+                        self.drawer.reset(&self.theme_manager);
+                        theme_manager::ThemeStaged::Current
+                    });
+                tasks.push(self.drawer.update_frosted_panel(message, v));
+            }
+            Message::FrostedApplets(v) => {
+                theme_staged = self
+                    .theme_manager
+                    .selected_customizer_mut()
+                    .set_frosted_applets(v)
+                    .map(|_| {
+                        self.drawer.reset(&self.theme_manager);
+                        theme_manager::ThemeStaged::Current
+                    });
+                tasks.push(self.drawer.update_frosted_applets(message, v));
             }
         }
 
@@ -827,8 +882,6 @@ pub fn window_management() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         active_hint = fl!("window-management-appearance", "active-hint");
         gaps = fl!("window-management-appearance", "gaps");
-        blur = fl!("window-management-appearance", "blur");
-        none = fl!("window-management-appearance", "none");
     });
 
     Section::default()
@@ -861,29 +914,6 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         Message::GapSize,
                     )),
                 )
-                // blur slider
-                .add(settings::item::builder(&descriptions[blur]).flex_control({
-                    // TODO custom discrete slider variant
-                    row::with_children(vec![
-                        text::body(&descriptions[none]).into(),
-                        slider(
-                            0..=14,
-                            page.theme_manager
-                                .builder()
-                                .frosted
-                                .as_ref()
-                                .map_or(0, |f| *f as u8),
-                            Message::Blur,
-                        )
-                        .width(Length::Fill)
-                        .apply(cosmic::widget::container)
-                        .max_width(250)
-                        .into(),
-                    ])
-                    .align_y(Alignment::Center)
-                    .spacing(8)
-                    .width(Length::Fill)
-                }))
                 .apply(Element::from)
                 .map(crate::pages::Message::Appearance)
         })
