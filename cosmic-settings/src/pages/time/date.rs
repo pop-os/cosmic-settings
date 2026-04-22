@@ -8,7 +8,7 @@ use cosmic::{
     cosmic_config::{self, ConfigGet, ConfigSet},
     iced::core::text::Wrapping,
     surface,
-    widget::{self, dropdown, list, settings},
+    widget::{self, dropdown, settings},
 };
 use cosmic_settings_page::{self as page, Section, section};
 use icu::{
