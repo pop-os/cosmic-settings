@@ -7,7 +7,7 @@ use std::sync::Arc;
 use crate::widget::selection_context_item;
 use cosmic::app::{ContextDrawer, context_drawer};
 use cosmic::iced::{Alignment, Length};
-use cosmic::widget::{self, button, list};
+use cosmic::widget::{self, button};
 use cosmic::{Apply, Element};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_page::Section;
