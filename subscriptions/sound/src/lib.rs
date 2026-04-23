@@ -520,6 +520,15 @@ impl Model {
                 if active_device == Some(id) {
                     for (node_id, &device) in &self.device_ids {
                         if device == id && node_ids.contains(&node_id) {
+                            // Match the route to the correct node via card_profile_device,
+                            // so that devices with multiple nodes (e.g. multi-HDMI cards)
+                            // don't get their active sink switched to a wrong node.
+                            if let Some(&cpd) = self.card_profile_devices.get(node_id) {
+                                if !route.devices.contains(&(cpd as i32)) {
+                                    continue;
+                                }
+                            }
+
                             set_default_node(self, node_id);
                             break;
                         }
