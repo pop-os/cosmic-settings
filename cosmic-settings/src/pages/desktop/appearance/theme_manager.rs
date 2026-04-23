@@ -524,12 +524,7 @@ impl ThemeCustomizer {
         let builder = &mut self.builder.0;
         let mut gaps = builder.gaps;
 
-        // Ensure that the gap is never less than what the active hint size is.
-        gaps.1 = if gap < builder.active_hint {
-            builder.active_hint
-        } else {
-            gap
-        };
+        gaps.1 = gap;
 
         if let Err(err) = builder.set_gaps(config, gaps) {
             tracing::error!(?err, "Error setting the gap");
@@ -550,7 +545,8 @@ impl ThemeCustomizer {
             return None;
         }
 
-        // Update the gap if it's less than the active hint
+        // Update the gap if it's less than the active hint.
+        // The user can still undo this if they wish.
         if active_hint > builder.gaps.1 {
             let mut gaps = builder.gaps;
             gaps.1 = active_hint;
