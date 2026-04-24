@@ -555,12 +555,14 @@ impl Page {
                 self.service_is_active = service_manager::is_bluetooth_active()
                     .unwrap_or_else(|err| {
                         tracing::warn!("Failed to check bluetooth service status: {}", err);
-                        true // Assume active if we can't check
+                        // Fail open to avoid blocking the UI when service manager is unavailable
+                        true
                     });
                 self.service_is_enabled = service_manager::is_bluetooth_enabled()
                     .unwrap_or_else(|err| {
                         tracing::warn!("Failed to check if bluetooth service is enabled: {}", err);
-                        true // Assume enabled if we can't check
+                        // Fail open to avoid blocking the UI when service manager is unavailable
+                        true
                     });
                 self.connection = Some(connection.clone());
 
@@ -1067,14 +1069,13 @@ mod service_manager {
                     Ok(())
                 }
                 InitSystem::OpenRC => {
-                    // Enable in default runlevel
                     tokio::process::Command::new("pkexec")
                         .args(["rc-update", "add", "bluetooth", "default"])
                         .status()
                         .await
                         .map_err(|_| ServiceError::CommandFailed)?;
 
-                    // Also start it now (equivalent to systemctl enable --now)
+                    // Match systemctl enable --now behavior
                     tokio::process::Command::new("pkexec")
                         .args(["rc-service", "bluetooth", "start"])
                         .status()
