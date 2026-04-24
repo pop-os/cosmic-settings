@@ -15,21 +15,19 @@ fn main() {
     match (has_systemd, has_openrc) {
         (true, true) => {
             println!("cargo:warning=Building with both systemd and OpenRC support (runtime detection enabled)");
-            println!("cargo:rerun-if-changed=build.rs");
         }
         (false, false) => {
             println!("cargo:warning=No init system features enabled - no init system support at runtime");
-            println!("cargo:rerun-if-changed=build.rs");
         }
         (true, false) => {
             println!("cargo:warning=Building with systemd support only (OpenRC will be unsupported at runtime)");
-            println!("cargo:rerun-if-changed=build.rs");
         }
         (false, true) => {
             println!("cargo:warning=Building with OpenRC support only (systemd will be unsupported at runtime)");
-            println!("cargo:rerun-if-changed=build.rs");
         }
     }
+
+    println!("cargo:rerun-if-changed=build.rs");
 
     let ctx = Context::new("../i18n", env::var("CARGO_PKG_NAME").unwrap()).unwrap();
 
