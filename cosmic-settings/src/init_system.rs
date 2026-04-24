@@ -52,29 +52,6 @@ fn has_openrc() -> bool {
     which::which("rc-service").is_ok() && which::which("rc-update").is_ok()
 }
 
-/// Detects init system from the PID 1 executable path
-/// This is exposed for testing purposes
-///
-/// systemd is always supported. OpenRC is supported when the openrc feature is enabled.
-/// Uses strict matching on the basename of the executable to avoid false positives.
-fn detect_from_pid1_exe(exe_path: &str) -> Option<InitSystem> {
-    use std::path::Path;
-
-    // Strict basename matching prevents false positives from directory names
-    let basename = Path::new(exe_path).file_name().and_then(|s| s.to_str())?;
-
-    if basename == "systemd" {
-        return Some(InitSystem::Systemd);
-    }
-
-    #[cfg(feature = "openrc")]
-    if basename == "openrc-init" {
-        return Some(InitSystem::OpenRC);
-    }
-
-    None
-}
-
 /// Detects the init system currently running on the host by checking for service management tools
 ///
 /// This checks for the presence of service management commands (systemctl, rc-service, rc-update)
@@ -121,94 +98,5 @@ mod tests {
     fn test_has_openrc_returns_bool() {
         let result = has_openrc();
         assert!(result == true || result == false, "must return a boolean value");
-    }
-
-    #[test]
-    fn test_detect_from_pid1_exe_systemd() {
-        let result = detect_from_pid1_exe("/usr/lib/systemd/systemd");
-        assert_eq!(result, Some(InitSystem::Systemd));
-    }
-
-    #[test]
-    fn test_detect_from_pid1_exe_systemd_sbin() {
-        let result = detect_from_pid1_exe("/sbin/init -> /lib/systemd/systemd");
-        assert_eq!(result, Some(InitSystem::Systemd));
-    }
-
-    #[test]
-    #[cfg(feature = "openrc")]
-    fn test_detect_from_pid1_exe_openrc() {
-        let result = detect_from_pid1_exe("/sbin/openrc-init");
-        assert_eq!(result, Some(InitSystem::OpenRC));
-    }
-
-    #[test]
-    fn test_detect_from_pid1_exe_unknown() {
-        let result = detect_from_pid1_exe("/sbin/runit");
-        assert_eq!(result, None);
-    }
-
-    #[test]
-    fn test_detect_from_pid1_exe_false_positive_systemd_in_path() {
-        let result = detect_from_pid1_exe("/opt/systemd-tools/bin/myinit");
-        assert_eq!(result, None, "should not match systemd in directory name");
-    }
-
-    #[test]
-    fn test_detect_from_pid1_exe_false_positive_openrc_in_path() {
-        let result = detect_from_pid1_exe("/usr/openrc-backups/bin/init");
-        assert_eq!(result, None, "should not match openrc in directory name");
-    }
-
-    #[test]
-    fn test_detect_from_pid1_exe_systemd_exact_match() {
-        assert_eq!(
-            detect_from_pid1_exe("/usr/lib/systemd/systemd"),
-            Some(InitSystem::Systemd)
-        );
-        assert_eq!(
-            detect_from_pid1_exe("/lib/systemd/systemd"),
-            Some(InitSystem::Systemd)
-        );
-        assert_eq!(
-            detect_from_pid1_exe("/sbin/systemd"),
-            Some(InitSystem::Systemd)
-        );
-    }
-
-    #[test]
-    #[cfg(feature = "openrc")]
-    fn test_detect_from_pid1_exe_openrc_exact_match() {
-        assert_eq!(
-            detect_from_pid1_exe("/sbin/openrc-init"),
-            Some(InitSystem::OpenRC)
-        );
-        assert_eq!(
-            detect_from_pid1_exe("/usr/sbin/openrc-init"),
-            Some(InitSystem::OpenRC)
-        );
-    }
-
-    #[test]
-    fn test_detect_from_pid1_exe_systemd_always_enabled() {
-        let result = detect_from_pid1_exe("/usr/lib/systemd/systemd");
-        assert_eq!(result, Some(InitSystem::Systemd));
-    }
-
-    #[test]
-    #[cfg(feature = "openrc")]
-    fn test_detect_from_pid1_exe_openrc_when_feature_enabled() {
-        let result = detect_from_pid1_exe("/sbin/openrc-init");
-        assert_eq!(result, Some(InitSystem::OpenRC));
-    }
-
-    #[test]
-    #[cfg(not(feature = "openrc"))]
-    fn test_detect_from_pid1_exe_openrc_when_feature_disabled() {
-        let result = detect_from_pid1_exe("/sbin/openrc-init");
-        assert_eq!(
-            result, None,
-            "openrc should not be detected when feature is disabled"
-        );
     }
 }
