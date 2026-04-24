@@ -24,13 +24,14 @@ fn detect_from_pid1_exe(exe_path: &str) -> Option<InitSystem> {
     }
 }
 
-/// Detects the init system currently running on the host
+/// Detects the init system currently running on the host by checking /proc/1/exe
+/// 
+/// This reads the symlink at /proc/1/exe to determine what executable is running
+/// as PID 1 (the init system), which is the most reliable detection method.
 pub fn detect_init_system() -> InitSystem {
     use std::fs;
-    use std::path::Path;
     
-    // Method 1: Check /proc/1/exe to see what's actually running as PID 1
-    // This is the most reliable method
+    // Check /proc/1/exe to see what's actually running as PID 1
     if let Ok(pid1_exe) = fs::read_link("/proc/1/exe") {
         if let Some(exe_str) = pid1_exe.to_str() {
             if let Some(init_system) = detect_from_pid1_exe(exe_str) {
@@ -39,20 +40,7 @@ pub fn detect_init_system() -> InitSystem {
         }
     }
     
-    // Method 2: Fall back to checking for characteristic runtime directories
-    // This handles cases where /proc/1/exe can't be read or is ambiguous
-    
-    // Check for systemd - look for /run/systemd/system directory
-    if Path::new("/run/systemd/system").exists() {
-        return InitSystem::Systemd;
-    }
-    
-    // Check for OpenRC - look for /run/openrc directory
-    if Path::new("/run/openrc").exists() {
-        return InitSystem::OpenRC;
-    }
-    
-    // No supported init system detected
+    // If we can't read /proc/1/exe or don't recognize the init system
     InitSystem::Unsupported
 }
 
