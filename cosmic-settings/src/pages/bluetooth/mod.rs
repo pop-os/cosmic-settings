@@ -1034,20 +1034,30 @@ mod service_manager {
         async {
             match detect_init_system() {
                 InitSystem::Systemd => {
-                    tokio::process::Command::new("pkexec")
+                    let status = tokio::process::Command::new("pkexec")
                         .args(["systemctl", "start", "bluetooth"])
                         .status()
                         .await
                         .map_err(|_| ServiceError::CommandFailed)?;
-                    Ok(())
+
+                    if status.success() {
+                        Ok(())
+                    } else {
+                        Err(ServiceError::CommandFailed)
+                    }
                 }
                 InitSystem::OpenRC => {
-                    tokio::process::Command::new("pkexec")
+                    let status = tokio::process::Command::new("pkexec")
                         .args(["rc-service", "bluetooth", "start"])
                         .status()
                         .await
                         .map_err(|_| ServiceError::CommandFailed)?;
-                    Ok(())
+
+                    if status.success() {
+                        Ok(())
+                    } else {
+                        Err(ServiceError::CommandFailed)
+                    }
                 }
                 InitSystem::Unsupported => {
                     tracing::error!(
@@ -1063,27 +1073,41 @@ mod service_manager {
         async {
             match detect_init_system() {
                 InitSystem::Systemd => {
-                    tokio::process::Command::new("pkexec")
+                    let status = tokio::process::Command::new("pkexec")
                         .args(["systemctl", "enable", "--now", "bluetooth"])
                         .status()
                         .await
                         .map_err(|_| ServiceError::CommandFailed)?;
-                    Ok(())
+
+                    if status.success() {
+                        Ok(())
+                    } else {
+                        Err(ServiceError::CommandFailed)
+                    }
                 }
                 InitSystem::OpenRC => {
-                    tokio::process::Command::new("pkexec")
+                    let status = tokio::process::Command::new("pkexec")
                         .args(["rc-update", "add", "bluetooth", "default"])
                         .status()
                         .await
                         .map_err(|_| ServiceError::CommandFailed)?;
 
+                    if !status.success() {
+                        return Err(ServiceError::CommandFailed);
+                    }
+
                     // Match systemctl enable --now behavior
-                    tokio::process::Command::new("pkexec")
+                    let status = tokio::process::Command::new("pkexec")
                         .args(["rc-service", "bluetooth", "start"])
                         .status()
                         .await
                         .map_err(|_| ServiceError::CommandFailed)?;
-                    Ok(())
+
+                    if status.success() {
+                        Ok(())
+                    } else {
+                        Err(ServiceError::CommandFailed)
+                    }
                 }
                 InitSystem::Unsupported => {
                     tracing::error!(
