@@ -113,10 +113,11 @@ git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
-default = ["a11y", "linux", "single-instance", "wgpu", "systemd"]
+default = ["a11y", "linux", "single-instance", "wgpu"]
 gettext = ["dep:gettext-rs"]
 
 # Init system support (mutually exclusive - enforced via build.rs)
+# If neither is specified, build.rs will auto-select systemd for backward compatibility
 systemd = []
 openrc = []
 

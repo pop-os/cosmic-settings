@@ -14,28 +14,22 @@ fn main() {
                 These features are mutually exclusive. Please enable only one.\n\n\
                 Examples:\n\
                   cargo build --features systemd\n\
-                  cargo build --no-default-features --features openrc,a11y,linux,single-instance,wgpu\n\
+                  cargo build --features openrc\n\
                 \n"
             );
         }
         (false, false) => {
-            panic!(
-                "\n\n\
-                ERROR: No init system feature enabled.\n\
-                You must enable either 'systemd' or 'openrc'.\n\n\
-                Examples:\n\
-                  cargo build --features systemd (or just use defaults)\n\
-                  cargo build --no-default-features --features openrc,a11y,linux,single-instance,wgpu\n\
-                \n"
-            );
+            // Auto-select systemd for backward compatibility when neither is specified
+            println!("cargo:warning=No init system specified, defaulting to systemd");
+            println!("cargo:rustc-cfg=feature=\"systemd\"");
+            println!("cargo:rerun-if-changed=build.rs");
         }
-        _ => {
-            // Exactly one init system is enabled - this is correct
-            if has_systemd {
-                println!("cargo:warning=Building with systemd init system support");
-            } else {
-                println!("cargo:warning=Building with OpenRC init system support");
-            }
+        (true, false) => {
+            println!("cargo:warning=Building with systemd init system support");
+            println!("cargo:rerun-if-changed=build.rs");
+        }
+        (false, true) => {
+            println!("cargo:warning=Building with OpenRC init system support");
             println!("cargo:rerun-if-changed=build.rs");
         }
     }

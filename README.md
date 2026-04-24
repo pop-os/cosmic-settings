@@ -25,22 +25,23 @@ cosmic-settings supports both systemd and OpenRC init systems. The init system i
 
 #### systemd (default)
 
+When no init system is specified, systemd is automatically selected:
+
 ```sh
 just
-# or explicitly with cargo:
+# or with cargo:
 cargo build --release
 ```
 
 #### OpenRC
 
-When building for OpenRC-based distributions (e.g., Gentoo):
+For OpenRC-based distributions (e.g., Gentoo):
 
 ```sh
-cargo build --release --no-default-features \
-  --features openrc,a11y,linux,single-instance,wgpu
+cargo build --release --features openrc
 ```
 
-**Note:** Only one init system can be enabled at a time. The build will fail with a clear error message if both are enabled or if neither is enabled.
+**Note:** Only one init system can be enabled at a time. The build will fail with a clear error message if both `systemd` and `openrc` features are explicitly enabled together.
 
 ### Install
 
