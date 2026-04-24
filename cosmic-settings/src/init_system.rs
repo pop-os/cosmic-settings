@@ -17,16 +17,22 @@ pub enum InitSystem {
 
 /// Detects init system from the PID 1 executable path
 /// This is exposed for testing purposes
+/// 
+/// Only returns init systems that are enabled via cargo features.
 fn detect_from_pid1_exe(exe_path: &str) -> Option<InitSystem> {
     let exe_lower = exe_path.to_lowercase();
     
+    #[cfg(feature = "systemd")]
     if exe_lower.contains("systemd") {
-        Some(InitSystem::Systemd)
-    } else if exe_lower.contains("openrc") {
-        Some(InitSystem::OpenRC)
-    } else {
-        None
+        return Some(InitSystem::Systemd);
     }
+    
+    #[cfg(feature = "openrc")]
+    if exe_lower.contains("openrc") {
+        return Some(InitSystem::OpenRC);
+    }
+    
+    None
 }
 
 /// Detects the init system currently running on the host by checking /proc/1/exe
@@ -123,5 +129,37 @@ mod tests {
         let (program, args) = get_service_start_command(InitSystem::Unsupported, "bluetooth");
         assert_eq!(program, "");
         assert!(args.is_empty());
+    }
+
+    #[test]
+    #[cfg(feature = "systemd")]
+    fn test_detect_from_pid1_exe_systemd_when_feature_enabled() {
+        // When systemd feature is enabled, systemd should be detected
+        let result = detect_from_pid1_exe("/usr/lib/systemd/systemd");
+        assert_eq!(result, Some(InitSystem::Systemd));
+    }
+
+    #[test]
+    #[cfg(feature = "openrc")]
+    fn test_detect_from_pid1_exe_openrc_when_feature_enabled() {
+        // When openrc feature is enabled, OpenRC should be detected
+        let result = detect_from_pid1_exe("/sbin/openrc-init");
+        assert_eq!(result, Some(InitSystem::OpenRC));
+    }
+
+    #[test]
+    #[cfg(all(not(feature = "systemd"), feature = "openrc"))]
+    fn test_detect_from_pid1_exe_systemd_when_feature_disabled() {
+        // When systemd feature is NOT enabled, systemd should NOT be detected
+        let result = detect_from_pid1_exe("/usr/lib/systemd/systemd");
+        assert_eq!(result, None, "systemd should not be detected when feature is disabled");
+    }
+
+    #[test]
+    #[cfg(all(feature = "systemd", not(feature = "openrc")))]
+    fn test_detect_from_pid1_exe_openrc_when_feature_disabled() {
+        // When openrc feature is NOT enabled, OpenRC should NOT be detected
+        let result = detect_from_pid1_exe("/sbin/openrc-init");
+        assert_eq!(result, None, "openrc should not be detected when feature is disabled");
     }
 }

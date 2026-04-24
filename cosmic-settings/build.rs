@@ -2,8 +2,12 @@ use std::{env, fs, path::PathBuf};
 use xdgen::{App, Context, FluentString};
 
 fn main() {
-    // Init system features are no longer mutually exclusive.
-    // Runtime detection is now used to determine which init system to use.
+    // Init system features control which init systems are supported at runtime.
+    // Features can be combined or used individually:
+    //   - Both enabled: Runtime detection supports both systemd and OpenRC
+    //   - Only systemd: Only systemd can be detected, OpenRC returns Unsupported
+    //   - Only openrc: Only OpenRC can be detected, systemd returns Unsupported
+    //   - Neither: Auto-enable both for backward compatibility
     let has_systemd = cfg!(feature = "systemd");
     let has_openrc = cfg!(feature = "openrc");
 
@@ -20,11 +24,11 @@ fn main() {
             println!("cargo:rerun-if-changed=build.rs");
         }
         (true, false) => {
-            println!("cargo:warning=Building with systemd init system support only");
+            println!("cargo:warning=Building with systemd support only (OpenRC will be unsupported at runtime)");
             println!("cargo:rerun-if-changed=build.rs");
         }
         (false, true) => {
-            println!("cargo:warning=Building with OpenRC init system support only");
+            println!("cargo:warning=Building with OpenRC support only (systemd will be unsupported at runtime)");
             println!("cargo:rerun-if-changed=build.rs");
         }
     }
