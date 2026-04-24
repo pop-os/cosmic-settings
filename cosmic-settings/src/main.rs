@@ -12,6 +12,7 @@ use std::str::FromStr;
 
 pub use app::{Message, SettingsApp};
 pub mod config;
+pub mod init_system;
 
 #[macro_use]
 pub mod localize;
