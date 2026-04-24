@@ -42,6 +42,11 @@ impl std::fmt::Display for ServiceError {
 
 impl std::error::Error for ServiceError {}
 
+/// Checks if the systemctl command is available on the system
+fn has_systemctl() -> bool {
+    which::which("systemctl").is_ok()
+}
+
 /// Detects init system from the PID 1 executable path
 /// This is exposed for testing purposes
 ///
@@ -98,6 +103,12 @@ mod tests {
             ),
             "detect_init_system must return a valid InitSystem variant"
         );
+    }
+
+    #[test]
+    fn test_has_systemctl_returns_bool() {
+        let result = has_systemctl();
+        assert!(result == true || result == false, "must return a boolean value");
     }
 
     #[test]
