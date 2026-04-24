@@ -113,12 +113,12 @@ git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
-default = ["a11y", "linux", "single-instance", "wgpu", "systemd", "openrc"]
+default = ["a11y", "linux", "single-instance", "wgpu"]
 gettext = ["dep:gettext-rs"]
 
 # Init system support (no longer mutually exclusive - runtime detection enabled)
 # Both features can be enabled simultaneously for maximum compatibility.
-# Must be explicitly enabled - no auto-enable behavior.
+# Must be explicitly specified - not included in default features.
 # Runtime detection determines which init system commands to use.
 systemd = []
 openrc = []

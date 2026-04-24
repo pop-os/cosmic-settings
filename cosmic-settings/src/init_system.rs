@@ -80,6 +80,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "systemd")]
     fn test_detect_from_pid1_exe_systemd() {
         // Test detection when /proc/1/exe points to systemd
         let result = detect_from_pid1_exe("/usr/lib/systemd/systemd");
@@ -87,6 +88,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "systemd")]
     fn test_detect_from_pid1_exe_systemd_sbin() {
         // Test detection when systemd is in /sbin
         let result = detect_from_pid1_exe("/sbin/init -> /lib/systemd/systemd");
@@ -94,6 +96,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "openrc")]
     fn test_detect_from_pid1_exe_openrc() {
         // Test detection when /proc/1/exe points to openrc-init
         let result = detect_from_pid1_exe("/sbin/openrc-init");
