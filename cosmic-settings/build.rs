@@ -2,34 +2,29 @@ use std::{env, fs, path::PathBuf};
 use xdgen::{App, Context, FluentString};
 
 fn main() {
-    // Check for mutually exclusive init system features
+    // Init system features are no longer mutually exclusive.
+    // Runtime detection is now used to determine which init system to use.
     let has_systemd = cfg!(feature = "systemd");
     let has_openrc = cfg!(feature = "openrc");
 
     match (has_systemd, has_openrc) {
         (true, true) => {
-            panic!(
-                "\n\n\
-                ERROR: Both 'systemd' and 'openrc' features are enabled.\n\
-                These features are mutually exclusive. Please enable only one.\n\n\
-                Examples:\n\
-                  cargo build --features systemd\n\
-                  cargo build --features openrc\n\
-                \n"
-            );
+            println!("cargo:warning=Building with both systemd and OpenRC support (runtime detection enabled)");
+            println!("cargo:rerun-if-changed=build.rs");
         }
         (false, false) => {
-            // Auto-select systemd for backward compatibility when neither is specified
-            println!("cargo:warning=No init system specified, defaulting to systemd");
+            // Auto-enable both features for backward compatibility
+            println!("cargo:warning=No init system features specified, enabling both systemd and OpenRC (runtime detection)");
             println!("cargo:rustc-cfg=feature=\"systemd\"");
+            println!("cargo:rustc-cfg=feature=\"openrc\"");
             println!("cargo:rerun-if-changed=build.rs");
         }
         (true, false) => {
-            println!("cargo:warning=Building with systemd init system support");
+            println!("cargo:warning=Building with systemd init system support only");
             println!("cargo:rerun-if-changed=build.rs");
         }
         (false, true) => {
-            println!("cargo:warning=Building with OpenRC init system support");
+            println!("cargo:warning=Building with OpenRC init system support only");
             println!("cargo:rerun-if-changed=build.rs");
         }
     }

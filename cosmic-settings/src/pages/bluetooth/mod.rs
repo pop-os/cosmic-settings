@@ -1012,85 +1012,110 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-#[cfg(feature = "systemd")]
 mod service_manager {
+    use crate::init_system::{detect_init_system, InitSystem};
     use futures::FutureExt;
     use std::future::Future;
 
     pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "start", "bluetooth"])
-            .status()
-            .map(|_| ())
-    }
-
-    pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "enable", "--now", "bluetooth"])
-            .status()
-            .map(|_| ())
-    }
-
-    pub fn is_bluetooth_active() -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-active", "bluetooth"])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
-    }
-
-    pub fn is_bluetooth_enabled() -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-enabled", "bluetooth"])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
-    }
-}
-
-#[cfg(feature = "openrc")]
-mod service_manager {
-    use futures::FutureExt;
-    use std::future::Future;
-
-    pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["rc-service", "bluetooth", "start"])
-            .status()
-            .map(|_| ())
+        async {
+            match detect_init_system() {
+                InitSystem::Systemd => {
+                    tokio::process::Command::new("pkexec")
+                        .args(["systemctl", "start", "bluetooth"])
+                        .status()
+                        .await
+                        .ok();
+                }
+                InitSystem::OpenRC => {
+                    tokio::process::Command::new("pkexec")
+                        .args(["rc-service", "bluetooth", "start"])
+                        .status()
+                        .await
+                        .ok();
+                }
+                InitSystem::Unsupported => {
+                    tracing::warn!("Unsupported init system detected, cannot activate bluetooth service");
+                }
+            }
+        }
     }
 
     pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
         async {
-            // Enable in default runlevel
-            tokio::process::Command::new("pkexec")
-                .args(["rc-update", "add", "bluetooth", "default"])
-                .status()
-                .await
-                .ok();
+            match detect_init_system() {
+                InitSystem::Systemd => {
+                    tokio::process::Command::new("pkexec")
+                        .args(["systemctl", "enable", "--now", "bluetooth"])
+                        .status()
+                        .await
+                        .ok();
+                }
+                InitSystem::OpenRC => {
+                    // Enable in default runlevel
+                    tokio::process::Command::new("pkexec")
+                        .args(["rc-update", "add", "bluetooth", "default"])
+                        .status()
+                        .await
+                        .ok();
 
-            // Also start it now (equivalent to systemctl enable --now)
-            tokio::process::Command::new("pkexec")
-                .args(["rc-service", "bluetooth", "start"])
-                .status()
-                .await
-                .ok();
+                    // Also start it now (equivalent to systemctl enable --now)
+                    tokio::process::Command::new("pkexec")
+                        .args(["rc-service", "bluetooth", "start"])
+                        .status()
+                        .await
+                        .ok();
+                }
+                InitSystem::Unsupported => {
+                    tracing::warn!("Unsupported init system detected, cannot enable bluetooth service");
+                }
+            }
         }
     }
 
     pub fn is_bluetooth_active() -> bool {
-        std::process::Command::new("rc-service")
-            .args(["bluetooth", "status"])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+        match detect_init_system() {
+            InitSystem::Systemd => {
+                std::process::Command::new("systemctl")
+                    .args(["is-active", "bluetooth"])
+                    .status()
+                    .map(|status| status.success())
+                    .unwrap_or(true)
+            }
+            InitSystem::OpenRC => {
+                std::process::Command::new("rc-service")
+                    .args(["bluetooth", "status"])
+                    .status()
+                    .map(|status| status.success())
+                    .unwrap_or(true)
+            }
+            InitSystem::Unsupported => {
+                tracing::warn!("Unsupported init system detected, cannot check bluetooth service status");
+                true
+            }
+        }
     }
 
     pub fn is_bluetooth_enabled() -> bool {
-        std::process::Command::new("rc-update")
-            .args(["show", "default"])
-            .output()
-            .map(|output| String::from_utf8_lossy(&output.stdout).contains("bluetooth"))
-            .unwrap_or(true)
+        match detect_init_system() {
+            InitSystem::Systemd => {
+                std::process::Command::new("systemctl")
+                    .args(["is-enabled", "bluetooth"])
+                    .status()
+                    .map(|status| status.success())
+                    .unwrap_or(true)
+            }
+            InitSystem::OpenRC => {
+                std::process::Command::new("rc-update")
+                    .args(["show", "default"])
+                    .output()
+                    .map(|output| String::from_utf8_lossy(&output.stdout).contains("bluetooth"))
+                    .unwrap_or(true)
+            }
+            InitSystem::Unsupported => {
+                tracing::warn!("Unsupported init system detected, cannot check if bluetooth service is enabled");
+                true
+            }
+        }
     }
 }
