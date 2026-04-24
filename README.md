@@ -19,6 +19,29 @@ The accent palettes on the Appearance settings page are configurable through the
 
 See the `Build-Depends` section of the [debian control file](./debian/control).
 
+### Building for Different Init Systems
+
+cosmic-settings supports both systemd and OpenRC init systems. The init system is selected at compile time via Cargo features.
+
+#### systemd (default)
+
+```sh
+just
+# or explicitly with cargo:
+cargo build --release
+```
+
+#### OpenRC
+
+When building for OpenRC-based distributions (e.g., Gentoo):
+
+```sh
+cargo build --release --no-default-features \
+  --features openrc,a11y,linux,single-instance,wgpu
+```
+
+**Note:** Only one init system can be enabled at a time. The build will fail with a clear error message if both are enabled or if neither is enabled.
+
 ### Install
 
 COSMIC uses [just][just] as its preferred build tool.
