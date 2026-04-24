@@ -162,4 +162,15 @@ mod tests {
         let result = detect_from_pid1_exe("/sbin/openrc-init");
         assert_eq!(result, None, "openrc should not be detected when feature is disabled");
     }
+
+    #[test]
+    #[cfg(all(not(feature = "systemd"), not(feature = "openrc")))]
+    fn test_detect_from_pid1_exe_no_features_enabled() {
+        // When no init system features are enabled, nothing should be detected
+        let systemd_result = detect_from_pid1_exe("/usr/lib/systemd/systemd");
+        assert_eq!(systemd_result, None, "systemd should not be detected when no features enabled");
+        
+        let openrc_result = detect_from_pid1_exe("/sbin/openrc-init");
+        assert_eq!(openrc_result, None, "openrc should not be detected when no features enabled");
+    }
 }

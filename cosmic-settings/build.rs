@@ -3,11 +3,12 @@ use xdgen::{App, Context, FluentString};
 
 fn main() {
     // Init system features control which init systems are supported at runtime.
-    // Features can be combined or used individually:
+    // Features must be explicitly enabled in Cargo.toml or via --features flag.
+    // They can be combined or used individually:
     //   - Both enabled: Runtime detection supports both systemd and OpenRC
     //   - Only systemd: Only systemd can be detected, OpenRC returns Unsupported
     //   - Only openrc: Only OpenRC can be detected, systemd returns Unsupported
-    //   - Neither: Auto-enable both for backward compatibility
+    //   - Neither enabled: No init system support (all return Unsupported)
     let has_systemd = cfg!(feature = "systemd");
     let has_openrc = cfg!(feature = "openrc");
 
@@ -17,10 +18,7 @@ fn main() {
             println!("cargo:rerun-if-changed=build.rs");
         }
         (false, false) => {
-            // Auto-enable both features for backward compatibility
-            println!("cargo:warning=No init system features specified, enabling both systemd and OpenRC (runtime detection)");
-            println!("cargo:rustc-cfg=feature=\"systemd\"");
-            println!("cargo:rustc-cfg=feature=\"openrc\"");
+            println!("cargo:warning=No init system features enabled - no init system support at runtime");
             println!("cargo:rerun-if-changed=build.rs");
         }
         (true, false) => {
