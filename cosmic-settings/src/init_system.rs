@@ -75,19 +75,20 @@ fn detect_from_pid1_exe(exe_path: &str) -> Option<InitSystem> {
     None
 }
 
-/// Detects the init system currently running on the host by checking /proc/1/exe
+/// Detects the init system currently running on the host by checking for service management tools
 ///
-/// This reads the symlink at /proc/1/exe to determine what executable is running
-/// as PID 1 (the init system), which is the most reliable detection method.
+/// This checks for the presence of service management commands (systemctl, rc-service, rc-update)
+/// to determine which init system is available. This is more reliable than checking /proc/1/exe
+/// because it detects the actual service manager you can use, not just what's running as PID 1.
+/// For example, Gentoo may have sysvinit at PID 1 but uses OpenRC for service management.
 pub fn detect_init_system() -> InitSystem {
-    use std::fs;
+    if has_systemctl() {
+        return InitSystem::Systemd;
+    }
 
-    if let Ok(pid1_exe) = fs::read_link("/proc/1/exe") {
-        if let Some(exe_str) = pid1_exe.to_str() {
-            if let Some(init_system) = detect_from_pid1_exe(exe_str) {
-                return init_system;
-            }
-        }
+    #[cfg(feature = "openrc")]
+    if has_openrc() {
+        return InitSystem::OpenRC;
     }
 
     InitSystem::Unsupported
