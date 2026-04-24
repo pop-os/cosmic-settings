@@ -28,20 +28,32 @@ fn detect_from_pid1_exe(exe_path: &str) -> Option<InitSystem> {
 /// 
 /// This reads the symlink at /proc/1/exe to determine what executable is running
 /// as PID 1 (the init system), which is the most reliable detection method.
+/// 
+/// On non-Linux platforms (where /proc doesn't exist), this always returns
+/// `InitSystem::Unsupported`.
 pub fn detect_init_system() -> InitSystem {
-    use std::fs;
-    
-    // Check /proc/1/exe to see what's actually running as PID 1
-    if let Ok(pid1_exe) = fs::read_link("/proc/1/exe") {
-        if let Some(exe_str) = pid1_exe.to_str() {
-            if let Some(init_system) = detect_from_pid1_exe(exe_str) {
-                return init_system;
+    #[cfg(target_os = "linux")]
+    {
+        use std::fs;
+        
+        // Check /proc/1/exe to see what's actually running as PID 1
+        if let Ok(pid1_exe) = fs::read_link("/proc/1/exe") {
+            if let Some(exe_str) = pid1_exe.to_str() {
+                if let Some(init_system) = detect_from_pid1_exe(exe_str) {
+                    return init_system;
+                }
             }
         }
+        
+        // If we can't read /proc/1/exe or don't recognize the init system
+        InitSystem::Unsupported
     }
     
-    // If we can't read /proc/1/exe or don't recognize the init system
-    InitSystem::Unsupported
+    #[cfg(not(target_os = "linux"))]
+    {
+        // Non-Linux platforms don't have /proc, so we always return Unsupported
+        InitSystem::Unsupported
+    }
 }
 
 /// Returns the command and arguments to start a service for the given init system
@@ -118,5 +130,14 @@ mod tests {
         let (program, args) = get_service_start_command(InitSystem::Unsupported, "bluetooth");
         assert_eq!(program, "");
         assert!(args.is_empty());
+    }
+
+    #[test]
+    #[cfg(not(target_os = "linux"))]
+    fn test_detect_init_system_non_linux_returns_unsupported() {
+        // On non-Linux platforms, detection should return Unsupported
+        // since /proc/1/exe doesn't exist
+        let init = detect_init_system();
+        assert_eq!(init, InitSystem::Unsupported);
     }
 }
