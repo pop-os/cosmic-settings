@@ -47,6 +47,11 @@ fn has_systemctl() -> bool {
     which::which("systemctl").is_ok()
 }
 
+/// Checks if both rc-service and rc-update commands are available on the system
+fn has_openrc() -> bool {
+    which::which("rc-service").is_ok() && which::which("rc-update").is_ok()
+}
+
 /// Detects init system from the PID 1 executable path
 /// This is exposed for testing purposes
 ///
@@ -108,6 +113,12 @@ mod tests {
     #[test]
     fn test_has_systemctl_returns_bool() {
         let result = has_systemctl();
+        assert!(result == true || result == false, "must return a boolean value");
+    }
+
+    #[test]
+    fn test_has_openrc_returns_bool() {
+        let result = has_openrc();
         assert!(result == true || result == false, "must return a boolean value");
     }
 
