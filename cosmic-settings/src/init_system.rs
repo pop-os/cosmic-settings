@@ -19,16 +19,22 @@ pub enum InitSystem {
 /// This is exposed for testing purposes
 /// 
 /// Only returns init systems that are enabled via cargo features.
+/// Uses strict matching on the basename of the executable to avoid false positives.
 fn detect_from_pid1_exe(exe_path: &str) -> Option<InitSystem> {
-    let exe_lower = exe_path.to_lowercase();
+    use std::path::Path;
+    
+    // Extract the basename (file name) from the path
+    let basename = Path::new(exe_path)
+        .file_name()
+        .and_then(|s| s.to_str())?;
     
     #[cfg(feature = "systemd")]
-    if exe_lower.contains("systemd") {
+    if basename == "systemd" {
         return Some(InitSystem::Systemd);
     }
     
     #[cfg(feature = "openrc")]
-    if exe_lower.contains("openrc") {
+    if basename == "openrc-init" {
         return Some(InitSystem::OpenRC);
     }
     
@@ -108,6 +114,37 @@ mod tests {
         // Test detection when PID 1 is something else (e.g., runit, s6, etc.)
         let result = detect_from_pid1_exe("/sbin/runit");
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_detect_from_pid1_exe_false_positive_systemd_in_path() {
+        // Should NOT match if "systemd" appears in a directory but not as the executable
+        let result = detect_from_pid1_exe("/opt/systemd-tools/bin/myinit");
+        assert_eq!(result, None, "should not match systemd in directory name");
+    }
+
+    #[test]
+    fn test_detect_from_pid1_exe_false_positive_openrc_in_path() {
+        // Should NOT match if "openrc" appears in a directory but not as the executable
+        let result = detect_from_pid1_exe("/usr/openrc-backups/bin/init");
+        assert_eq!(result, None, "should not match openrc in directory name");
+    }
+
+    #[test]
+    #[cfg(feature = "systemd")]
+    fn test_detect_from_pid1_exe_systemd_exact_match() {
+        // Should match exact systemd binary names
+        assert_eq!(detect_from_pid1_exe("/usr/lib/systemd/systemd"), Some(InitSystem::Systemd));
+        assert_eq!(detect_from_pid1_exe("/lib/systemd/systemd"), Some(InitSystem::Systemd));
+        assert_eq!(detect_from_pid1_exe("/sbin/systemd"), Some(InitSystem::Systemd));
+    }
+
+    #[test]
+    #[cfg(feature = "openrc")]
+    fn test_detect_from_pid1_exe_openrc_exact_match() {
+        // Should match exact OpenRC binary names
+        assert_eq!(detect_from_pid1_exe("/sbin/openrc-init"), Some(InitSystem::OpenRC));
+        assert_eq!(detect_from_pid1_exe("/usr/sbin/openrc-init"), Some(InitSystem::OpenRC));
     }
 
     #[test]
