@@ -274,7 +274,6 @@ pub enum Message {
     SelectAdapter(Option<OwnedObjectPath>),
     ServiceActivate,
     ServiceEnable,
-    ServiceError(String),
     SetActive(bool),
     UpdateStatus,
 }
@@ -695,46 +694,30 @@ impl Page {
 
             Message::ServiceActivate => {
                 return cosmic::task::future(async {
-                    match service_manager::activate_bluetooth().await {
-                        Ok(()) => {
-                            tokio::time::sleep(Duration::from_secs(3)).await;
+                    if let Err(err) = service_manager::activate_bluetooth().await {
+                        tracing::error!("Failed to activate bluetooth service: {}", err);
+                    }
+                    tokio::time::sleep(Duration::from_secs(3)).await;
 
-                            match zbus::Connection::system().await {
-                                Ok(connection) => Message::DBusConnect(connection),
-                                Err(why) => Message::DBusConnectFailed(why),
-                            }
-                        }
-                        Err(err) => {
-                            tracing::error!("Failed to activate bluetooth service: {}", err);
-                            Message::ServiceError(format!("Failed to start bluetooth service: {}", err))
-                        }
+                    match zbus::Connection::system().await {
+                        Ok(connection) => Message::DBusConnect(connection),
+                        Err(why) => Message::DBusConnectFailed(why),
                     }
                 });
             }
 
             Message::ServiceEnable => {
                 return cosmic::task::future(async {
-                    match service_manager::enable_bluetooth().await {
-                        Ok(()) => {
-                            tokio::time::sleep(Duration::from_secs(3)).await;
+                    if let Err(err) = service_manager::enable_bluetooth().await {
+                        tracing::error!("Failed to enable bluetooth service: {}", err);
+                    }
+                    tokio::time::sleep(Duration::from_secs(3)).await;
 
-                            match zbus::Connection::system().await {
-                                Ok(connection) => Message::DBusConnect(connection),
-                                Err(why) => Message::DBusConnectFailed(why),
-                            }
-                        }
-                        Err(err) => {
-                            tracing::error!("Failed to enable bluetooth service: {}", err);
-                            Message::ServiceError(format!("Failed to enable bluetooth service: {}", err))
-                        }
+                    match zbus::Connection::system().await {
+                        Ok(connection) => Message::DBusConnect(connection),
+                        Err(why) => Message::DBusConnectFailed(why),
                     }
                 });
-            }
-
-            Message::ServiceError(error_msg) => {
-                tracing::error!("Service error: {}", error_msg);
-                // Log the error - in a real implementation, this could show a dialog
-                // or notification to the user. For now, we just log it.
             }
 
             Message::DBusConnectFailed(why) => {
