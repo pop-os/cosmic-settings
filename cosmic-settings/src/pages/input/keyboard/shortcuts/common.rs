@@ -8,7 +8,7 @@ use cosmic::iced::keyboard::{Key, Location, Modifiers};
 use cosmic::iced::platform_specific::shell::wayland::commands::keyboard_shortcuts_inhibit;
 use cosmic::iced::platform_specific::shell::wayland::keymap;
 use cosmic::iced::{self, Alignment, Length};
-use cosmic::widget::{self, button, icon, settings, text};
+use cosmic::widget::{self, button, icon, list, settings, text};
 use cosmic::{Apply, Element, Task, theme};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::shortcuts::{self, Action, Binding, Shortcuts};
@@ -779,10 +779,7 @@ fn context_drawer<'a>(
     show_action: bool,
 ) -> Element<'a, ShortcutMessage> {
     let cosmic::cosmic_theme::Spacing {
-        space_xxs,
-        space_xs,
-        space_l,
-        ..
+        space_xs, space_l, ..
     } = theme::spacing();
 
     let model = &shortcuts[id];
@@ -798,7 +795,7 @@ fn context_drawer<'a>(
     });
 
     let bindings = model.bindings.iter().enumerate().fold(
-        widget::list_column().spacing(space_xxs),
+        widget::list_column(),
         |section, (_, (bind_id, shortcut))| {
             let editing = editing == Some(bind_id);
             let text: Cow<'_, str> = if !editing && shortcut.binding.is_set() {
@@ -868,13 +865,11 @@ fn context_drawer<'a>(
 }
 
 /// Display a shortcut as a list item
-fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<'_, ShortcutMessage> {
-    #[derive(Copy, Clone, Debug)]
-    enum LocalMessage {
-        Remove,
-        Show,
-    }
-
+fn shortcut_item(
+    custom: bool,
+    id: usize,
+    data: &ShortcutModel,
+) -> list::ListButton<'_, ShortcutMessage> {
     let bindings = data
         .bindings
         .iter()
@@ -883,7 +878,7 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<'_, S
         .map(|(_, shortcut)| text::body(shortcut.binding.to_string()).into())
         .collect::<Vec<_>>();
 
-    let shortcuts: Element<LocalMessage> = if bindings.is_empty() {
+    let shortcuts: Element<ShortcutMessage> = if bindings.is_empty() {
         text::body(fl!("disabled")).into()
     } else {
         widget::column::with_children(bindings)
@@ -903,7 +898,7 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<'_, S
         .push(icon::from_name("go-next-symbolic").size(16))
         .push_maybe(custom.then(|| {
             widget::button::icon(icon::from_name("edit-delete-symbolic"))
-                .on_press(LocalMessage::Remove)
+                .on_press(ShortcutMessage::DeleteShortcut(id))
         }))
         .align_y(Alignment::Center)
         .spacing(8);
@@ -912,14 +907,7 @@ fn shortcut_item(custom: bool, id: usize, data: &ShortcutModel) -> Element<'_, S
         .flex_control(control)
         .align_items(Alignment::Center)
         .spacing(16)
-        .apply(widget::container)
-        .class(theme::Container::List)
-        .apply(widget::button::custom)
-        .class(theme::Button::Transparent)
-        .on_press(LocalMessage::Show)
-        .apply(Element::from)
-        .map(move |message| match message {
-            LocalMessage::Show => ShortcutMessage::ShowShortcut(id, data.description.clone()),
-            LocalMessage::Remove => ShortcutMessage::DeleteShortcut(id),
-        })
+        .width(Length::Shrink)
+        .apply(list::button)
+        .on_press(ShortcutMessage::ShowShortcut(id, data.description.clone()))
 }

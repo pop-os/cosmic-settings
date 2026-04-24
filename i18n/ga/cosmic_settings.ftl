@@ -265,8 +265,8 @@ end-segment = Deighleog deireadh
 large = Mór
 no-applets-found = Níor aimsíodh feidhmchláiríní...
 panel-bottom = Bun
-panel-left = Clé
-panel-right = Deas
+panel-left = Ar chlé
+panel-right = Ar dheis
 panel-top = Barr
 search-applets = Cuardach feidhmchláiríní...
 small = Beag
@@ -518,8 +518,8 @@ migrate-workspace-next = Aistrigh spás oibre go dtí an chéad aschur eile
 migrate-workspace =
     Imirce spás oibre chuig aschur { $direction ->
        *[down] síos
-        [left] clé
-        [right] deas
+        [left] ar chlé
+        [right] ar dheis
         [up] suas
     }
 navigate = Nascleanúint
@@ -541,19 +541,19 @@ nav-shortcuts = Nascleanúint
     .prev-workspace = Fócas ar spás oibre roimhe seo
     .next-workspace = Fócas ar an gcéad spás oibre eile
     .focus =
-        Fuinneog fócais { $direction ->
+        Fócas fuinneog { $direction ->
            *[down] síos
             [in] isteach
-            [left] clé
+            [left] ar chlé
             [out] amach
-            [right] deas
+            [right] ar dheis
             [up] suas
         }
     .output =
         Athraigh chuig aschur { $direction ->
            *[down] síos
-            [left] clé
-            [right] deas
+            [left] ar chlé
+            [right] ar dheis
             [up] suas
         }
     .workspace = Athraigh go spás oibre { $num }
@@ -567,24 +567,24 @@ manage-windows = Bainistigh fuinneoga
     .toggle-sticky = Scoránaigh an fhuinneog greamaitheach
 move-windows = Bog fuinneoga
     .direction =
-        Bog Fuinneog { $direction ->
+        Bog an fhuinneog { $direction ->
            *[down] síos
-            [left] clé
-            [right] deas
+            [left] ar chlé
+            [right] ar dheis
             [up] suas
         }
     .display =
-        Bog fuinneog monatóir amháin { $direction ->
+        Bog an fhuinneog monatóir amháin { $direction ->
            *[down] síos
-            [left] clé
-            [right] deas
+            [left] ar chlé
+            [right] ar dheis
             [up] suas
         }
     .workspace =
-        Bog fuinneog spás oibre amháin { $direction ->
+        Bog an fhuinneog spás oibre amháin { $direction ->
            *[below] thíos
-            [left] clé
-            [right] deas
+            [left] ar chlé
+            [right] ar dheis
             [above] thuas
         }
     .workspace-num = Bog an fhuinneog go spás oibre { $num }
@@ -910,3 +910,4 @@ xdg-entry-date-time-comment = Crios ama, socruithe uathoibríocha cloig, agus fo
 xdg-entry-x11-applications = Comhoiriúnacht Feidhmchláir X11
 xdg-entry-window-management-comment = Gníomh na sár-eochrach, roghanna rialaithe fuinneoige, agus roghanna breise tíleála fuinneoige
 xdg-entry-wired-comment = Naisc sreangaithe agus próifílí nasc
+no-search-results = Níl aon líonra ag teacht leis an gcuardach seo.

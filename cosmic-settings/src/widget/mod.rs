@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use std::borrow::Cow;
+use std::rc::Rc;
 
 use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::{
-    self, ColorPickerModel, button, column, container, divider, icon, row, settings,
-    space::{horizontal as horizontal_space, vertical as vertical_space},
+    self, ColorPickerModel, button, column, container, divider, icon, list, row, settings,
+    space::{horizontal, vertical},
     text,
 };
 use cosmic::{Apply, Element, theme};
@@ -75,7 +76,7 @@ pub fn search_header<Message>(
             .into(),
     );
 
-    column_children.push(vertical_space().height(Length::Fixed(8.)).into());
+    column_children.push(vertical().height(Length::Fixed(8.)).into());
     column_children.push(divider::horizontal::heavy().into());
 
     column::with_children(column_children).into()
@@ -89,12 +90,12 @@ pub fn search_page_link<Message: 'static>(title: &str) -> button::TextButton<'_,
 pub fn page_title<Message: 'static>(page: &page::Info) -> Element<'_, Message> {
     row::with_capacity(2)
         .push(text::title3(page.title.as_str()))
-        .push(horizontal_space())
+        .push(horizontal())
         .into()
 }
 
 #[must_use]
-pub fn unimplemented_page<Message: 'static>() -> Element<'static, Message> {
+pub fn unimplemented_page<Message: Clone + 'static>() -> Element<'static, Message> {
     settings::section().title("")
         .add(text::body("We haven't created that panel yet, and/or it is using a similar idea as current Pop! designs."))
         .into()
@@ -184,50 +185,71 @@ pub fn sub_page_header<'a, Message: 'static + Clone>(
         .into()
 }
 
-pub fn go_next_item<Msg: Clone + 'static>(
+pub fn go_next_item<Msg: 'static>(
     description: &str,
     msg_opt: impl Into<Option<Msg>>,
-) -> cosmic::Element<'_, Msg> {
+) -> list::ListButton<'_, Msg> {
     settings::item_row(vec![
-        text::body(description).wrapping(Wrapping::Word).into(),
-        horizontal_space().into(),
+        text::body(description)
+            .width(Length::Fill)
+            .wrapping(Wrapping::Word)
+            .into(),
         icon::from_name("go-next-symbolic").size(16).icon().into(),
     ])
-    .width(Length::Fill)
-    .apply(widget::container)
-    .class(cosmic::theme::Container::List)
-    .width(Length::Fill)
-    .apply(button::custom)
-    .width(Length::Fill)
-    .padding(0)
-    .class(theme::Button::Transparent)
+    .apply(list::button)
     .on_press_maybe(msg_opt.into())
-    .into()
 }
 
-pub fn go_next_with_item<'a, Msg: Clone + 'static>(
+pub fn go_next_with_item<'a, Msg: 'static>(
     description: &'a str,
     item: impl Into<cosmic::Element<'a, Msg>>,
     msg_opt: impl Into<Option<Msg>>,
-) -> cosmic::Element<'a, Msg> {
+) -> list::ListButton<'a, Msg> {
     settings::item_row(vec![
-        text::body(description).wrapping(Wrapping::Word).into(),
-        horizontal_space().into(),
-        widget::row::with_capacity(2)
+        text::body(description)
+            .width(Length::Fill)
+            .wrapping(Wrapping::Word)
+            .into(),
+        row::with_capacity(2)
             .push(item)
             .push(icon::from_name("go-next-symbolic").size(16).icon())
             .align_y(Alignment::Center)
-            .spacing(cosmic::theme::spacing().space_s)
+            .spacing(theme::spacing().space_s)
             .into(),
     ])
-    .width(Length::Fill)
-    .apply(widget::container)
-    .class(cosmic::theme::Container::List)
-    .width(Length::Fill)
-    .apply(button::custom)
-    .padding(0)
-    .width(Length::Fill)
-    .class(theme::Button::Transparent)
+    .apply(list::button)
     .on_press_maybe(msg_opt.into())
-    .into()
+}
+
+pub fn selection_context_item<'a, Msg: 'static>(
+    name: &'a str,
+    selected: bool,
+    msg_opt: impl Into<Option<Msg>>,
+) -> list::ListButton<'a, Msg> {
+    let svg_accent = Rc::new(|theme: &cosmic::Theme| widget::svg::Style {
+        color: Some(theme.cosmic().accent_text_color().into()),
+    });
+
+    settings::item_row(vec![
+        text::body(name)
+            .class(if selected {
+                theme::Text::Accent
+            } else {
+                theme::Text::Default
+            })
+            .wrapping(Wrapping::Word)
+            .width(Length::Fill)
+            .into(),
+        if selected {
+            icon::from_name("object-select-symbolic")
+                .size(16)
+                .icon()
+                .class(theme::Svg::Custom(svg_accent.clone()))
+                .into()
+        } else {
+            horizontal().width(16.).into()
+        },
+    ])
+    .apply(list::button)
+    .on_press_maybe(msg_opt.into())
 }

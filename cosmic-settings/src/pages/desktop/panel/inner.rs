@@ -4,11 +4,8 @@ use cosmic::{
     cosmic_config::{self, CosmicConfigEntry},
     cosmic_theme::Density,
     iced::{Alignment, Length},
-    surface, theme,
-    widget::{
-        button, container, dropdown, icon, row, settings, slider,
-        space::horizontal as horizontal_space, text, toggler,
-    },
+    surface,
+    widget::{button, container, dropdown, row, settings, slider, space, text},
 };
 
 use cosmic::Apply;
@@ -27,6 +24,7 @@ pub struct PageInner {
     pub(crate) panel_config: Option<CosmicPanelConfig>,
     pub opacity: f32,
     pub opacity_changing: bool,
+    pub size: PanelSize,
     pub outputs: Vec<String>,
     pub anchors: Vec<String>,
     pub backgrounds: Vec<String>,
@@ -44,6 +42,7 @@ impl Default for PageInner {
             panel_config: Option::default(),
             opacity: 0.0,
             opacity_changing: false,
+            size: PanelSize::M,
             outputs: vec![fl!("all-displays")],
             anchors: vec![
                 Anchor(PanelAnchor::Left).to_string(),
@@ -119,10 +118,10 @@ pub(crate) fn behavior_and_position<
             };
             settings::section()
                 .title(&section.title)
-                .add(settings::item(
-                    &descriptions[autohide_label],
-                    toggler(panel_config.autohide.is_some()).on_toggle(Message::AutoHidePanel),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[autohide_label])
+                        .toggler(panel_config.autohide.is_some(), Message::AutoHidePanel),
+                )
                 .add(settings::item(
                     &descriptions[position],
                     dropdown::popup_dropdown(
@@ -180,14 +179,14 @@ pub(crate) fn style<
             };
             settings::section()
                 .title(&section.title)
-                .add(settings::item(
-                    &descriptions[gap_label],
-                    toggler(panel_config.anchor_gap).on_toggle(Message::AnchorGap),
-                ))
-                .add(settings::item(
-                    &descriptions[extend_label],
-                    toggler(panel_config.expand_to_edges).on_toggle(Message::ExtendToEdge),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[gap_label])
+                        .toggler(panel_config.anchor_gap, Message::AnchorGap),
+                )
+                .add(
+                    settings::item::builder(&descriptions[extend_label])
+                        .toggler(panel_config.expand_to_edges, Message::ExtendToEdge),
+                )
                 .add(settings::item(
                     &descriptions[appearance],
                     dropdown::popup_dropdown(
@@ -210,7 +209,7 @@ pub(crate) fn style<
                         text::body(fl!("small")).into(),
                         slider(
                             0..=4,
-                            match panel_config.size {
+                            match inner.size {
                                 PanelSize::XS => 0,
                                 PanelSize::S => 1,
                                 PanelSize::M => 2,
@@ -232,6 +231,7 @@ pub(crate) fn style<
                                 }
                             },
                         )
+                        .on_release(Message::PanelSizeCommit)
                         .width(Length::Fill)
                         .apply(cosmic::widget::container)
                         .max_width(250)
@@ -292,24 +292,10 @@ pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
                 .iter()
                 .find(|(_, v)| v.id == page.applets_page_id())
             {
-                let control = row::with_children(vec![
-                    horizontal_space().into(),
-                    icon::from_name("go-next-symbolic").size(16).into(),
-                ]);
-
-                settings.add(
-                    settings::item::builder(&*descriptions[applets_label])
-                        .control(control)
-                        .spacing(16)
-                        .width(Length::Fill)
-                        .apply(container)
-                        .class(theme::Container::List)
-                        .apply(button::custom)
-                        .width(Length::Fill)
-                        .class(theme::Button::Transparent)
-                        .width(Length::Fill)
-                        .on_press(crate::pages::Message::Page(panel_applets_entity)),
-                )
+                settings.add(crate::widget::go_next_item(
+                    &descriptions[applets_label],
+                    crate::pages::Message::Page(panel_applets_entity),
+                ))
             } else {
                 settings
             };
@@ -358,7 +344,7 @@ pub fn reset_button<
             let descriptions = &section.descriptions;
             let inner = page.inner();
             if inner.system_default == inner.panel_config {
-                Element::from(horizontal_space().width(1.))
+                Element::from(space())
             } else {
                 button::standard(&descriptions[reset_to_default])
                     .on_press(Message::ResetPanel)
@@ -437,6 +423,7 @@ pub enum Message {
     Output(usize),
     AnchorGap(bool),
     PanelSize(PanelSize),
+    PanelSizeCommit,
     Appearance(usize),
     ExtendToEdge(bool),
     OpacityRequest(f32),
@@ -517,6 +504,7 @@ impl PageInner {
                     if let Err(err) = default.write_entry(config) {
                         tracing::error!(?err, "Error resetting panel config.");
                     }
+                    self.size.clone_from(&default.size);
                     self.system_default = Some(default.clone());
                     self.panel_config.clone_from(&self.system_default);
                 } else {
@@ -615,7 +603,10 @@ impl PageInner {
                 _ = panel_config.set_border_radius(helper, new_radius).unwrap();
             }
             Message::PanelSize(size) => {
-                _ = panel_config.set_size(helper, size);
+                self.size = size;
+            }
+            Message::PanelSizeCommit => {
+                _ = panel_config.set_size(helper, self.size.clone());
                 // Reset any size overrides the user might have set
                 _ = panel_config.set_size_center(helper, None);
                 _ = panel_config.set_size_wings(helper, None);
@@ -678,6 +669,7 @@ impl PageInner {
                 }
             }
             Message::PanelConfig(c) => {
+                self.size = c.size.clone();
                 self.panel_config = Some(*c);
                 return Task::none();
             }

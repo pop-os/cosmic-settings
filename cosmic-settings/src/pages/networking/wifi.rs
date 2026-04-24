@@ -13,7 +13,7 @@ use cosmic::{
     iced::core::text::Wrapping,
     iced::{Alignment, Length, widget::operation::focus_next},
     task,
-    widget::{self, column, icon, space::horizontal as horizontal_space, text_input::focus},
+    widget::{self, column, icon, space::horizontal, text_input::focus},
 };
 use cosmic_settings_network_manager_subscription::{
     self as network_manager, NetworkManagerState,
@@ -195,7 +195,7 @@ impl page::Page<crate::pages::Message> for Page {
                     widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
 
                 let control: Element<_> = if let Some(identity) = identity {
-                    widget::Column::new()
+                    column::with_capacity(2)
                         .spacing(8)
                         .push(
                             widget::text_input::text_input(fl!("identity"), identity)
@@ -883,7 +883,7 @@ fn devices_view() -> Section<crate::pages::Message> {
             let spacing = cosmic::theme::spacing();
 
             let wifi_enable = widget::settings::item::builder(&section.descriptions[wifi_txt])
-                .control(widget::toggler(state.wifi_enabled).on_toggle(Message::WiFiEnable));
+                .toggler(state.wifi_enabled, Message::WiFiEnable);
 
             let mut view = widget::column::with_capacity(4)
                 .push(widget::list_column().add(wifi_enable))
@@ -1019,7 +1019,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                         let item = widget::settings::item_row(vec![
                             identifier.into(),
-                            horizontal_space().into(),
+                            horizontal().into(),
                             controls.into(),
                         ]);
 
@@ -1124,7 +1124,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                         let item = widget::settings::item_row(vec![
                             identifier.into(),
-                            horizontal_space().into(),
+                            horizontal().into(),
                             controls.into(),
                         ]);
 
@@ -1234,7 +1234,7 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                             let item = widget::settings::item_row(vec![
                                 identifier.into(),
-                                horizontal_space().into(),
+                                horizontal().into(),
                                 connect,
                             ]);
 
