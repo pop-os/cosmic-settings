@@ -1118,17 +1118,30 @@ mod service_manager {
     }
 
     pub fn is_bluetooth_active() -> Result<bool, ServiceError> {
-        match detect_init_system() {
+        let init_system = detect_init_system();
+        tracing::info!("Detected init system for bluetooth status check: {:?}", init_system);
+        
+        match init_system {
             InitSystem::Systemd => std::process::Command::new("systemctl")
                 .args(["is-active", "bluetooth"])
                 .status()
                 .map(|status| status.success())
                 .map_err(|_| ServiceError::StatusCheckFailed),
-            InitSystem::OpenRC => std::process::Command::new("rc-service")
-                .args(["bluetooth", "status"])
-                .status()
-                .map(|status| status.success())
-                .map_err(|_| ServiceError::StatusCheckFailed),
+            InitSystem::OpenRC => {
+                let output = std::process::Command::new("rc-service")
+                    .args(["bluetooth", "status"])
+                    .output()
+                    .map_err(|_| ServiceError::StatusCheckFailed)?;
+                
+                tracing::info!(
+                    "rc-service bluetooth status: exit_code={:?}, stdout={}, stderr={}",
+                    output.status.code(),
+                    String::from_utf8_lossy(&output.stdout),
+                    String::from_utf8_lossy(&output.stderr)
+                );
+                
+                Ok(output.status.success())
+            }
             InitSystem::Unsupported => {
                 tracing::error!(
                     "Unsupported init system detected, cannot check bluetooth service status"
