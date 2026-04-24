@@ -552,8 +552,8 @@ impl Page {
             }
 
             Message::DBusConnect(connection) => {
-                self.service_is_active = systemd::is_bluetooth_active();
-                self.service_is_enabled = systemd::is_bluetooth_enabled();
+                self.service_is_active = service_manager::is_bluetooth_active();
+                self.service_is_enabled = service_manager::is_bluetooth_enabled();
                 self.connection = Some(connection.clone());
 
                 let get_adapters_fut = get_adapters(connection.clone());
@@ -686,7 +686,7 @@ impl Page {
 
             Message::ServiceActivate => {
                 return cosmic::task::future(async {
-                    systemd::activate_bluetooth().await;
+                    service_manager::activate_bluetooth().await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -698,7 +698,7 @@ impl Page {
 
             Message::ServiceEnable => {
                 return cosmic::task::future(async {
-                    systemd::enable_bluetooth().await;
+                    service_manager::enable_bluetooth().await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -1012,8 +1012,10 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-mod systemd {
+#[cfg(feature = "systemd")]
+mod service_manager {
     use futures::FutureExt;
+    use std::future::Future;
 
     pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
         tokio::process::Command::new("pkexec")
@@ -1029,6 +1031,14 @@ mod systemd {
             .map(|_| ())
     }
 
+    pub fn is_bluetooth_active() -> bool {
+        std::process::Command::new("systemctl")
+            .args(["is-active", "bluetooth"])
+            .status()
+            .map(|status| status.success())
+            .unwrap_or(true)
+    }
+
     pub fn is_bluetooth_enabled() -> bool {
         std::process::Command::new("systemctl")
             .args(["is-enabled", "bluetooth"])
@@ -1036,12 +1046,54 @@ mod systemd {
             .map(|status| status.success())
             .unwrap_or(true)
     }
+}
+
+#[cfg(feature = "openrc")]
+mod service_manager {
+    use futures::FutureExt;
+    use std::future::Future;
+
+    pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
+        tokio::process::Command::new("pkexec")
+            .args(["rc-service", "bluetooth", "start"])
+            .status()
+            .map(|_| ())
+    }
+
+    pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
+        async {
+            // Enable in default runlevel
+            tokio::process::Command::new("pkexec")
+                .args(["rc-update", "add", "bluetooth", "default"])
+                .status()
+                .await
+                .ok();
+
+            // Also start it now (equivalent to systemctl enable --now)
+            tokio::process::Command::new("pkexec")
+                .args(["rc-service", "bluetooth", "start"])
+                .status()
+                .await
+                .ok();
+        }
+    }
 
     pub fn is_bluetooth_active() -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-active", "bluetooth"])
+        std::process::Command::new("rc-service")
+            .args(["bluetooth", "status"])
             .status()
             .map(|status| status.success())
+            .unwrap_or(true)
+    }
+
+    pub fn is_bluetooth_enabled() -> bool {
+        std::process::Command::new("rc-update")
+            .args(["show", "default"])
+            .output()
+            .map(|output| {
+                String::from_utf8_lossy(&output.stdout)
+                    .contains("bluetooth")
+            })
             .unwrap_or(true)
     }
 }
