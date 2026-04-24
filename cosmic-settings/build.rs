@@ -2,29 +2,14 @@ use std::{env, fs, path::PathBuf};
 use xdgen::{App, Context, FluentString};
 
 fn main() {
-    // Init system features control which init systems are supported at runtime.
-    // Features must be explicitly enabled in Cargo.toml or via --features flag.
-    // They can be combined or used individually:
-    //   - Both enabled: Runtime detection supports both systemd and OpenRC
-    //   - Only systemd: Only systemd can be detected, OpenRC returns Unsupported
-    //   - Only openrc: Only OpenRC can be detected, systemd returns Unsupported
-    //   - Neither enabled: No init system support (all return Unsupported)
-    let has_systemd = cfg!(feature = "systemd");
+    // Init system support: systemd is always enabled, OpenRC is optional.
+    // When OpenRC feature is enabled, runtime detection determines which init system to use.
     let has_openrc = cfg!(feature = "openrc");
 
-    match (has_systemd, has_openrc) {
-        (true, true) => {
-            println!("cargo:warning=Building with both systemd and OpenRC support (runtime detection enabled)");
-        }
-        (false, false) => {
-            println!("cargo:warning=No init system features enabled - no init system support at runtime");
-        }
-        (true, false) => {
-            println!("cargo:warning=Building with systemd support only (OpenRC will be unsupported at runtime)");
-        }
-        (false, true) => {
-            println!("cargo:warning=Building with OpenRC support only (systemd will be unsupported at runtime)");
-        }
+    if has_openrc {
+        println!("cargo:warning=Building with both systemd and OpenRC support (runtime detection enabled)");
+    } else {
+        println!("cargo:warning=Building with systemd support only");
     }
 
     println!("cargo:rerun-if-changed=build.rs");

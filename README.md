@@ -21,44 +21,39 @@ See the `Build-Depends` section of the [debian control file](./debian/control).
 
 ### Building for Different Init Systems
 
-cosmic-settings supports both systemd and OpenRC init systems. **Init system support must be explicitly enabled at compile time** via Cargo features.
+cosmic-settings supports both systemd and OpenRC init systems. **systemd is supported by default**, preserving existing behavior for all current packages.
 
-**Important:** When no init system features are specified, the application will build successfully but bluetooth service management features will not be available.
+#### Default Build (systemd)
 
-#### systemd
-
-For systemd-based distributions (most common):
+The default build includes systemd support, which works for the vast majority of Linux distributions:
 
 ```sh
-cargo build --release --features systemd
+just
+# or with cargo:
+cargo build --release
 ```
 
-#### OpenRC
+#### OpenRC Support
 
-For OpenRC-based distributions (e.g., Gentoo, Alpine):
+For OpenRC-based distributions (e.g., Gentoo, Alpine), enable the `openrc` feature. This enables runtime detection to support both systemd and OpenRC:
 
 ```sh
 cargo build --release --features openrc
 ```
 
-#### Universal Build (Runtime Detection)
-
-Both features can be enabled simultaneously for maximum compatibility. The application will detect which init system is actually running at runtime:
-
-```sh
-cargo build --release --features systemd,openrc
-```
+When the `openrc` feature is enabled, the application will detect which init system is actually running at runtime and use the appropriate service management commands.
 
 #### Distributors
 
-Package maintainers should explicitly specify the appropriate init system feature(s) in their build configuration:
-- For single-init distributions: use only the relevant feature (`systemd` or `openrc`)
-- For multi-init distributions or live environments: enable both features for runtime detection
+Package maintainers:
+- **systemd-based distributions**: No changes needed - default build works as before
+- **OpenRC-based distributions**: Add `--features openrc` to your build configuration
+- **Multi-init distributions**: Enable `openrc` feature for runtime detection
 
-Example for systemd-based distro packaging:
+Example for OpenRC-based distro packaging:
 ```sh
 just vendor
-just build-vendored --features systemd
+just build-vendored --features openrc
 just rootdir=debian/cosmic-settings prefix=/usr install
 ```
 
