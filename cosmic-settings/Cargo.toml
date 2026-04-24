@@ -116,10 +116,11 @@ optional = true
 default = ["a11y", "linux", "single-instance", "wgpu"]
 gettext = ["dep:gettext-rs"]
 
-# Init system support (no longer mutually exclusive - runtime detection enabled)
-# Both features can be enabled simultaneously for maximum compatibility.
-# Must be explicitly specified - not included in default features.
-# Runtime detection determines which init system commands to use.
+# Init system support - MUST be explicitly enabled
+# These features control which init systems are supported at runtime.
+# At least one must be specified to enable bluetooth service management.
+# Both can be enabled simultaneously for runtime detection and maximum compatibility.
+# NOT included in default features - distributors must choose explicitly.
 systemd = []
 openrc = []
 

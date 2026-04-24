@@ -21,27 +21,46 @@ See the `Build-Depends` section of the [debian control file](./debian/control).
 
 ### Building for Different Init Systems
 
-cosmic-settings supports both systemd and OpenRC init systems. The init system is selected at compile time via Cargo features.
+cosmic-settings supports both systemd and OpenRC init systems. **Init system support must be explicitly enabled at compile time** via Cargo features.
 
-#### systemd (default)
+**Important:** When no init system features are specified, the application will build successfully but bluetooth service management features will not be available.
 
-When no init system is specified, systemd is automatically selected:
+#### systemd
+
+For systemd-based distributions (most common):
 
 ```sh
-just
-# or with cargo:
-cargo build --release
+cargo build --release --features systemd
 ```
 
 #### OpenRC
 
-For OpenRC-based distributions (e.g., Gentoo):
+For OpenRC-based distributions (e.g., Gentoo, Alpine):
 
 ```sh
 cargo build --release --features openrc
 ```
 
-**Note:** Only one init system can be enabled at a time. The build will fail with a clear error message if both `systemd` and `openrc` features are explicitly enabled together.
+#### Universal Build (Runtime Detection)
+
+Both features can be enabled simultaneously for maximum compatibility. The application will detect which init system is actually running at runtime:
+
+```sh
+cargo build --release --features systemd,openrc
+```
+
+#### Distributors
+
+Package maintainers should explicitly specify the appropriate init system feature(s) in their build configuration:
+- For single-init distributions: use only the relevant feature (`systemd` or `openrc`)
+- For multi-init distributions or live environments: enable both features for runtime detection
+
+Example for systemd-based distro packaging:
+```sh
+just vendor
+just build-vendored --features systemd
+just rootdir=debian/cosmic-settings prefix=/usr install
+```
 
 ### Install
 
