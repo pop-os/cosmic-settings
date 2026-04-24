@@ -116,8 +116,10 @@ optional = true
 default = ["a11y", "linux", "single-instance", "wgpu"]
 gettext = ["dep:gettext-rs"]
 
-# Init system support (mutually exclusive - enforced via build.rs)
-# If neither is specified, build.rs will auto-select systemd for backward compatibility
+# Init system support (no longer mutually exclusive - runtime detection enabled)
+# Both features can be enabled simultaneously for maximum compatibility.
+# If neither is specified, build.rs will auto-enable both features.
+# Runtime detection determines which init system commands to use.
 systemd = []
 openrc = []
 
