@@ -1014,7 +1014,6 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 
 mod service_manager {
     use crate::init_system::{detect_init_system, InitSystem};
-    use futures::FutureExt;
     use std::future::Future;
 
     pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {

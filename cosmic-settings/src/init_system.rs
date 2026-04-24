@@ -63,15 +63,6 @@ pub fn detect_init_system() -> InitSystem {
     InitSystem::Unsupported
 }
 
-/// Returns the command and arguments to start a service for the given init system
-pub fn get_service_start_command(init: InitSystem, service: &str) -> (&'static str, Vec<&str>) {
-    match init {
-        InitSystem::Systemd => ("systemctl", vec!["start", service]),
-        InitSystem::OpenRC => ("rc-service", vec![service, "start"]),
-        InitSystem::Unsupported => ("", vec![]),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -147,30 +138,6 @@ mod tests {
         // Should match exact OpenRC binary names
         assert_eq!(detect_from_pid1_exe("/sbin/openrc-init"), Some(InitSystem::OpenRC));
         assert_eq!(detect_from_pid1_exe("/usr/sbin/openrc-init"), Some(InitSystem::OpenRC));
-    }
-
-    #[test]
-    fn test_get_service_start_command_systemd() {
-        // Test that systemd returns correct service start command
-        let (program, args) = get_service_start_command(InitSystem::Systemd, "bluetooth");
-        assert_eq!(program, "systemctl");
-        assert_eq!(args, vec!["start", "bluetooth"]);
-    }
-
-    #[test]
-    fn test_get_service_start_command_openrc() {
-        // Test that OpenRC returns correct service start command
-        let (program, args) = get_service_start_command(InitSystem::OpenRC, "bluetooth");
-        assert_eq!(program, "rc-service");
-        assert_eq!(args, vec!["bluetooth", "start"]);
-    }
-
-    #[test]
-    fn test_get_service_start_command_unsupported() {
-        // Test that Unsupported returns empty command (should not be called in practice)
-        let (program, args) = get_service_start_command(InitSystem::Unsupported, "bluetooth");
-        assert_eq!(program, "");
-        assert!(args.is_empty());
     }
 
     #[test]
