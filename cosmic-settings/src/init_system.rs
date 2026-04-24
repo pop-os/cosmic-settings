@@ -2,16 +2,8 @@
 
 /// Runtime detection and management of init systems
 ///
-/// This module provides runtime detection of the init system (systemd, OpenRC, etc.)
-/// and abstractions for managing services across different init systems.
-///
-/// Detection is performed by checking for the presence of service management tools
-/// (systemctl for systemd, rc-service and rc-update for OpenRC) rather than examining
-/// /proc/1/exe. This approach is more reliable because it detects the actual service
-/// manager you can use to control services, not just what's running as PID 1.
-///
-/// For example, on Gentoo with OpenRC, sysvinit may run as PID 1 but OpenRC handles
-/// service management.
+/// Detects service managers rather than PID 1 because on some distributions
+/// (e.g., Gentoo) the PID 1 process differs from the actual service manager.
 ///
 /// This module is Linux-only and will fail to compile on other platforms.
 
@@ -50,22 +42,16 @@ impl std::fmt::Display for ServiceError {
 
 impl std::error::Error for ServiceError {}
 
-/// Checks if the systemctl command is available on the system
 fn has_systemctl() -> bool {
     which::which("systemctl").is_ok()
 }
 
-/// Checks if both rc-service and rc-update commands are available on the system
+/// Requires both commands because OpenRC needs rc-service for service control
+/// and rc-update for runlevel management
 fn has_openrc() -> bool {
     which::which("rc-service").is_ok() && which::which("rc-update").is_ok()
 }
 
-/// Detects the init system currently running on the host by checking for service management tools
-///
-/// This checks for the presence of service management commands (systemctl, rc-service, rc-update)
-/// to determine which init system is available. This is more reliable than checking /proc/1/exe
-/// because it detects the actual service manager you can use, not just what's running as PID 1.
-/// For example, Gentoo may have sysvinit at PID 1 but uses OpenRC for service management.
 pub fn detect_init_system() -> InitSystem {
     if has_systemctl() {
         return InitSystem::Systemd;
