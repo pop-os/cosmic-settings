@@ -2,6 +2,44 @@ use std::{env, fs, path::PathBuf};
 use xdgen::{App, Context, FluentString};
 
 fn main() {
+    // Check for mutually exclusive init system features
+    let has_systemd = cfg!(feature = "systemd");
+    let has_openrc = cfg!(feature = "openrc");
+    
+    match (has_systemd, has_openrc) {
+        (true, true) => {
+            panic!(
+                "\n\n\
+                ERROR: Both 'systemd' and 'openrc' features are enabled.\n\
+                These features are mutually exclusive. Please enable only one.\n\n\
+                Examples:\n\
+                  cargo build --features systemd\n\
+                  cargo build --no-default-features --features openrc,a11y,linux,single-instance,wgpu\n\
+                \n"
+            );
+        }
+        (false, false) => {
+            panic!(
+                "\n\n\
+                ERROR: No init system feature enabled.\n\
+                You must enable either 'systemd' or 'openrc'.\n\n\
+                Examples:\n\
+                  cargo build --features systemd (or just use defaults)\n\
+                  cargo build --no-default-features --features openrc,a11y,linux,single-instance,wgpu\n\
+                \n"
+            );
+        }
+        _ => {
+            // Exactly one init system is enabled - this is correct
+            if has_systemd {
+                println!("cargo:warning=Building with systemd init system support");
+            } else {
+                println!("cargo:warning=Building with OpenRC init system support");
+            }
+            println!("cargo:rerun-if-changed=build.rs");
+        }
+    }
+
     let ctx = Context::new("../i18n", env::var("CARGO_PKG_NAME").unwrap()).unwrap();
 
     [

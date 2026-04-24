@@ -113,8 +113,12 @@ git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
-default = ["a11y", "linux", "single-instance", "wgpu"]
+default = ["a11y", "linux", "single-instance", "wgpu", "systemd"]
 gettext = ["dep:gettext-rs"]
+
+# Init system support (mutually exclusive - enforced via build.rs)
+systemd = []
+openrc = []
 
 # Default features for Linux
 linux = [
