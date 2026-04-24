@@ -5,11 +5,19 @@
 /// This module provides runtime detection of the init system (systemd, OpenRC, etc.)
 /// and abstractions for managing services across different init systems.
 ///
+/// Detection is performed by checking for the presence of service management tools
+/// (systemctl for systemd, rc-service and rc-update for OpenRC) rather than examining
+/// /proc/1/exe. This approach is more reliable because it detects the actual service
+/// manager you can use to control services, not just what's running as PID 1.
+///
+/// For example, on Gentoo with OpenRC, sysvinit may run as PID 1 but OpenRC handles
+/// service management.
+///
 /// This module is Linux-only and will fail to compile on other platforms.
 
 #[cfg(not(target_os = "linux"))]
 compile_error!(
-    "cosmic-settings requires Linux. Init system detection relies on /proc, which is Linux-specific."
+    "cosmic-settings requires Linux. Init system detection is Linux-specific."
 );
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
