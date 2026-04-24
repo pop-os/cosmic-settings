@@ -274,6 +274,7 @@ pub enum Message {
     SelectAdapter(Option<OwnedObjectPath>),
     ServiceActivate,
     ServiceEnable,
+    ServiceError(String),
     SetActive(bool),
     UpdateStatus,
 }
@@ -552,8 +553,16 @@ impl Page {
             }
 
             Message::DBusConnect(connection) => {
-                self.service_is_active = service_manager::is_bluetooth_active();
-                self.service_is_enabled = service_manager::is_bluetooth_enabled();
+                self.service_is_active = service_manager::is_bluetooth_active()
+                    .unwrap_or_else(|err| {
+                        tracing::warn!("Failed to check bluetooth service status: {}", err);
+                        true // Assume active if we can't check
+                    });
+                self.service_is_enabled = service_manager::is_bluetooth_enabled()
+                    .unwrap_or_else(|err| {
+                        tracing::warn!("Failed to check if bluetooth service is enabled: {}", err);
+                        true // Assume enabled if we can't check
+                    });
                 self.connection = Some(connection.clone());
 
                 let get_adapters_fut = get_adapters(connection.clone());
@@ -686,26 +695,46 @@ impl Page {
 
             Message::ServiceActivate => {
                 return cosmic::task::future(async {
-                    service_manager::activate_bluetooth().await;
-                    tokio::time::sleep(Duration::from_secs(3)).await;
+                    match service_manager::activate_bluetooth().await {
+                        Ok(()) => {
+                            tokio::time::sleep(Duration::from_secs(3)).await;
 
-                    match zbus::Connection::system().await {
-                        Ok(connection) => Message::DBusConnect(connection),
-                        Err(why) => Message::DBusConnectFailed(why),
+                            match zbus::Connection::system().await {
+                                Ok(connection) => Message::DBusConnect(connection),
+                                Err(why) => Message::DBusConnectFailed(why),
+                            }
+                        }
+                        Err(err) => {
+                            tracing::error!("Failed to activate bluetooth service: {}", err);
+                            Message::ServiceError(format!("Failed to start bluetooth service: {}", err))
+                        }
                     }
                 });
             }
 
             Message::ServiceEnable => {
                 return cosmic::task::future(async {
-                    service_manager::enable_bluetooth().await;
-                    tokio::time::sleep(Duration::from_secs(3)).await;
+                    match service_manager::enable_bluetooth().await {
+                        Ok(()) => {
+                            tokio::time::sleep(Duration::from_secs(3)).await;
 
-                    match zbus::Connection::system().await {
-                        Ok(connection) => Message::DBusConnect(connection),
-                        Err(why) => Message::DBusConnectFailed(why),
+                            match zbus::Connection::system().await {
+                                Ok(connection) => Message::DBusConnect(connection),
+                                Err(why) => Message::DBusConnectFailed(why),
+                            }
+                        }
+                        Err(err) => {
+                            tracing::error!("Failed to enable bluetooth service: {}", err);
+                            Message::ServiceError(format!("Failed to enable bluetooth service: {}", err))
+                        }
                     }
                 });
+            }
+
+            Message::ServiceError(error_msg) => {
+                tracing::error!("Service error: {}", error_msg);
+                // Log the error - in a real implementation, this could show a dialog
+                // or notification to the user. For now, we just log it.
             }
 
             Message::DBusConnectFailed(why) => {
