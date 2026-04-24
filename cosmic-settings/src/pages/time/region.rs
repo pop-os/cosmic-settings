@@ -23,6 +23,7 @@ use icu::{
     locale::Locale,
 };
 use locales_rs as locale;
+use regex::Regex;
 use slotmap::{DefaultKey, SlotMap};
 
 static GNOME_LANGUAGE_SELECTOR: &str = "gnome-language-selector";
@@ -242,9 +243,7 @@ impl Page {
                     let region = region.lang_code.clone();
 
                     return cosmic::task::future(async move {
-                        if let Ok(exit_status) = set_locale(lang, region.clone()).await
-                            && exit_status.success()
-                        {
+                        if set_locale(lang, region.clone()).await.is_ok() {
                             update_time_settings_after_region_change(region);
                         }
 
@@ -710,20 +709,26 @@ pub async fn page_reload() -> eyre::Result<PageRefresh> {
 
     let mut available_languages_set = BTreeSet::new();
 
-    let output = tokio::process::Command::new("localectl")
-        .arg("list-locales")
+    // Use 'locale -a' instead of 'localectl list-locales' for OpenRC compatibility
+    let output_result = tokio::process::Command::new("locale")
+        .arg("-a")
         .output()
-        .await
-        .expect("Failed to run localectl");
+        .await;
 
-    let output = String::from_utf8(output.stdout).unwrap_or_default();
-    for line in output.lines() {
-        if line == "C.UTF-8" {
-            continue;
+    let locale_list = match output_result {
+        Ok(output) => {
+            let output_str = String::from_utf8(output.stdout).unwrap_or_default();
+            parse_locale_output(&output_str)
         }
+        Err(why) => {
+            tracing::error!(?why, "failed to list available locales using 'locale -a'");
+            Vec::new()
+        }
+    };
 
-        if let Some(locale) = registry.locale(line) {
-            available_languages_set.insert(localized_locale(&locale, line.to_owned()));
+    for line in locale_list {
+        if let Some(locale) = registry.locale(&line) {
+            available_languages_set.insert(localized_locale(&locale, line));
         }
     }
 
@@ -841,27 +846,28 @@ fn popover_menu_row(
         .apply(Element::from)
 }
 
-pub async fn set_locale(
-    lang: String,
-    region: String,
-) -> Result<std::process::ExitStatus, std::io::Error> {
-    eprintln!("setting locale lang={lang}, region={region}");
-    tokio::process::Command::new("localectl")
-        .arg("set-locale")
-        .args(&[
-            ["LANG=", &lang].concat(),
-            ["LC_ADDRESS=", &region].concat(),
-            ["LC_IDENTIFICATION=", &region].concat(),
-            ["LC_MEASUREMENT=", &region].concat(),
-            ["LC_MONETARY=", &region].concat(),
-            ["LC_NAME=", &region].concat(),
-            ["LC_NUMERIC=", &region].concat(),
-            ["LC_PAPER=", &region].concat(),
-            ["LC_TELEPHONE=", &region].concat(),
-            ["LC_TIME=", &region].concat(),
-        ])
-        .status()
+/// Sets the system locale using D-Bus instead of localectl for OpenRC compatibility.
+pub async fn set_locale(lang: String, region: String) -> eyre::Result<()> {
+    tracing::debug!("setting locale lang={lang}, region={region}");
+
+    let conn = zbus::Connection::system()
         .await
+        .wrap_err("failed to connect to system D-Bus")?;
+
+    let proxy = locale1::locale1Proxy::new(&conn)
+        .await
+        .wrap_err("failed to create locale1 D-Bus proxy")?;
+
+    let locale_settings = build_locale_settings(&lang, &region);
+    let locale_strs: Vec<&str> = locale_settings.iter().map(|s| s.as_str()).collect();
+
+    proxy
+        .set_locale(&locale_strs, true)
+        .await
+        .wrap_err("failed to set locale via D-Bus")?;
+
+    tracing::debug!("successfully set locale via D-Bus");
+    Ok(())
 }
 
 /// Sets the user's preferred language list via AccountsService D-Bus.
@@ -883,7 +889,7 @@ pub async fn set_user_language(language_list: String) -> eyre::Result<()> {
         .await
         .wrap_err("failed to set language via AccountsService")?;
 
-    eprintln!("set user language via AccountsService: {language_list}");
+    tracing::debug!("set user language via AccountsService: {language_list}");
     Ok(())
 }
 
@@ -1015,4 +1021,207 @@ fn strip_locale_suffix(locale: &str) -> String {
         .next()
         .unwrap_or(without_codeset)
         .to_string()
+}
+
+/// Parses the output from `locale -a` command and returns a vector of locale strings.
+/// Filters out pseudo-locales (C, POSIX) and accepts only allowed character encodings.
+fn parse_locale_output(output: &str) -> Vec<String> {
+    // Regex to match pseudo-locales: C or POSIX, optionally followed by .anything
+    let pseudo_locale_re = Regex::new(r"^(C|POSIX)(\.|$)").unwrap();
+
+    // Regex to match UTF-8 encoded locales (case-insensitive)
+    // Supports optional modifiers after encoding (e.g., @euro, @valencia)
+    let utf8_encoding_re = Regex::new(r"(?i)\.(utf-?8)(@.*)?$").unwrap();
+
+    output
+        .lines()
+        .map(|line| line.trim())
+        .filter(|line| !pseudo_locale_re.is_match(line))
+        .filter(|line| utf8_encoding_re.is_match(line))
+        .map(|line| line.to_string())
+        .collect()
+}
+
+/// Builds the locale settings array for D-Bus SetLocale call.
+/// Sets LANG to the language parameter and all LC_* variables to the region parameter.
+fn build_locale_settings(lang: &str, region: &str) -> Vec<String> {
+    vec![
+        format!("LANG={}", lang),
+        format!("LC_ADDRESS={}", region),
+        format!("LC_IDENTIFICATION={}", region),
+        format!("LC_MEASUREMENT={}", region),
+        format!("LC_MONETARY={}", region),
+        format!("LC_NAME={}", region),
+        format!("LC_NUMERIC={}", region),
+        format!("LC_PAPER={}", region),
+        format!("LC_TELEPHONE={}", region),
+        format!("LC_TIME={}", region),
+    ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_locale_output_handles_empty_input() {
+        let output = "";
+        let result = parse_locale_output(output);
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_parse_locale_output_preserves_locale_strings() {
+        let output = "en_US.utf8\nde_DE.utf8\nfr_FR.utf8\n";
+        let result = parse_locale_output(output);
+        assert_eq!(result.len(), 3);
+        assert!(result.contains(&"en_US.utf8".to_string()));
+    }
+
+    #[test]
+    fn test_build_locale_settings_includes_all_lc_variables() {
+        let lang = "en_US.UTF-8";
+        let region = "de_DE.UTF-8";
+        let settings = build_locale_settings(lang, region);
+
+        assert_eq!(settings.len(), 10);
+        assert!(settings.contains(&format!("LANG={}", lang)));
+        assert!(settings.contains(&format!("LC_ADDRESS={}", region)));
+        assert!(settings.contains(&format!("LC_IDENTIFICATION={}", region)));
+        assert!(settings.contains(&format!("LC_MEASUREMENT={}", region)));
+        assert!(settings.contains(&format!("LC_MONETARY={}", region)));
+        assert!(settings.contains(&format!("LC_NAME={}", region)));
+        assert!(settings.contains(&format!("LC_NUMERIC={}", region)));
+        assert!(settings.contains(&format!("LC_PAPER={}", region)));
+        assert!(settings.contains(&format!("LC_TELEPHONE={}", region)));
+        assert!(settings.contains(&format!("LC_TIME={}", region)));
+    }
+
+    #[test]
+    fn test_build_locale_settings_uses_correct_values() {
+        let lang = "fr_FR.UTF-8";
+        let region = "en_GB.UTF-8";
+        let settings = build_locale_settings(lang, region);
+
+        // LANG should use the lang parameter
+        assert!(settings.iter().any(|s| s == "LANG=fr_FR.UTF-8"));
+        // LC_* variables should use the region parameter
+        assert!(settings.iter().any(|s| s == "LC_TIME=en_GB.UTF-8"));
+    }
+
+    #[test]
+    fn test_parse_locale_output_filters_pseudo_locales() {
+        let output = "C\nC.utf8\nC.UTF-8\nPOSIX\nen_US.utf8\nde_DE.UTF-8\n";
+        let result = parse_locale_output(output);
+
+        // Should filter out all C and POSIX variants
+        assert!(!result.contains(&"C".to_string()));
+        assert!(!result.contains(&"C.utf8".to_string()));
+        assert!(!result.contains(&"C.UTF-8".to_string()));
+        assert!(!result.contains(&"POSIX".to_string()));
+
+        // Should keep actual locales
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"de_DE.UTF-8".to_string()));
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_locale_output_accepts_only_utf8_locales() {
+        let output =
+            "en_US\nen_US.utf8\nen_US.UTF-8\nar_IN\nar_IN.utf8\nde_DE.iso88591\nfr_FR.UTF-8\n";
+        let result = parse_locale_output(output);
+
+        // Should accept UTF-8 variants
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"en_US.UTF-8".to_string()));
+        assert!(result.contains(&"ar_IN.utf8".to_string()));
+        assert!(result.contains(&"fr_FR.UTF-8".to_string()));
+
+        // Should filter out non-UTF-8 encoded locales
+        assert!(!result.contains(&"en_US".to_string()));
+        assert!(!result.contains(&"ar_IN".to_string()));
+        assert!(!result.contains(&"de_DE.iso88591".to_string()));
+
+        assert_eq!(result.len(), 4);
+    }
+
+    #[test]
+    fn test_parse_locale_output_filters_any_c_posix_variant() {
+        let output = "C\nC.iso88591\nC.anything\nPOSIX\nPOSIX.utf8\nen_US.utf8\n";
+        let result = parse_locale_output(output);
+
+        // Should filter out any C or POSIX variant regardless of encoding
+        assert!(!result.contains(&"C".to_string()));
+        assert!(!result.contains(&"C.iso88591".to_string()));
+        assert!(!result.contains(&"C.anything".to_string()));
+        assert!(!result.contains(&"POSIX".to_string()));
+        assert!(!result.contains(&"POSIX.utf8".to_string()));
+
+        // Should keep actual locales
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert_eq!(result.len(), 1);
+    }
+
+    #[test]
+    fn test_parse_locale_output_handles_whitespace() {
+        let output = "  en_US.utf8  \n\t de_DE.UTF-8\t\n   fr_FR.utf8   \n";
+        let result = parse_locale_output(output);
+
+        // Should handle leading/trailing whitespace
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"de_DE.UTF-8".to_string()));
+        assert!(result.contains(&"fr_FR.utf8".to_string()));
+        assert_eq!(result.len(), 3);
+    }
+
+    #[test]
+    fn test_parse_locale_output_handles_empty_lines() {
+        let output = "en_US.utf8\n\n\nde_DE.UTF-8\n\n";
+        let result = parse_locale_output(output);
+
+        // Should skip empty lines
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"de_DE.UTF-8".to_string()));
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn test_parse_locale_output_catalan_not_filtered_as_pseudo() {
+        let output = "C\nca_ES.UTF-8\nca_ES.utf8\ncs_CZ.UTF-8\nen_US.utf8\n";
+        let result = parse_locale_output(output);
+
+        // Should filter out C but not Catalan (ca_*) or Czech (cs_*)
+        assert!(!result.contains(&"C".to_string()));
+        assert!(result.contains(&"ca_ES.UTF-8".to_string()));
+        assert!(result.contains(&"ca_ES.utf8".to_string()));
+        assert!(result.contains(&"cs_CZ.UTF-8".to_string()));
+        assert_eq!(result.len(), 4);
+    }
+
+    #[test]
+    fn test_parse_locale_output_handles_locale_modifiers() {
+        let output = "en_US.UTF-8@euro\nca_ES.UTF-8@valencia\nde_DE.utf8\n";
+        let result = parse_locale_output(output);
+
+        // Locales with modifiers should be accepted
+        assert!(result.contains(&"en_US.UTF-8@euro".to_string()));
+        assert!(result.contains(&"ca_ES.UTF-8@valencia".to_string()));
+        assert!(result.contains(&"de_DE.utf8".to_string()));
+        assert_eq!(result.len(), 3);
+    }
+
+    #[test]
+    fn test_parse_locale_output_case_variations() {
+        let output = "en_US.UTF-8\nen_US.utf-8\nen_US.utf8\nen_US.UTF8\nde_DE.Utf8\n";
+        let result = parse_locale_output(output);
+
+        // All case variations should be accepted (case-insensitive regex)
+        assert!(result.contains(&"en_US.UTF-8".to_string()));
+        assert!(result.contains(&"en_US.utf-8".to_string()));
+        assert!(result.contains(&"en_US.utf8".to_string()));
+        assert!(result.contains(&"en_US.UTF8".to_string()));
+        assert!(result.contains(&"de_DE.Utf8".to_string()));
+        assert_eq!(result.len(), 5);
+    }
 }
