@@ -17,6 +17,29 @@ pub enum InitSystem {
     Unsupported,
 }
 
+/// Errors that can occur during service management operations
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ServiceError {
+    /// The detected init system is not supported by this build
+    UnsupportedInitSystem,
+    /// Failed to execute the service management command
+    CommandFailed,
+    /// Failed to determine service status
+    StatusCheckFailed,
+}
+
+impl std::fmt::Display for ServiceError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ServiceError::UnsupportedInitSystem => write!(f, "Init system not supported"),
+            ServiceError::CommandFailed => write!(f, "Service command failed"),
+            ServiceError::StatusCheckFailed => write!(f, "Failed to check service status"),
+        }
+    }
+}
+
+impl std::error::Error for ServiceError {}
+
 /// Detects init system from the PID 1 executable path
 /// This is exposed for testing purposes
 /// 

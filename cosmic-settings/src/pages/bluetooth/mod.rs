@@ -1013,10 +1013,10 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
 impl page::AutoBind<crate::pages::Message> for Page {}
 
 mod service_manager {
-    use crate::init_system::{detect_init_system, InitSystem};
+    use crate::init_system::{detect_init_system, InitSystem, ServiceError};
     use std::future::Future;
 
-    pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
+    pub fn activate_bluetooth() -> impl Future<Output = Result<(), ServiceError>> + Send {
         async {
             match detect_init_system() {
                 InitSystem::Systemd => {
@@ -1024,23 +1024,26 @@ mod service_manager {
                         .args(["systemctl", "start", "bluetooth"])
                         .status()
                         .await
-                        .ok();
+                        .map_err(|_| ServiceError::CommandFailed)?;
+                    Ok(())
                 }
                 InitSystem::OpenRC => {
                     tokio::process::Command::new("pkexec")
                         .args(["rc-service", "bluetooth", "start"])
                         .status()
                         .await
-                        .ok();
+                        .map_err(|_| ServiceError::CommandFailed)?;
+                    Ok(())
                 }
                 InitSystem::Unsupported => {
-                    tracing::warn!("Unsupported init system detected, cannot activate bluetooth service");
+                    tracing::error!("Unsupported init system detected, cannot activate bluetooth service");
+                    Err(ServiceError::UnsupportedInitSystem)
                 }
             }
         }
     }
 
-    pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
+    pub fn enable_bluetooth() -> impl Future<Output = Result<(), ServiceError>> + Send {
         async {
             match detect_init_system() {
                 InitSystem::Systemd => {
@@ -1048,7 +1051,8 @@ mod service_manager {
                         .args(["systemctl", "enable", "--now", "bluetooth"])
                         .status()
                         .await
-                        .ok();
+                        .map_err(|_| ServiceError::CommandFailed)?;
+                    Ok(())
                 }
                 InitSystem::OpenRC => {
                     // Enable in default runlevel
@@ -1056,64 +1060,66 @@ mod service_manager {
                         .args(["rc-update", "add", "bluetooth", "default"])
                         .status()
                         .await
-                        .ok();
+                        .map_err(|_| ServiceError::CommandFailed)?;
 
                     // Also start it now (equivalent to systemctl enable --now)
                     tokio::process::Command::new("pkexec")
                         .args(["rc-service", "bluetooth", "start"])
                         .status()
                         .await
-                        .ok();
+                        .map_err(|_| ServiceError::CommandFailed)?;
+                    Ok(())
                 }
                 InitSystem::Unsupported => {
-                    tracing::warn!("Unsupported init system detected, cannot enable bluetooth service");
+                    tracing::error!("Unsupported init system detected, cannot enable bluetooth service");
+                    Err(ServiceError::UnsupportedInitSystem)
                 }
             }
         }
     }
 
-    pub fn is_bluetooth_active() -> bool {
+    pub fn is_bluetooth_active() -> Result<bool, ServiceError> {
         match detect_init_system() {
             InitSystem::Systemd => {
                 std::process::Command::new("systemctl")
                     .args(["is-active", "bluetooth"])
                     .status()
                     .map(|status| status.success())
-                    .unwrap_or(true)
+                    .map_err(|_| ServiceError::StatusCheckFailed)
             }
             InitSystem::OpenRC => {
                 std::process::Command::new("rc-service")
                     .args(["bluetooth", "status"])
                     .status()
                     .map(|status| status.success())
-                    .unwrap_or(true)
+                    .map_err(|_| ServiceError::StatusCheckFailed)
             }
             InitSystem::Unsupported => {
-                tracing::warn!("Unsupported init system detected, cannot check bluetooth service status");
-                true
+                tracing::error!("Unsupported init system detected, cannot check bluetooth service status");
+                Err(ServiceError::UnsupportedInitSystem)
             }
         }
     }
 
-    pub fn is_bluetooth_enabled() -> bool {
+    pub fn is_bluetooth_enabled() -> Result<bool, ServiceError> {
         match detect_init_system() {
             InitSystem::Systemd => {
                 std::process::Command::new("systemctl")
                     .args(["is-enabled", "bluetooth"])
                     .status()
                     .map(|status| status.success())
-                    .unwrap_or(true)
+                    .map_err(|_| ServiceError::StatusCheckFailed)
             }
             InitSystem::OpenRC => {
                 std::process::Command::new("rc-update")
                     .args(["show", "default"])
                     .output()
                     .map(|output| String::from_utf8_lossy(&output.stdout).contains("bluetooth"))
-                    .unwrap_or(true)
+                    .map_err(|_| ServiceError::StatusCheckFailed)
             }
             InitSystem::Unsupported => {
-                tracing::warn!("Unsupported init system detected, cannot check if bluetooth service is enabled");
-                true
+                tracing::error!("Unsupported init system detected, cannot check if bluetooth service is enabled");
+                Err(ServiceError::UnsupportedInitSystem)
             }
         }
     }
