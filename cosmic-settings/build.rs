@@ -7,7 +7,9 @@ fn main() {
     let has_openrc = cfg!(feature = "openrc");
 
     if has_openrc {
-        println!("cargo:warning=Building with both systemd and OpenRC support (runtime detection enabled)");
+        println!(
+            "cargo:warning=Building with both systemd and OpenRC support (runtime detection enabled)"
+        );
     } else {
         println!("cargo:warning=Building with systemd support only");
     }

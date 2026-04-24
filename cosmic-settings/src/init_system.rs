@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 /// Runtime detection and management of init systems
-/// 
+///
 /// This module provides runtime detection of the init system (systemd, OpenRC, etc.)
 /// and abstractions for managing services across different init systems.
-/// 
+///
 /// This module is Linux-only and will fail to compile on other platforms.
 
 #[cfg(not(target_os = "linux"))]
-compile_error!("cosmic-settings requires Linux. Init system detection relies on /proc, which is Linux-specific.");
+compile_error!(
+    "cosmic-settings requires Linux. Init system detection relies on /proc, which is Linux-specific."
+);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InitSystem {
@@ -42,36 +44,34 @@ impl std::error::Error for ServiceError {}
 
 /// Detects init system from the PID 1 executable path
 /// This is exposed for testing purposes
-/// 
+///
 /// systemd is always supported. OpenRC is supported when the openrc feature is enabled.
 /// Uses strict matching on the basename of the executable to avoid false positives.
 fn detect_from_pid1_exe(exe_path: &str) -> Option<InitSystem> {
     use std::path::Path;
-    
+
     // Strict basename matching prevents false positives from directory names
-    let basename = Path::new(exe_path)
-        .file_name()
-        .and_then(|s| s.to_str())?;
-    
+    let basename = Path::new(exe_path).file_name().and_then(|s| s.to_str())?;
+
     if basename == "systemd" {
         return Some(InitSystem::Systemd);
     }
-    
+
     #[cfg(feature = "openrc")]
     if basename == "openrc-init" {
         return Some(InitSystem::OpenRC);
     }
-    
+
     None
 }
 
 /// Detects the init system currently running on the host by checking /proc/1/exe
-/// 
+///
 /// This reads the symlink at /proc/1/exe to determine what executable is running
 /// as PID 1 (the init system), which is the most reliable detection method.
 pub fn detect_init_system() -> InitSystem {
     use std::fs;
-    
+
     if let Ok(pid1_exe) = fs::read_link("/proc/1/exe") {
         if let Some(exe_str) = pid1_exe.to_str() {
             if let Some(init_system) = detect_from_pid1_exe(exe_str) {
@@ -79,7 +79,7 @@ pub fn detect_init_system() -> InitSystem {
             }
         }
     }
-    
+
     InitSystem::Unsupported
 }
 
@@ -90,9 +90,12 @@ mod tests {
     #[test]
     fn test_detect_init_system_returns_valid_variant() {
         let init = detect_init_system();
-        
+
         assert!(
-            matches!(init, InitSystem::Systemd | InitSystem::OpenRC | InitSystem::Unsupported),
+            matches!(
+                init,
+                InitSystem::Systemd | InitSystem::OpenRC | InitSystem::Unsupported
+            ),
             "detect_init_system must return a valid InitSystem variant"
         );
     }
@@ -136,16 +139,31 @@ mod tests {
 
     #[test]
     fn test_detect_from_pid1_exe_systemd_exact_match() {
-        assert_eq!(detect_from_pid1_exe("/usr/lib/systemd/systemd"), Some(InitSystem::Systemd));
-        assert_eq!(detect_from_pid1_exe("/lib/systemd/systemd"), Some(InitSystem::Systemd));
-        assert_eq!(detect_from_pid1_exe("/sbin/systemd"), Some(InitSystem::Systemd));
+        assert_eq!(
+            detect_from_pid1_exe("/usr/lib/systemd/systemd"),
+            Some(InitSystem::Systemd)
+        );
+        assert_eq!(
+            detect_from_pid1_exe("/lib/systemd/systemd"),
+            Some(InitSystem::Systemd)
+        );
+        assert_eq!(
+            detect_from_pid1_exe("/sbin/systemd"),
+            Some(InitSystem::Systemd)
+        );
     }
 
     #[test]
     #[cfg(feature = "openrc")]
     fn test_detect_from_pid1_exe_openrc_exact_match() {
-        assert_eq!(detect_from_pid1_exe("/sbin/openrc-init"), Some(InitSystem::OpenRC));
-        assert_eq!(detect_from_pid1_exe("/usr/sbin/openrc-init"), Some(InitSystem::OpenRC));
+        assert_eq!(
+            detect_from_pid1_exe("/sbin/openrc-init"),
+            Some(InitSystem::OpenRC)
+        );
+        assert_eq!(
+            detect_from_pid1_exe("/usr/sbin/openrc-init"),
+            Some(InitSystem::OpenRC)
+        );
     }
 
     #[test]
@@ -165,6 +183,9 @@ mod tests {
     #[cfg(not(feature = "openrc"))]
     fn test_detect_from_pid1_exe_openrc_when_feature_disabled() {
         let result = detect_from_pid1_exe("/sbin/openrc-init");
-        assert_eq!(result, None, "openrc should not be detected when feature is disabled");
+        assert_eq!(
+            result, None,
+            "openrc should not be detected when feature is disabled"
+        );
     }
 }
