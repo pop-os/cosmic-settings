@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+
 /// Runtime detection and management of init systems
 /// 
 /// This module provides runtime detection of the init system (systemd, OpenRC, etc.)
