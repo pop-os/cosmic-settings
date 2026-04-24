@@ -5,7 +5,7 @@ fn main() {
     // Check for mutually exclusive init system features
     let has_systemd = cfg!(feature = "systemd");
     let has_openrc = cfg!(feature = "openrc");
-    
+
     match (has_systemd, has_openrc) {
         (true, true) => {
             panic!(

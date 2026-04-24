@@ -1090,10 +1090,7 @@ mod service_manager {
         std::process::Command::new("rc-update")
             .args(["show", "default"])
             .output()
-            .map(|output| {
-                String::from_utf8_lossy(&output.stdout)
-                    .contains("bluetooth")
-            })
+            .map(|output| String::from_utf8_lossy(&output.stdout).contains("bluetooth"))
             .unwrap_or(true)
     }
 }
