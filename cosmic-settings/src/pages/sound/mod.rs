@@ -34,6 +34,7 @@ pub enum Message {
     SetSinkVolume(u32),
     /// Request to change the input volume.
     SetSourceVolume(u32),
+    TestOutput,
     /// Messages handled by the sound module in cosmic-settings-subscriptions
     Subscription(subscription::Message),
     /// Surface Action
@@ -212,6 +213,10 @@ impl Page {
                     .map(|message| Message::Subscription(message).into());
             }
 
+            Message::TestOutput => {
+                self.model.test_output();
+            }
+
             Message::ToggleOverAmplificationSink(enabled) => {
                 self.amplification_sink = enabled;
 
@@ -333,6 +338,7 @@ fn output() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         volume = fl!("sound-output", "volume");
         device = fl!("sound-output", "device");
+        test = fl!("sound-output", "test");
         _level = fl!("sound-output", "level");
         balance = fl!("sound-output", "balance");
         left = fl!("sound-output", "left");
@@ -388,6 +394,15 @@ fn output() -> Section<crate::pages::Message> {
             .apply(Element::from)
             .map(crate::pages::Message::from);
 
+            let test_output = widget::button::standard(&*section.descriptions[test])
+                .on_press_maybe(page.model.active_sink().map(|_| Message::TestOutput.into()));
+
+            let output_device_controls = widget::row::with_capacity(3)
+                .align_y(Alignment::Center)
+                .push(devices)
+                .push(horizontal_space().width(8.))
+                .push(test_output);
+
             let mut controls = settings::section()
                 .title(&section.title)
                 .add(
@@ -395,7 +410,10 @@ fn output() -> Section<crate::pages::Message> {
                         .flex_control(volume_control)
                         .align_items(Alignment::Center),
                 )
-                .add(settings::item(&*section.descriptions[device], devices))
+                .add(settings::item(
+                    &*section.descriptions[device],
+                    output_device_controls,
+                ))
                 .add(settings::item(
                     &*section.descriptions[balance],
                     widget::row::with_capacity(5)

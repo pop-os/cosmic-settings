@@ -138,6 +138,19 @@ impl Model {
         &self.sources
     }
 
+    pub fn test_output(&self) {
+        if self.active_sink_node.is_none() {
+            tracing::warn!(target: "sound", "cannot play output test sound without an active sink");
+            return;
+        }
+
+        tokio::spawn(async {
+            if !play_output_test_sound().await {
+                tracing::warn!(target: "sound", "failed to play output test sound using available backends");
+            }
+        });
+    }
+
     pub fn clear(&mut self) {
         if let Some(handle) = self.subscription_handle.take() {
             _ = handle.cancel_tx.send(());
@@ -955,4 +968,57 @@ pub async fn set_profile(id: u32, index: u32, save: bool) {
         .stderr(Stdio::null())
         .status()
         .await;
+}
+
+async fn play_output_test_sound() -> bool {
+    if run_command("canberra-gtk-play", &["-i", "audio-test-signal"]).await {
+        return true;
+    }
+
+    let test_sound_paths = [
+        "/usr/share/sounds/freedesktop/stereo/audio-test-signal.oga",
+        "/usr/share/sounds/freedesktop/stereo/audio-test-signal.ogg",
+        "/usr/share/sounds/freedesktop/stereo/audio-test-signal.wav",
+        "/usr/share/sounds/freedesktop/stereo/bell.oga",
+        "/usr/share/sounds/freedesktop/stereo/bell.ogg",
+        "/usr/share/sounds/freedesktop/stereo/bell.wav",
+        "/usr/share/sounds/freedesktop/stereo/audio-test.ogg",
+    ];
+
+    for sound_path in test_sound_paths {
+        if run_command("paplay", &[sound_path]).await {
+            return true;
+        }
+    }
+
+    for sound_path in test_sound_paths {
+        if run_command("pw-play", &[sound_path]).await {
+            return true;
+        }
+    }
+
+    false
+}
+
+async fn run_command(command: &str, args: &[&str]) -> bool {
+    match tokio::time::timeout(
+        Duration::from_secs(5),
+        tokio::process::Command::new(command)
+            .args(args)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status(),
+    )
+    .await
+    {
+        Ok(Ok(status)) => status.success(),
+        Ok(Err(why)) => {
+            tracing::debug!(target: "sound", ?why, command, "failed to run test sound command");
+            false
+        }
+        Err(why) => {
+            tracing::warn!(target: "sound", ?why, command, "test sound command timed out");
+            false
+        }
+    }
 }
