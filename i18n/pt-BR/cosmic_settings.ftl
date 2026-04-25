@@ -911,3 +911,5 @@ xdg-entry-x11-applications = Compatibilidade com aplicativos X11
 xdg-entry-window-management-comment = Ação da tecla Super, opções de controle de janela e opções de janelas lado a lado (tiling)
 xdg-entry-wired-comment = Conexões de rede com fio e perfis de conexão
 no-search-results = Nenhuma rede corresponde à sua pesquisa.
+workspaces-navigation = Navegação
+    .wraparound = Navegue entre o primeiro e o último espaço de trabalho usando atalhos de teclado e gestos
