@@ -926,3 +926,5 @@ xdg-entry-region-language-keywords = COSMIC;Region;Språk;Datum;Format;Tid;Lokal
 xdg-entry-keyboard-keywords = COSMIC;Tangentbord;Inmatning;Källa;Genvägar;
 xdg-entry-window-management-keywords = COSMIC;Fönster;Hantering;Kaklande;Super;Tangent;
 no-search-results = Inga nätverk matchar din sökning.
+workspaces-navigation = Navigering
+    .wraparound = Flytta mellan första och sista arbetsytan med hjälp av tangentbordsgenvägar och gester
