@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
-use cosmic::{Task, cosmic_config::CosmicConfigEntry};
+use cosmic::{
+    Apply, Element, Task,
+    cosmic_config::CosmicConfigEntry,
+    widget::{self, icon},
+};
 use cosmic_panel_config::{CosmicPanelConfig, CosmicPanelContainerConfig};
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
@@ -144,5 +148,26 @@ impl page::Page<crate::pages::Message> for Page {
         self.inner.update_defaults();
 
         Task::none()
+    }
+
+    fn dialog(&'_ self) -> Option<Element<'_, crate::pages::Message>> {
+        self.inner.dialog.as_ref().map(|dialog| match dialog {
+            inner::PanelInnerDialog::ResetPanelConfirmation => {
+                let primary_action = widget::button::destructive(fl!("confirm"))
+                    .on_press(inner::Message::ResetPanel);
+
+                let secondary_action =
+                    widget::button::standard(fl!("cancel")).on_press(inner::Message::CloseDialog);
+
+                widget::dialog()
+                    .title(fl!("panel-reset-dialog"))
+                    .icon(icon::from_name("dialog-warning").size(64))
+                    .body(fl!("panel-reset-dialog", "desc"))
+                    .primary_action(primary_action)
+                    .secondary_action(secondary_action)
+                    .apply(Element::from)
+                    .map(|m| crate::pages::Message::Panel(Message(m)))
+            }
+        })
     }
 }
