@@ -19,6 +19,11 @@ use std::{collections::HashMap, time::Duration};
 
 use crate::pages::desktop::appearance::Roundness;
 
+pub enum PanelInnerDialog {
+    /// Confirmation dialog for reseting all panel settings
+    ResetPanelConfirmation,
+}
+
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
     pub(crate) panel_config: Option<CosmicPanelConfig>,
@@ -28,6 +33,7 @@ pub struct PageInner {
     pub outputs: Vec<String>,
     pub anchors: Vec<String>,
     pub backgrounds: Vec<String>,
+    pub(crate) dialog: Option<PanelInnerDialog>,
     pub(crate) container_config: Option<CosmicPanelContainerConfig>,
     // TODO move these into panel config
     pub(crate) outputs_map: HashMap<ObjectId, (String, WlOutput)>,
@@ -55,6 +61,7 @@ impl Default for PageInner {
                 Appearance::Light.to_string(),
                 Appearance::Dark.to_string(),
             ],
+            dialog: None,
             container_config: Option::default(),
             outputs_map: HashMap::default(),
             system_default: None,
@@ -347,7 +354,7 @@ pub fn reset_button<
                 Element::from(space())
             } else {
                 button::standard(&descriptions[reset_to_default])
-                    .on_press(Message::ResetPanel)
+                    .on_press(Message::ConfirmResetPanel)
                     .into()
             }
             .map(msg_map)
@@ -432,6 +439,8 @@ pub enum Message {
     OutputRemoved(WlOutput),
     PanelConfig(Box<CosmicPanelConfig>),
     ResetPanel,
+    ConfirmResetPanel,
+    CloseDialog,
     FullReset,
     Surface(surface::Action),
 }
@@ -673,7 +682,13 @@ impl PageInner {
                 self.panel_config = Some(*c);
                 return Task::none();
             }
-            Message::ResetPanel | Message::FullReset => {}
+            Message::ConfirmResetPanel => {
+                self.dialog = Some(PanelInnerDialog::ResetPanelConfirmation);
+            }
+            Message::CloseDialog | Message::ResetPanel => {
+                self.dialog = None;
+            }
+            Message::FullReset => {}
             Message::Surface(_) => {
                 unimplemented!()
             }
