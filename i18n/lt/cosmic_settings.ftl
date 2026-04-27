@@ -4,7 +4,7 @@ super-key = Super klavišo veiksmas
     .launcher = Atidaryti aplikacijų paleidėją
     .workspaces = Atidaryti darbo sritis
     .applications = Atidaryti aplikaciją
-    .disable = Neaktyvus
+    .none = Neaktyvus
 x-minutes =
     { $number } { $number ->
         [one] minutė

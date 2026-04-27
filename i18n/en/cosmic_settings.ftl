@@ -476,7 +476,7 @@ super-key = Super key action
     .launcher = Open Launcher
     .workspaces = Open Workspaces
     .applications = Open Applications
-    .disable = Disable
+    .none = None
 
 edge-gravity = Floating windows gravitate to nearby edges
 
