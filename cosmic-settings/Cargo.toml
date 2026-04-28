@@ -116,6 +116,12 @@ optional = true
 default = ["a11y", "linux", "single-instance", "wgpu"]
 gettext = ["dep:gettext-rs"]
 
+# Init system support
+# systemd is always enabled by default to preserve existing behavior.
+# OpenRC can be optionally enabled for OpenRC-based distributions.
+# When both are enabled, runtime detection determines which to use.
+openrc = []
+
 # Default features for Linux
 linux = [
     "cosmic-comp-config",

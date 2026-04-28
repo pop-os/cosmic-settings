@@ -552,8 +552,18 @@ impl Page {
             }
 
             Message::DBusConnect(connection) => {
-                self.service_is_active = systemd::is_bluetooth_active();
-                self.service_is_enabled = systemd::is_bluetooth_enabled();
+                self.service_is_active =
+                    service_manager::is_bluetooth_active().unwrap_or_else(|err| {
+                        tracing::warn!("Failed to check bluetooth service status: {}", err);
+                        // Fail open to avoid blocking the UI when service manager is unavailable
+                        true
+                    });
+                self.service_is_enabled =
+                    service_manager::is_bluetooth_enabled().unwrap_or_else(|err| {
+                        tracing::warn!("Failed to check if bluetooth service is enabled: {}", err);
+                        // Fail open to avoid blocking the UI when service manager is unavailable
+                        true
+                    });
                 self.connection = Some(connection.clone());
 
                 let get_adapters_fut = get_adapters(connection.clone());
@@ -686,7 +696,9 @@ impl Page {
 
             Message::ServiceActivate => {
                 return cosmic::task::future(async {
-                    systemd::activate_bluetooth().await;
+                    if let Err(err) = service_manager::activate_bluetooth().await {
+                        tracing::error!("Failed to activate bluetooth service: {}", err);
+                    }
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -698,7 +710,9 @@ impl Page {
 
             Message::ServiceEnable => {
                 return cosmic::task::future(async {
-                    systemd::enable_bluetooth().await;
+                    if let Err(err) = service_manager::enable_bluetooth().await {
+                        tracing::error!("Failed to enable bluetooth service: {}", err);
+                    }
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -1010,36 +1024,151 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-mod systemd {
-    use futures::FutureExt;
+mod service_manager {
+    use crate::init_system::{InitSystem, ServiceError, detect_init_system};
+    use std::future::Future;
 
-    pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "start", "bluetooth"])
-            .status()
-            .map(|_| ())
+    pub fn activate_bluetooth() -> impl Future<Output = Result<(), ServiceError>> + Send {
+        async {
+            match detect_init_system() {
+                InitSystem::Systemd => {
+                    let status = tokio::process::Command::new("pkexec")
+                        .args(["systemctl", "start", "bluetooth"])
+                        .status()
+                        .await
+                        .map_err(|_| ServiceError::CommandFailed)?;
+
+                    if status.success() {
+                        Ok(())
+                    } else {
+                        Err(ServiceError::CommandFailed)
+                    }
+                }
+                InitSystem::OpenRC => {
+                    let status = tokio::process::Command::new("pkexec")
+                        .args(["rc-service", "bluetooth", "start"])
+                        .status()
+                        .await
+                        .map_err(|_| ServiceError::CommandFailed)?;
+
+                    if status.success() {
+                        Ok(())
+                    } else {
+                        Err(ServiceError::CommandFailed)
+                    }
+                }
+                InitSystem::Unsupported => {
+                    tracing::error!(
+                        "Unsupported init system detected, cannot activate bluetooth service"
+                    );
+                    Err(ServiceError::UnsupportedInitSystem)
+                }
+            }
+        }
     }
 
-    pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "enable", "--now", "bluetooth"])
-            .status()
-            .map(|_| ())
+    pub fn enable_bluetooth() -> impl Future<Output = Result<(), ServiceError>> + Send {
+        async {
+            match detect_init_system() {
+                InitSystem::Systemd => {
+                    let status = tokio::process::Command::new("pkexec")
+                        .args(["systemctl", "enable", "--now", "bluetooth"])
+                        .status()
+                        .await
+                        .map_err(|_| ServiceError::CommandFailed)?;
+
+                    if status.success() {
+                        Ok(())
+                    } else {
+                        Err(ServiceError::CommandFailed)
+                    }
+                }
+                InitSystem::OpenRC => {
+                    let status = tokio::process::Command::new("pkexec")
+                        .args(["rc-update", "add", "bluetooth", "default"])
+                        .status()
+                        .await
+                        .map_err(|_| ServiceError::CommandFailed)?;
+
+                    if !status.success() {
+                        return Err(ServiceError::CommandFailed);
+                    }
+
+                    // Match systemctl enable --now behavior
+                    let status = tokio::process::Command::new("pkexec")
+                        .args(["rc-service", "bluetooth", "start"])
+                        .status()
+                        .await
+                        .map_err(|_| ServiceError::CommandFailed)?;
+
+                    if status.success() {
+                        Ok(())
+                    } else {
+                        Err(ServiceError::CommandFailed)
+                    }
+                }
+                InitSystem::Unsupported => {
+                    tracing::error!(
+                        "Unsupported init system detected, cannot enable bluetooth service"
+                    );
+                    Err(ServiceError::UnsupportedInitSystem)
+                }
+            }
+        }
     }
 
-    pub fn is_bluetooth_enabled() -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-enabled", "bluetooth"])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+    pub fn is_bluetooth_active() -> Result<bool, ServiceError> {
+        let init_system = detect_init_system();
+        tracing::info!("Detected init system for bluetooth status check: {:?}", init_system);
+        
+        match init_system {
+            InitSystem::Systemd => std::process::Command::new("systemctl")
+                .args(["is-active", "bluetooth"])
+                .status()
+                .map(|status| status.success())
+                .map_err(|_| ServiceError::StatusCheckFailed),
+            InitSystem::OpenRC => {
+                let output = std::process::Command::new("rc-service")
+                    .args(["bluetooth", "status"])
+                    .output()
+                    .map_err(|_| ServiceError::StatusCheckFailed)?;
+                
+                tracing::info!(
+                    "rc-service bluetooth status: exit_code={:?}, stdout={}, stderr={}",
+                    output.status.code(),
+                    String::from_utf8_lossy(&output.stdout),
+                    String::from_utf8_lossy(&output.stderr)
+                );
+                
+                Ok(output.status.success())
+            }
+            InitSystem::Unsupported => {
+                tracing::error!(
+                    "Unsupported init system detected, cannot check bluetooth service status"
+                );
+                Err(ServiceError::UnsupportedInitSystem)
+            }
+        }
     }
 
-    pub fn is_bluetooth_active() -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-active", "bluetooth"])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+    pub fn is_bluetooth_enabled() -> Result<bool, ServiceError> {
+        match detect_init_system() {
+            InitSystem::Systemd => std::process::Command::new("systemctl")
+                .args(["is-enabled", "bluetooth"])
+                .status()
+                .map(|status| status.success())
+                .map_err(|_| ServiceError::StatusCheckFailed),
+            InitSystem::OpenRC => std::process::Command::new("rc-update")
+                .args(["show", "default"])
+                .output()
+                .map(|output| String::from_utf8_lossy(&output.stdout).contains("bluetooth"))
+                .map_err(|_| ServiceError::StatusCheckFailed),
+            InitSystem::Unsupported => {
+                tracing::error!(
+                    "Unsupported init system detected, cannot check if bluetooth service is enabled"
+                );
+                Err(ServiceError::UnsupportedInitSystem)
+            }
+        }
     }
 }

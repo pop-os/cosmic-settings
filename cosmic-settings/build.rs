@@ -2,6 +2,20 @@ use std::{env, fs, path::PathBuf};
 use xdgen::{App, Context, FluentString};
 
 fn main() {
+    // Init system support: systemd is always enabled, OpenRC is optional.
+    // When OpenRC feature is enabled, runtime detection determines which init system to use.
+    let has_openrc = cfg!(feature = "openrc");
+
+    if has_openrc {
+        println!(
+            "cargo:warning=Building with both systemd and OpenRC support (runtime detection enabled)"
+        );
+    } else {
+        println!("cargo:warning=Building with systemd support only");
+    }
+
+    println!("cargo:rerun-if-changed=build.rs");
+
     let ctx = Context::new("../i18n", env::var("CARGO_PKG_NAME").unwrap()).unwrap();
 
     [
