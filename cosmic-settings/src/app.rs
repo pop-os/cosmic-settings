@@ -569,6 +569,12 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                crate::pages::Message::Notifications(message) => {
+                    if let Some(page) = self.pages.page_mut::<desktop::notifications::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 #[cfg(feature = "page-region")]
                 crate::pages::Message::Region(message) => {
                     if let Some(page) = self.pages.page_mut::<time::region::Page>() {
