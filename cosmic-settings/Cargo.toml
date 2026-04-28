@@ -36,9 +36,6 @@ cosmic-settings-airplane-mode-subscription = { path = "../subscriptions/airplane
 cosmic-settings-bluetooth-subscription = { path = "../subscriptions/bluetooth", optional = true }
 cosmic-settings-network-manager-subscription = { path = "../subscriptions/network-manager", optional = true }
 cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
-cosmic-settings-sound-subscription = { path = "../subscriptions/sound", optional = true, features = [
-    "auto-profile-init",
-] }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 derive_setters = "0.1.9"
@@ -98,6 +95,14 @@ gettext-rs = { version = "0.7.7", features = [
 num-traits = "0.2"
 pwhash = "1"
 which = "8.0.0"
+zlink = "0.4.1"
+intmap = "3.1.3"
+
+[dependencies.cosmic-settings-audio-client]
+git = "https://github.com/pop-os/cosmic-settings-daemon"
+branch = "varlink"
+features = ["codec"]
+optional = true
 
 [dependencies.icu]
 version = "2.1.1"
@@ -181,7 +186,7 @@ page-region = [
     "dep:zbus",
     "dep:accounts-zbus",
 ]
-page-sound = ["dep:cosmic-settings-sound-subscription"]
+page-sound = ["dep:cosmic-settings-audio-client"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
 page-window-management = ["cosmic-comp-config", "dep:cosmic-settings-config"]
 page-workspaces = ["cosmic-comp-config"]
