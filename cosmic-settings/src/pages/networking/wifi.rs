@@ -1176,10 +1176,9 @@ fn devices_view() -> Section<crate::pages::Message> {
 
                     // Search input (only shown when 15+ networks)
                     if show_search {
-                        let search_input =
-                            widget::search_input(fl!("type-to-search"), &page.search_query)
-                                .on_input(Message::SearchQuery)
-                                .on_clear(Message::SearchQuery(String::new()));
+                        let search_input = widget::search_input("", &page.search_query)
+                            .on_input(Message::SearchQuery)
+                            .on_clear(Message::SearchQuery(String::new()));
                         visible_section = visible_section.push(search_input);
                     }
 
