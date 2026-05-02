@@ -29,12 +29,12 @@ impl Info {
     }
 
     #[cfg(feature = "wgpu")]
-    fn wgpu_graphics() -> Vec<String> {
+    async fn wgpu_graphics() -> Vec<String> {
         let mut graphics = Vec::new();
 
         // Use wgpu to enumerate GPUs. Works cross-platform and doesn't require external tools
         let instance = wgpu::Instance::default();
-        let adapters = instance.enumerate_adapters(wgpu::Backends::all());
+        let adapters = instance.enumerate_adapters(wgpu::Backends::all()).await;
 
         // Track seen GPUs by (vendor, device) and by name to handle different scenarios:
         // - Same GPU via different backends (Vulkan/OpenGL) -> deduplicate by device ID or name
@@ -140,7 +140,7 @@ impl Info {
         graphics
     }
 
-    pub fn load() -> Info {
+    pub async fn load() -> Info {
         let mut info = Info {
             os_architecture: architecture(),
             kernel_version: kernel_version(),
@@ -192,7 +192,7 @@ impl Info {
 
         #[cfg(feature = "wgpu")]
         {
-            info.graphics = Self::wgpu_graphics();
+            info.graphics = Self::wgpu_graphics().await;
         }
 
         info

@@ -66,7 +66,8 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
         let (task, handle) = Task::future(async move {
-            crate::pages::Message::About(Message::Info(Box::new(Info::load())))
+            let info = Info::load().await;
+            crate::pages::Message::About(Message::Info(Box::new(info)))
         })
         .abortable();
 
