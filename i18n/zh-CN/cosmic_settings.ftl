@@ -914,3 +914,5 @@ xdg-entry-keyboard-keywords = COSMIC;键盘;输入;输入源;快捷键;
 xdg-entry-window-management-keywords = COSMIC;窗口;管理;平铺;Super;键;
 xdg-entry-displays-keywords = COSMIC;显示器;屏幕;
 no-search-results = 无网络符合您的搜索。
+workspaces-navigation = 导航
+    .wraparound = 使用快捷键和手势在第一个和最后个工作区间切换
