@@ -1,14 +1,13 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-use cosmic_dbus_networkmanager::{
-    device::wireless::WirelessDevice,
-    interface::enums::{ApFlags, ApSecurityFlags, DeviceState},
-};
+use cosmic_dbus_networkmanager::device::wireless::WirelessDevice;
+use cosmic_dbus_networkmanager::interface::enums::{ApFlags, ApSecurityFlags, DeviceState};
 
 use futures::StreamExt;
 use itertools::Itertools;
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
+use std::sync::Arc;
 use zbus::zvariant::ObjectPath;
 
 use super::hw_address::HwAddress;

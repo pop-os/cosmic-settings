@@ -652,7 +652,8 @@ impl Model {
                     modifiers,
                     ..
                 }) => {
-                    use cosmic::iced::keyboard::{Key, key::Named};
+                    use cosmic::iced::keyboard::Key;
+                    use cosmic::iced::keyboard::key::Named;
 
                     if matches!(
                         key,
@@ -669,7 +670,8 @@ impl Model {
                     location,
                     ..
                 }) => {
-                    use cosmic::iced::keyboard::{Key, key::Named};
+                    use cosmic::iced::keyboard::Key;
+                    use cosmic::iced::keyboard::key::Named;
 
                     if matches!(
                         key,

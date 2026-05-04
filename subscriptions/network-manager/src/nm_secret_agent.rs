@@ -1,18 +1,14 @@
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::Debug,
-    sync::Arc,
-};
+use std::collections::{HashMap, HashSet};
+use std::fmt::Debug;
+use std::sync::Arc;
 
 use bitflags::bitflags;
 use cosmic_dbus_networkmanager::interface::settings::connection::ConnectionSettingsProxy;
 use futures::{SinkExt, Stream};
 use secure_string::SecureString;
 use tokio::sync::oneshot;
-use zbus::{
-    ObjectServer, fdo,
-    zvariant::{OwnedValue, Str},
-};
+use zbus::zvariant::{OwnedValue, Str};
+use zbus::{ObjectServer, fdo};
 
 pub type SecretSender = Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<SecureString>>>>;
 

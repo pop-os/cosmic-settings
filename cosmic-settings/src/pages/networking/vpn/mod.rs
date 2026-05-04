@@ -8,16 +8,16 @@ use std::sync::{Arc, LazyLock};
 
 use anyhow::Context;
 use cosmic::dialog::file_chooser::FileFilter;
-use cosmic::task;
-use cosmic::{
-    Apply, Element, Task,
-    iced::core::text::Wrapping,
-    iced::{Alignment, Length},
-    widget::{self, icon, space::horizontal as horizontal_space, text_input::focus},
-};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::space::horizontal as horizontal_space;
+use cosmic::widget::text_input::focus;
+use cosmic::widget::{self, icon};
+use cosmic::{Apply, Element, Task, task};
+use cosmic_settings_network_manager_subscription::current_networks::ActiveConnectionInfo;
 use cosmic_settings_network_manager_subscription::nm_secret_agent::{self, PasswordFlag};
 use cosmic_settings_network_manager_subscription::{
-    self as network_manager, NetworkManagerState, UUID, current_networks::ActiveConnectionInfo,
+    self as network_manager, NetworkManagerState, UUID,
 };
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{FutureExt, SinkExt, StreamExt};

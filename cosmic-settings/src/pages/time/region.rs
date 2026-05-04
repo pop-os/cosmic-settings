@@ -10,18 +10,15 @@ use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, button};
 use cosmic::{Apply, Element};
 use cosmic_config::{ConfigGet, ConfigSet};
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use eyre::Context;
-use icu::{
-    calendar::{types::Weekday, week},
-    datetime::{
-        DateTimeFormatter, DateTimeFormatterPreferences, fieldsets,
-        input::{Date, DateTime, Time},
-    },
-    decimal::{DecimalFormatter, input::Decimal},
-    locale::Locale,
-};
+use icu::calendar::types::Weekday;
+use icu::calendar::week;
+use icu::datetime::input::{Date, DateTime, Time};
+use icu::datetime::{DateTimeFormatter, DateTimeFormatterPreferences, fieldsets};
+use icu::decimal::DecimalFormatter;
+use icu::decimal::input::Decimal;
+use icu::locale::Locale;
 use locales_rs as locale;
 use regex::Regex;
 use slotmap::{DefaultKey, SlotMap};
@@ -497,11 +494,8 @@ mod preferred_languages {
     use crate::pages::time::region::localized_iso_codes;
 
     use super::Message;
-    use cosmic::{
-        Apply,
-        iced::{Alignment, Length},
-        widget,
-    };
+    use cosmic::iced::{Alignment, Length};
+    use cosmic::{Apply, widget};
     use cosmic_settings_page::Section;
 
     pub fn section() -> Section<crate::pages::Message> {

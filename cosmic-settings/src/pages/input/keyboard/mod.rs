@@ -5,14 +5,11 @@ pub mod shortcuts;
 
 use std::cmp;
 
-use cosmic::{
-    Apply, Element, Task,
-    app::{ContextDrawer, context_drawer},
-    cosmic_config::{self, ConfigSet},
-    iced::{Alignment, Length},
-    theme,
-    widget::{self, ListColumn, button, container, icon, list, row, settings},
-};
+use cosmic::app::{ContextDrawer, context_drawer};
+use cosmic::cosmic_config::{self, ConfigSet};
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::{self, ListColumn, button, container, icon, list, row, settings};
+use cosmic::{Apply, Element, Task, theme};
 use cosmic_comp_config::{KeyboardConfig, NumlockState, XkbConfig};
 use cosmic_settings_page::{self as page, Section, section};
 use itertools::Itertools;

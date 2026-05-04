@@ -1,17 +1,11 @@
 use cosmic_protocols::a11y::v1::client::cosmic_a11y_manager_v1::{self, ActiveState};
 use num_derive::{FromPrimitive, ToPrimitive};
-use sctk::{
-    reexports::{
-        calloop::{self, LoopSignal, channel},
-        calloop_wayland_source::WaylandSource,
-        client::{
-            ConnectError, Connection, Dispatch, Proxy, WEnum,
-            globals::{GlobalListContents, registry_queue_init},
-            protocol::wl_registry,
-        },
-    },
-    registry::RegistryState,
-};
+use sctk::reexports::calloop::{self, LoopSignal, channel};
+use sctk::reexports::calloop_wayland_source::WaylandSource;
+use sctk::reexports::client::globals::{GlobalListContents, registry_queue_init};
+use sctk::reexports::client::protocol::wl_registry;
+use sctk::reexports::client::{ConnectError, Connection, Dispatch, Proxy, WEnum};
+use sctk::registry::RegistryState;
 use tokio::sync::mpsc;
 
 #[derive(Debug, Clone, Copy)]

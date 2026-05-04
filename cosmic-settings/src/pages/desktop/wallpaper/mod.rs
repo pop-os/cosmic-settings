@@ -7,37 +7,25 @@ pub mod widgets;
 pub use config::Config;
 use url::Url;
 
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
+use cosmic::app::ContextDrawer;
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser;
-use cosmic::{
-    Apply, Element, Task,
-    iced::core::text::{Ellipsize, EllipsizeHeightLimit},
-    widget::{ColorPickerModel, color_picker::ColorPickerUpdate, icon},
+use cosmic::iced::core::text::{Ellipsize, EllipsizeHeightLimit};
+use cosmic::iced::runtime::core::image::Handle as ImageHandle;
+use cosmic::iced::{Alignment, Color, Length, Subscription, window};
+use cosmic::widget::color_picker::ColorPickerUpdate;
+use cosmic::widget::segmented_button::{self, SingleSelectModel};
+use cosmic::widget::space::horizontal as horizontal_space;
+use cosmic::widget::{
+    ColorPickerModel, button, dropdown, icon, list_column, row, settings, tab_bar, text,
 };
-use cosmic::{app::ContextDrawer, iced::runtime::core::image::Handle as ImageHandle};
-use cosmic::{
-    iced::Subscription,
-    widget::{
-        button, dropdown, list_column, row,
-        segmented_button::{self, SingleSelectModel},
-        settings,
-        space::horizontal as horizontal_space,
-        tab_bar, text,
-    },
-};
-use cosmic::{
-    iced::{Alignment, Color, Length, window},
-    surface,
-};
+use cosmic::{Apply, Element, Task, surface};
 use cosmic_bg_config::Source;
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_wallpaper::{self as wallpaper, Entry, ScalingMode};
 use image::imageops::FilterType::Lanczos3;
 use image::{ImageBuffer, Rgba};

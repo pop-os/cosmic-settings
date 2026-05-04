@@ -1,20 +1,15 @@
 use std::collections::HashSet;
 use std::fmt::Write;
 
-use cosmic::{
-    Apply,
-    iced::core::text::Wrapping,
-    iced::{Element, Length, stream},
-    surface,
-    widget::{self, icon, settings, svg, text},
-};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::{Element, Length, stream};
+use cosmic::widget::{self, icon, settings, svg, text};
+use cosmic::{Apply, surface};
 use cosmic_comp_config::{ZoomConfig, ZoomMovement};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{Action, Binding, shortcuts};
-use cosmic_settings_page::{
-    self as page, Entity,
-    section::{self, Section},
-};
+use cosmic_settings_page::section::{self, Section};
+use cosmic_settings_page::{self as page, Entity};
 use futures::SinkExt;
 use slotmap::SlotMap;
 use tracing::error;

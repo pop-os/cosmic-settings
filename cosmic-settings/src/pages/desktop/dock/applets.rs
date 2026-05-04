@@ -1,22 +1,16 @@
-use cosmic::{
-    Apply, Element, Task,
-    app::ContextDrawer,
-    cosmic_config::CosmicConfigEntry,
-    iced::{Alignment, Length},
-    widget::{button, container, row},
-};
+use cosmic::app::ContextDrawer;
+use cosmic::cosmic_config::CosmicConfigEntry;
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::{button, container, row};
+use cosmic::{Apply, Element, Task};
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::{Key, SlotMap};
 use std::borrow::Cow;
 
-use crate::{
-    app,
-    pages::{
-        self,
-        desktop::panel::applets_inner::{self, AppletsPage, ContextDrawerVariant, lists},
-    },
-};
+use crate::app;
+use crate::pages::desktop::panel::applets_inner::{self, AppletsPage, ContextDrawerVariant, lists};
+use crate::pages::{self};
 
 pub(crate) struct Page {
     inner: applets_inner::Page,

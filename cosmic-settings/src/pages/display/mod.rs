@@ -20,9 +20,10 @@ use cosmic_settings_page::{self as page, Section, section};
 use futures::SinkExt;
 use indexmap::Equivalent;
 use slotmap::{Key, SecondaryMap, SlotMap};
+use std::collections::BTreeMap;
+use std::process::ExitStatus;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
-use std::{collections::BTreeMap, process::ExitStatus};
 use tokio::sync::oneshot;
 
 static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];

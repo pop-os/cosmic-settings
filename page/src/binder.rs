@@ -3,15 +3,12 @@
 
 use crate::section::{self, Section};
 use crate::{Content, Info, Page};
-use cosmic::Element;
-use cosmic::Task;
 use cosmic::app::ContextDrawer;
+use cosmic::{Element, Task};
 use regex::Regex;
 use slotmap::{SecondaryMap, SlotMap, SparseSecondaryMap};
-use std::{
-    any::{Any, TypeId},
-    collections::HashMap,
-};
+use std::any::{Any, TypeId};
+use std::collections::HashMap;
 
 /// All settings pages are registered and managed by the [`Binder`].
 pub struct Binder<Message> {

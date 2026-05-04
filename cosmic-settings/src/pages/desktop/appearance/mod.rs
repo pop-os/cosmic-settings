@@ -21,14 +21,13 @@ use cosmic::cosmic_theme::{CornerRadii, Density, Roundness, ThemeBuilder, ThemeM
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced::Subscription;
 use cosmic::iced::core::{Alignment, Length};
-use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, row, settings, space::horizontal, text,
-};
+use cosmic::widget::color_picker::ColorPickerUpdate;
+use cosmic::widget::space::horizontal;
+use cosmic::widget::{button, container, row, settings, text};
 use cosmic::{Apply, Element, Task, widget};
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use ron::ser::PrettyConfig;
 use slotmap::{Key, SlotMap};
 

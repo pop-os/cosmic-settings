@@ -3,7 +3,9 @@
 
 #[cfg(feature = "wgpu")]
 use cosmic::iced::wgpu;
-use std::{collections::HashMap, collections::HashSet, ffi::OsStr, process::Command};
+use std::collections::{HashMap, HashSet};
+use std::ffi::OsStr;
+use std::process::Command;
 
 #[must_use]
 #[derive(Clone, Debug, Default)]

@@ -3,11 +3,9 @@ use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet};
 use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::core::{Color, Length};
-use cosmic::widget::{
-    ColorPickerModel, color_picker::ColorPickerUpdate, container, flex_row, settings, text,
-};
-use cosmic::{Apply, Task};
-use cosmic::{Element, widget};
+use cosmic::widget::color_picker::ColorPickerUpdate;
+use cosmic::widget::{ColorPickerModel, container, flex_row, settings, text};
+use cosmic::{Apply, Element, Task, widget};
 use cosmic_config::ConfigGet;
 use std::sync::Arc;
 use tracing::error;
@@ -15,11 +13,8 @@ use tracing::error;
 use crate::app;
 use crate::widget::color_picker_context_view;
 
-use super::{
-    ContextView, Message, font_config, icon_themes,
-    icon_themes::{IconHandles, IconThemes},
-    theme_manager,
-};
+use super::icon_themes::{IconHandles, IconThemes};
+use super::{ContextView, Message, font_config, icon_themes, theme_manager};
 
 pub struct Content {
     context_view: Option<ContextView>,

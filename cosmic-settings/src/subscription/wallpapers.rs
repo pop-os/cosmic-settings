@@ -1,10 +1,8 @@
 use std::path::PathBuf;
 
-use cosmic::iced::{
-    Subscription,
-    futures::{SinkExt, StreamExt, channel::mpsc::Sender, future},
-    stream,
-};
+use cosmic::iced::futures::channel::mpsc::Sender;
+use cosmic::iced::futures::{SinkExt, StreamExt, future};
+use cosmic::iced::{Subscription, stream};
 use image::{ImageBuffer, Rgba};
 
 #[derive(Clone, Debug)]

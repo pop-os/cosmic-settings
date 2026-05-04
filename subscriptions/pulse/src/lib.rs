@@ -4,37 +4,30 @@
 // Make sure not to fail if pulse not found, and reconnect?
 // change to device shouldn't send osd?
 
-use futures::{SinkExt, executor::block_on};
+use futures::SinkExt;
+use futures::executor::block_on;
 use iced_futures::{Subscription, stream};
-use libpulse_binding::{
-    callbacks::ListResult,
-    channelmap::Map,
-    context::{
-        Context, FlagSet, State,
-        introspect::{CardInfo, CardProfileInfo, Introspector, ServerInfo, SinkInfo, SourceInfo},
-        subscribe::{Facility, InterestMaskSet, Operation},
-    },
-    def::{PortAvailable, Retval},
-    mainloop::{
-        api::MainloopApi,
-        events::io::IoEventInternal,
-        standard::{IterateResult, Mainloop},
-    },
-    volume::{ChannelVolumes, Volume},
+use libpulse_binding::callbacks::ListResult;
+use libpulse_binding::channelmap::Map;
+use libpulse_binding::context::introspect::{
+    CardInfo, CardProfileInfo, Introspector, ServerInfo, SinkInfo, SourceInfo,
 };
-use std::{
-    borrow::Cow,
-    cell::{Cell, RefCell},
-    convert::Infallible,
-    io::{Read, Write},
-    os::{
-        fd::{FromRawFd, IntoRawFd, RawFd},
-        raw::c_void,
-    },
-    rc::Rc,
-    str::FromStr,
-    sync::mpsc,
-};
+use libpulse_binding::context::subscribe::{Facility, InterestMaskSet, Operation};
+use libpulse_binding::context::{Context, FlagSet, State};
+use libpulse_binding::def::{PortAvailable, Retval};
+use libpulse_binding::mainloop::api::MainloopApi;
+use libpulse_binding::mainloop::events::io::IoEventInternal;
+use libpulse_binding::mainloop::standard::{IterateResult, Mainloop};
+use libpulse_binding::volume::{ChannelVolumes, Volume};
+use std::borrow::Cow;
+use std::cell::{Cell, RefCell};
+use std::convert::Infallible;
+use std::io::{Read, Write};
+use std::os::fd::{FromRawFd, IntoRawFd, RawFd};
+use std::os::raw::c_void;
+use std::rc::Rc;
+use std::str::FromStr;
+use std::sync::mpsc;
 
 pub fn subscription() -> iced_futures::Subscription<Event> {
     Subscription::run_with("pulse", |_| {

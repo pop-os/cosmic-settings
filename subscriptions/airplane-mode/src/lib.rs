@@ -42,8 +42,9 @@ fn is_airplane_mode(rfkill_state: &HashMap<u32, rfkill::DeviceState>) -> bool {
 
 mod rfkill {
     use futures::stream::Stream;
+    use std::collections::HashMap;
     use std::os::unix::fs::OpenOptionsExt;
-    use std::{collections::HashMap, fs, io, mem, slice};
+    use std::{fs, io, mem, slice};
     use tokio::io::unix::AsyncFd;
 
     // /usr/include/linux/rfkill.h

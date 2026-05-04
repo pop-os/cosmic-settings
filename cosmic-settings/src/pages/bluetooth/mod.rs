@@ -3,7 +3,8 @@
 
 use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::{Alignment, Length, color};
-use cosmic::widget::{self, settings, space::horizontal as horizontal_space, text};
+use cosmic::widget::space::horizontal as horizontal_space;
+use cosmic::widget::{self, settings, text};
 use cosmic::{Apply, Element, Task, theme};
 use cosmic_settings_bluetooth_subscription::*;
 use cosmic_settings_page::{self as page, Section, section};
