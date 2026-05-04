@@ -3,15 +3,11 @@
 
 // TODO make settings work
 
-use cosmic::{
-    Apply, Element,
-    cosmic_config::{self, ConfigGet, ConfigSet},
-    surface,
-    widget::{self, settings},
-};
+use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
+use cosmic::widget::{self, settings};
+use cosmic::{Apply, Element, surface};
 use cosmic_comp_config::workspace::{Action, WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 use tracing::error;
 

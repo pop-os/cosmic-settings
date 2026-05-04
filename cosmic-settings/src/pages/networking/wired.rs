@@ -1,19 +1,18 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{collections::BTreeSet, sync::Arc};
+use std::collections::BTreeSet;
+use std::sync::Arc;
 
 use anyhow::Context;
-use cosmic::{
-    Apply, Element, Task,
-    iced::core::text::Wrapping,
-    iced::{Alignment, Length},
-    widget::{self, icon, space::horizontal as horizontal_space},
-};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::space::horizontal as horizontal_space;
+use cosmic::widget::{self, icon};
+use cosmic::{Apply, Element, Task};
 use cosmic_dbus_networkmanager::interface::enums::DeviceState;
-use cosmic_settings_network_manager_subscription::{
-    self as network_manager, NetworkManagerState, current_networks::ActiveConnectionInfo,
-};
+use cosmic_settings_network_manager_subscription::current_networks::ActiveConnectionInfo;
+use cosmic_settings_network_manager_subscription::{self as network_manager, NetworkManagerState};
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
 

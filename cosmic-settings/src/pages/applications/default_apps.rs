@@ -2,19 +2,14 @@
 // Copyright 2024 bbb651 <bar.ye651@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{
-    borrow::Cow,
-    collections::{BTreeMap, BTreeSet},
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::borrow::Cow;
+use std::collections::{BTreeMap, BTreeSet};
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
-use cosmic::{
-    Apply, Element, Task,
-    iced::{Alignment, Length},
-    surface,
-    widget::{self, dropdown, icon, settings},
-};
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::{self, dropdown, icon, settings};
+use cosmic::{Apply, Element, Task, surface};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::shortcuts::SystemActions;
 use cosmic_settings_config::shortcuts::action::System;

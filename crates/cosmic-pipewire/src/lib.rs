@@ -21,20 +21,19 @@ pub use route::{Route, RouteProps};
 mod spa_utils;
 pub use spa_utils::Channel;
 
-use libspa::{
-    param::{ParamType, format::FormatProperties},
-    pod::{self, Pod, serialize::PodSerializer},
-    utils::SpaTypes,
-};
-use pipewire::{
-    device::{DeviceChangeMask, DeviceListener},
-    main_loop::MainLoopWeak,
-    metadata::MetadataListener,
-    node::NodeListener,
-    proxy::{ProxyListener, ProxyT},
-    types::ObjectType,
-};
-use std::{cell::RefCell, rc::Rc};
+use libspa::param::ParamType;
+use libspa::param::format::FormatProperties;
+use libspa::pod::serialize::PodSerializer;
+use libspa::pod::{self, Pod};
+use libspa::utils::SpaTypes;
+use pipewire::device::{DeviceChangeMask, DeviceListener};
+use pipewire::main_loop::MainLoopWeak;
+use pipewire::metadata::MetadataListener;
+use pipewire::node::NodeListener;
+use pipewire::proxy::{ProxyListener, ProxyT};
+use pipewire::types::ObjectType;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub type NodeId = u32;
 pub type RouteId = u32;

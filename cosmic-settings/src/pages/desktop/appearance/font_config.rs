@@ -3,11 +3,8 @@
 
 use std::sync::Arc;
 
-use cosmic::{
-    Apply, Element, Task,
-    config::{CosmicTk, FontConfig},
-    widget,
-};
+use cosmic::config::{CosmicTk, FontConfig};
+use cosmic::{Apply, Element, Task, widget};
 use cosmic_config::ConfigSet;
 
 use crate::app;

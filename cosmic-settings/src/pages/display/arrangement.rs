@@ -5,11 +5,9 @@ use cosmic::Renderer;
 use cosmic::iced::core::renderer::Quad;
 use cosmic::iced::core::widget::{Tree, tree};
 use cosmic::iced::core::{
-    self as core, Border, Clipboard, Element, Layout, Length, Rectangle, Renderer as IcedRenderer,
-    Shell, Size, Widget,
+    self as core, Border, Clipboard, Element, Layout, Length, Point, Rectangle,
+    Renderer as IcedRenderer, Shell, Size, Widget, alignment, layout, mouse, renderer, text, touch,
 };
-use cosmic::iced::core::{Point, layout, mouse, renderer, touch};
-use cosmic::iced::core::{alignment, text};
 use cosmic::widget::segmented_button::{self, SingleSelectModel};
 use cosmic_randr_shell::{self as randr, OutputKey};
 use randr::Transform;

@@ -10,8 +10,11 @@ use core::hash;
 use cosmic_dbus_networkmanager::nm::NetworkManager;
 use futures::{SinkExt, StreamExt};
 use iced_futures::{self, Subscription, stream};
-use std::{fmt::Debug, hash::Hash, sync::Arc};
-use zbus::{Connection, zvariant::ObjectPath};
+use std::fmt::Debug;
+use std::hash::Hash;
+use std::sync::Arc;
+use zbus::Connection;
+use zbus::zvariant::ObjectPath;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DeviceInfo {

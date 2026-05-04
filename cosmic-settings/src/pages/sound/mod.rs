@@ -3,12 +3,10 @@
 
 pub mod device_profiles;
 
-use cosmic::{
-    Apply, Element, Task,
-    iced::{Alignment, Length, window},
-    surface,
-    widget::{self, settings, space::horizontal as horizontal_space},
-};
+use cosmic::iced::{Alignment, Length, window};
+use cosmic::widget::space::horizontal as horizontal_space;
+use cosmic::widget::{self, settings};
+use cosmic::{Apply, Element, Task, surface};
 use cosmic_config::{Config, ConfigGet, ConfigSet};
 use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_sound_subscription as subscription;

@@ -1,18 +1,14 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::{
-    Apply, Element,
-    iced::Length,
-    surface,
-    widget::{self, settings},
-};
+use cosmic::iced::Length;
+use cosmic::widget::{self, settings};
+use cosmic::{Apply, Element, surface};
 
 use cosmic_comp_config::CosmicCompConfig;
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{Action, Binding, Shortcuts, shortcuts};
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 use tracing::error;
 

@@ -7,11 +7,9 @@ use cosmic_pipewire as pipewire;
 use futures::{SinkExt, Stream};
 use intmap::IntMap;
 use pipewire::Availability;
-use std::{
-    process::Stdio,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::process::Stdio;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 pub type DeviceId = u32;
 pub type NodeId = u32;

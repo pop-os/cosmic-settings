@@ -4,25 +4,22 @@
 mod getent;
 
 use crate::pages;
-use cosmic::{
-    Apply, Element,
-    dialog::file_chooser,
-    iced::{Alignment, Length},
-    widget::{self, column, icon, list, row, settings, space::horizontal, text},
-};
+use cosmic::dialog::file_chooser;
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::space::horizontal;
+use cosmic::widget::{self, column, icon, list, row, settings, text};
+use cosmic::{Apply, Element};
 use cosmic_settings_page::{self as page, Section, section};
 use image::GenericImageView;
 use pwhash::{bcrypt, md5_crypt, sha256_crypt, sha512_crypt};
 use regex::Regex;
 use slotmap::SlotMap;
-use std::{
-    collections::HashMap,
-    fs::File,
-    future::Future,
-    io::{BufRead, BufReader},
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::collections::HashMap;
+use std::fs::File;
+use std::future::Future;
+use std::io::{BufRead, BufReader};
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use url::Url;
 use zbus_polkit::policykit1::CheckAuthorizationFlags;
 

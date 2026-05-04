@@ -4,7 +4,8 @@
 pub mod device {
     use futures::{FutureExt, Stream, StreamExt};
     use iced_futures::Subscription;
-    use std::{fmt::Debug, hash::Hash};
+    use std::fmt::Debug;
+    use std::hash::Hash;
     use upower_dbus::{BatteryType, DeviceProxy, UPowerProxy};
 
     pub fn device_subscription<I: 'static + Hash + Copy + Send + Sync + Debug>(
@@ -97,7 +98,8 @@ pub mod kbdbacklight {
 
     use futures::{FutureExt, Stream, StreamExt};
     use iced_futures::Subscription;
-    use std::{fmt::Debug, hash::Hash};
+    use std::fmt::Debug;
+    use std::hash::Hash;
     use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
     use tokio_stream::wrappers::UnboundedReceiverStream;
     use upower_dbus::{BrightnessChanged, KbdBacklightProxy};

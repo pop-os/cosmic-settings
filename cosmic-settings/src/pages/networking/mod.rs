@@ -5,14 +5,14 @@ pub mod vpn;
 pub mod wifi;
 pub mod wired;
 
-use std::{ffi::OsStr, process::Stdio, sync::Arc};
+use std::ffi::OsStr;
+use std::process::Stdio;
+use std::sync::Arc;
 
 use anyhow::Context;
 use cosmic::{Apply, Element, Task, widget};
-use cosmic_dbus_networkmanager::{
-    interface::enums::{DeviceState, DeviceType},
-    nm::NetworkManager,
-};
+use cosmic_dbus_networkmanager::interface::enums::{DeviceState, DeviceType};
+use cosmic_dbus_networkmanager::nm::NetworkManager;
 use cosmic_settings_network_manager_subscription as network_manager;
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};

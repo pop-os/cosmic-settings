@@ -1,10 +1,9 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-use cosmic_dbus_networkmanager::{
-    active_connection::ActiveConnection, device::SpecificDevice,
-    interface::enums::ActiveConnectionState,
-};
+use cosmic_dbus_networkmanager::active_connection::ActiveConnection;
+use cosmic_dbus_networkmanager::device::SpecificDevice;
+use cosmic_dbus_networkmanager::interface::enums::ActiveConnectionState;
 use std::net::Ipv4Addr;
 
 pub async fn active_connections(

@@ -10,23 +10,21 @@ use cosmic::iced;
 use cosmic::iced::core::clipboard::IconSurface;
 use cosmic::widget::{Column, button, column, container, icon, list_column, row, text, text_input};
 
-use cosmic::{
-    Apply, Element,
-    cosmic_config::{Config, CosmicConfigEntry},
-    iced::core::{
-        Clipboard, Shell, Widget, layout, renderer,
-        widget::{Operation, Tree, tree},
-    },
-    iced::runtime::{Task, core::id::Id},
-    iced::{
-        Alignment, Border, Color, Length, Point, Rectangle, Size, Vector, core::window, event,
-        mouse, overlay, touch,
-    },
-    theme,
+use cosmic::cosmic_config::{Config, CosmicConfigEntry};
+use cosmic::iced::core::widget::{Operation, Tree, tree};
+use cosmic::iced::core::{Clipboard, Shell, Widget, layout, renderer, window};
+use cosmic::iced::runtime::Task;
+use cosmic::iced::runtime::core::id::Id;
+use cosmic::iced::{
+    Alignment, Border, Color, Length, Point, Rectangle, Size, Vector, event, mouse, overlay, touch,
 };
+use cosmic::{Apply, Element, theme};
 
+use std::borrow::Cow;
+use std::fmt::Debug;
+use std::mem;
 use std::path::{Path, PathBuf};
-use std::{borrow::Cow, fmt::Debug, mem, sync::LazyLock};
+use std::sync::LazyLock;
 
 use crate::{app, pages};
 use cosmic_panel_config::CosmicPanelConfig;

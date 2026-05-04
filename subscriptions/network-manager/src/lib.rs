@@ -9,34 +9,33 @@ pub mod hw_address;
 pub mod nm_secret_agent;
 pub mod wireless_enabled;
 
-use std::{collections::HashMap, fmt::Debug, hash::Hash, sync::Arc, time::Duration};
+use std::collections::HashMap;
+use std::fmt::Debug;
+use std::hash::Hash;
+use std::sync::Arc;
+use std::time::Duration;
 
 use available_wifi::NetworkType;
 pub use cosmic_dbus_networkmanager as dbus;
 pub use dbus::settings::connection::Settings;
 
-use cosmic_dbus_networkmanager::{
-    device::SpecificDevice,
-    interface::{
-        enums::{self, ActiveConnectionState, DeviceType, NmConnectivityState},
-        settings::connection::ConnectionSettingsProxy,
-    },
-    nm::NetworkManager,
-    settings::{NetworkManagerSettings, connection::Connection},
+use cosmic_dbus_networkmanager::device::SpecificDevice;
+use cosmic_dbus_networkmanager::interface::enums::{
+    self, ActiveConnectionState, DeviceType, NmConnectivityState,
 };
-use futures::{
-    FutureExt, SinkExt, StreamExt,
-    channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded},
-};
+use cosmic_dbus_networkmanager::interface::settings::connection::ConnectionSettingsProxy;
+use cosmic_dbus_networkmanager::nm::NetworkManager;
+use cosmic_dbus_networkmanager::settings::NetworkManagerSettings;
+use cosmic_dbus_networkmanager::settings::connection::Connection;
+use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
+use futures::{FutureExt, SinkExt, StreamExt};
 use iced_futures::{Subscription, stream};
 use secure_string::SecureString;
 use tokio::process::Command;
 use zbus::zvariant::{self, ObjectPath, Value};
 
-use self::{
-    available_wifi::{AccessPoint, handle_wireless_device},
-    current_networks::{ActiveConnectionInfo, active_connections},
-};
+use self::available_wifi::{AccessPoint, handle_wireless_device};
+use self::current_networks::{ActiveConnectionInfo, active_connections};
 
 pub type SSID = Arc<str>;
 pub type UUID = Arc<str>;

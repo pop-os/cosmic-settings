@@ -2,11 +2,9 @@ use std::any::TypeId;
 
 use ashpd::desktop::location::{Location, LocationProxy};
 use chrono::NaiveDate;
-use cosmic::iced::{
-    Subscription,
-    futures::{SinkExt, StreamExt, channel::mpsc::Sender, future},
-    stream,
-};
+use cosmic::iced::futures::channel::mpsc::Sender;
+use cosmic::iced::futures::{SinkExt, StreamExt, future};
+use cosmic::iced::{Subscription, stream};
 use sunrise::{Coordinates, SolarDay, SolarEvent};
 use tokio::select;
 

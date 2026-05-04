@@ -5,7 +5,6 @@ use crate::PageCommands;
 use crate::config::Config;
 #[cfg(feature = "page-accessibility")]
 use crate::pages::accessibility;
-use crate::pages::applications;
 #[cfg(feature = "page-bluetooth")]
 use crate::pages::bluetooth;
 use crate::pages::desktop::{self, appearance};
@@ -19,26 +18,21 @@ use crate::pages::networking;
 use crate::pages::power;
 #[cfg(feature = "page-sound")]
 use crate::pages::sound;
-use crate::pages::{self, system, time};
+use crate::pages::{self, applications, system, time};
 use crate::subscription::desktop_files;
 use crate::widget::{page_title, search_header};
+use cosmic::app::context_drawer::ContextDrawer;
+use cosmic::app::{Core, Task};
 #[cfg(feature = "wayland")]
 use cosmic::cctk::{sctk::output::OutputInfo, wayland_client::protocol::wl_output::WlOutput};
-use cosmic::{
-    Element,
-    app::{Core, Task, context_drawer::ContextDrawer},
-    iced::{
-        self, Length, Subscription,
-        event::{self, PlatformSpecific},
-        keyboard, window,
-    },
-    prelude::*,
-    surface,
-    widget::{
-        button, column, container, icon, id_container, nav_bar, row, scrollable, segmented_button,
-        settings, text_input,
-    },
+use cosmic::iced::event::{self, PlatformSpecific};
+use cosmic::iced::{self, Length, Subscription, keyboard, window};
+use cosmic::prelude::*;
+use cosmic::widget::{
+    button, column, container, icon, id_container, nav_bar, row, scrollable, segmented_button,
+    settings, text_input,
 };
+use cosmic::{Element, surface};
 #[cfg(feature = "cosmic-comp-config")]
 use cosmic_comp_config::CosmicCompConfig;
 #[cfg(feature = "wayland")]
@@ -52,8 +46,9 @@ use desktop::{
 #[cfg(feature = "wayland")]
 use event::wayland;
 use page::Entity;
+use std::borrow::Cow;
 use std::collections::BTreeSet;
-use std::{borrow::Cow, str::FromStr};
+use std::str::FromStr;
 
 #[allow(clippy::struct_excessive_bools)]
 #[allow(clippy::module_name_repetitions)]

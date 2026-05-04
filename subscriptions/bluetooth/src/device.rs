@@ -3,11 +3,9 @@
 
 use crate::{Active, Event};
 use futures::join;
-use std::{
-    collections::HashMap,
-    hash::{Hash, Hasher},
-    time::Duration,
-};
+use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+use std::time::Duration;
 use zbus::zvariant::OwnedObjectPath;
 
 const DEFAILT_DEVICE_ICON: &str = "bluetooth-symbolic";

@@ -2,24 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use crate::widget::selection_context_item;
-use cosmic::{
-    Apply, Element, Task,
-    app::ContextDrawer,
-    cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::core::text::Wrapping,
-    surface,
-    widget::{self, dropdown, settings},
-};
+use cosmic::app::ContextDrawer;
+use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::widget::{self, dropdown, settings};
+use cosmic::{Apply, Element, Task, surface};
 use cosmic_settings_page::{self as page, Section, section};
-use icu::{
-    calendar::{Gregorian, types::Weekday, week},
-    datetime::{
-        DateTimeFormatter, DateTimeFormatterPreferences, fieldsets,
-        input::{Date, DateTime, Time},
-        options::TimePrecision,
-    },
-    locale::{Locale, preferences::extensions::unicode::keywords::HourCycle},
-};
+use icu::calendar::types::Weekday;
+use icu::calendar::{Gregorian, week};
+use icu::datetime::input::{Date, DateTime, Time};
+use icu::datetime::options::TimePrecision;
+use icu::datetime::{DateTimeFormatter, DateTimeFormatterPreferences, fieldsets};
+use icu::locale::Locale;
+use icu::locale::preferences::extensions::unicode::keywords::HourCycle;
 use slotmap::{Key, SlotMap};
 pub use timedate_zbus::TimeDateProxy;
 use tracing::error;

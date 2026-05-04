@@ -1,25 +1,17 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{
-    process::ExitStatus,
-    sync::{
-        Arc,
-        atomic::{AtomicBool, Ordering},
-    },
-};
+use std::process::ExitStatus;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
-use cosmic::{
-    Apply, Element, Task,
-    cosmic_config::{self, ConfigGet, ConfigSet},
-    iced::stream,
-    surface,
-    widget::{self, dropdown, settings, text},
-};
+use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
+use cosmic::iced::stream;
+use cosmic::widget::{self, dropdown, settings, text};
+use cosmic::{Apply, Element, Task, surface};
 use cosmic_comp_config::{EavesdroppingKeyboardMode, XwaylandDescaling, XwaylandEavesdropping};
 use cosmic_randr_shell::List;
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use futures::SinkExt;
 use slotmap::SlotMap;
 use tokio::sync::oneshot;

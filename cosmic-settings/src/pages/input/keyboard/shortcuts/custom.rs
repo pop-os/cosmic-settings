@@ -590,7 +590,8 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         core: &cosmic::Core,
     ) -> cosmic::iced::Subscription<crate::pages::Message> {
-        use cosmic::iced::{self, event::listen_with};
+        use cosmic::iced::event::listen_with;
+        use cosmic::iced::{self};
 
         cosmic::iced::Subscription::batch(vec![
             if self.add_shortcut.active
@@ -605,7 +606,8 @@ impl page::Page<crate::pages::Message> for Page {
                         modifiers,
                         ..
                     }) => {
-                        use cosmic::iced::keyboard::{Key, key::Named};
+                        use cosmic::iced::keyboard::Key;
+                        use cosmic::iced::keyboard::key::Named;
                         if matches!(
                             key,
                             Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)
@@ -624,7 +626,8 @@ impl page::Page<crate::pages::Message> for Page {
                         location,
                         ..
                     }) => {
-                        use cosmic::iced::keyboard::{Key, key::Named};
+                        use cosmic::iced::keyboard::Key;
+                        use cosmic::iced::keyboard::key::Named;
                         if matches!(
                             key,
                             Key::Named(Named::Super | Named::Alt | Named::Control | Named::Shift)

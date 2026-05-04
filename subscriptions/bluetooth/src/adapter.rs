@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use crate::{Active, Event};
-use std::{
-    collections::HashMap,
-    convert::Infallible,
-    hash::{Hash, Hasher},
-    path::PathBuf,
-    time::Duration,
-};
+use std::collections::HashMap;
+use std::convert::Infallible;
+use std::hash::{Hash, Hasher};
+use std::path::PathBuf;
+use std::time::Duration;
 use zbus::zvariant::OwnedObjectPath;
 
 #[derive(Default, Debug, Clone)]
