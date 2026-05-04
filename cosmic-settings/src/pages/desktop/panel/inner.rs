@@ -2,7 +2,7 @@ use cosmic::{
     Element, Task,
     cctk::sctk::reexports::client::{Proxy, backend::ObjectId, protocol::wl_output::WlOutput},
     cosmic_config::{self, CosmicConfigEntry},
-    cosmic_theme::Density,
+    cosmic_theme::{Density, Roundness},
     iced::{Alignment, Length},
     surface,
     widget::{button, container, dropdown, row, settings, slider, space, text},
@@ -16,8 +16,6 @@ use cosmic_panel_config::{
 };
 use cosmic_settings_page::{self as page, Section};
 use std::{collections::HashMap, time::Duration};
-
-use crate::pages::desktop::appearance::Roundness;
 
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
