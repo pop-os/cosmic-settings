@@ -142,8 +142,21 @@ impl page::Page<crate::pages::Message> for Page {
             let user_entries =
                 freedesktop_desktop_entry::Iter::new(user_dirs.into_iter()).entries(Some(&locales));
 
+            let mut user_entries_vec = user_entries.collect_vec();
+            user_entries_vec.sort_by(|a, b| {
+                let name_a = a
+                    .name(&locales)
+                    .map(|n| n.to_lowercase())
+                    .unwrap_or_else(|| a.appid.to_lowercase());
+                let name_b = b
+                    .name(&locales)
+                    .map(|n| n.to_lowercase())
+                    .unwrap_or_else(|| b.appid.to_lowercase());
+                name_a.cmp(&name_b)
+            });
+
             let mut apps_hash = HashMap::with_capacity(1);
-            apps_hash.insert(DirectoryType::User, user_entries.collect_vec());
+            apps_hash.insert(DirectoryType::User, user_entries_vec);
 
             Message::UpdateStartupApplications(CachedApps {
                 apps: apps_hash,
@@ -246,6 +259,17 @@ impl Page {
                                 if let Some(target_apps) = target_apps {
                                     let mut new_apps = target_apps.clone();
                                     new_apps.push(app.clone());
+                                    new_apps.sort_by(|a, b| {
+                                        let name_a = a
+                                            .name(&cached_startup_apps.locales)
+                                            .map(|n| n.to_lowercase())
+                                            .unwrap_or_else(|| a.appid.to_lowercase());
+                                        let name_b = b
+                                            .name(&cached_startup_apps.locales)
+                                            .map(|n| n.to_lowercase())
+                                            .unwrap_or_else(|| b.appid.to_lowercase());
+                                        name_a.cmp(&name_b)
+                                    });
 
                                     cached_startup_apps
                                         .apps
@@ -472,6 +496,18 @@ fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
         result.push(entry.clone());
         dedupe.insert(app_id.to_owned());
     }
+
+    result.sort_by(|a, b| {
+        let name_a = a
+            .name(&locales)
+            .map(|n| n.to_lowercase())
+            .unwrap_or_else(|| a.appid.to_lowercase());
+        let name_b = b
+            .name(&locales)
+            .map(|n| n.to_lowercase())
+            .unwrap_or_else(|| b.appid.to_lowercase());
+        name_a.cmp(&name_b)
+    });
 
     result
 }
