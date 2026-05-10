@@ -238,8 +238,8 @@ impl Page {
 
                 #[cfg(feature = "wayland")]
                 tokio::task::spawn(async move {
-                    Self::update_panel_radii(r);
                     Self::update_dock_padding(r);
+                    Self::update_panel_radii(r);
                 });
             }
 
@@ -520,112 +520,65 @@ impl Page {
 
     // TODO: cache panel and dock configs so that they needn't be re-read
     #[cfg(feature = "wayland")]
+    fn load_panel_config(name: &str) -> Option<(Config, CosmicPanelConfig)> {
+        let helper = CosmicPanelConfig::cosmic_config(name).ok()?;
+        let config = CosmicPanelConfig::get_entry(&helper).ok()?;
+        (config.name == name).then_some((helper, config))
+    }
+
+    #[cfg(feature = "wayland")]
     pub fn update_panel_radii(roundness: Roundness) {
-        let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
-        let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
+        let corner_radii: CornerRadii = roundness.into();
+        let radius = corner_radii.radius_xl[0] as u32;
 
-        let mut panel_config = panel_config_helper.as_ref().and_then(|config_helper| {
-            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
-            (panel_config.name == "Panel").then_some(panel_config)
-        });
+        for name in ["Panel", "Dock"] {
+            let Some((helper, mut config)) = Self::load_panel_config(name) else {
+                continue;
+            };
 
-        let mut dock_config = dock_config_helper.as_ref().and_then(|config_helper| {
-            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
-            (panel_config.name == "Dock").then_some(panel_config)
-        });
-
-        if let Some(panel_config_helper) = panel_config_helper.as_ref()
-            && let Some(panel_config) = panel_config.as_mut()
-        {
-            let radii = if panel_config.anchor_gap {
-                let cornder_radii: CornerRadii = roundness.into();
-                cornder_radii.radius_xl[0] as u32
-            } else if matches!(roundness, Roundness::Round) && !panel_config.expand_to_edges {
-                12
+            let new_radius = if config.anchor_gap {
+                radius
+            } else if !config.expand_to_edges {
+                radius.min(12)
             } else {
                 0
             };
 
-            if let Err(why) = panel_config.set_border_radius(panel_config_helper, radii) {
-                tracing::error!(?why, "Error updating panel corner radii");
-            }
-        }
-
-        if let Some(dock_config_helper) = dock_config_helper.as_ref()
-            && let Some(dock_config) = dock_config.as_mut()
-        {
-            let radii = if dock_config.anchor_gap {
-                let cornder_radii: CornerRadii = roundness.into();
-                cornder_radii.radius_xl[0] as u32
-            } else if matches!(roundness, Roundness::Round) && !dock_config.expand_to_edges {
-                12
-            } else {
-                0
-            };
-
-            if let Err(why) = dock_config.set_border_radius(dock_config_helper, radii) {
-                tracing::error!(?why, "Error updating dock corner radii");
+            if let Err(why) = config.set_border_radius(&helper, new_radius) {
+                tracing::error!(?why, "Error updating {name} corner radii");
             }
         }
     }
 
     #[cfg(feature = "wayland")]
     pub fn update_dock_padding(roundness: Roundness) {
-        let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
+        let Some((helper, mut config)) = Self::load_panel_config("Dock") else {
+            return;
+        };
 
-        let mut dock_config = dock_config_helper.as_ref().and_then(|config_helper| {
-            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
-            (panel_config.name == "Dock").then_some(panel_config)
-        });
+        let padding = match roundness {
+            Roundness::Round | Roundness::SlightlyRound => 4,
+            Roundness::Square => 0,
+        };
 
-        if let Some(dock_config_helper) = dock_config_helper.as_ref()
-            && let Some(dock_config) = dock_config.as_mut()
-        {
-            let padding = match roundness {
-                Roundness::Round => 4,
-                Roundness::SlightlyRound => 4,
-                Roundness::Square => 0,
-            };
-
-            if let Err(why) = dock_config.set_padding(dock_config_helper, padding) {
-                tracing::error!(?why, "Error updating dock padding");
-            }
+        if let Err(why) = config.set_padding(&helper, padding) {
+            tracing::error!(?why, "Error updating dock padding");
         }
     }
 
-    // TODO: cache panel and dock configs so that they needn't be re-read
     #[cfg(feature = "wayland")]
     pub fn update_panel_spacing(density: Density) {
         let spacing: cosmic::cosmic_theme::Spacing = density.into();
-        let space_none = spacing.space_none;
-        let panel_config_helper = CosmicPanelConfig::cosmic_config("Panel").ok();
-        let dock_config_helper = CosmicPanelConfig::cosmic_config("Dock").ok();
-        let mut panel_config = panel_config_helper.as_ref().and_then(|config_helper| {
-            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
-            (panel_config.name == "Panel").then_some(panel_config)
-        });
-        let mut dock_config = dock_config_helper.as_ref().and_then(|config_helper| {
-            let panel_config = CosmicPanelConfig::get_entry(config_helper).ok()?;
-            (panel_config.name == "Dock").then_some(panel_config)
-        });
+        let space_none = spacing.space_none as u32;
 
-        if let Some(panel_config_helper) = panel_config_helper.as_ref()
-            && let Some(panel_config) = panel_config.as_mut()
-        {
-            let update = panel_config.set_spacing(panel_config_helper, space_none as u32);
-            if let Err(err) = update {
-                tracing::error!(?err, "Error updating panel spacing");
+        for name in ["Panel", "Dock"] {
+            let Some((helper, mut config)) = Self::load_panel_config(name) else {
+                continue;
+            };
+            if let Err(err) = config.set_spacing(&helper, space_none) {
+                tracing::error!(?err, "Error updating {name} spacing");
             }
-        };
-
-        if let Some(dock_config_helper) = dock_config_helper.as_ref()
-            && let Some(dock_config) = dock_config.as_mut()
-        {
-            let update = dock_config.set_spacing(dock_config_helper, space_none as u32);
-            if let Err(err) = update {
-                tracing::error!(?err, "Error updating dock spacing");
-            }
-        };
+        }
     }
 
     fn can_reset(&self) -> bool {

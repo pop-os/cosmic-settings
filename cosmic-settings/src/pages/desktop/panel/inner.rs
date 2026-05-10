@@ -587,17 +587,14 @@ impl PageInner {
                 }
                 let theme = cosmic::theme::system_preference();
                 let theme = theme.cosmic();
-                let radius = theme.corner_radii;
-                let roundness: Roundness = radius.into();
-                let new_radius;
-                if enabled {
-                    let radii = theme.corner_radii.radius_xl[0] as u32;
-                    new_radius = radii;
-                } else if matches!(roundness, Roundness::Round) && !panel_config.expand_to_edges {
-                    new_radius = 12;
+                let radius = theme.corner_radii.radius_xl[0] as u32;
+                let new_radius = if enabled {
+                    radius
+                } else if !panel_config.expand_to_edges {
+                    radius.min(12)
                 } else {
-                    new_radius = 0;
-                }
+                    0
+                };
                 _ = panel_config.set_border_radius(helper, new_radius).unwrap();
             }
             Message::PanelSize(size) => {
@@ -622,17 +619,14 @@ impl PageInner {
 
                 let theme = cosmic::theme::system_preference();
                 let theme = theme.cosmic();
-                let radius = theme.corner_radii;
-                let roundness: Roundness = radius.into();
-                let new_radius;
-                if panel_config.anchor_gap {
-                    let radii = theme.corner_radii.radius_xl[0] as u32;
-                    new_radius = radii;
-                } else if matches!(roundness, Roundness::Round) && !enabled {
-                    new_radius = 12;
+                let radius = theme.corner_radii.radius_xl[0] as u32;
+                let new_radius = if panel_config.anchor_gap {
+                    radius
+                } else if !enabled {
+                    radius.min(12)
                 } else {
-                    new_radius = 0;
-                }
+                    0
+                };
                 _ = panel_config.set_border_radius(helper, new_radius).unwrap();
             }
             Message::OpacityRequest(opacity) => {
