@@ -902,3 +902,5 @@ xdg-entry-keyboard-keywords = COSMIC;Clavier;Saisie;Source;Raccourcis;
 xdg-entry-window-management-keywords = COSMIC;Fenêtre;Gestion;Agencement;Super;Touche;
 xdg-entry-displays-keywords = COSMIC;Écran;
 no-search-results = Aucun réseau ne correspond à votre recherche.
+workspaces-navigation = Navigation
+    .wraparound = Passez du premier au dernier espace de travail à l'aide des raccourcis clavier et des gestes

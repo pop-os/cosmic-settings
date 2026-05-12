@@ -911,3 +911,5 @@ xdg-entry-displays-keywords = COSMIC;عرض;
 xdg-entry-workspaces = مساحات العمل
 xdg-entry-wired-comment = الاتصالات السلكية وملفات تعريف الاتصال
 no-search-results = لا توجد شبكات تطابق بحثك.
+workspaces-navigation = التنقل
+    .wraparound = تنقل بين مساحة العمل الأولى والأخيرة باستخدام اختصارات لوحة المفاتيح والإيماءات
