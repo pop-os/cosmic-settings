@@ -912,3 +912,5 @@ xdg-entry-desktop-keywords = COSMIC;Desktop;
 xdg-entry-desktop = Desktop
 xdg-entry-a11y-keywords = COSMIC;Barrierefreiheit;A11y;Bildschirm;Leser;Vergrößerungsglas;Kontrast;Farbe;
 xdg-entry-a11y-comment = Bildschirmleser, Vergrößerungsglas, hoher Kontrast und Farbfilter
+workspaces-navigation = Navigation
+    .wraparound = Mit Tastenkombinationen und Gesten zwischen der ersten und letzten Arbeitsfläche wechseln

@@ -818,3 +818,5 @@ shadows-tiling = Asetellut ikkunat
     .clip = Sovita järjestelmän kulmiin
     .shadow = Käytä varjoja
 no-search-results = Hakuasi vastaavia verkkoja ei löytynyt.
+workspaces-navigation = Liikkuminen
+    .wraparound = Siirry ensimmäisen ja viimeisen työtilan välillä käyttäen pikanäppäimiä ja eleitä
