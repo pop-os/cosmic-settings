@@ -451,24 +451,13 @@ fn device_profiles() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-            let button = widget::row::with_children(vec![
-                horizontal_space().into(),
-                widget::icon::from_name("go-next-symbolic").size(16).into(),
-            ]);
 
-            let device_profiles = settings::item::builder(&*descriptions[button_txt])
-                .control(button)
-                .spacing(16)
-                .apply(widget::container)
-                .width(Length::Fill)
-                .class(cosmic::theme::Container::List)
-                .apply(widget::button::custom)
-                .width(Length::Fill)
-                .class(cosmic::theme::Button::Transparent)
-                .on_press(crate::pages::Message::Page(page.device_profiles))
-                .width(Length::Fill);
-
-            settings::section().add(device_profiles).into()
+            settings::section()
+                .add(crate::widget::go_next_item(
+                    &descriptions[button_txt],
+                    crate::pages::Message::Page(page.device_profiles),
+                ))
+                .into()
         })
 }
 
