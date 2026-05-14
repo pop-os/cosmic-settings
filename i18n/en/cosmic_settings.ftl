@@ -460,6 +460,9 @@ panel-applets = Configuration
     .dock-desc = Configure dock applets
     .desc = Configure panel applets
 
+panel-reset-dialog = Reset panel settings
+    .desc = This action will reset all panel settings, including configured applets. This action cannot be undone.
+
 panel-missing = Panel configuration is missing
     .desc = The panel configuration file is missing due to use of a custom configuration or it is corrupted.
     .fix = Reset to default
