@@ -8,7 +8,7 @@ use cosmic::{
     Apply, Element,
     dialog::file_chooser,
     iced::{Alignment, Length},
-    widget::{self, column, icon, row, settings, space::horizontal as horizontal_space, text},
+    widget::{self, column, icon, list, row, settings, space::horizontal, text},
 };
 use cosmic_settings_page::{self as page, Section, section};
 use image::GenericImageView;
@@ -322,7 +322,7 @@ impl page::Page<crate::pages::Message> for Page {
                                             )))
                                             .width(Length::Fill),
                                     )
-                                    .push(horizontal_space().width(5.))
+                                    .push(horizontal().width(5.))
                                     .push(admin_toggler)
                                     .align_y(Alignment::Center),
                             ),
@@ -785,16 +785,13 @@ fn user_list() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-
-            let cosmic::cosmic_theme::Spacing {
-                space_xxs, space_m, ..
-            } = cosmic::theme::active().cosmic().spacing;
+            let space_xxs = cosmic::theme::spacing().space_xxs;
 
             let users_list = page
                 .users
                 .iter()
                 .enumerate()
-                .flat_map(|(idx, user)| {
+                .map(|(idx, user)| {
                     let expanded =
                         matches!(page.selected_user_idx, Some(user_idx) if user_idx == idx);
 
@@ -832,37 +829,6 @@ fn user_list() -> Section<crate::pages::Message> {
                         &descriptions[user_type_standard]
                     });
 
-                    let expanded_details = expanded.then(|| {
-                        let mut details_list = widget::list_column()
-                            .add(settings::item(&page.fullname_label, fullname))
-                            .add(settings::item(&page.username_label, username))
-                            .add(settings::item(&page.password_label, password))
-                            .add(settings::item_row(vec![
-                                column::with_capacity(2)
-                                    .push(text::body(crate::fl!("administrator")))
-                                    .push(text::caption(crate::fl!("administrator", "desc")))
-                                    .width(Length::Fill)
-                                    .into(),
-                                horizontal_space().width(5.).into(),
-                                widget::toggler(user.is_admin)
-                                    .on_toggle(|enabled| {
-                                        Message::SelectedUserSetAdmin(user.id, enabled)
-                                    })
-                                    .into(),
-                            ]));
-
-                        if page.users.len() > 1 {
-                            details_list = details_list.add(settings::item_row(vec![
-                                horizontal_space().width(Length::Fill).into(),
-                                widget::button::destructive(crate::fl!("remove-user"))
-                                    .on_press(Message::SelectedUserDelete(user.id))
-                                    .into(),
-                            ]));
-                        }
-
-                        details_list.apply(Element::from)
-                    });
-
                     let profile_icon_handle = user
                         .profile_icon
                         .clone()
@@ -884,8 +850,8 @@ fn user_list() -> Section<crate::pages::Message> {
                             )
                             .align_y(Alignment::Center)
                             .spacing(space_xxs)
+                            .width(Length::Fill)
                             .into(),
-                        horizontal_space().width(Length::Fill).into(),
                         icon::from_name(if expanded {
                             "go-up-symbolic"
                         } else {
@@ -896,28 +862,49 @@ fn user_list() -> Section<crate::pages::Message> {
                         .into(),
                     ]);
 
-                    let account_details = Some(
-                        widget::button::custom(account_details_content)
-                            .padding([space_xxs, space_m])
-                            .on_press(Message::SelectUser(idx))
-                            .class(cosmic::theme::Button::ListItem)
-                            .width(Length::Fill)
+                    let mut user_list = widget::list_column().add(
+                        list::button(account_details_content)
                             .selected(expanded)
-                            .apply(Element::from),
+                            .on_press(Message::SelectUser(idx)),
                     );
 
-                    vec![account_details, expanded_details]
+                    if expanded {
+                        user_list = user_list
+                            .add(settings::item(&page.fullname_label, fullname))
+                            .add(settings::item(&page.username_label, username))
+                            .add(settings::item(&page.password_label, password))
+                            .add(settings::item_row(vec![
+                                column::with_capacity(2)
+                                    .push(text::body(crate::fl!("administrator")))
+                                    .push(text::caption(crate::fl!("administrator", "desc")))
+                                    .width(Length::Fill)
+                                    .into(),
+                                horizontal().width(5.).into(),
+                                widget::toggler(user.is_admin)
+                                    .on_toggle(|enabled| {
+                                        Message::SelectedUserSetAdmin(user.id, enabled)
+                                    })
+                                    .into(),
+                            ]));
+
+                        if page.users.len() > 1 {
+                            user_list = user_list.add(settings::item_row(vec![
+                                horizontal().width(Length::Fill).into(),
+                                widget::button::destructive(crate::fl!("remove-user"))
+                                    .on_press(Message::SelectedUserDelete(user.id))
+                                    .into(),
+                            ]));
+                        }
+                    }
+
+                    Element::from(user_list)
                 })
-                .flatten()
                 .fold(
-                    widget::list_column()
-                        .spacing(0)
-                        .padding([8, 0])
-                        .divider_padding(0)
-                        .list_item_padding(0),
-                    widget::ListColumn::add,
+                    widget::column::with_capacity(page.users.len()),
+                    |col, user| col.push(user),
                 )
-                .apply(|list| Element::from(settings::section::with_column(list)));
+                .spacing(space_xxs)
+                .width(Length::Fill);
 
             let add_user = widget::button::standard(crate::fl!("add-user"))
                 .on_press(Message::Dialog(Some(Dialog::AddNewUser(User::default()))))
@@ -928,7 +915,7 @@ fn user_list() -> Section<crate::pages::Message> {
             widget::column::with_capacity(2)
                 .push(users_list)
                 .push(add_user)
-                .spacing(space_m)
+                .spacing(space_xxs)
                 .apply(Element::from)
                 .map(crate::pages::Message::User)
         })

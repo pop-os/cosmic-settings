@@ -3,9 +3,9 @@
 
 use cosmic::{
     Apply, Element,
-    iced::{Alignment, Length},
+    iced::Length,
     surface,
-    widget::{self, settings, toggler},
+    widget::{self, settings},
 };
 
 use cosmic_comp_config::CosmicCompConfig;
@@ -259,13 +259,10 @@ pub fn window_management() -> Section<crate::pages::Message> {
                     ),
                 ))
                 .add(
-                    settings::flex_item(
-                        &descriptions[edge_gravity],
-                        toggler(page.edge_snap_threshold != 0).on_toggle(|is_enabled| {
+                    settings::item::builder(&descriptions[edge_gravity])
+                        .toggler(page.edge_snap_threshold != 0, |is_enabled| {
                             Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
                         }),
-                    )
-                    .align_items(Alignment::Center),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
@@ -287,18 +284,18 @@ pub fn window_controls() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::item(
-                    &descriptions[active_window_hint],
-                    toggler(page.show_active_hint).on_toggle(Message::ShowActiveWindowHint),
-                ))
-                .add(settings::item(
-                    &descriptions[maximize],
-                    toggler(cosmic::config::show_maximize()).on_toggle(Message::ShowMaximizeButton),
-                ))
-                .add(settings::item(
-                    &descriptions[minimize],
-                    toggler(cosmic::config::show_minimize()).on_toggle(Message::ShowMinimizeButton),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[active_window_hint])
+                        .toggler(page.show_active_hint, Message::ShowActiveWindowHint),
+                )
+                .add(
+                    settings::item::builder(&descriptions[maximize])
+                        .toggler(cosmic::config::show_maximize(), Message::ShowMaximizeButton),
+                )
+                .add(
+                    settings::item::builder(&descriptions[minimize])
+                        .toggler(cosmic::config::show_minimize(), Message::ShowMinimizeButton),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
         })
@@ -319,10 +316,10 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::item(
-                    &descriptions[focus_follows_cursor],
-                    toggler(page.focus_follows_cursor).on_toggle(Message::SetFocusFollowsCursor),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[focus_follows_cursor])
+                        .toggler(page.focus_follows_cursor, Message::SetFocusFollowsCursor),
+                )
                 .add(settings::item(
                     &descriptions[focus_follows_cursor_delay],
                     widget::editable_input("", &page.focus_delay_text, false, |editing| {
@@ -333,10 +330,10 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                     .on_submit(|_| Message::SaveFocusFollowsCursorDelay(true))
                     .width(Length::Fixed(80.0)),
                 ))
-                .add(settings::item(
-                    &descriptions[cursor_follows_focus],
-                    toggler(page.cursor_follows_focus).on_toggle(Message::SetCursorFollowsFocus),
-                ))
+                .add(
+                    settings::item::builder(&descriptions[cursor_follows_focus])
+                        .toggler(page.cursor_follows_focus, Message::SetCursorFollowsFocus),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
         })

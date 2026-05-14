@@ -11,8 +11,8 @@ use cosmic::dialog::file_chooser::FileFilter;
 use cosmic::task;
 use cosmic::{
     Apply, Element, Task,
+    iced::core::text::Wrapping,
     iced::{Alignment, Length},
-    iced_core::text::Wrapping,
     widget::{self, icon, space::horizontal as horizontal_space, text_input::focus},
 };
 use cosmic_settings_network_manager_subscription::nm_secret_agent::{self, PasswordFlag};
@@ -840,8 +840,8 @@ impl Page {
             Message::FocusSecureInput => {
                 // retry until the widget is in the tree and focused or the dialog is removed.
                 if matches!(self.dialog, Some(VpnDialog::Password { .. })) {
-                    return cosmic::iced_runtime::task::widget(
-                        cosmic::iced_core::widget::operation::focusable::find_focused(),
+                    return cosmic::iced::runtime::task::widget(
+                        cosmic::iced::core::widget::operation::focusable::find_focused(),
                     )
                     .collect()
                     .then(|id| {

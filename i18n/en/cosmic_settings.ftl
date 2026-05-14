@@ -521,6 +521,9 @@ workspaces-orientation = Workspaces orientation
 hot-corner = Hot Corner
     .top-left-corner = Enable top-left hot corner for Workspaces
 
+workspaces-navigation = Navigation
+    .wraparound = Move between first and last workspace using keyboard shortcuts and gestures
+
 ## Displays
 
 -requires-restart = Requires restart

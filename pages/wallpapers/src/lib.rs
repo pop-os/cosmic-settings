@@ -104,6 +104,7 @@ pub async fn load_each_from_path(
 ) -> Pin<Box<dyn Send + Stream<Item = (PathBuf, RgbaImage, RgbaImage)>>> {
     let candidate_paths: Vec<_> = WalkDir::new(path)
         .max_depth(3)
+        .follow_links(true)
         .into_iter()
         .filter_map(Result::ok)
         .filter(|entry| entry.file_type().is_file())

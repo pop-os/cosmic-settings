@@ -148,9 +148,9 @@ impl SettingsApp {
         }
     }
 
-    fn id(&self) -> cosmic::iced_core::id::Id {
+    fn id(&self) -> cosmic::iced::id::Id {
         let cur_page_name = self.pages.info[self.active_page].id.as_ref();
-        cosmic::iced_core::id::Id::new(cur_page_name.to_owned())
+        cosmic::iced::id::Id::new(cur_page_name.to_owned())
     }
 }
 
@@ -1057,7 +1057,7 @@ impl SettingsApp {
                 Message::Page(parent),
             );
 
-            let mut page_header_content: cosmic::iced_widget::Row<'_, Message, Theme> =
+            let mut page_header_content: cosmic::iced::widget::Row<'_, Message, Theme> =
                 row::with_capacity(2)
                     .align_y(iced::Alignment::End)
                     .push(page_header);

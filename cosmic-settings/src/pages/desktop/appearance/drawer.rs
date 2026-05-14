@@ -2,7 +2,7 @@ use cosmic::app::{ContextDrawer, context_drawer};
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet};
 use cosmic::cosmic_theme::Spacing;
-use cosmic::iced_core::{Color, Length};
+use cosmic::iced::core::{Color, Length};
 use cosmic::widget::{
     ColorPickerModel, color_picker::ColorPickerUpdate, container, flex_row, settings, text,
 };

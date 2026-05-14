@@ -928,3 +928,5 @@ xdg-entry-window-management-keywords = COSMIC;Okna;Zarządzanie;Kafelkowanie;Sup
 xdg-entry-panel-comment = Podstawowy panel z menu i apletami
 xdg-entry-displays-keywords = COSMIC;Wyświetlacz;Ekran;
 no-search-results = Żadna sieć nie odpowiada twojemu wyszukiwaniu.
+workspaces-navigation = Navigation
+    .wraparound = Przemieszczaj się między pierwszym a ostatnim obszarem roboczym używając skrótów klawiszowych i gestów

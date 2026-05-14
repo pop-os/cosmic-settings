@@ -320,10 +320,9 @@ fn input() -> Section<crate::pages::Message> {
             controls = controls.add(
                 settings::item::builder(&*section.descriptions[amplification])
                     .description(&*section.descriptions[amplification_desc])
-                    .control(
-                        widget::toggler(page.amplification_source)
-                            .on_toggle(|t| Message::ToggleOverAmplificationSource(t).into()),
-                    ),
+                    .toggler(page.amplification_source, |t| {
+                        Message::ToggleOverAmplificationSource(t).into()
+                    }),
             );
 
             Element::from(controls)
@@ -435,10 +434,9 @@ fn output() -> Section<crate::pages::Message> {
             controls = controls.add(
                 settings::item::builder(&*section.descriptions[amplification])
                     .description(&*section.descriptions[amplification_desc])
-                    .control(
-                        widget::toggler(page.amplification_sink)
-                            .on_toggle(|t| Message::ToggleOverAmplificationSink(t).into()),
-                    ),
+                    .toggler(page.amplification_sink, |t| {
+                        Message::ToggleOverAmplificationSink(t).into()
+                    }),
             );
 
             Element::from(controls)

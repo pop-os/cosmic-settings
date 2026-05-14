@@ -818,3 +818,5 @@ xdg-entry-x11-applications = Kompatibilitas Aplikasi X11
 xdg-entry-window-management-comment = Tindakan tombol Super, opsi kontrol jendela, dan pengubinan jendela tambahan
 xdg-entry-wired-comment = Sambungan berkabel dan profil sambungan
 no-search-results = Tidak ada jaringan yang sesuai pencarian anda.
+workspaces-navigation = Navigasi
+    .wraparound = Pindahkan antara ruang kerja pertama dan terakhir menggunakan pintasan papan ketik dan gerakan

@@ -4,7 +4,7 @@ use cosmic::cosmic_theme::{
     CornerRadii, DARK_THEME_BUILDER_ID, LIGHT_THEME_BUILDER_ID, Spacing, Theme, ThemeBuilder,
     ThemeMode,
 };
-use cosmic::iced_core::Color;
+use cosmic::iced::core::Color;
 
 use cosmic::Task;
 use cosmic::theme::ThemeType;

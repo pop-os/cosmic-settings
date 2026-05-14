@@ -15,8 +15,8 @@ pub mod tiling;
 
 use cosmic::app::ContextDrawer;
 use cosmic::iced::Length;
-use cosmic::widget::{self, icon, settings, text};
-use cosmic::{Apply, Element, Task, theme};
+use cosmic::widget::{self, list::ListButton, settings, text};
+use cosmic::{Apply, Element, Task};
 use cosmic_config::ConfigGet;
 use cosmic_settings_config::Binding;
 use cosmic_settings_config::shortcuts::action::{
@@ -222,11 +222,13 @@ impl Page {
         self.search.localized = SecondaryMap::new();
         self.search.input = String::new();
         self.search_model.on_clear();
-        self.modified.custom = 0;
+        self.modified.accessibility = 0;
         self.modified.manage_windows = 0;
         self.modified.move_windows = 0;
         self.modified.nav = 0;
         self.modified.system = 0;
+        self.modified.window_tiling = 0;
+        self.modified.custom = 0;
     }
 
     fn reload_search(&mut self) {
@@ -497,32 +499,18 @@ fn shortcuts() -> Section<crate::pages::Message> {
 }
 
 /// Display a category as a list item
-fn category_item(category: Category, name: &str, modified: u16) -> Element<'_, Message> {
-    let icon = icon::from_name("go-next-symbolic").size(16);
-
-    let control = if modified == 0 {
-        Element::from(icon)
-    } else {
-        widget::row::with_capacity(2)
-            .push(text::body(fl!("modified", count = modified)))
-            .push(icon)
-            .into()
-    };
-
-    settings::item::builder(name)
-        .control(control)
-        .spacing(16)
-        .apply(widget::container)
-        .class(theme::Container::List)
-        .apply(widget::button::custom)
-        .class(theme::Button::Transparent)
-        .width(Length::Fill)
-        .on_press(Message::Category(category))
-        .into()
+fn category_item(category: Category, name: &str, modified: u16) -> ListButton<'_, Message> {
+    crate::widget::go_next_with_item(
+        name,
+        (modified > 0).then(|| text::body(fl!("modified", count = modified)).apply(Element::from)),
+        Message::Category(category),
+    )
 }
 
 fn action_category(action: &Action) -> Option<Category> {
-    Some(if manage_windows::actions().contains(action) {
+    Some(if accessibility::actions().contains(action) {
+        Category::Accessibility
+    } else if manage_windows::actions().contains(action) {
         Category::ManageWindow
     } else if move_window::actions().contains(action) {
         Category::MoveWindow
@@ -530,6 +518,8 @@ fn action_category(action: &Action) -> Option<Category> {
         Category::Nav
     } else if system::actions().contains(action) {
         Category::System
+    } else if tiling::actions().contains(action) {
+        Category::WindowTiling
     } else {
         return None;
     })

@@ -3,7 +3,7 @@
 
 use super::{Message, NightLight};
 use crate::pages;
-use cosmic::iced_core::{Alignment, Length};
+use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::{
     button, column, container, icon, list_column, row, settings, text, toggler, vertical_space,
 };

@@ -11,7 +11,7 @@ use cosmic::{
     cosmic_config::{self, ConfigSet},
     iced::{Alignment, Length},
     theme,
-    widget::{self, ListColumn, button, container, icon, radio, row, settings},
+    widget::{self, ListColumn, button, container, icon, list, row, settings},
 };
 use cosmic_comp_config::{KeyboardConfig, NumlockState, XkbConfig};
 use cosmic_settings_page::{self as page, Section, section};
@@ -48,6 +48,7 @@ static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
     ("Backspace", "caps:backspace"),
     ("Super", "caps:super"),
     ("Control", "caps:ctrl_modifier"),
+    ("Swap with Control", "ctrl:swapcaps"),
 ];
 
 #[derive(Clone, Debug)]
@@ -151,11 +152,11 @@ impl SpecialKey {
         }
     }
 
-    pub fn prefix(self) -> &'static str {
+    pub fn prefixes(self) -> &'static [&'static str] {
         match self {
-            Self::Compose => "compose:",
-            Self::AlternateCharacters => "lv3:",
-            Self::CapsLock => "caps:",
+            Self::Compose => &["compose:"],
+            Self::AlternateCharacters => &["lv3:"],
+            Self::CapsLock => &["caps:", "ctrl:"],
         }
     }
 }
@@ -243,15 +244,10 @@ fn special_char_radio_row<'a>(
     desc: &'a str,
     value: Option<&'static str>,
     current_value: Option<&'a str>,
-) -> cosmic::Element<'a, Message> {
-    settings::item_row(vec![
-        radio(desc, value, Some(current_value), |_| {
-            Message::SpecialCharacterSelect(value)
-        })
-        .width(Length::Fill)
-        .into(),
-    ])
-    .into()
+) -> list::ListButton<'a, Message> {
+    settings::item::builder(desc).radio(value, Some(current_value), |_| {
+        Message::SpecialCharacterSelect(value)
+    })
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -513,10 +509,10 @@ impl Page {
             Message::SpecialCharacterSelect(id) => {
                 if let Some(Context::SpecialCharacter(special_key)) = self.context {
                     let options = self.xkb.options.as_deref().unwrap_or_default();
-                    let prefix = special_key.prefix();
+                    let prefixes = special_key.prefixes();
                     let new_options = options
                         .split(',')
-                        .filter(|x| !x.starts_with(prefix))
+                        .filter(|x| !prefixes.iter().any(|prefix| x.starts_with(prefix)))
                         .chain(id)
                         .join(",");
 
@@ -552,9 +548,11 @@ impl Page {
     pub fn add_input_source_view(&self) -> Element<'_, crate::pages::Message> {
         let space_l = theme::spacing().space_l;
 
-        let toggler = settings::item::builder(fl!("show-extended-input-sources")).toggler(
-            self.show_extended_input_sources,
-            Message::SetShowExtendedInputSources,
+        let toggler = settings::section().add(
+            settings::item::builder(fl!("show-extended-input-sources")).toggler(
+                self.show_extended_input_sources,
+                Message::SetShowExtendedInputSources,
+            ),
         );
 
         let mut list = widget::list_column();
@@ -610,13 +608,13 @@ impl Page {
             SpecialKey::AlternateCharacters => (ALTERNATE_CHARACTER_OPTIONS, None),
             SpecialKey::CapsLock => (CAPS_LOCK_OPTIONS, None),
         };
-        let prefix = special_key.prefix();
+        let prefixes = special_key.prefixes();
         let current = self
             .xkb
             .options
             .iter()
             .flat_map(|x| x.split(','))
-            .find(|x| x.starts_with(prefix));
+            .find(|x| prefixes.iter().any(|prefix| x.starts_with(prefix)));
 
         // TODO layout default
 
@@ -653,16 +651,11 @@ impl Page {
 
         let mut list = cosmic::widget::list_column();
         for (desc, state) in options {
-            list = list.add(settings::item_row(vec![
-                radio(
-                    cosmic::widget::text(desc),
-                    Some(state),
-                    Some(Some(current)),
-                    |_| Message::SetNumlockState(state),
-                )
-                .width(Length::Fill)
-                .into(),
-            ]));
+            list = list.add(settings::item::builder(desc).radio(
+                Some(state),
+                Some(Some(current)),
+                |_| Message::SetNumlockState(state),
+            ));
         }
 
         list.into()

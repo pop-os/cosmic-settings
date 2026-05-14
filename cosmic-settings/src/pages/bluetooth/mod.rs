@@ -1,8 +1,8 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::{Alignment, Length, color};
-use cosmic::iced_core::text::Wrapping;
 use cosmic::widget::{self, settings, space::horizontal as horizontal_space, text};
 use cosmic::{Apply, Element, Task, theme};
 use cosmic_settings_bluetooth_subscription::*;
@@ -772,12 +772,10 @@ fn status() -> Section<crate::pages::Message> {
             }
 
             widget::list_column()
-                .add(
-                    bluetooth_toggle.control(
-                        widget::toggler(matches!(status, Active::Enabling | Active::Enabled))
-                            .on_toggle(|active| Message::SetActive(active).into()),
-                    ),
-                )
+                .add(bluetooth_toggle.toggler(
+                    matches!(status, Active::Enabling | Active::Enabled),
+                    |active| Message::SetActive(active).into(),
+                ))
                 .apply(Element::from)
         })
 }
