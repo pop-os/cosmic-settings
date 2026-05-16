@@ -1,7 +1,9 @@
-use futures::{FutureExt, Stream, StreamExt, future::join_all};
+use futures::future::join_all;
+use futures::{FutureExt, Stream, StreamExt};
 use jiff::{Span, SpanRelativeTo, SpanRound, ToSpan, Unit};
 use upower_dbus::{BatteryState, BatteryType, DeviceProxy};
-use zbus::{Connection, zvariant::ObjectPath};
+use zbus::Connection;
+use zbus::zvariant::ObjectPath;
 
 mod ppdaemon;
 mod s76powerdaemon;

@@ -16,19 +16,18 @@ use cosmic::app::ContextDrawer;
 use cosmic::config::CosmicTk;
 use cosmic::cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic::cosmic_theme::palette::{FromColor, Hsv, Srgb};
-use cosmic::cosmic_theme::{CornerRadii, Density, ThemeBuilder, ThemeMode};
+use cosmic::cosmic_theme::{CornerRadii, Density, Roundness, ThemeBuilder, ThemeMode};
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced::Subscription;
 use cosmic::iced::core::{Alignment, Length};
-use cosmic::widget::{
-    button, color_picker::ColorPickerUpdate, container, row, settings, space::horizontal, text,
-};
+use cosmic::widget::color_picker::ColorPickerUpdate;
+use cosmic::widget::space::horizontal;
+use cosmic::widget::{button, container, row, settings, text};
 use cosmic::{Apply, Element, Task, widget};
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use ron::ser::PrettyConfig;
 use slotmap::{Key, SlotMap};
 
@@ -168,56 +167,6 @@ impl From<Message> for crate::app::Message {
 impl From<Message> for crate::pages::Message {
     fn from(message: Message) -> Self {
         crate::pages::Message::Appearance(message)
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum Roundness {
-    Round,
-    SlightlyRound,
-    Square,
-}
-
-impl From<Roundness> for CornerRadii {
-    fn from(value: Roundness) -> Self {
-        match value {
-            Roundness::Round => CornerRadii {
-                radius_0: [0.0; 4],
-                radius_xs: [4.0; 4],
-                radius_s: [8.0; 4],
-                radius_m: [16.0; 4],
-                radius_l: [32.0; 4],
-                radius_xl: [160.0; 4],
-            },
-            Roundness::SlightlyRound => CornerRadii {
-                radius_0: [0.0; 4],
-                radius_xs: [2.0; 4],
-                radius_s: [8.0; 4],
-                radius_m: [8.0; 4],
-                radius_l: [8.0; 4],
-                radius_xl: [8.0; 4],
-            },
-            Roundness::Square => CornerRadii {
-                radius_0: [0.0; 4],
-                radius_xs: [2.0; 4],
-                radius_s: [2.0; 4],
-                radius_m: [2.0; 4],
-                radius_l: [2.0; 4],
-                radius_xl: [2.0; 4],
-            },
-        }
-    }
-}
-
-impl From<CornerRadii> for Roundness {
-    fn from(value: CornerRadii) -> Self {
-        if (value.radius_m[0] - 16.0).abs() < 0.01 {
-            Self::Round
-        } else if (value.radius_m[0] - 8.0).abs() < 0.01 {
-            Self::SlightlyRound
-        } else {
-            Self::Square
-        }
     }
 }
 

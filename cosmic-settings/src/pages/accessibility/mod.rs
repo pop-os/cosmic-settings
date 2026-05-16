@@ -1,21 +1,16 @@
-use cosmic::{
-    Apply, Element, Task,
-    cosmic_theme::{CosmicPalette, ThemeBuilder},
-    iced::core::text::Wrapping,
-    iced::stream,
-    surface,
-    theme::CosmicTheme,
-    widget::{dropdown, settings, text},
-};
+use cosmic::cosmic_theme::{CosmicPalette, ThemeBuilder};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::stream;
+use cosmic::theme::CosmicTheme;
+use cosmic::widget::{dropdown, settings, text};
+use cosmic::{Apply, Element, Task, surface};
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;
 use cosmic_settings_a11y_manager_subscription as cosmic_a11y_manager;
 use cosmic_settings_accessibility_subscription as a11y_bus;
 use cosmic_settings_daemon_config::CosmicSettingsDaemonConfig;
-use cosmic_settings_page::{
-    self as page, Insert,
-    section::{self, Section},
-};
+use cosmic_settings_page::section::{self, Section};
+use cosmic_settings_page::{self as page, Insert};
 use futures::SinkExt;
 use num_traits::FromPrimitive;
 use slotmap::SlotMap;

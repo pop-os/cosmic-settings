@@ -8,10 +8,9 @@ use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
+use cosmic::widget::space::{horizontal, vertical};
 use cosmic::widget::{
-    self, ColorPickerModel, button, column, container, divider, icon, list, row, settings,
-    space::{horizontal, vertical},
-    text,
+    self, ColorPickerModel, button, column, container, divider, icon, list, row, settings, text,
 };
 use cosmic::{Apply, Element, theme};
 use cosmic_settings_page as page;

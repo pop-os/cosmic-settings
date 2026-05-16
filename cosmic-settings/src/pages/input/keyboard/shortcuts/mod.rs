@@ -15,7 +15,8 @@ pub mod tiling;
 
 use cosmic::app::ContextDrawer;
 use cosmic::iced::Length;
-use cosmic::widget::{self, list::ListButton, settings, text};
+use cosmic::widget::list::ListButton;
+use cosmic::widget::{self, settings, text};
 use cosmic::{Apply, Element, Task};
 use cosmic_config::ConfigGet;
 use cosmic_settings_config::Binding;
@@ -23,8 +24,7 @@ use cosmic_settings_config::shortcuts::action::{
     Direction, FocusDirection, Orientation, ResizeDirection,
 };
 use cosmic_settings_config::shortcuts::{self, Action, Shortcuts};
-use cosmic_settings_page::Section;
-use cosmic_settings_page::{self as page, section};
+use cosmic_settings_page::{self as page, Section, section};
 use itertools::Itertools;
 use shortcuts::action::System as SystemAction;
 use slab::Slab;

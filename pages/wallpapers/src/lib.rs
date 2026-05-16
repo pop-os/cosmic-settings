@@ -6,16 +6,15 @@ use futures_util::StreamExt;
 use image::imageops::FilterType;
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage};
 use jxl_oxide::integration::JxlDecoder;
+use std::borrow::Cow;
+use std::collections::HashMap;
+use std::collections::hash_map::DefaultHasher;
 use std::fs::File;
+use std::hash::{Hash, Hasher};
+use std::io::Read;
 use std::os::unix::ffi::OsStrExt;
-use std::{
-    borrow::Cow,
-    collections::{HashMap, hash_map::DefaultHasher},
-    hash::{Hash, Hasher},
-    io::Read,
-    path::{Path, PathBuf},
-    pin::Pin,
-};
+use std::path::{Path, PathBuf};
+use std::pin::Pin;
 use walkdir::WalkDir;
 
 pub const DEFAULT_COLORS: &[Color] = &[

@@ -24,7 +24,8 @@ pub mod widget;
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use cosmic::{app::CosmicFlags, iced::Limits};
+use cosmic::app::CosmicFlags;
+use cosmic::iced::Limits;
 use i18n_embed::DesktopLanguageRequester;
 use ron::error::SpannedError;
 use serde::{Deserialize, Serialize};

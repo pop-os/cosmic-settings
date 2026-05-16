@@ -8,16 +8,16 @@ use std::sync::{Arc, LazyLock};
 
 use anyhow::Context;
 use cosmic::dialog::file_chooser::FileFilter;
-use cosmic::task;
-use cosmic::{
-    Apply, Element, Task,
-    iced::core::text::Wrapping,
-    iced::{Alignment, Length},
-    widget::{self, icon, space::horizontal as horizontal_space, text_input::focus},
-};
+use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::space::horizontal as horizontal_space;
+use cosmic::widget::text_input::focus;
+use cosmic::widget::{self, icon};
+use cosmic::{Apply, Element, Task, task};
+use cosmic_settings_network_manager_subscription::current_networks::ActiveConnectionInfo;
 use cosmic_settings_network_manager_subscription::nm_secret_agent::{self, PasswordFlag};
 use cosmic_settings_network_manager_subscription::{
-    self as network_manager, NetworkManagerState, UUID, current_networks::ActiveConnectionInfo,
+    self as network_manager, NetworkManagerState, UUID,
 };
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{FutureExt, SinkExt, StreamExt};
@@ -428,7 +428,19 @@ impl Page {
                 }
             }
             Message::KnownConnections(connections) => {
-                self.known_connections = connections;
+                let mut connections: Vec<_> = connections.into_iter().collect();
+                connections.sort_by(|a, b| {
+                    let name_a = match &a.1 {
+                        ConnectionSettings::Vpn(s) => s.id.as_str(),
+                        ConnectionSettings::Wireguard { id } => id.as_str(),
+                    };
+                    let name_b = match &b.1 {
+                        ConnectionSettings::Vpn(s) => s.id.as_str(),
+                        ConnectionSettings::Wireguard { id } => id.as_str(),
+                    };
+                    name_a.to_lowercase().cmp(&name_b.to_lowercase())
+                });
+                self.known_connections = connections.into_iter().collect();
             }
             Message::UpdateDevices(devices) => {
                 self.update_devices(devices);
@@ -1005,7 +1017,20 @@ fn devices_view() -> Section<crate::pages::Message> {
                     widget::text::body(fl!("no-vpn")).into(),
                 ])));
             } else {
-                let known_networks = page.known_connections.iter().fold(
+                let mut known_connections: Vec<_> = page.known_connections.iter().collect();
+                known_connections.sort_by(|a, b| {
+                    let name_a = match a.1 {
+                        ConnectionSettings::Vpn(s) => s.id.as_str(),
+                        ConnectionSettings::Wireguard { id } => id.as_str(),
+                    };
+                    let name_b = match b.1 {
+                        ConnectionSettings::Vpn(s) => s.id.as_str(),
+                        ConnectionSettings::Wireguard { id } => id.as_str(),
+                    };
+                    name_a.to_lowercase().cmp(&name_b.to_lowercase())
+                });
+
+                let known_networks = known_connections.into_iter().fold(
                     vpn_connections,
                     |networks, (uuid, connection)| {
                         let id = match connection {

@@ -1,6 +1,6 @@
 [package]
 name = "cosmic-settings"
-version = "1.0.7"
+version = "1.0.12"
 edition = "2024"
 license = "GPL-3.0-only"
 publish = false

@@ -7,7 +7,8 @@ use super::Event;
 use cosmic_dbus_networkmanager::nm::NetworkManager;
 use futures::{SinkExt, StreamExt};
 use iced_futures::{Subscription, stream};
-use std::{fmt::Debug, hash::Hash};
+use std::fmt::Debug;
+use std::hash::Hash;
 use zbus::Connection;
 
 #[derive(Debug, Clone)]

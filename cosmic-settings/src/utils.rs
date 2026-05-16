@@ -1,4 +1,5 @@
-use std::{future::Future, io, process};
+use std::future::Future;
+use std::{io, process};
 
 use futures::future::select;
 

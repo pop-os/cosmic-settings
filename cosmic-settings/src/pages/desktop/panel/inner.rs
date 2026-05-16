@@ -1,12 +1,11 @@
-use cosmic::{
-    Element, Task,
-    cctk::sctk::reexports::client::{Proxy, backend::ObjectId, protocol::wl_output::WlOutput},
-    cosmic_config::{self, CosmicConfigEntry},
-    cosmic_theme::Density,
-    iced::{Alignment, Length},
-    surface,
-    widget::{button, container, dropdown, row, settings, slider, space, text},
-};
+use cosmic::cctk::sctk::reexports::client::Proxy;
+use cosmic::cctk::sctk::reexports::client::backend::ObjectId;
+use cosmic::cctk::sctk::reexports::client::protocol::wl_output::WlOutput;
+use cosmic::cosmic_config::{self, CosmicConfigEntry};
+use cosmic::cosmic_theme::{Density, Roundness};
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::{button, container, dropdown, row, settings, slider, space, text};
+use cosmic::{Element, Task, surface};
 
 use cosmic::Apply;
 use cosmic_config::ConfigSet;
@@ -15,9 +14,8 @@ use cosmic_panel_config::{
     CosmicPanelOuput, PanelAnchor, PanelSize,
 };
 use cosmic_settings_page::{self as page, Section};
-use std::{collections::HashMap, time::Duration};
-
-use crate::pages::desktop::appearance::Roundness;
+use std::collections::HashMap;
+use std::time::Duration;
 
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,

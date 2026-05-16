@@ -3,7 +3,7 @@
 
 // XXX error handling?
 
-use std::hash::Hash;
+use std::{hash::Hash, time::Duration};
 
 use futures::{FutureExt, StreamExt};
 use iced_futures::Subscription;
@@ -33,22 +33,50 @@ pub fn subscription(connection: zbus::Connection) -> iced_futures::Subscription<
          }| {
             let connection = connection.clone();
             async move {
-                let settings_daemon = match CosmicSettingsDaemonProxy::new(&connection).await {
-                    Ok(value) => value,
-                    Err(err) => {
-                        log::error!("Error connecting to settings daemon: {}", err);
-                        futures::future::pending().await
+                let count = 5;
+                let mut settings_daemon = None;
+                for _ in 0..5 {
+                    if count == 4 {
+                        return futures::future::pending().await;
                     }
-                };
+                    match CosmicSettingsDaemonProxy::new(&connection).await {
+                        Ok(value) => {
+                            // interface methods can be called
+                            // FIXME why does this fail sometimes??
+                            if let Err(err) = value.display_brightness().await {
+                                log::error!("Error connecting to settings daemon: {}", err);
 
+                                tokio::time::sleep(Duration::from_secs(1)).await;
+                                continue;
+                            }
+                            if let Err(err) = value.max_display_brightness().await {
+                                log::error!("Error connecting to settings daemon: {}", err);
+                                tokio::time::sleep(Duration::from_secs(1)).await;
+
+                                continue;
+                            }
+                            settings_daemon = Some(value);
+
+                            break;
+                        }
+                        Err(err) => {
+                            log::error!("Error connecting to settings daemon: {}", err);
+
+                            tokio::time::sleep(Duration::from_secs(1)).await;
+                        }
+                    };
+                }
+                let settings_daemon = settings_daemon.unwrap();
                 let (tx, rx) = unbounded_channel();
 
                 let max_brightness_stream = settings_daemon
                     .receive_max_display_brightness_changed()
                     .await;
-                let brightness_stream = settings_daemon.receive_display_brightness_changed().await;
 
-                let initial = futures::stream::iter([Event::Sender(tx)]);
+                let brightness_stream = settings_daemon.receive_display_brightness_changed().await;
+                let mut init = vec![Event::Sender(tx)];
+
+                let initial = futures::stream::iter(init);
 
                 initial.chain(futures::stream_select!(
                     Box::pin(UnboundedReceiverStream::new(rx).filter_map(move |request| {
@@ -58,6 +86,14 @@ pub fn subscription(connection: zbus::Connection) -> iced_futures::Subscription<
                                 Request::SetDisplayBrightness(brightness) => {
                                     let _ =
                                         settings_daemon.set_display_brightness(brightness).await;
+                                }
+                                Request::GetDisplayBrightness => {
+                                    let b = settings_daemon.display_brightness().await;
+                                    return Some(Event::DisplayBrightness(b.ok()?));
+                                }
+                                Request::GetMaxDisplayBrightness => {
+                                    let m = settings_daemon.max_display_brightness().await;
+                                    return Some(Event::MaxDisplayBrightness(m.ok()?));
                                 }
                             }
                             None::<Event>
@@ -102,4 +138,6 @@ trait CosmicSettingsDaemon {
 #[derive(Debug, Clone)]
 pub enum Request {
     SetDisplayBrightness(i32),
+    GetDisplayBrightness,
+    GetMaxDisplayBrightness,
 }

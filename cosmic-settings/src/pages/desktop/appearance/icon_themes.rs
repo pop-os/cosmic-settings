@@ -1,14 +1,13 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::{collections::BTreeMap, path::PathBuf};
+use std::collections::BTreeMap;
+use std::path::PathBuf;
 
 use super::Message;
-use cosmic::{
-    Element,
-    iced::{Background, Length},
-    widget::{button, icon, text},
-};
+use cosmic::Element;
+use cosmic::iced::{Background, Length};
+use cosmic::widget::{button, icon, text};
 use tokio::io::AsyncBufReadExt;
 
 const ICON_PREV_N: usize = 6;
