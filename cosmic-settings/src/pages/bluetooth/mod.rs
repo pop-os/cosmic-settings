@@ -705,8 +705,9 @@ impl Page {
             }
 
             Message::ServiceActivate => {
-                return cosmic::task::future(async {
-                    systemd::activate_bluetooth().await;
+                let activate_future = self.service_manager.activate("bluetooth");
+                return cosmic::task::future(async move {
+                    activate_future.await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -1329,5 +1330,47 @@ mod tests {
         future.await;
         
         // Assert: The method should return a Future that can be awaited
+    }
+
+    #[test]
+    fn test_service_activate_message_calls_service_manager_activate() {
+        use std::sync::{Arc, Mutex};
+        
+        // Arrange: Create a tracking mock service manager that sets flag when activate() is called
+        struct TrackingServiceManager {
+            activate_called: Arc<Mutex<bool>>,
+        }
+        
+        impl ServiceManager for TrackingServiceManager {
+            fn is_enabled(&self, _service: &str) -> bool {
+                false
+            }
+            
+            fn is_active(&self, _service: &str) -> bool {
+                false
+            }
+            
+            fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+                // Set the flag immediately when activate() is called, not when future is awaited
+                *self.activate_called.lock().unwrap() = true;
+                Box::pin(async {})
+            }
+            
+            fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+                Box::pin(async {})
+            }
+        }
+        
+        let activate_called = Arc::new(Mutex::new(false));
+        let manager = TrackingServiceManager {
+            activate_called: activate_called.clone(),
+        };
+        let mut page = Page::with_service_manager(Box::new(manager));
+        
+        // Act: Handle ServiceActivate message
+        let _task = page.update(Message::ServiceActivate);
+        
+        // Assert: activate() should have been called (synchronously) when creating the task
+        assert!(*activate_called.lock().unwrap(), "service_manager.activate() should be called when handling ServiceActivate message");
     }
 }
