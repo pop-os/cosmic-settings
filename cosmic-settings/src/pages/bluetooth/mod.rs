@@ -1016,6 +1016,30 @@ trait ServiceManager {
     fn is_active(&self, service: &str) -> bool;
 }
 
+#[cfg(test)]
+struct MockServiceManager {
+    enabled: bool,
+    active: bool,
+}
+
+#[cfg(test)]
+impl MockServiceManager {
+    fn new(enabled: bool, active: bool) -> Self {
+        Self { enabled, active }
+    }
+}
+
+#[cfg(test)]
+impl ServiceManager for MockServiceManager {
+    fn is_enabled(&self, _service: &str) -> bool {
+        self.enabled
+    }
+
+    fn is_active(&self, _service: &str) -> bool {
+        self.active
+    }
+}
+
 mod systemd {
     use futures::FutureExt;
 
@@ -1104,5 +1128,22 @@ mod tests {
         
         let inactive_manager = TestServiceManager { active: false };
         assert!(!inactive_manager.is_active("bluetooth"));
+    }
+
+    #[test]
+    fn test_mock_service_manager_returns_configured_values() {
+        // Arrange: Create a MockServiceManager with known state
+        let mock = MockServiceManager::new(true, true);
+        
+        // Act & Assert: Verify it returns the configured values
+        assert!(mock.is_enabled("bluetooth"));
+        assert!(mock.is_active("bluetooth"));
+        
+        // Arrange: Create a MockServiceManager with different state
+        let mock_disabled = MockServiceManager::new(false, false);
+        
+        // Act & Assert: Verify it returns the configured values
+        assert!(!mock_disabled.is_enabled("bluetooth"));
+        assert!(!mock_disabled.is_active("bluetooth"));
     }
 }
