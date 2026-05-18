@@ -147,7 +147,6 @@ impl Model {
     }
 }
 
-#[derive(Default)]
 pub struct Page {
     model: Model,
 
@@ -161,6 +160,24 @@ pub struct Page {
     service_is_active: bool,
 
     subscription: Option<tokio::sync::oneshot::Sender<()>>,
+    
+    service_manager: Box<dyn ServiceManager>,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        Self {
+            model: Model::default(),
+            connection: None,
+            dialog: None,
+            heading: String::new(),
+            bluez_service_unknown: false,
+            service_is_enabled: false,
+            service_is_active: false,
+            subscription: None,
+            service_manager: Box::new(SystemDServiceManager::new()),
+        }
+    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -1011,6 +1028,23 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
+impl Page {
+    #[cfg(test)]
+    fn with_service_manager(service_manager: Box<dyn ServiceManager>) -> Self {
+        Self {
+            model: Model::default(),
+            connection: None,
+            dialog: None,
+            heading: String::new(),
+            bluez_service_unknown: false,
+            service_is_enabled: false,
+            service_is_active: false,
+            subscription: None,
+            service_manager,
+        }
+    }
+}
+
 trait ServiceManager {
     fn is_enabled(&self, service: &str) -> bool;
     fn is_active(&self, service: &str) -> bool;
@@ -1183,5 +1217,16 @@ mod tests {
         // but we can verify the struct exists and implements the trait
         let _enabled: bool = manager.is_enabled("bluetooth");
         let _active: bool = manager.is_active("bluetooth");
+    }
+
+    #[test]
+    fn test_page_can_be_constructed_with_mock_service_manager() {
+        // Arrange & Act: Create a Page with a MockServiceManager
+        let mock = MockServiceManager::new(true, true);
+        let page = Page::with_service_manager(Box::new(mock));
+        
+        // Assert: Verify the page has the service manager
+        assert!(page.service_manager.is_enabled("bluetooth"));
+        assert!(page.service_manager.is_active("bluetooth"));
     }
 }
