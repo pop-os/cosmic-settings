@@ -177,9 +177,19 @@ impl Default for Page {
             service_is_enabled: false,
             service_is_active: false,
             subscription: None,
-            service_manager: Box::new(SystemDServiceManager::new()),
+            service_manager: create_default_service_manager(),
         }
     }
+}
+
+#[cfg(test)]
+fn create_default_service_manager() -> Box<dyn ServiceManager> {
+    Box::new(MockServiceManager::new(false, false))
+}
+
+#[cfg(not(test))]
+fn create_default_service_manager() -> Box<dyn ServiceManager> {
+    Box::new(SystemDServiceManager::new())
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -1415,5 +1425,18 @@ mod tests {
         
         // Assert: enable() should have been called (synchronously) when creating the task
         assert!(*enable_called.lock().unwrap(), "service_manager.enable() should be called when handling ServiceEnable message");
+    }
+
+    #[test]
+    fn test_default_page_uses_mock_service_manager_in_tests() {
+        // Arrange & Act: Create a Page using Default trait (which should auto-detect Mock in tests)
+        let page = Page::default();
+        
+        // Assert: The service manager should be a MockServiceManager
+        // We verify this by checking that it returns the mock's default values (false, false)
+        assert!(!page.service_manager.is_enabled("bluetooth"), 
+            "Default Page in test mode should use MockServiceManager which returns false for is_enabled");
+        assert!(!page.service_manager.is_active("bluetooth"),
+            "Default Page in test mode should use MockServiceManager which returns false for is_active");
     }
 }
