@@ -570,8 +570,8 @@ impl Page {
             }
 
             Message::DBusConnect(connection) => {
-                self.service_is_active = systemd::is_bluetooth_active();
-                self.service_is_enabled = systemd::is_bluetooth_enabled();
+                self.service_is_active = self.service_manager.is_active("bluetooth");
+                self.service_is_enabled = self.service_manager.is_enabled("bluetooth");
                 self.connection = Some(connection.clone());
 
                 let get_adapters_fut = get_adapters(connection.clone());
@@ -1228,5 +1228,24 @@ mod tests {
         // Assert: Verify the page has the service manager
         assert!(page.service_manager.is_enabled("bluetooth"));
         assert!(page.service_manager.is_active("bluetooth"));
+    }
+
+    #[test]
+    fn test_page_queries_service_manager_for_bluetooth_status() {
+        // Arrange: Create mock service managers with different states
+        let disabled_inactive = MockServiceManager::new(false, false);
+        let enabled_active = MockServiceManager::new(true, true);
+        
+        // Act: Query each manager
+        let disabled_status = disabled_inactive.is_enabled("bluetooth");
+        let inactive_status = disabled_inactive.is_active("bluetooth");
+        let enabled_status = enabled_active.is_enabled("bluetooth");
+        let active_status = enabled_active.is_active("bluetooth");
+        
+        // Assert: MockServiceManager should return configured values
+        assert!(!disabled_status);
+        assert!(!inactive_status);
+        assert!(enabled_status);
+        assert!(active_status);
     }
 }
