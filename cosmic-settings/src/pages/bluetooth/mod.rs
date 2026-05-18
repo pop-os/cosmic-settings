@@ -1434,4 +1434,38 @@ mod tests {
         assert!(!page.service_manager.is_active("bluetooth"),
             "Default Page in test mode should use MockServiceManager which returns false for is_active");
     }
+
+    #[tokio::test]
+    async fn test_dbus_connect_queries_service_manager_when_enabled_and_active() {
+        // Arrange: Create a page with a service manager that reports enabled=true, active=true
+        let mock = MockServiceManager::new(true, true);
+        let mut page = Page::with_service_manager(Box::new(mock));
+        
+        // Create a mock DBus connection
+        let connection = zbus::Connection::session().await.unwrap();
+        
+        // Act: Send DBusConnect message
+        let _task = page.update(Message::DBusConnect(connection));
+        
+        // Assert: Page should have queried the service manager and stored the states
+        assert!(page.service_is_enabled, "Page should have queried service_manager.is_enabled and stored true");
+        assert!(page.service_is_active, "Page should have queried service_manager.is_active and stored true");
+    }
+
+    #[tokio::test]
+    async fn test_dbus_connect_handles_enabled_but_inactive_service() {
+        // Arrange: Create a page with service that is enabled but not active (stopped state)
+        let mock = MockServiceManager::new(true, false);
+        let mut page = Page::with_service_manager(Box::new(mock));
+        
+        // Create a mock DBus connection
+        let connection = zbus::Connection::session().await.unwrap();
+        
+        // Act: Send DBusConnect message
+        let _task = page.update(Message::DBusConnect(connection));
+        
+        // Assert: Page should correctly distinguish between enabled and active states
+        assert!(page.service_is_enabled, "Service should be recognized as enabled");
+        assert!(!page.service_is_active, "Service should be recognized as inactive");
+    }
 }
