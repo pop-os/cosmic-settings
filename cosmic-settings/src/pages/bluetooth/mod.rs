@@ -1040,6 +1040,24 @@ impl ServiceManager for MockServiceManager {
     }
 }
 
+struct SystemDServiceManager;
+
+impl SystemDServiceManager {
+    fn new() -> Self {
+        Self
+    }
+}
+
+impl ServiceManager for SystemDServiceManager {
+    fn is_enabled(&self, service: &str) -> bool {
+        systemd::is_service_enabled(service)
+    }
+
+    fn is_active(&self, service: &str) -> bool {
+        systemd::is_service_active(service)
+    }
+}
+
 mod systemd {
     use futures::FutureExt;
 
@@ -1058,16 +1076,24 @@ mod systemd {
     }
 
     pub fn is_bluetooth_enabled() -> bool {
+        is_service_enabled("bluetooth")
+    }
+
+    pub fn is_bluetooth_active() -> bool {
+        is_service_active("bluetooth")
+    }
+
+    pub fn is_service_enabled(service: &str) -> bool {
         std::process::Command::new("systemctl")
-            .args(["is-enabled", "bluetooth"])
+            .args(["is-enabled", service])
             .status()
             .map(|status| status.success())
             .unwrap_or(true)
     }
 
-    pub fn is_bluetooth_active() -> bool {
+    pub fn is_service_active(service: &str) -> bool {
         std::process::Command::new("systemctl")
-            .args(["is-active", "bluetooth"])
+            .args(["is-active", service])
             .status()
             .map(|status| status.success())
             .unwrap_or(true)
@@ -1145,5 +1171,17 @@ mod tests {
         // Act & Assert: Verify it returns the configured values
         assert!(!mock_disabled.is_enabled("bluetooth"));
         assert!(!mock_disabled.is_active("bluetooth"));
+    }
+
+    #[test]
+    fn test_systemd_service_manager_implements_trait() {
+        // Arrange: Create a SystemDServiceManager
+        let manager = SystemDServiceManager::new();
+        
+        // Act & Assert: Verify it implements ServiceManager trait
+        // Note: We can't test the actual systemd calls in unit tests,
+        // but we can verify the struct exists and implements the trait
+        let _enabled: bool = manager.is_enabled("bluetooth");
+        let _active: bool = manager.is_active("bluetooth");
     }
 }
