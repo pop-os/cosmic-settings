@@ -1051,7 +1051,7 @@ trait ServiceManager {
     fn is_enabled(&self, service: &str) -> bool;
     fn is_active(&self, service: &str) -> bool;
     fn activate(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>>;
-    fn enable(&self, service: &str);
+    fn enable(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>>;
 }
 
 #[cfg(test)]
@@ -1081,8 +1081,8 @@ impl ServiceManager for MockServiceManager {
         Box::pin(async {})
     }
 
-    fn enable(&self, _service: &str) {
-        // Mock implementation: no-op
+    fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(async {})
     }
 }
 
@@ -1107,8 +1107,8 @@ impl ServiceManager for SystemDServiceManager {
         Box::pin(systemd::activate_bluetooth())
     }
 
-    fn enable(&self, _service: &str) {
-        // Implementation will be added when needed
+    fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(systemd::enable_bluetooth())
     }
 }
 
@@ -1178,8 +1178,8 @@ mod tests {
                 Box::pin(async {})
             }
 
-            fn enable(&self, _service: &str) {
-                // no-op
+            fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+                Box::pin(async {})
             }
         }
         
@@ -1212,8 +1212,8 @@ mod tests {
                 Box::pin(async {})
             }
 
-            fn enable(&self, _service: &str) {
-                // no-op
+            fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+                Box::pin(async {})
             }
         }
         
@@ -1296,16 +1296,15 @@ mod tests {
         // Assert: The method should exist and be callable
     }
 
-    #[test]
-    fn test_service_manager_trait_has_enable_method() {
+    #[tokio::test]
+    async fn test_service_manager_trait_has_enable_method() {
         // Arrange: Create a mock service manager
         let mock = MockServiceManager::new(false, false);
         
         // Act: Call enable on the service manager
-        mock.enable("bluetooth");
+        mock.enable("bluetooth").await;
         
         // Assert: The method should exist and be callable
-        // (This test will fail until enable() is added to the trait)
     }
 
     #[tokio::test]
@@ -1315,6 +1314,18 @@ mod tests {
         
         // Act: Call activate and await the future
         let future = mock.activate("bluetooth");
+        future.await;
+        
+        // Assert: The method should return a Future that can be awaited
+    }
+
+    #[tokio::test]
+    async fn test_service_manager_enable_returns_future() {
+        // Arrange: Create a mock service manager
+        let mock = MockServiceManager::new(false, false);
+        
+        // Act: Call enable and await the future
+        let future = mock.enable("bluetooth");
         future.await;
         
         // Assert: The method should return a Future that can be awaited
