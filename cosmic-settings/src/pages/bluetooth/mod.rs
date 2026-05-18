@@ -1011,6 +1011,10 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
+trait ServiceManager {
+    fn is_enabled(&self, service: &str) -> bool;
+}
+
 mod systemd {
     use futures::FutureExt;
 
@@ -1042,5 +1046,32 @@ mod systemd {
             .status()
             .map(|status| status.success())
             .unwrap_or(true)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_service_manager_trait_is_enabled() {
+        // Arrange: Create a mock service manager
+        struct TestServiceManager {
+            enabled: bool,
+        }
+        
+        impl ServiceManager for TestServiceManager {
+            fn is_enabled(&self, _service: &str) -> bool {
+                self.enabled
+            }
+        }
+        
+        let manager = TestServiceManager { enabled: true };
+        
+        // Act & Assert
+        assert!(manager.is_enabled("bluetooth"));
+        
+        let disabled_manager = TestServiceManager { enabled: false };
+        assert!(!disabled_manager.is_enabled("bluetooth"));
     }
 }
