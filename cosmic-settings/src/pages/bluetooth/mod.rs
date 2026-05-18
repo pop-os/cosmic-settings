@@ -1049,6 +1049,7 @@ trait ServiceManager {
     fn is_enabled(&self, service: &str) -> bool;
     fn is_active(&self, service: &str) -> bool;
     fn activate(&self, service: &str);
+    fn enable(&self, service: &str);
 }
 
 #[cfg(test)]
@@ -1077,6 +1078,10 @@ impl ServiceManager for MockServiceManager {
     fn activate(&self, _service: &str) {
         // Mock implementation: no-op
     }
+
+    fn enable(&self, _service: &str) {
+        // Mock implementation: no-op
+    }
 }
 
 struct SystemDServiceManager;
@@ -1097,6 +1102,10 @@ impl ServiceManager for SystemDServiceManager {
     }
 
     fn activate(&self, _service: &str) {
+        // Implementation will be added when needed
+    }
+
+    fn enable(&self, _service: &str) {
         // Implementation will be added when needed
     }
 }
@@ -1166,6 +1175,10 @@ mod tests {
             fn activate(&self, _service: &str) {
                 // no-op
             }
+
+            fn enable(&self, _service: &str) {
+                // no-op
+            }
         }
         
         let manager = TestServiceManager { enabled: true };
@@ -1194,6 +1207,10 @@ mod tests {
             }
 
             fn activate(&self, _service: &str) {
+                // no-op
+            }
+
+            fn enable(&self, _service: &str) {
                 // no-op
             }
         }
@@ -1276,5 +1293,17 @@ mod tests {
         
         // Assert: The method should exist and be callable
         // (This test will fail until activate() is added to the trait)
+    }
+
+    #[test]
+    fn test_service_manager_trait_has_enable_method() {
+        // Arrange: Create a mock service manager
+        let mock = MockServiceManager::new(false, false);
+        
+        // Act: Call enable on the service manager
+        mock.enable("bluetooth");
+        
+        // Assert: The method should exist and be callable
+        // (This test will fail until enable() is added to the trait)
     }
 }
