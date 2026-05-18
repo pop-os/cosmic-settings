@@ -12,6 +12,8 @@ use futures::channel::oneshot;
 use futures::{SinkExt, StreamExt};
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
 use zbus::zvariant::OwnedObjectPath;
@@ -1048,7 +1050,7 @@ impl Page {
 trait ServiceManager {
     fn is_enabled(&self, service: &str) -> bool;
     fn is_active(&self, service: &str) -> bool;
-    fn activate(&self, service: &str);
+    fn activate(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>>;
     fn enable(&self, service: &str);
 }
 
@@ -1075,8 +1077,8 @@ impl ServiceManager for MockServiceManager {
         self.active
     }
 
-    fn activate(&self, _service: &str) {
-        // Mock implementation: no-op
+    fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(async {})
     }
 
     fn enable(&self, _service: &str) {
@@ -1101,8 +1103,8 @@ impl ServiceManager for SystemDServiceManager {
         systemd::is_service_active(service)
     }
 
-    fn activate(&self, _service: &str) {
-        // Implementation will be added when needed
+    fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(systemd::activate_bluetooth())
     }
 
     fn enable(&self, _service: &str) {
@@ -1172,8 +1174,8 @@ mod tests {
                 true
             }
 
-            fn activate(&self, _service: &str) {
-                // no-op
+            fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+                Box::pin(async {})
             }
 
             fn enable(&self, _service: &str) {
@@ -1206,8 +1208,8 @@ mod tests {
                 self.active
             }
 
-            fn activate(&self, _service: &str) {
-                // no-op
+            fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+                Box::pin(async {})
             }
 
             fn enable(&self, _service: &str) {
@@ -1283,16 +1285,15 @@ mod tests {
         assert!(active_status);
     }
 
-    #[test]
-    fn test_service_manager_trait_has_activate_method() {
+    #[tokio::test]
+    async fn test_service_manager_trait_has_activate_method() {
         // Arrange: Create a mock service manager
         let mock = MockServiceManager::new(false, false);
         
         // Act: Call activate on the service manager
-        mock.activate("bluetooth");
+        mock.activate("bluetooth").await;
         
         // Assert: The method should exist and be callable
-        // (This test will fail until activate() is added to the trait)
     }
 
     #[test]
@@ -1305,5 +1306,17 @@ mod tests {
         
         // Assert: The method should exist and be callable
         // (This test will fail until enable() is added to the trait)
+    }
+
+    #[tokio::test]
+    async fn test_service_manager_activate_returns_future() {
+        // Arrange: Create a mock service manager
+        let mock = MockServiceManager::new(false, false);
+        
+        // Act: Call activate and await the future
+        let future = mock.activate("bluetooth");
+        future.await;
+        
+        // Assert: The method should return a Future that can be awaited
     }
 }
