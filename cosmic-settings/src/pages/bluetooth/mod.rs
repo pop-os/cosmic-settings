@@ -182,6 +182,9 @@ impl Default for Page {
     }
 }
 
+/// Creates the appropriate service manager based on the build configuration.
+/// In test mode, returns a MockServiceManager.
+/// In production mode, returns a SystemDServiceManager.
 #[cfg(test)]
 fn create_default_service_manager() -> Box<dyn ServiceManager> {
     Box::new(MockServiceManager::new(false, false))
@@ -1139,14 +1142,6 @@ mod systemd {
             .args(["systemctl", "enable", "--now", "bluetooth"])
             .status()
             .map(|_| ())
-    }
-
-    pub fn is_bluetooth_enabled() -> bool {
-        is_service_enabled("bluetooth")
-    }
-
-    pub fn is_bluetooth_active() -> bool {
-        is_service_active("bluetooth")
     }
 
     pub fn is_service_enabled(service: &str) -> bool {
