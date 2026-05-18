@@ -718,8 +718,9 @@ impl Page {
             }
 
             Message::ServiceEnable => {
-                return cosmic::task::future(async {
-                    systemd::enable_bluetooth().await;
+                let enable_future = self.service_manager.enable("bluetooth");
+                return cosmic::task::future(async move {
+                    enable_future.await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -1372,5 +1373,47 @@ mod tests {
         
         // Assert: activate() should have been called (synchronously) when creating the task
         assert!(*activate_called.lock().unwrap(), "service_manager.activate() should be called when handling ServiceActivate message");
+    }
+
+    #[test]
+    fn test_service_enable_message_calls_service_manager_enable() {
+        use std::sync::{Arc, Mutex};
+        
+        // Arrange: Create a tracking mock service manager that sets flag when enable() is called
+        struct TrackingServiceManager {
+            enable_called: Arc<Mutex<bool>>,
+        }
+        
+        impl ServiceManager for TrackingServiceManager {
+            fn is_enabled(&self, _service: &str) -> bool {
+                false
+            }
+            
+            fn is_active(&self, _service: &str) -> bool {
+                false
+            }
+            
+            fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+                Box::pin(async {})
+            }
+            
+            fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+                // Set the flag immediately when enable() is called, not when future is awaited
+                *self.enable_called.lock().unwrap() = true;
+                Box::pin(async {})
+            }
+        }
+        
+        let enable_called = Arc::new(Mutex::new(false));
+        let manager = TrackingServiceManager {
+            enable_called: enable_called.clone(),
+        };
+        let mut page = Page::with_service_manager(Box::new(manager));
+        
+        // Act: Handle ServiceEnable message
+        let _task = page.update(Message::ServiceEnable);
+        
+        // Assert: enable() should have been called (synchronously) when creating the task
+        assert!(*enable_called.lock().unwrap(), "service_manager.enable() should be called when handling ServiceEnable message");
     }
 }
