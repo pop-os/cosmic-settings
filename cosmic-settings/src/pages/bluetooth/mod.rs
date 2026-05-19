@@ -179,7 +179,7 @@ impl Default for Page {
             service_is_enabled: false,
             service_is_active: false,
             subscription: None,
-            service_manager: create_default_service_manager(),
+            service_manager: create_default_service_manager("bluetooth"),
         }
     }
 }
@@ -576,8 +576,8 @@ impl Page {
             }
 
             Message::DBusConnect(connection) => {
-                self.service_is_active = self.service_manager.is_active("bluetooth");
-                self.service_is_enabled = self.service_manager.is_enabled("bluetooth");
+                self.service_is_active = self.service_manager.is_active();
+                self.service_is_enabled = self.service_manager.is_enabled();
                 self.connection = Some(connection.clone());
 
                 let get_adapters_fut = get_adapters(connection.clone());
@@ -709,7 +709,7 @@ impl Page {
             }
 
             Message::ServiceActivate => {
-                let activate_future = self.service_manager.activate("bluetooth");
+                let activate_future = self.service_manager.activate();
                 return cosmic::task::future(async move {
                     activate_future.await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
@@ -722,7 +722,7 @@ impl Page {
             }
 
             Message::ServiceEnable => {
-                let enable_future = self.service_manager.enable("bluetooth");
+                let enable_future = self.service_manager.enable();
                 return cosmic::task::future(async move {
                     enable_future.await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
@@ -1060,12 +1060,12 @@ mod tests {
     #[test]
     fn test_page_can_be_constructed_with_mock_service_manager() {
         // Arrange & Act: Create a Page with a MockServiceManager
-        let mock = MockServiceManager::new(true, true);
-        let page = Page::with_service_manager(Box::new(mock));
+        let bluetooth = MockServiceManager::new("bluetooth", true, true);
+        let page = Page::with_service_manager(Box::new(bluetooth));
         
-        // Assert: Verify the page has the service manager
-        assert!(page.service_manager.is_enabled("bluetooth"));
-        assert!(page.service_manager.is_active("bluetooth"));
+        // Assert: Verify the page has the service manager bound to the bluetooth service
+        assert!(page.service_manager.is_enabled());
+        assert!(page.service_manager.is_active());
     }
 
     #[test]
@@ -1073,19 +1073,19 @@ mod tests {
         // Arrange & Act: Create a Page using Default trait (which should auto-detect Mock in tests)
         let page = Page::default();
         
-        // Assert: The service manager should be a MockServiceManager
+        // Assert: The service manager should be a MockServiceManager bound to the bluetooth service
         // We verify this by checking that it returns the mock's default values (false, false)
-        assert!(!page.service_manager.is_enabled("bluetooth"), 
+        assert!(!page.service_manager.is_enabled(), 
             "Default Page in test mode should use MockServiceManager which returns false for is_enabled");
-        assert!(!page.service_manager.is_active("bluetooth"),
+        assert!(!page.service_manager.is_active(),
             "Default Page in test mode should use MockServiceManager which returns false for is_active");
     }
 
     #[tokio::test]
     async fn test_dbus_connect_queries_service_manager_when_enabled_and_active() {
         // Arrange: Create a page with a service manager that reports enabled=true, active=true
-        let mock = MockServiceManager::new(true, true);
-        let mut page = Page::with_service_manager(Box::new(mock));
+        let bluetooth = MockServiceManager::new("bluetooth", true, true);
+        let mut page = Page::with_service_manager(Box::new(bluetooth));
         
         // Create a mock DBus connection
         let connection = zbus::Connection::session().await.unwrap();
@@ -1094,15 +1094,15 @@ mod tests {
         let _task = page.update(Message::DBusConnect(connection));
         
         // Assert: Page should have queried the service manager and stored the states
-        assert!(page.service_is_enabled, "Page should have queried service_manager.is_enabled and stored true");
-        assert!(page.service_is_active, "Page should have queried service_manager.is_active and stored true");
+        assert!(page.service_is_enabled, "Page should have queried bluetooth.is_enabled() and stored true");
+        assert!(page.service_is_active, "Page should have queried bluetooth.is_active() and stored true");
     }
 
     #[tokio::test]
     async fn test_dbus_connect_handles_enabled_but_inactive_service() {
         // Arrange: Create a page with service that is enabled but not active (stopped state)
-        let mock = MockServiceManager::new(true, false);
-        let mut page = Page::with_service_manager(Box::new(mock));
+        let bluetooth = MockServiceManager::new("bluetooth", true, false);
+        let mut page = Page::with_service_manager(Box::new(bluetooth));
         
         // Create a mock DBus connection
         let connection = zbus::Connection::session().await.unwrap();

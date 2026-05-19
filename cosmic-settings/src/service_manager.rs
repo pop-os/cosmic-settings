@@ -12,20 +12,21 @@ use std::pin::Pin;
 
 /// Trait for managing system services.
 ///
-/// Implementations of this trait provide methods to query service state
-/// and perform operations like enabling or activating services.
+/// Implementations of this trait are bound to a specific service name
+/// and provide methods to query service state and perform operations
+/// like enabling or activating that service.
 pub trait ServiceManager {
-    /// Check if a service is enabled (will start on boot).
-    fn is_enabled(&self, service: &str) -> bool;
+    /// Check if the service is enabled (will start on boot).
+    fn is_enabled(&self) -> bool;
     
-    /// Check if a service is currently active (running).
-    fn is_active(&self, service: &str) -> bool;
+    /// Check if the service is currently active (running).
+    fn is_active(&self) -> bool;
     
-    /// Activate (start) a service.
-    fn activate(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>>;
+    /// Activate (start) the service.
+    fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>>;
     
-    /// Enable a service (configure it to start on boot and start it now).
-    fn enable(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>>;
+    /// Enable the service (configure it to start on boot and start it now).
+    fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>>;
 }
 
 /// Mock implementation of ServiceManager for testing.
@@ -34,33 +35,38 @@ pub trait ServiceManager {
 /// no-op implementations of activate and enable operations.
 #[cfg(test)]
 pub struct MockServiceManager {
+    service_name: String,
     enabled: bool,
     active: bool,
 }
 
 #[cfg(test)]
 impl MockServiceManager {
-    /// Create a new MockServiceManager with specified enabled and active states.
-    pub fn new(enabled: bool, active: bool) -> Self {
-        Self { enabled, active }
+    /// Create a new MockServiceManager with specified service name, enabled and active states.
+    pub fn new(service_name: impl Into<String>, enabled: bool, active: bool) -> Self {
+        Self {
+            service_name: service_name.into(),
+            enabled,
+            active,
+        }
     }
 }
 
 #[cfg(test)]
 impl ServiceManager for MockServiceManager {
-    fn is_enabled(&self, _service: &str) -> bool {
+    fn is_enabled(&self) -> bool {
         self.enabled
     }
 
-    fn is_active(&self, _service: &str) -> bool {
+    fn is_active(&self) -> bool {
         self.active
     }
 
-    fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+    fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
         Box::pin(async {})
     }
 
-    fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+    fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
         Box::pin(async {})
     }
 }
@@ -69,43 +75,40 @@ impl ServiceManager for MockServiceManager {
 ///
 /// This implementation delegates to systemd commands for managing services.
 #[cfg(feature = "systemd")]
-pub struct SystemDServiceManager;
-
-#[cfg(feature = "systemd")]
-impl SystemDServiceManager {
-    /// Create a new SystemDServiceManager.
-    pub fn new() -> Self {
-        Self
-    }
+pub struct SystemDServiceManager {
+    service_name: String,
 }
 
 #[cfg(feature = "systemd")]
-impl Default for SystemDServiceManager {
-    fn default() -> Self {
-        Self::new()
+impl SystemDServiceManager {
+    /// Create a new SystemDServiceManager for the specified service.
+    pub fn new(service_name: impl Into<String>) -> Self {
+        Self {
+            service_name: service_name.into(),
+        }
     }
 }
 
 #[cfg(feature = "systemd")]
 impl ServiceManager for SystemDServiceManager {
-    fn is_enabled(&self, service: &str) -> bool {
+    fn is_enabled(&self) -> bool {
         std::process::Command::new("systemctl")
-            .args(["is-enabled", service])
+            .args(["is-enabled", &self.service_name])
             .status()
             .map(|status| status.success())
             .unwrap_or(true)
     }
 
-    fn is_active(&self, service: &str) -> bool {
+    fn is_active(&self) -> bool {
         std::process::Command::new("systemctl")
-            .args(["is-active", service])
+            .args(["is-active", &self.service_name])
             .status()
             .map(|status| status.success())
             .unwrap_or(true)
     }
 
-    fn activate(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        let service = service.to_string();
+    fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        let service = self.service_name.clone();
         Box::pin(async move {
             let _ = tokio::process::Command::new("pkexec")
                 .args(["systemctl", "start", &service])
@@ -114,8 +117,8 @@ impl ServiceManager for SystemDServiceManager {
         })
     }
 
-    fn enable(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        let service = service.to_string();
+    fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        let service = self.service_name.clone();
         Box::pin(async move {
             let _ = tokio::process::Command::new("pkexec")
                 .args(["systemctl", "enable", "--now", &service])
@@ -129,26 +132,23 @@ impl ServiceManager for SystemDServiceManager {
 ///
 /// This implementation delegates to OpenRC commands for managing services.
 #[cfg(feature = "openrc")]
-pub struct OpenRcServiceManager;
-
-#[cfg(feature = "openrc")]
-impl OpenRcServiceManager {
-    /// Create a new OpenRcServiceManager.
-    pub fn new() -> Self {
-        Self
-    }
+pub struct OpenRcServiceManager {
+    service_name: String,
 }
 
 #[cfg(feature = "openrc")]
-impl Default for OpenRcServiceManager {
-    fn default() -> Self {
-        Self::new()
+impl OpenRcServiceManager {
+    /// Create a new OpenRcServiceManager for the specified service.
+    pub fn new(service_name: impl Into<String>) -> Self {
+        Self {
+            service_name: service_name.into(),
+        }
     }
 }
 
 #[cfg(feature = "openrc")]
 impl ServiceManager for OpenRcServiceManager {
-    fn is_enabled(&self, service: &str) -> bool {
+    fn is_enabled(&self) -> bool {
         // Check if service is in a runlevel (enabled to start on boot)
         std::process::Command::new("rc-update")
             .args(["show"])
@@ -156,22 +156,22 @@ impl ServiceManager for OpenRcServiceManager {
             .map(|output| {
                 String::from_utf8_lossy(&output.stdout)
                     .lines()
-                    .any(|line| line.trim().starts_with(service))
+                    .any(|line| line.trim().starts_with(&self.service_name))
             })
             .unwrap_or(true)
     }
 
-    fn is_active(&self, service: &str) -> bool {
+    fn is_active(&self) -> bool {
         // Check if service is currently running
         std::process::Command::new("rc-service")
-            .args([service, "status"])
+            .args([&self.service_name, "status"])
             .status()
             .map(|status| status.success())
             .unwrap_or(true)
     }
 
-    fn activate(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        let service = service.to_string();
+    fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        let service = self.service_name.clone();
         Box::pin(async move {
             let _ = tokio::process::Command::new("pkexec")
                 .args(["rc-service", &service, "start"])
@@ -180,8 +180,8 @@ impl ServiceManager for OpenRcServiceManager {
         })
     }
 
-    fn enable(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        let service = service.to_string();
+    fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        let service = self.service_name.clone();
         Box::pin(async move {
             // Add to default runlevel
             let _ = tokio::process::Command::new("pkexec")
@@ -197,7 +197,7 @@ impl ServiceManager for OpenRcServiceManager {
     }
 }
 
-/// Detects the running service manager at runtime.
+/// Detects the running service manager at runtime and creates a manager for the specified service.
 ///
 /// Detection strategy:
 /// 1. Check for systemd: Verify /run/systemd/system exists (systemd running as service manager)
@@ -208,14 +208,16 @@ impl ServiceManager for OpenRcServiceManager {
 /// but only one is actively managing services.
 ///
 /// Returns an error if no supported service manager is detected.
-pub fn detect_service_manager() -> Result<Box<dyn ServiceManager>, String> {
+pub fn detect_service_manager(service_name: impl Into<String>) -> Result<Box<dyn ServiceManager>, String> {
+    let service_name = service_name.into();
+    
     // Try systemd first (most common on modern Linux)
     // /run/systemd/system only exists when systemd is running as the service manager
     #[cfg(feature = "systemd")]
     {
         if std::path::Path::new("/run/systemd/system").exists() {
             tracing::debug!("Detected systemd service manager via /run/systemd/system");
-            return Ok(Box::new(SystemDServiceManager::new()));
+            return Ok(Box::new(SystemDServiceManager::new(service_name)));
         }
     }
 
@@ -226,7 +228,7 @@ pub fn detect_service_manager() -> Result<Box<dyn ServiceManager>, String> {
     {
         if std::path::Path::new("/run/openrc").exists() {
             tracing::debug!("Detected OpenRC service manager via /run/openrc");
-            return Ok(Box::new(OpenRcServiceManager::new()));
+            return Ok(Box::new(OpenRcServiceManager::new(service_name)));
         }
     }
 
@@ -256,44 +258,51 @@ pub fn detect_service_manager() -> Result<Box<dyn ServiceManager>, String> {
 
 /// Creates the appropriate service manager.
 ///
-/// In test mode: Returns MockServiceManager
+/// In test mode: Returns MockServiceManager for the specified service
 /// In production: Attempts to detect the running service manager
 #[cfg(test)]
-pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
-    Box::new(MockServiceManager::new(false, false))
+pub fn create_default_service_manager(service_name: impl Into<String>) -> Box<dyn ServiceManager> {
+    Box::new(MockServiceManager::new(service_name, false, false))
 }
 
 #[cfg(not(test))]
-pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
-    detect_service_manager().unwrap_or_else(|e| {
+pub fn create_default_service_manager(service_name: impl Into<String>) -> Box<dyn ServiceManager> {
+    let service_name = service_name.into();
+    detect_service_manager(&service_name).unwrap_or_else(|e| {
         tracing::warn!(
             "Failed to detect service manager: {}. Service management features will not be available.",
             e
         );
+        tracing::warn!(
+            "Using no-op service manager for '{}'. Service status will always report as enabled/active, but operations will not actually execute.",
+            service_name
+        );
         // Return a no-op implementation that always reports services as enabled/active
         // This allows the app to continue but service management won't actually work
-        Box::new(NoOpServiceManager)
+        Box::new(NoOpServiceManager { service_name })
     })
 }
 
 /// No-op service manager for when no real service manager is detected.
 /// Reports all services as enabled and active, but doesn't actually manage anything.
-struct NoOpServiceManager;
+struct NoOpServiceManager {
+    service_name: String,
+}
 
 impl ServiceManager for NoOpServiceManager {
-    fn is_enabled(&self, _service: &str) -> bool {
+    fn is_enabled(&self) -> bool {
         true
     }
 
-    fn is_active(&self, _service: &str) -> bool {
+    fn is_active(&self) -> bool {
         true
     }
 
-    fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+    fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
         Box::pin(async {})
     }
 
-    fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+    fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
         Box::pin(async {})
     }
 }
@@ -310,30 +319,30 @@ mod tests {
         }
         
         impl ServiceManager for TestServiceManager {
-            fn is_enabled(&self, _service: &str) -> bool {
+            fn is_enabled(&self) -> bool {
                 self.enabled
             }
             
-            fn is_active(&self, _service: &str) -> bool {
+            fn is_active(&self) -> bool {
                 true
             }
 
-            fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+            fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
                 Box::pin(async {})
             }
 
-            fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+            fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
                 Box::pin(async {})
             }
         }
         
-        let manager = TestServiceManager { enabled: true };
+        let test_service = TestServiceManager { enabled: true };
         
         // Act & Assert
-        assert!(manager.is_enabled("bluetooth"));
+        assert!(test_service.is_enabled());
         
-        let disabled_manager = TestServiceManager { enabled: false };
-        assert!(!disabled_manager.is_enabled("bluetooth"));
+        let disabled_service = TestServiceManager { enabled: false };
+        assert!(!disabled_service.is_enabled());
     }
 
     #[test]
@@ -344,69 +353,69 @@ mod tests {
         }
         
         impl ServiceManager for TestServiceManager {
-            fn is_enabled(&self, _service: &str) -> bool {
+            fn is_enabled(&self) -> bool {
                 true
             }
             
-            fn is_active(&self, _service: &str) -> bool {
+            fn is_active(&self) -> bool {
                 self.active
             }
 
-            fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+            fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
                 Box::pin(async {})
             }
 
-            fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+            fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
                 Box::pin(async {})
             }
         }
         
-        let manager = TestServiceManager { active: true };
+        let test_service = TestServiceManager { active: true };
         
         // Act & Assert
-        assert!(manager.is_active("bluetooth"));
+        assert!(test_service.is_active());
         
-        let inactive_manager = TestServiceManager { active: false };
-        assert!(!inactive_manager.is_active("bluetooth"));
+        let inactive_service = TestServiceManager { active: false };
+        assert!(!inactive_service.is_active());
     }
 
     #[test]
     fn test_mock_service_manager_returns_configured_values() {
         // Arrange: Create a MockServiceManager with known state
-        let mock = MockServiceManager::new(true, true);
+        let bluetooth = MockServiceManager::new("bluetooth", true, true);
         
         // Act & Assert: Verify it returns the configured values
-        assert!(mock.is_enabled("bluetooth"));
-        assert!(mock.is_active("bluetooth"));
+        assert!(bluetooth.is_enabled());
+        assert!(bluetooth.is_active());
         
         // Arrange: Create a MockServiceManager with different state
-        let mock_disabled = MockServiceManager::new(false, false);
+        let disabled_bluetooth = MockServiceManager::new("bluetooth", false, false);
         
         // Act & Assert: Verify it returns the configured values
-        assert!(!mock_disabled.is_enabled("bluetooth"));
-        assert!(!mock_disabled.is_active("bluetooth"));
+        assert!(!disabled_bluetooth.is_enabled());
+        assert!(!disabled_bluetooth.is_active());
     }
 
     #[test]
     #[cfg(feature = "systemd")]
     fn test_systemd_service_manager_implements_trait() {
         // Arrange: Create a SystemDServiceManager
-        let manager = SystemDServiceManager::new();
+        let bluetooth = SystemDServiceManager::new("bluetooth");
         
         // Act & Assert: Verify it implements ServiceManager trait
         // Note: We can't test the actual systemd calls in unit tests,
         // but we can verify the struct exists and implements the trait
-        let _enabled: bool = manager.is_enabled("bluetooth");
-        let _active: bool = manager.is_active("bluetooth");
+        let _enabled: bool = bluetooth.is_enabled();
+        let _active: bool = bluetooth.is_active();
     }
 
     #[tokio::test]
     async fn test_service_manager_trait_has_activate_method() {
         // Arrange: Create a mock service manager
-        let mock = MockServiceManager::new(false, false);
+        let bluetooth = MockServiceManager::new("bluetooth", false, false);
         
         // Act: Call activate on the service manager
-        mock.activate("bluetooth").await;
+        bluetooth.activate().await;
         
         // Assert: The method should exist and be callable
     }
@@ -414,10 +423,10 @@ mod tests {
     #[tokio::test]
     async fn test_service_manager_trait_has_enable_method() {
         // Arrange: Create a mock service manager
-        let mock = MockServiceManager::new(false, false);
+        let bluetooth = MockServiceManager::new("bluetooth", false, false);
         
         // Act: Call enable on the service manager
-        mock.enable("bluetooth").await;
+        bluetooth.enable().await;
         
         // Assert: The method should exist and be callable
     }
@@ -425,10 +434,10 @@ mod tests {
     #[tokio::test]
     async fn test_service_manager_activate_returns_future() {
         // Arrange: Create a mock service manager
-        let mock = MockServiceManager::new(false, false);
+        let bluetooth = MockServiceManager::new("bluetooth", false, false);
         
         // Act: Call activate and await the future
-        let future = mock.activate("bluetooth");
+        let future = bluetooth.activate();
         future.await;
         
         // Assert: The method should return a Future that can be awaited
@@ -437,10 +446,10 @@ mod tests {
     #[tokio::test]
     async fn test_service_manager_enable_returns_future() {
         // Arrange: Create a mock service manager
-        let mock = MockServiceManager::new(false, false);
+        let bluetooth = MockServiceManager::new("bluetooth", false, false);
         
         // Act: Call enable and await the future
-        let future = mock.enable("bluetooth");
+        let future = bluetooth.enable();
         future.await;
         
         // Assert: The method should return a Future that can be awaited
@@ -449,13 +458,13 @@ mod tests {
     #[test]
     fn test_default_service_manager_uses_mock_in_tests() {
         // Arrange & Act: Create a service manager using the factory function
-        let manager = create_default_service_manager();
+        let bluetooth = create_default_service_manager("bluetooth");
         
         // Assert: The service manager should be a MockServiceManager
         // We verify this by checking that it returns the mock's default values (false, false)
-        assert!(!manager.is_enabled("bluetooth"), 
+        assert!(!bluetooth.is_enabled(), 
             "Default service manager in test mode should use MockServiceManager which returns false for is_enabled");
-        assert!(!manager.is_active("bluetooth"),
+        assert!(!bluetooth.is_active(),
             "Default service manager in test mode should use MockServiceManager which returns false for is_active");
     }
 
@@ -463,25 +472,25 @@ mod tests {
     #[cfg(feature = "openrc")]
     fn test_openrc_service_manager_implements_trait() {
         // Arrange: Create an OpenRcServiceManager
-        let manager = OpenRcServiceManager::new();
+        let bluetooth = OpenRcServiceManager::new("bluetooth");
         
         // Act & Assert: Verify it implements ServiceManager trait
         // Note: We can't test the actual OpenRC calls in unit tests,
         // but we can verify the struct exists and implements the trait
-        let _enabled: bool = manager.is_enabled("bluetooth");
-        let _active: bool = manager.is_active("bluetooth");
+        let _enabled: bool = bluetooth.is_enabled();
+        let _active: bool = bluetooth.is_active();
     }
 
     #[test]
     fn test_detect_service_manager_returns_result() {
-        // Act: Attempt to detect the running service manager
-        let result = detect_service_manager();
+        // Act: Attempt to detect the running service manager for a test service
+        let result = detect_service_manager("test-service");
         
         // Assert: Should return Ok or Err, never panic
         // On most Linux systems, at least one service manager should be detected
         // If detection fails, error message should be descriptive
         match result {
-            Ok(_manager) => {
+            Ok(_service_manager) => {
                 // Success - a service manager was detected
                 // We don't test actual service operations here to avoid
                 // depending on specific services being present
@@ -493,5 +502,14 @@ mod tests {
                     "Error message should mention service manager: {}", e);
             }
         }
+    }
+
+    #[test]
+    fn test_mock_service_manager_accepts_service_name() {
+        // Arrange & Act: Create a MockServiceManager with a service name
+        let bluetooth = MockServiceManager::new("bluetooth", true, true);
+        
+        // Assert: The MockServiceManager should be created successfully and bound to the service
+        assert!(bluetooth.is_enabled());
     }
 }
