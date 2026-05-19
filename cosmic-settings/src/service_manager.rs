@@ -18,13 +18,13 @@ use std::pin::Pin;
 pub trait ServiceManager {
     /// Check if the service is enabled (will start on boot).
     fn is_enabled(&self) -> bool;
-    
+
     /// Check if the service is currently active (running).
     fn is_active(&self) -> bool;
-    
+
     /// Activate (start) the service.
     fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>>;
-    
+
     /// Enable the service (configure it to start on boot and start it now).
     fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>>;
 
@@ -49,12 +49,7 @@ fn log_command_result(
             service,
             status.code(),
         ),
-        Err(e) => tracing::error!(
-            "Failed to execute {} for '{}': {}",
-            description,
-            service,
-            e,
-        ),
+        Err(e) => tracing::error!("Failed to execute {} for '{}': {}", description, service, e,),
     }
 }
 
@@ -76,7 +71,6 @@ async fn run_pkexec_command(args: &[&str], description: &str, service: &str) {
 /// no-op implementations of activate and enable operations.
 #[cfg(test)]
 pub struct MockServiceManager {
-    service_name: String,
     enabled: bool,
     active: bool,
     installed: bool,
@@ -84,10 +78,9 @@ pub struct MockServiceManager {
 
 #[cfg(test)]
 impl MockServiceManager {
-    /// Create a new MockServiceManager with specified service name, enabled and active states.
-    pub fn new(service_name: impl Into<String>, enabled: bool, active: bool) -> Self {
+    /// Create a new MockServiceManager with specified enabled and active states.
+    pub fn new(enabled: bool, active: bool) -> Self {
         Self {
-            service_name: service_name.into(),
             enabled,
             active,
             installed: true,
@@ -217,14 +210,12 @@ impl OpenRcServiceManager {
 /// (e.g., "bluetoothd" should not match a lookup for "bluetooth").
 #[cfg(any(feature = "openrc", test))]
 fn is_service_in_runlevel_output(output: &str, service_name: &str) -> bool {
-    output
-        .lines()
-        .any(|line| {
-            line.split('|')
-                .next()
-                .map(|name| name.trim() == service_name)
-                .unwrap_or(false)
-        })
+    output.lines().any(|line| {
+        line.split('|')
+            .next()
+            .map(|name| name.trim() == service_name)
+            .unwrap_or(false)
+    })
 }
 
 #[cfg(feature = "openrc")]
@@ -302,9 +293,11 @@ impl ServiceManager for OpenRcServiceManager {
 /// but only one is actively managing services.
 ///
 /// Returns an error if no supported service manager is detected.
-pub fn detect_service_manager(service_name: impl Into<String>) -> Result<Box<dyn ServiceManager>, String> {
+pub fn detect_service_manager(
+    service_name: impl Into<String>,
+) -> Result<Box<dyn ServiceManager>, String> {
     let service_name = service_name.into();
-    
+
     // Try systemd first (most common on modern Linux)
     // /run/systemd/system only exists when systemd is running as the service manager
     #[cfg(feature = "systemd")]
@@ -355,8 +348,8 @@ pub fn detect_service_manager(service_name: impl Into<String>) -> Result<Box<dyn
 /// In test mode: Returns MockServiceManager for the specified service
 /// In production: Attempts to detect the running service manager
 #[cfg(test)]
-pub fn create_default_service_manager(service_name: impl Into<String>) -> Box<dyn ServiceManager> {
-    Box::new(MockServiceManager::new(service_name, false, false))
+pub fn create_default_service_manager(_service_name: impl Into<String>) -> Box<dyn ServiceManager> {
+    Box::new(MockServiceManager::new(false, false))
 }
 
 #[cfg(not(test))]
@@ -373,15 +366,13 @@ pub fn create_default_service_manager(service_name: impl Into<String>) -> Box<dy
         );
         // Return a no-op implementation that always reports services as enabled/active
         // This allows the app to continue but service management won't actually work
-        Box::new(NoOpServiceManager { service_name })
+        Box::new(NoOpServiceManager)
     })
 }
 
 /// No-op service manager for when no real service manager is detected.
 /// Reports all services as enabled and active, but doesn't actually manage anything.
-struct NoOpServiceManager {
-    service_name: String,
-}
+struct NoOpServiceManager;
 
 impl ServiceManager for NoOpServiceManager {
     fn is_enabled(&self) -> bool {
@@ -408,6 +399,7 @@ impl ServiceManager for NoOpServiceManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tracing_subscriber::util::SubscriberInitExt;
 
     #[test]
     fn test_service_manager_trait_is_enabled() {
@@ -416,12 +408,12 @@ mod tests {
             enabled: bool,
             installed: bool,
         }
-        
+
         impl ServiceManager for TestServiceManager {
             fn is_enabled(&self) -> bool {
                 self.enabled
             }
-            
+
             fn is_active(&self) -> bool {
                 true
             }
@@ -438,13 +430,19 @@ mod tests {
                 self.installed
             }
         }
-        
-        let test_service = TestServiceManager { enabled: true, installed: true };
-        
+
+        let test_service = TestServiceManager {
+            enabled: true,
+            installed: true,
+        };
+
         // Act & Assert
         assert!(test_service.is_enabled());
-        
-        let disabled_service = TestServiceManager { enabled: false, installed: true };
+
+        let disabled_service = TestServiceManager {
+            enabled: false,
+            installed: true,
+        };
         assert!(!disabled_service.is_enabled());
     }
 
@@ -455,12 +453,12 @@ mod tests {
             active: bool,
             installed: bool,
         }
-        
+
         impl ServiceManager for TestServiceManager {
             fn is_enabled(&self) -> bool {
                 true
             }
-            
+
             fn is_active(&self) -> bool {
                 self.active
             }
@@ -477,28 +475,34 @@ mod tests {
                 self.installed
             }
         }
-        
-        let test_service = TestServiceManager { active: true, installed: true };
-        
+
+        let test_service = TestServiceManager {
+            active: true,
+            installed: true,
+        };
+
         // Act & Assert
         assert!(test_service.is_active());
-        
-        let inactive_service = TestServiceManager { active: false, installed: true };
+
+        let inactive_service = TestServiceManager {
+            active: false,
+            installed: true,
+        };
         assert!(!inactive_service.is_active());
     }
 
     #[test]
     fn test_mock_service_manager_returns_configured_values() {
         // Arrange: Create a MockServiceManager with known state
-        let bluetooth = MockServiceManager::new("bluetooth", true, true);
-        
+        let bluetooth = MockServiceManager::new(true, true);
+
         // Act & Assert: Verify it returns the configured values
         assert!(bluetooth.is_enabled());
         assert!(bluetooth.is_active());
-        
+
         // Arrange: Create a MockServiceManager with different state
-        let disabled_bluetooth = MockServiceManager::new("bluetooth", false, false);
-        
+        let disabled_bluetooth = MockServiceManager::new(false, false);
+
         // Act & Assert: Verify it returns the configured values
         assert!(!disabled_bluetooth.is_enabled());
         assert!(!disabled_bluetooth.is_active());
@@ -509,7 +513,7 @@ mod tests {
     fn test_systemd_service_manager_implements_trait() {
         // Arrange: Create a SystemDServiceManager
         let bluetooth = SystemDServiceManager::new("bluetooth");
-        
+
         // Act & Assert: Verify it implements ServiceManager trait
         // Note: We can't test the actual systemd calls in unit tests,
         // but we can verify the struct exists and implements the trait
@@ -520,46 +524,46 @@ mod tests {
     #[tokio::test]
     async fn test_service_manager_trait_has_activate_method() {
         // Arrange: Create a mock service manager
-        let bluetooth = MockServiceManager::new("bluetooth", false, false);
-        
+        let bluetooth = MockServiceManager::new(false, false);
+
         // Act: Call activate on the service manager
         bluetooth.activate().await;
-        
+
         // Assert: The method should exist and be callable
     }
 
     #[tokio::test]
     async fn test_service_manager_trait_has_enable_method() {
         // Arrange: Create a mock service manager
-        let bluetooth = MockServiceManager::new("bluetooth", false, false);
-        
+        let bluetooth = MockServiceManager::new(false, false);
+
         // Act: Call enable on the service manager
         bluetooth.enable().await;
-        
+
         // Assert: The method should exist and be callable
     }
 
     #[tokio::test]
     async fn test_service_manager_activate_returns_future() {
         // Arrange: Create a mock service manager
-        let bluetooth = MockServiceManager::new("bluetooth", false, false);
-        
+        let bluetooth = MockServiceManager::new(false, false);
+
         // Act: Call activate and await the future
         let future = bluetooth.activate();
         future.await;
-        
+
         // Assert: The method should return a Future that can be awaited
     }
 
     #[tokio::test]
     async fn test_service_manager_enable_returns_future() {
         // Arrange: Create a mock service manager
-        let bluetooth = MockServiceManager::new("bluetooth", false, false);
-        
+        let bluetooth = MockServiceManager::new(false, false);
+
         // Act: Call enable and await the future
         let future = bluetooth.enable();
         future.await;
-        
+
         // Assert: The method should return a Future that can be awaited
     }
 
@@ -567,13 +571,17 @@ mod tests {
     fn test_default_service_manager_uses_mock_in_tests() {
         // Arrange & Act: Create a service manager using the factory function
         let bluetooth = create_default_service_manager("bluetooth");
-        
+
         // Assert: The service manager should be a MockServiceManager
         // We verify this by checking that it returns the mock's default values (false, false)
-        assert!(!bluetooth.is_enabled(), 
-            "Default service manager in test mode should use MockServiceManager which returns false for is_enabled");
-        assert!(!bluetooth.is_active(),
-            "Default service manager in test mode should use MockServiceManager which returns false for is_active");
+        assert!(
+            !bluetooth.is_enabled(),
+            "Default service manager in test mode should use MockServiceManager which returns false for is_enabled"
+        );
+        assert!(
+            !bluetooth.is_active(),
+            "Default service manager in test mode should use MockServiceManager which returns false for is_active"
+        );
     }
 
     #[test]
@@ -581,7 +589,7 @@ mod tests {
     fn test_openrc_service_manager_implements_trait() {
         // Arrange: Create an OpenRcServiceManager
         let bluetooth = OpenRcServiceManager::new("bluetooth");
-        
+
         // Act & Assert: Verify it implements ServiceManager trait
         // Note: We can't test the actual OpenRC calls in unit tests,
         // but we can verify the struct exists and implements the trait
@@ -593,7 +601,7 @@ mod tests {
     fn test_detect_service_manager_returns_result() {
         // Act: Attempt to detect the running service manager for a test service
         let result = detect_service_manager("test-service");
-        
+
         // Assert: Should return Ok or Err, never panic
         // On most Linux systems, at least one service manager should be detected
         // If detection fails, error message should be descriptive
@@ -606,8 +614,11 @@ mod tests {
             Err(e) => {
                 // Verify error message is descriptive
                 assert!(!e.is_empty(), "Error message should not be empty");
-                assert!(e.contains("service manager"), 
-                    "Error message should mention service manager: {}", e);
+                assert!(
+                    e.contains("service manager"),
+                    "Error message should mention service manager: {}",
+                    e
+                );
             }
         }
     }
@@ -615,8 +626,8 @@ mod tests {
     #[test]
     fn test_mock_service_manager_accepts_service_name() {
         // Arrange & Act: Create a MockServiceManager with a service name
-        let bluetooth = MockServiceManager::new("bluetooth", true, true);
-        
+        let bluetooth = MockServiceManager::new(true, true);
+
         // Assert: The MockServiceManager should be created successfully and bound to the service
         assert!(bluetooth.is_enabled());
     }
@@ -624,44 +635,50 @@ mod tests {
     #[test]
     fn test_mock_service_manager_is_installed_defaults_to_true() {
         // Arrange: Create a MockServiceManager with default settings
-        let bluetooth = MockServiceManager::new("bluetooth", true, true);
-        
+        let bluetooth = MockServiceManager::new(true, true);
+
         // Assert: The default installed state should be true
-        assert!(bluetooth.is_installed(),
-            "MockServiceManager should default to installed=true");
+        assert!(
+            bluetooth.is_installed(),
+            "MockServiceManager should default to installed=true"
+        );
     }
 
     #[test]
     fn test_mock_service_manager_with_installed_configures_state() {
         // Arrange: Create a MockServiceManager configured as not installed
-        let not_installed = MockServiceManager::new("bluetooth", true, true)
-            .with_installed(false);
-        
+        let not_installed = MockServiceManager::new(true, true).with_installed(false);
+
         // Assert: is_installed should return false
-        assert!(!not_installed.is_installed(),
-            "with_installed(false) should make is_installed() return false");
-        
+        assert!(
+            !not_installed.is_installed(),
+            "with_installed(false) should make is_installed() return false"
+        );
+
         // Arrange: Create a MockServiceManager configured as installed
-        let installed = MockServiceManager::new("bluetooth", true, true)
-            .with_installed(true);
-        
+        let installed = MockServiceManager::new(true, true).with_installed(true);
+
         // Assert: is_installed should return true
-        assert!(installed.is_installed(),
-            "with_installed(true) should make is_installed() return true");
+        assert!(
+            installed.is_installed(),
+            "with_installed(true) should make is_installed() return true"
+        );
     }
 
     #[test]
     fn test_no_op_service_manager_reports_not_installed() {
         // Arrange: Create a NoOpServiceManager (production fallback when no service manager is detected)
-        let no_op = NoOpServiceManager { service_name: String::from("bluetooth") };
-        
+        let no_op = NoOpServiceManager;
+
         // Assert: NoOpServiceManager should report the service as NOT installed
         // This is critical for the DBusServiceUnknown handler: when the service manager
         // can't be detected at runtime, we must fall through to bluez_service_unknown
         // so the user sees an appropriate message rather than a non-functional toggle.
-        assert!(!no_op.is_installed(),
+        assert!(
+            !no_op.is_installed(),
             "NoOpServiceManager should report is_installed() = false so that \
-             DBusServiceUnknown falls through to the bluez_service_unknown path");
+             DBusServiceUnknown falls through to the bluez_service_unknown path"
+        );
     }
 
     #[test]
@@ -677,8 +694,10 @@ mod tests {
         let found = is_service_in_runlevel_output(output, "bluetooth");
 
         // Assert: Should NOT match "bluetooth" when only "bluetoothd" is present
-        assert!(!found,
-            "Should not match 'bluetooth' when only 'bluetoothd' is present (prefix matching bug)");
+        assert!(
+            !found,
+            "Should not match 'bluetooth' when only 'bluetoothd' is present (prefix matching bug)"
+        );
     }
 
     #[test]
@@ -690,8 +709,10 @@ mod tests {
         let found = is_service_in_runlevel_output(output, "bluetooth");
 
         // Assert: Should match when exact name is present
-        assert!(found,
-            "Should match 'bluetooth' when it is present in the output");
+        assert!(
+            found,
+            "Should match 'bluetooth' when it is present in the output"
+        );
     }
 
     #[test]
@@ -703,21 +724,26 @@ mod tests {
         let found = is_service_in_runlevel_output(output, "bluetooth");
 
         // Assert: Should not find it
-        assert!(!found,
-            "Should not match when the service is not in the output");
+        assert!(
+            !found,
+            "Should not match when the service is not in the output"
+        );
     }
 
-    #[tokio::test]
-    async fn test_log_command_result_logs_error_on_failure() {
-        // This test verifies that the run_pkexec_command helper exists and handles
-        // command failures gracefully (logs a warning/error instead of panicking).
-        // The function doesn't exist yet — this test drives its creation.
-        let result = std::io::Result::Err(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "command not found",
-        ));
-        log_command_result(&result, "test command", "test-service");
-        // Verification: the function should not panic on error.
+    #[test]
+    fn test_log_command_result_logs_all_branches() {
+        let _guard = tracing_subscriber::fmt().with_test_writer().set_default();
+
+        let err_result: Result<std::process::ExitStatus, std::io::Error> = Err(
+            std::io::Error::new(std::io::ErrorKind::NotFound, "command not found"),
+        );
+        log_command_result(&err_result, "test command", "test-service");
+
+        let fail_result = std::process::Command::new("false").status();
+        log_command_result(&fail_result, "test false", "test-service");
+
+        let ok_result = std::process::Command::new("true").status();
+        log_command_result(&ok_result, "test true", "test-service");
     }
 
     #[test]
@@ -729,7 +755,6 @@ mod tests {
         let found = is_service_in_runlevel_output(output, "bluetooth");
 
         // Assert: Should find it in multi-line output
-        assert!(found,
-            "Should find the service in multi-line output");
+        assert!(found, "Should find the service in multi-line output");
     }
 }

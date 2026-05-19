@@ -16,9 +16,9 @@ use std::sync::Arc;
 use std::time::Duration;
 use zbus::zvariant::OwnedObjectPath;
 
-use crate::service_manager::{ServiceManager, create_default_service_manager};
 #[cfg(test)]
 use crate::service_manager::MockServiceManager;
+use crate::service_manager::{ServiceManager, create_default_service_manager};
 
 enum Dialog {
     // RequestAuthorization {
@@ -164,7 +164,7 @@ pub struct Page {
     service_is_active: bool,
 
     subscription: Option<tokio::sync::oneshot::Sender<()>>,
-    
+
     service_manager: Box<dyn ServiceManager>,
 }
 
@@ -183,8 +183,6 @@ impl Default for Page {
         }
     }
 }
-
-
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
@@ -1083,36 +1081,47 @@ mod tests {
         // Arrange: Create a page with a service manager that reports known states
         let bluetooth = MockServiceManager::new(true, false);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
-        
+
         // Act: Send DBusServiceUnknown event
         let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
-        
+
         // Assert: Page should have queried the service manager for is_enabled and is_active
-        assert!(page.service_is_enabled,
-            "When service is installed, is_enabled should be queried from service manager");
-        assert!(!page.service_is_active,
-            "When service is installed, is_active should be queried from service manager");
-        assert!(!page.bluez_service_unknown,
-            "When service is installed, bluez_service_unknown should remain false");
+        assert!(
+            page.service_is_enabled,
+            "When service is installed, is_enabled should be queried from service manager"
+        );
+        assert!(
+            !page.service_is_active,
+            "When service is installed, is_active should be queried from service manager"
+        );
+        assert!(
+            !page.bluez_service_unknown,
+            "When service is installed, bluez_service_unknown should remain false"
+        );
     }
 
     #[test]
     fn test_dbus_service_unknown_with_uninstalled_service_sets_bluez_unknown() {
         // Arrange: Create a page with a service manager that reports not installed
-        let bluetooth = MockServiceManager::new(true, true)
-            .with_installed(false);
+        let bluetooth = MockServiceManager::new(true, true).with_installed(false);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
-        
+
         // Act: Send DBusServiceUnknown event
         let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
-        
+
         // Assert: Page should fall through to bluez_service_unknown state
-        assert!(page.bluez_service_unknown,
-            "When service is not installed, bluez_service_unknown should be set to true");
-        assert!(page.service_is_enabled,
-            "When service is not installed, is_enabled should default to true");
-        assert!(page.service_is_active,
-            "When service is not installed, is_active should default to true");
+        assert!(
+            page.bluez_service_unknown,
+            "When service is not installed, bluez_service_unknown should be set to true"
+        );
+        assert!(
+            page.service_is_enabled,
+            "When service is not installed, is_enabled should default to true"
+        );
+        assert!(
+            page.service_is_active,
+            "When service is not installed, is_active should default to true"
+        );
     }
 
     #[test]
@@ -1132,8 +1141,10 @@ mod tests {
 
         // Assert: The handler should clear bluez_service_unknown when the
         // service manager reports the service is installed.
-        assert!(!page.bluez_service_unknown,
-            "When is_installed() returns true, bluez_service_unknown should be reset to false");
+        assert!(
+            !page.bluez_service_unknown,
+            "When is_installed() returns true, bluez_service_unknown should be reset to false"
+        );
     }
 
     #[tokio::test]
@@ -1141,10 +1152,10 @@ mod tests {
         // Arrange: Create a page with a mock service manager
         let bluetooth = MockServiceManager::new(false, false);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
-        
+
         // Act: Send ServiceActivate message
         let _task = page.update(Message::ServiceActivate);
-        
+
         // Assert: The task was returned (we can't easily await it since it connects to D-Bus)
         // But we know the method was called on the service manager without panicking
     }
@@ -1154,10 +1165,10 @@ mod tests {
         // Arrange: Create a page with a mock service manager
         let bluetooth = MockServiceManager::new(false, false);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
-        
+
         // Act: Send ServiceEnable message
         let _task = page.update(Message::ServiceEnable);
-        
+
         // Assert: The task was returned (we can't easily await it since it connects to D-Bus)
         // But we know the method was called on the service manager without panicking
     }
