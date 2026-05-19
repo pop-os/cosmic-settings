@@ -169,6 +169,22 @@ impl OpenRcServiceManager {
     }
 }
 
+/// Parses `rc-update show` output to check if a service is in any runlevel.
+///
+/// Uses exact service name matching to avoid false positives from prefix matches
+/// (e.g., "bluetoothd" should not match a lookup for "bluetooth").
+#[cfg(any(feature = "openrc", test))]
+fn is_service_in_runlevel_output(output: &str, service_name: &str) -> bool {
+    output
+        .lines()
+        .any(|line| {
+            line.split('|')
+                .next()
+                .map(|name| name.trim() == service_name)
+                .unwrap_or(false)
+        })
+}
+
 #[cfg(feature = "openrc")]
 impl ServiceManager for OpenRcServiceManager {
     fn is_enabled(&self) -> bool {
@@ -177,9 +193,10 @@ impl ServiceManager for OpenRcServiceManager {
             .args(["show"])
             .output()
             .map(|output| {
-                String::from_utf8_lossy(&output.stdout)
-                    .lines()
-                    .any(|line| line.trim().starts_with(&self.service_name))
+                is_service_in_runlevel_output(
+                    &String::from_utf8_lossy(&output.stdout),
+                    &self.service_name,
+                )
             })
             .unwrap_or(true)
     }
@@ -597,5 +614,61 @@ mod tests {
         assert!(!no_op.is_installed(),
             "NoOpServiceManager should report is_installed() = false so that \
              DBusServiceUnknown falls through to the bluez_service_unknown path");
+    }
+
+    #[test]
+    fn test_parse_rc_update_output_exact_service_name() {
+        // Test that parsing rc-update output uses exact service name matching,
+        // not prefix matching (which would falsely match "bluetoothd" for "bluetooth").
+
+        // Arrange: Simulate rc-update show output that includes a service with
+        // a similar-but-longer name than the one we're looking for.
+        let output = "  bluetoothd | default\n";
+
+        // Act: Parse the output looking for "bluetooth" (not "bluetoothd")
+        let found = is_service_in_runlevel_output(output, "bluetooth");
+
+        // Assert: Should NOT match "bluetooth" when only "bluetoothd" is present
+        assert!(!found,
+            "Should not match 'bluetooth' when only 'bluetoothd' is present (prefix matching bug)");
+    }
+
+    #[test]
+    fn test_parse_rc_update_output_matches_exact_name() {
+        // Arrange: Simulate rc-update show output with exact service name
+        let output = "  bluetooth | default\n";
+
+        // Act: Parse the output looking for "bluetooth"
+        let found = is_service_in_runlevel_output(output, "bluetooth");
+
+        // Assert: Should match when exact name is present
+        assert!(found,
+            "Should match 'bluetooth' when it is present in the output");
+    }
+
+    #[test]
+    fn test_parse_rc_update_output_not_found() {
+        // Arrange: Simulate rc-update show output without the target service
+        let output = "  dbus | default\n  network | sysinit\n";
+
+        // Act: Parse looking for a service not in the output
+        let found = is_service_in_runlevel_output(output, "bluetooth");
+
+        // Assert: Should not find it
+        assert!(!found,
+            "Should not match when the service is not in the output");
+    }
+
+    #[test]
+    fn test_parse_rc_update_output_multi_line() {
+        // Arrange: Multi-line output with target service
+        let output = "  dbus | default\n  bluetooth | default\n  network | sysinit\n";
+
+        // Act: Parse looking for bluetooth
+        let found = is_service_in_runlevel_output(output, "bluetooth");
+
+        // Assert: Should find it in multi-line output
+        assert!(found,
+            "Should find the service in multi-line output");
     }
 }
