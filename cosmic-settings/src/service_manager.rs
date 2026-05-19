@@ -336,7 +336,7 @@ impl ServiceManager for NoOpServiceManager {
     }
 
     fn is_installed(&self) -> bool {
-        true
+        false
     }
 }
 
@@ -583,5 +583,19 @@ mod tests {
         // Assert: is_installed should return true
         assert!(installed.is_installed(),
             "with_installed(true) should make is_installed() return true");
+    }
+
+    #[test]
+    fn test_no_op_service_manager_reports_not_installed() {
+        // Arrange: Create a NoOpServiceManager (production fallback when no service manager is detected)
+        let no_op = NoOpServiceManager { service_name: String::from("bluetooth") };
+        
+        // Assert: NoOpServiceManager should report the service as NOT installed
+        // This is critical for the DBusServiceUnknown handler: when the service manager
+        // can't be detected at runtime, we must fall through to bluez_service_unknown
+        // so the user sees an appropriate message rather than a non-functional toggle.
+        assert!(!no_op.is_installed(),
+            "NoOpServiceManager should report is_installed() = false so that \
+             DBusServiceUnknown falls through to the bluez_service_unknown path");
     }
 }
