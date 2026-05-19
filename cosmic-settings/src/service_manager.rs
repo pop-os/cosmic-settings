@@ -266,11 +266,36 @@ pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
 #[cfg(not(test))]
 pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
     detect_service_manager().unwrap_or_else(|e| {
-        tracing::error!("Failed to detect service manager: {}", e);
-        // Fallback to a no-op mock in case of detection failure
-        // This prevents the application from crashing but service management won't work
-        Box::new(MockServiceManager::new(false, false))
+        tracing::warn!(
+            "Failed to detect service manager: {}. Service management features will not be available.",
+            e
+        );
+        // Return a no-op implementation that always reports services as enabled/active
+        // This allows the app to continue but service management won't actually work
+        Box::new(NoOpServiceManager)
     })
+}
+
+/// No-op service manager for when no real service manager is detected.
+/// Reports all services as enabled and active, but doesn't actually manage anything.
+struct NoOpServiceManager;
+
+impl ServiceManager for NoOpServiceManager {
+    fn is_enabled(&self, _service: &str) -> bool {
+        true
+    }
+
+    fn is_active(&self, _service: &str) -> bool {
+        true
+    }
+
+    fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(async {})
+    }
+
+    fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(async {})
+    }
 }
 
 #[cfg(test)]
