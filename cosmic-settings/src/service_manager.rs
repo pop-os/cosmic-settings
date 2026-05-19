@@ -200,31 +200,32 @@ impl ServiceManager for OpenRcServiceManager {
 /// Detects the running service manager at runtime.
 ///
 /// Detection strategy:
-/// 1. Check for systemd (if systemd feature enabled): Look for systemctl command
-/// 2. Check for OpenRC (if openrc feature enabled): Look for rc-service command
+/// 1. Check for systemd: Verify /run/systemd/system exists (systemd running as service manager)
+/// 2. Check for OpenRC: Verify /run/openrc exists (OpenRC actively managing services)
+///
+/// Note: This checks for RUNNING service managers, not just installed ones.
+/// For example, OpenRC may be installed but not running, or both may be installed
+/// but only one is actively managing services.
 ///
 /// Returns an error if no supported service manager is detected.
 pub fn detect_service_manager() -> Result<Box<dyn ServiceManager>, String> {
     // Try systemd first (most common on modern Linux)
+    // /run/systemd/system only exists when systemd is running as the service manager
     #[cfg(feature = "systemd")]
     {
-        if std::process::Command::new("systemctl")
-            .arg("--version")
-            .output()
-            .is_ok()
-        {
+        if std::path::Path::new("/run/systemd/system").exists() {
+            tracing::debug!("Detected systemd service manager via /run/systemd/system");
             return Ok(Box::new(SystemDServiceManager::new()));
         }
     }
 
     // Try OpenRC
+    // /run/openrc exists when OpenRC is actively managing services
+    // This works regardless of whether the init system is sysvinit, runit, or something else
     #[cfg(feature = "openrc")]
     {
-        if std::process::Command::new("rc-service")
-            .arg("--version")
-            .output()
-            .is_ok()
-        {
+        if std::path::Path::new("/run/openrc").exists() {
+            tracing::debug!("Detected OpenRC service manager via /run/openrc");
             return Ok(Box::new(OpenRcServiceManager::new()));
         }
     }
@@ -240,8 +241,8 @@ pub fn detect_service_manager() -> Result<Box<dyn ServiceManager>, String> {
         Err("No service manager features enabled at compile time".to_string())
     } else {
         Err(format!(
-            "Could not detect a supported service manager. Attempted: {}. \
-             Please ensure one of these service managers is installed and available in PATH.",
+            "Could not detect a running service manager. Attempted: {}. \
+             Checked for runtime indicators (/run/systemd/system, /run/openrc) but none were found.",
             attempted.join(", ")
         ))
     }
