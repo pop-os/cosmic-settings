@@ -197,25 +197,73 @@ impl ServiceManager for OpenRcServiceManager {
     }
 }
 
-/// Creates the appropriate service manager based on the build configuration.
+/// Detects the running service manager at runtime.
 ///
-/// Priority order:
-/// 1. In test mode: Returns MockServiceManager
-/// 2. If openrc feature is enabled: Returns OpenRcServiceManager
-/// 3. If systemd feature is enabled (default): Returns SystemDServiceManager
+/// Detection strategy:
+/// 1. Check for systemd (if systemd feature enabled): Look for systemctl command
+/// 2. Check for OpenRC (if openrc feature enabled): Look for rc-service command
+///
+/// Returns an error if no supported service manager is detected.
+pub fn detect_service_manager() -> Result<Box<dyn ServiceManager>, String> {
+    // Try systemd first (most common on modern Linux)
+    #[cfg(feature = "systemd")]
+    {
+        if std::process::Command::new("systemctl")
+            .arg("--version")
+            .output()
+            .is_ok()
+        {
+            return Ok(Box::new(SystemDServiceManager::new()));
+        }
+    }
+
+    // Try OpenRC
+    #[cfg(feature = "openrc")]
+    {
+        if std::process::Command::new("rc-service")
+            .arg("--version")
+            .output()
+            .is_ok()
+        {
+            return Ok(Box::new(OpenRcServiceManager::new()));
+        }
+    }
+
+    // No supported service manager detected
+    let mut attempted = Vec::new();
+    #[cfg(feature = "systemd")]
+    attempted.push("systemd");
+    #[cfg(feature = "openrc")]
+    attempted.push("openrc");
+
+    if attempted.is_empty() {
+        Err("No service manager features enabled at compile time".to_string())
+    } else {
+        Err(format!(
+            "Could not detect a supported service manager. Attempted: {}. \
+             Please ensure one of these service managers is installed and available in PATH.",
+            attempted.join(", ")
+        ))
+    }
+}
+
+/// Creates the appropriate service manager.
+///
+/// In test mode: Returns MockServiceManager
+/// In production: Attempts to detect the running service manager
 #[cfg(test)]
 pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
     Box::new(MockServiceManager::new(false, false))
 }
 
-#[cfg(all(not(test), feature = "openrc"))]
+#[cfg(not(test))]
 pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
-    Box::new(OpenRcServiceManager::new())
-}
-
-#[cfg(all(not(test), not(feature = "openrc"), feature = "systemd"))]
-pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
-    Box::new(SystemDServiceManager::new())
+    detect_service_manager().unwrap_or_else(|e| {
+        tracing::error!("Failed to detect service manager: {}", e);
+        // Fallback to a no-op mock in case of detection failure
+        // This prevents the application from crashing but service management won't work
+        Box::new(MockServiceManager::new(false, false))
+    })
 }
 
 #[cfg(test)]
@@ -390,5 +438,28 @@ mod tests {
         // but we can verify the struct exists and implements the trait
         let _enabled: bool = manager.is_enabled("bluetooth");
         let _active: bool = manager.is_active("bluetooth");
+    }
+
+    #[test]
+    fn test_detect_service_manager_returns_result() {
+        // Act: Attempt to detect the running service manager
+        let result = detect_service_manager();
+        
+        // Assert: Should return Ok or Err, never panic
+        // On most Linux systems, at least one service manager should be detected
+        // If detection fails, error message should be descriptive
+        match result {
+            Ok(_manager) => {
+                // Success - a service manager was detected
+                // We don't test actual service operations here to avoid
+                // depending on specific services being present
+            }
+            Err(e) => {
+                // Verify error message is descriptive
+                assert!(!e.is_empty(), "Error message should not be empty");
+                assert!(e.contains("service manager"), 
+                    "Error message should mention service manager: {}", e);
+            }
+        }
     }
 }
