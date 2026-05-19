@@ -337,6 +337,7 @@ never = Never
 ## Desktop: Appearance
 
 appearance = Appearance
+system-themes = System Themes
 
 accent-color = Accent color
 app-background = Window background

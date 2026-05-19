@@ -55,6 +55,7 @@ pub struct Page {
     can_reset: bool,
     context_view: Option<ContextView>,
     drawer: drawer::Content,
+    system_themes: Vec<(String, std::path::PathBuf, Option<std::path::PathBuf>)>,
     roundness: Roundness,
     density: Density,
 
@@ -91,6 +92,7 @@ impl From<theme_manager::Manager> for Page {
             theme_manager,
             tk_config,
             day_time: true,
+            system_themes: Vec::new(),
         }
     }
 }
@@ -156,6 +158,8 @@ pub enum Message {
     UseDefaultWindowHint(bool),
     WindowHintSize(u32),
     Daytime(bool),
+    LoadSystemThemes(Vec<(String, std::path::PathBuf, Option<std::path::PathBuf>)>),
+    ApplySystemTheme(std::path::PathBuf),
 }
 
 impl From<Message> for crate::app::Message {
@@ -505,6 +509,21 @@ impl Page {
                     self.drawer.reset(&self.theme_manager);
                 }
             }
+
+            Message::LoadSystemThemes(themes) => {
+                self.system_themes = themes;
+            }
+
+            Message::ApplySystemTheme(path) => {
+                tasks.push(cosmic::task::future(async move {
+                    let res = tokio::fs::read_to_string(path).await;
+                    if let Some(b) = res.ok().and_then(|s| ron::de::from_str(&s).ok()) {
+                        Message::ImportSuccess(Box::new(b))
+                    } else {
+                        Message::ImportError
+                    }
+                }));
+            }
         }
 
         let mut tasks = cosmic::Task::batch(tasks);
@@ -648,6 +667,7 @@ impl page::Page<crate::pages::Message> for Page {
     ) -> Option<page::Content> {
         Some(vec![
             sections.insert(mode_and_colors::section()),
+            sections.insert(system_themes_section()),
             sections.insert(style::section()),
             sections.insert(interface_density()),
             sections.insert(window_management()),
@@ -685,6 +705,28 @@ impl page::Page<crate::pages::Message> for Page {
             cosmic::task::future(async move {
                 let (interface, mono) = font_config::load_font_families();
                 Message::DrawerFont(drawer::FontMessage::FontLoaded(interface, mono))
+            })
+            .map(crate::pages::Message::Appearance),
+            cosmic::task::future(async move {
+                let mut themes = Vec::new();
+                if let Ok(mut entries) = tokio::fs::read_dir("/usr/share/cosmic-themes").await {
+                    while let Ok(Some(entry)) = entries.next_entry().await {
+                        let path = entry.path();
+                        if path.extension().and_then(|e| e.to_str()) == Some("ron") {
+                            let name = path.file_stem().unwrap_or_default()
+                                .to_string_lossy().to_string();
+                            let png = path.with_extension("png");
+                            let preview = if tokio::fs::try_exists(&png).await.unwrap_or(false) {
+                                Some(png)
+                            } else {
+                                None
+                            };
+                            themes.push((name, path, preview));
+                        }
+                    }
+                    
+                }
+                Message::LoadSystemThemes(themes)
             })
             .map(crate::pages::Message::Appearance),
         ])
@@ -871,4 +913,30 @@ pub fn reset_button() -> Section<crate::pages::Message> {
             .map(crate::pages::Message::Appearance)
         })
 }
+
+pub fn system_themes_section() -> Section<crate::pages::Message> {
+    Section::default()
+        .title(fl!("system-themes"))
+        .view::<Page>(move |_binder, page, section| {
+            let buttons: Vec<Element<Message>> = page.system_themes.iter().map(|(name, ron, png)| {
+                cosmic::iced::widget::column![
+                    button::standard(name)
+                        .on_press(Message::ApplySystemTheme(ron.clone())),
+                ]
+                .spacing(8)
+                .align_x(Alignment::Center)
+                .into()
+            }).collect();
+
+            settings::section()
+                .title(fl!("system-themes"))
+                .add(
+                    widget::flex_row(buttons)
+                        .spacing(16)
+                )
+            .apply(Element::from)
+            .map(crate::pages::Message::Appearance)
+        })
+}
+
 impl page::AutoBind<crate::pages::Message> for Page {}
