@@ -12,11 +12,13 @@ use futures::channel::oneshot;
 use futures::{SinkExt, StreamExt};
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
-use std::future::Future;
-use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
 use zbus::zvariant::OwnedObjectPath;
+
+use crate::service_manager::{ServiceManager, create_default_service_manager};
+#[cfg(test)]
+use crate::service_manager::MockServiceManager;
 
 enum Dialog {
     // RequestAuthorization {
@@ -182,18 +184,7 @@ impl Default for Page {
     }
 }
 
-/// Creates the appropriate service manager based on the build configuration.
-/// In test mode, returns a MockServiceManager.
-/// In production mode, returns a SystemDServiceManager.
-#[cfg(test)]
-fn create_default_service_manager() -> Box<dyn ServiceManager> {
-    Box::new(MockServiceManager::new(false, false))
-}
 
-#[cfg(not(test))]
-fn create_default_service_manager() -> Box<dyn ServiceManager> {
-    Box::new(SystemDServiceManager::new())
-}
 
 impl page::Page<crate::pages::Message> for Page {
     fn info(&self) -> page::Info {
@@ -1062,205 +1053,11 @@ impl Page {
     }
 }
 
-trait ServiceManager {
-    fn is_enabled(&self, service: &str) -> bool;
-    fn is_active(&self, service: &str) -> bool;
-    fn activate(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>>;
-    fn enable(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>>;
-}
-
-#[cfg(test)]
-struct MockServiceManager {
-    enabled: bool,
-    active: bool,
-}
-
-#[cfg(test)]
-impl MockServiceManager {
-    fn new(enabled: bool, active: bool) -> Self {
-        Self { enabled, active }
-    }
-}
-
-#[cfg(test)]
-impl ServiceManager for MockServiceManager {
-    fn is_enabled(&self, _service: &str) -> bool {
-        self.enabled
-    }
-
-    fn is_active(&self, _service: &str) -> bool {
-        self.active
-    }
-
-    fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        Box::pin(async {})
-    }
-
-    fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        Box::pin(async {})
-    }
-}
-
-struct SystemDServiceManager;
-
-impl SystemDServiceManager {
-    fn new() -> Self {
-        Self
-    }
-}
-
-impl ServiceManager for SystemDServiceManager {
-    fn is_enabled(&self, service: &str) -> bool {
-        systemd::is_service_enabled(service)
-    }
-
-    fn is_active(&self, service: &str) -> bool {
-        systemd::is_service_active(service)
-    }
-
-    fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        Box::pin(systemd::activate_bluetooth())
-    }
-
-    fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        Box::pin(systemd::enable_bluetooth())
-    }
-}
-
-mod systemd {
-    use futures::FutureExt;
-
-    pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "start", "bluetooth"])
-            .status()
-            .map(|_| ())
-    }
-
-    pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "enable", "--now", "bluetooth"])
-            .status()
-            .map(|_| ())
-    }
-
-    pub fn is_service_enabled(service: &str) -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-enabled", service])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
-    }
-
-    pub fn is_service_active(service: &str) -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-active", service])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_service_manager_trait_is_enabled() {
-        // Arrange: Create a mock service manager
-        struct TestServiceManager {
-            enabled: bool,
-        }
-        
-        impl ServiceManager for TestServiceManager {
-            fn is_enabled(&self, _service: &str) -> bool {
-                self.enabled
-            }
-            
-            fn is_active(&self, _service: &str) -> bool {
-                true
-            }
-
-            fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-                Box::pin(async {})
-            }
-
-            fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-                Box::pin(async {})
-            }
-        }
-        
-        let manager = TestServiceManager { enabled: true };
-        
-        // Act & Assert
-        assert!(manager.is_enabled("bluetooth"));
-        
-        let disabled_manager = TestServiceManager { enabled: false };
-        assert!(!disabled_manager.is_enabled("bluetooth"));
-    }
-
-    #[test]
-    fn test_service_manager_trait_is_active() {
-        // Arrange: Create a mock service manager
-        struct TestServiceManager {
-            active: bool,
-        }
-        
-        impl ServiceManager for TestServiceManager {
-            fn is_enabled(&self, _service: &str) -> bool {
-                true
-            }
-            
-            fn is_active(&self, _service: &str) -> bool {
-                self.active
-            }
-
-            fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-                Box::pin(async {})
-            }
-
-            fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-                Box::pin(async {})
-            }
-        }
-        
-        let manager = TestServiceManager { active: true };
-        
-        // Act & Assert
-        assert!(manager.is_active("bluetooth"));
-        
-        let inactive_manager = TestServiceManager { active: false };
-        assert!(!inactive_manager.is_active("bluetooth"));
-    }
-
-    #[test]
-    fn test_mock_service_manager_returns_configured_values() {
-        // Arrange: Create a MockServiceManager with known state
-        let mock = MockServiceManager::new(true, true);
-        
-        // Act & Assert: Verify it returns the configured values
-        assert!(mock.is_enabled("bluetooth"));
-        assert!(mock.is_active("bluetooth"));
-        
-        // Arrange: Create a MockServiceManager with different state
-        let mock_disabled = MockServiceManager::new(false, false);
-        
-        // Act & Assert: Verify it returns the configured values
-        assert!(!mock_disabled.is_enabled("bluetooth"));
-        assert!(!mock_disabled.is_active("bluetooth"));
-    }
-
-    #[test]
-    fn test_systemd_service_manager_implements_trait() {
-        // Arrange: Create a SystemDServiceManager
-        let manager = SystemDServiceManager::new();
-        
-        // Act & Assert: Verify it implements ServiceManager trait
-        // Note: We can't test the actual systemd calls in unit tests,
-        // but we can verify the struct exists and implements the trait
-        let _enabled: bool = manager.is_enabled("bluetooth");
-        let _active: bool = manager.is_active("bluetooth");
-    }
+    use std::pin::Pin;
+    use std::future::Future;
 
     #[test]
     fn test_page_can_be_constructed_with_mock_service_manager() {
@@ -1290,52 +1087,6 @@ mod tests {
         assert!(!inactive_status);
         assert!(enabled_status);
         assert!(active_status);
-    }
-
-    #[tokio::test]
-    async fn test_service_manager_trait_has_activate_method() {
-        // Arrange: Create a mock service manager
-        let mock = MockServiceManager::new(false, false);
-        
-        // Act: Call activate on the service manager
-        mock.activate("bluetooth").await;
-        
-        // Assert: The method should exist and be callable
-    }
-
-    #[tokio::test]
-    async fn test_service_manager_trait_has_enable_method() {
-        // Arrange: Create a mock service manager
-        let mock = MockServiceManager::new(false, false);
-        
-        // Act: Call enable on the service manager
-        mock.enable("bluetooth").await;
-        
-        // Assert: The method should exist and be callable
-    }
-
-    #[tokio::test]
-    async fn test_service_manager_activate_returns_future() {
-        // Arrange: Create a mock service manager
-        let mock = MockServiceManager::new(false, false);
-        
-        // Act: Call activate and await the future
-        let future = mock.activate("bluetooth");
-        future.await;
-        
-        // Assert: The method should return a Future that can be awaited
-    }
-
-    #[tokio::test]
-    async fn test_service_manager_enable_returns_future() {
-        // Arrange: Create a mock service manager
-        let mock = MockServiceManager::new(false, false);
-        
-        // Act: Call enable and await the future
-        let future = mock.enable("bluetooth");
-        future.await;
-        
-        // Assert: The method should return a Future that can be awaited
     }
 
     #[test]

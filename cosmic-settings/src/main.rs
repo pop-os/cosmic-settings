@@ -16,6 +16,7 @@ pub mod config;
 #[macro_use]
 pub mod localize;
 pub mod pages;
+pub mod service_manager;
 pub mod subscription;
 pub mod theme;
 pub mod utils;
