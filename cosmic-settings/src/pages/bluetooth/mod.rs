@@ -783,7 +783,7 @@ fn status() -> Section<crate::pages::Message> {
                 return bluetooth_service_issue(
                     fl!("bluetooth", "inactive"),
                     fl!("activate"),
-                    Message::ServiceEnable,
+                    Message::ServiceActivate,
                 );
             }
 
