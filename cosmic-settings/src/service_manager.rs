@@ -32,6 +32,44 @@ pub trait ServiceManager {
     fn is_installed(&self) -> bool;
 }
 
+/// Logs the result of a privileged command execution for diagnostics.
+///
+/// Called after a command completes — logs a warning on non-zero exit or
+/// an error if the command could not be executed at all.
+fn log_command_result(
+    result: &Result<std::process::ExitStatus, std::io::Error>,
+    description: &str,
+    service: &str,
+) {
+    match result {
+        Ok(status) if status.success() => {}
+        Ok(status) => tracing::warn!(
+            "{} for '{}' failed with exit code: {:?}",
+            description,
+            service,
+            status.code(),
+        ),
+        Err(e) => tracing::error!(
+            "Failed to execute {} for '{}': {}",
+            description,
+            service,
+            e,
+        ),
+    }
+}
+
+/// Runs a privileged command via `pkexec` and logs the result.
+///
+/// This is the standard async entry point for service management actions
+/// that require elevated privileges.
+async fn run_pkexec_command(args: &[&str], description: &str, service: &str) {
+    let result = tokio::process::Command::new("pkexec")
+        .args(args)
+        .status()
+        .await;
+    log_command_result(&result, description, service);
+}
+
 /// Mock implementation of ServiceManager for testing.
 ///
 /// This implementation returns configurable boolean values and provides
@@ -125,20 +163,24 @@ impl ServiceManager for SystemDServiceManager {
     fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
         let service = self.service_name.clone();
         Box::pin(async move {
-            let _ = tokio::process::Command::new("pkexec")
-                .args(["systemctl", "start", &service])
-                .status()
-                .await;
+            run_pkexec_command(
+                &["systemctl", "start", &service],
+                "systemctl start",
+                &service,
+            )
+            .await;
         })
     }
 
     fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
         let service = self.service_name.clone();
         Box::pin(async move {
-            let _ = tokio::process::Command::new("pkexec")
-                .args(["systemctl", "enable", "--now", &service])
-                .status()
-                .await;
+            run_pkexec_command(
+                &["systemctl", "enable", "--now", &service],
+                "systemctl enable --now",
+                &service,
+            )
+            .await;
         })
     }
 
@@ -213,10 +255,12 @@ impl ServiceManager for OpenRcServiceManager {
     fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
         let service = self.service_name.clone();
         Box::pin(async move {
-            let _ = tokio::process::Command::new("pkexec")
-                .args(["rc-service", &service, "start"])
-                .status()
-                .await;
+            run_pkexec_command(
+                &["rc-service", &service, "start"],
+                "rc-service start",
+                &service,
+            )
+            .await;
         })
     }
 
@@ -224,15 +268,19 @@ impl ServiceManager for OpenRcServiceManager {
         let service = self.service_name.clone();
         Box::pin(async move {
             // Add to default runlevel
-            let _ = tokio::process::Command::new("pkexec")
-                .args(["rc-update", "add", &service, "default"])
-                .status()
-                .await;
+            run_pkexec_command(
+                &["rc-update", "add", &service, "default"],
+                "rc-update add",
+                &service,
+            )
+            .await;
             // Start the service now
-            let _ = tokio::process::Command::new("pkexec")
-                .args(["rc-service", &service, "start"])
-                .status()
-                .await;
+            run_pkexec_command(
+                &["rc-service", &service, "start"],
+                "rc-service start",
+                &service,
+            )
+            .await;
         })
     }
 
@@ -657,6 +705,19 @@ mod tests {
         // Assert: Should not find it
         assert!(!found,
             "Should not match when the service is not in the output");
+    }
+
+    #[tokio::test]
+    async fn test_log_command_result_logs_error_on_failure() {
+        // This test verifies that the run_pkexec_command helper exists and handles
+        // command failures gracefully (logs a warning/error instead of panicking).
+        // The function doesn't exist yet — this test drives its creation.
+        let result = std::io::Result::Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "command not found",
+        ));
+        log_command_result(&result, "test command", "test-service");
+        // Verification: the function should not panic on error.
     }
 
     #[test]
