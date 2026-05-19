@@ -918,7 +918,7 @@ pub fn system_themes_section() -> Section<crate::pages::Message> {
     Section::default()
         .title(fl!("system-themes"))
         .view::<Page>(move |_binder, page, section| {
-            let buttons: Vec<Element<Message>> = page.system_themes.iter().map(|(name, ron, png)| {
+            let buttons: Vec<Element<Message>> = page.system_themes.iter().map(|(name, ron, _png)| {
                 cosmic::iced::widget::column![
                     button::standard(name)
                         .on_press(Message::ApplySystemTheme(ron.clone())),
