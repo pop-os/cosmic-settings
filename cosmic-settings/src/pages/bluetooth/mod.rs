@@ -451,8 +451,6 @@ impl Page {
                         self.service_is_enabled = self.service_manager.is_enabled();
                     } else {
                         // Genuinely not installed — let status() show the unknown message.
-                        self.service_is_active = true;
-                        self.service_is_enabled = true;
                         self.bluez_service_unknown = true;
                     }
                 }
@@ -765,7 +763,11 @@ fn status() -> Section<crate::pages::Message> {
                     .apply(|control| Element::from(widget::settings::section().add(control)))
             }
 
-            if !page.service_is_enabled {
+            if page.bluez_service_unknown {
+                let control = widget::text::body(fl!("bluetooth", "unknown"));
+
+                return Element::from(widget::settings::section().add(control));
+            } else if !page.service_is_enabled {
                 return bluetooth_service_issue(
                     fl!("bluetooth", "disabled"),
                     fl!("enable"),
@@ -777,10 +779,6 @@ fn status() -> Section<crate::pages::Message> {
                     fl!("activate"),
                     Message::ServiceActivate,
                 );
-            } else if page.bluez_service_unknown {
-                let control = widget::text::body(fl!("bluetooth", "unknown"));
-
-                return Element::from(widget::settings::section().add(control));
             }
 
             let status = page
@@ -1064,8 +1062,8 @@ mod tests {
         let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
 
         assert!(page.bluez_service_unknown);
-        assert!(page.service_is_enabled);
-        assert!(page.service_is_active);
+        assert!(!page.service_is_enabled);
+        assert!(!page.service_is_active);
     }
 
     #[test]
