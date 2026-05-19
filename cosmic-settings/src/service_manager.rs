@@ -230,20 +230,26 @@ pub fn detect_service_manager() -> Result<Box<dyn ServiceManager>, String> {
         }
     }
 
-    // No supported service manager detected
-    let mut attempted = Vec::new();
-    #[cfg(feature = "systemd")]
-    attempted.push("systemd");
-    #[cfg(feature = "openrc")]
-    attempted.push("openrc");
+    // No supported service manager detected - build error message based on what was checked
+    #[cfg(not(any(feature = "systemd", feature = "openrc")))]
+    {
+        Err("No service manager features enabled at compile time. \
+             Enable the 'systemd' or 'openrc' feature to support service management."
+            .to_string())
+    }
 
-    if attempted.is_empty() {
-        Err("No service manager features enabled at compile time".to_string())
-    } else {
+    #[cfg(any(feature = "systemd", feature = "openrc"))]
+    {
+        let mut checked = Vec::new();
+        #[cfg(feature = "systemd")]
+        checked.push("systemd (/run/systemd/system)");
+        #[cfg(feature = "openrc")]
+        checked.push("openrc (/run/openrc)");
+
         Err(format!(
-            "Could not detect a running service manager. Attempted: {}. \
-             Checked for runtime indicators (/run/systemd/system, /run/openrc) but none were found.",
-            attempted.join(", ")
+            "Could not detect a running service manager. Checked for: {}. \
+             None of these service managers appear to be running on this system.",
+            checked.join(", ")
         ))
     }
 }
