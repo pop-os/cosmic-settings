@@ -18,7 +18,7 @@ use zbus::zvariant::OwnedObjectPath;
 
 #[cfg(test)]
 use crate::service_manager::MockServiceManager;
-use crate::service_manager::{ServiceManager, ServiceManagerHandle, create_default_service_manager};
+use crate::service_manager::ServiceManagerHandle;
 
 enum Dialog {
     // RequestAuthorization {
@@ -167,12 +167,6 @@ pub struct Page {
     subscription: Option<tokio::sync::oneshot::Sender<()>>,
 
     service_manager: ServiceManagerHandle,
-}
-
-impl Default for ServiceManagerHandle {
-    fn default() -> Self {
-        Self::new(create_default_service_manager("bluetooth"))
-    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -1040,9 +1034,9 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 
 impl Page {
     #[cfg(test)]
-    fn with_service_manager(service_manager: Box<dyn ServiceManager>) -> Self {
+    fn with_service_manager(service_manager: ServiceManagerHandle) -> Self {
         Self {
-            service_manager: ServiceManagerHandle::new(service_manager),
+            service_manager,
             ..Page::default()
         }
     }
@@ -1055,7 +1049,7 @@ mod tests {
     #[test]
     fn test_dbus_service_unknown_with_installed_service_queries_manager() {
         let bluetooth = MockServiceManager::new(true, false);
-        let mut page = Page::with_service_manager(Box::new(bluetooth));
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
         let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
 
         assert!(page.service_is_enabled);
@@ -1066,7 +1060,7 @@ mod tests {
     #[test]
     fn test_dbus_service_unknown_with_uninstalled_service_sets_bluez_unknown() {
         let bluetooth = MockServiceManager::new(true, true).with_installed(false);
-        let mut page = Page::with_service_manager(Box::new(bluetooth));
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
         let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
 
         assert!(page.bluez_service_unknown);
@@ -1078,7 +1072,7 @@ mod tests {
     fn test_dbus_service_unknown_clears_previously_set_bluez_service_unknown() {
         // Simulate a stale state and verify the handler re-checks via is_installed().
         let bluetooth = MockServiceManager::new(true, true);
-        let mut page = Page::with_service_manager(Box::new(bluetooth));
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
         page.bluez_service_unknown = true;
 
         let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
@@ -1089,14 +1083,14 @@ mod tests {
     #[tokio::test]
     async fn test_service_activate_calls_through_to_service_manager() {
         let bluetooth = MockServiceManager::new(false, false);
-        let mut page = Page::with_service_manager(Box::new(bluetooth));
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
         let _task = page.update(Message::ServiceActivate);
     }
 
     #[tokio::test]
     async fn test_service_enable_calls_through_to_service_manager() {
         let bluetooth = MockServiceManager::new(false, false);
-        let mut page = Page::with_service_manager(Box::new(bluetooth));
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
         let _task = page.update(Message::ServiceEnable);
     }
 }

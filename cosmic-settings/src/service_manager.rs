@@ -34,8 +34,9 @@ pub trait ServiceManager {
 /// A newtype around `Box<dyn ServiceManager>` that enables `#[derive(Default)]`
 /// on containing structs. Methods on `ServiceManager` are accessible via `Deref`.
 ///
-/// Each consuming module provides its own `Default` impl with the appropriate
-/// service name.
+/// The `Default` impl creates a manager for the `"bluetooth"` service, which is
+/// currently the only consumer.  If other services need this in the future the
+/// default can be made configurable.
 pub struct ServiceManagerHandle(Box<dyn ServiceManager>);
 
 impl ServiceManagerHandle {
@@ -48,6 +49,12 @@ impl std::ops::Deref for ServiceManagerHandle {
     type Target = dyn ServiceManager;
     fn deref(&self) -> &Self::Target {
         &*self.0
+    }
+}
+
+impl Default for ServiceManagerHandle {
+    fn default() -> Self {
+        Self(create_default_service_manager("bluetooth"))
     }
 }
 
