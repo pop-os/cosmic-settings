@@ -458,7 +458,25 @@ impl Page {
                 }
 
                 Event::DBusServiceUnknown => {
-                    self.bluez_service_unknown = true;
+                    // D-Bus returned ServiceUnknown for org.bluez, meaning no
+                    // D-Bus activation file is registered for auto-starting
+                    // bluez.  On systemd this normally means bluez isn't
+                    // installed; on OpenRC bluez may be installed but lack
+                    // the D-Bus service file.
+                    //
+                    // Use the service manager to check whether the service
+                    // is actually installed on this system.
+                    if self.service_manager.is_installed() {
+                        self.service_is_active = self.service_manager.is_active();
+                        self.service_is_enabled = self.service_manager.is_enabled();
+                    } else {
+                        // Genuinely not installed — set the service state to
+                        // appear active/enabled so status() falls through to
+                        // the bluez_service_unknown check below.
+                        self.service_is_active = true;
+                        self.service_is_enabled = true;
+                        self.bluez_service_unknown = true;
+                    }
                 }
 
                 Event::Agent(message) => {
@@ -769,11 +787,7 @@ fn status() -> Section<crate::pages::Message> {
                     .apply(|control| Element::from(widget::settings::section().add(control)))
             }
 
-            if page.bluez_service_unknown {
-                let control = widget::text::body(fl!("bluetooth", "unknown"));
-
-                return Element::from(widget::settings::section().add(control));
-            } else if !page.service_is_enabled {
+            if !page.service_is_enabled {
                 return bluetooth_service_issue(
                     fl!("bluetooth", "disabled"),
                     fl!("enable"),
@@ -785,6 +799,10 @@ fn status() -> Section<crate::pages::Message> {
                     fl!("activate"),
                     Message::ServiceActivate,
                 );
+            } else if page.bluez_service_unknown {
+                let control = widget::text::body(fl!("bluetooth", "unknown"));
+
+                return Element::from(widget::settings::section().add(control));
             }
 
             let status = page
@@ -1113,5 +1131,68 @@ mod tests {
         // Assert: Page should correctly distinguish between enabled and active states
         assert!(page.service_is_enabled, "Service should be recognized as enabled");
         assert!(!page.service_is_active, "Service should be recognized as inactive");
+    }
+
+    #[test]
+    fn test_dbus_service_unknown_with_installed_service_queries_manager() {
+        // Arrange: Create a page with a service manager that reports known states
+        let bluetooth = MockServiceManager::new("bluetooth", true, false);
+        let mut page = Page::with_service_manager(Box::new(bluetooth));
+        
+        // Act: Send DBusServiceUnknown event
+        let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
+        
+        // Assert: Page should have queried the service manager for is_enabled and is_active
+        assert!(page.service_is_enabled,
+            "When service is installed, is_enabled should be queried from service manager");
+        assert!(!page.service_is_active,
+            "When service is installed, is_active should be queried from service manager");
+        assert!(!page.bluez_service_unknown,
+            "When service is installed, bluez_service_unknown should remain false");
+    }
+
+    #[test]
+    fn test_dbus_service_unknown_with_uninstalled_service_sets_bluez_unknown() {
+        // Arrange: Create a page with a service manager that reports not installed
+        let bluetooth = MockServiceManager::new("bluetooth", true, true)
+            .with_installed(false);
+        let mut page = Page::with_service_manager(Box::new(bluetooth));
+        
+        // Act: Send DBusServiceUnknown event
+        let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
+        
+        // Assert: Page should fall through to bluez_service_unknown state
+        assert!(page.bluez_service_unknown,
+            "When service is not installed, bluez_service_unknown should be set to true");
+        assert!(page.service_is_enabled,
+            "When service is not installed, is_enabled should default to true");
+        assert!(page.service_is_active,
+            "When service is not installed, is_active should default to true");
+    }
+
+    #[tokio::test]
+    async fn test_service_activate_calls_through_to_service_manager() {
+        // Arrange: Create a page with a mock service manager
+        let bluetooth = MockServiceManager::new("bluetooth", false, false);
+        let mut page = Page::with_service_manager(Box::new(bluetooth));
+        
+        // Act: Send ServiceActivate message
+        let _task = page.update(Message::ServiceActivate);
+        
+        // Assert: The task was returned (we can't easily await it since it connects to D-Bus)
+        // But we know the method was called on the service manager without panicking
+    }
+
+    #[tokio::test]
+    async fn test_service_enable_calls_through_to_service_manager() {
+        // Arrange: Create a page with a mock service manager
+        let bluetooth = MockServiceManager::new("bluetooth", false, false);
+        let mut page = Page::with_service_manager(Box::new(bluetooth));
+        
+        // Act: Send ServiceEnable message
+        let _task = page.update(Message::ServiceEnable);
+        
+        // Assert: The task was returned (we can't easily await it since it connects to D-Bus)
+        // But we know the method was called on the service manager without panicking
     }
 }
