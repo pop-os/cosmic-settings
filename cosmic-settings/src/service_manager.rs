@@ -57,7 +57,6 @@ impl MockServiceManager {
     }
 
     /// Configure whether the service is reported as installed.
-    #[allow(dead_code)]
     pub fn with_installed(mut self, installed: bool) -> Self {
         self.installed = installed;
         self
