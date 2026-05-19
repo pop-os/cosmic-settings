@@ -1074,6 +1074,40 @@ impl Page {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tokio::net::UnixStream;
+    use zbus::connection;
+
+    /// Creates an in-memory mock D-Bus connection using a Unix socket pair
+    /// and zbus's peer-to-peer mode (no subprocess, no filesystem, no real D-Bus daemon).
+    ///
+    /// Panics on failure — this is an in-memory operation with no external
+    /// dependencies, so any failure is a bug that should fail the test loudly.
+    async fn mock_dbus_connection() -> zbus::Connection {
+        let (server_end, client_end) = UnixStream::pair()
+            .expect("UnixStream::pair() should always succeed on Linux");
+
+        // GUID must be exactly 32 hex characters (a 128-bit UUID).
+        let guid = zbus::Guid::try_from("deadbeefdeadbeefdeadbeefdeadbeef")
+            .expect("hard-coded GUID is valid");
+
+        // Spawn the p2p server side: handles the D-Bus auth handshake with the client.
+        tokio::spawn(async move {
+            let _server = connection::Builder::unix_stream(server_end)
+                .p2p()
+                .server(guid)
+                .expect("valid server builder")
+                .build()
+                .await
+                .expect("p2p server connection should complete handshake");
+        });
+
+        // Client side: connects to the mock server peer.
+        connection::Builder::unix_stream(client_end)
+            .p2p()
+            .build()
+            .await
+            .expect("p2p client connection should complete handshake")
+    }
 
     #[test]
     fn test_page_can_be_constructed_with_mock_service_manager() {
@@ -1105,10 +1139,8 @@ mod tests {
         let bluetooth = MockServiceManager::new("bluetooth", true, true);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
         
-        // Attempt to connect to the session bus; skip test if unavailable
-        let Ok(connection) = zbus::Connection::session().await else {
-            return;
-        };
+        // Create an in-memory mock D-Bus connection (panics on failure — no silent passes)
+        let connection = mock_dbus_connection().await;
         
         // Act: Send DBusConnect message
         let _task = page.update(Message::DBusConnect(connection));
@@ -1124,10 +1156,8 @@ mod tests {
         let bluetooth = MockServiceManager::new("bluetooth", true, false);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
         
-        // Attempt to connect to the session bus; skip test if unavailable
-        let Ok(connection) = zbus::Connection::session().await else {
-            return;
-        };
+        // Create an in-memory mock D-Bus connection (panics on failure — no silent passes)
+        let connection = mock_dbus_connection().await;
         
         // Act: Send DBusConnect message
         let _task = page.update(Message::DBusConnect(connection));
