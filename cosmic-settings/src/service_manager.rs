@@ -68,8 +68,10 @@ impl ServiceManager for MockServiceManager {
 /// SystemD implementation of ServiceManager.
 ///
 /// This implementation delegates to systemd commands for managing services.
+#[cfg(feature = "systemd")]
 pub struct SystemDServiceManager;
 
+#[cfg(feature = "systemd")]
 impl SystemDServiceManager {
     /// Create a new SystemDServiceManager.
     pub fn new() -> Self {
@@ -77,27 +79,49 @@ impl SystemDServiceManager {
     }
 }
 
+#[cfg(feature = "systemd")]
 impl Default for SystemDServiceManager {
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[cfg(feature = "systemd")]
 impl ServiceManager for SystemDServiceManager {
     fn is_enabled(&self, service: &str) -> bool {
-        systemd::is_service_enabled(service)
+        std::process::Command::new("systemctl")
+            .args(["is-enabled", service])
+            .status()
+            .map(|status| status.success())
+            .unwrap_or(true)
     }
 
     fn is_active(&self, service: &str) -> bool {
-        systemd::is_service_active(service)
+        std::process::Command::new("systemctl")
+            .args(["is-active", service])
+            .status()
+            .map(|status| status.success())
+            .unwrap_or(true)
     }
 
-    fn activate(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        Box::pin(systemd::activate_bluetooth())
+    fn activate(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        let service = service.to_string();
+        Box::pin(async move {
+            let _ = tokio::process::Command::new("pkexec")
+                .args(["systemctl", "start", &service])
+                .status()
+                .await;
+        })
     }
 
-    fn enable(&self, _service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        Box::pin(systemd::enable_bluetooth())
+    fn enable(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        let service = service.to_string();
+        Box::pin(async move {
+            let _ = tokio::process::Command::new("pkexec")
+                .args(["systemctl", "enable", "--now", &service])
+                .status()
+                .await;
+        })
     }
 }
 
@@ -173,50 +197,23 @@ impl ServiceManager for OpenRcServiceManager {
     }
 }
 
-mod systemd {
-    use futures::FutureExt;
-    use std::future::Future;
-
-    pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "start", "bluetooth"])
-            .status()
-            .map(|_| ())
-    }
-
-    pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "enable", "--now", "bluetooth"])
-            .status()
-            .map(|_| ())
-    }
-
-    pub fn is_service_enabled(service: &str) -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-enabled", service])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
-    }
-
-    pub fn is_service_active(service: &str) -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-active", service])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
-    }
-}
-
 /// Creates the appropriate service manager based on the build configuration.
-/// In test mode, returns a MockServiceManager.
-/// In production mode, returns a SystemDServiceManager.
+///
+/// Priority order:
+/// 1. In test mode: Returns MockServiceManager
+/// 2. If openrc feature is enabled: Returns OpenRcServiceManager
+/// 3. If systemd feature is enabled (default): Returns SystemDServiceManager
 #[cfg(test)]
 pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
     Box::new(MockServiceManager::new(false, false))
 }
 
-#[cfg(not(test))]
+#[cfg(all(not(test), feature = "openrc"))]
+pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
+    Box::new(OpenRcServiceManager::new())
+}
+
+#[cfg(all(not(test), not(feature = "openrc"), feature = "systemd"))]
 pub fn create_default_service_manager() -> Box<dyn ServiceManager> {
     Box::new(SystemDServiceManager::new())
 }
@@ -311,6 +308,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "systemd")]
     fn test_systemd_service_manager_implements_trait() {
         // Arrange: Create a SystemDServiceManager
         let manager = SystemDServiceManager::new();
