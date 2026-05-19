@@ -456,24 +456,16 @@ impl Page {
                 }
 
                 Event::DBusServiceUnknown => {
-                    // D-Bus returned ServiceUnknown for org.bluez, meaning no
-                    // D-Bus activation file is registered for auto-starting
-                    // bluez.  On systemd this normally means bluez isn't
-                    // installed; on OpenRC bluez may be installed but lack
-                    // the D-Bus service file.
-                    //
-                    // Use the service manager to check whether the service
-                    // is actually installed on this system.
+                    // D-Bus activation for org.bluez is absent.  On systemd this usually
+                    // means bluez isn't installed; on OpenRC it may be installed but lack
+                    // the D-Bus service file.  Check the service manager to disambiguate.
                     if self.service_manager.is_installed() {
-                        // Clear any previously-set unknown flag — the
-                        // service manager confirmed the service exists.
+                        // Service manager confirms the service exists — query its real state.
                         self.bluez_service_unknown = false;
                         self.service_is_active = self.service_manager.is_active();
                         self.service_is_enabled = self.service_manager.is_enabled();
                     } else {
-                        // Genuinely not installed — set the service state to
-                        // appear active/enabled so status() falls through to
-                        // the bluez_service_unknown check below.
+                        // Genuinely not installed — let status() show the unknown message.
                         self.service_is_active = true;
                         self.service_is_enabled = true;
                         self.bluez_service_unknown = true;
@@ -1078,98 +1070,49 @@ mod tests {
 
     #[test]
     fn test_dbus_service_unknown_with_installed_service_queries_manager() {
-        // Arrange: Create a page with a service manager that reports known states
         let bluetooth = MockServiceManager::new(true, false);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
-
-        // Act: Send DBusServiceUnknown event
         let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
 
-        // Assert: Page should have queried the service manager for is_enabled and is_active
-        assert!(
-            page.service_is_enabled,
-            "When service is installed, is_enabled should be queried from service manager"
-        );
-        assert!(
-            !page.service_is_active,
-            "When service is installed, is_active should be queried from service manager"
-        );
-        assert!(
-            !page.bluez_service_unknown,
-            "When service is installed, bluez_service_unknown should remain false"
-        );
+        assert!(page.service_is_enabled);
+        assert!(!page.service_is_active);
+        assert!(!page.bluez_service_unknown);
     }
 
     #[test]
     fn test_dbus_service_unknown_with_uninstalled_service_sets_bluez_unknown() {
-        // Arrange: Create a page with a service manager that reports not installed
         let bluetooth = MockServiceManager::new(true, true).with_installed(false);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
-
-        // Act: Send DBusServiceUnknown event
         let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
 
-        // Assert: Page should fall through to bluez_service_unknown state
-        assert!(
-            page.bluez_service_unknown,
-            "When service is not installed, bluez_service_unknown should be set to true"
-        );
-        assert!(
-            page.service_is_enabled,
-            "When service is not installed, is_enabled should default to true"
-        );
-        assert!(
-            page.service_is_active,
-            "When service is not installed, is_active should default to true"
-        );
+        assert!(page.bluez_service_unknown);
+        assert!(page.service_is_enabled);
+        assert!(page.service_is_active);
     }
 
     #[test]
     fn test_dbus_service_unknown_clears_previously_set_bluez_service_unknown() {
-        // Arrange: Create a page with a service manager that reports installed
-        // (MockServiceManager defaults to installed=true)
+        // Simulate a stale state and verify the handler re-checks via is_installed().
         let bluetooth = MockServiceManager::new(true, true);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
-
-        // Simulate a stale state: a previous DBusServiceUnknown event left
-        // bluez_service_unknown = true (e.g., the service was temporarily
-        // unavailable but is now installed again).
         page.bluez_service_unknown = true;
 
-        // Act: Send DBusServiceUnknown — now is_installed() returns true
         let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
 
-        // Assert: The handler should clear bluez_service_unknown when the
-        // service manager reports the service is installed.
-        assert!(
-            !page.bluez_service_unknown,
-            "When is_installed() returns true, bluez_service_unknown should be reset to false"
-        );
+        assert!(!page.bluez_service_unknown);
     }
 
     #[tokio::test]
     async fn test_service_activate_calls_through_to_service_manager() {
-        // Arrange: Create a page with a mock service manager
         let bluetooth = MockServiceManager::new(false, false);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
-
-        // Act: Send ServiceActivate message
         let _task = page.update(Message::ServiceActivate);
-
-        // Assert: The task was returned (we can't easily await it since it connects to D-Bus)
-        // But we know the method was called on the service manager without panicking
     }
 
     #[tokio::test]
     async fn test_service_enable_calls_through_to_service_manager() {
-        // Arrange: Create a page with a mock service manager
         let bluetooth = MockServiceManager::new(false, false);
         let mut page = Page::with_service_manager(Box::new(bluetooth));
-
-        // Act: Send ServiceEnable message
         let _task = page.update(Message::ServiceEnable);
-
-        // Assert: The task was returned (we can't easily await it since it connects to D-Bus)
-        // But we know the method was called on the service manager without panicking
     }
 }
