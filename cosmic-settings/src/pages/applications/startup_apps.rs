@@ -142,8 +142,11 @@ impl page::Page<crate::pages::Message> for Page {
             let user_entries =
                 freedesktop_desktop_entry::Iter::new(user_dirs.into_iter()).entries(Some(&locales));
 
+            let mut user_entries_vec = user_entries.collect_vec();
+            sort_entries_by_name(&mut user_entries_vec, &locales);
+
             let mut apps_hash = HashMap::with_capacity(1);
-            apps_hash.insert(DirectoryType::User, user_entries.collect_vec());
+            apps_hash.insert(DirectoryType::User, user_entries_vec);
 
             Message::UpdateStartupApplications(CachedApps {
                 apps: apps_hash,
@@ -246,6 +249,10 @@ impl Page {
                                 if let Some(target_apps) = target_apps {
                                     let mut new_apps = target_apps.clone();
                                     new_apps.push(app.clone());
+                                    sort_entries_by_name(
+                                        &mut new_apps,
+                                        &cached_startup_apps.locales,
+                                    );
 
                                     cached_startup_apps
                                         .apps
@@ -433,6 +440,14 @@ fn apps() -> Section<crate::pages::Message> {
         })
 }
 
+fn sort_entries_by_name(entries: &mut [DesktopEntry], locales: &[String]) {
+    entries.sort_by_cached_key(|e| {
+        e.name(locales)
+            .map(|n| n.to_lowercase())
+            .unwrap_or_else(|| e.appid.to_lowercase())
+    });
+}
+
 fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
     let mut dedupe = HashSet::new();
 
@@ -472,6 +487,8 @@ fn get_all_apps(locales: Vec<String>) -> Vec<DesktopEntry> {
         result.push(entry.clone());
         dedupe.insert(app_id.to_owned());
     }
+
+    sort_entries_by_name(&mut result, &locales);
 
     result
 }
