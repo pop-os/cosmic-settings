@@ -18,7 +18,7 @@ use zbus::zvariant::OwnedObjectPath;
 
 #[cfg(test)]
 use crate::service_manager::MockServiceManager;
-use crate::service_manager::{ServiceManager, create_default_service_manager};
+use crate::service_manager::{ServiceManager, ServiceManagerHandle, create_default_service_manager};
 
 enum Dialog {
     // RequestAuthorization {
@@ -151,6 +151,7 @@ impl Model {
     }
 }
 
+#[derive(Default)]
 pub struct Page {
     model: Model,
 
@@ -165,22 +166,12 @@ pub struct Page {
 
     subscription: Option<tokio::sync::oneshot::Sender<()>>,
 
-    service_manager: Box<dyn ServiceManager>,
+    service_manager: ServiceManagerHandle,
 }
 
-impl Default for Page {
+impl Default for ServiceManagerHandle {
     fn default() -> Self {
-        Self {
-            model: Model::default(),
-            connection: None,
-            dialog: None,
-            heading: String::new(),
-            bluez_service_unknown: false,
-            service_is_enabled: false,
-            service_is_active: false,
-            subscription: None,
-            service_manager: create_default_service_manager("bluetooth"),
-        }
+        Self::new(create_default_service_manager("bluetooth"))
     }
 }
 
@@ -1051,15 +1042,8 @@ impl Page {
     #[cfg(test)]
     fn with_service_manager(service_manager: Box<dyn ServiceManager>) -> Self {
         Self {
-            model: Model::default(),
-            connection: None,
-            dialog: None,
-            heading: String::new(),
-            bluez_service_unknown: false,
-            service_is_enabled: false,
-            service_is_active: false,
-            subscription: None,
-            service_manager,
+            service_manager: ServiceManagerHandle::new(service_manager),
+            ..Page::default()
         }
     }
 }

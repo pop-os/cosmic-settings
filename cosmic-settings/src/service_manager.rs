@@ -31,6 +31,26 @@ pub trait ServiceManager {
     fn is_installed(&self) -> bool;
 }
 
+/// A newtype around `Box<dyn ServiceManager>` that enables `#[derive(Default)]`
+/// on containing structs. Methods on `ServiceManager` are accessible via `Deref`.
+///
+/// Each consuming module provides its own `Default` impl with the appropriate
+/// service name.
+pub struct ServiceManagerHandle(Box<dyn ServiceManager>);
+
+impl ServiceManagerHandle {
+    pub fn new(manager: Box<dyn ServiceManager>) -> Self {
+        Self(manager)
+    }
+}
+
+impl std::ops::Deref for ServiceManagerHandle {
+    type Target = dyn ServiceManager;
+    fn deref(&self) -> &Self::Target {
+        &*self.0
+    }
+}
+
 /// Log a warning or error after a privileged command completes.
 fn log_command_result(
     result: &Result<std::process::ExitStatus, std::io::Error>,
