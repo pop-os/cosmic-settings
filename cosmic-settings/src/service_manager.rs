@@ -27,6 +27,9 @@ pub trait ServiceManager {
     
     /// Enable the service (configure it to start on boot and start it now).
     fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>>;
+
+    /// Check if the service is installed on this system.
+    fn is_installed(&self) -> bool;
 }
 
 /// Mock implementation of ServiceManager for testing.
@@ -38,6 +41,7 @@ pub struct MockServiceManager {
     service_name: String,
     enabled: bool,
     active: bool,
+    installed: bool,
 }
 
 #[cfg(test)]
@@ -48,7 +52,15 @@ impl MockServiceManager {
             service_name: service_name.into(),
             enabled,
             active,
+            installed: true,
         }
+    }
+
+    /// Configure whether the service is reported as installed.
+    #[allow(dead_code)]
+    pub fn with_installed(mut self, installed: bool) -> Self {
+        self.installed = installed;
+        self
     }
 }
 
@@ -68,6 +80,10 @@ impl ServiceManager for MockServiceManager {
 
     fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
         Box::pin(async {})
+    }
+
+    fn is_installed(&self) -> bool {
+        self.installed
     }
 }
 
@@ -125,6 +141,14 @@ impl ServiceManager for SystemDServiceManager {
                 .status()
                 .await;
         })
+    }
+
+    fn is_installed(&self) -> bool {
+        std::process::Command::new("systemctl")
+            .args(["cat", &self.service_name])
+            .status()
+            .map(|status| status.success())
+            .unwrap_or(false)
     }
 }
 
@@ -194,6 +218,12 @@ impl ServiceManager for OpenRcServiceManager {
                 .status()
                 .await;
         })
+    }
+
+    fn is_installed(&self) -> bool {
+        std::path::Path::new("/etc/init.d")
+            .join(&self.service_name)
+            .exists()
     }
 }
 
@@ -305,6 +335,10 @@ impl ServiceManager for NoOpServiceManager {
     fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
         Box::pin(async {})
     }
+
+    fn is_installed(&self) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]
@@ -316,6 +350,7 @@ mod tests {
         // Arrange: Create a mock service manager
         struct TestServiceManager {
             enabled: bool,
+            installed: bool,
         }
         
         impl ServiceManager for TestServiceManager {
@@ -334,14 +369,18 @@ mod tests {
             fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
                 Box::pin(async {})
             }
+
+            fn is_installed(&self) -> bool {
+                self.installed
+            }
         }
         
-        let test_service = TestServiceManager { enabled: true };
+        let test_service = TestServiceManager { enabled: true, installed: true };
         
         // Act & Assert
         assert!(test_service.is_enabled());
         
-        let disabled_service = TestServiceManager { enabled: false };
+        let disabled_service = TestServiceManager { enabled: false, installed: true };
         assert!(!disabled_service.is_enabled());
     }
 
@@ -350,6 +389,7 @@ mod tests {
         // Arrange: Create a mock service manager
         struct TestServiceManager {
             active: bool,
+            installed: bool,
         }
         
         impl ServiceManager for TestServiceManager {
@@ -368,14 +408,18 @@ mod tests {
             fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
                 Box::pin(async {})
             }
+
+            fn is_installed(&self) -> bool {
+                self.installed
+            }
         }
         
-        let test_service = TestServiceManager { active: true };
+        let test_service = TestServiceManager { active: true, installed: true };
         
         // Act & Assert
         assert!(test_service.is_active());
         
-        let inactive_service = TestServiceManager { active: false };
+        let inactive_service = TestServiceManager { active: false, installed: true };
         assert!(!inactive_service.is_active());
     }
 
@@ -511,5 +555,34 @@ mod tests {
         
         // Assert: The MockServiceManager should be created successfully and bound to the service
         assert!(bluetooth.is_enabled());
+    }
+
+    #[test]
+    fn test_mock_service_manager_is_installed_defaults_to_true() {
+        // Arrange: Create a MockServiceManager with default settings
+        let bluetooth = MockServiceManager::new("bluetooth", true, true);
+        
+        // Assert: The default installed state should be true
+        assert!(bluetooth.is_installed(),
+            "MockServiceManager should default to installed=true");
+    }
+
+    #[test]
+    fn test_mock_service_manager_with_installed_configures_state() {
+        // Arrange: Create a MockServiceManager configured as not installed
+        let not_installed = MockServiceManager::new("bluetooth", true, true)
+            .with_installed(false);
+        
+        // Assert: is_installed should return false
+        assert!(!not_installed.is_installed(),
+            "with_installed(false) should make is_installed() return false");
+        
+        // Arrange: Create a MockServiceManager configured as installed
+        let installed = MockServiceManager::new("bluetooth", true, true)
+            .with_installed(true);
+        
+        // Assert: is_installed should return true
+        assert!(installed.is_installed(),
+            "with_installed(true) should make is_installed() return true");
     }
 }
