@@ -1056,8 +1056,6 @@ impl Page {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::pin::Pin;
-    use std::future::Future;
 
     #[test]
     fn test_page_can_be_constructed_with_mock_service_manager() {

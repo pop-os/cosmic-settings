@@ -101,6 +101,78 @@ impl ServiceManager for SystemDServiceManager {
     }
 }
 
+/// OpenRC implementation of ServiceManager.
+///
+/// This implementation delegates to OpenRC commands for managing services.
+#[cfg(feature = "openrc")]
+pub struct OpenRcServiceManager;
+
+#[cfg(feature = "openrc")]
+impl OpenRcServiceManager {
+    /// Create a new OpenRcServiceManager.
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+#[cfg(feature = "openrc")]
+impl Default for OpenRcServiceManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(feature = "openrc")]
+impl ServiceManager for OpenRcServiceManager {
+    fn is_enabled(&self, service: &str) -> bool {
+        // Check if service is in a runlevel (enabled to start on boot)
+        std::process::Command::new("rc-update")
+            .args(["show"])
+            .output()
+            .map(|output| {
+                String::from_utf8_lossy(&output.stdout)
+                    .lines()
+                    .any(|line| line.trim().starts_with(service))
+            })
+            .unwrap_or(true)
+    }
+
+    fn is_active(&self, service: &str) -> bool {
+        // Check if service is currently running
+        std::process::Command::new("rc-service")
+            .args([service, "status"])
+            .status()
+            .map(|status| status.success())
+            .unwrap_or(true)
+    }
+
+    fn activate(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        let service = service.to_string();
+        Box::pin(async move {
+            let _ = tokio::process::Command::new("pkexec")
+                .args(["rc-service", &service, "start"])
+                .status()
+                .await;
+        })
+    }
+
+    fn enable(&self, service: &str) -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        let service = service.to_string();
+        Box::pin(async move {
+            // Add to default runlevel
+            let _ = tokio::process::Command::new("pkexec")
+                .args(["rc-update", "add", &service, "default"])
+                .status()
+                .await;
+            // Start the service now
+            let _ = tokio::process::Command::new("pkexec")
+                .args(["rc-service", &service, "start"])
+                .status()
+                .await;
+        })
+    }
+}
+
 mod systemd {
     use futures::FutureExt;
     use std::future::Future;
@@ -307,5 +379,18 @@ mod tests {
             "Default service manager in test mode should use MockServiceManager which returns false for is_enabled");
         assert!(!manager.is_active("bluetooth"),
             "Default service manager in test mode should use MockServiceManager which returns false for is_active");
+    }
+
+    #[test]
+    #[cfg(feature = "openrc")]
+    fn test_openrc_service_manager_implements_trait() {
+        // Arrange: Create an OpenRcServiceManager
+        let manager = OpenRcServiceManager::new();
+        
+        // Act & Assert: Verify it implements ServiceManager trait
+        // Note: We can't test the actual OpenRC calls in unit tests,
+        // but we can verify the struct exists and implements the trait
+        let _enabled: bool = manager.is_enabled("bluetooth");
+        let _active: bool = manager.is_active("bluetooth");
     }
 }
