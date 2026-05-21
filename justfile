@@ -53,12 +53,12 @@ heaptrack *args:
 check-features:
     #!/usr/bin/env bash
     set -ex
+    cargo check
     for service_manager in \
         "systemd" \
         "openrc"
     do
         cargo check --no-default-features --features "${service_manager}"
-        cargo check
         for feature in \
             "page-accessibility" \
             "page-about" \
@@ -76,7 +76,7 @@ check-features:
             "page-window-management" \
             "page-workspaces"
         do
-            cargo check --no-default-features --features "${feature}","${service_manager}"
+            cargo check --no-default-features --features "${feature},${service_manager}"
         done
     done
 
