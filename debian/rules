@@ -9,7 +9,7 @@ override_dh_auto_clean:
 	ischroot || just vendor
 
 override_dh_auto_build:
-	test -e vendor.tar && just build-vendored || just
+	test -e vendor.tar && just build-vendored --features systemd || just build-release --features systemd
 
 override_dh_auto_install:
 	just rootdir=$(DESTDIR) install
