@@ -317,14 +317,6 @@ pub fn detect_service_manager(
         }
     }
 
-    #[cfg(not(any(feature = "systemd", feature = "openrc")))]
-    {
-        Err("No service manager features enabled at compile time. \
-             Enable the 'systemd' or 'openrc' feature to support service management."
-            .to_string())
-    }
-
-    #[cfg(any(feature = "systemd", feature = "openrc"))]
     {
         let mut checked = Vec::new();
         #[cfg(feature = "systemd")]
