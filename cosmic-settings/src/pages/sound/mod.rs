@@ -415,7 +415,8 @@ fn output() -> Section<crate::pages::Message> {
                                     as u32,
                                 |change| Message::SetSinkBalance(change).into(),
                             )
-                            .breakpoints(&[100]),
+                            .breakpoints(&[100])
+                            .default(100 as u32),
                         )
                         .push(horizontal_space().width(8.))
                         .push(
