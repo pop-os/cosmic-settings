@@ -1,9 +1,7 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-// XXX error handling?
-
-use std::{hash::Hash, time::Duration};
+use std::hash::Hash;
 
 use futures::{FutureExt, StreamExt};
 use iced_futures::Subscription;
@@ -21,6 +19,29 @@ impl Hash for Wrapper {
     }
 }
 
+const DAEMON_NAME: &str = "com.system76.CosmicSettingsDaemon";
+
+async fn wait_for_daemon(conn: &zbus::Connection) {
+    let Ok(dbus) = zbus::fdo::DBusProxy::new(conn).await else {
+        return;
+    };
+    let name: zbus::names::BusName = DAEMON_NAME.try_into().unwrap();
+    if dbus.name_has_owner(name.clone()).await.unwrap_or(false) {
+        return;
+    }
+    log::info!("Waiting for {DAEMON_NAME} to appear on D-Bus...");
+    if let Ok(mut stream) = dbus.receive_name_owner_changed().await {
+        while let Some(signal) = stream.next().await {
+            if let Ok(args) = signal.args()
+                && args.name == name
+                && args.new_owner.as_ref().is_some_and(|n| !n.is_empty())
+            {
+                break;
+            }
+        }
+    }
+}
+
 pub fn subscription(connection: zbus::Connection) -> iced_futures::Subscription<Event> {
     Subscription::run_with(
         Wrapper {
@@ -33,52 +54,32 @@ pub fn subscription(connection: zbus::Connection) -> iced_futures::Subscription<
          }| {
             let connection = connection.clone();
             async move {
-                let count = 5;
-                let mut settings_daemon = None;
-                for _ in 0..5 {
-                    if count == 4 {
+                wait_for_daemon(&connection).await;
+
+                let settings_daemon = match CosmicSettingsDaemonProxy::new(&connection).await {
+                    Ok(value) => value,
+                    Err(err) => {
+                        log::error!("Error connecting to settings daemon: {}", err);
                         return futures::future::pending().await;
                     }
-                    match CosmicSettingsDaemonProxy::new(&connection).await {
-                        Ok(value) => {
-                            // interface methods can be called
-                            // FIXME why does this fail sometimes??
-                            if let Err(err) = value.display_brightness().await {
-                                log::error!("Error connecting to settings daemon: {}", err);
+                };
 
-                                tokio::time::sleep(Duration::from_secs(1)).await;
-                                continue;
-                            }
-                            if let Err(err) = value.max_display_brightness().await {
-                                log::error!("Error connecting to settings daemon: {}", err);
-                                tokio::time::sleep(Duration::from_secs(1)).await;
-
-                                continue;
-                            }
-                            settings_daemon = Some(value);
-
-                            break;
-                        }
-                        Err(err) => {
-                            log::error!("Error connecting to settings daemon: {}", err);
-
-                            tokio::time::sleep(Duration::from_secs(1)).await;
-                        }
-                    };
-                }
-                let settings_daemon = settings_daemon.unwrap();
                 let (tx, rx) = unbounded_channel();
 
                 let max_brightness_stream = settings_daemon
                     .receive_max_display_brightness_changed()
                     .await;
-
                 let brightness_stream = settings_daemon.receive_display_brightness_changed().await;
-                let mut init = vec![Event::Sender(tx)];
 
-                let initial = futures::stream::iter(init);
+                let mut initial = vec![Event::Sender(tx)];
+                if let Ok(max) = settings_daemon.max_display_brightness().await {
+                    initial.push(Event::MaxDisplayBrightness(max));
+                }
+                if let Ok(brightness) = settings_daemon.display_brightness().await {
+                    initial.push(Event::DisplayBrightness(brightness));
+                }
 
-                initial.chain(futures::stream_select!(
+                futures::stream::iter(initial).chain(futures::stream_select!(
                     Box::pin(UnboundedReceiverStream::new(rx).filter_map(move |request| {
                         let settings_daemon = settings_daemon.clone();
                         async move {
@@ -86,17 +87,17 @@ pub fn subscription(connection: zbus::Connection) -> iced_futures::Subscription<
                                 Request::SetDisplayBrightness(brightness) => {
                                     let _ =
                                         settings_daemon.set_display_brightness(brightness).await;
+                                    None
                                 }
                                 Request::GetDisplayBrightness => {
                                     let b = settings_daemon.display_brightness().await;
-                                    return Some(Event::DisplayBrightness(b.ok()?));
+                                    Some(Event::DisplayBrightness(b.ok()?))
                                 }
                                 Request::GetMaxDisplayBrightness => {
                                     let m = settings_daemon.max_display_brightness().await;
-                                    return Some(Event::MaxDisplayBrightness(m.ok()?));
+                                    Some(Event::MaxDisplayBrightness(m.ok()?))
                                 }
                             }
-                            None::<Event>
                         }
                     })),
                     Box::pin(max_brightness_stream.filter_map(|evt| async move {
