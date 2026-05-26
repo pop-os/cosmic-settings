@@ -2,11 +2,6 @@
 // Copyright 2024 bbb651 <bar.ye651@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::borrow::Cow;
-use std::collections::{BTreeMap, BTreeSet};
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, dropdown, icon, settings};
 use cosmic::{Apply, Element, Task, surface};
@@ -17,8 +12,16 @@ use cosmic_settings_page::{self as page, Section, section};
 use freedesktop_desktop_entry::{
     DesktopEntry, Iter as DesktopEntryIter, default_paths, get_languages_from_env,
 };
+use mime::Mime;
 use mime_apps::App;
 use slotmap::SlotMap;
+use std::borrow::Cow;
+use std::collections::{BTreeMap, BTreeSet};
+use std::io::SeekFrom;
+use std::path::PathBuf;
+use std::str::FromStr;
+use std::sync::Arc;
+use tokio::io::{AsyncSeekExt, AsyncWriteExt};
 
 const DROPDOWN_WEB_BROWSER: usize = 0;
 const DROPDOWN_FILE_MANAGER: usize = 1;
@@ -47,7 +50,7 @@ pub enum Category {
 #[derive(Clone, Debug)]
 pub enum Message {
     SetDefault(Category, usize),
-    Update(CachedMimeApps),
+    Update(Arc<CachedMimeApps>),
     Surface(surface::Action),
 }
 
@@ -63,13 +66,11 @@ impl From<Message> for crate::pages::Message {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct CachedMimeApps {
-    pub list: mime_apps::List,
-    pub local_list: mime_apps::List,
-    pub apps: Vec<AppMeta>,
-    pub known_mimes: BTreeSet<mime::Mime>,
-    pub config_path: Box<Path>,
+    local_list: Option<(mime_apps::List, tokio::fs::File)>,
+    apps: Vec<AppMeta>,
+    known_mimes: BTreeSet<mime::Mime>,
 }
 
 #[derive(Clone, Debug)]
@@ -80,11 +81,12 @@ pub struct AppMeta {
     icons: Vec<icon::Handle>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Debug, Default)]
 pub struct Page {
     on_enter_handle: Option<cosmic::iced::task::Handle>,
     mime_apps: Option<CachedMimeApps>,
     shortcuts_config: Option<cosmic_config::Config>,
+    update_config: Option<tokio::task::JoinHandle<()>>,
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -108,46 +110,45 @@ impl page::Page<crate::pages::Message> for Page {
             handle.abort();
         }
 
+        let config_update_handle = self.update_config.take();
+
         if self.shortcuts_config.is_none() {
             self.shortcuts_config = cosmic_settings_config::shortcuts::context().ok();
         }
 
         let (task, on_enter_handle) = Task::future(async move {
-            let mut list = mime_apps::List::default();
-            list.load_from_paths(&mime_apps::list_paths());
-
-            let mut local_list = mime_apps::List::default();
-
-            if let Some(path) = mime_apps::local_list_path()
-                && let Ok(buffer) = std::fs::read_to_string(&path)
-            {
-                local_list.load_from(&buffer);
+            // Wait for previous copy operation to complete.
+            if let Some(handle) = config_update_handle {
+                _ = handle.await;
             }
 
-            let assocs = mime_apps::associations::by_app();
+            let local_list = mime_apps::load_user_mimeapps().await.ok();
+
+            let mut list = mime_apps::List::default();
+            list.load_from_paths(&mime_apps::list_paths());
+            let assocs = mime_apps::associations::by_app(&list);
 
             let apps = vec![
-                load_defaults(&assocs, &["x-scheme-handler/http"]).await,
-                load_defaults(&assocs, &["inode/directory"]).await,
-                load_defaults(&assocs, &["x-scheme-handler/mailto"]).await,
-                load_defaults(&assocs, &["audio/mp3", "application/ogg", "video/mp4"]).await,
-                load_defaults(&assocs, &["video/mp4"]).await,
-                load_defaults(&assocs, &["image/png"]).await,
-                load_defaults(&assocs, &["text/calendar"]).await,
+                load_defaults(&list, &assocs, &["x-scheme-handler/http"]),
+                load_defaults(&list, &assocs, &["inode/directory"]),
+                load_defaults(&list, &assocs, &["x-scheme-handler/mailto"]),
+                load_defaults(
+                    &list,
+                    &assocs,
+                    &["audio/mpeg", "application/ogg", "audio/x-flac"],
+                ),
+                load_defaults(&list, &assocs, &["video/mp4"]),
+                load_defaults(&list, &assocs, &["image/png"]),
+                load_defaults(&list, &assocs, &["text/calendar"]),
                 load_terminal_apps(&assocs).await,
-                load_defaults(&assocs, &["text/plain"]).await,
+                load_defaults(&list, &assocs, &["text/plain"]),
             ];
 
-            Message::Update(CachedMimeApps {
+            Message::Update(Arc::new(CachedMimeApps {
                 apps,
-                list,
                 local_list,
                 known_mimes: mime_apps::mime_info::mime_types(),
-                config_path: dirs::config_dir()
-                    .expect("config dir not found")
-                    .join("mimeapps.list")
-                    .into(),
-            })
+            }))
             .into()
         })
         .abortable();
@@ -188,6 +189,7 @@ impl Page {
                                 "application/ogg",
                                 "application/x-cue",
                                 "application/x-ogg",
+                                "audio/mpeg",
                                 "audio/mp3",
                                 "x-content/audio-cdda",
                             ])
@@ -238,7 +240,7 @@ impl Page {
 
                 let meta = &mut mime_apps.apps[category_id];
 
-                if meta.selected != Some(id) {
+                if meta.selected.is_none_or(|selected| selected != id) {
                     meta.selected = Some(id);
                     let appid = &meta.app_ids[id];
 
@@ -249,24 +251,40 @@ impl Page {
                         assign_default_terminal(config, appid);
                     }
 
-                    for mime in mime_types {
-                        if let Ok(mime) = mime.parse() {
-                            mime_apps
-                                .local_list
-                                .set_default_app(mime, [appid, ".desktop"].concat());
-                        };
+                    if let Some((local_list, local_file)) = mime_apps.local_list.as_mut() {
+                        for mime in mime_types {
+                            if let Ok(mime) = mime.parse() {
+                                tracing::info!(target: "default-apps", ?mime, appid, "setting default for mime");
+                                local_list.set_default_app(mime, [appid, ".desktop"].concat());
+                            };
+                        }
+
+                        if let Some(config_update_handle) = self.update_config.take() {
+                            config_update_handle.abort();
+                        }
+
+                        let mut buffer = local_list.to_string();
+                        buffer.push('\n');
+
+                        if let Ok(mut local_file) =
+                            futures::executor::block_on(local_file.try_clone())
+                        {
+                            self.update_config = Some(tokio::spawn(async move {
+                                tracing::debug!(target: "default-apps", buffer, "writing to mimeapps config");
+                                _ = local_file.seek(SeekFrom::Start(0)).await;
+                                _ = local_file.set_len(buffer.len() as u64).await;
+                                _ = local_file.write_all(buffer.as_bytes()).await;
+                                _ = local_file.flush().await;
+                                _ = local_file.seek(SeekFrom::Start(0)).await;
+                                _ = tokio::process::Command::new("update-desktop-database")
+                                    .status()
+                                    .await;
+                            }));
+                        }
                     }
-
-                    let mut buffer = mime_apps.local_list.to_string();
-                    buffer.push('\n');
-
-                    _ = std::fs::write(&mime_apps.config_path, buffer);
-                    _ = std::process::Command::new("update-desktop-database").status();
                 }
             }
-            Message::Update(mime_apps) => {
-                self.mime_apps = Some(mime_apps);
-            }
+            Message::Update(mime_apps) => self.mime_apps = Arc::into_inner(mime_apps),
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
             }
@@ -286,7 +304,7 @@ fn app_item(meta: &AppMeta, label: String, category: Category) -> widget::FlexRo
         } else {
             dropdown::popup_dropdown(
                 &meta.apps,
-                meta.selected,
+                Some(meta.selected.unwrap_or(0)),
                 move |id| Message::SetDefault(category, id),
                 cosmic::iced::window::Id::RESERVED,
                 Message::Surface,
@@ -393,12 +411,16 @@ fn assign_default_terminal(config: &cosmic_config::Config, appid: &str) {
     }
 }
 
-async fn load_defaults(assocs: &BTreeMap<Arc<str>, Arc<App>>, for_mimes: &[&str]) -> AppMeta {
+fn load_defaults(
+    list: &mime_apps::List,
+    assocs: &BTreeMap<Arc<str>, Arc<App>>,
+    for_mimes: &[&str],
+) -> AppMeta {
     let mut unsorted = Vec::new();
     let mut current_app = None;
 
     for for_mime in for_mimes {
-        let Ok(mime) = for_mime.parse() else {
+        let Ok(mime) = Mime::from_str(for_mime) else {
             return AppMeta {
                 selected: None,
                 app_ids: Vec::new(),
@@ -407,7 +429,12 @@ async fn load_defaults(assocs: &BTreeMap<Arc<str>, Arc<App>>, for_mimes: &[&str]
             };
         };
 
-        let current_app_entry = xdg_mime_query_default(for_mime).await;
+        let current_app_entry = dbg!(
+            list.default_app_for(&mime)
+                .and_then(|entries| entries.first())
+        );
+
+        tracing::info!(target: "default-apps", ?mime, ?current_app_entry, "entry for mime");
         let current_appid = current_app_entry
             .as_ref()
             .and_then(|entry| entry.strip_suffix(".desktop"));
