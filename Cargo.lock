@@ -1470,12 +1470,14 @@ dependencies = [
 
 [[package]]
 name = "cosmic-mime-apps"
-version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-mime-apps#673f3758920a7b20d307d356d586deef714df6b0"
+version = "0.2.0"
+source = "git+https://github.com/pop-os/cosmic-mime-apps#a95c8043a7b41ca3c143a1fad5b3b8a5a3411008"
 dependencies = [
  "freedesktop-desktop-entry",
+ "futures-util",
  "mime 0.3.17",
  "quick-xml 0.38.4",
+ "tokio",
  "xdg",
 ]
 
