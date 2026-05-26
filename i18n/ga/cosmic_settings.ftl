@@ -911,3 +911,5 @@ xdg-entry-x11-applications = Comhoiriúnacht Feidhmchláir X11
 xdg-entry-window-management-comment = Gníomh na sár-eochrach, roghanna rialaithe fuinneoige, agus roghanna breise tíleála fuinneoige
 xdg-entry-wired-comment = Naisc sreangaithe agus próifílí nasc
 no-search-results = Níl aon líonra ag teacht leis an gcuardach seo.
+workspaces-navigation = Nascleanúint
+    .wraparound = Bog idir an chéad spás oibre agus an spás oibre deireanach ag baint úsáide as aicearraí méarchláir agus gothaí
