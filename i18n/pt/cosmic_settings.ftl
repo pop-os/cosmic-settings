@@ -164,7 +164,6 @@ notifications = Notificações
 ## Desktop: Panel
 
 panel = Painel
-    .desc = Barra do sistema principal para menus e miniaplicativos.
 add = Adicionar
 add-applet = Adicionar miniaplicativo
 all = Todos
@@ -207,7 +206,6 @@ panel-missing = A configuração do painel está em falta
 ## Desktop: Dock
 
 dock = Doca
-    .desc = Uma barra opcional para aplicações e miniaplicativos.
 
 ## Desktop: Window management
 
