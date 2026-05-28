@@ -155,6 +155,13 @@ pub struct Page {
     /// Cache for storing the image used by the display preview.
     cached_display_handle: Option<ImageHandle>,
 
+    /// The DefaultKey and fit mode of the last successfully rendered display image.
+    /// Used to skip redundant ImageHandle::from_rgba calls: each call produces a unique
+    /// ID via AtomicU64::fetch_add (pop-os/iced core/src/image.rs:216), so calling it
+    /// when the source is unchanged leaks entries into the wgpu raster cache indefinitely.
+    cached_display_key: Option<DefaultKey>,
+    cached_display_fit: Option<usize>,
+
     /// Model for the category dropdown, which has categories and recent folders.
     categories: dropdown::multi::Model<String, Category>,
 
@@ -227,6 +234,8 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
         // Reclaim memory
         self.cached_display_handle = None;
+        self.cached_display_key = None;
+        self.cached_display_fit = None;
         self.selection = Context::default();
         self.outputs = SingleSelectModel::default();
 
@@ -287,6 +296,8 @@ impl Default for Page {
             show_tab_bar: false,
             active_output: None,
             cached_display_handle: None,
+            cached_display_key: None,
+            cached_display_fit: None,
             categories: {
                 let mut categories = dropdown::multi::model();
 
@@ -388,22 +399,44 @@ impl Page {
     }
 
     fn cache_display_image(&mut self) {
-        self.cached_display_handle = None;
-
-        let choice = match self.selection.active {
-            Choice::Wallpaper(id) => self.selection.display_images.get(id),
+        // Resolve which wallpaper DefaultKey we would render.
+        // Computed before the early-return check so the Slideshow lookup isn't duplicated.
+        let resolved_key: Option<DefaultKey> = match self.selection.active {
+            Choice::Wallpaper(id) => Some(id),
 
             Choice::Slideshow => self
                 .config_output()
                 .and_then(|output| match self.config.current_image(output)? {
-                    Source::Path(path) => {
-                        let id = self.wallpaper_id_from_path(&path)?;
-                        Some(&self.selection.display_images[id])
-                    }
-
-                    Source::Color(_color) => None,
+                    Source::Path(path) => self.wallpaper_id_from_path(&path),
+                    Source::Color(_) => None,
                 })
-                .or(self.selection.display_images.values().next()),
+                .or_else(|| self.selection.display_images.keys().next()),
+
+            Choice::Color(_) => None,
+        };
+
+        // Short-circuit: reuse the existing handle when neither the source image nor the
+        // fit mode has changed.  Without this guard, ImageHandle::from_rgba is called on
+        // every UpdateState event (each wallpaper rotation); because from_rgba always calls
+        // Id::unique() (AtomicU64::fetch_add, pop-os/iced core/src/image.rs:216), every
+        // call inserts an un-evictable entry into the wgpu raster cache
+        // (wgpu/src/image/raster.rs), causing unbounded RSS growth (~9 GB/hour).
+        if self.cached_display_handle.is_some()
+            && resolved_key == self.cached_display_key
+            && Some(self.selected_fit) == self.cached_display_fit
+        {
+            return;
+        }
+
+        self.cached_display_handle = None;
+        self.cached_display_key = None;
+        self.cached_display_fit = None;
+
+        let choice = match self.selection.active {
+            Choice::Wallpaper(id) => self.selection.display_images.get(id),
+
+            Choice::Slideshow => resolved_key
+                .and_then(|id| self.selection.display_images.get(id)),
 
             Choice::Color(_) => None,
         };
@@ -450,6 +483,8 @@ impl Page {
             image.height(),
             image.to_vec(),
         ));
+        self.cached_display_key = resolved_key;
+        self.cached_display_fit = Some(self.selected_fit);
     }
 
     fn config_output(&self) -> Option<&str> {
@@ -720,6 +755,8 @@ impl Page {
                             }
 
                             self.cached_display_handle = None;
+                            self.cached_display_key = None;
+                            self.cached_display_fit = None;
                             self.selection.replace_active_custom(color.clone());
                             self.config_apply();
 
@@ -812,6 +849,8 @@ impl Page {
             Message::ColorSelect(color) => {
                 self.selection.active = Choice::Color(color);
                 self.cached_display_handle = None;
+                self.cached_display_key = None;
+                self.cached_display_fit = None;
             }
 
             Message::Fit(selection) => {
