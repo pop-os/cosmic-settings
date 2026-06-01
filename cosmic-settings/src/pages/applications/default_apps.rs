@@ -29,6 +29,7 @@ const DROPDOWN_PHOTO: usize = 5;
 const DROPDOWN_CALENDAR: usize = 6;
 const DROPDOWN_TERMINAL: usize = 7;
 const DROPDOWN_TEXT_EDITOR: usize = 8;
+const DROPDOWN_ARCHIVES: usize = 9;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, PartialOrd, Ord)]
 pub enum Category {
@@ -42,6 +43,7 @@ pub enum Category {
     Video,
     WebBrowser,
     TextEditor,
+    Archives,
 }
 
 #[derive(Clone, Debug)]
@@ -136,6 +138,18 @@ impl page::Page<crate::pages::Message> for Page {
                 load_defaults(&assocs, &["text/calendar"]).await,
                 load_terminal_apps(&assocs).await,
                 load_defaults(&assocs, &["text/plain"]).await,
+                load_defaults(&assocs, &[
+                    "application/gzip",
+                    "application/x-compressed-tar",
+                    "application/x-tar",
+                    "application/zip",
+                    "application/x-bzip",
+                    "application/x-bzip-compressed-tar",
+                    "application/x-bzip2",
+                    "application/x-bzip2-compressed-tar",
+                    "application/x-xz",
+                    "application/x-xz-compressed-tar",
+                ]).await,
             ];
 
             Message::Update(CachedMimeApps {
@@ -233,6 +247,18 @@ impl Page {
                         ],
                     ),
                     Category::TextEditor => (DROPDOWN_TEXT_EDITOR, &["text/plain"]),
+                    Category::Archives => (DROPDOWN_ARCHIVES, &[
+                        "application/gzip",
+                        "application/x-compressed-tar",
+                        "application/x-tar",
+                        "application/zip",
+                        "application/x-bzip",
+                        "application/x-bzip-compressed-tar",
+                        "application/x-bzip2",
+                        "application/x-bzip2-compressed-tar",
+                        "application/x-xz",
+                        "application/x-xz-compressed-tar",
+                    ]),
                     Category::Mime(_mime_type) => return Task::none(),
                 };
 
@@ -352,6 +378,11 @@ fn apps() -> Section<crate::pages::Message> {
                 &mime_apps.apps[DROPDOWN_TEXT_EDITOR],
                 fl!("default-apps", "text-editor"),
                 Category::TextEditor,
+            ))
+            .add(app_item(
+                &mime_apps.apps[DROPDOWN_ARCHIVES],
+                fl!("default-apps", "archives"),
+                Category::Archives,
             ))
             .apply(Element::from)
             .map(crate::pages::Message::DefaultApps)
