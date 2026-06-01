@@ -9,14 +9,11 @@ use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::shortcuts::SystemActions;
 use cosmic_settings_config::shortcuts::action::System;
 use cosmic_settings_page::{self as page, Section, section};
-use freedesktop_desktop_entry::{
-    DesktopEntry, Iter as DesktopEntryIter, default_paths, get_languages_from_env,
-};
+use freedesktop_desktop_entry::{DesktopEntry, default_paths, get_languages_from_env};
 use mime::Mime;
-use mime_apps::App;
 use slotmap::SlotMap;
 use std::borrow::Cow;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::io::SeekFrom;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -76,7 +73,7 @@ pub struct CachedMimeApps {
 #[derive(Clone, Debug)]
 pub struct AppMeta {
     selected: Option<usize>,
-    app_ids: Vec<String>,
+    app_ids: Vec<Box<str>>,
     apps: Vec<String>,
     icons: Vec<icon::Handle>,
 }
@@ -126,7 +123,7 @@ impl page::Page<crate::pages::Message> for Page {
 
             let mut list = mime_apps::List::default();
             list.load_from_paths(&mime_apps::list_paths());
-            let assocs = mime_apps::associations::by_app(&list);
+            let assocs = mime_apps::associations::load_from_disk(&list);
 
             let apps = vec![
                 load_defaults(&list, &assocs, &["x-scheme-handler/http"]),
@@ -135,12 +132,12 @@ impl page::Page<crate::pages::Message> for Page {
                 load_defaults(
                     &list,
                     &assocs,
-                    &["audio/mpeg", "application/ogg", "audio/x-flac"],
+                    &["audio/mpeg", "application/ogg", "audio/x-flac", "video/mp4"],
                 ),
                 load_defaults(&list, &assocs, &["video/mp4"]),
                 load_defaults(&list, &assocs, &["image/png"]),
                 load_defaults(&list, &assocs, &["text/calendar"]),
-                load_terminal_apps(&assocs).await,
+                load_terminal_apps(&list, &assocs).await,
                 load_defaults(&list, &assocs, &["text/plain"]),
             ];
 
@@ -413,64 +410,69 @@ fn assign_default_terminal(config: &cosmic_config::Config, appid: &str) {
 
 fn load_defaults(
     list: &mime_apps::List,
-    assocs: &BTreeMap<Arc<str>, Arc<App>>,
+    assocs: &mime_apps::Associations,
     for_mimes: &[&str],
 ) -> AppMeta {
     let mut unsorted = Vec::new();
-    let mut current_app = None;
+    let mut default_app = None;
 
     for for_mime in for_mimes {
         let Ok(mime) = Mime::from_str(for_mime) else {
-            return AppMeta {
-                selected: None,
-                app_ids: Vec::new(),
-                apps: Vec::new(),
-                icons: Vec::new(),
-            };
+            continue;
         };
 
-        let current_app_entry = dbg!(
-            list.default_app_for(&mime)
-                .and_then(|entries| entries.first())
-        );
+        for default in list.default_app_for(&mime).into_iter().flatten() {
+            let appid = default.strip_suffix(".desktop").unwrap_or(default.as_ref());
 
-        tracing::info!(target: "default-apps", ?mime, ?current_app_entry, "entry for mime");
-        let current_appid = current_app_entry
-            .as_ref()
-            .and_then(|entry| entry.strip_suffix(".desktop"));
-
-        if unsorted.is_empty() {
-            current_app = current_appid.and_then(|appid| assocs.get(appid));
+            tracing::info!(target: "default-apps", ?mime, appid, "entry for mime");
+            if default_app.is_none() {
+                default_app = assocs.by_app_id.get(appid);
+                if default_app.is_some() {
+                    break;
+                }
+            }
         }
 
-        unsorted.extend(
-            mime_apps::apps_for_mime(&mime, assocs)
-                .map(|(app_id, app)| (app_id.clone(), app.clone())),
-        );
+        for (appid, app) in mime_apps::apps_for_mime(&mime, assocs) {
+            if app.icon.is_none() {
+                continue;
+            }
+
+            if unsorted.iter().any(|(id, _)| id == appid) {
+                continue;
+            }
+
+            unsorted.push((appid.clone(), app.clone()));
+        }
     }
 
     unsorted.sort_unstable_by_key(|(_, app)| app.name.clone());
-    unsorted.dedup_by_key(|(app_id, _)| app_id.clone());
 
     let mut selected = None;
     let mut app_ids = Vec::new();
     let mut apps = Vec::new();
     let mut icons = Vec::new();
 
-    for (id, (appid, app)) in unsorted.iter().enumerate() {
-        if let Some(current_app) = current_app
-            && app.name.as_ref() == current_app.name.as_ref()
+    let mut id = 0;
+    for (appid, app) in unsorted.iter() {
+        let Some(icon) = app.icon.as_deref() else {
+            continue;
+        };
+        if let Some(default_app) = default_app
+            && app.name.as_ref() == default_app.name.as_ref()
         {
             selected = Some(id);
         }
 
         app_ids.push(appid.as_ref().into());
         apps.push(app.name.as_ref().into());
-        icons.push(if app.icon.starts_with('/') {
-            icon::from_path(PathBuf::from(app.icon.as_ref()))
+        icons.push(if icon.starts_with('/') {
+            icon::from_path(PathBuf::from(icon))
         } else {
-            icon::from_name(app.icon.as_ref()).size(20).handle()
+            icon::from_name(icon).size(20).handle()
         });
+
+        id += 1;
     }
 
     AppMeta {
@@ -481,86 +483,55 @@ fn load_defaults(
     }
 }
 
-async fn xdg_mime_query_default(mime_type: &str) -> Option<String> {
-    let output = tokio::process::Command::new("xdg-mime")
-        .args(["query", "default", mime_type])
-        .output()
-        .await
-        .ok()?;
-
-    if !output.status.success() {
-        return None;
-    }
-
-    String::from_utf8(output.stdout)
-        .ok()
-        .map(|string| string.trim().to_owned())
-}
-
-async fn load_terminal_apps(assocs: &BTreeMap<Arc<str>, Arc<App>>) -> AppMeta {
-    let mut terminals = Vec::new();
-    let mut current_app = None;
-
-    // Get the current default terminal if set
-    let current_entry = xdg_mime_query_default("x-scheme-handler/terminal").await;
-    let current_appid = current_entry
-        .as_ref()
-        .and_then(|entry| entry.strip_suffix(".desktop"));
-
-    // Also check x-terminal-emulator
-    if current_app.is_none() {
-        let current_entry = xdg_mime_query_default("application/x-terminal-emulator").await;
-        let current_appid = current_entry
-            .as_ref()
-            .and_then(|entry| entry.strip_suffix(".desktop"));
-        if let Some(appid) = current_appid {
-            current_app = assocs.get(appid).cloned();
-        }
-    }
-
-    // Scan desktop entries for terminal applications
-    for path in DesktopEntryIter::new(default_paths()) {
-        if let Ok(bytes) = std::fs::read_to_string(&path)
-            && let Ok(entry) = DesktopEntry::from_str(&path, &bytes, None::<&[&str]>)
-        {
-            // Check if it's a terminal application
-            if entry
-                .categories()
-                .map(|cats| cats.contains(&"TerminalEmulator"))
-                .unwrap_or(false)
-            {
-                let id = entry.id();
-                if let Some(app) = assocs.get(id) {
-                    if current_appid.as_ref().map(|c| *c == id).unwrap_or(false) {
-                        current_app = Some(app.clone());
-                    }
-                    terminals.push((Arc::from(id), app.clone()));
-                }
-            }
-        }
-    }
-
-    terminals.sort_unstable_by_key(|(_, app): &(Arc<str>, Arc<App>)| app.name.clone());
-    terminals.dedup_by(|a, b| a.0 == b.0);
-
+async fn load_terminal_apps(list: &mime_apps::List, assocs: &mime_apps::Associations) -> AppMeta {
     let mut selected = None;
     let mut app_ids = Vec::new();
     let mut apps = Vec::new();
     let mut icons = Vec::new();
 
-    for (id, (appid, app)) in terminals.iter().enumerate() {
-        if let Some(ref current_app) = current_app
-            && app.name.as_ref() == current_app.name.as_ref()
-        {
+    let mut terminals: Vec<_> = assocs
+        .apps
+        .iter()
+        .filter(|app| app.is_terminal && app.icon.is_some())
+        .collect();
+
+    terminals.sort_unstable_by_key(|app| app.name.clone());
+
+    'outer: for for_mime in [
+        "x-scheme-handler/terminal",
+        "application/x-terminal-emulator",
+    ] {
+        let Ok(mime) = Mime::from_str(for_mime) else {
+            continue;
+        };
+
+        for default in list.default_app_for(&mime).into_iter().flatten() {
+            let appid = default.strip_suffix(".desktop").unwrap_or(default.as_ref());
+
+            for (id, app) in terminals.iter().enumerate() {
+                if app.appid.as_ref() == appid {
+                    selected = Some(id);
+                    break 'outer;
+                }
+            }
+        }
+    }
+
+    for (id, app) in terminals.into_iter().enumerate() {
+        let Some(icon) = app.icon.as_deref() else {
+            continue;
+        };
+
+        if selected.is_none() && app.appid.as_ref() == "com.system76.CosmicTerm" {
             selected = Some(id);
         }
 
-        app_ids.push(appid.to_string());
+        app_ids.push(app.appid.clone());
         apps.push(app.name.as_ref().into());
-        icons.push(if app.icon.starts_with('/') {
-            icon::from_path(PathBuf::from(app.icon.as_ref()))
+        icons.push(if icon.starts_with('/') {
+            icon::from_path(PathBuf::from(icon))
         } else {
-            icon::from_name(app.icon.as_ref()).size(20).handle()
+            icon::from_name(icon).size(20).handle()
         });
     }
 

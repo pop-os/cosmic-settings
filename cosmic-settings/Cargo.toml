@@ -64,7 +64,6 @@ iced_winit.workspace = true
 locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 sysinfo = { version = "=0.38.0", optional = true }
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = ["tokio"], optional = true }
-# mime-apps = { package = "cosmic-mime-apps", path = "../../../cosmic-mime-apps", features = ["tokio"], optional = true }
 notify = "8.2.0"
 regex = "1.12.3"
 ron = "0.12"
