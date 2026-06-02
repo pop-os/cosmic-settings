@@ -476,7 +476,10 @@ impl Page {
                 Event::UpdatedDevice(path, update) => {
                     // Dismiss passkey/pin display dialogs when pairing completes,
                     // since BlueZ may not always send Cancel after a successful pair.
-                    if update.iter().any(|u| matches!(u, DeviceUpdate::Paired(true))) {
+                    if update
+                        .iter()
+                        .any(|u| matches!(u, DeviceUpdate::Paired(true)))
+                    {
                         if matches!(
                             self.dialog,
                             Some(Dialog::DisplayPasskey { .. } | Dialog::DisplayPinCode { .. })
@@ -565,19 +568,13 @@ impl Page {
                             });
                         }
 
-                        bluez_zbus::agent1::Message::DisplayPinCode {
-                            device,
-                            pincode,
-                        } => {
+                        bluez_zbus::agent1::Message::DisplayPinCode { device, pincode } => {
                             let device = self.model.devices.get(&device).map_or_else(
                                 || device.to_string(),
                                 |device| device.alias_or_addr().to_owned(),
                             );
 
-                            self.dialog = Some(Dialog::DisplayPinCode {
-                                device,
-                                pincode,
-                            });
+                            self.dialog = Some(Dialog::DisplayPinCode { device, pincode });
                         }
 
                         bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
