@@ -453,7 +453,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     /// Opens a dialog to confirm the display settings.
     ///
-    /// This dialog has a 10 (arbitrary) second counter which will
+    /// This dialog has a timed countdown which will
     /// automatically revert to the original display settings when depleted.
     ///
     /// To make a setting activate this dialog. Call the `set_dialog` method with
@@ -732,7 +732,7 @@ impl Page {
             return Task::none();
         }
         self.dialog = Some(revert_request);
-        self.dialog_countdown = 10;
+        self.dialog_countdown = 20;
         cosmic::task::future(async {
             tokio::time::sleep(time::Duration::from_secs(1)).await;
             app::Message::from(Message::DialogCountdown)
