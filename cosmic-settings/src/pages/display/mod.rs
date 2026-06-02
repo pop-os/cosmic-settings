@@ -457,7 +457,7 @@ impl page::Page<crate::pages::Message> for Page {
     /// automatically revert to the original display settings when depleted.
     ///
     /// To make a setting activate this dialog. Call the `set_dialog` method with
-    /// the Randr enum value which undos the current change. Makde sure the
+    /// the Randr enum value which undoes the current change. Makde sure the
     /// return value is returned with the `exec_value` return value within a batch
     /// Task.
     fn dialog(&self) -> Option<Element<'_, pages::Message>> {
