@@ -17,23 +17,20 @@ use std::time::Duration;
 use zbus::zvariant::OwnedObjectPath;
 
 enum Dialog {
-    // RequestAuthorization {
-    //     device: OwnedObjectPath,
-    //     response: oneshot::Sender<bool>,
-    // },
     RequestConfirmation {
         device: String,
         passkey: u32,
         response: oneshot::Sender<bool>,
     },
-    // RequestPasskey {
-    //     device: OwnedObjectPath,
-    //     response: oneshot::Sender<Option<u32>>,
-    // },
-    // RequestPinCode {
-    //     device: OwnedObjectPath,
-    //     response: oneshot::Sender<Option<String>>,
-    // },
+    DisplayPasskey {
+        device: String,
+        passkey: u32,
+        entered: u16,
+    },
+    DisplayPinCode {
+        device: String,
+        pincode: String,
+    },
 }
 
 #[derive(Default)]
@@ -256,6 +253,81 @@ impl page::Page<crate::pages::Message> for Page {
 
                 Some(dialog)
             }
+
+            Dialog::DisplayPasskey {
+                device,
+                passkey,
+                entered,
+            } => {
+                let description = widget::text::body(fl!(
+                    "bluetooth-display-passkey",
+                    "description",
+                    device = device
+                ))
+                .wrapping(Wrapping::Word);
+
+                let passkey_str = format!("{passkey:06}");
+                let entered = *entered as usize;
+
+                let pin = widget::text::title1(passkey_str)
+                    .width(Length::Fill)
+                    .align_x(Alignment::Center)
+                    .wrapping(Wrapping::None);
+
+                let progress = widget::text::body(format!("{entered} / 6 keys entered"))
+                    .width(Length::Fill)
+                    .align_x(Alignment::Center)
+                    .wrapping(Wrapping::None);
+
+                let control = widget::column::with_capacity(3)
+                    .push(description)
+                    .push(pin)
+                    .push(progress)
+                    .spacing(theme::spacing().space_xxs);
+
+                let cancel_button =
+                    widget::button::standard(fl!("cancel")).on_press(Message::PinCancel);
+
+                let dialog = widget::dialog()
+                    .title(fl!("bluetooth-display-passkey"))
+                    .control(control)
+                    .secondary_action(cancel_button)
+                    .apply(Element::from)
+                    .map(Into::into);
+
+                Some(dialog)
+            }
+
+            Dialog::DisplayPinCode { device, pincode } => {
+                let description = widget::text::body(fl!(
+                    "bluetooth-display-pin",
+                    "description",
+                    device = device
+                ))
+                .wrapping(Wrapping::Word);
+
+                let pin = widget::text::title1(pincode.clone())
+                    .width(Length::Fill)
+                    .align_x(Alignment::Center)
+                    .wrapping(Wrapping::None);
+
+                let control = widget::column::with_capacity(2)
+                    .push(description)
+                    .push(pin)
+                    .spacing(theme::spacing().space_xxs);
+
+                let cancel_button =
+                    widget::button::standard(fl!("cancel")).on_press(Message::PinCancel);
+
+                let dialog = widget::dialog()
+                    .title(fl!("bluetooth-display-pin"))
+                    .control(control)
+                    .secondary_action(cancel_button)
+                    .apply(Element::from)
+                    .map(Into::into);
+
+                Some(dialog)
+            }
         }
     }
 }
@@ -402,6 +474,17 @@ impl Page {
                 }
 
                 Event::UpdatedDevice(path, update) => {
+                    // Dismiss passkey/pin display dialogs when pairing completes,
+                    // since BlueZ may not always send Cancel after a successful pair.
+                    if update.iter().any(|u| matches!(u, DeviceUpdate::Paired(true))) {
+                        if matches!(
+                            self.dialog,
+                            Some(Dialog::DisplayPasskey { .. } | Dialog::DisplayPinCode { .. })
+                        ) {
+                            self.dialog = None;
+                        }
+                    }
+
                     if let Some(existing) = self.model.devices.get_mut(&path) {
                         tracing::debug!("Device {} updated", existing.address);
                         existing.update(update);
@@ -462,6 +545,38 @@ impl Page {
                                 device,
                                 passkey,
                                 response,
+                            });
+                        }
+
+                        bluez_zbus::agent1::Message::DisplayPasskey {
+                            device,
+                            passkey,
+                            entered,
+                        } => {
+                            let device = self.model.devices.get(&device).map_or_else(
+                                || device.to_string(),
+                                |device| device.alias_or_addr().to_owned(),
+                            );
+
+                            self.dialog = Some(Dialog::DisplayPasskey {
+                                device,
+                                passkey,
+                                entered,
+                            });
+                        }
+
+                        bluez_zbus::agent1::Message::DisplayPinCode {
+                            device,
+                            pincode,
+                        } => {
+                            let device = self.model.devices.get(&device).map_or_else(
+                                || device.to_string(),
+                                |device| device.alias_or_addr().to_owned(),
+                            );
+
+                            self.dialog = Some(Dialog::DisplayPinCode {
+                                device,
+                                pincode,
                             });
                         }
 

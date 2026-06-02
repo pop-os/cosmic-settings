@@ -252,6 +252,12 @@ bluetooth-paired = Previously connected devices
 bluetooth-confirm-pin = Confirm Bluetooth PIN
     .description = Please confirm that the following PIN matches the one displayed on { $device }
 
+bluetooth-display-passkey = Bluetooth Pairing
+    .description = Please type the following passkey on { $device }, then press Enter
+
+bluetooth-display-pin = Bluetooth Pairing
+    .description = Please type the following PIN on { $device }, then press Enter
+
 bluetooth-available = Nearby devices
 
 bluetooth-adapters = Bluetooth adapters

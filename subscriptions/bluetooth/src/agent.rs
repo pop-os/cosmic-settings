@@ -40,7 +40,7 @@ pub async fn watch(
     bluez
         .register_agent(
             &agent_path,
-            <&'static str>::from(bluez_zbus::agent1::Capability::DisplayYesNo),
+            <&'static str>::from(bluez_zbus::agent1::Capability::KeyboardDisplay),
         )
         .await?;
 
