@@ -550,7 +550,7 @@ impl Page {
             }
             Message::Glass(glass) => {
                 let mut alpha_map = cosmic::cosmic_theme::AlphaMap::default();
-                let glass_offset_min = alpha_map.extremely_high;
+                let glass_offset_min = alpha_map.extremely_high_2;
                 let glass_offset_max = 1.0 - alpha_map.extremely_low;
                 let offset = (glass - 0.5) / 0.5
                     * if glass < 0.5 {
