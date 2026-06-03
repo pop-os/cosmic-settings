@@ -93,6 +93,7 @@ impl Model {
             }
 
             audio_client::Event::NodeVolume(node_id, volume, balance) => {
+                eprintln!("node volume {node_id} {volume} {balance:?}");
                 if let Some(pos) = self.sinks.id.iter().position(|id| node_id == *id) {
                     self.sinks.volume[pos] = volume;
                     self.sinks.balance[pos] = balance;
@@ -146,6 +147,7 @@ impl Model {
             }
 
             audio_client::Event::Node(node_id, node) => {
+                eprintln!("insert node {node_id}");
                 self.node_devices.insert(node_id, node.device_id);
                 if node.is_sink {
                     let pos = if let Some(pos) = self.sinks.id.iter().position(|&id| id == node_id)

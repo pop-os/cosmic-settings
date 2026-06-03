@@ -242,11 +242,13 @@ impl Page {
 
             Message::SetSinkBalance(balance) => {
                 if let Some((client, sink_id)) = self.client.as_ref().zip(self.model.default_sink) {
+                    // self.model.active_sink.balance = Some(balance);
                     block_on(async {
                         _ = client
                             .borrow_mut()
                             .conn
-                            .set_node_volume_balance(sink_id, Some(balance));
+                            .set_node_volume_balance(sink_id, Some(balance))
+                            .await;
                     });
                 }
             }
@@ -442,9 +444,10 @@ fn output() -> Section<crate::pages::Message> {
                         .push(
                             widget::slider(
                                 0.0..=1.0,
-                                page.model.active_sink.balance.unwrap_or(0.5).min(1.),
+                                page.model.active_sink.balance.unwrap_or(0.5),
                                 |change| Message::SetSinkBalance(change).into(),
                             )
+                            .step(0.01)
                             .breakpoints(&[0.5]),
                         )
                         .push(horizontal_space().width(8.))
