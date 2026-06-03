@@ -274,16 +274,20 @@ impl page::Page<crate::pages::Message> for Page {
                     .align_x(Alignment::Center)
                     .wrapping(Wrapping::None);
 
-                let progress = widget::text::body(format!("{entered} / 6 keys entered"))
-                    .width(Length::Fill)
-                    .align_x(Alignment::Center)
-                    .wrapping(Wrapping::None);
+                let mut control = widget::column::with_capacity(3).push(description).push(pin);
 
-                let control = widget::column::with_capacity(3)
-                    .push(description)
-                    .push(pin)
-                    .push(progress)
-                    .spacing(theme::spacing().space_xxs);
+                // Only show the key progress counter when the device actually
+                // reports keypress notifications. Most keyboards don't support
+                // this, so entered stays at 0 for the entire pairing process.
+                if entered > 0 {
+                    let progress = widget::text::body(format!("{entered} / 6 keys entered"))
+                        .width(Length::Fill)
+                        .align_x(Alignment::Center)
+                        .wrapping(Wrapping::None);
+                    control = control.push(progress);
+                }
+
+                let control = control.spacing(theme::spacing().space_xxs);
 
                 let cancel_button =
                     widget::button::standard(fl!("cancel")).on_press(Message::PinCancel);
@@ -479,13 +483,12 @@ impl Page {
                     if update
                         .iter()
                         .any(|u| matches!(u, DeviceUpdate::Paired(true)))
-                    {
-                        if matches!(
+                        && matches!(
                             self.dialog,
                             Some(Dialog::DisplayPasskey { .. } | Dialog::DisplayPinCode { .. })
-                        ) {
-                            self.dialog = None;
-                        }
+                        )
+                    {
+                        self.dialog = None;
                     }
 
                     if let Some(existing) = self.model.devices.get_mut(&path) {
