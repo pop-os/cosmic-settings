@@ -7,6 +7,12 @@
 #![allow(clippy::cast_lossless)]
 #![allow(clippy::too_many_lines)]
 
+#[cfg(not(any(feature = "systemd", feature = "openrc")))]
+compile_error!(
+    "At least one service manager feature must be enabled. \
+     Enable 'systemd' or 'openrc' for bluetooth service management."
+);
+
 pub mod app;
 use std::str::FromStr;
 
@@ -16,6 +22,7 @@ pub mod config;
 #[macro_use]
 pub mod localize;
 pub mod pages;
+pub mod service_manager;
 pub mod subscription;
 pub mod theme;
 pub mod utils;

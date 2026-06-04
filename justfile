@@ -53,26 +53,31 @@ heaptrack *args:
 check-features:
     #!/usr/bin/env bash
     set -ex
-    cargo check --no-default-features
     cargo check
-    for feature in \
-        "page-accessibility" \
-        "page-about" \
-        "page-bluetooth" \
-        "page-date" \
-        "page-default-apps" \
-        "page-display" \
-        "page-input" \
-        "page-legacy-applications" \
-        "page-networking" \
-        "page-power" \
-        "page-region" \
-        "page-sound" \
-        "page-users" \
-        "page-window-management" \
-        "page-workspaces"
+    for service_manager in \
+        "systemd" \
+        "openrc"
     do
-        cargo check --no-default-features --features "${feature}"
+        cargo check --no-default-features --features "${service_manager}"
+        for feature in \
+            "page-accessibility" \
+            "page-about" \
+            "page-bluetooth" \
+            "page-date" \
+            "page-default-apps" \
+            "page-display" \
+            "page-input" \
+            "page-legacy-applications" \
+            "page-networking" \
+            "page-power" \
+            "page-region" \
+            "page-sound" \
+            "page-users" \
+            "page-window-management" \
+            "page-workspaces"
+        do
+            cargo check --no-default-features --features "${feature},${service_manager}"
+        done
     done
 
 # Bump cargo version, create git commit, and create tag

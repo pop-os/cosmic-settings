@@ -16,6 +16,10 @@ use std::sync::Arc;
 use std::time::Duration;
 use zbus::zvariant::OwnedObjectPath;
 
+#[cfg(test)]
+use crate::service_manager::MockServiceManager;
+use crate::service_manager::ServiceManagerHandle;
+
 enum Dialog {
     RequestConfirmation {
         device: String,
@@ -158,6 +162,8 @@ pub struct Page {
     service_is_active: bool,
 
     subscription: Option<tokio::sync::oneshot::Sender<()>>,
+
+    service_manager: ServiceManagerHandle,
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -524,7 +530,18 @@ impl Page {
                 }
 
                 Event::DBusServiceUnknown => {
-                    self.bluez_service_unknown = true;
+                    // D-Bus activation for org.bluez is absent.  On systemd this usually
+                    // means bluez isn't installed; on OpenRC it may be installed but lack
+                    // the D-Bus service file.  Check the service manager to disambiguate.
+                    if self.service_manager.is_installed() {
+                        // Service manager confirms the service exists — query its real state.
+                        self.bluez_service_unknown = false;
+                        self.service_is_active = self.service_manager.is_active();
+                        self.service_is_enabled = self.service_manager.is_enabled();
+                    } else {
+                        // Genuinely not installed — let status() show the unknown message.
+                        self.bluez_service_unknown = true;
+                    }
                 }
 
                 Event::Agent(message) => {
@@ -668,8 +685,8 @@ impl Page {
             }
 
             Message::DBusConnect(connection) => {
-                self.service_is_active = systemd::is_bluetooth_active();
-                self.service_is_enabled = systemd::is_bluetooth_enabled();
+                self.service_is_active = self.service_manager.is_active();
+                self.service_is_enabled = self.service_manager.is_enabled();
                 self.connection = Some(connection.clone());
 
                 let get_adapters_fut = get_adapters(connection.clone());
@@ -801,8 +818,9 @@ impl Page {
             }
 
             Message::ServiceActivate => {
-                return cosmic::task::future(async {
-                    systemd::activate_bluetooth().await;
+                let activate_future = self.service_manager.activate();
+                return cosmic::task::future(async move {
+                    activate_future.await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -813,8 +831,9 @@ impl Page {
             }
 
             Message::ServiceEnable => {
-                return cosmic::task::future(async {
-                    systemd::enable_bluetooth().await;
+                let enable_future = self.service_manager.enable();
+                return cosmic::task::future(async move {
+                    enable_future.await;
                     tokio::time::sleep(Duration::from_secs(3)).await;
 
                     match zbus::Connection::system().await {
@@ -873,7 +892,7 @@ fn status() -> Section<crate::pages::Message> {
                 return bluetooth_service_issue(
                     fl!("bluetooth", "inactive"),
                     fl!("activate"),
-                    Message::ServiceEnable,
+                    Message::ServiceActivate,
                 );
             }
 
@@ -1126,36 +1145,65 @@ fn multiple_adapter() -> Section<crate::pages::Message> {
 
 impl page::AutoBind<crate::pages::Message> for Page {}
 
-mod systemd {
-    use futures::FutureExt;
+impl Page {
+    #[cfg(test)]
+    fn with_service_manager(service_manager: ServiceManagerHandle) -> Self {
+        Self {
+            service_manager,
+            ..Page::default()
+        }
+    }
+}
 
-    pub fn activate_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "start", "bluetooth"])
-            .status()
-            .map(|_| ())
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_dbus_service_unknown_with_installed_service_queries_manager() {
+        let bluetooth = MockServiceManager::new(true, false);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
+
+        assert!(page.service_is_enabled);
+        assert!(!page.service_is_active);
+        assert!(!page.bluez_service_unknown);
     }
 
-    pub fn enable_bluetooth() -> impl Future<Output = ()> + Send {
-        tokio::process::Command::new("pkexec")
-            .args(["systemctl", "enable", "--now", "bluetooth"])
-            .status()
-            .map(|_| ())
+    #[test]
+    fn test_dbus_service_unknown_with_uninstalled_service_sets_bluez_unknown() {
+        let bluetooth = MockServiceManager::new(true, true).with_installed(false);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
+
+        assert!(page.bluez_service_unknown);
+        assert!(!page.service_is_enabled);
+        assert!(!page.service_is_active);
     }
 
-    pub fn is_bluetooth_enabled() -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-enabled", "bluetooth"])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+    #[test]
+    fn test_dbus_service_unknown_clears_previously_set_bluez_service_unknown() {
+        // Simulate a stale state and verify the handler re-checks via is_installed().
+        let bluetooth = MockServiceManager::new(true, true);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        page.bluez_service_unknown = true;
+
+        let _task = page.update(Message::BluetoothEvent(Event::DBusServiceUnknown));
+
+        assert!(!page.bluez_service_unknown);
     }
 
-    pub fn is_bluetooth_active() -> bool {
-        std::process::Command::new("systemctl")
-            .args(["is-active", "bluetooth"])
-            .status()
-            .map(|status| status.success())
-            .unwrap_or(true)
+    #[tokio::test]
+    async fn test_service_activate_calls_through_to_service_manager() {
+        let bluetooth = MockServiceManager::new(false, false);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        let _task = page.update(Message::ServiceActivate);
+    }
+
+    #[tokio::test]
+    async fn test_service_enable_calls_through_to_service_manager() {
+        let bluetooth = MockServiceManager::new(false, false);
+        let mut page = Page::with_service_manager(ServiceManagerHandle::new(Box::new(bluetooth)));
+        let _task = page.update(Message::ServiceEnable);
     }
 }
