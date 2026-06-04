@@ -164,6 +164,7 @@ impl page::AutoBind<crate::pages::Message> for Page {
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
+        tracing::debug!(target: "sound", ?message, "update");
         match message {
             Message::Surface(a) => return cosmic::task::message(crate::app::Message::Surface(a)),
 
@@ -242,7 +243,7 @@ impl Page {
 
             Message::SetSinkBalance(balance) => {
                 if let Some((client, sink_id)) = self.client.as_ref().zip(self.model.default_sink) {
-                    // self.model.active_sink.balance = Some(balance);
+                    self.model.active_sink.balance = Some(balance);
                     block_on(async {
                         _ = client
                             .borrow_mut()
