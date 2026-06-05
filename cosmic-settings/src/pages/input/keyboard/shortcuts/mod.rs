@@ -410,11 +410,13 @@ impl Search {
             .fold(
                 Slab::with_capacity(self.actions.len()),
                 |mut slab, (_, action)| {
-                    slab.insert(ShortcutModel::new(
-                        &self.defaults,
-                        &self.shortcuts,
-                        action.clone(),
-                    ));
+                    if !slab.iter().any(|(_, model)| &model.action == action) {
+                        slab.insert(ShortcutModel::new(
+                            &self.defaults,
+                            &self.shortcuts,
+                            action.clone(),
+                        ));
+                    }
 
                     slab
                 },
