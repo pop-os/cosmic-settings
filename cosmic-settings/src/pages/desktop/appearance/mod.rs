@@ -23,8 +23,9 @@ use cosmic::iced::Subscription;
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::space::horizontal;
+use cosmic::widget::text_input::focus;
 use cosmic::widget::{button, container, row, settings, text};
-use cosmic::{Apply, Element, Task, widget};
+use cosmic::{Apply, Element, Task, task, widget};
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, Section, section};
@@ -32,6 +33,7 @@ use ron::ser::PrettyConfig;
 use slotmap::{Key, SlotMap};
 
 use crate::app;
+use crate::pages::desktop::appearance::font_config::FONT_SEARCH;
 
 #[derive(Clone, Copy, Debug)]
 pub enum ContextView {
@@ -138,6 +140,7 @@ pub enum Message {
     #[cfg(feature = "xdg-portal")]
     ExportSuccess,
 
+    FocusFontInput,
     GapSize(u32),
     #[cfg(feature = "xdg-portal")]
     ImportError,
@@ -503,6 +506,26 @@ impl Page {
                     || was_auto != self.theme_manager.mode().auto_switch
                 {
                     self.drawer.reset(&self.theme_manager);
+                }
+            }
+
+            Message::FocusFontInput => {
+                // retry until the widget is in the tree and focused or the dialog is removed.
+                if matches!(
+                    self.context_view,
+                    Some(ContextView::SystemFont | ContextView::MonospaceFont)
+                ) {
+                    return cosmic::iced::runtime::task::widget(
+                        cosmic::iced::core::widget::operation::focusable::find_focused(),
+                    )
+                    .collect()
+                    .then(|id| {
+                        if id.first().is_some_and(|id| *id == FONT_SEARCH.clone()) {
+                            Task::none()
+                        } else {
+                            focus(FONT_SEARCH.clone()).chain(task::message(Message::FocusFontInput))
+                        }
+                    });
                 }
             }
         }

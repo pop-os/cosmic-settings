@@ -1,16 +1,19 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use cosmic::config::{CosmicTk, FontConfig};
 use cosmic::{Apply, Element, Task, widget};
 use cosmic_config::ConfigSet;
+use mime::FONT;
 
 use crate::app;
 use crate::widget::selection_context_item;
 
 use super::{ContextView, Message, drawer};
+
+pub static FONT_SEARCH: LazyLock<widget::Id> = LazyLock::new(|| widget::Id::new("FONT_SEARCH"));
 
 const INTERFACE_FONT: &str = "interface_font";
 const MONOSPACE_FONT: &str = "monospace_font";
@@ -164,6 +167,7 @@ impl Model {
             .on_clear(Message::DrawerFont(drawer::FontMessage::Search(
                 String::new(),
             )))
+            .id(FONT_SEARCH.clone())
             .apply(Element::from)
             .map(crate::pages::Message::Appearance)
     }

@@ -5,7 +5,7 @@ use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::core::{Color, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
 use cosmic::widget::{ColorPickerModel, container, flex_row, settings, text};
-use cosmic::{Apply, Element, Task, widget};
+use cosmic::{Apply, Element, Task, task, widget};
 use cosmic_config::ConfigGet;
 use std::sync::Arc;
 use tracing::error;
@@ -295,6 +295,7 @@ impl Content {
             }
             ContextView::MonospaceFont | ContextView::SystemFont => {
                 self.font_config.reset();
+                return task::message(super::Message::FocusFontInput);
             }
             _ => {}
         }
