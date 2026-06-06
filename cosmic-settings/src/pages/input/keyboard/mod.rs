@@ -143,9 +143,9 @@ pub enum SpecialKey {
 impl SpecialKey {
     pub fn title(self) -> String {
         match self {
-            Self::Compose => "Compose".to_string(),
-            Self::AlternateCharacters => "Alternate Characters".to_string(),
-            Self::CapsLock => "Caps Lock".to_string(),
+            Self::Compose => fl!("keyboard-special-char", "compose"),
+            Self::AlternateCharacters => fl!("keyboard-special-char", "alternate"),
+            Self::CapsLock => fl!("keyboard-special-char", "caps"),
         }
     }
 
