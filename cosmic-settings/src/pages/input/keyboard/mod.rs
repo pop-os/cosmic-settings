@@ -15,37 +15,86 @@ use cosmic_settings_page::{self as page, Section, section};
 use itertools::Itertools;
 use slotmap::{DefaultKey, Key, SlotMap};
 
-static COMPOSE_OPTIONS: &[(&str, &str)] = &[
-    // ("Left Alt", "compose:lalt"), XXX?
-    ("Right Alt", "compose:ralt"),
-    ("Left Super", "compose:lwin"),
-    ("Right Super", "compose:rwin"),
-    ("Menu key", "compose:menu"),
-    ("Right Ctrl", "compose:rctrl"),
-    ("Caps Lock", "compose:caps"),
-    ("Scroll Lock", "compose:sclk"),
-    ("Print Screen", "compose:prsc"),
-];
+/// Contains all options for mapping a [SpecialKey].
+/// The available options differ for each key being mapped.
+enum SpecialKeyAlternative {
+    AltLeft,
+    AltRight,
+    Ctrl,
+    CtrlRight,
+    SwapWithCtrl,
+    Super,
+    SuperLeft,
+    SuperRight,
+    CapsLock,
+    ScrollLock,
+    MenuKey,
+    Backspace,
+    Escape,
+    SwapWithEscape,
+    PrintScreen,
+    None,
+}
+impl SpecialKeyAlternative {
+    fn display_text(&self) -> String {
+        match self {
+            Self::AltLeft => fl!("keyboard-special-char", "alt-left"),
+            Self::AltRight => fl!("keyboard-special-char", "alt-right"),
+            Self::Ctrl => fl!("keyboard-special-char", "ctrl"),
+            Self::CtrlRight => fl!("keyboard-special-char", "ctrl-right"),
+            Self::SwapWithCtrl => fl!("keyboard-special-char", "swap-with-ctrl"),
+            Self::Super => fl!("keyboard-special-char", "super"),
+            Self::SuperLeft => fl!("keyboard-special-char", "super-left"),
+            Self::SuperRight => fl!("keyboard-special-char", "super-right"),
+            Self::CapsLock => fl!("keyboard-special-char", "caps"),
+            Self::ScrollLock => fl!("keyboard-special-char", "scroll-lock"),
+            Self::MenuKey => fl!("keyboard-special-char", "menu"),
+            Self::Backspace => fl!("keyboard-special-char", "backspace"),
+            Self::Escape => fl!("keyboard-special-char", "escape"),
+            Self::SwapWithEscape => fl!("keyboard-special-char", "swap-with-escape"),
+            Self::PrintScreen => fl!("keyboard-special-char", "print-screen"),
+            Self::None => fl!("keyboard-special-char", "none"),
+        }
+    }
+}
 
-static ALTERNATE_CHARACTER_OPTIONS: &[(&str, &str)] = &[
-    ("Left Alt", "lv3:lalt_switch"),
-    ("Right Alt", "lv3:ralt_switch"),
-    ("Left Super", "lv3:lwin_switch"),
-    ("Right Super", "lv3:rwin_switch"),
-    ("Menu key", "lv3:menu_switch"),
+/// The second/right value is the key identifier, which is how it will be saved to the configuration.
+/// These values are different for each [SpecialKey], even for the same [SpecialKeyAlternative].
+/// The identifier starts with a prefix defined by [SpecialKey::prefixes].
+type SpecialKeyOption = (SpecialKeyAlternative, &'static str);
+
+/// Available options for [SpecialKey::Compose].
+static COMPOSE_OPTIONS: &[SpecialKeyOption] = &[
+    // ("Left Alt", "compose:lalt"), XXX?
+    (SpecialKeyAlternative::AltRight, "compose:ralt"),
+    (SpecialKeyAlternative::SuperLeft, "compose:lwin"),
+    (SpecialKeyAlternative::SuperRight, "compose:rwin"),
+    (SpecialKeyAlternative::MenuKey, "compose:menu"),
+    (SpecialKeyAlternative::CtrlRight, "compose:rctrl"),
+    (SpecialKeyAlternative::CapsLock, "compose:caps"),
+    (SpecialKeyAlternative::ScrollLock, "compose:sclk"),
+    (SpecialKeyAlternative::PrintScreen, "compose:prsc"),
+];
+/// Available options for [SpecialKey::AlternateCharacters].
+static ALTERNATE_CHARACTER_OPTIONS: &[SpecialKeyOption] = &[
+    (SpecialKeyAlternative::AltLeft, "lv3:lalt_switch"),
+    (SpecialKeyAlternative::AltRight, "lv3:ralt_switch"),
+    (SpecialKeyAlternative::SuperLeft, "lv3:lwin_switch"),
+    (SpecialKeyAlternative::SuperRight, "lv3:rwin_switch"),
+    (SpecialKeyAlternative::MenuKey, "lv3:menu_switch"),
     // ("Right Ctrl", "lv3:"), XXX
-    ("Caps Lock", "lv3:caps_switch"),
+    (SpecialKeyAlternative::CapsLock, "lv3:caps_switch"),
     // ("Scroll Lock", "lv3:"), XXX
     // ("Print Screen", "lv3"), XXX
 ];
-
-static CAPS_LOCK_OPTIONS: &[(&str, &str)] = &[
-    ("Escape", "caps:escape"),
-    ("Swap with Escape", "caps:swapescape"),
-    ("Backspace", "caps:backspace"),
-    ("Super", "caps:super"),
-    ("Control", "caps:ctrl_modifier"),
-    ("Swap with Control", "ctrl:swapcaps"),
+/// Available options for [SpecialKey::CapsLock].
+static CAPS_LOCK_OPTIONS: &[SpecialKeyOption] = &[
+    (SpecialKeyAlternative::Escape, "caps:escape"),
+    (SpecialKeyAlternative::SwapWithEscape, "caps:swapescape"),
+    (SpecialKeyAlternative::Backspace, "caps:backspace"),
+    (SpecialKeyAlternative::Super, "caps:super"),
+    (SpecialKeyAlternative::Ctrl, "caps:ctrl_modifier"),
+    (SpecialKeyAlternative::SwapWithCtrl, "ctrl:swapcaps"),
 ];
 
 #[derive(Clone, Debug)]
@@ -238,7 +287,7 @@ fn input_source(
 }
 
 fn special_char_radio_row<'a>(
-    desc: &'a str,
+    desc: String,
     value: Option<&'static str>,
     current_value: Option<&'a str>,
 ) -> list::ListButton<'a, Message> {
@@ -618,14 +667,22 @@ impl Page {
         let mut list = cosmic::widget::list_column();
 
         if matches!(special_key, SpecialKey::CapsLock) {
-            list = list.add(special_char_radio_row("Caps Lock", None, current));
+            list = list.add(special_char_radio_row(
+                SpecialKeyAlternative::CapsLock.display_text(),
+                None,
+                current,
+            ));
         } else {
-            list = list.add(special_char_radio_row("None", None, current));
+            list = list.add(special_char_radio_row(
+                SpecialKeyAlternative::None.display_text(),
+                None,
+                current,
+            ));
         }
 
         list = options
             .iter()
-            .map(|(desc, id)| special_char_radio_row(desc, Some(id), current))
+            .map(|(key, id)| special_char_radio_row(key.display_text(), Some(id), current))
             .fold(list, ListColumn::add);
 
         widget::column::with_capacity(2)
