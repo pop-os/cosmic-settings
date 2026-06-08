@@ -444,12 +444,12 @@ fn output() -> Section<crate::pages::Message> {
                         .push(horizontal_space().width(8.))
                         .push(
                             widget::slider(
-                                0.0..=1.0,
-                                page.model.active_sink.balance.unwrap_or(0.5),
+                                0.0..=2.0,
+                                page.model.active_sink.balance.unwrap_or(1.0),
                                 |change| Message::SetSinkBalance(change).into(),
                             )
                             .step(0.01)
-                            .breakpoints(&[0.5]),
+                            .breakpoints(&[1.0]),
                         )
                         .push(horizontal_space().width(8.))
                         .push(
