@@ -183,26 +183,20 @@ impl Model {
                                 }
 
                                 if route.devices.contains(&node_card_profile_device) {
-                                    return Some(
-                                        [
-                                            &*self.translate(&route.description),
-                                            " - ",
-                                            &self.sinks.description[pos],
-                                        ]
-                                        .concat(),
-                                    );
+                                    return Some(node_name(
+                                        &self.translate(&route.description),
+                                        &self.sinks.description[pos],
+                                    ));
                                 }
                             }
 
                             None
                         })
                         .unwrap_or_else(|| {
-                            [
+                            node_name(
                                 &node.device_profile_description,
-                                " - ",
-                                &*self.sinks.description[pos],
-                            ]
-                            .concat()
+                                &self.sinks.description[pos],
+                            )
                         });
 
                     if let Some(default_node_id) = self.default_sink
@@ -239,14 +233,10 @@ impl Model {
 
                     if let Some(name) = node.device_id.zip(node.card_profile_device).map_or_else(
                         || {
-                            Some(
-                                [
-                                    &node.device_profile_description,
-                                    " - ",
-                                    &*self.sources.description[pos],
-                                ]
-                                .concat(),
-                            )
+                            Some(node_name(
+                                &node.device_profile_description,
+                                &self.sources.description[pos],
+                            ))
                         },
                         |(device_id, node_card_profile_device)| {
                             let routes = self.device_routes.get(device_id)?;
@@ -256,14 +246,10 @@ impl Model {
                                 }
 
                                 if route.devices.contains(&node_card_profile_device) {
-                                    return Some(
-                                        [
-                                            &*self.translate(&route.description),
-                                            " - ",
-                                            &self.sources.description[pos],
-                                        ]
-                                        .concat(),
-                                    );
+                                    return Some(node_name(
+                                        &*self.translate(&route.description),
+                                        &self.sources.description[pos],
+                                    ));
                                 }
                             }
 
@@ -374,7 +360,7 @@ impl Model {
 
                 if route.devices.contains(&card_profile_device) {
                     self.sinks.display[pos] =
-                        [&route.description, " - ", &self.sinks.description[pos]].concat();
+                        node_name(&route.description, &self.sinks.description[pos]);
                     break;
                 }
             }
@@ -390,7 +376,7 @@ impl Model {
 
                 if route.devices.contains(&card_profile_device) {
                     self.sources.display[pos] =
-                        [&route.description, " - ", &self.sources.description[pos]].concat();
+                        node_name(&route.description, &self.sources.description[pos]);
                     break;
                 }
             }
@@ -449,5 +435,13 @@ impl Model {
             .collect::<Vec<_>>();
 
         self.device_profile_dropdowns.sort_by(|a, b| a.1.cmp(&b.1));
+    }
+}
+
+fn node_name(route: &str, node: &str) -> String {
+    if route.is_empty() {
+        node.to_owned()
+    } else {
+        [route, " - ", node].concat()
     }
 }
