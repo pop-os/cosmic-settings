@@ -130,6 +130,7 @@ linux = [
     "page-input",
     "page-legacy-applications",
     "page-networking",
+    "page-permissions",
     "page-power",
     "page-region",
     "page-sound",
@@ -175,6 +176,7 @@ page-networking = [
     "dep:nm-secret-agent-manager",
     "dep:zbus",
 ]
+page-permissions = ["dep:zbus"]
 page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = [
     "gettext",
