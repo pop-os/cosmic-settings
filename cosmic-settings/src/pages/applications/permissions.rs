@@ -1,11 +1,12 @@
 // Copyright 2026 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::iced::{Alignment, Length};
+use cosmic::iced::{self, Alignment, Length, stream};
 use cosmic::widget::{self, button, icon, settings, text};
 use cosmic::{Element, Task};
 use cosmic_settings_page::section::Entity;
 use cosmic_settings_page::{self as page, Content, Info, Section};
+use futures::{SinkExt, StreamExt};
 use slotmap::SlotMap;
 use std::collections::HashMap;
 use tracing::error;
@@ -30,6 +31,16 @@ trait PermissionStore {
     ) -> zbus::Result<(HashMap<String, Vec<String>>, zbus::zvariant::OwnedValue)>;
 
     fn delete_permission(&self, table: &str, id: &str, app: &str) -> zbus::Result<()>;
+
+    #[zbus(signal)]
+    fn changed(
+        &self,
+        table: &str,
+        id: &str,
+        deleted: bool,
+        data: zbus::zvariant::Value<'_>,
+        permissions: HashMap<String, Vec<String>>,
+    ) -> zbus::Result<()>;
 }
 
 /// A single (table, id, app) entry from the permission store.
@@ -45,6 +56,7 @@ pub struct Grant {
 #[derive(Clone, Debug)]
 pub enum Message {
     Loaded(Vec<Grant>),
+    Refresh,
     Revoke(usize),
 }
 
@@ -104,6 +116,42 @@ impl page::Page<crate::pages::Message> for Page {
     fn set_id(&mut self, entity: page::Entity) {
         self.entity = entity;
     }
+
+    fn subscription(&self, _core: &cosmic::Core) -> iced::Subscription<crate::pages::Message> {
+        // Refresh the page whenever a grant in one of the displayed tables is
+        // added, modified, or revoked elsewhere (portal dialogs, CLI, etc.).
+        iced::Subscription::run(|| {
+            stream::channel(
+                1,
+                |mut sender: futures::channel::mpsc::Sender<crate::pages::Message>| async move {
+                    let changes = async {
+                        let connection = zbus::Connection::session().await?;
+                        let store = PermissionStoreProxy::new(&connection).await?;
+                        store.receive_changed().await
+                    }
+                    .await;
+
+                    let mut changes = match changes {
+                        Ok(changes) => changes,
+                        Err(why) => {
+                            error!(?why, "failed to watch the XDG permission store");
+                            return;
+                        }
+                    };
+
+                    while let Some(signal) = changes.next().await {
+                        let relevant = signal
+                            .args()
+                            .is_ok_and(|args| TABLES.contains(args.table()));
+
+                        if relevant {
+                            _ = sender.send(Message::Refresh.into()).await;
+                        }
+                    }
+                },
+            )
+        })
+    }
 }
 
 impl Page {
@@ -112,6 +160,10 @@ impl Page {
             Message::Loaded(grants) => {
                 self.grants = grants;
                 self.loaded = true;
+            }
+
+            Message::Refresh => {
+                return Task::future(async move { Message::Loaded(load_grants().await).into() });
             }
 
             Message::Revoke(idx) => {
