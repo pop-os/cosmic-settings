@@ -89,12 +89,14 @@ pub enum Message {
     #[cfg(feature = "page-sound")]
     SoundDeviceProfiles(sound::device_profiles::Message),
     StartupApps(applications::startup_apps::Message),
-    #[cfg(feature = "page-users")]
-    User(system::users::Message),
     #[cfg(feature = "page-input")]
     SystemShortcuts(input::keyboard::shortcuts::ShortcutMessage),
+    #[cfg(feature = "pop")]
+    SystemUpdater(system::pop_updates::Message),
     #[cfg(feature = "page-input")]
     TilingShortcuts(input::keyboard::shortcuts::ShortcutMessage),
+    #[cfg(feature = "page-users")]
+    User(system::users::Message),
     #[cfg(feature = "page-networking")]
     Vpn(networking::vpn::Message),
     #[cfg(feature = "page-networking")]

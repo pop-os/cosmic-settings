@@ -3,9 +3,10 @@
 
 #[cfg(feature = "page-about")]
 pub mod about;
-
 #[cfg(feature = "page-about")]
 pub mod info;
+#[cfg(feature = "pop")]
+pub mod pop_updates;
 #[cfg(feature = "page-users")]
 pub mod users;
 
@@ -30,6 +31,11 @@ impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(
         mut page: page::Insert<crate::pages::Message>,
     ) -> page::Insert<crate::pages::Message> {
+        #[cfg(feature = "pop")]
+        {
+            page = page.sub_page::<pop_updates::Page>();
+        }
+
         #[cfg(feature = "page-users")]
         {
             page = page.sub_page::<users::Page>();

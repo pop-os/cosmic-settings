@@ -1044,3 +1044,33 @@ full-name = Full name
 invalid-username = Invalid username
 password-mismatch = Password and confirmation must match
 save = Save
+
+## System: OS Update & Recovery
+
+os-updates = OS Update & Recovery
+download-button = Download
+downloading-status = Downloading…
+frequency-daily = Daily
+frequency-weekly = Weekly
+frequency-monthly = Monthly
+update-button = Update
+
+system-and-app-updates = System & Application Updates
+    .automatic = Automatic updates
+    .notifications = Update notifications
+
+os-upgrade = OS Upgrade
+    .available = Version { $version } is available
+    .current = You are running the most current { $os } version
+    .installing-update = Installing update…
+
+os-recovery = OS Recovery
+    .available = Recovery partition update is available
+    .current = You have the most current version of the recovery partition
+    .refresh = Refresh OS
+    .refresh-button = Refresh
+    .refresh-desc = Reinstall while keeping user accounts and files
+
+refresh-dialog = Refresh OS Install
+    .explanation = Test
+    .reboot-button = Reboot & Refresh

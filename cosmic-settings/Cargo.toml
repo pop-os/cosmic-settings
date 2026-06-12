@@ -65,6 +65,7 @@ locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional =
 sysinfo = { version = "=0.38.0", optional = true }
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = ["tokio"], optional = true }
 notify = "8.2.0"
+pop-system-updater = { optional = true, path = "../crates/pop-system-updater" }
 regex = "1.12.3"
 ron = "0.12"
 rust-embed = "8.11.0"
@@ -113,7 +114,7 @@ git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
-default = ["a11y", "linux", "single-instance", "wgpu", "systemd"]
+default = ["a11y", "linux", "pop", "single-instance", "wgpu", "systemd"]
 gettext = ["dep:gettext-rs"]
 systemd = []
 openrc = []
@@ -139,6 +140,8 @@ linux = [
     "xdg-portal",
     "wayland",
 ]
+
+pop = ["dep:pop-system-updater"]
 
 # Pages
 page-accessibility = [

@@ -108,6 +108,8 @@ impl SettingsApp {
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             #[cfg(feature = "page-networking")]
             PageCommands::Network => self.pages.page_id::<networking::Page>(),
+            #[cfg(feature = "pop")]
+            PageCommands::OsUpdates => self.pages.page_id::<system::pop_updates::Page>(),
             #[cfg(feature = "wayland")]
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
             #[cfg(feature = "wayland")]
@@ -604,6 +606,13 @@ impl cosmic::Application for SettingsApp {
                         .pages
                         .page_mut::<input::keyboard::shortcuts::system::Page>()
                     {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "pop")]
+                crate::pages::Message::SystemUpdater(message) => {
+                    if let Some(page) = self.pages.page_mut::<system::pop_updates::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }

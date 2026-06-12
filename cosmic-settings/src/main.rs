@@ -113,6 +113,9 @@ pub enum PageCommands {
     /// Network settings page
     #[cfg(feature = "page-networking")]
     Network,
+    /// OS Update & Recovery settings page
+    #[cfg(feature = "pop")]
+    OsUpdates,
     /// Panel settings page
     #[cfg(feature = "wayland")]
     Panel,
