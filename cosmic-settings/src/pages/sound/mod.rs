@@ -186,22 +186,24 @@ impl Page {
             }
 
             Message::SetDefaultSink(pos) => {
-                if let Some(&node_id) = self.model.sinks.id.get(pos) {
-                    if let Some(client) = self.client.as_mut() {
-                        block_on(async {
-                            _ = client.borrow_mut().conn.set_default(node_id, true).await;
-                        });
-                    }
+                if let Some(&pos) = self.model.sinks.sorted_index.get(pos)
+                    && let Some(&node_id) = self.model.sinks.id.get(pos as usize)
+                    && let Some(client) = self.client.as_mut()
+                {
+                    block_on(async {
+                        _ = client.borrow_mut().conn.set_default(node_id, true).await;
+                    });
                 }
             }
 
             Message::SetDefaultSource(pos) => {
-                if let Some(&node_id) = self.model.sources.id.get(pos) {
-                    if let Some(client) = self.client.as_mut() {
-                        block_on(async {
-                            _ = client.borrow_mut().conn.set_default(node_id, true).await;
-                        });
-                    }
+                if let Some(&pos) = self.model.sources.sorted_index.get(pos)
+                    && let Some(&node_id) = self.model.sources.id.get(pos as usize)
+                    && let Some(client) = self.client.as_mut()
+                {
+                    block_on(async {
+                        _ = client.borrow_mut().conn.set_default(node_id, true).await;
+                    });
                 }
             }
 
@@ -330,8 +332,8 @@ fn input() -> Section<crate::pages::Message> {
                 .push(horizontal_space().width(8.))
                 .push(slider);
             let devices = widget::dropdown::popup_dropdown(
-                &page.model.sources.display,
-                Some(page.model.sources.active.unwrap_or(0)),
+                &page.model.sources.sorted_display,
+                page.model.sources.active(),
                 Message::SetDefaultSource,
                 window::Id::RESERVED,
                 Message::Surface,
@@ -410,8 +412,8 @@ fn output() -> Section<crate::pages::Message> {
                 .push(slider);
 
             let devices = widget::dropdown::popup_dropdown(
-                &page.model.sinks.display,
-                Some(page.model.sinks.active.unwrap_or(0)),
+                &page.model.sinks.sorted_display,
+                page.model.sinks.active(),
                 Message::SetDefaultSink,
                 window::Id::RESERVED,
                 Message::Surface,

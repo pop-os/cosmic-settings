@@ -1,6 +1,8 @@
 // Copyright 2026 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+use std::sync::Arc;
+
 use cosmic_settings_audio_client::{self as audio_client, Availability, ProfileInfo, RouteInfo};
 use intmap::IntMap;
 
@@ -33,12 +35,14 @@ pub struct Text {
 
 #[derive(Debug, Default)]
 pub struct Nodes {
-    pub active: Option<usize>,
+    active: Option<usize>,
+    pub sorted_display: Vec<Arc<str>>,
+    pub sorted_index: Vec<u16>,
     pub balance: Vec<Option<f32>>,
     pub card_profile_device: Vec<Option<u32>>,
     pub description: Vec<String>,
     pub devices: Vec<Option<NodeId>>,
-    pub display: Vec<String>,
+    pub display: Vec<Arc<str>>,
     pub mute: Vec<bool>,
     pub name: Vec<String>,
     pub id: Vec<NodeId>,
@@ -46,6 +50,28 @@ pub struct Nodes {
 }
 
 impl Nodes {
+    pub fn active(&self) -> Option<usize> {
+        self.active.and_then(|active| {
+            self.sorted_index
+                .iter()
+                .position(|idx| *idx as usize == active)
+        })
+    }
+
+    pub fn dropdown_sort(&mut self) {
+        let mut enumerated_displays = self
+            .display
+            .clone()
+            .into_iter()
+            .enumerate()
+            .map(|(index, display)| (index as u16, display))
+            .collect::<Vec<_>>();
+        enumerated_displays.sort_by_key(|v| v.1.clone());
+        let (indexes, displays): (Vec<_>, Vec<_>) = enumerated_displays.into_iter().unzip();
+        self.sorted_display = displays;
+        self.sorted_index = indexes;
+    }
+
     pub fn remove(&mut self, node_id: u32) -> bool {
         let Some(pos) = self.id.iter().position(|id| node_id == *id) else {
             return false;
@@ -59,6 +85,7 @@ impl Nodes {
         self.name.remove(pos);
         self.id.remove(pos);
         self.volume.remove(pos);
+        self.dropdown_sort();
         if self.active == Some(pos) {
             self.active = None;
         }
@@ -155,7 +182,7 @@ impl Model {
                         self.sinks.card_profile_device[pos] = node.card_profile_device;
                         pos
                     } else {
-                        self.sinks.display.push(String::new());
+                        self.sinks.display.push(Arc::default());
                         self.sinks
                             .description
                             .push(self.translate(&node.description));
@@ -199,6 +226,8 @@ impl Model {
                             )
                         });
 
+                    self.sinks.dropdown_sort();
+
                     if let Some(default_node_id) = self.default_sink
                         && default_node_id == node_id
                     {
@@ -218,7 +247,7 @@ impl Model {
                             self.sources
                                 .description
                                 .push(self.translate(&node.description));
-                            self.sources.display.push(String::new());
+                            self.sources.display.push(Arc::default());
                             self.sources.id.push(node_id);
                             self.sources.volume.push(0);
                             self.sources.balance.push(None);
@@ -247,7 +276,7 @@ impl Model {
 
                                 if route.devices.contains(&node_card_profile_device) {
                                     return Some(node_name(
-                                        &*self.translate(&route.description),
+                                        &self.translate(&route.description),
                                         &self.sources.description[pos],
                                     ));
                                 }
@@ -257,6 +286,7 @@ impl Model {
                         },
                     ) {
                         self.sources.display[pos] = name;
+                        self.sources.dropdown_sort();
                     } else {
                         // Remove sources that are unplugged.
                         self.sources.remove(node_id);
@@ -361,6 +391,7 @@ impl Model {
                 if route.devices.contains(&card_profile_device) {
                     self.sinks.display[pos] =
                         node_name(&route.description, &self.sinks.description[pos]);
+                    self.sinks.dropdown_sort();
                     break;
                 }
             }
@@ -377,6 +408,7 @@ impl Model {
                 if route.devices.contains(&card_profile_device) {
                     self.sources.display[pos] =
                         node_name(&route.description, &self.sources.description[pos]);
+                    self.sources.dropdown_sort();
                     break;
                 }
             }
@@ -438,10 +470,11 @@ impl Model {
     }
 }
 
-fn node_name(route: &str, node: &str) -> String {
+fn node_name(route: &str, node: &str) -> Arc<str> {
     if route.is_empty() {
         node.to_owned()
     } else {
         [route, " - ", node].concat()
     }
+    .into()
 }
