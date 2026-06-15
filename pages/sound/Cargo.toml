@@ -12,5 +12,4 @@ tracing = "0.1.44"
 
 [dependencies.cosmic-settings-audio-client]
 git = "https://github.com/pop-os/cosmic-settings-daemon"
-branch = "varlink"
 features = ["codec"]
