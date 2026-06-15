@@ -1,13 +1,26 @@
 // Copyright 2025 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-use cosmic::{Apply, widget};
+use super::model;
+use cosmic::iced::futures;
+use cosmic::{Apply, iced, widget};
+use cosmic_settings_audio_client::{self as audio_client, CosmicAudioProxy};
 use cosmic_settings_page::{self as page, Section, section};
-use cosmic_settings_sound_subscription::{self as subscription};
+use futures::executor::block_on;
 use slotmap::SlotMap;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
-pub enum Message {}
+pub enum Message {
+    /// Update for the model.
+    Model(cosmic_settings_sound::Message),
+    /// Set the profile of a sound device.
+    SetProfile(u32, u32),
+    /// Surface Action
+    Surface(cosmic::surface::Action),
+}
 
 impl From<Message> for crate::pages::Message {
     fn from(message: Message) -> Self {
@@ -24,6 +37,8 @@ impl From<Message> for crate::Message {
 #[derive(Default)]
 pub struct Page {
     entity: page::Entity,
+    model: model::Model,
+    client: Option<Rc<RefCell<audio_client::Client>>>,
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -41,55 +56,83 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![sections.insert(view())])
     }
 
-    fn on_leave(&mut self) -> cosmic::Task<crate::pages::Message> {
-        cosmic::Task::done(crate::pages::Message::Sound(super::Message::Reload))
-    }
-
     fn set_id(&mut self, entity: cosmic_settings_page::Entity) {
         self.entity = entity;
     }
 
-    fn subscription(
-        &self,
-        _core: &cosmic::Core,
-    ) -> cosmic::iced::Subscription<crate::pages::Message> {
-        cosmic::iced::Subscription::run(subscription::watch)
-            .map(|message| super::Message::Subscription(message).into())
+    fn on_leave(&mut self) -> cosmic::Task<crate::pages::Message> {
+        *self = Page {
+            entity: self.entity,
+            ..Page::default()
+        };
+        cosmic::Task::none()
+    }
+
+    fn subscription(&self, _core: &cosmic::Core) -> iced::Subscription<crate::pages::Message> {
+        iced::Subscription::run(|| {
+            iced::stream::channel(
+                1,
+                move |emitter: futures::channel::mpsc::Sender<crate::pages::Message>| async move {
+                    cosmic_settings_sound::subscribe(emitter, |m| Message::Model(m).into()).await
+                },
+            )
+        })
     }
 }
 
 impl Page {
-    pub fn update(&mut self, _message: Message) -> cosmic::Task<crate::app::Message> {
+    pub fn update(&mut self, message: Message) -> cosmic::Task<crate::app::Message> {
+        match message {
+            Message::Model(cosmic_settings_sound::Message::Subscription(message)) => {
+                self.model.update(message);
+            }
+
+            Message::Model(cosmic_settings_sound::Message::Client(client)) => {
+                if let Some(client) = Arc::into_inner(client) {
+                    self.client = Some(Rc::new(RefCell::new(client)));
+                    self.model = model::Model {
+                        text: model::Text {
+                            hd_audio: fl!("sound-hd-audio"),
+                            usb_audio: fl!("sound-usb-audio"),
+                        },
+                        ..model::Model::default()
+                    };
+                }
+            }
+
+            Message::Surface(a) => return cosmic::task::message(crate::app::Message::Surface(a)),
+
+            Message::SetProfile(id, index) => {
+                if let Some(client) = self.client.clone() {
+                    block_on(async move {
+                        _ = client.borrow_mut().conn.set_profile(id, index, true).await;
+                    });
+                }
+            }
+        }
+
         cosmic::Task::none()
     }
 }
 
 pub fn view() -> Section<crate::pages::Message> {
-    Section::default().view::<Page>(move |binder, _page, _section| {
-        let sound_page_id = binder.find_page_by_id("sound").unwrap().0;
-        let sound_page = binder.page[sound_page_id]
-            .downcast_ref::<super::Page>()
-            .unwrap();
-
-        let devices = sound_page
-            .model
-            .device_profile_dropdowns
-            .iter()
-            .cloned()
-            .map(|(device_id, name, active_profile, indexes, descriptions)| {
+    Section::default().view::<Page>(move |_, page, _section| {
+        let devices = page.model.device_profile_dropdowns.iter().cloned().map(
+            |(device_id, name, active_profile, indexes, descriptions)| {
                 let dropdown = widget::dropdown::popup_dropdown(
                     descriptions,
                     active_profile,
-                    move |id| super::Message::SetProfile(device_id, indexes[id]),
+                    move |id| Message::SetProfile(device_id, indexes[id]),
                     cosmic::iced::window::Id::RESERVED,
-                    super::Message::Surface,
+                    Message::Surface,
                     crate::Message::from,
                 )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::from);
 
                 widget::settings::item::builder(name).control(dropdown)
-            });
+            },
+        );
 
         widget::settings::section().extend(devices).into()
     })
