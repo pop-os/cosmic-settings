@@ -95,6 +95,7 @@ pub enum ErrorKind {
     ConnectionEditor,
     ConnectionSettings,
     DbusConnection,
+    OpenVpnConfigPath,
     UpdatingState,
     WireGuardConfigPath,
     WireGuardDevice,
@@ -109,6 +110,7 @@ impl ErrorKind {
             ErrorKind::ConnectionEditor => fl!("vpn-error", "connection-editor"),
             ErrorKind::ConnectionSettings => fl!("vpn-error", "connection-settings"),
             ErrorKind::DbusConnection => fl!("dbus-connection-error"),
+            ErrorKind::OpenVpnConfigPath => fl!("vpn-error", "openvpn-config-path"),
             ErrorKind::UpdatingState => fl!("vpn-error", "updating-state"),
             ErrorKind::WireGuardConfigPath => fl!("vpn-error", "wireguard-config-path"),
             ErrorKind::WireGuardDevice => fl!("vpn-error", "wireguard-device"),
@@ -1199,8 +1201,14 @@ fn add_network() -> Task<crate::app::Message> {
 
                         return Message::AddWireGuardDevice(device, filename.to_owned(), path);
                     } else {
-                        super::nm_add_vpn_file("openvpn", response.url().to_file_path().unwrap())
-                            .await
+                        let Ok(path) = response.url().to_file_path() else {
+                            return Message::Error(
+                                ErrorKind::OpenVpnConfigPath,
+                                fl!("vpn-error", "openvpn-config-path-desc"),
+                            );
+                        };
+
+                        super::nm_add_vpn_file("openvpn", path).await
                     };
 
                     match result {
