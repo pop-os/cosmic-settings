@@ -231,7 +231,10 @@ impl Page {
                             "x-scheme-handler/https",
                         ],
                     ),
-                    Category::TextEditor => (DROPDOWN_TEXT_EDITOR, &["text/plain"]),
+                    Category::TextEditor => (
+                        DROPDOWN_TEXT_EDITOR,
+                        &["application/x-zerosize", "text/plain"],
+                    ),
                     Category::Mime(_mime_type) => return Task::none(),
                 };
 
