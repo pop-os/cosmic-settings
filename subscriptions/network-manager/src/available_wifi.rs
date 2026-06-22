@@ -10,11 +10,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use zbus::zvariant::ObjectPath;
 
-use super::hw_address::HwAddress;
-
 pub async fn handle_wireless_device(
     device: WirelessDevice<'_>,
-    hw_address: Option<String>,
 ) -> zbus::Result<Vec<AccessPoint>> {
     device.request_scan(HashMap::new()).await?;
 
@@ -75,10 +72,6 @@ pub async fn handle_wireless_device(
                     secured: !ap.wpa_flags().await?.is_empty(),
                     wps_push: ap.flags().await?.contains(ApFlags::WPS_PBC),
                     network_type,
-                    hw_address: hw_address
-                        .as_ref()
-                        .and_then(|str_addr| HwAddress::from_str(str_addr))
-                        .unwrap_or_default(),
                 },
             );
         }
@@ -99,7 +92,6 @@ pub struct AccessPoint {
     pub state: DeviceState,
     pub working: bool,
     pub path: ObjectPath<'static>,
-    pub hw_address: HwAddress,
     pub secured: bool,
     pub wps_push: bool,
     pub network_type: NetworkType,
