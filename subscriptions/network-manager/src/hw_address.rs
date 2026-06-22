@@ -7,7 +7,7 @@ impl HwAddress {
     pub fn from_str(arg: &str) -> Option<Self> {
         let segments: Vec<&str> = arg.split(":").collect();
 
-        // Only accept 6-byte (MAC-48) or 8-byte (EUI-64) addresses
+        // Only accept 6-byte (EUI-48) or 8-byte (EUI-64) addresses
         if segments.len() != 6 && segments.len() != 8 {
             return None;
         }
