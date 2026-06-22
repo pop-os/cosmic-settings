@@ -930,3 +930,7 @@ xdg-entry-displays-keywords = COSMIC;Wyświetlacz;Ekran;
 no-search-results = Żadna sieć nie odpowiada twojemu wyszukiwaniu.
 workspaces-navigation = Navigation
     .wraparound = Przemieszczaj się między pierwszym a ostatnim obszarem roboczym używając skrótów klawiszowych i gestów
+bluetooth-display-passkey = Parowanie Bluetooth
+    .description = Wpisz ten kod na { $device } i naciśnij Enter
+bluetooth-display-pin = Bluetooth Pairing
+    .description = Wpisz PIN na { $device } i naciśnij Enter
