@@ -56,4 +56,22 @@ mod tests {
         
         assert_eq!(format!("{}", hw_addr), "00:11:22:33:44:55");
     }
+
+    #[test]
+    fn test_parse_valid_8_byte_mac() {
+        let mac: &str = "00:11:22:33:44:55:66:77";
+        let hw_addr: HwAddress = HwAddress::from_str(mac).expect("should parse valid EUI-64 MAC");
+        
+        assert_eq!(hw_addr.octets.len(), 8);
+        assert_eq!(hw_addr.octets, vec![0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77]);
+    }
+
+    #[test]
+    fn test_display_8_byte_mac() {
+        let hw_addr: HwAddress = HwAddress {
+            octets: vec![0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77],
+        };
+        
+        assert_eq!(format!("{}", hw_addr), "00:11:22:33:44:55:66:77");
+    }
 }
