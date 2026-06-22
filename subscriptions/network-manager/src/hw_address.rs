@@ -47,4 +47,13 @@ mod tests {
         assert_eq!(hw_addr.octets.len(), 6);
         assert_eq!(hw_addr.octets, vec![0x00, 0x11, 0x22, 0x33, 0x44, 0x55]);
     }
+
+    #[test]
+    fn test_display_6_byte_mac() {
+        let hw_addr: HwAddress = HwAddress {
+            octets: vec![0x00, 0x11, 0x22, 0x33, 0x44, 0x55],
+        };
+        
+        assert_eq!(format!("{}", hw_addr), "00:11:22:33:44:55");
+    }
 }
