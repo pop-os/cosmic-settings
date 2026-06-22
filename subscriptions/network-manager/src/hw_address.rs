@@ -7,8 +7,8 @@ impl HwAddress {
     pub fn from_str(arg: &str) -> Option<Self> {
         let segments: Vec<&str> = arg.split(":").collect();
         
-        // Reject MACs with less than 6 bytes
-        if segments.len() < 6 {
+        // Only accept 6-byte (MAC-48) or 8-byte (EUI-64) addresses
+        if segments.len() != 6 && segments.len() != 8 {
             return None;
         }
         
@@ -96,5 +96,23 @@ mod tests {
     fn test_reject_1_byte_mac() {
         let mac: &str = "00";
         assert!(HwAddress::from_str(mac).is_none(), "should reject 1-byte MAC");
+    }
+
+    #[test]
+    fn test_reject_7_byte_mac() {
+        let mac: &str = "00:11:22:33:44:55:66";
+        assert!(HwAddress::from_str(mac).is_none(), "should reject 7-byte MAC");
+    }
+
+    #[test]
+    fn test_reject_9_byte_mac() {
+        let mac: &str = "00:11:22:33:44:55:66:77:88";
+        assert!(HwAddress::from_str(mac).is_none(), "should reject 9-byte MAC");
+    }
+
+    #[test]
+    fn test_reject_12_byte_mac() {
+        let mac: &str = "00:11:22:33:44:55:66:77:88:99:aa:bb";
+        assert!(HwAddress::from_str(mac).is_none(), "should reject 12-byte MAC");
     }
 }
