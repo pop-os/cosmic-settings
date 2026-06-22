@@ -40,6 +40,7 @@ pub async fn active_connections(
                 Some(SpecificDevice::Wired(wired_device)) => {
                     info.push(ActiveConnectionInfo::Wired {
                         name: connection.id().await?,
+                        hw_address: wired_device.hw_address().await?,
                         speed: wired_device.speed().await?,
                         ip_addresses: addresses.clone(),
                     });
@@ -49,6 +50,7 @@ pub async fn active_connections(
                         info.push(ActiveConnectionInfo::WiFi {
                             name: String::from_utf8_lossy(&access_point.ssid().await?).into_owned(),
                             ip_addresses: addresses.clone(),
+                            hw_address: wireless_device.hw_address().await?,
                             state,
                             strength: access_point.strength().await.unwrap_or_default(),
                         });
@@ -81,12 +83,14 @@ pub async fn active_connections(
 pub enum ActiveConnectionInfo {
     Wired {
         name: String,
+        hw_address: String,
         speed: u32,
         ip_addresses: Vec<Ipv4Addr>,
     },
     WiFi {
         name: String,
         ip_addresses: Vec<Ipv4Addr>,
+        hw_address: String,
         state: ActiveConnectionState,
         strength: u8,
     },
