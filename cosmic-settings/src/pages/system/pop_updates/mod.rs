@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 mod system_updates;
+mod upgrade;
 
 use cosmic::Task;
 use cosmic_settings_page as page;
@@ -11,6 +12,7 @@ use pop_system_updater::client::notification::ClientProxy as NotificationClientP
 
 #[derive(Clone, Debug)]
 pub enum Message {
+    PopUpgrade(upgrade::Message),
     SetAutomaticUpdates(bool),
     SetNotificationFrequency(Option<Frequency>),
     Surface(cosmic::surface::Action),
@@ -25,12 +27,14 @@ pub enum Message {
 #[derive(Default)]
 pub struct Page {
     entity: page::Entity,
+    pop_upgrade: upgrade::Model,
     system_updates: system_updates::Model,
 }
 
 impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
+            Message::PopUpgrade(message) => return self.pop_upgrade.update(message),
             Message::SetAutomaticUpdates(enable) => {
                 self.system_updates.config.auto_update = enable;
 
@@ -123,13 +127,17 @@ impl page::Page<crate::pages::Message> for Page {
             page::Section<crate::pages::Message>,
         >,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(system_updates::section())])
+        Some(vec![
+            sections.insert(upgrade::section()),
+            sections.insert(system_updates::section()),
+        ])
     }
 
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
         Task::batch([
             Task::future(async { system_updates::load_clients().await }),
             Task::future(async { system_updates::load_configs().await }),
+            Task::future(async { Message::PopUpgrade(upgrade::client().await).into() }),
         ])
     }
 }
