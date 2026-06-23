@@ -34,7 +34,7 @@ xdg-entry-notifications-comment = "Não Perturbe", notificações na tela de blo
 xdg-entry-panel = Panel
 xdg-entry-panel-comment = Barra superior com controles e menus
 xdg-entry-power = Energia e Bateria
-xdg-entry-power-comment = Modos de energia e opções de economia de energia
+xdg-entry-power-comment = Modos de energia e opções de poupança de energia
 xdg-entry-region-language = Região e Idioma
 xdg-entry-region-language-comment = Formatação de datas, horas e números baseados em sua região
 xdg-entry-sound = Som
@@ -578,7 +578,6 @@ time-format = Formato de Data e Hora
     .sunday = Domingo
     .monday = Segunda-feira
 time-region = Região e Idioma
-    .desc = Formatar datas, horas e números baseado na sua região.
 
 ## System
 
@@ -857,3 +856,4 @@ workspaces-overview = Visão geral das áreas de trabalho
     .none = Nenhuma
     .launcher = Abrir lançador
     .applications = Abrir aplicações
+xdg-entry-power-keywords = COSMIC;Energia;Bateria
