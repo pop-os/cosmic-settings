@@ -928,3 +928,7 @@ xdg-entry-window-management-keywords = COSMIC;Fönster;Hantering;Kaklande;Super;
 no-search-results = Inga nätverk matchar din sökning.
 workspaces-navigation = Navigering
     .wraparound = Flytta mellan första och sista arbetsytan med hjälp av tangentbordsgenvägar och gester
+bluetooth-display-passkey = Bluetooth-koppling
+    .description = Mata in följande säkerhetskod på { $device }, tryck sedan Enter
+bluetooth-display-pin = Bluetooth-koppling
+    .description = Ange följande PIN på { $device }, tryck sedan Enter
