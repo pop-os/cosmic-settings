@@ -23,10 +23,6 @@ impl HwAddress {
 
         Some(HwAddress { octets })
     }
-
-    pub fn from_string(arg: &str) -> Option<Self> {
-        HwAddress::from_str(arg)
-    }
 }
 
 impl std::fmt::Display for HwAddress {
