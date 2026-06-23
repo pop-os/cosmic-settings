@@ -58,7 +58,7 @@ xdg-entry-wired = Vezetékes kapcsolatok
 xdg-entry-wired-comment = Vezetékes kapcsolatok és kapcsolódási profilok
 xdg-entry-wireless-comment = Wi-Fi-kapcsolatok és kapcsolódási profilok
 xdg-entry-workspaces = Munkaterületek
-xdg-entry-workspaces-comment = Munkaterület-tájolás, áttekintés és többkijelzős viselkedés
+xdg-entry-workspaces-comment = Munkaterület-tájolás, áttekintés és többmonitoros viselkedés
 xdg-entry-x11-applications = X11-alkalmazások támogatása
 xdg-entry-x11-applications-comment = X11 ablakrendszer alkalmazásméretezés, elsődleges kijelző és globális gyorsbillentyűk
 
@@ -385,7 +385,7 @@ workspaces-behavior = Munkaterületek viselkedése
     .dynamic-desc = Üres munkaterületek automatikus eltávolítása
     .fixed = Megadott számú munkaterület
     .fixed-desc = Munkaterületek hozzáadása vagy eltávolítása az áttekintésben.
-workspaces-multi-behavior = Többkijelzős viselkedés
+workspaces-multi-behavior = Többmonitoros viselkedés
     .span = A munkaterületek kiterjednek a kijelzőkre
     .separate = A kijelzők külön munkaterülettel rendelkeznek
 workspaces-overview-thumbnails = Munkaterület-áttekintő előnézetek
@@ -635,7 +635,7 @@ move-windows = Ablakok mozgatása
             [up] felfelé
         }
     .display =
-        Ablak mozgatása egy kijelzővel { $direction ->
+        Ablak mozgatása egy monitorral { $direction ->
            *[down] lefelé
             [left] balra
             [right] jobbra
@@ -909,7 +909,7 @@ xdg-entry-x11-applications-keywords = COSMIC;X11;Alkalmazás;Játék;Támogatás
 xdg-entry-touchpad-keywords = COSMIC;Érintőpárna;Mozdulat;
 xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Hálózat;Kapcsolat;
 xdg-entry-wireless = Wi-Fi
-xdg-entry-workspaces-keywords = COSMIC;Munkaterület;Tájolás;Áttekintés;Monitor;
+xdg-entry-workspaces-keywords = COSMIC;Munkaterület;Tájolás;Áttekintés;Monitor;Kijelző;Képernyő;
 xdg-entry-wallpaper-keywords = COSMIC;Háttérkép;Háttér;Diavetítés;
 xdg-entry-users-keywords = COSMIC;Felhasználó;Fiók;
 xdg-entry-vpn-keywords = COSMIC;VPN;Hálózat;Kapcsolat;OpenVPN;OpenConnect;
