@@ -1,5 +1,5 @@
 app = COSMIC Beállítások
-dbus-connection-error = Nem sikerült csatlakozni a D-Bus-hoz
+dbus-connection-error = Nem sikerült csatlakozni a D-Bushoz
 ok = OK
 unknown = Ismeretlen
 number = { $number }
@@ -23,7 +23,7 @@ xdg-entry-desktop = Asztal
 xdg-entry-displays = Kijelzők
 xdg-entry-displays-comment = Kijelzőbeállítások kezelése
 xdg-entry-dock = Dokk
-xdg-entry-dock-comment = Egy opcionális sáv alkalmazásokhoz és kisalkalmazásokhoz
+xdg-entry-dock-comment = Választható sáv alkalmazásokhoz és kisalkalmazásokhoz
 xdg-entry-input = Beviteli eszközök
 xdg-entry-input-comment = Billentyűzet- és egérbeállítások
 xdg-entry-keyboard = Billentyűzet
@@ -59,7 +59,7 @@ xdg-entry-wired-comment = Vezetékes kapcsolatok és kapcsolódási profilok
 xdg-entry-wireless-comment = Wi-Fi-kapcsolatok és kapcsolódási profilok
 xdg-entry-workspaces = Munkaterületek
 xdg-entry-workspaces-comment = Munkaterület-tájolás, áttekintés és többkijelzős viselkedés
-xdg-entry-x11-applications = X11 alkalmazások támogatása
+xdg-entry-x11-applications = X11-alkalmazások támogatása
 xdg-entry-x11-applications-comment = X11 ablakrendszer alkalmazásméretezés, elsődleges kijelző és globális gyorsbillentyűk
 
 ## Network & Wireless
@@ -118,6 +118,8 @@ vpn-error = VPN-hiba
     .connect = Nem sikerült kapcsolódni a VPN-hez
     .connection-editor = A kapcsolatszerkesztő nem működik
     .connection-settings = Nem sikerült lekérni az aktív kapcsolatok beállításait
+    .openvpn-config-path = Érvénytelen OpenVPN-konfiguráció-útvonal
+    .openvpn-config-path-desc = A kiválasztott fájlnak helyi fájlrendszeren kell lennie.
     .updating-state = Nem sikerült frissíteni a hálózatkezelő állapotát
     .wireguard-config-path = Érvénytelen fájlelérési út a WireGuard konfigurációhoz
     .wireguard-config-path-desc = A kiválasztott fájlnak helyi fájlrendszeren kell lennie.
@@ -150,14 +152,14 @@ activate = Aktiválás
 confirm = Megerősítés
 enable = Engedélyezés
 bluetooth = Bluetooth
-    .status = Ez a rendszer { $aliases } néven látható, amíg a Bluetooth beállítások meg vannak nyitva.
+    .status = Ez a rendszer { $aliases } néven látható, amíg a Bluetooth-beállítások meg vannak nyitva.
     .connected = Kapcsolódva
     .connecting = Kapcsolódás…
     .disconnecting = Bontás…
     .connect = Kapcsolódás
     .disconnect = Bontás
     .forget = Elfelejtés
-    .dbus-error = Hiba történt a D-Bus-szal való kommunikáció során: { $why }
+    .dbus-error = Hiba történt a D-Busszal való kommunikáció során: { $why }
     .disabled = A Bluetooth szolgáltatás le van tiltva
     .inactive = A Bluetooth szolgáltatás nem aktív
     .unknown = A Bluetooth szolgáltatást nem sikerült aktiválni. A BlueZ telepítve van?
@@ -222,8 +224,8 @@ desktop = Asztal
 wallpaper = Háttérkép
     .change = Háttérkép váltásának gyakorisága
     .fit = Háttérkép illeszkedése
-    .folder-dialog = Válassz mappát a háttérképekhez
-    .image-dialog = Válassz képet a háttérképnek
+    .folder-dialog = Háttérkép-mappa kiválasztása
+    .image-dialog = Háttérkép kiválasztása
     .plural = Háttérképek
     .same = Ugyanaz a háttérkép legyen minden kijelzőn
     .slide = Diavetítés
@@ -298,7 +300,7 @@ interface-density = Felületsűrűség
     .spacious = Tágas
 window-management-appearance = Ablakkezelés
     .active-hint = Aktív ablak kiemelésének mérete
-    .gaps = Rések a csempézett ablakok körül
+    .gaps = Hézagok a csempézett ablakok körül
 
 ### Experimental
 
@@ -371,7 +373,7 @@ window-controls = Ablakvezérlés
     .minimize = Minimalizálás gomb megjelenítése
     .active-window-hint = Aktív ablak kiemelése
 focus-navigation = Fókusznavigáció
-    .focus-follows-cursor = Fókusz követi az egeret
+    .focus-follows-cursor = Fókusz követi a mutatót
     .focus-follows-cursor-delay = Fókuszálás késleltetése (ms)
     .cursor-follows-focus = Mutató követi a fókuszt
 
@@ -426,7 +428,7 @@ mirroring = Tükrözés
     .project-count =
         Kivetítés { $count } további { $count ->
             [1] kijelzőre
-           *[other] kijelzőkre
+           *[other] kijelzőre
         }
 night-light = Éjszakai fény
     .auto = Automatikus (naplementétől napkeltéig)
@@ -674,7 +676,7 @@ system-shortcut = Rendszer
     .screenshot = Képernyőkép készítése
     .suspend = Felfüggesztés
     .terminal = Terminál megnyitása
-    .touchpad-toggle = Érintőpárna be- vagy kikapcsolása
+    .touchpad-toggle = Érintőpárna be/ki
     .volume-lower = Hangkimenet hangerejének csökkentése
     .volume-raise = Hangkimenet hangerejének növelése
     .web-browser = Webböngésző megnyitása
@@ -706,7 +708,7 @@ click-behavior = Kattintási viselkedés
     .click-finger = Másodlagos kattintás két ujjal és középső kattintás három ujjal
     .button-areas = Másodlagos kattintás a jobb alsó sarokban és középső kattintás alul középen
 pinch-to-zoom = Csippentéses nagyítás
-    .desc = Két ujjal belenagyíthatsz a tartalomba azokban az alkalmazásokban, amik támogatják a nagyítást
+    .desc = Két ujjal belenagyíthatsz a tartalomba azokban az alkalmazásokban, amelyek támogatják a nagyítást
 tap-to-click = Koppintás a kattintáshoz
     .desc = Engedélyezi az egyujjas koppintást az elsődleges kattintáshoz, a kétujjas koppintást a másodlagos kattintáshoz és a háromujjas koppintást a középső kattintáshoz
 touchpad = Érintőpárna
@@ -827,7 +829,7 @@ about-hardware = Hardver
     .disk-capacity = Tárhely
 about-os = Operációs rendszer
     .os = Operációs rendszer
-    .os-architecture = Operációs rendszer architektúra
+    .os-architecture = Operációs rendszer architektúrája
     .kernel = Kernelverzió
     .desktop-environment = Asztali környezet
     .windowing-system = Ablakrendszer
@@ -916,3 +918,7 @@ xdg-entry-window-management-keywords = COSMIC;Ablak;Kezelés;Csempézés;Super;B
 no-search-results = Nem található a keresésnek megfelelő hálózat.
 workspaces-navigation = Navigáció
     .wraparound = Váltás az első és az utolsó munkaterület között gyorsbillentyűkkel és gesztusokkal
+bluetooth-display-passkey = Bluetooth-párosítás
+    .description = Írd be a következő párosítási kulcsot a(z) { $device } eszközön, majd nyomd meg az Enter billentyűt
+bluetooth-display-pin = Bluetooth-párosítás
+    .description = Írd be a következő PIN-kódot a(z) { $device } eszközön, majd nyomd meg az Enter billentyűt
