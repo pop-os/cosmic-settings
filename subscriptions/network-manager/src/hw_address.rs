@@ -1,6 +1,6 @@
 #[derive(Clone, PartialEq, Eq, Default, Debug, PartialOrd, Ord)]
 pub struct HwAddress {
-    pub octets: Vec<u8>,
+    octets: Vec<u8>,
 }
 
 impl HwAddress {
