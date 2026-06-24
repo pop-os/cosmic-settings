@@ -1417,6 +1417,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmic-notifications-config"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/cosmic-notifications#b58fb29bd7e5898e4252ecb45d5bebfdecdf7cca"
+dependencies = [
+ "cosmic-config",
+ "serde",
+]
+
+[[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
 source = "git+https://github.com/pop-os/cosmic-panel#546a6c45210574caed9a3e51446aa8ad622d3627"
@@ -1485,6 +1494,7 @@ dependencies = [
  "cosmic-dbus-networkmanager",
  "cosmic-idle-config",
  "cosmic-mime-apps",
+ "cosmic-notifications-config",
  "cosmic-panel-config",
  "cosmic-protocols",
  "cosmic-randr",
