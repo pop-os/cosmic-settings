@@ -591,6 +591,13 @@ impl cosmic::Application for SettingsApp {
                     }
                 }
 
+                #[cfg(feature = "page-permissions")]
+                crate::pages::Message::Permissions(message) => {
+                    if let Some(page) = self.pages.page_mut::<applications::permissions::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
                 #[cfg(feature = "page-users")]
                 crate::pages::Message::User(message) => {
                     if let Some(page) = self.pages.page_mut::<system::users::Page>() {
