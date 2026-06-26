@@ -28,6 +28,22 @@ pub async fn add_fallback(connection_name: &str) -> Result<(), String> {
         .apply(crate::utils::map_stderr_output)
 }
 
+pub async fn set_autoconnect(connection_name: &str, autoconnect: bool) -> Result<(), String> {
+    let value = if autoconnect { "yes" } else { "no" };
+    tokio::process::Command::new("nmcli")
+        .args([
+            "con",
+            "mod",
+            connection_name,
+            "connection.autoconnect",
+            value,
+        ])
+        .stderr(Stdio::piped())
+        .output()
+        .await
+        .apply(crate::utils::map_stderr_output)
+}
+
 pub async fn connect(connection_name: &str) -> Result<(), String> {
     tokio::process::Command::new("nmcli")
         .args(["con", "up", connection_name])
