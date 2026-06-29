@@ -180,7 +180,7 @@ page-networking = [
     "dep:nm-secret-agent-manager",
     "dep:zbus",
 ]
-page-power = ["dep:upower_dbus", "dep:zbus"]
+page-power = ["dep:cosmic-settings-config", "dep:upower_dbus", "dep:zbus"]
 page-region = [
     "gettext",
     "dep:locales-rs",
