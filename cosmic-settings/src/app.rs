@@ -1145,6 +1145,9 @@ impl SettingsApp {
                 }
 
                 for page in unload {
+                    if page == self.active_page {
+                        continue;
+                    }
                     self.loaded_pages.remove(&page);
                     self.pages.on_leave(page);
                 }
