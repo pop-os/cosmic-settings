@@ -245,3 +245,72 @@ pub trait AutoBind<Message: Clone + 'static>: Page<Message> + Default + 'static 
         page
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::section::Section;
+    use crate::{Content, Info, Page};
+    use cosmic::Task;
+    use regex::Regex;
+    use slotmap::SlotMap;
+
+    /// A minimal page for testing — stores a flag so on_leave is observable.
+    #[derive(Default)]
+    struct TestPage {
+        entity: crate::Entity,
+        left: bool,
+        desc: String,
+    }
+
+    impl Page<()> for TestPage {
+        fn info(&self) -> Info {
+            Info::new("test-page", "test-icon").title("Test Page")
+        }
+
+        fn content(&self, sections: &mut SlotMap<section::Entity, Section<()>>) -> Option<Content> {
+            let mut descriptions = slab::Slab::new();
+            descriptions.insert(self.desc.clone());
+            let section = Section::default()
+                .descriptions(descriptions)
+                .view::<TestPage>(|_, _, _| cosmic::widget::space().into());
+            Some(vec![sections.insert(section)])
+        }
+
+        fn set_id(&mut self, entity: crate::Entity) {
+            self.entity = entity;
+        }
+
+        fn on_leave(&mut self) -> Task<()> {
+            self.left = true;
+            Task::none()
+        }
+    }
+
+    /// Registers a page whose only section has the given description.
+    /// Returns the page entity.
+    fn register_page_with_desc(binder: &mut Binder<()>, description: &str) -> crate::Entity {
+        let page = TestPage {
+            desc: description.to_string(),
+            ..TestPage::default()
+        };
+        binder.register_page(page)
+    }
+
+    #[test]
+    fn search_finds_matching_sections() {
+        let mut binder = Binder::<()>::default();
+
+        let page_a = register_page_with_desc(&mut binder, "Wi-Fi connections and profiles");
+        let page_b = register_page_with_desc(&mut binder, "VPN connections and profiles");
+        let page_c = register_page_with_desc(&mut binder, "Wired connections and profiles");
+
+        let re = Regex::new("(?i)vpn").unwrap();
+        let results: Vec<_> = binder.search(&re).collect();
+
+        assert_eq!(results.len(), 1, "only VPN page should match 'vpn'");
+        assert_eq!(results[0].0, page_b);
+        assert_ne!(results[0].0, page_a);
+        assert_ne!(results[0].0, page_c);
+    }
+}
