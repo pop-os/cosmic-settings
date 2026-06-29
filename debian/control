@@ -8,6 +8,7 @@ Build-Depends:
     fonts-open-sans,
     just,
     libclang-dev,
+    libdav1d-dev,
     libexpat1-dev,
     libfontconfig-dev,
     libfreetype-dev,
