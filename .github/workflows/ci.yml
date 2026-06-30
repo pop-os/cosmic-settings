@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: install system dependencies
-        run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
+        run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libdav1d-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
       - uses: actions/checkout@v6
       - name: install toolchain
         run: rustup toolchain install 1.90.0 --component clippy
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: install system dependencies
-        run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
+        run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libdav1d-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev
       - uses: actions/checkout@v6
       - name: install toolchain
         run: rustup show
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: install system dependencies
-        run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev just
+        run: sudo apt-get update && sudo apt-get install lld cmake libclang-dev libdav1d-dev libexpat1-dev libfontconfig-dev libfreetype-dev libpipewire-0.3-dev libpulse-dev pkg-config libxkbcommon-dev libudev-dev libinput-dev libwayland-dev just
       - uses: actions/checkout@v6
       - name: install toolchain
         run: rustup show
