@@ -103,7 +103,7 @@ impl Default for Page {
                     error!(?err, "Failed to read config 'show_week_numbers'");
                 }
 
-                true
+                false
             });
 
         Self {
