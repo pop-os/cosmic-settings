@@ -47,13 +47,7 @@ futures = "0.3.32"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 i18n-embed-fl = "0.10.0"
-image = { version = "0.25", default-features = false, features = [
-    "jpeg",
-    "png",
-    "rayon",
-    "webp",
-    "hdr",
-] }
+image.workspace = true
 indexmap = "2.13.0"
 itertools = "0.14.0"
 itoa = "1.0.17"
@@ -118,7 +112,8 @@ git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
-default = ["a11y", "linux", "single-instance", "wgpu", "systemd"]
+default = ["a11y", "avif", "linux", "single-instance", "wgpu", "systemd"]
+avif = ["image/avif-native"]
 gettext = ["dep:gettext-rs"]
 systemd = []
 openrc = []

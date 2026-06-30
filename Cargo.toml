@@ -10,6 +10,13 @@ rust-version = "1.93"
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
 tokio = { version = "1.49.0", features = ["macros"] }
 iced_winit = { git = "https://github.com/pop-os/libcosmic", default-features = false }
+image = { version = "0.25.10", default-features = false, features = [
+    "jpeg",
+    "png",
+    "rayon",
+    "webp",
+    "hdr",
+] }
 
 [workspace.dependencies.libcosmic]
 features = [

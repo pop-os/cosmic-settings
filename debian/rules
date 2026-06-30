@@ -1,6 +1,7 @@
 #!/usr/bin/make -f
 
 export DESTDIR = debian/tmp
+OS_VERSION = $(shell rg VERSION_ID /etc/os-release | awk -F\" '{print $2}')
 
 %:
 	dh $@
@@ -9,7 +10,11 @@ override_dh_auto_clean:
 	ischroot || just vendor
 
 override_dh_auto_build:
-	test -e vendor.tar && just build-vendored --features systemd || just build-release --features systemd
+ifeq ($(OS_VERSION),22.04)
+	test -e vendor.tar && just build-vendored || just build-release --no-default-features
+else
+	test -e vendor.tar && just build-vendored || just build-release
+endif
 
 override_dh_auto_install:
 	just rootdir=$(DESTDIR) install
