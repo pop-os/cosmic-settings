@@ -472,10 +472,8 @@ fn format() -> Section<crate::pages::Message> {
                         .toggler(page.show_date_in_top_panel, Message::ShowDate),
                 )
                 .add(
-                    settings::item::builder(&section.descriptions[show_week_numbers]).toggler(
-                        page.show_week_numbers,
-                        Message::ShowWeekNumbers,
-                    ),
+                    settings::item::builder(&section.descriptions[show_week_numbers])
+                        .toggler(page.show_week_numbers, Message::ShowWeekNumbers),
                 )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)
