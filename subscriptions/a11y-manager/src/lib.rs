@@ -1,4 +1,4 @@
-use cosmic_protocols::a11y::v1::client::cosmic_a11y_manager_v1::{self, ActiveState};
+use cosmic_protocols::a11y::v1::client::cosmic_a11y_manager_v1;
 use num_derive::{FromPrimitive, ToPrimitive};
 use sctk::reexports::calloop::{self, LoopSignal, channel};
 use sctk::reexports::calloop_wayland_source::WaylandSource;
@@ -14,7 +14,8 @@ pub enum AccessibilityEvent {
     Magnifier(bool),
     ScreenFilter {
         inverted: bool,
-        filter: Option<ColorFilter>,
+        filter: ColorFilter,
+        filter_state: bool,
     },
     Closed,
 }
@@ -34,7 +35,8 @@ pub enum AccessibilityRequest {
     Magnifier(bool),
     ScreenFilter {
         inverted: bool,
-        filter: Option<ColorFilter>,
+        filter: ColorFilter,
+        filter_state: bool,
     },
 }
 
@@ -76,7 +78,8 @@ fn wayland_thread(
 
         magnifier: bool,
         screen_inverted: bool,
-        screen_filter: Option<ColorFilter>,
+        screen_filter: ColorFilter,
+        screen_filter_state: bool,
     }
 
     impl Dispatch<cosmic_a11y_manager_v1::CosmicA11yManagerV1, ()> for State {
@@ -106,41 +109,6 @@ fn wayland_thread(
                         state.magnifier = magnifier;
                     }
                 }
-                cosmic_a11y_manager_v1::Event::ScreenFilter { inverted, filter } => {
-                    let inverted = inverted
-                        .into_result()
-                        .unwrap_or(cosmic_a11y_manager_v1::ActiveState::Disabled)
-                        == cosmic_a11y_manager_v1::ActiveState::Enabled;
-                    let filter = match filter {
-                        WEnum::Value(cosmic_a11y_manager_v1::Filter::Disabled) => None,
-                        WEnum::Value(cosmic_a11y_manager_v1::Filter::Greyscale) => {
-                            Some(ColorFilter::Greyscale)
-                        }
-                        WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeProtanopia) => {
-                            Some(ColorFilter::Protanopia)
-                        }
-                        WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeDeuteranopia) => {
-                            Some(ColorFilter::Deuteranopia)
-                        }
-                        WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeTritanopia) => {
-                            Some(ColorFilter::Tritanopia)
-                        }
-                        WEnum::Value(_) | WEnum::Unknown(_) => Some(ColorFilter::Unknown),
-                    };
-
-                    if inverted != state.screen_inverted || filter != state.screen_filter {
-                        if state
-                            .tx
-                            .blocking_send(AccessibilityEvent::ScreenFilter { inverted, filter })
-                            .is_err()
-                        {
-                            state.loop_signal.stop();
-                            state.loop_signal.wakeup();
-                        };
-                        state.screen_inverted = inverted;
-                        state.screen_filter = filter;
-                    }
-                }
                 cosmic_a11y_manager_v1::Event::ScreenFilter2 {
                     inverted,
                     filter,
@@ -150,33 +118,37 @@ fn wayland_thread(
                         .into_result()
                         .unwrap_or(cosmic_a11y_manager_v1::ActiveState::Disabled)
                         == cosmic_a11y_manager_v1::ActiveState::Enabled;
-                    let filter = if matches!(filter_state, WEnum::Value(ActiveState::Enabled)) {
-                        match filter {
-                            WEnum::Value(cosmic_a11y_manager_v1::Filter::Disabled) => {
-                                unreachable!()
-                            }
-                            WEnum::Value(cosmic_a11y_manager_v1::Filter::Greyscale) => {
-                                Some(ColorFilter::Greyscale)
-                            }
-                            WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeProtanopia) => {
-                                Some(ColorFilter::Protanopia)
-                            }
-                            WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeDeuteranopia) => {
-                                Some(ColorFilter::Deuteranopia)
-                            }
-                            WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeTritanopia) => {
-                                Some(ColorFilter::Tritanopia)
-                            }
-                            WEnum::Value(_) | WEnum::Unknown(_) => Some(ColorFilter::Unknown),
+                    let filter_state = filter_state
+                        .into_result()
+                        .unwrap_or(cosmic_a11y_manager_v1::ActiveState::Disabled)
+                        == cosmic_a11y_manager_v1::ActiveState::Enabled;
+                    let filter = match filter {
+                        WEnum::Value(cosmic_a11y_manager_v1::Filter::Greyscale) => {
+                            ColorFilter::Greyscale
                         }
-                    } else {
-                        None
+                        WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeProtanopia) => {
+                            ColorFilter::Protanopia
+                        }
+                        WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeDeuteranopia) => {
+                            ColorFilter::Deuteranopia
+                        }
+                        WEnum::Value(cosmic_a11y_manager_v1::Filter::DaltonizeTritanopia) => {
+                            ColorFilter::Tritanopia
+                        }
+                        WEnum::Value(_) | WEnum::Unknown(_) => ColorFilter::Unknown,
                     };
 
-                    if inverted != state.screen_inverted || filter != state.screen_filter {
+                    if inverted != state.screen_inverted
+                        || filter != state.screen_filter
+                        || filter_state != state.screen_filter_state
+                    {
                         if state
                             .tx
-                            .blocking_send(AccessibilityEvent::ScreenFilter { inverted, filter })
+                            .blocking_send(AccessibilityEvent::ScreenFilter {
+                                inverted,
+                                filter,
+                                filter_state,
+                            })
                             .is_err()
                         {
                             state.loop_signal.stop();
@@ -184,6 +156,7 @@ fn wayland_thread(
                         };
                         state.screen_inverted = inverted;
                         state.screen_filter = filter;
+                        state.screen_filter_state = filter_state;
                     }
                 }
                 _ => unreachable!(),
@@ -233,49 +206,33 @@ fn wayland_thread(
                     cosmic_a11y_manager_v1::ActiveState::Disabled
                 });
             }
-            channel::Event::Msg(AccessibilityRequest::ScreenFilter { inverted, filter }) => {
-                let mut filter_state = ActiveState::Enabled;
+            channel::Event::Msg(AccessibilityRequest::ScreenFilter {
+                inverted,
+                filter,
+                filter_state,
+            }) => {
                 let filter = match filter {
-                    None => {
-                        if state.global.version() < 3 {
-                            cosmic_a11y_manager_v1::Filter::Disabled
-                        } else {
-                            filter_state = ActiveState::Disabled;
-                            cosmic_a11y_manager_v1::Filter::Unknown
-                        }
-                    }
-                    Some(ColorFilter::Greyscale) => cosmic_a11y_manager_v1::Filter::Greyscale,
-                    Some(ColorFilter::Protanopia) => {
-                        cosmic_a11y_manager_v1::Filter::DaltonizeProtanopia
-                    }
-                    Some(ColorFilter::Deuteranopia) => {
+                    ColorFilter::Greyscale => cosmic_a11y_manager_v1::Filter::Greyscale,
+                    ColorFilter::Protanopia => cosmic_a11y_manager_v1::Filter::DaltonizeProtanopia,
+                    ColorFilter::Deuteranopia => {
                         cosmic_a11y_manager_v1::Filter::DaltonizeDeuteranopia
                     }
-                    Some(ColorFilter::Tritanopia) => {
-                        cosmic_a11y_manager_v1::Filter::DaltonizeTritanopia
-                    }
-                    Some(ColorFilter::Unknown) => cosmic_a11y_manager_v1::Filter::Unknown,
+                    ColorFilter::Tritanopia => cosmic_a11y_manager_v1::Filter::DaltonizeTritanopia,
+                    ColorFilter::Unknown => cosmic_a11y_manager_v1::Filter::Unknown,
                 };
-                if state.global.version() < 3 {
-                    state.global.set_screen_filter(
-                        if inverted {
-                            cosmic_a11y_manager_v1::ActiveState::Enabled
-                        } else {
-                            cosmic_a11y_manager_v1::ActiveState::Disabled
-                        },
-                        filter,
-                    );
-                } else {
-                    state.global.set_screen_filter2(
-                        if inverted {
-                            cosmic_a11y_manager_v1::ActiveState::Enabled
-                        } else {
-                            cosmic_a11y_manager_v1::ActiveState::Disabled
-                        },
-                        filter,
-                        filter_state,
-                    );
-                }
+                state.global.set_screen_filter2(
+                    if inverted {
+                        cosmic_a11y_manager_v1::ActiveState::Enabled
+                    } else {
+                        cosmic_a11y_manager_v1::ActiveState::Disabled
+                    },
+                    filter,
+                    if filter_state {
+                        cosmic_a11y_manager_v1::ActiveState::Enabled
+                    } else {
+                        cosmic_a11y_manager_v1::ActiveState::Disabled
+                    },
+                );
             }
             channel::Event::Closed => {
                 state.loop_signal.stop();
@@ -291,7 +248,8 @@ fn wayland_thread(
 
         magnifier: false,
         screen_inverted: false,
-        screen_filter: None,
+        screen_filter: ColorFilter::Greyscale,
+        screen_filter_state: false,
     };
 
     event_loop.run(None, &mut state, |_| {})?;
