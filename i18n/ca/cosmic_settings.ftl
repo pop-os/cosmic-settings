@@ -5,3 +5,7 @@ identity = Identitat
 password-confirm = Confirmeu la contrasenya
 connected = Connectat
 settings = Configuració
+save = Desa
+forget-dialog = Oblidar aquesta xarxa Wi-Fi?
+    .description = Caldrà tornar a introduir la contrasenya per utilitzar aquesta xarxa en el futur.
+close = Tancar

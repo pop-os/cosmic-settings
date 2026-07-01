@@ -282,6 +282,22 @@ keyboard-special-char = Zadávání speciálních znaků
     .compose = Klávesa Compose
     .compose-desc = Klávesa Compose umožňuje zadávat širokou škálu znaků. Pro její použití stiskněte Compose a poté zadejte sekvenci znaků. Například Compose, C, O vloží znak „©“, zatímco Compose, A, ‘ vloží znak „á“.
     .caps = Klávesa Caps Lock
+    .ctrl = Control
+    .ctrl-right = Pravý Ctrl
+    .swap-with-ctrl = Zaměnit s klávesou Control
+    .alt = Alt
+    .alt-left = Levý Alt
+    .alt-right = Pravý Alt
+    .super = Super
+    .super-left = Levý Super
+    .super-right = Pravý Super
+    .menu = Klávesa Menu
+    .backspace = Backspace
+    .escape = Escape
+    .swap-with-escape = Zaměnit s klávesou Escape
+    .print-screen = Print Screen
+    .scroll-lock = Scroll Lock
+    .none = Žádná
 
 ## Input: Keyboard: Shortcuts
 
@@ -469,7 +485,7 @@ super-key = Akce klávesy Super
     .launcher = Otevřít spouštěč
     .workspaces = Otevřít pracovní plochy
     .applications = Otevřít aplikace
-    .disable = Zakázat
+    .none = Žádná
 edge-gravity = Plovoucí okna se přichytávají k blízkým okrajům
 focus-navigation = Navigace zaměření
     .focus-follows-cursor = Zaměření následuje kurzor
