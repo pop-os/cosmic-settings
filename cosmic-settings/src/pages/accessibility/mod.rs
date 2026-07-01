@@ -400,22 +400,20 @@ impl Page {
                 if let Some(sender) = self.wayland_thread.as_ref() {
                     let _ = sender.send(AccessibilityRequest::ScreenFilter {
                         inverted: self.screen_inverted,
-                        filter: cosmic_a11y_manager::ColorFilter::Unknown,
+                        filter: self.screen_filter_selection,
                         filter_state: active,
                     });
                 }
             }
             Message::SetScreenFilterSelection(filter) => {
-                if self.wayland_available.is_some_and(|ver| ver >= 2) {
-                    if let Some(sender) = self.wayland_thread.as_ref() {
-                        let _ = sender.send(AccessibilityRequest::ScreenFilter {
-                            inverted: self.screen_inverted,
-                            filter: filter,
-                            filter_state: self.screen_filter_active,
-                        });
-                    }
-                } else {
-                    self.screen_filter_selection = filter;
+                if self.wayland_available.is_some_and(|ver| ver >= 2)
+                    && let Some(sender) = self.wayland_thread.as_ref()
+                {
+                    let _ = sender.send(AccessibilityRequest::ScreenFilter {
+                        inverted: self.screen_inverted,
+                        filter: filter,
+                        filter_state: self.screen_filter_active,
+                    });
                 }
             }
             Message::Surface(a) => {
