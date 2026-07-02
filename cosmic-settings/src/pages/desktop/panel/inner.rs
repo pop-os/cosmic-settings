@@ -118,7 +118,7 @@ pub(crate) fn behavior_and_position<
                 .title(&section.title)
                 .add(
                     settings::item::builder(&descriptions[autohide_label])
-                        .toggler(panel_config.autohide.is_some(), Message::AutoHidePanel),
+                        .toggler(panel_config.autohide_enabled(), Message::AutoHidePanel),
                 )
                 .add(settings::item(
                     &descriptions[position],
@@ -542,18 +542,10 @@ impl PageInner {
             Message::AutoHidePanel(enabled) => {
                 if enabled {
                     _ = panel_config.set_exclusive_zone(helper, false);
-                    _ = panel_config.set_autohide(
-                        helper,
-                        Some(AutoHide {
-                            wait_time: 1000,
-                            transition_time: 200,
-                            handle_size: 4,
-                            unhide_delay: 200,
-                        }),
-                    );
+                    _ = panel_config.set_autohide(helper, AutoHide::OnOverlap);
                 } else {
                     _ = panel_config.set_exclusive_zone(helper, true);
-                    _ = panel_config.set_autohide(helper, None);
+                    _ = panel_config.set_autohide(helper, AutoHide::Never);
                 }
             }
             Message::PanelAnchor(i) => {

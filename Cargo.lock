@@ -1457,7 +1457,7 @@ dependencies = [
 [[package]]
 name = "cosmic-panel-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel#546a6c45210574caed9a3e51446aa8ad622d3627"
+source = "git+https://github.com/pop-os/cosmic-panel#029400b2b447d9d31f1a772d7f6f0d5eed2ea21e"
 dependencies = [
  "anyhow",
  "cosmic-config",
@@ -8908,7 +8908,7 @@ checksum = "2fb433233f2df9344722454bc7e96465c9d03bff9d77c248f9e7523fe79585b5"
 [[package]]
 name = "xdg-shell-wrapper-config"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/cosmic-panel#546a6c45210574caed9a3e51446aa8ad622d3627"
+source = "git+https://github.com/pop-os/cosmic-panel#029400b2b447d9d31f1a772d7f6f0d5eed2ea21e"
 dependencies = [
  "serde",
  "wayland-protocols-wlr",
