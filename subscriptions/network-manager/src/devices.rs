@@ -188,7 +188,7 @@ pub fn subscription<I: 'static + Hash + Copy + Send + Sync + Debug>(
             conn,
         },
         |Wrapper {
-             id,
+             id: _,
              has_popup,
              conn,
          }| {
