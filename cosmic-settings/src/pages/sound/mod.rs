@@ -3,20 +3,19 @@
 
 pub mod device_profiles;
 
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::Arc;
-
 use cosmic::iced::{self, Alignment, Length, window};
 use cosmic::widget::space::horizontal as horizontal_space;
 use cosmic::widget::{self, settings};
 use cosmic::{Apply, Element, Task, surface};
 use cosmic_config::{Config, ConfigGet, ConfigSet};
-use cosmic_settings_audio_client::{self as audio_client, CosmicAudioProxy};
+use cosmic_settings_audio_client::{self as audio_client, Client, CosmicAudioProxy};
 use cosmic_settings_page::{self as page, Section, section};
 use cosmic_settings_sound::model;
 use futures::executor::block_on;
 use slotmap::SlotMap;
+use std::sync::atomic::AtomicU32;
+use std::sync::{Arc, atomic};
+use std::time::Duration;
 
 const AUDIO_CONFIG: &str = "com.system76.CosmicAudio";
 const AMPLIFICATION_SINK: &str = "amplification_sink";
@@ -26,6 +25,8 @@ const AMPLIFICATION_SOURCE: &str = "amplification_source";
 pub enum Message {
     /// Updates for the model.
     Model(cosmic_settings_sound::Message),
+    /// Reattach the client
+    ReattachClient(Arc<Client>),
     /// Change the default output.
     SetDefaultSink(usize),
     /// Change the default input output.
@@ -63,9 +64,12 @@ impl From<Message> for crate::Message {
 pub struct Page {
     entity: page::Entity,
     device_profiles: page::Entity,
-    client: Option<Rc<RefCell<audio_client::Client>>>,
+    client: Option<audio_client::Client>,
     model: model::Model,
     sound_config: Option<Config>,
+    applied_sink_volume: Arc<AtomicU32>,
+    applied_sink_volume_balance: Arc<AtomicU32>,
+    applied_source_volume: Arc<AtomicU32>,
     amplification_sink: bool,
     amplification_source: bool,
 }
@@ -84,6 +88,9 @@ impl Default for Page {
                 ..model::Model::default()
             },
             sound_config: None,
+            applied_sink_volume: Arc::new(AtomicU32::new(0)),
+            applied_sink_volume_balance: Arc::new(AtomicU32::new(0)),
+            applied_source_volume: Arc::new(AtomicU32::new(0)),
             amplification_sink: false,
             amplification_source: false,
         }
@@ -174,7 +181,7 @@ impl Page {
 
             Message::Model(cosmic_settings_sound::Message::Client(client)) => {
                 if let Some(client) = Arc::into_inner(client) {
-                    self.client = Some(Rc::new(RefCell::new(client)));
+                    self.client = Some(client);
                     self.model = model::Model {
                         text: model::Text {
                             hd_audio: fl!("sound-hd-audio"),
@@ -185,13 +192,19 @@ impl Page {
                 }
             }
 
+            Message::ReattachClient(client) => {
+                if let Some(client) = Arc::into_inner(client) {
+                    self.client = Some(client);
+                }
+            }
+
             Message::SetDefaultSink(pos) => {
                 if let Some(&pos) = self.model.sinks.sorted_index.get(pos)
                     && let Some(&node_id) = self.model.sinks.id.get(pos as usize)
                     && let Some(client) = self.client.as_mut()
                 {
                     block_on(async {
-                        _ = client.borrow_mut().conn.set_default(node_id, true).await;
+                        _ = client.conn.set_default(node_id, true).await;
                     });
                 }
             }
@@ -202,7 +215,7 @@ impl Page {
                     && let Some(client) = self.client.as_mut()
                 {
                     block_on(async {
-                        _ = client.borrow_mut().conn.set_default(node_id, true).await;
+                        _ = client.conn.set_default(node_id, true).await;
                     });
                 }
             }
@@ -210,7 +223,7 @@ impl Page {
             Message::ToggleSinkMute => {
                 if let Some(ref mut client) = self.client {
                     block_on(async {
-                        _ = client.borrow_mut().conn.sink_mute_toggle().await;
+                        _ = client.conn.sink_mute_toggle().await;
                     });
                 }
             }
@@ -218,40 +231,64 @@ impl Page {
             Message::ToggleSourceMute => {
                 if let Some(ref mut client) = self.client {
                     block_on(async {
-                        _ = client.borrow_mut().conn.source_mute_toggle().await;
+                        _ = client.conn.source_mute_toggle().await;
                     });
                 }
             }
 
             Message::SetSinkVolume(volume) => {
-                if let Some(ref mut client) = self.client {
-                    self.model.active_sink.volume = volume;
-                    self.model.active_sink.volume_text = volume.to_string();
-                    block_on(async {
-                        _ = client.borrow_mut().conn.set_sink_volume(volume).await;
+                self.applied_sink_volume
+                    .store(volume, atomic::Ordering::Relaxed);
+                self.model.active_sink.volume = volume;
+                self.model.active_sink.volume_text = volume.to_string();
+                if let Some(mut client) = self.client.take() {
+                    let volume = Arc::clone(&self.applied_sink_volume);
+                    return cosmic::Task::future(async move {
+                        tokio::time::sleep(Duration::from_millis(128)).await;
+                        _ = client
+                            .conn
+                            .set_sink_volume(volume.load(atomic::Ordering::Relaxed))
+                            .await;
+                        Message::ReattachClient(Arc::new(client)).into()
                     });
                 }
             }
 
             Message::SetSourceVolume(volume) => {
-                if let Some(ref mut client) = self.client {
-                    self.model.active_source.volume = volume;
-                    self.model.active_source.volume_text = volume.to_string();
-                    block_on(async {
-                        _ = client.borrow_mut().conn.set_source_volume(volume).await;
+                self.applied_source_volume
+                    .store(volume, atomic::Ordering::Relaxed);
+                self.model.active_source.volume = volume;
+                self.model.active_source.volume_text = volume.to_string();
+                if let Some(mut client) = self.client.take() {
+                    let volume = Arc::clone(&self.applied_source_volume);
+                    return cosmic::Task::future(async move {
+                        tokio::time::sleep(Duration::from_millis(128)).await;
+                        _ = client
+                            .conn
+                            .set_sink_volume(volume.load(atomic::Ordering::Relaxed))
+                            .await;
+                        Message::ReattachClient(Arc::new(client)).into()
                     });
                 }
             }
 
             Message::SetSinkBalance(balance) => {
-                if let Some((client, sink_id)) = self.client.as_ref().zip(self.model.default_sink) {
-                    self.model.active_sink.balance = Some(balance);
-                    block_on(async {
+                self.applied_sink_volume_balance
+                    .store((balance * 1000.0) as u32, atomic::Ordering::Relaxed);
+                self.model.active_sink.balance = Some(balance);
+                if let Some((mut client, sink_id)) = self.client.take().zip(self.model.default_sink)
+                {
+                    let balance = Arc::clone(&self.applied_sink_volume_balance);
+                    return cosmic::Task::future(async move {
+                        tokio::time::sleep(Duration::from_millis(128)).await;
                         _ = client
-                            .borrow_mut()
                             .conn
-                            .set_node_volume_balance(sink_id, Some(balance))
+                            .set_node_volume_balance(
+                                sink_id,
+                                Some(balance.load(atomic::Ordering::Relaxed) as f32 / 1000.0),
+                            )
                             .await;
+                        Message::ReattachClient(Arc::new(client)).into()
                     });
                 }
             }
