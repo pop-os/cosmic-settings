@@ -10,11 +10,13 @@ use cosmic::iced::{Alignment, Length};
 use cosmic::widget::space::horizontal as horizontal_space;
 use cosmic::widget::{self, icon};
 use cosmic::{Apply, Element, Task};
-use cosmic_dbus_networkmanager::interface::enums::DeviceState;
-use cosmic_settings_network_manager_subscription::current_networks::ActiveConnectionInfo;
-use cosmic_settings_network_manager_subscription::{self as network_manager, NetworkManagerState};
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
+
+use super::backend as network_manager;
+use super::backend::NetworkManagerState;
+use super::backend::current_networks::ActiveConnectionInfo;
+use super::backend::devices::DeviceState;
 
 pub type ConnectionId = Arc<str>;
 
@@ -32,8 +34,8 @@ pub enum Message {
     Error(String),
     /// An update from the network manager daemon
     NetworkManager(network_manager::Event),
-    /// Successfully connected to the system dbus.
-    NetworkManagerConnect(zbus::Connection),
+    /// Successfully connected to NetworkManager.
+    NetworkManagerConnect(nmrs::NetworkManager),
     /// Refresh devices and their connection profiles
     Refresh,
     /// Create a dialog to ask for confirmation of removal.
@@ -91,7 +93,7 @@ pub struct Page {
 
 #[derive(Debug)]
 pub struct NmState {
-    conn: zbus::Connection,
+    conn: nmrs::NetworkManager,
     sender: futures::channel::mpsc::UnboundedSender<network_manager::Request>,
     active_conns: Vec<ActiveConnectionInfo>,
     devices: Vec<Arc<network_manager::devices::DeviceInfo>>,
@@ -154,9 +156,9 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
             return cosmic::task::future(async move {
-                zbus::Connection::system()
+                nmrs::NetworkManager::new()
                     .await
-                    .context("failed to create system dbus connection")
+                    .context("failed to connect to NetworkManager")
                     .map_or_else(
                         |why| Message::Error(why.to_string()),
                         Message::NetworkManagerConnect,
@@ -356,18 +358,14 @@ impl Page {
         Task::none()
     }
 
-    fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
+    fn connect(&mut self, conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
             let (canceller, task) =
                 crate::utils::forward_event_loop(move |mut sender| async move {
                     let (tx, mut rx) = futures::channel::mpsc::channel(1);
 
                     let watchers = std::pin::pin!(async move {
-                        futures::join!(
-                            network_manager::watch(conn.clone(), tx.clone()),
-                            network_manager::active_conns::watch(conn.clone(), tx.clone()),
-                            network_manager::devices::watch(conn, true, tx)
-                        )
+                        network_manager::watch(conn, tx).await;
                     });
 
                     let forwarder = std::pin::pin!(async move {
@@ -622,7 +620,7 @@ fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
         .into()
 }
 
-fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
+fn update_state(conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
     cosmic::task::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
@@ -631,7 +629,7 @@ fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
     })
 }
 
-fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
+fn update_devices(conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
     cosmic::task::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::Ethernet);
