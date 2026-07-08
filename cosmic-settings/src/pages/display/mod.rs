@@ -913,8 +913,8 @@ impl Page {
             Some(orientation) => self.set_dialog(
                 Randr::Transform(match orientation {
                     1 => Transform::Rotate90,
-                    2 => Transform::Flipped180,
-                    3 => Transform::Flipped270,
+                    2 => Transform::Rotate180,
+                    3 => Transform::Rotate270,
                     _ => Transform::Normal,
                 }),
                 &request,
