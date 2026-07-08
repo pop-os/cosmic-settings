@@ -41,7 +41,6 @@ pub enum ContextView {
     ApplicationBackground,
     ContainerBackground,
     ControlComponent,
-    FrostedGlass,
     #[cfg(feature = "cosmic-comp-config")]
     ShadowAndCorners,
     CustomAccent,
@@ -160,12 +159,6 @@ pub enum Message {
     UseDefaultWindowHint(bool),
     WindowHintSize(u32),
     Daytime(bool),
-    Blur(u8),
-    Glass(f32),
-    FrostedPanel(bool),
-    FrostedApplets(bool),
-    FrostedSystemInterface(bool),
-    FrostedWindows(bool),
 }
 
 impl From<Message> for crate::app::Message {
@@ -200,7 +193,6 @@ impl Page {
 
             Message::DrawerOpen(context_view) => {
                 self.context_view = Some(context_view);
-                self.drawer = drawer::Content::from(&self.theme_manager);
                 tasks.push(cosmic::task::message(
                     crate::app::Message::OpenContextDrawer(self.entity),
                 ));
@@ -535,66 +527,6 @@ impl Page {
                         }
                     });
                 }
-            }
-            Message::Blur(b) => {
-                let Ok(blur_strength) = b.try_into() else {
-                    tracing::error!("Invalid blur strength: {b}");
-                    return Task::none();
-                };
-                theme_staged = self.theme_manager.set_frosted(blur_strength).map(|_| {
-                    self.drawer.reset(&self.theme_manager);
-                    theme_manager::ThemeStaged::Current
-                });
-
-                tasks.push(self.drawer.update_blur(blur_strength as u8));
-            }
-            Message::Glass(glass) => {
-                let mut alpha_map = cosmic::cosmic_theme::AlphaMap::default();
-                let glass_offset_min = alpha_map.extremely_high_2;
-                let glass_offset_max = 1.0 - alpha_map.extremely_low;
-                let offset = (glass - 0.5) / 0.5
-                    * if glass < 0.5 {
-                        glass_offset_min
-                    } else {
-                        glass_offset_max
-                    };
-                alpha_map = alpha_map.offset(offset);
-
-                // TODO optimize and apply to both light and dark themes
-                theme_staged = self.theme_manager.set_glass(alpha_map).map(|_| {
-                    self.drawer.reset(&self.theme_manager);
-                    theme_manager::ThemeStaged::Current
-                });
-
-                tasks.push(self.drawer.update_glass(glass));
-            }
-            Message::FrostedSystemInterface(v) => {
-                theme_staged = self.theme_manager.set_frosted_system_interface(v).map(|_| {
-                    self.drawer.reset(&self.theme_manager);
-                    theme_manager::ThemeStaged::Current
-                });
-                tasks.push(self.drawer.update_frosted_system_interface(v));
-            }
-            Message::FrostedWindows(v) => {
-                theme_staged = self.theme_manager.set_frosted_windows(v).map(|_| {
-                    self.drawer.reset(&self.theme_manager);
-                    theme_manager::ThemeStaged::Current
-                });
-                tasks.push(self.drawer.update_frosted_windows(v));
-            }
-            Message::FrostedPanel(v) => {
-                theme_staged = self.theme_manager.set_frosted_panel(v).map(|_| {
-                    self.drawer.reset(&self.theme_manager);
-                    theme_manager::ThemeStaged::Current
-                });
-                tasks.push(self.drawer.update_frosted_panel(v));
-            }
-            Message::FrostedApplets(v) => {
-                theme_staged = self.theme_manager.set_frosted_applets(v).map(|_| {
-                    self.drawer.reset(&self.theme_manager);
-                    theme_manager::ThemeStaged::Current
-                });
-                tasks.push(self.drawer.update_frosted_applets(v));
             }
         }
 
