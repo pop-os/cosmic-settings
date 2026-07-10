@@ -140,7 +140,7 @@ pub fn subscription<I: Copy + Debug + std::hash::Hash + 'static>(
             self.id.hash(state);
         }
     }
-    Subscription::run_with(Wrapper { id, conn }, |Wrapper { id, conn }| {
+    Subscription::run_with(Wrapper { id, conn }, |Wrapper { id: _, conn }| {
         let conn = conn.clone();
         stream::channel(
             50,
