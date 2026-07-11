@@ -17,6 +17,8 @@ pub enum Message {
     SetWorkspaceMode(WorkspaceMode),
     SetWorkspaceLayout(WorkspaceLayout),
     SetWorkspaceWraparound(bool),
+    SetGridColumns(u32),
+    SetGridRows(u32),
     SetShowName(bool),
     SetShowNumber(bool),
     Surface(surface::Action),
@@ -127,6 +129,14 @@ impl Page {
                 self.comp_workspace_config.workspace_wraparound = value;
                 self.save_comp_config();
             }
+            Message::SetGridColumns(value) => {
+                self.comp_workspace_config.workspace_grid_columns = value.max(1);
+                self.save_comp_config();
+            }
+            Message::SetGridRows(value) => {
+                self.comp_workspace_config.workspace_grid_rows = value.max(1);
+                self.save_comp_config();
+            }
             Message::SetShowName(value) => {
                 self.show_workspace_name = value;
                 if let Err(err) = self.config.set("show_workspace_name", value) {
@@ -229,6 +239,9 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         vertical = fl!("workspaces-orientation", "vertical");
         horizontal = fl!("workspaces-orientation", "horizontal");
+        grid = fl!("workspaces-orientation", "grid");
+        grid_columns = fl!("workspaces-orientation", "grid-columns");
+        grid_rows = fl!("workspaces-orientation", "grid-rows");
     });
 
     Section::default()
@@ -236,7 +249,9 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
-            settings::section()
+            let is_grid =
+                page.comp_workspace_config.workspace_layout == WorkspaceLayout::Grid;
+            let mut section = settings::section()
                 .title(&section.title)
                 .add(settings::item::builder(&descriptions[vertical]).radio(
                     WorkspaceLayout::Vertical,
@@ -248,6 +263,41 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
                     Some(page.comp_workspace_config.workspace_layout),
                     Message::SetWorkspaceLayout,
                 ))
+                .add(settings::item::builder(&descriptions[grid]).radio(
+                    WorkspaceLayout::Grid,
+                    Some(page.comp_workspace_config.workspace_layout),
+                    Message::SetWorkspaceLayout,
+                ));
+            if is_grid {
+                section = section
+                    .add(
+                        settings::item::builder(&descriptions[grid_columns]).control(
+                            widget::spin_button(
+                                page.comp_workspace_config.workspace_grid_columns.to_string(),
+                                "grid columns",
+                                page.comp_workspace_config.workspace_grid_columns,
+                                1,
+                                1,
+                                10,
+                                Message::SetGridColumns,
+                            ),
+                        ),
+                    )
+                    .add(
+                        settings::item::builder(&descriptions[grid_rows]).control(
+                            widget::spin_button(
+                                page.comp_workspace_config.workspace_grid_rows.to_string(),
+                                "grid rows",
+                                page.comp_workspace_config.workspace_grid_rows,
+                                1,
+                                1,
+                                10,
+                                Message::SetGridRows,
+                            ),
+                        ),
+                    );
+            }
+            section
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })

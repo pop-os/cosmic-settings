@@ -538,6 +538,9 @@ workspaces-overview-thumbnails = Workspace overview thumbnails
 workspaces-orientation = Workspaces orientation
     .vertical = Vertical
     .horizontal = Horizontal
+    .grid = Grid
+    .grid-columns = Grid columns
+    .grid-rows = Grid rows
 
 hot-corner = Hot Corner
     .top-left-corner = Enable top-left hot corner for Workspaces
