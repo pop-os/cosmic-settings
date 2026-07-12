@@ -4,9 +4,11 @@
 // TODO make settings work
 
 use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
-use cosmic::widget::{self, settings};
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::{self, icon, settings, text};
 use cosmic::{Apply, Element, surface};
 use cosmic_comp_config::workspace::{Action, WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
+use cosmic_comp_config::WorkspaceAssignment;
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 use tracing::error;
@@ -22,6 +24,11 @@ pub enum Message {
     SetShowName(bool),
     SetShowNumber(bool),
     Surface(surface::Action),
+    SetAssignmentWorkspace(usize, u32),
+    RemoveAssignment(usize),
+    NewAssignmentAppId(String),
+    NewAssignmentWorkspace(u32),
+    AddAssignment,
 }
 
 pub struct Page {
@@ -32,6 +39,9 @@ pub struct Page {
     action_on_typing_active: Option<usize>,
     show_workspace_name: bool,
     show_workspace_number: bool,
+    workspace_assignments: Vec<WorkspaceAssignment>,
+    new_assignment_app_id: String,
+    new_assignment_workspace: u32,
 }
 
 impl Default for Page {
@@ -61,6 +71,15 @@ impl Default for Page {
 
             false
         });
+        let workspace_assignments: Vec<WorkspaceAssignment> = comp_config
+            .get("workspace_assignments")
+            .unwrap_or_else(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'workspace_assignments'");
+                }
+
+                Vec::new()
+            });
         Self {
             config,
             comp_config,
@@ -73,6 +92,9 @@ impl Default for Page {
             action_on_typing_active,
             show_workspace_name,
             show_workspace_number,
+            workspace_assignments,
+            new_assignment_app_id: String::new(),
+            new_assignment_workspace: 1,
         }
     }
 }
@@ -87,6 +109,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(multi_behavior()),
             sections.insert(workspace_orientation()),
             sections.insert(workspace_navigation()),
+            sections.insert(workspace_assignments()),
         ])
     }
 
@@ -106,6 +129,15 @@ impl Page {
             .set("workspaces", &self.comp_workspace_config)
         {
             error!(?err, "Failed to set config 'workspaces'");
+        }
+    }
+
+    fn save_assignments(&self) {
+        if let Err(err) = self
+            .comp_config
+            .set("workspace_assignments", &self.workspace_assignments)
+        {
+            error!(?err, "Failed to set config 'workspace_assignments'");
         }
     }
 
@@ -151,6 +183,36 @@ impl Page {
             }
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
+            }
+            Message::SetAssignmentWorkspace(index, value) => {
+                if let Some(rule) = self.workspace_assignments.get_mut(index) {
+                    rule.workspace = value.max(1);
+                    self.save_assignments();
+                }
+            }
+            Message::RemoveAssignment(index) => {
+                if index < self.workspace_assignments.len() {
+                    self.workspace_assignments.remove(index);
+                    self.save_assignments();
+                }
+            }
+            Message::NewAssignmentAppId(value) => {
+                self.new_assignment_app_id = value;
+            }
+            Message::NewAssignmentWorkspace(value) => {
+                self.new_assignment_workspace = value.max(1);
+            }
+            Message::AddAssignment => {
+                let app_id = self.new_assignment_app_id.trim().to_string();
+                if !app_id.is_empty() {
+                    self.workspace_assignments.push(WorkspaceAssignment {
+                        app_id,
+                        workspace: self.new_assignment_workspace,
+                    });
+                    self.new_assignment_app_id.clear();
+                    self.new_assignment_workspace = 1;
+                    self.save_assignments();
+                }
             }
         }
         cosmic::iced::Task::none()
@@ -319,6 +381,83 @@ fn workspace_navigation() -> Section<crate::pages::Message> {
                     page.comp_workspace_config.workspace_wraparound,
                     Message::SetWorkspaceWraparound,
                 ))
+                .apply(Element::from)
+                .map(crate::pages::Message::DesktopWorkspaces)
+        })
+}
+
+fn workspace_assignments() -> Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        description = fl!("workspaces-assignments", "description");
+    });
+
+    Section::default()
+        .title(fl!("workspaces-assignments"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let cosmic::cosmic_theme::Spacing { space_xs, .. } = cosmic::theme::spacing();
+            let descriptions = &section.descriptions;
+
+            let mut section = settings::section()
+                .title(&section.title)
+                .add(text::body(&descriptions[description]));
+
+            if page.workspace_assignments.is_empty() {
+                section = section.add(text::body(fl!("workspaces-assignments", "none")));
+            } else {
+                for (index, rule) in page.workspace_assignments.iter().enumerate() {
+                    let row = widget::row::with_capacity(4)
+                        .spacing(space_xs)
+                        .align_y(Alignment::Center)
+                        .push(icon::from_name("application-x-executable-symbolic").size(24))
+                        .push(text::body(rule.app_id.clone()).width(Length::Fill))
+                        .push(widget::spin_button(
+                            rule.workspace.to_string(),
+                            "workspace",
+                            rule.workspace,
+                            1,
+                            1,
+                            99,
+                            move |value| Message::SetAssignmentWorkspace(index, value),
+                        ))
+                        .push(
+                            widget::button::icon(icon::from_name("edit-delete-symbolic"))
+                                .extra_small()
+                                .on_press(Message::RemoveAssignment(index)),
+                        );
+                    section = section.add(row);
+                }
+            }
+
+            let add_row = widget::row::with_capacity(3)
+                .spacing(space_xs)
+                .align_y(Alignment::Center)
+                .push(
+                    widget::text_input(
+                        fl!("workspaces-assignments", "app-id-placeholder"),
+                        &page.new_assignment_app_id,
+                    )
+                    .on_input(Message::NewAssignmentAppId)
+                    .width(Length::Fill),
+                )
+                .push(widget::spin_button(
+                    page.new_assignment_workspace.to_string(),
+                    "new-assignment-workspace",
+                    page.new_assignment_workspace,
+                    1,
+                    1,
+                    99,
+                    Message::NewAssignmentWorkspace,
+                ))
+                .push(
+                    widget::button::standard(fl!("workspaces-assignments", "add")).on_press_maybe(
+                        (!page.new_assignment_app_id.trim().is_empty())
+                            .then_some(Message::AddAssignment),
+                    ),
+                );
+
+            section
+                .add(add_row)
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })

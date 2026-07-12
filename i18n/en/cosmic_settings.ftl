@@ -548,6 +548,14 @@ hot-corner = Hot Corner
 workspaces-navigation = Navigation
     .wraparound = Move between first and last workspace using keyboard shortcuts and gestures
 
+workspaces-assignments = App workspace assignments
+    .description = Apps below always open on their assigned workspace, no matter where they're launched from.
+    .app-id = Application ID
+    .workspace = Workspace
+    .add = Add
+    .none = No apps assigned yet.
+    .app-id-placeholder = e.g. code, org.mozilla.firefox
+
 ## Displays
 
 -requires-restart = Requires restart
