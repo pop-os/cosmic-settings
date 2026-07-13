@@ -552,9 +552,7 @@ impl Model {
                                     self.add_keybindings_button_id.clone(),
                                 ),
                             ]);
-                        } else if cfg_modifiers
-                            == cosmic_settings_config::shortcuts::Modifiers::new()
-                        {
+                        } else if modifiers.is_empty() {
                             self.editing = None;
                             shortcut.reset();
                             return Task::batch(vec![

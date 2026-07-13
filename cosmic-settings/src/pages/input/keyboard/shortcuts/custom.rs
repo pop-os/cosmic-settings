@@ -296,9 +296,7 @@ impl Page {
                                 widget::text_input::focus(widget::Id::unique()),
                                 keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                             ]);
-                        } else if cfg_modifiers
-                            == cosmic_settings_config::shortcuts::Modifiers::new()
-                        {
+                        } else if modifiers.is_empty() {
                             self.add_shortcut = Default::default();
                             _ = self.model.on_enter();
 
