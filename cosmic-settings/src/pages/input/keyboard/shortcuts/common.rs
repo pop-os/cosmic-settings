@@ -524,11 +524,23 @@ impl Model {
                     if modifiers.logo() {
                         cfg_modifiers = cfg_modifiers.logo()
                     }
-                    let old = std::mem::replace(&mut shortcut.pending.modifiers, cfg_modifiers);
+                    let old =
+                        std::mem::replace(&mut shortcut.pending.modifiers, cfg_modifiers.clone());
+                    let modifier_released = (old.alt && !modifiers.alt())
+                        || (old.ctrl && !modifiers.control())
+                        || (old.shift && !modifiers.shift())
+                        || (old.logo && !modifiers.logo());
 
-                    if shortcut.pending.keycode.is_none() && modifiers.is_empty() {
-                        if old.logo {
-                            shortcut.pending.modifiers = old;
+                    if shortcut.pending.keycode.is_none() && modifier_released {
+                        shortcut.pending.modifiers = old;
+                        let binding_modifiers = &shortcut.pending.modifiers;
+                        let modifier_count = binding_modifiers.logo as u8
+                            + binding_modifiers.shift as u8
+                            + binding_modifiers.alt as u8
+                            + binding_modifiers.ctrl as u8;
+                        if shortcut.pending.key.is_none()
+                            && (shortcut.pending.is_super() || modifier_count >= 2)
+                        {
                             shortcut.input = shortcut.pending.to_string();
                             // XX for now avoid applying the keycode
                             shortcut.binding.keycode = None;
@@ -539,7 +551,7 @@ impl Model {
                                     self.add_keybindings_button_id.clone(),
                                 ),
                             ]);
-                        } else if old.alt || old.ctrl || old.shift {
+                        } else if modifiers.is_empty() {
                             self.editing = None;
                             shortcut.reset();
                             return Task::batch(vec![
@@ -548,6 +560,8 @@ impl Model {
                                 ),
                                 keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                             ]);
+                        } else {
+                            shortcut.pending.modifiers = cfg_modifiers;
                         }
                     }
                     shortcut.input = shortcut.pending.to_string();
