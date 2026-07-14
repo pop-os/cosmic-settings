@@ -65,7 +65,7 @@ pub enum Message {
     AddFolder(Arc<Result<Url, file_chooser::Error>>),
     /// Adds a new image file the system wallpaper folder.
     #[cfg(feature = "xdg-portal")]
-    AddFile(Arc<Result<Url, file_chooser::Error>>),
+    AddFiles(Arc<Result<Vec<Url>, file_chooser::Error>>),
     /// Cache currently displayed image.
     CacheDisplayImage,
     /// Selects an option in the category dropdown menu.
@@ -787,11 +787,11 @@ impl Page {
                         .title(fl!("wallpaper", "image-dialog"))
                         .accept_label(fl!("dialog-add"))
                         .modal(false)
-                        .open_file()
+                        .open_files()
                         .await
-                        .map(|response| response.url().to_owned());
+                        .map(|response| response.urls().to_vec());
 
-                    let message = Message::AddFile(Arc::new(dialog_result));
+                    let message = Message::AddFiles(Arc::new(dialog_result));
                     let page_message = crate::pages::Message::DesktopWallpaper(message);
                     crate::Message::PageMessage(page_message)
                 });
@@ -862,6 +862,11 @@ impl Page {
             #[cfg(feature = "xdg-portal")]
             Message::AddFolder(result) => {
                 let path = match dialog_response(result) {
+                    DialogResponse::Paths(_) => {
+                        // TODO find if there is a use of multi folder addition.
+                        tracing::warn!("unexpected multi-path response for folder dialog");
+                        return Task::none();
+                    }
                     DialogResponse::Path(path) => path,
                     DialogResponse::Error(why) => {
                         tracing::error!(why, "dialog response error");
@@ -887,27 +892,30 @@ impl Page {
             }
 
             #[cfg(feature = "xdg-portal")]
-            Message::AddFile(result) => {
-                let path = match dialog_response(result) {
-                    DialogResponse::Path(path) => path,
+            Message::AddFiles(result) => {
+                let paths = match dialog_response_multi(result) {
+                    DialogResponse::Paths(paths) => paths,
+                    DialogResponse::Path(path) => vec![path], // not really but for the sake of consistency..
                     DialogResponse::Error(why) => {
                         tracing::error!(why, "dialog response error");
                         return Task::none();
                     }
                 };
 
-                if path.is_file() {
+                let tasks = paths.into_iter().filter(|path| path.is_file()).map(|path| {
                     tracing::info!(?path, "opening custom image");
 
                     // Loads a single custom image and its thumbnail for display in the backgrounds view.
-                    return cosmic::Task::future(async move {
+                    cosmic::Task::future(async move {
                         let result = wallpaper::load_image_with_thumbnail(path);
 
                         let message = Message::ImageAdd(result.map(Arc::new));
                         let page_message = crate::pages::Message::DesktopWallpaper(message);
                         crate::Message::PageMessage(page_message)
-                    });
-                }
+                    })
+                });
+
+                return Task::batch(tasks);
             }
 
             Message::Event(event) => match event {
@@ -1417,27 +1425,33 @@ pub fn settings() -> Section<crate::pages::Message> {
 enum DialogResponse {
     Error(String),
     Path(PathBuf),
+    Paths(Vec<PathBuf>),
+}
+
+#[cfg(feature = "xdg-portal")]
+fn unwrap_dialog_response<T>(result: Arc<Result<T, file_chooser::Error>>) -> Result<T, String> {
+    let Some(result) = Arc::into_inner(result) else {
+        return Err(String::from("Arc::into_inner returned None"));
+    };
+
+    result.map_err(|why| {
+        let mut source: &dyn std::error::Error = &why;
+        let mut string = format!("open dialog subscription errored\n    cause: {source}");
+
+        while let Some(new_source) = source.source() {
+            string.push_str(&format!("\n    cause: {new_source}"));
+            source = new_source;
+        }
+
+        string
+    })
 }
 
 #[cfg(feature = "xdg-portal")]
 fn dialog_response(result: Arc<Result<Url, file_chooser::Error>>) -> DialogResponse {
-    let Some(result) = Arc::into_inner(result) else {
-        return DialogResponse::Error(String::from("Arc::into_inner returned None"));
-    };
-
-    let selection = match result {
-        Ok(response) => response,
-        Err(why) => {
-            let mut source: &dyn std::error::Error = &why;
-            let mut string = format!("open dialog subscription errored\n    cause: {source}");
-
-            while let Some(new_source) = source.source() {
-                string.push_str(&format!("\n    cause: {new_source}"));
-                source = new_source;
-            }
-
-            return DialogResponse::Error(string);
-        }
+    let selection = match unwrap_dialog_response(result) {
+        Ok(selection) => selection,
+        Err(why) => return DialogResponse::Error(why),
     };
 
     let Ok(path) = selection.to_file_path() else {
@@ -1445,4 +1459,23 @@ fn dialog_response(result: Arc<Result<Url, file_chooser::Error>>) -> DialogRespo
     };
 
     DialogResponse::Path(path)
+}
+
+#[cfg(feature = "xdg-portal")]
+fn dialog_response_multi(result: Arc<Result<Vec<Url>, file_chooser::Error>>) -> DialogResponse {
+    let selections = match unwrap_dialog_response(result) {
+        Ok(selections) => selections,
+        Err(why) => return DialogResponse::Error(why),
+    };
+
+    let mut paths = Vec::with_capacity(selections.len());
+    for selection in selections {
+        let Ok(path) = selection.to_file_path() else {
+            tracing::warn!("not a valid file path: {}", selection.path());
+            continue;
+        };
+        paths.push(path);
+    }
+
+    DialogResponse::Paths(paths)
 }
