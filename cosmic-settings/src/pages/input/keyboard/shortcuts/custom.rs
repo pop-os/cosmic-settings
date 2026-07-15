@@ -88,6 +88,8 @@ struct AddShortcut {
 impl AddShortcut {
     pub fn enable(&mut self) {
         self.active = true;
+        self.editing = None;
+        self.binding = Binding::default();
         self.name.clear();
         self.task.clear();
 
@@ -294,7 +296,9 @@ impl Page {
                                 widget::text_input::focus(widget::Id::unique()),
                                 keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                             ]);
-                        } else if modifiers.is_empty() {
+                        } else if cfg_modifiers
+                            == cosmic_settings_config::shortcuts::Modifiers::new()
+                        {
                             self.add_shortcut = Default::default();
                             _ = self.model.on_enter();
 
@@ -344,11 +348,11 @@ impl Page {
                         .binding
                         .keycode
                         .is_some_and(|k| k == keycode)
-                    && self.add_shortcut.binding.modifiers
+                    && (self.add_shortcut.binding.modifiers
                         != cosmic_settings_config::shortcuts::Modifiers::new()
-                    || self.add_shortcut.binding.key.is_some_and(|key| {
-                        !cosmic_settings_config::shortcuts::is_forbidden_unmodified_keysym(key)
-                    })
+                        || self.add_shortcut.binding.key.is_some_and(|key| {
+                            !cosmic_settings_config::shortcuts::is_forbidden_unmodified_keysym(key)
+                        }))
                 {
                     // XX for now avoid applying the keycode
                     let binding = Binding {

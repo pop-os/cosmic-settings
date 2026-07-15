@@ -442,6 +442,7 @@ impl Model {
                 {
                     if enable {
                         self.editing = Some(id);
+                        shortcut.pending = Binding::default();
                         shortcut.input = shortcut.binding.to_string();
                         return Task::batch(vec![
                             keyboard_shortcuts_inhibit::inhibit_shortcuts(true).discard(),
@@ -489,7 +490,7 @@ impl Model {
                 if let Some(model) = self.shortcut_models.get_mut(id)
                     && let Some(shortcut) = model.bindings.get_mut(0)
                 {
-                    shortcut.pending = shortcut.binding.clone();
+                    shortcut.pending = Binding::default();
 
                     shortcut.input = shortcut.binding.to_string();
                     self.editing = Some(0);
@@ -543,7 +544,7 @@ impl Model {
                         {
                             shortcut.input = shortcut.pending.to_string();
                             // XX for now avoid applying the keycode
-                            shortcut.binding.keycode = None;
+                            shortcut.pending.keycode = None;
                             return Task::batch(vec![
                                 keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                                 self.submit_binding(id),
@@ -551,7 +552,9 @@ impl Model {
                                     self.add_keybindings_button_id.clone(),
                                 ),
                             ]);
-                        } else if modifiers.is_empty() {
+                        } else if cfg_modifiers
+                            == cosmic_settings_config::shortcuts::Modifiers::new()
+                        {
                             self.editing = None;
                             shortcut.reset();
                             return Task::batch(vec![
@@ -603,7 +606,7 @@ impl Model {
                         {
                             shortcut.input = shortcut.pending.to_string();
                             // XX for now avoid applying the keycode
-                            shortcut.binding.keycode = None;
+                            shortcut.pending.keycode = None;
                             return Task::batch(vec![
                                 keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                                 self.submit_binding(id),
