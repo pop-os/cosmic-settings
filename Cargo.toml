@@ -74,8 +74,8 @@ cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev =
 cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "e95d895" }
 
 [patch.'https://github.com/pop-os/cosmic-settings-daemon']
-cosmic-settings-config = { path = "../cosmic-settings-daemon/config" }
-cosmic-settings-daemon-config = { path = "../cosmic-settings-daemon/cosmic-settings-daemon-config" }
+cosmic-settings-config = { git = "https://github.com/krakotay/cosmic-settings-daemon", branch = "caps-lock-bindings"}
+cosmic-settings-daemon-config = { git = "https://github.com/krakotay/cosmic-settings-daemon", branch = "caps-lock-bindings"}
 
 # For development and testing purposes
 # [patch.'https://github.com/pop-os/libcosmic']
