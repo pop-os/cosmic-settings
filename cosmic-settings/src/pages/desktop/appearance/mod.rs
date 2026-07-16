@@ -200,7 +200,9 @@ impl Page {
 
             Message::DrawerOpen(context_view) => {
                 self.context_view = Some(context_view);
-                self.drawer = drawer::Content::from(&self.theme_manager);
+                let mut previous =
+                    std::mem::replace(&mut self.drawer, drawer::Content::from(&self.theme_manager));
+                self.drawer.preserve_from(&mut previous);
                 tasks.push(cosmic::task::message(
                     crate::app::Message::OpenContextDrawer(self.entity),
                 ));
