@@ -21,8 +21,6 @@ color-eyre = "0.6.5"
 cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
-cosmic-dbus-networkmanager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-nm-secret-agent-manager = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 cosmic-idle-config.workspace = true
 cosmic-panel-config = { workspace = true, optional = true }
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
@@ -34,7 +32,6 @@ cosmic-settings-accessibility-subscription = { path = "../subscriptions/accessib
 cosmic-settings-a11y-manager-subscription = { path = "../subscriptions/a11y-manager", optional = true }
 cosmic-settings-airplane-mode-subscription = { path = "../subscriptions/airplane-mode", optional = true }
 cosmic-settings-bluetooth-subscription = { path = "../subscriptions/bluetooth", optional = true }
-cosmic-settings-network-manager-subscription = { path = "../subscriptions/network-manager", optional = true }
 cosmic-settings-sound = { path = "../pages/sound", optional = true }
 cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
@@ -47,13 +44,7 @@ futures = "0.3.32"
 hostname-validator = "1.1.1"
 hostname1-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 i18n-embed-fl = "0.10.0"
-image = { version = "0.25", default-features = false, features = [
-    "jpeg",
-    "png",
-    "rayon",
-    "webp",
-    "hdr",
-] }
+image.workspace = true
 indexmap = "2.13.0"
 itertools = "0.14.0"
 itoa = "1.0.17"
@@ -63,11 +54,13 @@ locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional =
 sysinfo = { version = "=0.38.0", optional = true }
 mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = ["tokio"], optional = true }
 notify = "8.2.0"
+nmrs = { version = "3.4.0", optional = true }
 regex = "1.12.3"
 ron = "0.12"
 rust-embed = "8.11.0"
 sctk = { workspace = true, optional = true }
 secure-string = "0.3.0"
+secret-service = { version = "5.1.0", features = ["rt-tokio-crypto-rust"], optional = true }
 serde = { version = "1.0.228", features = ["derive"] }
 slab = "0.4.12"
 slotmap = "1.1.1"
@@ -118,7 +111,8 @@ git = "https://github.com/AerynOS/locales-rs"
 optional = true
 
 [features]
-default = ["a11y", "linux", "single-instance", "wgpu", "systemd"]
+default = ["a11y", "avif", "linux", "single-instance", "wgpu", "systemd"]
+avif = ["image/avif-native"]
 gettext = ["dep:gettext-rs"]
 systemd = []
 openrc = []
@@ -174,10 +168,9 @@ page-input = [
 ]
 page-legacy-applications = ["cosmic-comp-config", "dep:cosmic-randr"]
 page-networking = [
-    "dep:cosmic-settings-network-manager-subscription",
     "xdg-portal",
-    "dep:cosmic-dbus-networkmanager",
-    "dep:nm-secret-agent-manager",
+    "dep:nmrs",
+    "dep:secret-service",
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]

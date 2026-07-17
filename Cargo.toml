@@ -10,6 +10,13 @@ rust-version = "1.93"
 cosmic-randr = { git = "https://github.com/pop-os/cosmic-randr" }
 tokio = { version = "1.49.0", features = ["macros"] }
 iced_winit = { git = "https://github.com/pop-os/libcosmic", default-features = false }
+image = { version = "0.25.10", default-features = false, features = [
+    "jpeg",
+    "png",
+    "rayon",
+    "webp",
+    "hdr",
+] }
 
 [workspace.dependencies.libcosmic]
 features = [
@@ -63,8 +70,8 @@ debug = true
 # cosmic-text = { git = "https://github.com/pop-os/cosmic-text//", rev = "b017d7c" }
 
 [patch.'https://github.com/pop-os/cosmic-protocols']
-cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d0e95be" }
-cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "d0e95be" }
+cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "e95d895" }
+cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", rev = "e95d895" }
 
 # [patch.'https://github.com/pop-os/cosmic-settings-daemon']
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
@@ -76,17 +83,14 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
 # iced_futures = { path = "../libcosmic/iced/futures" }
 # iced_winit = { path = "../libcosmic/iced/winit" }
-
-# libcosmic = { git = "https://github.com/pop-os/libcosmic//" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic//" }
-# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//" }
-# iced_futures = { git = "https://github.com/pop-os/libcosmic//" }
-# iced_winit = { git = "https://github.com/pop-os/libcosmic//" }
+# iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
+# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
+# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
+# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
+# iced_winit = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
 
 # [patch.'https://github.com/pop-os/dbus-settings-bindings']
-# cosmic-dbus-networkmanager = { path = "../dbus-settings-bindings/networkmanager" }
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }
-# nm-secret-agent-manager = { git = "https://github.com/pop-os/dbus-settings-bindings//", branch = "nm-secret-agent" }
 
 [patch.crates-io]
 atspi = { git = "https://github.com/wash2/atspi" }

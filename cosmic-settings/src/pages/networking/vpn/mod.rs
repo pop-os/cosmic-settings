@@ -1,8 +1,6 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
-pub mod nmcli;
-
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock};
 
@@ -14,17 +12,16 @@ use cosmic::widget::space::horizontal as horizontal_space;
 use cosmic::widget::text_input::focus;
 use cosmic::widget::{self, icon};
 use cosmic::{Apply, Element, Task, task};
-use cosmic_settings_network_manager_subscription::current_networks::ActiveConnectionInfo;
-use cosmic_settings_network_manager_subscription::nm_secret_agent::{self, PasswordFlag};
-use cosmic_settings_network_manager_subscription::{
-    self as network_manager, NetworkManagerState, UUID,
-};
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{FutureExt, SinkExt, StreamExt};
 use indexmap::IndexMap;
 use secure_string::SecureString;
 use tokio::sync::Mutex;
 
+use super::backend as network_manager;
+use super::backend::current_networks::ActiveConnectionInfo;
+use super::backend::nm_secret_agent::{self, PasswordFlag};
+use super::backend::{NetworkManagerState, UUID};
 use crate::pages::networking::SecretSender;
 
 pub static SECURE_INPUT_VPN: LazyLock<widget::Id> = LazyLock::new(widget::Id::unique);
@@ -60,8 +57,8 @@ pub enum Message {
     NetworkManager(network_manager::Event),
     /// An update from the secret agent
     SecretAgent(network_manager::nm_secret_agent::Event),
-    /// Successfully connected to the system dbus.
-    NetworkManagerConnect(zbus::Connection),
+    /// Successfully connected to NetworkManager.
+    NetworkManagerConnect(nmrs::NetworkManager),
     /// Updates the password text input
     PasswordUpdate(SecureString),
     /// Refresh devices and their connection profiles
@@ -181,7 +178,7 @@ pub enum VpnDialog {
 
 #[derive(Debug)]
 pub struct NmState {
-    conn: zbus::Connection,
+    conn: nmrs::NetworkManager,
     sender: futures::channel::mpsc::UnboundedSender<network_manager::Request>,
     active_conns: Vec<ActiveConnectionInfo>,
     devices: Vec<network_manager::devices::DeviceInfo>,
@@ -371,20 +368,22 @@ impl page::Page<crate::pages::Message> for Page {
         let (tx, rx) = tokio::sync::mpsc::channel(4);
         self.secret_tx = Some(tx);
         if self.nm_task.is_none() {
-            return cosmic::Task::batch([cosmic::task::future(async move {
-                zbus::Connection::system()
-                    .await
-                    .context("failed to create system dbus connection")
-                    .map_or_else(
-                        |why| Message::Error(ErrorKind::DbusConnection, why.to_string()),
-                        Message::NetworkManagerConnect,
-                    )
-            }),
-            cosmic::Task::stream(
-                cosmic_settings_network_manager_subscription::nm_secret_agent::secret_agent_stream("com.system76.CosmicSettings.VPN.NetworkManager.SecretAgent", rx),
-            )
-            .map(|m| crate::pages::Message::Vpn(Message::SecretAgent(m))),
-        ]);
+            return cosmic::Task::batch([
+                cosmic::task::future(async move {
+                    nmrs::NetworkManager::new()
+                        .await
+                        .context("failed to connect to NetworkManager")
+                        .map_or_else(
+                            |why| Message::Error(ErrorKind::DbusConnection, why.to_string()),
+                            Message::NetworkManagerConnect,
+                        )
+                }),
+                cosmic::Task::stream(nm_secret_agent::secret_agent_stream(
+                    "com.system76.CosmicSettings.VPN.NetworkManager.SecretAgent",
+                    rx,
+                ))
+                .map(|m| crate::pages::Message::Vpn(Message::SecretAgent(m))),
+            ]);
         }
 
         cosmic::Task::none()
@@ -495,9 +494,8 @@ impl Page {
             Message::WireGuardConfig => {
                 if let Some(VpnDialog::WireGuardName(device, filename, path)) = self.dialog.take() {
                     return cosmic::task::future(async move {
-                        let new_path = path.replace(&filename, &device);
-                        _ = std::fs::rename(&path, &new_path);
-                        match super::nm_add_vpn_file("wireguard", new_path).await {
+                        let _ = filename;
+                        match network_manager::import_wireguard(path, &device).await {
                             Ok(_) => Message::Refresh,
                             Err(why) => Message::Error(ErrorKind::Config, why.to_string()),
                         }
@@ -510,18 +508,12 @@ impl Page {
                 if let Some(settings) = self.known_connections.get(&uuid) {
                     let settings = match settings {
                         ConnectionSettings::Vpn(settings) => settings,
-                        ConnectionSettings::Wireguard { id } => {
-                            let connection_name = id.clone();
-                            return cosmic::task::future(async move {
-                                if let Err(why) = nmcli::connect(&connection_name).await {
-                                    return Message::Error(
-                                        ErrorKind::Connect,
-                                        format!("failed to connect to WireGuard VPN: {why}"),
-                                    );
-                                }
-
-                                Message::Refresh
-                            });
+                        ConnectionSettings::Wireguard { .. } => {
+                            if let Some(NmState { ref sender, .. }) = self.nm_state {
+                                _ = sender
+                                    .unbounded_send(network_manager::Request::ActivateVpn(uuid));
+                            }
+                            return Task::none();
                         }
                     };
 
@@ -541,28 +533,10 @@ impl Page {
                             return task::message(Message::FocusSecureInput);
                         }
                         _ => {
-                            let connection_name = settings.id.clone();
-                            let username = settings.username.clone();
-                            return cosmic::task::future(async move {
-                                if let Err(why) = nmcli::connect(&connection_name).await {
-                                    return Message::VpnDialogError(VpnDialog::Password {
-                                        error: Some((
-                                            ErrorKind::Connect,
-                                            format!("failed to connect to VPN: {why}"),
-                                        )),
-                                        id: connection_name.clone(),
-                                        uuid,
-                                        username: username.clone(),
-                                        description: None,
-                                        password: SecureString::from(""),
-                                        password_hidden: true,
-                                        // TODO grab from the current dialog
-                                        tx: Arc::new(Mutex::new(None)),
-                                    });
-                                }
-
-                                Message::Refresh
-                            });
+                            if let Some(NmState { ref sender, .. }) = self.nm_state {
+                                _ = sender
+                                    .unbounded_send(network_manager::Request::ActivateVpn(uuid));
+                            }
                         }
                     }
                 }
@@ -629,89 +603,55 @@ impl Page {
                 };
 
                 if let VpnDialog::Password {
-                    id,
+                    id: _,
                     uuid,
                     username,
                     password,
                     tx,
                     ..
                 } = dialog
+                    && let Some(NmState { ref sender, .. }) = self.nm_state
                 {
                     let username_unwrapped = username.clone().unwrap_or_default();
-                    let task = self.activate_with_password(
-                        id.clone(),
-                        uuid.clone(),
-                        username_unwrapped.clone(),
-                        password.clone(),
-                    );
                     let sec_tx = self.secret_tx.clone();
-                    return task
-                        .then(move |_| {
-                            let sec_tx = sec_tx.clone();
-                            let uuid = uuid.clone();
-                            let username = username.clone();
-                            let password = password.clone();
-                            let tx = tx.clone();
-                            let id = id.clone();
-                            Task::future(async move {
-                                let mut guard = tx.lock().await;
-                                if let Some(sender) = guard.take() {
-                                    let _ = sender.send(password);
-                                } else {
-                                    // apply password and username then
-                                    if let Some(sec_tx) = sec_tx {
-                                        let (applied_tx, applied_rx) =
-                                            tokio::sync::oneshot::channel();
-                                        if let Err(err) = sec_tx
-                                            .send(nm_secret_agent::Request::SetSecrets {
-                                                setting_name: "vpn".to_string(),
-                                                uuid: uuid.to_string(),
-                                                secrets: HashMap::from_iter([
-                                                    // username and password
-                                                    (
-                                                        "username".to_string(),
-                                                        username.clone().unwrap_or_default().into(),
-                                                    ),
-                                                    ("password".to_string(), password.clone()),
-                                                ]),
-                                                applied_tx,
-                                            })
-                                            .await
-                                        {
-                                            tracing::error!(%err, "failed to apply secret");
-                                        }
-                                        // wait max 1s for the applied signal
-                                        if let Err(err) = tokio::time::timeout(
-                                            std::time::Duration::from_secs(1),
-                                            applied_rx,
-                                        )
-                                        .await
-                                        {
-                                            tracing::error!(%err, "failed to apply secret");
-                                        }
-                                    }
-                                    // activate
-                                    if let Err(why) = nmcli::connect(&id).await {
-                                        return Message::VpnDialogError(VpnDialog::Password {
-                                            error: Some((
-                                                ErrorKind::Connect,
-                                                format!("failed to connect to VPN: {why}"),
-                                            )),
-                                            id: id.clone(),
-                                            uuid,
-                                            username: username.clone(),
-                                            description: None,
-                                            password,
-                                            password_hidden: true,
-                                            tx: Arc::new(Mutex::new(None)),
-                                        });
-                                    }
+                    let nm_sender = sender.clone();
+                    return Task::future(async move {
+                        let mut guard = tx.lock().await;
+                        if let Some(sender) = guard.take() {
+                            let _ = sender.send(password);
+                        } else {
+                            if let Some(sec_tx) = sec_tx {
+                                let (applied_tx, applied_rx) = tokio::sync::oneshot::channel();
+                                if let Err(err) = sec_tx
+                                    .send(nm_secret_agent::Request::SetSecrets {
+                                        setting_name: "vpn".to_string(),
+                                        uuid: uuid.to_string(),
+                                        secrets: HashMap::from_iter([
+                                            ("username".to_string(), username_unwrapped.into()),
+                                            ("password".to_string(), password),
+                                        ]),
+                                        applied_tx,
+                                    })
+                                    .await
+                                {
+                                    tracing::error!(%err, "failed to apply secret");
                                 }
+                                if let Err(err) = tokio::time::timeout(
+                                    std::time::Duration::from_secs(1),
+                                    applied_rx,
+                                )
+                                .await
+                                {
+                                    tracing::error!(%err, "failed to apply secret");
+                                }
+                            }
+                            _ = nm_sender
+                                .unbounded_send(network_manager::Request::ActivateVpn(uuid));
+                        }
 
-                                Message::Refresh
-                            })
-                        })
-                        .map(crate::app::Message::from);
+                        Message::Refresh
+                    })
+                    .map(crate::app::Message::from);
                 }
             }
             Message::RetryWithPassword => {
@@ -720,53 +660,39 @@ impl Page {
                 };
 
                 if let VpnDialog::Password {
-                    id,
+                    id: _,
                     uuid,
                     username,
                     password,
                     ..
                 } = dialog
+                    && let Some(NmState { ref sender, .. }) = self.nm_state
                 {
                     let username_unwrapped = username.unwrap_or_default();
                     let sec_tx = self.secret_tx.clone();
-                    let task = self.activate_with_password(
-                        id.clone(),
-                        uuid.clone(),
-                        username_unwrapped.clone(),
-                        password.clone(),
-                    );
-                    return task
-                        .then(move |_| {
-                            let sec_tx = sec_tx.clone();
-                            let uuid = uuid.clone();
-                            let username = username_unwrapped.clone();
-                            let password = password.clone();
-                            Task::future(async move {
-                                if let Some(sec_tx) = sec_tx {
-                                    let (applied_tx, applied_rx) = tokio::sync::oneshot::channel();
-                                    let _ = sec_tx
-                                        .send(nm_secret_agent::Request::SetSecrets {
-                                            setting_name: "vpn".to_string(),
-                                            uuid: uuid.to_string(),
-                                            secrets: HashMap::from_iter([
-                                                // username and password
-                                                ("username".to_string(), username.clone().into()),
-                                                ("password".to_string(), password.clone()),
-                                            ]),
-                                            applied_tx,
-                                        })
-                                        .await;
-                                    // wait max 1s for the applied signal
-                                    let _ = tokio::time::timeout(
-                                        std::time::Duration::from_secs(1),
-                                        applied_rx,
-                                    )
+                    let nm_sender = sender.clone();
+                    return Task::future(async move {
+                        if let Some(sec_tx) = sec_tx {
+                            let (applied_tx, applied_rx) = tokio::sync::oneshot::channel();
+                            let _ = sec_tx
+                                .send(nm_secret_agent::Request::SetSecrets {
+                                    setting_name: "vpn".to_string(),
+                                    uuid: uuid.to_string(),
+                                    secrets: HashMap::from_iter([
+                                        ("username".to_string(), username_unwrapped.into()),
+                                        ("password".to_string(), password),
+                                    ]),
+                                    applied_tx,
+                                })
+                                .await;
+                            let _ =
+                                tokio::time::timeout(std::time::Duration::from_secs(1), applied_rx)
                                     .await;
-                                }
-                                Message::Activate(uuid)
-                            })
-                        })
-                        .map(crate::app::Message::from);
+                        }
+                        _ = nm_sender.unbounded_send(network_manager::Request::ActivateVpn(uuid));
+                        Message::Refresh
+                    })
+                    .map(crate::app::Message::from);
                 }
             }
             Message::UsernameUpdate(user) => {
@@ -873,56 +799,14 @@ impl Page {
         Task::none()
     }
 
-    fn activate_with_password(
-        &mut self,
-        connection_name: String,
-        uuid: Arc<str>,
-        username: String,
-        password: SecureString,
-    ) -> Task<Message> {
-        cosmic::task::future(async move {
-            if let Err(why) = nmcli::set_username(&connection_name, &username).await {
-                return Message::VpnDialogError(VpnDialog::Password {
-                    error: Some((ErrorKind::WithPassword("username"), why.to_string())),
-                    id: connection_name.clone(),
-                    uuid,
-                    username: Some(username),
-                    description: None,
-                    password,
-                    password_hidden: true,
-                    tx: Arc::new(Mutex::new(None)),
-                });
-            }
-
-            if let Err(why) = nmcli::add_fallback(&connection_name).await {
-                return Message::VpnDialogError(VpnDialog::Password {
-                    error: Some((ErrorKind::Config, why.to_string())),
-                    id: connection_name.clone(),
-                    uuid,
-                    username: Some(username),
-                    password,
-                    description: None,
-                    password_hidden: true,
-                    tx: Arc::new(Mutex::new(None)),
-                });
-            }
-
-            Message::Refresh
-        })
-    }
-
-    fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
+    fn connect(&mut self, conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
             let (canceller, task) =
                 crate::utils::forward_event_loop(move |mut sender| async move {
                     let (tx, mut rx) = futures::channel::mpsc::channel(1);
 
                     let watchers = std::pin::pin!(async move {
-                        futures::join!(
-                            network_manager::watch(conn.clone(), tx.clone()),
-                            network_manager::active_conns::watch(conn.clone(), tx.clone()),
-                            network_manager::devices::watch(conn, true, tx)
-                        )
+                        network_manager::watch(conn, tx).await;
                     });
 
                     let forwarder = std::pin::pin!(async move {
@@ -1141,7 +1025,7 @@ fn popup_button(message: Message, text: &str) -> Element<'_, Message> {
         .into()
 }
 
-fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
+fn update_state(conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
     cosmic::task::future(async move {
         match NetworkManagerState::new(&conn).await {
             Ok(state) => Message::UpdateState(state),
@@ -1150,7 +1034,7 @@ fn update_state(conn: zbus::Connection) -> Task<crate::app::Message> {
     })
 }
 
-fn update_devices(conn: zbus::Connection) -> Task<crate::app::Message> {
+fn update_devices(conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
     cosmic::task::future(async move {
         let filter =
             |device_type| matches!(device_type, network_manager::devices::DeviceType::WireGuard);
@@ -1208,7 +1092,9 @@ fn add_network() -> Task<crate::app::Message> {
                             );
                         };
 
-                        super::nm_add_vpn_file("openvpn", path).await
+                        network_manager::import_openvpn(path)
+                            .await
+                            .map_err(|why| why.to_string())
                     };
 
                     match result {
@@ -1223,108 +1109,96 @@ fn add_network() -> Task<crate::app::Message> {
         .apply(cosmic::task::future)
 }
 
-fn connection_settings(conn: zbus::Connection) -> Task<crate::app::Message> {
-    let settings = async move {
-        let settings = network_manager::dbus::settings::NetworkManagerSettings::new(&conn).await?;
-
-        _ = settings.load_connections(&[]).await;
-
-        let settings = settings
-            // Get a list of known connections.
-            .list_connections()
-            .await?
-            // Prepare for wrapping in a concurrent stream.
-            .into_iter()
-            .map(|conn| async move { conn })
-            // Create a concurrent stream for each connection.
-            .apply(futures::stream::FuturesOrdered::from_iter)
-            // Concurrently fetch settings for each connection, and filter for VPN.
-            .filter_map(|conn| async move {
-                let settings = conn.get_settings().await.ok()?;
-
-                let connection = settings.get("connection")?;
-
-                match connection
-                    .get("type")?
-                    .downcast_ref::<String>()
-                    .ok()?
-                    .as_str()
-                {
-                    "vpn" => (),
-
-                    "wireguard" => {
-                        let id = connection.get("id")?.downcast_ref::<String>().ok()?;
-                        let uuid = connection.get("uuid")?.downcast_ref::<String>().ok()?;
-                        return Some((Arc::from(uuid), ConnectionSettings::Wireguard { id }));
-                    }
-
-                    _ => return None,
-                }
-
-                let vpn = settings.get("vpn")?;
-                let id = connection.get("id")?.downcast_ref::<String>().ok()?;
-                let uuid = connection.get("uuid")?.downcast_ref::<String>().ok()?;
-
-                let (connection_type, username, password_flag) = vpn
-                    .get("data")
-                    .and_then(|data| data.downcast_ref::<zbus::zvariant::Dict>().ok())
-                    .map(|dict| {
-                        let (mut connection_type, mut password_flag) = (None, None);
-                        let mut username = vpn
-                            .get("user-name")
-                            .and_then(|u| u.downcast_ref::<String>().ok());
-                        if dict
-                            .get::<String, String>(&String::from("connection-type"))
-                            .ok()
-                            .flatten()
-                            .as_deref()
-                            // may be "password" or "password-tls"
-                            .is_some_and(|p| p.starts_with("password"))
-                        {
-                            connection_type = Some(ConnectionType::Password);
-                            username = Some(username.unwrap_or_default());
-
-                            password_flag = dict
-                                .get::<String, String>(&String::from("password-flags"))
-                                .ok()
-                                .flatten()
-                                .and_then(|value| match value.as_str() {
-                                    "0" => Some(PasswordFlag::None),
-                                    "1" => Some(PasswordFlag::AgentOwned),
-                                    "2" => Some(PasswordFlag::NotSaved),
-                                    "4" => Some(PasswordFlag::NotRequired),
-                                    _ => None,
-                                });
-                        }
-
-                        (connection_type, username, password_flag)
-                    })
-                    .unwrap_or_default();
-
-                Some((
-                    Arc::from(uuid),
-                    ConnectionSettings::Vpn(VpnConnectionSettings {
-                        id,
-                        connection_type,
-                        password_flag,
-                        username,
-                    }),
-                ))
-            })
-            // Reduce the settings list into
-            .fold(IndexMap::new(), |mut set, (uuid, data)| async move {
-                set.insert(uuid, data);
-                set
-            })
-            .await;
-
-        Ok::<_, zbus::Error>(settings)
-    };
-
+fn connection_settings(conn: nmrs::NetworkManager) -> Task<crate::app::Message> {
     cosmic::task::future(async move {
+        let settings = async move {
+            let vpns = conn.list_vpn_connections().await?;
+            let mut settings = IndexMap::new();
+
+            for vpn in vpns {
+                let uuid = Arc::from(vpn.uuid.as_str());
+                let data = match vpn.vpn_type {
+                    nmrs::VpnType::WireGuard { .. } => ConnectionSettings::Wireguard { id: vpn.id },
+                    nmrs::VpnType::OpenVpn {
+                        connection_type,
+                        user_name,
+                        password_flags,
+                        ..
+                    } => ConnectionSettings::Vpn(VpnConnectionSettings {
+                        id: vpn.id,
+                        username: user_name,
+                        connection_type: connection_type
+                            .filter(|ct| {
+                                matches!(
+                                    ct,
+                                    nmrs::OpenVpnConnectionType::Password
+                                        | nmrs::OpenVpnConnectionType::PasswordTls
+                                )
+                            })
+                            .map(|_| ConnectionType::Password),
+                        password_flag: Some(password_flag(password_flags.0)),
+                    }),
+                    nmrs::VpnType::OpenConnect {
+                        user_name,
+                        password_flags,
+                        ..
+                    }
+                    | nmrs::VpnType::StrongSwan {
+                        user_name,
+                        password_flags,
+                        ..
+                    }
+                    | nmrs::VpnType::Pptp {
+                        user_name,
+                        password_flags,
+                        ..
+                    }
+                    | nmrs::VpnType::L2tp {
+                        user_name,
+                        password_flags,
+                        ..
+                    } => ConnectionSettings::Vpn(VpnConnectionSettings {
+                        id: vpn.id,
+                        username: user_name,
+                        connection_type: Some(ConnectionType::Password),
+                        password_flag: Some(password_flag(password_flags.0)),
+                    }),
+                    nmrs::VpnType::Generic {
+                        user_name,
+                        password_flags,
+                        ..
+                    } => ConnectionSettings::Vpn(VpnConnectionSettings {
+                        id: vpn.id,
+                        username: user_name,
+                        connection_type: Some(ConnectionType::Password),
+                        password_flag: Some(password_flag(password_flags.0)),
+                    }),
+                    _ => ConnectionSettings::Vpn(VpnConnectionSettings {
+                        id: vpn.id,
+                        username: None,
+                        connection_type: None,
+                        password_flag: None,
+                    }),
+                };
+                settings.insert(uuid, data);
+            }
+
+            Ok::<_, nmrs::ConnectionError>(settings)
+        };
+
         settings.await.map_or_else(
             |why| Message::Error(ErrorKind::ConnectionSettings, why.to_string()),
             Message::KnownConnections,
         )
     })
+}
+
+fn password_flag(value: u32) -> PasswordFlag {
+    match value {
+        0 => PasswordFlag::None,
+        1 => PasswordFlag::AgentOwned,
+        2 => PasswordFlag::NotSaved,
+        4 => PasswordFlag::NotRequired,
+        _ => PasswordFlag::AgentOwned,
+    }
 }

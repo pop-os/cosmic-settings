@@ -1,23 +1,23 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+pub mod backend;
 pub mod vpn;
 pub mod wifi;
 pub mod wired;
 
-use std::ffi::OsStr;
 use std::process::Stdio;
 use std::sync::Arc;
 
 use anyhow::Context;
 use cosmic::{Apply, Element, Task, widget};
-use cosmic_dbus_networkmanager::interface::enums::{DeviceState, DeviceType};
-use cosmic_dbus_networkmanager::nm::NetworkManager;
-use cosmic_settings_network_manager_subscription as network_manager;
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
 use secure_string::SecureString;
 use slotmap::SlotMap;
+
+use self::backend as network_manager;
+use self::backend::devices::{DeviceState, DeviceType};
 
 pub type SecretSender = Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<SecureString>>>>;
 
@@ -37,8 +37,8 @@ pub struct Page {
 pub enum Message {
     /// An error occurred.
     Error(String),
-    /// Successfully connected to the system dbus.
-    NetworkManagerConnect(zbus::Connection),
+    /// Successfully connected to NetworkManager.
+    NetworkManagerConnect(nmrs::NetworkManager),
     /// Open the wifi settings page with the selected device.
     OpenPage {
         page: page::Entity,
@@ -143,6 +143,7 @@ impl page::Page<crate::pages::Message> for Page {
                                     fl!("network-device-state", "unavailable")
                                 }
                                 DeviceState::Unknown => fl!("network-device-state", "unknown"),
+                                DeviceState::Other(_) => fl!("network-device-state", "unknown"),
                                 DeviceState::Unmanaged => fl!("network-device-state", "unmanaged"),
                             },
                             "preferences-wireless-symbolic",
@@ -190,6 +191,7 @@ impl page::Page<crate::pages::Message> for Page {
                                     fl!("network-device-state", "unplugged")
                                 }
                                 DeviceState::Unknown => fl!("network-device-state", "unknown"),
+                                DeviceState::Other(_) => fl!("network-device-state", "unknown"),
                                 DeviceState::Unmanaged => fl!("network-device-state", "unmanaged"),
                             },
                             "preferences-wired-symbolic",
@@ -225,9 +227,9 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
         if self.nm_task.is_none() {
             return cosmic::Task::future(async move {
-                zbus::Connection::system()
+                nmrs::NetworkManager::new()
                     .await
-                    .context("failed to create system dbus connection")
+                    .context("failed to connect to NetworkManager")
                     .map_or_else(
                         |why| Message::Error(why.to_string()),
                         Message::NetworkManagerConnect,
@@ -310,33 +312,47 @@ impl Page {
         Task::none()
     }
 
-    fn connect(&mut self, conn: zbus::Connection) -> Task<crate::app::Message> {
+    fn connect(&mut self, nm: nmrs::NetworkManager) -> Task<crate::app::Message> {
         if self.nm_task.is_none() {
             let (canceller, task) =
                 crate::utils::forward_event_loop(move |mut sender| async move {
-                    let network_manager = match NetworkManager::new(&conn).await {
-                        Ok(n) => n,
-                        Err(why) => {
-                            tracing::error!(
-                                why = why.to_string(),
-                                "failed to connect to network_manager"
-                            );
-
-                            return futures::future::pending().await;
+                    match network_manager::devices::list(&nm, |_| true).await {
+                        Ok(devices) => {
+                            _ = sender
+                                .send(crate::pages::Message::Networking(Message::UpdateDevices(
+                                    devices.into_iter().map(Arc::new).collect(),
+                                )))
+                                .await;
                         }
-                    };
+                        Err(why) => {
+                            _ = sender
+                                .send(crate::pages::Message::Networking(Message::Error(
+                                    why.to_string(),
+                                )))
+                                .await;
+                        }
+                    }
 
-                    let mut devices_changed =
-                        std::pin::pin!(network_manager.receive_devices_changed().await.then(
-                            |_| async {
-                                match network_manager::devices::list(&conn, |_| true).await {
-                                    Ok(devices) => Message::UpdateDevices(
+                    let Ok(events) = nm.network_events().await else {
+                        return futures::future::pending().await;
+                    };
+                    let devices_changed = events.filter_map(|event| async {
+                        match event {
+                            Ok(nmrs::NetworkEvent::DeviceChanged { .. })
+                            | Ok(nmrs::NetworkEvent::SettingsChanged(_))
+                            | Ok(nmrs::NetworkEvent::NetworkManagerRestarted) => {
+                                match network_manager::devices::list(&nm, |_| true).await {
+                                    Ok(devices) => Some(Message::UpdateDevices(
                                         devices.into_iter().map(Arc::new).collect(),
-                                    ),
-                                    Err(why) => Message::Error(why.to_string()),
+                                    )),
+                                    Err(why) => Some(Message::Error(why.to_string())),
                                 }
                             }
-                        ));
+                            Ok(_) => None,
+                            Err(why) => Some(Message::Error(why.to_string())),
+                        }
+                    });
+                    futures::pin_mut!(devices_changed);
 
                     while let Some(message) = devices_changed.next().await {
                         _ = sender
@@ -351,16 +367,6 @@ impl Page {
 
         Task::none()
     }
-}
-
-async fn nm_add_vpn_file<P: AsRef<OsStr>>(type_: &str, path: P) -> Result<(), String> {
-    tokio::process::Command::new("nmcli")
-        .args(["connection", "import", "type", type_, "file"])
-        .arg(path)
-        .stderr(Stdio::piped())
-        .output()
-        .await
-        .apply(crate::utils::map_stderr_output)
 }
 
 async fn nm_add_wired() -> Result<(), String> {
