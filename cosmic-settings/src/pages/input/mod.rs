@@ -15,12 +15,39 @@ pub mod keyboard;
 pub mod mouse;
 pub mod touchpad;
 
+/// Seed for `cursor_hide_timeout` the first time the toggle is enabled (config default is disabled).
+const DEFAULT_CURSOR_HIDE_SECONDS: u32 = 5;
+
+/// Cursor idle-hide state, kept separate from persistence so its invariants are unit-testable.
+#[derive(Clone, Copy)]
+struct CursorHide {
+    enabled: bool,
+    /// Retained while disabled so re-enabling restores the previous timeout.
+    seconds: u32,
+}
+
+impl CursorHide {
+    fn from_config(timeout: Option<u32>) -> Self {
+        Self {
+            enabled: timeout.is_some(),
+            seconds: timeout.unwrap_or(DEFAULT_CURSOR_HIDE_SECONDS),
+        }
+    }
+
+    /// Value to persist to `cursor_hide_timeout`: `None` when disabled, else the seconds.
+    fn timeout(self) -> Option<u32> {
+        self.enabled.then_some(self.seconds)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum Message {
     // seperate close message, to make sure another isn't closed?
     DisableWhileTyping(bool, bool),
     PrimaryButtonSelected(cosmic::widget::segmented_button::Entity, bool),
     SetAcceleration(bool, bool),
+    SetCursorHideEnabled(bool),
+    SetCursorHideTimeout(u32),
     SetMouseSpeed(f64, bool),
     SetNaturalScroll(bool, bool),
     SetSecondaryClickBehavior(Option<ClickMethod>, bool),
@@ -37,6 +64,7 @@ pub struct Page {
 
     // Mouse
     primary_button: cosmic::widget::segmented_button::SingleSelectModel,
+    cursor_hide: CursorHide,
 
     // Touchpad
     touchpad_primary_button: cosmic::widget::segmented_button::SingleSelectModel,
@@ -69,6 +97,8 @@ impl Default for Page {
         let idx = input_touchpad.left_handed.unwrap_or(false) as u16;
         touchpad_primary_button.activate_position(idx);
 
+        let cursor_hide = CursorHide::from_config(get_config(&config, "cursor_hide_timeout"));
+
         Self {
             config,
             input_default,
@@ -76,6 +106,7 @@ impl Default for Page {
 
             // Mouse
             primary_button,
+            cursor_hide,
 
             // Touchpad
             touchpad_primary_button,
@@ -93,6 +124,12 @@ impl Page {
         f(input_config);
         if let Err(err) = self.config.set(name, input_config) {
             error!(?err, "Failed to set config '{}'", name);
+        }
+    }
+
+    fn set_cursor_hide_timeout(&self, timeout: Option<u32>) {
+        if let Err(err) = self.config.set("cursor_hide_timeout", timeout) {
+            error!(?err, "Failed to set config 'cursor_hide_timeout'");
         }
     }
 
@@ -163,6 +200,18 @@ impl Page {
                 self.update_input(touchpad, |x| x.left_handed = Some(left_handed));
             }
 
+            Message::SetCursorHideEnabled(enabled) => {
+                self.cursor_hide.enabled = enabled;
+                self.set_cursor_hide_timeout(self.cursor_hide.timeout());
+            }
+
+            Message::SetCursorHideTimeout(seconds) => {
+                self.cursor_hide.seconds = seconds;
+                if self.cursor_hide.enabled {
+                    self.set_cursor_hide_timeout(self.cursor_hide.timeout());
+                }
+            }
+
             Message::TapToClick(enabled) => {
                 self.update_input(true, |conf| {
                     conf.tap_config
@@ -219,4 +268,37 @@ fn system_has_touchpad() -> bool {
             .property_value("ID_INPUT_TOUCHPAD")
             .is_some_and(|value| value == "1")
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{CursorHide, DEFAULT_CURSOR_HIDE_SECONDS};
+
+    #[test]
+    fn disabled_by_default_but_seeded() {
+        let state = CursorHide::from_config(None);
+        assert_eq!(state.timeout(), None);
+        assert_eq!(state.seconds, DEFAULT_CURSOR_HIDE_SECONDS);
+    }
+
+    #[test]
+    fn loads_enabled_state_from_config() {
+        let state = CursorHide::from_config(Some(12));
+        assert!(state.enabled);
+        assert_eq!(state.timeout(), Some(12));
+    }
+
+    #[test]
+    fn seconds_retained_across_disable() {
+        let mut state = CursorHide::from_config(Some(30));
+
+        // Disabling clears the persisted timeout but keeps the seconds...
+        state.enabled = false;
+        assert_eq!(state.timeout(), None);
+        assert_eq!(state.seconds, 30);
+
+        // ...so re-enabling restores it rather than resetting to the default.
+        state.enabled = true;
+        assert_eq!(state.timeout(), Some(30));
+    }
 }
