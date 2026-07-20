@@ -108,6 +108,8 @@ impl SettingsApp {
             PageCommands::Mouse => self.pages.page_id::<input::mouse::Page>(),
             #[cfg(feature = "page-networking")]
             PageCommands::Network => self.pages.page_id::<networking::Page>(),
+            #[cfg(feature = "page-networking")]
+            PageCommands::Mobile => self.pages.page_id::<networking::mobile::Page>(),
             #[cfg(feature = "wayland")]
             PageCommands::Panel => self.pages.page_id::<desktop::panel::Page>(),
             #[cfg(feature = "wayland")]
@@ -678,6 +680,13 @@ impl cosmic::Application for SettingsApp {
                 #[cfg(feature = "page-networking")]
                 crate::pages::Message::Wired(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::wired::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-networking")]
+                crate::pages::Message::Mobile(message) => {
+                    if let Some(page) = self.pages.page_mut::<networking::mobile::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }

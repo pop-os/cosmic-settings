@@ -5,6 +5,7 @@ pub mod backend;
 pub mod vpn;
 pub mod wifi;
 pub mod wired;
+pub mod mobile;
 
 use std::process::Stdio;
 use std::sync::Arc;
@@ -34,6 +35,7 @@ pub struct Page {
     vpn: page::Entity,
     wifi: page::Entity,
     wired: page::Entity,
+    mobile: page::Entity,
 }
 
 #[derive(Debug, Clone)]
@@ -90,6 +92,7 @@ impl page::Page<crate::pages::Message> for Page {
             wifi_desc = fl!("xdg-entry-wireless-comment");
             wired_desc = fl!("xdg-entry-wired-comment");
             vpn_desc = fl!("xdg-entry-vpn-comment");
+            mobile_desc = fl!("xdg-entry-mobile-comment");
         });
 
         let device_list = Section::default().descriptions(descriptions).view::<Self>(
@@ -221,9 +224,20 @@ impl page::Page<crate::pages::Message> for Page {
                         )
                     });
 
+                // Mobile is always listed (VPN-like). Modem presence is a page detail.
                 let device_list = wifi_devices
                     .chain(wired_devices)
                     .fold(widget::column([]), |column, device| column.push(device))
+                    .push(crate::widget::page_list_item(
+                        fl!("mobile-data"),
+                        &descs[mobile_desc],
+                        "",
+                        "network-cellular-symbolic",
+                        Message::OpenPage {
+                            page: page.mobile,
+                            device: None,
+                        },
+                    ))
                     .push(crate::widget::page_list_item(
                         fl!("vpn"),
                         &descs[vpn_desc],
@@ -278,11 +292,13 @@ impl page::AutoBind<crate::pages::Message> for Page {
         let vpn = page.sub_page_with_id::<vpn::Page>();
         let wifi = page.sub_page_with_id::<wifi::Page>();
         let wired = page.sub_page_with_id::<wired::Page>();
+        let mobile = page.sub_page_with_id::<mobile::Page>();
 
         let model = page.model.page_mut::<Self>().unwrap();
         model.vpn = vpn;
         model.wifi = wifi;
         model.wired = wired;
+        model.mobile = mobile;
 
         page
     }
@@ -389,7 +405,7 @@ impl Page {
     }
 }
 
-async fn nm_add_wired() -> Result<(), String> {
+pub(crate) async fn nm_add_wired() -> Result<(), String> {
     nm_connection_editor(&["--type=802-3-ethernet", "-c"]).await
 }
 
@@ -397,7 +413,7 @@ async fn nm_add_wifi() -> Result<(), String> {
     nm_connection_editor(&["--type=802-11-wireless", "-c"]).await
 }
 
-async fn nm_edit_connection(uuid: &str) -> Result<(), String> {
+pub(crate) async fn nm_edit_connection(uuid: &str) -> Result<(), String> {
     nm_connection_editor(&[&["--edit=", uuid].concat()]).await
 }
 
