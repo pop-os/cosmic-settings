@@ -146,6 +146,7 @@ disconnect = Disconnect
 forget = Forget
 known-networks = Known networks
 network-and-wireless = Network & wireless
+    .loading = Loading network devices…
 network-name = Network Name
 no-networks = No networks have been found.
 no-vpn = No VPN connections available.
