@@ -508,6 +508,7 @@ window-controls = Window controls
 
 focus-navigation = Focus navigation
     .focus-follows-cursor = Focus follows cursor
+    .focus-follows-cursor-raise = Raise window on focus
     .focus-follows-cursor-delay = Focus follows cursor delay in ms
     .cursor-follows-focus = Cursor follows focus
 
