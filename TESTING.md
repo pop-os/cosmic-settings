@@ -48,7 +48,10 @@ This document provides a regression testing checklist for COSMIC Settings and th
 
 ### Sound
 
-TBD after devices/profiles are fixed.
+- [ ] Output & Input volume sliders work independently
+- [ ] Output balance slider works & doesn't get reset by volume slider
+- [ ] Amplification toggles work as expected
+- [ ] Device profiles can be changed & reflect as expected on the main Sound page
 
 ### Power & Battery
 
