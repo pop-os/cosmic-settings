@@ -106,6 +106,7 @@ xdg-entry-users-comment = Authentication and user accounts
 xdg-entry-users-keywords = COSMIC;User;Account;
 
 xdg-entry-vpn-comment = VPN connections and connection profiles
+xdg-entry-mobile-comment = Cellular data, SIM, and mobile broadband
 xdg-entry-vpn-keywords = COSMIC;VPN;Network;Connection;OpenVPN;OpenConnect;
 
 xdg-entry-wallpaper = Wallpaper
@@ -146,6 +147,7 @@ disconnect = Disconnect
 forget = Forget
 known-networks = Known networks
 network-and-wireless = Network & wireless
+    .loading = Loading network devices…
 network-name = Network Name
 no-networks = No networks have been found.
 no-vpn = No VPN connections available.
@@ -186,6 +188,7 @@ network-device-state =
 remove-connection-dialog = Remove connection profile?
     .vpn-description = You'll need to enter a password again to use this network in the future.
     .wired-description = You'll need to recreate this profile to use it in the future.
+    .mobile-description = This removes the saved mobile connection profile from NetworkManager.
 
 vpn = VPN
     .connections = VPN connections
@@ -1075,3 +1078,28 @@ full-name = Full name
 invalid-username = Invalid username
 password-mismatch = Password and confirmation must match
 save = Save
+
+
+mobile-data = Mobile data
+    .loading = Loading mobile data…
+    .airplane = Airplane mode is on — mobile data is unavailable.
+    .no-modem = No mobile modem detected.
+    .no-sim = No SIM card detected.
+    .sim-other-slot = A SIM is available in slot { $slot }. Switch to use mobile data.
+    .esim-empty-use-physical = Active slot is an empty eSIM. Use physical SIM in slot { $slot }.
+    .use-slot = Use slot { $slot }
+    .switching-sim = Switching SIM slot…
+    .slot-ready = SIM slot ready
+    .slot-access-denied = System policy denied SIM slot switch. Install ModemManager D-Bus allow for SetPrimarySimSlot.
+    .device-unavailable = Modem device is not ready yet.
+    .no-profile = No mobile connection profile found.
+    .activate-failed = Failed to activate mobile data.
+    .working = Working…
+    .details = Modem
+    .operator = Operator
+    .technology = Technology
+    .signal = Signal
+    .sim = SIM
+    .imei = IMEI
+    .model = Model
+    .profile = Connection profile

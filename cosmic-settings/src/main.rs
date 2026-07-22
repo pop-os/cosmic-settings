@@ -113,6 +113,9 @@ pub enum PageCommands {
     /// Network settings page
     #[cfg(feature = "page-networking")]
     Network,
+    /// Mobile data settings page
+    #[cfg(feature = "page-networking")]
+    Mobile,
     /// Panel settings page
     #[cfg(feature = "wayland")]
     Panel,
