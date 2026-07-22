@@ -88,6 +88,8 @@ struct AddShortcut {
 impl AddShortcut {
     pub fn enable(&mut self) {
         self.active = true;
+        self.editing = None;
+        self.binding = Binding::default();
         self.name.clear();
         self.task.clear();
 
@@ -243,11 +245,25 @@ impl Page {
                     if modifiers.logo() {
                         cfg_modifiers = cfg_modifiers.logo()
                     }
-                    let old =
-                        std::mem::replace(&mut self.add_shortcut.binding.modifiers, cfg_modifiers);
+                    let old = std::mem::replace(
+                        &mut self.add_shortcut.binding.modifiers,
+                        cfg_modifiers.clone(),
+                    );
+                    let modifier_released = (old.alt && !modifiers.alt())
+                        || (old.ctrl && !modifiers.control())
+                        || (old.shift && !modifiers.shift())
+                        || (old.logo && !modifiers.logo());
 
-                    if self.add_shortcut.binding.keycode.is_none() && modifiers.is_empty() {
-                        if old.logo {
+                    if self.add_shortcut.binding.keycode.is_none() && modifier_released {
+                        self.add_shortcut.binding.modifiers = old;
+                        let binding_modifiers = &self.add_shortcut.binding.modifiers;
+                        let modifier_count = binding_modifiers.logo as u8
+                            + binding_modifiers.shift as u8
+                            + binding_modifiers.alt as u8
+                            + binding_modifiers.ctrl as u8;
+                        if self.add_shortcut.binding.key.is_none()
+                            && (self.add_shortcut.binding.is_super() || modifier_count >= 2)
+                        {
                             // XX for now avoid applying the keycode
                             let binding = Binding {
                                 modifiers: self.add_shortcut.binding.modifiers.clone(),
@@ -280,13 +296,17 @@ impl Page {
                                 widget::text_input::focus(widget::Id::unique()),
                                 keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                             ]);
-                        } else if old.alt || old.ctrl || old.shift {
+                        } else if cfg_modifiers
+                            == cosmic_settings_config::shortcuts::Modifiers::new()
+                        {
                             self.add_shortcut = Default::default();
                             _ = self.model.on_enter();
 
                             return Task::batch(vec![
                                 keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
                             ]);
+                        } else {
+                            self.add_shortcut.binding.modifiers = cfg_modifiers;
                         }
                     }
                     if let Some(k) = self
@@ -328,11 +348,11 @@ impl Page {
                         .binding
                         .keycode
                         .is_some_and(|k| k == keycode)
-                    && self.add_shortcut.binding.modifiers
+                    && (self.add_shortcut.binding.modifiers
                         != cosmic_settings_config::shortcuts::Modifiers::new()
-                    || self.add_shortcut.binding.key.is_some_and(|key| {
-                        !cosmic_settings_config::shortcuts::is_forbidden_unmodified_keysym(key)
-                    })
+                        || self.add_shortcut.binding.key.is_some_and(|key| {
+                            !cosmic_settings_config::shortcuts::is_forbidden_unmodified_keysym(key)
+                        }))
                 {
                     // XX for now avoid applying the keycode
                     let binding = Binding {
