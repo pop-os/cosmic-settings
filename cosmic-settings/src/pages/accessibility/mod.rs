@@ -312,12 +312,14 @@ impl Page {
             Message::Event(AccessibilityEvent::Magnifier(value)) => {
                 self.magnifier_state = value;
             }
-            Message::Event(AccessibilityEvent::ScreenFilter { inverted, filter }) => {
+            Message::Event(AccessibilityEvent::ScreenFilter {
+                inverted,
+                filter,
+                filter_state,
+            }) => {
                 self.screen_inverted = inverted;
-                self.screen_filter_active = filter.is_some();
-                if let Some(filter) = filter {
-                    self.screen_filter_selection = filter;
-                }
+                self.screen_filter_active = filter_state;
+                self.screen_filter_selection = filter;
             }
             Message::Event(AccessibilityEvent::Closed) | Message::ProtocolUnavailable => {
                 self.wayland_available = None;
@@ -388,8 +390,9 @@ impl Page {
             Message::SetScreenInverted(inverted) => {
                 if let Some(sender) = self.wayland_thread.as_ref() {
                     let _ = sender.send(AccessibilityRequest::ScreenFilter {
-                        inverted,
-                        filter: Some(cosmic_a11y_manager::ColorFilter::Unknown),
+                        inverted: inverted,
+                        filter: cosmic_a11y_manager::ColorFilter::Unknown,
+                        filter_state: self.screen_filter_active,
                     });
                 }
             }
@@ -397,20 +400,20 @@ impl Page {
                 if let Some(sender) = self.wayland_thread.as_ref() {
                     let _ = sender.send(AccessibilityRequest::ScreenFilter {
                         inverted: self.screen_inverted,
-                        filter: active.then_some(self.screen_filter_selection),
+                        filter: self.screen_filter_selection,
+                        filter_state: active,
                     });
                 }
             }
             Message::SetScreenFilterSelection(filter) => {
-                if self.screen_filter_active && self.wayland_available.is_some_and(|ver| ver >= 2) {
-                    if let Some(sender) = self.wayland_thread.as_ref() {
-                        let _ = sender.send(AccessibilityRequest::ScreenFilter {
-                            inverted: self.screen_inverted,
-                            filter: Some(filter),
-                        });
-                    }
-                } else {
-                    self.screen_filter_selection = filter;
+                if self.wayland_available.is_some_and(|ver| ver >= 2)
+                    && let Some(sender) = self.wayland_thread.as_ref()
+                {
+                    let _ = sender.send(AccessibilityRequest::ScreenFilter {
+                        inverted: self.screen_inverted,
+                        filter: filter,
+                        filter_state: self.screen_filter_active,
+                    });
                 }
             }
             Message::Surface(a) => {
