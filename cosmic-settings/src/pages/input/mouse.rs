@@ -51,6 +51,8 @@ fn mouse() -> Section<crate::pages::Message> {
         mouse_speed = fl!("mouse", "speed");
         primary_button = fl!("primary-button");
         acceleration_desc = fl!("acceleration-desc");
+        cursor_hide = fl!("mouse", "hide-when-inactive");
+        cursor_hide_timeout = fl!("mouse", "hide-timeout");
     });
 
     Section::default()
@@ -110,6 +112,23 @@ fn mouse() -> Section<crate::pages::Message> {
                                 .is_none_or(|x| x.profile == Some(AccelProfile::Adaptive)),
                             |x| Message::SetAcceleration(x, false),
                         ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[cursor_hide])
+                        .toggler(input.cursor_hide.enabled, Message::SetCursorHideEnabled),
+                )
+                .add(
+                    settings::item::builder(&descriptions[cursor_hide_timeout]).control(
+                        widget::spin_button(
+                            input.cursor_hide.seconds.to_string(),
+                            "cursor hide timeout",
+                            input.cursor_hide.seconds,
+                            1,
+                            1,
+                            300,
+                            Message::SetCursorHideTimeout,
+                        ),
+                    ),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)

@@ -900,6 +900,8 @@ zoom-out = Zoom Out
 mouse = Mouse
     .speed = Mouse speed
     .acceleration = Enable mouse acceleration
+    .hide-when-inactive = Hide cursor when inactive
+    .hide-timeout = Time before hiding in seconds
 
 ## Input: Touchpad
 
