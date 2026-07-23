@@ -1026,6 +1026,15 @@ legacy-app-scaling = X11 window system application scaling
     .preferred-display = Preferred display for games and full screen X11 applications
     .no-display = None
 
+## Applications: Application permissions
+
+app-permissions = Application permissions
+    .desc = Persistent screen sharing and remote desktop permissions granted to applications
+    .screencast = Screen sharing
+    .remote-desktop = Remote desktop
+    .none = No applications have been granted persistent permissions
+    .unknown-app = Unknown application
+
 ## System
 
 system = System & accounts
