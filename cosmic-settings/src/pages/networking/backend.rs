@@ -148,14 +148,19 @@ pub mod current_networks {
             name: String,
             ip_addresses: Vec<Ipv4Addr>,
         },
+        Mobile {
+            name: String,
+            ip_addresses: Vec<Ipv4Addr>,
+        },
     }
 
     impl ActiveConnectionInfo {
         pub fn name(&self) -> String {
             match self {
-                Self::Wired { name, .. } | Self::WiFi { name, .. } | Self::Vpn { name, .. } => {
-                    name.clone()
-                }
+                Self::Wired { name, .. }
+                | Self::WiFi { name, .. }
+                | Self::Vpn { name, .. }
+                | Self::Mobile { name, .. } => name.clone(),
             }
         }
     }
@@ -178,6 +183,8 @@ pub mod devices {
         Bluetooth,
         Vlan,
         WireGuard,
+        /// NM_DEVICE_TYPE_MODEM (GSM/CDMA/LTE WWAN). nmrs exposes this as Other(8).
+        Modem,
         Other(u32),
     }
 
@@ -190,6 +197,7 @@ pub mod devices {
                 nmrs::DeviceType::Loopback => Self::Loopback,
                 nmrs::DeviceType::Bluetooth => Self::Bluetooth,
                 nmrs::DeviceType::Vlan => Self::Vlan,
+                nmrs::DeviceType::Other(8) => Self::Modem,
                 nmrs::DeviceType::Other(v) => Self::Other(v),
                 _ => Self::Other(0),
             }
@@ -1168,6 +1176,17 @@ fn active_connection_infos(
                 name: vpn.id,
                 ip_addresses: parse_ipv4_list([vpn.ip4_address]),
             }),
+            ActiveConnection::Other(other)
+                if other
+                    .connection_type
+                    .as_deref()
+                    .is_some_and(|ty| ty == "gsm" || ty == "cdma") =>
+            {
+                Some(current_networks::ActiveConnectionInfo::Mobile {
+                    name: other.id,
+                    ip_addresses: parse_ipv4_list([other.ip4_address]),
+                })
+            }
             ActiveConnection::Other(_) => None,
             _ => None,
         })
@@ -1178,6 +1197,7 @@ fn active_connection_infos(
             current_networks::ActiveConnectionInfo::Vpn { name, .. } => format!("0{name}"),
             current_networks::ActiveConnectionInfo::Wired { name, .. } => format!("1{name}"),
             current_networks::ActiveConnectionInfo::WiFi { name, .. } => format!("2{name}"),
+            current_networks::ActiveConnectionInfo::Mobile { name, .. } => format!("3{name}"),
         };
         helper(a).cmp(&helper(b))
     });
@@ -1246,6 +1266,9 @@ fn saved_matches_device(
         devices::DeviceType::Ethernet => connection.connection_type == "802-3-ethernet",
         devices::DeviceType::Wifi => connection.connection_type == "802-11-wireless",
         devices::DeviceType::WireGuard => connection.connection_type == "wireguard",
+        devices::DeviceType::Modem => {
+            connection.connection_type == "gsm" || connection.connection_type == "cdma"
+        }
         _ => false,
     };
 
@@ -1253,7 +1276,7 @@ fn saved_matches_device(
         && connection
             .interface_name
             .as_deref()
-            .is_none_or(|name| name == interface)
+            .is_none_or(|name| name.is_empty() || name == interface)
 }
 
 fn active_connection_by_interface(
@@ -1284,6 +1307,20 @@ fn active_connection_by_interface(
                     id: vpn.id.clone(),
                     uuid: vpn.uuid.clone(),
                     state: devices::ActiveConnectionState::from(vpn.state),
+                });
+            }
+            ActiveConnection::Other(other)
+                if other.interface.as_deref() == Some(interface)
+                    && other
+                        .connection_type
+                        .as_deref()
+                        .is_some_and(|ty| ty == "gsm" || ty == "cdma") =>
+            {
+                return Some(ActiveConnectionRecord {
+                    path: slash_path(),
+                    id: other.id.clone(),
+                    uuid: other.uuid.clone(),
+                    state: devices::ActiveConnectionState::from(other.state),
                 });
             }
             _ => {}
