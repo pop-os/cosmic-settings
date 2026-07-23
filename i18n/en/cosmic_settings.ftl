@@ -682,6 +682,26 @@ power-saving = Power saving options
     .auto-suspend-ac = Automatic suspend when plugged in
     .auto-suspend-battery = Automatic suspend on battery power
 
+power-button-behavior = Power button
+    .desc = Sets how the power button behaves when pressed
+    .confirm-shutdown = Confirm Shutdown
+    .confirm-shutdown-desc = Shut the system down after the timer ends (default)
+    .confirm-log-out = Confirm Log Out
+    .confirm-log-out-desc = Log out of the system after the timer ends
+    .confirm-restart = Confirm Restart
+    .confirm-restart-desc = Restart the system after the timer ends
+
+    .shutdown = Shutdown
+    .shutdown-desc = Shut the system down immediately
+    .log-out = Log Out
+    .log-out-desc = Log out of the system immediately
+    .restart = Restart
+    .restart-desc = Restart the system immediately
+    .suspend = Suspend
+    .suspend-desc = Suspend the system immediately
+    .hibernate = Hibernate
+    .hibernate-desc = Hibernate the system immediately
+
 ## Input
 
 acceleration-desc = Automatically adjusts tracking sensitivity based on speed
