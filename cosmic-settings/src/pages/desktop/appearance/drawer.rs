@@ -153,6 +153,16 @@ impl Content {
         }
     }
 
+    pub fn preserve_from(&mut self, previous: &mut Content) {
+        self.font_config
+            .take_families_from(&mut previous.font_config);
+
+        self.icons_fetched = previous.icons_fetched;
+        self.icon_theme_active = previous.icon_theme_active;
+        self.icon_themes = std::mem::take(&mut previous.icon_themes);
+        self.icon_handles = std::mem::take(&mut previous.icon_handles);
+    }
+
     pub fn update_font(
         &mut self,
         message: FontMessage,

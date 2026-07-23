@@ -94,6 +94,11 @@ impl Model {
         self.font_filter.clear();
     }
 
+    pub fn take_families_from(&mut self, other: &mut Model) {
+        self.interface_font_families = std::mem::take(&mut other.interface_font_families);
+        self.monospace_font_families = std::mem::take(&mut other.monospace_font_families);
+    }
+
     pub fn font_loaded(
         &mut self,
         mono: Vec<Arc<str>>,
