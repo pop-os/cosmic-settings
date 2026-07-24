@@ -275,6 +275,7 @@ accessibility = Accessibility
     .high-contrast = High contrast mode
     .invert-colors = Invert colors
     .color-filters = Color filters
+    .shake-cursor = Shake pointer to find it
 
 hearing = Hearing
     .mono = Play stereo audio as mono

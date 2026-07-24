@@ -4,6 +4,7 @@ use cosmic::iced::stream;
 use cosmic::theme::CosmicTheme;
 use cosmic::widget::{dropdown, settings, text};
 use cosmic::{Apply, Element, Task, surface};
+use cosmic_comp_config::CosmicCompConfig;
 pub use cosmic_comp_config::ZoomMovement;
 use cosmic_config::CosmicConfigEntry;
 use cosmic_settings_a11y_manager_subscription as cosmic_a11y_manager;
@@ -36,11 +37,21 @@ pub struct Page {
     daemon_helper: cosmic_config::Config,
     dbus_sender: Option<UnboundedSender<a11y_bus::Request>>,
     reader_enabled: bool,
+    comp_config: CosmicCompConfig,
+    comp_helper: cosmic_config::Config,
 }
 
 impl Default for Page {
     fn default() -> Self {
         let daemon_helper = CosmicSettingsDaemonConfig::config().unwrap();
+        let comp_helper = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        let comp_config =
+            CosmicCompConfig::get_entry(&comp_helper).unwrap_or_else(|(errs, config)| {
+                for err in errs {
+                    tracing::warn!(?err, "error while reading cosmic-comp config");
+                }
+                config
+            });
         Page {
             dbus_sender: None,
             entity: page::Entity::default(),
@@ -65,6 +76,8 @@ impl Default for Page {
                 .unwrap_or_default(),
             daemon_helper,
             reader_enabled: false,
+            comp_config,
+            comp_helper,
         }
     }
 }
@@ -77,6 +90,7 @@ pub enum Message {
     ProtocolUnavailable,
     Return,
     ScreenReaderEnabled(bool),
+    SetCursorShakeToFind(bool),
     SetScreenFilterActive(bool),
     SetScreenFilterSelection(ColorFilter),
     SetScreenInverted(bool),
@@ -187,6 +201,7 @@ pub fn vision() -> section::Section<crate::pages::Message> {
         invert_colors = fl!("accessibility", "invert-colors");
         color_filters = fl!("accessibility", "color-filters");
         color_filter_type = fl!("color-filter");
+        shake_cursor = fl!("accessibility", "shake-cursor");
     });
 
     Section::default()
@@ -276,6 +291,12 @@ pub fn vision() -> section::Section<crate::pages::Message> {
 
                     settings::item::builder(&descriptions[color_filter_type]).control(dropdown)
                 })
+                .add(
+                    settings::item::builder(&descriptions[shake_cursor])
+                        .toggler(page.comp_config.cursor_shake_to_find, |enabled| {
+                            Message::SetCursorShakeToFind(enabled).into()
+                        }),
+                )
                 .into()
         })
 }
@@ -415,6 +436,14 @@ impl Page {
             }
             Message::Surface(a) => {
                 return cosmic::task::message(crate::app::Message::Surface(a));
+            }
+            Message::SetCursorShakeToFind(enabled) => {
+                if let Err(err) = self
+                    .comp_config
+                    .set_cursor_shake_to_find(&self.comp_helper, enabled)
+                {
+                    tracing::error!(?err, "failed to set cursor_shake_to_find");
+                }
             }
             Message::SetSoundMono(active) => {
                 if let Err(err) = self
