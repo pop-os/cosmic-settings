@@ -21,8 +21,8 @@ network-and-wireless = नेटवर्क और वायरलेस
 no-networks = कोई नेटवर्क नहीं मिला।
 no-vpn = कोई वी.पी.एन कनेक्शन नहीं है।
 password = पासवर्ड
-remove = हटा दें
-settings = सेटिंग
+remove = हटाएँ
+settings = सेटिंग्स
 username = उपयोगकर्ता नाम
 visible-networks = दृश्य नेटवर्क
 auth-dialog = प्रमाणीकरण आवश्यक है
@@ -145,8 +145,7 @@ x-hours =
 
 ## Desktop: Appearance
 
-appearance = रूपरेखा
-    .desc = प्राधिकरण रंग और थीम।
+appearance = रुप-रंग
 accent-color = प्राधिकरण रंग
 app-background = एप्लिकेशन या विंडो का पृष्ठभूमि
 auto = स्वचालित
@@ -154,11 +153,11 @@ close = बंद करें
 color-picker = रंग चयनकर्ता
 copied-to-clipboard = क्लिपबोर्ड में कॉपी किया गया
 copy-to-clipboard = क्लिपबोर्ड में कॉपी करें
-dark = गहरा
+dark = डार्क
 export = निर्यात
 hex = हेक्स
 import = आयात
-light = हल्का
+light = लाइट
 mode-and-colors = मोड और रंग
 recent-colors = हाल के रंग
 reset-to-default = डिफ़ॉल्ट पर पुनर्स्थापित करें
