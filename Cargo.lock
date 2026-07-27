@@ -5028,9 +5028,9 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
 name = "nmrs"
-version = "3.4.0"
+version = "3.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62c427203beda58ac05815b356d64a34eeb2fba180b3077d543ebb1472fc1269"
+checksum = "33e42c05118e18f29f55eefa2fbfd98a06b0c7a1a829bdb0f328137d358c6013"
 dependencies = [
  "async-trait",
  "base64",
