@@ -3,7 +3,45 @@
 
 use futures::{FutureExt, StreamExt};
 use iced_futures::Subscription;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
+
+/// Values match `enum rfkill_type` in `/usr/include/linux/rfkill.h`.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum RfkillType {
+    All,
+    Wlan,
+    Bluetooth,
+    Uwb,
+    Wimax,
+    Wwan,
+    Gps,
+    Fm,
+    Nfc,
+    Unknown(u8),
+}
+
+impl From<u8> for RfkillType {
+    fn from(type_: u8) -> Self {
+        match type_ {
+            0 => Self::All,
+            1 => Self::Wlan,
+            2 => Self::Bluetooth,
+            3 => Self::Uwb,
+            4 => Self::Wimax,
+            5 => Self::Wwan,
+            6 => Self::Gps,
+            7 => Self::Fm,
+            8 => Self::Nfc,
+            other => Self::Unknown(other),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct RfkillUpdate {
+    pub airplane_mode: bool,
+    pub blocked: BTreeMap<RfkillType, bool>,
+}
 
 pub fn subscription() -> iced_futures::Subscription<bool> {
     struct MyId;
@@ -30,6 +68,34 @@ pub fn subscription() -> iced_futures::Subscription<bool> {
     })
 }
 
+pub fn rfkill_subscription() -> iced_futures::Subscription<RfkillUpdate> {
+    struct MyId;
+
+    Subscription::run_with(std::any::TypeId::of::<MyId>(), |_| {
+        async {
+            match rfkill::rfkill_updates() {
+                Ok(updates) => updates.filter_map(|state| async {
+                    match state {
+                        Ok(state) => Some(RfkillUpdate {
+                            airplane_mode: is_airplane_mode(&state),
+                            blocked: blocked_by_type(&state),
+                        }),
+                        Err(err) => {
+                            log::error!("Failed to read rfkill: {}", err);
+                            None
+                        }
+                    }
+                }),
+                Err(err) => {
+                    log::error!("Failed to monitor rfkill: {}", err);
+                    futures::future::pending().await
+                }
+            }
+        }
+        .flatten_stream()
+    })
+}
+
 // Test that:
 // - There is at least one device
 // - All devices have either a hard or soft block active
@@ -38,6 +104,18 @@ fn is_airplane_mode(rfkill_state: &HashMap<u32, rfkill::DeviceState>) -> bool {
         && rfkill_state
             .values()
             .all(|device_state| device_state.hard || device_state.soft)
+}
+
+// A kind is blocked only once every device of that kind is blocked.
+fn blocked_by_type(rfkill_state: &HashMap<u32, rfkill::DeviceState>) -> BTreeMap<RfkillType, bool> {
+    let mut blocked = BTreeMap::new();
+    for device_state in rfkill_state.values() {
+        let entry = blocked
+            .entry(RfkillType::from(device_state.type_))
+            .or_insert(true);
+        *entry &= device_state.hard || device_state.soft;
+    }
+    blocked
 }
 
 mod rfkill {
@@ -144,5 +222,87 @@ mod rfkill {
         };
         rustix::io::read(dev, bytes)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const WLAN: u8 = 1;
+    const BLUETOOTH: u8 = 2;
+
+    fn devices(
+        devices: impl IntoIterator<Item = (u32, u8, bool)>,
+    ) -> HashMap<u32, rfkill::DeviceState> {
+        devices
+            .into_iter()
+            .map(|(idx, type_, blocked)| {
+                (
+                    idx,
+                    rfkill::DeviceState {
+                        type_,
+                        soft: blocked,
+                        hard: false,
+                    },
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn test_bluetooth_only_machine() {
+        let blocked = blocked_by_type(&devices([(0, BLUETOOTH, false)]));
+
+        assert_eq!(
+            blocked.keys().copied().collect::<Vec<_>>(),
+            [RfkillType::Bluetooth]
+        );
+        assert!(!blocked[&RfkillType::Bluetooth]);
+    }
+
+    #[test]
+    fn test_every_kind_is_reported() {
+        let blocked = blocked_by_type(&devices([(0, BLUETOOTH, true), (1, WLAN, false)]));
+
+        assert!(blocked[&RfkillType::Bluetooth]);
+        assert!(!blocked[&RfkillType::Wlan]);
+    }
+
+    #[test]
+    fn test_two_adapters_of_one_kind() {
+        let one_of_two = blocked_by_type(&devices([(0, BLUETOOTH, true), (1, BLUETOOTH, false)]));
+        assert!(!one_of_two[&RfkillType::Bluetooth]);
+
+        let both = blocked_by_type(&devices([(0, BLUETOOTH, true), (1, BLUETOOTH, true)]));
+        assert!(both[&RfkillType::Bluetooth]);
+    }
+
+    #[test]
+    fn test_hard_block_counts_as_blocked() {
+        let hard = HashMap::from([(
+            0,
+            rfkill::DeviceState {
+                type_: BLUETOOTH,
+                soft: false,
+                hard: true,
+            },
+        )]);
+
+        assert!(blocked_by_type(&hard)[&RfkillType::Bluetooth]);
+        assert!(is_airplane_mode(&hard));
+    }
+
+    #[test]
+    fn test_airplane_mode_unchanged() {
+        assert!(!is_airplane_mode(&devices([])));
+        assert!(!is_airplane_mode(&devices([
+            (0, BLUETOOTH, true),
+            (1, WLAN, false)
+        ])));
+        assert!(is_airplane_mode(&devices([
+            (0, BLUETOOTH, true),
+            (1, WLAN, true)
+        ])));
     }
 }
