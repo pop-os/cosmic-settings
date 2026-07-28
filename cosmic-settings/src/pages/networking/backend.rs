@@ -12,7 +12,7 @@ use futures::channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use futures::{FutureExt, SinkExt, StreamExt};
 use nmrs::agent::{SecretAgent, SecretAgentFlags, SecretRequest, SecretResponder, SecretSetting};
 use nmrs::raw::zbus;
-use nmrs::raw::zvariant::{OwnedObjectPath, OwnedValue, Str, Value};
+use nmrs::raw::zvariant::{Dict, OwnedObjectPath, OwnedValue, Str, Value};
 use nmrs::{
     ActiveConnection, ConnectType, ConnectionOptions, EapOptions, NetworkEvent, NetworkManager,
     SavedConnection, SettingsSummary, WifiKeyMgmt, WifiSecurity,
@@ -514,6 +514,10 @@ pub enum Request {
         Option<String>,
     ),
     SetAirplaneMode(bool),
+    SetVpnUsername {
+        uuid: UUID,
+        username: String,
+    },
     SetWiFi(bool),
 }
 
@@ -720,10 +724,62 @@ async fn handle_request(nm: &NetworkManager, req: Request) -> Event {
             result.is_ok()
         }
         Request::SetAirplaneMode(enabled) => nm.set_airplane_mode(*enabled).await.is_ok(),
+        Request::SetVpnUsername { uuid, username } => {
+            let result = set_vpn_username(nm, uuid, username).await;
+            if let Err(err) = &result {
+                tracing::error!(%err, %uuid, "failed to store VPN username");
+            }
+            result.is_ok()
+        }
         Request::SetWiFi(enabled) => nm.set_wireless_enabled(*enabled).await.is_ok(),
     };
 
     request_response(nm, req, success).await
+}
+
+/// Stores a VPN username in `vpn.data`, which is where NetworkManager and the VPN
+/// plugins read it from.
+///
+/// The username must not be sent through the secret agent: openvpn fails to
+/// reconnect when it receives a `username` key in the VPN secrets dictionary.
+async fn set_vpn_username(
+    nm: &NetworkManager,
+    uuid: &str,
+    username: &str,
+) -> Result<(), nmrs::ConnectionError> {
+    let settings = nm.get_saved_connection_raw(uuid).await?;
+
+    // The whole dict is rewritten, so the keys already in it have to be carried over.
+    let mut data = HashMap::<String, String>::new();
+    if let Some(stored) = settings.get("vpn").and_then(|vpn| vpn.get("data"))
+        && let Ok(dict) = Dict::try_from(stored.clone())
+    {
+        for (key, value) in dict.iter() {
+            if let (Ok(key), Ok(value)) = (Str::try_from(key.clone()), Str::try_from(value.clone()))
+            {
+                data.insert(key.to_string(), value.to_string());
+            }
+        }
+    }
+
+    if data
+        .get("username")
+        .is_some_and(|stored| stored == username)
+    {
+        return Ok(());
+    }
+
+    data.insert("username".to_string(), username.to_string());
+    let data = OwnedValue::try_from(Value::from(data))
+        .map_err(|err| nmrs::ConnectionError::VpnFailed(err.to_string()))?;
+
+    let mut patch = nmrs::SettingsPatch::default();
+    patch.raw_overlay = Some(HashMap::from([(
+        "vpn".to_string(),
+        HashMap::from([("data".to_string(), data)]),
+    )]));
+
+    nm.update_saved_connection(uuid, patch).await
 }
 
 async fn request_response(nm: &NetworkManager, req: Request, success: bool) -> Event {
@@ -1649,15 +1705,28 @@ pub mod nm_secret_agent {
                 }
             }
             SecretSetting::Vpn { .. } => {
-                let secrets = stored
+                // Earlier versions stored the username next to the password. openvpn
+                // fails to reconnect when one is present in the secrets dictionary, so
+                // profiles saved by those versions have to be filtered on read too.
+                let secrets: HashMap<String, String> = stored
                     .into_iter()
+                    .filter(|(key, _)| key != "username")
                     .map(|(key, value)| (key, value.unsecure().to_string()))
                     .collect();
-                request
-                    .responder
-                    .vpn_secrets(secrets)
-                    .await
-                    .map_err(|err| Error(err.to_string()))?;
+
+                if secrets.is_empty() {
+                    request
+                        .responder
+                        .no_secrets()
+                        .await
+                        .map_err(|err| Error(err.to_string()))?;
+                } else {
+                    request
+                        .responder
+                        .vpn_secrets(secrets)
+                        .await
+                        .map_err(|err| Error(err.to_string()))?;
+                }
             }
             _ => {
                 let setting_name = setting_name(&request.setting).to_string();
