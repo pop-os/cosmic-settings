@@ -244,11 +244,13 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                     if let Some(ref on_placement) = self.on_placement {
                         shell.publish(on_placement(
                             output_key,
-                            ((region.x - state.max_dimensions.0 - bounds.x) * UNIT_PIXELS) as i32,
+                            ((region.x - state.max_dimensions.0 - bounds.x) * UNIT_PIXELS).round()
+                                as i32,
                             ((region.y
                                 - (state.max_dimensions.1 / VERTICAL_DISPLAY_OVERHEAD)
                                 - bounds.y)
-                                * UNIT_PIXELS) as i32,
+                                * UNIT_PIXELS)
+                                .round() as i32,
                         ));
                     }
 

@@ -612,7 +612,7 @@ impl Page {
                 } = dialog
                     && let Some(NmState { ref sender, .. }) = self.nm_state
                 {
-                    let username_unwrapped = username.clone().unwrap_or_default();
+                    let username = username.clone().unwrap_or_default();
                     let sec_tx = self.secret_tx.clone();
                     let nm_sender = sender.clone();
                     return Task::future(async move {
@@ -626,10 +626,10 @@ impl Page {
                                     .send(nm_secret_agent::Request::SetSecrets {
                                         setting_name: "vpn".to_string(),
                                         uuid: uuid.to_string(),
-                                        secrets: HashMap::from_iter([
-                                            ("username".to_string(), username_unwrapped.into()),
-                                            ("password".to_string(), password),
-                                        ]),
+                                        secrets: HashMap::from_iter([(
+                                            "password".to_string(),
+                                            password,
+                                        )]),
                                         applied_tx,
                                     })
                                     .await
@@ -645,6 +645,16 @@ impl Page {
                                     tracing::error!(%err, "failed to apply secret");
                                 }
                             }
+
+                            if !username.is_empty() {
+                                _ = nm_sender.unbounded_send(
+                                    network_manager::Request::SetVpnUsername {
+                                        uuid: uuid.clone(),
+                                        username,
+                                    },
+                                );
+                            }
+
                             _ = nm_sender
                                 .unbounded_send(network_manager::Request::ActivateVpn(uuid));
                         }
@@ -668,7 +678,7 @@ impl Page {
                 } = dialog
                     && let Some(NmState { ref sender, .. }) = self.nm_state
                 {
-                    let username_unwrapped = username.unwrap_or_default();
+                    let username = username.unwrap_or_default();
                     let sec_tx = self.secret_tx.clone();
                     let nm_sender = sender.clone();
                     return Task::future(async move {
@@ -678,10 +688,10 @@ impl Page {
                                 .send(nm_secret_agent::Request::SetSecrets {
                                     setting_name: "vpn".to_string(),
                                     uuid: uuid.to_string(),
-                                    secrets: HashMap::from_iter([
-                                        ("username".to_string(), username_unwrapped.into()),
-                                        ("password".to_string(), password),
-                                    ]),
+                                    secrets: HashMap::from_iter([(
+                                        "password".to_string(),
+                                        password,
+                                    )]),
                                     applied_tx,
                                 })
                                 .await;
@@ -689,6 +699,16 @@ impl Page {
                                 tokio::time::timeout(std::time::Duration::from_secs(1), applied_rx)
                                     .await;
                         }
+
+                        if !username.is_empty() {
+                            _ = nm_sender.unbounded_send(
+                                network_manager::Request::SetVpnUsername {
+                                    uuid: uuid.clone(),
+                                    username,
+                                },
+                            );
+                        }
+
                         _ = nm_sender.unbounded_send(network_manager::Request::ActivateVpn(uuid));
                         Message::Refresh
                     })
