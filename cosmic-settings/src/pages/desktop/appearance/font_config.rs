@@ -6,7 +6,6 @@ use std::sync::{Arc, LazyLock};
 use cosmic::config::{CosmicTk, FontConfig};
 use cosmic::{Apply, Element, Task, widget};
 use cosmic_config::ConfigSet;
-use mime::FONT;
 
 use crate::app;
 use crate::widget::selection_context_item;

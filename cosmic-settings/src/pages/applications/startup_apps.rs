@@ -1,7 +1,7 @@
 use cosmic::app::ContextDrawer;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::text_input::focus;
-use cosmic::widget::{Id, button, icon, settings, text};
+use cosmic::widget::{button, icon, settings, text};
 use cosmic::{Apply, Element, Task, task, widget};
 use cosmic_settings_page::section::Entity;
 use cosmic_settings_page::{self as page, Content, Info, Section};
