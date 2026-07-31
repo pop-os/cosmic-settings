@@ -426,6 +426,11 @@ impl Manager {
         self.light.set_frosted_windows(enabled)?;
         Some(ThemeStaged::Both)
     }
+    pub fn set_frosted_maximized_apps(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        self.dark.set_frosted_maximized_apps(enabled)?;
+        self.light.set_frosted_maximized_apps(enabled)?;
+        Some(ThemeStaged::Both)
+    }
 
     pub fn get_color(&self, context: &ContextView) -> Option<Color> {
         match *context {
@@ -665,6 +670,18 @@ impl ThemeCustomizer {
         self.theme
             .0
             .set_frosted_applets(self.theme.1.as_ref()?, enabled)
+            .ok()?;
+
+        Some(ThemeStaged::Current)
+    }
+
+    pub fn set_frosted_maximized_apps(&mut self, enabled: bool) -> Option<ThemeStaged> {
+        let config = self.builder.1.as_ref()?;
+
+        self.builder.0.set_frosted_maximized_apps(config, enabled).ok()?;
+        self.theme
+            .0
+            .set_frosted_maximized_apps(self.theme.1.as_ref()?, enabled)
             .ok()?;
 
         Some(ThemeStaged::Current)
