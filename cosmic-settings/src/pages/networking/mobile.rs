@@ -35,7 +35,10 @@ pub enum Message {
     RemoveProfile(ConnectionId),
     RemoveProfileRequest(ConnectionId),
     SelectDevice(Arc<DeviceInfo>),
-    SetDefault(ConnectionId),
+    SetDefault {
+        uuid: ConnectionId,
+        device_profiles: Vec<ConnectionId>,
+    },
     SetRadio(bool),
     Settings(ConnectionId),
     Update {
@@ -235,10 +238,13 @@ impl Page {
                     });
                 }
             }
-            Message::SetDefault(uuid) => {
+            Message::SetDefault {
+                uuid,
+                device_profiles,
+            } => {
                 if let Some(network_manager) = self.network_manager.clone() {
                     return cosmic::task::future(async move {
-                        set_default_profile(&network_manager, uuid.as_ref())
+                        set_default_profile(&network_manager, uuid.as_ref(), &device_profiles)
                             .await
                             .map(|_| Message::Refresh)
                             .unwrap_or_else(Message::Error)
@@ -301,7 +307,13 @@ impl Page {
             ]));
         }
 
-        let default_uuid = default_profile(&device.known_connections).map(|profile| profile.uuid.as_ref());
+        let default_uuid =
+            default_profile(&device.known_connections).map(|profile| profile.uuid.as_ref());
+        let device_profiles = device
+            .known_connections
+            .iter()
+            .map(|profile| profile.uuid.clone())
+            .collect::<Vec<_>>();
         let mut profiles_sorted = device.known_connections.iter().collect::<Vec<_>>();
         profiles_sorted.sort_by(|left, right| {
             let left_default = Some(left.uuid.as_ref()) == default_uuid;
@@ -342,7 +354,10 @@ impl Page {
                     .into()
             } else {
                 widget::button::text(fl!("mobile", "set-default"))
-                    .on_press(Message::SetDefault(profile.uuid.clone()))
+                    .on_press(Message::SetDefault {
+                        uuid: profile.uuid.clone(),
+                        device_profiles: device_profiles.clone(),
+                    })
                     .into()
             };
             let controls = widget::row::with_capacity(4)
@@ -386,21 +401,26 @@ fn default_profile(
 async fn set_default_profile(
     network_manager: &nmrs::NetworkManager,
     uuid: &str,
+    device_profiles: &[ConnectionId],
 ) -> Result<(), String> {
     let profiles = network_manager
         .list_saved_connections()
         .await
         .map_err(|why| why.to_string())?;
-    let mobile_profiles = profiles
+    let device_profiles = profiles
         .iter()
-        .filter(|profile| matches!(profile.connection_type.as_str(), "gsm" | "cdma"))
+        .filter(|profile| {
+            is_profile_for_device(profile.uuid.as_str(), device_profiles)
+        })
         .collect::<Vec<_>>();
 
-    if !mobile_profiles.iter().any(|profile| profile.uuid == uuid) {
-        return Err(format!("mobile profile {uuid} was not found"));
+    if !device_profiles.iter().any(|profile| profile.uuid == uuid) {
+        return Err(format!(
+            "mobile profile {uuid} is not associated with the selected modem"
+        ));
     }
 
-    for profile in mobile_profiles {
+    for profile in device_profiles {
         let selected = profile.uuid == uuid;
         let mut patch = nmrs::SettingsPatch::default();
         patch.autoconnect = Some(selected);
@@ -416,6 +436,12 @@ async fn set_default_profile(
     }
 
     Ok(())
+}
+
+fn is_profile_for_device(uuid: &str, device_profiles: &[ConnectionId]) -> bool {
+    device_profiles
+        .iter()
+        .any(|device_profile| device_profile.as_ref() == uuid)
 }
 
 fn devices_view() -> Section<crate::pages::Message> {
@@ -487,5 +513,19 @@ mod tests {
             default_profile(&profiles).map(|profile| profile.id.as_str()),
             Some("preferred")
         );
+    }
+
+    #[test]
+    fn default_profile_scope_excludes_profiles_from_other_modems() {
+        let selected_modem = [Arc::from("profile-on-selected-modem")];
+
+        assert!(is_profile_for_device(
+            "profile-on-selected-modem",
+            &selected_modem
+        ));
+        assert!(!is_profile_for_device(
+            "profile-on-other-modem",
+            &selected_modem
+        ));
     }
 }
