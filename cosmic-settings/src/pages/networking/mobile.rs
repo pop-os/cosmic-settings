@@ -213,8 +213,28 @@ impl Page {
             .active_connection
             .as_ref()
             .map(|(connection, _)| connection.uuid.as_ref());
+        let connection_status = active_uuid
+            .and_then(|uuid| {
+                device
+                    .known_connections
+                    .iter()
+                    .find(|connection| connection.uuid.as_ref() == uuid)
+            })
+            .map(|connection| fl!("mobile", "status-connected", profile = connection.id.as_str()))
+            .unwrap_or_else(|| fl!("mobile", "status-disconnected"));
+        let connection = widget::settings::section()
+            .title(fl!("mobile", "connection"))
+            .add(
+                widget::settings::item::builder(fl!("mobile", "data"))
+                    .description(connection_status)
+                    .toggler(self.radio_enabled, Message::SetRadio),
+            )
+            .add(widget::settings::item_row(vec![
+                widget::text::body(fl!("mobile", "interface", interface = device.interface.as_str()))
+                    .into(),
+            ]));
         let mut profiles = widget::settings::section()
-            .title(fl!("mobile", "connections"));
+            .title(fl!("mobile", "profiles"));
 
         if device.known_connections.is_empty() {
             profiles = profiles.add(widget::settings::item_row(vec![
@@ -263,13 +283,7 @@ impl Page {
         }
 
         widget::column::with_capacity(2)
-            .push(
-                widget::settings::section().add(
-                    widget::settings::item::builder(fl!("mobile", "enable"))
-                        .description(fl!("mobile", "enable-description"))
-                        .toggler(self.radio_enabled, Message::SetRadio),
-                ),
-            )
+            .push(connection)
             .push(profiles)
             .spacing(cosmic::theme::spacing().space_l)
             .into()
