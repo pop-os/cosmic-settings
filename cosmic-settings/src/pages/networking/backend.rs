@@ -285,6 +285,8 @@ pub mod devices {
     pub struct KnownDeviceConnection {
         pub id: String,
         pub uuid: Arc<str>,
+        pub autoconnect: bool,
+        pub autoconnect_priority: i32,
     }
 
     pub async fn list(
@@ -332,6 +334,8 @@ pub mod devices {
                 .map(|connection| KnownDeviceConnection {
                     id: connection.id.clone(),
                     uuid: Arc::from(connection.uuid.as_str()),
+                    autoconnect: connection.autoconnect,
+                    autoconnect_priority: connection.autoconnect_priority,
                 })
                 .collect();
 
