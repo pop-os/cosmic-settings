@@ -220,6 +220,12 @@ wired = Wired
     .remove = Remove connection profile
 
 mobile = Mobile Broadband
+    .connection = Connection
+    .data = Mobile data
+    .interface = Network interface: { $interface }
+    .profiles = Connection profiles
+    .status-connected = Connected to { $profile }
+    .status-disconnected = Not connected
     .adapter = Mobile broadband adapter { $id }
     .connections = Mobile broadband connections
     .enable = Enable mobile broadband
