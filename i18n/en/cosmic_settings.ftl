@@ -187,6 +187,7 @@ network-device-state =
     .unplugged = Cable unplugged
 
 remove-connection-dialog = Remove connection profile?
+    .mobile-description = You'll need to recreate this mobile broadband profile to use it in the future.
     .vpn-description = You'll need to enter a password again to use this network in the future.
     .wired-description = You'll need to recreate this profile to use it in the future.
 
@@ -222,8 +223,11 @@ wired = Wired
 mobile = Mobile Broadband
     .connection = Connection
     .data = Mobile data
+    .default = Default
     .interface = Network interface: { $interface }
     .profiles = Connection profiles
+    .remove = Remove profile
+    .set-default = Set as default
     .status-connected = Connected to { $profile }
     .status-disconnected = Not connected
     .adapter = Mobile broadband adapter { $id }
