@@ -285,7 +285,13 @@ impl Page {
                     .iter()
                     .find(|connection| connection.uuid.as_ref() == uuid)
             })
-            .map(|connection| fl!("mobile", "status-connected", profile = connection.id.as_str()))
+            .map(|connection| {
+                fl!(
+                    "mobile",
+                    "status-connected",
+                    profile = connection.id.as_str()
+                )
+            })
             .unwrap_or_else(|| fl!("mobile", "status-disconnected"));
         let connection = widget::settings::section()
             .title(fl!("mobile", "connection"))
@@ -295,11 +301,14 @@ impl Page {
                     .toggler(self.radio_enabled, Message::SetRadio),
             )
             .add(widget::settings::item_row(vec![
-                widget::text::body(fl!("mobile", "interface", interface = device.interface.as_str()))
-                    .into(),
+                widget::text::body(fl!(
+                    "mobile",
+                    "interface",
+                    interface = device.interface.as_str()
+                ))
+                .into(),
             ]));
-        let mut profiles = widget::settings::section()
-            .title(fl!("mobile", "profiles"));
+        let mut profiles = widget::settings::section().title(fl!("mobile", "profiles"));
 
         if device.known_connections.is_empty() {
             profiles = profiles.add(widget::settings::item_row(vec![
@@ -409,9 +418,7 @@ async fn set_default_profile(
         .map_err(|why| why.to_string())?;
     let device_profiles = profiles
         .iter()
-        .filter(|profile| {
-            is_profile_for_device(profile.uuid.as_str(), device_profiles)
-        })
+        .filter(|profile| is_profile_for_device(profile.uuid.as_str(), device_profiles))
         .collect::<Vec<_>>();
 
     if !device_profiles.iter().any(|profile| profile.uuid == uuid) {
@@ -452,9 +459,7 @@ fn devices_view() -> Section<crate::pages::Message> {
             .or_else(|| (page.devices.len() == 1).then(|| page.devices.first())?);
 
         match active_device {
-            Some(device) => page
-                .device_view(device)
-                .map(crate::pages::Message::Mobile),
+            Some(device) => page.device_view(device).map(crate::pages::Message::Mobile),
             None => widget::settings::section()
                 .add(widget::settings::item_row(vec![
                     widget::text::body(fl!("mobile", "no-device")).into(),
@@ -492,7 +497,11 @@ fn slash_path() -> nmrs::raw::zvariant::OwnedObjectPath {
 mod tests {
     use super::*;
 
-    fn profile(id: &str, autoconnect: bool, autoconnect_priority: i32) -> network_manager::devices::KnownDeviceConnection {
+    fn profile(
+        id: &str,
+        autoconnect: bool,
+        autoconnect_priority: i32,
+    ) -> network_manager::devices::KnownDeviceConnection {
         network_manager::devices::KnownDeviceConnection {
             id: id.to_owned(),
             uuid: Arc::from(id),
