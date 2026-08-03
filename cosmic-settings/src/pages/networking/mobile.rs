@@ -9,9 +9,10 @@ use anyhow::Context;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::space::horizontal as horizontal_space;
 use cosmic::widget::{self, icon};
-use cosmic::{Apply, Element, Task};
+use cosmic::{Apply, Element, Task, surface};
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
+use zbus::{Connection, fdo::ObjectManagerProxy, proxy};
 
 use super::backend as network_manager;
 use super::backend::devices::{DeviceInfo, DeviceState, DeviceType};
@@ -19,6 +20,126 @@ use super::backend::devices::{DeviceInfo, DeviceState, DeviceType};
 pub type ConnectionId = Arc<str>;
 
 const DEFAULT_AUTOCONNECT_PRIORITY: i32 = 100;
+const MODEM_MANAGER_SERVICE: &str = "org.freedesktop.ModemManager1";
+const MODEM_MANAGER_PATH: &str = "/org/freedesktop/ModemManager1";
+const MODEM_INTERFACE: &str = "org.freedesktop.ModemManager1.Modem";
+
+// `MMModemMode` bit flags from ModemManager's public D-Bus API.
+const MODE_3G: u32 = 1 << 2;
+const MODE_4G: u32 = 1 << 3;
+const MODE_5G: u32 = 1 << 4;
+const MODE_3G_4G: u32 = MODE_3G | MODE_4G;
+const MODE_3G_5G: u32 = MODE_3G | MODE_5G;
+const MODE_4G_5G: u32 = MODE_4G | MODE_5G;
+const MODE_3G_4G_5G: u32 = MODE_3G | MODE_4G | MODE_5G;
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct NetworkMode {
+    allowed: u32,
+    preferred: u32,
+}
+
+impl NetworkMode {
+    const AUTOMATIC: Self = Self {
+        allowed: MODE_3G_4G_5G,
+        preferred: MODE_5G,
+    };
+    const FOUR_G_FIVE_G: Self = Self {
+        allowed: MODE_4G_5G,
+        preferred: MODE_5G,
+    };
+    const FIVE_G_ONLY: Self = Self {
+        allowed: MODE_5G,
+        preferred: 0,
+    };
+    const THREE_G_FOUR_G: Self = Self {
+        allowed: MODE_3G_4G,
+        preferred: MODE_4G,
+    };
+    const FOUR_G_ONLY: Self = Self {
+        allowed: MODE_4G,
+        preferred: 0,
+    };
+    const THREE_G_ONLY: Self = Self {
+        allowed: MODE_3G,
+        preferred: 0,
+    };
+    fn label(self) -> String {
+        match self {
+            Self::AUTOMATIC => fl!("mobile", "network-automatic"),
+            Self::FOUR_G_FIVE_G => fl!("mobile", "network-4g-5g"),
+            Self::FIVE_G_ONLY => fl!("mobile", "network-5g-only"),
+            Self::THREE_G_FOUR_G => fl!("mobile", "network-3g-4g"),
+            Self::FOUR_G_ONLY => fl!("mobile", "network-4g-only"),
+            Self::THREE_G_ONLY => fl!("mobile", "network-3g-only"),
+            _ => fl!(
+                "mobile",
+                "network-custom",
+                allowed = self.allowed_label(),
+                preferred = self.preferred_label()
+            ),
+        }
+    }
+
+    fn allowed_label(self) -> &'static str {
+        match self.allowed {
+            MODE_3G => "3G",
+            MODE_4G => "4G",
+            MODE_5G => "5G",
+            MODE_3G_4G => "3G / 4G",
+            MODE_3G_5G => "3G / 5G",
+            MODE_4G_5G => "4G / 5G",
+            MODE_3G_4G_5G => "3G / 4G / 5G",
+            _ => "Mobile",
+        }
+    }
+
+    fn preferred_label(self) -> &'static str {
+        match self.preferred {
+            MODE_3G => "3G",
+            MODE_4G => "4G",
+            MODE_5G => "5G",
+            _ => "Automatic",
+        }
+    }
+
+    fn menu_order(self) -> u8 {
+        match self {
+            Self::AUTOMATIC => 0,
+            Self::FOUR_G_FIVE_G => 1,
+            Self::FIVE_G_ONLY => 2,
+            Self::THREE_G_FOUR_G => 3,
+            Self::FOUR_G_ONLY => 4,
+            Self::THREE_G_ONLY => 5,
+            _ => 6,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ModemModes {
+    interface: String,
+    current: NetworkMode,
+    supported: Vec<NetworkMode>,
+}
+
+#[proxy(
+    interface = "org.freedesktop.ModemManager1.Modem",
+    default_service = "org.freedesktop.ModemManager1"
+)]
+trait Modem {
+    #[zbus(property, name = "PrimaryPort")]
+    fn primary_port(&self) -> zbus::Result<String>;
+
+    #[zbus(property, name = "SupportedModes")]
+    fn supported_modes(&self) -> zbus::Result<Vec<(u32, u32)>>;
+
+    #[zbus(property, name = "CurrentModes")]
+    fn current_modes(&self) -> zbus::Result<(u32, u32)>;
+
+    #[zbus(name = "SetCurrentModes")]
+    async fn set_current_modes(&self, modes: (u32, u32)) -> zbus::Result<()>;
+}
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -39,10 +160,17 @@ pub enum Message {
         uuid: ConnectionId,
         device_profiles: Vec<ConnectionId>,
     },
+    SetNetworkMode {
+        interface: String,
+        mode: NetworkMode,
+    },
+    NetworkModeUpdated(Result<(), String>),
     SetRadio(bool),
     Settings(ConnectionId),
+    Surface(surface::Action),
     Update {
         devices: Vec<DeviceInfo>,
+        modem_modes: Vec<ModemModes>,
         radio_enabled: bool,
     },
 }
@@ -70,6 +198,9 @@ pub struct Page {
     active_device: Option<Arc<DeviceInfo>>,
     devices: Vec<Arc<DeviceInfo>>,
     dialog: Option<MobileDialog>,
+    network_mode_change_in_progress: bool,
+    network_mode_change_failed: bool,
+    modem_modes: Vec<ModemModes>,
     network_manager: Option<nmrs::NetworkManager>,
     radio_enabled: bool,
 }
@@ -174,10 +305,12 @@ impl Page {
             }
             Message::Update {
                 devices,
+                modem_modes,
                 radio_enabled,
             } => {
                 self.radio_enabled = radio_enabled;
                 self.devices = devices.into_iter().map(Arc::new).collect();
+                self.modem_modes = modem_modes;
                 self.update_active_device();
             }
             Message::SelectDevice(device) => self.active_device = Some(device),
@@ -251,11 +384,34 @@ impl Page {
                     });
                 }
             }
+            Message::SetNetworkMode { interface, mode } => {
+                if self.network_mode_change_in_progress {
+                    return Task::none();
+                }
+                self.network_mode_change_in_progress = true;
+                self.network_mode_change_failed = false;
+                return cosmic::task::future(async move {
+                    Message::NetworkModeUpdated(set_network_mode(&interface, mode).await)
+                });
+            }
+            Message::NetworkModeUpdated(result) => {
+                self.network_mode_change_in_progress = false;
+                self.network_mode_change_failed = result.is_err();
+                if let Err(why) = result {
+                    tracing::warn!(why, "failed to apply preferred network type");
+                }
+                if let Some(network_manager) = self.network_manager.clone() {
+                    return refresh(network_manager);
+                }
+            }
             Message::Settings(uuid) => {
                 return cosmic::task::future(async move {
                     let _ = super::nm_edit_connection(uuid.as_ref()).await;
                     Message::Refresh
                 });
+            }
+            Message::Surface(action) => {
+                return cosmic::task::message(crate::app::Message::Surface(action));
             }
             Message::Error(why) => tracing::error!(why),
         }
@@ -308,6 +464,7 @@ impl Page {
                 ))
                 .into(),
             ]));
+        let network_mode = self.network_mode_view(device);
         let mut profiles = widget::settings::section().title(fl!("mobile", "profiles"));
 
         if device.known_connections.is_empty() {
@@ -390,10 +547,59 @@ impl Page {
             ]));
         }
 
-        widget::column::with_capacity(2)
+        widget::column::with_capacity(3)
             .push(connection)
+            .push(network_mode)
             .push(profiles)
             .spacing(cosmic::theme::spacing().space_l)
+            .into()
+    }
+
+    fn network_mode_view<'a>(&'a self, device: &'a Arc<DeviceInfo>) -> Element<'a, Message> {
+        let Some(modem_modes) = self
+            .modem_modes
+            .iter()
+            .find(|modes| modes.interface == device.interface)
+        else {
+            return widget::settings::section()
+                .title(fl!("mobile", "network-type"))
+                .add(widget::settings::item_row(vec![
+                    widget::text::body(fl!("mobile", "network-type-unavailable")).into(),
+                ]))
+                .into();
+        };
+
+        let modes = available_network_modes(&modem_modes.supported, modem_modes.current);
+
+        let labels = modes.iter().map(|mode| mode.label()).collect::<Vec<_>>();
+        let selected = modes.iter().position(|mode| *mode == modem_modes.current);
+        let interface = device.interface.clone();
+        let modes_for_action = modes.clone();
+        let item = widget::settings::item::builder(fl!("mobile", "network-preferences"))
+            .description(if self.network_mode_change_failed {
+                fl!("mobile", "network-type-failed")
+            } else {
+                modem_modes.current.label()
+            });
+        let item = if self.network_mode_change_in_progress {
+            item.control(widget::text::body(fl!("mobile", "network-type-applying")))
+        } else {
+            item.control(widget::dropdown::popup_dropdown(
+                labels,
+                selected,
+                move |index| Message::SetNetworkMode {
+                    interface: interface.clone(),
+                    mode: modes_for_action[index],
+                },
+                cosmic::iced::window::Id::RESERVED,
+                Message::Surface,
+                |message| crate::app::Message::PageMessage(crate::pages::Message::Mobile(message)),
+            ))
+        };
+
+        widget::settings::section()
+            .title(fl!("mobile", "network-type"))
+            .add(item)
             .into()
     }
 }
@@ -451,6 +657,15 @@ fn is_profile_for_device(uuid: &str, device_profiles: &[ConnectionId]) -> bool {
         .any(|device_profile| device_profile.as_ref() == uuid)
 }
 
+fn available_network_modes(supported: &[NetworkMode], current: NetworkMode) -> Vec<NetworkMode> {
+    let mut modes = supported.to_vec();
+    if !modes.contains(&current) {
+        modes.insert(0, current);
+    }
+    modes.sort_by_key(|mode| mode.menu_order());
+    modes
+}
+
 fn devices_view() -> Section<crate::pages::Message> {
     Section::default().view::<Page>(move |_binder, page, _section| {
         let active_device = page
@@ -472,21 +687,125 @@ fn devices_view() -> Section<crate::pages::Message> {
 
 fn refresh(network_manager: nmrs::NetworkManager) -> Task<crate::app::Message> {
     cosmic::task::future(async move {
-        let (devices, radio) = futures::join!(
+        let (devices, radio, modem_modes) = futures::join!(
             network_manager::devices::list(&network_manager, |device_type| {
                 matches!(device_type, DeviceType::Modem)
             }),
             network_manager.wwan_state(),
+            read_modem_modes(),
         );
 
         match devices {
             Ok(devices) => Message::Update {
                 devices,
+                modem_modes: modem_modes.unwrap_or_else(|why| {
+                    tracing::warn!(why, "failed to read mobile network modes");
+                    Vec::new()
+                }),
                 radio_enabled: radio.map(|state| state.enabled).unwrap_or(false),
             },
             Err(why) => Message::Error(why.to_string()),
         }
     })
+}
+
+async fn read_modem_modes() -> Result<Vec<ModemModes>, String> {
+    let connection = Connection::system()
+        .await
+        .map_err(|why| format!("connect to ModemManager: {why}"))?;
+    let manager = ObjectManagerProxy::builder(&connection)
+        .destination(MODEM_MANAGER_SERVICE)
+        .map_err(|why| format!("build ModemManager manager: {why}"))?
+        .path(MODEM_MANAGER_PATH)
+        .map_err(|why| format!("build ModemManager manager: {why}"))?
+        .build()
+        .await
+        .map_err(|why| format!("connect to ModemManager: {why}"))?;
+    let paths = manager
+        .get_managed_objects()
+        .await
+        .map_err(|why| format!("enumerate ModemManager devices: {why}"))?
+        .into_iter()
+        .filter(|(_, interfaces)| interfaces.contains_key(MODEM_INTERFACE))
+        .map(|(path, _)| path.to_string())
+        .collect::<Vec<_>>();
+
+    let mut modes = Vec::new();
+    for path in paths {
+        if let Ok(mode) = read_modem_mode(&connection, &path).await {
+            modes.push(mode);
+        }
+    }
+    Ok(modes)
+}
+
+async fn read_modem_mode(connection: &Connection, path: &str) -> Result<ModemModes, String> {
+    let proxy = ModemProxy::builder(connection)
+        .path(path)
+        .map_err(|why| format!("build modem proxy: {why}"))?
+        .build()
+        .await
+        .map_err(|why| format!("read modem properties: {why}"))?;
+    let (interface, supported, current) = futures::join!(
+        proxy.primary_port(),
+        proxy.supported_modes(),
+        proxy.current_modes(),
+    );
+    let (allowed, preferred) = current.map_err(|why| format!("read modem modes: {why}"))?;
+
+    Ok(ModemModes {
+        interface: interface.map_err(|why| format!("read modem interface: {why}"))?,
+        current: NetworkMode { allowed, preferred },
+        supported: supported
+            .map_err(|why| format!("read supported modem modes: {why}"))?
+            .into_iter()
+            .map(|(allowed, preferred)| NetworkMode { allowed, preferred })
+            .collect(),
+    })
+}
+
+async fn set_network_mode(interface: &str, mode: NetworkMode) -> Result<(), String> {
+    let connection = Connection::system()
+        .await
+        .map_err(|why| format!("connect to ModemManager: {why}"))?;
+    let manager = ObjectManagerProxy::builder(&connection)
+        .destination(MODEM_MANAGER_SERVICE)
+        .map_err(|why| format!("build ModemManager manager: {why}"))?
+        .path(MODEM_MANAGER_PATH)
+        .map_err(|why| format!("build ModemManager manager: {why}"))?
+        .build()
+        .await
+        .map_err(|why| format!("connect to ModemManager: {why}"))?;
+    let paths = manager
+        .get_managed_objects()
+        .await
+        .map_err(|why| format!("enumerate ModemManager devices: {why}"))?
+        .into_iter()
+        .filter(|(_, interfaces)| interfaces.contains_key(MODEM_INTERFACE))
+        .map(|(path, _)| path.to_string())
+        .collect::<Vec<_>>();
+
+    for path in paths {
+        let proxy = ModemProxy::builder(&connection)
+            .path(path.as_str())
+            .map_err(|why| format!("build modem proxy: {why}"))?
+            .build()
+            .await
+            .map_err(|why| format!("read modem properties: {why}"))?;
+        if proxy
+            .primary_port()
+            .await
+            .map_err(|why| format!("read modem interface: {why}"))?
+            == interface
+        {
+            return proxy
+                .set_current_modes((mode.allowed, mode.preferred))
+                .await
+                .map_err(|why| format!("set preferred network type: {why}"));
+        }
+    }
+
+    Err(format!("no modem found for network interface {interface}"))
 }
 
 fn slash_path() -> nmrs::raw::zvariant::OwnedObjectPath {
@@ -536,5 +855,41 @@ mod tests {
             "profile-on-other-modem",
             &selected_modem
         ));
+    }
+
+    #[test]
+    fn network_mode_choices_include_every_supported_combination() {
+        let additional_supported_mode = NetworkMode {
+            allowed: MODE_3G_5G,
+            preferred: MODE_5G,
+        };
+        let supported = [
+            NetworkMode::AUTOMATIC,
+            NetworkMode::FOUR_G_FIVE_G,
+            NetworkMode::FIVE_G_ONLY,
+            NetworkMode::THREE_G_FOUR_G,
+            NetworkMode::FOUR_G_ONLY,
+            NetworkMode::THREE_G_ONLY,
+            additional_supported_mode,
+        ];
+
+        assert_eq!(
+            available_network_modes(&supported, NetworkMode::AUTOMATIC),
+            supported
+        );
+    }
+
+    #[test]
+    fn network_mode_choices_keep_a_supported_nonstandard_current_mode_visible() {
+        let current = NetworkMode {
+            allowed: MODE_3G_4G_5G,
+            preferred: MODE_4G,
+        };
+        let supported = [current, NetworkMode::AUTOMATIC, NetworkMode::FOUR_G_ONLY];
+
+        assert_eq!(
+            available_network_modes(&supported, current),
+            [NetworkMode::AUTOMATIC, NetworkMode::FOUR_G_ONLY, current]
+        );
     }
 }
