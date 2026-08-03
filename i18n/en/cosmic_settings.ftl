@@ -124,6 +124,9 @@ xdg-entry-wireless = Wi-Fi
 xdg-entry-wireless-comment = Wi-Fi connections and connection profiles
 xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Network;Connection;
 
+xdg-entry-mobile-comment = Mobile broadband, SIM and connection profiles
+xdg-entry-mobile-keywords = COSMIC;Mobile;Broadband;Cellular;WWAN;Modem;5G;LTE;SIM;
+
 xdg-entry-workspaces = Workspaces
 xdg-entry-workspaces-comment = Workspace orientation, overview, and multi-monitor behavior
 xdg-entry-workspaces-keywords = COSMIC;Workspace;Orientation;Overview;Monitor;
@@ -215,6 +218,14 @@ wired = Wired
     .connections = Wired connections
     .devices = Wired devices
     .remove = Remove connection profile
+
+mobile = Mobile Broadband
+    .adapter = Mobile broadband adapter { $id }
+    .connections = Mobile broadband connections
+    .enable = Enable mobile broadband
+    .enable-description = Turn the WWAN radio on or off
+    .no-device = No mobile broadband device found.
+    .no-profiles = No mobile broadband profiles configured.
 
 wifi = Wi-Fi
     .adapter = Wi-Fi adapter { $id }
