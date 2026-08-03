@@ -18,6 +18,8 @@ use super::backend::devices::{DeviceInfo, DeviceState, DeviceType};
 
 pub type ConnectionId = Arc<str>;
 
+const DEFAULT_AUTOCONNECT_PRIORITY: i32 = 100;
+
 #[derive(Clone, Debug)]
 pub enum Message {
     AddProfile,
@@ -25,17 +27,26 @@ pub enum Message {
         connection: network_manager::devices::DeviceConnection,
         device: Arc<DeviceInfo>,
     },
+    CancelDialog,
     Deactivate(ConnectionId),
     Error(String),
     NetworkManagerConnect(nmrs::NetworkManager),
     Refresh,
+    RemoveProfile(ConnectionId),
+    RemoveProfileRequest(ConnectionId),
     SelectDevice(Arc<DeviceInfo>),
+    SetDefault(ConnectionId),
     SetRadio(bool),
     Settings(ConnectionId),
     Update {
         devices: Vec<DeviceInfo>,
         radio_enabled: bool,
     },
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum MobileDialog {
+    RemoveProfile(ConnectionId),
 }
 
 impl From<Message> for crate::app::Message {
@@ -55,6 +66,7 @@ pub struct Page {
     entity: page::Entity,
     active_device: Option<Arc<DeviceInfo>>,
     devices: Vec<Arc<DeviceInfo>>,
+    dialog: Option<MobileDialog>,
     network_manager: Option<nmrs::NetworkManager>,
     radio_enabled: bool,
 }
@@ -77,6 +89,26 @@ impl page::Page<crate::pages::Message> for Page {
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![sections.insert(devices_view())])
+    }
+
+    fn dialog(&'_ self) -> Option<Element<'_, crate::pages::Message>> {
+        self.dialog.as_ref().map(|dialog| match dialog {
+            MobileDialog::RemoveProfile(uuid) => {
+                let primary_action = widget::button::destructive(fl!("remove"))
+                    .on_press(Message::RemoveProfile(uuid.clone()));
+                let secondary_action =
+                    widget::button::standard(fl!("cancel")).on_press(Message::CancelDialog);
+
+                widget::dialog()
+                    .title(fl!("remove-connection-dialog"))
+                    .icon(icon::from_name("dialog-information").size(64))
+                    .body(fl!("remove-connection-dialog", "mobile-description"))
+                    .primary_action(primary_action)
+                    .secondary_action(secondary_action)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Mobile)
+            }
+        })
     }
 
     fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
@@ -112,6 +144,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
         self.active_device = None;
         self.devices.clear();
+        self.dialog = None;
         self.network_manager = None;
         Task::none()
     }
@@ -130,6 +163,7 @@ impl Page {
                 self.network_manager = Some(network_manager.clone());
                 return refresh(network_manager);
             }
+            Message::CancelDialog => self.dialog = None,
             Message::Refresh => {
                 if let Some(network_manager) = self.network_manager.clone() {
                     return refresh(network_manager);
@@ -185,6 +219,31 @@ impl Page {
                     let _ = super::nm_add_mobile().await;
                     Message::Refresh
                 });
+            }
+            Message::RemoveProfileRequest(uuid) => {
+                self.dialog = Some(MobileDialog::RemoveProfile(uuid));
+            }
+            Message::RemoveProfile(uuid) => {
+                self.dialog = None;
+                if let Some(network_manager) = self.network_manager.clone() {
+                    return cosmic::task::future(async move {
+                        network_manager
+                            .delete_saved_connection(uuid.as_ref())
+                            .await
+                            .map(|_| Message::Refresh)
+                            .unwrap_or_else(|why| Message::Error(why.to_string()))
+                    });
+                }
+            }
+            Message::SetDefault(uuid) => {
+                if let Some(network_manager) = self.network_manager.clone() {
+                    return cosmic::task::future(async move {
+                        set_default_profile(&network_manager, uuid.as_ref())
+                            .await
+                            .map(|_| Message::Refresh)
+                            .unwrap_or_else(Message::Error)
+                    });
+                }
             }
             Message::Settings(uuid) => {
                 return cosmic::task::future(async move {
@@ -242,9 +301,20 @@ impl Page {
             ]));
         }
 
-        for profile in &device.known_connections {
+        let default_uuid = default_profile(&device.known_connections).map(|profile| profile.uuid.as_ref());
+        let mut profiles_sorted = device.known_connections.iter().collect::<Vec<_>>();
+        profiles_sorted.sort_by(|left, right| {
+            let left_default = Some(left.uuid.as_ref()) == default_uuid;
+            let right_default = Some(right.uuid.as_ref()) == default_uuid;
+            right_default
+                .cmp(&left_default)
+                .then_with(|| left.id.cmp(&right.id))
+        });
+
+        for profile in profiles_sorted {
             let active = active_uuid.is_some_and(|uuid| uuid == profile.uuid.as_ref())
                 && device.state == DeviceState::Activated;
+            let is_default = Some(profile.uuid.as_ref()) == default_uuid;
             let action = if active {
                 widget::button::text(fl!("disconnect"))
                     .on_press(Message::Deactivate(profile.uuid.clone()))
@@ -266,11 +336,25 @@ impl Page {
                 widget::button::text(fl!("connect"))
             };
 
-            let controls = widget::row::with_capacity(2)
+            let default_action: Element<'_, Message> = if is_default {
+                widget::text::body(fl!("mobile", "default"))
+                    .align_y(Alignment::Center)
+                    .into()
+            } else {
+                widget::button::text(fl!("mobile", "set-default"))
+                    .on_press(Message::SetDefault(profile.uuid.clone()))
+                    .into()
+            };
+            let controls = widget::row::with_capacity(4)
                 .push(action)
+                .push(default_action)
                 .push(
                     widget::button::icon(icon::from_name("emblem-system-symbolic"))
                         .on_press(Message::Settings(profile.uuid.clone())),
+                )
+                .push(
+                    widget::button::icon(icon::from_name("edit-delete-symbolic"))
+                        .on_press(Message::RemoveProfileRequest(profile.uuid.clone())),
                 )
                 .align_y(Alignment::Center)
                 .spacing(cosmic::theme::spacing().space_xxs);
@@ -288,6 +372,50 @@ impl Page {
             .spacing(cosmic::theme::spacing().space_l)
             .into()
     }
+}
+
+fn default_profile(
+    profiles: &[network_manager::devices::KnownDeviceConnection],
+) -> Option<&network_manager::devices::KnownDeviceConnection> {
+    profiles
+        .iter()
+        .filter(|profile| profile.autoconnect)
+        .max_by_key(|profile| profile.autoconnect_priority)
+}
+
+async fn set_default_profile(
+    network_manager: &nmrs::NetworkManager,
+    uuid: &str,
+) -> Result<(), String> {
+    let profiles = network_manager
+        .list_saved_connections()
+        .await
+        .map_err(|why| why.to_string())?;
+    let mobile_profiles = profiles
+        .iter()
+        .filter(|profile| matches!(profile.connection_type.as_str(), "gsm" | "cdma"))
+        .collect::<Vec<_>>();
+
+    if !mobile_profiles.iter().any(|profile| profile.uuid == uuid) {
+        return Err(format!("mobile profile {uuid} was not found"));
+    }
+
+    for profile in mobile_profiles {
+        let selected = profile.uuid == uuid;
+        let mut patch = nmrs::SettingsPatch::default();
+        patch.autoconnect = Some(selected);
+        patch.autoconnect_priority = Some(if selected {
+            DEFAULT_AUTOCONNECT_PRIORITY
+        } else {
+            0
+        });
+        network_manager
+            .update_saved_connection(&profile.uuid, patch)
+            .await
+            .map_err(|why| why.to_string())?;
+    }
+
+    Ok(())
 }
 
 fn devices_view() -> Section<crate::pages::Message> {
@@ -332,4 +460,32 @@ fn refresh(network_manager: nmrs::NetworkManager) -> Task<crate::app::Message> {
 
 fn slash_path() -> nmrs::raw::zvariant::OwnedObjectPath {
     nmrs::raw::zvariant::OwnedObjectPath::try_from("/").expect("slash is a valid object path")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn profile(id: &str, autoconnect: bool, autoconnect_priority: i32) -> network_manager::devices::KnownDeviceConnection {
+        network_manager::devices::KnownDeviceConnection {
+            id: id.to_owned(),
+            uuid: Arc::from(id),
+            autoconnect,
+            autoconnect_priority,
+        }
+    }
+
+    #[test]
+    fn default_profile_uses_the_highest_autoconnect_priority() {
+        let profiles = [
+            profile("backup", true, 0),
+            profile("manual", false, 100),
+            profile("preferred", true, DEFAULT_AUTOCONNECT_PRIORITY),
+        ];
+
+        assert_eq!(
+            default_profile(&profiles).map(|profile| profile.id.as_str()),
+            Some("preferred")
+        );
+    }
 }
