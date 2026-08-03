@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 pub mod backend;
+pub mod mobile;
 pub mod vpn;
 pub mod wifi;
 pub mod wired;
@@ -31,6 +32,7 @@ pub struct Page {
     vpn: page::Entity,
     wifi: page::Entity,
     wired: page::Entity,
+    mobile: page::Entity,
 }
 
 #[derive(Debug, Clone)]
@@ -50,6 +52,7 @@ pub enum Message {
 
 #[derive(Debug, Clone)]
 pub enum DeviceVariant {
+    Mobile(Arc<network_manager::devices::DeviceInfo>),
     Wired(Arc<network_manager::devices::DeviceInfo>),
     WiFi(Arc<network_manager::devices::DeviceInfo>),
 }
@@ -86,6 +89,7 @@ impl page::Page<crate::pages::Message> for Page {
         crate::slab!(descriptions {
             wifi_desc = fl!("xdg-entry-wireless-comment");
             wired_desc = fl!("xdg-entry-wired-comment");
+            mobile_desc = fl!("xdg-entry-mobile-comment");
             vpn_desc = fl!("xdg-entry-vpn-comment");
         });
 
@@ -103,6 +107,12 @@ impl page::Page<crate::pages::Message> for Page {
                     .devices
                     .iter()
                     .filter(|device| device.device_type == DeviceType::Ethernet)
+                    .count()
+                    > 1;
+                let multiple_mobile_adapters = page
+                    .devices
+                    .iter()
+                    .filter(|device| device.device_type == DeviceType::Modem)
                     .count()
                     > 1;
 
@@ -202,8 +212,34 @@ impl page::Page<crate::pages::Message> for Page {
                         )
                     });
 
+                let mobile_devices = page
+                    .devices
+                    .iter()
+                    .filter(|device| device.device_type == DeviceType::Modem)
+                    .map(|device| {
+                        crate::widget::page_list_item(
+                            if multiple_mobile_adapters {
+                                fl!("mobile", "adapter", id = device.interface.as_str())
+                            } else {
+                                fl!("mobile")
+                            },
+                            if multiple_mobile_adapters {
+                                ""
+                            } else {
+                                &descs[mobile_desc]
+                            },
+                            device_state_label(device.state),
+                            "network-cellular-symbolic",
+                            Message::OpenPage {
+                                page: page.mobile,
+                                device: Some(DeviceVariant::Mobile(device.clone())),
+                            },
+                        )
+                    });
+
                 let device_list = wifi_devices
                     .chain(wired_devices)
+                    .chain(mobile_devices)
                     .fold(widget::column([]), |column, device| column.push(device))
                     .push(crate::widget::page_list_item(
                         fl!("vpn"),
@@ -259,11 +295,13 @@ impl page::AutoBind<crate::pages::Message> for Page {
         let vpn = page.sub_page_with_id::<vpn::Page>();
         let wifi = page.sub_page_with_id::<wifi::Page>();
         let wired = page.sub_page_with_id::<wired::Page>();
+        let mobile = page.sub_page_with_id::<mobile::Page>();
 
         let model = page.model.page_mut::<Self>().unwrap();
         model.vpn = vpn;
         model.wifi = wifi;
         model.wired = wired;
+        model.mobile = mobile;
 
         page
     }
@@ -291,6 +329,9 @@ impl Page {
                 if let Some(device) = device {
                     tasks.push(cosmic::task::message(crate::app::Message::PageMessage(
                         match device {
+                            DeviceVariant::Mobile(device) => crate::pages::Message::Mobile(
+                                mobile::Message::SelectDevice(device),
+                            ),
                             DeviceVariant::WiFi(device) => {
                                 crate::pages::Message::WiFi(wifi::Message::SelectDevice(device))
                             }
@@ -369,12 +410,34 @@ impl Page {
     }
 }
 
+fn device_state_label(state: DeviceState) -> String {
+    match state {
+        DeviceState::Activated => fl!("network-device-state", "activated"),
+        DeviceState::Config => fl!("network-device-state", "config"),
+        DeviceState::Deactivating => fl!("network-device-state", "deactivating"),
+        DeviceState::Disconnected => fl!("network-device-state", "disconnected"),
+        DeviceState::Failed => fl!("network-device-state", "failed"),
+        DeviceState::IpCheck => fl!("network-device-state", "ip-check"),
+        DeviceState::IpConfig => fl!("network-device-state", "ip-config"),
+        DeviceState::NeedAuth => fl!("network-device-state", "need-auth"),
+        DeviceState::Prepare => fl!("network-device-state", "prepare"),
+        DeviceState::Secondaries => fl!("network-device-state", "secondaries"),
+        DeviceState::Unavailable => fl!("network-device-state", "unavailable"),
+        DeviceState::Unknown | DeviceState::Other(_) => fl!("network-device-state", "unknown"),
+        DeviceState::Unmanaged => fl!("network-device-state", "unmanaged"),
+    }
+}
+
 async fn nm_add_wired() -> Result<(), String> {
     nm_connection_editor(&["--type=802-3-ethernet", "-c"]).await
 }
 
 async fn nm_add_wifi() -> Result<(), String> {
     nm_connection_editor(&["--type=802-11-wireless", "-c"]).await
+}
+
+async fn nm_add_mobile() -> Result<(), String> {
+    nm_connection_editor(&["--type=gsm", "-c"]).await
 }
 
 async fn nm_edit_connection(uuid: &str) -> Result<(), String> {
