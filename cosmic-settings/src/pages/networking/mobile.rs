@@ -3,10 +3,13 @@
 
 //! Mobile broadband profiles managed by NetworkManager.
 
+pub mod details;
+
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Context;
-use cosmic::iced::{Alignment, Length};
+use cosmic::iced::{Alignment, Length, Subscription};
 use cosmic::widget::space::horizontal as horizontal_space;
 use cosmic::widget::{self, icon};
 use cosmic::{Apply, Element, Task, surface};
@@ -164,15 +167,20 @@ pub enum Message {
         interface: String,
         mode: NetworkMode,
     },
-    NetworkModeUpdated(Result<(), String>),
+    NetworkModeUpdated {
+        mode: NetworkMode,
+        result: Result<(), String>,
+    },
     SetRadio(bool),
     Settings(ConnectionId),
     Surface(surface::Action),
     Update {
         devices: Vec<DeviceInfo>,
+        modem_details: Vec<details::ModemDetails>,
         modem_modes: Vec<ModemModes>,
         radio_enabled: bool,
     },
+    SignalPollingStopped,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -200,9 +208,12 @@ pub struct Page {
     dialog: Option<MobileDialog>,
     network_mode_change_in_progress: bool,
     network_mode_change_failed: bool,
+    modem_details: Vec<details::ModemDetails>,
     modem_modes: Vec<ModemModes>,
     network_manager: Option<nmrs::NetworkManager>,
     radio_enabled: bool,
+    rejected_network_modes: Vec<NetworkMode>,
+    signal_polling_rates: Vec<(String, u32)>,
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -276,11 +287,25 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        let signal_polling_rates = std::mem::take(&mut self.signal_polling_rates);
         self.active_device = None;
         self.devices.clear();
         self.dialog = None;
+        self.modem_details.clear();
         self.network_manager = None;
-        Task::none()
+        if signal_polling_rates.is_empty() {
+            Task::none()
+        } else {
+            cosmic::task::future(async move {
+                details::restore_signal_polling(&signal_polling_rates).await;
+                crate::pages::Message::Mobile(Message::SignalPollingStopped)
+            })
+        }
+    }
+
+    fn subscription(&self, _core: &cosmic::Core) -> Subscription<crate::pages::Message> {
+        cosmic::iced::time::every(Duration::from_secs(details::SIGNAL_REFRESH_SECONDS.into()))
+            .map(|_| crate::pages::Message::Mobile(Message::Refresh))
     }
 
     fn title(&self) -> Option<&str> {
@@ -305,11 +330,27 @@ impl Page {
             }
             Message::Update {
                 devices,
+                modem_details,
                 modem_modes,
                 radio_enabled,
             } => {
                 self.radio_enabled = radio_enabled;
                 self.devices = devices.into_iter().map(Arc::new).collect();
+                for (interface, previous_rate) in modem_details.iter().filter_map(|details| {
+                    details
+                        .started_signal_polling
+                        .map(|rate| (details.interface.as_str(), rate))
+                }) {
+                    if !self
+                        .signal_polling_rates
+                        .iter()
+                        .any(|(active, _)| active == interface)
+                    {
+                        self.signal_polling_rates
+                            .push((interface.to_owned(), previous_rate));
+                    }
+                }
+                self.modem_details = modem_details;
                 self.modem_modes = modem_modes;
                 self.update_active_device();
             }
@@ -391,19 +432,26 @@ impl Page {
                 self.network_mode_change_in_progress = true;
                 self.network_mode_change_failed = false;
                 return cosmic::task::future(async move {
-                    Message::NetworkModeUpdated(set_network_mode(&interface, mode).await)
+                    Message::NetworkModeUpdated {
+                        mode,
+                        result: set_network_mode(&interface, mode).await,
+                    }
                 });
             }
-            Message::NetworkModeUpdated(result) => {
+            Message::NetworkModeUpdated { mode, result } => {
                 self.network_mode_change_in_progress = false;
                 self.network_mode_change_failed = result.is_err();
                 if let Err(why) = result {
+                    if !self.rejected_network_modes.contains(&mode) {
+                        self.rejected_network_modes.push(mode);
+                    }
                     tracing::warn!(why, "failed to apply preferred network type");
                 }
                 if let Some(network_manager) = self.network_manager.clone() {
                     return refresh(network_manager);
                 }
             }
+            Message::SignalPollingStopped => {}
             Message::Settings(uuid) => {
                 return cosmic::task::future(async move {
                     let _ = super::nm_edit_connection(uuid.as_ref()).await;
@@ -465,6 +513,7 @@ impl Page {
                 .into(),
             ]));
         let network_mode = self.network_mode_view(device);
+        let network_details = self.network_details_view(device);
         let mut profiles = widget::settings::section().title(fl!("mobile", "profiles"));
 
         if device.known_connections.is_empty() {
@@ -547,9 +596,10 @@ impl Page {
             ]));
         }
 
-        widget::column::with_capacity(3)
+        widget::column::with_capacity(4)
             .push(connection)
             .push(network_mode)
+            .push(network_details)
             .push(profiles)
             .spacing(cosmic::theme::spacing().space_l)
             .into()
@@ -569,7 +619,11 @@ impl Page {
                 .into();
         };
 
-        let modes = available_network_modes(&modem_modes.supported, modem_modes.current);
+        let modes = available_network_modes(
+            &modem_modes.supported,
+            modem_modes.current,
+            &self.rejected_network_modes,
+        );
 
         let labels = modes.iter().map(|mode| mode.label()).collect::<Vec<_>>();
         let selected = modes.iter().position(|mode| *mode == modem_modes.current);
@@ -602,6 +656,69 @@ impl Page {
             .add(item)
             .into()
     }
+
+    fn network_details_view<'a>(&'a self, device: &'a Arc<DeviceInfo>) -> Element<'a, Message> {
+        let Some(details) = self
+            .modem_details
+            .iter()
+            .find(|details| details.interface == device.interface)
+        else {
+            return widget::settings::section()
+                .title(fl!("mobile", "network-details"))
+                .add(detail_item(
+                    fl!("mobile", "network-details-unavailable"),
+                    String::new(),
+                ))
+                .into();
+        };
+
+        let operator = match (&details.operator, &details.operator_code) {
+            (Some(name), Some(code)) => format!("{name} ({code})"),
+            (Some(name), None) => name.clone(),
+            (None, Some(code)) => code.clone(),
+            (None, None) => fl!("mobile", "network-details-unavailable"),
+        };
+        let mut section = widget::settings::section()
+            .title(fl!("mobile", "network-details"))
+            .add(detail_item(fl!("mobile", "network-operator"), operator))
+            .add(detail_item(
+                fl!("mobile", "network-cell"),
+                details.cell_description(),
+            ));
+
+        if !details.lte.is_empty() {
+            section = section.add(detail_item(
+                fl!("mobile", "network-lte-signal"),
+                details.lte.description(),
+            ));
+        }
+        if !details.nr5g.is_empty() {
+            section = section.add(detail_item(
+                fl!("mobile", "network-5g-signal"),
+                details.nr5g.description(),
+            ));
+        }
+
+        section
+            .add(detail_item(
+                fl!("mobile", "network-aggregation"),
+                fl!("mobile", "network-aggregation-unavailable"),
+            ))
+            .add(detail_item(
+                fl!("mobile", "network-signal-guide"),
+                fl!("mobile", "network-signal-guide-description"),
+            ))
+            .into()
+    }
+}
+
+fn detail_item<'a>(title: String, description: String) -> Element<'a, Message> {
+    let content = widget::column::with_capacity(2)
+        .push(widget::text::body(title))
+        .push_maybe((!description.is_empty()).then(|| widget::text::caption(description)))
+        .spacing(cosmic::theme::spacing().space_xxxs);
+
+    widget::settings::item_row(vec![content.into()]).into()
 }
 
 fn default_profile(
@@ -657,8 +774,16 @@ fn is_profile_for_device(uuid: &str, device_profiles: &[ConnectionId]) -> bool {
         .any(|device_profile| device_profile.as_ref() == uuid)
 }
 
-fn available_network_modes(supported: &[NetworkMode], current: NetworkMode) -> Vec<NetworkMode> {
-    let mut modes = supported.to_vec();
+fn available_network_modes(
+    supported: &[NetworkMode],
+    current: NetworkMode,
+    rejected: &[NetworkMode],
+) -> Vec<NetworkMode> {
+    let mut modes = supported
+        .iter()
+        .copied()
+        .filter(|mode| *mode == current || !rejected.contains(mode))
+        .collect::<Vec<_>>();
     if !modes.contains(&current) {
         modes.insert(0, current);
     }
@@ -687,17 +812,22 @@ fn devices_view() -> Section<crate::pages::Message> {
 
 fn refresh(network_manager: nmrs::NetworkManager) -> Task<crate::app::Message> {
     cosmic::task::future(async move {
-        let (devices, radio, modem_modes) = futures::join!(
+        let (devices, radio, modem_details, modem_modes) = futures::join!(
             network_manager::devices::list(&network_manager, |device_type| {
                 matches!(device_type, DeviceType::Modem)
             }),
             network_manager.wwan_state(),
+            details::read_modem_details(),
             read_modem_modes(),
         );
 
         match devices {
             Ok(devices) => Message::Update {
                 devices,
+                modem_details: modem_details.unwrap_or_else(|why| {
+                    tracing::warn!(why, "failed to read mobile network details");
+                    Vec::new()
+                }),
                 modem_modes: modem_modes.unwrap_or_else(|why| {
                     tracing::warn!(why, "failed to read mobile network modes");
                     Vec::new()
@@ -874,7 +1004,7 @@ mod tests {
         ];
 
         assert_eq!(
-            available_network_modes(&supported, NetworkMode::AUTOMATIC),
+            available_network_modes(&supported, NetworkMode::AUTOMATIC, &[]),
             supported
         );
     }
@@ -888,8 +1018,22 @@ mod tests {
         let supported = [current, NetworkMode::AUTOMATIC, NetworkMode::FOUR_G_ONLY];
 
         assert_eq!(
-            available_network_modes(&supported, current),
+            available_network_modes(&supported, current, &[]),
             [NetworkMode::AUTOMATIC, NetworkMode::FOUR_G_ONLY, current]
+        );
+    }
+
+    #[test]
+    fn network_mode_choices_hide_a_rejected_mode_but_keep_the_current_one() {
+        let supported = [NetworkMode::AUTOMATIC, NetworkMode::FOUR_G_FIVE_G];
+
+        assert_eq!(
+            available_network_modes(
+                &supported,
+                NetworkMode::FOUR_G_FIVE_G,
+                &[NetworkMode::AUTOMATIC],
+            ),
+            [NetworkMode::FOUR_G_FIVE_G]
         );
     }
 }
