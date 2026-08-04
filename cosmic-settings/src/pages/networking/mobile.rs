@@ -36,6 +36,49 @@ const MODE_3G_5G: u32 = MODE_3G | MODE_5G;
 const MODE_4G_5G: u32 = MODE_4G | MODE_5G;
 const MODE_3G_4G_5G: u32 = MODE_3G | MODE_4G | MODE_5G;
 
+// `MM_MODEM_BAND_ANY` restores the modem's automatic band selection.
+const BAND_ANY: u32 = 1;
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum BandTechnology {
+    ThreeG,
+    FourG,
+    FiveG,
+    Other,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct MobileBand(u32);
+
+impl MobileBand {
+    fn technology(self) -> BandTechnology {
+        match self.0 {
+            5..=12 | 219 => BandTechnology::ThreeG,
+            31..=101 => BandTechnology::FourG,
+            301..=379 => BandTechnology::FiveG,
+            _ => BandTechnology::Other,
+        }
+    }
+
+    fn label(self) -> String {
+        let label = match self.technology() {
+            BandTechnology::ThreeG => utran_band_number(self.0)
+                .map(|band| format!("3G B{band}"))
+                .unwrap_or_else(|| format!("3G ({})", self.0)),
+            BandTechnology::FourG => format!("4G LTE B{}", self.0 - 30),
+            BandTechnology::FiveG => format!("5G NR n{}", self.0 - 300),
+            BandTechnology::Other => format!("Band {}", self.0),
+        };
+        label
+    }
+}
+
+#[derive(Clone, Debug)]
+struct BandSelection {
+    interface: String,
+    selected: Vec<u32>,
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct NetworkMode {
     allowed: u32,
@@ -122,7 +165,9 @@ impl NetworkMode {
 #[derive(Clone, Debug)]
 pub struct ModemModes {
     interface: String,
+    current_bands: Vec<u32>,
     current: NetworkMode,
+    supported_bands: Vec<u32>,
     supported: Vec<NetworkMode>,
 }
 
@@ -139,6 +184,15 @@ trait Modem {
 
     #[zbus(property, name = "CurrentModes")]
     fn current_modes(&self) -> zbus::Result<(u32, u32)>;
+
+    #[zbus(property, name = "SupportedBands")]
+    fn supported_bands(&self) -> zbus::Result<Vec<u32>>;
+
+    #[zbus(property, name = "CurrentBands")]
+    fn current_bands(&self) -> zbus::Result<Vec<u32>>;
+
+    #[zbus(name = "SetCurrentBands")]
+    async fn set_current_bands(&self, bands: Vec<u32>) -> zbus::Result<()>;
 
     #[zbus(name = "SetCurrentModes")]
     async fn set_current_modes(&self, modes: (u32, u32)) -> zbus::Result<()>;
@@ -171,9 +225,23 @@ pub enum Message {
         mode: NetworkMode,
         result: Result<(), String>,
     },
+    ApplyBandLock {
+        interface: String,
+        bands: Vec<u32>,
+    },
+    BandLockUpdated(Result<(), String>),
+    CloseBandPreferences,
+    OpenBandPreferences {
+        interface: String,
+        selected: Vec<u32>,
+    },
     SetRadio(bool),
     Settings(ConnectionId),
     Surface(surface::Action),
+    ToggleBand {
+        band: u32,
+        selected: bool,
+    },
     Update {
         devices: Vec<DeviceInfo>,
         modem_details: Vec<details::ModemDetails>,
@@ -206,6 +274,9 @@ pub struct Page {
     active_device: Option<Arc<DeviceInfo>>,
     devices: Vec<Arc<DeviceInfo>>,
     dialog: Option<MobileDialog>,
+    band_lock_change_failed: bool,
+    band_lock_change_in_progress: bool,
+    band_selection: Option<BandSelection>,
     network_mode_change_in_progress: bool,
     network_mode_change_failed: bool,
     modem_details: Vec<details::ModemDetails>,
@@ -352,6 +423,16 @@ impl Page {
                 }
                 self.modem_details = modem_details;
                 self.modem_modes = modem_modes;
+                if let Some(selection) = self.band_selection.as_mut()
+                    && let Some(modem) = self
+                        .modem_modes
+                        .iter()
+                        .find(|modem| modem.interface == selection.interface)
+                {
+                    selection
+                        .selected
+                        .retain(|band| modem.supported_bands.contains(band));
+                }
                 self.update_active_device();
             }
             Message::SelectDevice(device) => self.active_device = Some(device),
@@ -451,6 +532,56 @@ impl Page {
                     return refresh(network_manager);
                 }
             }
+            Message::OpenBandPreferences {
+                interface,
+                mut selected,
+            } => {
+                selected.sort_unstable();
+                selected.dedup();
+                self.band_lock_change_failed = false;
+                self.band_selection = Some(BandSelection {
+                    interface,
+                    selected,
+                });
+            }
+            Message::CloseBandPreferences => self.band_selection = None,
+            Message::ToggleBand { band, selected } => {
+                let Some(selection) = self.band_selection.as_mut() else {
+                    return Task::none();
+                };
+                if selected {
+                    if !selection.selected.contains(&band) {
+                        selection.selected.push(band);
+                    }
+                } else {
+                    selection
+                        .selected
+                        .retain(|selected_band| *selected_band != band);
+                }
+                selection.selected.sort_unstable();
+            }
+            Message::ApplyBandLock { interface, bands } => {
+                if self.band_lock_change_in_progress || bands.is_empty() {
+                    return Task::none();
+                }
+                self.band_lock_change_in_progress = true;
+                self.band_lock_change_failed = false;
+                return cosmic::task::future(async move {
+                    Message::BandLockUpdated(set_band_lock(&interface, bands).await)
+                });
+            }
+            Message::BandLockUpdated(result) => {
+                self.band_lock_change_in_progress = false;
+                self.band_lock_change_failed = result.is_err();
+                if let Err(why) = result {
+                    tracing::warn!(why, "failed to apply preferred mobile bands");
+                } else {
+                    self.band_selection = None;
+                }
+                if let Some(network_manager) = self.network_manager.clone() {
+                    return refresh(network_manager);
+                }
+            }
             Message::SignalPollingStopped => {}
             Message::Settings(uuid) => {
                 return cosmic::task::future(async move {
@@ -513,6 +644,7 @@ impl Page {
                 .into(),
             ]));
         let network_mode = self.network_mode_view(device);
+        let band_lock = self.band_lock_view(device);
         let network_details = self.network_details_view(device);
         let mut profiles = widget::settings::section().title(fl!("mobile", "profiles"));
 
@@ -596,9 +728,10 @@ impl Page {
             ]));
         }
 
-        widget::column::with_capacity(4)
+        widget::column::with_capacity(5)
             .push(connection)
             .push(network_mode)
+            .push(band_lock)
             .push(network_details)
             .push(profiles)
             .spacing(cosmic::theme::spacing().space_l)
@@ -655,6 +788,136 @@ impl Page {
             .title(fl!("mobile", "network-type"))
             .add(item)
             .into()
+    }
+
+    fn band_lock_view<'a>(&'a self, device: &'a Arc<DeviceInfo>) -> Element<'a, Message> {
+        let Some(modem) = self
+            .modem_modes
+            .iter()
+            .find(|modem| modem.interface == device.interface)
+        else {
+            return widget::settings::section()
+                .title(fl!("mobile", "network-bands"))
+                .add(widget::settings::item_row(vec![
+                    widget::text::body(fl!("mobile", "network-bands-unavailable")).into(),
+                ]))
+                .into();
+        };
+
+        let interface = modem.interface.clone();
+        let selected = selected_supported_bands(modem);
+        let item = widget::settings::item::builder(fl!("mobile", "network-bands")).description(
+            if self.band_lock_change_failed {
+                fl!("mobile", "network-bands-failed")
+            } else {
+                band_summary(modem)
+            },
+        );
+        let item = if self.band_lock_change_in_progress {
+            item.control(widget::text::body(fl!("mobile", "network-bands-applying")))
+        } else if self
+            .band_selection
+            .as_ref()
+            .is_some_and(|selection| selection.interface == modem.interface)
+        {
+            item.control(
+                widget::button::text(fl!("cancel")).on_press(Message::CloseBandPreferences),
+            )
+        } else {
+            item.control(
+                widget::button::text(fl!("mobile", "network-bands-edit")).on_press(
+                    Message::OpenBandPreferences {
+                        interface,
+                        selected,
+                    },
+                ),
+            )
+        };
+        let mut section = widget::settings::section()
+            .title(fl!("mobile", "network-bands"))
+            .add(item);
+
+        if let Some(selection) = self
+            .band_selection
+            .as_ref()
+            .filter(|selection| selection.interface == modem.interface)
+        {
+            section = section.add(self.band_selection_view(modem, selection));
+        }
+
+        section.into()
+    }
+
+    fn band_selection_view<'a>(
+        &'a self,
+        modem: &'a ModemModes,
+        selection: &'a BandSelection,
+    ) -> Element<'a, Message> {
+        let mut content = widget::list_column::with_capacity(modem.supported_bands.len() + 5)
+            .add(widget::text::caption(fl!(
+                "mobile",
+                "network-bands-description"
+            )))
+            .add(widget::text::caption(fl!(
+                "mobile",
+                "network-bands-warning"
+            )));
+
+        for technology in [
+            BandTechnology::ThreeG,
+            BandTechnology::FourG,
+            BandTechnology::FiveG,
+            BandTechnology::Other,
+        ] {
+            let bands = modem
+                .supported_bands
+                .iter()
+                .copied()
+                .map(MobileBand)
+                .filter(|band| band.technology() == technology)
+                .collect::<Vec<_>>();
+            if bands.is_empty() {
+                continue;
+            }
+
+            content = content.add(
+                widget::text::body(band_technology_label(technology)).align_y(Alignment::Center),
+            );
+            for band in bands {
+                let selected = selection.selected.contains(&band.0);
+                content = content.add(widget::settings::item::builder(band.label()).checkbox(
+                    selected,
+                    move |value| Message::ToggleBand {
+                        band: band.0,
+                        selected: value,
+                    },
+                ));
+            }
+        }
+
+        let apply = if selection.selected.is_empty() {
+            widget::button::standard(fl!("mobile", "network-bands-apply"))
+        } else {
+            widget::button::suggested(fl!("mobile", "network-bands-apply")).on_press(
+                Message::ApplyBandLock {
+                    interface: selection.interface.clone(),
+                    bands: selection.selected.clone(),
+                },
+            )
+        };
+        let automatic = widget::button::standard(fl!("mobile", "network-bands-automatic"))
+            .on_press(Message::ApplyBandLock {
+                interface: selection.interface.clone(),
+                bands: vec![BAND_ANY],
+            });
+        content
+            .add(
+                widget::row::with_capacity(2)
+                    .push(automatic)
+                    .push(apply)
+                    .spacing(cosmic::theme::spacing().space_s),
+            )
+            .into_element()
     }
 
     fn network_details_view<'a>(&'a self, device: &'a Arc<DeviceInfo>) -> Element<'a, Message> {
@@ -719,6 +982,54 @@ fn detail_item<'a>(title: String, description: String) -> Element<'a, Message> {
         .spacing(cosmic::theme::spacing().space_xxxs);
 
     widget::settings::item_row(vec![content.into()]).into()
+}
+
+fn utran_band_number(value: u32) -> Option<u32> {
+    match value {
+        5 => Some(1),
+        6 => Some(3),
+        7 => Some(4),
+        8 => Some(6),
+        9 => Some(5),
+        10 => Some(8),
+        11 => Some(9),
+        12 => Some(2),
+        219 => Some(19),
+        _ => None,
+    }
+}
+
+fn band_technology_label(technology: BandTechnology) -> String {
+    match technology {
+        BandTechnology::ThreeG => fl!("mobile", "network-bands-3g"),
+        BandTechnology::FourG => fl!("mobile", "network-bands-4g"),
+        BandTechnology::FiveG => fl!("mobile", "network-bands-5g"),
+        BandTechnology::Other => fl!("mobile", "network-bands-other"),
+    }
+}
+
+fn selected_supported_bands(modem: &ModemModes) -> Vec<u32> {
+    let mut selected = modem
+        .current_bands
+        .iter()
+        .copied()
+        .filter(|band| modem.supported_bands.contains(band))
+        .collect::<Vec<_>>();
+    if selected.is_empty() {
+        selected.clone_from(&modem.supported_bands);
+    }
+    selected.sort_unstable();
+    selected.dedup();
+    selected
+}
+
+fn band_summary(modem: &ModemModes) -> String {
+    fl!(
+        "mobile",
+        "network-bands-summary",
+        selected = selected_supported_bands(modem).len(),
+        supported = modem.supported_bands.len()
+    )
 }
 
 fn default_profile(
@@ -876,16 +1187,21 @@ async fn read_modem_mode(connection: &Connection, path: &str) -> Result<ModemMod
         .build()
         .await
         .map_err(|why| format!("read modem properties: {why}"))?;
-    let (interface, supported, current) = futures::join!(
+    let (interface, supported, current, supported_bands, current_bands) = futures::join!(
         proxy.primary_port(),
         proxy.supported_modes(),
         proxy.current_modes(),
+        proxy.supported_bands(),
+        proxy.current_bands(),
     );
     let (allowed, preferred) = current.map_err(|why| format!("read modem modes: {why}"))?;
 
     Ok(ModemModes {
         interface: interface.map_err(|why| format!("read modem interface: {why}"))?,
+        current_bands: current_bands.map_err(|why| format!("read current modem bands: {why}"))?,
         current: NetworkMode { allowed, preferred },
+        supported_bands: supported_bands
+            .map_err(|why| format!("read supported modem bands: {why}"))?,
         supported: supported
             .map_err(|why| format!("read supported modem modes: {why}"))?
             .into_iter()
@@ -932,6 +1248,50 @@ async fn set_network_mode(interface: &str, mode: NetworkMode) -> Result<(), Stri
                 .set_current_modes((mode.allowed, mode.preferred))
                 .await
                 .map_err(|why| format!("set preferred network type: {why}"));
+        }
+    }
+
+    Err(format!("no modem found for network interface {interface}"))
+}
+
+async fn set_band_lock(interface: &str, bands: Vec<u32>) -> Result<(), String> {
+    let connection = Connection::system()
+        .await
+        .map_err(|why| format!("connect to ModemManager: {why}"))?;
+    let manager = ObjectManagerProxy::builder(&connection)
+        .destination(MODEM_MANAGER_SERVICE)
+        .map_err(|why| format!("build ModemManager manager: {why}"))?
+        .path(MODEM_MANAGER_PATH)
+        .map_err(|why| format!("build ModemManager manager: {why}"))?
+        .build()
+        .await
+        .map_err(|why| format!("connect to ModemManager: {why}"))?;
+    let paths = manager
+        .get_managed_objects()
+        .await
+        .map_err(|why| format!("enumerate ModemManager devices: {why}"))?
+        .into_iter()
+        .filter(|(_, interfaces)| interfaces.contains_key(MODEM_INTERFACE))
+        .map(|(path, _)| path.to_string())
+        .collect::<Vec<_>>();
+
+    for path in paths {
+        let proxy = ModemProxy::builder(&connection)
+            .path(path.as_str())
+            .map_err(|why| format!("build modem proxy: {why}"))?
+            .build()
+            .await
+            .map_err(|why| format!("read modem properties: {why}"))?;
+        if proxy
+            .primary_port()
+            .await
+            .map_err(|why| format!("read modem interface: {why}"))?
+            == interface
+        {
+            return proxy
+                .set_current_bands(bands)
+                .await
+                .map_err(|why| format!("set preferred mobile bands: {why}"));
         }
     }
 
@@ -1035,5 +1395,38 @@ mod tests {
             ),
             [NetworkMode::FOUR_G_FIVE_G]
         );
+    }
+
+    #[test]
+    fn mobile_band_labels_use_radio_technology_and_band_number() {
+        assert_eq!(MobileBand(33).label(), "4G LTE B3");
+        assert_eq!(MobileBand(378).label(), "5G NR n78");
+        assert_eq!(MobileBand(5).label(), "3G B1");
+    }
+
+    #[test]
+    fn band_selection_keeps_only_supported_current_bands() {
+        let modem = ModemModes {
+            interface: "wwan0".to_owned(),
+            current_bands: vec![31, 33, 999],
+            current: NetworkMode::AUTOMATIC,
+            supported_bands: vec![31, 33, 378],
+            supported: vec![NetworkMode::AUTOMATIC],
+        };
+
+        assert_eq!(selected_supported_bands(&modem), [31, 33]);
+    }
+
+    #[test]
+    fn empty_current_band_list_defaults_to_all_supported_bands() {
+        let modem = ModemModes {
+            interface: "wwan0".to_owned(),
+            current_bands: Vec::new(),
+            current: NetworkMode::AUTOMATIC,
+            supported_bands: vec![378, 31, 33],
+            supported: vec![NetworkMode::AUTOMATIC],
+        };
+
+        assert_eq!(selected_supported_bands(&modem), [31, 33, 378]);
     }
 }
