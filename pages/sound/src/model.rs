@@ -3,7 +3,9 @@
 
 use std::sync::Arc;
 
-use cosmic_settings_audio_client::{self as audio_client, Availability, ProfileInfo, RouteInfo};
+use cosmic_settings_audio_client::{
+    self as audio_client, Availability, PlaybackInfo, ProfileInfo, RouteInfo,
+};
 use intmap::IntMap;
 
 pub type DeviceId = u32;
@@ -18,6 +20,7 @@ pub struct Model {
     pub device_profiles_active: IntMap<DeviceId, ProfileInfo>,
     pub device_routes: IntMap<DeviceId, Vec<RouteInfo>>,
     pub node_devices: IntMap<NodeId, Option<u32>>,
+    pub playback: Vec<Playback>,
     pub sinks: Nodes,
     pub sources: Nodes,
     pub active_sink: ActiveNode,
@@ -25,6 +28,43 @@ pub struct Model {
     pub default_sink: Option<NodeId>,
     pub default_source: Option<NodeId>,
     pub text: Text,
+}
+
+#[derive(Clone, Debug)]
+pub struct Playback {
+    pub id: NodeId,
+    pub info: PlaybackInfo,
+    pub mute: bool,
+    pub volume: u32,
+    pub balance: Option<f32>,
+    /// Explicitly selected output. `None` means the playback follows the default sink.
+    pub sink_id: Option<NodeId>,
+}
+
+impl Playback {
+    pub fn name(&self) -> &str {
+        [
+            self.info.application_name.as_deref(),
+            self.info.application_id.as_deref(),
+            self.info.media_name.as_deref(),
+            Some(self.info.node_name.as_str()),
+        ]
+        .into_iter()
+        .flatten()
+        .find(|value| !value.is_empty())
+        .unwrap_or_default()
+    }
+
+    pub fn description(&self) -> Option<&str> {
+        self.info
+            .media_name
+            .as_deref()
+            .filter(|description| !description.is_empty() && *description != self.name())
+    }
+
+    pub fn selected_sink(&self, default_sink: Option<NodeId>) -> Option<NodeId> {
+        self.sink_id.or(default_sink)
+    }
 }
 
 #[derive(Debug, Default)]
@@ -106,7 +146,9 @@ impl Model {
         tracing::info!(target: "sound", ?event, "update");
         match event {
             audio_client::Event::NodeMute(node_id, mute) => {
-                if let Some(pos) = self.sinks.id.iter().position(|id| node_id == *id) {
+                if let Some(playback) = self.playback.iter_mut().find(|item| item.id == node_id) {
+                    playback.mute = mute;
+                } else if let Some(pos) = self.sinks.id.iter().position(|id| node_id == *id) {
                     self.sinks.mute[pos] = mute;
                     if self.sinks.active == Some(pos) {
                         self.active_sink.mute = mute;
@@ -120,7 +162,10 @@ impl Model {
             }
 
             audio_client::Event::NodeVolume(node_id, volume, balance) => {
-                if let Some(pos) = self.sinks.id.iter().position(|id| node_id == *id) {
+                if let Some(playback) = self.playback.iter_mut().find(|item| item.id == node_id) {
+                    playback.volume = volume;
+                    playback.balance = balance;
+                } else if let Some(pos) = self.sinks.id.iter().position(|id| node_id == *id) {
                     self.sinks.volume[pos] = volume;
                     self.sinks.balance[pos] = balance;
                     if self.default_sink.as_ref().is_some_and(|&id| id == node_id)
@@ -304,6 +349,33 @@ impl Model {
                 }
             }
 
+            audio_client::Event::Playback(node_id, info) => {
+                if let Some(playback) = self.playback.iter_mut().find(|item| item.id == node_id) {
+                    playback.info = info;
+                } else {
+                    self.playback.push(Playback {
+                        id: node_id,
+                        info,
+                        mute: false,
+                        volume: 0,
+                        balance: None,
+                        sink_id: None,
+                    });
+                }
+                self.playback
+                    .sort_by(|a, b| a.name().cmp(b.name()).then(a.id.cmp(&b.id)));
+            }
+
+            audio_client::Event::PlaybackTarget(playback_id, sink_id) => {
+                if let Some(playback) = self
+                    .playback
+                    .iter_mut()
+                    .find(|playback| playback.id == playback_id)
+                {
+                    playback.sink_id = sink_id;
+                }
+            }
+
             audio_client::Event::ActiveRoute(device_id, _index, route) => {
                 self.update_device_names(device_id, &route);
             }
@@ -338,6 +410,12 @@ impl Model {
 
             audio_client::Event::RemoveNode(node_id) => {
                 self.node_devices.remove(node_id);
+                self.playback.retain(|item| item.id != node_id);
+                for playback in &mut self.playback {
+                    if playback.sink_id == Some(node_id) {
+                        playback.sink_id = None;
+                    }
+                }
 
                 if !self.sinks.remove(node_id) {
                     self.sources.remove(node_id);

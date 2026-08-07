@@ -87,6 +87,8 @@ pub enum Message {
     #[cfg(feature = "page-sound")]
     Sound(sound::Message),
     #[cfg(feature = "page-sound")]
+    SoundApplications(sound::applications::Message),
+    #[cfg(feature = "page-sound")]
     SoundDeviceProfiles(sound::device_profiles::Message),
     StartupApps(applications::startup_apps::Message),
     #[cfg(feature = "page-users")]
