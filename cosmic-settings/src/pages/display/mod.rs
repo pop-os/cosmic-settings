@@ -1103,6 +1103,8 @@ impl Page {
                     .arg(itoa::Buffer::new().format(x))
                     .arg("--pos-y")
                     .arg(itoa::Buffer::new().format(y))
+                    .arg("--refresh")
+                    .arg((current.refresh_rate as f32 / 1000.0).ceil().to_string())
                     .arg(name)
                     .arg(itoa::Buffer::new().format(current.size.0))
                     .arg(itoa::Buffer::new().format(current.size.1));
