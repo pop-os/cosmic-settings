@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use super::model;
+use cosmic::desktop::{
+    DesktopEntryCache, DesktopLookupContext, DesktopResolveOptions, resolve_desktop_entry,
+};
 use cosmic::iced::futures;
 use cosmic::iced::{self, Alignment, Length, window};
 use cosmic::widget::space::horizontal as horizontal_space;
@@ -10,6 +13,7 @@ use cosmic_config::{Config, ConfigGet};
 use cosmic_settings_audio_client::{self as audio_client, CosmicAudioProxy};
 use cosmic_settings_page::{self as page, Section, section};
 use futures::executor::block_on;
+use intmap::IntMap;
 use slotmap::SlotMap;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -46,6 +50,8 @@ pub struct Page {
     entity: page::Entity,
     model: model::Model,
     client: Option<Rc<RefCell<audio_client::Client>>>,
+    desktop_entries: DesktopEntryCache,
+    playback_icons: IntMap<u32, String>,
     amplification_sink: bool,
     expanded: Option<u32>,
 }
@@ -98,9 +104,57 @@ impl page::Page<crate::pages::Message> for Page {
 }
 
 impl Page {
+    fn resolve_playback_icon(&mut self, node_id: u32, info: &audio_client::PlaybackInfo) {
+        let Some(candidate) = [
+            info.application_id.as_deref(),
+            info.icon_name.as_deref(),
+            info.application_name.as_deref(),
+        ]
+        .into_iter()
+        .flatten()
+        .find(|value| !value.is_empty()) else {
+            return;
+        };
+
+        let mut context = DesktopLookupContext::new(candidate);
+        if let Some(icon_name) = info.icon_name.as_deref().filter(|value| !value.is_empty()) {
+            context = context.with_identifier(icon_name);
+        }
+        if let Some(application_name) = info
+            .application_name
+            .as_deref()
+            .filter(|value| !value.is_empty())
+        {
+            context = context.with_title(application_name);
+        }
+
+        let entry = resolve_desktop_entry(
+            &mut self.desktop_entries,
+            &context,
+            &DesktopResolveOptions::default(),
+        );
+        let entry_icon = entry.icon();
+        let icon_name = entry_icon
+            .filter(|value| !value.is_empty())
+            .or(info.icon_name.as_deref())
+            .or(info.application_id.as_deref())
+            .unwrap_or("application-default");
+
+        self.playback_icons.insert(node_id, icon_name.to_owned());
+    }
+
     pub fn update(&mut self, message: Message) -> cosmic::Task<crate::app::Message> {
         match message {
             Message::Model(cosmic_settings_sound::Message::Subscription(message)) => {
+                match &message {
+                    audio_client::Event::Playback(node_id, info) => {
+                        self.resolve_playback_icon(*node_id, info);
+                    }
+                    audio_client::Event::RemoveNode(node_id) => {
+                        self.playback_icons.remove(*node_id);
+                    }
+                    _ => {}
+                }
                 self.model.update(message);
             }
 
@@ -108,6 +162,7 @@ impl Page {
                 if let Some(client) = Arc::into_inner(client) {
                     self.client = Some(Rc::new(RefCell::new(client)));
                     self.model = model::Model::default();
+                    self.playback_icons = IntMap::new();
                 }
             }
 
@@ -287,11 +342,10 @@ pub fn view() -> Section<crate::pages::Message> {
             let mute = playback.mute;
             let volume = playback.volume;
             let expanded = page.expanded == Some(node_id);
-            let icon_name = playback
-                .info
-                .icon_name
-                .as_deref()
-                .filter(|name| !name.is_empty())
+            let icon_name = page
+                .playback_icons
+                .get(node_id)
+                .map(String::as_str)
                 .unwrap_or("application-default");
 
             let slider = if page.amplification_sink {

@@ -31,7 +31,7 @@ pub async fn subscribe<T>(
             }
         };
 
-        if let Ok(Ok(mut stream)) = client.recv_events_with_playback().await {
+        if let Ok(Ok(mut stream)) = client.recv_events().await {
             _ = emitter
                 .send(apply_fn(Message::Client(Arc::new(client))))
                 .await;
