@@ -166,6 +166,7 @@ pub enum Message {
     FrostedApplets(bool),
     FrostedSystemInterface(bool),
     FrostedWindows(bool),
+    FrostedMaximizedApps(bool),
 }
 
 impl From<Message> for crate::app::Message {
@@ -597,6 +598,13 @@ impl Page {
                     theme_manager::ThemeStaged::Current
                 });
                 tasks.push(self.drawer.update_frosted_applets(v));
+            }
+            Message::FrostedMaximizedApps(v) => {
+                theme_staged = self.theme_manager.set_frosted_maximized_apps(v).map(|_| {
+                    self.drawer.reset(&self.theme_manager);
+                    theme_manager::ThemeStaged::Current
+                });
+                tasks.push(self.drawer.update_frosted_maximized_apps(v));
             }
         }
 

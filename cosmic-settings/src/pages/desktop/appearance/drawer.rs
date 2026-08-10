@@ -42,6 +42,7 @@ pub struct Content {
     frosted_windows: bool,
     frosted_panel: bool,
     frosted_applets: bool,
+    frosted_maximized_apps: bool,
 
     comp_config: cosmic_config::Config,
     #[cfg(feature = "cosmic-comp-config")]
@@ -130,6 +131,7 @@ impl From<&theme_manager::Manager> for Content {
             frosted_windows: theme.frosted_windows,
             frosted_panel: theme.frosted_panel,
             frosted_applets: theme.frosted_applets,
+            frosted_maximized_apps: theme.frosted_maximized_apps,
             icons_fetched: false,
             icon_global: cosmic::config::apply_theme_global(),
             icon_fetch_handle: None,
@@ -323,6 +325,12 @@ impl Content {
 
     pub fn update_frosted_applets(&mut self, v: bool) -> Task<app::Message> {
         self.frosted_applets = v;
+
+        Task::none()
+    }
+
+    pub fn update_frosted_maximized_apps(&mut self, v: bool) -> Task<app::Message> {
+        self.frosted_maximized_apps = v;
 
         Task::none()
     }
@@ -640,6 +648,11 @@ impl Content {
                 settings::item::builder(fl!("style", "frosted-windows"))
                     .description(fl!("style", "frosted-windows-desc"))
                     .toggler(self.frosted_windows, Message::FrostedWindows),
+            )
+            .add(
+                settings::item::builder(fl!("style", "frosted-maximized-apps"))
+                    .description(fl!("style", "frosted-maximized-apps-desc"))
+                    .toggler(self.frosted_maximized_apps, Message::FrostedMaximizedApps),
             )
             .add(
                 settings::item::builder(fl!("style", "frosted-thickness")).flex_control({
