@@ -80,6 +80,8 @@ pub enum Message {
     Panel(desktop::panel::Message),
     #[cfg(feature = "wayland")]
     PanelApplet(desktop::panel::applets_inner::Message),
+    #[cfg(feature = "page-permissions")]
+    Permissions(applications::permissions::Message),
     #[cfg(feature = "page-power")]
     Power(power::Message),
     #[cfg(feature = "page-region")]
