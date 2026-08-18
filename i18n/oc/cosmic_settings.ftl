@@ -24,3 +24,6 @@ add-network = Apondre una ret
     .profile = Apondre perfil
 unknown = Desconegut
 ok = D’acòrdi
+light = Clar
+dark = Fosc
+appearance = Aparéncia

@@ -781,3 +781,5 @@ xdg-entry-region-language-comment = 지역에 기반한 날짜와 시간 및 숫
 xdg-entry-time-language-keywords = COSMIC;시스템;시간;날짜;지역;언어;
 xdg-entry-sound-keywords = COSMIC;소리;오디오;알림;Pipewire;
 xdg-entry-sound = 소리
+xdg-entry-touchpad-comment = 터치패드 속도와 클릭 옵션 및 제스처
+xdg-entry-wallpaper-comment = 바탕화면 이미지와 색상 및 슬라이드 쇼 옵션
