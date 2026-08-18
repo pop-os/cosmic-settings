@@ -632,6 +632,7 @@ sound-alerts = Alerts
 
 sound-applications = Applications
     .desc = Application volumes and settings
+    .none = No applications are using sound
 
 # No speaker, headphones, or microphone plugged into sound card port
 sound-device-port-unplugged = Unplugged
