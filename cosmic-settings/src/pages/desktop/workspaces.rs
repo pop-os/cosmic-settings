@@ -6,7 +6,9 @@
 use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
 use cosmic::widget::{self, settings};
 use cosmic::{Apply, Element, surface};
-use cosmic_comp_config::workspace::{Action, WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
+use cosmic_comp_config::workspace::{
+    Action, EdgeNavigation, WorkspaceConfig, WorkspaceLayout, WorkspaceMode,
+};
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 use tracing::error;
@@ -17,6 +19,8 @@ pub enum Message {
     SetWorkspaceMode(WorkspaceMode),
     SetWorkspaceLayout(WorkspaceLayout),
     SetWorkspaceWraparound(bool),
+    SetFocusEdgeNavigationLocked(bool),
+    SetMoveEdgeNavigationLocked(bool),
     SetShowName(bool),
     SetShowNumber(bool),
     Surface(surface::Action),
@@ -125,6 +129,22 @@ impl Page {
             }
             Message::SetWorkspaceWraparound(value) => {
                 self.comp_workspace_config.workspace_wraparound = value;
+                self.save_comp_config();
+            }
+            Message::SetFocusEdgeNavigationLocked(value) => {
+                self.comp_workspace_config.focus_edge_navigation = if value {
+                    EdgeNavigation::LockedSpaces
+                } else {
+                    EdgeNavigation::SwitchWorkspace
+                };
+                self.save_comp_config();
+            }
+            Message::SetMoveEdgeNavigationLocked(value) => {
+                self.comp_workspace_config.move_edge_navigation = if value {
+                    EdgeNavigation::LockedSpaces
+                } else {
+                    EdgeNavigation::SwitchWorkspace
+                };
                 self.save_comp_config();
             }
             Message::SetShowName(value) => {
@@ -256,6 +276,8 @@ fn workspace_orientation() -> Section<crate::pages::Message> {
 fn workspace_navigation() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         description = fl!("workspaces-navigation", "wraparound");
+        focus_edge_locked = fl!("workspaces-navigation", "focus-edge-locked");
+        move_edge_locked = fl!("workspaces-navigation", "move-edge-locked");
     });
 
     Section::default()
@@ -269,6 +291,20 @@ fn workspace_navigation() -> Section<crate::pages::Message> {
                     page.comp_workspace_config.workspace_wraparound,
                     Message::SetWorkspaceWraparound,
                 ))
+                .add(
+                    settings::item::builder(&descriptions[focus_edge_locked]).toggler(
+                        page.comp_workspace_config.focus_edge_navigation
+                            == EdgeNavigation::LockedSpaces,
+                        Message::SetFocusEdgeNavigationLocked,
+                    ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[move_edge_locked]).toggler(
+                        page.comp_workspace_config.move_edge_navigation
+                            == EdgeNavigation::LockedSpaces,
+                        Message::SetMoveEdgeNavigationLocked,
+                    ),
+                )
                 .apply(Element::from)
                 .map(crate::pages::Message::DesktopWorkspaces)
         })
