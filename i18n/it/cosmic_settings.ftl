@@ -254,7 +254,6 @@ never = Mai
 ## Desktop: Appearance
 
 appearance = Aspetto
-    .desc = Colore d'accento e tema COSMIC.
 accent-color = Colore d'accento
 app-background = Sfondo applicazione o finestra
 auto = Automatico

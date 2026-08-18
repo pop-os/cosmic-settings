@@ -187,7 +187,7 @@ battery = Betarî
     .and = û
     .remaining-time =
         { $time } heya { $action ->
-            [full] tije
+            [full] tije bibe
            *[other] vala
         }
 search-applets = Sepanokan bigere...
@@ -423,8 +423,8 @@ system-shortcut = Pergal
     .suspend = Rawestîne
     .terminal = Termînalê veke
     .touchpad-toggle = Touchpadê biguhêrîne
-    .volume-lower = Asta dengê derana kêm bike
-    .volume-raise = Asta dengê derana bêtir bike
+    .volume-lower = Asta dengê ya deran kêm bike
+    .volume-raise = Asta dengê ya deranê bêtir bike
     .web-browser = Gerokeke tevnê veke
     .window-switcher = Di navbera çarçoveyên vekirî de biguhêrîne
     .window-switcher-previous = Di navbera çarçoveyên vekirî de berevajî biguhêrîne
