@@ -17,6 +17,7 @@ pub enum Message {
     SuperKey(usize),
     CompConfigUpdate(Box<CosmicCompConfig>),
     SetFocusFollowsCursor(bool),
+    SetFocusFollowsCursorRaise(bool),
     SaveFocusFollowsCursorDelay(bool),
     SetFocusFollowsCursorDelay(String),
     SetCursorFollowsFocus(bool),
@@ -32,6 +33,9 @@ pub struct Page {
     pub super_key_active: Option<usize>,
     comp_config: cosmic_config::Config,
     focus_follows_cursor: bool,
+    // Whether a window focused by the cursor is also raised. Only meaningful
+    // when `focus_follows_cursor` is enabled.
+    focus_follows_cursor_raise: bool,
     focus_follows_cursor_delay: u64,
     focus_delay_text: String,
     cursor_follows_focus: bool,
@@ -49,6 +53,16 @@ impl Default for Page {
                     error!(?err, "Failed to read config 'focus_follows_cursor'");
                 }
                 false
+            });
+        // Defaults to true so that turning on focus-follows-cursor keeps the
+        // historical "focus and raise" behaviour unless the user opts out.
+        let focus_follows_cursor_raise = comp_config
+            .get("focus_follows_cursor_raise")
+            .unwrap_or_else(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'focus_follows_cursor_raise'");
+                }
+                true
             });
         let cursor_follows_focus = comp_config
             .get("cursor_follows_focus")
@@ -96,6 +110,7 @@ impl Default for Page {
             super_key_active: super_key_active_config(),
             comp_config,
             focus_follows_cursor,
+            focus_follows_cursor_raise,
             focus_follows_cursor_delay,
             focus_delay_text: format!("{focus_follows_cursor_delay}"),
             cursor_follows_focus,
@@ -127,6 +142,15 @@ impl Page {
                     .set("focus_follows_cursor", self.focus_follows_cursor)
                 {
                     error!(?err, "Failed to set config 'focus_follows_cursor'");
+                }
+            }
+            Message::SetFocusFollowsCursorRaise(value) => {
+                self.focus_follows_cursor_raise = value;
+                if let Err(err) = self.comp_config.set(
+                    "focus_follows_cursor_raise",
+                    self.focus_follows_cursor_raise,
+                ) {
+                    error!(?err, "Failed to set config 'focus_follows_cursor_raise'");
                 }
             }
             Message::SaveFocusFollowsCursorDelay(save) => {
@@ -300,6 +324,7 @@ pub fn window_controls() -> Section<crate::pages::Message> {
 pub fn focus_navigation() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         focus_follows_cursor = fl!("focus-navigation", "focus-follows-cursor");
+        focus_follows_cursor_raise = fl!("focus-navigation", "focus-follows-cursor-raise");
         focus_follows_cursor_delay = fl!("focus-navigation", "focus-follows-cursor-delay");
         cursor_follows_focus = fl!("focus-navigation", "cursor-follows-focus");
     });
@@ -316,6 +341,15 @@ pub fn focus_navigation() -> Section<crate::pages::Message> {
                     settings::item::builder(&descriptions[focus_follows_cursor])
                         .toggler(page.focus_follows_cursor, Message::SetFocusFollowsCursor),
                 )
+                // Sub-option of focus-follows-cursor: only shown while
+                // focus-follows-cursor is on, since raising has no effect
+                // without follow-cursor focus.
+                .add_maybe(page.focus_follows_cursor.then(|| {
+                    settings::item::builder(&descriptions[focus_follows_cursor_raise]).toggler(
+                        page.focus_follows_cursor_raise,
+                        Message::SetFocusFollowsCursorRaise,
+                    )
+                }))
                 .add(settings::item(
                     &descriptions[focus_follows_cursor_delay],
                     widget::editable_input("", &page.focus_delay_text, false, |editing| {
