@@ -1,6 +1,7 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+pub mod applications;
 pub mod device_profiles;
 
 use cosmic::iced::{self, Alignment, Length, window};
@@ -63,6 +64,7 @@ impl From<Message> for crate::Message {
 
 pub struct Page {
     entity: page::Entity,
+    applications: page::Entity,
     device_profiles: page::Entity,
     client: Option<audio_client::Client>,
     model: model::Model,
@@ -78,6 +80,7 @@ impl Default for Page {
     fn default() -> Self {
         Self {
             entity: page::Entity::default(),
+            applications: page::Entity::default(),
             device_profiles: page::Entity::default(),
             client: None,
             model: model::Model {
@@ -122,6 +125,7 @@ impl page::Page<crate::pages::Message> for Page {
         Some(vec![
             sections.insert(output()),
             sections.insert(input()),
+            sections.insert(applications()),
             sections.insert(device_profiles()),
         ])
     }
@@ -150,6 +154,7 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
         *self = Page {
             entity: self.entity,
+            applications: self.applications,
             device_profiles: self.device_profiles,
             ..Page::default()
         };
@@ -163,8 +168,10 @@ impl page::AutoBind<crate::pages::Message> for Page {
         mut page: page::Insert<crate::pages::Message>,
     ) -> page::Insert<crate::pages::Message> {
         let id = page.sub_page_with_id::<device_profiles::Page>();
+        let applications_id = page.sub_page_with_id::<applications::Page>();
         let model = page.model.page_mut::<Page>().unwrap();
         model.device_profiles = id;
+        model.applications = applications_id;
         page
     }
 }
@@ -534,6 +541,24 @@ fn device_profiles() -> Section<crate::pages::Message> {
         })
 }
 
+/// A section for opening the application volume controls sub-page.
+fn applications() -> Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        button_txt = fl!("sound-applications");
+    });
+
+    Section::default()
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            settings::section()
+                .add(crate::widget::go_next_item(
+                    &section.descriptions[button_txt],
+                    crate::pages::Message::Page(page.applications),
+                ))
+                .into()
+        })
+}
+
 // fn alerts() -> Section<crate::pages::Message> {
 //     let mut descriptions = Slab::new();
 //     let volume = descriptions.insert(fl!("sound-alerts", "volume"));
@@ -546,24 +571,6 @@ fn device_profiles() -> Section<crate::pages::Message> {
 //             settings::section().title(&section.title)
 //                 .add(settings::item(&section.descriptions[volume], text::body("TODO")))
 //                 .add(settings::item(&section.descriptions[sound], text::body("TODO")))
-//                 .into()
-//         })
-// }
-
-// fn applications() -> Section<crate::pages::Message> {
-//     let mut descriptions = Slab::new();
-
-//     let applications = descriptions.insert(fl!("sound-applications", "desc"));
-
-//     Section::default()
-//         .title(fl!("sound-applications"))
-//         .descriptions(descriptions)
-//         .view::<Page>(move |_binder, _page, section| {
-//             settings::section().title(&section.title)
-//                 .add(settings::item(
-//                     &*section.descriptions[applications],
-//                     text::body("TODO"),
-//                 ))
 //                 .into()
 //         })
 // }
