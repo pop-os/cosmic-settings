@@ -23,6 +23,7 @@ cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
 cosmic-idle-config.workspace = true
 cosmic-panel-config = { workspace = true, optional = true }
+cosmic-notifications-config.workspace = true
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
 cosmic-randr-shell.workspace = true
 cosmic-randr = { workspace = true, optional = true }
