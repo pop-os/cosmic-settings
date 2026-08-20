@@ -1104,7 +1104,11 @@ impl Page {
                     .arg("--pos-y")
                     .arg(itoa::Buffer::new().format(y))
                     .arg("--refresh")
-                    .arg(format!("{}.{:03}", current.refresh_rate / 1000, current.refresh_rate % 1000))
+                    .arg(format!(
+                        "{}.{:03}",
+                        current.refresh_rate / 1000,
+                        current.refresh_rate % 1000
+                    ))
                     .arg(name)
                     .arg(itoa::Buffer::new().format(current.size.0))
                     .arg(itoa::Buffer::new().format(current.size.1));
