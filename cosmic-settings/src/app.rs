@@ -676,6 +676,16 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 #[cfg(feature = "page-window-management")]
+                crate::pages::Message::FloatingWindowExceptions(message) => {
+                    if let Some(page) = self
+                        .pages
+                        .page_mut::<desktop::window_management::floating_window_exceptions::Page>(
+                    ) {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-window-management")]
                 crate::pages::Message::WindowManagement(message) => {
                     if let Some(page) = self.pages.page_mut::<desktop::window_management::Page>() {
                         return page.update(message).map(Into::into);
