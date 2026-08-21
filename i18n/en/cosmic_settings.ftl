@@ -414,7 +414,7 @@ style = Style
     .less = less
     .more = more
     .glass-opacity = Glass opacity
-    
+
 interface-density = Interface density
     .comfortable = Comfortable
     .compact = Compact
@@ -492,6 +492,13 @@ dock = Dock
 ## Desktop: Window management
 
 window-management = Window management
+
+floating-window-exceptions = Floating window exceptions
+    .description = List of windows to keep floating when tiling is enabled.
+    .built-in = Built-in exceptions
+    .built-in-description = System exceptions based on validated user reports.
+    .all-titles = All window titles
+    .title-pattern = Window title
 
 super-key = Super key action
     .launcher = Open Launcher
