@@ -431,6 +431,7 @@ sound-alerts = Alarmsignale
     .sound = Alarmsignalklang
 sound-applications = Anwendungen
     .desc = Lautstärken und Einstellungen von Anwendungen
+    .none = Keine Anwendungen verwenden einen Klang
 
 ## Energie
 

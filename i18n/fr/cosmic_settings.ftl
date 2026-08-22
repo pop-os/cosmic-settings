@@ -440,6 +440,7 @@ sound-alerts = Alertes
     .sound = Alertes sonores
 sound-applications = Applications
     .desc = Volumes et paramètres d'application
+    .none = Aucune application n'utilise le son
 
 ## Power
 

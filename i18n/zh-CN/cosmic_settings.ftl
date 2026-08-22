@@ -184,6 +184,8 @@ accessibility = 无障碍
     .high-contrast = 高对比度模式
     .invert-colors = 颜色反转
     .color-filters = 色彩滤镜
+    .shake-cursor = 晃动指针来寻找它
+    .shake-cursor-desc = 快速晃动鼠标以暂时放大指标
 hearing = 听觉
     .mono = 播放立体声音频为单声道
 default = 默认
@@ -486,6 +488,7 @@ sound-alerts = 警告音
     .sound = 警告音效
 sound-applications = 应用程序
     .desc = 应用程序音量和设置
+    .none = 没有任何应用程序正在使用声音
 
 ## Power
 

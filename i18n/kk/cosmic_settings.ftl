@@ -394,6 +394,7 @@ sound-alerts = Ескертулер
     .sound = Ескертулер дыбысы
 sound-applications = Қолданбалар
     .desc = Қолданбалардың дыбыс деңгейі мен баптаулары
+    .none = Ешбір қолданба дыбысты қолданып жатқан жоқ
 sound-device-port-unplugged = Ажыратылған
 sound-hd-audio = HD аудио
 sound-usb-audio = USB аудио

@@ -514,7 +514,7 @@ show-extended-input-sources = Vis udvidede inputkilder
 
 keyboard-shortcuts = Tastaturgenveje
     .desc = Se og tilpas genveje
-cancel = Annuller
+cancel = Afbryd
 command = Kommando
 custom = Brugerdefineret
 debug = Debug
