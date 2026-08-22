@@ -546,6 +546,8 @@ hot-corner = Hot Corner
 
 workspaces-navigation = Navigation
     .wraparound = Move between first and last workspace using keyboard shortcuts and gestures
+    .focus-edge-locked = Focus shortcuts never switch workspaces, only displays
+    .move-edge-locked = Move shortcuts never switch workspaces, only displays
 
 ## Displays
 
