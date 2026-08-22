@@ -86,10 +86,10 @@ dock = Dok
 ## Desktop: Panel
 
 panel = Panel
-panel-behavior-and-position = Chování a pozice
+panel-behavior-and-position = Chování a umístění
     .autohide = Automaticky skrýt panel
     .dock-autohide = Automaticky skrýt dok
-    .position = Pozice na obrazovce
+    .position = Umístění na obrazovce
     .display = Zobrazit na obrazovce
 panel-top = Nahoře
 panel-bottom = Dole
@@ -215,7 +215,8 @@ sound-alerts = Upozornění
     .volume = Hlasitost upozornění
     .sound = Zvuk pro upozornění
 sound-applications = Aplikace
-    .desc = Hlasitosti aplikací a nastavení
+    .desc = Hlasitosti a nastavení aplikací
+    .none = Žádné aplikace nepoužívají zvuk
 
 ## System
 
@@ -369,8 +370,10 @@ accessibility = Přístupnost
     .unavailable = Nedostupné
     .screen-reader = Čtečka obrazovky
     .high-contrast = Vysoký kontrast
-    .invert-colors = Převrátit barvy
+    .invert-colors = Inverze barev
     .color-filters = Barevné filtry
+    .shake-cursor = Nalezení ukazatele zatřesením
+    .shake-cursor-desc = Rychlým zatřesením myší se ukazatel dočasně zvětší
 hearing = Sluch
     .mono = Přehrávat stereo zvuk jako mono
 default = Výchozí
@@ -521,7 +524,7 @@ magnifier = Lupa
     .show_overlay = Zobrazit překrytí lupy
     .increment = Krok přiblížení
     .signin = Spustit lupu při přihlášení
-    .applet = Lupu lze přepnout v appletu na panelu
+    .applet = Lupu lze přepnout (zap/vyp) v nabídce zobrazené po kliknutí na applet přímo v panelu
     .movement = Pohyb přiblíženého zobrazení
     .continuous = Neustále s ukazatelem
     .onedge = Když ukazatel dosáhne okraje
@@ -529,9 +532,9 @@ magnifier = Lupa
 color-filter = Typ barevného filtru
     .unknown = Neznámý filtr aktivní
     .greyscale = Stupně šedi
-    .deuteranopia = Zeleno/Červená (oslabení zelené, Deuteranopie)
-    .protanopia = Červeno/Zelená (oslabení červené, Protanopie)
-    .tritanopia = Modro/Žlutá (oslabení modré, Tritanopie)
+    .deuteranopia = Zelená/červená (oslabené vnímání zelené, deuteranopie)
+    .protanopia = Červená/zelená (oslabené vnímání červené, protanopie)
+    .tritanopia = Modrá/žlutá (oslabené vnímání modré, tritanopie)
 text-tint = Odstín textu rozhraní
     .desc = Používá se k odvození barev textu rozhraní, které mají dostatečný kontrast na různých površích
 experimental-settings = Experimentální nastavení

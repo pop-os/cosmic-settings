@@ -206,6 +206,8 @@ accessibility = Tillgänglighet
     .high-contrast = Högkontrastläge
     .invert-colors = Invertera färger
     .color-filters = Färgfilter
+    .shake-cursor = Skaka muspekaren för att hitta den
+    .shake-cursor-desc = Skaka musen snabbt för att tillfälligt förstora muspekaren
 hearing = Hörsel
     .mono = Spela stereoljud som mono
 default = Standard
@@ -490,6 +492,7 @@ sound-alerts = Larm
     .sound = Larmljud
 sound-applications = Program
     .desc = Programvolym och inställningar
+    .none = Inga program använder ljud
 
 ## System
 

@@ -496,6 +496,7 @@ sound-alerts = Alerty
     .sound = Dźwięk alertów
 sound-applications = Aplikacje
     .desc = Ustawienia i głośność aplikacji
+    .none = Żadna z aplikacji nie wydaje dźwięków
 
 ## Power
 

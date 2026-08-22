@@ -426,6 +426,7 @@ sound-alerts = 提示音
     .sound = 提示音音效
 sound-applications = 應用程式
     .desc = 應用程式音量與設定
+    .none = 無應用程式使用音效
 
 ## Power
 
