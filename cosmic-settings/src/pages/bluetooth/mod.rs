@@ -19,6 +19,7 @@ use zbus::zvariant::OwnedObjectPath;
 #[cfg(test)]
 use crate::service_manager::MockServiceManager;
 use crate::service_manager::ServiceManagerHandle;
+use crate::utils::is_valid_bluetooth_alias;
 
 enum Dialog {
     RequestConfirmation {
@@ -34,6 +35,10 @@ enum Dialog {
     DisplayPinCode {
         device: String,
         pincode: String,
+    },
+    RenameDevice {
+        path: OwnedObjectPath,
+        name: String,
     },
 }
 
@@ -338,6 +343,29 @@ impl page::Page<crate::pages::Message> for Page {
 
                 Some(dialog)
             }
+
+            Dialog::RenameDevice { name, .. } => {
+                let is_valid = is_valid_bluetooth_alias(name);
+                let input = widget::text_input("", name)
+                    .on_input(|value| Message::RenameDeviceInput(value))
+                    .on_submit(|_| Message::RenameDeviceConfirm);
+
+                let rename_button =
+                    widget::button::suggested(fl!("rename")).on_press_maybe(is_valid.then_some(Message::RenameDeviceConfirm));
+
+                let cancel_button =
+                    widget::button::standard(fl!("cancel")).on_press(Message::RenameDeviceCancel);
+
+                let dialog = widget::dialog()
+                    .title(fl!("bluetooth-rename-device"))
+                    .control(input)
+                    .primary_action(rename_button)
+                    .secondary_action(cancel_button)
+                    .apply(Element::from)
+                    .map(Into::into);
+
+                Some(dialog)
+            }
         }
     }
 }
@@ -354,6 +382,10 @@ pub enum Message {
     PinConfirm,
     PopupDevice(Option<OwnedObjectPath>),
     PopupSetting(bool),
+    RenameDevice(OwnedObjectPath),
+    RenameDeviceInput(String),
+    RenameDeviceConfirm,
+    RenameDeviceCancel,
     SelectAdapter(Option<OwnedObjectPath>),
     ServiceActivate,
     ServiceEnable,
@@ -817,6 +849,38 @@ impl Page {
                 }
             }
 
+            Message::RenameDevice(path) => {
+                self.model.popup_device = None;
+                let name = self
+                    .model
+                    .devices
+                    .get(&path)
+                    .map_or_else(String::new, |d| d.alias_or_addr().to_owned());
+                self.dialog = Some(Dialog::RenameDevice { path, name });
+            }
+
+            Message::RenameDeviceInput(new_name) => {
+                if let Some(Dialog::RenameDevice { name, .. }) = &mut self.dialog {
+                    *name = new_name;
+                }
+            }
+
+            Message::RenameDeviceCancel => {
+                if matches!(self.dialog, Some(Dialog::RenameDevice { .. })) {
+                    self.dialog = None;
+                }
+            }
+
+            Message::RenameDeviceConfirm => {
+                if let Some(Dialog::RenameDevice { path, name }) = self.dialog.take() {
+                    if let Some(connection) = self.connection.clone() {
+                        return cosmic::task::future(rename_device(connection, path, name.trim().into()));
+                    } else {
+                        tracing::warn!("No DBus connection ready");
+                    }
+                }
+            }
+
             Message::ServiceActivate => {
                 let activate_future = self.service_manager.activate();
                 return cosmic::task::future(async move {
@@ -935,6 +999,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
         device_connect = fl!("bluetooth", "connect");
         device_disconnect = fl!("bluetooth", "disconnect");
         device_forget = fl!("bluetooth", "forget");
+        device_rename = fl!("bluetooth", "rename");
     });
 
     Section::default()
@@ -972,13 +1037,17 @@ fn connected_devices() -> Section<crate::pages::Message> {
                         .position(widget::popover::Position::Bottom)
                         .on_close(Message::PopupDevice(None))
                         .popup(
-                            widget::column::with_capacity(2)
+                            widget::column::with_capacity(3)
                                 .push_maybe(device.is_connected().then(|| {
                                     popup_button(
                                         Some(Message::DisconnectDevice(path.clone())),
                                         &descriptions[device_disconnect],
                                     )
                                 }))
+                                .push(popup_button(
+                                    Some(Message::RenameDevice(path.clone())),
+                                    &descriptions[device_rename],
+                                ))
                                 .push_maybe(device.paired.then(|| {
                                     popup_button(
                                         Some(Message::ForgetDevice(path.clone())),
