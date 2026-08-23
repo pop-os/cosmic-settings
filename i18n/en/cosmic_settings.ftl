@@ -416,7 +416,7 @@ style = Style
     .less = less
     .more = more
     .glass-opacity = Glass opacity
-    
+
 interface-density = Interface density
     .comfortable = Comfortable
     .compact = Compact
@@ -467,8 +467,15 @@ panel-appearance = Appearance
 panel-behavior-and-position = Behavior and positions
     .autohide = Automatically hide panel
     .dock-autohide = Automatically hide dock
+    .autohide-mode = Auto hide mode
+    .on-overlap = On overlap
+    .always = Always
+    .hide-speed = Hide animation speed
     .position = Position on screen
     .display = Show on display
+    .slow = Slow
+    .normal = Normal
+    .fast = Fast
 
 panel-style = Style
     .anchor-gap = Gap between panel and screen edges
