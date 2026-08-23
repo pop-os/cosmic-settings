@@ -18,6 +18,7 @@ use futures::{SinkExt, StreamExt};
 use secure_string::SecureString;
 use tokio::sync::Mutex;
 
+use super::{NM_CONNECTION_EDITOR};
 use super::backend as network_manager;
 use super::backend::available_wifi::{AccessPoint, NetworkType};
 use super::backend::current_networks::ActiveConnectionInfo;
@@ -137,6 +138,7 @@ pub struct Page {
     qr_drawer: Option<QRCodeDrawer>,
     /// Search query for filtering WiFi networks
     search_query: String,
+    connection_editor_available: bool,
 }
 
 #[derive(Debug)]
@@ -164,7 +166,7 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut slotmap::SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(devices_view())])
+        Some(vec![sections.insert(devices_view(self.connection_editor_available))])
     }
 
     fn dialog(&'_ self) -> Option<Element<'_, crate::pages::Message>> {
@@ -278,19 +280,25 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
-        Some(
-            widget::button::standard(fl!("add-network"))
-                .trailing_icon(icon::from_name("window-pop-out-symbolic"))
-                .on_press(Message::AddNetwork)
-                .apply(widget::container)
-                .width(Length::Fill)
-                .align_x(Alignment::End)
-                .apply(Element::from)
-                .map(crate::pages::Message::WiFi),
-        )
+        if self.connection_editor_available {
+            Some(
+                widget::button::standard(fl!("add-network"))
+                    .trailing_icon(icon::from_name("window-pop-out-symbolic"))
+                    .on_press(Message::AddNetwork)
+                    .apply(widget::container)
+                    .width(Length::Fill)
+                    .align_x(Alignment::End)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::WiFi),
+            )
+        } else {
+            None
+        }
     }
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+        self.connection_editor_available = which::which(NM_CONNECTION_EDITOR).is_ok();
+
         let (tx, rx) = tokio::sync::mpsc::channel(4);
         self.secret_tx = Some(tx);
         if self.nm_task.is_none() {
@@ -886,7 +894,7 @@ fn escape_wifi_qr_string(s: &str) -> String {
         .replace('"', "\\\"")
 }
 
-fn devices_view() -> Section<crate::pages::Message> {
+fn devices_view(connection_editor_available: bool) -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         airplane_mode_txt = fl!("airplane-on");
         connect_txt = fl!("connect");
@@ -1013,10 +1021,12 @@ fn devices_view() -> Section<crate::pages::Message> {
                                                 &section.descriptions[disconnect_txt],
                                             )
                                         }))
-                                        .push(popup_button(
-                                            Message::Settings(network.ssid.clone()),
-                                            &section.descriptions[settings_txt],
-                                        ))
+                                        .push_maybe(connection_editor_available.then(|| {
+                                            popup_button(
+                                                Message::Settings(network.ssid.clone()),
+                                                &section.descriptions[settings_txt],
+                                            )
+                                        }))
                                         .push_maybe(is_known.then(|| {
                                             popup_button(
                                                 Message::QRCodeRequest(network.ssid.clone()),
@@ -1118,10 +1128,12 @@ fn devices_view() -> Section<crate::pages::Message> {
                                                 &section.descriptions[disconnect_txt],
                                             )
                                         }))
-                                        .push(popup_button(
-                                            Message::Settings(network.ssid.clone()),
-                                            &section.descriptions[settings_txt],
-                                        ))
+                                        .push_maybe(connection_editor_available.then(|| {
+                                            popup_button(
+                                                Message::Settings(network.ssid.clone()),
+                                                &section.descriptions[settings_txt],
+                                            )
+                                        }))
                                         .push_maybe(is_known.then(|| {
                                             popup_button(
                                                 Message::QRCodeRequest(network.ssid.clone()),

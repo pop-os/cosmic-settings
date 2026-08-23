@@ -13,6 +13,7 @@ use cosmic::{Apply, Element, Task};
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
 
+use super::{NM_CONNECTION_EDITOR};
 use super::backend as network_manager;
 use super::backend::NetworkManagerState;
 use super::backend::current_networks::ActiveConnectionInfo;
@@ -89,6 +90,7 @@ pub struct Page {
     withheld_devices: Option<Vec<Arc<network_manager::devices::DeviceInfo>>>,
     /// Withhold active connections update if the view more popup is shown.
     withheld_active_conns: Option<Vec<ActiveConnectionInfo>>,
+    connection_editor_available: bool
 }
 
 #[derive(Debug)]
@@ -141,19 +143,25 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
-        Some(
-            widget::button::standard(fl!("add-network", "profile"))
-                .trailing_icon(icon::from_name("window-pop-out-symbolic"))
-                .on_press(Message::AddNetwork)
-                .apply(widget::container)
-                .width(Length::Fill)
-                .align_x(Alignment::End)
-                .apply(Element::from)
-                .map(crate::pages::Message::Wired),
-        )
+        if self.connection_editor_available {
+            Some(
+                widget::button::standard(fl!("add-network", "profile"))
+                    .trailing_icon(icon::from_name("window-pop-out-symbolic"))
+                    .on_press(Message::AddNetwork)
+                    .apply(widget::container)
+                    .width(Length::Fill)
+                    .align_x(Alignment::End)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::Wired),
+            )
+        } else {
+            None
+        }
     }
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+        self.connection_editor_available = which::which(NM_CONNECTION_EDITOR).is_ok();
+
         if self.nm_task.is_none() {
             return cosmic::task::future(async move {
                 nmrs::NetworkManager::new()
@@ -516,10 +524,12 @@ impl Page {
                                             disconnect_txt,
                                         )
                                     }))
-                                    .push(popup_button(
-                                        Message::Settings(connection.uuid.clone()),
-                                        settings_txt,
-                                    ))
+                                    .push_maybe(self.connection_editor_available.then(|| {
+                                        popup_button(
+                                            Message::Settings(connection.uuid.clone()),
+                                            settings_txt,
+                                        )
+                                    }))
                                     .push_maybe(has_multiple_connection_profiles.then(|| {
                                         popup_button(
                                             Message::RemoveProfileRequest(connection.uuid.clone()),
