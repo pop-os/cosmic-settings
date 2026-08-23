@@ -118,8 +118,8 @@ pub enum SourceContext {
     MoveDown(DefaultKey),
     MoveUp(DefaultKey),
     Remove(DefaultKey),
-    Settings(DefaultKey),
-    ViewLayout(DefaultKey),
+    // Settings(DefaultKey),
+    // ViewLayout(DefaultKey),
 }
 
 pub type Locale = String;
@@ -239,16 +239,16 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
             .apply(widget::container)
             .padding(8)
             .into(),
-        popover_menu_row(
-            id,
-            fl!("keyboard-sources", "settings"),
-            SourceContext::Settings,
-        ),
-        popover_menu_row(
-            id,
-            fl!("keyboard-sources", "view-layout"),
-            SourceContext::ViewLayout,
-        ),
+        // popover_menu_row(
+        //     id,
+        //     fl!("keyboard-sources", "settings"),
+        //     SourceContext::Settings,
+        // ),
+        // popover_menu_row(
+        //     id,
+        //     fl!("keyboard-sources", "view-layout"),
+        //     SourceContext::ViewLayout,
+        // ),
         popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
     ])
     .width(Length::Fixed(200.0))
@@ -523,13 +523,13 @@ impl Page {
                         }
                     }
 
-                    SourceContext::Settings(_id) => {
-                        eprintln!("settings not implemented");
-                    }
+                    // SourceContext::Settings(_id) => {
+                    //     eprintln!("settings not implemented");
+                    // }
 
-                    SourceContext::ViewLayout(_id) => {
-                        eprintln!("view layout not implemented");
-                    }
+                    // SourceContext::ViewLayout(_id) => {
+                    //     eprintln!("view layout not implemented");
+                    // }
                 }
             }
 
