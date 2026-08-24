@@ -124,6 +124,8 @@ accessibility = Acessibilidade
     .high-contrast = Modo de alto contraste
     .invert-colors = Inverter cores
     .color-filters = Filtros de cor
+    .shake-cursor = Agite o ponteiro para encontrá-lo
+    .shake-cursor-desc = Agite rapidamente o mouse para ampliar temporariamente o ponteiro
 hearing = Audição
     .mono = Reproduzir áudio estéreo como mono
 default = Padrão
@@ -426,8 +428,9 @@ amplification = Amplificação
 sound-alerts = Alertas
     .volume = Volume dos alertas
     .sound = Som dos alertas
-sound-applications = Aplicações
-    .desc = Volume e configurações das aplicações
+sound-applications = Aplicativos
+    .desc = Volumes e configurações de aplicativo
+    .none = Nenhum aplicativo está usando som
 
 ## Power
 
