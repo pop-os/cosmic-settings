@@ -124,6 +124,8 @@ accessibility = Barrierefreiheit
     .high-contrast = Modus für hohen Kontrast
     .invert-colors = Farben invertieren
     .color-filters = Farbfilter
+    .shake-cursor = Mauszeiger schütteln, um ihn zu finden
+    .shake-cursor-desc = Schüttle die Maus kurz, um den Mauszeiger vorübergehend zu vergrößern
 hearing = Hören
     .mono = Stereo-Audio als Mono abspielen
 default = Standard
@@ -431,6 +433,7 @@ sound-alerts = Alarmsignale
     .sound = Alarmsignalklang
 sound-applications = Anwendungen
     .desc = Lautstärken und Einstellungen von Anwendungen
+    .none = Keine Anwendungen verwenden einen Klang
 
 ## Energie
 
