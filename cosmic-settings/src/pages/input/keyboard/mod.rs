@@ -211,6 +211,7 @@ fn popover_menu_row(
     id: DefaultKey,
     label: String,
     message: impl Fn(DefaultKey) -> SourceContext + 'static,
+    disabled: bool,
 ) -> cosmic::Element<'static, Message> {
     let spacing = theme::spacing();
     widget::text::body(label)
@@ -219,21 +220,31 @@ fn popover_menu_row(
         .padding([spacing.space_xxxs, spacing.space_xs])
         .width(Length::Fill)
         .class(theme::Button::MenuItem)
-        .on_press(Message::SourceContext(message(id)))
+        .on_press_maybe(if disabled {
+            None
+        } else {
+            Some(Message::SourceContext(message(id)))
+        })
         .apply(Element::from)
 }
 
-fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
+fn popover_menu(
+    id: DefaultKey,
+    is_first: bool,
+    is_last: bool,
+) -> cosmic::Element<'static, Message> {
     widget::column::with_children([
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-up"),
             SourceContext::MoveUp,
+            is_first,
         ),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "move-down"),
             SourceContext::MoveDown,
+            is_last,
         ),
         widget::divider::horizontal::default()
             .apply(widget::container)
@@ -243,13 +254,20 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
             id,
             fl!("keyboard-sources", "settings"),
             SourceContext::Settings,
+            false,
         ),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "view-layout"),
             SourceContext::ViewLayout,
+            false,
         ),
-        popover_menu_row(id, fl!("keyboard-sources", "remove"), SourceContext::Remove),
+        popover_menu_row(
+            id,
+            fl!("keyboard-sources", "remove"),
+            SourceContext::Remove,
+            false,
+        ),
     ])
     .width(Length::Fixed(200.0))
     .apply(widget::container)
@@ -258,7 +276,12 @@ fn popover_menu(id: DefaultKey) -> cosmic::Element<'static, Message> {
     .into()
 }
 
-fn popover_button(id: DefaultKey, expanded: bool) -> cosmic::Element<'static, Message> {
+fn popover_button(
+    id: DefaultKey,
+    expanded: bool,
+    is_first: bool,
+    is_last: bool,
+) -> cosmic::Element<'static, Message> {
     let on_press = Message::ExpandInputSourcePopover(if expanded { None } else { Some(id) });
 
     let button = button::icon(icon::from_name("view-more-symbolic"))
@@ -268,7 +291,7 @@ fn popover_button(id: DefaultKey, expanded: bool) -> cosmic::Element<'static, Me
     if expanded {
         widget::popover(button)
             .position(widget::popover::Position::Bottom)
-            .popup(popover_menu(id))
+            .popup(popover_menu(id, is_first, is_last))
             .on_close(Message::ExpandInputSourcePopover(None))
             .into()
     } else {
@@ -280,10 +303,12 @@ fn input_source(
     id: DefaultKey,
     description: &str,
     expanded_source_popover: Option<DefaultKey>,
+    is_first: bool,
+    is_last: bool,
 ) -> cosmic::Element<'_, Message> {
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
-    settings::item(description, popover_button(id, expanded)).into()
+    settings::item(description, popover_button(id, expanded, is_first, is_last)).into()
 }
 
 fn special_char_radio_row<'a>(
@@ -747,12 +772,17 @@ fn input_sources() -> Section<crate::pages::Message> {
             // TODO Need something more custom, with drag and drop
             let mut section = settings::section().title(&section.title);
 
-            for id in &page.active_layouts {
+            for (position, id) in page.active_layouts.iter().enumerate() {
                 if let Some((_locale, _variant, description, _source)) =
                     page.keyboard_layouts.get(*id)
                 {
-                    section =
-                        section.add(input_source(*id, description, page.expanded_source_popover));
+                    section = section.add(input_source(
+                        *id,
+                        description,
+                        page.expanded_source_popover,
+                        position == 0,
+                        position + 1 == page.active_layouts.len(),
+                    ));
                 }
             }
 
