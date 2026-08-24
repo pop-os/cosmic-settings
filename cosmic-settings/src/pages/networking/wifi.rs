@@ -18,7 +18,7 @@ use futures::{SinkExt, StreamExt};
 use secure_string::SecureString;
 use tokio::sync::Mutex;
 
-use super::{NM_CONNECTION_EDITOR};
+use super::NM_CONNECTION_EDITOR;
 use super::backend as network_manager;
 use super::backend::available_wifi::{AccessPoint, NetworkType};
 use super::backend::current_networks::ActiveConnectionInfo;
@@ -166,7 +166,9 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut slotmap::SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(devices_view(self.connection_editor_available))])
+        Some(vec![
+            sections.insert(devices_view(self.connection_editor_available)),
+        ])
     }
 
     fn dialog(&'_ self) -> Option<Element<'_, crate::pages::Message>> {

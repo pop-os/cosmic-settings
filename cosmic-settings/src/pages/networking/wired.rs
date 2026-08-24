@@ -13,7 +13,7 @@ use cosmic::{Apply, Element, Task};
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
 
-use super::{NM_CONNECTION_EDITOR};
+use super::NM_CONNECTION_EDITOR;
 use super::backend as network_manager;
 use super::backend::NetworkManagerState;
 use super::backend::current_networks::ActiveConnectionInfo;
@@ -90,7 +90,7 @@ pub struct Page {
     withheld_devices: Option<Vec<Arc<network_manager::devices::DeviceInfo>>>,
     /// Withhold active connections update if the view more popup is shown.
     withheld_active_conns: Option<Vec<ActiveConnectionInfo>>,
-    connection_editor_available: bool
+    connection_editor_available: bool,
 }
 
 #[derive(Debug)]
