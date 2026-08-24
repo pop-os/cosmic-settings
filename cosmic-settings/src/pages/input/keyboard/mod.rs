@@ -308,11 +308,7 @@ fn input_source(
 ) -> cosmic::Element<'_, Message> {
     let expanded = expanded_source_popover.is_some_and(|expanded_id| expanded_id == id);
 
-    settings::item(
-        description,
-        popover_button(id, expanded, is_first, is_last),
-    )
-    .into()
+    settings::item(description, popover_button(id, expanded, is_first, is_last)).into()
 }
 
 fn special_char_radio_row<'a>(
