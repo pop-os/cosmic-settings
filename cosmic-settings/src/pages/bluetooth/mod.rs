@@ -1007,7 +1007,7 @@ fn connected_devices() -> Section<crate::pages::Message> {
         device_connect = fl!("bluetooth", "connect");
         device_disconnect = fl!("bluetooth", "disconnect");
         device_forget = fl!("bluetooth", "forget");
-        device_rename = fl!("bluetooth", "rename");
+        device_rename = fl!("rename");
     });
 
     Section::default()

@@ -243,7 +243,6 @@ bluetooth = Bluetooth
     .connect = Connect
     .disconnect = Disconnect
     .forget = Forget
-    .rename = Rename
     .dbus-error = An error has occurred while interacting with DBus: { $why }
     .disabled = The Bluetooth service is disabled
     .inactive = The Bluetooth service is not active
