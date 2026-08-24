@@ -11,8 +11,8 @@ add-network = Tilføj Netværk
 add-vpn = Tilføj VPN
 airplane-on = Airplane mode is on. Flytilstand er slået til
 cable-unplugged = Kabel frakoblet
-connect = Tilslut
-connected = Tilsluttet
+connect = Opret forbindelse
+connected = Forbundet
 connecting = Tilslutter…
 disconnect = Afbryd
 forget = Glem
@@ -21,14 +21,14 @@ network-and-wireless = Netværk & trådløst
 no-networks = Der blev ikke fundet nogen netværk.
 no-vpn = Ingen VPN-forbindelser tilgængelige.
 password = Adgangskode
-password-confirm = Godkend Adgangskode
+password-confirm = Bekræft adgangskode
 remove = Fjern
 settings = Indstillinger
 username = Brugernavn
 visible-networks = Synlige Netværk
 identity = Identitet
 forget-dialog = Glem dette Wi-Fi-netværk?
-    .description = Du skal indtaste en adgangskode igen for at bruge dette Wi-Fi-netværk i fremtiden.
+    .description = Du skal indtaste adgangskoden igen for at bruge dette Wi-Fi-netværk i fremtiden.
 network-device-state =
     .activated = Tilsluttet
     .config = Opretter forbindelse
@@ -192,7 +192,6 @@ never = Aldrig
 ## Desktop: Udseende
 
 appearance = Udseende
-    .desc = Accentfarver og tema.
 accent-color = Accentfarve
 app-background = Applikation eller vinduesbaggrund
 auto = Auto
@@ -200,11 +199,11 @@ close = Luk
 color-picker = Farvevælger
 copied-to-clipboard = Kopieret til udklipsholder
 copy-to-clipboard = Kopiér til udklipsholder
-dark = Mørk
+dark = Mørkt
 export = Eksporter
 hex = Hex
 import = Importer
-light = Lys
+light = Lyst
 mode-and-colors = Tilstand og farver
 recent-colors = Seneste farver
 reset-to-default = Nulstil til standard
@@ -714,7 +713,7 @@ region = Region
 
 ## Applications
 
-applications = Applikationer
+applications = Programmer
 
 ## Applications: Default Applications
 

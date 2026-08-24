@@ -1,0 +1,9 @@
+save = Save
+cancel = Cancel
+connected = Connected
+confirm = Confirm
+replace = Replace
+settings = Settings
+appearance = Appearance
+dark = Dark
+light = Light
