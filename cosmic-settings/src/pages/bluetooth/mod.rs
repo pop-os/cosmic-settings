@@ -19,7 +19,6 @@ use zbus::zvariant::OwnedObjectPath;
 #[cfg(test)]
 use crate::service_manager::MockServiceManager;
 use crate::service_manager::ServiceManagerHandle;
-use crate::utils::is_valid_bluetooth_alias;
 
 enum Dialog {
     RequestConfirmation {
@@ -643,6 +642,10 @@ impl Page {
 
                         _ => (),
                     }
+                },
+
+                Event::DeviceRenameFailed(path) => {
+                    tracing::warn!("Failed to rename device {path}");
                 }
             },
 
@@ -977,6 +980,11 @@ fn status() -> Section<crate::pages::Message> {
                 ))
                 .apply(Element::from)
         })
+}
+
+fn is_valid_bluetooth_alias(name: &str) -> bool {
+    let trimmed = name.trim();
+    !trimmed.is_empty() && trimmed.len() <= 248
 }
 
 fn popup_button(message: Option<Message>, text: &str) -> Element<'_, Message> {

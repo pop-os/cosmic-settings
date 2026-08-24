@@ -336,7 +336,7 @@ pub async fn rename_device(
         }
     }
 
-    Event::DeviceFailed(device_path)
+    Event::DeviceRenameFailed(device_path)
 }
 
 pub async fn get_devices(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {

@@ -20,11 +20,6 @@ pub fn display_name(name: &str, physical: (u32, u32)) -> String {
     }
 }
 
-pub fn is_valid_bluetooth_alias(name: &str) -> bool {
-    let trimmed = name.trim();
-    !trimmed.is_empty() && trimmed.len() <= 248
-}
-
 /// Spawn a background tasks and forward its messages
 pub fn forward_event_loop<M: 'static + Send, T: Future<Output = ()> + Send + 'static>(
     event_loop: impl FnOnce(futures::channel::mpsc::Sender<M>) -> T + Send + 'static,
