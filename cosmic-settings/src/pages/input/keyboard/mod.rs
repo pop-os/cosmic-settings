@@ -546,15 +546,13 @@ impl Page {
                             let _removed = self.active_layouts.remove(pos);
                             self.update_xkb_config();
                         }
-                    }
+                    } // SourceContext::Settings(_id) => {
+                      //     eprintln!("settings not implemented");
+                      // }
 
-                    // SourceContext::Settings(_id) => {
-                    //     eprintln!("settings not implemented");
-                    // }
-
-                    // SourceContext::ViewLayout(_id) => {
-                    //     eprintln!("view layout not implemented");
-                    // }
+                      // SourceContext::ViewLayout(_id) => {
+                      //     eprintln!("view layout not implemented");
+                      // }
                 }
             }
 
