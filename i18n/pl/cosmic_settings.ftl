@@ -180,6 +180,8 @@ accessibility = Dostępność
     .high-contrast = Tryb wysokiego kontrastu
     .invert-colors = Odwróć kolory
     .color-filters = Filtry kolorów
+    .shake-cursor = Porusz energicznie kursorem by go znaleźć
+    .shake-cursor-desc = Szybko ruszaj myszką by czasowo powiększyć kursor
 hearing = Słuchanie
     .mono = Odtwarzaj dźwięk stereo jako mono
 default = Domyślne
@@ -496,6 +498,7 @@ sound-alerts = Alerty
     .sound = Dźwięk alertów
 sound-applications = Aplikacje
     .desc = Ustawienia i głośność aplikacji
+    .none = Żadna z aplikacji nie wydaje dźwięków
 
 ## Power
 

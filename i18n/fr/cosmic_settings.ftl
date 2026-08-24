@@ -440,6 +440,7 @@ sound-alerts = Alertes
     .sound = Alertes sonores
 sound-applications = Applications
     .desc = Volumes et paramètres d'application
+    .none = Aucune application n'utilise le son
 
 ## Power
 
@@ -807,6 +808,8 @@ accessibility = Accessibilité
     .high-contrast = Mode contraste élevé
     .invert-colors = Inverser les couleurs
     .color-filters = Filtres de couleurs
+    .shake-cursor = Secouer le curseur pour le localiser
+    .shake-cursor-desc = Secouez rapidement la souris pour agrandir temporairement le curseur
 color-filter = Type de filtre de couleurs
     .unknown = Filtre inconnu actif
     .greyscale = Niveaux de gris

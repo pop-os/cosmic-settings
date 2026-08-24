@@ -182,6 +182,8 @@ accessibility = Akadálymentesség
     .high-contrast = Magas kontraszt mód
     .invert-colors = Színek invertálása
     .color-filters = Színszűrők
+    .shake-cursor = Mutató rázása a megtalálásához
+    .shake-cursor-desc = Az egér gyors megrázásával ideiglenesen megnövelhető a mutató mérete
 hearing = Hallás
     .mono = Sztereó hang lejátszása monóként
 default = Alapértelmezett
@@ -483,7 +485,8 @@ sound-alerts = Figyelmeztetések
     .volume = Figyelmeztetések hangereje
     .sound = Figyelmeztető hang
 sound-applications = Alkalmazások
-    .desc = Alkalmazások hangerejei és beállításai
+    .desc = Alkalmazások hangereje és beállításai
+    .none = Egyetlen alkalmazás sem használ hangot
 
 ## Power
 

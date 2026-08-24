@@ -124,6 +124,8 @@ accessibility = 無障礙功能
     .high-contrast = 高對比模式
     .invert-colors = 反轉顏色
     .color-filters = 色彩濾鏡
+    .shake-cursor = 晃動指標以能找到所在
+    .shake-cursor-desc = 快速晃動游標來暫時性地放大指標
 hearing = 聽覺
     .mono = 將立體聲播放為單聲道
 default = 預設
@@ -426,6 +428,7 @@ sound-alerts = 提示音
     .sound = 提示音音效
 sound-applications = 應用程式
     .desc = 應用程式音量與設定
+    .none = 無應用程式使用音效
 
 ## Power
 
