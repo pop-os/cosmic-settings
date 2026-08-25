@@ -63,6 +63,7 @@ pub struct SettingsApp {
     pages: page::Binder<crate::pages::Message>,
     search_active: bool,
     search_id: cosmic::widget::Id,
+    search_scroll_id: cosmic::iced::id::Id,
     search_input: String,
     search_selections: Vec<(page::Entity, section::Entity)>,
     context_title: Option<String>,
@@ -205,6 +206,7 @@ impl cosmic::Application for SettingsApp {
             pages: page::Binder::default(),
             search_active: false,
             search_id: cosmic::widget::Id::unique(),
+            search_scroll_id: cosmic::iced::id::Id::new("COSMIC_search_results_scrollable"),
             search_input: String::new(),
             search_selections: Vec::default(),
             context_title: None,
@@ -1208,6 +1210,7 @@ impl SettingsApp {
 
         self.page_container(settings::view_column(sections))
             .apply(scrollable)
+            .apply(|w| id_container(w, self.search_scroll_id.clone()))
             .into()
     }
 
