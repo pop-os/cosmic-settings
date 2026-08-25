@@ -479,6 +479,9 @@ panel-style = Style
     .size = Size
     .background-opacity = Background opacity
 
+dock-keep-style-on-maximize = Keep dock floating when windows are maximized
+    .desc = Keeps the dock's width, margin, rounded corners, and opacity when a window is maximized.
+
 panel-applets = Configuration
     .dock-desc = Configure dock applets
     .desc = Configure panel applets

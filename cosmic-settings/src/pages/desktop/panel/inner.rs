@@ -424,6 +424,7 @@ pub enum Message {
     PanelSizeCommit,
     Appearance(usize),
     ExtendToEdge(bool),
+    KeepStyleOnMaximize(bool),
     OpacityRequest(f32),
     OpacityApply,
     OutputAdded(String, WlOutput),
@@ -620,6 +621,21 @@ impl PageInner {
                     0
                 };
                 _ = panel_config.set_border_radius(helper, new_radius).unwrap();
+            }
+            Message::KeepStyleOnMaximize(enabled) => {
+                panel_config.keep_style_on_maximize = enabled;
+
+                let config_handle = match CosmicPanelConfig::cosmic_config(&panel_config.name) {
+                    Ok(config_handle) => config_handle,
+                    Err(err) => {
+                        tracing::error!(?err, "Error opening maximized dock style config.");
+                        return Task::none();
+                    }
+                };
+
+                if let Err(err) = panel_config.write_entry(&config_handle) {
+                    tracing::error!(?err, "Error updating maximized dock style.");
+                }
             }
             Message::OpacityRequest(opacity) => {
                 panel_config.opacity = opacity;
