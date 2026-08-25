@@ -118,8 +118,8 @@ pub enum SourceContext {
     MoveDown(DefaultKey),
     MoveUp(DefaultKey),
     Remove(DefaultKey),
-    Settings(DefaultKey),
-    ViewLayout(DefaultKey),
+    // Settings(DefaultKey),
+    // ViewLayout(DefaultKey),
 }
 
 pub type Locale = String;
@@ -250,18 +250,18 @@ fn popover_menu(
             .apply(widget::container)
             .padding(8)
             .into(),
-        popover_menu_row(
-            id,
-            fl!("keyboard-sources", "settings"),
-            SourceContext::Settings,
-            false,
-        ),
-        popover_menu_row(
-            id,
-            fl!("keyboard-sources", "view-layout"),
-            SourceContext::ViewLayout,
-            false,
-        ),
+        // popover_menu_row(
+        //     id,
+        //     fl!("keyboard-sources", "settings"),
+        //     SourceContext::Settings,
+        //     false,
+        // ),
+        // popover_menu_row(
+        //     id,
+        //     fl!("keyboard-sources", "view-layout"),
+        //     SourceContext::ViewLayout,
+        //     false,
+        // ),
         popover_menu_row(
             id,
             fl!("keyboard-sources", "remove"),
@@ -546,15 +546,13 @@ impl Page {
                             let _removed = self.active_layouts.remove(pos);
                             self.update_xkb_config();
                         }
-                    }
+                    } // SourceContext::Settings(_id) => {
+                      //     eprintln!("settings not implemented");
+                      // }
 
-                    SourceContext::Settings(_id) => {
-                        eprintln!("settings not implemented");
-                    }
-
-                    SourceContext::ViewLayout(_id) => {
-                        eprintln!("view layout not implemented");
-                    }
+                      // SourceContext::ViewLayout(_id) => {
+                      //     eprintln!("view layout not implemented");
+                      // }
                 }
             }
 

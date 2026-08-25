@@ -12,13 +12,15 @@ use futures::channel::oneshot;
 use futures::{SinkExt, StreamExt};
 use slotmap::SlotMap;
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 use zbus::zvariant::OwnedObjectPath;
 
 #[cfg(test)]
 use crate::service_manager::MockServiceManager;
 use crate::service_manager::ServiceManagerHandle;
+
+static BLUETOOTH_PAGE_LABEL: LazyLock<String> = LazyLock::new(|| fl!("bluetooth"));
 
 enum Dialog {
     RequestConfirmation {
@@ -175,6 +177,19 @@ impl page::Page<crate::pages::Message> for Page {
         page::Info::new("bluetooth", "bluetooth-symbolic")
             .title(fl!("bluetooth"))
             .description(fl!("xdg-entry-bluetooth-comment"))
+    }
+
+    fn header(&self) -> Option<Element<'_, crate::pages::Message>> {
+        if self.model.adapters.len() > 1 {
+            let (_, adapter) = self.model.get_selected_adapter()?;
+            return Some(crate::widget::sub_page_header(
+                &adapter.alias,
+                BLUETOOTH_PAGE_LABEL.as_str(),
+                Message::SelectAdapter(None).into(),
+            ));
+        }
+
+        None
     }
 
     fn content(
@@ -423,6 +438,30 @@ impl From<Event> for Message {
 }
 
 impl Page {
+    fn update_heading(&mut self) {
+        self.heading = if let Some((_, adapter)) = self.model.get_selected_adapter() {
+            fl!(
+                "bluetooth",
+                "status",
+                aliases = format!("“{}”", adapter.alias)
+            )
+        } else {
+            fl!(
+                "bluetooth",
+                "status",
+                aliases = self
+                    .model
+                    .adapters
+                    .values()
+                    .map(|adapter| format!("“{}”", adapter.alias))
+                    .collect::<HashSet<String>>()
+                    .into_iter()
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            )
+        };
+    }
+
     pub fn update(&mut self, message: Message) -> cosmic::Task<crate::Message> {
         let span = tracing::span!(tracing::Level::INFO, "bluetooth::update");
         let _span = span.enter();
@@ -468,28 +507,7 @@ impl Page {
 
                 Event::SetAdapters(adapters) => {
                     let select_adapter = self.model.set_adapters(adapters);
-
-                    if let Some((_, adapter)) = self.model.get_selected_adapter() {
-                        self.heading = fl!(
-                            "bluetooth",
-                            "status",
-                            aliases = format!("“{}”", adapter.alias)
-                        );
-                    } else {
-                        self.heading = fl!(
-                            "bluetooth",
-                            "status",
-                            aliases = self
-                                .model
-                                .adapters
-                                .values()
-                                .map(|adapter| format!("“{}”", adapter.alias))
-                                .collect::<HashSet<String>>()
-                                .into_iter()
-                                .collect::<Vec<String>>()
-                                .join(", ")
-                        );
-                    }
+                    self.update_heading();
 
                     if let Some(adapter) = select_adapter {
                         return cosmic::task::message(Message::SelectAdapter(Some(adapter)));
@@ -776,6 +794,7 @@ impl Page {
             Message::SelectAdapter(adapter_maybe) => {
                 tracing::debug!("Adapter selected: {adapter_maybe:?}");
                 self.model.selected_adapter = adapter_maybe;
+                self.update_heading();
                 self.model.update_status();
                 let Some(connection) = self.connection.as_ref() else {
                     tracing::error!("No DBus connection ready");
@@ -1235,6 +1254,51 @@ impl Page {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use cosmic_settings_page::Page as _;
+
+    fn adapter(path: &str, alias: &str) -> (OwnedObjectPath, Adapter) {
+        (
+            OwnedObjectPath::try_from(path).unwrap(),
+            Adapter {
+                alias: alias.to_owned(),
+                ..Adapter::default()
+            },
+        )
+    }
+
+    fn page_with_two_adapters() -> Page {
+        let mut page = Page::default();
+        let adapters = [
+            adapter("/org/bluez/hci0", "Adapter 0"),
+            adapter("/org/bluez/hci1", "Adapter 1"),
+        ]
+        .into_iter()
+        .collect();
+        let _task = page.update(Message::BluetoothEvent(Event::SetAdapters(adapters)));
+        page
+    }
+
+    #[test]
+    fn bluetooth_header_is_absent_at_adapter_chooser() {
+        let page = page_with_two_adapters();
+
+        assert!(page.header().is_none());
+    }
+
+    #[test]
+    fn bluetooth_header_tracks_adapter_selection_and_clearing() {
+        let mut page = page_with_two_adapters();
+        let selected = OwnedObjectPath::try_from("/org/bluez/hci1").unwrap();
+
+        let _task = page.update(Message::SelectAdapter(Some(selected)));
+        assert!(page.header().is_some());
+        assert!(page.heading.contains("Adapter 1"));
+
+        let _task = page.update(Message::SelectAdapter(None));
+        assert!(page.header().is_none());
+        assert!(page.heading.contains("Adapter 0"));
+        assert!(page.heading.contains("Adapter 1"));
+    }
 
     #[test]
     fn test_dbus_service_unknown_with_installed_service_queries_manager() {
