@@ -57,7 +57,7 @@ impl Device {
             return Err(zbus::Error::Failure("Device has no adapter".to_owned()));
         }
         let alias = match alias {
-            Ok(alias) if !alias.is_empty() => Some(alias),
+            Ok(alias) if !alias.is_empty() && alias != address.replace(':', "-") => Some(alias),
             _ => proxy.device.name().await.ok(),
         };
         let device_type: String = proxy.icon().await;
