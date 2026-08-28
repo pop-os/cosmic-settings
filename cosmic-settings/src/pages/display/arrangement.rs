@@ -197,6 +197,7 @@ impl<Message: Clone> Widget<Message, cosmic::Theme, Renderer> for Arrangement<'_
                         );
 
                         shell.capture_event();
+                        shell.request_redraw();
                     }
                 }
             }
