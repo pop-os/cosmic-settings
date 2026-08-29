@@ -7,6 +7,7 @@ use std::sync::{Arc, LazyLock};
 use anyhow::Context;
 use cosmic::app::ContextDrawer;
 use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::core::Widget;
 use cosmic::iced::widget::operation::focus_next;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::space::horizontal;
@@ -1111,19 +1112,20 @@ fn devices_view(connection_editor_available: bool) -> Section<crate::pages::Mess
                                 .into()
                         };
 
-                        let view_more_button =
-                            widget::button::icon(widget::icon::from_name("view-more-symbolic"));
+                        let view_more: Option<Element<_>> =
+                            if (is_connected || connection_editor_available || is_known) {
+                                let view_more_button =
+                                    widget::button::icon(widget::icon::from_name("view-more-symbolic"));
 
-                        let view_more: Element<_> = if page
-                            .view_more_popup
-                            .as_deref()
-                            .is_some_and(|id| id == network.ssid.as_ref())
-                        {
-                            widget::popover(view_more_button.on_press(Message::ViewMore(None)))
-                                .position(widget::popover::Position::Bottom)
-                                .on_close(Message::ViewMore(None))
-                                .popup(
-                                    widget::column::with_capacity(4)
+                                let view_more  = if page
+                                    .view_more_popup
+                                    .as_deref()
+                                    .is_some_and(|id| id == network.ssid.as_ref())
+                                {
+                                    widget::popover(view_more_button.on_press(Message::ViewMore(None)))
+                                        .position(widget::popover::Position::Bottom)
+                                        .on_close(Message::ViewMore(None))
+                                        .popup(widget::column::with_capacity(4)
                                         .push_maybe(is_connected.then(|| {
                                             popup_button(
                                                 Message::Disconnect(network.ssid.clone()),
@@ -1151,14 +1153,18 @@ fn devices_view(connection_editor_available: bool) -> Section<crate::pages::Mess
                                         .width(Length::Fixed(200.0))
                                         .apply(widget::container)
                                         .padding(cosmic::theme::spacing().space_xxs)
-                                        .class(cosmic::theme::Container::Dropdown),
-                                )
-                                .into()
-                        } else {
-                            view_more_button
-                                .on_press(Message::ViewMore(Some(network.ssid.clone())))
-                                .into()
-                        };
+                                        .class(cosmic::theme::Container::Dropdown))
+                                        .into()
+                                } else {
+                                    view_more_button
+                                        .on_press(Message::ViewMore(Some(network.ssid.clone())))
+                                        .into()
+                                };
+
+                                Some(view_more)
+                            } else {
+                                None
+                            };
 
                         let controls = widget::row::with_capacity(2)
                             .push(connect)

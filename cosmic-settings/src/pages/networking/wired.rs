@@ -505,47 +505,53 @@ impl Page {
                             .into()
                     };
 
-                    let view_more_button =
-                        widget::button::icon(widget::icon::from_name("view-more-symbolic"));
+                    let view_more: Option<Element<_>> = if (is_connected || self.connection_editor_available || has_multiple_connection_profiles) {
+                        let view_more_button =
+                            widget::button::icon(widget::icon::from_name("view-more-symbolic"));
 
-                    let view_more: Option<Element<_>> = if self
-                        .view_more_popup
-                        .as_deref()
-                        .is_some_and(|id| id == connection.uuid.as_ref())
-                    {
-                        widget::popover(view_more_button.on_press(Message::ViewMore(None)))
-                            .position(widget::popover::Position::Bottom)
-                            .on_close(Message::ViewMore(None))
-                            .popup(
-                                widget::column::with_capacity(3)
-                                    .push_maybe(is_connected.then(|| {
-                                        popup_button(
-                                            Message::Deactivate(connection.uuid.clone()),
-                                            disconnect_txt,
-                                        )
-                                    }))
-                                    .push_maybe(self.connection_editor_available.then(|| {
-                                        popup_button(
-                                            Message::Settings(connection.uuid.clone()),
-                                            settings_txt,
-                                        )
-                                    }))
-                                    .push_maybe(has_multiple_connection_profiles.then(|| {
-                                        popup_button(
-                                            Message::RemoveProfileRequest(connection.uuid.clone()),
-                                            remove_txt,
-                                        )
-                                    }))
-                                    .width(Length::Fixed(200.0))
-                                    .apply(widget::container)
-                                    .padding(cosmic::theme::spacing().space_xxs)
-                                    .class(cosmic::theme::Container::Dropdown),
-                            )
-                            .apply(|e| Some(Element::from(e)))
+                        let view_more = if self
+                            .view_more_popup
+                            .as_deref()
+                            .is_some_and(|id| id == connection.uuid.as_ref())
+                        {
+                            widget::popover(view_more_button.on_press(Message::ViewMore(None)))
+                                .position(widget::popover::Position::Bottom)
+                                .on_close(Message::ViewMore(None))
+                                .popup(
+                                    widget::column::with_capacity(3)
+                                        .push_maybe(is_connected.then(|| {
+                                            popup_button(
+                                                Message::Deactivate(connection.uuid.clone()),
+                                                disconnect_txt,
+                                            )
+                                        }))
+                                        .push_maybe(self.connection_editor_available.then(|| {
+                                            popup_button(
+                                                Message::Settings(connection.uuid.clone()),
+                                                settings_txt,
+                                            )
+                                        }))
+                                        .push_maybe(has_multiple_connection_profiles.then(|| {
+                                            popup_button(
+                                                Message::RemoveProfileRequest(connection.uuid.clone()),
+                                                remove_txt,
+                                            )
+                                        }))
+                                        .width(Length::Fixed(200.0))
+                                        .apply(widget::container)
+                                        .padding(cosmic::theme::spacing().space_xxs)
+                                        .class(cosmic::theme::Container::Dropdown),
+                                )
+                                .into()
+                        } else {
+                            view_more_button
+                                .on_press(Message::ViewMore(Some(connection.uuid.clone())))
+                                .into()
+                        };
+
+                        Some(view_more)
                     } else {
-                        view_more_button
-                            .on_press(Message::ViewMore(Some(connection.uuid.clone())))
-                            .apply(|e| Some(Element::from(e)))
+                        None
                     };
 
                     let controls = widget::row::with_capacity(2)
