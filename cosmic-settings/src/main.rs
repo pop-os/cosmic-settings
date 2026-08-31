@@ -122,6 +122,9 @@ pub enum PageCommands {
     /// Power settings page
     #[cfg(feature = "page-power")]
     Power,
+    /// Printers settings page
+    #[cfg(feature = "page-printers")]
+    Printers,
     /// Region & Language settings page
     #[cfg(feature = "page-region")]
     RegionLanguage,

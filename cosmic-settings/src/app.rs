@@ -16,6 +16,8 @@ use crate::pages::input;
 use crate::pages::networking;
 #[cfg(feature = "page-power")]
 use crate::pages::power;
+#[cfg(feature = "page-printers")]
+use crate::pages::printers;
 #[cfg(feature = "page-sound")]
 use crate::pages::sound;
 use crate::pages::{self, applications, system, time};
@@ -117,6 +119,8 @@ impl SettingsApp {
             }
             #[cfg(feature = "page-power")]
             PageCommands::Power => self.pages.page_id::<power::Page>(),
+            #[cfg(feature = "page-printers")]
+            PageCommands::Printers => self.pages.page_id::<printers::Page>(),
             #[cfg(feature = "page-region")]
             PageCommands::RegionLanguage => self.pages.page_id::<time::region::Page>(),
             #[cfg(feature = "page-sound")]
@@ -230,6 +234,8 @@ impl cosmic::Application for SettingsApp {
         app.insert_page::<applications::Page>();
         app.insert_page::<time::Page>();
         app.insert_page::<system::Page>();
+        #[cfg(feature = "page-printers")]
+        app.insert_page::<printers::Page>();
 
         let active_id = match flags.sub_command {
             Some(p) => app.subtask_to_page(&p),
@@ -400,6 +406,36 @@ impl cosmic::Application for SettingsApp {
 
             Message::PageMessage(message) => match message {
                 crate::pages::Message::CloseContextDrawer => return self.close_context_drawer(),
+
+                // Shared printer screens do not own Settings page identities.
+                #[cfg(feature = "page-printers")]
+                crate::pages::Message::PrinterRequest(request) => {
+                    use cosmic_printers_ui::Request;
+
+                    return match request {
+                        Request::GoBack => match self.pages.page_id::<printers::Page>() {
+                            Some(entity) => cosmic::task::message(Message::PageMessage(
+                                crate::pages::Message::Page(entity),
+                            )),
+                            None => cosmic::Task::none(),
+                        },
+                        Request::ShowDetails => {
+                            match self.pages.page_id::<printers::details::Page>() {
+                                Some(entity) => cosmic::task::message(Message::PageMessage(
+                                    crate::pages::Message::Page(entity),
+                                )),
+                                None => cosmic::Task::none(),
+                            }
+                        }
+                        Request::ShowQueue => match self.pages.page_id::<printers::queue::Page>() {
+                            Some(entity) => {
+                                cosmic::task::message(Message::OpenContextDrawer(entity))
+                            }
+                            None => cosmic::Task::none(),
+                        },
+                        Request::Surface(action) => cosmic::task::message(Message::Surface(action)),
+                    };
+                }
 
                 #[cfg(feature = "page-accessibility")]
                 crate::pages::Message::Accessibility(message) => {
@@ -694,6 +730,27 @@ impl cosmic::Application for SettingsApp {
                 #[cfg(feature = "page-workspaces")]
                 crate::pages::Message::Workspaces(message) => {
                     if let Some(page) = self.pages.page_mut::<desktop::workspaces::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-printers")]
+                crate::pages::Message::PrinterDetails(message) => {
+                    if let Some(page) = self.pages.page_mut::<printers::details::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-printers")]
+                crate::pages::Message::PrinterQueue(message) => {
+                    if let Some(page) = self.pages.page_mut::<printers::queue::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-printers")]
+                crate::pages::Message::Printers(message) => {
+                    if let Some(page) = self.pages.page_mut::<printers::Page>() {
                         return page.update(message).map(Into::into);
                     }
                 }

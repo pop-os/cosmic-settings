@@ -35,6 +35,7 @@ cosmic-settings-bluetooth-subscription = { path = "../subscriptions/bluetooth", 
 cosmic-settings-sound = { path = "../pages/sound", optional = true }
 cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
+cosmic-printers-ui = { git = "https://github.com/Abd002/cosmic-printers.git", optional = true }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
 derive_setters = "0.1.9"
 dirs = "6.0.0"
@@ -135,6 +136,7 @@ linux = [
     "page-users",
     "page-window-management",
     "page-workspaces",
+    "page-printers",
     "xdg-portal",
     "wayland",
 ]
@@ -185,6 +187,7 @@ page-sound = ["dep:cosmic-settings-audio-client", "dep:cosmic-settings-sound"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
 page-window-management = ["cosmic-comp-config", "dep:cosmic-settings-config"]
 page-workspaces = ["cosmic-comp-config"]
+page-printers = ["dep:cosmic-printers-ui"]
 
 # Other features
 a11y = ["libcosmic/a11y"]
