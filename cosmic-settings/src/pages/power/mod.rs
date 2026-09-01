@@ -1,4 +1,8 @@
+use cosmic_config::ConfigGet;
 mod backend;
+
+use crate::pages::power::backend::PowerButtonBehavior;
+use std::collections::BTreeMap;
 
 use self::backend::{GetCurrentPowerProfile, SetPowerProfile};
 use backend::{Battery, ConnectedDevice, PowerProfile};
@@ -8,7 +12,7 @@ use cosmic::iced::widget::{column, row};
 use cosmic::iced::{self, Alignment, Length, stream};
 use cosmic::widget::{self, settings, space, text};
 use cosmic::{Apply, Task, surface};
-use cosmic_config::{Config, CosmicConfigEntry};
+use cosmic_config::{Config, ConfigSet, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
@@ -18,6 +22,7 @@ use slotmap::SlotMap;
 use std::hash::Hash;
 use std::iter;
 use std::time::Duration;
+use cosmic_settings_config::shortcuts::action::System;
 use upower_dbus::DeviceProxy;
 
 static SCREEN_OFF_TIMES: &[Duration] = &[
@@ -61,12 +66,14 @@ pub struct Page {
     idle_conf: CosmicIdleConfig,
     backend: Option<backend::PowerBackendEnum>,
     current_power_profile: Option<PowerProfile>,
+    power_button_behavior: Option<PowerButtonBehavior>,
 }
 
 impl Default for Page {
     fn default() -> Self {
         let idle_config = Config::new("com.system76.CosmicIdle", 1).unwrap();
         let idle_conf = CosmicIdleConfig::get_entry(&idle_config).unwrap_or_else(|(_, conf)| conf);
+        let power_button_behavior = PowerButtonBehavior::from_config();
 
         Self {
             entity: Default::default(),
@@ -89,6 +96,7 @@ impl Default for Page {
             idle_conf,
             backend: None,
             current_power_profile: None,
+            power_button_behavior,
         }
     }
 }
@@ -113,6 +121,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(connected_devices()),
             sections.insert(profiles()),
             sections.insert(power_saving()),
+            sections.insert(power_button())
         ])
     }
 
@@ -300,6 +309,7 @@ impl page::Page<crate::pages::Message> for Page {
 #[derive(Clone, Debug)]
 pub enum Message {
     PowerProfileChange(PowerProfile),
+    PowerButtonBehaviorChange(PowerButtonBehavior),
     /// Update the system battery
     UpdateBattery(Battery),
     /// Update the battery of a connected device
@@ -339,6 +349,21 @@ impl Page {
                         crate::app::Message::None
                     });
                 }
+            }
+            Message::PowerButtonBehaviorChange(behavior) => {
+                match Config::new("com.system76.CosmicSettings.Shortcuts", 1) {
+                    Ok(config) => {
+                        let mut system_actions: BTreeMap<System, String> = config
+                            .get("system_actions")
+                            .unwrap_or_default();
+                        system_actions.insert(System::PowerOff, behavior.command());
+                        if let Err(err) = config.set("system_actions", system_actions) {
+                            tracing::error!("Failed to set power button action: {}", err);
+                        }
+                    }
+                    Err(err) => tracing::error!("Failed to open shortcuts config: {}", err),
+                }
+                self.power_button_behavior = Some(behavior);
             }
             Message::UpdateBattery(battery) => self.battery = battery,
             Message::UpdateDeviceBattery(path, battery) => {
@@ -547,6 +572,33 @@ fn profiles() -> Section<crate::pages::Message> {
             } else {
                 let item = text::body(fl!("power-mode", "no-backend"));
                 section = section.add(item);
+            }
+
+            section
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::Power)
+        })
+}
+
+fn power_button() -> Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        _power_button_desc = fl!("power-button-behavior", "desc");
+    });
+    Section::default()
+        .title(fl!("power-button-behavior"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let mut section = settings::section().title(&section.title);
+
+            if page.backend.is_some() {
+                let behaviors = backend::get_power_button_behaviors();
+                section = behaviors
+                    .into_iter()
+                    .map(|behavior| {
+                        settings::item::builder(behavior.title())
+                            .description(behavior.description())
+                            .radio(behavior, page.power_button_behavior, Message::PowerButtonBehaviorChange)
+                    }).fold(section, settings::Section::add);
             }
 
             section
