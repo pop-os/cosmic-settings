@@ -233,6 +233,7 @@ online-accounts = Online accounts
 activate = Activate
 confirm = Confirm
 enable = Enable
+rename = Rename
 
 bluetooth = Bluetooth
     .status = This system is visible as { $aliases } while Bluetooth settings are open.
@@ -259,6 +260,8 @@ bluetooth-display-passkey = Bluetooth Pairing
 
 bluetooth-display-pin = Bluetooth Pairing
     .description = Please type the following PIN on { $device }, then press Enter
+
+bluetooth-rename-device = Rename Device
 
 bluetooth-available = Nearby devices
 
