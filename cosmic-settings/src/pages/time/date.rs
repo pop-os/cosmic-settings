@@ -38,6 +38,7 @@ pub struct Page {
     show_seconds: bool,
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
+    show_week_numbers: bool,
     timezone_context: bool,
     local_time: Option<DateTime<Gregorian>>,
     timezone: Option<usize>,
@@ -95,6 +96,16 @@ impl Default for Page {
                 true
             });
 
+        let show_week_numbers = cosmic_applet_config
+            .get("show_week_numbers")
+            .unwrap_or_else(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'show_week_numbers'");
+                }
+
+                false
+            });
+
         Self {
             entity: page::Entity::null(),
             cosmic_applet_config,
@@ -105,6 +116,7 @@ impl Default for Page {
             show_seconds,
             ntp_enabled: false,
             show_date_in_top_panel,
+            show_week_numbers,
             timezone: None,
             timezone_context: false,
             timezone_list: Vec::new(),
@@ -235,6 +247,14 @@ impl Page {
                 }
             }
 
+            Message::ShowWeekNumbers(enable) => {
+                self.show_week_numbers = enable;
+
+                if let Err(err) = self.cosmic_applet_config.set("show_week_numbers", enable) {
+                    error!(?err, "Failed to set config 'show_week_numbers'");
+                }
+            }
+
             Message::TimezoneSearch(text) => {
                 self.timezone_search = text;
             }
@@ -361,6 +381,7 @@ pub enum Message {
     FirstDayOfWeek(usize),
     Refresh(Info),
     ShowDate(bool),
+    ShowWeekNumbers(bool),
     Timezone(usize),
     TimezoneContext,
     TimezoneSearch(String),
@@ -397,6 +418,7 @@ fn format() -> Section<crate::pages::Message> {
         show_seconds = fl!("time-format", "show-seconds");
         first = fl!("time-format", "first");
         show_date = fl!("time-format", "show-date");
+        show_week_numbers = fl!("time-format", "show-week-numbers");
     });
 
     Section::default()
@@ -448,6 +470,10 @@ fn format() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&section.descriptions[show_date])
                         .toggler(page.show_date_in_top_panel, Message::ShowDate),
+                )
+                .add(
+                    settings::item::builder(&section.descriptions[show_week_numbers])
+                        .toggler(page.show_week_numbers, Message::ShowWeekNumbers),
                 )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)
