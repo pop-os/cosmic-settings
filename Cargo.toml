@@ -17,7 +17,7 @@ image = { version = "0.25.10", default-features = false, features = [
     "webp",
     "hdr",
 ] }
-
+iced_test = { git = "https://github.com/pop-os/libcosmic", branch = "iced-test", feature = "tester" }
 [workspace.dependencies.libcosmic]
 features = [
     "dbus-config",
@@ -77,8 +77,8 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/libcosmic']
-# libcosmic = { path = "../libcosmic" }
+[patch.'https://github.com/pop-os/libcosmic']
+ libcosmic = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
 # iced_futures = { path = "../libcosmic/iced/futures" }

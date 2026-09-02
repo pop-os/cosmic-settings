@@ -264,3 +264,11 @@ macro_rules! cache_dynamic_lazy {
         )+
     };
 }
+
+#[test]
+fn network() {
+    use iced_test::simulator;
+    let app = iced_test::Simulator::new(crate::Default);
+    app.click("Network & Wireless");
+    println!("test")
+}
