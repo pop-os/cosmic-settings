@@ -506,6 +506,9 @@ super-key = Super key action
 
 edge-gravity = Floating windows gravitate to nearby edges
 
+system-window-headers = Use system window headers when possible
+    .desc = Applications may use their own window headers in some cases
+
 window-controls = Window controls
     .maximize = Show maximize button
     .minimize = Show minimize button

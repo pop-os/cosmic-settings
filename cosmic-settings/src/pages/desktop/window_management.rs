@@ -5,7 +5,7 @@ use cosmic::iced::Length;
 use cosmic::widget::{self, settings};
 use cosmic::{Apply, Element, surface};
 
-use cosmic_comp_config::CosmicCompConfig;
+use cosmic_comp_config::{AppearanceConfig, CosmicCompConfig};
 use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_settings_config::{Action, Binding, Shortcuts, shortcuts};
 use cosmic_settings_page::{self as page, Section, section};
@@ -24,6 +24,7 @@ pub enum Message {
     ShowMaximizeButton(bool),
     ShowMinimizeButton(bool),
     SetEdgeSnapThreshold(u32),
+    ShowTitlebars(bool),
     Surface(surface::Action),
 }
 
@@ -37,6 +38,7 @@ pub struct Page {
     cursor_follows_focus: bool,
     show_active_hint: bool,
     edge_snap_threshold: u32,
+    appearance_conf: AppearanceConfig,
 }
 
 impl Default for Page {
@@ -86,6 +88,15 @@ impl Default for Page {
             })
             .unwrap_or(0);
 
+        let appearance_conf = comp_config
+            .get::<AppearanceConfig>("appearance_settings")
+            .unwrap_or_else(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'appearance_settings'");
+                }
+                AppearanceConfig::default()
+            });
+
         Page {
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
@@ -101,6 +112,7 @@ impl Default for Page {
             cursor_follows_focus,
             show_active_hint,
             edge_snap_threshold,
+            appearance_conf,
         }
     }
 }
@@ -179,9 +191,21 @@ impl Page {
                     error!(?err, "Failed to set config 'active_hint'");
                 }
             }
+            Message::ShowTitlebars(value) => {
+                self.appearance_conf.show_titlebars = value;
+                if let Err(err) = self
+                    .comp_config
+                    .set("appearance_settings", self.appearance_conf)
+                {
+                    error!(?err, "Failed to set config 'appearance_settings'");
+                }
+            }
             Message::CompConfigUpdate(comp_config) => {
                 if comp_config.active_hint != self.show_active_hint {
                     self.show_active_hint = comp_config.active_hint;
+                }
+                if comp_config.appearance_settings != self.appearance_conf {
+                    self.appearance_conf = comp_config.appearance_settings;
                 }
             }
             Message::SetEdgeSnapThreshold(value) => {
@@ -231,6 +255,8 @@ pub fn window_management() -> Section<crate::pages::Message> {
         _applications = fl!("super-key", "applications");
         _none = fl!("super-key", "none");
         edge_gravity = fl!("edge-gravity");
+        system_window_headers = fl!("system-window-headers");
+        system_window_headers_desc = fl!("system-window-headers", "desc");
     });
 
     Section::default()
@@ -259,6 +285,11 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         .toggler(page.edge_snap_threshold != 0, |is_enabled| {
                             Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
                         }),
+                )
+                .add(
+                    settings::item::builder(&descriptions[system_window_headers])
+                        .description(&descriptions[system_window_headers_desc])
+                        .toggler(page.appearance_conf.show_titlebars, Message::ShowTitlebars),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
