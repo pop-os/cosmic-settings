@@ -19,6 +19,7 @@ jiff = "0.2"
 clap = { version = "4.6.4", features = ["derive"] }
 color-eyre = "0.6.5"
 cosmic-bg-config.workspace = true
+cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
 cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
 cosmic-idle-config.workspace = true
@@ -183,7 +184,11 @@ page-region = [
 ]
 page-sound = ["dep:cosmic-settings-audio-client", "dep:cosmic-settings-sound"]
 page-users = ["xdg-portal", "dep:accounts-zbus", "dep:zbus", "dep:zbus_polkit"]
-page-window-management = ["cosmic-comp-config", "dep:cosmic-settings-config"]
+page-window-management = [
+    "cosmic-comp-config",
+    "dep:cosmic-client-toolkit",
+    "dep:cosmic-settings-config",
+]
 page-workspaces = ["cosmic-comp-config"]
 
 # Other features
