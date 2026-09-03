@@ -173,6 +173,8 @@ pub mod devices {
     pub enum DeviceType {
         Ethernet,
         Wifi,
+        /// Mobile broadband / WWAN modem.
+        Modem,
         WifiP2P,
         Loopback,
         Bluetooth,
@@ -186,6 +188,7 @@ pub mod devices {
             match value {
                 nmrs::DeviceType::Ethernet => Self::Ethernet,
                 nmrs::DeviceType::Wifi => Self::Wifi,
+                nmrs::DeviceType::Other(8) => Self::Modem,
                 nmrs::DeviceType::WifiP2P => Self::WifiP2P,
                 nmrs::DeviceType::Loopback => Self::Loopback,
                 nmrs::DeviceType::Bluetooth => Self::Bluetooth,
@@ -282,6 +285,8 @@ pub mod devices {
     pub struct KnownDeviceConnection {
         pub id: String,
         pub uuid: Arc<str>,
+        pub autoconnect: bool,
+        pub autoconnect_priority: i32,
     }
 
     pub async fn list(
@@ -329,6 +334,8 @@ pub mod devices {
                 .map(|connection| KnownDeviceConnection {
                     id: connection.id.clone(),
                     uuid: Arc::from(connection.uuid.as_str()),
+                    autoconnect: connection.autoconnect,
+                    autoconnect_priority: connection.autoconnect_priority,
                 })
                 .collect();
 
@@ -360,6 +367,19 @@ pub mod devices {
 
     pub fn is_wifi_summary(summary: &SettingsSummary) -> bool {
         matches!(summary, SettingsSummary::Wifi { .. })
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::DeviceType;
+
+        #[test]
+        fn classifies_networkmanager_modems() {
+            assert_eq!(
+                DeviceType::from(nmrs::DeviceType::Other(8)),
+                DeviceType::Modem
+            );
+        }
     }
 }
 
@@ -906,7 +926,7 @@ async fn disconnect_wifi_by_ssid(nm: &NetworkManager, ssid: &str) -> Result<(), 
     Ok(())
 }
 
-async fn deactivate_by_uuid(nm: &NetworkManager, uuid: &str) -> Result<(), Error> {
+pub(crate) async fn deactivate_by_uuid(nm: &NetworkManager, uuid: &str) -> Result<(), Error> {
     if nm.disconnect_vpn_by_uuid(uuid).await.is_ok() {
         return Ok(());
     }
@@ -920,7 +940,7 @@ async fn deactivate_by_uuid(nm: &NetworkManager, uuid: &str) -> Result<(), Error
     Ok(())
 }
 
-async fn activate_connection(
+pub(crate) async fn activate_connection(
     nm: &NetworkManager,
     connection_path: OwnedObjectPath,
     device_path: OwnedObjectPath,
@@ -1301,6 +1321,7 @@ fn saved_matches_device(
     let type_matches = match device_type {
         devices::DeviceType::Ethernet => connection.connection_type == "802-3-ethernet",
         devices::DeviceType::Wifi => connection.connection_type == "802-11-wireless",
+        devices::DeviceType::Modem => connection.connection_type == "gsm",
         devices::DeviceType::WireGuard => connection.connection_type == "wireguard",
         _ => false,
     };
@@ -1340,6 +1361,17 @@ fn active_connection_by_interface(
                     id: vpn.id.clone(),
                     uuid: vpn.uuid.clone(),
                     state: devices::ActiveConnectionState::from(vpn.state),
+                });
+            }
+            ActiveConnection::Other(other)
+                if other.connection_type.as_deref() == Some("gsm")
+                    && other.interface.as_deref() == Some(interface) =>
+            {
+                return Some(ActiveConnectionRecord {
+                    path: slash_path(),
+                    id: other.id.clone(),
+                    uuid: other.uuid.clone(),
+                    state: devices::ActiveConnectionState::from(other.state),
                 });
             }
             _ => {}

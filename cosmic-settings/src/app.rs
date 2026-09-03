@@ -636,6 +636,13 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 #[cfg(feature = "page-networking")]
+                crate::pages::Message::Mobile(message) => {
+                    if let Some(page) = self.pages.page_mut::<networking::mobile::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-networking")]
                 crate::pages::Message::Networking(message) => {
                     if let Some(page) = self.pages.page_mut::<networking::Page>() {
                         return page.update(message).map(Into::into);
