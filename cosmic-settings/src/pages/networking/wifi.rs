@@ -1162,10 +1162,6 @@ fn devices_view() -> Section<crate::pages::Message> {
                     }
                 }
 
-                if has_known {
-                    view = view.push(known_networks);
-                }
-
                 // Build Visible Networks section (searchable when 15+ networks, filtered when user types)
                 let show_search = state.wireless_access_points.len() >= 15;
                 let search_query_lower = page.search_query.trim().to_lowercase();
@@ -1273,6 +1269,10 @@ fn devices_view() -> Section<crate::pages::Message> {
                     }
 
                     view = view.push(visible_section.spacing(spacing.space_xs));
+                }
+
+                if has_known {
+                    view = view.push(known_networks);
                 }
             };
 
