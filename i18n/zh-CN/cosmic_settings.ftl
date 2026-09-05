@@ -954,3 +954,5 @@ bluetooth-display-passkey = 蓝牙配对
     .description = 请在 { $device } 上输入以下密钥，然后按回车键
 bluetooth-display-pin = 蓝牙配对
     .description = 请在 { $device } 上输入以下 PIN 码，然后按回车键
+rename = 重命名
+bluetooth-rename-device = 重命名设备

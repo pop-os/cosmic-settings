@@ -933,3 +933,5 @@ bluetooth-display-passkey = Párování Bluetooth
     .description = Zadejte prosím následující párovací kód na zařízení { $device } a poté stiskněte Enter
 bluetooth-display-pin = Párování Bluetooth
     .description = Zadejte prosím následující PIN na zařízení { $device } a poté stiskněte Enter
+rename = Přejmenovat
+bluetooth-rename-device = Přejmenovat zařízení

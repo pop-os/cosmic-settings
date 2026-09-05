@@ -858,3 +858,5 @@ bluetooth-display-pin = Cotkirina Bluetoothê
 workspaces-navigation = Gerandin
     .wraparound = Di navbera yekem û dawîn qadê xebatê de digere bi riya bikaranîna kurteriyên kilîtdankê û tevgeran
 no-search-results = Tu tor li lêgerînên te li hev nakin .
+rename = Navê biguhêrîne
+bluetooth-rename-device = Navê amûrê biguhêrîne

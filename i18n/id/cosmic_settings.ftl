@@ -858,3 +858,5 @@ bluetooth-display-passkey = Pemasangan Bluetooth
     .description = Silakan ketik kunci sandi berikut pada { $device }, kemudian tekan Enter
 bluetooth-display-pin = Pemasangan Bluetooth
     .description = Silakan ketik PIN berikut pada { $device }, kemudian tekan Enter
+rename = Ganti Nama
+bluetooth-rename-device = Ganti Nama Perangkat
