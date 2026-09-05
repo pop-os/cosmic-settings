@@ -942,3 +942,5 @@ bluetooth-display-passkey = Appairage Bluetooth
     .description = Veuillez saisir le code d’association sur { $device }, puis appuyer sur Entrée
 bluetooth-display-pin = Appairage Bluetooth
     .description = Veuillez saisir le code PIN suivant sur { $device }, puis appuyer sur Entrée
+rename = Renommer
+bluetooth-rename-device = Renommer le périphérique

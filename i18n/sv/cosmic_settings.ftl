@@ -966,3 +966,5 @@ bluetooth-display-passkey = Bluetooth-koppling
     .description = Mata in följande säkerhetskod på { $device }, tryck sedan Enter
 bluetooth-display-pin = Bluetooth-koppling
     .description = Ange följande PIN på { $device }, tryck sedan Enter
+bluetooth-rename-device = Byt namn på enhet
+rename = Byt namn

@@ -952,3 +952,5 @@ bluetooth-display-passkey = Bluetooth-Kopplung
     .description = Bitte gib den folgenden Passkey auf { $device } ein und drücke dann die Eingabetaste
 bluetooth-display-pin = Bluetooth-Kopplung
     .description = Bitte gib die folgende PIN auf { $device } ein und drücke dann die Eingabetaste
+bluetooth-rename-device = Gerät umbenennen
+rename = Umbenennen

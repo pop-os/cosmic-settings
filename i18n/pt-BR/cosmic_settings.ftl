@@ -951,3 +951,5 @@ bluetooth-display-passkey = Emparelhamento Bluetooth
     .description = Por favor, digite a seguinte chave em { $device }, depois pressione Enter
 bluetooth-display-pin = Emparelhamento Bluetooth
     .description = Por favor, digite o seguinte PIN em { $device }, depois pressione Enter
+rename = Renomear
+bluetooth-rename-device = Renomear dispositivo
