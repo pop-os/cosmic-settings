@@ -38,6 +38,7 @@ pub struct Page {
     show_seconds: bool,
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
+    show_weekday: bool,
     timezone_context: bool,
     local_time: Option<DateTime<Gregorian>>,
     timezone: Option<usize>,
@@ -95,6 +96,16 @@ impl Default for Page {
                 true
             });
 
+        let show_weekday = cosmic_applet_config
+            .get("show_weekday")
+            .unwrap_or_else(|err| {
+                if err.is_err() {
+                    error!(?err, "Failed to read config 'show_weekday'");
+                }
+
+                false
+            });
+
         Self {
             entity: page::Entity::null(),
             cosmic_applet_config,
@@ -105,6 +116,7 @@ impl Default for Page {
             show_seconds,
             ntp_enabled: false,
             show_date_in_top_panel,
+            show_weekday,
             timezone: None,
             timezone_context: false,
             timezone_list: Vec::new(),
@@ -235,6 +247,14 @@ impl Page {
                 }
             }
 
+            Message::ShowWeekday(enable) => {
+                self.show_weekday = enable;
+
+                if let Err(err) = self.cosmic_applet_config.set("show_weekday", enable) {
+                    error!(?err, "Failed to set config 'show_weekday'");
+                }
+            }
+
             Message::TimezoneSearch(text) => {
                 self.timezone_search = text;
             }
@@ -361,6 +381,7 @@ pub enum Message {
     FirstDayOfWeek(usize),
     Refresh(Info),
     ShowDate(bool),
+    ShowWeekday(bool),
     Timezone(usize),
     TimezoneContext,
     TimezoneSearch(String),
@@ -397,6 +418,7 @@ fn format() -> Section<crate::pages::Message> {
         show_seconds = fl!("time-format", "show-seconds");
         first = fl!("time-format", "first");
         show_date = fl!("time-format", "show-date");
+        show_weekday = fl!("time-format", "show-weekday");
     });
 
     Section::default()
@@ -448,6 +470,11 @@ fn format() -> Section<crate::pages::Message> {
                 .add(
                     settings::item::builder(&section.descriptions[show_date])
                         .toggler(page.show_date_in_top_panel, Message::ShowDate),
+                )
+                // Weekday before the date in the top panel
+                .add(
+                    settings::item::builder(&section.descriptions[show_weekday])
+                        .toggler(page.show_weekday, Message::ShowWeekday),
                 )
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)

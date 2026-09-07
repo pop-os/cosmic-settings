@@ -957,6 +957,7 @@ time-format = Date & time format
     .show-seconds = Show seconds
     .first = First day of week
     .show-date = Show date in the time applet
+    .show-weekday = Show day of the week
     .friday = Friday
     .saturday = Saturday
     .sunday = Sunday
