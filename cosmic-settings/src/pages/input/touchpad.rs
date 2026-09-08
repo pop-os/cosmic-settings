@@ -312,7 +312,10 @@ fn gestures() -> Section<crate::pages::Message> {
                     settings::item::builder(
                         &descriptions[match page.comp_workspace_config.workspace_layout {
                             WorkspaceLayout::Horizontal => switch_workspaces_horizontal,
-                            WorkspaceLayout::Vertical => switch_workspaces_vertical,
+                            // Grid behaves like Vertical for 4-finger swipes.
+                            WorkspaceLayout::Vertical | WorkspaceLayout::Grid => {
+                                switch_workspaces_vertical
+                            }
                         }],
                     )
                     .flex_control(text::body(&descriptions[switch_workspaces])),
