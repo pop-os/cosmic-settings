@@ -764,7 +764,11 @@ impl Page {
         self.config.refresh_rate = None;
         self.config.resolution = None;
         self.config.vrr = output.adaptive_sync;
-        self.config.scale = (output.scale * 100.0) as u32;
+        // Only sync config.scale from the kernel if the user hasn't manually set a scale.
+        // This prevents config-change refreshes from reverting the user's scale preference.
+        if self.cache.scale_selected.is_none() {
+            self.config.scale = (output.scale * 100.0) as u32;
+        }
 
         self.cache.modes.clear();
         self.cache.refresh_rates.clear();
