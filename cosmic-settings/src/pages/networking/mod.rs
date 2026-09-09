@@ -28,6 +28,9 @@ pub struct Page {
     entity: page::Entity,
     nm_task: Option<tokio::sync::oneshot::Sender<()>>,
     devices: Vec<Arc<network_manager::devices::DeviceInfo>>,
+    /// First device list has arrived (or was cached). Avoids painting VPN
+    /// alone then inserting Wi‑Fi/Wired above (layout shift).
+    devices_ready: bool,
     vpn: page::Entity,
     wifi: page::Entity,
     wired: page::Entity,
@@ -92,6 +95,22 @@ impl page::Page<crate::pages::Message> for Page {
         let device_list = Section::default().descriptions(descriptions).view::<Self>(
             move |_binder, page, section| {
                 let descs = &section.descriptions;
+
+                // Wait for the first NM device snapshot so Wi‑Fi/Wired and VPN
+                // rows paint together (no insert-above shift).
+                if !page.devices_ready {
+                    let loading = widget::column::with_capacity(1)
+                        .push(
+                            widget::settings::section().add(
+                                widget::settings::item_row(vec![
+                                    widget::text::body(fl!("network-and-wireless", "loading"))
+                                        .into(),
+                                ]),
+                            ),
+                        )
+                        .spacing(cosmic::theme::active().cosmic().spacing.space_s);
+                    return Element::from(loading).map(crate::pages::Message::Networking);
+                }
 
                 let multiple_wifi_adapters = page
                     .devices
@@ -242,8 +261,8 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        self.devices = Vec::new();
-
+        // Keep devices + devices_ready cached so re-opening the hub does not
+        // flash VPN alone and then re-insert Wi‑Fi/Wired.
         if let Some(cancel) = self.nm_task.take() {
             _ = cancel.send(());
         }
@@ -306,6 +325,7 @@ impl Page {
 
             Message::UpdateDevices(devices) => {
                 self.devices = devices;
+                self.devices_ready = true;
             }
         }
 
