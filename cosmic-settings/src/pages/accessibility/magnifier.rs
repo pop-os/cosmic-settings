@@ -57,7 +57,8 @@ impl Default for Page {
             })
             .unwrap_or_default();
 
-        let mut values = HashSet::<u32>::from_iter([25, 50, 100, 150, 200, zoom_config.increment])
+        let presets = ZoomConfig::ZOOM_INCREMENT_PRESETS.iter().copied();
+        let mut values = HashSet::<u32>::from_iter(presets.chain([zoom_config.increment]))
             .into_iter()
             .collect::<Vec<_>>();
         values.sort_unstable();
