@@ -180,6 +180,35 @@ pub(crate) fn enable() -> Section<crate::pages::Message> {
                 .map(crate::pages::Message::Dock)
         })
 }
+
+fn maximize_style() -> Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        keep_style_on_maximize = fl!("dock-keep-style-on-maximize");
+        keep_style_on_maximize_desc = fl!("dock-keep-style-on-maximize", "desc");
+    });
+
+    Section::default()
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let descriptions = &section.descriptions;
+            let Some(panel_config) = page.inner.panel_config.as_ref() else {
+                return Element::from(text::body(fl!("unknown")));
+            };
+
+            settings::section()
+                .add(
+                    settings::item::builder(&descriptions[keep_style_on_maximize])
+                        .description(&descriptions[keep_style_on_maximize_desc])
+                        .toggler(
+                            panel_config.keep_style_on_maximize,
+                            inner::Message::KeepStyleOnMaximize,
+                        ),
+                )
+                .apply(Element::from)
+                .map(|message| crate::pages::Message::Dock(Message::Inner(message)))
+        })
+}
+
 // TODO cleanup
 impl page::Page<crate::pages::Message> for Page {
     #[allow(clippy::too_many_lines)]
@@ -196,6 +225,7 @@ impl page::Page<crate::pages::Message> for Page {
                 sections.insert(style::<Page, _>(self, |m| {
                     crate::pages::Message::Dock(Message::Inner(m))
                 })),
+                sections.insert(maximize_style()),
                 sections.insert(configuration::<Page>(self)),
                 sections.insert(reset_button::<Page, _>(|m| {
                     crate::pages::Message::Dock(Message::Inner(m))
