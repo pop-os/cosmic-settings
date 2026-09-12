@@ -33,7 +33,11 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(mouse()), sections.insert(scrolling())])
+        Some(vec![
+            sections.insert(mouse()),
+            sections.insert(scrolling()),
+            sections.insert(cursor_hiding()),
+        ])
     }
 
     fn info(&self) -> page::Info {
@@ -177,6 +181,80 @@ fn scrolling() -> Section<crate::pages::Message> {
                                 .unwrap_or(false),
                             |x| Message::SetNaturalScroll(x, false),
                         ),
+                )
+                .apply(Element::from)
+                .map(crate::pages::Message::Input)
+        })
+}
+
+/// Every trigger the compositor has, each individually switchable — a hidden
+/// cursor should always be something the user can find and turn off.
+fn cursor_hiding() -> Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        while_typing = fl!("cursor-hiding", "while-typing");
+        after_touch = fl!("cursor-hiding", "after-touch");
+        in_fullscreen = fl!("cursor-hiding", "in-fullscreen");
+        fullscreen_delay = fl!("cursor-hiding", "fullscreen-delay");
+        when_inactive = fl!("cursor-hiding", "when-inactive");
+        inactive_delay = fl!("cursor-hiding", "inactive-delay");
+    });
+
+    Section::default()
+        .title(fl!("cursor-hiding"))
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _page, section| {
+            let descriptions = &section.descriptions;
+            let input = binder.page::<super::Page>().expect("input page not found");
+            let hide = input.cursor_hide;
+
+            let mut items = settings::section().title(&section.title).add(
+                settings::item::builder(&descriptions[while_typing])
+                    .toggler(hide.while_typing, Message::SetCursorHideWhileTyping),
+            );
+
+            if input.has_touchscreen {
+                items = items.add(
+                    settings::item::builder(&descriptions[after_touch])
+                        .toggler(hide.after_touch, Message::SetCursorHideAfterTouch),
+                );
+            }
+
+            items
+                .add(
+                    settings::item::builder(&descriptions[in_fullscreen]).toggler(
+                        hide.fullscreen_enabled,
+                        Message::SetCursorHideFullscreenEnabled,
+                    ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[fullscreen_delay]).control(
+                        widget::spin_button(
+                            hide.fullscreen_seconds.to_string(),
+                            "cursor hide fullscreen delay",
+                            hide.fullscreen_seconds,
+                            1,
+                            1,
+                            300,
+                            Message::SetCursorHideFullscreenSeconds,
+                        ),
+                    ),
+                )
+                .add(
+                    settings::item::builder(&descriptions[when_inactive])
+                        .toggler(hide.idle_enabled, Message::SetCursorHideIdleEnabled),
+                )
+                .add(
+                    settings::item::builder(&descriptions[inactive_delay]).control(
+                        widget::spin_button(
+                            hide.idle_seconds.to_string(),
+                            "cursor hide inactive delay",
+                            hide.idle_seconds,
+                            1,
+                            1,
+                            300,
+                            Message::SetCursorHideIdleSeconds,
+                        ),
+                    ),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
