@@ -274,6 +274,12 @@ impl cosmic::Application for SettingsApp {
     }
 
     fn on_app_exit(&mut self) -> Option<Self::Message> {
+        #[cfg(feature = "page-display")]
+        if self.pages.page_id::<display::Page>() == Some(self.active_page)
+            && let Some(display) = self.pages.page_mut::<display::Page>()
+        {
+            _ = display.deactivate_display_identifiers();
+        }
         self.pages.on_leave(self.active_page);
         None
     }
@@ -952,11 +958,22 @@ impl SettingsApp {
         let current_page = self.active_page;
         self.active_page = page;
 
+        #[cfg(feature = "page-display")]
+        let display_page = self.pages.page_id::<display::Page>();
+        #[cfg(feature = "page-display")]
+        let mut identifier_tasks = Vec::new();
         let mut leave_task = iced::Task::none();
         let mut close_context_drawer_task = iced::Task::none();
 
         if current_page != page {
             self.loaded_pages.remove(&current_page);
+
+            #[cfg(feature = "page-display")]
+            if display_page == Some(current_page)
+                && let Some(display) = self.pages.page_mut::<display::Page>()
+            {
+                identifier_tasks.push(display.deactivate_display_identifiers().map(Into::into));
+            }
 
             close_context_drawer_task = self.close_context_drawer();
 
@@ -981,12 +998,22 @@ impl SettingsApp {
             .map(Message::PageMessage)
             .map(Into::into);
 
-        Task::batch(vec![
+        #[cfg(feature = "page-display")]
+        if display_page == Some(page)
+            && let Some(display) = self.pages.page_mut::<display::Page>()
+        {
+            identifier_tasks.push(display.activate_display_identifiers().map(Into::into));
+        }
+
+        let mut tasks = vec![
             leave_task,
             page_task,
             close_context_drawer_task,
             cosmic::task::future(async { Message::SetWindowTitle }),
-        ])
+        ];
+        #[cfg(feature = "page-display")]
+        tasks.extend(identifier_tasks);
+        Task::batch(tasks)
     }
 
     fn set_title(&mut self) -> Task<crate::Message> {

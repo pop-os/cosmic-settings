@@ -1581,6 +1581,7 @@ dependencies = [
  "secret-service",
  "secure-string",
  "serde",
+ "serde_json",
  "slab",
  "slotmap",
  "smithay-client-toolkit",
