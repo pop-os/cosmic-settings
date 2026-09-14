@@ -5,8 +5,7 @@ use super::model;
 use cosmic::desktop::{
     DesktopEntryCache, DesktopLookupContext, DesktopResolveOptions, resolve_desktop_entry,
 };
-use cosmic::iced::futures;
-use cosmic::iced::{self, Alignment, Length, window};
+use cosmic::iced::{self, Alignment, Length, futures, window};
 use cosmic::widget::space::horizontal as horizontal_space;
 use cosmic::{Apply, Element, surface, widget};
 use cosmic_config::{Config, ConfigGet};
@@ -29,7 +28,7 @@ pub enum Message {
     SetMute(u32, bool),
     SetSink(u32, usize),
     SetVolume(u32, u32),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
     ToggleExpanded(u32),
 }
 

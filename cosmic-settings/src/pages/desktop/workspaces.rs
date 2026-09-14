@@ -19,7 +19,7 @@ pub enum Message {
     SetWorkspaceWraparound(bool),
     SetShowName(bool),
     SetShowNumber(bool),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 pub struct Page {

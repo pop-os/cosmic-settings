@@ -364,8 +364,8 @@ impl page::Page<crate::pages::Message> for Page {
                     .on_input(|value| Message::RenameDeviceInput(value))
                     .on_submit(|_| Message::RenameDeviceConfirm);
 
-                let rename_button =
-                    widget::button::suggested(fl!("rename")).on_press_maybe(is_valid.then_some(Message::RenameDeviceConfirm));
+                let rename_button = widget::button::suggested(fl!("rename"))
+                    .on_press_maybe(is_valid.then_some(Message::RenameDeviceConfirm));
 
                 let cancel_button =
                     widget::button::standard(fl!("cancel")).on_press(Message::RenameDeviceCancel);
@@ -660,7 +660,7 @@ impl Page {
 
                         _ => (),
                     }
-                },
+                }
 
                 Event::DeviceRenameFailed(path) => {
                     tracing::warn!("Failed to rename device {path}");
@@ -896,7 +896,11 @@ impl Page {
             Message::RenameDeviceConfirm => {
                 if let Some(Dialog::RenameDevice { path, name }) = self.dialog.take() {
                     if let Some(connection) = self.connection.clone() {
-                        return cosmic::task::future(rename_device(connection, path, name.trim().into()));
+                        return cosmic::task::future(rename_device(
+                            connection,
+                            path,
+                            name.trim().into(),
+                        ));
                     } else {
                         tracing::warn!("No DBus connection ready");
                     }

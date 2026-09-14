@@ -95,7 +95,7 @@ pub enum Message {
     SetScreenFilterSelection(ColorFilter),
     SetScreenInverted(bool),
     SetSoundMono(bool),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
     SystemTheme(Box<cosmic::cosmic_theme::Theme>),
 }
 
