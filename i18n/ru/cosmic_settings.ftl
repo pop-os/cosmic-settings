@@ -928,3 +928,5 @@ bluetooth-display-passkey = Сопряжение по Bluetooth
     .description = Введите следующий код на { $device }, затем нажмите Enter
 bluetooth-display-pin = Сопряжение по Bluetooth
     .description = Введите следующий PIN-код на { $device }, затем нажмите Enter
+rename = Переименовать
+bluetooth-rename-device = Переименовать устройство

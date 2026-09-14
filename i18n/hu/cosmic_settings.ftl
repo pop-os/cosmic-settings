@@ -954,3 +954,5 @@ bluetooth-display-passkey = Bluetooth-párosítás
     .description = Írd be a következő párosítási kulcsot a(z) { $device } eszközön, majd nyomd meg az Enter billentyűt
 bluetooth-display-pin = Bluetooth-párosítás
     .description = Írd be a következő PIN-kódot a(z) { $device } eszközön, majd nyomd meg az Enter billentyűt
+rename = Átnevezés
+bluetooth-rename-device = Eszköz átnevezése

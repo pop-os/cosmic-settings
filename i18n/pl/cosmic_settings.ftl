@@ -968,3 +968,5 @@ bluetooth-display-passkey = Parowanie Bluetooth
     .description = Wpisz ten kod na { $device } i naciśnij Enter
 bluetooth-display-pin = Bluetooth Pairing
     .description = Wpisz PIN na { $device } i naciśnij Enter
+rename = Zmień nazwę
+bluetooth-rename-device = Zmień Nazwę Urządzenia
