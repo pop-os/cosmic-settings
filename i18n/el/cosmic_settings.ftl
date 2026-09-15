@@ -858,3 +858,5 @@ bluetooth-display-passkey = Σύζευξη Bluetooth
     .description = Πληκτρολογήστε το ακόλουθο κλειδί πρόσβασης στο { $device } και πατήστε Enter
 bluetooth-display-pin = Σύζευξη Bluetooth
     .description = Πληκτρολογήστε το ακόλουθο PIN στο { $device } και πατήστε Enter
+rename = Μετονομασία
+bluetooth-rename-device = Μετονομασία συσκευής
