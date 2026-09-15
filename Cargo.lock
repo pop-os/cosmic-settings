@@ -1528,6 +1528,7 @@ dependencies = [
  "clap",
  "color-eyre",
  "cosmic-bg-config",
+ "cosmic-client-toolkit",
  "cosmic-comp-config",
  "cosmic-config",
  "cosmic-idle-config",

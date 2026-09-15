@@ -102,6 +102,8 @@ pub enum Message {
     #[cfg(feature = "page-networking")]
     WiFi(networking::wifi::Message),
     #[cfg(feature = "page-window-management")]
+    FloatingWindowExceptions(desktop::window_management::floating_window_exceptions::Message),
+    #[cfg(feature = "page-window-management")]
     WindowManagement(desktop::window_management::Message),
     #[cfg(feature = "page-networking")]
     Wired(networking::wired::Message),
