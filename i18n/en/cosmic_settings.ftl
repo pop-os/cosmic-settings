@@ -419,7 +419,7 @@ style = Style
     .less = less
     .more = more
     .glass-opacity = Glass opacity
-    
+
 interface-density = Interface density
     .comfortable = Comfortable
     .compact = Compact
