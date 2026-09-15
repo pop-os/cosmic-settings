@@ -10,16 +10,16 @@ use std::process::Command;
 #[must_use]
 #[derive(Clone, Debug, Default)]
 pub struct Info {
-    pub desktop_environment: String,
     pub device_name: String,
-    pub disk_capacity: String,
-    pub graphics: Vec<String>,
     pub hardware_model: String,
     pub memory: String,
+    pub processor: String,
+    pub graphics: Vec<String>,
+    pub disk_capacity: String,
     pub operating_system: String,
     pub os_architecture: String,
     pub kernel_version: String,
-    pub processor: String,
+    pub desktop_environment: String,
     pub windowing_system: String,
 }
 
@@ -144,11 +144,11 @@ impl Info {
 
     pub async fn load() -> Info {
         let mut info = Info {
+            hardware_model: hardware_model(),
+            processor: processor_name(),
+            operating_system: operating_system(),
             os_architecture: architecture(),
             kernel_version: kernel_version(),
-            hardware_model: hardware_model(),
-            operating_system: operating_system(),
-            processor: processor_name(),
             ..Default::default()
         };
 
@@ -189,7 +189,11 @@ impl Info {
             if let Some(first) = session.get_mut(0..1) {
                 first.make_ascii_uppercase();
             }
-            info.desktop_environment = session;
+            info.desktop_environment = if session.eq_ignore_ascii_case("COSMIC") {
+                format!("COSMIC {}", env!("CARGO_PKG_VERSION"))
+            } else {
+                session
+            };
         }
 
         #[cfg(feature = "wgpu")]
