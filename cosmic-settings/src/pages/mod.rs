@@ -17,6 +17,8 @@ pub mod input;
 pub mod networking;
 #[cfg(feature = "page-power")]
 pub mod power;
+#[cfg(feature = "page-printers")]
+pub mod printers;
 #[cfg(feature = "page-sound")]
 pub mod sound;
 pub mod system;
@@ -82,6 +84,10 @@ pub enum Message {
     PanelApplet(desktop::panel::applets_inner::Message),
     #[cfg(feature = "page-power")]
     Power(power::Message),
+    #[cfg(feature = "page-printers")]
+    PrinterDetails(printers::details::Message),
+    #[cfg(feature = "page-printers")]
+    PrinterQueue(printers::queue::Message),
     #[cfg(feature = "page-region")]
     Region(time::region::Message),
     #[cfg(feature = "page-sound")]
@@ -107,6 +113,11 @@ pub enum Message {
     Wired(networking::wired::Message),
     #[cfg(feature = "page-workspaces")]
     Workspaces(desktop::workspaces::Message),
+    #[cfg(feature = "page-printers")]
+    Printers(printers::Message),
+    /// Navigation and surface requests that Settings must route.
+    #[cfg(feature = "page-printers")]
+    PrinterRequest(cosmic_printers_ui::Request),
 
     // Common page functionality
     CloseContextDrawer,
