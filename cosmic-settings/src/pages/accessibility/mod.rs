@@ -17,6 +17,8 @@ use num_traits::FromPrimitive;
 use slotmap::SlotMap;
 
 pub mod magnifier;
+pub mod osk;
+
 pub use cosmic_a11y_manager::{AccessibilityEvent, AccessibilityRequest, ColorFilter};
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -128,7 +130,11 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, page::Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(vision()), sections.insert(hearing())])
+        Some(vec![
+            sections.insert(vision()),
+            sections.insert(hearing()),
+            sections.insert(mobility()),
+        ])
     }
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
@@ -185,7 +191,7 @@ impl page::Page<crate::pages::Message> for Page {
 
 impl page::AutoBind<crate::pages::Message> for Page {
     fn sub_pages(page: Insert<crate::pages::Message>) -> Insert<crate::pages::Message> {
-        page.sub_page::<magnifier::Page>()
+        page.sub_page::<magnifier::Page>().sub_page::<osk::Page>()
     }
 }
 
@@ -323,6 +329,34 @@ pub fn hearing() -> section::Section<crate::pages::Message> {
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::Accessibility)
+        })
+}
+
+pub fn mobility() -> section::Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        mobility = fl!("mobility");
+        on_screen_keyboard = fl!("on-screen-keyboard");
+    });
+
+    Section::default()
+        .title(&descriptions[mobility])
+        .descriptions(descriptions)
+        .view::<Page>(move |binder, _, section| {
+            let descriptions = &section.descriptions;
+
+            let (osk_entity, _osk_info) = binder
+                .info
+                .iter()
+                .find(|(_, v)| v.id == "accessibility_osk")
+                .expect("osk page not found");
+
+            settings::section()
+                .title(&section.title)
+                .add(crate::widget::go_next_item(
+                    &descriptions[on_screen_keyboard],
+                    crate::pages::Message::Page(osk_entity),
+                ))
+                .into()
         })
 }
 
