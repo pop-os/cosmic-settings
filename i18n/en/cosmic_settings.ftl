@@ -312,6 +312,14 @@ color-filter = Color filter type
     .protanopia = Red/Green (red weakness, Protanopia)
     .tritanopia = Blue/Yellow (blue weakness, Tritanopia)
 
+mobility = Mobility
+
+on-screen-keyboard = On-screen keyboard
+    .always-show = Always show on-screen-keyboard
+    .icon-on-panel = Icon on panel
+    .show-on-gamepad-shortcut = Show on-screen keyboard with a gamepad by pressing the Start and Select/Back buttons at the same time
+    .show-on-text-input = Show on-screen keyboard when selecting a text field
+
 ## Desktop
 
 desktop = Desktop

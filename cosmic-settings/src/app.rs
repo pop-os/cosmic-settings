@@ -78,6 +78,8 @@ impl SettingsApp {
             PageCommands::AccessibilityMagnifier => {
                 self.pages.page_id::<accessibility::magnifier::Page>()
             }
+            #[cfg(feature = "page-accessibility")]
+            PageCommands::AccessibilityOsk => self.pages.page_id::<accessibility::osk::Page>(),
             #[cfg(feature = "page-about")]
             PageCommands::About => self.pages.page_id::<system::about::Page>(),
             PageCommands::Appearance { command: _ } => {
@@ -416,6 +418,12 @@ impl cosmic::Application for SettingsApp {
                 #[cfg(feature = "page-accessibility")]
                 crate::pages::Message::AccessibilityMagnifier(message) => {
                     if let Some(page) = self.pages.page_mut::<accessibility::magnifier::Page>() {
+                        return page.update(self.active_page, message).map(Into::into);
+                    }
+                }
+                #[cfg(feature = "page-accessibility")]
+                crate::pages::Message::AccessibilityOsk(message) => {
+                    if let Some(page) = self.pages.page_mut::<accessibility::osk::Page>() {
                         return page.update(self.active_page, message).map(Into::into);
                     }
                 }
