@@ -688,6 +688,13 @@ power-saving = Power saving options
     .auto-suspend-ac = Automatic suspend when plugged in
     .auto-suspend-battery = Automatic suspend on battery power
 
+power-button-settings-group = Suspend and power button behavior
+
+power-button = Power button behavior
+    .power-off = Power off
+    .suspend = Suspend
+    .nothing = Nothing
+
 ## Input
 
 acceleration-desc = Automatically adjusts tracking sensitivity based on speed

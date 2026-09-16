@@ -19,6 +19,7 @@ use std::hash::Hash;
 use std::iter;
 use std::time::Duration;
 use upower_dbus::DeviceProxy;
+use cosmic_config::{ConfigGet, ConfigSet};
 
 static SCREEN_OFF_TIMES: &[Duration] = &[
     Duration::from_secs(2 * 60),
@@ -41,6 +42,13 @@ static SUSPEND_TIMES: &[Duration] = &[
     Duration::from_secs(2 * 60 * 60),
 ];
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum PowerButtonBehaviorEnum {
+    Suspend,
+    PowerOff,
+    Nothing,
+}
+
 fn format_time(duration: Duration) -> String {
     let m = duration.as_secs() / 60;
     if m.is_multiple_of(60) {
@@ -61,12 +69,28 @@ pub struct Page {
     idle_conf: CosmicIdleConfig,
     backend: Option<backend::PowerBackendEnum>,
     current_power_profile: Option<PowerProfile>,
+    power_config: Config,
+    power_button_behavior: Option<PowerButtonBehaviorEnum>,
 }
 
 impl Default for Page {
     fn default() -> Self {
-        let idle_config = Config::new("com.system76.CosmicIdle", 1).unwrap();
+        let idle_config: Config = Config::new("com.system76.CosmicIdle", 1).unwrap();
         let idle_conf = CosmicIdleConfig::get_entry(&idle_config).unwrap_or_else(|(_, conf)| conf);
+
+        // Get the CosmicPower config, then pull out the power button behavior and convert it to the corresponding enum.
+        let power_config: Config = Config::new("com.system76.CosmicPower", 1).unwrap();
+        let power_button_behavior: Option<PowerButtonBehaviorEnum> = power_config
+            .get::<String>("power_button_behavior")
+            .ok()
+            .and_then(|behavior| match behavior.as_str() {
+                "suspend" => Some(PowerButtonBehaviorEnum::Suspend),
+                "power_off" => Some(PowerButtonBehaviorEnum::PowerOff),
+                "nothing" => Some(PowerButtonBehaviorEnum::Nothing),
+                _ => None,
+            })
+            // Suspend was chosen as the default behavior.
+            .or(Some(PowerButtonBehaviorEnum::PowerOff));
 
         Self {
             entity: Default::default(),
@@ -89,6 +113,8 @@ impl Default for Page {
             idle_conf,
             backend: None,
             current_power_profile: None,
+            power_config,
+            power_button_behavior,
         }
     }
 }
@@ -113,6 +139,8 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(connected_devices()),
             sections.insert(profiles()),
             sections.insert(power_saving()),
+            #[cfg(feature = "power-button-behavior")]
+            sections.insert(power_button()),
         ])
     }
 
@@ -312,7 +340,8 @@ pub enum Message {
     SuspendOnBatteryTimeChange(Option<Duration>),
     BackendAvailabilityCheck(Option<backend::PowerBackendEnum>),
     CurrentPowerProfileUpdate(PowerProfile),
-    Surface(surface::Action<crate::app::Message>),
+    PowerButtonBehaviorUpdate(PowerButtonBehaviorEnum),
+    Surface(surface::Action),
 }
 
 impl From<Message> for crate::app::Message {
@@ -409,6 +438,21 @@ impl Page {
             }
             Message::CurrentPowerProfileUpdate(profile) => {
                 self.current_power_profile = Some(profile);
+            }
+            Message::PowerButtonBehaviorUpdate(behavior) => {
+                // Save the selected value into the config file.
+                let behavior_str = match &behavior {
+                    PowerButtonBehaviorEnum::Suspend => "suspend",
+                    PowerButtonBehaviorEnum::PowerOff => "power_off",
+                    PowerButtonBehaviorEnum::Nothing => "nothing",
+                };
+                if let Err(err) = self.power_config.set("power_button_behavior", behavior_str) {
+                    tracing::error!("failed to set power button behavior: {}", err);
+                } else {
+                    // If no error saving the selected value, update this page to visually reflect the change. 
+                    self.power_button_behavior = Some(behavior);
+                }
+
             }
         };
         Task::none()
@@ -581,6 +625,67 @@ fn power_saving_row<'a>(
         ),
     )
     .into()
+}
+
+
+#[cfg(feature = "power-button-behavior")]
+fn power_button() -> Section<crate::pages::Message> {
+    let mut descriptions = Slab::new();
+    let _power_button_power_off = descriptions.insert(fl!("power-button", "power-off"));
+    let _power_button_suspend = descriptions.insert(fl!("power-button", "suspend"));
+    let _power_button_nothing = descriptions.insert(fl!("power-button", "nothing"));
+
+    Section::default()
+        .title(fl!("power-button-settings-group"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, page, section| {
+            let selected = page
+                .power_button_behavior
+                .as_ref()
+                .map(|selection| {
+                let mapped_val = match selection {
+                    PowerButtonBehaviorEnum::Suspend => 0,
+                    PowerButtonBehaviorEnum::PowerOff => 1,
+                    PowerButtonBehaviorEnum::Nothing => 2,
+                };
+
+                mapped_val
+            });
+
+            let power_button_labels: Vec<String> = vec![
+                fl!("power-button", "suspend"),
+                fl!("power-button", "power-off"),
+                fl!("power-button", "nothing"),
+            ];
+
+            let dropdown_widget = widget::dropdown::popup_dropdown(
+                power_button_labels,
+                selected,
+                move |idx| {
+                    // This is the on_selected callback. Map the int back to corresponding enum value.
+                    let selected_value = match idx {
+                        0 => PowerButtonBehaviorEnum::Suspend,
+                        1 => PowerButtonBehaviorEnum::PowerOff,
+                        _ => PowerButtonBehaviorEnum::Nothing,
+                    };
+
+                    // Return a message for update() to process, saying that there's a change on the setting.
+                    Message::PowerButtonBehaviorUpdate(selected_value)
+                },
+                cosmic::iced::window::Id::RESERVED,
+                Message::Surface,
+                move |a| crate::app::Message::PageMessage(crate::pages::Message::Power(a)),
+            );
+
+            settings::section()
+                .title(&section.title)
+                .add(settings::item(
+                    fl!("power-button"),
+                    dropdown_widget,
+                ))
+                .apply(cosmic::Element::from)
+                .map(crate::pages::Message::Power)
+        })
 }
 
 fn power_saving() -> Section<crate::pages::Message> {
