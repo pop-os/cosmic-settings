@@ -296,6 +296,36 @@ impl ArrangementState {
         displays.is_empty() || Self::connected_component(displays, 0).len() == displays.len()
     }
 
+    fn has_overlaps(displays: &[DisplayRect]) -> bool {
+        displays.iter().enumerate().any(|(index, display)| {
+            displays.iter().skip(index + 1).any(|other| {
+                Self::rectangles_overlap(display.position, display.size, other.bounds())
+            })
+        })
+    }
+
+    fn unconnected_component(
+        displays: &[DisplayRect],
+        start: usize,
+        connected: &[bool],
+    ) -> Vec<usize> {
+        let mut component = vec![start];
+        let mut cursor = 0;
+        while cursor < component.len() {
+            let current = component[cursor];
+            for candidate in 0..displays.len() {
+                if !connected[candidate]
+                    && !component.contains(&candidate)
+                    && Self::are_adjacent(&displays[current], &displays[candidate])
+                {
+                    component.push(candidate);
+                }
+            }
+            cursor += 1;
+        }
+        component
+    }
+
     fn component_translation(
         displays: &[DisplayRect],
         moving: &[usize],
@@ -381,17 +411,31 @@ impl ArrangementState {
                             Edge::Top | Edge::Bottom => snapped.x = alignment,
                         }
 
+                        match edge {
+                            Edge::Left => snapped.x = snapped.x.floor(),
+                            Edge::Right => snapped.x = snapped.x.ceil(),
+                            Edge::Top => snapped.y = snapped.y.floor(),
+                            Edge::Bottom => snapped.y = snapped.y.ceil(),
+                        }
+                        if matches!(edge, Edge::Left | Edge::Right) {
+                            snapped.y = snapped.y.round();
+                        } else {
+                            snapped.x = snapped.x.round();
+                        }
+
                         let translation = snapped - moving_display.position;
                         let valid = moving.iter().all(|&index| {
                             let translated = displays[index].position + translation;
-                            displays.iter().enumerate().all(|(other_index, other)| {
-                                moving.contains(&other_index)
-                                    || !Self::rectangles_overlap(
-                                        translated,
-                                        displays[index].size,
-                                        other.bounds(),
-                                    )
-                            })
+                            translated.x >= 0.0
+                                && translated.y >= 0.0
+                                && displays.iter().enumerate().all(|(other_index, other)| {
+                                    moving.contains(&other_index)
+                                        || !Self::rectangles_overlap(
+                                            translated,
+                                            displays[index].size,
+                                            other.bounds(),
+                                        )
+                                })
                         });
                         if !valid {
                             continue;
@@ -443,6 +487,76 @@ impl ArrangementState {
         }
 
         debug_assert!(Self::is_connected(&displays));
+        true
+    }
+
+    fn reflow_around(&mut self, anchor: OutputKey) -> bool {
+        let mut displays = self.displays.borrow_mut();
+        let Some(anchor_index) = displays
+            .iter()
+            .position(|display| display.output_key == anchor)
+        else {
+            return false;
+        };
+
+        let mut connected = vec![false; displays.len()];
+        connected[anchor_index] = true;
+
+        while connected.iter().any(|is_connected| !is_connected) {
+            let mut visited = connected.clone();
+            let mut absorbed = false;
+            for start in 0..displays.len() {
+                if visited[start] {
+                    continue;
+                }
+                let component = Self::unconnected_component(&displays, start, &connected);
+                for &index in &component {
+                    visited[index] = true;
+                }
+
+                let touches_connected = component.iter().any(|&index| {
+                    displays.iter().enumerate().any(|(other_index, other)| {
+                        connected[other_index] && Self::are_adjacent(&displays[index], other)
+                    })
+                });
+                let overlaps_connected = component.iter().any(|&index| {
+                    displays.iter().enumerate().any(|(other_index, other)| {
+                        connected[other_index]
+                            && Self::rectangles_overlap(
+                                displays[index].position,
+                                displays[index].size,
+                                other.bounds(),
+                            )
+                    })
+                });
+                if touches_connected && !overlaps_connected {
+                    for &index in &component {
+                        connected[index] = true;
+                    }
+                    absorbed = true;
+                }
+            }
+            if absorbed {
+                continue;
+            }
+
+            let start = connected
+                .iter()
+                .position(|is_connected| !is_connected)
+                .expect("a disconnected display exists");
+            let component = Self::unconnected_component(&displays, start, &connected);
+            let Some(translation) = Self::component_translation(&displays, &component, &connected)
+            else {
+                return false;
+            };
+            for &index in &component {
+                displays[index].position += translation;
+                connected[index] = true;
+            }
+        }
+
+        debug_assert!(Self::is_connected(&displays));
+        debug_assert!(!Self::has_overlaps(&displays));
         true
     }
 
@@ -618,6 +732,77 @@ impl ArrangementState {
             *self.needs_fit.borrow_mut() = true;
         }
     }
+}
+
+fn display_snapshot(list: &randr::List) -> Vec<DisplayRect> {
+    let mut tab_model = SingleSelectModel::default();
+    for output_key in list.outputs.keys() {
+        tab_model.insert().data::<OutputKey>(output_key);
+    }
+    ArrangementState::display_snapshot(list, &tab_model)
+}
+
+pub(super) fn repair_after_logical_size_change(
+    previous: &randr::List,
+    current: &randr::List,
+) -> Vec<(OutputKey, i32, i32)> {
+    let previous_displays = display_snapshot(previous);
+    let current_displays = display_snapshot(current);
+
+    if previous_displays.len() != current_displays.len() {
+        return Vec::new();
+    }
+
+    let mut changed_output_key = None;
+    for previous_display in &previous_displays {
+        let name = previous.outputs[previous_display.output_key].name.as_str();
+        let Some(current_display) = current_displays
+            .iter()
+            .find(|display| current.outputs[display.output_key].name == name)
+        else {
+            return Vec::new();
+        };
+
+        if previous_display.size != current_display.size
+            && changed_output_key
+                .replace(current_display.output_key)
+                .is_some()
+        {
+            return Vec::new();
+        }
+    }
+
+    let Some(changed_output_key) = changed_output_key else {
+        return Vec::new();
+    };
+    if ArrangementState::is_connected(&current_displays)
+        && !ArrangementState::has_overlaps(&current_displays)
+    {
+        return Vec::new();
+    }
+
+    let mut state = ArrangementState::default();
+    *state.displays.get_mut() = current_displays;
+    if !state.reflow_around(changed_output_key) {
+        return Vec::new();
+    }
+
+    state
+        .displays
+        .into_inner()
+        .into_iter()
+        .filter_map(|display| {
+            let new_position = (
+                display.position.x.round() as i32,
+                display.position.y.round() as i32,
+            );
+            (current.outputs[display.output_key].position != new_position).then_some((
+                display.output_key,
+                new_position.0,
+                new_position.1,
+            ))
+        })
+        .collect()
 }
 
 type PlacementHandler<'a, Message> = dyn Fn(Vec<(OutputKey, i32, i32)>) -> Message + 'a;

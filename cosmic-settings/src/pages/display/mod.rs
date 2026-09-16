@@ -230,10 +230,6 @@ impl LayoutUpdates {
             LayoutCompletion::Done
         }
     }
-
-    fn is_busy(&self) -> bool {
-        self.in_flight.is_some()
-    }
 }
 
 /// The page struct for the display settings page.
@@ -804,12 +800,11 @@ impl Page {
             }
 
             Message::Update { randr } => {
-                if self.layout_updates.is_busy() {
-                    self.refreshing_page.store(false, Ordering::SeqCst);
-                    return Task::none();
-                }
+                let mut repaired_positions = Vec::new();
                 match Arc::into_inner(randr) {
                     Some(Ok(outputs)) => {
+                        repaired_positions =
+                            arrangement::repair_after_logical_size_change(&self.list, &outputs);
                         self.update_displays(outputs);
                     }
 
@@ -821,6 +816,9 @@ impl Page {
                 }
 
                 self.refreshing_page.store(false, Ordering::SeqCst);
+                if !repaired_positions.is_empty() {
+                    return self.set_positions(&repaired_positions);
+                }
             }
 
             Message::Surface(a) => {
