@@ -312,6 +312,14 @@ color-filter = Color filter type
     .protanopia = Red/Green (red weakness, Protanopia)
     .tritanopia = Blue/Yellow (blue weakness, Tritanopia)
 
+mobility = Mobility
+
+on-screen-keyboard = On-screen keyboard
+    .always-show = Always show on-screen-keyboard
+    .icon-on-panel = Icon on panel
+    .show-on-gamepad-shortcut = Show on-screen keyboard using Start+Select buttons on gamepads
+    .show-on-text-input = Show on-screen keyboard when selecting a text field
+
 ## Desktop
 
 desktop = Desktop
@@ -419,7 +427,7 @@ style = Style
     .less = less
     .more = more
     .glass-opacity = Glass opacity
-    
+
 interface-density = Interface density
     .comfortable = Comfortable
     .compact = Compact
