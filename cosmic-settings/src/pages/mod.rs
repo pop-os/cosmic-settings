@@ -75,6 +75,7 @@ pub enum Message {
     NavShortcuts(input::keyboard::shortcuts::ShortcutMessage),
     #[cfg(feature = "page-networking")]
     Networking(networking::Message),
+    Notifications(desktop::notifications::Message),
     Page(Entity),
     #[cfg(feature = "wayland")]
     Panel(desktop::panel::Message),
