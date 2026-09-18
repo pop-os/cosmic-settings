@@ -6,7 +6,7 @@ pub mod shortcuts;
 use std::cmp;
 
 use cosmic::app::{ContextDrawer, context_drawer};
-use cosmic::cosmic_config::{self, ConfigSet};
+use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, ListColumn, button, container, icon, list, row, settings};
 use cosmic::{Apply, Element, Task, theme};
@@ -110,6 +110,7 @@ pub enum Message {
     SetRepeatKeysDelay(u32),
     SetRepeatKeysRate(u32),
     SetShowExtendedInputSources(bool),
+    SetShowKeyboardLayoutOsd(bool),
     SetNumlockState(NumlockState),
 }
 
@@ -143,9 +144,13 @@ const KB_REPEAT_RATE_MIN: u32 = 5;
 const COSMIC_COMP_CONFIG: &str = "com.system76.CosmicComp";
 const COSMIC_COMP_CONFIG_VERSION: u64 = 1;
 
+const OSD_CONFIG: &str = "com.system76.CosmicOsd";
+const SHOW_KEYBOARD_LAYOUT_OSD: &str = "show_keyboard_layout_osd";
+
 pub struct Page {
     entity: page::Entity,
     config: cosmic_config::Config,
+    osd_config: Option<cosmic_config::Config>,
     context: Option<Context>,
     input_source_search: String,
     xkb: XkbConfig,
@@ -154,6 +159,7 @@ pub struct Page {
     active_layouts: Vec<DefaultKey>,
     expanded_source_popover: Option<DefaultKey>,
     show_extended_input_sources: bool,
+    show_keyboard_layout_osd: bool,
 }
 
 impl Default for Page {
@@ -171,6 +177,8 @@ impl Default for Page {
             keyboard_config: KeyboardConfig::default(),
             input_source_search: String::new(),
             show_extended_input_sources: false,
+            show_keyboard_layout_osd: true,
+            osd_config: None,
             config,
         }
     }
@@ -379,6 +387,17 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
         self.keyboard_config = super::get_config(&self.config, "keyboard_config");
+        match cosmic_config::Config::new(OSD_CONFIG, 1) {
+            Ok(config) => {
+                self.show_keyboard_layout_osd =
+                    config.get::<bool>(SHOW_KEYBOARD_LAYOUT_OSD).unwrap_or(true);
+                self.osd_config = Some(config);
+            }
+            Err(why) => {
+                tracing::error!(?why, "Failed to load cosmic-osd config");
+                self.show_keyboard_layout_osd = true;
+            }
+        }
         match (
             xkb_data::keyboard_layouts(),
             xkb_data::extra_keyboard_layouts(),
@@ -603,6 +622,14 @@ impl Page {
             Message::SetShowExtendedInputSources(value) => {
                 self.show_extended_input_sources = value;
             }
+            Message::SetShowKeyboardLayoutOsd(value) => {
+                self.show_keyboard_layout_osd = value;
+                if let Some(config) = &self.osd_config
+                    && let Err(err) = config.set(SHOW_KEYBOARD_LAYOUT_OSD, value)
+                {
+                    tracing::error!(?err, "Failed to set config '{SHOW_KEYBOARD_LAYOUT_OSD}'");
+                }
+            }
             Message::SetNumlockState(numlock_state) => {
                 self.keyboard_config.numlock_state = numlock_state;
                 if let Err(err) = self.config.set("keyboard_config", &self.keyboard_config) {
@@ -787,9 +814,17 @@ fn input_sources() -> Section<crate::pages::Message> {
             let add_input_source = widget::button::standard(fl!("keyboard-sources", "add"))
                 .on_press(Message::ShowInputSourcesContext);
 
-            widget::column::with_capacity(2)
+            let osd_toggle = settings::section().add(
+                settings::item::builder(fl!("keyboard-sources", "show-layout-osd")).toggler(
+                    page.show_keyboard_layout_osd,
+                    Message::SetShowKeyboardLayoutOsd,
+                ),
+            );
+
+            widget::column::with_capacity(3)
                 .spacing(theme::spacing().space_xxs)
                 .push(section)
+                .push(osd_toggle)
                 .push(
                     widget::container(add_input_source)
                         .width(Length::Fill)
