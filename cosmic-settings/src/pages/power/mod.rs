@@ -8,7 +8,7 @@ use cosmic::iced::widget::{column, row};
 use cosmic::iced::{self, Alignment, Length, stream};
 use cosmic::widget::{self, settings, space, text};
 use cosmic::{Apply, Task, surface};
-use cosmic_config::{Config, CosmicConfigEntry};
+use cosmic_config::{Config, CosmicConfigEntry, ConfigGet, ConfigSet};
 use cosmic_idle_config::CosmicIdleConfig;
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
@@ -19,7 +19,9 @@ use std::hash::Hash;
 use std::iter;
 use std::time::Duration;
 use upower_dbus::DeviceProxy;
-use cosmic_config::{ConfigGet, ConfigSet};
+use serde::{Deserialize, Serialize};
+use cosmic_settings_config::shortcuts::SystemActions;
+use cosmic_settings_config::shortcuts::action::System;
 
 static SCREEN_OFF_TIMES: &[Duration] = &[
     Duration::from_secs(2 * 60),
@@ -42,8 +44,10 @@ static SUSPEND_TIMES: &[Duration] = &[
     Duration::from_secs(2 * 60 * 60),
 ];
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum PowerButtonBehaviorEnum {
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PowerButtonBehavior {
+    #[default]
     Suspend,
     PowerOff,
     Nothing,
@@ -69,8 +73,8 @@ pub struct Page {
     idle_conf: CosmicIdleConfig,
     backend: Option<backend::PowerBackendEnum>,
     current_power_profile: Option<PowerProfile>,
-    power_config: Config,
-    power_button_behavior: Option<PowerButtonBehaviorEnum>,
+    shortcuts_config: Config,
+    power_button_behavior: Option<PowerButtonBehavior>,
 }
 
 impl Default for Page {
@@ -78,19 +82,24 @@ impl Default for Page {
         let idle_config: Config = Config::new("com.system76.CosmicIdle", 1).unwrap();
         let idle_conf = CosmicIdleConfig::get_entry(&idle_config).unwrap_or_else(|(_, conf)| conf);
 
-        // Get the CosmicPower config, then pull out the power button behavior and convert it to the corresponding enum.
-        let power_config: Config = Config::new("com.system76.CosmicPower", 1).unwrap();
-        let power_button_behavior: Option<PowerButtonBehaviorEnum> = power_config
-            .get::<String>("power_button_behavior")
-            .ok()
-            .and_then(|behavior| match behavior.as_str() {
-                "suspend" => Some(PowerButtonBehaviorEnum::Suspend),
-                "power_off" => Some(PowerButtonBehaviorEnum::PowerOff),
-                "nothing" => Some(PowerButtonBehaviorEnum::Nothing),
-                _ => None,
+        // This is being stored in shortcuts because "shortcuts" is mapping SystemActions (VolumeUp, LockScreen, BrightnessDown, etc.)
+        // to command strings. The power button behavior is a system action and the setting is user scoped so it makes sense to store
+        // it in the same config as the other user shortcuts.
+        let shortcuts_config: Config = Config::new("com.system76.CosmicSettings.Shortcuts", 1).unwrap();
+        let custom_shortcuts: SystemActions =
+                shortcuts_config.get::<SystemActions>("system_actions").unwrap_or_else(|err| {
+            tracing::error!("Error loading shortcuts map with power button behavior: {err:?}");
+            Default::default()
+        });
+
+        let power_button_behavior = Some(custom_shortcuts
+            .get(&System::PowerOff)
+            .map(|s| match s.as_str() {
+                "systemctl suspend" => PowerButtonBehavior::Suspend,
+                "cosmic-osd shutdown" => PowerButtonBehavior::PowerOff,
+                _ => PowerButtonBehavior::Nothing,
             })
-            // Suspend was chosen as the default behavior.
-            .or(Some(PowerButtonBehaviorEnum::PowerOff));
+            .unwrap_or_default());
 
         Self {
             entity: Default::default(),
@@ -113,7 +122,7 @@ impl Default for Page {
             idle_conf,
             backend: None,
             current_power_profile: None,
-            power_config,
+            shortcuts_config,
             power_button_behavior,
         }
     }
@@ -139,7 +148,6 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(connected_devices()),
             sections.insert(profiles()),
             sections.insert(power_saving()),
-            #[cfg(feature = "power-button-behavior")]
             sections.insert(power_button()),
         ])
     }
@@ -340,8 +348,8 @@ pub enum Message {
     SuspendOnBatteryTimeChange(Option<Duration>),
     BackendAvailabilityCheck(Option<backend::PowerBackendEnum>),
     CurrentPowerProfileUpdate(PowerProfile),
-    PowerButtonBehaviorUpdate(PowerButtonBehaviorEnum),
-    Surface(surface::Action),
+    PowerButtonBehaviorUpdate(PowerButtonBehavior),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl From<Message> for crate::app::Message {
@@ -440,19 +448,28 @@ impl Page {
                 self.current_power_profile = Some(profile);
             }
             Message::PowerButtonBehaviorUpdate(behavior) => {
-                // Save the selected value into the config file.
-                let behavior_str = match &behavior {
-                    PowerButtonBehaviorEnum::Suspend => "suspend",
-                    PowerButtonBehaviorEnum::PowerOff => "power_off",
-                    PowerButtonBehaviorEnum::Nothing => "nothing",
+                // Because this setting deals with user-defined behavior when the power button is pressed, we store
+                // it in the same config as the other user-defined shortcuts. Behaviors automatically get serialized
+                // into the desired command string based on the values in the PowerButtonBehavior enum.
+                let mut custom_shortcuts: SystemActions =
+                    self.shortcuts_config.get::<SystemActions>("system_actions").unwrap_or_else(|err| {
+                        tracing::error!("Error loading shortcuts map with power button behavior: {err:?}");
+                        Default::default()
+                    });
+
+                let command_to_save = match behavior {
+                    PowerButtonBehavior::Suspend => "systemctl suspend",
+                    PowerButtonBehavior::PowerOff => "cosmic-osd shutdown",
+                    PowerButtonBehavior::Nothing => "",
                 };
-                if let Err(err) = self.power_config.set("power_button_behavior", behavior_str) {
-                    tracing::error!("failed to set power button behavior: {}", err);
+
+                custom_shortcuts.insert(System::PowerOff, command_to_save.to_string());
+                if let Err(err) = self.shortcuts_config.set("system_actions", custom_shortcuts) {
+                    tracing::error!("failed to save power button behavior: {}", err);
                 } else {
-                    // If no error saving the selected value, update this page to visually reflect the change. 
+                    // If no error while saving the selected value, update this page to visually reflect the change. 
                     self.power_button_behavior = Some(behavior);
                 }
-
             }
         };
         Task::none()
@@ -628,12 +645,11 @@ fn power_saving_row<'a>(
 }
 
 
-#[cfg(feature = "power-button-behavior")]
 fn power_button() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
-    let _power_button_power_off = descriptions.insert(fl!("power-button", "power-off"));
-    let _power_button_suspend = descriptions.insert(fl!("power-button", "suspend"));
-    let _power_button_nothing = descriptions.insert(fl!("power-button", "nothing"));
+    descriptions.insert(fl!("power-button", "power-off"));
+    descriptions.insert(fl!("power-button", "suspend"));
+    descriptions.insert(fl!("power-button", "nothing"));
 
     Section::default()
         .title(fl!("power-button-settings-group"))
@@ -644,9 +660,9 @@ fn power_button() -> Section<crate::pages::Message> {
                 .as_ref()
                 .map(|selection| {
                 let mapped_val = match selection {
-                    PowerButtonBehaviorEnum::Suspend => 0,
-                    PowerButtonBehaviorEnum::PowerOff => 1,
-                    PowerButtonBehaviorEnum::Nothing => 2,
+                    PowerButtonBehavior::Suspend => 0,
+                    PowerButtonBehavior::PowerOff => 1,
+                    PowerButtonBehavior::Nothing => 2,
                 };
 
                 mapped_val
@@ -664,9 +680,9 @@ fn power_button() -> Section<crate::pages::Message> {
                 move |idx| {
                     // This is the on_selected callback. Map the int back to corresponding enum value.
                     let selected_value = match idx {
-                        0 => PowerButtonBehaviorEnum::Suspend,
-                        1 => PowerButtonBehaviorEnum::PowerOff,
-                        _ => PowerButtonBehaviorEnum::Nothing,
+                        0 => PowerButtonBehavior::Suspend,
+                        1 => PowerButtonBehavior::PowerOff,
+                        _ => PowerButtonBehavior::Nothing,
                     };
 
                     // Return a message for update() to process, saying that there's a change on the setting.

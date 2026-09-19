@@ -174,7 +174,6 @@ page-networking = [
     "dep:zbus",
 ]
 page-power = ["dep:upower_dbus", "dep:zbus"]
-power-button-behavior = []
 page-region = [
     "gettext",
     "dep:locales-rs",
