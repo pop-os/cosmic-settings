@@ -180,7 +180,7 @@ colors = Cores
 dialog-add = Adicionar
 fill = Preencher
 fit-to-screen = Ajustar à tela
-open-new-folder = Abrir Nova Pasta
+open-new-folder = Abrir nova pasta
 recent-folders = Pastas recentes
 x-minutes =
     { $number } { $number ->
