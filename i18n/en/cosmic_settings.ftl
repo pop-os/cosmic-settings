@@ -962,13 +962,17 @@ time-zone = Time zone
 
 time-format = Date & time format
     .twenty-four = 24-hour time
-    .show-seconds = Show seconds
+    .show-seconds = Seconds
+    .show-weekday = Day of week
     .first = First day of week
-    .show-date = Show date in the time applet
+    .date = Date
     .friday = Friday
     .saturday = Saturday
     .sunday = Sunday
     .monday = Monday
+
+date-time-applet-settings-title = Date & time applet
+date-time-applet-settings-label = Date & time applet settings
 
 time-region = Region & language
 
