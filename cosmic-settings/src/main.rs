@@ -68,6 +68,9 @@ pub enum PageCommands {
     /// Accessibility Magnifier settings page
     #[cfg(feature = "page-accessibility")]
     AccessibilityMagnifier,
+    /// Accessibility OSK settings page
+    #[cfg(feature = "page-accessibility")]
+    AccessibilityOsk,
     /// About settings page
     #[cfg(feature = "page-about")]
     About,

@@ -896,7 +896,7 @@ dependencies = [
 [[package]]
 name = "build_helpers"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#d77e99fb1555e2728297677de61e23ada4d9d09b"
+source = "git+https://github.com/pop-os/libcosmic#87ab8179e1bd9880239c340855ae8862034bd0e8"
 dependencies = [
  "cfg_aliases 0.2.2",
 ]
@@ -1396,7 +1396,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/libcosmic#d77e99fb1555e2728297677de61e23ada4d9d09b"
+source = "git+https://github.com/pop-os/libcosmic#87ab8179e1bd9880239c340855ae8862034bd0e8"
 dependencies = [
  "atomicwrites",
  "cosmic-config-derive",
@@ -1417,7 +1417,7 @@ dependencies = [
 [[package]]
 name = "cosmic-config-derive"
 version = "1.0.0"
-source = "git+https://github.com/pop-os/libcosmic#d77e99fb1555e2728297677de61e23ada4d9d09b"
+source = "git+https://github.com/pop-os/libcosmic#87ab8179e1bd9880239c340855ae8862034bd0e8"
 dependencies = [
  "quote",
  "syn 2.0.119",
@@ -1465,6 +1465,16 @@ dependencies = [
  "quick-xml 0.38.4",
  "tokio",
  "xdg",
+]
+
+[[package]]
+name = "cosmic-osk-config"
+version = "0.1.0"
+source = "git+https://github.com/pop-os/cosmic-osk#d7b66a24890d03e38dd8962d956bc802d4a41067"
+dependencies = [
+ "cosmic-config",
+ "iced_futures",
+ "serde",
 ]
 
 [[package]]
@@ -1535,6 +1545,7 @@ dependencies = [
  "cosmic-config",
  "cosmic-idle-config",
  "cosmic-mime-apps",
+ "cosmic-osk-config",
  "cosmic-panel-config",
  "cosmic-protocols",
  "cosmic-randr",
@@ -2347,7 +2358,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -3278,7 +3289,7 @@ dependencies = [
 [[package]]
 name = "iced_accessibility"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/libcosmic#d77e99fb1555e2728297677de61e23ada4d9d09b"
+source = "git+https://github.com/pop-os/libcosmic#87ab8179e1bd9880239c340855ae8862034bd0e8"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -3287,7 +3298,7 @@ dependencies = [
 [[package]]
 name = "iced_core"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#d77e99fb1555e2728297677de61e23ada4d9d09b"
+source = "git+https://github.com/pop-os/libcosmic#87ab8179e1bd9880239c340855ae8862034bd0e8"
 dependencies = [
  "bitflags 2.13.2",
  "build_helpers",
@@ -3324,7 +3335,7 @@ dependencies = [
 [[package]]
 name = "iced_futures"
 version = "0.14.0"
-source = "git+https://github.com/pop-os/libcosmic#d77e99fb1555e2728297677de61e23ada4d9d09b"
+source = "git+https://github.com/pop-os/libcosmic#87ab8179e1bd9880239c340855ae8862034bd0e8"
 dependencies = [
  "futures",
  "iced_core",
@@ -5100,9 +5111,9 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 
 [[package]]
 name = "nmrs"
-version = "3.5.2"
+version = "3.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa84a0ad51eda83c8817099a0b613847599c712d049e89d892cca53ed6c4a337"
+checksum = "83ad7c7fb5d3552a6b08801a6fe858ec4e3af49be51b53cba51fa6615155f3f3"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -6496,7 +6507,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -6509,7 +6520,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -7222,7 +7233,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix 1.1.4",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -8302,7 +8313,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
