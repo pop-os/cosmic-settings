@@ -134,9 +134,6 @@ impl Model {
                     stretch: cosmic::iced::font::Stretch::Normal,
                 };
                 update_config(INTERFACE_FONT, self.interface_font.clone());
-                tokio::spawn(async move {
-                    set_gnome_font_name(font.as_ref()).await;
-                });
                 None
             }
             _ => None,
@@ -220,12 +217,4 @@ fn update_config(variant: &str, font: FontConfig) {
     if let Ok(config) = CosmicTk::config() {
         _ = config.set(variant, font);
     }
-}
-
-/// Set the preferred icon theme for GNOME/GTK applications.
-pub async fn set_gnome_font_name(font_name: &str) {
-    let _res = tokio::process::Command::new("gsettings")
-        .args(["set", "org.gnome.desktop.interface", "font-name", font_name])
-        .status()
-        .await;
 }
