@@ -20,11 +20,32 @@ use cosmic_settings_page::{self as page, Section, section};
 use futures::SinkExt;
 use indexmap::Equivalent;
 use slotmap::{Key, SecondaryMap, SlotMap};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::process::ExitStatus;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
-use tokio::sync::oneshot;
+use tokio::sync::{oneshot, watch};
+use zbus::zvariant::Value;
+
+#[zbus::proxy(
+    interface = "org.freedesktop.DbusActivation",
+    default_service = "com.system76.CosmicOnScreenDisplay",
+    default_path = "/com/system76/CosmicOnScreenDisplay"
+)]
+trait OsdActivation {
+    fn activate_action(
+        &self,
+        action_name: &str,
+        parameter: Vec<&str>,
+        platform_data: HashMap<&str, Value<'_>>,
+    ) -> zbus::Result<()>;
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum DisplayIdentifierState {
+    Hidden,
+    Visible(Vec<String>),
+}
 
 static DPI_SCALES: &[u32] = &[50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300];
 
@@ -141,6 +162,8 @@ pub struct Page {
     active_display: OutputKey,
     randr_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
     hotplug_handle: Option<(oneshot::Sender<()>, cosmic::iced::task::Handle)>,
+    display_identifier_sender: Option<watch::Sender<DisplayIdentifierState>>,
+    display_identifiers_active: bool,
     config: Config,
     cache: ViewCache,
     // context: Option<ContextDrawer>,
@@ -166,6 +189,8 @@ impl Default for Page {
             active_display: OutputKey::default(),
             randr_handle: None,
             hotplug_handle: None,
+            display_identifier_sender: None,
+            display_identifiers_active: false,
             config: Config::default(),
             cache: ViewCache::default(),
             // context: None,
@@ -479,7 +504,56 @@ impl page::Page<crate::pages::Message> for Page {
 }
 
 impl Page {
+    pub fn activate_display_identifiers(&mut self) -> Task<app::Message> {
+        self.display_identifiers_active = true;
+        self.refresh_display_identifiers()
+    }
+
+    pub fn deactivate_display_identifiers(&mut self) -> Task<app::Message> {
+        self.display_identifiers_active = false;
+        if let Some(sender) = self.display_identifier_sender.as_ref()
+            && sender.send(DisplayIdentifierState::Hidden).is_err()
+        {
+            self.display_identifier_sender = None;
+        }
+        Task::none()
+    }
+
+    fn refresh_display_identifiers(&mut self) -> Task<app::Message> {
+        if !self.display_identifiers_active {
+            return Task::none();
+        }
+
+        let outputs = ordered_display_identifiers(
+            self.list
+                .outputs
+                .values()
+                .map(|output| (output.name.as_str(), output.enabled)),
+        );
+        let state = if outputs.is_empty() {
+            DisplayIdentifierState::Hidden
+        } else {
+            DisplayIdentifierState::Visible(outputs)
+        };
+
+        if let Some(sender) = self.display_identifier_sender.as_ref()
+            && sender.send(state.clone()).is_ok()
+        {
+            return Task::none();
+        }
+
+        let (sender, receiver) = watch::channel(state);
+        self.display_identifier_sender = Some(sender);
+        Task::stream(stream::channel(
+            1,
+            move |_emitter: futures::channel::mpsc::Sender<app::Message>| async move {
+                display_identifier_worker(receiver).await;
+            },
+        ))
+    }
+
     pub fn update(&mut self, message: Message) -> Task<app::Message> {
+        let mut identifier_task = Task::none();
         match message {
             Message::RandrResult(result) => {
                 if let Some(Err(why)) = Arc::into_inner(result) {
@@ -644,6 +718,7 @@ impl Page {
                 match Arc::into_inner(randr) {
                     Some(Ok(outputs)) => {
                         self.update_displays(outputs);
+                        identifier_task = self.refresh_display_identifiers();
                     }
 
                     Some(Err(why)) => {
@@ -662,13 +737,14 @@ impl Page {
         }
 
         self.last_pan = 0.5;
-        cosmic::iced::widget::scrollable::snap_to(
+        let snap_task = cosmic::iced::widget::scrollable::snap_to(
             self.display_arrangement_scrollable.clone(),
             RelativeOffset {
                 x: Some(0.5),
                 y: Some(0.5),
             },
-        )
+        );
+        Task::batch([identifier_task, snap_task])
     }
 
     // /// Displays the night light context drawer.
@@ -1455,6 +1531,96 @@ fn cache_rates(cached_rates: &mut Vec<String>, rates: &[u32]) {
                     cached_rates.push(format_dec(rate))
                 } else {
                     cached_rates.push(format!("{} Hz", round(rate)))
+                }
+            }
+        }
+    }
+}
+
+fn ordered_display_identifiers<'a>(
+    outputs: impl IntoIterator<Item = (&'a str, bool)>,
+) -> Vec<String> {
+    let names = outputs
+        .into_iter()
+        .filter_map(|(name, enabled)| enabled.then_some(name))
+        .collect::<std::collections::BTreeSet<_>>();
+
+    if names.len() < 2 {
+        Vec::new()
+    } else {
+        names.into_iter().map(str::to_owned).collect()
+    }
+}
+
+fn display_identifier_action(state: &DisplayIdentifierState) -> String {
+    match state {
+        DisplayIdentifierState::Hidden => "\"DismissDisplayIdentifiers\"".into(),
+        DisplayIdentifierState::Visible(outputs) => {
+            serde_json::json!({ "IdentifyDisplays": { "outputs": outputs } }).to_string()
+        }
+    }
+}
+
+async fn send_display_identifier_activation(
+    state: &DisplayIdentifierState,
+    connection: &mut Option<zbus::Connection>,
+) -> anyhow::Result<()> {
+    if connection.is_none() {
+        *connection = Some(zbus::Connection::session().await?);
+    }
+    let proxy = OsdActivationProxy::new(connection.as_ref().unwrap()).await?;
+    let action = display_identifier_action(state);
+    tokio::time::timeout(
+        std::time::Duration::from_millis(400),
+        proxy.activate_action(&action, Vec::new(), HashMap::new()),
+    )
+    .await??;
+    Ok(())
+}
+
+async fn display_identifier_worker(mut receiver: watch::Receiver<DisplayIdentifierState>) {
+    let mut state = receiver.borrow_and_update().clone();
+    let mut connection = None;
+    let mut reported_error = match send_display_identifier_activation(&state, &mut connection).await
+    {
+        Ok(()) => false,
+        Err(why) => {
+            tracing::warn!(
+                why = why.to_string(),
+                "failed to update cosmic-osd display identifiers"
+            );
+            connection = None;
+            true
+        }
+    };
+    let mut interval = tokio::time::interval(std::time::Duration::from_millis(500));
+    interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+    interval.tick().await;
+
+    loop {
+        let should_send = tokio::select! {
+            result = receiver.changed() => {
+                if result.is_err() {
+                    return;
+                }
+                state = receiver.borrow_and_update().clone();
+                true
+            }
+            _ = interval.tick(), if matches!(state, DisplayIdentifierState::Visible(_)) => true,
+        };
+
+        if should_send {
+            match send_display_identifier_activation(&state, &mut connection).await {
+                Ok(()) => reported_error = false,
+                Err(why) => {
+                    connection = None;
+                    if !reported_error {
+                        tracing::warn!(
+                            why = why.to_string(),
+                            "failed to update cosmic-osd display identifiers"
+                        );
+                        reported_error = true;
+                    }
                 }
             }
         }
