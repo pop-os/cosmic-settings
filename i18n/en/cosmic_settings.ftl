@@ -478,6 +478,9 @@ panel-appearance = Appearance
 panel-behavior-and-position = Behavior and positions
     .autohide = Automatically hide panel
     .dock-autohide = Automatically hide dock
+    .autohide-off = Off
+    .autohide-on-overlap = On Overlap
+    .autohide-always = Always
     .position = Position on screen
     .display = Show on display
 
