@@ -12,10 +12,13 @@ use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 use tracing::error;
 
+pub mod floating_window_exceptions;
+
 #[derive(Clone, Debug)]
 pub enum Message {
     SuperKey(usize),
     CompConfigUpdate(Box<CosmicCompConfig>),
+    OpenFloatingWindowExceptions,
     SetFocusFollowsCursor(bool),
     SaveFocusFollowsCursorDelay(bool),
     SetFocusFollowsCursorDelay(String),
@@ -30,6 +33,7 @@ pub enum Message {
 pub struct Page {
     pub super_key_selections: Vec<String>,
     pub super_key_active: Option<usize>,
+    floating_window_exceptions: page::Entity,
     comp_config: cosmic_config::Config,
     focus_follows_cursor: bool,
     focus_follows_cursor_delay: u64,
@@ -94,6 +98,7 @@ impl Default for Page {
                 fl!("super-key", "none"),
             ],
             super_key_active: super_key_active_config(),
+            floating_window_exceptions: page::Entity::default(),
             comp_config,
             focus_follows_cursor,
             focus_follows_cursor_delay,
@@ -119,6 +124,11 @@ impl Page {
 
                 self.super_key_active = Some(id);
                 super_key_set(action);
+            }
+            Message::OpenFloatingWindowExceptions => {
+                return cosmic::task::message(crate::app::Message::Page(
+                    self.floating_window_exceptions,
+                ));
             }
             Message::SetFocusFollowsCursor(value) => {
                 self.focus_follows_cursor = value;
@@ -208,6 +218,7 @@ impl page::Page<crate::pages::Message> for Page {
             sections.insert(window_management()),
             sections.insert(window_controls()),
             sections.insert(focus_navigation()),
+            sections.insert(tiling()),
         ])
     }
 
@@ -221,7 +232,21 @@ impl page::Page<crate::pages::Message> for Page {
     }
 }
 
-impl page::AutoBind<crate::pages::Message> for Page {}
+impl page::AutoBind<crate::pages::Message> for Page {
+    fn sub_pages(
+        mut page: page::Insert<crate::pages::Message>,
+    ) -> page::Insert<crate::pages::Message> {
+        let floating_window_exceptions =
+            page.sub_page_with_id::<floating_window_exceptions::Page>();
+
+        page.model
+            .page_mut::<Page>()
+            .unwrap()
+            .floating_window_exceptions = floating_window_exceptions;
+
+        page
+    }
+}
 
 pub fn window_management() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
@@ -259,6 +284,33 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         .toggler(page.edge_snap_threshold != 0, |is_enabled| {
                             Message::SetEdgeSnapThreshold(if is_enabled { 10 } else { 0 })
                         }),
+                )
+                .apply(Element::from)
+                .map(crate::pages::Message::WindowManagement)
+        })
+}
+
+pub fn tiling() -> Section<crate::pages::Message> {
+    crate::slab!(descriptions {
+        built_in_exceptions = fl!("floating-window-exceptions");
+        built_in_exceptions_desc = fl!("floating-window-exceptions", "description");
+    });
+
+    Section::default()
+        .title(fl!("window-tiling"))
+        .descriptions(descriptions)
+        .view::<Page>(move |_binder, _page, section| {
+            let descriptions = &section.descriptions;
+
+            settings::section()
+                .title(&section.title)
+                .add(
+                    widget::list::button(
+                        settings::item::builder(&descriptions[built_in_exceptions])
+                            .description(&descriptions[built_in_exceptions_desc])
+                            .control(widget::icon::from_name("go-next-symbolic")),
+                    )
+                    .on_press(Message::OpenFloatingWindowExceptions),
                 )
                 .apply(Element::from)
                 .map(crate::pages::Message::WindowManagement)
