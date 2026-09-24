@@ -733,6 +733,7 @@ keyboard-sources = Input Sources
     .view-layout = View keyboard layout
     .remove = Remove
     .add = Add input source
+    .show-layout-osd = Show notification on layout change
 
 keyboard-special-char = Special Character Entry
     .alternate = Alternate characters key
