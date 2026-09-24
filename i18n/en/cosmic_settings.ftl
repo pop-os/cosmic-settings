@@ -677,6 +677,7 @@ battery = Battery
         [full] full
        *[other] empty
    }
+   .show_percentage = Show percentage
 
 connected-devices = Connected devices
   .unknown = Unknown device
