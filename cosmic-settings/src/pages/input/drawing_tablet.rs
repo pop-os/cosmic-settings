@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use cosmic::cosmic_config::{ConfigGet, ConfigSet};
 use cosmic::widget::{dropdown, settings};
 use cosmic::{Apply, Element, Task};
-use cosmic_comp_config::input::{InputConfig, DeviceState};
+use cosmic_comp_config::input::{DeviceState, InputConfig};
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::{Key, SlotMap};
 use udev::Enumerator;
@@ -18,8 +18,8 @@ pub fn default_drawing_tablet_button() -> cosmic::widget::segmented_button::Sing
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    SetTabletDeviceState (String, bool),
-    SetTabletOutput (String, Option<String>),
+    SetTabletDeviceState(String, bool),
+    SetTabletOutput(String, Option<String>),
     Surface(cosmic::surface::Action<crate::app::Message>),
 }
 
@@ -54,11 +54,13 @@ pub fn get_connected_tablets() -> Vec<String> {
     for device in devices {
         if device
             .property_value("ID_INPUT_TABLET")
-            .is_some_and(|v| v == "1") {
+            .is_some_and(|v| v == "1")
+        {
             if let Some(name) = device
                 .property_value("NAME")
                 .or_else(|| device.property_value("ID_NAME"))
-                .or_else(|| device.property_value("ID_MODEL")) {
+                .or_else(|| device.property_value("ID_MODEL"))
+            {
                 let name = name.to_string_lossy().trim_matches('"').to_string();
                 if !tablets.contains(&name) {
                     tablets.push(name);
@@ -154,7 +156,7 @@ impl page::AutoBind<crate::pages::Message> for Page {}
 impl Page {
     pub fn update(&mut self, message: Message) -> Task<crate::app::Message> {
         match message {
-            Message::SetTabletDeviceState (device_name, enabled) => {
+            Message::SetTabletDeviceState(device_name, enabled) => {
                 let state = if enabled {
                     DeviceState::Enabled
                 } else {
@@ -168,7 +170,7 @@ impl Page {
                 self.input_devices = devices;
             }
 
-            Message::SetTabletOutput (device_name, output) => {
+            Message::SetTabletOutput(device_name, output) => {
                 let mut devices: HashMap<String, InputConfig> = self.input_devices.clone();
                 devices.entry(device_name).or_default().map_to_output = output;
                 if let Err(err) = self.tablet_config.set("input_devices", &devices) {
@@ -198,11 +200,10 @@ fn tablet_settings_ui(tablet_device_name: String) -> Section<crate::pages::Messa
                 c.state == cosmic_comp_config::input::DeviceState::Enabled
             });
             let tablet_name = tablet_device_name.clone();
-            let device_state_toggler =
-                settings::item::builder(fl!("drawing-tablet", "enabled"))
-                    .toggler(enabled, {
-                        move |checked| Message::SetTabletDeviceState (tablet_name.clone(), checked)
-                    });
+            let device_state_toggler = settings::item::builder(fl!("drawing-tablet", "enabled"))
+                .toggler(enabled, {
+                    move |checked| Message::SetTabletDeviceState(tablet_name.clone(), checked)
+                });
             section_ui = section_ui.add(device_state_toggler);
 
             // If enabled, show dropdown of displays that the tablet input can be mapped to.
@@ -227,7 +228,7 @@ fn tablet_settings_ui(tablet_device_name: String) -> Section<crate::pages::Messa
                         } else {
                             Some(displays_clone[idx].clone())
                         };
-                        Message::SetTabletOutput (device_name.clone(), output)
+                        Message::SetTabletOutput(device_name.clone(), output)
                     },
                     cosmic::iced::window::Id::RESERVED,
                     Message::Surface,
