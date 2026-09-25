@@ -61,6 +61,10 @@ xdg-entry-mouse = Mouse
 xdg-entry-mouse-comment = Mouse speed, acceleration, and natural scrolling
 xdg-entry-mouse-keywords = COSMIC;Mouse;Acceleration;Scrolling;
 
+xdg-entry-drawing-tablet = Drawing tablet
+xdg-entry-drawing-tablet-comment = Display mapping
+xdg-entry-drawing-tablet-keywords = COSMIC;Tablet;Drawing;Sensitivity;
+
 xdg-entry-network = Network & Wireless
 xdg-entry-network-comment = Manage network connections
 xdg-entry-network-keywords = COSMIC;Network;Wireless;WiFi;VPN;
@@ -947,6 +951,16 @@ switch-workspaces = Switch workspaces
 switch-between-windows = Switch between windows
 open-application-library = Open Application Library
 open-workspaces-view = Open Workspaces Overview
+
+## Input: Tablet
+
+drawing-tablet = Drawing tablet
+    .sensitivity = Pen sensitivity
+    .sensitivity-curve = Sensitivity curve
+    .no-devices-detected = No drawing tablets or pen devices detected
+    .map-to-display = Map to display
+    .not-set = Not Set
+    .enabled = Enabled
 
 ## Time & language
 
