@@ -25,7 +25,7 @@ pub enum Message {
     SetXwaylandKeyboardMode(EavesdroppingKeyboardMode),
     SetXwaylandMouseButtonMode(bool),
     SetXwaylandPrimaryOutput(usize),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl From<Message> for crate::pages::Message {

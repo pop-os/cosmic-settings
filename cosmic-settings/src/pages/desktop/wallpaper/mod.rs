@@ -102,7 +102,7 @@ pub enum Message {
     Slideshow(bool),
     /// State change from cosmic-bg
     UpdateState(cosmic_bg_config::state::State),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl From<Message> for crate::app::Message {

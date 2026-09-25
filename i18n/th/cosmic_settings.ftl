@@ -1,6 +1,6 @@
 app = การตั้งค่า COSMIC
 dbus-connection-error = ล้มเหลวในการเชื่อมต่อไปยัง DBus
-ok = OK
+ok = ตกลง
 unknown = ไม่ทราบ
 number = { $number }
 
@@ -30,8 +30,8 @@ identity = ตัวตน
 auth-dialog = จำเป็นต้องเข้าสู่ระบบ
     .vpn-description = ใส่ชื่อผู้ใช้และรหัสผ่านที่จำเป็นต่อบริการ VPN
     .wifi-description = ใส่รหัสผ่านหรือกุญแจเข้ารหัส คุณสามารถเชื่อมต่อโดยใช้ปุ่ม "WPS" บนเราเตอร์ได้เช่นกัน
-forget-dialog = ลิมเครือข่ายไวไฟนี้หรือไม่
-    .description = คุณจะต้องใส่รหัสผ่านอีกครั้งในการเชื่อมต่อเครือข่ายไวไฟนี้ในอนาคต
+forget-dialog = ลืมเครือข่าย Wi-Fi นี้หรือไม่
+    .description = คุณจะต้องใส่รหัสผ่านอีกครั้งในการเชื่อมต่อเครือข่าย Wi-Fi นี้ในอนาคต
 network-device-state =
     .activated = เชื่อมต่อแล้ว
     .config = กำลังเชื่อมต่อ
@@ -40,7 +40,7 @@ network-device-state =
     .failed = ล้มเหลวในการเชื่อมต่อ
     .ip-check = กำลังตรวจสอบการเชื่อมต่อ
     .ip-config = กำลังขอ IP และข้อมูลเส้นทางเครือข่าย
-    .need-auth = ต้องการการเข้าสู่ระบบ
+    .need-auth = จำเป็นต้องเข้าสู่ระบบ
     .prepare = กำลังเตรียมพร้อมในการเชื่อมต่อ
     .secondaries = กำลังรอการเชื่อมต่อรอง
     .unavailable = ไม่มีมีอยู่
@@ -49,7 +49,7 @@ network-device-state =
     .unplugged = สายถูกถอด
 remove-connection-dialog = นำโปรไฟล์การเชื่อมต่อออกหรือไม่
     .vpn-description = คุณจำเป็นต้องใส่รหัสผ่านอีกครั้งในการใช้เครือข่ายนี้อีกในอนาคต
-    .wired-description = คุณจะต้องสร้างโปรไฟล์นี้ซ้ำในการจะใช้มันอีกในอนาคต
+    .wired-description = คุณต้องสร้างโปรไฟล์นี้ใหม่หากต้องใช้งานในอนาคต
 vpn = VPN
     .connections = การเชื่อมต่อ VPN
     .error = ล้มเหลวในการเพิ่มการตั้งค่า VPN
@@ -60,6 +60,8 @@ vpn-error = ความล้มเหลวที่เกี่ยวกั�
     .connect = ล้มเหลวในการเชื่อมต่อไปยัง VPN
     .connection-editor = ตัวแก้ไขการเชื่อมต่อล้มเหลว
     .connection-settings = ล้มเหลวในการรับการตั้งค่าสำหรับการเชื่อมต่อที่เปิดอยู่
+    .openvpn-config-path = เส้นทางไฟล์ไม่ถูกต้องสำหรับการตั้งค่า OpenVPN
+    .openvpn-config-path-desc = ไฟล์ที่ถูกเลือกต้องอยู่บนระบบไฟล์ภายในเครื่อง
     .updating-state = ล้มเหลวในการอัพเดทสถานะตัวจัดการเครือข่าย
     .wireguard-config-path = เส้นทางไฟล์ของไฟล์การตั้งค่า WireGuard ไม่ถูกต้อง
     .wireguard-config-path-desc = ไฟล์ที่เลือกจะต้องอยู่บนระบบไฟล์ภายในเครื่อง
@@ -76,10 +78,10 @@ wired = การเชื่อมต่อแบบมีสาย
     .devices = อุปกรณ์มีสาย
     .remove = ลบโปรไฟล์การเชื่อมต่อ
 wifi = Wi-Fi
-    .adapter = อะแดปเตอร์ Wi-Fi { $id }
+    .adapter = อะแด็ปเตอร์ Wi-Fi { $id }
     .forget = ลืมเครือข่ายนี้
 wireguard-dialog = เพิ่มอุปกรณ์ WireGuard
-    .description = เลือกชื่ออุปกรณ์สำหรับการตั้งค่า WireGuard
+    .description = เลือกชื่ออุปกรณ์สำหรับการตั้งค่า WireGuard นี้
 
 ## Networking: Online Accounts
 
@@ -91,9 +93,8 @@ online-accounts = บัญชีออนไลน์
 activate = เปิดใช้งาน
 confirm = ยืนยัน
 enable = เปิดใช้งาน
-bluetooth = บลูทูธ
-    .desc = จัดการอุปกรณ์บลูทูธ
-    .status = อุปกรณ์นี้สามารถมองเห็นได้ด้วยชื่อ { $aliases } ขณะที่การตั้งค่าบลูทูธเปิดอยู่
+bluetooth = บลูทูท
+    .status = อุปกรณ์นี้สามารถมองเห็นได้ด้วยชื่อ { $aliases } ขณะที่การตั้งค่าบลูทูทเปิดอยู่
     .connected = เชื่อมต่อแล้ว
     .connecting = กำลังเชื่อมต่อ
     .disconnecting = กำลังตัดการเชื่อมต่อ
@@ -101,13 +102,13 @@ bluetooth = บลูทูธ
     .disconnect = ตัดการเชื่อมต่อ
     .forget = ลืม
     .dbus-error = เกิดข้อผิดพลาดระหว่างการติดต่อกับ DBus: { $why }
-    .disabled = บริการบลูทูธปิดใช้งานอยู่
-    .inactive = บริการบลูทูธไม่ทำงานอยู่
-    .unknown = บริการบลูทูธไม่สามารถเปิดใช้งานได้ คุณมี BlueZ ติดตั้งอยู่รึเปล่า
+    .disabled = บริการบลูทูทปิดใช้งานอยู่
+    .inactive = บริการบลูทูทไม่ทำงานอยู่
+    .unknown = บริการบลูทูทไม่สามารถเปิดใช้งานได้ คุณมี BlueZ ติดตั้งอยู่รึเปล่า
 bluetooth-paired = อุปกรณ์ที่เชื่อมต่อก่อนหน้านี้
     .connect = เชื่อมต่อ
     .battery = แบตเตอรี่ { $percentage }%
-bluetooth-confirm-pin = ยืนยันรหัส PIN บลูทูธ
+bluetooth-confirm-pin = ยืนยันรหัส PIN บลูทูท
     .description = โปรดยืนยันว่ารหัส PIN ต่อไปนี้ตรงกับรหัสที่แสดงอยู่บน { $device }
 bluetooth-available = อุปกรณ์ใกล้เคียง
 bluetooth-adapters = อะแดปเตอร์บลูทูธ
@@ -123,8 +124,10 @@ accessibility = ความเข้าถึงได้
     .high-contrast = โหมดคอนทราสท์สูง
     .invert-colors = สลับสี
     .color-filters = ฟิลเตอร์สี
+    .shake-cursor = เขย่าเคอร์เซอร์เพื่อหามัน
+    .shake-cursor-desc = เขย่าเมาส์อย่างรวดเร็วเพื่อขยายขนาดเคอร์เซอร์ชั่วคราว
 hearing = การได้ยิน
-    .mono = เล่นเสียงสเตอริโอเป็นแบบโมโน
+    .mono = เล่นเสียงสเตรีโอเป็นแบบโมโน
 default = ค่าเริ่มต้น
 magnifier = แว่นขยาย
     .controls =
@@ -158,13 +161,12 @@ color-filter = ประเภทฟิลเตอร์สี
 
 ## Desktop
 
-desktop = เดสก์ทอป
+desktop = เดสก์ท็อป
 
 ## Desktop: Wallpaper
 
 wallpaper = วอลเปเปอร์
     .change = เปลี่ยนภาพทุก ๆ
-    .desc = ภาพวอลเปเปอร์ สี และตัวเลือกสไลด์โชว์
     .fit = การทำให้วอลเปเปอร์พอดี
     .folder-dialog = เลือกโฟลเดอร์วอลเปเปอร์
     .image-dialog = เลือกรูปภาพวอลเปเปอร์
@@ -186,8 +188,7 @@ never = ไม่เคย
 
 ## Desktop: Appearance
 
-appearance = หน้าตา
-    .desc = ธีมและสีหลัก
+appearance = ลักษณะ
 accent-color = สีหลัก
 app-background = พื้นหลังแอพลิเคชั่นหรือหน้าต่าง
 auto = อัตโนมัติ
@@ -204,8 +205,8 @@ mode-and-colors = โหมดและสี
 recent-colors = สีล่าสุด
 reset-to-default = รีเซ็ตเป็นค่าเริ่มต้น
 rgb = RGB
-window-hint-accent = สีที่บอกใบ้ว่าหน้าต่างที่ใช้งานอยู่
-window-hint-accent-toggle = ใช้สีหลักธีมเป็นสีที่บอกใบ้หน้าต่างที่ใช้งานอยู่
+window-hint-accent = สีบอกใบ้หน้าต่างที่ใช้งานอยู่
+window-hint-accent-toggle = ใช้สีหลักธีมเป็นสีบอกใบ้หน้าต่างที่ใช้งานอยู่
 auto-switch = สลับระหว่างโหมดมืดและสว่างอัตโนมัติ
     .sunrise = สลับเป็นโหมดสว่างเมื่อพระอาทิตย์ขึ้น
     .sunset = สลับเป็นโหมดมืดเมื่อพระอาทิตย์ตก
@@ -229,6 +230,19 @@ style = สไตล์
     .round = กลม
     .slightly-round = กลมเล็กน้อย
     .square = เหลี่ยม
+    .frosted-glass = กระจกฝ้า
+    .frosted-system-interface = อินเทอร์เฟซระบบ
+    .frosted-system-interface-desc = นำเอฟเฟกต์กระจกฝ้าไปใช้กับลันเชอร์ ไลบรารีแอปพลิเคชัน ภาพรวมพื้นที่ทำงาน และการควบคุมบนหน้าจอ
+    .frosted-windows = หน้าต่าง
+    .frosted-windows-desc = นำเอฟเฟกต์กระจกฝ้าไปใช้กับหน้าต่างและไดอะลอก
+    .frosted-panels = แผงควบคุม
+    .frosted-panels-desc = นำเอฟเฟกต์กระจกฝ้าไปใช้กับแผงควบคุมและแท่นวาง
+    .frosted-applets = แอพเล็ต
+    .frosted-applets-desc = นำเอฟเฟกต์กระจกฝ้าไปใช้กับเมนูแอพเล็ตบนแผงควบคุมและแท่นวาง
+    .frosted-thickness = ความหนาฝ้า
+    .less = น้อย
+    .more = มาก
+    .glass-opacity = ความทึบกระจก
 interface-density = ความหนาแน่นของอินเทอร์เฟซ
     .comfortable = สะบาย
     .compact = กะทัดรัด
@@ -247,12 +261,10 @@ monospace-font = ฟอนต์โมโนสเปซ
 ## Desktop: Notifications
 
 notifications = การแจ้งเตือน
-    .desc = ห้ามรบกวน การแจ้งเตือนบนหน้าจอล็อค และการตั้งค่าแต่ละแอพลิเคชั่น
 
 ## Desktop: Panel
 
 panel = แผงควบคุม
-    .desc = แถบด้านบนที่มีการควบคุมเดสก์ทอปและเมนู
 add = เพิ่ม
 add-applet = เพิ่มแอพเล็ต
 all = ทั้งหมด
@@ -269,7 +281,7 @@ search-applets = ค้นหาแอพเล็ต...
 small = เล็ก
 start-segment = เริ่มส่วนใหม่
 panel-appearance = หน้าตา
-    .match = ตรงกับเดสก์ทอป
+    .match = ตรงกับเดสก์ท็อป
     .light = สว่าง
     .dark = มืด
 panel-behavior-and-position = พฤติกรรมและตำแหน่ง
@@ -295,17 +307,15 @@ panel-missing = การตั้งค่าแผงควบคุมสู�
 ## Desktop: Dock
 
 dock = แท่นวาง
-    .desc = แผงที่มีแอพลิเคชั่นปักหมุดในถาดแอพและแอพเล็ตอื่น ๆ
 
 ## Desktop: Window management
 
 window-management = การจัดการหน้าต่าง
-    .desc = การกระทำซุปเปอร์คีย์ ตัวเลือกการควบคุมหน้าต่าง และตัวเลือกการไทล์หน้าต่างเพิ่มเติม
-super-key = ซุปเปอร์คีย์
+super-key = การกระทำปุ่มซูเปอร์
     .launcher = เปิดลันเชอร์
     .workspaces = เปิดหน้าพื้นที่ทำงาน
     .applications = เปิดหน้าแอพลิเคชั่น
-    .disable = ปิด
+    .none = ไม่มี
 edge-gravity = หน้าต่างที่ลอยอยู่จะยึดติดกับขอบที่ใกล้เคียง
 window-controls = การควบคุมหน้าต่าง
     .minimize = แสดงปุ่มซ่อนหน้าต่าง
@@ -319,7 +329,6 @@ focus-navigation = การนำทางโฟกัส
 ## Desktop: Workspaces
 
 workspaces = พื้นที่ทำงาน
-    .desc = พฤติกรรมและการวางแนวพื้นที่ทำงาน
 workspaces-behavior = พฤติกรรมพื้นที่ทำงาน
     .dynamic = พื้นที่ทำงานที่เปลี่ยนแปลงอยู่เสมอ
     .dynamic-desc = ลบที่ทำงานว่างปล่าวโดยอัตโนมัติ
@@ -346,7 +355,6 @@ color = สี
     .sidebar = โปรไฟล์สี
     .temperature = อุณหภูมิสี
 display = จอแสดงผล
-    .desc = จัดการจอแสดงผล การสลับกราฟิก และไฟกลางคืน
     .arrangement = การจัดจอแสดงผล
     .arrangement-desc = ลากจอแสดงผลเพื่อจัดเรียงพวกมัน
     .enable = เปิดจอแสดงผล
@@ -362,9 +370,9 @@ mirroring = การสะท้อน
     .dont = อย่าสะท้อน
     .mirror = สะท้อน { $display }
     .project =
-        ฉายภาพไปยัง { $display ->
+        ฉายภาพไปยัง{ $display ->
             [all] จอภาพทั้งหมด
-           *[other] { $display }
+           *[other] { " " }{ $display }
         }
     .project-count = กำลังฉายไปยังจอภาพอื่นอีก { $count } จอ
 night-light = ไฟกลางคืน
@@ -372,9 +380,9 @@ night-light = ไฟกลางคืน
     .desc = ลดแสงสีฟ้าด้วยสีที่อุ่นขึ้น
 orientation = การวางแนว
     .standard = มาตรฐาน
-    .rotate-90 = หมุน 90
-    .rotate-180 = หมุน 180
-    .rotate-270 = หมุน 270
+    .rotate-90 = หมุน 90°
+    .rotate-180 = หมุน 180°
+    .rotate-270 = หมุน 270°
 vrr = อัตราการรีเฟรชแบบแปรผัน
     .enabled = เปิด
     .force = บังคับเปิด
@@ -391,13 +399,14 @@ dialog = ไดอะล็อก
 ## Sound
 
 sound = เสียง
-    .desc = N/A
-sound-output = เอาท์พุต
-    .volume = ระดับเสียงเอาท์พุต
-    .device = อุปกรณ์เอาท์พุต
-    .level = ระดับเอาท์พุต
+sound-output = เอาต์พุต
+    .volume = ระดับเสียงเอาต์พุต
+    .device = อุปกรณ์เอาต์พุต
+    .level = ระดับเอาต์พุต
     .config = การตั้งค่า
     .balance = สมดุล
+    .left = ซ้าย
+    .right = ขวา
 sound-input = อินพุต
     .volume = ระดับเสียงอินพุต
     .device = อุปกรณ์อินพุต
@@ -405,13 +414,13 @@ sound-input = อินพุต
 sound-alerts = การแจ้งเตือน
     .volume = ระดับเสียงการแจ้งเตือน
     .sound = เสียงการแจ้งเตือน
-sound-applications = แอพลิเคชั่น
+sound-applications = แอปพลิเคชัน
     .desc = การตั้งค่าและระดับเสียงแอพลิเคชั่น
+    .none = ไม่มีแอปพลิเคชันใดใช้เสียงอยู่
 
 ## Power
 
 power = พลังงานและแบตเตอรี่
-    .desc = จัดการการตั้งค่าพลังงาน
 battery = แบตเตอรี่
     .minute = { $value } นาที
     .hour = { $value } ชั่วโมง
@@ -444,7 +453,6 @@ power-saving = ตัวเลือกประหยัดพลังงา�
 acceleration-desc = ปรับความไวในการติดตามโดยอัตโนมัติตามความเร็ว
 disable-while-typing = ปิดการใช้งานระหว่างการพิมพ์
 input-devices = อุปกรณ์ป้อนข้อมูล
-    .desc = อุปกรณ์ป้อนข้อมูล
 primary-button = ปุ่มหลัก
     .desc = ตั้งลำดับปุ่มกายภาพ
     .left = ซ้าย
@@ -462,14 +470,13 @@ slow = ช้า
 fast = เร็ว
 short = สั้น
 long = ยาว
-keyboard = คีย์บอร์ด
-    .desc = แหล่งอินพุต การสลับ การพิมพ์ตัวอักษรพิเศษ และคีย์ลัด
+keyboard = แป้นพิมพ์
 keyboard-sources = แหล่งอินพุต
-    .desc = สามารถสลับแหล่งอินพุตได้โดยคีย์ ซุปเปอร์ + เว้นวรรค ปุ่มนี้สามารถปรับแต่งได้ผ่านการตั้งค่าคีย์ลัด
+    .desc = สามารถสลับแหล่งอินพุตได้ผ่านคีย์ลัด ซูเปอร์ + เว้นวรรค ปุ่มนี้สามารถปรับแต่งได้ผ่านการตั้งค่าคีย์ลัด
     .move-up = ขยับขึ้น
     .move-down = ขยับลง
     .settings = การตั้งค่า
-    .view-layout = ดูแผนผังคีย์บอร์ด
+    .view-layout = ดูแผนผังแป้นพิมพ์
     .remove = ลบ
     .add = เพิ่มแหล่งอินพุต
 keyboard-special-char = การพิมพ์ตัวอักษรพิเศษ
@@ -493,17 +500,17 @@ show-extended-input-sources = แสดงแหล่งอินพุตเ�
 
 keyboard-shortcuts = คีย์ลัด
     .desc = ดูและปรับแต่งคีย์ลัด
-add-another-keybinding = เพิ่มปุ่มลัดเพิ่มเติม
+add-another-keybinding = เพิ่มคีย์ลัดเพิ่มเติม
 cancel = ยกเลิก
 command = คำสั่ง
 custom = กำหนดเอง
 debug = ดีบัก
 disabled = ปิดใช้งาน
 input-source-switch = สลับภาษาคีย์บอร์ดแหล่งอินพุต
-migrate-workspace-prev = ย้ายพื้นที่ทำงานไปยังเอาท์พุตก่อนหน้า
-migrate-workspace-next = ย้ายพื้นที่ทำงานไปยังเอาท์พุตถัดไป
+migrate-workspace-prev = ย้ายพื้นที่ทำงานไปยังเอาต์พุตก่อนหน้า
+migrate-workspace-next = ย้ายพื้นที่ทำงานไปยังเอาต์พุตถัดไป
 migrate-workspace =
-    ย้ายพื้นที่ทำงานไปยังเอาท์พุต{ $direction ->
+    ย้ายพื้นที่ทำงานไปยังเอาต์พุต{ $direction ->
        *[down] ล่าง
         [left] ทางซ้าย
         [right] ทางขวา
@@ -522,8 +529,8 @@ custom-shortcuts = คีย์ลัดกำหนดเอง
     .none = ไม่มีคีย์ลัดกำหนดเอง
 modified = { $count } รายการถูกแก้ไข
 nav-shortcuts = การนำทาง
-    .prev-output = โฟกัสเอาท์พุตก่อนหน้า
-    .next-output = โฟกัสเอาท์พุตถัดไป
+    .prev-output = โฟกัสเอาต์พุตก่อนหน้า
+    .next-output = โฟกัสเอาต์พุตถัดไป
     .last-workspace = โฟกัสพื้นที่ทำงานสุดท้าย
     .prev-workspace = โฟกัสพื้นที่ทำงานก่อนหน้า
     .next-workspace = โฟกัสพื้นที่ทำงานถัดไป
@@ -537,7 +544,7 @@ nav-shortcuts = การนำทาง
             [up] ด้านบน
         }
     .output =
-        สลับไปยังเอาท์พุต{ $direction ->
+        สลับไปยังเอาต์พุต{ $direction ->
            *[down] ด้านล่าง
             [left] ด้านซ้าย
             [right] ด้านขวา
@@ -583,30 +590,34 @@ move-windows = ขยับหน้าต่าง
     .send-to-prev-workspace = ขยับหน้าต่างไปยังพื้นที่ทำงานก่อนหน้า
     .send-to-next-workspace = ขยับหน้าต่างไปยังพื้นที่ทำงานถัดไป
 system-shortcut = ระบบ
-    .app-library = เปิดไลบรารีแอพ
+    .app-library = เปิดไลบรารีแอป
     .brightness-down = ลดความสว่างจอแสดงผล
     .brightness-up = เพิ่มความสว่างจอแสดงผล
+    .display-toggle = ปิดเปิดหน้าจอภายใน
     .home-folder = เปิดโฟลเดอร์บ้าน
     .keyboard-brightness-down = ลดความสว่างคีย์บอร์ด
     .keyboard-brightness-up = เพิ่มความสว่างคีย์บอร์ด
     .launcher = เปิดลันเชอร์
     .log-out = ล็อกเอาท์
     .lock-screen = ล็อคหน้าจอ
-    .mute = ปิดเสียงเอาท์พุต
+    .mute = ปิดเสียงเอาต์พุต
     .mute-mic = ปิดเสียงอินพุตไมโครโฟน
     .play-pause = เล่น/หยุด
     .play-next = เพลงถัดไป
     .play-prev = เพลงก่อนหน้า
+    .poweroff = ปิดเครื่อง
     .screenshot = ถ่ายภาพหน้าจอ
+    .suspend = ระงับ
     .terminal = เปิดเทอร์มินัล
-    .volume-lower = ลดระดับเสียงเอาท์พุต
-    .volume-raise = เพิ่มระดับเสียงเอาท์พุต
+    .touchpad-toggle = ปิดเปิดทัชแพด
+    .volume-lower = ลดระดับเสียงเอาต์พุต
+    .volume-raise = เพิ่มระดับเสียงเอาต์พุต
     .web-browser = เปิดเบราเซอร์
     .window-switcher = สลับระหว่างหน้าต่างที่เปิดอยู่
     .window-switcher-previous = สลับไปยังหน้าต่างก่อนหน้า
     .workspace-overview = เปิดภาพรวมพื้นที่ทำงาน
 window-tiling = การไทล์หน้าต่าง
-    .horizontal = ตั้งวางแนวเป็นแนวนอน
+    .horizontal = ตั้งการวางแนวเป็นแนวนอน
     .vertical = ตั้งการวางแนวเป็นแนวตั้ง
     .swap-window = สลับหน้าต่าง
     .toggle-tiling = ปิดเปิดการไทล์หน้าต่าง
@@ -619,7 +630,6 @@ replace-shortcut-dialog = แทนที่คีย์ลัดหรือไ
 ## Input: Mouse
 
 mouse = เมาส์
-    .desc = ความเร็วเมาส์ ความเร่ง และการเลื่อนอย่างเป็นธรรมชาติ
     .speed = ความเร็วเมาส์
     .acceleration = เปิดใช้งานการเร่งความเร็วเมาส์
 
@@ -634,7 +644,6 @@ tap-to-click = แตะเพื่อคลิก
     .desc = เปิดการแตะนิ้วเดียวเพื่อการคลิกหลัก แตะสองนิ้วเพื่อการคลิกรอง แตะสามนิ้วเพื่อคลิกกลาง
 touchpad = ทัชแพด
     .acceleration = เปิดใช้งานการเร่งความเร็วทัชแพด
-    .desc = ความเร็วทัชแพด ตัวเลือกการคลิก และท่าทาง
     .speed = ความเร็วทัชแพด
 
 ## Input: Gestures
@@ -655,9 +664,7 @@ open-workspaces-view = เปิดภาพรวมพื้นที่ทำ
 ## Time & Language
 
 time = เวลาและภาษา
-    .desc = N/A
 time-date = วันที่และเวลา
-    .desc = โซนเวลา การตั้งค่านาฬิกาอัตโนมัติ และรูปแบบเวลา
     .auto = ตั้งโดยอัตโนมัติ
     .auto-ntp = วันที่และเวลาจะอัพเดทอัตโนมัติเมื่อโซนเวลาถูกตั้งอยู่
 time-zone = โซนเวลา
@@ -672,8 +679,7 @@ time-format = รูปแบบวันที่และเวลา
     .saturday = เสาร์
     .sunday = อาทิตย์
     .monday = จันทร์
-time-region = ภาษาและภูมิภาค
-    .desc = รูปแบบวันที่ เวลา และตัวเลขตามภูมิภาคของคุณ
+time-region = ภูมิภาคและภาษา
 formatting = การจัดรูปแบบ
     .dates = วันที่
     .time = เวลา
@@ -694,8 +700,7 @@ applications = แอพลิเคชั่น
 
 ## Applications: Default Applications
 
-default-apps = แอพลิเคชั่นเริ่มต้น
-    .desc = ค่าเริ่มต้นแอพลิเคชั่นเว็บเบราเซอร์ ไคลเอนต์อีเมล ตัวจัดการไฟล์ และแอพลิเคชั่นอื่น ๆ
+default-apps = แอปพลิเคชันเริ่มต้น
     .web-browser = เว็บเบราเซอร์
     .file-manager = ตัวจัดการไฟล์
     .mail-client = ไคลเอนต์อีเมล
@@ -706,22 +711,21 @@ default-apps = แอพลิเคชั่นเริ่มต้น
     .terminal = เทอร์มินัล
     .other-associations = โปรแกรมที่เกี่ยวข้องกับรูปแบบไฟล์อื่น ๆ
     .text-editor = โปรแกรมแก้ไขข้อความ
+    .not-installed = ไม่ถูกติดตั้ง
 
 ## Applications: Startup Applications
 
-startup-apps = แอพลิเคชั่นเริ่มระบบ
-    .desc = ตั้งค่าแอพลิเคชั่นที่จะถูกเรียกใช้เมื่อล็อกอิน
-    .add = เพิ่มแอพ
-    .user = แอพลิเคชั่นที่จะถูกเปิดเมื่อคุณล็อกอิน
-    .none = ไม่มีการเพิ่มแอพลิเคชั่นเริ่มระบบ
+startup-apps = แอปพลิเคชันเริ่มระบบ
+    .add = เพิ่มแอป
+    .user = แอปพลิเคชันที่จะถูกเปิดเมื่อคุณล็อกอิน
+    .none = ไม่มีการเพิ่มแอปพลิเคชันเริ่มระบบ
     .remove-dialog-title = ลบ { $name } หรือไม่
-    .remove-dialog-description = คุณแน่ใจหรือไม่ที่จะลบแอพลิเคชั่นเริ่มระบบนี้
-    .search-for-application = ค้นหาแอพลิเคชั่น
+    .remove-dialog-description = คุณแน่ใจหรือไม่ที่จะลบแอปพลิเคชันเริ่มระบบนี้
+    .add-startup-app = เพิ่มแอปพลิเคชันเริ่มระบบ
 
 ## Applications: Legacy Applications
 
-legacy-applications = ความเข้ากันได้กับแอพลิเคชั่น X11
-    .desc = การขยายแอพลิเคชั่นระบบหน้าต่าง X11 และคีย์ลัดทั่วเดสก์ท็อป
+legacy-applications = ความเข้ากันได้กับแอปพลิเคชัน X11
 legacy-app-global-shortcuts = คีย์ลัดทั่วเดสก์ท็อปในแอพลิเคชั่น X11
     .desc = คีย์ลัดทั่วเดสก์ท็อปอนุญาตให้อีเวนท์การกดปุ่มและการคลิกเมาส์ที่ถูกกระทำในแอพลิเคชั่นถูกได้รับการรับรู้โดยแอพลิเคชั่นอื่นสำหรับฟีเจอร์เช่น การกดเพื่อพูดหรือกดเพื่อปิดเสียง โดยค่าเริ่มต้น ฟีเจอร์นี้จะปิดอยู่สำหรับแอพลิเคชั่น X11 เพื่อให้แน่ใจว่าแอพลิเคชั่นอื่นไม่สามารถคอยฟังอีเวนท์คีย์บอร์ดและเมาส์ที่มีข้อมูลละเอียดอ่อน
     .none = ไม่มีปุ่มได้ที่สามารถรับรู้ได้
@@ -746,7 +750,6 @@ system = ระบบและบัญชี
 ## System: About
 
 about = เกี่ยวกับ
-    .desc = ชื่ออุปกรณ์ ข้อมูลฮาร์ดแวร์ และค่าเริ่มต้นระบบปฏิบัติการ
 about-device = ชื่ออุปกรณ์
     .desc = ชื่อนี้แสดงต่ออุปกรณ์ภายในเครือข่ายหรืออุปกรณ์บลูธูทอื่น ๆ
 about-hardware = ฮาร์ดแวร์
@@ -758,6 +761,7 @@ about-hardware = ฮาร์ดแวร์
 about-os = ระบบปฏิบัติการ
     .os = ระบบปฏิบัติการ
     .os-architecture = สถาปัตยกรรมระบบปฏิบัติการ
+    .kernel = เวอร์ชันเคอร์เนล
     .desktop-environment = สภาพแวดล้อมเดสก์ท็อป
     .windowing-system = ระบบหน้าต่าง
 about-related = การตั้งค่าที่เกี่ยวข้อง
@@ -766,21 +770,26 @@ about-related = การตั้งค่าที่เกี่ยวข้�
 ## System: Firmware
 
 firmware = เฟิร์มแวร์
-    .desc = รายละเอียดเฟิร์มแวร์
 
 ## System: Users
 
 users = ผู้ใช้
-    .desc = การเข้าสู่ระบบและบัญชีผู้ใช้
     .admin = ผู้ดูแลระบบ
     .standard = มาตรฐาน
     .profile-add = เลือกรูปโปรไฟล์
 administrator = ผู้ดูแลระบบ
     .desc = ผู้ดูแลระบบสามารถเปลี่ยนแปลงการตั้งค่าสำหรับผู้ใช้ทั้งหมดได้ เพิ่มและลบผู้ใช้อื่นได้
 add-user = เพิ่มผู้ใช้
-change-password = Change password
+change-password = เปลี่ยนรหัสผ่าน
 remove-user = ลบผู้ใช้
 full-name = ชื่อเต็ม
 invalid-username = ชื่อผู้ใช้ไม่ถูกต้อง
 password-mismatch = รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน
 save = บันทึก
+xdg-entry-a11y = การเข้าถึง
+xdg-entry-about-keywords = COSMIC;About;เกี่ยวกับ
+xdg-entry-a11y-keywords = COSMIC;Accessibility;A11y;Screen;Reader;Magnifier;Contrast;Color;การเข้าถึง;หน้าจอ;อ่าน;แว่นขยาย;คอนทราสต์;สี;
+xdg-entry-a11y-comment = โปรแกรมอ่านหน้าจอ แว่นขยาย คอนทราสต์สูง และฟิลเตอร์สี
+xdg-entry-about-comment = ชื่ออุปกรณ์ ข้อมูลฮาร์ดแวร์ ค่าเริ่มต้นระบบปฏิบัติการ
+xdg-entry-comment = แอปพลิเคชันการตั้งค่าสำหรับเดสก์ท็อป COSMIC
+xdg-entry-keywords = COSMIC;Settings;การตั้งค่า;

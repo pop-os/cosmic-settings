@@ -32,7 +32,7 @@ fn device_type_to_icon(device_type: &str) -> &'static str {
 
 #[derive(Default, Debug, Clone)]
 pub struct Device {
-    alias: Option<String>,
+    pub alias: Option<String>,
     pub address: String,
     pub adapter: OwnedObjectPath,
     pub enabled: Active,
@@ -46,7 +46,7 @@ impl Device {
         let (address, adapter, alias) = join!(
             proxy.device.address(),
             proxy.device.adapter(),
-            proxy.device.name()
+            proxy.device.alias()
         );
         let address = address?;
         if address.is_empty() {
@@ -56,7 +56,10 @@ impl Device {
         if adapter.is_empty() {
             return Err(zbus::Error::Failure("Device has no adapter".to_owned()));
         }
-        let alias = alias.ok();
+        let alias = match alias {
+            Ok(alias) if !alias.is_empty() && alias != address.replace(':', "-") => Some(alias),
+            _ => proxy.device.name().await.ok(),
+        };
         let device_type: String = proxy.icon().await;
         let paired = proxy.device.paired().await.unwrap_or(false);
         let enabled = if proxy.device.connected().await.unwrap_or(false) {
@@ -307,6 +310,33 @@ pub async fn forget_device(connection: zbus::Connection, device_path: OwnedObjec
     } else {
         Event::Ok
     }
+}
+
+pub async fn rename_device(
+    connection: zbus::Connection,
+    device_path: OwnedObjectPath,
+    name: String,
+) -> Event {
+    let proxy = match bluez_zbus::get_device(&connection, device_path.clone()).await {
+        Err(why) => {
+            tracing::error!("Unable to get the device: {why}");
+            return Event::DeviceFailed(device_path);
+        }
+        Ok(proxy) => proxy,
+    };
+
+    for attempt in 1..5 {
+        let result = proxy.device.set_alias(&name).await;
+
+        if let Err(why) = result {
+            tracing::warn!("Unable to rename device: {why}");
+            tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+        } else {
+            return Event::Ok;
+        }
+    }
+
+    Event::DeviceRenameFailed(device_path)
 }
 
 pub async fn get_devices(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {

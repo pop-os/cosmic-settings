@@ -839,3 +839,5 @@ bluetooth-display-passkey = Bluetooth-parinmuodostus
     .description = Syötä seuraava turva-avain laitteelle { $device }, ja paina sitten Enter
 bluetooth-display-pin = Bluetooth-parinmuodostus
     .description = Syötä seuraava PIN-koodi laitteelle { $device }, ja paina sitten Enter
+rename = Nimeä uudelleen
+bluetooth-rename-device = Nimeä laite uudelleen

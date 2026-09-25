@@ -312,7 +312,7 @@ pub enum Message {
     SuspendOnBatteryTimeChange(Option<Duration>),
     BackendAvailabilityCheck(Option<backend::PowerBackendEnum>),
     CurrentPowerProfileUpdate(PowerProfile),
-    Surface(surface::Action),
+    Surface(surface::Action<crate::app::Message>),
 }
 
 impl From<Message> for crate::app::Message {

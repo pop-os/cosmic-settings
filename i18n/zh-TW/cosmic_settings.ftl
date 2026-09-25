@@ -373,19 +373,19 @@ display = 顯示器
     .resolution = 解析度
     .scale = 縮放
     .additional-scale-options = 其他縮放選項
-mirroring = 投影
-    .id = 正在投影 { $id }
-    .dont = 不要投影
-    .mirror = 投影 { $display }
+mirroring = 鏡射
+    .id = 鏡射 { $id }
+    .dont = 不要鏡射
+    .mirror = 鏡射 { $display }
     .project =
         投影至 { $display ->
-            [all] 全部的螢幕
+            [all] 全部顯示器
            *[other] { $display }
         }
     .project-count =
-        投影了 { $count } 個 { $count ->
-            [1] 螢幕
-           *[other] 螢幕
+        投影 { $count } 個其他 { $count ->
+            [1] 顯示器
+           *[other] 顯示器
         }
 night-light = 夜間模式
     .auto = 自動（日落至日出）
@@ -829,7 +829,7 @@ full-name = 全名
 invalid-username = 無效的使用者名稱
 password-mismatch = 密碼與確認密碼必須相符
 save = 儲存
-xdg-entry-dock-comment = 可選應用程式和小程式的工具列
+xdg-entry-dock-comment = 可選擇應用程式和小程式的工具列
 xdg-entry-dock = Dock
 xdg-entry-displays-keywords = COSMIC;顯示器;螢幕;
 xdg-entry-displays-comment = 管理顯示器設定
@@ -907,7 +907,7 @@ xdg-entry-wallpaper-comment = 背景圖片、顏色及投影片選項
 xdg-entry-wireless = Wi-Fi
 xdg-entry-workspaces-keywords = COSMIC;工作區;方向;總覽;螢幕;
 xdg-entry-system-comment = 系統資訊、帳號及韌體更新
-xdg-entry-x11-applications-comment = X11 視窗系統應用程式縮放大小、主要顯示螢幕和整體快速鍵
+xdg-entry-x11-applications-comment = X11 視窗系統應用程式縮放大小、主要顯示器和整體快速鍵
 xdg-entry-wallpaper-keywords = COSMIC;背景圖片;背景;投影片;
 xdg-entry-users-keywords = COSMIC;使用者;帳戶;
 xdg-entry-vpn-keywords = COSMIC;VPN;網路;連接;OpenVPN;OpenConnect;
@@ -951,3 +951,5 @@ bluetooth-display-passkey = 藍牙配對
     .description = 請在 { $device } 上輸入密金鑰，然後按 Enter 鍵
 bluetooth-display-pin = 藍牙配對
     .description = 請在 { $device } 上輸入 PIN 碼，然後按 Enter 鍵
+rename = 重新命名
+bluetooth-rename-device = 重新命名裝置
