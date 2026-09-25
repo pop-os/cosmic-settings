@@ -11,10 +11,10 @@ use cosmic_comp_config::input::{
 use cosmic_settings_page as page;
 use tracing::error;
 
+pub mod drawing_tablet;
 pub mod keyboard;
 pub mod mouse;
 pub mod touchpad;
-pub mod drawing_tablet;
 
 #[derive(Clone, Debug)]
 pub enum Message {
