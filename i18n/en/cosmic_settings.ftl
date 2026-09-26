@@ -915,6 +915,14 @@ mouse = Mouse
     .speed = Mouse speed
     .acceleration = Enable mouse acceleration
 
+cursor-hiding = Hiding the cursor
+    .while-typing = Hide while typing
+    .after-touch = Hide after touch input
+    .in-fullscreen = Hide in fullscreen
+    .fullscreen-delay = Seconds of stillness before hiding in fullscreen
+    .when-inactive = Hide when inactive
+    .inactive-delay = Seconds of stillness before hiding
+
 ## Input: Touchpad
 
 click-behavior = Click Behavior
