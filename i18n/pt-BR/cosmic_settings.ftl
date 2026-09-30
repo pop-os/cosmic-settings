@@ -305,6 +305,9 @@ panel-style = Estilo
     .appearance = Aparência
     .size = Tamanho
     .background-opacity = Opacidade do fundo
+
+dock-keep-style-on-maximize = Manter dock flutuante ao maximizar janelas
+    .desc = Mantém a largura, margem, cantos arredondados e opacidade da dock quando uma janela é maximizada.
 panel-applets = Configuração
     .dock-desc = Configurar miniaplicativos da dock
     .desc = Configurar miniaplicativos do painel
