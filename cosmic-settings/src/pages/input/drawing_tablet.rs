@@ -3,10 +3,13 @@
 use std::collections::HashMap;
 
 use cosmic::cosmic_config::{ConfigGet, ConfigSet};
+use cosmic::iced::Subscription;
+use cosmic::iced::stream;
 use cosmic::widget::{dropdown, settings};
 use cosmic::{Apply, Element, Task};
 use cosmic_comp_config::input::{DeviceState, InputConfig};
 use cosmic_settings_page::{self as page, Section, section};
+use futures::SinkExt;
 use slotmap::{Key, SlotMap};
 use udev::Enumerator;
 
@@ -21,6 +24,7 @@ pub enum Message {
     SetTabletDeviceState(String, bool),
     SetTabletOutput(String, Option<String>),
     Surface(cosmic::surface::Action<crate::app::Message>),
+    RefreshDisplays,
 }
 
 impl From<Message> for crate::pages::Message {
@@ -149,6 +153,64 @@ impl page::Page<crate::pages::Message> for Page {
     fn on_enter(&mut self) -> Task<crate::pages::Message> {
         Task::none()
     }
+
+    fn subscription(&self, _core: &cosmic::Core) -> Subscription<crate::pages::Message> {
+        let display_subscription = Subscription::run(|| {
+            stream::channel(
+                1,
+                move |mut emitter: futures::channel::mpsc::Sender<crate::pages::Message>| async move {
+                    let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+
+                    let tokio_handle = tokio::runtime::Handle::current();
+                    std::thread::spawn(move || {
+                        tokio_handle.block_on(async move {
+                            let Ok(builder) = udev::MonitorBuilder::new() else {
+                                return;
+                            };
+
+                            let Ok(builder) = builder.match_subsystem("drm") else {
+                                return;
+                            };
+
+                            let Ok(socket) = builder.listen() else {
+                                return;
+                            };
+
+                            let Ok(mut async_fd) = tokio::io::unix::AsyncFd::new(socket) else {
+                                return;
+                            };
+
+                            loop {
+                                if let Ok(mut guard) = async_fd.writable().await {
+                                    guard.clear_ready();
+
+                                    let drm_hotplug_occurred = &mut false;
+                                    async_fd.get_mut().iter().for_each(|_| {
+                                        *drm_hotplug_occurred = true;
+                                    });
+
+                                    if *drm_hotplug_occurred {
+                                        if tx.send(()).await.is_err() {
+                                            break;
+                                        }
+                                    }
+                                }
+                                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                            }
+                        });
+                    });
+
+                    while let Some(()) = rx.recv().await {
+                        if emitter.send(Message::RefreshDisplays.into()).await.is_err() {
+                            break;
+                        }
+                    }
+                },
+            )
+        });
+
+        Subscription::batch(vec![display_subscription])
+    }
 }
 
 impl page::AutoBind<crate::pages::Message> for Page {}
@@ -177,6 +239,10 @@ impl Page {
                     tracing::error!(?err, "Failed to set input_devices config");
                 }
                 self.input_devices = devices;
+            }
+
+            Message::RefreshDisplays => {
+                self.connected_displays = get_connected_displays();
             }
 
             Message::Surface(a) => {
@@ -208,27 +274,33 @@ fn tablet_settings_ui(tablet_device_name: String) -> Section<crate::pages::Messa
 
             // If enabled, show dropdown of displays that the tablet input can be mapped to.
             if enabled {
+                let mut display_names = page.connected_displays.clone();
+                // If the tablet is configured to some other display not connected, add it to the list of options to avoid confusion.
+                if let Some(preexisting_output) =
+                    tablet_config.and_then(|c| c.map_to_output.as_ref())
+                {
+                    if !display_names.contains(preexisting_output) {
+                        display_names.push(preexisting_output.clone());
+                    }
+                }
+
                 let selected_dropdown_index = tablet_config
                     .and_then(|c| c.map_to_output.as_ref())
                     .and_then(|output_display_name| {
-                        page.connected_displays
-                            .iter()
-                            .position(|d| d == output_display_name)
+                        display_names.iter().position(|d| d == output_display_name)
                     })
                     .unwrap_or(0);
-
-                let displays_clone = page.connected_displays.clone();
-                let device_name = tablet_device_name.clone();
+                let tablet_name = tablet_device_name.clone();
                 let dropdown_element = dropdown::popup_dropdown(
-                    &page.connected_displays,
+                    display_names.clone(),
                     Some(selected_dropdown_index),
                     move |idx| {
                         let output = if idx == 0 {
                             None
                         } else {
-                            Some(displays_clone[idx].clone())
+                            Some(display_names[idx].clone())
                         };
-                        Message::SetTabletOutput(device_name.clone(), output)
+                        Message::SetTabletOutput(tablet_name.clone(), output)
                     },
                     cosmic::iced::window::Id::RESERVED,
                     Message::Surface,
