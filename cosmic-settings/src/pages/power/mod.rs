@@ -61,6 +61,7 @@ pub struct Page {
     idle_conf: CosmicIdleConfig,
     backend: Option<backend::PowerBackendEnum>,
     current_power_profile: Option<PowerProfile>,
+    high_performance_when_plugged_in: bool,
 }
 
 impl Default for Page {
@@ -89,6 +90,7 @@ impl Default for Page {
             idle_conf,
             backend: None,
             current_power_profile: None,
+            high_performance_when_plugged_in: true,
         }
     }
 }
@@ -309,6 +311,7 @@ pub enum Message {
     DeviceConnect(ConnectedDevice),
     ScreenOffTimeChange(Option<Duration>),
     SuspendOnAcTimeChange(Option<Duration>),
+    HighPerformanceWhenPluggedInChange(bool),
     SuspendOnBatteryTimeChange(Option<Duration>),
     BackendAvailabilityCheck(Option<backend::PowerBackendEnum>),
     CurrentPowerProfileUpdate(PowerProfile),
@@ -375,6 +378,9 @@ impl Page {
                 {
                     tracing::error!("failed to set suspend on battery time: {}", err)
                 }
+            }
+            Message::HighPerformanceWhenPluggedInChange(new_state) => {
+                self.high_performance_when_plugged_in = new_state;
             }
             Message::DeviceDisconnect(device_path) => self
                 .connected_devices
@@ -591,6 +597,9 @@ fn power_saving() -> Section<crate::pages::Message> {
     let auto_suspend_ac_desc = descriptions.insert(fl!("power-saving", "auto-suspend-ac"));
     let auto_suspend_battery_desc =
         descriptions.insert(fl!("power-saving", "auto-suspend-battery"));
+    // TODO: i18n
+    let high_performance_plugged_desc =
+        descriptions.insert("Automatic switch to High Performance when plugged in".into());
 
     Section::default()
         .title(fl!("power-saving"))
@@ -628,7 +637,13 @@ fn power_saving() -> Section<crate::pages::Message> {
                     suspend_on_ac_time,
                     SUSPEND_TIMES,
                     Message::SuspendOnAcTimeChange,
-                ));
+                ))
+                .add(
+                    settings::item::builder(&descriptions[high_performance_plugged_desc]).toggler(
+                        page.high_performance_when_plugged_in,
+                        Message::HighPerformanceWhenPluggedInChange,
+                    ),
+                );
             if page.battery.is_present {
                 section = section.add(power_saving_row(
                     &descriptions[auto_suspend_battery_desc],
