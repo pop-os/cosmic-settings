@@ -30,7 +30,7 @@ Depends:
     cosmic-randr,
     cosmic-settings-daemon,
     iso-codes,
-    network-manager-gnome,
+    nm-connection-editor | network-manager-gnome,
     network-manager-openvpn,
     network-manager-openvpn-gnome,
     xkb-data,
