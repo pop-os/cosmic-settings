@@ -29,7 +29,6 @@ Depends:
     accountsservice,
     cosmic-randr,
     cosmic-settings-daemon,
-    gettext,
     iso-codes,
     network-manager-gnome,
     network-manager-openvpn,
