@@ -24,6 +24,7 @@ pub enum Message {
     SetTabletDeviceState(String, bool),
     SetTabletOutput(String, Option<String>),
     Surface(cosmic::surface::Action<crate::app::Message>),
+    RefreshTablets,
     RefreshDisplays,
 }
 
@@ -35,14 +36,14 @@ impl From<Message> for crate::pages::Message {
 
 pub struct Page {
     entity: page::Entity,
-    connected_tablets: Vec<String>,
+    connected_tablets: HashMap<String, Vec<udev::Device>>,
     connected_displays: Vec<String>,
-    input_devices: HashMap<String, InputConfig>,
+    saved_input_devices: HashMap<String, InputConfig>,
     tablet_config: cosmic_config::Config,
 }
 
-pub fn get_connected_tablets() -> Vec<String> {
-    let mut tablets = Vec::new();
+pub fn get_connected_tablets() -> HashMap<String, Vec<udev::Device>> {
+    let mut tablets = HashMap::new();
     let Ok(mut device_scanner) = Enumerator::new() else {
         return tablets;
     };
@@ -60,20 +61,51 @@ pub fn get_connected_tablets() -> Vec<String> {
             .property_value("ID_INPUT_TABLET")
             .is_some_and(|v| v == "1")
         {
-            if let Some(name) = device
-                .property_value("NAME")
-                .or_else(|| device.property_value("ID_NAME"))
-                .or_else(|| device.property_value("ID_MODEL"))
-            {
-                let name = name.to_string_lossy().trim_matches('"').to_string();
-                if !tablets.contains(&name) {
-                    tablets.push(name);
-                }
+            let physical_device_id = get_physical_device_id(&device);
+
+            let device_name = device.property_value("NAME");
+            if !device_name.is_some() {
+                continue;
             }
+
+            tablets.entry(physical_device_id).or_default().push(device);
         }
     }
 
     tablets
+}
+
+pub fn get_physical_device_id(device: &udev::Device) -> String {
+    if let Some(group) = device.property_value("LIBINPUT_DEVICE_GROUP") {
+        return group.to_string_lossy().into_owned();
+    }
+
+    let mut curr = Some(device.clone());
+    while let Some(dev) = curr {
+        if dev.devtype().is_some_and(|t| t == "usb_device") {
+            return dev.syspath().to_string_lossy().into_owned();
+        }
+        curr = dev.parent();
+    }
+
+    device.syspath().to_string_lossy().into_owned()
+}
+
+pub fn get_pen_interface(devices: &Vec<udev::Device>) -> Option<&udev::Device> {
+    devices.into_iter().find(|device| {
+        let is_tablet = device
+            .property_value("ID_INPUT_TABLET")
+            .is_some_and(|v| v == "1");
+
+        let is_pad = device
+            .property_value("ID_INPUT_TABLET_PAD")
+            .is_some_and(|v| v == "1");
+        let is_touchpad = device
+            .property_value("ID_INPUT_TOUCHPAD")
+            .is_some_and(|v| v == "1");
+
+        is_tablet && !is_pad && !is_touchpad
+    })
 }
 
 pub fn get_connected_displays() -> Vec<String> {
@@ -91,9 +123,9 @@ pub fn get_connected_displays() -> Vec<String> {
 
 impl Default for Page {
     fn default() -> Self {
-        let config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
-        let saved_input_devices: HashMap<String, InputConfig> = config
-            .get("input_devices")
+        let tablet_config = cosmic_config::Config::new("com.system76.CosmicComp", 1).unwrap();
+        let saved_input_devices: HashMap<String, InputConfig> = tablet_config
+            .get("saved_input_devices")
             .unwrap_or_else(|_| HashMap::new());
 
         let connected_tablets = get_connected_tablets();
@@ -103,8 +135,8 @@ impl Default for Page {
             entity: page::Entity::null(),
             connected_tablets,
             connected_displays,
-            input_devices: saved_input_devices,
-            tablet_config: config,
+            saved_input_devices,
+            tablet_config,
         }
     }
 }
@@ -118,30 +150,32 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        // Show a "no devices" message on the screen if none are found.
-        if self.connected_tablets.is_empty() {
-            let no_devices_section =
-                Section::default().view::<Page>(move |_binder, _page, section| {
-                    settings::section()
-                        .title(&section.title)
-                        .add(
-                            settings::item::builder(fl!("drawing-tablet", "no-devices-detected"))
-                                .control(cosmic::widget::space()),
-                        )
-                        .apply(Element::from)
-                        .map(crate::pages::Message::DrawingTablet)
-                });
-
-            Some(vec![sections.insert(no_devices_section)])
-        } else {
-            // If devices are found, make a new Section for each one with tablet_settings_ui() and then add all the settings groups to the view.
-            let mut tablets = Vec::new();
-            for tablet in &self.connected_tablets {
-                tablets.push(sections.insert(tablet_settings_ui(tablet.clone())));
+        let devices_section = Section::default().view::<Page>(move |_binder, page, section| {
+            if page.connected_tablets.is_empty() {
+                settings::section()
+                    .title(&section.title)
+                    .add(
+                        settings::item::builder(fl!("drawing-tablet", "no-devices-detected"))
+                            .control(cosmic::widget::space()),
+                    )
+                    .apply(Element::from)
+                    .map(crate::pages::Message::DrawingTablet)
+            } else {
+                let mut sections_column = Vec::new();
+                for tablet in page.connected_tablets.values() {
+                    if let Some(pen_interface) = get_pen_interface(tablet) {
+                        if let Some(pen_name) = pen_interface.property_value("NAME") {
+                            let tablet_device_name =
+                                pen_name.to_string_lossy().trim_matches('"').to_owned();
+                            sections_column.push(tablet_settings_ui(tablet_device_name, page));
+                        }
+                    }
+                }
+                settings::view_column(sections_column).apply(Element::from)
             }
+        });
 
-            Some(tablets)
-        }
+        Some(vec![sections.insert(devices_section)])
     }
 
     fn info(&self) -> page::Info {
@@ -155,6 +189,65 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn subscription(&self, _core: &cosmic::Core) -> Subscription<crate::pages::Message> {
+        let tablet_subscription = Subscription::run(|| {
+            stream::channel(
+                1,
+                move |mut emitter: futures::channel::mpsc::Sender<crate::pages::Message>| async move {
+                    let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+
+                    let tokio_handle = tokio::runtime::Handle::current();
+                    std::thread::spawn(move || {
+                        tokio_handle.block_on(async move {
+                            let Ok(builder) = udev::MonitorBuilder::new() else {
+                                return;
+                            };
+
+                            let Ok(builder) = builder.match_subsystem("input") else {
+                                return;
+                            };
+
+                            let Ok(socket) = builder.listen() else {
+                                return;
+                            };
+
+                            let Ok(mut async_fd) = tokio::io::unix::AsyncFd::new(socket) else {
+                                return;
+                            };
+
+                            loop {
+                                if let Ok(mut guard) = async_fd.writable().await {
+                                    guard.clear_ready();
+
+                                    let input_event_occurred = &mut false;
+                                    async_fd.get_mut().iter().for_each(|event| {
+                                        let event_type = event.event_type();
+                                        if event_type == udev::EventType::Add
+                                            || event_type == udev::EventType::Remove
+                                        {
+                                            *input_event_occurred = true;
+                                        }
+                                    });
+
+                                    if *input_event_occurred {
+                                        if tx.send(()).await.is_err() {
+                                            break;
+                                        }
+                                    }
+                                }
+                                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                            }
+                        });
+                    });
+
+                    while let Some(()) = rx.recv().await {
+                        if emitter.send(Message::RefreshTablets.into()).await.is_err() {
+                            break;
+                        }
+                    }
+                },
+            )
+        });
+
         let display_subscription = Subscription::run(|| {
             stream::channel(
                 1,
@@ -209,7 +302,7 @@ impl page::Page<crate::pages::Message> for Page {
             )
         });
 
-        Subscription::batch(vec![display_subscription])
+        Subscription::batch(vec![tablet_subscription, display_subscription])
     }
 }
 
@@ -224,21 +317,25 @@ impl Page {
                 } else {
                     DeviceState::Disabled
                 };
-                let mut devices: HashMap<String, InputConfig> = self.input_devices.clone();
+                let mut devices: HashMap<String, InputConfig> = self.saved_input_devices.clone();
                 devices.entry(device_name).or_default().state = state;
                 if let Err(err) = self.tablet_config.set("input_devices", &devices) {
                     tracing::error!(?err, "Failed to set input_devices config");
                 }
-                self.input_devices = devices;
+                self.saved_input_devices = devices;
             }
 
             Message::SetTabletOutput(device_name, output) => {
-                let mut devices: HashMap<String, InputConfig> = self.input_devices.clone();
+                let mut devices: HashMap<String, InputConfig> = self.saved_input_devices.clone();
                 devices.entry(device_name).or_default().map_to_output = output;
                 if let Err(err) = self.tablet_config.set("input_devices", &devices) {
                     tracing::error!(?err, "Failed to set input_devices config");
                 }
-                self.input_devices = devices;
+                self.saved_input_devices = devices;
+            }
+
+            Message::RefreshTablets => {
+                self.connected_tablets = get_connected_tablets();
             }
 
             Message::RefreshDisplays => {
@@ -254,67 +351,61 @@ impl Page {
     }
 }
 
-// The returned value is a Section representing the settings for a single tablet device.
-fn tablet_settings_ui(tablet_device_name: String) -> Section<crate::pages::Message> {
-    Section::default()
-        .title(tablet_device_name.clone())
-        .view::<Page>(move |_binder, page, section| {
-            let mut section_ui = settings::section().title(&section.title);
-            let tablet_config = page.input_devices.get(&tablet_device_name);
+// The returned value represents all the settings UI for a single tablet device.
+fn tablet_settings_ui(
+    tablet_device_name: String,
+    page: &Page,
+) -> Element<'_, crate::pages::Message> {
+    let mut section_ui = settings::section().title(tablet_device_name.clone());
+    let tablet_config = page.saved_input_devices.get(&tablet_device_name);
 
-            let enabled = tablet_config.map_or(false, |c| {
-                c.state == cosmic_comp_config::input::DeviceState::Enabled
-            });
-            let tablet_name = tablet_device_name.clone();
-            let device_state_toggler = settings::item::builder(fl!("drawing-tablet", "enabled"))
-                .toggler(enabled, {
-                    move |checked| Message::SetTabletDeviceState(tablet_name.clone(), checked)
-                });
-            section_ui = section_ui.add(device_state_toggler);
+    let enabled = tablet_config.map_or(false, |c| {
+        c.state == cosmic_comp_config::input::DeviceState::Enabled
+    });
+    let tablet_name = tablet_device_name.clone();
+    let device_state_toggler = settings::item::builder(fl!("drawing-tablet", "enabled"))
+        .toggler(enabled, {
+            move |checked| Message::SetTabletDeviceState(tablet_name.clone(), checked)
+        });
+    section_ui = section_ui.add(device_state_toggler);
 
-            // If enabled, show dropdown of displays that the tablet input can be mapped to.
-            if enabled {
-                let mut display_names = page.connected_displays.clone();
-                // If the tablet is configured to some other display not connected, add it to the list of options to avoid confusion.
-                if let Some(preexisting_output) =
-                    tablet_config.and_then(|c| c.map_to_output.as_ref())
-                {
-                    if !display_names.contains(preexisting_output) {
-                        display_names.push(preexisting_output.clone());
-                    }
-                }
-
-                let selected_dropdown_index = tablet_config
-                    .and_then(|c| c.map_to_output.as_ref())
-                    .and_then(|output_display_name| {
-                        display_names.iter().position(|d| d == output_display_name)
-                    })
-                    .unwrap_or(0);
-                let tablet_name = tablet_device_name.clone();
-                let dropdown_element = dropdown::popup_dropdown(
-                    display_names.clone(),
-                    Some(selected_dropdown_index),
-                    move |idx| {
-                        let output = if idx == 0 {
-                            None
-                        } else {
-                            Some(display_names[idx].clone())
-                        };
-                        Message::SetTabletOutput(tablet_name.clone(), output)
-                    },
-                    cosmic::iced::window::Id::RESERVED,
-                    Message::Surface,
-                    |a| crate::app::Message::PageMessage(crate::pages::Message::DrawingTablet(a)),
-                );
-
-                let dropdown_item =
-                    settings::item::builder(fl!("drawing-tablet", "map-to-display"))
-                        .control(dropdown_element);
-                section_ui = section_ui.add(dropdown_item);
+    if enabled {
+        let mut display_names = page.connected_displays.clone();
+        if let Some(preexisting_output) = tablet_config.and_then(|c| c.map_to_output.as_ref()) {
+            if !display_names.contains(preexisting_output) {
+                display_names.push(preexisting_output.clone());
             }
+        }
 
-            section_ui
-                .apply(Element::from)
-                .map(crate::pages::Message::DrawingTablet)
-        })
+        let selected_dropdown_index = tablet_config
+            .and_then(|c| c.map_to_output.as_ref())
+            .and_then(|output_display_name| {
+                display_names.iter().position(|d| d == output_display_name)
+            })
+            .unwrap_or(0);
+        let tablet_name = tablet_device_name.clone();
+        let dropdown_element = dropdown::popup_dropdown(
+            display_names.clone(),
+            Some(selected_dropdown_index),
+            move |idx| {
+                let output = if idx == 0 {
+                    None
+                } else {
+                    Some(display_names[idx].clone())
+                };
+                Message::SetTabletOutput(tablet_name.clone(), output)
+            },
+            cosmic::iced::window::Id::RESERVED,
+            Message::Surface,
+            |a| crate::app::Message::PageMessage(crate::pages::Message::DrawingTablet(a)),
+        );
+
+        let dropdown_item = settings::item::builder(fl!("drawing-tablet", "map-to-display"))
+            .control(dropdown_element);
+        section_ui = section_ui.add(dropdown_item);
+    }
+
+    section_ui
+        .apply(Element::from)
+        .map(crate::pages::Message::DrawingTablet)
 }
