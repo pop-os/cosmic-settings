@@ -17,6 +17,7 @@ use slotmap::{DefaultKey, Key, SlotMap};
 
 /// Contains all options for mapping a [SpecialKey].
 /// The available options differ for each key being mapped.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum SpecialKeyAlternative {
     AltLeft,
     AltRight,
@@ -182,7 +183,7 @@ enum Context {
     NumlockState,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum SpecialKey {
     AlternateCharacters,
     Compose,
@@ -203,6 +204,14 @@ impl SpecialKey {
             Self::Compose => &["compose:"],
             Self::AlternateCharacters => &["lv3:"],
             Self::CapsLock => &["caps:", "ctrl:"],
+        }
+    }
+
+    pub fn options(self) -> &'static [SpecialKeyOption] {
+        match self {
+            Self::Compose => COMPOSE_OPTIONS,
+            Self::AlternateCharacters => ALTERNATE_CHARACTER_OPTIONS,
+            Self::CapsLock => CAPS_LOCK_OPTIONS,
         }
     }
 }
@@ -579,9 +588,33 @@ impl Page {
                 if let Some(Context::SpecialCharacter(special_key)) = self.context {
                     let options = self.xkb.options.as_deref().unwrap_or_default();
                     let prefixes = special_key.prefixes();
+
+                    let conflicting_ids: Vec<&str> = if let Some(selected_id) = id {
+                        if let Some(&(selected_alt, _)) = special_key
+                            .options()
+                            .iter()
+                            .find(|(_, opt_id)| *opt_id == selected_id)
+                        {
+                            [SpecialKey::Compose, SpecialKey::AlternateCharacters]
+                                .into_iter()
+                                .filter(|&other_key| other_key != special_key)
+                                .flat_map(|other_key| other_key.options())
+                                .filter(|(other_alt, _)| *other_alt == selected_alt)
+                                .map(|(_, opt_id)| *opt_id)
+                                .collect()
+                        } else {
+                            Vec::new()
+                        }
+                    } else {
+                        Vec::new()
+                    };
+
                     let new_options = options
                         .split(',')
-                        .filter(|x| !prefixes.iter().any(|prefix| x.starts_with(prefix)))
+                        .filter(|x| {
+                            !prefixes.iter().any(|prefix| x.starts_with(prefix))
+                                && !conflicting_ids.iter().any(|&conf| conf == *x)
+                        })
                         .chain(id)
                         .join(",");
 
