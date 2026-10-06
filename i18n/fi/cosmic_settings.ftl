@@ -672,11 +672,12 @@ mirroring = Peilaus
            *[other] näytölle
         }
 end-segment = Päätyalue
-time-format = Päiväyksen ja kellonajan muotoilu
+time-format = Ajan ja päiväyksen muotoilu
     .twenty-four = 24-tuntinen kello
     .show-seconds = Näytä sekunnit
+    .show-weekday = Näytä viikonpäivä
     .first = Ensimmäinen viikonpäivä
-    .show-date = Näytä päiväys aikasovelmassa
+    .date = Päivä
     .friday = Perjantai
     .saturday = Lauantai
     .sunday = Sunnuntai
@@ -841,3 +842,10 @@ bluetooth-display-pin = Bluetooth-parinmuodostus
     .description = Syötä seuraava PIN-koodi laitteelle { $device }, ja paina sitten Enter
 rename = Nimeä uudelleen
 bluetooth-rename-device = Nimeä laite uudelleen
+date-time-applet-settings-title = Ajan ja päiväyksen sovelma
+date-time-applet-settings-label = Ajan ja päiväyksen sovelman asetukset
+on-screen-keyboard = Näyttönäppäimistö
+    .always-show = Näytä aina näyttönäppäimistö
+    .icon-on-panel = Kuvake paneelissa
+    .show-on-gamepad-shortcut = Näytä näyttönäppäimistö peliohjaimen Käynnistä- ja Valitse-/takaisin-painikkeita samanaikaisesti painettaessa
+    .show-on-text-input = Näytä näyttönäppäimistö kun tekstikenttä valitaan
