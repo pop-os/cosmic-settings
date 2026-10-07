@@ -511,6 +511,13 @@ impl cosmic::Application for SettingsApp {
                 }
 
                 #[cfg(feature = "page-input")]
+                crate::pages::Message::DrawingTablet(message) => {
+                    if let Some(page) = self.pages.page_mut::<input::drawing_tablet::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                #[cfg(feature = "page-input")]
                 crate::pages::Message::Keyboard(message) => {
                     if let Some(page) = self.pages.page_mut::<input::keyboard::Page>() {
                         return page.update(message).map(Into::into);

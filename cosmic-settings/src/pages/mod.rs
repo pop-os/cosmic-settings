@@ -64,6 +64,8 @@ pub enum Message {
     #[cfg(feature = "page-input")]
     Input(input::Message),
     #[cfg(feature = "page-input")]
+    DrawingTablet(input::drawing_tablet::Message),
+    #[cfg(feature = "page-input")]
     Keyboard(input::keyboard::Message),
     #[cfg(feature = "page-input")]
     KeyboardShortcuts(input::keyboard::shortcuts::Message),
