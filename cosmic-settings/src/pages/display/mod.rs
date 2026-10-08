@@ -7,7 +7,6 @@ pub mod arrangement;
 use crate::{app, pages};
 use arrangement::Arrangement;
 use cosmic::iced::core::text::{Ellipsize, EllipsizeHeightLimit};
-use cosmic::iced::widget::scrollable::RelativeOffset;
 use cosmic::iced::{Alignment, Length, stream, time};
 use cosmic::widget::{
     self, column, container, dropdown, list_column, segmented_button, tab_bar, text,
@@ -65,8 +64,12 @@ pub enum Mirroring {
 
 #[derive(Clone, Debug)]
 pub enum Message {
-    /// Change placement of display
-    Position(OutputKey, i32, i32),
+    /// Change placement of displays
+    Position(Vec<(OutputKey, i32, i32)>),
+    LayoutApplied {
+        generation: u64,
+        result: Result<(), String>,
+    },
     /// Changes the active display being configured.
     Display(segmented_button::Entity),
     /// Set the color depth of a display.
@@ -89,8 +92,6 @@ pub enum Message {
     // NightLightContext,
     /// Set the orientation of a display.
     Orientation(Transform),
-    /// Pan the displays view
-    Pan(arrangement::Pan),
     /// Status of an applied display change.
     RandrResult(Arc<std::io::Result<ExitStatus>>),
     /// Set the refresh rate of a display.
@@ -121,13 +122,114 @@ impl From<Message> for app::Message {
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Randr {
     Mirror(OutputKey),
-    Position(i32, i32),
     RefreshRate(u32),
     VariableRefreshRate(AdaptiveSyncState),
     Resolution(u32, u32),
     Scale(u32),
     Transform(Transform),
     Toggle(bool),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct NamedPosition {
+    name: String,
+    x: i32,
+    y: i32,
+}
+
+#[derive(Clone, Debug)]
+struct LayoutRequest {
+    generation: u64,
+    positions: Vec<NamedPosition>,
+}
+
+enum LayoutCompletion {
+    Ignore,
+    Start(LayoutRequest),
+    RollBack(Vec<NamedPosition>),
+    Done,
+}
+
+#[derive(Default)]
+struct LayoutUpdates {
+    next_generation: u64,
+    in_flight: Option<LayoutRequest>,
+    queued: Option<LayoutRequest>,
+    confirmed: Option<Vec<NamedPosition>>,
+}
+
+impl LayoutUpdates {
+    fn merge_positions(target: &mut Vec<NamedPosition>, updates: Vec<NamedPosition>) {
+        for update in updates {
+            if let Some(position) = target
+                .iter_mut()
+                .find(|position| position.name == update.name)
+            {
+                *position = update;
+            } else {
+                target.push(update);
+            }
+        }
+    }
+
+    fn submit(
+        &mut self,
+        positions: Vec<NamedPosition>,
+        confirmed: Vec<NamedPosition>,
+    ) -> Option<LayoutRequest> {
+        self.next_generation = self.next_generation.wrapping_add(1);
+        let generation = self.next_generation;
+
+        if self.in_flight.is_some() {
+            if let Some(queued) = &mut self.queued {
+                Self::merge_positions(&mut queued.positions, positions);
+                queued.generation = generation;
+            } else {
+                self.queued = Some(LayoutRequest {
+                    generation,
+                    positions,
+                });
+            }
+            return None;
+        }
+
+        self.confirmed = Some(confirmed);
+        let request = LayoutRequest {
+            generation,
+            positions,
+        };
+        self.in_flight = Some(request.clone());
+        Some(request)
+    }
+
+    fn complete(&mut self, generation: u64, succeeded: bool) -> LayoutCompletion {
+        let Some(in_flight) = self.in_flight.as_ref() else {
+            return LayoutCompletion::Ignore;
+        };
+        if in_flight.generation != generation {
+            return LayoutCompletion::Ignore;
+        }
+        let completed = self.in_flight.take().expect("in-flight request exists");
+
+        if !succeeded {
+            self.queued = None;
+            return self
+                .confirmed
+                .take()
+                .map_or(LayoutCompletion::Done, LayoutCompletion::RollBack);
+        }
+
+        if let Some(confirmed) = &mut self.confirmed {
+            Self::merge_positions(confirmed, completed.positions);
+        }
+        if let Some(next) = self.queued.take() {
+            self.in_flight = Some(next.clone());
+            LayoutCompletion::Start(next)
+        } else {
+            self.confirmed = None;
+            LayoutCompletion::Done
+        }
+    }
 }
 
 /// The page struct for the display settings page.
@@ -144,15 +246,13 @@ pub struct Page {
     config: Config,
     cache: ViewCache,
     // context: Option<ContextDrawer>,
-    display_arrangement_scrollable: widget::Id,
-    /// Tracks the last pan status.
-    last_pan: f32,
     /// The setting to revert to if the next dialog page is cancelled.
     dialog: Option<Randr>,
     /// the instant the setting was changed.
     dialog_countdown: usize,
     show_display_options: bool,
     adjusted_scale: u32,
+    layout_updates: LayoutUpdates,
 }
 
 impl Default for Page {
@@ -169,12 +269,11 @@ impl Default for Page {
             config: Config::default(),
             cache: ViewCache::default(),
             // context: None,
-            display_arrangement_scrollable: widget::Id::unique(),
-            last_pan: 0.5,
             dialog: None,
             dialog_countdown: 0,
             show_display_options: true,
             adjusted_scale: 0,
+            layout_updates: LayoutUpdates::default(),
         }
     }
 }
@@ -478,6 +577,61 @@ impl page::Page<crate::pages::Message> for Page {
     }
 }
 
+#[cfg(feature = "wayland")]
+async fn apply_layout_positions(positions: Vec<NamedPosition>) -> Result<(), String> {
+    use cosmic_randr::Message as RandrMessage;
+    use cosmic_randr::context::HeadConfiguration;
+
+    let (sender, receiver) = cosmic_randr::channel();
+    let (mut context, mut event_queue) = cosmic_randr::connect(sender)
+        .map_err(|error| format!("failed to connect to output manager: {error}"))?;
+    let mut configuration_submitted = false;
+
+    loop {
+        context
+            .dispatch(&mut event_queue)
+            .await
+            .map_err(|error| format!("output manager dispatch failed: {error}"))?;
+
+        while let Some(message) = receiver.try_recv() {
+            match message {
+                RandrMessage::ManagerDone if !configuration_submitted => {
+                    let mut configuration = context.create_output_config();
+                    for position in &positions {
+                        configuration
+                            .enable_head(
+                                &position.name,
+                                Some(HeadConfiguration {
+                                    pos: Some((position.x, position.y)),
+                                    ..HeadConfiguration::default()
+                                }),
+                            )
+                            .map_err(|error| {
+                                format!("failed to configure {}: {error}", position.name)
+                            })?;
+                    }
+                    configuration.apply();
+                    configuration_submitted = true;
+                }
+                RandrMessage::ConfigurationSucceeded if configuration_submitted => return Ok(()),
+                RandrMessage::ConfigurationFailed if configuration_submitted => {
+                    return Err("output manager rejected the display arrangement".into());
+                }
+                RandrMessage::ConfigurationCancelled if configuration_submitted => {
+                    return Err("display arrangement was cancelled".into());
+                }
+                RandrMessage::Unsupported => {
+                    return Err("output management protocol is unsupported".into());
+                }
+                RandrMessage::ManagerFinished => {
+                    return Err("output manager finished before applying the arrangement".into());
+                }
+                _ => {}
+            }
+        }
+    }
+}
+
 impl Page {
     pub fn update(&mut self, message: Message) -> Task<app::Message> {
         match message {
@@ -602,22 +756,27 @@ impl Page {
             // }
             Message::Orientation(orientation) => return self.set_orientation(orientation),
 
-            Message::Pan(pan) => {
-                match pan {
-                    arrangement::Pan::Left => self.last_pan = 0.0f32.max(self.last_pan - 0.01),
-                    arrangement::Pan::Right => self.last_pan = 1.0f32.min(self.last_pan + 0.01),
-                }
-
-                return cosmic::iced::widget::scrollable::snap_to(
-                    self.display_arrangement_scrollable.clone(),
-                    RelativeOffset {
-                        x: Some(self.last_pan),
-                        y: None,
-                    },
-                );
+            Message::Position(positions) => {
+                return self.set_positions(&positions);
             }
 
-            Message::Position(display, x, y) => return self.set_position(display, x, y),
+            Message::LayoutApplied { generation, result } => {
+                if let Err(error) = &result {
+                    tracing::error!(generation, %error, "failed to apply display arrangement");
+                }
+
+                return match self.layout_updates.complete(generation, result.is_ok()) {
+                    LayoutCompletion::Ignore => Task::none(),
+                    LayoutCompletion::Start(request) => Self::start_layout_request(request),
+                    LayoutCompletion::Done => {
+                        cosmic::task::future(async { app::Message::from(on_enter().await) })
+                    }
+                    LayoutCompletion::RollBack(positions) => {
+                        self.apply_named_positions(&positions);
+                        cosmic::task::future(async { app::Message::from(on_enter().await) })
+                    }
+                };
+            }
 
             Message::RefreshRate(rate) => return self.set_refresh_rate(rate),
 
@@ -641,8 +800,11 @@ impl Page {
             }
 
             Message::Update { randr } => {
+                let mut repaired_positions = Vec::new();
                 match Arc::into_inner(randr) {
                     Some(Ok(outputs)) => {
+                        repaired_positions =
+                            arrangement::repair_after_logical_size_change(&self.list, &outputs);
                         self.update_displays(outputs);
                     }
 
@@ -654,6 +816,9 @@ impl Page {
                 }
 
                 self.refreshing_page.store(false, Ordering::SeqCst);
+                if !repaired_positions.is_empty() {
+                    return self.set_positions(&repaired_positions);
+                }
             }
 
             Message::Surface(a) => {
@@ -661,14 +826,7 @@ impl Page {
             }
         }
 
-        self.last_pan = 0.5;
-        cosmic::iced::widget::scrollable::snap_to(
-            self.display_arrangement_scrollable.clone(),
-            RelativeOffset {
-                x: Some(0.5),
-                y: Some(0.5),
-            },
-        )
+        Task::none()
     }
 
     // /// Displays the night light context drawer.
@@ -938,21 +1096,93 @@ impl Page {
         Task::batch(tasks)
     }
 
-    /// Changes the position of the display.
-    pub fn set_position(&mut self, display: OutputKey, x: i32, y: i32) -> Task<app::Message> {
-        let Some(output) = self.list.outputs.get_mut(display) else {
+    fn named_positions(&self) -> Vec<NamedPosition> {
+        self.list
+            .outputs
+            .values()
+            .map(|output| NamedPosition {
+                name: output.name.clone(),
+                x: output.position.0,
+                y: output.position.1,
+            })
+            .collect()
+    }
+
+    fn apply_named_positions(&mut self, positions: &[NamedPosition]) {
+        for position in positions {
+            if let Some((_, output)) = self
+                .list
+                .outputs
+                .iter_mut()
+                .find(|(_, output)| output.name == position.name)
+            {
+                output.position = (position.x, position.y);
+            }
+        }
+    }
+
+    fn start_layout_request(request: LayoutRequest) -> Task<app::Message> {
+        let generation = request.generation;
+
+        #[cfg(feature = "wayland")]
+        {
+            let runtime = tokio::runtime::Handle::current();
+            return cosmic::task::future(async move {
+                let result = match tokio::task::spawn_blocking(move || {
+                    runtime.block_on(tokio::time::timeout(
+                        std::time::Duration::from_secs(5),
+                        apply_layout_positions(request.positions),
+                    ))
+                })
+                .await
+                {
+                    Ok(Ok(result)) => result,
+                    Ok(Err(_)) => Err("timed out applying the display arrangement".into()),
+                    Err(error) => Err(format!("display arrangement worker failed: {error}")),
+                };
+
+                app::Message::from(Message::LayoutApplied { generation, result })
+            });
+        }
+
+        #[cfg(not(feature = "wayland"))]
+        cosmic::task::message(app::Message::from(Message::LayoutApplied {
+            generation,
+            result: Err("output management requires Wayland support".into()),
+        }))
+    }
+
+    fn set_positions(&mut self, positions: &[(OutputKey, i32, i32)]) -> Task<app::Message> {
+        let Some(named_positions) = positions
+            .iter()
+            .map(|(display, x, y)| {
+                self.list.outputs.get(*display).map(|output| NamedPosition {
+                    name: output.name.clone(),
+                    x: *x,
+                    y: *y,
+                })
+            })
+            .collect::<Option<Vec<_>>>()
+        else {
             return Task::none();
         };
-
-        output.position = (x, y);
-
-        if cfg!(feature = "test") {
-            tracing::debug!("set position {x},{y}");
+        if named_positions.is_empty() {
             return Task::none();
         }
 
-        let output = &self.list.outputs[display];
-        self.exec_randr(output, Randr::Position(x, y))
+        let confirmed = self.named_positions();
+        self.apply_named_positions(&named_positions);
+        let request = self.layout_updates.submit(named_positions, confirmed);
+
+        if cfg!(feature = "test") {
+            tracing::debug!(?positions, "set display positions");
+            if let Some(request) = request {
+                _ = self.layout_updates.complete(request.generation, true);
+            }
+            return Task::none();
+        }
+
+        request.map_or_else(Task::none, Self::start_layout_request)
     }
 
     /// Changes the refresh rate of the active display.
@@ -1093,27 +1323,6 @@ impl Page {
                 task.arg("mirror").arg(&output.name).arg(&from_output.name);
             }
 
-            Randr::Position(x, y) => {
-                let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
-                    return Task::none();
-                };
-
-                task.arg("mode")
-                    .arg("--pos-x")
-                    .arg(itoa::Buffer::new().format(x))
-                    .arg("--pos-y")
-                    .arg(itoa::Buffer::new().format(y))
-                    .arg("--refresh")
-                    .arg(format!(
-                        "{}.{:03}",
-                        current.refresh_rate / 1000,
-                        current.refresh_rate % 1000
-                    ))
-                    .arg(name)
-                    .arg(itoa::Buffer::new().format(current.size.0))
-                    .arg(itoa::Buffer::new().format(current.size.1));
-            }
-
             Randr::RefreshRate(rate) => {
                 let Some(current) = output.current.and_then(|id| self.list.modes.get(id)) else {
                     return Task::none();
@@ -1217,16 +1426,11 @@ pub fn display_arrangement() -> Section<crate::pages::Message> {
                 )
                 .push({
                     Arrangement::new(&page.list, &page.display_tabs)
-                        .on_select(|id| pages::Message::Displays(Message::Display(id)))
-                        .on_pan(|pan| pages::Message::Displays(Message::Pan(pan)))
-                        .on_placement(|id, x, y| {
-                            pages::Message::Displays(Message::Position(id, x, y))
+                        .on_select(|entity| pages::Message::Displays(Message::Display(entity)))
+                        .on_placement(|positions| {
+                            pages::Message::Displays(Message::Position(positions))
                         })
-                        .apply(widget::scrollable::horizontal)
-                        .id(page.display_arrangement_scrollable.clone())
-                        .width(Length::Shrink)
-                        .apply(container)
-                        .center_x(Length::Fill)
+                        .view()
                 })
                 .apply(container)
                 .class(cosmic::theme::Container::List)
