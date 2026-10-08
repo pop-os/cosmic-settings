@@ -7,6 +7,7 @@ use std::sync::{Arc, LazyLock};
 use anyhow::Context;
 use cosmic::app::ContextDrawer;
 use cosmic::iced::core::text::Wrapping;
+use cosmic::iced::core::Widget;
 use cosmic::iced::widget::operation::focus_next;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::space::horizontal;
@@ -18,6 +19,7 @@ use futures::{SinkExt, StreamExt};
 use secure_string::SecureString;
 use tokio::sync::Mutex;
 
+use super::NM_CONNECTION_EDITOR;
 use super::backend as network_manager;
 use super::backend::available_wifi::{AccessPoint, NetworkType};
 use super::backend::current_networks::ActiveConnectionInfo;
@@ -137,6 +139,7 @@ pub struct Page {
     qr_drawer: Option<QRCodeDrawer>,
     /// Search query for filtering WiFi networks
     search_query: String,
+    connection_editor_available: bool,
 }
 
 #[derive(Debug)]
@@ -164,7 +167,9 @@ impl page::Page<crate::pages::Message> for Page {
         &self,
         sections: &mut slotmap::SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
-        Some(vec![sections.insert(devices_view())])
+        Some(vec![
+            sections.insert(devices_view(self.connection_editor_available)),
+        ])
     }
 
     fn dialog(&'_ self) -> Option<Element<'_, crate::pages::Message>> {
@@ -278,19 +283,25 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn header_view(&self) -> Option<cosmic::Element<'_, crate::pages::Message>> {
-        Some(
-            widget::button::standard(fl!("add-network"))
-                .trailing_icon(icon::from_name("window-pop-out-symbolic"))
-                .on_press(Message::AddNetwork)
-                .apply(widget::container)
-                .width(Length::Fill)
-                .align_x(Alignment::End)
-                .apply(Element::from)
-                .map(crate::pages::Message::WiFi),
-        )
+        if self.connection_editor_available {
+            Some(
+                widget::button::standard(fl!("add-network"))
+                    .trailing_icon(icon::from_name("window-pop-out-symbolic"))
+                    .on_press(Message::AddNetwork)
+                    .apply(widget::container)
+                    .width(Length::Fill)
+                    .align_x(Alignment::End)
+                    .apply(Element::from)
+                    .map(crate::pages::Message::WiFi),
+            )
+        } else {
+            None
+        }
     }
 
     fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+        self.connection_editor_available = which::which(NM_CONNECTION_EDITOR).is_ok();
+
         let (tx, rx) = tokio::sync::mpsc::channel(4);
         self.secret_tx = Some(tx);
         if self.nm_task.is_none() {
@@ -886,7 +897,7 @@ fn escape_wifi_qr_string(s: &str) -> String {
         .replace('"', "\\\"")
 }
 
-fn devices_view() -> Section<crate::pages::Message> {
+fn devices_view(connection_editor_available: bool) -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         airplane_mode_txt = fl!("airplane-on");
         connect_txt = fl!("connect");
@@ -1013,10 +1024,12 @@ fn devices_view() -> Section<crate::pages::Message> {
                                                 &section.descriptions[disconnect_txt],
                                             )
                                         }))
-                                        .push(popup_button(
-                                            Message::Settings(network.ssid.clone()),
-                                            &section.descriptions[settings_txt],
-                                        ))
+                                        .push_maybe(connection_editor_available.then(|| {
+                                            popup_button(
+                                                Message::Settings(network.ssid.clone()),
+                                                &section.descriptions[settings_txt],
+                                            )
+                                        }))
                                         .push_maybe(is_known.then(|| {
                                             popup_button(
                                                 Message::QRCodeRequest(network.ssid.clone()),
@@ -1099,29 +1112,32 @@ fn devices_view() -> Section<crate::pages::Message> {
                                 .into()
                         };
 
-                        let view_more_button =
-                            widget::button::icon(widget::icon::from_name("view-more-symbolic"));
+                        let view_more: Option<Element<_>> =
+                            if (is_connected || connection_editor_available || is_known) {
+                                let view_more_button =
+                                    widget::button::icon(widget::icon::from_name("view-more-symbolic"));
 
-                        let view_more: Element<_> = if page
-                            .view_more_popup
-                            .as_deref()
-                            .is_some_and(|id| id == network.ssid.as_ref())
-                        {
-                            widget::popover(view_more_button.on_press(Message::ViewMore(None)))
-                                .position(widget::popover::Position::Bottom)
-                                .on_close(Message::ViewMore(None))
-                                .popup(
-                                    widget::column::with_capacity(4)
+                                let view_more  = if page
+                                    .view_more_popup
+                                    .as_deref()
+                                    .is_some_and(|id| id == network.ssid.as_ref())
+                                {
+                                    widget::popover(view_more_button.on_press(Message::ViewMore(None)))
+                                        .position(widget::popover::Position::Bottom)
+                                        .on_close(Message::ViewMore(None))
+                                        .popup(widget::column::with_capacity(4)
                                         .push_maybe(is_connected.then(|| {
                                             popup_button(
                                                 Message::Disconnect(network.ssid.clone()),
                                                 &section.descriptions[disconnect_txt],
                                             )
                                         }))
-                                        .push(popup_button(
-                                            Message::Settings(network.ssid.clone()),
-                                            &section.descriptions[settings_txt],
-                                        ))
+                                        .push_maybe(connection_editor_available.then(|| {
+                                            popup_button(
+                                                Message::Settings(network.ssid.clone()),
+                                                &section.descriptions[settings_txt],
+                                            )
+                                        }))
                                         .push_maybe(is_known.then(|| {
                                             popup_button(
                                                 Message::QRCodeRequest(network.ssid.clone()),
@@ -1137,14 +1153,18 @@ fn devices_view() -> Section<crate::pages::Message> {
                                         .width(Length::Fixed(200.0))
                                         .apply(widget::container)
                                         .padding(cosmic::theme::spacing().space_xxs)
-                                        .class(cosmic::theme::Container::Dropdown),
-                                )
-                                .into()
-                        } else {
-                            view_more_button
-                                .on_press(Message::ViewMore(Some(network.ssid.clone())))
-                                .into()
-                        };
+                                        .class(cosmic::theme::Container::Dropdown))
+                                        .into()
+                                } else {
+                                    view_more_button
+                                        .on_press(Message::ViewMore(Some(network.ssid.clone())))
+                                        .into()
+                                };
+
+                                Some(view_more)
+                            } else {
+                                None
+                            };
 
                         let controls = widget::row::with_capacity(2)
                             .push(connect)
