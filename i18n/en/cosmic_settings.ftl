@@ -931,6 +931,10 @@ pinch-to-zoom = Pinch to zoom
 tap-to-click = Tap to click
     .desc = Enables single-finger tap for primary click, two-finger tap for secondary click, and three-finger tap for middle click
 
+tap-and-drag = Tap and drag
+
+drag-lock = Drag lock
+
 touchpad = Touchpad
     .acceleration = Enable touchpad acceleration
     .speed = Touchpad speed
