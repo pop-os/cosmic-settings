@@ -285,6 +285,13 @@ impl cosmic::Application for SettingsApp {
             self.search_active = false;
             self.search_clear();
         }
+        else if self.core.window.show_context {
+            // Close context drawer if open
+            self.core.window.show_context = false;
+        }
+        else if let Some(parent) = self.pages.info[self.active_page].parent{
+           return self.activate_page(parent);
+        }
 
         Task::none()
     }
