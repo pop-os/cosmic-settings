@@ -150,6 +150,8 @@ fn click_behavior() -> Section<crate::pages::Message> {
         click_finger = fl!("click-behavior", "click-finger");
         button_areas = fl!("click-behavior", "button-areas");
         tap_to_click = fl!("tap-to-click");
+        tap_and_drag = fl!("tap-and-drag");
+        drag_lock = fl!("drag-lock");
         _tap_to_click_desc = fl!("tap-to-click", "desc");
     });
 
@@ -161,6 +163,11 @@ fn click_behavior() -> Section<crate::pages::Message> {
             let page = binder
                 .page::<super::Page>()
                 .expect("input devices page not found");
+            let tap_enabled = page
+                .input_touchpad
+                .tap_config
+                .as_ref()
+                .is_some_and(|x| x.enabled);
 
             settings::section()
                 .title(&*section.title)
@@ -178,13 +185,36 @@ fn click_behavior() -> Section<crate::pages::Message> {
                 ))
                 .add(
                     settings::item::builder(&descriptions[tap_to_click]).toggler(
-                        page.input_touchpad
-                            .tap_config
-                            .as_ref()
-                            .is_some_and(|x| x.enabled),
+                        tap_enabled,
                         Message::TapToClick,
                     ),
                 )
+                .add_maybe(if tap_enabled {
+                    Some(
+                        settings::item::builder(&descriptions[tap_and_drag]).toggler(
+                            page.input_touchpad
+                                .tap_config
+                                .as_ref()
+                                .is_some_and(|x| x.drag),
+                            Message::TapAndDrag,
+                        ),
+                    )
+                } else {
+                    None
+                })
+                .add_maybe(if tap_enabled {
+                    Some(
+                        settings::item::builder(&descriptions[drag_lock]).toggler(
+                            page.input_touchpad
+                                .tap_config
+                                .as_ref()
+                                .is_some_and(|x| x.drag_lock),
+                            Message::DragLock,
+                        ),
+                    )
+                } else {
+                    None
+                })
                 .apply(Element::from)
                 .map(crate::pages::Message::Input)
         })
