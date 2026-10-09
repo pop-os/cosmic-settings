@@ -4,14 +4,8 @@ Priority: optional
 Maintainer: Michael Murphy <mmstick@pm.me>
 Build-Depends:
     debhelper-compat (=13),
-    cmake,
-    fonts-open-sans,
     just,
-    libclang-dev,
     libdav1d-dev,
-    libexpat1-dev,
-    libfontconfig-dev,
-    libfreetype-dev,
     libinput-dev,
     libudev-dev,
     libwayland-dev,
