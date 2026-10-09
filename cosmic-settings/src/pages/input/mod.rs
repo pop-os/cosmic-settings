@@ -28,6 +28,8 @@ pub enum Message {
     SetScrollFactor(f64, bool),
     SetScrollMethod(Option<ScrollMethod>, bool),
     TapToClick(bool),
+    TapAndDrag(bool),
+    DragLock(bool),
 }
 
 pub struct Page {
@@ -174,6 +176,32 @@ impl Page {
                             drag_lock: false,
                         })
                         .enabled = enabled;
+                });
+            }
+
+            Message::TapAndDrag(enabled) => {
+                self.update_input(true, |conf| {
+                    conf.tap_config
+                        .get_or_insert(TapConfig {
+                            enabled: true,
+                            button_map: Some(TapButtonMap::LeftRightMiddle),
+                            drag: true,
+                            drag_lock: false,
+                        })
+                        .drag = enabled;
+                });
+            }
+
+            Message::DragLock(enabled) => {
+                self.update_input(true, |conf| {
+                    conf.tap_config
+                        .get_or_insert(TapConfig {
+                            enabled: true,
+                            button_map: Some(TapButtonMap::LeftRightMiddle),
+                            drag: true,
+                            drag_lock: false,
+                        })
+                        .drag_lock = enabled;
                 });
             }
         }
