@@ -4,7 +4,7 @@ use fast_image_resize::SrcCropping;
 use futures_lite::Stream;
 use futures_util::StreamExt;
 use image::imageops::FilterType;
-use image::{DynamicImage, ImageBuffer, ImageDecoder, ImageResult, Limits, Rgba, RgbaImage};
+use image::{DynamicImage, ImageDecoder, ImageResult, Limits, RgbaImage};
 use jxl_oxide::integration::JxlDecoder;
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -16,6 +16,9 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use walkdir::WalkDir;
+
+/// A wallpaper path with display and selection thumbnails.
+pub type ImageWithThumbnails = (PathBuf, RgbaImage, RgbaImage);
 
 pub const DEFAULT_COLORS: &[Color] = &[
     Color::Single([0.580, 0.922, 0.922]),
@@ -140,13 +143,7 @@ pub async fn load_each_from_path(
 }
 
 #[must_use]
-pub fn load_image_with_thumbnail(
-    path: PathBuf,
-) -> Option<(
-    PathBuf,
-    ImageBuffer<Rgba<u8>, Vec<u8>>,
-    ImageBuffer<Rgba<u8>, Vec<u8>>,
-)> {
+pub fn load_image_with_thumbnail(path: PathBuf) -> Option<ImageWithThumbnails> {
     let cache_dir = cache_dir();
     let image_operation = load_thumbnail(&mut Vec::new(), cache_dir.as_deref(), &path);
 

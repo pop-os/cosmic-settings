@@ -177,7 +177,7 @@ impl Default for Page {
 }
 
 enum Context {
-    ShowInputSourcesContext,
+    InputSources,
     SpecialCharacter(SpecialKey),
     NumlockState,
 }
@@ -347,7 +347,7 @@ impl page::Page<crate::pages::Message> for Page {
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
         self.context.as_ref().map(|context| match context {
-            Context::ShowInputSourcesContext => {
+            Context::InputSources => {
                 let search = widget::search_input("", &self.input_source_search)
                     .on_input(Message::InputSourceSearch)
                     .on_clear(Message::InputSourceSearch(String::new()))
@@ -557,7 +557,7 @@ impl Page {
             }
 
             Message::ShowInputSourcesContext => {
-                self.context = Some(Context::ShowInputSourcesContext);
+                self.context = Some(Context::InputSources);
                 return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
             }
 
