@@ -101,13 +101,14 @@ pub struct PageRefresh {
     language_selector_available: bool,
 }
 
-#[derive(Default)]
 pub struct Page {
     entity: page::Entity,
     config: Option<(cosmic_config::Config, Vec<String>)>,
     context: Option<ContextView>,
     language: Option<SystemLocale>,
+    language_search_id: widget::Id,
     region: Option<SystemLocale>,
+    region_search_id: widget::Id,
     available_languages: SlotMap<DefaultKey, SystemLocale>,
     system_locales: BTreeMap<String, SystemLocale>,
     registry: Option<locale::Registry>,
@@ -119,6 +120,28 @@ pub struct Page {
     numeric_locale: Option<Locale>,
     /// Cached LC_TIME locale in icu locale format.
     time_locale: Option<Locale>,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        Self {
+            entity: page::Entity::default(),
+            config: None,
+            context: None,
+            language: None,
+            language_search_id: widget::Id::unique(),
+            region: None,
+            region_search_id: widget::Id::unique(),
+            available_languages: SlotMap::default(),
+            system_locales: BTreeMap::default(),
+            registry: None,
+            expanded_source_popover: None,
+            add_language_search: String::new(),
+            language_selector_available: false,
+            numeric_locale: None,
+            time_locale: None,
+        }
+    }
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -165,6 +188,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let search = widget::search_input("", &self.add_language_search)
                     .on_input(Message::AddLanguageSearch)
                     .on_clear(Message::AddLanguageSearch(String::new()))
+                    .capture_escape(false)
+                    .id(self.language_search_id.clone())
                     .apply(Element::from)
                     .map(crate::pages::Message::from);
                 let drawer = context_drawer(
@@ -193,6 +218,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let search = widget::search_input("", &self.add_language_search)
                     .on_input(Message::AddLanguageSearch)
                     .on_clear(Message::AddLanguageSearch(String::new()))
+                    .capture_escape(false)
+                    .id(self.region_search_id.clone())
                     .apply(Element::from)
                     .map(crate::pages::Message::from);
 
@@ -251,7 +278,10 @@ impl Page {
 
             Message::AddLanguageContext => {
                 self.context = Some(ContextView::AddLanguage);
-                return cosmic::Task::done(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::Task::done(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    Some(self.language_search_id.clone()),
+                ));
             }
 
             Message::AddLanguageSearch(search) => {
@@ -292,7 +322,10 @@ impl Page {
 
             Message::RegionContext => {
                 self.context = Some(ContextView::Region);
-                return cosmic::Task::done(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::Task::done(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    Some(self.region_search_id.clone()),
+                ));
             }
 
             Message::SourceContext(context_message) => {

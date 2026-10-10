@@ -219,7 +219,10 @@ impl Page {
                 let name_id = self.name_id.clone();
                 self.add_shortcut.enable();
                 return Task::batch(vec![
-                    cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity)),
+                    cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                        self.entity,
+                        None,
+                    )),
                     // XX hack: wait a bit before focusing the input to avoid it being ignored before it exists
                     cosmic::task::future(async move {
                         tokio::time::sleep(Duration::from_millis(10)).await;

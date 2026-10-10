@@ -53,6 +53,7 @@ pub struct Page {
     pub(crate) config_helper: Option<Config>,
     pub(crate) current_config: Option<CosmicPanelConfig>,
     pub(crate) reorder_widget_state: Option<(Applet<'static>, CosmicPanelConfig)>,
+    pub(crate) applet_search_id: cosmic::widget::Id,
     pub(crate) search: String,
     pub(crate) context: Option<ContextDrawerVariant>,
 }
@@ -75,6 +76,7 @@ impl Default for Page {
             config_helper,
             current_config,
             reorder_widget_state: None,
+            applet_search_id: cosmic::widget::Id::unique(),
             search: String::new(),
             context: None,
         }
@@ -135,6 +137,8 @@ impl page::Page<crate::pages::Message> for Page {
                     .on_input(Message::Search)
                     .on_paste(Message::Search)
                     .width(Length::Fixed(312.0))
+                    .capture_escape(false)
+                    .id(self.applet_search_id.clone())
                     .apply(Element::from)
                     .map(crate::pages::Message::PanelApplet);
 
@@ -412,7 +416,10 @@ impl Page {
             }
             Message::AddAppletDrawer => {
                 self.context = Some(ContextDrawerVariant::AddApplet);
-                return cosmic::task::message(app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(app::Message::OpenContextDrawer(
+                    self.entity,
+                    Some(self.applet_search_id.clone()),
+                ));
             }
         };
         Task::none()

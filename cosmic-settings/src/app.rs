@@ -158,7 +158,7 @@ pub enum Message {
     DesktopInfo,
     Error(String),
     None,
-    OpenContextDrawer(Entity),
+    OpenContextDrawer(Entity, Option<cosmic::widget::Id>),
     #[cfg(feature = "wayland")]
     OutputAdded(OutputInfo, WlOutput),
     #[cfg(feature = "wayland")]
@@ -284,6 +284,16 @@ impl cosmic::Application for SettingsApp {
         if self.search_active {
             self.search_active = false;
             self.search_clear();
+        } else if self.core.window.show_context {
+            // Close context drawer if open
+            self.core.window.show_context = false;
+        } else if self.pages.page[self.active_page].dialog_open() {
+            self.pages.page[self.active_page].close_dialog();
+        } else if self.pages.page[self.active_page].block_escape() {
+            // In case there's valid reason don't change page
+            self.pages.page[self.active_page].handle_escape();
+        } else if let Some(parent) = self.pages.info[self.active_page].parent {
+            return self.activate_page(parent);
         }
 
         Task::none()
@@ -866,9 +876,13 @@ impl cosmic::Application for SettingsApp {
             Message::SetTheme(t) => {
                 return cosmic::command::set_theme(t);
             }
-            Message::OpenContextDrawer(page) => {
+            Message::OpenContextDrawer(page, id) => {
                 self.core.window.show_context = true;
                 self.active_context_page = Some(page);
+                match id {
+                    Some(id) => return cosmic::widget::text_input::focus(id.clone()),
+                    None => return Task::none(),
+                }
             }
 
             Message::Error(error) => {

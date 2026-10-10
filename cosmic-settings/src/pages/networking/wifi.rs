@@ -484,7 +484,10 @@ impl Page {
                 });
 
                 // Open the context drawer
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    None,
+                ));
             }
             Message::AddNetwork => {
                 tokio::task::spawn(super::nm_add_wifi());
