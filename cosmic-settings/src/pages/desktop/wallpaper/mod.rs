@@ -735,7 +735,10 @@ impl Page {
             Message::ColorAddContext => {
                 self.context_view = Some(ContextView::AddColor);
                 self.selection.active = Choice::Color(wallpaper::Color::Single([0., 0., 0.]));
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    None,
+                ));
             }
 
             Message::ColorRemove(color) => {

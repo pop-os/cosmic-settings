@@ -35,6 +35,7 @@ impl Default for Page {
                 config_helper,
                 current_config,
                 reorder_widget_state: None,
+                applet_search_id: cosmic::widget::Id::unique(),
                 search: String::new(),
                 context: None,
             },

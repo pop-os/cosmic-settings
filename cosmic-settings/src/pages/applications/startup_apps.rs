@@ -1,8 +1,7 @@
 use cosmic::app::ContextDrawer;
 use cosmic::iced::{Alignment, Length};
-use cosmic::widget::text_input::focus;
 use cosmic::widget::{button, icon, settings, text};
-use cosmic::{Apply, Element, Task, task, widget};
+use cosmic::{Apply, Element, Task, widget};
 use cosmic_settings_page::section::Entity;
 use cosmic_settings_page::{self as page, Content, Info, Section};
 use freedesktop_desktop_entry::DesktopEntry;
@@ -10,11 +9,7 @@ use itertools::Itertools;
 use slotmap::{Key, SlotMap};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
-use std::sync::LazyLock;
 use tracing::error;
-
-pub static ADD_APPLICATION_SEARCH: LazyLock<widget::Id> =
-    LazyLock::new(|| widget::Id::new("ADD_APPLICATION_SEARCH"));
 
 #[derive(Clone, Debug)]
 pub struct CachedApps {
@@ -28,6 +23,7 @@ pub struct Page {
     on_enter_handle: Option<cosmic::iced::task::Handle>,
     cached_startup_apps: Option<CachedApps>,
     application_search: String,
+    application_search_id: widget::Id,
     context: Option<Context>,
     app_to_remove: Option<DesktopEntry>,
     target_directory_type: Option<DirectoryType>,
@@ -40,6 +36,7 @@ impl Default for Page {
             on_enter_handle: None,
             cached_startup_apps: None,
             application_search: String::new(),
+            application_search_id: widget::Id::unique(),
             context: None,
             app_to_remove: None,
             target_directory_type: None,
@@ -122,7 +119,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let search = widget::search_input("", &self.application_search)
                     .on_input(|i| Message::ApplicationSearch(i).into())
                     .on_clear(Message::ApplicationSearch(String::new()).into())
-                    .id(ADD_APPLICATION_SEARCH.clone())
+                    .capture_escape(false)
+                    .id(self.application_search_id.clone())
                     .apply(Element::from);
 
                 Some(
@@ -226,9 +224,12 @@ impl Page {
                 self.application_search = search;
             }
             Message::ShowApplicationSidebar(directory_type) => {
+                self.application_search.clear();
                 self.context = Some(Context::AddApplication(directory_type));
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity))
-                    .chain(task::message(Message::FocusAddApplicationSearch));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    Some(self.application_search_id.clone()),
+                ));
             }
             Message::AddStartupApplication(directory_type, app) => {
                 let mut file_name = app.clone().appid;
@@ -326,26 +327,6 @@ impl Page {
                 self.app_to_remove = None;
                 self.target_directory_type = None;
                 self.context = None;
-            }
-            Message::FocusAddApplicationSearch => {
-                // retry until the widget is in the tree and focused or the dialog is removed.
-                if matches!(self.context, Some(Context::AddApplication(_))) {
-                    return cosmic::iced::runtime::task::widget(
-                        cosmic::iced::core::widget::operation::focusable::find_focused(),
-                    )
-                    .collect()
-                    .then(|id| {
-                        if id
-                            .first()
-                            .is_some_and(|id| *id == ADD_APPLICATION_SEARCH.clone())
-                        {
-                            Task::none()
-                        } else {
-                            focus(ADD_APPLICATION_SEARCH.clone())
-                                .chain(task::message(Message::FocusAddApplicationSearch))
-                        }
-                    });
-                }
             }
             _ => {}
         }
