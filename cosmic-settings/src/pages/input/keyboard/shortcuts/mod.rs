@@ -31,6 +31,10 @@ use slab::Slab;
 use slotmap::{DefaultKey, Key, SecondaryMap, SlotMap};
 use std::collections::BTreeSet;
 use std::io;
+use std::sync::LazyLock;
+
+pub static SEARCH_ID: LazyLock<widget::Id> =
+    LazyLock::new(|| widget::Id::new("KEYBOARD_SHORTCUTS_SEARCH_ID"));
 
 pub struct Page {
     entity: page::Entity,
@@ -156,7 +160,7 @@ impl page::Page<crate::pages::Message> for Page {
 
         self.reload_search();
 
-        Task::none()
+        widget::text_input::focus(SEARCH_ID.clone())
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
@@ -172,6 +176,14 @@ impl page::Page<crate::pages::Message> for Page {
         self.search_model
             .subscription(core)
             .map(|m| crate::pages::Message::KeyboardShortcuts(Message::SearchShortcut(m)))
+    }
+
+    fn block_escape(&self) -> bool {
+        return self.search.input != "";
+    }
+
+    fn handle_escape(&mut self) {
+        self.search.input.clear();
     }
 }
 
@@ -444,6 +456,8 @@ fn shortcuts() -> Section<crate::pages::Message> {
                 .width(314.)
                 .on_clear(Message::Search(String::new()))
                 .on_input(Message::Search)
+                .capture_escape(false)
+                .id(SEARCH_ID.clone())
                 .apply(widget::container)
                 .padding([2, 0, 0, 0])
                 .center_x(Length::Fill);

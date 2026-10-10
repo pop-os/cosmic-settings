@@ -20,10 +20,10 @@ pub use timedate_zbus::TimeDateProxy;
 use tracing::error;
 
 crate::cache_dynamic_lazy! {
-    static WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
-    static SHOW_WEEKDAY: String = fl!("time-format", "show-weekday");
-    static SHOW_SECONDS: String = fl!("time-format", "show-seconds");
-    static SHOW_DATE: String = fl!("time-format", "date");}
+static WEEKDAYS: [String; 4] = [fl!("time-format", "friday"), fl!("time-format", "saturday"), fl!("time-format", "sunday"), fl!("time-format", "monday")];
+static SHOW_WEEKDAY: String = fl!("time-format", "show-weekday");
+static SHOW_SECONDS: String = fl!("time-format", "show-seconds");
+static SHOW_DATE: String = fl!("time-format", "date");}
 
 #[derive(Debug, Clone)]
 pub struct Info {
@@ -42,6 +42,7 @@ pub struct Page {
     ntp_enabled: bool,
     show_date_in_top_panel: bool,
     timezone_context: bool,
+    timezone_search_id: widget::Id,
     date_time_applet_context: bool,
     local_time: Option<DateTime<Gregorian>>,
     timezone: Option<usize>,
@@ -122,6 +123,7 @@ impl Default for Page {
             show_date_in_top_panel,
             timezone: None,
             timezone_context: false,
+            timezone_search_id: widget::Id::unique(),
             date_time_applet_context: false,
             timezone_list: Vec::new(),
             timezone_search: String::new(),
@@ -186,7 +188,9 @@ impl page::Page<crate::pages::Message> for Page {
         if self.timezone_context {
             let search = widget::search_input("", &self.timezone_search)
                 .on_input(Message::TimezoneSearch)
+                .id(self.timezone_search_id.clone())
                 .on_clear(Message::TimezoneSearch(String::new()))
+                .capture_escape(false)
                 .apply(Element::from)
                 .map(crate::pages::Message::DateAndTime);
 
@@ -219,8 +223,12 @@ impl Page {
         match message {
             Message::TimezoneContext => {
                 self.timezone_search.clear();
+                self.date_time_applet_context = false;
                 self.timezone_context = true;
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    Some(self.timezone_search_id.clone()),
+                ));
             }
 
             Message::MilitaryTime(enable) => {
@@ -259,8 +267,12 @@ impl Page {
             }
 
             Message::DateAndTimeContext => {
+                self.timezone_context = false;
                 self.date_time_applet_context = true;
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    None,
+                ));
             }
 
             Message::ShowDate(enable) => {
@@ -384,17 +396,19 @@ impl Page {
     fn date_time_applet_view(&self) -> Element<'_, crate::pages::Message> {
         let mut list = widget::list_column();
 
-        list = list.add(
-            settings::item::builder(&*SHOW_DATE)
-                        .toggler(self.show_date_in_top_panel, Message::ShowDate)
-        )
-        .add(
-            settings::item::builder(&*SHOW_WEEKDAY)
-                .toggler(self.show_weekday, Message::ShowWeekday),
-        )
-        .add(
-            settings::item::builder(&*SHOW_SECONDS)
-                        .toggler(self.show_seconds, Message::ShowSeconds));
+        list = list
+            .add(
+                settings::item::builder(&*SHOW_DATE)
+                    .toggler(self.show_date_in_top_panel, Message::ShowDate),
+            )
+            .add(
+                settings::item::builder(&*SHOW_WEEKDAY)
+                    .toggler(self.show_weekday, Message::ShowWeekday),
+            )
+            .add(
+                settings::item::builder(&*SHOW_SECONDS)
+                    .toggler(self.show_seconds, Message::ShowSeconds),
+            );
 
         list.apply(Element::from)
             .map(crate::pages::Message::DateAndTime)
@@ -499,11 +513,10 @@ fn format() -> Section<crate::pages::Message> {
                     ),
                 )
                 // Show a Context Drawer which contains settings for how the Date and Time applet displays the date.
-                .add(
-                    crate::widget::go_next_with_item(
-                        &section.descriptions[date_time_applet_settings_label],
-                        "",
-                        Message::DateAndTimeContext,
+                .add(crate::widget::go_next_with_item(
+                    &section.descriptions[date_time_applet_settings_label],
+                    "",
+                    Message::DateAndTimeContext,
                 ))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::DateAndTime)
