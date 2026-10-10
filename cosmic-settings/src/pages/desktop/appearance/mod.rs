@@ -204,7 +204,7 @@ impl Page {
                     std::mem::replace(&mut self.drawer, drawer::Content::from(&self.theme_manager));
                 self.drawer.preserve_from(&mut previous);
                 tasks.push(cosmic::task::message(
-                    crate::app::Message::OpenContextDrawer(self.entity),
+                    crate::app::Message::OpenContextDrawer(self.entity, None),
                 ));
                 tasks.push(self.drawer.on_open(&context_view));
             }

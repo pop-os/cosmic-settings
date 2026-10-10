@@ -147,6 +147,7 @@ pub struct Page {
     entity: page::Entity,
     config: cosmic_config::Config,
     context: Option<Context>,
+    search_id: widget::Id,
     input_source_search: String,
     xkb: XkbConfig,
     keyboard_config: KeyboardConfig,
@@ -169,6 +170,7 @@ impl Default for Page {
             active_layouts: Vec::new(),
             xkb: XkbConfig::default(),
             keyboard_config: KeyboardConfig::default(),
+            search_id: widget::Id::unique(),
             input_source_search: String::new(),
             show_extended_input_sources: false,
             config,
@@ -351,6 +353,8 @@ impl page::Page<crate::pages::Message> for Page {
                 let search = widget::search_input("", &self.input_source_search)
                     .on_input(Message::InputSourceSearch)
                     .on_clear(Message::InputSourceSearch(String::new()))
+                    .capture_escape(false)
+                    .id(self.search_id.clone())
                     .apply(Element::from)
                     .map(crate::pages::Message::Keyboard);
 
@@ -558,7 +562,10 @@ impl Page {
 
             Message::ShowInputSourcesContext => {
                 self.context = Some(Context::ShowInputSourcesContext);
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    Some(self.search_id.clone()),
+                ));
             }
 
             Message::ExpandInputSourcePopover(value) => {
@@ -567,12 +574,18 @@ impl Page {
 
             Message::OpenSpecialCharacterContext(key) => {
                 self.context = Some(Context::SpecialCharacter(key));
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    None,
+                ));
             }
 
             Message::OpenNumlockContext => {
                 self.context = Some(Context::NumlockState);
-                return cosmic::task::message(crate::app::Message::OpenContextDrawer(self.entity));
+                return cosmic::task::message(crate::app::Message::OpenContextDrawer(
+                    self.entity,
+                    None,
+                ));
             }
 
             Message::SpecialCharacterSelect(id) => {

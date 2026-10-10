@@ -59,6 +59,30 @@ pub trait Page<Message: Clone + 'static>: Downcast {
         None
     }
 
+    /// Get info on dialog state
+    #[inline]
+    fn dialog_open(&self) -> bool {
+        false
+    }
+
+    /// Order page to close dialog
+    #[inline]
+    fn close_dialog(&mut self) {
+        ()
+    }
+
+    /// Get info on dialog state
+    #[inline]
+    fn block_escape(&self) -> bool {
+        false
+    }
+
+    /// Order page to handle escape event
+    #[inline]
+    fn handle_escape(&mut self) {
+        ()
+    }
+
     /// Response from a file chooser dialog request.
     #[inline]
     fn file_chooser(&mut self, _selected: Vec<url::Url>) -> Task<Message> {
