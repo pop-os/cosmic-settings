@@ -712,8 +712,9 @@ impl Page {
             Message::Dialog(dialog) => {
                 self.password_hidden = true;
                 self.password_confirm_hidden = true;
+                let update_focus = self.dialog.is_none();
                 self.dialog = dialog.clone();
-                if let Some(dialog) = dialog {
+                if update_focus && let Some(dialog) = dialog {
                     match dialog {
                         Dialog::AddNewUser(_user) => {
                             return widget::text_input::focus(self.username_id.clone());
