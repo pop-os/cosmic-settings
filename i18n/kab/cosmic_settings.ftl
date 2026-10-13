@@ -52,6 +52,7 @@ workspaces-orientation = Taɣda n tallunin n umahil
     .horizontal = Aglawan
 sound-applications = Isnasen
     .desc = Iblaɣen akked iɣewwaṛen n usnas
+    .none = Ulac isnasen i yesseqdacen ameslaw
 xdg-entry-x11-applications-keywords = COSMIC;X11;Asnas;Urar;Amṣada;
 xdg-entry-wireless-keywords = COSMIC;WiFi;Wi-Fi;Aẓeṭṭa;Tuqqna;
 xdg-entry-wireless-comment = Tuqqniwin Wi-Fi akked imeɣna n tuqqna
@@ -138,15 +139,28 @@ interface-density = Taneẓẓi n ugrudem
     .compact = Akussim
     .spacious = Wessiɛen
 style = Aɣanib
-    .round = Imdewweṛ
-    .slightly-round = Imdewweṛ cwiṭ
+    .round = Imdewwer
+    .slightly-round = Imdewwer cwiṭ
     .square = Amkuẓ
+    .frosted-glass = Asmaɣ iluɣen
+    .frosted-system-interface = Agrudem n unagraw
+    .frosted-system-interface-desc = Snes asemdu n usmaɣ iluɣen ɣef umsekker, temkarḍit n yisnasen, tmuɣli tamatut n tallunin n umahil d yisenqaden ɣef ugdil
+    .frosted-windows = Isfuyla
+    .frosted-windows-desc = Snes asemdu n usmaɣ iluɣen ɣef yisfuyla d yidiwenniyen
+    .frosted-panels = Igalisen
+    .frosted-panels-desc = Snes asemdu n usmaɣ iluɣen ɣef ugalis d udekkan
+    .frosted-applets = Tappliḍin
+    .frosted-applets-desc = Snes asemdu n usmaɣ iluɣen ɣef wumuɣen n tappliḍin deg ugalis d udekkan
+    .frosted-thickness = Tuzert n usemdu n usmaɣ iluɣen
+    .less = drus
+    .more = ugar
+    .glass-opacity = Aswir n tḍullest n usmaɣ
 text-tint = Sbeɣ n uḍris n ugrudem
     .desc = Yettwaseqdec iwakken ad d-yawi initen n uḍris n ugrudem i yesɛan agnil akken iwata deg tugett n tjummiwin
 icon-theme = Asentel n tignit
     .desc = Ad yesnes tagrumma n tignitin yemgaraden ɣef isnasen
-frosted = Asemdu n usmaɣ deg ugrudem n unagraw.
-    .desc = Snes asluɣu n ugilal ɣer ugalis, adekkan, tiplaḍin, ameskar, d temkarḍit n usnas
+frosted = Asemdu n usmaɣ iluɣen deg ugrudem n unagraw.
+    .desc = Snes asluɣu n ugilal ɣer ugalis, adekkan, tiplaḍin, amsekker, d temkarḍit n usnas
 enable-export = Snes asentel amiran i yisnasen n GNOME
     .desc = Mačči akk ifecka sefraken asnifel awurman. Isnasen ur nelli n COSMIC zemrent ad sran ales n tnekra seld asnifel n usentel.
 control-tint = Sbeɣ n isger usenqed
@@ -216,11 +230,13 @@ accessibility = Tuffart
     .vision = Tamuɣli
     .on = Yermed
     .off = Yensa
-    .unavailable = Ur yewjid ara
+    .unavailable = Ulac-it
     .screen-reader = Imeɣri n ugdil
     .high-contrast = Askar n ugnil afellay
     .invert-colors = Tti initen
-    .color-filters = Tistayin n yini
+    .color-filters = Tistayin n yiniten
+    .shake-cursor = Sḥerrek asewwaṛ iwakken ad t-id-tafeḍ
+    .shake-cursor-desc = Sḥerrek taɣerdayt s lemɣawla iwakken ad tessemɣreḍ asewwaṛ i kra n wakud
 bluetooth-adapters = Imezgayen n Bluetooth
 bluetooth-available = Ibenkan iqeṛben
 bluetooth-confirm-pin = Sentem Tangalt Bluetooth PIN
@@ -255,20 +271,22 @@ wired = S ugatu
     .devices = Ibenkan n ugatu
     .remove = Kkes amaɣnu n tuqqna
 vpn-error = Tuccḍa n VPN
-    .config = Ur teddi ara tmerna n twila VPN
-    .connect = Tecceḍ tuqqna ɣer VPN
-    .connection-editor = Amaẓrag n tuqqna ur yeddi ara
-    .connection-settings = Yecceḍ wawway n iɣewwaṛen i tuqqniwin turmidin
-    .updating-state = Yecceḍ uleqqem n waddad n umsefrak n uzeṭṭa
-    .wireguard-config-path = Abrid n ufaylu d armeɣtu i twila n WireGuard
-    .wireguard-config-path-desc = Afaylu yettwafernen ilaq ad yili deg unagraw adigan.
-    .wireguard-device = Yecceḍ usnulfu n yibenk WireGuard
+    .config = Ur izmir ara ad yernu tawila n VPN
+    .connect = Ur izmir ara ad yeqqen ɣer VPN
+    .connection-editor = Amaẓrag n tuqqniwin ur yeddi ara
+    .connection-settings = Ur izmir ara ad d-yawi iɣewwaṛen n tuqqniwin yermden
+    .openvpn-config-path = Abrid n ufaylu n twila n OpenVPN mačči d ameɣtu
+    .openvpn-config-path-desc = Afaylu yettwafernen ilaq ad yili deg unagraw n yifuyla adigan.
+    .updating-state = Ur izmir ara ad ileqqem addad n usefrak n uzeṭṭa
+    .wireguard-config-path = Abrid n ufaylu n twila n WireGuard mačči d ameɣtu
+    .wireguard-config-path-desc = Afaylu yettwafernen ilaq ad yili deg unagraw n yifuyla adigan.
+    .wireguard-device = Ur izmir ara ad d-yesnulfu ibenk n WireGuard
     .with-password =
-        Ur yizmir ara ad isbadu { $field ->
+        Ur izmir ara ad isbadu { $field ->
            *[username] isem n useqdac
             [password] awal uffir
-            [password-flags] tikbabin n wawal uffir
-        } n VPN s nmcli
+            [password-flags] ticraḍ n wawal uffir
+        } s nmcli
 vpn = VPN
     .connections = Tuqqniwin VPN
     .error = Timerna n twila VPN ur teddi ara
@@ -320,7 +338,7 @@ zoom-out = Simẓi
 zoom-in = Semɣeṛ
 replace-shortcut-dialog = Semselsi anegzum?
     .desc = { $shortcut } yettwaseqdec sɣur { $name }. Ma tsemselsiḍ-t, { $name } ad yettwsens.
-window-tiling = Afser n yisfuyla
+window-tiling = Afsar n yisfuyla
     .horizontal = Sbadu taɣda taglawant
     .vertical = Sbadu taɣda tubdidt
     .swap-window = Asfaylu n usemmeskel
@@ -411,12 +429,12 @@ connected-devices = Ibenkan yeqqnen
 battery = Aẓru
     .minute =
         { $value } { $value ->
-            [one] tasdat
+            [one] n tesdat
            *[other] n tesdatin
         }
     .hour =
         { $value } { $value ->
-            [one] asrag
+            [one] n usrag
            *[other] n yisragen
         }
     .day =
@@ -424,7 +442,7 @@ battery = Aẓru
             [one] wass
            *[other] n wussan
         }
-    .less-than-minute = Ur tettaweḍ ara tesdat
+    .less-than-minute = Ur yettaweḍ ara tasdat
     .and = akked
     .remaining-time =
         { $time } alamma { $action ->
@@ -482,7 +500,7 @@ workspaces-behavior = Tiddin n tallunt n umahil
 workspaces-overview = Taskant n tallunin n umahil
     .action-on-typing = Tigawt deg tira
     .none = Ula yiwen
-    .launcher = Ldi Amsekkar
+    .launcher = Ldi Amsekker
     .applications = Ldi Isnasen
 workspaces = Tallunin n umahil
 focus-navigation = Asaḍas n yinig
@@ -495,10 +513,10 @@ window-controls = Isenqaden n usfaylu
     .active-window-hint = Sken amatar n usfaylu urmid
 edge-gravity = Ajbad n yisfuyla yettifliwen ɣer yiran iqerben
 super-key = Tigawt n tsarut Super
-    .launcher = Ldi amsekkar
+    .launcher = Ldi amsekker
     .workspaces = Ldi tallunin n umahil
     .applications = Ldi isnasen
-    .disable = Sens
+    .none = Ula yiwen
 window-management = Amsefrak n yisfuyla
 panel-missing = Tawila n ugalis ulac-itt
     .desc = Afaylu n twila n ugalis ulac-it ɣef sebba n useqdec n twila yugnen neɣ yexṣer.
@@ -633,3 +651,174 @@ click-behavior = Tiddin n usiti
 mouse = Taɣerdayt
     .speed = Arured n tɣerdayt
     .acceleration = Rmed asɣiwel n tɣerdayt
+nav-shortcuts = Inig
+    .prev-output = Err asaḍas ɣer ugdil yezrin
+    .next-output = Err asaḍas ɣer ugdil i d-iteddun
+    .last-workspace = Err asaḍas ɣer tallunt n umahil taneggarut
+    .prev-workspace = Err asaḍas ɣer tallunt n umahil yezrin
+    .next-workspace = Err asaḍas ɣer tallunt n umahil i d-iteddun
+    .focus =
+        Err asaḍas ɣer usfaylu { $direction ->
+           *[down] n wadda
+            [in] n daxel
+            [left] n uzelmaḍ
+            [out] n beṛṛa
+            [right] n uyeffus
+            [up] n ufella
+        }
+    .output =
+        Uɣal ɣer ugdil { $direction ->
+           *[down] n wadda
+            [left] n uzelmaḍ
+            [right] n uyeffus
+            [up] n ufella
+        }
+    .workspace = Uɣal ɣer tallunt n umahil { $num }
+move-windows = Smutti isfuyla
+    .direction =
+        Smutti asfaylu { $direction ->
+           *[down] ɣer tama wadda
+            [left] ɣer uzelmaḍ
+            [right] ɣer uyeffus
+            [up] ɣer tama ufella
+        }
+    .display =
+        Smutti asfaylu s yiwen n umeskan { $direction ->
+           *[down] ɣer tama wadda
+            [left] ɣer uzelmaḍ
+            [right] ɣer uyeffus
+            [up] ɣer tama ufella
+        }
+    .workspace =
+        Smutti asfaylu s yiwet n tallunt n umahil { $direction ->
+           *[below] ɣer tama wadda
+            [left] ɣer uzelmaḍ
+            [right] ɣer uyeffus
+            [above] ɣer tama ufella
+        }
+    .workspace-num = Smutti asfaylu ɣer tallunt n umahil tis { $num }
+    .prev-workspace = Smutti asfaylu ɣer tallunt n umahil tuzwirt
+    .next-workspace = Smutti asfaylu ɣer tallunt n umahil tuḍfirt
+    .last-workspace = Smutti asfaylu ɣer tallunt n umahil taneggarut
+    .next-display = Smutti asfaylu ɣer ugdil uḍfir
+    .prev-display = Smutti asfaylu ɣer ugdil azwir
+    .send-to-prev-workspace = Smutti asfaylu ɣer tallunt n umahil tuzwirt
+    .send-to-next-workspace = Smutti asfaylu ɣer tallunt n umahil tuḍfirt
+system-shortcut = Anagraw
+    .app-library = Ldi tamkarḍit n yisnasen
+    .brightness-down = Ssenqes tifawt n ugdil
+    .brightness-up = Snerni tifawt n ugdil
+    .display-toggle = Sermed neɣ ssens agdil agensan
+    .home-folder = Ldi akaram agejdan
+    .keyboard-brightness-down = Ssenqes tifawt n unasiw
+    .keyboard-brightness-up = Snerni tifawt n unasiw
+    .launcher = Ldi amsekker
+    .log-out = Ffeɣ
+    .lock-screen = Sekkeṛ agdil
+    .mute = Sgugem tuffɣa n yimesli
+    .mute-mic = Sgugem anekcum n usawaḍ
+    .play-pause = Ɣeṛ / Ḥbes di leɛḍil
+    .play-next = Tafuɣalt i d-iteddun
+    .play-prev = Tafuɣalt yezrin
+    .poweroff = Ssensi
+    .screenshot = Ṭṭef tugna n ugdil
+    .suspend = Err ɣer usgunfu
+    .terminal = Ldi ixef
+    .touchpad-toggle = Sermed neɣ ssens talwiḥt n unnal
+    .volume-lower = Ssenqes ableɣ n yimesli n tuffɣa
+    .volume-raise = Snerni ableɣ n yimesli n tuffɣa
+    .web-browser = Ldi iminig n Web
+    .window-switcher = Uɣal gar yisfuyla yeldin
+    .window-switcher-previous = Uɣal gar yisfuyla yeldin s umyezwer imetti
+    .workspace-overview = Ldi tamuɣli tamatut n tallunin n umahil
+xdg-entry-touchpad-keywords = COSMIC;Talwiḥt n unnal;Imussuten n yiḍuḍan;
+xdg-entry-input-keywords = COSMIC;Asekcem;Anasiw;Taɣerdayt;Taɣerdayt;
+xdg-entry-notifications-comment = Ur ttcewwil ara, alɣuten ɣef ugdil n usekkeṛ, akked iɣewwaṛen i yal asnas
+xdg-entry-window-management-keywords = COSMIC;Asfaylu;Asefrak;Afsar;Super;Taqeffalt;
+xdg-entry-window-management-comment = Tigawt n tqeffalt Super, tixtiṛiyin n usenqed n yisfuyla d tixtiṛiyin nniḍen n ufsar n yisfuyla
+tap-to-click = Nnal iwakken ad tsiteḍ
+    .desc = Sermed annal s yiwen uḍad i usit agejdan, s sin iḍudan i usit asnawan, akked kraḍ iḍudan i usit alemmas
+hot-corner = Tiɣmert turmidt
+    .top-left-corner = Sermed tiɣmert turmidt n ufella ɣer zelmaḍ i tallunin n umahil
+hearing = Timesliwt
+    .mono = Ɣeṛ imesli stereo s uskar mono
+shadows-tiling = Isfuyla yefseren
+    .clip = Semṣada akked tɣemmar n unagraw
+    .shadow = Snes tili
+workspaces-overview-thumbnails = tinfulin n tmuɣli tamatut n tallunin n umahil
+    .show-number = Sken uṭṭun n tallunt n umahil
+    .show-name = Sken isem n tallunt n umahil
+magnifier = Tasemɣert
+    .controls =
+        Neɣ seqdec inegzumen-a: { $zoom_in ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_in } i usemɣer,
+        }{ $zoom_out ->
+            [zero] { "" }
+           *[other]
+                { "" }
+                { $zoom_out } i usemẓi,
+        }
+        Super + adrurem s tɣerdayt
+    .scroll_controls = Sermed asemɣer d usemẓi s tɣerdayt neɣ s telwiḥt n unnal s Super + adrurem
+    .show_overlay = Sken agalis n tsemɣert yettwaran sufella
+    .increment = Tifest n usemɣer
+    .signin = Sekker tasemɣert deg unekcum
+    .applet = Sermed neɣ ssens tasemɣert seg teppleṭ deg ugalis
+    .movement = Tamuɣli yettwasemɣren tettḥerrik
+    .continuous = S wudem aɣezfan akked usewwaṛ
+    .onedge = Mi ara yaweḍ usewwaṛ ɣer yiri
+    .centered = Iwakken ad yeqqim usewwaṛ deg tlemmast
+xdg-entry-touchpad = Talwiḥt n unnal
+xdg-entry-x11-applications-comment = Tafesna n yisnasen n unagraw n yisfuyla X11, agdil agejdan d yinegzumen imuta
+xdg-entry-touchpad-comment = Arured n telwiḥt n unnal, tixtiṛiyin n usiti d yimussuten n yiḍuḍan
+scan-to-connect-description = Ḍumm tangalt QR akken ad teqqneḍ ɣer uzeṭṭa-agi.
+rename = Snifel isem
+bluetooth-rename-device = Snifel isem n yibenk
+bluetooth-display-passkey = Ayugan n Bluetooth
+    .description = Ttxil-k·m sekcem tasarut-a n uɛeddi deg { $device }, sakin sit ɣef Kcem
+bluetooth-display-pin = Ayugan n Bluetooth
+    .description = Ttxil-k·m sekcem tangalt-a PIN deg { $device }, sakin sit ɣef Kcem
+workspaces-navigation = Inig
+    .wraparound = Asaka seg tallunt n umahil tamezwarut ɣer tneggarut s yinegzumen n unasiw d yimussuten n yiḍuḍan
+keyboard-numlock-boot = Num Lock
+    .boot-state = Addad deg usekker
+    .last-boot = Asekker aneggaru
+    .on = Yermed
+    .off = Yensa
+    .set = Sbadu addad n Num Lock deg usekker
+display = Igdilen
+    .arrangement = Asuddes n yigdilen
+    .arrangement-desc = Zuɣer igdilen iwakken ad tbeddeleḍ asuddes-nsen
+    .enable = Sermed agdil
+    .external = Agdil azɣaray { $size } { $output }
+    .laptop = Agdil n uselkim aziraz { $size }
+    .options = Tixtiṛiyin n ugdil
+    .refresh-rate = Asnagar n usismeḍ
+    .resolution = Tabadut
+    .scale = Tafesna
+    .additional-scale-options = Tixtiṛiyin nniḍen n tfesna
+keyboard-special-char = Asekcem n yisekkilen uzzigen
+    .alternate = Taqeffalt n yisekkilen imlellayen
+    .compose = Taqeffalt n usuddes
+    .compose-desc = Taqeffalt n usuddes tettɛawan-ik·im ad teskecmeḍ aṭas n yisekkilen yemgaraden. Iwakken ad tt-tesqedceḍ, senned ɣef asuddes, syen ɣef uḍfer n yisekkilen. Amedya, senned ɣef asuddes, syen ɣef C d o iwakken ad teskecmeḍ © ; senned ɣef asuddes, syen ɣef a d ‘ iwakken ad teskecmeḍ á.
+    .caps = Taqeffalt isekkilen imeqqranen
+    .ctrl = Asenqed
+    .ctrl-right = Ctrl n uyeffus
+    .swap-with-ctrl = Semmeskel akked Usenqed
+    .alt = Alt
+    .alt-left = Alt n uzelmaḍ
+    .alt-right = Alt n uyeffus
+    .super = Super
+    .super-left = Super n uzelmaḍ
+    .super-right = Super n uyeffus
+    .menu = Taqeffalt n wumuɣ
+    .backspace = Tallunt ɣer deffir
+    .escape = Asenser(ESC)
+    .swap-with-escape = Semmeskel akked tqeffalt usenser
+    .print-screen = Siggez agdil
+    .scroll-lock = Taqeffalt n udrurem
+    .none = Ulac
+sound-device-port-unplugged = Ur yeqqin ara

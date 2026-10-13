@@ -124,6 +124,8 @@ accessibility = Inrochtaineacht
     .high-contrast = Mód codarsnachta ard
     .invert-colors = Inbhéartaigh dathanna
     .color-filters = Scagairí dathanna
+    .shake-cursor = Croith an pointeoir chun é a aimsiú
+    .shake-cursor-desc = Croith an luch go tapa chun an pointeoir a mhéadú go sealadach
 hearing = Éisteacht
     .mono = Seinn fuaim steireo mar mhonó
 default = Réamhshocrú
@@ -426,6 +428,7 @@ sound-alerts = Foláirimh
     .sound = Fuaime foláirimh
 sound-applications = Feidhmchláir
     .desc = Toirt agus socruithe feidhmchlár
+    .none = Níl aon fheidhmchlár ag úsáid fuaime
 
 ## Power
 
@@ -948,3 +951,5 @@ bluetooth-display-passkey = Péireáil Bluetooth
     .description = Clóscríobh an eochair phas seo a leanas ar { $device }, ansin brúigh Iontráil
 bluetooth-display-pin = Péireáil Bluetooth
     .description = Clóscríobh an PIN seo a leanas ar { $device }, ansin brúigh Iontráil
+rename = Athainmnigh
+bluetooth-rename-device = Athainmnigh an gléas
