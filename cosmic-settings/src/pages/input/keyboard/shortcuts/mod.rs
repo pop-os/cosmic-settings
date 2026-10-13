@@ -456,7 +456,6 @@ fn shortcuts() -> Section<crate::pages::Message> {
                 .width(314.)
                 .on_clear(Message::Search(String::new()))
                 .on_input(Message::Search)
-                .capture_escape(false)
                 .id(SEARCH_ID.clone())
                 .apply(widget::container)
                 .padding([2, 0, 0, 0])

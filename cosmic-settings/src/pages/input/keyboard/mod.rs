@@ -353,7 +353,6 @@ impl page::Page<crate::pages::Message> for Page {
                 let search = widget::search_input("", &self.input_source_search)
                     .on_input(Message::InputSourceSearch)
                     .on_clear(Message::InputSourceSearch(String::new()))
-                    .capture_escape(false)
                     .id(self.search_id.clone())
                     .apply(Element::from)
                     .map(crate::pages::Message::Keyboard);

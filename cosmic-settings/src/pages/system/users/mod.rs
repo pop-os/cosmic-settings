@@ -225,8 +225,7 @@ impl page::Page<crate::pages::Message> for Page {
                                 full_name: value,
                                 ..user.clone()
                             })))
-                        })
-                        .capture_escape(false),
+                        }),
                 );
 
                 let username_input = widget::container(
@@ -359,8 +358,7 @@ impl page::Page<crate::pages::Message> for Page {
                             password: value,
                             ..user.clone()
                         })))
-                    })
-                    .capture_escape(false),
+                    }),
                 );
 
                 let password_confirm_input = widget::container(
