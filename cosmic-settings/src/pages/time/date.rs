@@ -190,7 +190,6 @@ impl page::Page<crate::pages::Message> for Page {
                 .on_input(Message::TimezoneSearch)
                 .id(self.timezone_search_id.clone())
                 .on_clear(Message::TimezoneSearch(String::new()))
-                .capture_escape(false)
                 .apply(Element::from)
                 .map(crate::pages::Message::DateAndTime);
 

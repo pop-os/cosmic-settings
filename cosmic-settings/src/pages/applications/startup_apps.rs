@@ -119,7 +119,6 @@ impl page::Page<crate::pages::Message> for Page {
                 let search = widget::search_input("", &self.application_search)
                     .on_input(|i| Message::ApplicationSearch(i).into())
                     .on_clear(Message::ApplicationSearch(String::new()).into())
-                    .capture_escape(false)
                     .id(self.application_search_id.clone())
                     .apply(Element::from);
 

@@ -188,7 +188,6 @@ impl page::Page<crate::pages::Message> for Page {
                 let search = widget::search_input("", &self.add_language_search)
                     .on_input(Message::AddLanguageSearch)
                     .on_clear(Message::AddLanguageSearch(String::new()))
-                    .capture_escape(false)
                     .id(self.language_search_id.clone())
                     .apply(Element::from)
                     .map(crate::pages::Message::from);
@@ -218,7 +217,6 @@ impl page::Page<crate::pages::Message> for Page {
                 let search = widget::search_input("", &self.add_language_search)
                     .on_input(Message::AddLanguageSearch)
                     .on_clear(Message::AddLanguageSearch(String::new()))
-                    .capture_escape(false)
                     .id(self.region_search_id.clone())
                     .apply(Element::from)
                     .map(crate::pages::Message::from);

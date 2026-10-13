@@ -137,7 +137,6 @@ impl page::Page<crate::pages::Message> for Page {
                     .on_input(Message::Search)
                     .on_paste(Message::Search)
                     .width(Length::Fixed(312.0))
-                    .capture_escape(false)
                     .id(self.applet_search_id.clone())
                     .apply(Element::from)
                     .map(crate::pages::Message::PanelApplet);
