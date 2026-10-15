@@ -70,8 +70,10 @@ pub struct Page {
     default_icon: icon::Handle,
     password_label: String,
     password_confirm_label: String,
+    username_id: widget::Id,
     username_label: String,
     fullname_label: String,
+    password_id: widget::Id,
     password_hidden: bool,
     password_confirm_hidden: bool,
 }
@@ -88,8 +90,10 @@ impl Default for Page {
             default_icon: icon::from_path(PathBuf::from(DEFAULT_ICON_FILE)),
             password_label: crate::fl!("password"),
             password_confirm_label: crate::fl!("password-confirm"),
+            username_id: widget::Id::unique(),
             username_label: crate::fl!("username"),
             fullname_label: crate::fl!("full-name"),
+            password_id: widget::Id::unique(),
             password_hidden: true,
             password_confirm_hidden: true,
         }
@@ -199,6 +203,14 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-users-comment"))
     }
 
+    fn dialog_open(&self) -> bool {
+        return self.dialog.is_some();
+    }
+
+    fn close_dialog(&mut self) {
+        self.dialog = None;
+    }
+
     fn dialog(&self) -> Option<Element<'_, pages::Message>> {
         let dialog = self.dialog.as_ref()?;
 
@@ -207,6 +219,7 @@ impl page::Page<crate::pages::Message> for Page {
                 let full_name_input = widget::container(
                     widget::text_input("", &user.full_name)
                         .label(&self.fullname_label)
+                        .id(self.username_id.clone())
                         .on_input(|value| {
                             Message::Dialog(Some(Dialog::AddNewUser(User {
                                 full_name: value,
@@ -339,6 +352,7 @@ impl page::Page<crate::pages::Message> for Page {
                         self.password_hidden,
                     )
                     .label(&self.password_label)
+                    .id(self.password_id.clone())
                     .on_input(|value| {
                         Message::Dialog(Some(Dialog::UpdatePassword(User {
                             password: value,
@@ -698,7 +712,18 @@ impl Page {
             Message::Dialog(dialog) => {
                 self.password_hidden = true;
                 self.password_confirm_hidden = true;
-                self.dialog = dialog;
+                let update_focus = self.dialog.is_none();
+                self.dialog = dialog.clone();
+                if update_focus && let Some(dialog) = dialog {
+                    match dialog {
+                        Dialog::AddNewUser(_user) => {
+                            return widget::text_input::focus(self.username_id.clone());
+                        }
+                        Dialog::UpdatePassword(_user) => {
+                            return widget::text_input::focus(self.password_id.clone());
+                        }
+                    }
+                }
             }
 
             Message::NewUser(username, full_name, password, is_admin) => {
