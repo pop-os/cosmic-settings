@@ -26,6 +26,7 @@ pub struct PageInner {
     pub outputs: Vec<String>,
     pub anchors: Vec<String>,
     pub backgrounds: Vec<String>,
+    pub autohide_modes: Vec<String>,
     pub(crate) container_config: Option<CosmicPanelContainerConfig>,
     // TODO move these into panel config
     pub(crate) outputs_map: HashMap<ObjectId, (String, WlOutput)>,
@@ -52,6 +53,10 @@ impl Default for PageInner {
                 Appearance::Match.to_string(),
                 Appearance::Light.to_string(),
                 Appearance::Dark.to_string(),
+            ],
+            autohide_modes: vec![
+                fl!("panel-behavior-and-position", "on-overlap"),
+                fl!("panel-behavior-and-position", "always"),
             ],
             container_config: Option::default(),
             outputs_map: HashMap::default(),
@@ -101,6 +106,8 @@ pub(crate) fn behavior_and_position<
 ) -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         autohide_label = p.autohide_label();
+        hide_speed_label = fl!("panel-behavior-and-position", "hide-speed");
+        autohide_mode_label = fl!("panel-behavior-and-position", "autohide-mode");
         position = fl!("panel-behavior-and-position", "position");
         display = fl!("panel-behavior-and-position", "display");
     });
@@ -114,40 +121,83 @@ pub(crate) fn behavior_and_position<
             let Some(panel_config) = page.panel_config.as_ref() else {
                 return Element::from(text::body(fl!("unknown")));
             };
-            settings::section()
+            let mut s = settings::section()
                 .title(&section.title)
                 .add(
                     settings::item::builder(&descriptions[autohide_label])
                         .toggler(panel_config.autohide_enabled(), Message::AutoHidePanel),
-                )
-                .add(settings::item(
-                    &descriptions[position],
+                );
+
+            if panel_config.autohide_enabled() {
+                let current_mode = match panel_config.autohide {
+                    AutoHide::Always => 1,
+                    _ => 0,
+                };
+
+                s = s.add(settings::item(
+                    &descriptions[autohide_mode_label],
                     dropdown::popup_dropdown(
-                        page.anchors.as_slice(),
-                        Some(panel_config.anchor as usize),
-                        Message::PanelAnchor,
+                        &page.autohide_modes,
+                        Some(current_mode),
+                        Message::AutoHideMode,
                         cosmic::iced::window::Id::RESERVED,
                         Message::Surface,
                         move |a| crate::app::Message::PageMessage(msg_map(a)),
                     ),
                 ))
                 .add(settings::item(
-                    &descriptions[display],
-                    dropdown::popup_dropdown(
-                        page.outputs.as_slice(),
-                        match &panel_config.output {
-                            CosmicPanelOuput::All => Some(0),
-                            CosmicPanelOuput::Active => None,
-                            CosmicPanelOuput::Name(n) => page.outputs.iter().position(|o| o == n),
-                        },
-                        Message::Output,
-                        cosmic::iced::window::Id::RESERVED,
-                        Message::Surface,
-                        move |a| crate::app::Message::PageMessage(msg_map(a)),
-                    ),
-                ))
-                .apply(Element::from)
-                .map(msg_map)
+                    &descriptions[hide_speed_label],
+                    row::with_children(vec![
+                        text::body(fl!("panel-behavior-and-position", "slow")).into(),
+                        slider(
+                            0.0..=2.0,
+                            match panel_config.autohide_behavior.wait_time {
+                                0..=500 => 2.0,
+                                501..=1500 => 1.0,
+                                _ => 0.0,
+                            },
+                            |v| Message::HideSpeed(v as usize),
+                        )
+                        .width(Length::Fill)
+                        .apply(cosmic::widget::container)
+                        .max_width(250)
+                        .into(),
+                        text::body(fl!("panel-behavior-and-position", "fast")).into(),
+                    ])
+                    .align_y(Alignment::Center)
+                    .spacing(8)
+                    .width(Length::Fill),
+                ));
+            }
+
+            s.add(settings::item(
+                &descriptions[position],
+                dropdown::popup_dropdown(
+                    page.anchors.as_slice(),
+                    Some(panel_config.anchor as usize),
+                    Message::PanelAnchor,
+                    cosmic::iced::window::Id::RESERVED,
+                    Message::Surface,
+                    move |a| crate::app::Message::PageMessage(msg_map(a)),
+                ),
+            ))
+            .add(settings::item(
+                &descriptions[display],
+                dropdown::popup_dropdown(
+                    page.outputs.as_slice(),
+                    match &panel_config.output {
+                        CosmicPanelOuput::All => Some(0),
+                        CosmicPanelOuput::Active => None,
+                        CosmicPanelOuput::Name(n) => page.outputs.iter().position(|o| o == n),
+                    },
+                    Message::Output,
+                    cosmic::iced::window::Id::RESERVED,
+                    Message::Surface,
+                    move |a| crate::app::Message::PageMessage(msg_map(a)),
+                ),
+            ))
+            .apply(Element::from)
+            .map(msg_map)
         })
 }
 
@@ -417,6 +467,8 @@ impl From<Appearance> for CosmicPanelBackground {
 pub enum Message {
     // panel messages
     AutoHidePanel(bool),
+    AutoHideMode(usize),
+    HideSpeed(usize),
     PanelAnchor(usize),
     Output(usize),
     AnchorGap(bool),
@@ -547,6 +599,35 @@ impl PageInner {
                     _ = panel_config.set_exclusive_zone(helper, true);
                     _ = panel_config.set_autohide(helper, AutoHide::Never);
                 }
+            }
+            Message::AutoHideMode(i) => {
+                let mode = if i == 1 {
+                    AutoHide::Always
+                } else {
+                    AutoHide::OnOverlap
+                };
+                _ = panel_config.set_autohide(helper, mode);
+            }
+            Message::HideSpeed(speed) => {
+                let mut behavior = panel_config.autohide_behavior.clone();
+                match speed {
+                    0 => {
+                        behavior.wait_time = 2500;
+                        behavior.transition_time = 500;
+                        behavior.unhide_delay = 300;
+                    }
+                    1 => {
+                        behavior.wait_time = 1000;
+                        behavior.transition_time = 200;
+                        behavior.unhide_delay = 200;
+                    }
+                    _ => {
+                        behavior.wait_time = 250;
+                        behavior.transition_time = 100;
+                        behavior.unhide_delay = 0;
+                    }
+                }
+                _ = panel_config.set_autohide_behavior(helper, behavior);
             }
             Message::PanelAnchor(i) => {
                 if let Some(anchor) = [
