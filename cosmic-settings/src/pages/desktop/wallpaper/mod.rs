@@ -47,6 +47,7 @@ const HOUR_1: usize = 4;
 const HOUR_2: usize = 5;
 
 pub type Image = ImageBuffer<Rgba<u8>, Vec<u8>>;
+type DisplayInfo = HashMap<String, (String, (u32, u32))>;
 
 #[derive(Clone, Debug)]
 struct OutputName(String);
@@ -54,7 +55,7 @@ struct OutputName(String);
 #[derive(Clone, Debug)]
 pub struct InitUpdate {
     service_config: wallpaper::Config,
-    displays: HashMap<String, (String, (u32, u32))>,
+    displays: DisplayInfo,
 }
 
 /// Messages for the wallpaper view.
@@ -183,7 +184,7 @@ pub struct Page {
     selection: Context,
 
     /// When set, applys a config update after images are loaded.
-    update_config: Option<(usize, HashMap<String, (String, (u32, u32))>)>,
+    update_config: Option<(usize, DisplayInfo)>,
 }
 
 impl page::Page<crate::pages::Message> for Page {

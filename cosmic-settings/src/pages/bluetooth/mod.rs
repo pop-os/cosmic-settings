@@ -361,7 +361,7 @@ impl page::Page<crate::pages::Message> for Page {
             Dialog::RenameDevice { name, .. } => {
                 let is_valid = is_valid_bluetooth_alias(name);
                 let input = widget::text_input("", name)
-                    .on_input(|value| Message::RenameDeviceInput(value))
+                    .on_input(Message::RenameDeviceInput)
                     .on_submit(|_| Message::RenameDeviceConfirm);
 
                 let rename_button = widget::button::suggested(fl!("rename"))

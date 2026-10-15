@@ -497,17 +497,15 @@ impl Page {
                     {
                         tracing::debug!(old = ?self.dialog, new = ?mode, "Mode update");
                         match self.dialog {
-                            Some(Randr::Resolution(width, height)) => {
-                                if mode.size.0 == width && mode.size.1 == height {
-                                    self.config.resolution = Some((width, height));
-                                    return self.update(Message::DialogComplete);
-                                }
+                            Some(Randr::Resolution(width, height))
+                                if mode.size.0 == width && mode.size.1 == height =>
+                            {
+                                self.config.resolution = Some((width, height));
+                                return self.update(Message::DialogComplete);
                             }
-                            Some(Randr::RefreshRate(rate)) => {
-                                if mode.refresh_rate == rate {
-                                    self.config.refresh_rate = Some(rate);
-                                    return self.update(Message::DialogComplete);
-                                }
+                            Some(Randr::RefreshRate(rate)) if mode.refresh_rate == rate => {
+                                self.config.refresh_rate = Some(rate);
+                                return self.update(Message::DialogComplete);
                             }
                             _ => {}
                         }
