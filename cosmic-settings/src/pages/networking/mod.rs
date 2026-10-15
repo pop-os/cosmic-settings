@@ -21,7 +21,7 @@ use self::backend::devices::{DeviceState, DeviceType};
 
 pub type SecretSender = Arc<tokio::sync::Mutex<Option<tokio::sync::oneshot::Sender<SecureString>>>>;
 
-static NM_CONNECTION_EDITOR: &str = "nm-connection-editor";
+pub static NM_CONNECTION_EDITOR: &str = "nm-connection-editor";
 
 #[derive(Debug, Default)]
 pub struct Page {
