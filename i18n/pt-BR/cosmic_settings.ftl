@@ -262,7 +262,7 @@ window-management-appearance = Gerenciamento de Janelas
 ### Experimental
 
 experimental-settings = Configurações Experimentais
-icons-and-toolkit = Tema de ícones e toolkit
+icons-and-toolkit = Ícones e temas de toolkit
 interface-font = Fonte do sistema
 monospace-font = Fonte monoespaçada
 
@@ -962,3 +962,13 @@ on-screen-keyboard = Teclado virtual
     .show-on-text-input = Exibir o teclado virtual ao selecionar um campo de texto
 date-time-applet-settings-title = Miniaplicativo de data e hora
 date-time-applet-settings-label = Configurações do miniaplicativo de data e hora
+xdg-entry-drawing-tablet = Mesa digitalizadora
+xdg-entry-drawing-tablet-keywords = COSMIC;Tablet;Desenho;Sensibilidade;
+drawing-tablet = Mesa digitalizadora
+    .no-devices-detected = Nenhuma mesa digitalizadora ou caneta detectada
+    .map-to-display = Mapear para a tela
+    .not-set = Não definido
+    .enabled = Habilitado
+xdg-entry-drawing-tablet-comment = Mapeamento da tela
+tap-and-drag = Tocar e arrastar
+drag-lock = Bloqueio do arrasto

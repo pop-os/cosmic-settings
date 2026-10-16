@@ -15,33 +15,33 @@ xdg-entry-appearance-comment = Accentfärger och teman
 xdg-entry-applications = Program
 xdg-entry-applications-comment = Standardprogram, uppstartsprogram och kompatibilitetsinställningar för X11-program
 xdg-entry-bluetooth-comment = Hantera Bluetooth-enheter
-xdg-entry-date-time = Datum & Tid
+xdg-entry-date-time = Datum & tid
 xdg-entry-date-time-comment = Tidszon, automatiska klockinställningar och tidsformat
 xdg-entry-default-apps = Standardprogram
 xdg-entry-default-apps-comment = Standardwebbläsare, e-postklient, filbläddrare och andra program
 xdg-entry-desktop = Skrivbord
 xdg-entry-displays = Skärmar
-xdg-entry-displays-comment = Inställningar för skärmalternativ, grafiklägen, och nattljus
+xdg-entry-displays-comment = Hantera skärminställningar
 xdg-entry-dock = Docka
-xdg-entry-dock-comment = En valfri list för program och miniprogram
+xdg-entry-dock-comment = Ett valfritt fält för program och miniprogram
 xdg-entry-input = Inmatningsenheter
 xdg-entry-input-comment = Inställningar för tangentbord och mus
 xdg-entry-keyboard = Tangentbord
 xdg-entry-keyboard-comment = Inmatningskällor, växling, specialtecken, genvägar
 xdg-entry-mouse = Mus
 xdg-entry-mouse-comment = Mushastighet, acceleration, och naturlig rullning
-xdg-entry-network = Nätverk & Wi-Fi
+xdg-entry-network = Nätverksanslutningar
 xdg-entry-network-comment = Hantera nätverksanslutningar
 xdg-entry-notifications = Aviseringar
 xdg-entry-notifications-comment = Stör ej, aviseringar på låsskärm, och inställningar per program
 xdg-entry-panel = Panel
 xdg-entry-panel-comment = Primärt systemfält för menyer och miniprogram
-xdg-entry-power = Ström & Batteri
+xdg-entry-power = Ström & batteri
 xdg-entry-power-comment = Ström- och energisparalternativ
 xdg-entry-region-language = Region & språk
 xdg-entry-region-language-comment = Formatera datum, tider och siffror baserat på din region
 xdg-entry-sound = Ljud
-xdg-entry-sound-comment = Ljudinställningar för enhter, larm och program
+xdg-entry-sound-comment = Ljudinställningar för enheter, varningsljud och program
 xdg-entry-startup-apps = Uppstartsprogram
 xdg-entry-startup-apps-comment = Konfigurera program som körs vid inloggning
 xdg-entry-system = System & konton
@@ -54,8 +54,8 @@ xdg-entry-vpn-comment = VPN-anslutningar och anslutningsprofiler
 xdg-entry-wallpaper = Bakgrundsbild
 xdg-entry-wallpaper-comment = Bakgrundsbilder, färger, och bildspelsalternativ
 xdg-entry-window-management = Fönsterhantering
-xdg-entry-window-management-comment = Åtgärd för Supertangent, fönsterkontrollalternativ, och ytterligare fönsterplaceringsalternativ
-xdg-entry-wired = Tråndbunden anslutning
+xdg-entry-window-management-comment = Åtgärd för Super-tangent, fönsterkontrollalternativ, och ytterligare fönsterplaceringsalternativ
+xdg-entry-wired = Trådbunden anslutning
 xdg-entry-wired-comment = Trådbundna anslutningar och anslutningsprofiler
 xdg-entry-wireless-comment = Wi-Fi-anslutningar och anslutningsprofiler
 xdg-entry-workspaces = Arbetsytor
@@ -88,7 +88,7 @@ reset-to-default = Återställ till standard
 rgb = RGB
 window-hint-accent = Färg för aktivt fönster-indikator
 window-hint-accent-toggle = Använd temaaccentfärg som aktivt fönster-indikator
-auto-switch = Växla automatiskt från ljust till mörkt läge
+auto-switch = Växla automatiskt mellan ljust och mörkt läge
     .sunrise = Växlar till ljust läge vid soluppgång
     .sunset = Växlar till mörkt läge vid solnedgång
     .next-sunrise = Växlar till ljust läge vid nästa soluppgång
@@ -101,16 +101,16 @@ control-tint = Kontrollkomponentens färgton
     .desc = Används för bakgrunder av standardknappar, sökinmatningar, textinmatningar och liknande komponenter
 frosted = Frostat glaseffekt på systemgränssnittet
     .desc = Tillämpar bakgrundsoskärpa på panel, docka, miniprogram, programstartare och programbibliotek
-enable-export = Använd detta tema för GNOME program.
-    .desc = Alla verktygssatser har inte stöd för automatisk växling. Icke COSMIC program kan behöva startas om efter en temaändring.
+enable-export = Använd detta tema för GNOME-program
+    .desc = Alla verktygssatser har inte stöd för automatisk växling. Program som inte är COSMIC-program kan behöva startas om efter en temaändring.
 icon-theme = Ikontema
     .desc = Tillämpar en annan uppsättning ikoner till program
 text-tint = Gränssnittstextton
     .desc = Färg som används för att härleda gränssnittstextfärger som har tillräcklig kontrast på olika ytor
 style = Stil
     .round = Rund
-    .slightly-round = Lite rund
-    .square = Fyrkant
+    .slightly-round = Lätt rundad
+    .square = Fyrkantig
     .frosted-glass = Frostat glas
     .frosted-system-interface = Systemgränssnitt
     .frosted-system-interface-desc = Tillämpar frostat glas på programstartare, programbibliotek, arbetsyteöversikten, kontroller som ritas upp på skärmen
@@ -133,8 +133,8 @@ interface-density = Gränssnittstäthet
 
 window-management = Fönsterhantering
 window-management-appearance = Fönsterhantering
-    .active-hint = Storlek på aktivt fönster indikator
-    .gaps = Springor runt kaklade fönster
+    .active-hint = Storlek på indikatorn för aktivt fönster
+    .gaps = Mellanrum runt kaklade fönster
 super-key = Åtgärd för Super-tangent
     .launcher = Öppna programstartare
     .workspaces = Öppna arbetsytor
@@ -154,7 +154,7 @@ monospace-font = Teckensnitt med fast bredd
 -requires-restart = Kräver omstart
 color = Färg
     .depth = Färgdjup
-    .profile = Färgprofiler
+    .profile = Färgprofil
     .sidebar = Färgprofiler
     .temperature = Färgtemperatur
 display = Skärmar
@@ -224,8 +224,8 @@ magnifier = Förstoringsglas
                 { "" }
                 { $zoom_out } för att zooma ut,
         }
-        Super + scrolla med musen
-    .scroll_controls = Aktivera mus eller pekplattazoom med Super + Scroll
+        Super + rulla med musen
+    .scroll_controls = Aktivera mus eller pekplattazoom med Super + rullning
     .show_overlay = Visa förstoringsöverlägget
     .increment = Förstoring
     .signin = Starta förstoringsglaset vid inloggning
@@ -234,7 +234,7 @@ magnifier = Förstoringsglas
     .continuous = Kontinuerligt med pekare
     .onedge = När pekaren når kanten
     .centered = För att hålla pekaren centrerad
-color-filter = Färgfilter typ
+color-filter = Typ av färgfilter
     .unknown = Okänt filter aktivt
     .greyscale = Gråskala
     .deuteranopia = Grön/Röd (grön svaghet, Deuteranopi)
@@ -253,9 +253,9 @@ window-controls = Fönsterkontroller
     .maximize = Visa maximeraknapp
     .active-window-hint = Visa indikation för aktivt fönster
 focus-navigation = Fokusnavigering
-    .focus-follows-cursor = Fokus följer markören
-    .focus-follows-cursor-delay = Fokus följer markören, fördröjning i ms
-    .cursor-follows-focus = Markören följer fokus
+    .focus-follows-cursor = Fokus följer muspekaren
+    .focus-follows-cursor-delay = Fördröjning för fokus som följer muspekaren, i ms
+    .cursor-follows-focus = Muspekaren följer fokus
 
 ## Skrivbord: Panel
 
@@ -285,14 +285,14 @@ panel-behavior-and-position = Beteende och positioner
     .position = Position på skärm
     .display = Visa på skärm
 panel-style = Stil
-    .anchor-gap = Glapp mellan panel och skärmkanter
-    .dock-anchor-gap = Glapp mellan docka och skärmkanter
+    .anchor-gap = Mellanrum mellan panel och skärmkanter
+    .dock-anchor-gap = Mellanrum mellan docka och skärmkanter
     .extend = Förläng panelen till skärmkanterna
     .dock-extend = Förläng docka till skärmkanterna
     .appearance = Utseende
     .size = Storlek
-    .background-opacity = Bakgrundens opacitet
-panel-applets = Konfiguera
+    .background-opacity = Bakgrundens ogenomskinlighet
+panel-applets = Konfiguration
     .dock-desc = Konfigurera dockans miniprogram
     .desc = Konfigurera panelens miniprogram
 panel-missing = Panelkonfiguration saknas
@@ -365,12 +365,12 @@ wired = Trådbunden anslutning
 ## Nätverk: WiFi
 
 wifi = Wi-Fi
-    .adapter = Wi-Fi adapter { $id }
-    .forget = Glöm detta nätverket
+    .adapter = Wi-Fi-adapter { $id }
+    .forget = Glöm det här nätverket
 
 ## Nätverk: Wireguard
 
-wireguard-dialog = Lägg till WireGuard enhet
+wireguard-dialog = Lägg till WireGuard-enhet
     .description = Välj ett enhetsnamn för WireGuard-konfigurationen.
 
 ## Nätverksanslutningar
@@ -395,7 +395,7 @@ password-confirm = Bekräfta lösenord
 remove = Ta bort
 settings = Inställningar
 username = Användarnamn
-visible-networks = Tillgängliga nätverk
+visible-networks = Synliga nätverk
 identity = Identitet
 
 ## Nätverksanslutningar: Beskrivningar
@@ -418,7 +418,7 @@ vpn = VPN
 
 ## Nätverk: Onlinekonton
 
-online-accounts = Onlinekonton
+online-accounts = Nätkonton
     .desc = Lägg till konton, IMAP och SMTP, företagsinloggningar
 
 # Bluetooth
@@ -451,11 +451,11 @@ bluetooth-adapters = Bluetooth-adaptrar
 time = Tid & språk
 time-date = Datum & tid
     .auto = Ställ in automatiskt
-    .auto-ntp = Datum och tid uppdateras automatisk när tidszon är satt
+    .auto-ntp = Datum och tid uppdateras automatiskt när tidszonen är inställd
 time-zone = Tidszon
     .auto = Automatisk tidszon
     .auto-info = Kräver platstjänster och internetåtkomst
-time-format = Datum & tidsformat
+time-format = Datum- & tidsformat
     .twenty-four = 24-timmars tid
     .show-seconds = Sekunder
     .show-weekday = Veckodag
@@ -488,9 +488,9 @@ sound-input = Ingång
     .volume = Ingångsvolym
     .device = Ingångsenhet
     .level = Ingångsnivå
-sound-alerts = Larm
-    .volume = Larmvolym
-    .sound = Larmljud
+sound-alerts = Varningsljud
+    .volume = Volym för varningsljud
+    .sound = Ljud
 sound-applications = Program
     .desc = Programvolym och inställningar
     .none = Inga program använder ljud
@@ -567,18 +567,18 @@ battery = Batteri
         }
 connected-devices = Anslutna enheter
     .unknown = Okänd enhet
-power-mode = Strömalternativ
-    .battery = Förläng batteriets livslängd
+power-mode = Strömläge
+    .battery = Längre batteritid
     .battery-desc = Minskad strömförbrukning och tyst prestanda
     .balanced = Balanserad
     .balanced-desc = Lågmäld prestanda och måttlig strömförbrukning
     .performance = Hög prestanda
     .performance-desc = Hög prestanda och strömförbrukning
-    .no-backend = Bakända hittades inte. Installera system76-power eller power-profiles-daemon.
+    .no-backend = Ingen bakände hittades. Installera system76-power eller power-profiles-daemon.
 power-saving = Energisparalternativ
     .turn-off-screen-after = Stäng av skärmen efter
     .auto-suspend = Automatiskt vänteläge
-    .auto-suspend-ac = Automatiskt vänteläge vid inkoppling
+    .auto-suspend-ac = Automatiskt vänteläge vid nätdrift
     .auto-suspend-battery = Automatiskt vänteläge på batteridrift
 
 ## Input
@@ -605,13 +605,13 @@ short = Kort
 long = Lång
 keyboard = Tangentbord
 keyboard-sources = Inmatningskällor
-    .desc = Ingångskällor kan växlas med tangentkombinationen Super+Mellanslag. Detta kan anpassas i inställningarna för kortkommandon.
+    .desc = Inmatningskällor kan växlas med tangentkombinationen Super+Mellanslag. Detta kan anpassas i inställningarna för tangentbordsgenvägar.
     .move-up = Flytta upp
     .move-down = Flytta ned
     .settings = Inställningar
     .view-layout = Visa tangentbordslayout
     .remove = Ta bort
-    .add = Lägg till källa
+    .add = Lägg till inmatningskälla
 keyboard-special-char = Specialteckeninmatning
     .alternate = Tangent för alternativa tecken
     .compose = Compose-tangent
@@ -641,10 +641,10 @@ keyboard-numlock-boot = Numlock
     .last-boot = Senaste uppstart
     .on = På
     .off = Av
-    .set = Ställ in numlock uppstartstatus
+    .set = Ställ in Num Lock-status vid uppstart
 added = Tillagd
 type-to-search = Skriv för att söka...
-show-extended-input-sources = Visa utökade ingångskällor
+show-extended-input-sources = Visa utökade inmatningskällor
 
 ## Input: Keyboard shortcuts
 
@@ -654,52 +654,52 @@ add-another-keybinding = Lägg till ytterligare en tangentbindning
 cancel = Avbryt
 command = Kommando
 custom = Anpassat
-debug = Avlusa
+debug = Felsöka
 disabled = Inaktiverat
-migrate-workspace-prev = Migrera arbetsytan till tidigare utdata
-migrate-workspace-next = Migrera arbetsytan till nästa utdata
+migrate-workspace-prev = Migrera arbetsytan till föregående skärm
+migrate-workspace-next = Migrera arbetsytan till nästa skärm
 migrate-workspace =
-    Migrera arbetsytan till utdata { $direction ->
-       *[down] ned
-        [left] vänster
-        [right] höger
-        [up] upp
+    Migrera arbetsytan till skärmen { $direction ->
+       *[down] nedanför
+        [left] till vänster
+        [right] till höger
+        [up] ovanför
     }
 navigate = Navigera
-replace = Byt ut
+replace = Ersätt
 shortcut-name = Genvägsnamn
 system-controls = Systemkontroller
 terminate = Avsluta
 toggle-stacking = Växla fönsterstapling
-type-key-combination = Skriv knappkombination
+type-key-combination = Tryck på en tangentkombination
 custom-shortcuts = Anpassade genvägar
     .add = Lägg till genväg
     .context = Lägg till anpassad genväg
     .none = Inga anpassade genvägar
-modified = { $count } ändrad
+modified = { $count } ändrade
 nav-shortcuts = Navigation
-    .prev-output = Fokusera föregående utdata
-    .next-output = Fokusera nästa utdata
-    .last-workspace = Fokusera sista arbetsyta
+    .prev-output = Fokusera föregående skärm
+    .next-output = Fokusera nästa skärm
+    .last-workspace = Fokusera sista arbetsytan
     .prev-workspace = Fokusera föregående arbetsyta
     .next-workspace = Fokusera nästa arbetsyta
     .focus =
-        Fokusera fönster { $direction ->
-           *[down] ned
-            [in] i
-            [left] vänster
-            [out] ot
-            [right] höger
-            [up] upp
+        { $direction ->
+           *[down] Fokusera fönstret nedanför
+            [in] Fokusera fönster i gruppen
+            [left] Fokusera fönstret till vänster
+            [out] Fokusera fönstrets grupp
+            [right] Fokusera fönstret till höger
+            [up] Fokusera fönstret ovanför
         }
     .output =
-        Ändra till utdata { $direction ->
-           *[down] ned
-            [left] vänster
-            [right] höger
-            [up] upp
+        Växla till skärmen { $direction ->
+           *[down] nedanför
+            [left] till vänster
+            [right] till höger
+            [up] ovanför
         }
-    .workspace = Ändra till arbetsyta { $num }
+    .workspace = Växla till arbetsyta { $num }
 manage-windows = Hantera fönster
     .close = Stäng fönster
     .maximize = Maximera fönster
@@ -707,28 +707,28 @@ manage-windows = Hantera fönster
     .minimize = Minimera fönster
     .resize-inwards = Ändra storlek på fönstret inåt
     .resize-outwards = Ändra storlek på fönstret utåt
-    .toggle-sticky = Växla klistrigt fönster
+    .toggle-sticky = Slå på/av visning på alla arbetsytor
 move-windows = Flytta fönster
     .direction =
         Flytta fönster { $direction ->
-           *[down] ned
-            [left] vänster
-            [right] höger
-            [up] upp
+           *[down] nedåt
+            [left] till vänster
+            [right] till höger
+            [up] uppåt
         }
     .display =
         Flytta fönster en skärm { $direction ->
-           *[down] ned
-            [left] vänster
-            [right] höger
-            [up] upp
+           *[down] nedåt
+            [left] till vänster
+            [right] till höger
+            [up] uppåt
         }
     .workspace =
         Flytta fönster en arbetsyta { $direction ->
-           *[below] nedan
+           *[below] nedåt
             [left] vänster
             [right] höger
-            [above] över
+            [above] uppåt
         }
     .workspace-num = Flytta fönster till arbetsyta { $num }
     .prev-workspace = Flytta fönster till föregående arbetsyta
@@ -743,7 +743,7 @@ system-shortcut = System
     .brightness-down = Minska skärmens ljusstyrka
     .brightness-up = Öka skärmens ljusstyrka
     .display-toggle = Växla inbyggd skärm
-    .home-folder = Öppna hem-mapp
+    .home-folder = Öppna hemmapp
     .keyboard-brightness-down = Minska tangentbordets ljusstyrka
     .keyboard-brightness-up = Öka tangentbordets ljusstyrka
     .launcher = Öppna programstartaren
@@ -755,7 +755,7 @@ system-shortcut = System
     .play-next = Nästa spår
     .play-prev = Föregående spår
     .poweroff = Stäng av
-    .screenshot = Ta en skärmdump
+    .screenshot = Ta en skärmbild
     .suspend = Vänteläge
     .terminal = Öppna en terminal
     .touchpad-toggle = Växla pekplatta
@@ -774,7 +774,7 @@ window-tiling = Kaklad fönsterplacering
     .toggle-floating = Växla flytande fönster
     .toggle-orientation = Växla orientering
 replace-shortcut-dialog = Byt ut genväg?
-    .desc = { $shortcut } används av { $name }. Om du byter ut den så kommer { $name } att inaktiveras.
+    .desc = { $shortcut } används av { $name }. Om du ersätter den så kommer { $name } att inaktiveras.
 
 ## Input: Mus
 
@@ -786,7 +786,7 @@ mouse = Mus
 
 click-behavior = Klickbeteende
     .click-finger = Sekundärklicka med två fingrar och mellanklicka med tre fingrar
-    .button-areas = Sekundärklicka i det nedre högra hörnet och mittenklicka längst ner i mitten
+    .button-areas = Sekundärklicka i det nedre högra hörnet och mittenklicka längst ned i mitten
 tap-to-click = Tryck för att klicka
     .desc = Aktiverar tryck med ett finger för primärt klick, tryck med två fingrar för sekundärt klick och tryck med tre fingrar för mittenklick
 touchpad = Pekplatta
@@ -796,17 +796,17 @@ touchpad = Pekplatta
 ## Input: Gester
 
 gestures = Gester
-    .four-finger-down = Fyra fingrar svep ned
-    .four-finger-left = Fyra fingrar svep vänster
-    .four-finger-right = Fyra fingrar svep höger
-    .four-finger-up = Fyra fingrar svep upp
+    .four-finger-down = Svep nedåt med fyra fingrar
+    .four-finger-left = Svep vänster med fyra fingrar
+    .four-finger-right = Svep höger med fyra fingrar
+    .four-finger-up = Svep uppåt med fyra fingrar
     .three-finger-any = Svep med tre fingrar i valfri riktning
-switch-workspaces = Ändra arbetsyta
-    .horizontal = Fyra fingrar svep vänster/höger
-    .vertical = Fyra fingrar svep upp/ned
-switch-between-windows = Ändra mellan fönster
+switch-workspaces = Byt arbetsyta
+    .horizontal = Svep vänster/höger med fyra fingrar
+    .vertical = Svep upp/ned med fyra fingrar
+switch-between-windows = Växla mellan fönster
 open-application-library = Öppna programbibliotek
-open-workspaces-view = Öppna Översikt över arbetsytor
+open-workspaces-view = Öppna översikt över arbetsytor
 
 ## Program
 
@@ -834,7 +834,7 @@ legacy-app-global-shortcuts = Globala genvägar i X11-program
     .desc = Globala genvägar gör att tangenttryckningar och musknappshändelser som utförs i program kan kännas igen av andra program för funktioner som tryck-för-att-tala eller tryck-för-att-tysta. Som standard är detta inaktiverat i X11-program för att säkerställa att andra program inte kan övervaka tangentbords- och mushändelser som innehåller känslig information.
     .none = Inga tangenter
     .modifiers = Modifierare (Super, Shift, Control, Alt)
-    .combination = Alla tangenter medan modifierare Super, Control eller Alt håller på att tryckas ned
+    .combination = Alla tangenter medan modifierare Super, Control eller Alt hålls nedtryckta
     .all = Alla tangenter
     .mouse = Musknappshändelser i X11-program
 legacy-app-scaling = Programskalning för X11-fönstersystemet
@@ -863,7 +863,7 @@ vrr = Variabel uppdateringsfrekvens
     .auto = Automatisk
     .disabled = Av
 amplification = Ljudförstärkning
-    .desc = Tillåt att höja volymen till 150%
+    .desc = Tillåter höjning av volymen till 150 %
 input-source-switch = Växla tangentbordsspråkets inmatningskälla
 zoom-in = Zooma in
 zoom-out = Zooma ut
@@ -872,21 +872,21 @@ pinch-to-zoom = Nyp för att zooma
 formatting = Formatering
     .dates = Datum
     .time = Tid
-    .date-and-time = Datum & Tid
+    .date-and-time = Datum & tid
     .numbers = Nummer
     .measurement = Måttenheter
     .paper = Papper
-vpn-error = VPN Fel
+vpn-error = VPN-Fel
     .config = Misslyckades att lägga till VPN-konfiguration
     .connect = Misslyckades att ansluta till VPN
     .connection-editor = Anslutningsredigerare misslyckades
     .connection-settings = Misslyckades att erhålla inställningar för aktiva anslutningar
-    .openvpn-config-path = Ogiltig sökväg for OpenVPN-konfiguration
+    .openvpn-config-path = Ogiltig sökväg för OpenVPN-konfiguration
     .openvpn-config-path-desc = Vald fil måste ligga på ett lokalt filsystem.
     .updating-state = Misslyckades att uppdatera tillstånd för 'network manager'
-    .wireguard-config-path = Ogiltig sökväg för Wireguard config
+    .wireguard-config-path = Ogiltig sökväg för Wireguard-konfiguration
     .wireguard-config-path-desc = Vald fil måste ligga på ett lokalt filsystem.
-    .wireguard-device = Misslyckades att skapa WireGuard enhet
+    .wireguard-device = Misslyckades att skapa WireGuard-enhet
     .with-password =
         Misslyckades att sätta { $field ->
            *[username] användarnamn
@@ -927,7 +927,7 @@ xdg-entry-appearance-keywords = COSMIC;Accent;Färg;Ikon;Teckensnitt;Tema
 xdg-entry-dock-keywords = COSMIC;Docka;Panel;Applet;Miniprogram
 xdg-entry-desktop-keywords = COSMIC;Skrivbord;
 xdg-entry-about-keywords = COSMIC;Om
-xdg-entry-a11y-keywords = COSMIC;Tillgänglighet;A11y; Skärm;Läsare;Förstoringsglas;Kontrast;Färg;
+xdg-entry-a11y-keywords = COSMIC;Tillgänglighet;A11y;Skärm;Läsare;Förstoringsglas;Kontrast;Färg;
 xdg-entry-date-time-keywords = COSMIC;Tidszon;Tid;Zon;
 xdg-entry-desktop-comment = Inställningar för bakgrundsbild, utseende, panel, docka, fönsterhantering och arbetsytor
 xdg-entry-bluetooth-keywords = COSMIC;Bluetooth;
@@ -955,7 +955,7 @@ xdg-entry-wallpaper-keywords = COSMIC;Bakgrundsbild;Bakgrund;Bildspel;
 xdg-entry-users-keywords = COSMIC;Användare;Konto;
 xdg-entry-vpn-keywords = COSMIC;VPN;Nätverk;Anslutning;OpenVPN;OpenConnect;
 xdg-entry-time-language-keywords = COSMIC;System;Tid;Datum;Region;Språk;
-xdg-entry-sound-keywords = COSMIC;Ljud;Ljud;Varning;Pipewire;
+xdg-entry-sound-keywords = COSMIC;Ljud;Varningsljud;Pipewire;
 xdg-entry-power-keywords = COSMIC;Ström;Batteri
 xdg-entry-region-language-keywords = COSMIC;Region;Språk;Datum;Format;Tid;Lokal;Lokalisering;
 xdg-entry-keyboard-keywords = COSMIC;Tangentbord;Inmatning;Källa;Genvägar;
@@ -963,9 +963,9 @@ xdg-entry-window-management-keywords = COSMIC;Fönster;Hantering;Kaklande;Super;
 no-search-results = Inga nätverk matchar din sökning.
 workspaces-navigation = Navigering
     .wraparound = Flytta mellan första och sista arbetsytan med hjälp av tangentbordsgenvägar och gester
-bluetooth-display-passkey = Bluetooth-koppling
+bluetooth-display-passkey = Bluetooth-parkoppling
     .description = Mata in följande säkerhetskod på { $device }, tryck sedan Enter
-bluetooth-display-pin = Bluetooth-koppling
+bluetooth-display-pin = Bluetooth-parkoppling
     .description = Ange följande PIN på { $device }, tryck sedan Enter
 bluetooth-rename-device = Byt namn på enhet
 rename = Byt namn
@@ -973,7 +973,17 @@ mobility = Rörlighet
 on-screen-keyboard = Virtuellt tangentbord
     .always-show = Visa alltid virtuellt tangentbord
     .icon-on-panel = Ikon på panel
-    .show-on-gamepad-shortcut = Visa virtuellt tangentbrod med en spelkontroll genom att trycka på Start- och Select-/Back-knapparna samtidigt
+    .show-on-gamepad-shortcut = Visa virtuellt tangentbord med en spelkontroll genom att trycka på Start- och Select-/Back-knapparna samtidigt
     .show-on-text-input = Visa virtuellt tangentbord när ett textinmatningsfält markeras
 date-time-applet-settings-title = Miniprogrammet Datum & tid
 date-time-applet-settings-label = Inställningar för miniprogrammet Datum & tid
+drawing-tablet = Ritplatta
+    .no-devices-detected = Ingen ritplatta eller pennenheter hittades
+    .map-to-display = Mappa till skärm
+    .not-set = Inte inställt
+    .enabled = Aktiverad
+xdg-entry-drawing-tablet = Ritplatta
+xdg-entry-drawing-tablet-comment = Skärmmappning
+xdg-entry-drawing-tablet-keywords = COSMIC;Platta;Rita;Känslighet;Sensitivitet;
+tap-and-drag = Tryck och dra
+drag-lock = Draglås
