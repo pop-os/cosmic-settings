@@ -480,9 +480,26 @@ keyboard-sources = แหล่งอินพุต
     .remove = ลบ
     .add = เพิ่มแหล่งอินพุต
 keyboard-special-char = การพิมพ์ตัวอักษรพิเศษ
-    .alternate = คีย์อักขระอื่น
-    .compose = คีย์เรียบเรียง
+    .alternate = ปุ่มอักขระอื่น
+    .compose = ปุ่มเรียบเรียง
+    .compose-desc = ปุ่มเรียบเรียงอนุญาตให้ตัวอักษรหลากหลายประเภทสามารถถูกพิมพ์ได้ ในการใช้งาน กดเรียบเรียงและตามด้วยลำดับตัวอักษร ตัวอย่างเช่น ปุ่มเรียบเรียงตามด้วย C และ o จะพิมพ์ © ในขณะที่ปุ่มเรียบเรียงตามด้วย a และ ‘ จะพิมพ์ á
     .caps = ปุ่ม Caps Lock
+    .ctrl = Control
+    .ctrl-right = Control ขวา
+    .swap-with-ctrl = สลับกับ Control
+    .alt = Alt
+    .alt-left = Alt ซ้าย
+    .alt-right = Alt ขวา
+    .super = ซูเปอร์
+    .super-left = ซูเปอร์ซ้าย
+    .super-right = ซูเปอร์ขวา
+    .menu = ปุ่มเมนู
+    .backspace = Backspace
+    .escape = Escape
+    .swap-with-escape = สลับกับ Escape
+    .print-screen = Print Screen
+    .scroll-lock = Scroll Lock
+    .none = None
 keyboard-typing-assist = การพิมพ์
     .repeat-rate = อัตราการทำซ้ำ
     .repeat-delay = ดีเลย์การทำซ้ำ
@@ -658,7 +675,7 @@ switch-workspaces = สลับพื้นที่ทำงาน
     .horizontal = เลื่อนสี่นิ้วซ้าย/ขวา
     .vertical = เลื่อนสี่นิ้วขึ้น/ลง
 switch-between-windows = สลับระหว่างหน้าต่าง
-open-application-library = เปิดไลบรารีแอพลิเคชั่น
+open-application-library = เปิดไลบรารีแอปพลิเคชัน
 open-workspaces-view = เปิดภาพรวมพื้นที่ทำงาน
 
 ## Time & Language
@@ -672,9 +689,10 @@ time-zone = โซนเวลา
     .auto-info = จำเป็นต้องใช้บริการบอกตำแหน่งและการเข้าถึงอินเทอร์เน็ต
 time-format = รูปแบบวันที่และเวลา
     .twenty-four = เวลาแบบ 24 ชั่วโมง
-    .show-seconds = แสดงวินาที
+    .show-seconds = วินาที
+    .show-weekday = วันของสัปดาห์
     .first = วันแรกของสัปดาห์
-    .show-date = แสดงวันที่บนแผงด้านบน
+    .date = วันที่
     .friday = ศุกร์
     .saturday = เสาร์
     .sunday = อาทิตย์
@@ -696,7 +714,7 @@ region = ภูมิภาค
 
 ## Applications
 
-applications = แอพลิเคชั่น
+applications = แอปพลิเคชัน
 
 ## Applications: Default Applications
 
@@ -793,3 +811,4 @@ xdg-entry-a11y-comment = โปรแกรมอ่านหน้าจอ แ
 xdg-entry-about-comment = ชื่ออุปกรณ์ ข้อมูลฮาร์ดแวร์ ค่าเริ่มต้นระบบปฏิบัติการ
 xdg-entry-comment = แอปพลิเคชันการตั้งค่าสำหรับเดสก์ท็อป COSMIC
 xdg-entry-keywords = COSMIC;Settings;การตั้งค่า;
+xdg-entry-appearance = ลักษณะ
