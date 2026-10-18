@@ -8,7 +8,7 @@ use cosmic::widget::{button, container, dropdown, row, settings, slider, space, 
 use cosmic::{Element, Task, surface};
 
 use cosmic::Apply;
-use cosmic_config::ConfigSet;
+use cosmic_config::{ConfigGet, ConfigSet};
 use cosmic_panel_config::{
     AutoHide, CosmicPanelBackground, CosmicPanelConfig, CosmicPanelContainerConfig,
     CosmicPanelOuput, PanelAnchor, PanelSize,
@@ -17,11 +17,16 @@ use cosmic_settings_page::{self as page, Section};
 use std::collections::HashMap;
 use std::time::Duration;
 
+/// Panel config key: when set, the panel takes its background and opacity
+/// from the system appearance instead of its own settings.
+const SYNC_APPEARANCE: &str = "sync_appearance";
+
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
     pub(crate) panel_config: Option<CosmicPanelConfig>,
     pub opacity: f32,
     pub opacity_changing: bool,
+    pub sync_appearance: bool,
     pub size: PanelSize,
     pub outputs: Vec<String>,
     pub anchors: Vec<String>,
@@ -40,6 +45,7 @@ impl Default for PageInner {
             panel_config: Option::default(),
             opacity: 0.0,
             opacity_changing: false,
+            sync_appearance: false,
             size: PanelSize::M,
             outputs: vec![fl!("all-displays")],
             anchors: vec![
@@ -161,6 +167,8 @@ pub(crate) fn style<
     crate::slab!(descriptions {
         gap_label = p.gap_label();
         extend_label = p.extend_label();
+        sync_appearance = fl!("panel-style", "sync-appearance");
+        sync_appearance_desc = fl!("panel-style", "sync-appearance-desc");
         appearance = fl!("panel-style", "appearance");
         background_opacity = fl!("panel-style", "background-opacity");
         size = fl!("panel-style", "size");
@@ -175,7 +183,7 @@ pub(crate) fn style<
             let Some(panel_config) = inner.panel_config.as_ref() else {
                 return Element::from(text::body(fl!("unknown")));
             };
-            settings::section()
+            let mut section = settings::section()
                 .title(&section.title)
                 .add(
                     settings::item::builder(&descriptions[gap_label])
@@ -185,7 +193,14 @@ pub(crate) fn style<
                     settings::item::builder(&descriptions[extend_label])
                         .toggler(panel_config.expand_to_edges, Message::ExtendToEdge),
                 )
-                .add(settings::item(
+                .add(
+                    settings::item::builder(&descriptions[sync_appearance])
+                        .description(&descriptions[sync_appearance_desc])
+                        .toggler(inner.sync_appearance, Message::SyncAppearance),
+                );
+
+            if !inner.sync_appearance {
+                section = section.add(settings::item(
                     &descriptions[appearance],
                     dropdown::popup_dropdown(
                         inner.backgrounds.as_slice(),
@@ -200,47 +215,51 @@ pub(crate) fn style<
                         Message::Surface,
                         move |a| crate::app::Message::PageMessage(msg_map(a)),
                     ),
-                ))
-                .add(settings::item::builder(&descriptions[size]).flex_control({
-                    // TODO custom discrete slider variant
-                    row::with_children(vec![
-                        text::body(fl!("small")).into(),
-                        slider(
-                            0..=4,
-                            match inner.size {
-                                PanelSize::XS => 0,
-                                PanelSize::S => 1,
-                                PanelSize::M => 2,
-                                PanelSize::L => 3,
-                                PanelSize::XL => 4,
-                                PanelSize::Custom(_) => 2,
-                            },
-                            |v| {
-                                if v == 0 {
-                                    Message::PanelSize(PanelSize::XS)
-                                } else if v == 1 {
-                                    Message::PanelSize(PanelSize::S)
-                                } else if v == 2 {
-                                    Message::PanelSize(PanelSize::M)
-                                } else if v == 3 {
-                                    Message::PanelSize(PanelSize::L)
-                                } else {
-                                    Message::PanelSize(PanelSize::XL)
-                                }
-                            },
-                        )
-                        .on_release(Message::PanelSizeCommit)
-                        .width(Length::Fill)
-                        .apply(cosmic::widget::container)
-                        .max_width(250)
-                        .into(),
-                        text::body(fl!("large")).into(),
-                    ])
-                    .align_y(Alignment::Center)
-                    .spacing(8)
+                ));
+            }
+
+            section = section.add(settings::item::builder(&descriptions[size]).flex_control({
+                // TODO custom discrete slider variant
+                row::with_children(vec![
+                    text::body(fl!("small")).into(),
+                    slider(
+                        0..=4,
+                        match inner.size {
+                            PanelSize::XS => 0,
+                            PanelSize::S => 1,
+                            PanelSize::M => 2,
+                            PanelSize::L => 3,
+                            PanelSize::XL => 4,
+                            PanelSize::Custom(_) => 2,
+                        },
+                        |v| {
+                            if v == 0 {
+                                Message::PanelSize(PanelSize::XS)
+                            } else if v == 1 {
+                                Message::PanelSize(PanelSize::S)
+                            } else if v == 2 {
+                                Message::PanelSize(PanelSize::M)
+                            } else if v == 3 {
+                                Message::PanelSize(PanelSize::L)
+                            } else {
+                                Message::PanelSize(PanelSize::XL)
+                            }
+                        },
+                    )
+                    .on_release(Message::PanelSizeCommit)
                     .width(Length::Fill)
-                }))
-                .add(
+                    .apply(cosmic::widget::container)
+                    .max_width(250)
+                    .into(),
+                    text::body(fl!("large")).into(),
+                ])
+                .align_y(Alignment::Center)
+                .spacing(8)
+                .width(Length::Fill)
+            }));
+
+            if !inner.sync_appearance {
+                section = section.add(
                     settings::item::builder(&descriptions[background_opacity]).flex_control({
                         row::with_capacity(2)
                             .align_y(Alignment::Center)
@@ -266,10 +285,29 @@ pub(crate) fn style<
                                 .max_width(250),
                             )
                     }),
-                )
-                .apply(Element::from)
-                .map(msg_map)
+                );
+            }
+
+            section.apply(Element::from).map(msg_map)
         })
+}
+
+/// Whether the panel follows the system appearance.
+///
+/// Configs written before the setting existed are treated as synced when
+/// they already look like the system: theme background at full opacity.
+pub(crate) fn load_sync_appearance(
+    helper: Option<&cosmic_config::Config>,
+    panel_config: Option<&CosmicPanelConfig>,
+) -> bool {
+    helper
+        .and_then(|helper| helper.get::<bool>(SYNC_APPEARANCE).ok())
+        .unwrap_or_else(|| panel_config.is_some_and(follows_system_appearance))
+}
+
+fn follows_system_appearance(panel_config: &CosmicPanelConfig) -> bool {
+    matches!(panel_config.background, CosmicPanelBackground::ThemeDefault)
+        && (panel_config.opacity - 1.0).abs() < f32::EPSILON
 }
 
 pub(crate) fn configuration<P: page::Page<crate::pages::Message> + PanelPage>(
@@ -426,6 +464,7 @@ pub enum Message {
     ExtendToEdge(bool),
     OpacityRequest(f32),
     OpacityApply,
+    SyncAppearance(bool),
     OutputAdded(String, WlOutput),
     OutputRemoved(WlOutput),
     PanelConfig(Box<CosmicPanelConfig>),
@@ -503,6 +542,8 @@ impl PageInner {
                         tracing::error!(?err, "Error resetting panel config.");
                     }
                     self.size.clone_from(&default.size);
+                    self.sync_appearance = follows_system_appearance(default);
+                    _ = config.set(SYNC_APPEARANCE, self.sync_appearance);
                     self.system_default = Some(default.clone());
                     self.panel_config.clone_from(&self.system_default);
                 } else {
@@ -638,6 +679,19 @@ impl PageInner {
             Message::OpacityApply => {
                 self.opacity_changing = false;
                 _ = helper.set("opacity", panel_config.opacity);
+            }
+
+            Message::SyncAppearance(enabled) => {
+                self.sync_appearance = enabled;
+                _ = helper.set(SYNC_APPEARANCE, enabled);
+
+                // Full opacity lets the theme's frosted glass and glass
+                // opacity settings decide the panel's transparency.
+                if enabled {
+                    _ = panel_config.set_background(helper, CosmicPanelBackground::ThemeDefault);
+                    panel_config.opacity = 1.0;
+                    _ = helper.set("opacity", 1.0f32);
+                }
             }
 
             Message::OutputAdded(name, output) => {

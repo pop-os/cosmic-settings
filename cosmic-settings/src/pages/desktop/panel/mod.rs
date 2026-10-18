@@ -95,10 +95,13 @@ impl Default for Page {
         })
         .ok();
         let container_config = CosmicPanelContainerConfig::load().ok();
+        let sync_appearance =
+            inner::load_sync_appearance(config_helper.as_ref(), panel_config.as_ref());
         Self {
             inner: PageInner {
                 config_helper,
                 panel_config,
+                sync_appearance,
                 container_config,
                 outputs_map: HashMap::new(),
                 system_default,

@@ -493,6 +493,8 @@ panel-style = Style
     .appearance = Appearance
     .size = Size
     .background-opacity = Background opacity
+    .sync-appearance = Sync with system appearance
+    .sync-appearance-desc = Use the background and frosted glass settings from Appearance
 
 panel-applets = Configuration
     .dock-desc = Configure dock applets
