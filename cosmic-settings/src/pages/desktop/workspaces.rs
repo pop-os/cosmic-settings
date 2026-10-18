@@ -4,16 +4,52 @@
 // TODO make settings work
 
 use cosmic::cosmic_config::{self, ConfigGet, ConfigSet};
+use cosmic::iced::{Alignment, Length};
 use cosmic::widget::{self, settings};
 use cosmic::{Apply, Element, surface};
 use cosmic_comp_config::workspace::{Action, WorkspaceConfig, WorkspaceLayout, WorkspaceMode};
 use cosmic_settings_page::{self as page, Section, section};
+use serde::{Deserialize, Serialize};
 use slotmap::SlotMap;
+use std::collections::HashMap;
 use tracing::error;
+
+/// Mirrors `OverviewStyle` in cosmic-workspaces.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+enum OverviewStyle {
+    #[default]
+    Normal,
+    Compact,
+}
+
+/// Mirrors `cosmic_panel_config::PanelAnchor`, which cosmic-workspaces uses for
+/// the workspace bar position.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+enum BarPosition {
+    Left,
+    Right,
+    Top,
+    Bottom,
+}
+
+/// Options of the bar position dropdown; `None` follows the workspace orientation.
+const BAR_POSITIONS: [Option<BarPosition>; 5] = [
+    None,
+    Some(BarPosition::Left),
+    Some(BarPosition::Right),
+    Some(BarPosition::Top),
+    Some(BarPosition::Bottom),
+];
+
+const COMPACT_WORKSPACE_SIZE_DEFAULT: u16 = 96;
 
 #[derive(Clone, Debug)]
 pub enum Message {
     SetActionOnTyping(usize),
+    SetOverviewStyle(usize),
+    SetBarPosition(usize),
+    CompactWorkspaceSize(u16),
+    CompactWorkspaceSizeCommit,
     SetWorkspaceMode(WorkspaceMode),
     SetWorkspaceLayout(WorkspaceLayout),
     SetWorkspaceWraparound(bool),
@@ -30,6 +66,11 @@ pub struct Page {
     action_on_typing_active: Option<usize>,
     show_workspace_name: bool,
     show_workspace_number: bool,
+    overview_style_selections: Vec<String>,
+    overview_style: OverviewStyle,
+    bar_position_selections: Vec<String>,
+    bar_position: Option<BarPosition>,
+    compact_workspace_size: u16,
 }
 
 impl Default for Page {
@@ -59,6 +100,13 @@ impl Default for Page {
 
             false
         });
+        let overview_style = read_config(&config, "overview_style", OverviewStyle::default());
+        let bar_position = read_config(&config, "bar_position", None);
+        let compact_workspace_size = read_config(
+            &config,
+            "compact_workspace_size",
+            COMPACT_WORKSPACE_SIZE_DEFAULT,
+        );
         Self {
             config,
             comp_config,
@@ -71,8 +119,36 @@ impl Default for Page {
             action_on_typing_active,
             show_workspace_name,
             show_workspace_number,
+            overview_style_selections: vec![
+                fl!("workspaces-overview", "normal"),
+                fl!("workspaces-overview", "compact"),
+            ],
+            overview_style,
+            bar_position_selections: vec![
+                fl!("workspaces-overview", "automatic"),
+                fl!("panel-left"),
+                fl!("panel-right"),
+                fl!("panel-top"),
+                fl!("panel-bottom"),
+            ],
+            bar_position,
+            compact_workspace_size,
         }
     }
+}
+
+fn read_config<T: serde::de::DeserializeOwned>(
+    config: &cosmic_config::Config,
+    key: &str,
+    default: T,
+) -> T {
+    config.get(key).unwrap_or_else(|err| {
+        if err.is_err() {
+            error!(?err, "Failed to read config '{key}'");
+        }
+
+        default
+    })
 }
 
 impl page::Page<crate::pages::Message> for Page {
@@ -107,8 +183,35 @@ impl Page {
         }
     }
 
+    fn set_config<T: Serialize>(&self, key: &str, value: T) {
+        if let Err(err) = self.config.set(key, value) {
+            error!(?err, "Failed to set config '{key}'");
+        }
+    }
+
     pub fn update(&mut self, message: Message) -> cosmic::iced::Task<crate::app::Message> {
         match message {
+            Message::SetOverviewStyle(idx) => {
+                self.overview_style = if idx == 1 {
+                    OverviewStyle::Compact
+                } else {
+                    OverviewStyle::Normal
+                };
+                self.set_config("overview_style", self.overview_style);
+            }
+            Message::SetBarPosition(idx) => {
+                if let Some(position) = BAR_POSITIONS.get(idx) {
+                    self.bar_position = *position;
+                    self.set_config("bar_position", self.bar_position);
+                }
+            }
+            // Only moves the slider; the overview is updated once it is released.
+            Message::CompactWorkspaceSize(size) => {
+                self.compact_workspace_size = size;
+            }
+            Message::CompactWorkspaceSizeCommit => {
+                self.set_config("compact_workspace_size", self.compact_workspace_size);
+            }
             Message::SetWorkspaceMode(value) => {
                 self.comp_workspace_config.workspace_mode = value;
                 self.save_comp_config();
@@ -166,6 +269,9 @@ fn into_action(value: usize) -> Action {
 pub fn action_on_typing() -> Section<crate::pages::Message> {
     crate::slab!(descriptions {
         action_on_typing = fl!("workspaces-overview", "action-on-typing");
+        style = fl!("workspaces-overview", "style");
+        bar_position = fl!("workspaces-overview", "bar-position");
+        workspace_size = fl!("workspaces-overview", "workspace-size");
     });
 
     Section::default()
@@ -174,7 +280,10 @@ pub fn action_on_typing() -> Section<crate::pages::Message> {
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
 
-            settings::section()
+            let on_surface_action =
+                |a| crate::app::Message::PageMessage(crate::pages::Message::Workspaces(a));
+
+            let mut section = settings::section()
                 .title(&section.title)
                 .add(
                     settings::item::builder(&descriptions[action_on_typing]).control(
@@ -184,14 +293,71 @@ pub fn action_on_typing() -> Section<crate::pages::Message> {
                             Message::SetActionOnTyping,
                             cosmic::iced::window::Id::RESERVED,
                             Message::Surface,
-                            |a| {
-                                crate::app::Message::PageMessage(crate::pages::Message::Workspaces(
-                                    a,
-                                ))
-                            },
+                            on_surface_action,
                         ),
                     ),
                 )
+                .add(settings::item::builder(&descriptions[style]).control(
+                    widget::dropdown::popup_dropdown(
+                        &page.overview_style_selections,
+                        Some(match page.overview_style {
+                            OverviewStyle::Normal => 0,
+                            OverviewStyle::Compact => 1,
+                        }),
+                        Message::SetOverviewStyle,
+                        cosmic::iced::window::Id::RESERVED,
+                        Message::Surface,
+                        on_surface_action,
+                    ),
+                ))
+                .add(
+                    settings::item::builder(&descriptions[bar_position]).control(
+                        widget::dropdown::popup_dropdown(
+                            &page.bar_position_selections,
+                            BAR_POSITIONS.iter().position(|p| *p == page.bar_position),
+                            Message::SetBarPosition,
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            on_surface_action,
+                        ),
+                    ),
+                );
+
+            if page.overview_style == OverviewStyle::Compact {
+                section = section.add(
+                    settings::item::builder(&descriptions[workspace_size]).flex_control(
+                        widget::row::with_capacity(2)
+                            .align_y(Alignment::Center)
+                            .spacing(8)
+                            .width(Length::Fill)
+                            .push(
+                                widget::text::body(fl!(
+                                    "number",
+                                    HashMap::from_iter(vec![(
+                                        "number",
+                                        i32::from(page.compact_workspace_size)
+                                    )])
+                                ))
+                                .width(Length::Fixed(28.0))
+                                .align_x(Alignment::Center),
+                            )
+                            .push(
+                                widget::slider(
+                                    64..=160,
+                                    page.compact_workspace_size,
+                                    Message::CompactWorkspaceSize,
+                                )
+                                .step(8u16)
+                                .on_release(Message::CompactWorkspaceSizeCommit)
+                                .width(Length::Fill)
+                                .apply(widget::container)
+                                .max_width(250),
+                            ),
+                    ),
+                );
+            }
+
+            section
                 .apply(Element::from)
                 .map(crate::pages::Message::Workspaces)
         })

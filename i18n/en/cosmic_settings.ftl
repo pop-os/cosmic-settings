@@ -537,6 +537,12 @@ workspaces-overview = Workspaces overview
     .none = None
     .launcher = Open Launcher
     .applications = Open Applications
+    .style = Overview style
+    .normal = Normal
+    .compact = Compact
+    .bar-position = Workspace bar position
+    .automatic = Automatic
+    .workspace-size = Workspace thumbnail size
 
 workspaces-behavior = Workspace behavior
     .dynamic = Dynamic workspaces
