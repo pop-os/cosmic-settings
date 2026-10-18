@@ -58,7 +58,8 @@ pub struct Page {
     can_reset: bool,
     context_view: Option<ContextView>,
     drawer: drawer::Content,
-    roundness: Roundness,
+    /// Position of the roundness slider, see [`CornerRadii::from_roundness_level`].
+    roundness_level: f32,
     density: Density,
 
     theme_manager: theme_manager::Manager,
@@ -89,7 +90,7 @@ impl From<theme_manager::Manager> for Page {
             },
             context_view: None,
             drawer: drawer::Content::from(&theme_manager),
-            roundness: theme_builder.corner_radii.into(),
+            roundness_level: theme_builder.corner_radii.roundness_level(),
             density: cosmic::config::interface_density(),
             theme_manager,
             tk_config,
@@ -153,6 +154,8 @@ pub enum Message {
     PaletteAccent(cosmic::iced::Color),
     Reset,
     Roundness(Roundness),
+    RoundnessLevel(f32),
+    RoundnessLevelCommit,
     #[cfg(feature = "xdg-portal")]
     StartExport,
     #[cfg(feature = "xdg-portal")]
@@ -244,16 +247,20 @@ impl Page {
             }
 
             Message::Roundness(r) => {
-                self.roundness = r;
+                self.roundness_level = r.level();
+                theme_staged = self.set_corner_radii(r.into());
+            }
 
-                let radii = self.roundness.into();
-                theme_staged = self.theme_manager.set_corner_radii(radii);
+            // Only moves the slider; the theme is rebuilt once it is released.
+            Message::RoundnessLevel(level) => {
+                self.roundness_level = level;
+            }
 
-                #[cfg(feature = "wayland")]
-                tokio::task::spawn(async move {
-                    Self::update_dock_padding(r);
-                    Self::update_panel_radii(r);
-                });
+            Message::RoundnessLevelCommit => {
+                let radii = CornerRadii::from_roundness_level(self.roundness_level);
+                if radii != self.theme_manager.builder().corner_radii {
+                    theme_staged = self.set_corner_radii(radii);
+                }
             }
 
             Message::Density(density) => {
@@ -289,7 +296,8 @@ impl Page {
                     ThemeBuilder::light()
                 };
 
-                self.roundness = builder.corner_radii.into();
+                let radii = builder.corner_radii;
+                self.roundness_level = radii.roundness_level();
                 self.density = Density::Standard;
 
                 self.theme_manager.set_active_hint(builder.active_hint);
@@ -305,13 +313,12 @@ impl Page {
                     _ = config.set("header_size", Density::Standard);
                 }
 
-                let r = self.roundness;
                 self.drawer.reset(&self.theme_manager);
 
                 tasks.push(cosmic::task::future(async move {
                     #[cfg(feature = "wayland")]
                     {
-                        Self::update_panel_radii(r);
+                        Self::update_panel_radii(radii);
                         Self::update_panel_spacing(Density::Standard);
                     }
 
@@ -448,7 +455,7 @@ impl Page {
                     tracing::error!(?err, "Error setting dark mode");
                 }
 
-                self.roundness = builder.corner_radii.into();
+                self.roundness_level = builder.corner_radii.roundness_level();
                 self.density = Density::Standard;
 
                 self.theme_manager
@@ -612,6 +619,19 @@ impl Page {
     }
 
     // TODO: cache panel and dock configs so that they needn't be re-read
+    /// Applies the radii to the theme and keeps the panel and dock in sync.
+    fn set_corner_radii(&mut self, radii: CornerRadii) -> Option<theme_manager::ThemeStaged> {
+        let theme_staged = self.theme_manager.set_corner_radii(radii);
+
+        #[cfg(feature = "wayland")]
+        tokio::task::spawn(async move {
+            Self::update_dock_padding(radii);
+            Self::update_panel_radii(radii);
+        });
+
+        theme_staged
+    }
+
     #[cfg(feature = "wayland")]
     fn load_panel_config(name: &str) -> Option<(Config, CosmicPanelConfig)> {
         let helper = CosmicPanelConfig::cosmic_config(name).ok()?;
@@ -620,8 +640,7 @@ impl Page {
     }
 
     #[cfg(feature = "wayland")]
-    pub fn update_panel_radii(roundness: Roundness) {
-        let corner_radii: CornerRadii = roundness.into();
+    pub fn update_panel_radii(corner_radii: CornerRadii) {
         let radius = corner_radii.radius_xl[0] as u32;
 
         for name in ["Panel", "Dock"] {
@@ -644,12 +663,12 @@ impl Page {
     }
 
     #[cfg(feature = "wayland")]
-    pub fn update_dock_padding(roundness: Roundness) {
+    pub fn update_dock_padding(corner_radii: CornerRadii) {
         let Some((helper, mut config)) = Self::load_panel_config("Dock") else {
             return;
         };
 
-        let padding = match roundness {
+        let padding = match Roundness::from(corner_radii) {
             Roundness::Round | Roundness::SlightlyRound => 4,
             Roundness::Square => 0,
         };

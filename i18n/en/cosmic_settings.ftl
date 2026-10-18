@@ -418,6 +418,7 @@ style = Style
     .round = Round
     .slightly-round = Slightly round
     .square = Square
+    .roundness = Roundness
     .frosted-glass = Frosted glass
     .frosted-system-interface = System interface
     .frosted-system-interface-desc = Applies frosted glass to Launcher, application library, workspace overview, on-screen controls

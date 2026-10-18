@@ -1,7 +1,7 @@
 use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::icon::{from_name, icon};
-use cosmic::widget::{button, container, settings, text};
+use cosmic::widget::{button, container, row, settings, slider, text};
 use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
 
@@ -15,6 +15,7 @@ pub fn section() -> Section<crate::pages::Message> {
         round = fl!("style", "round");
         slightly_round = fl!("style", "slightly-round");
         square = fl!("style", "square");
+        roundness = fl!("style", "roundness");
         frosted_glass = fl!("style", "frosted-glass");
     });
 
@@ -49,6 +50,7 @@ pub fn section() -> Section<crate::pages::Message> {
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
             let descriptions = &section.descriptions;
+            let preset = page.theme_manager.builder().corner_radii.preset();
 
             settings::section()
                 .title(&section.title)
@@ -69,7 +71,7 @@ pub fn section() -> Section<crate::pages::Message> {
                                     .height(Length::Fixed(100.0)),
                                     None
                                 )
-                                .selected(matches!(page.roundness, Roundness::Round))
+                                .selected(preset == Some(Roundness::Round))
                                 .class(button::ButtonClass::Image)
                                 .padding(0)
                                 .on_press(Message::Roundness(Roundness::Round))
@@ -95,7 +97,7 @@ pub fn section() -> Section<crate::pages::Message> {
                                     .height(Length::Fixed(100.0)),
                                     None
                                 )
-                                .selected(matches!(page.roundness, Roundness::SlightlyRound))
+                                .selected(preset == Some(Roundness::SlightlyRound))
                                 .class(button::ButtonClass::Image)
                                 .padding(0)
                                 .on_press(Message::Roundness(Roundness::SlightlyRound))
@@ -122,7 +124,7 @@ pub fn section() -> Section<crate::pages::Message> {
                                     None
                                 )
                                 .width(Length::FillPortion(1))
-                                .selected(matches!(page.roundness, Roundness::Square))
+                                .selected(preset == Some(Roundness::Square))
                                 .class(button::ButtonClass::Image)
                                 .padding(0)
                                 .on_press(Message::Roundness(Roundness::Square))
@@ -139,6 +141,24 @@ pub fn section() -> Section<crate::pages::Message> {
                         .align_y(Alignment::Center),
                     )
                     .center_x(Length::Fill),
+                )
+                .add(
+                    settings::item::builder(&descriptions[roundness]).flex_control({
+                        row::with_children(vec![
+                            text::body(&descriptions[square]).into(),
+                            slider(0.0..=1.0, page.roundness_level, Message::RoundnessLevel)
+                                .step(0.05)
+                                .on_release(Message::RoundnessLevelCommit)
+                                .width(Length::Fill)
+                                .apply(container)
+                                .max_width(250)
+                                .into(),
+                            text::body(&descriptions[round]).into(),
+                        ])
+                        .align_y(Alignment::Center)
+                        .spacing(8)
+                        .width(Length::Fill)
+                    }),
                 )
                 .add(crate::widget::go_next_item(
                     &descriptions[frosted_glass],

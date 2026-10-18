@@ -519,17 +519,13 @@ impl PageInner {
                 let theme = cosmic::theme::system_preference();
                 let theme = theme.cosmic();
 
-                let radius = theme.corner_radii;
-                let roundness: Roundness = radius.into();
-                crate::pages::desktop::appearance::Page::update_panel_radii(roundness);
+                crate::pages::desktop::appearance::Page::update_panel_radii(theme.corner_radii);
 
                 let spacing = theme.spacing;
                 let density = Density::from(spacing);
                 crate::pages::desktop::appearance::Page::update_panel_spacing(density);
 
-                let radius = theme.corner_radii;
-                let roundness: Roundness = radius.into();
-                crate::pages::desktop::appearance::Page::update_dock_padding(roundness);
+                crate::pages::desktop::appearance::Page::update_dock_padding(theme.corner_radii);
             }
             _ => {}
         };
