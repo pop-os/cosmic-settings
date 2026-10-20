@@ -8,20 +8,20 @@ use cosmic::iced::widget::{column, row};
 use cosmic::iced::{self, Alignment, Length, stream};
 use cosmic::widget::{self, settings, space, text};
 use cosmic::{Apply, Task, surface};
-use cosmic_config::{Config, CosmicConfigEntry, ConfigGet, ConfigSet};
+use cosmic_config::{Config, ConfigGet, ConfigSet, CosmicConfigEntry};
 use cosmic_idle_config::CosmicIdleConfig;
+use cosmic_settings_config::shortcuts::SystemActions;
+use cosmic_settings_config::shortcuts::action::System;
 use cosmic_settings_page::{self as page, Section, section};
 use futures::{SinkExt, StreamExt};
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 use slab::Slab;
 use slotmap::SlotMap;
 use std::hash::Hash;
 use std::iter;
 use std::time::Duration;
 use upower_dbus::DeviceProxy;
-use serde::{Deserialize, Serialize};
-use cosmic_settings_config::shortcuts::SystemActions;
-use cosmic_settings_config::shortcuts::action::System;
 
 static SCREEN_OFF_TIMES: &[Duration] = &[
     Duration::from_secs(2 * 60),
@@ -85,21 +85,25 @@ impl Default for Page {
         // This is being stored in shortcuts because "shortcuts" is mapping SystemActions (VolumeUp, LockScreen, BrightnessDown, etc.)
         // to command strings. The power button behavior is a system action and the setting is user scoped so it makes sense to store
         // it in the same config as the other user shortcuts.
-        let shortcuts_config: Config = Config::new("com.system76.CosmicSettings.Shortcuts", 1).unwrap();
-        let custom_shortcuts: SystemActions =
-                shortcuts_config.get::<SystemActions>("system_actions").unwrap_or_else(|err| {
-            tracing::error!("Error loading shortcuts map with power button behavior: {err:?}");
-            Default::default()
-        });
+        let shortcuts_config: Config =
+            Config::new("com.system76.CosmicSettings.Shortcuts", 1).unwrap();
+        let custom_shortcuts: SystemActions = shortcuts_config
+            .get::<SystemActions>("system_actions")
+            .unwrap_or_else(|err| {
+                tracing::error!("Error loading shortcuts map with power button behavior: {err:?}");
+                Default::default()
+            });
 
-        let power_button_behavior = Some(custom_shortcuts
-            .get(&System::PowerOff)
-            .map(|s| match s.as_str() {
-                "systemctl suspend" => PowerButtonBehavior::Suspend,
-                "cosmic-osd shutdown" => PowerButtonBehavior::PowerOff,
-                _ => PowerButtonBehavior::Nothing,
-            })
-            .unwrap_or_default());
+        let power_button_behavior = Some(
+            custom_shortcuts
+                .get(&System::PowerOff)
+                .map(|s| match s.as_str() {
+                    "systemctl suspend" => PowerButtonBehavior::Suspend,
+                    "cosmic-osd shutdown" => PowerButtonBehavior::PowerOff,
+                    _ => PowerButtonBehavior::Nothing,
+                })
+                .unwrap_or_default(),
+        );
 
         Self {
             entity: Default::default(),
@@ -451,9 +455,13 @@ impl Page {
                 // Because this setting deals with user-defined behavior when the power button is pressed, we store
                 // it in the same config as the other user-defined shortcuts. Behaviors automatically get serialized
                 // into the desired command string based on the values in the PowerButtonBehavior enum.
-                let mut custom_shortcuts: SystemActions =
-                    self.shortcuts_config.get::<SystemActions>("system_actions").unwrap_or_else(|err| {
-                        tracing::error!("Error loading shortcuts map with power button behavior: {err:?}");
+                let mut custom_shortcuts: SystemActions = self
+                    .shortcuts_config
+                    .get::<SystemActions>("system_actions")
+                    .unwrap_or_else(|err| {
+                        tracing::error!(
+                            "Error loading shortcuts map with power button behavior: {err:?}"
+                        );
                         Default::default()
                     });
 
@@ -464,10 +472,13 @@ impl Page {
                 };
 
                 custom_shortcuts.insert(System::PowerOff, command_to_save.to_string());
-                if let Err(err) = self.shortcuts_config.set("system_actions", custom_shortcuts) {
+                if let Err(err) = self
+                    .shortcuts_config
+                    .set("system_actions", custom_shortcuts)
+                {
                     tracing::error!("failed to save power button behavior: {}", err);
                 } else {
-                    // If no error while saving the selected value, update this page to visually reflect the change. 
+                    // If no error while saving the selected value, update this page to visually reflect the change.
                     self.power_button_behavior = Some(behavior);
                 }
             }
@@ -644,7 +655,6 @@ fn power_saving_row<'a>(
     .into()
 }
 
-
 fn power_button() -> Section<crate::pages::Message> {
     let mut descriptions = Slab::new();
     descriptions.insert(fl!("power-button", "power-off"));
@@ -655,10 +665,7 @@ fn power_button() -> Section<crate::pages::Message> {
         .title(fl!("power-button-settings-group"))
         .descriptions(descriptions)
         .view::<Page>(move |_binder, page, section| {
-            let selected = page
-                .power_button_behavior
-                .as_ref()
-                .map(|selection| {
+            let selected = page.power_button_behavior.as_ref().map(|selection| {
                 let mapped_val = match selection {
                     PowerButtonBehavior::Suspend => 0,
                     PowerButtonBehavior::PowerOff => 1,
@@ -695,10 +702,7 @@ fn power_button() -> Section<crate::pages::Message> {
 
             settings::section()
                 .title(&section.title)
-                .add(settings::item(
-                    fl!("power-button"),
-                    dropdown_widget,
-                ))
+                .add(settings::item(fl!("power-button"), dropdown_widget))
                 .apply(cosmic::Element::from)
                 .map(crate::pages::Message::Power)
         })

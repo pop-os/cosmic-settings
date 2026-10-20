@@ -311,10 +311,13 @@ impl page::Page<crate::pages::Message> for Page {
             }
 
             VpnDialog::WireGuardName(device, ..) => {
-                let input = widget::text_input("", device.as_str()).on_input(|input| {
-                    Message::WireGuardDeviceInput(input.replace(|c: char| !c.is_alphanumeric(), ""))
-                })
-                .on_submit(|_| Message::WireGuardConfig);
+                let input = widget::text_input("", device.as_str())
+                    .on_input(|input| {
+                        Message::WireGuardDeviceInput(
+                            input.replace(|c: char| !c.is_alphanumeric(), ""),
+                        )
+                    })
+                    .on_submit(|_| Message::WireGuardConfig);
 
                 let primary_action =
                     widget::button::suggested(fl!("connect")).on_press(Message::WireGuardConfig);
