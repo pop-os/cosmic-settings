@@ -103,6 +103,14 @@ impl SettingsApp {
             PageCommands::Input => self.pages.page_id::<input::Page>(),
             #[cfg(feature = "page-input")]
             PageCommands::Keyboard => self.pages.page_id::<input::keyboard::Page>(),
+            #[cfg(feature = "page-input")]
+            PageCommands::KeyboardShortcuts => {
+                self.pages.page_id::<input::keyboard::shortcuts::Page>()
+            }
+            #[cfg(feature = "page-input")]
+            PageCommands::CustomShortcuts => {
+                self.pages.page_id::<input::keyboard::shortcuts::custom::Page>()
+            }
             #[cfg(feature = "page-legacy-applications")]
             PageCommands::LegacyApplications => self
                 .pages
