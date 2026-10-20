@@ -9,7 +9,7 @@ use freedesktop_desktop_entry::DesktopEntry;
 use itertools::Itertools;
 use slotmap::{Key, SlotMap};
 use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 use tracing::error;
 
@@ -241,36 +241,29 @@ impl Page {
 
                 _ = std::fs::create_dir_all(directory_to_target.as_path());
 
-                if let Ok(exists) = std::fs::exists(directory_to_target.join(file_name.clone()))
-                    && !exists
-                {
-                    // when adding an application, we want to symlink to be more user-friendly
-                    // this ensures that, as an application gets updated / removed, so does the
-                    // symlink
-                    match std::os::unix::fs::symlink(
-                        app.clone().path,
-                        directory_to_target.join(file_name),
-                    ) {
-                        Ok(_) => {
-                            if let Some(ref mut cached_startup_apps) = self.cached_startup_apps {
-                                let target_apps = cached_startup_apps.apps.get(&directory_type);
-                                if let Some(target_apps) = target_apps {
-                                    let mut new_apps = target_apps.clone();
-                                    new_apps.push(app.clone());
-                                    sort_entries_by_name(
-                                        &mut new_apps,
-                                        &cached_startup_apps.locales,
-                                    );
+                let link_path = directory_to_target.join(file_name);
 
-                                    cached_startup_apps
-                                        .apps
-                                        .insert(directory_type.clone(), new_apps);
-                                }
+                // when adding an application, we want to symlink to be more user-friendly
+                // this ensures that, as an application gets updated / removed, so does the
+                // symlink
+                match create_autostart_symlink(&link_path, &app.path) {
+                    Ok(true) => {
+                        if let Some(ref mut cached_startup_apps) = self.cached_startup_apps {
+                            let target_apps = cached_startup_apps.apps.get(&directory_type);
+                            if let Some(target_apps) = target_apps {
+                                let mut new_apps = target_apps.clone();
+                                new_apps.push(app.clone());
+                                sort_entries_by_name(&mut new_apps, &cached_startup_apps.locales);
+
+                                cached_startup_apps
+                                    .apps
+                                    .insert(directory_type.clone(), new_apps);
                             }
                         }
-                        Err(e) => {
-                            error!(?e, "Failed to symlink");
-                        }
+                    }
+                    Ok(false) => {}
+                    Err(e) => {
+                        error!(?e, "Failed to symlink");
                     }
                 }
 
@@ -289,11 +282,12 @@ impl Page {
 
                     let directory_to_target =
                         directories.first().expect("Always at least one directory");
-                    if let Ok(exists) = std::fs::exists(directory_to_target.join(file_name.clone()))
-                        && exists
-                    {
+
+                    let file_path = directory_to_target.join(file_name);
+
+                    if std::fs::symlink_metadata(&file_path).is_ok() {
                         // remove_file works for both regular files & symlinks
-                        match std::fs::remove_file(directory_to_target.join(file_name)) {
+                        match std::fs::remove_file(&file_path) {
                             Ok(_) => {
                                 if let Some(ref mut cached_startup_apps) = self.cached_startup_apps
                                 {
@@ -466,6 +460,30 @@ fn apps() -> Section<crate::pages::Message> {
 
             view.into()
         })
+}
+
+/// Creates a symbolic link at `link_path` pointing to `target` for the autostart entry.
+///
+/// Returns `Ok(true)` if the symbolic link was created; `Ok(false)` if the entry already exists and remains unchanged;
+/// or an error if the symbolic link could not be created.
+fn create_autostart_symlink(link_path: &Path, target: &Path) -> std::io::Result<bool> {
+    match std::fs::symlink_metadata(link_path) {
+        Ok(metadata) => {
+            let broken_symlink =
+                metadata.file_type().is_symlink() && std::fs::metadata(link_path).is_err();
+            if !broken_symlink {
+                // A valid entry already exists; leave it as is.
+                return Ok(false);
+            }
+            // Replace the broken symbolic link with a new one.
+            std::fs::remove_file(link_path)?;
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e),
+    }
+
+    std::os::unix::fs::symlink(target, link_path)?;
+    Ok(true)
 }
 
 fn sort_entries_by_name(entries: &mut [DesktopEntry], locales: &[String]) {
