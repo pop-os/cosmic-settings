@@ -107,6 +107,12 @@ pub enum PageCommands {
     /// Keyboard settings page
     #[cfg(feature = "page-input")]
     Keyboard,
+    /// Keyboard Shortcuts settings page
+    #[cfg(feature = "page-input")]
+    KeyboardShortcuts,
+    /// Custom Keyboard Shortcuts settings page
+    #[cfg(feature = "page-input")]
+    CustomShortcuts,
     /// Legacy Applications settings page
     #[cfg(feature = "page-legacy-applications")]
     LegacyApplications,
