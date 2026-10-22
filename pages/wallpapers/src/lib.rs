@@ -65,6 +65,12 @@ pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
 
     let context = cosmic_bg_config::context().expect("failed to get helper for cosmic bg config");
 
+    if let Ok(shared) = cosmic_bg_config::shared()
+        && let Err(why) = context.seed_from(&shared)
+    {
+        tracing::warn!(?why, "failed to seed the background config");
+    }
+
     let config = match Config::load(&context) {
         Ok(conf) => conf,
         Err(why) => {
