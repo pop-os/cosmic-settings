@@ -22,7 +22,9 @@ cosmic-bg-config.workspace = true
 cosmic-comp-config = { workspace = true, optional = true }
 cosmic-config.workspace = true
 cosmic-idle-config.workspace = true
-cosmic-osk-config = { git = "https://github.com/pop-os/cosmic-osk", features = ["subscription"] }
+cosmic-osk-config = { git = "https://github.com/pop-os/cosmic-osk", features = [
+    "subscription",
+] }
 cosmic-panel-config = { workspace = true, optional = true }
 cosmic-protocols = { git = "https://github.com/pop-os/cosmic-protocols", optional = true }
 cosmic-randr-shell.workspace = true
@@ -37,6 +39,7 @@ cosmic-settings-sound = { path = "../pages/sound", optional = true }
 cosmic-settings-upower-subscription = { path = "../subscriptions/upower", optional = true }
 cosmic-settings-wallpaper = { path = "../pages/wallpapers" }
 cosmic-settings-daemon-config = { git = "https://github.com/pop-os/cosmic-settings-daemon", optional = true }
+cosmic-theme-bundle-config = { path = "../theme-bundle-config" }
 derive_setters = "0.1.9"
 dirs = "6.0.0"
 eyre = "0.6.12"
@@ -53,7 +56,9 @@ libcosmic.workspace = true
 iced_winit.workspace = true
 locale1 = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 sysinfo = { version = "=0.38.0", optional = true }
-mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = ["tokio"], optional = true }
+mime-apps = { package = "cosmic-mime-apps", git = "https://github.com/pop-os/cosmic-mime-apps", features = [
+    "tokio",
+], optional = true }
 notify = "8.2.0"
 nmrs = { version = "3.5.3", optional = true }
 regex = "1.13.1"
@@ -61,7 +66,9 @@ ron = "0.12"
 rust-embed = "8.12.0"
 sctk = { workspace = true, optional = true }
 secure-string = "0.3.0"
-secret-service = { version = "5.1.0", features = ["rt-tokio-crypto-rust"], optional = true }
+secret-service = { version = "5.1.0", features = [
+    "rt-tokio-crypto-rust",
+], optional = true }
 serde = { version = "1.0.229", features = ["derive"] }
 slab = "0.4.12"
 slotmap = "1.1.1"
@@ -69,7 +76,7 @@ static_init = "1.0.4"
 sunrise = "3.0.0"
 timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 tokio = { workspace = true, features = ["fs", "io-util", "process", "sync"] }
-tracing = "0.1.44"
+tracing.workspace = true
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 udev = { version = "0.9.3", optional = true }
 upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
@@ -81,7 +88,7 @@ zbus = { version = "5.18.0", default-features = false, features = [
     "tokio",
 ], optional = true }
 zbus_polkit = { version = "5.0.0", optional = true }
-fontdb = "0.23.0"
+fontdb.workspace = true
 mime = "0.3.17"
 rustix = { version = "1.1.4", features = ["process"] }
 gettext-rs = { version = "0.7.7", features = [
@@ -168,12 +175,7 @@ page-input = [
     "wayland",
 ]
 page-legacy-applications = ["cosmic-comp-config", "dep:cosmic-randr"]
-page-networking = [
-    "xdg-portal",
-    "dep:nmrs",
-    "dep:secret-service",
-    "dep:zbus",
-]
+page-networking = ["xdg-portal", "dep:nmrs", "dep:secret-service", "dep:zbus"]
 page-power = ["dep:upower_dbus", "dep:zbus"]
 page-region = [
     "gettext",
@@ -194,6 +196,11 @@ cosmic-comp-config = ["dep:cosmic-comp-config"]
 dbus-config = ["libcosmic/dbus-config", "cosmic-config/dbus"]
 single-instance = ["libcosmic/single-instance"]
 test = []
-wayland = ["libcosmic/wayland", "dep:cosmic-panel-config", "dep:cosmic-randr", "iced_winit/wayland"]
+wayland = [
+    "libcosmic/wayland",
+    "dep:cosmic-panel-config",
+    "dep:cosmic-randr",
+    "iced_winit/wayland",
+]
 wgpu = ["libcosmic/wgpu"]
 xdg-portal = ["ashpd", "libcosmic/xdg-portal"]

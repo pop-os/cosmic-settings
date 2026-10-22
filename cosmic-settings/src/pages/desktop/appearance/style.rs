@@ -5,9 +5,8 @@ use cosmic::widget::{button, container, settings, text};
 use cosmic::{Apply, Element};
 use cosmic_settings_page::Section;
 
-use crate::pages::desktop::appearance::ContextView;
-
-use super::{Message, Page, Roundness};
+use super::custom::Page;
+use super::{Message, Roundness};
 
 #[allow(clippy::too_many_lines)]
 pub fn section() -> Section<crate::pages::Message> {
@@ -15,7 +14,6 @@ pub fn section() -> Section<crate::pages::Message> {
         round = fl!("style", "round");
         slightly_round = fl!("style", "slightly-round");
         square = fl!("style", "square");
-        frosted_glass = fl!("style", "frosted-glass");
     });
 
     let dark_round_style = from_name("illustration-appearance-dark-style-round").handle();
@@ -140,11 +138,7 @@ pub fn section() -> Section<crate::pages::Message> {
                     )
                     .center_x(Length::Fill),
                 )
-                .add(crate::widget::go_next_item(
-                    &descriptions[frosted_glass],
-                    Message::DrawerOpen(ContextView::FrostedGlass),
-                ))
                 .apply(Element::from)
-                .map(crate::pages::Message::Appearance)
+                .map(crate::pages::Message::AppearanceTheme)
         })
 }
