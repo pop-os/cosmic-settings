@@ -227,6 +227,13 @@ fn is_final(why: &zbus::Error) -> bool {
     matches!(why, zbus::Error::MethodError(name, ..) if FINAL_ERRORS.contains(&name.as_str()))
 }
 
+/// Lets the device connect by itself later, without asking.
+async fn trust(device: &Device1Proxy<'_>) {
+    if let Err(why) = device.set_trusted(true).await {
+        tracing::error!("Failed to trust the device: {why}");
+    }
+}
+
 pub async fn disconnect_device(
     connection: zbus::Connection,
     device_path: OwnedObjectPath,
@@ -263,7 +270,7 @@ pub async fn disconnect_device(
     Event::DeviceFailed(device_path)
 }
 
-/// Connects the device, after pairing with it if needed.
+/// Connects the device, after pairing with it if needed, then trusts it.
 ///
 /// Tries up to `attempts` times, but not again after a failed or rejected pairing.
 pub async fn connect_device(
@@ -286,13 +293,17 @@ pub async fn connect_device(
             }
             if !device.paired().await.unwrap_or(false) {
                 device.pair().await?;
+                trust(&device).await;
             }
             device.connect().await
         }
         .await;
 
         match result {
-            Ok(()) => return Event::Ok,
+            Ok(()) => {
+                trust(&device).await;
+                return Event::Ok;
+            }
             Err(why) => {
                 tracing::warn!("Unable to connect to device: {why}");
                 if is_final(&why) {
