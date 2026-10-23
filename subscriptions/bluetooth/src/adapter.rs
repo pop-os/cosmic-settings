@@ -1,6 +1,7 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
+use crate::properties::Properties;
 use crate::{Active, Event};
 use bluez_zbus::adapter1::Adapter1Proxy;
 use std::collections::HashMap;
@@ -36,35 +37,16 @@ impl PartialEq for Adapter {
 impl Eq for Adapter {}
 
 impl Adapter {
-    pub async fn from_device(
-        proxy: &bluez_zbus::adapter1::Adapter1Proxy<'_>,
-    ) -> zbus::Result<Self> {
-        let (address, alias, scanning, enabled) = futures::try_join!(
-            proxy.address(),
-            proxy.alias(),
-            async {
-                Ok(
-                    if proxy.discoverable().await? && proxy.discovering().await? {
-                        Active::Enabled
-                    } else {
-                        Active::Disabled
-                    },
-                )
-            },
-            async {
-                Ok(if proxy.powered().await? {
-                    Active::Enabled
-                } else {
-                    Active::Disabled
-                })
-            }
-        )?;
-
-        Ok(Self {
-            alias,
-            address,
-            scanning,
-            enabled,
+    /// Reads an adapter from its `org.bluez.Adapter1` properties.
+    pub(crate) fn from_properties(adapter: &impl Properties) -> Option<Self> {
+        Some(Self {
+            alias: adapter.string("Alias").unwrap_or_default(),
+            address: adapter.string("Address")?,
+            scanning: Active::from(
+                adapter.boolean("Discoverable").unwrap_or(false)
+                    && adapter.boolean("Discovering").unwrap_or(false),
+            ),
+            enabled: Active::from(adapter.boolean("Powered").unwrap_or(false)),
         })
     }
 
@@ -107,31 +89,19 @@ impl AdapterUpdate {
     pub fn from_update(update: HashMap<&'_ str, zbus::zvariant::Value<'_>>) -> Vec<Self> {
         update
             .into_iter()
-            .filter_map(|(key, value)| {
-                match (key, value) {
-                    ("Alias", zbus::zvariant::Value::Str(value)) => Some(Self::Alias(value.into())),
-                    ("Discovering" | "Discoverable", zbus::zvariant::Value::Bool(value)) => {
-                        Some(Self::Scanning(if value {
-                            Active::Enabled
-                        } else {
-                            Active::Disabled
-                        }))
-                    }
-                    ("Powered", zbus::zvariant::Value::Bool(value)) => {
-                        Some(Self::Enabled(if value {
-                            Active::Enabled
-                        } else {
-                            Active::Disabled
-                        }))
-                    }
-                    ("Address", zbus::zvariant::Value::Str(value)) => {
-                        Some(Self::Address(value.into()))
-                    }
-                    // Battery
-                    (message, value) => {
-                        tracing::error!(message, ?value, "adapter update");
-                        None
-                    }
+            .filter_map(|(key, value)| match (key, value) {
+                ("Alias", zbus::zvariant::Value::Str(value)) => Some(Self::Alias(value.into())),
+                ("Discovering" | "Discoverable", zbus::zvariant::Value::Bool(value)) => {
+                    Some(Self::Scanning(Active::from(value)))
+                }
+                ("Powered", zbus::zvariant::Value::Bool(value)) => {
+                    Some(Self::Enabled(Active::from(value)))
+                }
+                ("Address", zbus::zvariant::Value::Str(value)) => Some(Self::Address(value.into())),
+                // Battery
+                (message, value) => {
+                    tracing::error!(message, ?value, "adapter update");
+                    None
                 }
             })
             .collect()
@@ -359,22 +329,8 @@ async fn rfkill(adapter_path: &OwnedObjectPath, active: bool) -> bool {
 }
 
 pub async fn get_adapters(connection: zbus::Connection) -> Event {
-    let result: zbus::Result<HashMap<OwnedObjectPath, Adapter>> = async {
-        futures::future::join_all(
-            bluez_zbus::get_adapters(&connection)
-                .await?
-                .into_iter()
-                .map(|(path, proxy)| async move {
-                    Ok((path.to_owned(), Adapter::from_device(&proxy).await?))
-                }),
-        )
-        .await
-        .into_iter()
-        .collect::<zbus::Result<HashMap<_, _>>>()
-    }
-    .await;
-    match result {
-        Ok(adapters) => Event::SetAdapters(adapters),
+    match crate::subscription::managed_objects(&connection).await {
+        Ok((_, objects)) => Event::SetAdapters(crate::subscription::adapters(&objects)),
         Err(why) => {
             tracing::error!("dbus connection failed. {why}");
             Event::DBusError(why)
@@ -385,6 +341,41 @@ pub async fn get_adapters(connection: zbus::Connection) -> Event {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use zbus::zvariant::{OwnedValue, Value};
+
+    fn properties(properties: &[(&str, Value<'_>)]) -> HashMap<String, OwnedValue> {
+        properties
+            .iter()
+            .map(|(name, value)| ((*name).to_owned(), value.try_to_owned().unwrap()))
+            .collect()
+    }
+
+    #[test]
+    fn test_adapter_from_properties() {
+        let adapter = Adapter::from_properties(&properties(&[
+            ("Address", Value::from("00:11:22:33:44:55")),
+            ("Alias", Value::from("laptop")),
+            ("Powered", Value::from(true)),
+            ("Discoverable", Value::from(true)),
+            ("Discovering", Value::from(true)),
+        ]))
+        .unwrap();
+        assert_eq!(adapter.address, "00:11:22:33:44:55");
+        assert_eq!(adapter.alias, "laptop");
+        assert_eq!(adapter.enabled, Active::Enabled);
+        assert_eq!(adapter.scanning, Active::Enabled);
+
+        let adapter = Adapter::from_properties(&properties(&[
+            ("Address", Value::from("00:11:22:33:44:55")),
+            ("Powered", Value::from(false)),
+            ("Discovering", Value::from(true)),
+        ]))
+        .unwrap();
+        assert_eq!(adapter.enabled, Active::Disabled);
+        assert_eq!(adapter.scanning, Active::Disabled);
+
+        assert!(Adapter::from_properties(&properties(&[("Powered", Value::from(true))])).is_none());
+    }
 
     #[test]
     fn test_adapter_device_with_intermediary_state() {

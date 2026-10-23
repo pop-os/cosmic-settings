@@ -8,12 +8,16 @@ use zbus::zvariant::OwnedObjectPath;
 mod adapter;
 pub mod agent;
 mod device;
+mod properties;
 pub mod subscription;
 
 pub use adapter::*;
 pub use device::*;
 
 pub(crate) const SERVICE: &str = "org.bluez";
+pub(crate) const ADAPTER_INTERFACE: &str = "org.bluez.Adapter1";
+pub(crate) const DEVICE_INTERFACE: &str = "org.bluez.Device1";
+pub(crate) const BATTERY_INTERFACE: &str = "org.bluez.Battery1";
 
 #[derive(Clone, Debug)]
 pub enum Event {
@@ -41,4 +45,14 @@ pub enum Active {
     Disabling,
     Enabling,
     Enabled,
+}
+
+impl From<bool> for Active {
+    fn from(enabled: bool) -> Self {
+        if enabled {
+            Self::Enabled
+        } else {
+            Self::Disabled
+        }
+    }
 }

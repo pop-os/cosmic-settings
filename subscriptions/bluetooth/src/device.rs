@@ -1,16 +1,16 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
+use crate::properties::Properties;
 use crate::{Active, Event};
 use bluez_zbus::device1::Device1Proxy;
-use futures::join;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::time::Duration;
 use zbus::proxy::CacheProperties;
 use zbus::zvariant::OwnedObjectPath;
 
-const DEFAILT_DEVICE_ICON: &str = "bluetooth-symbolic";
+const DEFAULT_DEVICE_ICON: &str = "bluetooth-symbolic";
 
 /// How many times a request to a device is tried, unless said otherwise.
 const ATTEMPTS: u64 = 4;
@@ -42,7 +42,7 @@ fn device_type_to_icon(device_type: &str) -> &'static str {
         "input-mouse" => "input-mouse-symbolic",
         "printer" => "printer-network-symbolic",
         "camera-photo" => "camera-photo-symbolic",
-        _ => DEFAILT_DEVICE_ICON,
+        _ => DEFAULT_DEVICE_ICON,
     }
 }
 
@@ -58,63 +58,42 @@ pub struct Device {
 }
 
 impl Device {
-    pub async fn from_device(proxy: &bluez_zbus::BluetoothDevice<'_>) -> zbus::Result<Self> {
-        let (address, adapter, alias) = join!(
-            proxy.device.address(),
-            proxy.device.adapter(),
-            proxy.device.alias()
-        );
-        let address = address?;
-        if address.is_empty() {
-            return Err(zbus::Error::Failure("Device has no MAC address".to_owned()));
-        }
-        let adapter = adapter?;
-        if adapter.is_empty() {
-            return Err(zbus::Error::Failure("Device has no adapter".to_owned()));
-        }
-        let alias = match alias {
-            Ok(alias) if !alias.is_empty() && alias != address.replace(':', "-") => Some(alias),
-            _ => proxy.device.name().await.ok(),
-        };
-        let device_type: String = proxy.icon().await;
-        let paired = proxy.device.paired().await.unwrap_or(false);
-        let enabled = if proxy.device.connected().await.unwrap_or(false) {
-            Active::Enabled
-        } else {
-            Active::Disabled
-        };
-        let battery = match &proxy.battery {
-            Some(battery) => match battery.percentage().await {
-                Ok(percentage) => Some(percentage.to_string()),
-                Err(why) => {
-                    eprintln!("couldn't fetch battery percentage: {why}");
-                    None
-                }
-            },
-            None => None,
+    /// Reads a device from its `org.bluez.Device1` properties, and those of its
+    /// `org.bluez.Battery1` interface if it has one.
+    pub(crate) fn from_properties(
+        device: &impl Properties,
+        battery: Option<&impl Properties>,
+    ) -> Option<Self> {
+        let address = device
+            .string("Address")
+            .filter(|address| !address.is_empty())?;
+        let adapter = device
+            .object_path("Adapter")
+            .filter(|adapter| !adapter.as_str().is_empty())?;
+        // Without a name, BlueZ gives the address as alias.
+        let alias = match device.string("Alias") {
+            Some(alias) if !alias.is_empty() && alias != address.replace(':', "-") => Some(alias),
+            _ => device.string("Name"),
         };
 
-        let icon = device_type_to_icon(device_type.as_str());
-
-        Ok(Self {
+        Some(Self {
             alias,
             address,
             adapter,
-            enabled,
-            paired,
-            icon,
-            battery,
+            enabled: Active::from(device.boolean("Connected").unwrap_or(false)),
+            paired: device.boolean("Paired").unwrap_or(false),
+            icon: device_type_to_icon(device.string("Icon").as_deref().unwrap_or("unknown")),
+            battery: battery
+                .and_then(|battery| battery.byte("Percentage"))
+                .map(|percentage| percentage.to_string()),
         })
     }
+
     #[must_use]
     pub fn is_connected(&self) -> bool {
         self.enabled == Active::Enabled
     }
     /// Update the state of the device without overriding intermediary states.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the device used for update doesn't have the same MAC address
     pub fn update(&mut self, updates: Vec<DeviceUpdate>) {
         for udpate in updates {
             match udpate {
@@ -144,7 +123,7 @@ impl Device {
     }
     #[must_use]
     pub fn is_known_device_type(&self) -> bool {
-        self.icon != DEFAILT_DEVICE_ICON
+        self.icon != DEFAULT_DEVICE_ICON
     }
     #[must_use]
     pub fn alias_or_addr(&self) -> &str {
@@ -185,11 +164,7 @@ impl DeviceUpdate {
                         Some(DeviceUpdate::Alias(Some(value.into())))
                     }
                     ("Connected", zbus::zvariant::Value::Bool(value)) => {
-                        Some(DeviceUpdate::Enabled(if value {
-                            Active::Enabled
-                        } else {
-                            Active::Disabled
-                        }))
+                        Some(DeviceUpdate::Enabled(Active::from(value)))
                     }
                     ("Paired", zbus::zvariant::Value::Bool(value)) => {
                         Some(DeviceUpdate::Paired(value))
@@ -197,10 +172,10 @@ impl DeviceUpdate {
                     ("Icon", zbus::zvariant::Value::Str(value)) => {
                         Some(DeviceUpdate::Icon(device_type_to_icon(&value)))
                     }
+                    // Battery
                     ("Percentage", zbus::zvariant::Value::U8(percentage)) => {
                         Some(DeviceUpdate::Battery(Some(percentage.to_string())))
                     }
-                    // Battery
                     (message, value) => {
                         tracing::debug!(message, ?value, "device update");
                         None
@@ -405,23 +380,10 @@ pub async fn rename_device(
 }
 
 pub async fn get_devices(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
-    // TODO error handling
-    let result: zbus::Result<HashMap<OwnedObjectPath, Device>> = async {
-        futures::future::join_all(
-            bluez_zbus::get_devices(&connection, Some(&adapter_path))
-                .await?
-                .into_iter()
-                .map(
-                    |(path, device)| async move { Ok((path, Device::from_device(&device).await?)) },
-                ),
-        )
-        .await
-        .into_iter()
-        .collect::<Result<HashMap<_, _>, _>>()
-    }
-    .await;
-    match result {
-        Ok(devices) => Event::SetDevices(devices),
+    match crate::subscription::managed_objects(&connection).await {
+        Ok((_, objects)) => {
+            Event::SetDevices(crate::subscription::devices(&objects, Some(&adapter_path)))
+        }
         Err(why) => {
             tracing::error!("zbus connection failed. {why}");
             Event::DBusError(why)
@@ -432,6 +394,75 @@ pub async fn get_devices(connection: zbus::Connection, adapter_path: OwnedObject
 #[cfg(test)]
 mod tests {
     use super::*;
+    use zbus::zvariant::{ObjectPath, OwnedValue, Value};
+
+    fn properties(properties: &[(&str, Value<'_>)]) -> HashMap<String, OwnedValue> {
+        properties
+            .iter()
+            .map(|(name, value)| ((*name).to_owned(), value.try_to_owned().unwrap()))
+            .collect()
+    }
+
+    fn adapter() -> Value<'static> {
+        Value::from(ObjectPath::from_static_str_unchecked("/org/bluez/hci0"))
+    }
+
+    #[test]
+    fn test_device_from_properties() {
+        let device = Device::from_properties(
+            &properties(&[
+                ("Address", Value::from("AA:BB:CC:DD:EE:FF")),
+                ("Adapter", adapter()),
+                ("Alias", Value::from("Headphones")),
+                ("Icon", Value::from("audio-headphones")),
+                ("Paired", Value::from(true)),
+                ("Connected", Value::from(true)),
+            ]),
+            Some(&properties(&[("Percentage", Value::from(42u8))])),
+        )
+        .unwrap();
+        assert_eq!(device.address, "AA:BB:CC:DD:EE:FF");
+        assert_eq!(device.adapter.as_str(), "/org/bluez/hci0");
+        assert_eq!(device.alias.as_deref(), Some("Headphones"));
+        assert_eq!(device.icon, "audio-headphones-symbolic");
+        assert!(device.paired);
+        assert_eq!(device.enabled, Active::Enabled);
+        assert_eq!(device.battery.as_deref(), Some("42"));
+    }
+
+    #[test]
+    fn test_device_without_name() {
+        let device = Device::from_properties(
+            &properties(&[
+                ("Address", Value::from("AA:BB:CC:DD:EE:FF")),
+                ("Adapter", adapter()),
+                ("Alias", Value::from("AA-BB-CC-DD-EE-FF")),
+            ]),
+            None::<&HashMap<String, OwnedValue>>,
+        )
+        .unwrap();
+        assert_eq!(device.alias, None);
+        assert_eq!(device.alias_or_addr(), "AA:BB:CC:DD:EE:FF");
+        assert_eq!(device.icon, DEFAULT_DEVICE_ICON);
+        assert!(!device.paired);
+        assert_eq!(device.enabled, Active::Disabled);
+        assert_eq!(device.battery, None);
+    }
+
+    #[test]
+    fn test_device_without_address_or_adapter() {
+        let no_battery = None::<&HashMap<String, OwnedValue>>;
+        assert!(
+            Device::from_properties(&properties(&[("Adapter", adapter())]), no_battery).is_none()
+        );
+        assert!(
+            Device::from_properties(
+                &properties(&[("Address", Value::from("AA:BB:CC:DD:EE:FF"))]),
+                no_battery
+            )
+            .is_none()
+        );
+    }
 
     #[test]
     fn test_final_errors() {

@@ -1,14 +1,19 @@
 // Copyright 2024 System76 <info@system76.com>
 // SPDX-License-Identifier: MPL-2.0
 
-use crate::{AdapterUpdate, Device, DeviceUpdate, Event};
+use crate::properties::Properties;
+use crate::{
+    ADAPTER_INTERFACE, Adapter, AdapterUpdate, BATTERY_INTERFACE, DEVICE_INTERFACE, Device,
+    DeviceUpdate, Event, SERVICE,
+};
+use std::collections::HashMap;
 use std::pin::Pin;
 
-use bluez_zbus::BluetoothDevice;
 use futures::channel::mpsc;
 use futures::stream::FusedStream;
 use iced_futures::futures::{SinkExt, StreamExt};
 use zbus::fdo;
+use zbus::names::UniqueName;
 use zbus::zvariant::OwnedObjectPath;
 
 enum DevicePropertyWatcherTask {
@@ -79,7 +84,7 @@ pub async fn watch(connection: zbus::Connection, mut tx: futures::channel::mpsc:
     let _span = span.enter();
 
     loop {
-        let result = async {
+        let result: zbus::Result<()> = async {
             let managed_object_proxy =
                 zbus::fdo::ObjectManagerProxy::new(&connection, "org.bluez", "/")
                     .await?;
@@ -139,26 +144,26 @@ pub async fn watch(connection: zbus::Connection, mut tx: futures::channel::mpsc:
                     signal = receive_interfaces_added.next() => match signal {
                         Some(signal) => {
                             let args = signal.args()?;
-                            match BluetoothDevice::new(&connection, args.object_path.clone()).await {
-                                Ok(device) => {
-                                    match Device::from_device(&device).await {
-                                        Ok(device) => {
-                                            property_watcher_task
-                                                .send(DevicePropertyWatcherTask::Add(args.object_path.to_owned().into())).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
+                            let path: OwnedObjectPath = args.object_path.to_owned().into();
+                            let interfaces = &args.interfaces_and_properties;
+                            if let Some(device) = interfaces.get(DEVICE_INTERFACE) {
+                                match Device::from_properties(device, interfaces.get(BATTERY_INTERFACE)) {
+                                    Some(device) => {
+                                        property_watcher_task
+                                            .send(DevicePropertyWatcherTask::Add(path.clone())).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
 
-                                            tx
-                                                .send(Event::AddedDevice(args.object_path.to_owned().into(), device))
-                                                .await
-                                                .map_err(|e| zbus::Error::Failure(e.to_string()))?;
-
-                                        }
-                                        Err(why) => {
-                                            tracing::warn!("Cannot deserialise device: {why}");
-                                        }
+                                        tx
+                                            .send(Event::AddedDevice(path, device))
+                                            .await
+                                            .map_err(|e| zbus::Error::Failure(e.to_string()))?;
                                     }
+                                    None => tracing::warn!("Ignoring the device {path}, which has no address or adapter"),
                                 }
-                                Err(zbus::Error::InterfaceNotFound) => continue,
-                                Err(e) => return Err(e),
+                            } else if let Some(percentage) = interfaces.get(BATTERY_INTERFACE).and_then(|battery| battery.byte("Percentage")) {
+                                tx
+                                    .send(Event::UpdatedDevice(path, vec![DeviceUpdate::Battery(Some(percentage.to_string()))]))
+                                    .await
+                                    .map_err(|e| zbus::Error::Failure(e.to_string()))?;
                             }
                         }
                         None => {
@@ -226,4 +231,67 @@ pub async fn watch(connection: zbus::Connection, mut tx: futures::channel::mpsc:
             }
         }
     }
+}
+
+/// All the objects of BlueZ, and the unique name of the bluetoothd that sent them.
+pub(crate) async fn managed_objects(
+    connection: &zbus::Connection,
+) -> zbus::Result<(UniqueName<'static>, fdo::ManagedObjects)> {
+    let reply = connection
+        .call_method(
+            Some(SERVICE),
+            "/",
+            Some("org.freedesktop.DBus.ObjectManager"),
+            "GetManagedObjects",
+            &(),
+        )
+        .await?;
+    let owner = reply
+        .header()
+        .sender()
+        .ok_or(zbus::Error::MissingField)?
+        .to_owned();
+    let objects = reply.body().deserialize()?;
+    Ok((owner, objects))
+}
+
+pub(crate) fn adapters(objects: &fdo::ManagedObjects) -> HashMap<OwnedObjectPath, Adapter> {
+    objects
+        .iter()
+        .filter_map(|(path, interfaces)| {
+            let adapter = interfaces.get(ADAPTER_INTERFACE)?;
+            let Some(adapter) = Adapter::from_properties(adapter) else {
+                tracing::warn!("Ignoring the adapter {path}, which has no address");
+                return None;
+            };
+            Some((path.clone(), adapter))
+        })
+        .collect()
+}
+
+/// The devices, of all the adapters or of one.
+pub(crate) fn devices(
+    objects: &fdo::ManagedObjects,
+    adapter: Option<&OwnedObjectPath>,
+) -> HashMap<OwnedObjectPath, Device> {
+    let prefix = adapter.map(|adapter| format!("{adapter}/"));
+
+    objects
+        .iter()
+        .filter_map(|(path, interfaces)| {
+            if prefix
+                .as_ref()
+                .is_some_and(|prefix| !path.as_str().starts_with(prefix.as_str()))
+            {
+                return None;
+            }
+            let device = interfaces.get(DEVICE_INTERFACE)?;
+            let Some(device) = Device::from_properties(device, interfaces.get(BATTERY_INTERFACE))
+            else {
+                tracing::warn!("Ignoring the device {path}, which has no address or adapter");
+                return None;
+            };
+            Some((path.clone(), device))
+        })
+        .collect()
 }
