@@ -149,6 +149,21 @@ pub async fn watch(connection: zbus::Connection, mut tx: futures::channel::mpsc:
                             let args = signal.args()?;
                             let path: OwnedObjectPath = args.object_path.to_owned().into();
                             let interfaces = &args.interfaces_and_properties;
+                            if let Some(adapter) = interfaces.get(ADAPTER_INTERFACE) {
+                                match Adapter::from_properties(adapter) {
+                                    Some(adapter) => {
+                                        property_watcher_task
+                                            .send(DevicePropertyWatcherTask::Add(path.clone())).await.map_err(|e| zbus::Error::Failure(e.to_string()))?;
+
+                                        tx
+                                            .send(Event::AddedAdapter(path.clone(), adapter))
+                                            .await
+                                            .map_err(|e| zbus::Error::Failure(e.to_string()))?;
+                                    }
+                                    None => tracing::warn!("Ignoring the adapter {path}, which has no address"),
+                                }
+                            }
+
                             if let Some(device) = interfaces.get(DEVICE_INTERFACE) {
                                 match Device::from_properties(device, interfaces.get(BATTERY_INTERFACE)) {
                                     Some(device) => {
