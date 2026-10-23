@@ -518,6 +518,13 @@ impl Page {
                     if let Some(adapter) = select_adapter {
                         return cosmic::task::message(Message::SelectAdapter(Some(adapter)));
                     }
+
+                    // The adapters come again after bluetoothd restarts, without searching.
+                    if let Some(connection) = self.connection.clone()
+                        && let Some(search) = self.model.search_with_selected_adapter(connection)
+                    {
+                        return cosmic::task::future(search);
+                    }
                 }
 
                 Event::UpdatedAdapter(path, update) => {
@@ -759,8 +766,6 @@ impl Page {
                 self.service_is_enabled = self.service_manager.is_enabled();
                 self.connection = Some(connection.clone());
 
-                let get_adapters_fut = get_adapters(connection.clone());
-
                 if self.subscription.is_none() {
                     let connection = connection.clone();
 
@@ -794,9 +799,10 @@ impl Page {
                         });
 
                     self.subscription = Some(cancellation);
-                    return cosmic::task::batch(vec![cosmic::task::future(get_adapters_fut), task]);
+                    // The subscription sends the adapters and devices first.
+                    return task.map(Into::into);
                 } else {
-                    return cosmic::task::future(get_adapters_fut);
+                    return cosmic::task::future(get_adapters(connection));
                 }
             }
 
@@ -818,17 +824,9 @@ impl Page {
                     return Task::none();
                 };
 
-                let connection = connection.clone();
-                if let Some((path, adapter)) = self.model.get_selected_adapter_mut() {
-                    let mut fut: Vec<Task<Message>> = vec![cosmic::task::future(get_devices(
-                        connection.clone(),
-                        path.clone(),
-                    ))];
-                    if adapter.enabled == Active::Enabled && adapter.scanning == Active::Disabled {
-                        fut.push(cosmic::task::future(search(connection, path.clone())));
-                    }
-
-                    return cosmic::task::batch(fut);
+                // The subscription already has the devices of every adapter.
+                if let Some(search) = self.model.search_with_selected_adapter(connection.clone()) {
+                    return cosmic::task::future(search);
                 }
             }
 

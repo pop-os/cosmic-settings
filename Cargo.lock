@@ -1684,7 +1684,6 @@ version = "1.11.0"
 dependencies = [
  "bluez-zbus",
  "futures",
- "iced_futures",
  "tokio",
  "tracing",
  "zbus",
