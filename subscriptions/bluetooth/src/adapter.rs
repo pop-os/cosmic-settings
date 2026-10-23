@@ -98,9 +98,8 @@ impl AdapterUpdate {
                     Some(Self::Enabled(Active::from(value)))
                 }
                 ("Address", zbus::zvariant::Value::Str(value)) => Some(Self::Address(value.into())),
-                // Battery
                 (message, value) => {
-                    tracing::error!(message, ?value, "adapter update");
+                    tracing::debug!(message, ?value, "adapter update");
                     None
                 }
             })

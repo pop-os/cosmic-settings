@@ -124,17 +124,20 @@ pub async fn watch(connection: zbus::Connection, mut tx: futures::channel::mpsc:
                         Some(signal) => {
                             let args = signal.args()?;
                             let header = signal.message().header();
-                            match header.path() {
-                                Some(path) if path.contains("/dev_") =>
+                            let Some(path) = header.path() else { continue };
+                            match args.interface_name.as_str() {
+                                ADAPTER_INTERFACE => tx
+                                        .send(Event::UpdatedAdapter(path.to_owned().into(), AdapterUpdate::from_update(args.changed_properties)))
+                                        .await
+                                        .map_err(|e| zbus::Error::Failure(e.to_string()))?,
+                                DEVICE_INTERFACE | BATTERY_INTERFACE =>
                                     tx
                                         .send(Event::UpdatedDevice(path.to_owned().into(), DeviceUpdate::from_update(args.changed_properties)))
                                         .await
                                         .map_err(|e| zbus::Error::Failure(e.to_string()))?,
-                                Some(path) => tx
-                                        .send(Event::UpdatedAdapter(path.to_owned().into(), AdapterUpdate::from_update(args.changed_properties)))
-                                        .await
-                                        .map_err(|e| zbus::Error::Failure(e.to_string()))?,
-                                None => continue
+                                // Properties of other interfaces can have the same names, but not the same
+                                // meaning, like `Connected` of `org.bluez.MediaControl1`.
+                                _ => continue,
                             }
                         }
                         None => {
