@@ -104,13 +104,19 @@ impl Model {
         }
 
         self.update_status();
+        self.search_with_selected_adapter(connection)
+    }
 
-        if let Some((path, existing)) = self.get_selected_adapter_mut()
-            && existing.enabled == Active::Enabled
-            && existing.scanning == Active::Disabled
-        {
-            existing.scanning = Active::Enabling;
-            return Some(start_discovery(connection, path));
+    // Searches with the selected adapter, if it is enabled and not searching yet.
+    fn search_with_selected_adapter(
+        &mut self,
+        connection: zbus::Connection,
+    ) -> Option<impl Future<Output = Event> + Send + 'static> {
+        let (path, adapter) = self.get_selected_adapter_mut()?;
+
+        if adapter.enabled == Active::Enabled && adapter.scanning == Active::Disabled {
+            adapter.scanning = Active::Enabling;
+            return Some(search(connection, path));
         }
 
         None
@@ -228,7 +234,7 @@ impl page::Page<crate::pages::Message> for Page {
             // Execute within task to ensure it completes before the app exits.
             task = Task::future(async move {
                 for (path, _) in adapters {
-                    stop_discovery(connection.clone(), path.clone()).await;
+                    stop_search(connection.clone(), path).await;
                 }
                 _ = agent::unregister(connection).await;
             })
@@ -688,19 +694,15 @@ impl Page {
                             Active::Disabling
                         };
 
-                        return cosmic::task::future(change_adapter_status(
-                            connection.clone(),
-                            path,
-                            active,
-                        ))
-                        .then(|event| {
-                            if matches!(event, Event::Ok) {
-                                Task::none()
-                            } else {
-                                Task::done(event.into())
-                            }
-                        })
-                        .chain(Task::done(Message::UpdateStatus.into()));
+                        return cosmic::task::future(set_power(connection.clone(), path, active))
+                            .then(|event| {
+                                if matches!(event, Event::Ok) {
+                                    Task::none()
+                                } else {
+                                    Task::done(event.into())
+                                }
+                            })
+                            .chain(Task::done(Message::UpdateStatus.into()));
                     }
                     let tasks: Vec<Task<Message>> = self
                         .model
@@ -712,7 +714,7 @@ impl Page {
                             } else {
                                 Active::Disabling
                             };
-                            cosmic::task::future(change_adapter_status(
+                            cosmic::task::future(set_power(
                                 connection.clone(),
                                 path.clone(),
                                 active,
@@ -808,10 +810,7 @@ impl Page {
                         path.clone(),
                     ))];
                     if adapter.enabled == Active::Enabled && adapter.scanning == Active::Disabled {
-                        fut.push(cosmic::task::future(start_discovery(
-                            connection,
-                            path.clone(),
-                        )));
+                        fut.push(cosmic::task::future(search(connection, path.clone())));
                     }
 
                     return cosmic::task::batch(fut);
@@ -945,6 +944,34 @@ impl Page {
         };
 
         cosmic::Task::none()
+    }
+}
+
+// While the page is shown, the selected adapter is visible to other devices, and searches for them.
+async fn search(connection: zbus::Connection, path: OwnedObjectPath) -> Event {
+    let visible = set_visible(connection.clone(), path.clone(), true).await;
+    let discovery = start_discovery(connection, path).await;
+
+    if matches!(visible, Event::Ok) {
+        discovery
+    } else {
+        visible
+    }
+}
+
+async fn stop_search(connection: zbus::Connection, path: OwnedObjectPath) {
+    stop_discovery(connection.clone(), path.clone()).await;
+    set_visible(connection, path, false).await;
+}
+
+// Turns the adapter on or off. Once on, it is visible as while searching.
+async fn set_power(connection: zbus::Connection, path: OwnedObjectPath, active: bool) -> Event {
+    let event = change_adapter_status(connection.clone(), path.clone(), active).await;
+
+    if active && matches!(event, Event::Ok) {
+        set_visible(connection, path, true).await
+    } else {
+        event
     }
 }
 

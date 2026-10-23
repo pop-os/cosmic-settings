@@ -150,6 +150,7 @@ async fn proxy(
         .await
 }
 
+/// Searches for devices with the adapter, unless it's already searching.
 pub async fn start_discovery(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
     let adapter = match proxy(&connection, adapter_path).await {
         Ok(adapter) => adapter,
@@ -163,9 +164,6 @@ pub async fn start_discovery(connection: zbus::Connection, adapter_path: OwnedOb
     loop {
         tracing::debug!("Starting discovery");
         let result = async {
-            // We don't seem to be able to use join here as it seem to lead to some kind of race condition and not start scanning occasionally
-            adapter.set_pairable(true).await?;
-            adapter.set_discoverable(true).await?;
             if adapter.discovering().await? {
                 return Ok(());
             }
@@ -191,6 +189,7 @@ pub async fn start_discovery(connection: zbus::Connection, adapter_path: OwnedOb
     }
 }
 
+/// Stops the search for devices that [`start_discovery`] started.
 pub async fn stop_discovery(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
     let adapter = match proxy(&connection, adapter_path).await {
         Ok(adapter) => adapter,
@@ -201,9 +200,6 @@ pub async fn stop_discovery(connection: zbus::Connection, adapter_path: OwnedObj
     loop {
         tracing::debug!("Stopping discovery");
         let result = async {
-            // We don't seem to be able to use join here as it seem to lead to some kind of race condition and not stop scanning occasionally
-            adapter.set_pairable(false).await?;
-            adapter.set_discoverable(false).await?;
             if adapter.discovering().await? {
                 adapter.stop_discovery().await
             } else {
@@ -224,6 +220,41 @@ pub async fn stop_discovery(connection: zbus::Connection, adapter_path: OwnedObj
             }
             Err(why) => {
                 tracing::warn!("Unable to stop bluetooth scanning: {why}");
+                tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
+                attempt += 1;
+            }
+        }
+    }
+}
+
+/// Makes the adapter visible to other devices, and lets them pair with it, or stops that.
+pub async fn set_visible(
+    connection: zbus::Connection,
+    adapter_path: OwnedObjectPath,
+    visible: bool,
+) -> Event {
+    let adapter = match proxy(&connection, adapter_path).await {
+        Ok(adapter) => adapter,
+        Err(why) => return Event::DBusError(why),
+    };
+
+    let mut attempt = 1;
+    loop {
+        // One after the other: setting both at once sometimes leaves one unchanged.
+        let result = async {
+            adapter.set_pairable(visible).await?;
+            adapter.set_discoverable(visible).await
+        }
+        .await;
+
+        match result {
+            Ok(()) => return Event::Ok,
+            Err(why) if attempt == ATTEMPTS => {
+                tracing::warn!("Unable to change the adapter visibility: {why}");
+                return Event::DBusError(why);
+            }
+            Err(why) => {
+                tracing::warn!("Unable to change the adapter visibility: {why}");
                 tokio::time::sleep(Duration::from_millis(1000 * attempt)).await;
                 attempt += 1;
             }
@@ -262,17 +293,7 @@ pub async fn change_adapter_status(
 
     let mut attempt = 1;
     loop {
-        let result: zbus::Result<()> = async {
-            adapter.set_powered(active).await?;
-            // Visible once on.
-            if active {
-                adapter.set_discoverable(true).await?;
-            }
-            Ok(())
-        }
-        .await;
-
-        match result {
+        match adapter.set_powered(active).await {
             Ok(()) => return Event::Ok,
             Err(why) if attempt == ATTEMPTS => {
                 tracing::error!("Failed to change the adapter state: {why}");
