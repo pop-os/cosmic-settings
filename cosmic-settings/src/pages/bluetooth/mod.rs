@@ -774,7 +774,7 @@ impl Page {
                                 let watchers = std::pin::pin!(async move {
                                     _ = futures::future::join(
                                         subscription::watch(connection.clone(), tx.clone()),
-                                        agent::watch(connection, tx),
+                                        agent::watch(connection, tx, true),
                                     )
                                     .await;
                                 });

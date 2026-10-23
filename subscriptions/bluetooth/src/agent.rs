@@ -177,9 +177,15 @@ pub async fn unregister(connection: zbus::Connection) -> zbus::Result<()> {
     bluez.unregister_agent(&agent_path).await
 }
 
+/// Registers the agent, and sends the requests of BlueZ as [`Event::Agent`] until `tx` closes.
+///
+/// BlueZ asks the agent about the pairings that this connection starts. The default agent also
+/// gets the requests that no application started, such as a device that pairs with the
+/// computer by itself, or wants to use one of its services.
 pub async fn watch(
     connection: zbus::Connection,
-    mut tx: futures::channel::mpsc::Sender<Event>,
+    mut tx: mpsc::Sender<Event>,
+    default: bool,
 ) -> zbus::Result<()> {
     let span = tracing::span!(tracing::Level::INFO, "bluetooth::agent::watch");
     let _span = span.enter();
@@ -208,7 +214,7 @@ pub async fn watch(
         )
         .await?;
 
-    if let Err(why) = bluez.request_default_agent(&agent_path).await {
+    if default && let Err(why) = bluez.request_default_agent(&agent_path).await {
         _ = bluez.unregister_agent(&agent_path).await;
         Err(why)?;
     }
