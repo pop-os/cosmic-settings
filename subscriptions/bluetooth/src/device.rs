@@ -234,6 +234,14 @@ async fn trust(device: &Device1Proxy<'_>) {
     }
 }
 
+/// Whether BlueZ has the device paired, asked now. False when that can't be known.
+pub async fn is_paired(connection: zbus::Connection, device_path: OwnedObjectPath) -> bool {
+    match proxy(&connection, device_path).await {
+        Ok(device) => device.paired().await.unwrap_or(false),
+        Err(_) => false,
+    }
+}
+
 pub async fn disconnect_device(
     connection: zbus::Connection,
     device_path: OwnedObjectPath,

@@ -609,9 +609,19 @@ impl Page {
                             _ = response.send(true);
                         }
 
-                        // Devices may use the services of the computer, as before.
-                        agent::Message::AuthorizeService { response, .. } => {
-                            _ = response.send(true);
+                        // Only paired devices may use the services of the computer. BlueZ is
+                        // asked, as the page may not know of a pairing that just happened.
+                        agent::Message::AuthorizeService {
+                            device, response, ..
+                        } => {
+                            let Some(connection) = self.connection.clone() else {
+                                return Task::none();
+                            };
+
+                            return cosmic::task::future(async move {
+                                _ = response.send(is_paired(connection, device).await);
+                                Event::Ok
+                            });
                         }
 
                         agent::Message::RequestConfirmation {
