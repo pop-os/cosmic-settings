@@ -605,11 +605,16 @@ impl Page {
                     };
 
                     match message {
-                        bluez_zbus::agent1::Message::RequestAuthorization { response, .. } => {
+                        agent::Message::RequestAuthorization { response, .. } => {
                             _ = response.send(true);
                         }
 
-                        bluez_zbus::agent1::Message::RequestConfirmation {
+                        // Devices may use the services of the computer, as before.
+                        agent::Message::AuthorizeService { response, .. } => {
+                            _ = response.send(true);
+                        }
+
+                        agent::Message::RequestConfirmation {
                             device,
                             passkey,
                             response,
@@ -626,7 +631,7 @@ impl Page {
                             });
                         }
 
-                        bluez_zbus::agent1::Message::DisplayPasskey {
+                        agent::Message::DisplayPasskey {
                             device,
                             passkey,
                             entered,
@@ -643,7 +648,7 @@ impl Page {
                             });
                         }
 
-                        bluez_zbus::agent1::Message::DisplayPinCode { device, pincode } => {
+                        agent::Message::DisplayPinCode { device, pincode } => {
                             let device = self.model.devices.get(&device).map_or_else(
                                 || device.to_string(),
                                 |device| device.alias_or_addr().to_owned(),
@@ -652,15 +657,15 @@ impl Page {
                             self.dialog = Some(Dialog::DisplayPinCode { device, pincode });
                         }
 
-                        bluez_zbus::agent1::Message::RequestPasskey { response, .. } => {
+                        agent::Message::RequestPasskey { response, .. } => {
                             _ = response.send(None);
                         }
 
-                        bluez_zbus::agent1::Message::RequestPinCode { response, .. } => {
+                        agent::Message::RequestPinCode { response, .. } => {
                             _ = response.send(None);
                         }
 
-                        bluez_zbus::agent1::Message::Cancel => {
+                        agent::Message::Cancel => {
                             self.dialog = None;
                         }
 

@@ -73,7 +73,6 @@ tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 udev = { version = "0.9.3", optional = true }
 upower_dbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
-bluez-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings", optional = true }
 url = "2.5.8"
 xkb-data = "0.2.2"
 xkeysym = { version = "0.2.1", optional = true }
@@ -154,7 +153,6 @@ page-about = ["dep:hostname1-zbus", "dep:sysinfo", "dep:zbus"]
 page-bluetooth = [
     "dep:cosmic-settings-bluetooth-subscription",
     "dep:zbus",
-    "dep:bluez-zbus",
 ]
 page-date = ["dep:timedate-zbus", "dep:zbus"]
 page-default-apps = ["dep:cosmic-settings-config", "dep:mime-apps"]

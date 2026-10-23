@@ -1535,7 +1535,6 @@ dependencies = [
  "accounts-zbus",
  "anyhow",
  "ashpd 0.12.3",
- "bluez-zbus",
  "chrono",
  "clap",
  "color-eyre",
