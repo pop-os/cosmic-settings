@@ -846,7 +846,7 @@ impl Page {
                             return cosmic::Task::none();
                         }
                         device.enabled = Active::Enabling;
-                        return cosmic::task::future(connect_device(connection, path));
+                        return cosmic::task::future(connect_device(connection, path, 4));
                     }
                 } else {
                     tracing::warn!("No DBus connection ready");
