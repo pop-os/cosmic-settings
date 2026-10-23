@@ -8,8 +8,10 @@ use crate::Event;
 
 use std::sync::Arc;
 
+use bluez_zbus::agent_manager1::AgentManager1Proxy;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
+use tracing::Instrument;
 use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 
 const AGENT_PATH: &str = "/org/bluez/agent/cosmic_settings";
@@ -177,6 +179,26 @@ pub async fn unregister(connection: zbus::Connection) -> zbus::Result<()> {
     bluez.unregister_agent(&agent_path).await
 }
 
+async fn register(
+    bluez: &AgentManager1Proxy<'_>,
+    agent_path: &ObjectPath<'_>,
+    default: bool,
+) -> zbus::Result<()> {
+    bluez
+        .register_agent(
+            agent_path,
+            <&'static str>::from(bluez_zbus::agent1::Capability::KeyboardDisplay),
+        )
+        .await?;
+
+    if default && let Err(why) = bluez.request_default_agent(agent_path).await {
+        _ = bluez.unregister_agent(agent_path).await;
+        return Err(why);
+    }
+
+    Ok(())
+}
+
 /// Registers the agent, and sends the requests of BlueZ as [`Event::Agent`] until `tx` closes.
 ///
 /// BlueZ asks the agent about the pairings that this connection starts. The default agent also
@@ -187,51 +209,46 @@ pub async fn watch(
     mut tx: mpsc::Sender<Event>,
     default: bool,
 ) -> zbus::Result<()> {
-    let span = tracing::span!(tracing::Level::INFO, "bluetooth::agent::watch");
-    let _span = span.enter();
+    async move {
+        let agent_path = ObjectPath::from_static_str_unchecked(AGENT_PATH);
+        let (messages, mut receiver) = mpsc::channel(8);
 
-    let (messages, mut receiver) = mpsc::channel(8);
+        tracing::debug!("connecting agent");
 
-    let agent_path = ObjectPath::from_static_str_unchecked(AGENT_PATH);
+        // Replace the agent of an earlier watch on this connection, which nobody listens to.
+        let object_server = connection.object_server();
+        _ = object_server.remove::<Agent, _>(&agent_path).await;
+        object_server.at(&agent_path, Agent { messages }).await?;
 
-    tracing::debug!("connecting agent");
+        tracing::debug!("connecting to bluez agent manager");
 
-    connection
-        .object_server()
-        .at(&agent_path, Agent { messages })
-        .await?;
-
-    tracing::debug!("connecting to bluez agent manager");
-
-    let bluez = bluez_zbus::agent_manager1::AgentManager1Proxy::new(&connection).await?;
-
-    tracing::debug!("registering agent");
-
-    bluez
-        .register_agent(
-            &agent_path,
-            <&'static str>::from(bluez_zbus::agent1::Capability::KeyboardDisplay),
-        )
-        .await?;
-
-    if default && let Err(why) = bluez.request_default_agent(&agent_path).await {
+        let bluez = AgentManager1Proxy::new(&connection).await?;
         _ = bluez.unregister_agent(&agent_path).await;
-        Err(why)?;
-    }
 
-    tracing::debug!("registered");
+        tracing::debug!("registering agent");
 
-    while let Some(msg) = receiver.next().await {
-        tracing::debug!(?msg, "agent message received");
-
-        if tx.send(Event::Agent(Arc::new(msg))).await.is_err() {
-            break;
+        if let Err(why) = register(&bluez, &agent_path, default).await {
+            _ = object_server.remove::<Agent, _>(&agent_path).await;
+            return Err(why);
         }
+
+        tracing::debug!("registered");
+
+        while let Some(msg) = receiver.next().await {
+            tracing::debug!(?msg, "agent message received");
+
+            if tx.send(Event::Agent(Arc::new(msg))).await.is_err() {
+                break;
+            }
+        }
+
+        _ = bluez.unregister_agent(&agent_path).await;
+        _ = object_server.remove::<Agent, _>(&agent_path).await;
+
+        tracing::debug!("exiting");
+
+        Ok(())
     }
-
-    _ = bluez.unregister_agent(&agent_path).await;
-
-    tracing::debug!("exiting");
-
-    Ok(())
+    .instrument(tracing::info_span!("bluetooth::agent::watch"))
+    .await
 }
