@@ -4,14 +4,16 @@
 //! The agent that BlueZ asks when pairing with a device, or when a device wants to use a
 //! service of the computer.
 
-use crate::Event;
+use crate::{Event, SERVICE};
 
 use std::sync::Arc;
 
 use bluez_zbus::agent_manager1::AgentManager1Proxy;
 use futures::channel::{mpsc, oneshot};
+use futures::future::Either;
 use futures::{SinkExt, StreamExt};
 use tracing::Instrument;
+use zbus::fdo;
 use zbus::zvariant::{ObjectPath, OwnedObjectPath};
 
 const AGENT_PATH: &str = "/org/bluez/agent/cosmic_settings";
@@ -203,7 +205,8 @@ async fn register(
 ///
 /// BlueZ asks the agent about the pairings that this connection starts. The default agent also
 /// gets the requests that no application started, such as a device that pairs with the
-/// computer by itself, or wants to use one of its services.
+/// computer by itself, or wants to use one of its services. The agent registers again when
+/// bluetoothd restarts.
 pub async fn watch(
     connection: zbus::Connection,
     mut tx: mpsc::Sender<Event>,
@@ -223,6 +226,10 @@ pub async fn watch(
         tracing::debug!("connecting to bluez agent manager");
 
         let bluez = AgentManager1Proxy::new(&connection).await?;
+        let mut owners = fdo::DBusProxy::new(&connection)
+            .await?
+            .receive_name_owner_changed_with_args(&[(0, SERVICE)])
+            .await?;
         _ = bluez.unregister_agent(&agent_path).await;
 
         tracing::debug!("registering agent");
@@ -234,11 +241,27 @@ pub async fn watch(
 
         tracing::debug!("registered");
 
-        while let Some(msg) = receiver.next().await {
-            tracing::debug!(?msg, "agent message received");
+        loop {
+            match futures::future::select(receiver.next(), owners.next()).await {
+                Either::Left((Some(msg), _)) => {
+                    tracing::debug!(?msg, "agent message received");
 
-            if tx.send(Event::Agent(Arc::new(msg))).await.is_err() {
-                break;
+                    if tx.send(Event::Agent(Arc::new(msg))).await.is_err() {
+                        break;
+                    }
+                }
+
+                // bluetoothd forgets its agents when it stops.
+                Either::Right((Some(signal), _)) => {
+                    if signal.args().is_ok_and(|args| args.new_owner().is_some()) {
+                        tracing::debug!("registering agent again");
+                        if let Err(why) = register(&bluez, &agent_path, default).await {
+                            tracing::error!("Failed to register the agent again: {why}");
+                        }
+                    }
+                }
+
+                Either::Left((None, _)) | Either::Right((None, _)) => break,
             }
         }
 

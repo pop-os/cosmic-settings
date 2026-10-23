@@ -13,6 +13,8 @@ pub mod subscription;
 pub use adapter::*;
 pub use device::*;
 
+pub(crate) const SERVICE: &str = "org.bluez";
+
 #[derive(Clone, Debug)]
 pub enum Event {
     AddedAdapter(OwnedObjectPath, Adapter),
