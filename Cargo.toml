@@ -1,5 +1,11 @@
 [workspace]
-members = ["cosmic-settings", "page", "pages/*", "subscriptions/*"]
+members = [
+    "cosmic-settings",
+    "page",
+    "pages/*",
+    "subscriptions/*",
+    "theme-bundle-config",
+]
 default-members = ["cosmic-settings"]
 resolver = "3"
 
@@ -17,6 +23,9 @@ image = { version = "0.25.10", default-features = false, features = [
     "webp",
     "hdr",
 ] }
+fontdb = "0.23.0"
+tracing = "0.1.44"
+walkdir = "=2.5.0"
 
 [workspace.dependencies.libcosmic]
 features = [
@@ -29,7 +38,20 @@ features = [
 ]
 git = "https://github.com/pop-os/libcosmic"
 
+[workspace.dependencies.ron]
+version = "0.8"
+
+[workspace.dependencies.serde]
+version = "1"
+features = ["derive"]
+
+[workspace.dependencies.zip]
+version = "2"
+
 [workspace.dependencies.cosmic-config]
+git = "https://github.com/pop-os/libcosmic"
+
+[workspace.dependencies.cosmic-theme]
 git = "https://github.com/pop-os/libcosmic"
 
 [workspace.dependencies.cosmic-bg-config]
@@ -77,17 +99,21 @@ cosmic-client-toolkit = { git = "https://github.com/pop-os/cosmic-protocols//", 
 # cosmic-settings-config = { git = "https://github.com/pop-os/cosmic-settings-daemon//", branch = "input_nobuild" }
 
 # For development and testing purposes
-# [patch.'https://github.com/pop-os/libcosmic']
+[patch.'https://github.com/pop-os/cosmic-bg']
+# Local checkout for now, for per-mode background configs.
+cosmic-bg-config = { git = "https://github.com/pop-os/cosmic-bg//", branch = "bundles" }
+
+[patch.'https://github.com/pop-os/libcosmic']
 # libcosmic = { path = "../libcosmic" }
 # cosmic-config = { path = "../libcosmic/cosmic-config" }
 # cosmic-theme = { path = "../libcosmic/cosmic-theme" }
 # iced_futures = { path = "../libcosmic/iced/futures" }
 # iced_winit = { path = "../libcosmic/iced/winit" }
-# iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
-# libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
-# cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
-# cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
-# iced_winit = { git = "https://github.com/pop-os/libcosmic//", branch = "theme-v2" }
+iced_futures = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+libcosmic = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+cosmic-config = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+cosmic-theme = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
+iced_winit = { git = "https://github.com/pop-os/libcosmic//", branch = "bundles" }
 
 # [patch.'https://github.com/pop-os/dbus-settings-bindings']
 # upower_dbus = { path = "../dbus-settings-bindings/upower" }

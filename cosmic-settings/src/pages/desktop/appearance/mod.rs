@@ -1,15 +1,18 @@
 // Copyright 2023 System76 <info@system76.com>
 // SPDX-License-Identifier: GPL-3.0-only
 
+pub mod colors_and_style;
 pub mod commands;
+pub mod custom;
 pub mod drawer;
 pub mod font_config;
+pub mod frosted;
 pub mod icon_themes;
-pub mod mode_and_colors;
+pub mod mode_and_auto;
 pub mod style;
+pub mod theme_bundles;
 pub mod theme_manager;
-
-use std::sync::Arc;
+pub mod wallpaper;
 
 use cosmic::app::ContextDrawer;
 //TODO: use embedded cosmic-files for portability
@@ -20,20 +23,19 @@ use cosmic::cosmic_theme::{CornerRadii, Density, Roundness, ThemeBuilder, ThemeM
 #[cfg(feature = "xdg-portal")]
 use cosmic::dialog::file_chooser::{self, FileFilter};
 use cosmic::iced::Subscription;
-use cosmic::iced::core::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
-use cosmic::widget::space::horizontal;
+use cosmic::widget::segmented_button::Model;
 use cosmic::widget::text_input::focus;
-use cosmic::widget::{button, container, row, settings, text};
+use cosmic::widget::{segmented_button, settings, text};
 use cosmic::{Apply, Element, Task, task, widget};
 #[cfg(feature = "wayland")]
 use cosmic_panel_config::CosmicPanelConfig;
 use cosmic_settings_page::{self as page, Section, section};
-use ron::ser::PrettyConfig;
 use slotmap::{Key, SlotMap};
 
 use crate::app;
 use crate::pages::desktop::appearance::font_config::FONT_SEARCH;
+use crate::pages::desktop::appearance::frosted::Frosted;
 
 #[derive(Clone, Copy, Debug)]
 pub enum ContextView {
@@ -41,7 +43,6 @@ pub enum ContextView {
     ApplicationBackground,
     ContainerBackground,
     ControlComponent,
-    FrostedGlass,
     #[cfg(feature = "cosmic-comp-config")]
     ShadowAndCorners,
     CustomAccent,
@@ -55,13 +56,25 @@ pub enum ContextView {
 pub struct Page {
     entity: page::Entity,
     on_enter_handle: Option<cosmic::iced::task::Handle>,
-    can_reset: bool,
     context_view: Option<ContextView>,
     drawer: drawer::Content,
     roundness: Roundness,
     density: Density,
+    mode_model: segmented_button::SingleSelectModel,
+
+    frosted_mode: Frosted,
+    frosted: u8,
+    glass: f32,
+    frosted_system_interface: bool,
+    frosted_windows: bool,
+    frosted_panel: bool,
+    frosted_applets: bool,
 
     theme_manager: theme_manager::Manager,
+
+    decks: Vec<theme_bundles::Deck>,
+
+    import: Option<theme_bundles::Import>,
 
     tk_config: Option<Config>,
     day_time: bool,
@@ -79,51 +92,69 @@ impl From<theme_manager::Manager> for Page {
         let theme_mode = theme_manager.mode();
         let theme_builder = theme_manager.builder().clone();
 
+        let frosted = theme_manager.theme().frosted as u8;
+        let glass = theme_manager.theme().alpha_map.guess_offset();
+        let frosted_mode = frosted_mode_of(frosted, glass);
+        let is_dark = theme_mode.is_dark;
         Self {
             entity: page::Entity::null(),
             on_enter_handle: None,
-            can_reset: if theme_mode.is_dark {
-                theme_builder == ThemeBuilder::dark()
-            } else {
-                theme_builder == ThemeBuilder::light()
-            },
             context_view: None,
             drawer: drawer::Content::from(&theme_manager),
             roundness: theme_builder.corner_radii.into(),
+            frosted_mode,
             density: cosmic::config::interface_density(),
+            mode_model: Model::builder()
+                .insert(|mut b| {
+                    b = b.text(fl!("dark")).data(true);
+                    if is_dark { b.activate() } else { b }
+                })
+                .insert(|mut b| {
+                    b = b.text(fl!("light")).data(false);
+                    if is_dark { b } else { b.activate() }
+                })
+                .build(),
+
+            frosted,
+            glass,
+            frosted_system_interface: theme_manager.theme().frosted_system_interface,
+            frosted_windows: theme_manager.theme().frosted_windows,
+            frosted_panel: theme_manager.theme().frosted_panel,
+            frosted_applets: theme_manager.theme().frosted_applets,
+
             theme_manager,
+            decks: Vec::new(),
+            import: None,
             tk_config,
             day_time: true,
         }
     }
 }
 
-#[cfg(feature = "xdg-portal")]
-#[derive(Clone)]
-pub struct SaveResponse(pub Arc<file_chooser::save::Response>);
-
-#[cfg(feature = "xdg-portal")]
-impl std::fmt::Debug for SaveResponse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("SaveResponse")
-    }
-}
-
-#[cfg(feature = "xdg-portal")]
-#[derive(Clone)]
-pub struct OpenResponse(pub Arc<file_chooser::open::FileResponse>);
-
-#[cfg(feature = "xdg-portal")]
-impl std::fmt::Debug for OpenResponse {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("OpenResponse")
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum Message {
+    ActivateBundle(String),
     Autoswitch(bool),
-    DarkMode(bool),
+    BundleActivated(String, Result<(), String>),
+    BundleDeleted(String, Result<(), String>),
+    BundleImport,
+    BundleImported(Result<String, String>),
+    Open(cosmic_theme_bundle_config::Mode),
+    ExportTheme,
+    ExportThemeFile(Option<std::path::PathBuf>),
+    Exported(Result<String, String>),
+    ImportCancel,
+    ImportChooseFile,
+    ImportConfirm,
+    ImportFileChosen(Option<std::path::PathBuf>),
+    ImportNameChanged(String),
+    BundleWallpaper(
+        Vec<(cosmic_theme_bundle_config::Mode, String)>,
+        Option<cosmic::widget::image::Handle>,
+    ),
+    BundlesLoaded(Vec<theme_bundles::Deck>),
+    DarkMode(segmented_button::Entity),
+    DeleteBundle(String),
     Density(Density),
     ThemeModeUpdate(ThemeMode),
 
@@ -134,29 +165,13 @@ pub enum Message {
     DrawerFont(drawer::FontMessage),
     DrawerIcon(drawer::IconMessage),
 
-    #[cfg(feature = "xdg-portal")]
-    ExportError,
-    #[cfg(feature = "xdg-portal")]
-    ExportFile(SaveResponse),
-    #[cfg(feature = "xdg-portal")]
-    ExportSuccess,
-
     FocusFontInput,
     GapSize(u32),
-    #[cfg(feature = "xdg-portal")]
-    ImportError,
-    #[cfg(feature = "xdg-portal")]
-    ImportFile(OpenResponse),
-    #[cfg(feature = "xdg-portal")]
-    ImportSuccess(Box<ThemeBuilder>),
     Left,
     PaletteAccent(cosmic::iced::Color),
     Reset,
     Roundness(Roundness),
-    #[cfg(feature = "xdg-portal")]
-    StartExport,
-    #[cfg(feature = "xdg-portal")]
-    StartImport,
+    Frosted(frosted::Frosted),
     UseDefaultWindowHint(bool),
     WindowHintSize(u32),
     Daytime(bool),
@@ -166,6 +181,7 @@ pub enum Message {
     FrostedApplets(bool),
     FrostedSystemInterface(bool),
     FrostedWindows(bool),
+    WallpaperPage,
 }
 
 impl From<Message> for crate::app::Message {
@@ -187,14 +203,148 @@ impl Page {
         let mut theme_staged: Option<theme_manager::ThemeStaged> = None;
 
         match message {
+            Message::ActivateBundle(slug) => {
+                tasks.push(cosmic::task::future(async move {
+                    let result = theme_bundles::activate(&slug);
+                    Message::BundleActivated(slug, result)
+                }));
+            }
+
+            Message::BundleActivated(slug, result) => match result {
+                Ok(()) => {
+                    tasks.push(self.reload_theme());
+                    tasks.push(cosmic::task::future(async {
+                        Message::BundlesLoaded(theme_bundles::load())
+                    }));
+                }
+                Err(error) => {
+                    tracing::error!(%slug, ?error, "failed to activate theme bundle");
+                }
+            },
+
+            Message::BundlesLoaded(decks) => {
+                for (slugs, path) in theme_bundles::wallpapers(&decks) {
+                    tasks.push(cosmic::task::future(async move {
+                        let handle = theme_bundles::wallpaper_handle(path).await;
+                        Message::BundleWallpaper(slugs, handle)
+                    }));
+                }
+                self.decks = decks;
+            }
+
+            Message::BundleWallpaper(slugs, handle) => {
+                if let Some(handle) = handle {
+                    theme_bundles::wallpaper_loaded(&mut self.decks, &slugs, handle);
+                }
+            }
+
+            Message::DeleteBundle(slug) => {
+                tasks.push(cosmic::task::future(async move {
+                    let result = theme_bundles::delete(&slug);
+                    Message::BundleDeleted(slug, result)
+                }));
+            }
+
+            Message::BundleDeleted(slug, result) => {
+                match result {
+                    Ok(()) => {}
+                    Err(error) => tracing::error!(%slug, ?error, "failed to remove theme bundle"),
+                }
+                tasks.push(cosmic::task::future(async {
+                    Message::BundlesLoaded(theme_bundles::load())
+                }));
+            }
+
+            Message::BundleImport => {
+                self.import = Some(theme_bundles::Import::default());
+            }
+
+            Message::Open(_) => {}
+
+            Message::ExportTheme | Message::ExportThemeFile(_) | Message::Exported(_) => {}
+
+            Message::ImportNameChanged(name) => {
+                if let Some(import) = self.import.as_mut() {
+                    import.name = name;
+                }
+            }
+
+            Message::ImportChooseFile => {
+                #[cfg(feature = "xdg-portal")]
+                tasks.push(cosmic::task::future(async {
+                    let description = fl!("theme-bundles-archive");
+                    let chosen = file_chooser::open::Dialog::new()
+                        .modal(true)
+                        .filter(FileFilter::glob(FileFilter::new(&description), "*.zip"))
+                        .open_file()
+                        .await;
+
+                    match chosen {
+                        Ok(file) => Message::ImportFileChosen(
+                            file.0
+                                .uris()
+                                .first()
+                                .filter(|uri| uri.scheme() == "file")
+                                .and_then(|uri| uri.to_file_path().ok()),
+                        ),
+                        Err(why) => {
+                            tracing::error!(?why, "failed to select a theme bundle archive");
+                            Message::ImportFileChosen(None)
+                        }
+                    }
+                }));
+            }
+
+            Message::ImportFileChosen(path) => {
+                if let (Some(path), Some(import)) = (path, self.import.as_mut()) {
+                    if import.name.is_empty()
+                        && let Ok(name) = cosmic_theme_bundle_config::transfer::archive_name(&path)
+                    {
+                        import.name = name;
+                    }
+                    import.path = Some(path);
+                }
+            }
+
+            Message::ImportConfirm => {
+                let chosen = self.import.as_ref().and_then(|import| {
+                    let path = import.path.clone()?;
+                    let name = import.name.trim().to_owned();
+                    Some((path, name))
+                });
+                if let Some((path, name)) = chosen {
+                    self.import = None;
+                    tasks.push(cosmic::task::future(async move {
+                        Message::BundleImported(theme_bundles::import_archive(
+                            &path,
+                            (!name.is_empty()).then_some(name.as_str()),
+                        ))
+                    }));
+                }
+            }
+
+            Message::ImportCancel => self.import = None,
+
+            Message::BundleImported(result) => match result {
+                Ok(_) => {
+                    tasks.push(cosmic::task::future(async {
+                        Message::BundlesLoaded(theme_bundles::load())
+                    }));
+                }
+                Err(error) => tracing::error!(?error, "failed to read a theme bundle archive"),
+            },
+
             Message::Autoswitch(enabled) => self.theme_manager.auto_switch(enabled),
 
             Message::DarkMode(enabled) => {
+                self.mode_model.activate(enabled);
+                let enabled = self.mode_model.active_data().copied().unwrap_or_default();
                 if let Err(err) = self.theme_manager.dark_mode(enabled) {
                     tracing::error!(?err, "Error setting dark mode");
                 }
 
                 self.drawer.reset(&self.theme_manager);
+                self.drawer.sync_fonts(&self.theme_manager);
                 theme_staged = Some(theme_manager::ThemeStaged::Current);
             }
 
@@ -238,6 +388,10 @@ impl Page {
 
             Message::WindowHintSize(active_hint) => {
                 self.theme_manager.set_active_hint(active_hint);
+            }
+
+            Message::Frosted(f) => {
+                tasks.push(self.update_frosted_mode(f));
             }
             Message::GapSize(gap) => {
                 self.theme_manager.set_gap_size(gap);
@@ -307,6 +461,7 @@ impl Page {
 
                 let r = self.roundness;
                 self.drawer.reset(&self.theme_manager);
+                self.drawer.sync_fonts(&self.theme_manager);
 
                 tasks.push(cosmic::task::future(async move {
                     #[cfg(feature = "wayland")]
@@ -317,154 +472,6 @@ impl Page {
 
                     app::Message::SetTheme(cosmic::theme::system_preference())
                 }));
-            }
-
-            #[cfg(feature = "xdg-portal")]
-            Message::StartImport => {
-                tasks.push(cosmic::task::future(async move {
-                    let res = file_chooser::open::Dialog::new()
-                        .modal(true)
-                        .filter(FileFilter::glob(FileFilter::new("ron"), "*.ron"))
-                        .open_file()
-                        .await;
-
-                    match res {
-                        Ok(f) => Message::ImportFile(OpenResponse(Arc::new(f))),
-                        Err(why) => {
-                            tracing::error!(
-                                ?why,
-                                "failed to select a file for importing a custom theme."
-                            );
-                            Message::ImportError
-                        }
-                    }
-                }));
-            }
-
-            #[cfg(feature = "xdg-portal")]
-            Message::StartExport => {
-                let is_dark = self.theme_manager.mode().is_dark;
-                let name = format!("{}.ron", if is_dark { fl!("dark") } else { fl!("light") });
-
-                tasks.push(cosmic::task::future(async move {
-                    let res = file_chooser::save::Dialog::new()
-                        .modal(true)
-                        .file_name(name)
-                        .save_file()
-                        .await;
-
-                    if let Ok(f) = res {
-                        Message::ExportFile(SaveResponse(Arc::new(f)))
-                    } else {
-                        // TODO Error toast?
-                        tracing::error!("failed to select a file for importing a custom theme.");
-                        Message::ExportError
-                    }
-                }));
-
-                return cosmic::Task::batch(tasks);
-            }
-
-            #[cfg(feature = "xdg-portal")]
-            Message::ImportFile(f) => {
-                let path_res =
-                    f.0.0
-                        .uris()
-                        .first()
-                        .filter(|f| f.scheme() == "file")
-                        .and_then(|f| f.to_file_path().ok());
-
-                let Some(path) = path_res else {
-                    return Task::none();
-                };
-
-                tasks.push(cosmic::task::future(async move {
-                    let res = tokio::fs::read_to_string(path).await;
-                    if let Some(b) = res.ok().and_then(|s| ron::de::from_str(&s).ok()) {
-                        Message::ImportSuccess(Box::new(b))
-                    } else {
-                        // TODO Error toast?
-                        tracing::error!("failed to import a file for a custom theme.");
-                        Message::ImportError
-                    }
-                }));
-            }
-
-            #[cfg(feature = "xdg-portal")]
-            Message::ExportFile(f) => {
-                let path_res =
-                    f.0.0
-                        .uris()
-                        .first()
-                        .filter(|f| f.scheme() == "file")
-                        .and_then(|f| f.to_file_path().ok());
-
-                let Some(path) = path_res else {
-                    return Task::none();
-                };
-
-                let theme_builder = self.theme_manager.builder().clone();
-
-                tasks.push(cosmic::task::future(async move {
-                    let Ok(builder) =
-                        ron::ser::to_string_pretty(&theme_builder, PrettyConfig::default())
-                    else {
-                        return crate::app::Message::None;
-                    };
-
-                    match tokio::fs::write(path, builder).await {
-                        Ok(_) => Message::ExportSuccess,
-                        Err(_why) => {
-                            // TODO Error toast?
-                            tracing::error!(
-                                "failed to select a file for importing a custom theme."
-                            );
-                            Message::ExportError
-                        }
-                    }
-                    .into()
-                }));
-
-                return cosmic::Task::batch(tasks);
-            }
-
-            // TODO: error message toast?
-            #[cfg(feature = "xdg-portal")]
-            Message::ExportError | Message::ImportError => return Task::none(),
-
-            #[cfg(feature = "xdg-portal")]
-            Message::ExportSuccess => {
-                tracing::trace!("Export successful");
-                return Task::none();
-            }
-
-            #[cfg(feature = "xdg-portal")]
-            Message::ImportSuccess(builder) => {
-                tracing::trace!("Import successful");
-                let new_is_dark = builder.palette.is_dark();
-                if new_is_dark != self.theme_manager.mode().is_dark
-                    && let Err(err) = self.theme_manager.dark_mode(new_is_dark)
-                {
-                    tracing::error!(?err, "Error setting dark mode");
-                }
-
-                self.roundness = builder.corner_radii.into();
-                self.density = Density::Standard;
-
-                self.theme_manager
-                    .selected_customizer_mut()
-                    .set_builder(*builder.clone())
-                    .set_theme(builder.build())
-                    .apply_builder()
-                    .apply_theme();
-
-                self.drawer.reset(&self.theme_manager);
-
-                self.can_reset = self.can_reset();
-
-                return cosmic::task::future(async move {
-                    app::Message::SetTheme(cosmic::theme::system_preference())
-                });
             }
 
             Message::UseDefaultWindowHint(v) => {
@@ -516,6 +523,10 @@ impl Page {
                     || was_auto != self.theme_manager.mode().auto_switch
                 {
                     self.drawer.reset(&self.theme_manager);
+                    self.drawer.sync_fonts(&self.theme_manager);
+                    return cosmic::task::future(async {
+                        Message::BundlesLoaded(theme_bundles::load())
+                    });
                 }
             }
 
@@ -548,7 +559,7 @@ impl Page {
                     theme_manager::ThemeStaged::Current
                 });
 
-                tasks.push(self.drawer.update_blur(blur_strength as u8));
+                self.update_blur(blur_strength as u8);
             }
             Message::Glass(glass) => {
                 let mut alpha_map = cosmic::cosmic_theme::AlphaMap::default();
@@ -568,36 +579,38 @@ impl Page {
                     theme_manager::ThemeStaged::Current
                 });
 
-                tasks.push(self.drawer.update_glass(glass));
+                self.update_glass(glass);
             }
             Message::FrostedSystemInterface(v) => {
                 theme_staged = self.theme_manager.set_frosted_system_interface(v).map(|_| {
                     self.drawer.reset(&self.theme_manager);
                     theme_manager::ThemeStaged::Current
                 });
-                tasks.push(self.drawer.update_frosted_system_interface(v));
+                self.update_frosted_system_interface(v);
             }
             Message::FrostedWindows(v) => {
                 theme_staged = self.theme_manager.set_frosted_windows(v).map(|_| {
                     self.drawer.reset(&self.theme_manager);
                     theme_manager::ThemeStaged::Current
                 });
-                tasks.push(self.drawer.update_frosted_windows(v));
+                self.update_frosted_windows(v);
             }
             Message::FrostedPanel(v) => {
                 theme_staged = self.theme_manager.set_frosted_panel(v).map(|_| {
                     self.drawer.reset(&self.theme_manager);
                     theme_manager::ThemeStaged::Current
                 });
-                tasks.push(self.drawer.update_frosted_panel(v));
+                self.update_frosted_panel(v);
             }
             Message::FrostedApplets(v) => {
                 theme_staged = self.theme_manager.set_frosted_applets(v).map(|_| {
                     self.drawer.reset(&self.theme_manager);
                     theme_manager::ThemeStaged::Current
                 });
-                tasks.push(self.drawer.update_frosted_applets(v));
+                self.update_frosted_applets(v);
             }
+
+            Message::WallpaperPage => {}
         }
 
         let mut tasks = cosmic::Task::batch(tasks);
@@ -605,8 +618,6 @@ impl Page {
         if let Some(stage) = theme_staged {
             tasks = tasks.chain(self.theme_manager.build_theme(stage))
         }
-
-        self.can_reset = self.can_reset();
 
         tasks
     }
@@ -674,12 +685,79 @@ impl Page {
         }
     }
 
-    fn can_reset(&self) -> bool {
-        if self.theme_manager.mode().is_dark {
-            *self.theme_manager.builder() != ThemeBuilder::dark()
-        } else {
-            *self.theme_manager.builder() != ThemeBuilder::light()
+    pub fn update_frosted_system_interface(&mut self, v: bool) {
+        self.frosted_system_interface = v;
+    }
+
+    pub fn update_frosted_windows(&mut self, v: bool) {
+        self.frosted_windows = v;
+    }
+
+    pub fn update_frosted_panel(&mut self, v: bool) {
+        self.frosted_panel = v;
+    }
+
+    pub fn update_frosted_applets(&mut self, v: bool) {
+        self.frosted_applets = v;
+    }
+
+    pub fn update_blur(&mut self, v: u8) {
+        self.frosted = v;
+    }
+
+    pub fn update_glass(&mut self, v: f32) {
+        self.glass = v;
+    }
+
+    pub fn update_frosted_mode(&mut self, f: Frosted) -> Task<app::Message> {
+        self.frosted_mode = f;
+        match f {
+            Frosted::Frosted => Task::batch(vec![
+                self.update(Message::Blur(6)),
+                self.update(Message::Glass(0.5)),
+            ]),
+
+            Frosted::Glassy => Task::batch(vec![
+                self.update(Message::Blur(5)),
+                self.update(Message::Glass(3. / 14.)),
+            ]),
+
+            _ => Task::none(),
         }
+    }
+
+    fn refresh_theme(&mut self) {
+        let manager = theme_manager::Manager::default();
+
+        self.roundness = manager.builder().corner_radii.into();
+        self.frosted = manager.theme().frosted as u8;
+        self.glass = manager.theme().alpha_map.guess_offset();
+        self.frosted_mode = frosted_mode_of(self.frosted, self.glass);
+        self.frosted_system_interface = manager.theme().frosted_system_interface;
+        self.frosted_windows = manager.theme().frosted_windows;
+        self.frosted_panel = manager.theme().frosted_panel;
+        self.frosted_applets = manager.theme().frosted_applets;
+        self.density = cosmic::config::interface_density();
+
+        self.theme_manager = manager;
+        self.drawer.reset(&self.theme_manager);
+        self.drawer.sync_fonts(&self.theme_manager);
+    }
+
+    fn reload_theme(&mut self) -> Task<app::Message> {
+        self.refresh_theme();
+
+        cosmic::task::future(async { app::Message::SetTheme(cosmic::theme::system_preference()) })
+    }
+}
+
+fn frosted_mode_of(frosted: u8, glass: f32) -> Frosted {
+    if frosted == 6 && (glass - 0.5).abs() < 0.1 {
+        Frosted::Frosted
+    } else if frosted == 5 && (glass - (3. / 14.)).abs() < 0.1 {
+        Frosted::Glassy
+    } else {
+        Frosted::Custom
     }
 }
 
@@ -688,33 +766,37 @@ impl page::Page<crate::pages::Message> for Page {
         self.entity = entity;
     }
 
+    fn dialog(&self) -> Option<Element<'_, crate::pages::Message>> {
+        self.import.as_ref().map(|import| {
+            theme_bundles::import_dialog(import).map(crate::pages::Message::Appearance)
+        })
+    }
+
+    fn header(&self) -> Option<Element<'_, crate::pages::Message>> {
+        Some(
+            text::title3(fl!("appearance"))
+                .apply(Element::from)
+                .map(crate::pages::Message::Appearance),
+        )
+    }
+
     fn content(
         &self,
         sections: &mut SlotMap<section::Entity, Section<crate::pages::Message>>,
     ) -> Option<page::Content> {
         Some(vec![
-            sections.insert(mode_and_colors::section()),
-            sections.insert(style::section()),
+            sections.insert(mode_and_auto::section()),
+            sections.insert(theme_bundles::section(
+                cosmic_theme_bundle_config::Mode::Dark,
+            )),
+            sections.insert(theme_bundles::section(
+                cosmic_theme_bundle_config::Mode::Light,
+            )),
             sections.insert(interface_density()),
+            sections.insert(frosted::section()),
             sections.insert(window_management()),
             sections.insert(experimental()),
-            sections.insert(reset_button()),
         ])
-    }
-
-    #[cfg(feature = "xdg-portal")]
-    fn header_view(&self) -> Option<Element<'_, crate::pages::Message>> {
-        let content = row::with_capacity(2)
-            .spacing(self.theme_manager.builder().spacing.space_xxs)
-            .push(button::standard(fl!("import")).on_press(Message::StartImport))
-            .push(button::standard(fl!("export")).on_press(Message::StartExport))
-            .apply(container)
-            .width(Length::Fill)
-            .align_x(Alignment::End)
-            .apply(Element::from)
-            .map(crate::pages::Message::Appearance);
-
-        Some(content)
     }
 
     fn info(&self) -> page::Info {
@@ -727,6 +809,12 @@ impl page::Page<crate::pages::Message> for Page {
         let (task, handle) = cosmic::task::batch(vec![
             // Load icon themes
             // cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
+            cosmic::task::future(async { Message::BundlesLoaded(theme_bundles::load()) })
+                .map(crate::pages::Message::Appearance),
+            {
+                self.refresh_theme();
+                cosmic::task::none()
+            },
             // Load font families
             cosmic::task::future(async move {
                 let (interface, mono) = font_config::load_font_families();
@@ -765,7 +853,8 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn context_drawer(&self) -> Option<ContextDrawer<'_, crate::pages::Message>> {
-        self.drawer.context_drawer(self.context_view)
+        self.drawer
+            .context_drawer(self.context_view, crate::pages::Message::Appearance)
     }
 }
 
@@ -898,23 +987,12 @@ pub fn experimental() -> Section<crate::pages::Message> {
 }
 
 #[allow(clippy::too_many_lines)]
-pub fn reset_button() -> Section<crate::pages::Message> {
-    crate::slab!(descriptions {
-        reset_to_default = fl!("reset-to-default");
-    });
+impl page::AutoBind<crate::pages::Message> for Page {
+    fn sub_pages(
+        mut page: cosmic_settings_page::Insert<crate::pages::Message>,
+    ) -> cosmic_settings_page::Insert<crate::pages::Message> {
+        let _ = page.sub_page_with_id::<custom::Page>();
 
-    Section::default()
-        .descriptions(descriptions)
-        .view::<Page>(move |_binder, page, section| {
-            let descriptions = &section.descriptions;
-            if page.can_reset {
-                button::standard(&descriptions[reset_to_default])
-                    .on_press(Message::Reset)
-                    .into()
-            } else {
-                horizontal().width(1.).apply(Element::from)
-            }
-            .map(crate::pages::Message::Appearance)
-        })
+        page
+    }
 }
-impl page::AutoBind<crate::pages::Message> for Page {}

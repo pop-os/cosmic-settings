@@ -7,7 +7,7 @@ use crate::config::Config;
 use crate::pages::accessibility;
 #[cfg(feature = "page-bluetooth")]
 use crate::pages::bluetooth;
-use crate::pages::desktop::{self, appearance};
+use crate::pages::desktop::{self, appearance, wallpaper};
 #[cfg(feature = "page-display")]
 use crate::pages::display;
 #[cfg(feature = "page-input")]
@@ -177,6 +177,7 @@ pub enum Message {
     SetTheme(cosmic::theme::Theme),
     SetWindowTitle,
     Surface(surface::Action<Message>),
+    WallpaperPage(cosmic_theme_bundle_config::Mode),
 }
 
 impl cosmic::Application for SettingsApp {
@@ -436,6 +437,21 @@ impl cosmic::Application for SettingsApp {
                         return page.update(message).map(Into::into);
                     }
                 }
+                crate::pages::Message::AppearanceTheme(message) => {
+                    if let Some(page) = self.pages.page_mut::<appearance::custom::Page>() {
+                        return page.update(message).map(Into::into);
+                    }
+                }
+
+                crate::pages::Message::AppearancePreview(theme) => {
+                    let custom = self.pages.page_id::<appearance::custom::Page>();
+                    let theme = match theme {
+                        Some(theme) if custom == Some(self.active_page) => theme,
+                        _ => cosmic::theme::system_preference(),
+                    };
+                    return cosmic::command::set_theme(theme);
+                }
+
                 crate::pages::Message::Appearance(message) => {
                     if let Some(page) = self.pages.page_mut::<appearance::Page>() {
                         return page.update(message).map(Into::into);
@@ -869,6 +885,14 @@ impl cosmic::Application for SettingsApp {
             Message::OpenContextDrawer(page) => {
                 self.core.window.show_context = true;
                 self.active_context_page = Some(page);
+            }
+            Message::WallpaperPage(mode) => {
+                if let Some(page) = self.pages.page_mut::<wallpaper::Page>() {
+                    page.set_target_mode(cosmic_bg_config::Mode::from_is_dark(mode.is_dark()));
+                }
+                if let Some(page) = self.pages.page_id::<wallpaper::Page>() {
+                    return self.activate_page(page);
+                }
             }
 
             Message::Error(error) => {

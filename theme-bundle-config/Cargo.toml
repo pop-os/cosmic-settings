@@ -1,0 +1,21 @@
+[package]
+name = "cosmic-theme-bundle-config"
+version = "0.1.0"
+edition = "2024"
+rust-version.workspace = true
+
+[dependencies]
+cosmic-bg-config.workspace = true
+cosmic-config.workspace = true
+cosmic-theme.workspace = true
+fontdb.workspace = true
+ron.workspace = true
+serde.workspace = true
+tempfile = "3"
+tracing.workspace = true
+walkdir.workspace = true
+xdg = "3.0"
+zip.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+rustix = { version = "0.38.44", features = ["fs"] }

@@ -55,6 +55,12 @@ pub const DEFAULT_COLORS: &[Color] = &[
 ];
 
 pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
+    config_for(cosmic_bg_config::Mode::current()).await
+}
+
+pub async fn config_for(
+    mode: cosmic_bg_config::Mode,
+) -> (Config, HashMap<String, (String, (u32, u32))>) {
     let mut displays = HashMap::new();
 
     if let Ok(list) = cosmic_randr_shell::list().await {
@@ -63,7 +69,14 @@ pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
         }
     }
 
-    let context = cosmic_bg_config::context().expect("failed to get helper for cosmic bg config");
+    let context =
+        cosmic_bg_config::context_for(mode).expect("failed to get helper for cosmic bg config");
+
+    if let Ok(shared) = cosmic_bg_config::shared()
+        && let Err(why) = context.seed_from(&shared)
+    {
+        tracing::warn!(?why, "failed to seed the background config");
+    }
 
     let config = match Config::load(&context) {
         Ok(conf) => conf,
@@ -77,7 +90,11 @@ pub async fn config() -> (Config, HashMap<String, (String, (u32, u32))>) {
 }
 
 pub fn set(config: &mut Config, entry: Entry) {
-    if let Ok(context) = cosmic_bg_config::context() {
+    set_for(cosmic_bg_config::Mode::current(), config, entry);
+}
+
+pub fn set_for(mode: cosmic_bg_config::Mode, config: &mut Config, entry: Entry) {
+    if let Ok(context) = cosmic_bg_config::context_for(mode) {
         let _res = context.set_same_on_all(config.same_on_all);
 
         if let Err(why) = config.set_entry(&context, entry) {

@@ -144,6 +144,9 @@ pub struct Page {
     /// Whether to show the tab_bar or not.
     show_tab_bar: bool,
 
+    /// Mode whose background is edited, when opened from a bundle's edit page.
+    target_mode: Option<cosmic_bg_config::Mode>,
+
     /// The display that is currently being configured.
     ///
     /// If set to `None`, all displays will have the same wallpaper.
@@ -210,8 +213,12 @@ impl page::Page<crate::pages::Message> for Page {
             return Task::none();
         }
 
+        let target_mode = self.target_mode;
         let (task, on_enter_handle) = Task::future(async move {
-            let (service_config, displays) = wallpaper::config().await;
+            let (service_config, displays) = match target_mode {
+                Some(mode) => wallpaper::config_for(mode).await,
+                None => wallpaper::config().await,
+            };
 
             crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
                 service_config,
@@ -225,6 +232,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
+        self.target_mode = None;
         // Reclaim memory
         self.cached_display_handle = None;
         self.selection = Context::default();
@@ -285,6 +293,7 @@ impl Default for Page {
             on_enter_handle: None,
             context_view: None,
             show_tab_bar: false,
+            target_mode: None,
             active_output: None,
             cached_display_handle: None,
             categories: {
@@ -353,6 +362,10 @@ impl Default for Page {
 }
 
 impl Page {
+    pub fn set_target_mode(&mut self, mode: cosmic_bg_config::Mode) {
+        self.target_mode = Some(mode);
+    }
+
     fn get_selected_rotation(rotation_frequency: u64) -> usize {
         match rotation_frequency {
             0..=300 => MINUTES_5,
@@ -502,7 +515,10 @@ impl Page {
             Choice::Color(ref color) => Entry::new(output, wallpaper::Source::Color(color.clone())),
         };
 
-        wallpaper::set(&mut self.wallpaper_service_config, entry);
+        match self.target_mode {
+            Some(mode) => wallpaper::set_for(mode, &mut self.wallpaper_service_config, entry),
+            None => wallpaper::set(&mut self.wallpaper_service_config, entry),
+        }
     }
 
     /// Locate the ID of a wallpaper that's already stored in memory
@@ -668,7 +684,6 @@ impl Page {
             entry
                 .sampling_method(old_entry.sampling_method)
                 .filter_method(old_entry.filter_method.clone())
-                .filter_by_theme(old_entry.filter_by_theme)
         } else {
             entry
         }
