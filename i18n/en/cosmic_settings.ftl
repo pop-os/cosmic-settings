@@ -901,6 +901,8 @@ system-shortcut = System
     .web-browser = Open a web browser
     .window-switcher = Switch between open windows
     .window-switcher-previous = Switch between open windows reversed
+    .window-switcher-same-app = Switch between windows of the focused app
+    .window-switcher-same-app-previous = Switch between windows of the focused app reversed
     .workspace-overview = Open the workspace overview
 
 window-tiling = Window tiling
