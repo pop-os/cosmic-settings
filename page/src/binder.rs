@@ -188,6 +188,16 @@ impl<Message: Clone + 'static> Binder<Message> {
 
     /// Calls a page's load function to refresh its data.
     #[inline]
+    pub fn on_load(&mut self, id: crate::Entity) -> Task<Message> {
+        if let Some(page) = self.page.get_mut(id) {
+            return page.on_load();
+        }
+
+        Task::none()
+    }
+
+    /// Calls a page's function to refresh data and set focus etc. on activating page.
+    #[inline]
     pub fn on_enter(&mut self, id: crate::Entity) -> Task<Message> {
         if let Some(page) = self.page.get_mut(id) {
             return page.on_enter();

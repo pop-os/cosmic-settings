@@ -61,7 +61,7 @@ pub enum Dialog {
 
 #[derive(Clone, Debug)]
 pub struct Page {
-    on_enter_handle: Option<cosmic::iced::task::Handle>,
+    on_load_handle: Option<cosmic::iced::task::Handle>,
     current_user_id: u64,
     entity: page::Entity,
     users: Vec<User>,
@@ -70,8 +70,10 @@ pub struct Page {
     default_icon: icon::Handle,
     password_label: String,
     password_confirm_label: String,
+    username_id: widget::Id,
     username_label: String,
     fullname_label: String,
+    password_id: widget::Id,
     password_hidden: bool,
     password_confirm_hidden: bool,
 }
@@ -79,7 +81,7 @@ pub struct Page {
 impl Default for Page {
     fn default() -> Self {
         Self {
-            on_enter_handle: None,
+            on_load_handle: None,
             current_user_id: 0,
             entity: page::Entity::default(),
             users: Vec::default(),
@@ -88,8 +90,10 @@ impl Default for Page {
             default_icon: icon::from_path(PathBuf::from(DEFAULT_ICON_FILE)),
             password_label: crate::fl!("password"),
             password_confirm_label: crate::fl!("password-confirm"),
+            username_id: widget::Id::unique(),
             username_label: crate::fl!("username"),
             fullname_label: crate::fl!("full-name"),
+            password_id: widget::Id::unique(),
             password_hidden: true,
             password_confirm_hidden: true,
         }
@@ -199,6 +203,14 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-users-comment"))
     }
 
+    fn dialog_open(&self) -> bool {
+        return self.dialog.is_some();
+    }
+
+    fn close_dialog(&mut self) {
+        self.dialog = None;
+    }
+
     fn dialog(&self) -> Option<Element<'_, pages::Message>> {
         let dialog = self.dialog.as_ref()?;
 
@@ -207,6 +219,7 @@ impl page::Page<crate::pages::Message> for Page {
                 let full_name_input = widget::container(
                     widget::text_input("", &user.full_name)
                         .label(&self.fullname_label)
+                        .id(self.username_id.clone())
                         .on_input(|value| {
                             Message::Dialog(Some(Dialog::AddNewUser(User {
                                 full_name: value,
@@ -339,6 +352,7 @@ impl page::Page<crate::pages::Message> for Page {
                         self.password_hidden,
                     )
                     .label(&self.password_label)
+                    .id(self.password_id.clone())
                     .on_input(|value| {
                         Message::Dialog(Some(Dialog::UpdatePassword(User {
                             password: value,
@@ -401,18 +415,18 @@ impl page::Page<crate::pages::Message> for Page {
         dialog_element.map(crate::pages::Message::User).into()
     }
 
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
-        if let Some(handle) = self.on_enter_handle.take() {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 
         let (task, handle) = cosmic::task::future(async { Self::reload().await }).abortable();
-        self.on_enter_handle = Some(handle);
+        self.on_load_handle = Some(handle);
         task
     }
 
     fn on_leave(&mut self) -> cosmic::Task<crate::pages::Message> {
-        if let Some(handle) = self.on_enter_handle.take() {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 
@@ -698,7 +712,18 @@ impl Page {
             Message::Dialog(dialog) => {
                 self.password_hidden = true;
                 self.password_confirm_hidden = true;
-                self.dialog = dialog;
+                let update_focus = self.dialog.is_none();
+                self.dialog = dialog.clone();
+                if update_focus && let Some(dialog) = dialog {
+                    match dialog {
+                        Dialog::AddNewUser(_user) => {
+                            return widget::text_input::focus(self.username_id.clone());
+                        }
+                        Dialog::UpdatePassword(_user) => {
+                            return widget::text_input::focus(self.password_id.clone());
+                        }
+                    }
+                }
             }
 
             Message::NewUser(username, full_name, password, is_admin) => {

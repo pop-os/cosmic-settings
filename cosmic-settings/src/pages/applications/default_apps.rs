@@ -80,7 +80,7 @@ pub struct AppMeta {
 
 #[derive(Debug, Default)]
 pub struct Page {
-    on_enter_handle: Option<cosmic::iced::task::Handle>,
+    on_load_handle: Option<cosmic::iced::task::Handle>,
     mime_apps: Option<CachedMimeApps>,
     shortcuts_config: Option<cosmic_config::Config>,
     update_config: Option<tokio::task::JoinHandle<()>>,
@@ -102,8 +102,8 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-default-apps-comment"))
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
-        if let Some(handle) = self.on_enter_handle.take() {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 
@@ -113,7 +113,7 @@ impl page::Page<crate::pages::Message> for Page {
             self.shortcuts_config = cosmic_settings_config::shortcuts::context().ok();
         }
 
-        let (task, on_enter_handle) = Task::future(async move {
+        let (task, on_load_handle) = Task::future(async move {
             // Wait for previous copy operation to complete.
             if let Some(handle) = config_update_handle {
                 _ = handle.await;
@@ -150,13 +150,13 @@ impl page::Page<crate::pages::Message> for Page {
         })
         .abortable();
 
-        self.on_enter_handle = Some(on_enter_handle);
+        self.on_load_handle = Some(on_load_handle);
 
         task
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        if let Some(handle) = self.on_enter_handle.take() {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 
