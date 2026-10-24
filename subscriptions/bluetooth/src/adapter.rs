@@ -7,6 +7,8 @@ use std::convert::Infallible;
 use std::hash::{Hash, Hasher};
 use std::path::PathBuf;
 use std::time::Duration;
+use bluez_zbus::adapter1::Adapter1Proxy;
+use zbus::proxy::CacheProperties;
 use zbus::zvariant::OwnedObjectPath;
 
 #[derive(Default, Debug, Clone)]
@@ -134,10 +136,21 @@ impl AdapterUpdate {
     }
 }
 
+async fn proxy(
+    connection: &zbus::Connection,
+    path: OwnedObjectPath,
+) -> zbus::Result<Adapter1Proxy<'static>> {
+    Adapter1Proxy::builder(connection)
+        .path(path)?
+        .cache_properties(CacheProperties::No)
+        .build()
+        .await
+}
+
 pub async fn start_discovery(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
     let result: zbus::Result<()> = Ok(());
 
-    let adapter = match bluez_zbus::get_adapter(&connection, adapter_path).await {
+    let adapter = match proxy(&connection, adapter_path).await {
         Err(why) => {
             tracing::error!("Unable to get the adapter: {why}");
             return Event::DBusError(why);
@@ -177,7 +190,7 @@ pub async fn start_discovery(connection: zbus::Connection, adapter_path: OwnedOb
 pub async fn stop_discovery(connection: zbus::Connection, adapter_path: OwnedObjectPath) -> Event {
     let result: zbus::Result<()> = Ok(());
 
-    let adapter = match bluez_zbus::get_adapter(&connection, adapter_path).await {
+    let adapter = match proxy(&connection, adapter_path).await {
         Err(why) => return Event::DBusError(why),
         Ok(adapter) => adapter,
     };
