@@ -100,6 +100,8 @@ pub const fn actions() -> &'static [Action] {
         Action::System(SystemAction::WorkspaceOverview),
         Action::System(SystemAction::WindowSwitcher),
         Action::System(SystemAction::WindowSwitcherPrevious),
+        Action::System(SystemAction::WindowSwitcherSameApp),
+        Action::System(SystemAction::WindowSwitcherSameAppPrevious),
         Action::System(SystemAction::LogOut),
         Action::System(SystemAction::LockScreen),
         Action::System(SystemAction::Suspend),

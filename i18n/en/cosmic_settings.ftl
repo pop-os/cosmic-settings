@@ -516,6 +516,11 @@ super-key = Super key action
     .applications = Open Applications
     .none = None
 
+window-switcher-scope = Window switcher shows windows from
+    .all-workspaces = All workspaces
+    .active-workspaces = Current workspace on all displays
+    .focused-output = Current workspace on this display only
+
 edge-gravity = Floating windows gravitate to nearby edges
 
 window-controls = Window controls
@@ -896,6 +901,8 @@ system-shortcut = System
     .web-browser = Open a web browser
     .window-switcher = Switch between open windows
     .window-switcher-previous = Switch between open windows reversed
+    .window-switcher-same-app = Switch between windows of the focused app
+    .window-switcher-same-app-previous = Switch between windows of the focused app reversed
     .workspace-overview = Open the workspace overview
 
 window-tiling = Window tiling

@@ -6,15 +6,24 @@ use cosmic::widget::{self, settings};
 use cosmic::{Apply, Element, surface};
 
 use cosmic_comp_config::CosmicCompConfig;
-use cosmic_config::{ConfigGet, ConfigSet};
+use cosmic_config::{ConfigGet, ConfigSet, CosmicConfigEntry};
+use cosmic_launcher_config::{CosmicLauncherConfig, WindowSwitcherScope};
 use cosmic_settings_config::{Action, Binding, Shortcuts, shortcuts};
 use cosmic_settings_page::{self as page, Section, section};
 use slotmap::SlotMap;
 use tracing::error;
 
+/// Window switcher scopes in the order the dropdown lists them.
+const WINDOW_SWITCHER_SCOPES: [WindowSwitcherScope; 3] = [
+    WindowSwitcherScope::AllWorkspaces,
+    WindowSwitcherScope::ActiveWorkspaces,
+    WindowSwitcherScope::FocusedOutputWorkspace,
+];
+
 #[derive(Clone, Debug)]
 pub enum Message {
     SuperKey(usize),
+    WindowSwitcherScope(usize),
     CompConfigUpdate(Box<CosmicCompConfig>),
     SetFocusFollowsCursor(bool),
     SaveFocusFollowsCursorDelay(bool),
@@ -31,6 +40,9 @@ pub struct Page {
     pub super_key_selections: Vec<String>,
     pub super_key_active: Option<usize>,
     comp_config: cosmic_config::Config,
+    launcher_config: Option<cosmic_config::Config>,
+    window_switcher_scope_selections: Vec<String>,
+    window_switcher_scope_active: Option<usize>,
     focus_follows_cursor: bool,
     focus_follows_cursor_delay: u64,
     focus_delay_text: String,
@@ -86,7 +98,37 @@ impl Default for Page {
             })
             .unwrap_or(0);
 
+        let launcher_config = cosmic_config::Config::new(
+            cosmic_launcher_config::APP_ID,
+            CosmicLauncherConfig::VERSION,
+        )
+        .inspect_err(|err| error!(?err, "Failed to open launcher config"))
+        .ok();
+
+        let window_switcher_scope = launcher_config
+            .as_ref()
+            .map(|config| {
+                CosmicLauncherConfig::get_entry(config)
+                    .unwrap_or_else(|(errs, config)| {
+                        for err in errs.into_iter().filter(cosmic_config::Error::is_err) {
+                            error!(?err, "Failed to read launcher config");
+                        }
+                        config
+                    })
+                    .window_switcher_scope
+            })
+            .unwrap_or_default();
+
         Page {
+            window_switcher_scope_selections: vec![
+                fl!("window-switcher-scope", "all-workspaces"),
+                fl!("window-switcher-scope", "active-workspaces"),
+                fl!("window-switcher-scope", "focused-output"),
+            ],
+            window_switcher_scope_active: WINDOW_SWITCHER_SCOPES
+                .iter()
+                .position(|scope| *scope == window_switcher_scope),
+            launcher_config,
             super_key_selections: vec![
                 fl!("super-key", "launcher"),
                 fl!("super-key", "workspaces"),
@@ -119,6 +161,18 @@ impl Page {
 
                 self.super_key_active = Some(id);
                 super_key_set(action);
+            }
+            Message::WindowSwitcherScope(id) => {
+                let Some(scope) = WINDOW_SWITCHER_SCOPES.get(id) else {
+                    return cosmic::iced::Task::none();
+                };
+
+                self.window_switcher_scope_active = Some(id);
+                if let Some(config) = &self.launcher_config {
+                    if let Err(err) = config.set("window_switcher_scope", scope) {
+                        error!(?err, "Failed to set config 'window_switcher_scope'");
+                    }
+                }
             }
             Message::SetFocusFollowsCursor(value) => {
                 self.focus_follows_cursor = value;
@@ -230,6 +284,10 @@ pub fn window_management() -> Section<crate::pages::Message> {
         _workspaces = fl!("super-key", "workspaces");
         _applications = fl!("super-key", "applications");
         _none = fl!("super-key", "none");
+        window_switcher_scope = fl!("window-switcher-scope");
+        _all_workspaces = fl!("window-switcher-scope", "all-workspaces");
+        _active_workspaces = fl!("window-switcher-scope", "active-workspaces");
+        _focused_output = fl!("window-switcher-scope", "focused-output");
         edge_gravity = fl!("edge-gravity");
     });
 
@@ -254,6 +312,22 @@ pub fn window_management() -> Section<crate::pages::Message> {
                         },
                     ),
                 ))
+                .add(
+                    settings::item::builder(&descriptions[window_switcher_scope]).control(
+                        widget::dropdown::popup_dropdown(
+                            &page.window_switcher_scope_selections,
+                            page.window_switcher_scope_active,
+                            Message::WindowSwitcherScope,
+                            cosmic::iced::window::Id::RESERVED,
+                            Message::Surface,
+                            |a| {
+                                crate::app::Message::PageMessage(
+                                    crate::pages::Message::WindowManagement(a),
+                                )
+                            },
+                        ),
+                    ),
+                )
                 .add(
                     settings::item::builder(&descriptions[edge_gravity])
                         .toggler(page.edge_snap_threshold != 0, |is_enabled| {

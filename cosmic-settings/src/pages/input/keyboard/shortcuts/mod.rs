@@ -601,6 +601,8 @@ fn all_system_actions() -> &'static [Action] {
         Action::System(SystemAction::WebBrowser),
         Action::System(SystemAction::WindowSwitcher),
         Action::System(SystemAction::WindowSwitcherPrevious),
+        Action::System(SystemAction::WindowSwitcherSameApp),
+        Action::System(SystemAction::WindowSwitcherSameAppPrevious),
         Action::System(SystemAction::WorkspaceOverview),
         Action::System(SystemAction::InputSourceSwitch),
         Action::Terminate,
@@ -740,6 +742,12 @@ fn localize_action(action: &Action) -> String {
             SystemAction::WindowSwitcher => fl!("system-shortcut", "window-switcher"),
             SystemAction::WindowSwitcherPrevious => {
                 fl!("system-shortcut", "window-switcher-previous")
+            }
+            SystemAction::WindowSwitcherSameApp => {
+                fl!("system-shortcut", "window-switcher-same-app")
+            }
+            SystemAction::WindowSwitcherSameAppPrevious => {
+                fl!("system-shortcut", "window-switcher-same-app-previous")
             }
             SystemAction::WorkspaceOverview => fl!("system-shortcut", "workspace-overview"),
             SystemAction::DisplayToggle => fl!("system-shortcut", "display-toggle"),
