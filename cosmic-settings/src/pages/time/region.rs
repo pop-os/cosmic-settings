@@ -165,7 +165,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-region-language-comment"))
     }
 
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
         cosmic::task::future(async move { Message::Refresh(Arc::new(page_reload().await)) })
     }
 

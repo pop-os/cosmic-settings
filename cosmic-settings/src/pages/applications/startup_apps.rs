@@ -20,7 +20,7 @@ pub struct CachedApps {
 #[derive(Clone, Debug)]
 pub struct Page {
     entity: page::Entity,
-    on_enter_handle: Option<cosmic::iced::task::Handle>,
+    on_load_handle: Option<cosmic::iced::task::Handle>,
     cached_startup_apps: Option<CachedApps>,
     application_search: String,
     application_search_id: widget::Id,
@@ -33,7 +33,7 @@ impl Default for Page {
     fn default() -> Self {
         Self {
             entity: page::Entity::null(),
-            on_enter_handle: None,
+            on_load_handle: None,
             cached_startup_apps: None,
             application_search: String::new(),
             application_search_id: widget::Id::unique(),
@@ -135,11 +135,11 @@ impl page::Page<crate::pages::Message> for Page {
         }
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         if self.app_to_remove.is_some() {
             return Task::none();
         }
-        let (task, on_enter_handle) = Task::future(async move {
+        let (task, on_load_handle) = Task::future(async move {
             let locales = freedesktop_desktop_entry::get_languages_from_env();
 
             let user_dirs: Vec<PathBuf> = DirectoryType::User.into();
@@ -161,7 +161,7 @@ impl page::Page<crate::pages::Message> for Page {
         })
         .abortable();
 
-        self.on_enter_handle = Some(on_enter_handle);
+        self.on_load_handle = Some(on_load_handle);
 
         task
     }
@@ -201,7 +201,7 @@ impl page::Page<crate::pages::Message> for Page {
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
-        if let Some(handle) = self.on_enter_handle.take() {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 

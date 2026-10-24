@@ -153,7 +153,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-date-time-comment"))
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         cosmic::Task::future(async move {
             let client = match zbus::Connection::system().await {
                 Ok(client) => client,

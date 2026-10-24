@@ -54,7 +54,7 @@ pub enum ContextView {
 #[allow(clippy::struct_excessive_bools)]
 pub struct Page {
     entity: page::Entity,
-    on_enter_handle: Option<cosmic::iced::task::Handle>,
+    on_load_handle: Option<cosmic::iced::task::Handle>,
     can_reset: bool,
     context_view: Option<ContextView>,
     drawer: drawer::Content,
@@ -81,7 +81,7 @@ impl From<theme_manager::Manager> for Page {
 
         Self {
             entity: page::Entity::null(),
-            on_enter_handle: None,
+            on_load_handle: None,
             can_reset: if theme_mode.is_dark {
                 theme_builder == ThemeBuilder::dark()
             } else {
@@ -723,7 +723,7 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-appearance-comment"))
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         let (task, handle) = cosmic::task::batch(vec![
             // Load icon themes
             // cosmic::task::future(icon_themes::fetch()).map(crate::pages::Message::Appearance),
@@ -736,13 +736,13 @@ impl page::Page<crate::pages::Message> for Page {
         ])
         .abortable();
 
-        self.on_enter_handle = Some(handle);
+        self.on_load_handle = Some(handle);
         task
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {
         let mut tasks = Vec::new();
-        if let Some(handle) = self.on_enter_handle.take() {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
         tasks.push(self.drawer.on_leave());

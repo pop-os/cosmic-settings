@@ -379,7 +379,7 @@ impl page::Page<crate::pages::Message> for Page {
         })
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         self.xkb = super::get_config(&self.config, "xkb_config");
         self.keyboard_config = super::get_config(&self.config, "keyboard_config");
         match (

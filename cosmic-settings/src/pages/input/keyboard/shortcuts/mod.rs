@@ -153,14 +153,21 @@ impl page::Page<crate::pages::Message> for Page {
         }
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         if self.shortcuts_context.is_none() {
             self.shortcuts_context = cosmic_settings_config::shortcuts::context().ok();
         }
 
         self.reload_search();
 
-        widget::text_input::focus(SEARCH_ID.clone())
+        Task::none()
+    }
+
+    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+        Task::batch(vec![
+            self.on_load(),
+            widget::text_input::focus(SEARCH_ID.clone()),
+        ])
     }
 
     fn on_leave(&mut self) -> Task<crate::pages::Message> {

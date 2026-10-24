@@ -1177,7 +1177,7 @@ impl SettingsApp {
 
                 for page in load {
                     self.loaded_pages.insert(page);
-                    tasks.push(self.pages.on_enter(page));
+                    tasks.push(self.pages.on_load(page));
                 }
 
                 for page in unload {

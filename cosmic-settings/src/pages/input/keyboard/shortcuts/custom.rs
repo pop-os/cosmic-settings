@@ -194,7 +194,7 @@ impl Page {
 
                     if self.replace_dialog.is_empty() {
                         self.add_shortcut = Default::default();
-                        _ = self.model.on_enter();
+                        _ = self.model.on_load();
                     }
                 }
             }
@@ -203,7 +203,7 @@ impl Page {
                 _ = self.replace_dialog.pop();
                 if self.replace_dialog.is_empty() {
                     self.add_shortcut = Default::default();
-                    _ = self.model.on_enter();
+                    _ = self.model.on_load();
                 }
             }
 
@@ -277,7 +277,7 @@ impl Page {
                                 ]);
                             }
                             self.add_shortcut(binding, false);
-                            _ = self.model.on_enter();
+                            _ = self.model.on_load();
 
                             return Task::batch(vec![
                                 widget::text_input::focus(widget::Id::unique()),
@@ -285,7 +285,7 @@ impl Page {
                             ]);
                         } else if old.alt || old.ctrl || old.shift {
                             self.add_shortcut = Default::default();
-                            _ = self.model.on_enter();
+                            _ = self.model.on_load();
 
                             return Task::batch(vec![
                                 keyboard_shortcuts_inhibit::inhibit_shortcuts(false).discard(),
@@ -362,7 +362,7 @@ impl Page {
                         ]);
                     }
                     self.add_shortcut(binding, false);
-                    _ = self.model.on_enter();
+                    _ = self.model.on_load();
 
                     return Task::batch(vec![
                         widget::text_input::focus(widget::Id::unique()),
@@ -577,9 +577,9 @@ impl page::Page<crate::pages::Message> for Page {
         Task::none()
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         self.add_shortcut = Default::default();
-        _ = self.model.on_enter();
+        _ = self.model.on_load();
         Task::none()
     }
 

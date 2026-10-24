@@ -135,8 +135,8 @@ pub struct Page {
     /// Internal ID of this page in the application.
     entity: page::Entity,
 
-    /// Abort handle to the on_enter task.
-    on_enter_handle: Option<cosmic::iced::task::Handle>,
+    /// Abort handle to the on_load task.
+    on_load_handle: Option<cosmic::iced::task::Handle>,
 
     /// Whether to show a context drawer.
     context_view: Option<ContextView>,
@@ -204,13 +204,13 @@ impl page::Page<crate::pages::Message> for Page {
             .description(fl!("xdg-entry-wallpaper-comment"))
     }
 
-    fn on_enter(&mut self) -> Task<crate::pages::Message> {
+    fn on_load(&mut self) -> Task<crate::pages::Message> {
         // Check if the page is already being loaded.
-        if self.on_enter_handle.is_some() {
+        if self.on_load_handle.is_some() {
             return Task::none();
         }
 
-        let (task, on_enter_handle) = Task::future(async move {
+        let (task, on_load_handle) = Task::future(async move {
             let (service_config, displays) = wallpaper::config().await;
 
             crate::pages::Message::DesktopWallpaper(Message::Init(Box::new(InitUpdate {
@@ -220,7 +220,7 @@ impl page::Page<crate::pages::Message> for Page {
         })
         .abortable();
 
-        self.on_enter_handle = Some(on_enter_handle);
+        self.on_load_handle = Some(on_load_handle);
         task
     }
 
@@ -231,7 +231,7 @@ impl page::Page<crate::pages::Message> for Page {
         self.outputs = SingleSelectModel::default();
 
         // Cancel the on_enter task if it was running.
-        if let Some(handle) = self.on_enter_handle.take() {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 
@@ -282,7 +282,7 @@ impl Default for Page {
 
         let mut page = Page {
             entity: page::Entity::null(),
-            on_enter_handle: None,
+            on_load_handle: None,
             context_view: None,
             show_tab_bar: false,
             active_output: None,

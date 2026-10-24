@@ -105,8 +105,15 @@ pub trait Page<Message: Clone + 'static>: Downcast {
     /// Reload page metadata via a Task.
     #[allow(unused)]
     #[inline]
-    fn on_enter(&mut self) -> Task<Message> {
+    fn on_load(&mut self) -> Task<Message> {
         Task::none()
+    }
+
+    /// Reload page, set focus etc. via a Task.
+    #[allow(unused)]
+    #[inline]
+    fn on_enter(&mut self) -> Task<Message> {
+        self.on_load()
     }
 
     /// Emit a command when the page is left

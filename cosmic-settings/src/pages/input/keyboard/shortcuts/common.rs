@@ -236,7 +236,7 @@ impl Model {
         None
     }
 
-    pub(super) fn on_enter(&mut self) -> cosmic::Task<ShortcutMessage> {
+    pub(super) fn on_load(&mut self) -> cosmic::Task<ShortcutMessage> {
         let mut shortcuts = self.config.get::<Shortcuts>("defaults").unwrap_or_default();
         self.defaults = shortcuts.clone();
 
@@ -390,7 +390,7 @@ impl Model {
                         self.config_add(action, new_binding);
                     }
 
-                    _ = self.on_enter();
+                    _ = self.on_load();
                 }
             }
             ShortcutMessage::CancelReplace => {
@@ -474,7 +474,7 @@ impl Model {
                         }
                     }
 
-                    _ = self.on_enter();
+                    _ = self.on_load();
                 }
             }
             ShortcutMessage::ShowShortcut(id, description) => {

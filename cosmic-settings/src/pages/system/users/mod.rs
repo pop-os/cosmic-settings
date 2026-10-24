@@ -61,7 +61,7 @@ pub enum Dialog {
 
 #[derive(Clone, Debug)]
 pub struct Page {
-    on_enter_handle: Option<cosmic::iced::task::Handle>,
+    on_load_handle: Option<cosmic::iced::task::Handle>,
     current_user_id: u64,
     entity: page::Entity,
     users: Vec<User>,
@@ -81,7 +81,7 @@ pub struct Page {
 impl Default for Page {
     fn default() -> Self {
         Self {
-            on_enter_handle: None,
+            on_load_handle: None,
             current_user_id: 0,
             entity: page::Entity::default(),
             users: Vec::default(),
@@ -415,18 +415,18 @@ impl page::Page<crate::pages::Message> for Page {
         dialog_element.map(crate::pages::Message::User).into()
     }
 
-    fn on_enter(&mut self) -> cosmic::Task<crate::pages::Message> {
-        if let Some(handle) = self.on_enter_handle.take() {
+    fn on_load(&mut self) -> cosmic::Task<crate::pages::Message> {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 
         let (task, handle) = cosmic::task::future(async { Self::reload().await }).abortable();
-        self.on_enter_handle = Some(handle);
+        self.on_load_handle = Some(handle);
         task
     }
 
     fn on_leave(&mut self) -> cosmic::Task<crate::pages::Message> {
-        if let Some(handle) = self.on_enter_handle.take() {
+        if let Some(handle) = self.on_load_handle.take() {
             handle.abort();
         }
 
