@@ -516,6 +516,11 @@ super-key = Super key action
     .applications = Open Applications
     .none = None
 
+window-switcher-scope = Window switcher shows windows from
+    .all-workspaces = All workspaces
+    .active-workspaces = Current workspace on all displays
+    .focused-output = Current workspace on this display only
+
 edge-gravity = Floating windows gravitate to nearby edges
 
 window-controls = Window controls
