@@ -494,7 +494,7 @@ fn output() -> Section<crate::pages::Message> {
                                 page.model.active_sink.balance.unwrap_or(1.0),
                                 |change| Message::SetSinkBalance(change).into(),
                             )
-                            .step(0.01)
+                            .step(0.01_f32)
                             .breakpoints(&[1.0]),
                         )
                         .push(horizontal_space().width(8.))

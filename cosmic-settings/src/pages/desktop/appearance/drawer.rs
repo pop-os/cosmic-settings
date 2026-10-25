@@ -231,14 +231,13 @@ impl Content {
                     };
                     if let Ok(config) = config {
                         _ = config.set::<String>("icon_theme", theme.id);
-                        if let Ok(store) = cosmic_theme_bundle_config::Store::new() {
-                            if let Err(error) =
+                        if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+                            && let Err(error) =
                                 store.sync_active(cosmic_theme_bundle_config::Mode::from_is_dark(
                                     cosmic_theme.is_dark,
                                 ))
-                            {
-                                tracing::warn!(?error, "failed to sync the active theme bundle");
-                            }
+                        {
+                            tracing::warn!(?error, "failed to sync the active theme bundle");
                         }
                     }
                 }

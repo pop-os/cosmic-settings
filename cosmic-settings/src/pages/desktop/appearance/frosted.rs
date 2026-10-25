@@ -173,7 +173,7 @@ pub fn section() -> Section<crate::pages::Message> {
                         row::with_children(vec![
                             text::body(fl!("style", "less")).into(),
                             slider(0.0..=1.0, page.glass, Message::Glass)
-                                .step(0.05)
+                                .step(0.05_f32)
                                 .width(Length::Fill)
                                 .apply(cosmic::widget::container)
                                 .max_width(250)
