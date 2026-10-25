@@ -245,12 +245,12 @@ impl Content {
                         _ = config.set::<String>("icon_theme", theme.id.clone());
                         _ = builder_config.set::<String>("icon_theme", theme.id);
 
-                        if let Ok(store) = cosmic_theme_bundle_config::Store::new() {
-                            if let Err(error) = store.sync_active(
+                        if let Ok(store) = cosmic_theme_bundle_config::Store::new()
+                            && let Err(error) = store.sync_active(
                                 cosmic_theme_bundle_config::Mode::from_is_dark(is_dark),
-                            ) {
-                                tracing::warn!(?error, "failed to sync the active theme bundle");
-                            }
+                            )
+                        {
+                            tracing::warn!(?error, "failed to sync the active theme bundle");
                         }
                     }
                 }

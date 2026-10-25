@@ -460,13 +460,11 @@ impl Page {
                 tasks.push(cosmic::task::message(
                     crate::app::Message::OpenContextDrawer(self.entity),
                 ));
-                tasks.push(
-                    self.drawer.on_open(
-                        &context_view,
-                        &self.theme_manager,
-                        crate::pages::Message::Appearance,
-                    ),
-                );
+                tasks.push(self.drawer.on_open(
+                    &context_view,
+                    &self.theme_manager,
+                    crate::pages::Message::Appearance,
+                ));
             }
 
             Message::ApplyThemeGlobal(enabled) => {
